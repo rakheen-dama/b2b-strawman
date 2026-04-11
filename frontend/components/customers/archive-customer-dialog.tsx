@@ -65,12 +65,11 @@ export function ArchiveCustomerDialog({
           </div>
           <AlertDialogTitle className="text-center">Archive Customer</AlertDialogTitle>
           <AlertDialogDescription className="text-center">
-            Archive{" "}
-            <span className="text-foreground font-semibold">{customerName}</span>? Their project
-            links will be preserved but they will be hidden from active customer lists.
+            Archive <span className="text-foreground font-semibold">{customerName}</span>? Their
+            project links will be preserved but they will be hidden from active customer lists.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
         <AlertDialogFooter>
           <AlertDialogCancel variant="plain" disabled={isArchiving}>
             Cancel

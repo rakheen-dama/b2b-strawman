@@ -8,7 +8,7 @@ afterEach(() => {
 });
 
 function makeField(
-  overrides: Partial<IntakeFieldGroup["fields"][number]> = {},
+  overrides: Partial<IntakeFieldGroup["fields"][number]> = {}
 ): IntakeFieldGroup["fields"][number] {
   return {
     id: "field-1",
@@ -25,9 +25,7 @@ function makeField(
   };
 }
 
-function makeGroup(
-  overrides: Partial<IntakeFieldGroup> = {},
-): IntakeFieldGroup {
+function makeGroup(overrides: Partial<IntakeFieldGroup> = {}): IntakeFieldGroup {
   return {
     id: "group-1",
     name: "Billing Information",
@@ -40,13 +38,7 @@ function makeGroup(
 describe("IntakeFieldsSection", () => {
   it("renders group headers and required fields", () => {
     const onChange = vi.fn();
-    render(
-      <IntakeFieldsSection
-        groups={[makeGroup()]}
-        values={{}}
-        onChange={onChange}
-      />,
-    );
+    render(<IntakeFieldsSection groups={[makeGroup()]} values={{}} onChange={onChange} />);
 
     expect(screen.getByText("Billing Information")).toBeInTheDocument();
     // Group with required fields starts expanded, so the field label is visible
@@ -62,13 +54,7 @@ describe("IntakeFieldsSection", () => {
       ],
     });
 
-    render(
-      <IntakeFieldsSection
-        groups={[group]}
-        values={{}}
-        onChange={onChange}
-      />,
-    );
+    render(<IntakeFieldsSection groups={[group]} values={{}} onChange={onChange} />);
 
     // Required field visible immediately (group starts expanded with required fields)
     expect(screen.getByText("Tax ID")).toBeInTheDocument();
@@ -117,7 +103,7 @@ describe("IntakeFieldsSection", () => {
         groups={[group]}
         values={{ entity_type: "individual" }}
         onChange={onChange}
-      />,
+      />
     );
 
     expect(screen.getByText("Entity Type")).toBeInTheDocument();
@@ -159,7 +145,7 @@ describe("IntakeFieldsSection", () => {
         groups={[group]}
         values={{ entity_type: "individual" }}
         onChange={onChange}
-      />,
+      />
     );
 
     expect(screen.getByText("Personal ID")).toBeInTheDocument();
@@ -200,7 +186,7 @@ describe("IntakeFieldsSection", () => {
         groups={[group]}
         values={{ entity_type: "company" }}
         onChange={onChange}
-      />,
+      />
     );
 
     expect(screen.queryByText("Personal ID")).not.toBeInTheDocument();
@@ -237,13 +223,7 @@ describe("IntakeFieldsSection", () => {
     });
 
     // country = "ZA" (in ["ZA", "US"]) → state_province should be visible
-    render(
-      <IntakeFieldsSection
-        groups={[group]}
-        values={{ country: "ZA" }}
-        onChange={onChange}
-      />,
-    );
+    render(<IntakeFieldsSection groups={[group]} values={{ country: "ZA" }} onChange={onChange} />);
 
     expect(screen.getByText("State/Province")).toBeInTheDocument();
   });
@@ -279,13 +259,7 @@ describe("IntakeFieldsSection", () => {
     });
 
     // country = "UK" (not in ["ZA", "US"]) → state_province should be hidden
-    render(
-      <IntakeFieldsSection
-        groups={[group]}
-        values={{ country: "UK" }}
-        onChange={onChange}
-      />,
-    );
+    render(<IntakeFieldsSection groups={[group]} values={{ country: "UK" }} onChange={onChange} />);
 
     expect(screen.queryByText("State/Province")).not.toBeInTheDocument();
   });
@@ -294,17 +268,17 @@ describe("IntakeFieldsSection", () => {
     const onChange = vi.fn();
     const group = makeGroup({
       fields: [
-        makeField({ id: "f1", name: "VAT Number", slug: "vat_number", required: true, fieldType: "TEXT" }),
+        makeField({
+          id: "f1",
+          name: "VAT Number",
+          slug: "vat_number",
+          required: true,
+          fieldType: "TEXT",
+        }),
       ],
     });
 
-    render(
-      <IntakeFieldsSection
-        groups={[group]}
-        values={{}}
-        onChange={onChange}
-      />,
-    );
+    render(<IntakeFieldsSection groups={[group]} values={{}} onChange={onChange} />);
 
     const input = screen.getByRole("textbox");
     fireEvent.change(input, { target: { value: "GB123456789" } });

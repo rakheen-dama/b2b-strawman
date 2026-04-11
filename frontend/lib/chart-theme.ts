@@ -1,19 +1,19 @@
 export const CHART_THEME = {
   // Color palette — references CSS custom properties with hex fallbacks
   colors: {
-    primary: "var(--color-chart-1, #2563eb)",   // warm orange
+    primary: "var(--color-chart-1, #2563eb)", // warm orange
     secondary: "var(--color-chart-2, #e11d48)", // teal
-    tertiary: "var(--color-chart-3, #e77e23)",  // dark blue
+    tertiary: "var(--color-chart-3, #e77e23)", // dark blue
     quaternary: "var(--color-chart-4, #8b5cf6)", // yellow
-    quinary: "var(--color-chart-5, #06b6d4)",   // amber
+    quinary: "var(--color-chart-5, #06b6d4)", // amber
   },
 
   // Slate-based supplementary colors for data-heavy charts
   slate: {
-    grid: "var(--color-slate-200)",       // light mode grid lines
-    gridDark: "var(--color-slate-700)",   // dark mode grid lines
-    axis: "var(--color-slate-500)",       // axis text
-    muted: "var(--color-slate-400)",      // secondary series
+    grid: "var(--color-slate-200)", // light mode grid lines
+    gridDark: "var(--color-slate-700)", // dark mode grid lines
+    axis: "var(--color-slate-500)", // axis text
+    muted: "var(--color-slate-400)", // secondary series
   },
 
   // Gradient fill factory — returns [startColor, endColor] for area charts

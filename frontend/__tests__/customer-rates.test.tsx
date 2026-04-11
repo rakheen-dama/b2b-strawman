@@ -9,12 +9,9 @@ const mockUpdateCustomerBillingRate = vi.fn();
 const mockDeleteCustomerBillingRate = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/customers/[id]/rate-actions", () => ({
-  createCustomerBillingRate: (...args: unknown[]) =>
-    mockCreateCustomerBillingRate(...args),
-  updateCustomerBillingRate: (...args: unknown[]) =>
-    mockUpdateCustomerBillingRate(...args),
-  deleteCustomerBillingRate: (...args: unknown[]) =>
-    mockDeleteCustomerBillingRate(...args),
+  createCustomerBillingRate: (...args: unknown[]) => mockCreateCustomerBillingRate(...args),
+  updateCustomerBillingRate: (...args: unknown[]) => mockUpdateCustomerBillingRate(...args),
+  deleteCustomerBillingRate: (...args: unknown[]) => mockDeleteCustomerBillingRate(...args),
 }));
 
 function makeOrgMembers(): OrgMember[] {
@@ -74,20 +71,16 @@ describe("CustomerRatesTab", () => {
         customerId="c1"
         slug="acme"
         defaultCurrency="USD"
-      />,
+      />
     );
 
-    expect(
-      screen.getByText("No customer rate overrides"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("No customer rate overrides")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Add billing rate overrides for team members when working for this customer.",
-      ),
+        "Add billing rate overrides for team members when working for this customer."
+      )
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /Add Override/ }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Add Override/ })).toBeInTheDocument();
   });
 
   it("renders customer rate overrides table with rate data", () => {
@@ -98,12 +91,10 @@ describe("CustomerRatesTab", () => {
         customerId="c1"
         slug="acme"
         defaultCurrency="USD"
-      />,
+      />
     );
 
-    expect(
-      screen.getByText("Customer Rate Overrides"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Customer Rate Overrides")).toBeInTheDocument();
     expect(screen.getByText("Alice Johnson")).toBeInTheDocument();
     expect(screen.getByText("EUR")).toBeInTheDocument();
   });
@@ -118,23 +109,21 @@ describe("CustomerRatesTab", () => {
         customerId="c1"
         slug="acme"
         defaultCurrency="USD"
-      />,
+      />
     );
 
     await user.click(screen.getByRole("button", { name: /Add Override/ }));
 
     await waitFor(() => {
       expect(
-        screen.getByRole("heading", { name: "Add Customer Rate Override" }),
+        screen.getByRole("heading", { name: "Add Customer Rate Override" })
       ).toBeInTheDocument();
     });
 
     expect(screen.getByLabelText("Member")).toBeInTheDocument();
     expect(screen.getByLabelText("Hourly Rate")).toBeInTheDocument();
     expect(screen.getByLabelText("Effective From")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Create Override" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Create Override" })).toBeInTheDocument();
   });
 
   it("delete customer rate shows confirmation and calls server action", async () => {
@@ -148,28 +137,20 @@ describe("CustomerRatesTab", () => {
         customerId="c1"
         slug="acme"
         defaultCurrency="USD"
-      />,
+      />
     );
 
-    const deleteButton = screen.getByLabelText(
-      "Delete customer rate for Alice Johnson",
-    );
+    const deleteButton = screen.getByLabelText("Delete customer rate for Alice Johnson");
     await user.click(deleteButton);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Delete Customer Rate Override"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Delete Customer Rate Override")).toBeInTheDocument();
     });
 
     await user.click(screen.getByRole("button", { name: "Delete" }));
 
     await waitFor(() => {
-      expect(mockDeleteCustomerBillingRate).toHaveBeenCalledWith(
-        "acme",
-        "c1",
-        "cbr1",
-      );
+      expect(mockDeleteCustomerBillingRate).toHaveBeenCalledWith("acme", "c1", "cbr1");
     });
   });
 });

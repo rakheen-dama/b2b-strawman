@@ -87,7 +87,13 @@ function makeTask(overrides: Partial<Task> = {}): Task {
   };
 }
 
-const openUnassigned = makeTask({ id: "t1", title: "Open unassigned task", status: "OPEN", assigneeId: null, priority: "HIGH" });
+const openUnassigned = makeTask({
+  id: "t1",
+  title: "Open unassigned task",
+  status: "OPEN",
+  assigneeId: null,
+  priority: "HIGH",
+});
 const inProgressOwn = makeTask({
   id: "t2",
   title: "My in-progress task",
@@ -97,14 +103,22 @@ const inProgressOwn = makeTask({
   priority: "MEDIUM",
 });
 const doneTask = makeTask({ id: "t3", title: "Completed task", status: "DONE", priority: "LOW" });
-const cancelledTask = makeTask({ id: "t4", title: "Cancelled task", status: "CANCELLED", priority: "LOW", cancelledAt: "2024-06-02T00:00:00Z" });
+const cancelledTask = makeTask({
+  id: "t4",
+  title: "Cancelled task",
+  status: "CANCELLED",
+  priority: "LOW",
+  cancelledAt: "2024-06-02T00:00:00Z",
+});
 
 describe("TaskListPanel", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSearchParams = new URLSearchParams("tab=tasks");
     mockFetchTasks.mockResolvedValue([openUnassigned, inProgressOwn, doneTask]);
-    mockFetchTask.mockResolvedValue(makeTask({ id: "t1", projectId: "p1", title: "Open unassigned task" }));
+    mockFetchTask.mockResolvedValue(
+      makeTask({ id: "t1", projectId: "p1", title: "Open unassigned task" })
+    );
     mockFetchTimeEntries.mockResolvedValue([]);
   });
 
@@ -121,7 +135,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     // Default filter shows OPEN + IN_PROGRESS only
@@ -142,7 +156,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     // Find the Claim button within the table (not in filter bar)
@@ -159,7 +173,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     const table = screen.getByRole("table");
@@ -185,7 +199,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     const table = screen.getByRole("table");
@@ -212,7 +226,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={false}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     const table = screen.getByRole("table");
@@ -228,7 +242,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     const filterGroup = screen.getByRole("group", { name: /task filters/i });
@@ -249,7 +263,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     const filterGroup = screen.getByRole("group", { name: /task filters/i });
@@ -277,7 +291,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     const filterGroup = screen.getByRole("group", { name: /task filters/i });
@@ -299,14 +313,16 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     const filterGroup = screen.getByRole("group", { name: /task filters/i });
     await user.click(within(filterGroup).getByText("All"));
 
     await waitFor(() => {
-      expect(mockFetchTasks).toHaveBeenCalledWith("p1", { status: "OPEN,IN_PROGRESS,DONE,CANCELLED" });
+      expect(mockFetchTasks).toHaveBeenCalledWith("p1", {
+        status: "OPEN,IN_PROGRESS,DONE,CANCELLED",
+      });
     });
   });
 
@@ -322,7 +338,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     // Click "All" to include DONE tasks in view
@@ -348,7 +364,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     // Click "All" to include CANCELLED tasks in view
@@ -380,7 +396,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     // Click "All" to include DONE tasks
@@ -405,7 +421,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     // Click "All" to include CANCELLED tasks
@@ -421,7 +437,12 @@ describe("TaskListPanel", () => {
   // 40.10: Priority badge variants (HIGH=destructive, MEDIUM=warning, LOW=neutral)
   it("renders priority badges with correct variants", () => {
     // Use a LOW-priority OPEN task so it appears with the default OPEN+IN_PROGRESS filter
-    const lowOpenTask = makeTask({ id: "t-low", title: "Low open task", status: "OPEN", priority: "LOW" });
+    const lowOpenTask = makeTask({
+      id: "t-low",
+      title: "Low open task",
+      status: "OPEN",
+      priority: "LOW",
+    });
 
     render(
       <TaskListPanel
@@ -430,7 +451,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     const highBadge = screen.getByText("High");
@@ -438,9 +459,7 @@ describe("TaskListPanel", () => {
 
     // There is exactly one "Medium" badge (priority) in the table
     const mediumBadges = screen.getAllByText("Medium");
-    const mediumPriorityBadge = mediumBadges.find(
-      (el) => el.getAttribute("data-slot") === "badge",
-    );
+    const mediumPriorityBadge = mediumBadges.find((el) => el.getAttribute("data-slot") === "badge");
     expect(mediumPriorityBadge).toHaveAttribute("data-variant", "warning");
 
     const lowBadge = screen.getByText("Low");
@@ -464,7 +483,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     // The overdue date span should have red text styling
@@ -491,7 +510,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     // Click "All" to include DONE tasks
@@ -522,7 +541,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     const table = screen.getByRole("table");
@@ -534,7 +553,7 @@ describe("TaskListPanel", () => {
 
     await waitFor(() => {
       expect(screen.getByRole("alert")).toHaveTextContent(
-        "This task was just claimed by someone else",
+        "This task was just claimed by someone else"
       );
     });
 
@@ -552,7 +571,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     expect(screen.getByText("No tasks yet")).toBeInTheDocument();
@@ -571,7 +590,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     // Click "Done" filter — fetchTasks returns []
@@ -581,9 +600,7 @@ describe("TaskListPanel", () => {
     await waitFor(() => {
       expect(screen.getByText("No tasks match this filter")).toBeInTheDocument();
     });
-    expect(
-      screen.getByText("Try a different filter or clear the selection."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Try a different filter or clear the selection.")).toBeInTheDocument();
   });
 
   // 130B: Clicking task title updates URL with ?taskId=
@@ -597,17 +614,16 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     // Click the task title button (now a sheet opener, not an expand toggle)
-    const titleButton = screen.getByRole("button", { name: /Open task detail for Open unassigned task/i });
+    const titleButton = screen.getByRole("button", {
+      name: /Open task detail for Open unassigned task/i,
+    });
     await user.click(titleButton);
 
-    expect(mockPush).toHaveBeenCalledWith(
-      expect.stringContaining("taskId=t1"),
-      { scroll: false },
-    );
+    expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("taskId=t1"), { scroll: false });
   });
 
   // 130B: Sheet renders when URL has ?taskId=
@@ -622,7 +638,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     // TaskDetailSheet fetches task when taskId is non-null
@@ -645,7 +661,7 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     // Wait for sheet to load task
@@ -657,10 +673,7 @@ describe("TaskListPanel", () => {
     const closeButton = await screen.findByRole("button", { name: /Close task detail/i });
     await user.click(closeButton);
 
-    expect(mockPush).toHaveBeenCalledWith(
-      expect.stringContaining("tab=tasks"),
-      { scroll: false },
-    );
+    expect(mockPush).toHaveBeenCalledWith(expect.stringContaining("tab=tasks"), { scroll: false });
     // taskId should NOT be in the push URL
     const pushCall = mockPush.mock.calls[0][0] as string;
     expect(pushCall).not.toContain("taskId");
@@ -677,11 +690,13 @@ describe("TaskListPanel", () => {
         projectId="p1"
         canManage={true}
         currentMemberId="current-member"
-      />,
+      />
     );
 
     // Click the task title
-    const titleButton = screen.getByRole("button", { name: /Open task detail for Open unassigned task/i });
+    const titleButton = screen.getByRole("button", {
+      name: /Open task detail for Open unassigned task/i,
+    });
     await user.click(titleButton);
 
     // No colSpan row should appear in the table

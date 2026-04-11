@@ -97,10 +97,7 @@ export function GenerateDocxDialog({
               </p>
               <div className="space-y-2">
                 {OUTPUT_FORMAT_OPTIONS.map((option) => (
-                  <label
-                    key={option.value}
-                    className="flex cursor-pointer items-center gap-2"
-                  >
+                  <label key={option.value} className="flex cursor-pointer items-center gap-2">
                     <input
                       type="radio"
                       name="outputFormat"
@@ -137,16 +134,8 @@ export function GenerateDocxDialog({
 
             <div className="flex flex-col gap-2">
               {result.downloadUrl && (
-                <Button
-                  variant="outline"
-                  className="justify-start"
-                  asChild
-                >
-                  <a
-                    href={result.downloadUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                <Button variant="outline" className="justify-start" asChild>
+                  <a href={result.downloadUrl} target="_blank" rel="noopener noreferrer">
                     <Download className="mr-1.5 size-4" />
                     Download .docx
                   </a>
@@ -154,16 +143,8 @@ export function GenerateDocxDialog({
               )}
 
               {result.pdfDownloadUrl && (
-                <Button
-                  variant="outline"
-                  className="justify-start"
-                  asChild
-                >
-                  <a
-                    href={result.pdfDownloadUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                <Button variant="outline" className="justify-start" asChild>
+                  <a href={result.pdfDownloadUrl} target="_blank" rel="noopener noreferrer">
                     <Download className="mr-1.5 size-4" />
                     Download PDF
                   </a>
@@ -176,8 +157,7 @@ export function GenerateDocxDialog({
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="mt-0.5 size-4 shrink-0 text-yellow-600" />
                   <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                    PDF conversion is not available. Your document has been
-                    generated as .docx
+                    PDF conversion is not available. Your document has been generated as .docx
                   </p>
                 </div>
               </div>
@@ -189,10 +169,7 @@ export function GenerateDocxDialog({
                   <AlertTriangle className="mt-0.5 size-4 shrink-0 text-yellow-600" />
                   <div className="space-y-1">
                     {result.warnings.map((warning, idx) => (
-                      <p
-                        key={idx}
-                        className="text-sm text-yellow-800 dark:text-yellow-200"
-                      >
+                      <p key={idx} className="text-sm text-yellow-800 dark:text-yellow-200">
                         {warning}
                       </p>
                     ))}
@@ -205,7 +182,7 @@ export function GenerateDocxDialog({
 
         {state === "error" && (
           <div className="space-y-4">
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
           </div>
         )}
 

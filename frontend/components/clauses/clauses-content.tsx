@@ -42,23 +42,14 @@ import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const DocumentEditor = dynamic(
-  () =>
-    import("@/components/editor/DocumentEditor").then(
-      (mod) => mod.DocumentEditor,
-    ),
-  { loading: () => <Skeleton className="h-64 w-full" />, ssr: false },
+  () => import("@/components/editor/DocumentEditor").then((mod) => mod.DocumentEditor),
+  { loading: () => <Skeleton className="h-64 w-full" />, ssr: false }
 );
 import { ClauseEditorSheet } from "@/components/clauses/clause-editor-sheet";
-import {
-  cloneClause,
-  deactivateClause,
-} from "@/lib/actions/clause-actions";
+import { cloneClause, deactivateClause } from "@/lib/actions/clause-actions";
 import type { Clause, ClauseSource } from "@/lib/actions/clause-actions";
 
-const SOURCE_BADGE: Record<
-  ClauseSource,
-  { label: string; variant: "pro" | "lead" | "neutral" }
-> = {
+const SOURCE_BADGE: Record<ClauseSource, { label: string; variant: "pro" | "lead" | "neutral" }> = {
   SYSTEM: { label: "System", variant: "pro" },
   CLONED: { label: "Cloned", variant: "lead" },
   CUSTOM: { label: "Custom", variant: "neutral" },
@@ -77,20 +68,13 @@ interface ClausesContentProps {
   canManage: boolean;
 }
 
-export function ClausesContent({
-  slug,
-  clauses,
-  categories,
-  canManage,
-}: ClausesContentProps) {
+export function ClausesContent({ slug, clauses, categories, canManage }: ClausesContentProps) {
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    () => new Set(categories),
+    () => new Set(categories)
   );
-  const [expandedClauses, setExpandedClauses] = useState<Set<string>>(
-    () => new Set(),
-  );
+  const [expandedClauses, setExpandedClauses] = useState<Set<string>>(() => new Set());
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [editorSheetOpen, setEditorSheetOpen] = useState(false);
@@ -98,10 +82,8 @@ export function ClausesContent({
 
   const filteredClauses = useMemo(() => {
     return clauses.filter((c) => {
-      const matchesSearch =
-        !search || c.title.toLowerCase().includes(search.toLowerCase());
-      const matchesCategory =
-        selectedCategory === "all" || c.category === selectedCategory;
+      const matchesSearch = !search || c.title.toLowerCase().includes(search.toLowerCase());
+      const matchesCategory = selectedCategory === "all" || c.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
   }, [clauses, search, selectedCategory]);
@@ -118,10 +100,7 @@ export function ClausesContent({
     return groups;
   }, [filteredClauses]);
 
-  const sortedCategories = useMemo(
-    () => Object.keys(grouped).sort(),
-    [grouped],
-  );
+  const sortedCategories = useMemo(() => Object.keys(grouped).sort(), [grouped]);
 
   function toggleCategory(category: string) {
     setExpandedCategories((prev) => {
@@ -169,7 +148,7 @@ export function ClausesContent({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-3">
           <div className="relative max-w-xs flex-1">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+            <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
             <Input
               placeholder="Search clauses..."
               value={search}
@@ -177,10 +156,7 @@ export function ClausesContent({
               className="pl-9"
             />
           </div>
-          <Select
-            value={selectedCategory}
-            onValueChange={setSelectedCategory}
-          >
+          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
             <SelectTrigger aria-label="Filter by category">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
@@ -372,9 +348,7 @@ function ClauseCard({
             </button>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="font-medium text-slate-950 dark:text-slate-50">
-                  {clause.title}
-                </p>
+                <p className="font-medium text-slate-950 dark:text-slate-50">{clause.title}</p>
                 <Badge variant={sourceBadge.variant}>{sourceBadge.label}</Badge>
                 {clause.active ? (
                   <Badge variant="success">Active</Badge>
@@ -394,9 +368,7 @@ function ClauseCard({
                   >
                     <FileText className="size-3" />
                     Used in {clause.templateUsageCount}{" "}
-                    {clause.templateUsageCount === 1
-                      ? "template"
-                      : "templates"}
+                    {clause.templateUsageCount === 1 ? "template" : "templates"}
                   </span>
                 )}
               </div>
@@ -421,23 +393,19 @@ function ClauseCard({
 
         {/* Expanded body content */}
         {isExpanded && (
-          <div className="border-t border-slate-200 px-4 pb-4 pt-3 dark:border-slate-800">
+          <div className="border-t border-slate-200 px-4 pt-3 pb-4 dark:border-slate-800">
             {isLegacy && (
               <div className="mb-3 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950">
                 <div className="flex items-start gap-2">
                   <AlertTriangle className="mt-0.5 size-4 text-amber-600 dark:text-amber-400" />
                   <p className="text-sm text-amber-700 dark:text-amber-300">
-                    This clause contains legacy HTML content that needs
-                    migration to the new editor format.
+                    This clause contains legacy HTML content that needs migration to the new editor
+                    format.
                   </p>
                 </div>
               </div>
             )}
-            <DocumentEditor
-              content={clause.body}
-              scope="clause"
-              editable={false}
-            />
+            <DocumentEditor content={clause.body} scope="clause" editable={false} />
           </div>
         )}
       </div>
@@ -463,16 +431,12 @@ function ClauseCard({
       </AlertDialog>
 
       {/* Deactivate Confirmation Dialog */}
-      <AlertDialog
-        open={deactivateDialogOpen}
-        onOpenChange={setDeactivateDialogOpen}
-      >
+      <AlertDialog open={deactivateDialogOpen} onOpenChange={setDeactivateDialogOpen}>
         <AlertDialogContent className="max-w-md">
           <AlertDialogHeader>
             <AlertDialogTitle>Deactivate Clause</AlertDialogTitle>
             <AlertDialogDescription>
-              This clause will be hidden from the clause picker but preserved on
-              existing templates.
+              This clause will be hidden from the clause picker but preserved on existing templates.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

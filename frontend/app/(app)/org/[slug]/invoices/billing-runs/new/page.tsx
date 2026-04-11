@@ -24,12 +24,10 @@ export default async function NewBillingRunPage({
   if (!isAdmin) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          New Billing Run
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">New Billing Run</h1>
         <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to create billing runs. Only admins and
-          owners can access this page.
+          You do not have permission to create billing runs. Only admins and owners can access this
+          page.
         </p>
       </div>
     );
@@ -37,13 +35,8 @@ export default async function NewBillingRunPage({
 
   return (
     <div className="space-y-8">
-      <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-        New Billing Run
-      </h1>
-      <BillingRunWizard
-        slug={slug}
-        billingRunId={search.billingRunId}
-      />
+      <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">New Billing Run</h1>
+      <BillingRunWizard slug={slug} billingRunId={search.billingRunId} />
     </div>
   );
 }

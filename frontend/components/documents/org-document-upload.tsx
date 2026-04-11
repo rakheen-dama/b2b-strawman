@@ -96,12 +96,7 @@ export function OrgDocumentUpload({ slug }: OrgDocumentUploadProps) {
 
       // Step 1: Initiate
       dispatch({ type: "SET_STATUS", id: item.id, status: "initiating" });
-      const initResult = await initiateOrgUpload(
-        slug,
-        item.file.name,
-        contentType,
-        item.file.size
-      );
+      const initResult = await initiateOrgUpload(slug, item.file.name, contentType, item.file.size);
 
       if (!initResult.success || !initResult.documentId || !initResult.presignedUrl) {
         dispatch({

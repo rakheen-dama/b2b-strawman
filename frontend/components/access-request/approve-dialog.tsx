@@ -64,12 +64,17 @@ export function ApproveDialog({
             <span className="text-foreground font-semibold">{email}</span>.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
         <AlertDialogFooter>
           <AlertDialogCancel variant="plain" disabled={isApproving}>
             Cancel
           </AlertDialogCancel>
-          <Button variant="accent" onClick={handleApprove} disabled={isApproving} data-testid="confirm-approve-btn">
+          <Button
+            variant="accent"
+            onClick={handleApprove}
+            disabled={isApproving}
+            data-testid="confirm-approve-btn"
+          >
             {isApproving ? "Approving..." : "Approve"}
           </Button>
         </AlertDialogFooter>

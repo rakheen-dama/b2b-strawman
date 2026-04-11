@@ -76,9 +76,7 @@ describe("DeliveryLogTable", () => {
     render(<DeliveryLogTable />);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("No delivery log entries found.")
-      ).toBeInTheDocument();
+      expect(screen.getByText("No delivery log entries found.")).toBeInTheDocument();
     });
   });
 
@@ -99,9 +97,7 @@ describe("DeliveryLogTable", () => {
     });
 
     // Initial call should not have a status filter
-    expect(mockGetDeliveryLog).toHaveBeenCalledWith(
-      expect.objectContaining({ status: undefined })
-    );
+    expect(mockGetDeliveryLog).toHaveBeenCalledWith(expect.objectContaining({ status: undefined }));
 
     const user = userEvent.setup();
 

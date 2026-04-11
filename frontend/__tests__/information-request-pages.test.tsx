@@ -11,15 +11,12 @@ vi.mock("next/navigation", () => ({
   useSearchParams: () => new URLSearchParams(),
 }));
 
-vi.mock(
-  "@/app/(app)/org/[slug]/customers/[id]/request-actions",
-  () => ({
-    createRequestAction: vi.fn(),
-    sendRequestAction: vi.fn(),
-    fetchActiveTemplatesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
-    fetchPortalContactsAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/customers/[id]/request-actions", () => ({
+  createRequestAction: vi.fn(),
+  sendRequestAction: vi.fn(),
+  fetchActiveTemplatesAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+  fetchPortalContactsAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+}));
 
 const mockRequest: InformationRequestResponse = {
   id: "req-1",
@@ -105,13 +102,7 @@ describe("Information Request Components", () => {
 
   // Test 6: RequestList shows request data
   it("renders RequestList with request data", () => {
-    render(
-      <RequestList
-        requests={[mockRequest]}
-        slug="test-org"
-        showCustomer={true}
-      />,
-    );
+    render(<RequestList requests={[mockRequest]} slug="test-org" showCustomer={true} />);
     expect(screen.getByText("REQ-0001")).toBeInTheDocument();
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
     expect(screen.getByText("John Smith")).toBeInTheDocument();
@@ -121,13 +112,7 @@ describe("Information Request Components", () => {
 
   // Test 7: RequestList hides customer column when showCustomer=false
   it("hides customer column when showCustomer is false", () => {
-    render(
-      <RequestList
-        requests={[mockRequest]}
-        slug="test-org"
-        showCustomer={false}
-      />,
-    );
+    render(<RequestList requests={[mockRequest]} slug="test-org" showCustomer={false} />);
     expect(screen.getByText("REQ-0001")).toBeInTheDocument();
     // Customer column header should not be rendered
     const headers = screen.getAllByRole("columnheader");
@@ -137,13 +122,7 @@ describe("Information Request Components", () => {
 
   // Test 8: RequestList shows project name as subtitle
   it("shows project name under request number", () => {
-    render(
-      <RequestList
-        requests={[mockRequest]}
-        slug="test-org"
-        showCustomer={false}
-      />,
-    );
+    render(<RequestList requests={[mockRequest]} slug="test-org" showCustomer={false} />);
     expect(screen.getByText("Annual Audit")).toBeInTheDocument();
   });
 });

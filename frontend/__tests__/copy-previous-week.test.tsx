@@ -1,10 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import {
-  WeeklyTimeGrid,
-  type GridTaskRow,
-} from "@/components/time-tracking/weekly-time-grid";
+import { WeeklyTimeGrid, type GridTaskRow } from "@/components/time-tracking/weekly-time-grid";
 import type { MyWorkTimeEntryItem } from "@/lib/types";
 import { toast } from "sonner";
 
@@ -16,8 +13,7 @@ const mockFetchPreviousWeekEntries = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/my-work/timesheet/actions", () => ({
   saveWeeklyEntries: (...args: unknown[]) => mockSaveWeeklyEntries(...args),
   fetchWeekEntries: (...args: unknown[]) => mockFetchWeekEntries(...args),
-  fetchPreviousWeekEntries: (...args: unknown[]) =>
-    mockFetchPreviousWeekEntries(...args),
+  fetchPreviousWeekEntries: (...args: unknown[]) => mockFetchPreviousWeekEntries(...args),
 }));
 
 // Mock sonner toast
@@ -91,7 +87,7 @@ describe("Copy Previous Week", () => {
         weekStart={weekStart}
         allTasks={sampleTasks}
         slug="test-org"
-      />,
+      />
     );
 
     // Click "Copy Previous Week" button
@@ -151,7 +147,7 @@ describe("Copy Previous Week", () => {
         weekStart={weekStart}
         allTasks={singleTask}
         slug="test-org"
-      />,
+      />
     );
 
     const copyButton = screen.getByRole("button", {
@@ -205,7 +201,7 @@ describe("Copy Previous Week", () => {
         weekStart={weekStart}
         allTasks={singleTask}
         slug="test-org"
-      />,
+      />
     );
 
     // Save button should initially be disabled (no dirty state)

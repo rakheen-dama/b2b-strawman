@@ -32,7 +32,7 @@ export default function ProjectDetailLoading() {
         <div className="px-6 pt-6 pb-4">
           <Skeleton className="h-5 w-28" />
         </div>
-        <div className="px-6 pb-6 space-y-3">
+        <div className="space-y-3 px-6 pb-6">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-12 w-full" />
           ))}

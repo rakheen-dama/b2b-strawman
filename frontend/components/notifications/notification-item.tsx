@@ -31,10 +31,7 @@ const NOTIFICATION_ICON_MAP: Record<string, LucideIcon> = {
   LEAVE: CalendarOff,
 };
 
-function getDeepLinkUrl(
-  orgSlug: string,
-  notification: Notification
-): string | null {
+function getDeepLinkUrl(orgSlug: string, notification: Notification): string | null {
   const { referenceProjectId, referenceEntityType } = notification;
   if (!referenceProjectId) return null;
 
@@ -49,11 +46,7 @@ function getDeepLinkUrl(
   }
 }
 
-export function NotificationItem({
-  notification,
-  orgSlug,
-  onRead,
-}: NotificationItemProps) {
+export function NotificationItem({ notification, orgSlug, onRead }: NotificationItemProps) {
   const router = useRouter();
   const prefix = notification.type.split("_")[0];
   const Icon = NOTIFICATION_ICON_MAP[prefix] ?? BellRing;
@@ -61,7 +54,9 @@ export function NotificationItem({
   async function handleClick() {
     if (!notification.isRead) {
       // Fire-and-forget: mark as read
-      markNotificationRead(notification.id).then(() => onRead?.()).catch(() => {});
+      markNotificationRead(notification.id)
+        .then(() => onRead?.())
+        .catch(() => {});
     }
 
     const url = getDeepLinkUrl(orgSlug, notification);
@@ -98,10 +93,7 @@ export function NotificationItem({
       </div>
 
       {!notification.isRead && (
-        <span
-          className="mt-2 size-2 shrink-0 rounded-full bg-teal-500"
-          aria-label="Unread"
-        />
+        <span className="mt-2 size-2 shrink-0 rounded-full bg-teal-500" aria-label="Unread" />
       )}
     </button>
   );

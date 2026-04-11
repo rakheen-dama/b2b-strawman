@@ -2,12 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Plus,
-  Trash2,
-  ChevronUp,
-  ChevronDown,
-} from "lucide-react";
+import { Plus, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -38,10 +33,7 @@ interface EditRequestTemplateFormProps {
   template: RequestTemplateResponse;
 }
 
-export function EditRequestTemplateForm({
-  slug,
-  template,
-}: EditRequestTemplateFormProps) {
+export function EditRequestTemplateForm({ slug, template }: EditRequestTemplateFormProps) {
   const router = useRouter();
   const nextKeyRef = useRef(0);
   const isPlatform = template.source === "PLATFORM";
@@ -60,9 +52,7 @@ export function EditRequestTemplateForm({
   const [name, setName] = useState(template.name);
   const [description, setDescription] = useState(template.description ?? "");
 
-  const sortedItems = [...template.items].sort(
-    (a, b) => a.sortOrder - b.sortOrder,
-  );
+  const sortedItems = [...template.items].sort((a, b) => a.sortOrder - b.sortOrder);
   const [items, setItems] = useState<TemplateItem[]>(
     sortedItems.map((item) => ({
       key: `existing-${nextKeyRef.current++}`,
@@ -71,7 +61,7 @@ export function EditRequestTemplateForm({
       responseType: item.responseType,
       required: item.required,
       fileTypeHints: item.fileTypeHints ?? "",
-    })),
+    }))
   );
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,11 +75,7 @@ export function EditRequestTemplateForm({
   }
 
   function updateItem(key: string, updates: Partial<TemplateItem>) {
-    setItems((prev) =>
-      prev.map((item) =>
-        item.key === key ? { ...item, ...updates } : item,
-      ),
-    );
+    setItems((prev) => prev.map((item) => (item.key === key ? { ...item, ...updates } : item)));
   }
 
   function moveItem(index: number, direction: "up" | "down") {
@@ -97,10 +83,7 @@ export function EditRequestTemplateForm({
       const newItems = [...prev];
       const targetIndex = direction === "up" ? index - 1 : index + 1;
       if (targetIndex < 0 || targetIndex >= newItems.length) return prev;
-      [newItems[index], newItems[targetIndex]] = [
-        newItems[targetIndex],
-        newItems[index],
-      ];
+      [newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]];
       return newItems;
     });
   }
@@ -146,9 +129,7 @@ export function EditRequestTemplateForm({
     try {
       const result = await duplicateTemplateAction(slug, template.id);
       if (result.success && result.data) {
-        router.push(
-          `/org/${slug}/settings/request-templates/${result.data.id}`,
-        );
+        router.push(`/org/${slug}/settings/request-templates/${result.data.id}`);
       } else {
         setError(result.error ?? "Failed to duplicate template.");
       }
@@ -164,17 +145,13 @@ export function EditRequestTemplateForm({
       <div className="space-y-6">
         <div className="space-y-2">
           <Label>Name</Label>
-          <p className="text-sm text-slate-900 dark:text-slate-100">
-            {template.name}
-          </p>
+          <p className="text-sm text-slate-900 dark:text-slate-100">{template.name}</p>
         </div>
 
         {template.description && (
           <div className="space-y-2">
             <Label>Description</Label>
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              {template.description}
-            </p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{template.description}</p>
           </div>
         )}
 
@@ -184,9 +161,7 @@ export function EditRequestTemplateForm({
           </h2>
 
           {sortedItems.length === 0 ? (
-            <p className="py-8 text-center text-sm text-slate-500">
-              No items in this template.
-            </p>
+            <p className="py-8 text-center text-sm text-slate-500">No items in this template.</p>
           ) : (
             <div className="space-y-3">
               {sortedItems.map((item, index) => (
@@ -196,13 +171,9 @@ export function EditRequestTemplateForm({
                   className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950"
                 >
                   <div className="flex items-center gap-3">
-                    <span className="text-xs font-medium text-slate-400">
-                      {index + 1}
-                    </span>
+                    <span className="text-xs font-medium text-slate-400">{index + 1}</span>
                     <div className="flex-1">
-                      <p className="font-medium text-slate-900 dark:text-slate-100">
-                        {item.name}
-                      </p>
+                      <p className="font-medium text-slate-900 dark:text-slate-100">{item.name}</p>
                       {item.description && (
                         <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
                           {item.description}
@@ -226,7 +197,7 @@ export function EditRequestTemplateForm({
                     )}
                   </div>
                   {item.fileTypeHints && (
-                    <p className="ml-7 mt-1 text-xs text-slate-400">
+                    <p className="mt-1 ml-7 text-xs text-slate-400">
                       Accepted: {item.fileTypeHints}
                     </p>
                   )}
@@ -236,14 +207,12 @@ export function EditRequestTemplateForm({
           )}
         </div>
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
 
         <div className="flex justify-end gap-3">
           <Button
             variant="soft"
-            onClick={() =>
-              router.push(`/org/${slug}/settings/request-templates`)
-            }
+            onClick={() => router.push(`/org/${slug}/settings/request-templates`)}
           >
             Back
           </Button>
@@ -327,14 +296,10 @@ export function EditRequestTemplateForm({
                 </div>
                 <div className="flex-1 space-y-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-medium text-slate-400">
-                      {index + 1}
-                    </span>
+                    <span className="text-xs font-medium text-slate-400">{index + 1}</span>
                     <Input
                       value={item.name}
-                      onChange={(e) =>
-                        updateItem(item.key, { name: e.target.value })
-                      }
+                      onChange={(e) => updateItem(item.key, { name: e.target.value })}
                       placeholder="Item name"
                       className="flex-1"
                     />
@@ -361,10 +326,7 @@ export function EditRequestTemplateForm({
 
                   <div className="flex flex-wrap items-center gap-4">
                     <div className="flex items-center gap-2">
-                      <Label
-                        htmlFor={`response-type-${item.key}`}
-                        className="text-sm"
-                      >
+                      <Label htmlFor={`response-type-${item.key}`} className="text-sm">
                         Response Type
                       </Label>
                       <select
@@ -375,7 +337,7 @@ export function EditRequestTemplateForm({
                             responseType: e.target.value as ResponseType,
                           })
                         }
-                        className="flex h-8 rounded-md border border-slate-200 bg-transparent px-2 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                        className="flex h-8 rounded-md border border-slate-200 bg-transparent px-2 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
                       >
                         <option value="FILE_UPLOAD">File Upload</option>
                         <option value="TEXT_RESPONSE">Text Response</option>
@@ -417,21 +379,16 @@ export function EditRequestTemplateForm({
         </div>
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
 
       <div className="flex justify-end gap-3">
         <Button
           variant="soft"
-          onClick={() =>
-            router.push(`/org/${slug}/settings/request-templates`)
-          }
+          onClick={() => router.push(`/org/${slug}/settings/request-templates`)}
         >
           Cancel
         </Button>
-        <Button
-          onClick={handleSave}
-          disabled={isSaving || !name.trim()}
-        >
+        <Button onClick={handleSave} disabled={isSaving || !name.trim()}>
           {isSaving ? "Saving..." : "Save Changes"}
         </Button>
       </div>

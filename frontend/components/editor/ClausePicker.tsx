@@ -17,27 +17,16 @@ import { getClauses, type Clause } from "@/lib/actions/clause-actions";
 import { extractTextFromBody } from "@/lib/tiptap-utils";
 
 interface ClausePickerProps {
-  onSelect: (clause: {
-    id: string;
-    slug: string;
-    title: string;
-    required: boolean;
-  }) => void;
+  onSelect: (clause: { id: string; slug: string; title: string; required: boolean }) => void;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export function ClausePicker({
-  onSelect,
-  open,
-  onOpenChange,
-}: ClausePickerProps) {
+export function ClausePicker({ onSelect, open, onOpenChange }: ClausePickerProps) {
   const [clauses, setClauses] = useState<Clause[]>([]);
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(
-    new Set(),
-  );
+  const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set());
 
   const handleOpenChange = useCallback(
     (nextOpen: boolean) => {
@@ -48,7 +37,7 @@ export function ClausePicker({
       }
       onOpenChange(nextOpen);
     },
-    [onOpenChange],
+    [onOpenChange]
   );
 
   useEffect(() => {
@@ -66,7 +55,7 @@ export function ClausePicker({
       (c) =>
         c.title.toLowerCase().includes(query) ||
         c.slug.toLowerCase().includes(query) ||
-        c.category.toLowerCase().includes(query),
+        c.category.toLowerCase().includes(query)
     );
   }, [clauses, search]);
 
@@ -107,9 +96,7 @@ export function ClausePicker({
   };
 
   // Extract text from Tiptap JSON for preview
-  const previewText = selectedClause?.body
-    ? extractTextFromBody(selectedClause.body)
-    : null;
+  const previewText = selectedClause?.body ? extractTextFromBody(selectedClause.body) : null;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -138,53 +125,51 @@ export function ClausePicker({
                   No clauses found.
                 </div>
               ) : (
-                Array.from(grouped.entries()).map(
-                  ([category, categoryClauses]) => (
-                    <div key={category} className="mb-1">
-                      <button
-                        type="button"
-                        className="flex w-full items-center gap-1 px-2 py-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
-                        onClick={() => toggleCategory(category)}
-                      >
-                        {collapsedCategories.has(category) ? (
-                          <ChevronRight className="h-3 w-3" />
-                        ) : (
-                          <ChevronDown className="h-3 w-3" />
-                        )}
-                        {category}
-                        <span className="ml-auto font-normal text-slate-400">
-                          {categoryClauses.length}
-                        </span>
-                      </button>
+                Array.from(grouped.entries()).map(([category, categoryClauses]) => (
+                  <div key={category} className="mb-1">
+                    <button
+                      type="button"
+                      className="flex w-full items-center gap-1 px-2 py-1.5 text-xs font-semibold tracking-wider text-slate-500 uppercase hover:text-slate-700 dark:hover:text-slate-300"
+                      onClick={() => toggleCategory(category)}
+                    >
+                      {collapsedCategories.has(category) ? (
+                        <ChevronRight className="h-3 w-3" />
+                      ) : (
+                        <ChevronDown className="h-3 w-3" />
+                      )}
+                      {category}
+                      <span className="ml-auto font-normal text-slate-400">
+                        {categoryClauses.length}
+                      </span>
+                    </button>
 
-                      {!collapsedCategories.has(category) &&
-                        categoryClauses.map((clause) => (
-                          <button
-                            key={clause.id}
-                            type="button"
-                            className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors ${
-                              selectedId === clause.id
-                                ? "bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300"
-                                : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-                            }`}
-                            onClick={() => setSelectedId(clause.id)}
-                            onDoubleClick={() => {
-                              onSelect({
-                                id: clause.id,
-                                slug: clause.slug,
-                                title: clause.title,
-                                required: false,
-                              });
-                              handleOpenChange(false);
-                            }}
-                          >
-                            <FileText className="h-4 w-4 shrink-0 text-slate-400" />
-                            <span className="truncate">{clause.title}</span>
-                          </button>
-                        ))}
-                    </div>
-                  ),
-                )
+                    {!collapsedCategories.has(category) &&
+                      categoryClauses.map((clause) => (
+                        <button
+                          key={clause.id}
+                          type="button"
+                          className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors ${
+                            selectedId === clause.id
+                              ? "bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300"
+                              : "text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                          }`}
+                          onClick={() => setSelectedId(clause.id)}
+                          onDoubleClick={() => {
+                            onSelect({
+                              id: clause.id,
+                              slug: clause.slug,
+                              title: clause.title,
+                              required: false,
+                            });
+                            handleOpenChange(false);
+                          }}
+                        >
+                          <FileText className="h-4 w-4 shrink-0 text-slate-400" />
+                          <span className="truncate">{clause.title}</span>
+                        </button>
+                      ))}
+                  </div>
+                ))
               )}
             </div>
           </div>
@@ -198,9 +183,7 @@ export function ClausePicker({
                     {selectedClause.title}
                   </h3>
                   {selectedClause.description && (
-                    <p className="mt-1 text-xs text-slate-500">
-                      {selectedClause.description}
-                    </p>
+                    <p className="mt-1 text-xs text-slate-500">{selectedClause.description}</p>
                   )}
                   <div className="mt-2 flex items-center gap-2">
                     <Badge variant="neutral" className="text-xs">
@@ -218,9 +201,7 @@ export function ClausePicker({
                       {previewText}
                     </div>
                   ) : (
-                    <div className="text-sm text-slate-400">
-                      No content available
-                    </div>
+                    <div className="text-sm text-slate-400">No content available</div>
                   )}
                 </div>
 

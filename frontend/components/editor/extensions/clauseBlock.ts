@@ -33,8 +33,7 @@ export const ClauseBlockExtension = Node.create({
       },
       required: {
         default: false,
-        parseHTML: (element) =>
-          element.getAttribute("data-required") === "true",
+        parseHTML: (element) => element.getAttribute("data-required") === "true",
         renderHTML: (attributes) => ({
           "data-required": String(attributes.required),
         }),
@@ -47,10 +46,7 @@ export const ClauseBlockExtension = Node.create({
   },
 
   renderHTML({ HTMLAttributes }) {
-    return [
-      "div",
-      mergeAttributes(HTMLAttributes, { "data-clause-block": "" }),
-    ];
+    return ["div", mergeAttributes(HTMLAttributes, { "data-clause-block": "" })];
   },
 
   addNodeView() {

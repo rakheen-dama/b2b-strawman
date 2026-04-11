@@ -58,9 +58,7 @@ export function CustomerRatesTab({
   slug,
   defaultCurrency,
 }: CustomerRatesTabProps) {
-  const customerRates = billingRates.filter(
-    (r) => r.scope === "CUSTOMER_OVERRIDE",
-  );
+  const customerRates = billingRates.filter((r) => r.scope === "CUSTOMER_OVERRIDE");
 
   if (customerRates.length === 0) {
     return (
@@ -145,18 +143,12 @@ export function CustomerRatesTab({
                   {rate.effectiveTo ? (
                     formatDate(rate.effectiveTo)
                   ) : (
-                    <span className="text-slate-400 dark:text-slate-600">
-                      Ongoing
-                    </span>
+                    <span className="text-slate-400 dark:text-slate-600">Ongoing</span>
                   )}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <EditCustomerRateDialog
-                      slug={slug}
-                      customerId={customerId}
-                      rate={rate}
-                    >
+                    <EditCustomerRateDialog slug={slug} customerId={customerId} rate={rate}>
                       <Button
                         variant="plain"
                         size="sm"
@@ -213,9 +205,7 @@ function AddCustomerRateDialog({
   const [memberId, setMemberId] = useState("");
   const [hourlyRate, setHourlyRate] = useState("");
   const [currency, setCurrency] = useState(defaultCurrency);
-  const [effectiveFrom, setEffectiveFrom] = useState(
-    new Date().toLocaleDateString("en-CA"),
-  );
+  const [effectiveFrom, setEffectiveFrom] = useState(new Date().toLocaleDateString("en-CA"));
   const [effectiveTo, setEffectiveTo] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
@@ -298,7 +288,7 @@ function AddCustomerRateDialog({
               id="customer-rate-member"
               value={memberId}
               onChange={(e) => setMemberId(e.target.value)}
-              className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:placeholder:text-slate-400"
+              className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:placeholder:text-slate-400"
               required
             >
               <option value="">Select a member...</option>
@@ -326,11 +316,7 @@ function AddCustomerRateDialog({
 
           <div className="space-y-2">
             <Label>Currency</Label>
-            <CurrencySelector
-              value={currency}
-              onChange={setCurrency}
-              className="w-full"
-            />
+            <CurrencySelector value={currency} onChange={setCurrency} className="w-full" />
           </div>
 
           <div className="space-y-2">
@@ -346,8 +332,7 @@ function AddCustomerRateDialog({
 
           <div className="space-y-2">
             <Label htmlFor="customer-rate-to">
-              Effective To{" "}
-              <span className="font-normal text-slate-500">(optional)</span>
+              Effective To <span className="font-normal text-slate-500">(optional)</span>
             </Label>
             <Input
               id="customer-rate-to"
@@ -357,7 +342,7 @@ function AddCustomerRateDialog({
             />
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <DialogFooter>
             <Button
@@ -387,12 +372,7 @@ interface EditCustomerRateDialogProps {
   children: React.ReactNode;
 }
 
-function EditCustomerRateDialog({
-  slug,
-  customerId,
-  rate,
-  children,
-}: EditCustomerRateDialogProps) {
+function EditCustomerRateDialog({ slug, customerId, rate, children }: EditCustomerRateDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -422,17 +402,12 @@ function EditCustomerRateDialog({
     setIsSubmitting(true);
 
     try {
-      const result = await updateCustomerBillingRate(
-        slug,
-        customerId,
-        rate.id,
-        {
-          currency,
-          hourlyRate: parsedRate,
-          effectiveFrom,
-          effectiveTo: effectiveTo || undefined,
-        },
-      );
+      const result = await updateCustomerBillingRate(slug, customerId, rate.id, {
+        currency,
+        hourlyRate: parsedRate,
+        effectiveFrom,
+        effectiveTo: effectiveTo || undefined,
+      });
 
       if (result.success) {
         setOpen(false);
@@ -484,11 +459,7 @@ function EditCustomerRateDialog({
 
           <div className="space-y-2">
             <Label>Currency</Label>
-            <CurrencySelector
-              value={currency}
-              onChange={setCurrency}
-              className="w-full"
-            />
+            <CurrencySelector value={currency} onChange={setCurrency} className="w-full" />
           </div>
 
           <div className="space-y-2">
@@ -504,8 +475,7 @@ function EditCustomerRateDialog({
 
           <div className="space-y-2">
             <Label htmlFor="edit-customer-rate-to">
-              Effective To{" "}
-              <span className="font-normal text-slate-500">(optional)</span>
+              Effective To <span className="font-normal text-slate-500">(optional)</span>
             </Label>
             <Input
               id="edit-customer-rate-to"
@@ -515,7 +485,7 @@ function EditCustomerRateDialog({
             />
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <DialogFooter>
             <Button
@@ -593,24 +563,18 @@ function DeleteCustomerRateDialog({
               <AlertTriangle className="size-6 text-red-600 dark:text-red-400" />
             </div>
           </div>
-          <AlertDialogTitle className="text-center">
-            Delete Customer Rate Override
-          </AlertDialogTitle>
+          <AlertDialogTitle className="text-center">Delete Customer Rate Override</AlertDialogTitle>
           <AlertDialogDescription className="text-center">
-            Delete the customer billing rate override for {memberName}? This
-            action cannot be undone.
+            Delete the customer billing rate override for {memberName}? This action cannot be
+            undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
         <AlertDialogFooter>
           <AlertDialogCancel variant="plain" disabled={isDeleting}>
             Cancel
           </AlertDialogCancel>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
+          <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
             {isDeleting ? "Deleting..." : "Delete"}
           </Button>
         </AlertDialogFooter>

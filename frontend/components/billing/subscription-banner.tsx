@@ -23,10 +23,7 @@ type BannerConfig = {
   storageKey: string;
 };
 
-function getBannerConfig(
-  billingResponse: BillingResponse,
-  slug: string,
-): BannerConfig | null {
+function getBannerConfig(billingResponse: BillingResponse, slug: string): BannerConfig | null {
   const { status } = billingResponse;
 
   switch (status) {
@@ -146,10 +143,7 @@ function getBannerConfig(
   }
 }
 
-export function SubscriptionBanner({
-  billingResponse,
-  slug,
-}: SubscriptionBannerProps) {
+export function SubscriptionBanner({ billingResponse, slug }: SubscriptionBannerProps) {
   const config = getBannerConfig(billingResponse, slug);
 
   // Track the storage key that the user last dismissed in this session.
@@ -160,8 +154,7 @@ export function SubscriptionBanner({
   const isDismissed =
     config?.dismissible === true &&
     (dismissedKey === config.storageKey ||
-      (typeof window !== "undefined" &&
-        sessionStorage.getItem(config.storageKey) === "1"));
+      (typeof window !== "undefined" && sessionStorage.getItem(config.storageKey) === "1"));
 
   if (!config || isDismissed) return null;
 
@@ -174,10 +167,7 @@ export function SubscriptionBanner({
 
   return (
     <div className="px-6 pt-4 lg:px-10">
-      <Alert
-        variant={config.variant}
-        className={cn("relative", config.className)}
-      >
+      <Alert variant={config.variant} className={cn("relative", config.className)}>
         {config.icon}
         <AlertTitle>{config.title}</AlertTitle>
         <AlertDescription>{config.description}</AlertDescription>
@@ -185,7 +175,7 @@ export function SubscriptionBanner({
           <button
             type="button"
             onClick={handleDismiss}
-            className="absolute right-3 top-3 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            className="ring-offset-background focus:ring-ring absolute top-3 right-3 rounded-sm opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-none"
             aria-label="Dismiss banner"
           >
             <X className="size-4" />

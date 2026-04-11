@@ -29,8 +29,7 @@ afterEach(() => {
 
 describe("useAssistantChat", () => {
   it("sendMessage adds user message and starts streaming", async () => {
-    const ssePayload =
-      'event: text_delta\ndata: {"text":"Hi there!"}\n\nevent: done\ndata: {}\n\n';
+    const ssePayload = 'event: text_delta\ndata: {"text":"Hi there!"}\n\nevent: done\ndata: {}\n\n';
 
     globalThis.fetch = vi.fn().mockResolvedValueOnce({
       ok: true,
@@ -62,7 +61,7 @@ describe("useAssistantChat", () => {
       () =>
         new Promise(() => {
           // Never resolves — simulates a pending SSE connection
-        }),
+        })
     );
 
     const { result } = renderHook(() => useAssistantChat());

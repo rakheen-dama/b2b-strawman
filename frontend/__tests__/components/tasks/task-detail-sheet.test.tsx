@@ -51,8 +51,7 @@ vi.mock("@/app/(app)/org/[slug]/settings/tags/actions", () => ({
 }));
 
 vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
-  updateEntityCustomFieldsAction: (...args: unknown[]) =>
-    mockUpdateEntityCustomFields(...args),
+  updateEntityCustomFieldsAction: (...args: unknown[]) => mockUpdateEntityCustomFields(...args),
 }));
 
 // --- Test data ---
@@ -224,7 +223,7 @@ describe("TaskDetailSheet", () => {
         "acme",
         "t1",
         "p1",
-        expect.objectContaining({ assigneeId: "m1" }),
+        expect.objectContaining({ assigneeId: "m1" })
       );
     });
   });
@@ -254,7 +253,7 @@ describe("TaskDetailSheet", () => {
         "acme",
         "t1",
         "p1",
-        expect.objectContaining({ status: "DONE" }),
+        expect.objectContaining({ status: "DONE" })
       );
     });
   });
@@ -267,7 +266,7 @@ describe("TaskDetailSheet", () => {
         taskId="t1"
         canManage={false}
         currentMemberId="different-member"
-      />,
+      />
     );
 
     await waitFor(() => {
@@ -294,9 +293,7 @@ describe("TaskDetailSheet", () => {
     });
 
     // "Time Entries" tab trigger should be present and active by default
-    expect(
-      screen.getByRole("tab", { name: "Time Entries" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Time Entries" })).toBeInTheDocument();
     // TimeEntryList renders its empty state
     await waitFor(() => {
       expect(screen.getByText("No time logged yet")).toBeInTheDocument();
@@ -325,9 +322,7 @@ describe("TaskDetailSheet", () => {
 
   // Test 6: TagInput renders in sheet with current task tags
   it("renders TagInput with current task tags when task has tags", async () => {
-    mockFetchTask.mockResolvedValue(
-      makeTask({ tags: [tag1], appliedFieldGroups: [] }),
-    );
+    mockFetchTask.mockResolvedValue(makeTask({ tags: [tag1], appliedFieldGroups: [] }));
 
     render(<TaskDetailSheet {...defaultProps} taskId="t1" />);
 
@@ -348,7 +343,7 @@ describe("TaskDetailSheet", () => {
         tags: [],
         appliedFieldGroups: ["grp-1"],
         customFields: { sprint_number: "Sprint 42" },
-      }),
+      })
     );
 
     render(<TaskDetailSheet {...defaultProps} taskId="t1" />);
@@ -366,9 +361,7 @@ describe("TaskDetailSheet", () => {
   it("calls setEntityTagsAction when a tag is removed", async () => {
     const user = userEvent.setup();
     mockSetEntityTags.mockResolvedValue({ success: true });
-    mockFetchTask.mockResolvedValue(
-      makeTask({ tags: [tag1, tag2], appliedFieldGroups: [] }),
-    );
+    mockFetchTask.mockResolvedValue(makeTask({ tags: [tag1, tag2], appliedFieldGroups: [] }));
 
     render(<TaskDetailSheet {...defaultProps} taskId="t1" />);
 
@@ -379,12 +372,7 @@ describe("TaskDetailSheet", () => {
     await user.click(screen.getByRole("button", { name: /Remove Urgent/i }));
 
     await waitFor(() => {
-      expect(mockSetEntityTags).toHaveBeenCalledWith(
-        "acme",
-        "TASK",
-        "t1",
-        ["tag-2"],
-      );
+      expect(mockSetEntityTags).toHaveBeenCalledWith("acme", "TASK", "t1", ["tag-2"]);
     });
   });
 
@@ -397,7 +385,7 @@ describe("TaskDetailSheet", () => {
         tags: [],
         appliedFieldGroups: ["grp-1"],
         customFields: {},
-      }),
+      })
     );
 
     render(<TaskDetailSheet {...defaultProps} taskId="t1" />);
@@ -416,7 +404,7 @@ describe("TaskDetailSheet", () => {
         "acme",
         "TASK",
         "t1",
-        expect.objectContaining({ sprint_number: "42" }),
+        expect.objectContaining({ sprint_number: "42" })
       );
     });
   });
@@ -441,9 +429,7 @@ describe("TaskDetailSheet", () => {
     const user = userEvent.setup();
     mockFetchTask.mockResolvedValue(makeTask({ status: "IN_PROGRESS" }));
 
-    render(
-      <TaskDetailSheet {...defaultProps} taskId="t1" isAdmin={true} />,
-    );
+    render(<TaskDetailSheet {...defaultProps} taskId="t1" isAdmin={true} />);
 
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Fix login bug" })).toBeInTheDocument();
@@ -451,9 +437,7 @@ describe("TaskDetailSheet", () => {
 
     // Open the overflow menu — find the MoreHorizontal icon button by its SVG
     const triggers = screen.getAllByRole("button");
-    const overflowTrigger = triggers.find(
-      (btn) => btn.querySelector("svg.lucide-ellipsis"),
-    );
+    const overflowTrigger = triggers.find((btn) => btn.querySelector("svg.lucide-ellipsis"));
     expect(overflowTrigger).toBeDefined();
     await user.click(overflowTrigger!);
 
@@ -469,7 +453,7 @@ describe("TaskDetailSheet", () => {
         status: "DONE",
         completedAt: "2026-02-15T10:00:00Z",
         completedByName: "Alice",
-      }),
+      })
     );
 
     render(<TaskDetailSheet {...defaultProps} taskId="t1" />);
@@ -489,7 +473,7 @@ describe("TaskDetailSheet", () => {
       makeTask({
         status: "CANCELLED",
         cancelledAt: "2026-02-20T14:00:00Z",
-      }),
+      })
     );
 
     render(<TaskDetailSheet {...defaultProps} taskId="t1" />);
@@ -509,7 +493,7 @@ describe("TaskDetailSheet", () => {
         assigneeId: "m1", // assigned to Alice, not to current-member
         completedAt: "2026-02-15T10:00:00Z",
         completedByName: "Alice",
-      }),
+      })
     );
 
     render(
@@ -519,7 +503,7 @@ describe("TaskDetailSheet", () => {
         canManage={false}
         currentMemberId="different-member"
         isAdmin={false}
-      />,
+      />
     );
 
     await waitFor(() => {
@@ -538,7 +522,7 @@ describe("TaskDetailSheet", () => {
         assigneeId: "current-member", // assigned to current user
         completedAt: "2026-02-15T10:00:00Z",
         completedByName: "Alice",
-      }),
+      })
     );
 
     render(
@@ -548,7 +532,7 @@ describe("TaskDetailSheet", () => {
         canManage={false}
         currentMemberId="current-member"
         isAdmin={false}
-      />,
+      />
     );
 
     await waitFor(() => {
@@ -585,7 +569,7 @@ describe("TaskDetailSheet", () => {
         status: "DONE",
         completedAt: "2026-02-15T10:00:00Z",
         completedByName: "Alice",
-      }),
+      })
     );
 
     render(<TaskDetailSheet {...defaultProps} taskId="t1" />);

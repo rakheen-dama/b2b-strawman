@@ -15,11 +15,7 @@ import type { DeadlineFiltersType } from "@/lib/types";
 interface DeadlineFiltersProps {
   initialYear: number;
   initialMonth: number; // 1-indexed
-  onFilterChange: (
-    filters: Partial<DeadlineFiltersType>,
-    year: number,
-    month: number
-  ) => void;
+  onFilterChange: (filters: Partial<DeadlineFiltersType>, year: number, month: number) => void;
   isPending?: boolean;
 }
 

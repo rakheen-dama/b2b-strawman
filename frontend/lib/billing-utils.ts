@@ -3,10 +3,7 @@
  */
 
 export function computeDaysRemaining(dateString: string): number {
-  return Math.max(
-    0,
-    Math.ceil((new Date(dateString).getTime() - Date.now()) / 86_400_000)
-  );
+  return Math.max(0, Math.ceil((new Date(dateString).getTime() - Date.now()) / 86_400_000));
 }
 
 export function formatAmount(cents: number, currency: string): string {

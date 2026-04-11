@@ -62,11 +62,5 @@ export function CreateRuleClient({ slug }: CreateRuleClientProps) {
     router.push(`/org/${slug}/settings/automations`);
   }
 
-  return (
-    <RuleForm
-      onSave={handleSave}
-      onCancel={handleCancel}
-      isSaving={isSaving}
-    />
-  );
+  return <RuleForm onSave={handleSave} onCancel={handleCancel} isSaving={isSaving} />;
 }

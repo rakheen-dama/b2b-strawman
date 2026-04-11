@@ -23,13 +23,9 @@ vi.mock("@/lib/api/org-roles", () => ({
 
 // Mock next/link to render plain <a> tags
 vi.mock("next/link", () => ({
-  default: ({
-    children,
-    href,
-  }: {
-    children: React.ReactNode;
-    href: string;
-  }) => <a href={href}>{children}</a>,
+  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
 }));
 
 // Mock next/navigation
@@ -41,11 +37,7 @@ vi.mock("next/navigation", () => ({
 import RolesSettingsPage from "@/app/(app)/org/[slug]/settings/roles/page";
 import type { OrgRole } from "@/lib/api/org-roles";
 
-function makeSystemRole(
-  name: string,
-  memberCount: number,
-  capabilities: string[] = [],
-): OrgRole {
+function makeSystemRole(name: string, memberCount: number, capabilities: string[] = []): OrgRole {
   return {
     id: `sys-${name.toLowerCase()}`,
     name,
@@ -122,9 +114,7 @@ describe("RolesSettingsPage", () => {
     await renderPage();
 
     expect(screen.getByText("Bookkeeper")).toBeInTheDocument();
-    expect(
-      screen.getByText("Can manage invoices and view financials"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Can manage invoices and view financials")).toBeInTheDocument();
 
     // Capability pills (underscores replaced with spaces)
     // "FINANCIAL VISIBILITY" appears on Owner, Admin, and Bookkeeper cards (3 total)
@@ -150,9 +140,7 @@ describe("RolesSettingsPage", () => {
   it("renders New Role button", async () => {
     await renderPage();
 
-    expect(
-      screen.getByRole("button", { name: /new role/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /new role/i })).toBeInTheDocument();
   });
 
   it("renders edit and delete actions on custom roles", async () => {

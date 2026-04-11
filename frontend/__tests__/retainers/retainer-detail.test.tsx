@@ -62,9 +62,7 @@ describe("RetainerDetailActions", () => {
   });
 
   it("shows Pause button for ACTIVE retainer", () => {
-    render(
-      <RetainerDetailActions slug="acme" retainer={BASE_RETAINER} currency="USD" />,
-    );
+    render(<RetainerDetailActions slug="acme" retainer={BASE_RETAINER} currency="USD" />);
 
     expect(screen.getByText("Pause")).toBeInTheDocument();
     expect(screen.getByText("Terminate")).toBeInTheDocument();
@@ -77,9 +75,7 @@ describe("RetainerDetailActions", () => {
       status: "PAUSED",
     };
 
-    render(
-      <RetainerDetailActions slug="acme" retainer={paused} currency="USD" />,
-    );
+    render(<RetainerDetailActions slug="acme" retainer={paused} currency="USD" />);
 
     expect(screen.getByText("Resume")).toBeInTheDocument();
     expect(screen.queryByText("Pause")).not.toBeInTheDocument();
@@ -95,17 +91,13 @@ describe("RetainerDetailActions", () => {
       },
     };
 
-    render(
-      <RetainerDetailActions slug="acme" retainer={readyRetainer} currency="USD" />,
-    );
+    render(<RetainerDetailActions slug="acme" retainer={readyRetainer} currency="USD" />);
 
     expect(screen.getByText("Close Period")).toBeInTheDocument();
   });
 
   it("hides Close Period button when readyToClose is false", () => {
-    render(
-      <RetainerDetailActions slug="acme" retainer={BASE_RETAINER} currency="USD" />,
-    );
+    render(<RetainerDetailActions slug="acme" retainer={BASE_RETAINER} currency="USD" />);
 
     expect(screen.queryByText("Close Period")).not.toBeInTheDocument();
   });
@@ -123,7 +115,7 @@ describe("EditRetainerDialog", () => {
     render(
       <EditRetainerDialog slug="acme" retainer={BASE_RETAINER}>
         <Button>Edit Retainer</Button>
-      </EditRetainerDialog>,
+      </EditRetainerDialog>
     );
 
     await user.click(screen.getByText("Edit Retainer"));

@@ -43,16 +43,14 @@ export function HorizontalBarChart({
 }: HorizontalBarChartProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
+      <div className="text-muted-foreground flex h-48 items-center justify-center text-sm">
         No data available
       </div>
     );
   }
 
   // Get unique segment labels for creating stacked bars
-  const allSegmentLabels = Array.from(
-    new Set(data.flatMap((d) => d.segments.map((s) => s.label)))
-  );
+  const allSegmentLabels = Array.from(new Set(data.flatMap((d) => d.segments.map((s) => s.label))));
 
   // Build color map from first occurrence, falling back to theme colors
   const colorMap: Record<string, string> = {};
@@ -60,8 +58,7 @@ export function HorizontalBarChart({
   for (const item of data) {
     for (const seg of item.segments) {
       if (!colorMap[seg.label]) {
-        colorMap[seg.label] =
-          seg.color || THEME_COLORS[colorIdx % THEME_COLORS.length];
+        colorMap[seg.label] = seg.color || THEME_COLORS[colorIdx % THEME_COLORS.length];
         colorIdx++;
       }
     }
@@ -79,11 +76,7 @@ export function HorizontalBarChart({
   // Calculate domain max
   const computedMax =
     maxValue ??
-    Math.max(
-      ...data.map((item) =>
-        item.segments.reduce((sum, seg) => sum + seg.value, 0)
-      )
-    );
+    Math.max(...data.map((item) => item.segments.reduce((sum, seg) => sum + seg.value, 0)));
 
   const barHeight = 28;
   const chartHeight = Math.max(data.length * (barHeight + 16) + 40, 120);

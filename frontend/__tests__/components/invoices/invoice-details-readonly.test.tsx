@@ -76,7 +76,7 @@ describe("InvoiceDetailsReadonly — promoted fields (Epic 464)", () => {
           billingPeriodStart: "2026-01-01",
           billingPeriodEnd: "2026-01-31",
         })}
-      />,
+      />
     );
     expect(screen.getByText("Billing Period")).toBeInTheDocument();
   });

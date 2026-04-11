@@ -12,8 +12,7 @@ vi.mock("@/lib/api/settings", () => ({
 
 const mockFetchMyCapabilities = vi.fn();
 vi.mock("@/lib/api/capabilities", () => ({
-  fetchMyCapabilities: (...args: unknown[]) =>
-    mockFetchMyCapabilities(...args),
+  fetchMyCapabilities: (...args: unknown[]) => mockFetchMyCapabilities(...args),
 }));
 
 // ── Mock parent trust actions ────────────────────────────────────
@@ -45,20 +44,13 @@ const mockFetchClientLedger = vi.fn();
 const mockFetchClientHistory = vi.fn();
 const mockGenerateStatementPdf = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions",
-  () => ({
-    fetchClientLedgers: (...args: unknown[]) =>
-      mockFetchClientLedgers(...args),
-    fetchClientLedger: (...args: unknown[]) =>
-      mockFetchClientLedger(...args),
-    fetchClientHistory: (...args: unknown[]) =>
-      mockFetchClientHistory(...args),
-    fetchClientStatement: vi.fn(),
-    generateStatementPdf: (...args: unknown[]) =>
-      mockGenerateStatementPdf(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions", () => ({
+  fetchClientLedgers: (...args: unknown[]) => mockFetchClientLedgers(...args),
+  fetchClientLedger: (...args: unknown[]) => mockFetchClientLedger(...args),
+  fetchClientHistory: (...args: unknown[]) => mockFetchClientHistory(...args),
+  fetchClientStatement: vi.fn(),
+  generateStatementPdf: (...args: unknown[]) => mockGenerateStatementPdf(...args),
+}));
 
 // ── Mock next/navigation ─────────────────────────────────────────
 vi.mock("next/navigation", () => ({
@@ -253,7 +245,7 @@ describe("Client Ledgers", () => {
         customerId: "cust-1",
         customerName: "Acme Corp",
         balance: 50000,
-      }),
+      })
     );
     mockFetchClientHistory.mockResolvedValue({
       content: [
@@ -299,7 +291,7 @@ describe("Client Ledgers", () => {
         customerId: "cust-1",
         customerName: "Acme Corp",
         balance: 50000,
-      }),
+      })
     );
     mockFetchClientHistory.mockResolvedValue({
       content: [],
@@ -329,7 +321,7 @@ describe("Client Ledgers", () => {
       "acc-1",
       "cust-1",
       "2026-01-01",
-      "2026-03-31",
+      "2026-03-31"
     );
   });
 });

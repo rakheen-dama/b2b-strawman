@@ -34,9 +34,7 @@ vi.mock("@tiptap/react", () => ({
     return mockEditor;
   }),
   EditorContent: vi.fn(({ editor }: { editor: unknown }) =>
-    editor ? (
-      <div data-testid="editor-content" contentEditable={capturedEditable} />
-    ) : null,
+    editor ? <div data-testid="editor-content" contentEditable={capturedEditable} /> : null
   ),
 }));
 

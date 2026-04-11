@@ -357,8 +357,7 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
   },
   {
     title: "Custom Fields",
-    description:
-      "Define custom fields and groups for projects, tasks, and customers",
+    description: "Define custom fields and groups for projects, tasks, and customers",
     href: (slug) => `/org/${slug}/settings/custom-fields`,
   },
   {
@@ -383,14 +382,12 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
   },
   {
     title: "Document Acceptance",
-    description:
-      "Configure default expiry period for document acceptance requests",
+    description: "Configure default expiry period for document acceptance requests",
     href: (slug) => `/org/${slug}/settings/acceptance`,
   },
   {
     title: "Compliance",
-    description:
-      "Configure retention policies, dormancy thresholds, and data requests",
+    description: "Configure retention policies, dormancy thresholds, and data requests",
     href: (slug) => `/org/${slug}/settings/compliance`,
   },
   {
@@ -405,20 +402,17 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
   },
   {
     title: "Request Templates",
-    description:
-      "Create and manage reusable information request templates",
+    description: "Create and manage reusable information request templates",
     href: (slug) => `/org/${slug}/settings/request-templates`,
   },
   {
     title: "Request Settings",
-    description:
-      "Configure default reminder interval for information requests",
+    description: "Configure default reminder interval for information requests",
     href: (slug) => `/org/${slug}/settings/request-settings`,
   },
   {
     title: "Batch Billing",
-    description:
-      "Configure async thresholds, email rate limits, and default billing currency",
+    description: "Configure async thresholds, email rate limits, and default billing currency",
     href: (slug) => `/org/${slug}/settings/batch-billing`,
     adminOnly: true,
     requiredModule: "bulk_billing",
@@ -436,8 +430,7 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
   },
   {
     title: "Automations",
-    description:
-      "Create rules to automate tasks, notifications, and workflows",
+    description: "Create rules to automate tasks, notifications, and workflows",
     href: (slug) => `/org/${slug}/settings/automations`,
     adminOnly: true,
     requiredModule: "automation_builder",
@@ -484,7 +477,4 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
  * Used by MobileSidebar which iterates over this array
  * to render all sidebar items including Notifications and Settings.
  */
-export const NAV_ITEMS: NavItem[] = [
-  ...NAV_GROUPS.flatMap((g) => g.items),
-  ...UTILITY_ITEMS,
-];
+export const NAV_ITEMS: NavItem[] = [...NAV_GROUPS.flatMap((g) => g.items), ...UTILITY_ITEMS];

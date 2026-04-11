@@ -9,12 +9,9 @@ const mockDownloadGeneratedDocument = vi.fn();
 const mockDownloadDocxGeneratedDocument = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/settings/templates/template-generation-actions", () => ({
-  fetchGeneratedDocumentsAction: (...args: unknown[]) =>
-    mockFetchGeneratedDocuments(...args),
-  deleteGeneratedDocumentAction: (...args: unknown[]) =>
-    mockDeleteGeneratedDocument(...args),
-  downloadGeneratedDocumentAction: (...args: unknown[]) =>
-    mockDownloadGeneratedDocument(...args),
+  fetchGeneratedDocumentsAction: (...args: unknown[]) => mockFetchGeneratedDocuments(...args),
+  deleteGeneratedDocumentAction: (...args: unknown[]) => mockDeleteGeneratedDocument(...args),
+  downloadGeneratedDocumentAction: (...args: unknown[]) => mockDownloadGeneratedDocument(...args),
   downloadDocxGeneratedDocumentAction: (...args: unknown[]) =>
     mockDownloadDocxGeneratedDocument(...args),
 }));
@@ -29,8 +26,7 @@ vi.mock("server-only", () => ({}));
 const mockGetAcceptanceRequests = vi.fn();
 
 vi.mock("@/lib/actions/acceptance-actions", () => ({
-  getAcceptanceRequests: (...args: unknown[]) =>
-    mockGetAcceptanceRequests(...args),
+  getAcceptanceRequests: (...args: unknown[]) => mockGetAcceptanceRequests(...args),
 }));
 
 vi.mock("@/components/acceptance/AcceptanceStatusBadge", () => ({
@@ -40,9 +36,7 @@ vi.mock("@/components/acceptance/AcceptanceStatusBadge", () => ({
 }));
 
 vi.mock("@/components/acceptance/SendForAcceptanceDialog", () => ({
-  SendForAcceptanceDialog: () => (
-    <div data-testid="send-acceptance-dialog" />
-  ),
+  SendForAcceptanceDialog: () => <div data-testid="send-acceptance-dialog" />,
 }));
 
 const SAMPLE_DOCS = [
@@ -80,12 +74,7 @@ describe("GeneratedDocumentsList", () => {
     });
 
     render(
-      <GeneratedDocumentsList
-        entityType="PROJECT"
-        entityId="proj-1"
-        slug="acme"
-        isAdmin={true}
-      />,
+      <GeneratedDocumentsList entityType="PROJECT" entityId="proj-1" slug="acme" isAdmin={true} />
     );
 
     await waitFor(() => {
@@ -106,18 +95,10 @@ describe("GeneratedDocumentsList", () => {
       data: [],
     });
 
-    render(
-      <GeneratedDocumentsList
-        entityType="PROJECT"
-        entityId="proj-1"
-        slug="acme"
-      />,
-    );
+    render(<GeneratedDocumentsList entityType="PROJECT" entityId="proj-1" slug="acme" />);
 
     await waitFor(() => {
-      expect(
-        screen.getByText("No documents generated yet"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("No documents generated yet")).toBeInTheDocument();
     });
   });
 
@@ -136,17 +117,10 @@ describe("GeneratedDocumentsList", () => {
     const createObjectURLSpy = vi
       .spyOn(URL, "createObjectURL")
       .mockReturnValue("blob:http://localhost/fake-blob");
-    const revokeObjectURLSpy = vi
-      .spyOn(URL, "revokeObjectURL")
-      .mockImplementation(() => {});
+    const revokeObjectURLSpy = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => {});
 
     render(
-      <GeneratedDocumentsList
-        entityType="PROJECT"
-        entityId="proj-1"
-        slug="acme"
-        isAdmin={false}
-      />,
+      <GeneratedDocumentsList entityType="PROJECT" entityId="proj-1" slug="acme" isAdmin={false} />
     );
 
     await waitFor(() => {
@@ -180,12 +154,7 @@ describe("GeneratedDocumentsList", () => {
     });
 
     render(
-      <GeneratedDocumentsList
-        entityType="PROJECT"
-        entityId="proj-1"
-        slug="acme"
-        isAdmin={false}
-      />,
+      <GeneratedDocumentsList entityType="PROJECT" entityId="proj-1" slug="acme" isAdmin={false} />
     );
 
     await waitFor(() => {
@@ -208,12 +177,7 @@ describe("GeneratedDocumentsList", () => {
 
     // Non-admin: no delete button
     const { unmount } = render(
-      <GeneratedDocumentsList
-        entityType="PROJECT"
-        entityId="proj-1"
-        slug="acme"
-        isAdmin={false}
-      />,
+      <GeneratedDocumentsList entityType="PROJECT" entityId="proj-1" slug="acme" isAdmin={false} />
     );
 
     await waitFor(() => {
@@ -227,12 +191,7 @@ describe("GeneratedDocumentsList", () => {
 
     // Admin: delete button present
     render(
-      <GeneratedDocumentsList
-        entityType="PROJECT"
-        entityId="proj-1"
-        slug="acme"
-        isAdmin={true}
-      />,
+      <GeneratedDocumentsList entityType="PROJECT" entityId="proj-1" slug="acme" isAdmin={true} />
     );
 
     await waitFor(() => {
@@ -253,12 +212,7 @@ describe("GeneratedDocumentsList", () => {
     const user = userEvent.setup();
 
     render(
-      <GeneratedDocumentsList
-        entityType="PROJECT"
-        entityId="proj-1"
-        slug="acme"
-        isAdmin={true}
-      />,
+      <GeneratedDocumentsList entityType="PROJECT" entityId="proj-1" slug="acme" isAdmin={true} />
     );
 
     await waitFor(() => {
@@ -273,9 +227,7 @@ describe("GeneratedDocumentsList", () => {
 
     // Confirmation dialog should appear
     await waitFor(() => {
-      expect(
-        screen.getByText("Delete Generated Document"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Delete Generated Document")).toBeInTheDocument();
     });
 
     // Click confirm delete
@@ -301,12 +253,7 @@ describe("GeneratedDocumentsList", () => {
     });
 
     const { rerender } = render(
-      <GeneratedDocumentsList
-        entityType="PROJECT"
-        entityId="proj-1"
-        slug="acme"
-        refreshKey={0}
-      />,
+      <GeneratedDocumentsList entityType="PROJECT" entityId="proj-1" slug="acme" refreshKey={0} />
     );
 
     await waitFor(() => {
@@ -316,12 +263,7 @@ describe("GeneratedDocumentsList", () => {
     expect(mockFetchGeneratedDocuments).toHaveBeenCalledTimes(1);
 
     rerender(
-      <GeneratedDocumentsList
-        entityType="PROJECT"
-        entityId="proj-1"
-        slug="acme"
-        refreshKey={1}
-      />,
+      <GeneratedDocumentsList entityType="PROJECT" entityId="proj-1" slug="acme" refreshKey={1} />
     );
 
     await waitFor(() => {
@@ -343,7 +285,7 @@ describe("GeneratedDocumentsList", () => {
         slug="acme"
         isAdmin={true}
         customerId="cust-1"
-      />,
+      />
     );
 
     await waitFor(() => {
@@ -380,7 +322,7 @@ describe("GeneratedDocumentsList", () => {
         slug="acme"
         isAdmin={true}
         customerId="cust-1"
-      />,
+      />
     );
 
     await waitFor(() => {

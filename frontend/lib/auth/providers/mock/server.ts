@@ -11,9 +11,7 @@ const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://mock-idp:8090";
  *   { sub, organization: [orgSlug], groups: [...], email, iss, aud, iat, exp }
  */
 
-function getTokenFromCookie(
-  cookieStore: Awaited<ReturnType<typeof cookies>>,
-): string {
+function getTokenFromCookie(cookieStore: Awaited<ReturnType<typeof cookies>>): string {
   const token = cookieStore.get("mock-auth-token")?.value;
   if (!token) {
     throw new Error("No mock-auth-token cookie — user is not authenticated");
@@ -61,9 +59,7 @@ export async function getAuthContext(): Promise<AuthContext> {
   const orgSlug = organization?.[0];
 
   if (!userId || !orgSlug) {
-    throw new Error(
-      "No active organization — mock JWT missing required claims",
-    );
+    throw new Error("No active organization — mock JWT missing required claims");
   }
 
   return {

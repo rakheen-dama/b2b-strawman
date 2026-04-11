@@ -31,9 +31,7 @@ vi.mock("recharts", () => ({
       {children}
     </div>
   ),
-  Cell: ({ fill }: { fill: string }) => (
-    <div data-testid="cell" data-fill={fill} />
-  ),
+  Cell: ({ fill }: { fill: string }) => <div data-testid="cell" data-fill={fill} />,
   Legend: () => <div data-testid="legend" />,
   Tooltip: ({ content }: { content: React.ReactElement }) => (
     <div data-testid="tooltip">{content}</div>
@@ -46,9 +44,7 @@ describe("Sparkline", () => {
   });
 
   it("renders SVG polyline with data points", () => {
-    const { container } = render(
-      <Sparkline data={[10, 20, 15, 30, 25]} />
-    );
+    const { container } = render(<Sparkline data={[10, 20, 15, 30, 25]} />);
 
     const svg = container.querySelector("svg");
     expect(svg).toBeInTheDocument();
@@ -77,9 +73,7 @@ describe("Sparkline", () => {
   });
 
   it("respects custom width and height", () => {
-    const { container } = render(
-      <Sparkline data={[5, 10, 15]} width={120} height={40} />
-    );
+    const { container } = render(<Sparkline data={[5, 10, 15]} width={120} height={40} />);
 
     const svg = container.querySelector("svg");
     expect(svg).toHaveAttribute("width", "120");
@@ -121,10 +115,7 @@ describe("RadialGauge", () => {
 
     const paths = container.querySelectorAll("path");
     const fgPath = paths[1];
-    expect(fgPath).toHaveAttribute(
-      "stroke",
-      "var(--color-amber-500, #f59e0b)"
-    );
+    expect(fgPath).toHaveAttribute("stroke", "var(--color-amber-500, #f59e0b)");
   });
 
   it("handles edge cases 0 and 100", () => {
@@ -161,11 +152,7 @@ describe("MicroStackedBar", () => {
   });
 
   it("handles single segment", () => {
-    render(
-      <MicroStackedBar
-        segments={[{ value: 100, color: "green", label: "Only" }]}
-      />
-    );
+    render(<MicroStackedBar segments={[{ value: 100, color: "green", label: "Only" }]} />);
 
     const segments = screen.getAllByTestId("segment");
     expect(segments).toHaveLength(1);

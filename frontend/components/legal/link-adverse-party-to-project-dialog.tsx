@@ -42,10 +42,9 @@ const RELATIONSHIPS = [
 const linkToProjectSchema = z.object({
   adversePartyId: z.string().uuid("Please select an adverse party"),
   customerId: z.string().uuid("Please select a customer"),
-  relationship: z.enum(
-    ["OPPOSING_PARTY", "WITNESS", "CO_ACCUSED", "RELATED_ENTITY", "GUARANTOR"],
-    { message: "Relationship is required" },
-  ),
+  relationship: z.enum(["OPPOSING_PARTY", "WITNESS", "CO_ACCUSED", "RELATED_ENTITY", "GUARANTOR"], {
+    message: "Relationship is required",
+  }),
   description: z.string().max(2000).optional().or(z.literal("")),
 });
 
@@ -66,9 +65,7 @@ export function LinkAdversePartyToProjectDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [adverseParties, setAdverseParties] = useState<AdverseParty[]>([]);
-  const [customers, setCustomers] = useState<{ id: string; name: string }[]>(
-    [],
-  );
+  const [customers, setCustomers] = useState<{ id: string; name: string }[]>([]);
 
   const form = useForm<LinkToProjectFormData>({
     resolver: zodResolver(linkToProjectSchema),
@@ -137,9 +134,7 @@ export function LinkAdversePartyToProjectDialog({
       <DialogContent data-testid="link-adverse-party-to-project-dialog">
         <DialogHeader>
           <DialogTitle>Link Adverse Party</DialogTitle>
-          <DialogDescription>
-            Link an adverse party to this matter.
-          </DialogDescription>
+          <DialogDescription>Link an adverse party to this matter.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -153,7 +148,7 @@ export function LinkAdversePartyToProjectDialog({
                     <select
                       value={field.value}
                       onChange={field.onChange}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 dark:border-slate-800 dark:focus-visible:ring-slate-300"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none dark:border-slate-800 dark:focus-visible:ring-slate-300"
                     >
                       <option value="">-- Select adverse party --</option>
                       {adverseParties.map((ap) => (
@@ -178,7 +173,7 @@ export function LinkAdversePartyToProjectDialog({
                     <select
                       value={field.value}
                       onChange={field.onChange}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 dark:border-slate-800 dark:focus-visible:ring-slate-300"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none dark:border-slate-800 dark:focus-visible:ring-slate-300"
                     >
                       <option value="">-- Select customer --</option>
                       {customers.map((c) => (
@@ -203,7 +198,7 @@ export function LinkAdversePartyToProjectDialog({
                     <select
                       value={field.value}
                       onChange={field.onChange}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 dark:border-slate-800 dark:focus-visible:ring-slate-300"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none dark:border-slate-800 dark:focus-visible:ring-slate-300"
                     >
                       {RELATIONSHIPS.map((r) => (
                         <option key={r.value} value={r.value}>

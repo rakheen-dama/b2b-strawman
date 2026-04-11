@@ -5,7 +5,7 @@ import { TerminologyProvider } from "@/lib/terminology";
 import type { ProjectProfitabilityResponse } from "@/lib/types";
 
 function makeProfitability(
-  overrides: Partial<ProjectProfitabilityResponse> = {},
+  overrides: Partial<ProjectProfitabilityResponse> = {}
 ): ProjectProfitabilityResponse {
   return {
     projectId: "p1",
@@ -37,7 +37,11 @@ describe("ProjectFinancialsTab", () => {
 
   it("renders profitability data with currency breakdowns", () => {
     const profitability = makeProfitability();
-    render(<TerminologyProvider verticalProfile={null}><ProjectFinancialsTab profitability={profitability} /></TerminologyProvider>);
+    render(
+      <TerminologyProvider verticalProfile={null}>
+        <ProjectFinancialsTab profitability={profitability} />
+      </TerminologyProvider>
+    );
 
     expect(screen.getByText("Project Profitability")).toBeInTheDocument();
     expect(screen.getByText("120.0h")).toBeInTheDocument();
@@ -62,7 +66,11 @@ describe("ProjectFinancialsTab", () => {
         },
       ],
     });
-    render(<TerminologyProvider verticalProfile={null}><ProjectFinancialsTab profitability={profitability} /></TerminologyProvider>);
+    render(
+      <TerminologyProvider verticalProfile={null}>
+        <ProjectFinancialsTab profitability={profitability} />
+      </TerminologyProvider>
+    );
 
     // Cost shows N/A from formatCurrencySafe, margin and margin% show N/A
     const naElements = screen.getAllByText("N/A");
@@ -70,13 +78,17 @@ describe("ProjectFinancialsTab", () => {
   });
 
   it("shows empty state when profitability is null", () => {
-    render(<TerminologyProvider verticalProfile={null}><ProjectFinancialsTab profitability={null} /></TerminologyProvider>);
+    render(
+      <TerminologyProvider verticalProfile={null}>
+        <ProjectFinancialsTab profitability={null} />
+      </TerminologyProvider>
+    );
 
     expect(screen.getByText("No financial data yet")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Track billable time and set up billing rates to see project profitability here.",
-      ),
+        "Track billable time and set up billing rates to see project profitability here."
+      )
     ).toBeInTheDocument();
   });
 });

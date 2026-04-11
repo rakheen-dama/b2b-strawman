@@ -48,11 +48,10 @@ export function AccessRequestsTable({ requests }: AccessRequestsTableProps) {
   const [rejectTarget, setRejectTarget] = useState<AccessRequest | null>(null);
   const router = useRouter();
 
-  const filtered =
-    activeTab === "ALL" ? requests : requests.filter((r) => r.status === activeTab);
+  const filtered = activeTab === "ALL" ? requests : requests.filter((r) => r.status === activeTab);
 
   const sorted = [...filtered].sort(
-    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(),
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   );
 
   function handleSuccess() {
@@ -72,7 +71,7 @@ export function AccessRequestsTable({ requests }: AccessRequestsTableProps) {
                 "relative pb-3 text-sm font-medium transition-colors outline-none",
                 "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",
                 "data-[state=active]:text-slate-950 dark:data-[state=active]:text-slate-50",
-                "focus-visible:outline-2 focus-visible:outline-teal-500 focus-visible:outline-offset-2",
+                "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
               )}
             >
               {tab.label}
@@ -122,7 +121,9 @@ export function AccessRequestsTable({ requests }: AccessRequestsTableProps) {
                   <TableCell>{request.fullName}</TableCell>
                   <TableCell>{request.country}</TableCell>
                   <TableCell>{request.industry}</TableCell>
-                  <TableCell><RelativeDate iso={request.createdAt} /></TableCell>
+                  <TableCell>
+                    <RelativeDate iso={request.createdAt} />
+                  </TableCell>
                   <TableCell>
                     <Badge variant={statusBadgeVariant[request.status] ?? "neutral"}>
                       {request.status}

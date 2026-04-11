@@ -18,17 +18,13 @@ const mockRejectItem = vi.fn();
 const mockCancelRequest = vi.fn();
 const mockResendNotification = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/information-requests/[id]/actions",
-  () => ({
-    getRequestAction: vi.fn(),
-    acceptItemAction: (...args: unknown[]) => mockAcceptItem(...args),
-    rejectItemAction: (...args: unknown[]) => mockRejectItem(...args),
-    cancelRequestAction: (...args: unknown[]) => mockCancelRequest(...args),
-    resendNotificationAction: (...args: unknown[]) =>
-      mockResendNotification(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/information-requests/[id]/actions", () => ({
+  getRequestAction: vi.fn(),
+  acceptItemAction: (...args: unknown[]) => mockAcceptItem(...args),
+  rejectItemAction: (...args: unknown[]) => mockRejectItem(...args),
+  cancelRequestAction: (...args: unknown[]) => mockCancelRequest(...args),
+  resendNotificationAction: (...args: unknown[]) => mockResendNotification(...args),
+}));
 
 vi.mock("sonner", () => ({
   toast: {
@@ -44,7 +40,7 @@ import type {
 import { RequestDetailClient } from "@/components/information-requests/request-detail-client";
 
 function makeItem(
-  overrides: Partial<InformationRequestItemResponse> = {},
+  overrides: Partial<InformationRequestItemResponse> = {}
 ): InformationRequestItemResponse {
   return {
     id: "item-1",
@@ -66,7 +62,7 @@ function makeItem(
 }
 
 function makeRequest(
-  overrides: Partial<InformationRequestResponse> = {},
+  overrides: Partial<InformationRequestResponse> = {}
 ): InformationRequestResponse {
   return {
     id: "req-1",
@@ -124,9 +120,7 @@ describe("Information Request Detail", () => {
     const request = makeRequest({ items, totalItems: 3 });
     render(<RequestDetailClient request={request} slug="test-org" />);
 
-    const itemNames = screen.getAllByText(
-      /Tax Certificate|ID Document|Bank Statement/,
-    );
+    const itemNames = screen.getAllByText(/Tax Certificate|ID Document|Bank Statement/);
     expect(itemNames[0]).toHaveTextContent("Tax Certificate");
     expect(itemNames[1]).toHaveTextContent("ID Document");
     expect(itemNames[2]).toHaveTextContent("Bank Statement");
@@ -169,9 +163,7 @@ describe("Information Request Detail", () => {
     await user.click(screen.getByText("Reject"));
 
     expect(screen.getByText("Reject Item")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Provide a reason for rejecting/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Provide a reason for rejecting/)).toBeInTheDocument();
   });
 
   // Test 6: Reject sends reason via action
@@ -199,7 +191,7 @@ describe("Information Request Detail", () => {
       "test-org",
       "req-1",
       "item-1",
-      "Document is blurry",
+      "Document is blurry"
     );
   });
 

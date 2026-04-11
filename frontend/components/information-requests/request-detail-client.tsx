@@ -54,21 +54,17 @@ interface RequestDetailClientProps {
   slug: string;
 }
 
-export function RequestDetailClient({
-  request,
-  slug,
-}: RequestDetailClientProps) {
+export function RequestDetailClient({ request, slug }: RequestDetailClientProps) {
   const router = useRouter();
   const [acceptingItemId, setAcceptingItemId] = useState<string | null>(null);
-  const [rejectDialogItem, setRejectDialogItem] =
-    useState<InformationRequestItemResponse | null>(null);
+  const [rejectDialogItem, setRejectDialogItem] = useState<InformationRequestItemResponse | null>(
+    null
+  );
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [isResending, setIsResending] = useState(false);
 
-  const sortedItems = [...request.items].sort(
-    (a, b) => a.sortOrder - b.sortOrder,
-  );
+  const sortedItems = [...request.items].sort((a, b) => a.sortOrder - b.sortOrder);
 
   async function handleAccept(itemId: string) {
     setAcceptingItemId(itemId);
@@ -88,12 +84,7 @@ export function RequestDetailClient({
 
   async function handleReject(reason: string) {
     if (!rejectDialogItem) return;
-    const result = await rejectItemAction(
-      slug,
-      request.id,
-      rejectDialogItem.id,
-      reason,
-    );
+    const result = await rejectItemAction(slug, request.id, rejectDialogItem.id, reason);
     if (result.success) {
       router.refresh();
     } else {
@@ -135,10 +126,8 @@ export function RequestDetailClient({
     }
   }
 
-  const canCancel =
-    request.status !== "CANCELLED" && request.status !== "COMPLETED";
-  const canResend =
-    request.status === "SENT" || request.status === "IN_PROGRESS";
+  const canCancel = request.status !== "CANCELLED" && request.status !== "COMPLETED";
+  const canResend = request.status === "SENT" || request.status === "IN_PROGRESS";
 
   return (
     <>
@@ -176,10 +165,7 @@ export function RequestDetailClient({
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               {canResend && (
-                <DropdownMenuItem
-                  onClick={handleResend}
-                  disabled={isResending}
-                >
+                <DropdownMenuItem onClick={handleResend} disabled={isResending}>
                   <Send className="mr-2 size-4" />
                   {isResending ? "Resending..." : "Resend Notification"}
                 </DropdownMenuItem>
@@ -199,7 +185,7 @@ export function RequestDetailClient({
       </div>
 
       {/* Metadata */}
-      <div className="grid grid-cols-2 gap-6 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-6 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:grid-cols-4 dark:border-slate-800 dark:bg-slate-900">
         <div className="space-y-1">
           <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
             <Mail className="size-3.5" />
@@ -208,9 +194,7 @@ export function RequestDetailClient({
           <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
             {request.portalContactName}
           </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            {request.portalContactEmail}
-          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{request.portalContactEmail}</p>
         </div>
         <div className="space-y-1">
           <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
@@ -288,19 +272,12 @@ export function RequestDetailClient({
           <AlertDialogHeader>
             <AlertDialogTitle>Cancel Request</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to cancel {request.requestNumber}? This
-              action cannot be undone.
+              Are you sure you want to cancel {request.requestNumber}? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isCancelling}>
-              Keep Request
-            </AlertDialogCancel>
-            <Button
-              variant="destructive"
-              onClick={handleCancel}
-              disabled={isCancelling}
-            >
+            <AlertDialogCancel disabled={isCancelling}>Keep Request</AlertDialogCancel>
+            <Button variant="destructive" onClick={handleCancel} disabled={isCancelling}>
               {isCancelling ? "Cancelling..." : "Cancel Request"}
             </Button>
           </AlertDialogFooter>
@@ -319,12 +296,7 @@ interface RequestItemRowProps {
   isAccepting: boolean;
 }
 
-function RequestItemRow({
-  item,
-  onAccept,
-  onReject,
-  isAccepting,
-}: RequestItemRowProps) {
+function RequestItemRow({ item, onAccept, onReject, isAccepting }: RequestItemRowProps) {
   const bgClass = getItemBgClass(item.status);
 
   return (
@@ -338,17 +310,13 @@ function RequestItemRow({
             {item.status === "REJECTED" && (
               <X className="size-4 shrink-0 text-red-600 dark:text-red-400" />
             )}
-            <span className="font-medium text-slate-900 dark:text-slate-100">
-              {item.name}
-            </span>
+            <span className="font-medium text-slate-900 dark:text-slate-100">{item.name}</span>
             <ResponseTypeBadge responseType={item.responseType} />
             <ItemStatusBadge status={item.status} />
           </div>
 
           {item.description && (
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              {item.description}
-            </p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{item.description}</p>
           )}
 
           {/* Status-specific content */}
@@ -359,24 +327,26 @@ function RequestItemRow({
             </p>
           )}
 
-          {item.status === "ACCEPTED" && item.responseType === "FILE_UPLOAD" && item.documentFileName && (
-            <p className="flex items-center gap-1.5 text-sm text-teal-600 dark:text-teal-400">
-              <FileText className="size-3.5" />
-              {item.documentFileName}
-            </p>
-          )}
+          {item.status === "ACCEPTED" &&
+            item.responseType === "FILE_UPLOAD" &&
+            item.documentFileName && (
+              <p className="flex items-center gap-1.5 text-sm text-teal-600 dark:text-teal-400">
+                <FileText className="size-3.5" />
+                {item.documentFileName}
+              </p>
+            )}
 
-          {item.status === "ACCEPTED" && item.responseType === "TEXT_RESPONSE" && item.textResponse && (
-            <p className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300">
-              <MessageSquare className="size-3.5" />
-              {item.textResponse}
-            </p>
-          )}
+          {item.status === "ACCEPTED" &&
+            item.responseType === "TEXT_RESPONSE" &&
+            item.textResponse && (
+              <p className="flex items-center gap-1.5 text-sm text-slate-700 dark:text-slate-300">
+                <MessageSquare className="size-3.5" />
+                {item.textResponse}
+              </p>
+            )}
 
           {item.status === "REJECTED" && item.rejectionReason && (
-            <p className="text-sm text-red-600 dark:text-red-400">
-              Reason: {item.rejectionReason}
-            </p>
+            <p className="text-sm text-red-600 dark:text-red-400">Reason: {item.rejectionReason}</p>
           )}
         </div>
 

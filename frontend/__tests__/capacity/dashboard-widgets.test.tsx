@@ -33,9 +33,7 @@ function makeWeekCell(overrides: Partial<WeekCell> = {}): WeekCell {
   };
 }
 
-function makeGrid(
-  overrides: Partial<TeamCapacityGrid> = {},
-): TeamCapacityGrid {
+function makeGrid(overrides: Partial<TeamCapacityGrid> = {}): TeamCapacityGrid {
   return {
     members: [
       {
@@ -47,9 +45,7 @@ function makeGrid(
             totalAllocated: 35,
             remainingCapacity: 5,
             utilizationPct: 87.5,
-            allocations: [
-              { id: "a1", projectId: "p1", projectName: "Alpha", hours: 35 },
-            ],
+            allocations: [{ id: "a1", projectId: "p1", projectName: "Alpha", hours: 35 }],
           }),
         ],
         totalAllocated: 35,
@@ -182,24 +178,15 @@ describe("TeamCapacityWidget", () => {
   });
 
   it("shows empty state when no members", () => {
-    render(
-      <TeamCapacityWidget
-        data={{ members: [], weekSummaries: [] }}
-        orgSlug="test-org"
-      />,
-    );
+    render(<TeamCapacityWidget data={{ members: [], weekSummaries: [] }} orgSlug="test-org" />);
 
-    expect(
-      screen.getByText("No capacity data"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("No capacity data")).toBeInTheDocument();
   });
 
   it("shows error state when data is null", () => {
     render(<TeamCapacityWidget data={null} orgSlug="test-org" />);
 
-    expect(
-      screen.getByText("Unable to load team capacity data."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Unable to load team capacity data.")).toBeInTheDocument();
   });
 });
 
@@ -220,7 +207,7 @@ describe("MyScheduleWidget", () => {
         leaveBlocks={[]}
         weeklyCapacity={40}
         projectNames={{ p1: "Project Alpha", p2: "Project Beta" }}
-      />,
+      />
     );
 
     expect(screen.getByText("My Schedule")).toBeInTheDocument();
@@ -233,17 +220,9 @@ describe("MyScheduleWidget", () => {
   });
 
   it("falls back to projectId when projectNames not provided", () => {
-    const allocations = [
-      makeAllocation({ id: "a1", projectId: "uuid-123", allocatedHours: 20 }),
-    ];
+    const allocations = [makeAllocation({ id: "a1", projectId: "uuid-123", allocatedHours: 20 })];
 
-    render(
-      <MyScheduleWidget
-        allocations={allocations}
-        leaveBlocks={[]}
-        weeklyCapacity={40}
-      />,
-    );
+    render(<MyScheduleWidget allocations={allocations} leaveBlocks={[]} weeklyCapacity={40} />);
 
     expect(screen.getByText("uuid-123")).toBeInTheDocument();
   });
@@ -254,30 +233,16 @@ describe("MyScheduleWidget", () => {
       makeAllocation({ id: "a2", projectId: "p2", allocatedHours: 20 }),
     ];
 
-    render(
-      <MyScheduleWidget
-        allocations={allocations}
-        leaveBlocks={[]}
-        weeklyCapacity={40}
-      />,
-    );
+    render(<MyScheduleWidget allocations={allocations} leaveBlocks={[]} weeklyCapacity={40} />);
 
     expect(screen.getByText("Over by")).toBeInTheDocument();
     expect(screen.getByText("10h")).toBeInTheDocument();
   });
 
   it("shows empty state when no allocations", () => {
-    render(
-      <MyScheduleWidget
-        allocations={[]}
-        leaveBlocks={[]}
-        weeklyCapacity={40}
-      />,
-    );
+    render(<MyScheduleWidget allocations={[]} leaveBlocks={[]} weeklyCapacity={40} />);
 
-    expect(
-      screen.getByText("No allocations this week."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("No allocations this week.")).toBeInTheDocument();
   });
 
   it("shows upcoming leave blocks", () => {
@@ -300,7 +265,7 @@ describe("MyScheduleWidget", () => {
           }),
         ]}
         weeklyCapacity={40}
-      />,
+      />
     );
 
     expect(screen.getByText("Upcoming Leave")).toBeInTheDocument();
@@ -324,31 +289,21 @@ describe("ProjectStaffingTab", () => {
   it("shows budget comparison when budget exists", () => {
     render(<ProjectStaffingTab staffing={makeStaffing()} />);
 
-    expect(
-      screen.getByText("Planned Hours vs Budget"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Planned Hours vs Budget")).toBeInTheDocument();
     expect(screen.getByText(/100h/)).toBeInTheDocument();
     // Budget donut shows 35% via aria-label
     expect(screen.getByLabelText("35%")).toBeInTheDocument();
   });
 
   it("shows empty state when no members allocated", () => {
-    render(
-      <ProjectStaffingTab
-        staffing={makeStaffing({ members: [] })}
-      />,
-    );
+    render(<ProjectStaffingTab staffing={makeStaffing({ members: [] })} />);
 
-    expect(
-      screen.getByText("No team members allocated to this project."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("No team members allocated to this project.")).toBeInTheDocument();
   });
 
   it("shows error state when data is null", () => {
     render(<ProjectStaffingTab staffing={null} />);
 
-    expect(
-      screen.getByText("Unable to load staffing data."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Unable to load staffing data.")).toBeInTheDocument();
   });
 });

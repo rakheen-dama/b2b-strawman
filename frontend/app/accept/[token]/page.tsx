@@ -1,13 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import {
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  Clock,
-  FileText,
-} from "lucide-react";
+import { CheckCircle2, AlertCircle, Loader2, Clock, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,10 +10,7 @@ import {
   getAcceptancePdf,
   acceptDocument,
 } from "@/lib/api/portal-acceptance";
-import type {
-  AcceptancePageData,
-  AcceptResponse,
-} from "@/lib/api/portal-acceptance";
+import type { AcceptancePageData, AcceptResponse } from "@/lib/api/portal-acceptance";
 
 type PageState =
   | { kind: "loading" }
@@ -141,21 +132,16 @@ export function AcceptancePageContent({ token }: { token: string }) {
           return prev;
         });
       } catch (err) {
-        setSubmitError(
-          err instanceof Error ? err.message : "Failed to accept",
-        );
+        setSubmitError(err instanceof Error ? err.message : "Failed to accept");
       } finally {
         setSubmitting(false);
       }
     },
-    [token, name, submitting],
+    [token, name, submitting]
   );
 
   // Extract branding from any state that has data
-  const data =
-    state.kind !== "loading" && state.kind !== "not_found"
-      ? state.data
-      : null;
+  const data = state.kind !== "loading" && state.kind !== "not_found" ? state.data : null;
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -191,8 +177,7 @@ export function AcceptancePageContent({ token }: { token: string }) {
               Link Not Valid
             </h2>
             <p className="text-slate-600 dark:text-slate-400">
-              This link is not valid. It may have already been used or the URL
-              may be incorrect.
+              This link is not valid. It may have already been used or the URL may be incorrect.
             </p>
           </div>
         )}
@@ -205,8 +190,7 @@ export function AcceptancePageContent({ token }: { token: string }) {
               Request Expired
             </h2>
             <p className="text-slate-600 dark:text-slate-400">
-              This acceptance request expired on{" "}
-              {formatDate(state.data.expiresAt)}. Please contact{" "}
+              This acceptance request expired on {formatDate(state.data.expiresAt)}. Please contact{" "}
               {state.data.orgName ?? "the organization"} to request a new link.
             </p>
           </div>
@@ -233,14 +217,12 @@ export function AcceptancePageContent({ token }: { token: string }) {
               <div className="mb-4 flex items-center gap-2">
                 <FileText className="h-5 w-5 text-slate-500" />
                 <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-                  {state.data.documentTitle ??
-                    state.data.documentFileName ??
-                    "Document"}
+                  {state.data.documentTitle ?? state.data.documentFileName ?? "Document"}
                 </h2>
               </div>
               <p className="mb-6 text-sm text-slate-600 dark:text-slate-400">
-                Please review the document below. When you&apos;re ready, type
-                your full name and click &apos;I Accept&apos; to confirm.
+                Please review the document below. When you&apos;re ready, type your full name and
+                click &apos;I Accept&apos; to confirm.
               </p>
 
               {/* PDF viewer */}
@@ -271,9 +253,7 @@ export function AcceptancePageContent({ token }: { token: string }) {
                 </div>
 
                 {submitError && (
-                  <p className="text-sm text-red-600 dark:text-red-400">
-                    {submitError}
-                  </p>
+                  <p className="text-sm text-red-600 dark:text-red-400">{submitError}</p>
                 )}
 
                 <Button
@@ -313,10 +293,8 @@ export function AcceptancePageContent({ token }: { token: string }) {
             </h2>
             <p className="text-slate-600 dark:text-slate-400">
               You accepted this document on{" "}
-              {formatDate(
-                state.acceptResponse?.acceptedAt ?? state.data.acceptedAt,
-              )}
-              . A confirmation has been sent to your email.
+              {formatDate(state.acceptResponse?.acceptedAt ?? state.data.acceptedAt)}. A
+              confirmation has been sent to your email.
             </p>
           </div>
         )}
@@ -326,11 +304,7 @@ export function AcceptancePageContent({ token }: { token: string }) {
 }
 
 /** Next.js page wrapper — unwraps async params via React.use(). */
-export default function AcceptancePage({
-  params,
-}: {
-  params: Promise<{ token: string }>;
-}) {
+export default function AcceptancePage({ params }: { params: Promise<{ token: string }> }) {
   const { token } = React.use(params);
   return <AcceptancePageContent token={token} />;
 }

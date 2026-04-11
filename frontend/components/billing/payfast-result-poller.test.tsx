@@ -33,17 +33,13 @@ afterEach(() => {
 describe("PayFastResultPoller", () => {
   it("renders nothing when result is absent (idle state)", () => {
     mockSearchParams = new URLSearchParams();
-    const { container } = render(
-      <PayFastResultPoller initialStatus="TRIALING" />
-    );
+    const { container } = render(<PayFastResultPoller initialStatus="TRIALING" />);
     expect(container.innerHTML).toBe("");
   });
 
   it("renders nothing when result is an unrecognized value", () => {
     mockSearchParams = new URLSearchParams("result=unknown");
-    const { container } = render(
-      <PayFastResultPoller initialStatus="TRIALING" />
-    );
+    const { container } = render(<PayFastResultPoller initialStatus="TRIALING" />);
     expect(container.innerHTML).toBe("");
   });
 
@@ -105,9 +101,7 @@ describe("PayFastResultPoller", () => {
     });
 
     // Should have transitioned to timeout
-    expect(
-      screen.getByText(/still being processed/)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/still being processed/)).toBeInTheDocument();
 
     // Verify at least some polls happened before timeout
     expect(mockGetSubscription.mock.calls.length).toBeGreaterThan(0);

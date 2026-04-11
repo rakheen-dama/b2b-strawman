@@ -24,7 +24,9 @@ export function DormancyCandidateList({ candidates, orgSlug }: DormancyCandidate
   const [loading, setLoading] = useState<Set<string>>(new Set());
 
   if (candidates.length === 0) {
-    return <p className="text-sm text-slate-500 dark:text-slate-400">No dormant customers detected.</p>;
+    return (
+      <p className="text-sm text-slate-500 dark:text-slate-400">No dormant customers detected.</p>
+    );
   }
 
   function toggleSelect(customerId: string) {
@@ -149,7 +151,7 @@ export function DormancyCandidateList({ candidates, orgSlug }: DormancyCandidate
                       "font-mono tabular-nums",
                       candidate.daysSinceActivity > 90
                         ? "text-red-600 dark:text-red-400"
-                        : "text-slate-600 dark:text-slate-400",
+                        : "text-slate-600 dark:text-slate-400"
                     )}
                   >
                     {candidate.daysSinceActivity}

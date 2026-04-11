@@ -35,8 +35,7 @@ export function DocumentEditor({
   entityType,
   missingVariables,
 }: DocumentEditorProps) {
-  const placeholderText =
-    scope === "clause" ? "Enter clause content..." : "Start typing...";
+  const placeholderText = scope === "clause" ? "Enter clause content..." : "Start typing...";
 
   const customExtensions =
     scope === "template"

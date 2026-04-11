@@ -8,10 +8,7 @@ vi.mock("server-only", () => ({}));
 // Mock motion/react (Sheet uses motion internally)
 vi.mock("motion/react", () => ({
   motion: {
-    div: ({
-      children,
-      ...props
-    }: React.PropsWithChildren<Record<string, unknown>>) => {
+    div: ({ children, ...props }: React.PropsWithChildren<Record<string, unknown>>) => {
       const { initial, animate, transition, ...rest } = props;
       return <div {...rest}>{children}</div>;
     },
@@ -30,8 +27,7 @@ const mockListMembers = vi.fn().mockResolvedValue([]);
 
 vi.mock("@/app/(app)/org/[slug]/team/member-actions", () => ({
   assignMemberRole: (...args: unknown[]) => mockAssignMemberRole(...args),
-  fetchMemberCapabilities: (...args: unknown[]) =>
-    mockFetchMemberCapabilities(...args),
+  fetchMemberCapabilities: (...args: unknown[]) => mockFetchMemberCapabilities(...args),
   listMembers: (...args: unknown[]) => mockListMembers(...args),
 }));
 
@@ -141,7 +137,7 @@ describe("MemberList", () => {
         }}
         roles={allRoles}
         slug="test-org"
-      />,
+      />
     );
 
     await waitFor(() => {
@@ -173,11 +169,7 @@ describe("MemberList", () => {
       roleName: "Project Manager",
       roleCapabilities: ["PROJECT_MANAGEMENT"],
       overrides: ["+INVOICING", "+TEAM_OVERSIGHT", "-AUTOMATIONS"],
-      effectiveCapabilities: [
-        "PROJECT_MANAGEMENT",
-        "INVOICING",
-        "TEAM_OVERSIGHT",
-      ],
+      effectiveCapabilities: ["PROJECT_MANAGEMENT", "INVOICING", "TEAM_OVERSIGHT"],
     });
 
     render(
@@ -192,7 +184,7 @@ describe("MemberList", () => {
         }}
         roles={[customRole]}
         slug="test-org"
-      />,
+      />
     );
 
     // Panel should show the member's name
@@ -212,11 +204,7 @@ describe("MemberDetailPanel", () => {
       roleName: "Project Manager",
       roleCapabilities: ["PROJECT_MANAGEMENT", "TEAM_OVERSIGHT"],
       overrides: ["+INVOICING"],
-      effectiveCapabilities: [
-        "PROJECT_MANAGEMENT",
-        "TEAM_OVERSIGHT",
-        "INVOICING",
-      ],
+      effectiveCapabilities: ["PROJECT_MANAGEMENT", "TEAM_OVERSIGHT", "INVOICING"],
     });
 
     render(
@@ -231,7 +219,7 @@ describe("MemberDetailPanel", () => {
         }}
         roles={allRoles}
         slug="test-org"
-      />,
+      />
     );
 
     // Wait for capabilities to load
@@ -279,7 +267,7 @@ describe("MemberDetailPanel", () => {
         }}
         roles={allRoles}
         slug="test-org"
-      />,
+      />
     );
 
     // Wait for capabilities to load
@@ -297,7 +285,7 @@ describe("MemberDetailPanel", () => {
         "test-org",
         "m1",
         expect.any(String),
-        expect.any(Array),
+        expect.any(Array)
       );
     });
 

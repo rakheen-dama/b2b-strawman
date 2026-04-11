@@ -50,8 +50,7 @@ export function GenerateDocumentDialog({
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [validationResult, setValidationResult] =
-    useState<TemplateValidationResult | null>(null);
+  const [validationResult, setValidationResult] = useState<TemplateValidationResult | null>(null);
   const [savedDocumentId, setSavedDocumentId] = useState<string | null>(null);
   const [acceptanceDialogOpen, setAcceptanceDialogOpen] = useState(false);
 
@@ -122,7 +121,7 @@ export function GenerateDocumentDialog({
       const result = await previewTemplateAction(
         templateId,
         entityId,
-        clauseSelectionsForApi(clauseOverrides),
+        clauseSelectionsForApi(clauseOverrides)
       );
       if (result.success && result.html) {
         setHtml(result.html);
@@ -146,9 +145,7 @@ export function GenerateDocumentDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, isCheckingClauses, hasClauses, step]);
 
-  const hasWarnings = Boolean(
-    validationResult && !validationResult.allPresent,
-  );
+  const hasWarnings = Boolean(validationResult && !validationResult.allPresent);
 
   function handleClauseNext(clauses: SelectedClause[]) {
     setSelectedClauses(clauses);
@@ -174,7 +171,7 @@ export function GenerateDocumentDialog({
         entityId,
         false,
         hasWarnings,
-        clauseSelectionsForApi(),
+        clauseSelectionsForApi()
       );
       if (result.success && result.pdfBase64) {
         // Convert base64 to blob and trigger download
@@ -214,7 +211,7 @@ export function GenerateDocumentDialog({
         entityId,
         true,
         hasWarnings,
-        clauseSelectionsForApi(),
+        clauseSelectionsForApi()
       );
       if (result.success) {
         setSuccessMessage("Document saved successfully");
@@ -270,9 +267,7 @@ export function GenerateDocumentDialog({
           <GenerationClauseStep
             templateId={templateId}
             preloadedClauses={templateClauseList}
-            initialClauses={
-              selectedClauses.length > 0 ? selectedClauses : undefined
-            }
+            initialClauses={selectedClauses.length > 0 ? selectedClauses : undefined}
             onNext={handleClauseNext}
           />
         )}
@@ -282,9 +277,7 @@ export function GenerateDocumentDialog({
             <div className="space-y-4">
               {isLoadingPreview && (
                 <div className="flex h-[500px] items-center justify-center rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50">
-                  <p className="text-sm text-slate-500">
-                    Generating preview...
-                  </p>
+                  <p className="text-sm text-slate-500">Generating preview...</p>
                 </div>
               )}
 
@@ -297,10 +290,7 @@ export function GenerateDocumentDialog({
                   </p>
                   <ul className="space-y-1">
                     {validationResult.fields.map((f, idx) => (
-                      <li
-                        key={idx}
-                        className="flex items-center gap-2 text-sm"
-                      >
+                      <li key={idx} className="flex items-center gap-2 text-sm">
                         {f.present ? (
                           <CheckCircle2 className="size-4 shrink-0 text-green-600" />
                         ) : (
@@ -321,27 +311,17 @@ export function GenerateDocumentDialog({
                 </div>
               )}
 
-              {error && <p className="text-sm text-destructive">{error}</p>}
+              {error && <p className="text-destructive text-sm">{error}</p>}
               {successMessage && (
-                <p className="text-sm text-green-600 dark:text-green-400">
-                  {successMessage}
-                </p>
+                <p className="text-sm text-green-600 dark:text-green-400">{successMessage}</p>
               )}
               {savedDocumentId && customerId && (
                 <div className="flex items-center gap-2">
-                  <Button
-                    variant="accent"
-                    size="sm"
-                    onClick={() => setAcceptanceDialogOpen(true)}
-                  >
+                  <Button variant="accent" size="sm" onClick={() => setAcceptanceDialogOpen(true)}>
                     <Send className="mr-1.5 size-4" />
                     Send for Acceptance
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onOpenChange(false)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => onOpenChange(false)}>
                     Close
                   </Button>
                 </div>
@@ -379,11 +359,7 @@ export function GenerateDocumentDialog({
                   disabled={isActionInProgress || isLoadingPreview}
                 >
                   <Save className="mr-1.5 size-4" />
-                  {isSaving
-                    ? "Saving..."
-                    : hasWarnings
-                      ? "Save anyway"
-                      : "Save to Documents"}
+                  {isSaving ? "Saving..." : hasWarnings ? "Save anyway" : "Save to Documents"}
                 </Button>
               </DialogFooter>
             )}

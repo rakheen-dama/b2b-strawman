@@ -44,13 +44,11 @@ describe("EmptyState", () => {
         description="Create your first project to get started."
         actionLabel="Create project"
         onAction={handleAction}
-      />,
+      />
     );
 
     expect(screen.getByText("No projects yet")).toBeInTheDocument();
-    expect(
-      screen.getByText("Create your first project to get started."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Create your first project to get started.")).toBeInTheDocument();
 
     const button = screen.getByRole("button", { name: "Create project" });
     await user.click(button);
@@ -64,7 +62,7 @@ describe("EmptyState", () => {
         title="No customers yet"
         description="Add your first customer."
         secondaryLink={{ label: "Learn more", href: "/help" }}
-      />,
+      />
     );
 
     const link = screen.getByText("Learn more");
@@ -74,13 +72,7 @@ describe("EmptyState", () => {
   });
 
   it("applies max-w-md to description paragraph", () => {
-    render(
-      <EmptyState
-        icon={FolderOpen}
-        title="Test"
-        description="A description"
-      />,
-    );
+    render(<EmptyState icon={FolderOpen} title="Test" description="A description" />);
 
     const description = screen.getByText("A description");
     expect(description).toHaveClass("max-w-md");
@@ -94,7 +86,7 @@ describe("EmptyState", () => {
         description="No tasks assigned."
         actionLabel="Browse projects"
         actionHref="/projects"
-      />,
+      />
     );
 
     const link = screen.getByText("Browse projects");
@@ -108,18 +100,16 @@ describe("EmptyState", () => {
         title="No projects yet"
         description="Projects organise your work, documents, and time tracking. Create your first project to get started."
         action={<button type="button">New Project</button>}
-      />,
+      />
     );
 
     expect(screen.getByText("No projects yet")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Projects organise your work, documents, and time tracking. Create your first project to get started.",
-      ),
+        "Projects organise your work, documents, and time tracking. Create your first project to get started."
+      )
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "New Project" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "New Project" })).toBeInTheDocument();
   });
 
   it("renders customer-like empty state with catalog strings", () => {
@@ -128,14 +118,14 @@ describe("EmptyState", () => {
         icon={Users}
         title="No customers yet"
         description="Customers represent the organisations you work with. Add your first customer to start managing relationships."
-      />,
+      />
     );
 
     expect(screen.getByText("No customers yet")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Customers represent the organisations you work with. Add your first customer to start managing relationships.",
-      ),
+        "Customers represent the organisations you work with. Add your first customer to start managing relationships."
+      )
     ).toBeInTheDocument();
   });
 
@@ -147,13 +137,13 @@ describe("EmptyState", () => {
         title="No projects yet"
         description="Projects organise your work, documents, and time tracking. Create your first project to get started."
         action={<button type="button">Create project</button>}
-      />,
+      />
     );
 
     expect(
       screen.getByText(
-        "Projects organise your work, documents, and time tracking. Create your first project to get started.",
-      ),
+        "Projects organise your work, documents, and time tracking. Create your first project to get started."
+      )
     ).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Create project" })).toBeInTheDocument();
   });
@@ -166,12 +156,10 @@ describe("EmptyState", () => {
         title="No projects yet"
         description={`You\u2019re not on any projects yet.`}
         action={<button type="button">Create project</button>}
-      />,
+      />
     );
 
-    expect(
-      screen.getByText(/not on any projects yet/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/not on any projects yet/)).toBeInTheDocument();
   });
 
   it("renders member description for customers when user is member", () => {
@@ -181,12 +169,10 @@ describe("EmptyState", () => {
         icon={Users}
         title="No customers yet"
         description="No customers have been added yet."
-      />,
+      />
     );
 
-    expect(
-      screen.getByText("No customers have been added yet."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("No customers have been added yet.")).toBeInTheDocument();
   });
 
   it("prefers onAction over actionHref when both provided", async () => {
@@ -201,7 +187,7 @@ describe("EmptyState", () => {
         actionLabel="Click me"
         actionHref="/fallback"
         onAction={handleAction}
-      />,
+      />
     );
 
     // Should render as a button (onAction), not a link
@@ -212,9 +198,7 @@ describe("EmptyState", () => {
 
     // The link should NOT be rendered
     const links = screen.queryAllByRole("link");
-    const fallbackLink = links.find(
-      (l) => l.getAttribute("href") === "/fallback",
-    );
+    const fallbackLink = links.find((l) => l.getAttribute("href") === "/fallback");
     expect(fallbackLink).toBeUndefined();
   });
 });

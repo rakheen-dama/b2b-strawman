@@ -82,15 +82,13 @@ describe("UserMenuBff", () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
         "http://localhost:8443/bff/csrf",
-        expect.objectContaining({ credentials: "include" }),
+        expect.objectContaining({ credentials: "include" })
       );
     });
 
     // Verify the hidden form was appended to the body
     await waitFor(() => {
-      const form = document.body.querySelector(
-        'form[action="http://localhost:8443/logout"]',
-      );
+      const form = document.body.querySelector('form[action="http://localhost:8443/logout"]');
       expect(form).not.toBeNull();
       expect(form?.getAttribute("method")).toBe("POST");
       // Verify CSRF token input
@@ -106,7 +104,7 @@ describe("UserMenuBff", () => {
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
         "http://localhost:8443/bff/me",
-        expect.objectContaining({ credentials: "include" }),
+        expect.objectContaining({ credentials: "include" })
       );
     });
   });

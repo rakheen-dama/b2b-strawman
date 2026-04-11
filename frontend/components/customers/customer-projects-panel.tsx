@@ -62,11 +62,7 @@ export function CustomerProjectsPanel({
         {projects.length > 0 && <Badge variant="neutral">{projects.length}</Badge>}
       </div>
       {canManage && (
-        <LinkProjectDialog
-          slug={slug}
-          customerId={customerId}
-          existingProjects={projects}
-        >
+        <LinkProjectDialog slug={slug} customerId={customerId} existingProjects={projects}>
           <Button size="sm" variant="outline">
             <Plus className="mr-1.5 size-4" />
             Link Project
@@ -97,24 +93,22 @@ export function CustomerProjectsPanel({
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-800">
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Project
               </th>
-              <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+              <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                 Status
               </th>
-              <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+              <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                 Description
               </th>
-              <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 md:table-cell dark:text-slate-400">
+              <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase md:table-cell dark:text-slate-400">
                 Due Date
               </th>
-              <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 lg:table-cell dark:text-slate-400">
+              <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase lg:table-cell dark:text-slate-400">
                 Created
               </th>
-              {canManage && (
-                <th className="w-[60px] px-4 py-3" />
-              )}
+              {canManage && <th className="w-[60px] px-4 py-3" />}
             </tr>
           </thead>
           <tbody>
@@ -135,14 +129,22 @@ export function CustomerProjectsPanel({
                     </Link>
                   </td>
                   <td className="hidden px-4 py-3 sm:table-cell">
-                    <Badge variant={(STATUS_BADGE[project.status] ?? { variant: "neutral", label: project.status }).variant} data-testid="customer-project-status-badge">
+                    <Badge
+                      variant={
+                        (
+                          STATUS_BADGE[project.status] ?? {
+                            variant: "neutral",
+                            label: project.status,
+                          }
+                        ).variant
+                      }
+                      data-testid="customer-project-status-badge"
+                    >
                       {(STATUS_BADGE[project.status] ?? { label: project.status }).label}
                     </Badge>
                   </td>
                   <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
-                    <span className="line-clamp-1">
-                      {project.description || "\u2014"}
-                    </span>
+                    <span className="line-clamp-1">{project.description || "\u2014"}</span>
                   </td>
                   <td className="hidden px-4 py-3 text-sm md:table-cell">
                     {project.dueDate ? (

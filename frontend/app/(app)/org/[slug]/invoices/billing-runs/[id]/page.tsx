@@ -30,12 +30,10 @@ export default async function BillingRunDetailPage({
   if (!isAdmin) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Billing Run
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Billing Run</h1>
         <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to view billing runs. Only admins and
-          owners can access this page.
+          You do not have permission to view billing runs. Only admins and owners can access this
+          page.
         </p>
       </div>
     );
@@ -44,10 +42,7 @@ export default async function BillingRunDetailPage({
   let billingRun: BillingRun;
   let items: BillingRunItem[];
   try {
-    [billingRun, items] = await Promise.all([
-      getBillingRun(id),
-      getItems(id),
-    ]);
+    [billingRun, items] = await Promise.all([getBillingRun(id), getItems(id)]);
   } catch (error) {
     handleApiError(error);
   }
@@ -76,20 +71,12 @@ export default async function BillingRunDetailPage({
             Period: {formatLocalDate(billingRun.periodFrom)} &ndash;{" "}
             {formatLocalDate(billingRun.periodTo)}
             {billingRun.completedAt && (
-              <>
-                {" "}
-                &middot; Completed{" "}
-                {formatLocalDate(billingRun.completedAt.split("T")[0])}
-              </>
+              <> &middot; Completed {formatLocalDate(billingRun.completedAt.split("T")[0])}</>
             )}
           </p>
         </div>
 
-        <BillingRunDetailActions
-          slug={slug}
-          billingRunId={id}
-          status={billingRun.status}
-        />
+        <BillingRunDetailActions slug={slug} billingRunId={id} status={billingRun.status} />
       </div>
 
       {/* Summary Cards */}
@@ -97,14 +84,8 @@ export default async function BillingRunDetailPage({
 
       {/* Items Table */}
       <div className="space-y-4">
-        <h2 className="font-display text-xl text-slate-950 dark:text-slate-50">
-          Items
-        </h2>
-        <BillingRunItemsTable
-          items={items}
-          currency={billingRun.currency}
-          slug={slug}
-        />
+        <h2 className="font-display text-xl text-slate-950 dark:text-slate-50">Items</h2>
+        <BillingRunItemsTable items={items} currency={billingRun.currency} slug={slug} />
       </div>
     </div>
   );

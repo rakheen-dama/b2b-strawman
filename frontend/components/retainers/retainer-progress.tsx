@@ -16,12 +16,7 @@ export function RetainerProgress({
   // FIXED_FEE: show consumed hours only, no bar
   if (type === "FIXED_FEE" || allocatedHours === null || allocatedHours <= 0) {
     return (
-      <div
-        className={cn(
-          "text-sm text-slate-600 dark:text-slate-400",
-          className,
-        )}
-      >
+      <div className={cn("text-sm text-slate-600 dark:text-slate-400", className)}>
         {consumedHours.toFixed(1)} hrs consumed
       </div>
     );

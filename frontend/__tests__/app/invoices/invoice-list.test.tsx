@@ -19,7 +19,7 @@ describe("StatusBadge", () => {
         {statuses.map((status) => (
           <StatusBadge key={status} status={status} />
         ))}
-      </div>,
+      </div>
     );
 
     for (const label of labels) {
@@ -97,13 +97,7 @@ describe("InvoiceLineTable", () => {
   });
 
   it("renders table columns with line items", () => {
-    render(
-      <InvoiceLineTable
-        lines={sampleLines}
-        currency="USD"
-        editable={false}
-      />,
-    );
+    render(<InvoiceLineTable lines={sampleLines} currency="USD" editable={false} />);
 
     expect(screen.getByText("Line Items")).toBeInTheDocument();
     expect(screen.getByText("Development work")).toBeInTheDocument();
@@ -114,29 +108,17 @@ describe("InvoiceLineTable", () => {
   });
 
   it("shows empty message when no lines", () => {
-    render(
-      <InvoiceLineTable
-        lines={[]}
-        currency="USD"
-        editable={true}
-        onAddLine={vi.fn()}
-      />,
-    );
+    render(<InvoiceLineTable lines={[]} currency="USD" editable={true} onAddLine={vi.fn()} />);
 
     expect(
-      screen.getByText("No line items yet. Add a line item to get started."),
+      screen.getByText("No line items yet. Add a line item to get started.")
     ).toBeInTheDocument();
   });
 
   it("shows Add Line button in editable mode", () => {
     const onAddLine = vi.fn();
     render(
-      <InvoiceLineTable
-        lines={sampleLines}
-        currency="USD"
-        editable={true}
-        onAddLine={onAddLine}
-      />,
+      <InvoiceLineTable lines={sampleLines} currency="USD" editable={true} onAddLine={onAddLine} />
     );
 
     const addBtn = screen.getByRole("button", { name: /add line/i });
@@ -151,32 +133,18 @@ describe("InvoiceLineTable", () => {
         editable={true}
         onEditLine={vi.fn()}
         onDeleteLine={vi.fn()}
-      />,
+      />
     );
 
-    expect(
-      screen.getByRole("button", { name: /edit development work/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /delete development work/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /edit development work/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /delete development work/i })).toBeInTheDocument();
   });
 
   it("hides edit/delete icons in read-only mode", () => {
-    render(
-      <InvoiceLineTable
-        lines={sampleLines}
-        currency="USD"
-        editable={false}
-      />,
-    );
+    render(<InvoiceLineTable lines={sampleLines} currency="USD" editable={false} />);
 
-    expect(
-      screen.queryByRole("button", { name: /edit/i }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /delete/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /edit/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /delete/i })).not.toBeInTheDocument();
   });
 
   it("calls onDeleteLine when delete button is clicked", async () => {
@@ -190,7 +158,7 @@ describe("InvoiceLineTable", () => {
         editable={true}
         onEditLine={vi.fn()}
         onDeleteLine={onDeleteLine}
-      />,
+      />
     );
 
     const deleteBtn = screen.getByRole("button", {

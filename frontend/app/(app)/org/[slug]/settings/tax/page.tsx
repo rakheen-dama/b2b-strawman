@@ -6,11 +6,7 @@ import { TaxSettingsForm } from "@/components/settings/TaxSettingsForm";
 import { TaxRateTable } from "@/app/(app)/org/[slug]/settings/tax/tax-rate-table";
 import type { OrgSettings, TaxRateResponse } from "@/lib/types";
 
-export default async function TaxSettingsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function TaxSettingsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const caps = await fetchMyCapabilities();
 
@@ -23,9 +19,7 @@ export default async function TaxSettingsPage({
         >
           <ChevronLeft className="size-4" /> Settings
         </Link>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Tax Settings
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Tax Settings</h1>
         <p className="text-slate-600 dark:text-slate-400">
           You do not have permission to manage tax settings.
         </p>
@@ -34,9 +28,7 @@ export default async function TaxSettingsPage({
   }
 
   let settings: OrgSettings = { defaultCurrency: "USD" };
-  const settingsResult = await api
-    .get<OrgSettings>("/api/settings")
-    .catch(() => null);
+  const settingsResult = await api.get<OrgSettings>("/api/settings").catch(() => null);
   if (settingsResult) settings = settingsResult;
 
   const taxRates = await api
@@ -52,9 +44,7 @@ export default async function TaxSettingsPage({
         <ChevronLeft className="size-4" /> Settings
       </Link>
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Tax Settings
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Tax Settings</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Configure tax registration details, labels, and inclusive pricing.
         </p>

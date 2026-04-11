@@ -34,18 +34,14 @@ afterEach(() => cleanup());
 describe("Nav items - resource planning gating", () => {
   it("Resources nav item declares requiredModule: resource_planning", () => {
     const teamGroup = NAV_GROUPS.find((g) => g.id === "team");
-    const resourcesItem = teamGroup?.items.find(
-      (i) => i.label === "Resources",
-    );
+    const resourcesItem = teamGroup?.items.find((i) => i.label === "Resources");
     expect(resourcesItem).toBeDefined();
     expect(resourcesItem?.requiredModule).toBe("resource_planning");
   });
 
   it("Utilization nav item exists with requiredModule: resource_planning", () => {
     const teamGroup = NAV_GROUPS.find((g) => g.id === "team");
-    const utilizationItem = teamGroup?.items.find(
-      (i) => i.label === "Utilization",
-    );
+    const utilizationItem = teamGroup?.items.find((i) => i.label === "Utilization");
     expect(utilizationItem).toBeDefined();
     expect(utilizationItem?.requiredModule).toBe("resource_planning");
   });
@@ -54,9 +50,7 @@ describe("Nav items - resource planning gating", () => {
 describe("Nav items - bulk billing gating", () => {
   it("Billing Runs nav item exists in finance group with requiredModule: bulk_billing", () => {
     const financeGroup = NAV_GROUPS.find((g) => g.id === "finance");
-    const billingRunsItem = financeGroup?.items.find(
-      (i) => i.label === "Billing Runs",
-    );
+    const billingRunsItem = financeGroup?.items.find((i) => i.label === "Billing Runs");
     expect(billingRunsItem).toBeDefined();
     expect(billingRunsItem?.requiredModule).toBe("bulk_billing");
   });
@@ -98,25 +92,19 @@ describe("Settings nav groups - features group", () => {
 describe("ModuleGate page-level gating", () => {
   it("hides resource planning content when module disabled", () => {
     render(
-      <OrgProfileProvider
-        verticalProfile={null}
-        enabledModules={[]}
-        terminologyNamespace={null}
-      >
+      <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
         <ModuleGate
           module="resource_planning"
-          fallback={
-            <ModuleDisabledFallback moduleName="Resource Planning" slug="acme" />
-          }
+          fallback={<ModuleDisabledFallback moduleName="Resource Planning" slug="acme" />}
         >
           <div>Resource planning content</div>
         </ModuleGate>
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
 
     expect(screen.queryByText("Resource planning content")).not.toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /resource planning is not enabled/i }),
+      screen.getByRole("heading", { name: /resource planning is not enabled/i })
     ).toBeInTheDocument();
   });
 
@@ -129,32 +117,26 @@ describe("ModuleGate page-level gating", () => {
       >
         <ModuleGate
           module="resource_planning"
-          fallback={
-            <ModuleDisabledFallback moduleName="Resource Planning" slug="acme" />
-          }
+          fallback={<ModuleDisabledFallback moduleName="Resource Planning" slug="acme" />}
         >
           <div>Resource planning content</div>
         </ModuleGate>
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
 
     expect(screen.getByText("Resource planning content")).toBeInTheDocument();
     expect(
-      screen.queryByRole("heading", { name: /resource planning is not enabled/i }),
+      screen.queryByRole("heading", { name: /resource planning is not enabled/i })
     ).not.toBeInTheDocument();
   });
 
   it("hides automation widget when module disabled (no fallback)", () => {
     render(
-      <OrgProfileProvider
-        verticalProfile={null}
-        enabledModules={[]}
-        terminologyNamespace={null}
-      >
+      <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
         <ModuleGate module="automation_builder">
           <div>Automation runs widget</div>
         </ModuleGate>
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
 
     expect(screen.queryByText("Automation runs widget")).not.toBeInTheDocument();

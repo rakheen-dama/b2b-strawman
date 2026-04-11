@@ -3,11 +3,7 @@
 import { useState, useCallback } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -55,12 +51,10 @@ export function FieldGroupSelector({
       setOpen(false);
 
       try {
-        const result = await setEntityFieldGroupsAction(
-          slug,
-          entityType,
-          entityId,
-          [...appliedFieldGroups, groupId],
-        );
+        const result = await setEntityFieldGroupsAction(slug, entityType, entityId, [
+          ...appliedFieldGroups,
+          groupId,
+        ]);
         if (!result.success) {
           setError(result.error ?? "Failed to add field group.");
         }
@@ -70,7 +64,7 @@ export function FieldGroupSelector({
         setIsUpdating(false);
       }
     },
-    [slug, entityType, entityId, appliedFieldGroups],
+    [slug, entityType, entityId, appliedFieldGroups]
   );
 
   const handleRemoveGroup = useCallback(
@@ -83,7 +77,7 @@ export function FieldGroupSelector({
           slug,
           entityType,
           entityId,
-          appliedFieldGroups.filter((id) => id !== groupId),
+          appliedFieldGroups.filter((id) => id !== groupId)
         );
         if (!result.success) {
           setError(result.error ?? "Failed to remove field group.");
@@ -94,7 +88,7 @@ export function FieldGroupSelector({
         setIsUpdating(false);
       }
     },
-    [slug, entityType, entityId, appliedFieldGroups],
+    [slug, entityType, entityId, appliedFieldGroups]
   );
 
   // Show nothing if no groups available at all and not managing
@@ -104,7 +98,7 @@ export function FieldGroupSelector({
 
   return (
     <div className="space-y-2" data-testid="field-group-selector">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+      <p className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
         Field Groups
       </p>
       <div className="flex flex-wrap items-center gap-2">
@@ -173,9 +167,7 @@ export function FieldGroupSelector({
           </Popover>
         )}
       </div>
-      {error && (
-        <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="text-xs text-red-600 dark:text-red-400">{error}</p>}
     </div>
   );
 }

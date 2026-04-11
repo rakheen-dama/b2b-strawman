@@ -69,7 +69,7 @@ export function CreateViewDialog({
     })),
   ];
   const [selectedColumns, setSelectedColumns] = useState<string[]>(
-    standardCols.map((c) => c.value),
+    standardCols.map((c) => c.value)
   );
 
   // Step 3: Save
@@ -91,10 +91,8 @@ export function CreateViewDialog({
   function buildFilters(): Record<string, unknown> {
     const filters: Record<string, unknown> = {};
     if (filterTags.length > 0) filters.tags = filterTags;
-    if (Object.keys(filterCustomFields).length > 0)
-      filters.customFields = filterCustomFields;
-    if (filterDateRange.from || filterDateRange.to)
-      filters.dateRange = filterDateRange;
+    if (Object.keys(filterCustomFields).length > 0) filters.customFields = filterCustomFields;
+    if (filterDateRange.from || filterDateRange.to) filters.dateRange = filterDateRange;
     if (filterSearch.trim()) filters.search = filterSearch.trim();
     return filters;
   }
@@ -134,7 +132,7 @@ export function CreateViewDialog({
 
   function toggleColumn(col: string) {
     setSelectedColumns((prev) =>
-      prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col],
+      prev.includes(col) ? prev.filter((c) => c !== col) : [...prev, col]
     );
   }
 
@@ -154,29 +152,20 @@ export function CreateViewDialog({
             {step === 2 && "Select Columns"}
             {step === 3 && "Name Your View"}
           </DialogTitle>
-          <DialogDescription>
-            Step {step} of 3
-          </DialogDescription>
+          <DialogDescription>Step {step} of 3</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4 py-2">
           {/* Step 1: Filters */}
           {step === 1 && (
             <div className="space-y-4">
-              <TagFilter
-                value={filterTags}
-                onChange={setFilterTags}
-                allTags={allTags}
-              />
+              <TagFilter value={filterTags} onChange={setFilterTags} allTags={allTags} />
               <CustomFieldFilter
                 value={filterCustomFields}
                 onChange={setFilterCustomFields}
                 fieldDefinitions={fieldDefinitions}
               />
-              <DateRangeFilter
-                value={filterDateRange}
-                onChange={setFilterDateRange}
-              />
+              <DateRangeFilter value={filterDateRange} onChange={setFilterDateRange} />
               <div className="space-y-2">
                 <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
                   Search
@@ -208,9 +197,7 @@ export function CreateViewDialog({
                       onChange={() => toggleColumn(col.value)}
                       className="rounded border-slate-300"
                     />
-                    <span className="text-sm text-slate-700 dark:text-slate-300">
-                      {col.label}
-                    </span>
+                    <span className="text-sm text-slate-700 dark:text-slate-300">{col.label}</span>
                     {col.value.startsWith("cf:") && (
                       <span className="text-xs text-slate-400">(custom)</span>
                     )}
@@ -241,30 +228,20 @@ export function CreateViewDialog({
                   disabled={!canCreateShared}
                   className="rounded border-slate-300"
                 />
-                <span className="text-sm text-slate-700 dark:text-slate-300">
-                  Share with team
-                </span>
+                <span className="text-sm text-slate-700 dark:text-slate-300">Share with team</span>
                 {!canCreateShared && (
-                  <span className="text-xs text-slate-400">
-                    (admin/owner only)
-                  </span>
+                  <span className="text-xs text-slate-400">(admin/owner only)</span>
                 )}
               </label>
             </div>
           )}
 
-          {error && (
-            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-          )}
+          {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
         </div>
 
         <DialogFooter>
           {step > 1 && (
-            <Button
-              variant="outline"
-              onClick={() => setStep((s) => s - 1)}
-              disabled={saving}
-            >
+            <Button variant="outline" onClick={() => setStep((s) => s - 1)} disabled={saving}>
               Previous
             </Button>
           )}

@@ -2,7 +2,12 @@
 
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type { TimeEntry, CreateTimeEntryRequest, UpdateTimeEntryRequest, ResolvedRate } from "@/lib/types";
+import type {
+  TimeEntry,
+  CreateTimeEntryRequest,
+  UpdateTimeEntryRequest,
+  ResolvedRate,
+} from "@/lib/types";
 import { classifyError } from "@/lib/error-handler";
 import { createMessages } from "@/lib/messages";
 

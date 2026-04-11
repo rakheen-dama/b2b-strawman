@@ -12,24 +12,17 @@ const mockApproveTransaction = vi.fn();
 const mockRejectTransaction = vi.fn();
 const mockReverseTransaction = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/trust-accounting/transactions/actions",
-  () => ({
-    fetchTransactions: (...args: unknown[]) =>
-      mockFetchTransactions(...args),
-    recordDeposit: (...args: unknown[]) => mockRecordDeposit(...args),
-    recordPayment: vi.fn(),
-    recordTransfer: vi.fn(),
-    recordFeeTransfer: vi.fn(),
-    recordRefund: vi.fn(),
-    approveTransaction: (...args: unknown[]) =>
-      mockApproveTransaction(...args),
-    rejectTransaction: (...args: unknown[]) =>
-      mockRejectTransaction(...args),
-    reverseTransaction: (...args: unknown[]) =>
-      mockReverseTransaction(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/trust-accounting/transactions/actions", () => ({
+  fetchTransactions: (...args: unknown[]) => mockFetchTransactions(...args),
+  recordDeposit: (...args: unknown[]) => mockRecordDeposit(...args),
+  recordPayment: vi.fn(),
+  recordTransfer: vi.fn(),
+  recordFeeTransfer: vi.fn(),
+  recordRefund: vi.fn(),
+  approveTransaction: (...args: unknown[]) => mockApproveTransaction(...args),
+  rejectTransaction: (...args: unknown[]) => mockRejectTransaction(...args),
+  reverseTransaction: (...args: unknown[]) => mockReverseTransaction(...args),
+}));
 
 // ── Mock parent trust actions ────────────────────────────────────
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
@@ -196,18 +189,10 @@ describe("Trust Transactions", () => {
   it("submits deposit dialog with valid form data", async () => {
     mockRecordDeposit.mockResolvedValue({ success: true });
 
-    render(
-      <RecordDepositDialog
-        accountId="acc-1"
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<RecordDepositDialog accountId="acc-1" open={true} onOpenChange={vi.fn()} />);
 
     expect(
-      screen.getByText(
-        "Record a trust deposit from a client into the trust account.",
-      ),
+      screen.getByText("Record a trust deposit from a client into the trust account.")
     ).toBeInTheDocument();
 
     // Fill the client ID field
@@ -234,19 +219,14 @@ describe("Trust Transactions", () => {
         expect.objectContaining({
           customerId: "550e8400-e29b-41d4-a716-446655440000",
           reference: "DEP/2026/TEST",
-        }),
+        })
       );
     });
   });
 
   // Test 3: Approval badge shows buttons for AWAITING_APPROVAL
   it("shows Approve and Reject buttons for AWAITING_APPROVAL transactions", () => {
-    render(
-      <ApprovalBadge
-        transactionId="tx-pending"
-        status="AWAITING_APPROVAL"
-      />,
-    );
+    render(<ApprovalBadge transactionId="tx-pending" status="AWAITING_APPROVAL" />);
 
     expect(screen.getByTestId("approve-button")).toBeInTheDocument();
     expect(screen.getByTestId("reject-button")).toBeInTheDocument();
@@ -256,20 +236,13 @@ describe("Trust Transactions", () => {
   it("requires a reason when rejecting a transaction", async () => {
     const user = userEvent.setup();
 
-    render(
-      <ApprovalBadge
-        transactionId="tx-pending"
-        status="AWAITING_APPROVAL"
-      />,
-    );
+    render(<ApprovalBadge transactionId="tx-pending" status="AWAITING_APPROVAL" />);
 
     // Click reject to open the dialog
     await user.click(screen.getByTestId("reject-button"));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Reject Transaction", { selector: "h2" }),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Reject Transaction", { selector: "h2" })).toBeInTheDocument();
     });
 
     // Try to submit with empty reason -- click the confirm button
@@ -295,9 +268,7 @@ describe("Trust Transactions", () => {
     await user.click(screen.getByTestId("reverse-button"));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Reverse Transaction", { selector: "h2" }),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Reverse Transaction", { selector: "h2" })).toBeInTheDocument();
     });
 
     // Fill in reason
@@ -308,10 +279,7 @@ describe("Trust Transactions", () => {
     await user.click(screen.getByTestId("confirm-reverse-button"));
 
     await waitFor(() => {
-      expect(mockReverseTransaction).toHaveBeenCalledWith(
-        "tx-approved",
-        "Duplicate entry",
-      );
+      expect(mockReverseTransaction).toHaveBeenCalledWith("tx-approved", "Duplicate entry");
     });
   });
 });

@@ -1,10 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest, NextResponse } from "next/server";
 
-function createRequest(
-  pathname: string,
-  sessionCookie?: string,
-): NextRequest {
+function createRequest(pathname: string, sessionCookie?: string): NextRequest {
   const url = `http://localhost:3000${pathname}`;
   const request = new NextRequest(url);
   if (sessionCookie) {
@@ -30,29 +27,18 @@ describe("Keycloak BFF middleware", () => {
     const middleware = await loadMiddleware();
     const request = createRequest("/org/acme-corp/dashboard");
 
-    const response = (await middleware(
-      request,
-      {} as never,
-    )) as NextResponse;
+    const response = (await middleware(request, {} as never)) as NextResponse;
 
     expect(response.status).toBe(307);
     const location = response.headers.get("location");
-    expect(location).toBe(
-      "http://localhost:8443/oauth2/authorization/keycloak",
-    );
+    expect(location).toBe("http://localhost:8443/oauth2/authorization/keycloak");
   });
 
   it("passes through when SESSION cookie exists on protected route", async () => {
     const middleware = await loadMiddleware();
-    const request = createRequest(
-      "/org/acme-corp/dashboard",
-      "session-abc-123",
-    );
+    const request = createRequest("/org/acme-corp/dashboard", "session-abc-123");
 
-    const response = (await middleware(
-      request,
-      {} as never,
-    )) as NextResponse;
+    const response = (await middleware(request, {} as never)) as NextResponse;
 
     // NextResponse.next() returns a 200
     expect(response.status).toBe(200);
@@ -64,10 +50,7 @@ describe("Keycloak BFF middleware", () => {
     const publicPaths = ["/", "/sign-in", "/api/webhooks"];
     for (const path of publicPaths) {
       const request = createRequest(path);
-      const response = (await middleware(
-        request,
-        {} as never,
-      )) as NextResponse;
+      const response = (await middleware(request, {} as never)) as NextResponse;
 
       expect(response.status).toBe(200);
     }
@@ -77,10 +60,7 @@ describe("Keycloak BFF middleware", () => {
     const middleware = await loadMiddleware();
     const request = createRequest("/dashboard", "session-abc-123");
 
-    const response = (await middleware(
-      request,
-      {} as never,
-    )) as NextResponse;
+    const response = (await middleware(request, {} as never)) as NextResponse;
 
     // Should pass through — no redirect from middleware
     expect(response.status).toBe(200);
@@ -90,10 +70,7 @@ describe("Keycloak BFF middleware", () => {
     const middleware = await loadMiddleware();
     const request = createRequest("/portal/some-token");
 
-    const response = (await middleware(
-      request,
-      {} as never,
-    )) as NextResponse;
+    const response = (await middleware(request, {} as never)) as NextResponse;
 
     expect(response.status).toBe(200);
   });

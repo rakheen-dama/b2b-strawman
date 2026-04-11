@@ -23,11 +23,7 @@ function getMonthDateRange(): {
   };
 }
 
-export default async function CalendarPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function CalendarPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const { from, to, year, month } = getMonthDateRange();
 
@@ -41,9 +37,7 @@ export default async function CalendarPage({
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Calendar
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Calendar</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           View upcoming due dates across all projects
         </p>

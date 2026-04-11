@@ -18,19 +18,10 @@ const promotedCustomerFields = {
   city: z.string().max(100).optional().or(z.literal("")),
   stateProvince: z.string().max(100).optional().or(z.literal("")),
   postalCode: z.string().max(20).optional().or(z.literal("")),
-  country: z
-    .string()
-    .length(2, "Country must be a 2-letter ISO code")
-    .optional()
-    .or(z.literal("")),
+  country: z.string().length(2, "Country must be a 2-letter ISO code").optional().or(z.literal("")),
   taxNumber: z.string().max(100).optional().or(z.literal("")),
   contactName: z.string().max(255).optional().or(z.literal("")),
-  contactEmail: z
-    .string()
-    .email("Invalid email address")
-    .max(255)
-    .optional()
-    .or(z.literal("")),
+  contactEmail: z.string().email("Invalid email address").max(255).optional().or(z.literal("")),
   contactPhone: z.string().max(50).optional().or(z.literal("")),
   registrationNumber: z.string().max(100).optional().or(z.literal("")),
   entityType: entityTypeEnum.optional().or(z.literal("")),

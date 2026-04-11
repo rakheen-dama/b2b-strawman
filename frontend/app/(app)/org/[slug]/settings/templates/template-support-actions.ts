@@ -31,7 +31,7 @@ interface ActionResult {
 
 export async function uploadDocxTemplateAction(
   slug: string,
-  formData: FormData,
+  formData: FormData
 ): Promise<ActionResult> {
   try {
     const file = formData.get("file") as File;
@@ -49,7 +49,7 @@ export async function uploadDocxTemplateAction(
       name,
       category,
       entityType,
-      description || undefined,
+      description || undefined
     );
     revalidatePath(`/org/${slug}/settings/templates`);
     return { success: true, data };
@@ -74,7 +74,7 @@ export async function uploadDocxTemplateAction(
 }
 
 export async function getDocxFieldsAction(
-  templateId: string,
+  templateId: string
 ): Promise<{ success: boolean; data?: import("@/lib/types").DiscoveredField[]; error?: string }> {
   try {
     const data = await getDocxFields(templateId);
@@ -88,7 +88,7 @@ export async function getDocxFieldsAction(
 }
 
 export async function downloadDocxTemplateAction(
-  templateId: string,
+  templateId: string
 ): Promise<{ success: boolean; url?: string; error?: string }> {
   try {
     const url = await downloadDocxTemplate(templateId);
@@ -104,7 +104,7 @@ export async function downloadDocxTemplateAction(
 export async function replaceDocxFileAction(
   slug: string,
   id: string,
-  formData: FormData,
+  formData: FormData
 ): Promise<ActionResult> {
   try {
     const file = formData.get("file") as File;
@@ -132,10 +132,7 @@ export async function replaceDocxFileAction(
 
 // ---- Branding Actions ----
 
-export async function uploadLogoAction(
-  slug: string,
-  formData: FormData,
-): Promise<ActionResult> {
+export async function uploadLogoAction(slug: string, formData: FormData): Promise<ActionResult> {
   try {
     const file = formData.get("file") as File;
     if (!file) {
@@ -152,9 +149,7 @@ export async function uploadLogoAction(
   }
 }
 
-export async function deleteLogoAction(
-  slug: string,
-): Promise<ActionResult> {
+export async function deleteLogoAction(slug: string): Promise<ActionResult> {
   try {
     await deleteOrgLogo();
     revalidatePath(`/org/${slug}/settings/templates`);
@@ -170,7 +165,7 @@ export async function deleteLogoAction(
 export async function saveBrandingAction(
   slug: string,
   brandColor: string,
-  documentFooterText: string,
+  documentFooterText: string
 ): Promise<ActionResult> {
   try {
     // Get current settings to preserve defaultCurrency
@@ -200,11 +195,11 @@ export interface FieldPackStatus {
 }
 
 export async function fetchRequiredFieldPacksAction(
-  templateId: string,
+  templateId: string
 ): Promise<{ success: boolean; data?: FieldPackStatus[]; error?: string }> {
   try {
     const data = await api.get<FieldPackStatus[]>(
-      `/api/templates/${templateId}/required-field-packs`,
+      `/api/templates/${templateId}/required-field-packs`
     );
     return { success: true, data };
   } catch (error) {
@@ -218,7 +213,7 @@ export async function fetchRequiredFieldPacksAction(
 // ---- Variable Metadata Action ----
 
 export async function fetchVariableMetadataAction(
-  entityType: import("@/lib/types").TemplateEntityType,
+  entityType: import("@/lib/types").TemplateEntityType
 ): Promise<import("@/components/editor/actions").VariableMetadataResponse> {
   const { fetchVariableMetadata } = await import("@/components/editor/actions");
   return fetchVariableMetadata(entityType);

@@ -18,13 +18,11 @@ describe("ActionCard", () => {
         icon={FileText}
         title="Generate Invoice"
         description="Create an invoice from unbilled time entries."
-      />,
+      />
     );
 
     expect(screen.getByText("Generate Invoice")).toBeInTheDocument();
-    expect(
-      screen.getByText("Create an invoice from unbilled time entries."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Create an invoice from unbilled time entries.")).toBeInTheDocument();
   });
 
   it("renders primary and secondary action links", () => {
@@ -35,7 +33,7 @@ describe("ActionCard", () => {
         description="Create an invoice from unbilled time entries."
         primaryAction={{ label: "Create Invoice", href: "/invoices/new" }}
         secondaryAction={{ label: "View All", href: "/invoices" }}
-      />,
+      />
     );
 
     const createLink = screen.getByRole("link", { name: "Create Invoice" });
@@ -47,12 +45,7 @@ describe("ActionCard", () => {
 
   it("applies accent variant class", () => {
     const { container } = render(
-      <ActionCard
-        icon={FileText}
-        title="Action"
-        description="Description"
-        variant="accent"
-      />,
+      <ActionCard icon={FileText} title="Action" description="Description" variant="accent" />
     );
 
     const card = container.querySelector("[data-slot='card']");

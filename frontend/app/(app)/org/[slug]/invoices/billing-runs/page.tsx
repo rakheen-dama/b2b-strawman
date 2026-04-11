@@ -10,11 +10,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
 
-export default async function BillingRunsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function BillingRunsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
   // Server-side module gate — short-circuit BEFORE invoking backend data fetches.
@@ -28,12 +24,10 @@ export default async function BillingRunsPage({
   if (!isAdmin) {
     return (
       <div className="space-y-8">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Billing Runs
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Billing Runs</h1>
         <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to view billing runs. Only admins and
-          owners can access this page.
+          You do not have permission to view billing runs. Only admins and owners can access this
+          page.
         </p>
       </div>
     );
@@ -51,7 +45,7 @@ export default async function BillingRunsPage({
   }
 
   const activeRun = billingRuns.find(
-    (run) => run.status === "PREVIEW" || run.status === "IN_PROGRESS",
+    (run) => run.status === "PREVIEW" || run.status === "IN_PROGRESS"
   );
 
   return (
@@ -59,9 +53,7 @@ export default async function BillingRunsPage({
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            Invoices
-          </h1>
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Invoices</h1>
         </div>
         <Button asChild size="sm">
           <Link href={`/org/${slug}/invoices/billing-runs/new`}>
@@ -101,9 +93,7 @@ export default async function BillingRunsPage({
             </p>
           </div>
           <Button asChild size="sm" variant="outline">
-            <Link href={`/org/${slug}/invoices/billing-runs/${activeRun.id}`}>
-              View
-            </Link>
+            <Link href={`/org/${slug}/invoices/billing-runs/${activeRun.id}`}>View</Link>
           </Button>
         </div>
       )}
@@ -122,25 +112,25 @@ export default async function BillingRunsPage({
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Name
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Status
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                   Period
                 </th>
-                <th className="hidden px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 md:table-cell dark:text-slate-400">
+                <th className="hidden px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase md:table-cell dark:text-slate-400">
                   Customers
                 </th>
-                <th className="hidden px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 md:table-cell dark:text-slate-400">
+                <th className="hidden px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase md:table-cell dark:text-slate-400">
                   Invoices
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Total
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 lg:table-cell dark:text-slate-400">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase lg:table-cell dark:text-slate-400">
                   Created
                 </th>
               </tr>
@@ -163,8 +153,7 @@ export default async function BillingRunsPage({
                     <BillingRunStatusBadge status={run.status} />
                   </td>
                   <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
-                    {formatLocalDate(run.periodFrom)} &ndash;{" "}
-                    {formatLocalDate(run.periodTo)}
+                    {formatLocalDate(run.periodFrom)} &ndash; {formatLocalDate(run.periodTo)}
                   </td>
                   <td className="hidden px-4 py-3 text-right text-sm text-slate-600 md:table-cell dark:text-slate-400">
                     {run.totalCustomers ?? "\u2014"}

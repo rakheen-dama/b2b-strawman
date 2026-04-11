@@ -90,8 +90,7 @@ const HEALTH_BAND_COLORS: Record<string, string> = {
 const REASON_BADGE_COLORS: Record<string, string> = {
   budget: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
   overdue: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-  default:
-    "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
+  default: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300",
 };
 
 function getReasonBadgeColor(reason: string): string {
@@ -128,14 +127,10 @@ export async function OverviewTab({
     fetchProjectHealthDetail(projectId),
     fetchProjectTaskSummary(projectId),
     fetchProjectMemberHours(projectId, from, to),
-    api
-      .get<BudgetStatusResponse>(`/api/projects/${projectId}/budget`)
-      .catch(() => null),
+    api.get<BudgetStatusResponse>(`/api/projects/${projectId}/budget`).catch(() => null),
     canManage
       ? api
-          .get<ProjectProfitabilityResponse>(
-            `/api/projects/${projectId}/profitability`,
-          )
+          .get<ProjectProfitabilityResponse>(`/api/projects/${projectId}/profitability`)
           .catch(() => null)
       : Promise.resolve(null),
     fetchProjectActivity(projectId, undefined, 0, 10).catch(() => null),
@@ -149,8 +144,7 @@ export async function OverviewTab({
   const activityResponse = settled(activityResult);
 
   // Compute margin from profitability data
-  const marginPercent =
-    profitability?.currencies?.[0]?.marginPercent ?? null;
+  const marginPercent = profitability?.currencies?.[0]?.marginPercent ?? null;
 
   // Health status
   const healthStatus = health?.healthStatus ?? "UNKNOWN";
@@ -158,8 +152,7 @@ export async function OverviewTab({
 
   // Metrics from health
   const metrics = health?.metrics ?? null;
-  const totalHours =
-    memberHours?.reduce((sum, m) => sum + m.totalHours, 0) ?? 0;
+  const totalHours = memberHours?.reduce((sum, m) => sum + m.totalHours, 0) ?? 0;
   const budgetPercent = budgetStatus?.hoursConsumedPct ?? null;
 
   // Task summary for MicroStackedBar
@@ -173,15 +166,9 @@ export async function OverviewTab({
   const upcomingTasks = tasks
     .filter(
       (t) =>
-        t.dueDate &&
-        new Date(t.dueDate) >= now &&
-        t.status !== "DONE" &&
-        t.status !== "CANCELLED",
+        t.dueDate && new Date(t.dueDate) >= now && t.status !== "DONE" && t.status !== "CANCELLED"
     )
-    .sort(
-      (a, b) =>
-        new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime(),
-    )
+    .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
     .slice(0, 5);
 
   const activityItems: ActivityItem[] = activityResponse?.content ?? [];
@@ -189,8 +176,7 @@ export async function OverviewTab({
   // Setup progress computation
   const completedSteps = setupSteps.filter((s) => s.complete).length;
   const totalSteps = setupSteps.length;
-  const setupIncomplete =
-    setupStatus != null && completedSteps < totalSteps;
+  const setupIncomplete = setupStatus != null && completedSteps < totalSteps;
 
   // DonutChart data for time breakdown by member
   const timeByMemberData: Array<{
@@ -210,9 +196,9 @@ export async function OverviewTab({
       <div
         data-testid="project-health-header"
         className={cn(
-          "rounded-lg border border-slate-200/60 bg-card shadow-sm",
+          "bg-card rounded-lg border border-slate-200/60 shadow-sm",
           "border-t-4",
-          HEALTH_BAND_COLORS[healthStatus] ?? HEALTH_BAND_COLORS.UNKNOWN,
+          HEALTH_BAND_COLORS[healthStatus] ?? HEALTH_BAND_COLORS.UNKNOWN
         )}
       >
         {/* Band header with health badge + project info */}
@@ -223,9 +209,7 @@ export async function OverviewTab({
               {projectName}
             </h2>
             {customerName && (
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Customer: {customerName}
-              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Customer: {customerName}</p>
             )}
           </div>
         </div>
@@ -238,7 +222,7 @@ export async function OverviewTab({
                 key={i}
                 className={cn(
                   "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
-                  getReasonBadgeColor(reason),
+                  getReasonBadgeColor(reason)
                 )}
               >
                 {reason}
@@ -250,48 +234,38 @@ export async function OverviewTab({
         {/* Metrics strip below the band */}
         <div className="grid grid-cols-2 gap-3 border-t border-slate-200/60 px-4 py-3 sm:grid-cols-4 dark:border-slate-700/60">
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+            <p className="text-[11px] font-medium tracking-wider text-slate-500 uppercase">
               Budget
             </p>
             <span className="font-mono text-lg font-bold tabular-nums">
               {budgetPercent != null ? `${Math.round(budgetPercent)}%` : "--"}
             </span>
             {budgetPercent != null && (
-              <span className="ml-1 text-xs text-muted-foreground">used</span>
+              <span className="text-muted-foreground ml-1 text-xs">used</span>
             )}
           </div>
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
-              Hours
-            </p>
+            <p className="text-[11px] font-medium tracking-wider text-slate-500 uppercase">Hours</p>
             <span className="font-mono text-lg font-bold tabular-nums">
               {totalHours.toFixed(1)}h
             </span>
           </div>
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
-              Tasks
-            </p>
+            <p className="text-[11px] font-medium tracking-wider text-slate-500 uppercase">Tasks</p>
             <span className="font-mono text-lg font-bold tabular-nums">
               {metrics?.tasksDone ?? 0}/{metrics?.totalTasks ?? 0}
             </span>
-            <span className="ml-1 text-xs text-muted-foreground">
-              complete
-            </span>
+            <span className="text-muted-foreground ml-1 text-xs">complete</span>
           </div>
           <div>
-            <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+            <p className="text-[11px] font-medium tracking-wider text-slate-500 uppercase">
               Revenue
             </p>
             <span className="font-mono text-lg font-bold tabular-nums">
-              {canManage && marginPercent != null
-                ? `${marginPercent.toFixed(1)}%`
-                : "--"}
+              {canManage && marginPercent != null ? `${marginPercent.toFixed(1)}%` : "--"}
             </span>
             {canManage && marginPercent != null && (
-              <span className="ml-1 text-xs text-muted-foreground">
-                margin
-              </span>
+              <span className="text-muted-foreground ml-1 text-xs">margin</span>
             )}
           </div>
         </div>
@@ -301,7 +275,7 @@ export async function OverviewTab({
       {setupIncomplete && (
         <details
           data-testid="setup-progress-bar"
-          className="group rounded-lg border border-slate-200/60 bg-card shadow-sm"
+          className="group bg-card rounded-lg border border-slate-200/60 shadow-sm"
         >
           <summary className="flex cursor-pointer items-center gap-3 px-4 py-3">
             <div className="min-w-0 flex-1">
@@ -311,9 +285,7 @@ export async function OverviewTab({
                 </span>
               </div>
               <div className="mt-1.5">
-                <CompletionProgressBar
-                  percent={(completedSteps / totalSteps) * 100}
-                />
+                <CompletionProgressBar percent={(completedSteps / totalSteps) * 100} />
               </div>
             </div>
             <ChevronDown className="size-4 shrink-0 text-slate-400 transition-transform group-open:rotate-180" />
@@ -325,28 +297,26 @@ export async function OverviewTab({
                   <span
                     className={cn(
                       "inline-block size-2 rounded-full",
-                      step.complete ? "bg-green-500" : "bg-slate-300",
+                      step.complete ? "bg-green-500" : "bg-slate-300"
                     )}
                   />
                   <span
                     className={cn(
                       step.complete
                         ? "text-slate-500 line-through"
-                        : "text-slate-700 dark:text-slate-300",
+                        : "text-slate-700 dark:text-slate-300"
                     )}
                   >
                     {step.label}
                   </span>
-                  {!step.complete &&
-                    step.actionHref &&
-                    (!step.permissionRequired || canManage) && (
-                      <Link
-                        href={step.actionHref}
-                        className="ml-auto text-xs text-teal-600 hover:text-teal-700 dark:text-teal-400"
-                      >
-                        Set up
-                      </Link>
-                    )}
+                  {!step.complete && step.actionHref && (!step.permissionRequired || canManage) && (
+                    <Link
+                      href={step.actionHref}
+                      className="ml-auto text-xs text-teal-600 hover:text-teal-700 dark:text-teal-400"
+                    >
+                      Set up
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>
@@ -357,17 +327,12 @@ export async function OverviewTab({
       {/* 395.3 — Two-panel body layout (60/40 split) */}
       <div className="grid gap-4 lg:grid-cols-5">
         {/* Left panel: activity, task status, upcoming deadlines */}
-        <div
-          data-testid="activity-tasks-panel"
-          className="space-y-4 lg:col-span-3"
-        >
+        <div data-testid="activity-tasks-panel" className="space-y-4 lg:col-span-3">
           {/* Recent Activity */}
           <Card>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium">
-                  Recent Activity
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
                 <Link
                   href={`/org/${slug}/projects/${projectId}?tab=activity`}
                   className="text-xs text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
@@ -378,18 +343,13 @@ export async function OverviewTab({
             </CardHeader>
             <CardContent>
               {activityItems.length === 0 ? (
-                <p className="text-sm italic text-muted-foreground">
-                  No recent activity
-                </p>
+                <p className="text-muted-foreground text-sm italic">No recent activity</p>
               ) : (
                 <div className="space-y-0.5">
                   {activityItems.map((item) => {
                     const Icon = getEventIcon(item.eventType);
                     return (
-                      <div
-                        key={item.id}
-                        className="flex items-start gap-3 rounded-md px-2 py-1.5"
-                      >
+                      <div key={item.id} className="flex items-start gap-3 rounded-md px-2 py-1.5">
                         <span className="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-slate-200 text-xs font-medium text-slate-700 dark:bg-slate-700 dark:text-slate-200">
                           {getInitials(item.actorName)}
                         </span>
@@ -417,9 +377,7 @@ export async function OverviewTab({
           <Card>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium">
-                  Task Status
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Task Status</CardTitle>
                 <Link
                   href={`/org/${slug}/projects/${projectId}?tab=tasks`}
                   className="text-xs text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
@@ -430,9 +388,7 @@ export async function OverviewTab({
             </CardHeader>
             <CardContent>
               {taskTotal === 0 ? (
-                <p className="text-sm italic text-muted-foreground">
-                  No tasks yet
-                </p>
+                <p className="text-muted-foreground text-sm italic">No tasks yet</p>
               ) : (
                 <div className="space-y-2">
                   <MicroStackedBar
@@ -478,27 +434,20 @@ export async function OverviewTab({
           {/* Upcoming Task Deadlines */}
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">
-                Upcoming Deadlines
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Upcoming Deadlines</CardTitle>
             </CardHeader>
             <CardContent>
               {upcomingTasks.length === 0 ? (
-                <p className="text-sm italic text-muted-foreground">
-                  No upcoming deadlines
-                </p>
+                <p className="text-muted-foreground text-sm italic">No upcoming deadlines</p>
               ) : (
                 <div className="space-y-1">
                   {upcomingTasks.map((task) => (
-                    <div
-                      key={task.id}
-                      className="flex items-center gap-2 py-1.5 pl-2 pr-2"
-                    >
+                    <div key={task.id} className="flex items-center gap-2 py-1.5 pr-2 pl-2">
                       <CheckSquare className="size-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
                       <span className="min-w-0 flex-1 truncate text-sm text-slate-700 dark:text-slate-300">
                         {task.title}
                       </span>
-                      <span className="shrink-0 text-xs text-muted-foreground">
+                      <span className="text-muted-foreground shrink-0 text-xs">
                         due{" "}
                         {new Date(task.dueDate!).toLocaleDateString("en-US", {
                           month: "short",
@@ -514,10 +463,7 @@ export async function OverviewTab({
         </div>
 
         {/* Right panel: budget, time breakdown, team roster, unbilled callout */}
-        <div
-          data-testid="financial-team-panel"
-          className="space-y-4 lg:col-span-2"
-        >
+        <div data-testid="financial-team-panel" className="space-y-4 lg:col-span-2">
           {/* Budget Progress */}
           <Card>
             <CardHeader className="pb-2">
@@ -530,24 +476,18 @@ export async function OverviewTab({
                     <span className="font-mono font-bold tabular-nums">
                       {Math.round(budgetPercent)}%
                     </span>
-                    <span className="text-xs text-muted-foreground">used</span>
+                    <span className="text-muted-foreground text-xs">used</span>
                   </div>
                   <CompletionProgressBar percent={budgetPercent} />
                   {budgetStatus?.budgetHours != null && (
                     <div className="flex justify-between text-xs text-slate-500">
-                      <span>
-                        {budgetStatus.hoursConsumed.toFixed(1)}h consumed
-                      </span>
-                      <span>
-                        {budgetStatus.hoursRemaining.toFixed(1)}h remaining
-                      </span>
+                      <span>{budgetStatus.hoursConsumed.toFixed(1)}h consumed</span>
+                      <span>{budgetStatus.hoursRemaining.toFixed(1)}h remaining</span>
                     </div>
                   )}
                 </div>
               ) : (
-                <p className="text-sm italic text-muted-foreground">
-                  No budget configured
-                </p>
+                <p className="text-muted-foreground text-sm italic">No budget configured</p>
               )}
             </CardContent>
           </Card>
@@ -556,9 +496,7 @@ export async function OverviewTab({
           <Card>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-medium">
-                  Time Breakdown
-                </CardTitle>
+                <CardTitle className="text-sm font-medium">Time Breakdown</CardTitle>
                 <Link
                   href={`/org/${slug}/projects/${projectId}?tab=time`}
                   className="text-xs text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
@@ -569,9 +507,7 @@ export async function OverviewTab({
             </CardHeader>
             <CardContent>
               {totalHours === 0 ? (
-                <p className="text-sm italic text-muted-foreground">
-                  No hours logged this month
-                </p>
+                <p className="text-muted-foreground text-sm italic">No hours logged this month</p>
               ) : (
                 <DonutChart
                   data={timeByMemberData}
@@ -590,9 +526,7 @@ export async function OverviewTab({
             </CardHeader>
             <CardContent>
               {!memberHours || memberHours.length === 0 ? (
-                <p className="text-sm italic text-muted-foreground">
-                  No team members assigned
-                </p>
+                <p className="text-muted-foreground text-sm italic">No team members assigned</p>
               ) : (
                 <div className="flex flex-wrap gap-1.5">
                   {memberHours.map((member) => (
@@ -623,11 +557,8 @@ export async function OverviewTab({
                       Unbilled Time
                     </p>
                     <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-400">
-                      {formatCurrency(
-                        unbilledSummary.totalAmount,
-                        unbilledSummary.currency,
-                      )}{" "}
-                      across {unbilledSummary.totalHours.toFixed(1)} hours
+                      {formatCurrency(unbilledSummary.totalAmount, unbilledSummary.currency)} across{" "}
+                      {unbilledSummary.totalHours.toFixed(1)} hours
                     </p>
                     <div className="mt-2 flex gap-2">
                       {isAdmin && customerId && (

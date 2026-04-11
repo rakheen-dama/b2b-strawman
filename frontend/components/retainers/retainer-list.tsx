@@ -67,12 +67,10 @@ export function RetainerList({ slug, retainers }: RetainerListProps) {
   const [sortAsc, setSortAsc] = useState(true);
 
   const filtered =
-    activeTab === "ALL"
-      ? retainers
-      : retainers.filter((r) => r.status === activeTab);
+    activeTab === "ALL" ? retainers : retainers.filter((r) => r.status === activeTab);
 
   const sorted = [...filtered].sort((a, b) =>
-    sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name),
+    sortAsc ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
   );
 
   async function handlePause(id: string) {
@@ -163,7 +161,7 @@ export function RetainerList({ slug, retainers }: RetainerListProps) {
       {sorted.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <FileText className="size-12 text-slate-300 dark:text-slate-700" />
-          <h2 className="mt-4 font-display text-lg text-slate-900 dark:text-slate-100">
+          <h2 className="font-display mt-4 text-lg text-slate-900 dark:text-slate-100">
             No retainers found.
           </h2>
         </div>
@@ -172,7 +170,7 @@ export function RetainerList({ slug, retainers }: RetainerListProps) {
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   <button
                     onClick={() => setSortAsc(!sortAsc)}
                     className="inline-flex items-center gap-1"
@@ -181,25 +179,25 @@ export function RetainerList({ slug, retainers }: RetainerListProps) {
                     <ArrowUpDown className="size-3" />
                   </button>
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Customer
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Type
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Frequency
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Period
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Hours
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Status
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Actions
                 </th>
               </tr>
@@ -233,9 +231,11 @@ export function RetainerList({ slug, retainers }: RetainerListProps) {
                     {FREQUENCY_LABELS[retainer.frequency]}
                   </td>
                   <td className="px-4 py-3">
-                    {retainer.currentPeriod
-                      ? periodStatusBadge(retainer.currentPeriod.status)
-                      : <span className="text-sm text-slate-400">—</span>}
+                    {retainer.currentPeriod ? (
+                      periodStatusBadge(retainer.currentPeriod.status)
+                    ) : (
+                      <span className="text-sm text-slate-400">—</span>
+                    )}
                   </td>
                   <td className="min-w-[140px] px-4 py-3">
                     {retainer.type === "HOUR_BANK" && retainer.currentPeriod ? (
@@ -255,8 +255,10 @@ export function RetainerList({ slug, retainers }: RetainerListProps) {
                               width: `${Math.min(
                                 100,
                                 (retainer.currentPeriod.allocatedHours ?? 0) > 0
-                                  ? (retainer.currentPeriod.consumedHours / (retainer.currentPeriod.allocatedHours ?? 0)) * 100
-                                  : 0,
+                                  ? (retainer.currentPeriod.consumedHours /
+                                      (retainer.currentPeriod.allocatedHours ?? 0)) *
+                                      100
+                                  : 0
                               )}%`,
                             }}
                           />
@@ -266,9 +268,7 @@ export function RetainerList({ slug, retainers }: RetainerListProps) {
                       <span className="text-sm text-slate-400">—</span>
                     )}
                   </td>
-                  <td className="px-4 py-3">
-                    {retainerStatusBadge(retainer.status)}
-                  </td>
+                  <td className="px-4 py-3">{retainerStatusBadge(retainer.status)}</td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex items-center justify-end gap-1">
                       {retainer.status === "ACTIVE" && (
@@ -293,8 +293,8 @@ export function RetainerList({ slug, retainers }: RetainerListProps) {
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Pause Retainer</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  Pausing this retainer will suspend time tracking and billing
-                                  for &quot;{retainer.name}&quot;.
+                                  Pausing this retainer will suspend time tracking and billing for
+                                  &quot;{retainer.name}&quot;.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
@@ -368,15 +368,16 @@ export function RetainerList({ slug, retainers }: RetainerListProps) {
                           <AlertDialog
                             open={terminateDialogId === retainer.id}
                             onOpenChange={(open) => {
-                              if (!open && isTerminatingId !== retainer.id) setTerminateDialogId(null);
+                              if (!open && isTerminatingId !== retainer.id)
+                                setTerminateDialogId(null);
                             }}
                           >
                             <AlertDialogContent>
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Terminate Retainer</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                  This will permanently terminate &quot;{retainer.name}&quot;.
-                                  This action cannot be undone.
+                                  This will permanently terminate &quot;{retainer.name}&quot;. This
+                                  action cannot be undone.
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
@@ -388,7 +389,9 @@ export function RetainerList({ slug, retainers }: RetainerListProps) {
                                   disabled={isTerminatingId === retainer.id}
                                   className="bg-red-600 text-white hover:bg-red-700"
                                 >
-                                  {isTerminatingId === retainer.id ? "Terminating..." : "Terminate Retainer"}
+                                  {isTerminatingId === retainer.id
+                                    ? "Terminating..."
+                                    : "Terminate Retainer"}
                                 </AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>

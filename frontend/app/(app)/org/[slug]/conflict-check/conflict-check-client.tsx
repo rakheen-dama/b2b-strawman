@@ -40,30 +40,17 @@ export function ConflictCheckClient({
 
   return (
     <div className="space-y-4">
-      <Tabs
-        value={view}
-        onValueChange={(v) => setView(v as ViewMode)}
-      >
+      <Tabs value={view} onValueChange={(v) => setView(v as ViewMode)}>
         <TabsList>
           <TabsTrigger value="check">Run Check</TabsTrigger>
-          <TabsTrigger value="history">
-            History ({total})
-          </TabsTrigger>
+          <TabsTrigger value="history">History ({total})</TabsTrigger>
         </TabsList>
       </Tabs>
 
-      <div
-        className={cn(isPending && "opacity-50 transition-opacity")}
-      >
-        {view === "check" && (
-          <ConflictCheckForm slug={slug} onCheckComplete={refetchHistory} />
-        )}
+      <div className={cn(isPending && "opacity-50 transition-opacity")}>
+        {view === "check" && <ConflictCheckForm slug={slug} onCheckComplete={refetchHistory} />}
         {view === "history" && (
-          <ConflictCheckHistory
-            initialChecks={checks}
-            initialTotal={total}
-            slug={slug}
-          />
+          <ConflictCheckHistory initialChecks={checks} initialTotal={total} slug={slug} />
         )}
       </div>
     </div>

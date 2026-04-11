@@ -27,8 +27,8 @@ export default async function RequestSettingsPage({
           Request Settings
         </h1>
         <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to manage request settings. Only admins and
-          owners can access this page.
+          You do not have permission to manage request settings. Only admins and owners can access
+          this page.
         </p>
       </div>
     );
@@ -36,9 +36,7 @@ export default async function RequestSettingsPage({
 
   let settings: OrgSettings = { defaultCurrency: "USD" };
 
-  const settingsResult = await api
-    .get<OrgSettings>("/api/settings")
-    .catch(() => null);
+  const settingsResult = await api.get<OrgSettings>("/api/settings").catch(() => null);
   if (settingsResult) {
     settings = settingsResult;
   }

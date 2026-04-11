@@ -25,26 +25,19 @@ export function MyExpenses({ expenses }: MyExpensesProps) {
   }
 
   // Group totals by currency to avoid mixing currencies
-  const totalsByCurrency = expenses.reduce<Record<string, number>>(
-    (acc, e) => {
-      const cur = e.currency ?? "ZAR";
-      acc[cur] = (acc[cur] ?? 0) + e.amount;
-      return acc;
-    },
-    {},
-  );
+  const totalsByCurrency = expenses.reduce<Record<string, number>>((acc, e) => {
+    const cur = e.currency ?? "ZAR";
+    acc[cur] = (acc[cur] ?? 0) + e.amount;
+    return acc;
+  }, {});
   const currencyEntries = Object.entries(totalsByCurrency);
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-          My Expenses
-        </h3>
+        <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">My Expenses</h3>
         <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-          {currencyEntries
-            .map(([cur, amt]) => formatCurrencySafe(amt, cur))
-            .join(" | ")}
+          {currencyEntries.map(([cur, amt]) => formatCurrencySafe(amt, cur)).join(" | ")}
         </span>
       </div>
       <div className="space-y-2">

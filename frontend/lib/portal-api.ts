@@ -15,7 +15,7 @@ export class PortalApiError extends Error {
   constructor(
     public status: number,
     message: string,
-    public detail?: ProblemDetail,
+    public detail?: ProblemDetail
   ) {
     super(message);
     this.name = "PortalApiError";
@@ -63,7 +63,7 @@ interface PortalRequestOptions {
 
 export async function portalRequest<T>(
   endpoint: string,
-  options: PortalRequestOptions = {},
+  options: PortalRequestOptions = {}
 ): Promise<T> {
   const token = getPortalToken();
   const headers: Record<string, string> = {

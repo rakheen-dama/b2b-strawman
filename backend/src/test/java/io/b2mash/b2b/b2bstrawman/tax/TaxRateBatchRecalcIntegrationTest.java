@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.tax;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
@@ -19,6 +20,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
@@ -355,10 +357,15 @@ class TaxRateBatchRecalcIntegrationTest {
                 new UpdateTaxRateRequest("VAT", new BigDecimal("15.00"), true, false, true, 5)));
 
     // Verify line was NOT touched (updatedAt unchanged)
+    // Allow 1µs tolerance: Postgres TIMESTAMP stores 6-digit micros and ROUNDS on
+    // write, while JDK 25 on Linux provides 9-digit Instant precision via
+    // clock_gettime. A truncate-on-one-side approach is insufficient because the
+    // DB may round up while the in-memory value floors.
     runInTenant(
         () -> {
           var line = invoiceLineRepository.findById(lineId.get()).orElseThrow();
-          assertThat(line.getUpdatedAt()).isEqualTo(originalUpdatedAt.get());
+          assertThat(line.getUpdatedAt())
+              .isCloseTo(originalUpdatedAt.get(), within(1, ChronoUnit.MICROS));
           assertThat(line.getTaxAmount()).isEqualByComparingTo(new BigDecimal("150.00"));
         });
   }

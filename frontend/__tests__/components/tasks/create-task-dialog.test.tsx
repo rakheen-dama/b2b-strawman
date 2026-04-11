@@ -29,7 +29,7 @@ describe("CreateTaskDialog", () => {
     render(
       <CreateTaskDialog slug="acme" projectId="p1" members={[]} canManage={false}>
         <button>Open Create Task Dialog</button>
-      </CreateTaskDialog>,
+      </CreateTaskDialog>
     );
 
     await user.click(screen.getByText("Open Create Task Dialog"));
@@ -46,7 +46,7 @@ describe("CreateTaskDialog", () => {
     render(
       <CreateTaskDialog slug="acme" projectId="p1" members={[]} canManage={false}>
         <button>Open Create Task Dialog</button>
-      </CreateTaskDialog>,
+      </CreateTaskDialog>
     );
 
     await user.click(screen.getByText("Open Create Task Dialog"));
@@ -66,7 +66,7 @@ describe("CreateTaskDialog", () => {
     render(
       <CreateTaskDialog slug="acme" projectId="p1" members={[]} canManage={false}>
         <button>Open Create Task Dialog</button>
-      </CreateTaskDialog>,
+      </CreateTaskDialog>
     );
 
     await user.click(screen.getByText("Open Create Task Dialog"));
@@ -84,7 +84,7 @@ describe("CreateTaskDialog", () => {
     render(
       <CreateTaskDialog slug="acme" projectId="p1" members={TEST_MEMBERS} canManage={false}>
         <button>Open Create Task Dialog No Manage</button>
-      </CreateTaskDialog>,
+      </CreateTaskDialog>
     );
 
     await user.click(screen.getByText("Open Create Task Dialog No Manage"));
@@ -98,14 +98,12 @@ describe("CreateTaskDialog", () => {
     render(
       <CreateTaskDialog slug="acme" projectId="p1" members={[]} canManage={false}>
         <button>Open Create Task Dialog Estimated Hours</button>
-      </CreateTaskDialog>,
+      </CreateTaskDialog>
     );
 
     await user.click(screen.getByText("Open Create Task Dialog Estimated Hours"));
 
-    const input = (await screen.findByLabelText(
-      /estimated hours/i,
-    )) as HTMLInputElement;
+    const input = (await screen.findByLabelText(/estimated hours/i)) as HTMLInputElement;
     expect(input).toBeInTheDocument();
     expect(input.type).toBe("number");
     expect(input.min).toBe("0");
@@ -119,7 +117,7 @@ describe("CreateTaskDialog", () => {
     render(
       <CreateTaskDialog slug="acme" projectId="p1" members={[]} canManage={false}>
         <button>Open Create Task Dialog Estimated Hours Submit</button>
-      </CreateTaskDialog>,
+      </CreateTaskDialog>
     );
 
     await user.click(screen.getByText("Open Create Task Dialog Estimated Hours Submit"));
@@ -140,7 +138,7 @@ describe("CreateTaskDialog", () => {
     render(
       <CreateTaskDialog slug="acme" projectId="p1" members={TEST_MEMBERS} canManage={true}>
         <button>Open Create Task Dialog With Manage</button>
-      </CreateTaskDialog>,
+      </CreateTaskDialog>
     );
 
     await user.click(screen.getByText("Open Create Task Dialog With Manage"));

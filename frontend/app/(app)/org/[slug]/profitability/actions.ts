@@ -16,7 +16,7 @@ interface ActionResult<T> {
 
 export async function getUtilization(
   from: string,
-  to: string,
+  to: string
 ): Promise<ActionResult<UtilizationResponse>> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -25,7 +25,7 @@ export async function getUtilization(
 
   try {
     const data = await api.get<UtilizationResponse>(
-      `/api/reports/utilization?from=${from}&to=${to}`,
+      `/api/reports/utilization?from=${from}&to=${to}`
     );
     return { data };
   } catch (error) {
@@ -40,7 +40,7 @@ export async function getOrgProfitability(
   from?: string,
   to?: string,
   customerId?: string,
-  includeProjections?: boolean,
+  includeProjections?: boolean
 ): Promise<ActionResult<OrgProfitabilityResponse>> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -55,7 +55,7 @@ export async function getOrgProfitability(
     if (includeProjections) params.set("includeProjections", "true");
     const qs = params.toString();
     const data = await api.get<OrgProfitabilityResponse>(
-      `/api/reports/profitability${qs ? `?${qs}` : ""}`,
+      `/api/reports/profitability${qs ? `?${qs}` : ""}`
     );
     return { data };
   } catch (error) {
@@ -69,7 +69,7 @@ export async function getOrgProfitability(
 export async function getProjectProfitability(
   projectId: string,
   from?: string,
-  to?: string,
+  to?: string
 ): Promise<ActionResult<ProjectProfitabilityResponse>> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -82,7 +82,7 @@ export async function getProjectProfitability(
     if (to) params.set("to", to);
     const qs = params.toString();
     const data = await api.get<ProjectProfitabilityResponse>(
-      `/api/projects/${projectId}/profitability${qs ? `?${qs}` : ""}`,
+      `/api/projects/${projectId}/profitability${qs ? `?${qs}` : ""}`
     );
     return { data };
   } catch (error) {
@@ -96,7 +96,7 @@ export async function getProjectProfitability(
 export async function getCustomerProfitability(
   customerId: string,
   from?: string,
-  to?: string,
+  to?: string
 ): Promise<ActionResult<CustomerProfitabilityResponse>> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -109,7 +109,7 @@ export async function getCustomerProfitability(
     if (to) params.set("to", to);
     const qs = params.toString();
     const data = await api.get<CustomerProfitabilityResponse>(
-      `/api/customers/${customerId}/profitability${qs ? `?${qs}` : ""}`,
+      `/api/customers/${customerId}/profitability${qs ? `?${qs}` : ""}`
     );
     return { data };
   } catch (error) {

@@ -13,11 +13,7 @@ import type { ScheduleResponse } from "@/lib/api/schedules";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type { OrgMember, Customer } from "@/lib/types";
 
-export default async function SchedulesPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function SchedulesPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const caps = await fetchMyCapabilities();
 

@@ -59,10 +59,10 @@ export function FeaturesSection() {
   return (
     <section id="features" className="px-6 py-24 lg:py-32">
       <div className="mx-auto max-w-7xl">
-        <p className="text-center text-sm font-semibold uppercase tracking-[0.2em] text-teal-600">
+        <p className="text-center text-sm font-semibold tracking-[0.2em] text-teal-600 uppercase">
           Everything your practice needs
         </p>
-        <h2 className="mx-auto mt-4 max-w-lg text-center font-display text-3xl text-slate-950 sm:text-4xl dark:text-slate-50">
+        <h2 className="font-display mx-auto mt-4 max-w-lg text-center text-3xl text-slate-950 sm:text-4xl dark:text-slate-50">
           One platform, no patchwork
         </h2>
 
@@ -79,7 +79,7 @@ export function FeaturesSection() {
                 <div className="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-slate-50 p-2.5 dark:border-slate-800 dark:bg-slate-900">
                   <story.icon className="size-5 text-teal-600 dark:text-teal-500" />
                 </div>
-                <h3 className="mt-5 font-display text-2xl text-slate-950 dark:text-slate-50">
+                <h3 className="font-display mt-5 text-2xl text-slate-950 dark:text-slate-50">
                   {story.heading}
                 </h3>
                 <p className="mt-3 max-w-md text-base leading-7 text-slate-600 dark:text-slate-400">
@@ -102,7 +102,7 @@ export function FeaturesSection() {
               {/* Screenshot placeholder */}
               <div className="flex-1">
                 <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-lg dark:border-slate-800 dark:bg-slate-900">
-                  <div className="aspect-[16/10] flex items-center justify-center text-sm text-slate-400 dark:text-slate-600">
+                  <div className="flex aspect-[16/10] items-center justify-center text-sm text-slate-400 dark:text-slate-600">
                     {story.heading} screenshot
                   </div>
                 </div>

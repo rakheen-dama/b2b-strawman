@@ -58,16 +58,14 @@ function mapBffInvitation(inv: BffInvitation): MappedInvitation {
 
 async function resolveOrgRoleId(
   role: "org:member" | "org:admin",
-  orgRoleId?: string,
+  orgRoleId?: string
 ): Promise<string> {
   // If an explicit orgRoleId was provided (custom role), use it directly
   if (orgRoleId) return orgRoleId;
 
   // For system roles, look up the UUID by slug
   const slug = role.replace("org:", ""); // "member" or "admin"
-  const roles = await api.get<{ id: string; slug: string; isSystem: boolean }[]>(
-    "/api/org-roles",
-  );
+  const roles = await api.get<{ id: string; slug: string; isSystem: boolean }[]>("/api/org-roles");
   const match = (roles ?? []).find((r) => r.slug === slug && r.isSystem);
   if (!match) {
     throw new Error(`System role "${slug}" not found`);
@@ -79,7 +77,7 @@ async function inviteMemberBff(
   email: string,
   role: "org:member" | "org:admin",
   orgRoleId?: string,
-  _capabilityOverrides?: string[],
+  _capabilityOverrides?: string[]
 ): Promise<ActionResult> {
   try {
     const resolvedRoleId = await resolveOrgRoleId(role, orgRoleId);
@@ -145,7 +143,7 @@ export async function inviteMember(
   emailAddress: string,
   role: "org:member" | "org:admin",
   orgRoleId?: string,
-  capabilityOverrides?: string[],
+  capabilityOverrides?: string[]
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
 

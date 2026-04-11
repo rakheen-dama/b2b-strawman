@@ -7,11 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -37,9 +33,7 @@ interface GridFiltersProps {
 
 export function GridFilters({ grid, projects, onFilteredGrid }: GridFiltersProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedProjectIds, setSelectedProjectIds] = useState<Set<string>>(
-    new Set(),
-  );
+  const [selectedProjectIds, setSelectedProjectIds] = useState<Set<string>>(new Set());
   const [showOverAllocatedOnly, setShowOverAllocatedOnly] = useState(false);
   const [projectFilterOpen, setProjectFilterOpen] = useState(false);
 
@@ -49,25 +43,19 @@ export function GridFilters({ grid, projects, onFilteredGrid }: GridFiltersProps
     // Filter by member name
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase().trim();
-      filtered = filtered.filter((m) =>
-        m.memberName.toLowerCase().includes(term),
-      );
+      filtered = filtered.filter((m) => m.memberName.toLowerCase().includes(term));
     }
 
     // Filter by project
     if (selectedProjectIds.size > 0) {
       filtered = filtered.filter((m) =>
-        m.weeks.some((w) =>
-          w.allocations.some((a) => selectedProjectIds.has(a.projectId)),
-        ),
+        m.weeks.some((w) => w.allocations.some((a) => selectedProjectIds.has(a.projectId)))
       );
     }
 
     // Filter by over-allocated
     if (showOverAllocatedOnly) {
-      filtered = filtered.filter((m) =>
-        m.weeks.some((w) => w.overAllocated),
-      );
+      filtered = filtered.filter((m) => m.weeks.some((w) => w.overAllocated));
     }
 
     onFilteredGrid({ ...grid, members: filtered });
@@ -89,7 +77,7 @@ export function GridFilters({ grid, projects, onFilteredGrid }: GridFiltersProps
     <div className="flex flex-wrap items-center gap-3">
       {/* Member search */}
       <div className="relative">
-        <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <Search className="absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-slate-400" />
         <Input
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
@@ -122,17 +110,11 @@ export function GridFilters({ grid, projects, onFilteredGrid }: GridFiltersProps
               <CommandEmpty>No projects found.</CommandEmpty>
               <CommandGroup>
                 {projects.map((p) => (
-                  <CommandItem
-                    key={p.id}
-                    value={p.name}
-                    onSelect={() => toggleProject(p.id)}
-                  >
+                  <CommandItem key={p.id} value={p.name} onSelect={() => toggleProject(p.id)}>
                     <Check
                       className={cn(
                         "mr-2 h-4 w-4",
-                        selectedProjectIds.has(p.id)
-                          ? "opacity-100"
-                          : "opacity-0",
+                        selectedProjectIds.has(p.id) ? "opacity-100" : "opacity-0"
                       )}
                     />
                     {p.name}

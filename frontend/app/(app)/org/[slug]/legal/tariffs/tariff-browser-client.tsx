@@ -7,10 +7,7 @@ import { Copy, ChevronRight, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { TariffItemBrowser } from "@/components/legal/tariff-item-browser";
-import {
-  fetchTariffSchedules,
-  cloneSchedule,
-} from "./actions";
+import { fetchTariffSchedules, cloneSchedule } from "./actions";
 import type { TariffSchedule } from "@/lib/types";
 
 interface TariffBrowserClientProps {
@@ -63,17 +60,10 @@ export function TariffBrowserClient({
       </div>
 
       {/* Schedule list */}
-      <div
-        className={cn(
-          "overflow-x-auto",
-          isPending && "opacity-50 transition-opacity",
-        )}
-      >
+      <div className={cn("overflow-x-auto", isPending && "opacity-50 transition-opacity")}>
         {schedules.length === 0 ? (
           <div className="rounded-lg border border-slate-200 p-8 text-center dark:border-slate-800">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              No tariff schedules found.
-            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">No tariff schedules found.</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -105,7 +95,7 @@ export function TariffBrowserClient({
                         {schedule.code}
                       </Badge>
                       {schedule.active && (
-                        <Badge className="bg-teal-100 text-teal-700 text-xs dark:bg-teal-900 dark:text-teal-300">
+                        <Badge className="bg-teal-100 text-xs text-teal-700 dark:bg-teal-900 dark:text-teal-300">
                           Active
                         </Badge>
                       )}

@@ -16,11 +16,7 @@ function getMonthRange(): {
   return { from, to, year, month };
 }
 
-export default async function DeadlinesPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function DeadlinesPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const { from, to, year, month } = getMonthRange();
 
@@ -41,8 +37,7 @@ export default async function DeadlinesPage({
           Regulatory Deadlines
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Filing deadlines for all clients, calculated from financial year-end
-          dates
+          Filing deadlines for all clients, calculated from financial year-end dates
         </p>
       </div>
 

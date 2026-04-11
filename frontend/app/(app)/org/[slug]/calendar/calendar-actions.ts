@@ -20,16 +20,12 @@ export async function getCalendarItems(
   return api.get<CalendarResponse>(`/api/calendar?${params.toString()}`);
 }
 
-export async function getCalendarProjects(): Promise<
-  { id: string; name: string }[]
-> {
+export async function getCalendarProjects(): Promise<{ id: string; name: string }[]> {
   const projects = await api.get<Project[]>("/api/projects");
   return projects.map((p) => ({ id: p.id, name: p.name }));
 }
 
-export async function getCalendarMembers(): Promise<
-  { id: string; name: string }[]
-> {
+export async function getCalendarMembers(): Promise<{ id: string; name: string }[]> {
   const members = await api.get<OrgMember[]>("/api/members");
   return members.map((m) => ({ id: m.id, name: m.name }));
 }

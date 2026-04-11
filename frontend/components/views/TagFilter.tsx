@@ -3,11 +3,7 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -43,20 +39,14 @@ export function TagFilter({ value, onChange, allTags }: TagFilterProps) {
 
   return (
     <div className="space-y-2">
-      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">
-        Tags
-      </Label>
+      <Label className="text-sm font-medium text-slate-700 dark:text-slate-300">Tags</Label>
       <div className="flex flex-wrap items-center gap-1.5">
         {selectedTags.map((tag) => (
           <Badge
             key={tag.slug}
             variant="outline"
             className="gap-1"
-            style={
-              tag.color
-                ? { borderColor: tag.color, color: tag.color }
-                : undefined
-            }
+            style={tag.color ? { borderColor: tag.color, color: tag.color } : undefined}
           >
             {tag.name}
             <button

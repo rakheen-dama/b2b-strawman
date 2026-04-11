@@ -20,7 +20,7 @@ export function AutomationsWidget({ data, orgSlug }: AutomationsWidgetProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm italic text-slate-500 dark:text-slate-400">
+          <p className="text-sm text-slate-500 italic dark:text-slate-400">
             Unable to load automation data.
           </p>
         </CardContent>
@@ -39,26 +39,20 @@ export function AutomationsWidget({ data, orgSlug }: AutomationsWidgetProps) {
       <CardContent>
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-600 dark:text-slate-400">
-              Active Rules
-            </span>
-            <span className="font-mono text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+            <span className="text-sm text-slate-600 dark:text-slate-400">Active Rules</span>
+            <span className="font-mono text-sm font-semibold text-slate-900 tabular-nums dark:text-slate-100">
               {data.activeRulesCount}
             </span>
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-sm text-slate-600 dark:text-slate-400">
-              Executions Today
-            </span>
-            <span className="font-mono text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+            <span className="text-sm text-slate-600 dark:text-slate-400">Executions Today</span>
+            <span className="font-mono text-sm font-semibold text-slate-900 tabular-nums dark:text-slate-100">
               {data.todayTotal}
             </span>
           </div>
           {data.todayTotal > 0 && (
             <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
-              <span>
-                {data.todaySucceeded} succeeded
-              </span>
+              <span>{data.todaySucceeded} succeeded</span>
               {data.todayFailed > 0 ? (
                 <Link
                   href={`/org/${orgSlug}/settings/automations/executions?status=ACTIONS_FAILED`}
@@ -66,9 +60,7 @@ export function AutomationsWidget({ data, orgSlug }: AutomationsWidgetProps) {
                   <Badge variant="destructive">{data.todayFailed} failed</Badge>
                 </Link>
               ) : (
-                <span className="text-emerald-600 dark:text-emerald-400">
-                  0 failed
-                </span>
+                <span className="text-emerald-600 dark:text-emerald-400">0 failed</span>
               )}
             </div>
           )}

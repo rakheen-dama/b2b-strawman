@@ -51,25 +51,16 @@ function getWeekKey(dateStr: string): string {
   return start.toISOString().split("T")[0];
 }
 
-export function CalendarListView({
-  items,
-  overdueItems,
-  slug,
-}: CalendarListViewProps) {
+export function CalendarListView({ items, overdueItems, slug }: CalendarListViewProps) {
   // Compute today once for all getDueDateColor calls
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   // Sort by dueDate
-  const sorted = [...items].sort((a, b) =>
-    a.dueDate.localeCompare(b.dueDate)
-  );
+  const sorted = [...items].sort((a, b) => a.dueDate.localeCompare(b.dueDate));
 
   // Group by week
-  const weekGroups = new Map<
-    string,
-    { header: string; items: CalendarItem[] }
-  >();
+  const weekGroups = new Map<string, { header: string; items: CalendarItem[] }>();
 
   for (const item of sorted) {
     const weekKey = getWeekKey(item.dueDate);
@@ -100,7 +91,7 @@ export function CalendarListView({
       {/* Overdue Section */}
       {hasOverdue && (
         <div>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-red-600 dark:text-red-400">
+          <h3 className="mb-2 text-xs font-semibold tracking-wider text-red-600 uppercase dark:text-red-400">
             Overdue
           </h3>
           <div className="divide-y divide-red-100 rounded-lg border border-red-200 bg-red-50 dark:divide-red-900/30 dark:border-red-800 dark:bg-red-950/10">
@@ -123,21 +114,15 @@ export function CalendarListView({
                     {item.projectName}
                   </p>
                 </div>
-                <span className="shrink-0 font-mono text-xs tabular-nums text-red-600 dark:text-red-400">
+                <span className="shrink-0 font-mono text-xs text-red-600 tabular-nums dark:text-red-400">
                   {item.dueDate}
                 </span>
-                <Badge
-                  variant={getStatusVariant(item.status)}
-                  className="shrink-0"
-                >
+                <Badge variant={getStatusVariant(item.status)} className="shrink-0">
                   {item.status}
                 </Badge>
                 {item.priority && (
                   <span
-                    className={cn(
-                      "shrink-0 text-xs font-medium",
-                      getPriorityColor(item.priority)
-                    )}
+                    className={cn("shrink-0 text-xs font-medium", getPriorityColor(item.priority))}
                   >
                     {item.priority}
                   </span>
@@ -151,7 +136,7 @@ export function CalendarListView({
       {/* Week Groups */}
       {Array.from(weekGroups.entries()).map(([weekKey, group]) => (
         <div key={weekKey}>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+          <h3 className="mb-2 text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
             {group.header}
           </h3>
           <div className="divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-700 dark:bg-slate-900">
@@ -178,21 +163,16 @@ export function CalendarListView({
                     <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
                       {item.name}
                     </p>
-                    <p className="truncate text-xs text-slate-500">
-                      {item.projectName}
-                    </p>
+                    <p className="truncate text-xs text-slate-500">{item.projectName}</p>
                   </div>
 
                   {/* Due date */}
-                  <span className="shrink-0 font-mono text-xs tabular-nums text-slate-500">
+                  <span className="shrink-0 font-mono text-xs text-slate-500 tabular-nums">
                     {item.dueDate}
                   </span>
 
                   {/* Status badge */}
-                  <Badge
-                    variant={getStatusVariant(item.status)}
-                    className="shrink-0"
-                  >
+                  <Badge variant={getStatusVariant(item.status)} className="shrink-0">
                     {item.status}
                   </Badge>
 

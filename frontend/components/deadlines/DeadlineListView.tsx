@@ -23,9 +23,7 @@ function deadlineKey(d: CalculatedDeadline) {
   return `${d.customerId}__${d.deadlineTypeSlug}__${d.dueDate}`;
 }
 
-function statusVariant(
-  status: string
-): "success" | "destructive" | "warning" | "neutral" {
+function statusVariant(status: string): "success" | "destructive" | "warning" | "neutral" {
   switch (status) {
     case "filed":
       return "success";
@@ -111,8 +109,7 @@ export function DeadlineListView({
     );
   }
 
-  const allSelected =
-    selectedIds.size === deadlines.length && deadlines.length > 0;
+  const allSelected = selectedIds.size === deadlines.length && deadlines.length > 0;
 
   return (
     <div className="overflow-x-auto">
@@ -131,12 +128,12 @@ export function DeadlineListView({
                 variant="ghost"
                 size="sm"
                 onClick={() => toggleSort("customerName")}
-                className="h-auto p-0 text-xs font-medium uppercase tracking-wide text-slate-600 hover:text-slate-900 dark:text-slate-400"
+                className="h-auto p-0 text-xs font-medium tracking-wide text-slate-600 uppercase hover:text-slate-900 dark:text-slate-400"
               >
                 Client <ArrowUpDown className="ml-1 size-3" />
               </Button>
             </th>
-            <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+            <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
               Deadline Type
             </th>
             <th className="px-4 py-3 text-left">
@@ -144,7 +141,7 @@ export function DeadlineListView({
                 variant="ghost"
                 size="sm"
                 onClick={() => toggleSort("dueDate")}
-                className="h-auto p-0 text-xs font-medium uppercase tracking-wide text-slate-600 hover:text-slate-900 dark:text-slate-400"
+                className="h-auto p-0 text-xs font-medium tracking-wide text-slate-600 uppercase hover:text-slate-900 dark:text-slate-400"
               >
                 Due Date <ArrowUpDown className="ml-1 size-3" />
               </Button>
@@ -154,12 +151,12 @@ export function DeadlineListView({
                 variant="ghost"
                 size="sm"
                 onClick={() => toggleSort("status")}
-                className="h-auto p-0 text-xs font-medium uppercase tracking-wide text-slate-600 hover:text-slate-900 dark:text-slate-400"
+                className="h-auto p-0 text-xs font-medium tracking-wide text-slate-600 uppercase hover:text-slate-900 dark:text-slate-400"
               >
                 Status <ArrowUpDown className="ml-1 size-3" />
               </Button>
             </th>
-            <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400 sm:table-cell">
+            <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
               Linked Engagement
             </th>
           </tr>
@@ -202,7 +199,7 @@ export function DeadlineListView({
                     {statusLabel(deadline.status)}
                   </Badge>
                 </td>
-                <td className="hidden px-4 py-3 text-sm text-slate-600 dark:text-slate-400 sm:table-cell">
+                <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
                   {deadline.linkedProjectId ? (
                     <Link
                       href={`/org/${slug}/projects/${deadline.linkedProjectId}`}

@@ -23,11 +23,7 @@ interface InvoiceActionResult {
   invoice?: InvoiceResponse;
 }
 
-function revalidateInvoicePaths(
-  slug: string,
-  invoiceId: string,
-  customerId?: string,
-) {
+function revalidateInvoicePaths(slug: string, invoiceId: string, customerId?: string) {
   revalidatePath(`/org/${slug}/invoices`);
   revalidatePath(`/org/${slug}/invoices/${invoiceId}`);
   if (customerId) {
@@ -35,9 +31,7 @@ function revalidateInvoicePaths(
   }
 }
 
-export async function fetchInvoice(
-  invoiceId: string,
-): Promise<InvoiceActionResult> {
+export async function fetchInvoice(invoiceId: string): Promise<InvoiceActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can view invoices." };
@@ -57,7 +51,7 @@ export async function fetchInvoice(
 
 export async function fetchInvoices(
   status?: string,
-  customerId?: string,
+  customerId?: string
 ): Promise<{ success: boolean; error?: string; invoices?: InvoiceResponse[] }> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -85,7 +79,7 @@ export async function updateInvoice(
   slug: string,
   invoiceId: string,
   customerId: string,
-  request: UpdateInvoiceRequest,
+  request: UpdateInvoiceRequest
 ): Promise<InvoiceActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -93,10 +87,7 @@ export async function updateInvoice(
   }
 
   try {
-    const invoice = await api.put<InvoiceResponse>(
-      `/api/invoices/${invoiceId}`,
-      request,
-    );
+    const invoice = await api.put<InvoiceResponse>(`/api/invoices/${invoiceId}`, request);
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true, invoice };
   } catch (error) {
@@ -111,7 +102,7 @@ export async function updateInvoice(
 export async function deleteInvoice(
   slug: string,
   invoiceId: string,
-  customerId: string,
+  customerId: string
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -135,7 +126,7 @@ export async function addLineItem(
   slug: string,
   invoiceId: string,
   customerId: string,
-  request: AddLineItemRequest,
+  request: AddLineItemRequest
 ): Promise<InvoiceActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -143,10 +134,7 @@ export async function addLineItem(
   }
 
   try {
-    const invoice = await api.post<InvoiceResponse>(
-      `/api/invoices/${invoiceId}/lines`,
-      request,
-    );
+    const invoice = await api.post<InvoiceResponse>(`/api/invoices/${invoiceId}/lines`, request);
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true, invoice };
   } catch (error) {
@@ -163,7 +151,7 @@ export async function updateLineItem(
   invoiceId: string,
   lineId: string,
   customerId: string,
-  request: UpdateLineItemRequest,
+  request: UpdateLineItemRequest
 ): Promise<InvoiceActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -176,7 +164,7 @@ export async function updateLineItem(
   try {
     const invoice = await api.put<InvoiceResponse>(
       `/api/invoices/${invoiceId}/lines/${lineId}`,
-      request,
+      request
     );
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true, invoice };
@@ -193,7 +181,7 @@ export async function deleteLineItem(
   slug: string,
   invoiceId: string,
   lineId: string,
-  customerId: string,
+  customerId: string
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {

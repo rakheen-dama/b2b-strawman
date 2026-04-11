@@ -139,9 +139,7 @@ export function KycVerificationDialog({
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Verification Result</DialogTitle>
-            <DialogDescription>
-              Identity verification for {customerName}
-            </DialogDescription>
+            <DialogDescription>Identity verification for {customerName}</DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
@@ -151,9 +149,7 @@ export function KycVerificationDialog({
                 <AlertDescription>
                   <p className="font-medium">Identity verified</p>
                   {result.providerReference && (
-                    <p className="mt-1 text-sm">
-                      Reference: {result.providerReference}
-                    </p>
+                    <p className="mt-1 text-sm">Reference: {result.providerReference}</p>
                   )}
                   {result.verifiedAt && (
                     <p className="mt-1 text-sm">
@@ -182,8 +178,8 @@ export function KycVerificationDialog({
                 <AlertDescription>
                   <p className="font-medium">Manual review required</p>
                   <p className="mt-1 text-sm">
-                    {result.providerName} validates format only. Please verify
-                    the physical ID document.
+                    {result.providerName} validates format only. Please verify the physical ID
+                    document.
                   </p>
                 </AlertDescription>
               </Alert>
@@ -195,8 +191,7 @@ export function KycVerificationDialog({
                 <AlertDescription>
                   <p className="font-medium">Verification error</p>
                   <p className="mt-1 text-sm">
-                    {result.reasonDescription ??
-                      "Please try again or contact support."}
+                    {result.reasonDescription ?? "Please try again or contact support."}
                   </p>
                 </AlertDescription>
               </Alert>
@@ -205,11 +200,7 @@ export function KycVerificationDialog({
 
           <DialogFooter>
             {(result.status === "NOT_VERIFIED" || result.status === "ERROR") && (
-              <Button
-                type="button"
-                variant="outline"
-                onClick={resetForm}
-              >
+              <Button type="button" variant="outline" onClick={resetForm}>
                 Retry
               </Button>
             )}
@@ -228,22 +219,15 @@ export function KycVerificationDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>KYC Verification</DialogTitle>
-          <DialogDescription>
-            Verify identity for {customerName}
-          </DialogDescription>
+          <DialogDescription>Verify identity for {customerName}</DialogDescription>
         </DialogHeader>
 
         {providerDescription && (
-          <p className="text-sm text-slate-500 dark:text-slate-400">
-            {providerDescription}
-          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{providerDescription}</p>
         )}
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="idNumber"
@@ -251,11 +235,7 @@ export function KycVerificationDialog({
                 <FormItem>
                   <FormLabel>ID Number</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Enter ID number"
-                      disabled={isSubmitting}
-                      {...field}
-                    />
+                    <Input placeholder="Enter ID number" disabled={isSubmitting} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -269,11 +249,7 @@ export function KycVerificationDialog({
                 <FormItem>
                   <FormLabel>Full Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Enter full name"
-                      disabled={isSubmitting}
-                      {...field}
-                    />
+                    <Input placeholder="Enter full name" disabled={isSubmitting} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -288,9 +264,7 @@ export function KycVerificationDialog({
                   <FormLabel>ID Document Type (optional)</FormLabel>
                   <Select
                     value={field.value ?? ""}
-                    onValueChange={(value) =>
-                      field.onChange(value || undefined)
-                    }
+                    onValueChange={(value) => field.onChange(value || undefined)}
                     disabled={isSubmitting}
                   >
                     <FormControl>
@@ -313,21 +287,19 @@ export function KycVerificationDialog({
               control={form.control}
               name="consentAcknowledged"
               render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border border-slate-200 p-4 dark:border-slate-800">
+                <FormItem className="flex flex-row items-start space-y-0 space-x-3 rounded-md border border-slate-200 p-4 dark:border-slate-800">
                   <FormControl>
                     <Checkbox
                       checked={field.value === true}
-                      onCheckedChange={(checked) =>
-                        field.onChange(checked === true)
-                      }
+                      onCheckedChange={(checked) => field.onChange(checked === true)}
                       disabled={isSubmitting}
                     />
                   </FormControl>
                   <div className="space-y-1 leading-none">
                     <FormLabel className="text-sm font-normal">
-                      By proceeding, you confirm that {customerName} has given
-                      explicit written consent for identity verification against
-                      government databases, as required by POPIA and FICA.
+                      By proceeding, you confirm that {customerName} has given explicit written
+                      consent for identity verification against government databases, as required by
+                      POPIA and FICA.
                     </FormLabel>
                     <FormMessage />
                   </div>
@@ -336,7 +308,7 @@ export function KycVerificationDialog({
             />
 
             {error && (
-              <p className="text-sm text-destructive" role="alert">
+              <p className="text-destructive text-sm" role="alert">
                 {error}
               </p>
             )}

@@ -10,13 +10,9 @@ vi.mock("next/navigation", () => ({
 // Mock motion/react — avoid animation issues in tests
 vi.mock("motion/react", () => ({
   motion: {
-    div: ({ children, ...props }: React.ComponentProps<"div">) => (
-      <div {...props}>{children}</div>
-    ),
+    div: ({ children, ...props }: React.ComponentProps<"div">) => <div {...props}>{children}</div>,
   },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 import { usePathname } from "next/navigation";
@@ -96,7 +92,7 @@ function renderWithProviders(
     isAdmin?: boolean;
     isOwner?: boolean;
     enabledModules?: string[];
-  } = {},
+  } = {}
 ) {
   return render(
     <OrgProfileProvider
@@ -114,7 +110,7 @@ function renderWithProviders(
           {ui}
         </CapabilityProvider>
       </TerminologyProvider>
-    </OrgProfileProvider>,
+    </OrgProfileProvider>
   );
 }
 
@@ -124,9 +120,7 @@ describe("NavZone", () => {
   it("renders zone label", () => {
     mockUsePathname.mockReturnValue("/org/test-org/other");
 
-    renderWithProviders(
-      <NavZone zone={workZone} slug="test-org" />,
-    );
+    renderWithProviders(<NavZone zone={workZone} slug="test-org" />);
 
     expect(screen.getByText("Work")).toBeInTheDocument();
   });
@@ -134,9 +128,7 @@ describe("NavZone", () => {
   it("renders items when expanded", () => {
     mockUsePathname.mockReturnValue("/org/test-org/other");
 
-    renderWithProviders(
-      <NavZone zone={workZone} slug="test-org" />,
-    );
+    renderWithProviders(<NavZone zone={workZone} slug="test-org" />);
 
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
     expect(screen.getByText("Projects")).toBeInTheDocument();
@@ -146,9 +138,7 @@ describe("NavZone", () => {
     const user = userEvent.setup();
     mockUsePathname.mockReturnValue("/org/test-org/other");
 
-    renderWithProviders(
-      <NavZone zone={workZone} slug="test-org" />,
-    );
+    renderWithProviders(<NavZone zone={workZone} slug="test-org" />);
 
     // Items should be visible initially (defaultExpanded: true)
     expect(screen.getByText("Dashboard")).toBeInTheDocument();
@@ -165,10 +155,11 @@ describe("NavZone", () => {
   it("hides zone entirely when all items are capability-gated and user lacks capability", () => {
     mockUsePathname.mockReturnValue("/org/test-org/other");
 
-    renderWithProviders(
-      <NavZone zone={financeZone} slug="test-org" />,
-      { capabilities: [], isAdmin: false, isOwner: false },
-    );
+    renderWithProviders(<NavZone zone={financeZone} slug="test-org" />, {
+      capabilities: [],
+      isAdmin: false,
+      isOwner: false,
+    });
 
     // Zone label should not be rendered
     expect(screen.queryByText("Finance")).not.toBeInTheDocument();
@@ -179,9 +170,7 @@ describe("NavZone", () => {
   it("shows active indicator on current path", () => {
     mockUsePathname.mockReturnValue("/org/test-org/dashboard");
 
-    renderWithProviders(
-      <NavZone zone={workZone} slug="test-org" />,
-    );
+    renderWithProviders(<NavZone zone={workZone} slug="test-org" />);
 
     // Dashboard link should have active class
     const dashboardLink = screen.getByRole("link", { name: /dashboard/i });
@@ -198,13 +187,10 @@ describe("NavZone", () => {
   it("shows nav item with requiredModule when module is enabled", () => {
     mockUsePathname.mockReturnValue("/org/test-org/other");
 
-    renderWithProviders(
-      <NavZone zone={legalFinanceZone} slug="test-org" />,
-      {
-        capabilities: ["FINANCIAL_VISIBILITY"],
-        enabledModules: ["trust_accounting"],
-      },
-    );
+    renderWithProviders(<NavZone zone={legalFinanceZone} slug="test-org" />, {
+      capabilities: ["FINANCIAL_VISIBILITY"],
+      enabledModules: ["trust_accounting"],
+    });
 
     expect(screen.getByText("Trust Accounting")).toBeInTheDocument();
   });
@@ -213,15 +199,11 @@ describe("NavZone", () => {
   it("hides nav item with requiredModule when module is not enabled", () => {
     mockUsePathname.mockReturnValue("/org/test-org/other");
 
-    renderWithProviders(
-      <NavZone zone={legalFinanceZone} slug="test-org" />,
-      {
-        capabilities: ["FINANCIAL_VISIBILITY"],
-        enabledModules: [],
-      },
-    );
+    renderWithProviders(<NavZone zone={legalFinanceZone} slug="test-org" />, {
+      capabilities: ["FINANCIAL_VISIBILITY"],
+      enabledModules: [],
+    });
 
     expect(screen.queryByText("Trust Accounting")).not.toBeInTheDocument();
   });
-
 });

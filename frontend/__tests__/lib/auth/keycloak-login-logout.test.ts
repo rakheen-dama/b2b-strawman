@@ -14,19 +14,13 @@ describe("Keycloak login/logout URLs", () => {
   });
 
   it("login URL points to gateway OAuth2 authorization endpoint", async () => {
-    const { getKeycloakLoginUrl } = await import(
-      "@/components/auth/user-menu-bff"
-    );
+    const { getKeycloakLoginUrl } = await import("@/components/auth/user-menu-bff");
 
-    expect(getKeycloakLoginUrl()).toBe(
-      "http://localhost:8443/oauth2/authorization/keycloak",
-    );
+    expect(getKeycloakLoginUrl()).toBe("http://localhost:8443/oauth2/authorization/keycloak");
   });
 
   it("logout URL points to gateway logout endpoint", async () => {
-    const { getKeycloakLogoutUrl } = await import(
-      "@/components/auth/user-menu-bff"
-    );
+    const { getKeycloakLogoutUrl } = await import("@/components/auth/user-menu-bff");
 
     expect(getKeycloakLogoutUrl()).toBe("http://localhost:8443/logout");
   });
@@ -45,25 +39,28 @@ describe("Keycloak login/logout URLs", () => {
 
     // Track form submission and CSRF input
     const mockSubmit = vi.fn();
-    const capturedInputs: Array<{ type: string; name: string; value: string }> =
-      [];
+    const capturedInputs: Array<{ type: string; name: string; value: string }> = [];
 
     // Store original before mocking to avoid infinite recursion
     const originalCreateElement = document.createElement.bind(document);
     const mockCreateElement = vi.spyOn(document, "createElement");
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DOM mock requires any for test stub
     let capturedForm: any;
     mockCreateElement.mockImplementation((tag: string) => {
       if (tag === "form") {
         capturedForm = {
           method: "",
           action: "",
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DOM mock requires any for test stub
           appendChild: (input: any) => capturedInputs.push(input),
           submit: mockSubmit,
         };
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DOM mock requires any for test stub
         return capturedForm as any;
       }
       if (tag === "input") {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any -- DOM mock requires any for test stub
         return { type: "", name: "", value: "" } as any;
       }
       return originalCreateElement(tag);
@@ -71,9 +68,7 @@ describe("Keycloak login/logout URLs", () => {
 
     vi.spyOn(document.body, "appendChild").mockImplementation((node) => node);
 
-    const { performKeycloakLogout } = await import(
-      "@/components/auth/user-menu-bff"
-    );
+    const { performKeycloakLogout } = await import("@/components/auth/user-menu-bff");
 
     await performKeycloakLogout();
 
@@ -108,9 +103,7 @@ describe("Keycloak login/logout URLs", () => {
       href: "",
     } as Location);
 
-    const { performKeycloakLogout } = await import(
-      "@/components/auth/user-menu-bff"
-    );
+    const { performKeycloakLogout } = await import("@/components/auth/user-menu-bff");
 
     await performKeycloakLogout();
 

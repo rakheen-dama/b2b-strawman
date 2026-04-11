@@ -109,9 +109,7 @@ describe("CalendarListView", () => {
         status: "OPEN",
       }),
     ];
-    render(
-      <CalendarListView items={[]} overdueItems={overdueItems} slug="acme" />
-    );
+    render(<CalendarListView items={[]} overdueItems={overdueItems} slug="acme" />);
     expect(screen.getByText("Overdue")).toBeInTheDocument();
     expect(screen.getByText("Very Overdue Task")).toBeInTheDocument();
   });
@@ -125,9 +123,7 @@ describe("CalendarListView", () => {
         status: "OPEN",
       }),
     ];
-    render(
-      <CalendarListView items={[]} overdueItems={overdueItems} slug="acme" />
-    );
+    render(<CalendarListView items={[]} overdueItems={overdueItems} slug="acme" />);
     expect(screen.getByText(/overdue/i)).toBeInTheDocument();
     expect(screen.getByText("Old Task")).toBeInTheDocument();
   });

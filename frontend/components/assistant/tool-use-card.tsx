@@ -2,11 +2,7 @@
 
 import { useState } from "react";
 import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
-import {
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsibleContent,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@/components/ui/collapsible";
 
 interface ToolUseCardProps {
   message: {
@@ -38,11 +34,7 @@ export function ToolUseCard({ message, isLoading = false }: ToolUseCardProps) {
             </span>
           </>
         ) : (
-          <Collapsible
-            open={isOpen}
-            onOpenChange={setIsOpen}
-            className="w-full"
-          >
+          <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
             <div className="flex items-center gap-2">
               <span className="text-slate-600 dark:text-slate-400">
                 Looked up <span className="font-medium">{toolName}</span>
@@ -52,11 +44,7 @@ export function ToolUseCard({ message, isLoading = false }: ToolUseCardProps) {
                   className="ml-auto text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                   aria-label={isOpen ? "Collapse result" : "Expand result"}
                 >
-                  {isOpen ? (
-                    <ChevronUp className="size-3" />
-                  ) : (
-                    <ChevronDown className="size-3" />
-                  )}
+                  {isOpen ? <ChevronUp className="size-3" /> : <ChevronDown className="size-3" />}
                 </button>
               </CollapsibleTrigger>
             </div>

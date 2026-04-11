@@ -1,42 +1,26 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import type { FieldValueGridProps, FieldValueProps } from "./types";
 
 function FieldItem({ field }: { field: FieldValueProps }) {
   const unfilled = field.required && (!field.value || field.value === "");
 
   return (
-    <div
-      className={cn(
-        "space-y-1 rounded-md p-2",
-        unfilled && "border-l-2 border-amber-400",
-      )}
-    >
-      <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+    <div className={cn("space-y-1 rounded-md p-2", unfilled && "border-l-2 border-amber-400")}>
+      <p className="text-muted-foreground text-xs font-medium tracking-wide uppercase">
         {field.name}
       </p>
       {field.value ? (
-        <p className="text-sm text-slate-900 dark:text-slate-100">
-          {field.value}
-        </p>
+        <p className="text-sm text-slate-900 dark:text-slate-100">{field.value}</p>
       ) : (
-        <p className="text-sm italic text-muted-foreground">Not set</p>
+        <p className="text-muted-foreground text-sm italic">Not set</p>
       )}
     </div>
   );
 }
 
-export function FieldValueGrid({
-  fields,
-  groups,
-  editHref,
-}: FieldValueGridProps) {
+export function FieldValueGrid({ fields, groups, editHref }: FieldValueGridProps) {
   // Group fields if groups are provided
   const groupedContent = groups ? renderGrouped(fields, groups) : null;
 
@@ -68,17 +52,12 @@ export function FieldValueGrid({
   );
 }
 
-function renderGrouped(
-  fields: FieldValueProps[],
-  groups: { id: string; name: string }[],
-) {
+function renderGrouped(fields: FieldValueProps[], groups: { id: string; name: string }[]) {
   const groupMap = new Map(groups.map((g) => [g.id, g.name]));
   const grouped = new Map<string, FieldValueProps[]>();
 
   for (const field of fields) {
-    const key = field.groupId && groupMap.has(field.groupId)
-      ? field.groupId
-      : "__other__";
+    const key = field.groupId && groupMap.has(field.groupId) ? field.groupId : "__other__";
     const list = grouped.get(key) ?? [];
     list.push(field);
     grouped.set(key, list);

@@ -34,9 +34,7 @@ function daysFromNow(days: number): string {
   return `${y}-${m}-${dd}`;
 }
 
-function makeTask(
-  overrides: Partial<MyWorkTaskItem> & { id: string },
-): MyWorkTaskItem {
+function makeTask(overrides: Partial<MyWorkTaskItem> & { id: string }): MyWorkTaskItem {
   return {
     projectId: "p1",
     projectName: "Test Project",
@@ -68,11 +66,7 @@ describe("TodaysAgenda", () => {
     ];
 
     render(
-      <TodaysAgenda
-        tasks={tasks}
-        todayEntries={emptyEntries}
-        upcomingDeadlines={emptyDeadlines}
-      />,
+      <TodaysAgenda tasks={tasks} todayEntries={emptyEntries} upcomingDeadlines={emptyDeadlines} />
     );
 
     expect(screen.getByTestId("todays-tasks")).toBeInTheDocument();
@@ -101,7 +95,7 @@ describe("TodaysAgenda", () => {
         todayEntries={entries}
         upcomingDeadlines={emptyDeadlines}
         weeklyCapacityHours={40}
-      />,
+      />
     );
 
     const progressSection = screen.getByTestId("time-progress-today");
@@ -119,13 +113,7 @@ describe("TodaysAgenda", () => {
       },
     ];
 
-    render(
-      <TodaysAgenda
-        tasks={[]}
-        todayEntries={emptyEntries}
-        upcomingDeadlines={deadlines}
-      />,
-    );
+    render(<TodaysAgenda tasks={[]} todayEntries={emptyEntries} upcomingDeadlines={deadlines} />);
 
     const deadlineSection = screen.getByTestId("next-deadline");
     expect(deadlineSection).toBeInTheDocument();
@@ -136,11 +124,7 @@ describe("TodaysAgenda", () => {
 
   it("handles empty tasks without crashing", () => {
     render(
-      <TodaysAgenda
-        tasks={[]}
-        todayEntries={emptyEntries}
-        upcomingDeadlines={emptyDeadlines}
-      />,
+      <TodaysAgenda tasks={[]} todayEntries={emptyEntries} upcomingDeadlines={emptyDeadlines} />
     );
 
     expect(screen.getByTestId("todays-tasks")).toBeInTheDocument();

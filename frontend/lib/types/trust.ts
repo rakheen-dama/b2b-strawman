@@ -134,11 +134,7 @@ export type ClientLedgerResponse = ClientLedgerCard;
 
 export type BankStatementFormat = "CSV" | "OFX";
 
-export type BankStatementStatus =
-  | "IMPORTED"
-  | "MATCHING_IN_PROGRESS"
-  | "MATCHED"
-  | "RECONCILED";
+export type BankStatementStatus = "IMPORTED" | "MATCHING_IN_PROGRESS" | "MATCHED" | "RECONCILED";
 
 export type BankStatementLineMatchStatus =
   | "UNMATCHED"
@@ -211,10 +207,7 @@ export interface MatchResultResponse {
 
 // Dashboard types
 
-export type TrustAlertType =
-  | "MATURING_INVESTMENT"
-  | "OVERDUE_RECONCILIATION"
-  | "AGING_APPROVAL";
+export type TrustAlertType = "MATURING_INVESTMENT" | "OVERDUE_RECONCILIATION" | "AGING_APPROVAL";
 
 export type TrustAlertSeverity = "info" | "warning" | "error";
 

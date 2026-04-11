@@ -27,7 +27,7 @@ export function NavZone({ zone, slug, onNavItemClick }: NavZoneProps) {
   const visibleItems = zone.items.filter(
     (item) =>
       (!item.requiredCapability || hasCapability(item.requiredCapability)) &&
-      (!item.requiredModule || isModuleEnabled(item.requiredModule)),
+      (!item.requiredModule || isModuleEnabled(item.requiredModule))
   );
 
   if (visibleItems.length === 0) return null;
@@ -47,7 +47,7 @@ export function NavZone({ zone, slug, onNavItemClick }: NavZoneProps) {
         <ChevronRight
           className={cn(
             "h-3 w-3 text-white/40 transition-transform duration-150",
-            expanded && "rotate-90",
+            expanded && "rotate-90"
           )}
         />
       </button>
@@ -64,9 +64,7 @@ export function NavZone({ zone, slug, onNavItemClick }: NavZoneProps) {
           >
             {visibleItems.map((item) => {
               const href = item.href(slug);
-              const isActive = item.exact
-                ? pathname === href
-                : pathname.startsWith(href);
+              const isActive = item.exact ? pathname === href : pathname.startsWith(href);
 
               return (
                 <Link
@@ -77,14 +75,14 @@ export function NavZone({ zone, slug, onNavItemClick }: NavZoneProps) {
                     "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
                     isActive
                       ? "bg-white/5 text-white"
-                      : "text-white/60 hover:bg-slate-800 hover:text-white",
+                      : "text-white/60 hover:bg-slate-800 hover:text-white"
                   )}
                 >
                   {isActive && (
                     <motion.div
                       layoutId={`sidebar-indicator-${zone.id}`}
                       aria-hidden="true"
-                      className="absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-teal-500"
+                      className="absolute top-1 bottom-1 left-0 w-0.5 rounded-full bg-teal-500"
                       transition={{ type: "spring", stiffness: 350, damping: 30 }}
                     />
                   )}

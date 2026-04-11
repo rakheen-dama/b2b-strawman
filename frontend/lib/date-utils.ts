@@ -27,10 +27,10 @@ export function addWeeks(date: Date, weeks: number): Date {
 /**
  * Resolves date range from URL search params, defaulting to current month.
  */
-export function resolveDateRange(searchParams: {
-  from?: string;
-  to?: string;
-}): { from: string; to: string } {
+export function resolveDateRange(searchParams: { from?: string; to?: string }): {
+  from: string;
+  to: string;
+} {
   if (searchParams.from && searchParams.to) {
     return { from: searchParams.from, to: searchParams.to };
   }

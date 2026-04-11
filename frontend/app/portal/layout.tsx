@@ -8,10 +8,6 @@ export const metadata: Metadata = {
   description: "Customer portal for viewing shared documents and projects",
 };
 
-export default function PortalRootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function PortalRootLayout({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }

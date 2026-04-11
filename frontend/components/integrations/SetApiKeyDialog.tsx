@@ -22,11 +22,7 @@ interface SetApiKeyDialogProps {
   children: React.ReactNode;
 }
 
-export function SetApiKeyDialog({
-  slug,
-  domain,
-  children,
-}: SetApiKeyDialogProps) {
+export function SetApiKeyDialog({ slug, domain, children }: SetApiKeyDialogProps) {
   const [open, setOpen] = useState(false);
   const [apiKey, setApiKey] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -73,8 +69,7 @@ export function SetApiKeyDialog({
           <DialogHeader>
             <DialogTitle>Set API Key</DialogTitle>
             <DialogDescription>
-              Enter your API key for this integration. The key will be stored
-              securely.
+              Enter your API key for this integration. The key will be stored securely.
             </DialogDescription>
           </DialogHeader>
           <div className="mt-4 space-y-4">
@@ -89,7 +84,7 @@ export function SetApiKeyDialog({
                 disabled={isSubmitting}
               />
             </div>
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
           </div>
           <DialogFooter className="mt-6">
             <Button

@@ -20,8 +20,11 @@ function groupLinesByType(lines: InvoiceLineResponse[]) {
     // Backward compat: treat missing lineType as TIME
     const type = line.lineType ?? "TIME";
     const groupKey: string =
-      type === "TARIFF" ? "TARIFF" :
-      type === "MANUAL" || type === "RETAINER" || type === "FIXED_FEE" ? "OTHER" : type;
+      type === "TARIFF"
+        ? "TARIFF"
+        : type === "MANUAL" || type === "RETAINER" || type === "FIXED_FEE"
+          ? "OTHER"
+          : type;
     if (!groups[groupKey]) {
       groups[groupKey] = [];
     }
@@ -43,7 +46,7 @@ function renderGroupedLines(
   hasPerLineTax: boolean,
   editable: boolean,
   onEditLine?: (line: InvoiceLineResponse) => void,
-  onDeleteLine?: (lineId: string) => void,
+  onDeleteLine?: (lineId: string) => void
 ) {
   const sections = groupLinesByType(lines);
   const needsSectionHeaders = sections.length > 1;
@@ -92,7 +95,7 @@ function LineSection({
         <tr data-testid={`section-header-${label}`}>
           <td
             colSpan={colCount}
-            className="bg-slate-50 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-slate-600 dark:bg-slate-900/50 dark:text-slate-400"
+            className="bg-slate-50 px-4 py-2 text-xs font-semibold tracking-wide text-slate-600 uppercase dark:bg-slate-900/50 dark:text-slate-400"
           >
             {label}
           </td>
@@ -107,7 +110,9 @@ function LineSection({
             <span className="flex items-center gap-2">
               {line.description}
               {line.lineSource === "TARIFF" && (
-                <Badge variant="neutral" className="text-xs">Tariff</Badge>
+                <Badge variant="neutral" className="text-xs">
+                  Tariff
+                </Badge>
               )}
             </span>
           </td>
@@ -126,13 +131,10 @@ function LineSection({
           {hasPerLineTax && (
             <td className="px-4 py-3 text-right text-sm text-slate-600 dark:text-slate-400">
               {line.taxExempt ? (
-                <span className="text-slate-500 dark:text-slate-400">
-                  Exempt
-                </span>
+                <span className="text-slate-500 dark:text-slate-400">Exempt</span>
               ) : line.taxRateName && line.taxAmount != null ? (
                 <span>
-                  {line.taxRateName} ({line.taxRatePercent}%)
-                  {" "}
+                  {line.taxRateName} ({line.taxRatePercent}%){" "}
                   {formatCurrency(line.taxAmount, currency)}
                 </span>
               ) : (
@@ -194,9 +196,7 @@ export function InvoiceLineTable({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-slate-900 dark:text-slate-100">
-          Line Items
-        </h2>
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">Line Items</h2>
         {editable && onAddLine && (
           <Button variant="outline" size="sm" onClick={onAddLine}>
             <Plus className="mr-1.5 size-4" />
@@ -214,35 +214,42 @@ export function InvoiceLineTable({
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Description
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                   Project
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Qty
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Rate
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Amount
                 </th>
                 {hasPerLineTax && (
-                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                  <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                     Tax
                   </th>
                 )}
                 {editable && (
-                  <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                  <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                     Actions
                   </th>
                 )}
               </tr>
             </thead>
             <tbody>
-              {renderGroupedLines(lines, currency, hasPerLineTax, editable, onEditLine, onDeleteLine)}
+              {renderGroupedLines(
+                lines,
+                currency,
+                hasPerLineTax,
+                editable,
+                onEditLine,
+                onDeleteLine
+              )}
             </tbody>
           </table>
         </div>

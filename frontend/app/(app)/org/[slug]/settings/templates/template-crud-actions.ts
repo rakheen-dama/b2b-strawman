@@ -16,7 +16,7 @@ interface ActionResult {
 
 export async function createTemplateAction(
   slug: string,
-  req: CreateTemplateRequest,
+  req: CreateTemplateRequest
 ): Promise<ActionResult> {
   try {
     const data = await api.post<TemplateDetailResponse>("/api/templates", req);
@@ -45,13 +45,10 @@ export async function createTemplateAction(
 export async function updateTemplateAction(
   slug: string,
   id: string,
-  req: UpdateTemplateRequest,
+  req: UpdateTemplateRequest
 ): Promise<ActionResult> {
   try {
-    const data = await api.put<TemplateDetailResponse>(
-      `/api/templates/${id}`,
-      req,
-    );
+    const data = await api.put<TemplateDetailResponse>(`/api/templates/${id}`, req);
     revalidatePath(`/org/${slug}/settings/templates`);
     revalidatePath(`/org/${slug}/settings/templates/${id}/edit`);
     return { success: true, data };
@@ -69,14 +66,9 @@ export async function updateTemplateAction(
   }
 }
 
-export async function cloneTemplateAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function cloneTemplateAction(slug: string, id: string): Promise<ActionResult> {
   try {
-    const data = await api.post<TemplateDetailResponse>(
-      `/api/templates/${id}/clone`,
-    );
+    const data = await api.post<TemplateDetailResponse>(`/api/templates/${id}/clone`);
     revalidatePath(`/org/${slug}/settings/templates`);
     return { success: true, data };
   } catch (error) {
@@ -99,10 +91,7 @@ export async function cloneTemplateAction(
   }
 }
 
-export async function resetTemplateAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function resetTemplateAction(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.post<void>(`/api/templates/${id}/reset`);
     revalidatePath(`/org/${slug}/settings/templates`);
@@ -127,10 +116,7 @@ export async function resetTemplateAction(
   }
 }
 
-export async function deactivateTemplateAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deactivateTemplateAction(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.delete(`/api/templates/${id}`);
     revalidatePath(`/org/${slug}/settings/templates`);
@@ -152,11 +138,20 @@ export async function deactivateTemplateAction(
 export async function previewTemplateAction(
   id: string,
   entityId: string,
-  clauses?: Array<{ clauseId: string; sortOrder: number }>,
-): Promise<{ success: boolean; html?: string; validationResult?: import("@/lib/types").TemplateValidationResult; error?: string }> {
+  clauses?: Array<{ clauseId: string; sortOrder: number }>
+): Promise<{
+  success: boolean;
+  html?: string;
+  validationResult?: import("@/lib/types").TemplateValidationResult;
+  error?: string;
+}> {
   try {
     const result = await previewTemplate(id, entityId, clauses);
-    return { success: true, html: result.html, validationResult: result.validationResult ?? undefined };
+    return {
+      success: true,
+      html: result.html,
+      validationResult: result.validationResult ?? undefined,
+    };
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -164,4 +159,3 @@ export async function previewTemplateAction(
     return { success: false, error: "Failed to generate preview." };
   }
 }
-

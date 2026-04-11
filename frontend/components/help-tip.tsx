@@ -1,11 +1,7 @@
 "use client";
 
 import { CircleHelp, ExternalLink } from "lucide-react";
-import {
-  Popover,
-  PopoverTrigger,
-  PopoverContent,
-} from "@/components/ui/popover";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { createMessages } from "@/lib/messages";
 import { docsLink } from "@/lib/docs";
 
@@ -32,12 +28,8 @@ export function HelpTip({ code, docsPath }: HelpTipProps) {
         </button>
       </PopoverTrigger>
       <PopoverContent className="p-4">
-        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-          {title}
-        </p>
-        <p className="mt-1 max-w-xs text-sm text-slate-600 dark:text-slate-400">
-          {body}
-        </p>
+        <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{title}</p>
+        <p className="mt-1 max-w-xs text-sm text-slate-600 dark:text-slate-400">{body}</p>
         {docsPath && (
           <a
             href={docsLink(docsPath)}

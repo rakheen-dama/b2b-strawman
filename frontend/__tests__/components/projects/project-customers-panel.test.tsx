@@ -53,7 +53,7 @@ describe("ProjectCustomersPanel", () => {
         slug="acme"
         projectId="p1"
         canManage={false}
-      />,
+      />
     );
 
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
@@ -61,27 +61,13 @@ describe("ProjectCustomersPanel", () => {
   });
 
   it("renders empty state when no customers", () => {
-    render(
-      <ProjectCustomersPanel
-        customers={[]}
-        slug="acme"
-        projectId="p1"
-        canManage={false}
-      />,
-    );
+    render(<ProjectCustomersPanel customers={[]} slug="acme" projectId="p1" canManage={false} />);
 
     expect(screen.getByText("No linked customers")).toBeInTheDocument();
   });
 
   it("shows Link Customer button when canManage is true", () => {
-    render(
-      <ProjectCustomersPanel
-        customers={[]}
-        slug="acme"
-        projectId="p1"
-        canManage={true}
-      />,
-    );
+    render(<ProjectCustomersPanel customers={[]} slug="acme" projectId="p1" canManage={true} />);
 
     expect(screen.getByText("Link Customer")).toBeInTheDocument();
   });
@@ -93,7 +79,7 @@ describe("ProjectCustomersPanel", () => {
         slug="acme"
         projectId="p1"
         canManage={false}
-      />,
+      />
     );
 
     expect(screen.queryByText("Link Customer")).not.toBeInTheDocument();
@@ -106,7 +92,7 @@ describe("ProjectCustomersPanel", () => {
         slug="acme"
         projectId="p1"
         canManage={true}
-      />,
+      />
     );
 
     const unlinkButtons = screen.getAllByTitle("Unlink customer");
@@ -120,7 +106,7 @@ describe("ProjectCustomersPanel", () => {
         slug="acme"
         projectId="p1"
         canManage={false}
-      />,
+      />
     );
 
     expect(screen.queryByTitle("Unlink customer")).not.toBeInTheDocument();
@@ -133,7 +119,7 @@ describe("ProjectCustomersPanel", () => {
         slug="acme"
         projectId="p1"
         canManage={false}
-      />,
+      />
     );
 
     expect(screen.getByText("2")).toBeInTheDocument();

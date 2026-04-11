@@ -37,7 +37,7 @@ export function A4PreviewWrapper({ html, className }: A4PreviewWrapperProps) {
       className={cn(
         // Dark surround — PDF viewer feel
         "rounded-lg bg-slate-800 p-6 dark:bg-slate-900",
-        className,
+        className
       )}
       data-testid="a4-preview-wrapper"
     >

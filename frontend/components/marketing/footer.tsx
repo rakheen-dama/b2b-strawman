@@ -26,7 +26,7 @@ const linkGroups = [
 
 export function Footer() {
   return (
-    <footer className="bg-slate-950 border-t border-white/5">
+    <footer className="border-t border-white/5 bg-slate-950">
       <div className="mx-auto max-w-7xl px-6 py-12">
         {/* Top row */}
         <div className="flex flex-col gap-10 lg:flex-row lg:justify-between">
@@ -35,18 +35,14 @@ export function Footer() {
             <Link href="/" className="font-display text-xl tracking-tight text-white">
               kazi
             </Link>
-            <p className="mt-2 text-sm text-white/40">
-              Practice management, built for Africa.
-            </p>
+            <p className="mt-2 text-sm text-white/40">Practice management, built for Africa.</p>
           </div>
 
           {/* Link groups */}
           <div className="grid grid-cols-2 gap-8 md:grid-cols-3">
             {linkGroups.map((group) => (
               <div key={group.heading}>
-                <h3 className="mb-3 text-sm font-medium text-white">
-                  {group.heading}
-                </h3>
+                <h3 className="mb-3 text-sm font-medium text-white">{group.heading}</h3>
                 <ul className="space-y-2">
                   {group.links.map((link) => (
                     <li key={link.label}>
@@ -78,9 +74,7 @@ export function Footer() {
           <p className="text-sm text-white/40">
             &copy; {new Date().getFullYear()} Kazi. All rights reserved.
           </p>
-          <p className="text-sm text-white/30">
-            Built in South Africa
-          </p>
+          <p className="text-sm text-white/30">Built in South Africa</p>
         </div>
       </div>
     </footer>

@@ -45,9 +45,7 @@ export function TestimonialsSection() {
                   <p className="font-semibold text-slate-950 dark:text-slate-50">
                     {testimonial.name}
                   </p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    {testimonial.title}
-                  </p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400">{testimonial.title}</p>
                 </div>
               </div>
             </div>

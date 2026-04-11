@@ -9,11 +9,7 @@ export type CourtDateType =
   | "MENTION"
   | "OTHER";
 
-export type CourtDateStatus =
-  | "SCHEDULED"
-  | "POSTPONED"
-  | "HEARD"
-  | "CANCELLED";
+export type CourtDateStatus = "SCHEDULED" | "POSTPONED" | "HEARD" | "CANCELLED";
 
 export interface CourtDate {
   id: string;
@@ -45,11 +41,7 @@ export type PrescriptionType =
   | "CONTRACT_3Y"
   | "CUSTOM";
 
-export type PrescriptionStatus =
-  | "RUNNING"
-  | "WARNED"
-  | "INTERRUPTED"
-  | "EXPIRED";
+export type PrescriptionStatus = "RUNNING" | "WARNED" | "INTERRUPTED" | "EXPIRED";
 
 export interface PrescriptionTracker {
   id: string;
@@ -71,21 +63,11 @@ export interface PrescriptionTracker {
 }
 
 // Conflict check types
-export type ConflictCheckResult =
-  | "NO_CONFLICT"
-  | "CONFLICT_FOUND"
-  | "POTENTIAL_CONFLICT";
+export type ConflictCheckResult = "NO_CONFLICT" | "CONFLICT_FOUND" | "POTENTIAL_CONFLICT";
 
-export type ConflictCheckType =
-  | "NEW_CLIENT"
-  | "NEW_MATTER"
-  | "PERIODIC_REVIEW";
+export type ConflictCheckType = "NEW_CLIENT" | "NEW_MATTER" | "PERIODIC_REVIEW";
 
-export type ConflictResolution =
-  | "PROCEED"
-  | "DECLINED"
-  | "WAIVER_OBTAINED"
-  | "REFERRED";
+export type ConflictResolution = "PROCEED" | "DECLINED" | "WAIVER_OBTAINED" | "REFERRED";
 
 export interface ConflictMatch {
   adversePartyId: string;

@@ -55,10 +55,7 @@ function createKeycloakMiddleware(): NextMiddleware {
     const sessionCookie = request.cookies.get("SESSION");
     if (!sessionCookie) {
       // Redirect to gateway OAuth2 authorization endpoint
-      const gatewayLoginUrl = new URL(
-        "/oauth2/authorization/keycloak",
-        GATEWAY_URL,
-      );
+      const gatewayLoginUrl = new URL("/oauth2/authorization/keycloak", GATEWAY_URL);
       return NextResponse.redirect(gatewayLoginUrl.toString());
     }
 
@@ -91,9 +88,7 @@ function createMockMiddleware(): NextMiddleware {
       const organization = payload?.organization as string[] | undefined;
       const orgSlug = organization?.[0];
       if (orgSlug) {
-        return NextResponse.redirect(
-          new URL(`/org/${orgSlug}/dashboard`, request.url),
-        );
+        return NextResponse.redirect(new URL(`/org/${orgSlug}/dashboard`, request.url));
       }
       // No org in token — send back to mock login
       const loginUrl = new URL("/mock-login", request.url);

@@ -20,9 +20,7 @@ vi.mock("@/lib/actions/clause-actions", () => ({
 
 // Mock Tiptap dependencies for DocumentEditor
 const mockSetContent = vi.fn();
-const mockGetJSON = vi.fn(
-  (): Record<string, unknown> => ({ type: "doc", content: [] }),
-);
+const mockGetJSON = vi.fn((): Record<string, unknown> => ({ type: "doc", content: [] }));
 const mockSetEditable = vi.fn();
 const mockOn = vi.fn();
 const mockOff = vi.fn();
@@ -49,7 +47,7 @@ vi.mock("@tiptap/react", () => ({
     return mockEditor;
   }),
   EditorContent: vi.fn(({ editor }: { editor: unknown }) =>
-    editor ? <div data-testid="editor-content" /> : null,
+    editor ? <div data-testid="editor-content" /> : null
   ),
 }));
 
@@ -167,7 +165,7 @@ describe("ClausesContent", () => {
         clauses={ALL_CLAUSES}
         categories={ALL_CATEGORIES}
         canManage={true}
-      />,
+      />
     );
 
     // Both category headers should be present
@@ -190,7 +188,7 @@ describe("ClausesContent", () => {
         clauses={ALL_CLAUSES}
         categories={ALL_CATEGORIES}
         canManage={true}
-      />,
+      />
     );
 
     const searchInput = screen.getByPlaceholderText("Search clauses...");
@@ -209,7 +207,7 @@ describe("ClausesContent", () => {
         clauses={ALL_CLAUSES}
         categories={ALL_CATEGORIES}
         canManage={true}
-      />,
+      />
     );
 
     // Click the Shadcn Select trigger
@@ -234,7 +232,7 @@ describe("ClausesContent", () => {
         clauses={ALL_CLAUSES}
         categories={ALL_CATEGORIES}
         canManage={false}
-      />,
+      />
     );
 
     // No dropdown menu triggers should be present
@@ -248,7 +246,7 @@ describe("ClausesContent", () => {
         clauses={ALL_CLAUSES}
         categories={ALL_CATEGORIES}
         canManage={false}
-      />,
+      />
     );
 
     expect(screen.getByText("System")).toBeInTheDocument();
@@ -264,7 +262,7 @@ describe("ClausesContent", () => {
         clauses={[SYSTEM_CLAUSE]}
         categories={ALL_CATEGORIES}
         canManage={false}
-      />,
+      />
     );
 
     // Editor content should NOT be visible initially
@@ -288,13 +286,13 @@ describe("ClausesContent", () => {
         clauses={[SYSTEM_CLAUSE]}
         categories={ALL_CATEGORIES}
         canManage={true}
-      />,
+      />
     );
 
     // Open the dropdown menu
     const menuButtons = screen.getAllByRole("button");
     const moreButton = menuButtons.find(
-      (btn) => btn.querySelector("svg") && btn.className.includes("size-8"),
+      (btn) => btn.querySelector("svg") && btn.className.includes("size-8")
     );
     if (moreButton) await user.click(moreButton);
 
@@ -306,18 +304,14 @@ describe("ClausesContent", () => {
 
     // Confirmation dialog should appear
     await waitFor(() => {
-      expect(
-        screen.getByText("Clone this clause to create an editable copy?"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Clone this clause to create an editable copy?")).toBeInTheDocument();
     });
 
     // Confirm the clone
     await user.click(screen.getByRole("button", { name: "Clone" }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText('Clause "Standard NDA" cloned successfully.'),
-      ).toBeInTheDocument();
+      expect(screen.getByText('Clause "Standard NDA" cloned successfully.')).toBeInTheDocument();
     });
   });
 });

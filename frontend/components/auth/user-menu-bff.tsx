@@ -3,8 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { LogOut } from "lucide-react";
 
-const GATEWAY_URL =
-  process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8443";
+const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8443";
 
 interface BffUserInfo {
   name: string;
@@ -139,7 +138,7 @@ export function UserMenuBff() {
         {initials}
       </button>
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-48 rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
+        <div className="absolute top-full right-0 mt-2 w-48 rounded-lg border border-slate-200 bg-white py-1 shadow-lg dark:border-slate-700 dark:bg-slate-900">
           <div className="border-b border-slate-100 px-3 py-2 dark:border-slate-800">
             <p className="truncate text-sm font-medium text-slate-900 dark:text-slate-100">
               {user?.name ?? "Loading..."}

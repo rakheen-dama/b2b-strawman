@@ -50,14 +50,10 @@ describe("LogExpenseDialog", () => {
     await user.click(screen.getByText("Open Expense Dialog"));
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: "Log Expense" })
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Log Expense" })).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByText("Record a disbursement against this project.")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Record a disbursement against this project.")).toBeInTheDocument();
   });
 
   it("shows 'Edit Expense' title when expenseToEdit is provided", async () => {
@@ -73,14 +69,10 @@ describe("LogExpenseDialog", () => {
     await user.click(screen.getByText("Open Edit Dialog"));
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: "Edit Expense" })
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Edit Expense" })).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByText("Update the details of this expense.")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Update the details of this expense.")).toBeInTheDocument();
   });
 
   it("billable checkbox defaults to checked in create mode", async () => {
@@ -95,9 +87,7 @@ describe("LogExpenseDialog", () => {
     await user.click(screen.getByText("Open Create Dialog"));
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: "Log Expense" })
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Log Expense" })).toBeInTheDocument();
     });
 
     const checkbox = screen.getByRole("checkbox", { name: /billable/i });
@@ -116,9 +106,7 @@ describe("LogExpenseDialog", () => {
     await user.click(screen.getByText("Open Category Dialog"));
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: "Log Expense" })
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Log Expense" })).toBeInTheDocument();
     });
 
     const categorySelect = screen.getByLabelText("Category");
@@ -143,14 +131,10 @@ describe("LogExpenseDialog", () => {
     await user.click(screen.getByText("Open Submit Create"));
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: "Log Expense" })
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Log Expense" })).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByRole("button", { name: "Log Expense" })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Log Expense" })).toBeInTheDocument();
 
     unmount();
     cleanup();
@@ -166,13 +150,9 @@ describe("LogExpenseDialog", () => {
     await user.click(screen.getByText("Open Submit Edit"));
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: "Edit Expense" })
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Edit Expense" })).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByRole("button", { name: "Update Expense" })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Update Expense" })).toBeInTheDocument();
   });
 });

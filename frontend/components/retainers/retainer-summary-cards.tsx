@@ -23,7 +23,7 @@ export function RetainerSummaryCards({
           <FileText className="size-4 text-slate-400 dark:text-slate-600" />
         </CardHeader>
         <CardContent>
-          <p className="font-mono text-2xl font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+          <p className="font-mono text-2xl font-semibold text-slate-900 tabular-nums dark:text-slate-100">
             {activeCount}
           </p>
         </CardContent>
@@ -32,7 +32,7 @@ export function RetainerSummaryCards({
       <Card
         className={cn(
           readyToCloseCount > 0 &&
-            "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950",
+            "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950"
         )}
       >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -42,9 +42,7 @@ export function RetainerSummaryCards({
           <Clock
             className={cn(
               "size-4",
-              readyToCloseCount > 0
-                ? "text-amber-500"
-                : "text-slate-400 dark:text-slate-600",
+              readyToCloseCount > 0 ? "text-amber-500" : "text-slate-400 dark:text-slate-600"
             )}
           />
         </CardHeader>
@@ -54,7 +52,7 @@ export function RetainerSummaryCards({
               "font-mono text-2xl font-semibold tabular-nums",
               readyToCloseCount > 0
                 ? "text-amber-600 dark:text-amber-400"
-                : "text-slate-900 dark:text-slate-100",
+                : "text-slate-900 dark:text-slate-100"
             )}
           >
             {readyToCloseCount}
@@ -65,7 +63,7 @@ export function RetainerSummaryCards({
       <Card
         className={cn(
           totalOverageHours > 0 &&
-            "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950",
+            "border-amber-200 bg-amber-50 dark:border-amber-800 dark:bg-amber-950"
         )}
       >
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -75,9 +73,7 @@ export function RetainerSummaryCards({
           <AlertTriangle
             className={cn(
               "size-4",
-              totalOverageHours > 0
-                ? "text-amber-500"
-                : "text-slate-400 dark:text-slate-600",
+              totalOverageHours > 0 ? "text-amber-500" : "text-slate-400 dark:text-slate-600"
             )}
           />
         </CardHeader>
@@ -87,7 +83,7 @@ export function RetainerSummaryCards({
               "font-mono text-2xl font-semibold tabular-nums",
               totalOverageHours > 0
                 ? "text-amber-600 dark:text-amber-400"
-                : "text-slate-900 dark:text-slate-100",
+                : "text-slate-900 dark:text-slate-100"
             )}
           >
             {totalOverageHours.toFixed(1)} hrs

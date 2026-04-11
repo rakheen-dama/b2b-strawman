@@ -4,11 +4,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { InvoiceDetailClient } from "@/components/invoices/invoice-detail-client";
 import { InvoiceLineTable } from "@/components/invoices/invoice-line-table";
-import type {
-  InvoiceResponse,
-  InvoiceLineResponse,
-  TaxRateResponse,
-} from "@/lib/types";
+import type { InvoiceResponse, InvoiceLineResponse, TaxRateResponse } from "@/lib/types";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -59,14 +55,10 @@ vi.mock("@/app/(app)/org/[slug]/invoices/invoice-payment-actions", () => ({
   sendInvoice: vi.fn().mockResolvedValue({ success: true, invoice: null }),
   recordPayment: vi.fn().mockResolvedValue({ success: true, invoice: null }),
   voidInvoice: vi.fn().mockResolvedValue({ success: true, invoice: null }),
-  refreshPaymentLink: vi
-    .fn()
-    .mockResolvedValue({ success: true, invoice: null }),
+  refreshPaymentLink: vi.fn().mockResolvedValue({ success: true, invoice: null }),
 }));
 
-function makeLine(
-  overrides?: Partial<InvoiceLineResponse>,
-): InvoiceLineResponse {
+function makeLine(overrides?: Partial<InvoiceLineResponse>): InvoiceLineResponse {
   return {
     id: "line-1",
     projectId: "p1",
@@ -90,9 +82,7 @@ function makeLine(
   };
 }
 
-function makeInvoice(
-  overrides?: Partial<InvoiceResponse>,
-): InvoiceResponse {
+function makeInvoice(overrides?: Partial<InvoiceResponse>): InvoiceResponse {
   return {
     id: "inv-1",
     customerId: "c1",
@@ -176,7 +166,7 @@ describe("Invoice Tax UI", () => {
           slug="acme"
           isAdmin={true}
           taxRates={sampleTaxRates}
-        />,
+        />
       );
 
       // Click "Add Line" button to open the form
@@ -190,14 +180,7 @@ describe("Invoice Tax UI", () => {
     it("does not render tax rate select when no tax rates provided", async () => {
       const user = userEvent.setup();
       const invoice = makeInvoice();
-      render(
-        <InvoiceDetailClient
-          invoice={invoice}
-          slug="acme"
-          isAdmin={true}
-          taxRates={[]}
-        />,
-      );
+      render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} taxRates={[]} />);
 
       // Click "Add Line" button
       const addLineBtn = screen.getByRole("button", { name: /add line/i });
@@ -221,12 +204,7 @@ describe("Invoice Tax UI", () => {
       ];
 
       render(
-        <InvoiceLineTable
-          lines={lines}
-          currency="USD"
-          editable={false}
-          hasPerLineTax={true}
-        />,
+        <InvoiceLineTable lines={lines} currency="USD" editable={false} hasPerLineTax={true} />
       );
 
       // Tax column header should be present
@@ -241,12 +219,7 @@ describe("Invoice Tax UI", () => {
       const lines = [makeLine()];
 
       render(
-        <InvoiceLineTable
-          lines={lines}
-          currency="USD"
-          editable={false}
-          hasPerLineTax={false}
-        />,
+        <InvoiceLineTable lines={lines} currency="USD" editable={false} hasPerLineTax={false} />
       );
 
       // No Tax column header
@@ -267,12 +240,7 @@ describe("Invoice Tax UI", () => {
       ];
 
       render(
-        <InvoiceLineTable
-          lines={lines}
-          currency="USD"
-          editable={false}
-          hasPerLineTax={true}
-        />,
+        <InvoiceLineTable lines={lines} currency="USD" editable={false} hasPerLineTax={true} />
       );
 
       expect(screen.getByText("Exempt")).toBeInTheDocument();
@@ -293,13 +261,7 @@ describe("Invoice Tax UI", () => {
         ],
       });
 
-      render(
-        <InvoiceDetailClient
-          invoice={invoice}
-          slug="acme"
-          isAdmin={true}
-        />,
-      );
+      render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
 
       // Tax breakdown should show rate name and percentage in totals
       expect(screen.getByText("VAT (15%)")).toBeInTheDocument();
@@ -308,13 +270,7 @@ describe("Invoice Tax UI", () => {
     it("shows simple Tax row when hasPerLineTax is false", () => {
       const invoice = makeInvoice({ hasPerLineTax: false });
 
-      render(
-        <InvoiceDetailClient
-          invoice={invoice}
-          slug="acme"
-          isAdmin={true}
-        />,
-      );
+      render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
 
       // Simple Tax row should appear in totals
       // Tax appears both as column header "TAX" (but only when hasPerLineTax) and as "Tax" label
@@ -331,13 +287,7 @@ describe("Invoice Tax UI", () => {
         hasPerLineTax: false,
       });
 
-      render(
-        <InvoiceDetailClient
-          invoice={invoice}
-          slug="acme"
-          isAdmin={true}
-        />,
-      );
+      render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
 
       expect(screen.getByLabelText("Tax Amount")).toBeInTheDocument();
     });
@@ -356,13 +306,7 @@ describe("Invoice Tax UI", () => {
         ],
       });
 
-      render(
-        <InvoiceDetailClient
-          invoice={invoice}
-          slug="acme"
-          isAdmin={true}
-        />,
-      );
+      render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
 
       expect(screen.queryByLabelText("Tax Amount")).not.toBeInTheDocument();
     });
@@ -375,13 +319,7 @@ describe("Invoice Tax UI", () => {
         taxLabel: "VAT",
       });
 
-      render(
-        <InvoiceDetailClient
-          invoice={invoice}
-          slug="acme"
-          isAdmin={true}
-        />,
-      );
+      render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
 
       expect(screen.getByText("Prices include VAT")).toBeInTheDocument();
     });
@@ -392,17 +330,9 @@ describe("Invoice Tax UI", () => {
         taxLabel: "VAT",
       });
 
-      render(
-        <InvoiceDetailClient
-          invoice={invoice}
-          slug="acme"
-          isAdmin={true}
-        />,
-      );
+      render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
 
-      expect(
-        screen.queryByText("Prices include VAT"),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByText("Prices include VAT")).not.toBeInTheDocument();
     });
 
     it("does not show tax-inclusive note when taxLabel is null", () => {
@@ -411,13 +341,7 @@ describe("Invoice Tax UI", () => {
         taxLabel: null,
       });
 
-      render(
-        <InvoiceDetailClient
-          invoice={invoice}
-          slug="acme"
-          isAdmin={true}
-        />,
-      );
+      render(<InvoiceDetailClient invoice={invoice} slug="acme" isAdmin={true} />);
 
       expect(screen.queryByText(/Prices include/)).not.toBeInTheDocument();
     });

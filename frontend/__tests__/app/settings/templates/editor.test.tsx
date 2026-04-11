@@ -31,22 +31,15 @@ vi.mock("@/lib/api", () => ({
   },
 }));
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/templates/template-crud-actions",
-  () => ({
-    updateTemplateAction: (...args: unknown[]) =>
-      mockUpdateTemplateAction(...args),
-    createTemplateAction: vi.fn(),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/templates/template-crud-actions", () => ({
+  updateTemplateAction: (...args: unknown[]) => mockUpdateTemplateAction(...args),
+  createTemplateAction: vi.fn(),
+}));
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/templates/template-support-actions",
-  () => ({
-    fetchVariableMetadataAction: vi.fn(),
-    fetchRequiredFieldPacksAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/templates/template-support-actions", () => ({
+  fetchVariableMetadataAction: vi.fn(),
+  fetchRequiredFieldPacksAction: vi.fn().mockResolvedValue({ success: true, data: [] }),
+}));
 
 vi.mock("@/components/editor/DocumentEditor", () => ({
   DocumentEditor: ({
@@ -60,11 +53,7 @@ vi.mock("@/components/editor/DocumentEditor", () => ({
   }) => (
     <div data-testid="document-editor" data-editable={editable}>
       {content ? "Editor with content" : "Empty editor"}
-      <button
-        onClick={() =>
-          onUpdate?.({ type: "doc", content: [{ type: "paragraph" }] })
-        }
-      >
+      <button onClick={() => onUpdate?.({ type: "doc", content: [{ type: "paragraph" }] })}>
         Simulate edit
       </button>
     </div>
@@ -72,9 +61,7 @@ vi.mock("@/components/editor/DocumentEditor", () => ({
 }));
 
 vi.mock("@/components/templates/TemplatePreviewDialog", () => ({
-  TemplatePreviewDialog: () => (
-    <button data-testid="preview-dialog">Preview</button>
-  ),
+  TemplatePreviewDialog: () => <button data-testid="preview-dialog">Preview</button>,
 }));
 
 vi.mock("next/navigation", () => ({
@@ -87,9 +74,7 @@ vi.mock("next/navigation", () => ({
 // Must import after mocks
 import { TemplateEditorClient } from "@/components/templates/TemplateEditorClient";
 
-function makeTemplate(
-  overrides?: Partial<TemplateDetailResponse>,
-): TemplateDetailResponse {
+function makeTemplate(overrides?: Partial<TemplateDetailResponse>): TemplateDetailResponse {
   return {
     id: "tpl-1",
     name: "Test Template",
@@ -128,13 +113,7 @@ describe("TemplateEditorClient", () => {
 
   it("renders with DocumentEditor and back link", () => {
     const template = makeTemplate();
-    render(
-      <TemplateEditorClient
-        slug="acme"
-        template={template}
-        readOnly={false}
-      />,
-    );
+    render(<TemplateEditorClient slug="acme" template={template} readOnly={false} />);
 
     expect(screen.getByTestId("document-editor")).toBeInTheDocument();
     expect(screen.getByText("Templates")).toBeInTheDocument();
@@ -144,13 +123,7 @@ describe("TemplateEditorClient", () => {
   it("settings panel toggles visibility", async () => {
     const user = userEvent.setup();
     const template = makeTemplate();
-    render(
-      <TemplateEditorClient
-        slug="acme"
-        template={template}
-        readOnly={false}
-      />,
-    );
+    render(<TemplateEditorClient slug="acme" template={template} readOnly={false} />);
 
     // Settings panel should be hidden by default
     expect(screen.queryByLabelText("Description")).not.toBeInTheDocument();
@@ -172,13 +145,7 @@ describe("TemplateEditorClient", () => {
     const template = makeTemplate();
     mockUpdateTemplateAction.mockResolvedValue({ success: true });
 
-    render(
-      <TemplateEditorClient
-        slug="acme"
-        template={template}
-        readOnly={false}
-      />,
-    );
+    render(<TemplateEditorClient slug="acme" template={template} readOnly={false} />);
 
     // Simulate an edit in the editor
     await user.click(screen.getByText("Simulate edit"));
@@ -193,7 +160,7 @@ describe("TemplateEditorClient", () => {
         expect.objectContaining({
           name: "Test Template",
           content: { type: "doc", content: [{ type: "paragraph" }] },
-        }),
+        })
       );
     });
   });
@@ -203,17 +170,9 @@ describe("TemplateEditorClient", () => {
       legacyContent: "<html><body>Old content</body></html>",
     });
 
-    render(
-      <TemplateEditorClient
-        slug="acme"
-        template={template}
-        readOnly={false}
-      />,
-    );
+    render(<TemplateEditorClient slug="acme" template={template} readOnly={false} />);
 
     expect(screen.getByText("Migration needed")).toBeInTheDocument();
-    expect(
-      screen.getByText(/migrated from legacy HTML content/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/migrated from legacy HTML content/)).toBeInTheDocument();
   });
 });

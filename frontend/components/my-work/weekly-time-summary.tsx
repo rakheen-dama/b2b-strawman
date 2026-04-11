@@ -42,10 +42,7 @@ interface WeeklyTimeSummaryProps {
   initialFrom: string;
 }
 
-export function WeeklyTimeSummary({
-  initialSummary,
-  initialFrom,
-}: WeeklyTimeSummaryProps) {
+export function WeeklyTimeSummary({ initialSummary, initialFrom }: WeeklyTimeSummaryProps) {
   const [summary, setSummary] = useState(initialSummary);
   const [weekStart, setWeekStart] = useState(() => {
     const [y, m, d] = initialFrom.split("-").map(Number);
@@ -80,9 +77,7 @@ export function WeeklyTimeSummary({
     <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
       {/* Week Navigation Header */}
       <div className="flex items-center justify-between">
-        <h2 className="font-semibold text-slate-900 dark:text-slate-100">
-          This Week
-        </h2>
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">This Week</h2>
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
@@ -111,15 +106,13 @@ export function WeeklyTimeSummary({
       </div>
 
       {isEmpty ? (
-        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
-          No time tracked this week
-        </p>
+        <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">No time tracked this week</p>
       ) : (
         <div className="mt-4 space-y-4">
           {/* Stat Cards: Total, Billable, Non-billable */}
           <div className="space-y-3">
             <div className="rounded-md bg-slate-50 px-4 py-3 dark:bg-slate-900">
-              <p className="text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <p className="text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Total
               </p>
               <p className="font-display text-2xl text-slate-900 dark:text-slate-100">
@@ -129,7 +122,7 @@ export function WeeklyTimeSummary({
 
             <div className="grid grid-cols-2 gap-3">
               <div className="rounded-md bg-slate-50 px-4 py-3 dark:bg-slate-900">
-                <p className="text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <p className="text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Billable
                 </p>
                 <p className="font-display text-xl text-green-600 dark:text-green-400">
@@ -137,7 +130,7 @@ export function WeeklyTimeSummary({
                 </p>
               </div>
               <div className="rounded-md bg-slate-50 px-4 py-3 dark:bg-slate-900">
-                <p className="text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <p className="text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Non-billable
                 </p>
                 <p className="font-display text-xl text-slate-600 dark:text-slate-400">

@@ -12,22 +12,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TriggerConfigForm } from "@/components/automations/trigger-config-form";
-import {
-  ConditionBuilder,
-  type ConditionRow,
-} from "@/components/automations/condition-builder";
-import {
-  ActionList,
-  type ActionRow,
-} from "@/components/automations/action-list";
+import { ConditionBuilder, type ConditionRow } from "@/components/automations/condition-builder";
+import { ActionList, type ActionRow } from "@/components/automations/action-list";
 import type {
   AutomationRuleResponse,
   TriggerType,
@@ -59,21 +47,59 @@ interface RuleFormProps {
 }
 
 const TRIGGER_TYPE_OPTIONS: { value: TriggerType; label: string; description: string }[] = [
-  { value: "TASK_STATUS_CHANGED", label: "Task Status Changed", description: "Triggered when a task status changes" },
-  { value: "PROJECT_STATUS_CHANGED", label: "Project Status Changed", description: "Triggered when a project status changes" },
-  { value: "CUSTOMER_STATUS_CHANGED", label: "Customer Status Changed", description: "Triggered when a customer status changes" },
-  { value: "INVOICE_STATUS_CHANGED", label: "Invoice Status Changed", description: "Triggered when an invoice status changes" },
-  { value: "TIME_ENTRY_CREATED", label: "Time Entry Created", description: "Triggered when a new time entry is logged" },
-  { value: "BUDGET_THRESHOLD_REACHED", label: "Budget Threshold Reached", description: "Triggered when budget consumption hits a threshold" },
-  { value: "DOCUMENT_ACCEPTED", label: "Document Accepted", description: "Triggered when a document is accepted" },
-  { value: "INFORMATION_REQUEST_COMPLETED", label: "Information Request Completed", description: "Triggered when an information request is completed" },
-  { value: "PROPOSAL_SENT", label: "Proposal Sent", description: "Triggered when a proposal is sent to a customer" },
-  { value: "FIELD_DATE_APPROACHING", label: "Date Approaching", description: "Triggered when a tracked date field is approaching" },
+  {
+    value: "TASK_STATUS_CHANGED",
+    label: "Task Status Changed",
+    description: "Triggered when a task status changes",
+  },
+  {
+    value: "PROJECT_STATUS_CHANGED",
+    label: "Project Status Changed",
+    description: "Triggered when a project status changes",
+  },
+  {
+    value: "CUSTOMER_STATUS_CHANGED",
+    label: "Customer Status Changed",
+    description: "Triggered when a customer status changes",
+  },
+  {
+    value: "INVOICE_STATUS_CHANGED",
+    label: "Invoice Status Changed",
+    description: "Triggered when an invoice status changes",
+  },
+  {
+    value: "TIME_ENTRY_CREATED",
+    label: "Time Entry Created",
+    description: "Triggered when a new time entry is logged",
+  },
+  {
+    value: "BUDGET_THRESHOLD_REACHED",
+    label: "Budget Threshold Reached",
+    description: "Triggered when budget consumption hits a threshold",
+  },
+  {
+    value: "DOCUMENT_ACCEPTED",
+    label: "Document Accepted",
+    description: "Triggered when a document is accepted",
+  },
+  {
+    value: "INFORMATION_REQUEST_COMPLETED",
+    label: "Information Request Completed",
+    description: "Triggered when an information request is completed",
+  },
+  {
+    value: "PROPOSAL_SENT",
+    label: "Proposal Sent",
+    description: "Triggered when a proposal is sent to a customer",
+  },
+  {
+    value: "FIELD_DATE_APPROACHING",
+    label: "Date Approaching",
+    description: "Triggered when a tracked date field is approaching",
+  },
 ];
 
-function parseConditions(
-  raw: Record<string, unknown>[],
-): ConditionRow[] {
+function parseConditions(raw: Record<string, unknown>[]): ConditionRow[] {
   return raw.map((c) => ({
     id: crypto.randomUUID(),
     field: (c.field as string) ?? "",
@@ -82,9 +108,7 @@ function parseConditions(
   }));
 }
 
-function serializeConditions(
-  rows: ConditionRow[],
-): Record<string, unknown>[] {
+function serializeConditions(rows: ConditionRow[]): Record<string, unknown>[] {
   return rows
     .filter((r) => r.field)
     .map(({ field, operator, value }) => ({
@@ -94,22 +118,15 @@ function serializeConditions(
     }));
 }
 
-export function RuleForm({
-  rule,
-  onSave,
-  onCancel,
-  isSaving,
-}: RuleFormProps) {
+export function RuleForm({ rule, onSave, onCancel, isSaving }: RuleFormProps) {
   const [name, setName] = useState(rule?.name ?? "");
   const [description, setDescription] = useState(rule?.description ?? "");
-  const [triggerType, setTriggerType] = useState<TriggerType | "">(
-    rule?.triggerType ?? "",
-  );
+  const [triggerType, setTriggerType] = useState<TriggerType | "">(rule?.triggerType ?? "");
   const [triggerConfig, setTriggerConfig] = useState<Record<string, unknown>>(
-    rule?.triggerConfig ?? {},
+    rule?.triggerConfig ?? {}
   );
   const [conditions, setConditions] = useState<ConditionRow[]>(
-    rule?.conditions ? parseConditions(rule.conditions) : [],
+    rule?.conditions ? parseConditions(rule.conditions) : []
   );
   const [actions, setActions] = useState<ActionRow[]>(
     rule?.actions
@@ -121,7 +138,7 @@ export function RuleForm({
           delayDuration: a.delayDuration,
           delayUnit: a.delayUnit,
         }))
-      : [],
+      : []
   );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -172,9 +189,7 @@ export function RuleForm({
       <Card>
         <CardHeader>
           <CardTitle>Trigger</CardTitle>
-          <CardDescription>
-            Define when this automation rule should fire.
-          </CardDescription>
+          <CardDescription>Define when this automation rule should fire.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -193,11 +208,7 @@ export function RuleForm({
               }}
               placeholder="e.g. Notify on task completion"
             />
-            {errors.name && (
-              <p className="text-sm text-red-600 dark:text-red-400">
-                {errors.name}
-              </p>
-            )}
+            {errors.name && <p className="text-sm text-red-600 dark:text-red-400">{errors.name}</p>}
           </div>
 
           <div className="space-y-2">
@@ -226,9 +237,7 @@ export function RuleForm({
               </SelectContent>
             </Select>
             {errors.triggerType && (
-              <p className="text-sm text-red-600 dark:text-red-400">
-                {errors.triggerType}
-              </p>
+              <p className="text-sm text-red-600 dark:text-red-400">{errors.triggerType}</p>
             )}
           </div>
 
@@ -261,16 +270,10 @@ export function RuleForm({
       <Card>
         <CardHeader>
           <CardTitle>Actions</CardTitle>
-          <CardDescription>
-            Define what happens when this rule triggers.
-          </CardDescription>
+          <CardDescription>Define what happens when this rule triggers.</CardDescription>
         </CardHeader>
         <CardContent>
-          <ActionList
-            actions={actions}
-            onActionsChange={setActions}
-            triggerType={triggerType}
-          />
+          <ActionList actions={actions} onActionsChange={setActions} triggerType={triggerType} />
         </CardContent>
       </Card>
 

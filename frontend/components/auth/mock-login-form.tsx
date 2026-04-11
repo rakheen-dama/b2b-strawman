@@ -41,9 +41,7 @@ export function MockLoginForm({ mockIdpUrl }: MockLoginFormProps) {
 
       if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        throw new Error(
-          data.error || `Token request failed (${response.status})`,
-        );
+        throw new Error(data.error || `Token request failed (${response.status})`);
       }
 
       const { access_token } = await response.json();
@@ -82,9 +80,7 @@ export function MockLoginForm({ mockIdpUrl }: MockLoginFormProps) {
         </select>
       </div>
 
-      {error && (
-        <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       <button
         type="submit"

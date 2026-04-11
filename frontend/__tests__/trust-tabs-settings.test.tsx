@@ -54,27 +54,21 @@ vi.mock("sonner", () => ({
 }));
 
 // Mock the trust transaction actions to prevent server action imports in test env
-vi.mock(
-  "@/app/(app)/org/[slug]/trust-accounting/transactions/actions",
-  () => ({
-    fetchTransactions: vi.fn().mockResolvedValue({ content: [] }),
-    recordDeposit: vi.fn(),
-    recordPayment: vi.fn(),
-    recordFeeTransfer: vi.fn(),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/trust-accounting/transactions/actions", () => ({
+  fetchTransactions: vi.fn().mockResolvedValue({ content: [] }),
+  recordDeposit: vi.fn(),
+  recordPayment: vi.fn(),
+  recordFeeTransfer: vi.fn(),
+}));
 
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
   fetchTrustAccounts: vi.fn().mockResolvedValue([]),
 }));
 
-vi.mock(
-  "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions",
-  () => ({
-    fetchClientLedger: vi.fn().mockResolvedValue(null),
-    fetchClientHistory: vi.fn().mockResolvedValue({ content: [] }),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions", () => ({
+  fetchClientLedger: vi.fn().mockResolvedValue(null),
+  fetchClientHistory: vi.fn().mockResolvedValue({ content: [] }),
+}));
 
 // --- Imports after mocks ---
 
@@ -104,11 +98,7 @@ function withTrustEnabled(ui: React.ReactElement) {
 
 function withNoModules(ui: React.ReactElement) {
   return (
-    <OrgProfileProvider
-      verticalProfile={null}
-      enabledModules={[]}
-      terminologyNamespace={null}
-    >
+    <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
       {ui}
     </OrgProfileProvider>
   );
@@ -138,15 +128,9 @@ describe("Project detail Trust tab", () => {
           tasksPanel={placeholder}
           timePanel={placeholder}
           activityPanel={placeholder}
-          trustPanel={
-            <TrustBalanceCard
-              customerId="cust-1"
-              slug="acme"
-              showQuickActions={false}
-            />
-          }
-        />,
-      ),
+          trustPanel={<TrustBalanceCard customerId="cust-1" slug="acme" showQuickActions={false} />}
+        />
+      )
     );
 
     expect(screen.getByRole("tab", { name: "Trust" })).toBeInTheDocument();
@@ -163,11 +147,9 @@ describe("Project detail Trust tab", () => {
           tasksPanel={placeholder}
           timePanel={placeholder}
           activityPanel={placeholder}
-          trustPanel={
-            <div data-testid="trust-content">Trust content</div>
-          }
-        />,
-      ),
+          trustPanel={<div data-testid="trust-content">Trust content</div>}
+        />
+      )
     );
 
     expect(screen.queryByRole("tab", { name: "Trust" })).not.toBeInTheDocument();
@@ -187,8 +169,8 @@ describe("Project detail Trust tab", () => {
           timePanel={placeholder}
           activityPanel={placeholder}
           trustPanel={<div data-testid="trust-content">Trust</div>}
-        />,
-      ),
+        />
+      )
     );
 
     // Trust tab should not be rendered
@@ -213,15 +195,9 @@ describe("Customer detail Trust tab", () => {
         <CustomerTabs
           projectsPanel={placeholder}
           documentsPanel={placeholder}
-          trustPanel={
-            <TrustBalanceCard
-              customerId="cust-1"
-              slug="acme"
-              showQuickActions={true}
-            />
-          }
-        />,
-      ),
+          trustPanel={<TrustBalanceCard customerId="cust-1" slug="acme" showQuickActions={true} />}
+        />
+      )
     );
 
     expect(screen.getByRole("tab", { name: "Trust" })).toBeInTheDocument();
@@ -230,15 +206,11 @@ describe("Customer detail Trust tab", () => {
 
 describe("Trust settings page", () => {
   it("has a settings entry in SETTINGS_ITEMS with module gating", () => {
-    const trustSetting = SETTINGS_ITEMS.find(
-      (s) => s.title === "Trust Accounting",
-    );
+    const trustSetting = SETTINGS_ITEMS.find((s) => s.title === "Trust Accounting");
     expect(trustSetting).toBeDefined();
     expect(trustSetting!.adminOnly).toBe(true);
     expect(trustSetting!.requiredModule).toBe("trust_accounting");
-    expect(trustSetting!.href("acme")).toBe(
-      "/org/acme/settings/trust-accounting",
-    );
+    expect(trustSetting!.href("acme")).toBe("/org/acme/settings/trust-accounting");
     expect(trustSetting!.description).toContain("trust accounts");
   });
 });
@@ -252,11 +224,7 @@ describe("TrustBalanceCard", () => {
       mutate: vi.fn(),
     } as ReturnType<typeof useSWR>);
 
-    render(
-      withTrustEnabled(
-        <TrustBalanceCard customerId="cust-1" slug="acme" />,
-      ),
-    );
+    render(withTrustEnabled(<TrustBalanceCard customerId="cust-1" slug="acme" />));
 
     expect(screen.getByText("Loading trust balance...")).toBeInTheDocument();
   });
@@ -279,11 +247,7 @@ describe("TrustBalanceCard", () => {
       } as ReturnType<typeof useSWR>;
     });
 
-    render(
-      withTrustEnabled(
-        <TrustBalanceCard customerId="cust-1" slug="acme" />,
-      ),
-    );
+    render(withTrustEnabled(<TrustBalanceCard customerId="cust-1" slug="acme" />));
 
     expect(screen.getByText("Unable to load trust balance")).toBeInTheDocument();
   });
@@ -296,15 +260,9 @@ describe("TrustBalanceCard", () => {
       mutate: vi.fn(),
     } as ReturnType<typeof useSWR>);
 
-    render(
-      withTrustEnabled(
-        <TrustBalanceCard customerId="cust-1" slug="acme" />,
-      ),
-    );
+    render(withTrustEnabled(<TrustBalanceCard customerId="cust-1" slug="acme" />));
 
-    expect(
-      screen.getByText(/No trust account configured/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/No trust account configured/)).toBeInTheDocument();
   });
 
   it("renders balance data with Funds Held badge", () => {
@@ -332,14 +290,12 @@ describe("TrustBalanceCard", () => {
     });
 
     render(
-      withTrustEnabled(
-        <TrustBalanceCard customerId="cust-1" slug="acme" trustAccountId="acc-1" />,
-      ),
+      withTrustEnabled(<TrustBalanceCard customerId="cust-1" slug="acme" trustAccountId="acc-1" />)
     );
 
     expect(screen.getByText("Funds Held")).toBeInTheDocument();
-    // Balance is rendered by formatCurrency (ZAR) — "R 50,000.00" or "R\u00a050,000.00"
-    expect(screen.getByText(/R[\s\u00a0]?50[,.]000/)).toBeInTheDocument();
+    // locale-agnostic: accepts en-ZA "R 50 000,00" or en-US "R 50,000.00"
+    expect(screen.getByText(/R[\s\u00a0]50[\s\u00a0,]000[,.]00/)).toBeInTheDocument();
   });
 
   it("renders Overdrawn badge for negative balance", () => {
@@ -367,9 +323,7 @@ describe("TrustBalanceCard", () => {
     });
 
     render(
-      withTrustEnabled(
-        <TrustBalanceCard customerId="cust-1" slug="acme" trustAccountId="acc-1" />,
-      ),
+      withTrustEnabled(<TrustBalanceCard customerId="cust-1" slug="acme" trustAccountId="acc-1" />)
     );
 
     expect(screen.getByText("Overdrawn")).toBeInTheDocument();
@@ -406,8 +360,8 @@ describe("TrustBalanceCard", () => {
           slug="acme"
           trustAccountId="acc-1"
           showQuickActions={true}
-        />,
-      ),
+        />
+      )
     );
 
     expect(screen.getByRole("button", { name: /Record Deposit/ })).toBeInTheDocument();
@@ -422,7 +376,7 @@ describe("Sidebar nav items", () => {
     expect(financeGroup).toBeDefined();
 
     const trustItems = financeGroup!.items.filter(
-      (item) => item.requiredModule === "trust_accounting",
+      (item) => item.requiredModule === "trust_accounting"
     );
     expect(trustItems).toHaveLength(7);
 

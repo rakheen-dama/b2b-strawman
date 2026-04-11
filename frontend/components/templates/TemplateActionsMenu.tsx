@@ -22,10 +22,7 @@ interface TemplateActionsMenuProps {
   template: TemplateListResponse;
 }
 
-export function TemplateActionsMenu({
-  slug,
-  template,
-}: TemplateActionsMenuProps) {
+export function TemplateActionsMenu({ slug, template }: TemplateActionsMenuProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -68,71 +65,56 @@ export function TemplateActionsMenu({
 
   return (
     <div className="flex items-center gap-2">
-      {error && (
-        <span className="text-xs text-destructive">{error}</span>
-      )}
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="plain"
-          size="icon"
-          className="size-8"
-          disabled={isLoading}
-        >
-          <MoreHorizontal className="size-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {isCustom && (
-          <DropdownMenuItem
-            onClick={() =>
-              router.push(`/org/${slug}/settings/templates/${template.id}/edit`)
-            }
-          >
-            <Pencil className="mr-2 size-4" />
-            Edit
-          </DropdownMenuItem>
-        )}
-
-        {isPlatform && (
-          <DropdownMenuItem
-            onClick={() =>
-              router.push(`/org/${slug}/settings/templates/${template.id}/edit`)
-            }
-          >
-            <Eye className="mr-2 size-4" />
-            View
-          </DropdownMenuItem>
-        )}
-
-        {isPlatform && (
-          <DropdownMenuItem onClick={handleClone} disabled={isLoading}>
-            <Copy className="mr-2 size-4" />
-            Clone & Customize
-          </DropdownMenuItem>
-        )}
-
-        {isCustom && hasSource && (
-          <ResetTemplateDialog
-            slug={slug}
-            templateId={template.id}
-            templateName={template.name}
-          >
-            <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-              <RotateCcw className="mr-2 size-4" />
-              Reset to Default
+      {error && <span className="text-destructive text-xs">{error}</span>}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="plain" size="icon" className="size-8" disabled={isLoading}>
+            <MoreHorizontal className="size-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {isCustom && (
+            <DropdownMenuItem
+              onClick={() => router.push(`/org/${slug}/settings/templates/${template.id}/edit`)}
+            >
+              <Pencil className="mr-2 size-4" />
+              Edit
             </DropdownMenuItem>
-          </ResetTemplateDialog>
-        )}
+          )}
 
-        {template.active && (
-          <DropdownMenuItem onClick={handleDeactivate} disabled={isLoading}>
-            <Power className="mr-2 size-4" />
-            Deactivate
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+          {isPlatform && (
+            <DropdownMenuItem
+              onClick={() => router.push(`/org/${slug}/settings/templates/${template.id}/edit`)}
+            >
+              <Eye className="mr-2 size-4" />
+              View
+            </DropdownMenuItem>
+          )}
+
+          {isPlatform && (
+            <DropdownMenuItem onClick={handleClone} disabled={isLoading}>
+              <Copy className="mr-2 size-4" />
+              Clone & Customize
+            </DropdownMenuItem>
+          )}
+
+          {isCustom && hasSource && (
+            <ResetTemplateDialog slug={slug} templateId={template.id} templateName={template.name}>
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <RotateCcw className="mr-2 size-4" />
+                Reset to Default
+              </DropdownMenuItem>
+            </ResetTemplateDialog>
+          )}
+
+          {template.active && (
+            <DropdownMenuItem onClick={handleDeactivate} disabled={isLoading}>
+              <Power className="mr-2 size-4" />
+              Deactivate
+            </DropdownMenuItem>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }

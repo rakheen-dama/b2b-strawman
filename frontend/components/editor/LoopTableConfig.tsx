@@ -2,11 +2,7 @@
 
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -20,10 +16,7 @@ interface LoopTableConfigProps {
   onOpenChange: (open: boolean) => void;
   dataSource: string;
   columns: LoopTableColumn[];
-  onUpdate: (attrs: {
-    dataSource: string;
-    columns: LoopTableColumn[];
-  }) => void;
+  onUpdate: (attrs: { dataSource: string; columns: LoopTableColumn[] }) => void;
 }
 
 function LoopTableConfigForm({
@@ -37,7 +30,7 @@ function LoopTableConfigForm({
 }) {
   const [dataSource, setDataSource] = useState(initialDataSource);
   const [columns, setColumns] = useState<LoopTableColumn[]>(
-    initialColumns.length > 0 ? initialColumns : [],
+    initialColumns.length > 0 ? initialColumns : []
   );
 
   const addColumn = () => {
@@ -48,32 +41,21 @@ function LoopTableConfigForm({
     setColumns(columns.filter((_, i) => i !== index));
   };
 
-  const updateColumn = (
-    index: number,
-    field: keyof LoopTableColumn,
-    value: string,
-  ) => {
-    const updated = columns.map((col, i) =>
-      i === index ? { ...col, [field]: value } : col,
-    );
+  const updateColumn = (index: number, field: keyof LoopTableColumn, value: string) => {
+    const updated = columns.map((col, i) => (i === index ? { ...col, [field]: value } : col));
     setColumns(updated);
   };
 
   const handleApply = () => {
     if (!dataSource.trim()) return;
-    const validColumns = columns.filter(
-      (col) => col.header.trim() && col.key.trim(),
-    );
+    const validColumns = columns.filter((col) => col.header.trim() && col.key.trim());
     onUpdate({ dataSource: dataSource.trim(), columns: validColumns });
   };
 
   return (
     <div className="space-y-4">
       <div>
-        <label
-          htmlFor="loop-data-source"
-          className="mb-1 block text-sm font-medium"
-        >
+        <label htmlFor="loop-data-source" className="mb-1 block text-sm font-medium">
           Data Source
         </label>
         <Input
@@ -104,18 +86,14 @@ function LoopTableConfigForm({
             <div key={index} className="flex items-center gap-2">
               <Input
                 value={col.header}
-                onChange={(e) =>
-                  updateColumn(index, "header", e.target.value)
-                }
+                onChange={(e) => updateColumn(index, "header", e.target.value)}
                 placeholder="Header"
                 className="h-8 text-xs"
                 aria-label={`Column ${index + 1} header`}
               />
               <Input
                 value={col.key}
-                onChange={(e) =>
-                  updateColumn(index, "key", e.target.value)
-                }
+                onChange={(e) => updateColumn(index, "key", e.target.value)}
                 placeholder="Data key"
                 className="h-8 text-xs"
                 aria-label={`Column ${index + 1} key`}
@@ -133,20 +111,14 @@ function LoopTableConfigForm({
           ))}
 
           {columns.length === 0 && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               No columns configured. Click &quot;Add&quot; to add one.
             </p>
           )}
         </div>
       </div>
 
-      <Button
-        variant="default"
-        size="sm"
-        type="button"
-        onClick={handleApply}
-        className="w-full"
-      >
+      <Button variant="default" size="sm" type="button" onClick={handleApply} className="w-full">
         Apply
       </Button>
     </div>

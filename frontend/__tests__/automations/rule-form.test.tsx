@@ -62,7 +62,7 @@ describe("RuleForm", () => {
 
     // Before selecting, should show "Select a trigger type"
     expect(
-      screen.getByText("Select a trigger type to configure additional settings."),
+      screen.getByText("Select a trigger type to configure additional settings.")
     ).toBeInTheDocument();
   });
 
@@ -85,7 +85,7 @@ describe("RuleForm", () => {
           updatedAt: "2026-01-01T00:00:00Z",
           actions: [],
         }}
-      />,
+      />
     );
 
     expect(screen.getByLabelText("Budget Threshold")).toBeInTheDocument();
@@ -111,12 +111,10 @@ describe("RuleForm", () => {
           updatedAt: "2026-01-01T00:00:00Z",
           actions: [],
         }}
-      />,
+      />
     );
 
-    expect(
-      screen.getByText("This trigger has no additional configuration."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("This trigger has no additional configuration.")).toBeInTheDocument();
   });
 
   it("renders status from/to selects for status change triggers", () => {
@@ -138,7 +136,7 @@ describe("RuleForm", () => {
           updatedAt: "2026-01-01T00:00:00Z",
           actions: [],
         }}
-      />,
+      />
     );
 
     expect(screen.getByLabelText("From Status")).toBeInTheDocument();
@@ -164,7 +162,7 @@ describe("RuleForm", () => {
           updatedAt: "2026-01-01T00:00:00Z",
           actions: [],
         }}
-      />,
+      />
     );
 
     const addButton = screen.getByText("Add Condition");
@@ -193,7 +191,7 @@ describe("RuleForm", () => {
           updatedAt: "2026-01-01T00:00:00Z",
           actions: [],
         }}
-      />,
+      />
     );
 
     // Should have a remove button
@@ -235,7 +233,7 @@ describe("RuleForm", () => {
           updatedAt: "2026-01-01T00:00:00Z",
           actions: [],
         }}
-      />,
+      />
     );
 
     expect(screen.getByText("Save Changes")).toBeInTheDocument();
@@ -260,7 +258,7 @@ describe("RuleForm", () => {
           updatedAt: "2026-01-01T00:00:00Z",
           actions: [],
         }}
-      />,
+      />
     );
 
     const addButton = screen.getByText("Add Condition");
@@ -298,7 +296,7 @@ describe("RuleForm", () => {
           updatedAt: "2026-01-01T00:00:00Z",
           actions: [],
         }}
-      />,
+      />
     );
 
     // There should be only ONE value input (for the EQUALS row), not two
@@ -325,7 +323,7 @@ describe("RuleForm", () => {
           updatedAt: "2026-01-01T00:00:00Z",
           actions: [],
         }}
-      />,
+      />
     );
 
     expect(screen.getByLabelText("From Status")).toBeInTheDocument();
@@ -351,7 +349,7 @@ describe("RuleForm", () => {
           updatedAt: "2026-01-01T00:00:00Z",
           actions: [],
         }}
-      />,
+      />
     );
 
     const input = screen.getByDisplayValue("75");

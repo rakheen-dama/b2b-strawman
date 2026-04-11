@@ -11,16 +11,17 @@ import type { OrgRole } from "@/lib/api/org-roles";
 
 const ALL_CAPABILITIES = Object.values(CAPABILITIES);
 
-export default async function RolesSettingsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function RolesSettingsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const capData = await fetchMyCapabilities();
 
   if (!capData.isAdmin && !capData.isOwner) {
-    return <PermissionDenied featureName="Roles & Permissions" dashboardHref={`/org/${slug}/dashboard`} />;
+    return (
+      <PermissionDenied
+        featureName="Roles & Permissions"
+        dashboardHref={`/org/${slug}/dashboard`}
+      />
+    );
   }
 
   let roles: OrgRole[] = [];
@@ -67,9 +68,7 @@ export default async function RolesSettingsPage({
       {/* System Roles Section */}
       <div className="space-y-4">
         <div>
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-            System Roles
-          </h2>
+          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">System Roles</h2>
           <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-400">
             Built-in roles that cannot be modified or deleted.
           </p>
@@ -84,9 +83,7 @@ export default async function RolesSettingsPage({
                 className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950"
               >
                 <div className="flex items-center gap-2">
-                  <h3 className="font-semibold text-slate-950 dark:text-slate-50">
-                    {role.name}
-                  </h3>
+                  <h3 className="font-semibold text-slate-950 dark:text-slate-50">{role.name}</h3>
                   <Badge variant="neutral">System</Badge>
                 </div>
 
@@ -107,8 +104,7 @@ export default async function RolesSettingsPage({
                 <div className="mt-3 flex items-center gap-1 text-xs text-slate-500 dark:text-slate-400">
                   <Users className="size-3.5" />
                   <span>
-                    {role.memberCount}{" "}
-                    {role.memberCount === 1 ? "member" : "members"}
+                    {role.memberCount} {role.memberCount === 1 ? "member" : "members"}
                   </span>
                 </div>
               </div>

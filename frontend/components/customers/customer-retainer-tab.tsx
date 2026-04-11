@@ -77,25 +77,18 @@ export function CustomerRetainerTab({
           <CardContent className="space-y-4">
             <div className="text-sm text-slate-600 dark:text-slate-400">
               <span>
-                {TYPE_LABELS[retainer.type]} &middot;{" "}
-                {FREQUENCY_LABELS[retainer.frequency]}
+                {TYPE_LABELS[retainer.type]} &middot; {FREQUENCY_LABELS[retainer.frequency]}
               </span>
               <span className="mx-2">&middot;</span>
               <span>Start: {formatLocalDate(retainer.startDate)}</span>
               <span className="mx-2">&middot;</span>
-              <span>
-                End:{" "}
-                {retainer.endDate
-                  ? formatLocalDate(retainer.endDate)
-                  : "Ongoing"}
-              </span>
+              <span>End: {retainer.endDate ? formatLocalDate(retainer.endDate) : "Ongoing"}</span>
             </div>
 
             {retainer.currentPeriod && (
               <div className="space-y-2">
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Current Period:{" "}
-                  {formatLocalDate(retainer.currentPeriod.periodStart)} &ndash;{" "}
+                  Current Period: {formatLocalDate(retainer.currentPeriod.periodStart)} &ndash;{" "}
                   {formatLocalDate(retainer.currentPeriod.periodEnd)}
                 </p>
                 <RetainerProgress
@@ -106,9 +99,7 @@ export function CustomerRetainerTab({
               </div>
             )}
 
-            {retainer.notes && (
-              <p className="text-sm text-slate-500">{retainer.notes}</p>
-            )}
+            {retainer.notes && <p className="text-sm text-slate-500">{retainer.notes}</p>}
           </CardContent>
         </Card>
       )}

@@ -27,8 +27,7 @@ interface InvoiceDraftFormProps {
 const inputClass =
   "w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-600";
 
-const labelClass =
-  "mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300";
+const labelClass = "mb-1 block text-sm font-medium text-slate-700 dark:text-slate-300";
 
 export function InvoiceDraftForm({
   dueDate,
@@ -53,9 +52,7 @@ export function InvoiceDraftForm({
 }: InvoiceDraftFormProps) {
   return (
     <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
-      <h2 className="mb-4 font-semibold text-slate-900 dark:text-slate-100">
-        Invoice Details
-      </h2>
+      <h2 className="mb-4 font-semibold text-slate-900 dark:text-slate-100">Invoice Details</h2>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="invoice-due-date" className={labelClass}>
@@ -169,12 +166,7 @@ export function InvoiceDraftForm({
         </div>
       </div>
       <div className="mt-4 flex justify-end">
-        <Button
-          variant="accent"
-          size="sm"
-          onClick={onSave}
-          disabled={isPending}
-        >
+        <Button variant="accent" size="sm" onClick={onSave} disabled={isPending}>
           Save Changes
         </Button>
       </div>

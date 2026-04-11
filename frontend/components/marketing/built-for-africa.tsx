@@ -30,12 +30,12 @@ export function BuiltForAfrica() {
       <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-teal-600/5 via-transparent to-teal-600/5" />
 
       <div className="relative mx-auto max-w-5xl">
-        <p className="text-center text-sm font-semibold uppercase tracking-[0.2em] text-teal-400">
+        <p className="text-center text-sm font-semibold tracking-[0.2em] text-teal-400 uppercase">
           Built for South Africa
         </p>
         <p className="mx-auto mt-4 max-w-2xl text-center text-lg text-slate-400">
-          Kazi understands the regulations, workflows, and realities of running a
-          South African practice — because that&apos;s exactly where it was built.
+          Kazi understands the regulations, workflows, and realities of running a South African
+          practice — because that&apos;s exactly where it was built.
         </p>
 
         <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -45,12 +45,8 @@ export function BuiltForAfrica() {
               className="group rounded-lg border border-white/5 bg-white/[0.02] p-5 transition-colors hover:border-teal-500/20 hover:bg-teal-500/[0.04]"
             >
               <pillar.icon className="size-5 text-teal-500" />
-              <p className="mt-3 font-display text-sm font-semibold text-white">
-                {pillar.label}
-              </p>
-              <p className="mt-1.5 text-sm leading-relaxed text-slate-500">
-                {pillar.detail}
-              </p>
+              <p className="font-display mt-3 text-sm font-semibold text-white">{pillar.label}</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{pillar.detail}</p>
             </div>
           ))}
         </div>

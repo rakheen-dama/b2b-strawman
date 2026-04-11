@@ -96,9 +96,7 @@ describe("SubscribeButton", () => {
     await user.click(screen.getByRole("button", { name: /subscribe/i }));
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Payment service unavailable")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Payment service unavailable")).toBeInTheDocument();
     });
   });
 });

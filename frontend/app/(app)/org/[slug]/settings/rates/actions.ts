@@ -18,10 +18,7 @@ interface ActionResult {
   error?: string;
 }
 
-export async function updateDefaultCurrency(
-  slug: string,
-  currency: string,
-): Promise<ActionResult> {
+export async function updateDefaultCurrency(slug: string, currency: string): Promise<ActionResult> {
   const body: UpdateOrgSettingsRequest = { defaultCurrency: currency };
 
   try {
@@ -45,7 +42,7 @@ export async function updateDefaultCurrency(
 
 export async function createBillingRate(
   slug: string,
-  data: CreateBillingRateRequest,
+  data: CreateBillingRateRequest
 ): Promise<ActionResult> {
   try {
     await api.post<BillingRate>("/api/billing-rates", data);
@@ -76,7 +73,7 @@ export async function createBillingRate(
 export async function updateBillingRate(
   slug: string,
   id: string,
-  data: UpdateBillingRateRequest,
+  data: UpdateBillingRateRequest
 ): Promise<ActionResult> {
   try {
     await api.put<BillingRate>(`/api/billing-rates/${id}`, data);
@@ -104,10 +101,7 @@ export async function updateBillingRate(
   return { success: true };
 }
 
-export async function deleteBillingRate(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deleteBillingRate(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.delete(`/api/billing-rates/${id}`);
   } catch (error) {
@@ -129,7 +123,7 @@ export async function deleteBillingRate(
 
 export async function createCostRate(
   slug: string,
-  data: CreateCostRateRequest,
+  data: CreateCostRateRequest
 ): Promise<ActionResult> {
   try {
     await api.post<CostRate>("/api/cost-rates", data);
@@ -160,7 +154,7 @@ export async function createCostRate(
 export async function updateCostRate(
   slug: string,
   id: string,
-  data: UpdateCostRateRequest,
+  data: UpdateCostRateRequest
 ): Promise<ActionResult> {
   try {
     await api.put<CostRate>(`/api/cost-rates/${id}`, data);
@@ -188,10 +182,7 @@ export async function updateCostRate(
   return { success: true };
 }
 
-export async function deleteCostRate(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deleteCostRate(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.delete(`/api/cost-rates/${id}`);
   } catch (error) {

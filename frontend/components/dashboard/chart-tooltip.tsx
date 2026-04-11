@@ -33,9 +33,7 @@ export function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
         padding: "8px 12px",
       }}
     >
-      {label && (
-        <p className="mb-1 font-sans text-xs opacity-80">{label}</p>
-      )}
+      {label && <p className="mb-1 font-sans text-xs opacity-80">{label}</p>}
       {payload.map((entry, i) => (
         <div key={i} className="flex items-center gap-2">
           {entry.color && (
@@ -45,9 +43,7 @@ export function ChartTooltip({ active, payload, label }: ChartTooltipProps) {
             />
           )}
           <span className="font-sans text-xs">{entry.name}</span>
-          <span className="font-mono text-xs tabular-nums font-medium">
-            {entry.value}
-          </span>
+          <span className="font-mono text-xs font-medium tabular-nums">{entry.value}</span>
         </div>
       ))}
     </div>

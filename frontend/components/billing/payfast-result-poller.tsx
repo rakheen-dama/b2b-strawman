@@ -22,9 +22,7 @@ function computeInitialState(
 const POLL_INTERVAL_MS = 2000;
 const POLL_TIMEOUT_MS = 30000;
 
-export function PayFastResultPoller({
-  initialStatus,
-}: PayFastResultPollerProps) {
+export function PayFastResultPoller({ initialStatus }: PayFastResultPollerProps) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const result = searchParams.get("result");
@@ -113,8 +111,8 @@ export function PayFastResultPoller({
         <div className="flex items-center gap-2">
           <Clock className="size-4 shrink-0" />
           <p>
-            Your payment is still being processed. This may take a few minutes.
-            Please refresh the page shortly.
+            Your payment is still being processed. This may take a few minutes. Please refresh the
+            page shortly.
           </p>
         </div>
       </div>

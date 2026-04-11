@@ -48,10 +48,7 @@ export interface PreviewActionResult {
   error?: string;
 }
 
-export async function getClauses(
-  includeInactive?: boolean,
-  category?: string,
-): Promise<Clause[]> {
+export async function getClauses(includeInactive?: boolean, category?: string): Promise<Clause[]> {
   try {
     const params = new URLSearchParams();
     if (includeInactive) params.set("includeInactive", "true");
@@ -73,10 +70,7 @@ export async function getClause(id: string): Promise<Clause | null> {
   }
 }
 
-export async function createClause(
-  slug: string,
-  data: CreateClauseData,
-): Promise<ActionResult> {
+export async function createClause(slug: string, data: CreateClauseData): Promise<ActionResult> {
   try {
     await api.post("/api/clauses", data);
     revalidatePath(`/org/${slug}/settings/clauses`);
@@ -98,7 +92,7 @@ export async function createClause(
 export async function updateClause(
   slug: string,
   id: string,
-  data: UpdateClauseData,
+  data: UpdateClauseData
 ): Promise<ActionResult> {
   try {
     await api.put(`/api/clauses/${id}`, data);
@@ -118,10 +112,7 @@ export async function updateClause(
   }
 }
 
-export async function deleteClause(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deleteClause(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.delete(`/api/clauses/${id}`);
     revalidatePath(`/org/${slug}/settings/clauses`);
@@ -146,10 +137,7 @@ export async function deleteClause(
   }
 }
 
-export async function deactivateClause(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deactivateClause(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.post(`/api/clauses/${id}/deactivate`);
     revalidatePath(`/org/${slug}/settings/clauses`);
@@ -168,10 +156,7 @@ export async function deactivateClause(
   }
 }
 
-export async function cloneClause(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function cloneClause(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.post(`/api/clauses/${id}/clone`);
     revalidatePath(`/org/${slug}/settings/clauses`);
@@ -200,7 +185,7 @@ export async function previewClause(
   slug: string,
   clauseId: string,
   entityId: string,
-  entityType: string,
+  entityType: string
 ): Promise<PreviewActionResult> {
   try {
     const html = await api.post<string>(`/api/clauses/${clauseId}/preview`, {

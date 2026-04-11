@@ -8,7 +8,7 @@ import type { ActionResult } from "../actions";
 
 export async function createRuleAction(
   slug: string,
-  data: CreateRuleRequest,
+  data: CreateRuleRequest
 ): Promise<ActionResult> {
   try {
     const created = await createRule(data);

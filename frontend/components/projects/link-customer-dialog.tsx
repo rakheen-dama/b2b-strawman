@@ -45,10 +45,7 @@ export function LinkCustomerDialog({
     data: allCustomers,
     error: fetchError,
     isLoading,
-  } = useSWR<Customer[]>(
-    open ? "link-customer-list" : null,
-    () => fetchCustomers()
-  );
+  } = useSWR<Customer[]>(open ? "link-customer-list" : null, () => fetchCustomers());
 
   const availableCustomers = useMemo(() => {
     if (!allCustomers) return [];
@@ -97,11 +94,13 @@ export function LinkCustomerDialog({
           <CommandInput placeholder="Search customers..." disabled={isLoading || isLinking} />
           <CommandList>
             {isLoading ? (
-              <div className="py-6 text-center text-sm text-muted-foreground">
+              <div className="text-muted-foreground py-6 text-center text-sm">
                 Loading customers...
               </div>
             ) : fetchError ? (
-              <div className="py-6 text-center text-sm text-destructive">Failed to load customers.</div>
+              <div className="text-destructive py-6 text-center text-sm">
+                Failed to load customers.
+              </div>
             ) : availableCustomers.length === 0 ? (
               <CommandEmpty>
                 {!allCustomers || allCustomers.length === 0
@@ -133,9 +132,7 @@ export function LinkCustomerDialog({
           </CommandList>
         </Command>
 
-        {linkError && (
-          <p className="px-4 pb-4 text-sm text-destructive">{linkError}</p>
-        )}
+        {linkError && <p className="text-destructive px-4 pb-4 text-sm">{linkError}</p>}
       </DialogContent>
     </Dialog>
   );

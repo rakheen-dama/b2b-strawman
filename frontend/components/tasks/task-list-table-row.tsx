@@ -4,15 +4,8 @@ import { AlertTriangle, Check, Clock, Hand, Repeat, RotateCcw, Undo2 } from "luc
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { LogTimeDialog } from "@/components/tasks/log-time-dialog";
-import {
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TableCell, TableRow } from "@/components/ui/table";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { formatDate } from "@/lib/format";
 import { PRIORITY_BADGE, STATUS_BADGE } from "@/components/tasks/task-badge-config";
@@ -56,8 +49,14 @@ export function TaskListTableRow({
   onComplete,
   onReopen,
 }: TaskListTableRowProps) {
-  const priorityBadge = PRIORITY_BADGE[task.priority] ?? { label: task.priority, variant: "neutral" as const };
-  const statusBadge = STATUS_BADGE[task.status] ?? { label: task.status, variant: "neutral" as const };
+  const priorityBadge = PRIORITY_BADGE[task.priority] ?? {
+    label: task.priority,
+    variant: "neutral" as const,
+  };
+  const statusBadge = STATUS_BADGE[task.status] ?? {
+    label: task.status,
+    variant: "neutral" as const,
+  };
   const overdue = isOverdue(task.dueDate, task.status);
   const isTerminal = task.status === "DONE" || task.status === "CANCELLED";
 
@@ -77,26 +76,31 @@ export function TaskListTableRow({
       <TableCell>
         <button
           type="button"
-          className="flex min-w-0 items-center gap-1.5 cursor-pointer text-left"
+          className="flex min-w-0 cursor-pointer items-center gap-1.5 text-left"
           onClick={() => onOpenTask(task.id)}
           aria-label={`Open task detail for ${task.title}`}
         >
           <div className="min-w-0">
             <span className="flex items-center gap-1.5">
-              <p className={cn(
-                "truncate text-sm font-medium dark:text-slate-50",
-                task.status === "DONE"
-                  ? "line-through text-muted-foreground"
-                  : task.status === "CANCELLED"
-                    ? "text-muted-foreground"
-                    : "text-slate-950 hover:text-teal-600",
-              )}>
+              <p
+                className={cn(
+                  "truncate text-sm font-medium dark:text-slate-50",
+                  task.status === "DONE"
+                    ? "text-muted-foreground line-through"
+                    : task.status === "CANCELLED"
+                      ? "text-muted-foreground"
+                      : "text-slate-950 hover:text-teal-600"
+                )}
+              >
                 {task.title}
               </p>
               {task.isRecurring && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <span className="inline-flex shrink-0 text-teal-500" aria-label="Recurring task">
+                    <span
+                      className="inline-flex shrink-0 text-teal-500"
+                      aria-label="Recurring task"
+                    >
                       <Repeat className="size-3.5" />
                     </span>
                   </TooltipTrigger>
@@ -121,10 +125,14 @@ export function TaskListTableRow({
         </span>
       </TableCell>
       <TableCell className="hidden sm:table-cell">
-        <span className={cn(
-          "inline-flex items-center gap-1 text-sm",
-          overdue ? "font-medium text-red-600 dark:text-red-400" : "text-slate-600 dark:text-slate-400",
-        )}>
+        <span
+          className={cn(
+            "inline-flex items-center gap-1 text-sm",
+            overdue
+              ? "font-medium text-red-600 dark:text-red-400"
+              : "text-slate-600 dark:text-slate-400"
+          )}
+        >
           {overdue && <AlertTriangle className="size-3.5 shrink-0" />}
           {task.dueDate ? formatDate(task.dueDate) : "\u2014"}
         </span>
@@ -146,25 +154,51 @@ export function TaskListTableRow({
             </LogTimeDialog>
           )}
           {canClaim && (
-            <Button size="xs" variant="default" disabled={isActioning} onClick={() => onClaim(task.id)}>
+            <Button
+              size="xs"
+              variant="default"
+              disabled={isActioning}
+              onClick={() => onClaim(task.id)}
+            >
               <Hand className="size-3" />
               {isActioning ? "Claiming..." : "Claim"}
             </Button>
           )}
           {isOwnTask && (
-            <Button size="xs" variant="ghost" disabled={isActioning} onClick={() => onRelease(task.id)}>
+            <Button
+              size="xs"
+              variant="ghost"
+              disabled={isActioning}
+              onClick={() => onRelease(task.id)}
+            >
               <Undo2 className="size-3" />
               Release
             </Button>
           )}
           {canMarkDone && (
-            <Button size="xs" variant="soft" disabled={isActioning} onClick={(e) => { e.stopPropagation(); onComplete(task.id); }}>
+            <Button
+              size="xs"
+              variant="soft"
+              disabled={isActioning}
+              onClick={(e) => {
+                e.stopPropagation();
+                onComplete(task.id);
+              }}
+            >
               <Check className="size-3" />
               Done
             </Button>
           )}
           {isTerminal && canManage && (
-            <Button size="xs" variant="outline" disabled={isActioning} onClick={(e) => { e.stopPropagation(); onReopen(task.id); }}>
+            <Button
+              size="xs"
+              variant="outline"
+              disabled={isActioning}
+              onClick={(e) => {
+                e.stopPropagation();
+                onReopen(task.id);
+              }}
+            >
               <RotateCcw className="size-3" />
               Reopen
             </Button>

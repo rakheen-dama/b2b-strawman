@@ -15,9 +15,7 @@ describe("HelpTip integration — new help points #12-#22", () => {
     await user.click(screen.getByRole("button", { name: /help/i }));
 
     expect(screen.getByText("Template variables")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Use \{\{variable\}\} syntax/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Use \{\{variable\}\} syntax/)).toBeInTheDocument();
   });
 
   it("shows fields.types help text", async () => {
@@ -27,9 +25,7 @@ describe("HelpTip integration — new help points #12-#22", () => {
     await user.click(screen.getByRole("button", { name: /help/i }));
 
     expect(screen.getByText("Field types")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Choose from text, number, date/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Choose from text, number, date/)).toBeInTheDocument();
   });
 
   it("shows tags.overview help text", async () => {
@@ -39,8 +35,6 @@ describe("HelpTip integration — new help points #12-#22", () => {
     await user.click(screen.getByRole("button", { name: /help/i }));
 
     expect(screen.getByText("Tags")).toBeInTheDocument();
-    expect(
-      screen.getByText(/colour-coded labels/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/colour-coded labels/)).toBeInTheDocument();
   });
 });

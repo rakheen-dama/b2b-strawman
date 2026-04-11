@@ -5,11 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { AvatarCircle } from "@/components/ui/avatar-circle";
-import {
-  type Comment,
-  fetchProjectComments,
-  createProjectComment,
-} from "@/lib/actions/comments";
+import { type Comment, fetchProjectComments, createProjectComment } from "@/lib/actions/comments";
 import { RelativeDate } from "@/components/ui/relative-date";
 
 interface ProjectCommentsSectionProps {
@@ -17,10 +13,7 @@ interface ProjectCommentsSectionProps {
   orgSlug: string;
 }
 
-export function ProjectCommentsSection({
-  projectId,
-  orgSlug,
-}: ProjectCommentsSectionProps) {
+export function ProjectCommentsSection({ projectId, orgSlug }: ProjectCommentsSectionProps) {
   const [comments, setComments] = useState<Comment[]>([]);
   const [body, setBody] = useState("");
   const [isPending, startTransition] = useTransition();
@@ -44,16 +37,18 @@ export function ProjectCommentsSection({
 
   if (isLoading) {
     return (
-      <p className="text-sm text-muted-foreground" aria-live="polite">Loading comments...</p>
+      <p className="text-muted-foreground text-sm" aria-live="polite">
+        Loading comments...
+      </p>
     );
   }
 
   return (
     <div className="space-y-4">
       {comments.length === 0 ? (
-        <p className="text-sm text-muted-foreground">
-          No customer comments yet. Comments shared between your team and
-          customers will appear here.
+        <p className="text-muted-foreground text-sm">
+          No customer comments yet. Comments shared between your team and customers will appear
+          here.
         </p>
       ) : (
         <div className="space-y-3">
@@ -66,13 +61,9 @@ export function ProjectCommentsSection({
               />
               <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">
-                    {comment.authorName ?? "Unknown"}
-                  </span>
-                  {comment.source === "PORTAL" && (
-                    <Badge variant="outline">Customer</Badge>
-                  )}
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-sm font-medium">{comment.authorName ?? "Unknown"}</span>
+                  {comment.source === "PORTAL" && <Badge variant="outline">Customer</Badge>}
+                  <span className="text-muted-foreground text-xs">
                     <RelativeDate iso={comment.createdAt} />
                   </span>
                 </div>
@@ -90,11 +81,7 @@ export function ProjectCommentsSection({
           onChange={(e) => setBody(e.target.value)}
           rows={3}
         />
-        <Button
-          onClick={handleSubmit}
-          disabled={isPending || !body.trim()}
-          size="sm"
-        >
+        <Button onClick={handleSubmit} disabled={isPending || !body.trim()} size="sm">
           {isPending ? "Sending..." : "Post Reply"}
         </Button>
       </div>

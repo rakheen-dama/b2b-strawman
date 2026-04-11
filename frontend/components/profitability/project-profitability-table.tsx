@@ -16,10 +16,7 @@ import { HelpTip } from "@/components/help-tip";
 import { useTerminology } from "@/lib/terminology";
 import { formatCurrency, formatCurrencySafe } from "@/lib/format";
 import { getOrgProfitability } from "@/app/(app)/org/[slug]/profitability/actions";
-import type {
-  OrgProfitabilityResponse,
-  ProjectProfitabilitySummary,
-} from "@/lib/types";
+import type { OrgProfitabilityResponse, ProjectProfitabilitySummary } from "@/lib/types";
 import { ArrowUpDown } from "lucide-react";
 
 interface ProjectProfitabilityTableProps {
@@ -40,7 +37,7 @@ type SortField =
 function sortProjects(
   projects: ProjectProfitabilitySummary[],
   field: SortField,
-  dir: "asc" | "desc",
+  dir: "asc" | "desc"
 ): ProjectProfitabilitySummary[] {
   return [...projects].sort((a, b) => {
     let cmp = 0;
@@ -119,10 +116,7 @@ export function ProjectProfitabilityTable({
             <HelpTip code="dashboard.profitability" />
           </CardTitle>
           <div className="flex items-center gap-2">
-            <label
-              htmlFor="prof-from"
-              className="text-sm text-slate-600 dark:text-slate-400"
-            >
+            <label htmlFor="prof-from" className="text-sm text-slate-600 dark:text-slate-400">
               From
             </label>
             <input
@@ -132,10 +126,7 @@ export function ProjectProfitabilityTable({
               onChange={(e) => handleDateChange(e.target.value, to)}
               className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
             />
-            <label
-              htmlFor="prof-to"
-              className="text-sm text-slate-600 dark:text-slate-400"
-            >
+            <label htmlFor="prof-to" className="text-sm text-slate-600 dark:text-slate-400">
               To
             </label>
             <input
@@ -149,14 +140,8 @@ export function ProjectProfitabilityTable({
         </div>
       </CardHeader>
       <CardContent>
-        {isPending && (
-          <div className="mb-4 text-sm text-slate-500">Loading...</div>
-        )}
-        {error && (
-          <div className="mb-4 text-sm text-red-600 dark:text-red-400">
-            {error}
-          </div>
-        )}
+        {isPending && <div className="mb-4 text-sm text-slate-500">Loading...</div>}
+        {error && <div className="mb-4 text-sm text-red-600 dark:text-red-400">{error}</div>}
         {sorted.length === 0 ? (
           <p className="py-8 text-center text-sm text-slate-500">
             No project profitability data for this period
@@ -234,9 +219,7 @@ export function ProjectProfitabilityTable({
             <TableBody>
               {sorted.map((project) => (
                 <TableRow key={`${project.projectId}-${project.currency}`}>
-                  <TableCell className="font-medium">
-                    {project.projectName}
-                  </TableCell>
+                  <TableCell className="font-medium">{project.projectName}</TableCell>
                   <TableCell>
                     {project.customerName ? (
                       project.customerName
@@ -245,9 +228,7 @@ export function ProjectProfitabilityTable({
                     )}
                   </TableCell>
                   <TableCell>{project.currency}</TableCell>
-                  <TableCell className="text-right">
-                    {project.billableHours.toFixed(1)}h
-                  </TableCell>
+                  <TableCell className="text-right">{project.billableHours.toFixed(1)}h</TableCell>
                   <TableCell className="text-right">
                     {formatCurrency(project.billableValue, project.currency)}
                   </TableCell>
@@ -260,7 +241,7 @@ export function ProjectProfitabilityTable({
                         className={cn(
                           project.margin >= 0
                             ? "text-green-600 dark:text-green-400"
-                            : "text-red-600 dark:text-red-400",
+                            : "text-red-600 dark:text-red-400"
                         )}
                       >
                         {formatCurrency(project.margin, project.currency)}
@@ -275,7 +256,7 @@ export function ProjectProfitabilityTable({
                         className={cn(
                           project.marginPercent >= 0
                             ? "text-green-600 dark:text-green-400"
-                            : "text-red-600 dark:text-red-400",
+                            : "text-red-600 dark:text-red-400"
                         )}
                       >
                         {project.marginPercent.toFixed(1)}%

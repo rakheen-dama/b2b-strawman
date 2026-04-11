@@ -3,11 +3,7 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type {
-  InvoiceResponse,
-  RecordPaymentRequest,
-  ValidationCheck,
-} from "@/lib/types";
+import type { InvoiceResponse, RecordPaymentRequest, ValidationCheck } from "@/lib/types";
 import { classifyError } from "@/lib/error-handler";
 import { createMessages } from "@/lib/messages";
 
@@ -19,11 +15,7 @@ interface InvoiceActionResult {
   validationChecks?: ValidationCheck[];
 }
 
-function revalidateInvoicePaths(
-  slug: string,
-  invoiceId: string,
-  customerId?: string,
-) {
+function revalidateInvoicePaths(slug: string, invoiceId: string, customerId?: string) {
   revalidatePath(`/org/${slug}/invoices`);
   revalidatePath(`/org/${slug}/invoices/${invoiceId}`);
   if (customerId) {
@@ -34,7 +26,7 @@ function revalidateInvoicePaths(
 export async function approveInvoice(
   slug: string,
   invoiceId: string,
-  customerId: string,
+  customerId: string
 ): Promise<InvoiceActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -42,9 +34,7 @@ export async function approveInvoice(
   }
 
   try {
-    const invoice = await api.post<InvoiceResponse>(
-      `/api/invoices/${invoiceId}/approve`,
-    );
+    const invoice = await api.post<InvoiceResponse>(`/api/invoices/${invoiceId}/approve`);
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true, invoice };
   } catch (error) {
@@ -60,7 +50,7 @@ export async function sendInvoice(
   slug: string,
   invoiceId: string,
   customerId: string,
-  overrideWarnings?: boolean,
+  overrideWarnings?: boolean
 ): Promise<InvoiceActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -69,10 +59,7 @@ export async function sendInvoice(
 
   try {
     const body = overrideWarnings ? { overrideWarnings: true } : undefined;
-    const invoice = await api.post<InvoiceResponse>(
-      `/api/invoices/${invoiceId}/send`,
-      body,
-    );
+    const invoice = await api.post<InvoiceResponse>(`/api/invoices/${invoiceId}/send`, body);
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true, invoice };
   } catch (error) {
@@ -100,7 +87,7 @@ export async function recordPayment(
   slug: string,
   invoiceId: string,
   customerId: string,
-  request?: RecordPaymentRequest,
+  request?: RecordPaymentRequest
 ): Promise<InvoiceActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -113,7 +100,7 @@ export async function recordPayment(
   try {
     const invoice = await api.post<InvoiceResponse>(
       `/api/invoices/${invoiceId}/payment`,
-      request ?? {},
+      request ?? {}
     );
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true, invoice };
@@ -129,7 +116,7 @@ export async function recordPayment(
 export async function voidInvoice(
   slug: string,
   invoiceId: string,
-  customerId: string,
+  customerId: string
 ): Promise<InvoiceActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -137,9 +124,7 @@ export async function voidInvoice(
   }
 
   try {
-    const invoice = await api.post<InvoiceResponse>(
-      `/api/invoices/${invoiceId}/void`,
-    );
+    const invoice = await api.post<InvoiceResponse>(`/api/invoices/${invoiceId}/void`);
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true, invoice };
   } catch (error) {
@@ -154,7 +139,7 @@ export async function voidInvoice(
 export async function refreshPaymentLink(
   slug: string,
   invoiceId: string,
-  customerId: string,
+  customerId: string
 ): Promise<InvoiceActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -166,7 +151,7 @@ export async function refreshPaymentLink(
 
   try {
     const invoice = await api.post<InvoiceResponse>(
-      `/api/invoices/${invoiceId}/refresh-payment-link`,
+      `/api/invoices/${invoiceId}/refresh-payment-link`
     );
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true, invoice };

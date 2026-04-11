@@ -25,10 +25,7 @@ import {
 } from "@/components/ui/form";
 import { updateProject, fetchActiveCustomers } from "@/app/(app)/org/[slug]/projects/actions";
 import type { Project, Customer } from "@/lib/types";
-import {
-  editProjectSchema,
-  type EditProjectFormData,
-} from "@/lib/schemas/project";
+import { editProjectSchema, type EditProjectFormData } from "@/lib/schemas/project";
 import { nativeSelectClassName } from "@/lib/styles/native-select";
 
 interface EditProjectDialogProps {
@@ -137,7 +134,8 @@ export function EditProjectDialog({ project, slug, children }: EditProjectDialog
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Description <span className="text-muted-foreground font-normal">(optional)</span>
+                    Description{" "}
+                    <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
                     <Textarea maxLength={2000} rows={3} {...field} />
@@ -173,7 +171,7 @@ export function EditProjectDialog({ project, slug, children }: EditProjectDialog
                     <select
                       value={field.value}
                       onChange={field.onChange}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
                     >
                       <option value="">-- None --</option>
                       {customers.map((c) => (
@@ -194,14 +192,10 @@ export function EditProjectDialog({ project, slug, children }: EditProjectDialog
                 <FormItem>
                   <FormLabel>
                     Reference Number{" "}
-                    <span className="font-normal text-muted-foreground">(optional)</span>
+                    <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. PRJ-2026-001"
-                      maxLength={100}
-                      {...field}
-                    />
+                    <Input placeholder="e.g. PRJ-2026-001" maxLength={100} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -213,8 +207,7 @@ export function EditProjectDialog({ project, slug, children }: EditProjectDialog
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Priority{" "}
-                    <span className="font-normal text-muted-foreground">(optional)</span>
+                    Priority <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
                     <select
@@ -238,15 +231,10 @@ export function EditProjectDialog({ project, slug, children }: EditProjectDialog
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Work Type{" "}
-                    <span className="font-normal text-muted-foreground">(optional)</span>
+                    Work Type <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. Consulting, Litigation"
-                      maxLength={50}
-                      {...field}
-                    />
+                    <Input placeholder="e.g. Consulting, Litigation" maxLength={50} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

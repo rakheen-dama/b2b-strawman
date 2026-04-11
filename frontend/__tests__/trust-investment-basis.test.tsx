@@ -1,10 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  cleanup,
-  render,
-  screen,
-  fireEvent,
-} from "@testing-library/react";
+import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 
 // -- Mock server-only -----------------------------------------------------
 vi.mock("server-only", () => ({}));
@@ -16,17 +11,13 @@ const mockRecordInterest = vi.fn();
 const mockWithdrawInvestment = vi.fn();
 const mockFetchMaturing = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/trust-accounting/investments/actions",
-  () => ({
-    fetchInvestments: (...args: unknown[]) => mockFetchInvestments(...args),
-    placeInvestment: (...args: unknown[]) => mockPlaceInvestment(...args),
-    recordInterest: (...args: unknown[]) => mockRecordInterest(...args),
-    withdrawInvestment: (...args: unknown[]) =>
-      mockWithdrawInvestment(...args),
-    fetchMaturing: (...args: unknown[]) => mockFetchMaturing(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/trust-accounting/investments/actions", () => ({
+  fetchInvestments: (...args: unknown[]) => mockFetchInvestments(...args),
+  placeInvestment: (...args: unknown[]) => mockPlaceInvestment(...args),
+  recordInterest: (...args: unknown[]) => mockRecordInterest(...args),
+  withdrawInvestment: (...args: unknown[]) => mockWithdrawInvestment(...args),
+  fetchMaturing: (...args: unknown[]) => mockFetchMaturing(...args),
+}));
 
 // -- Mock interest run actions for wizard ---------------------------------
 const mockCreateInterestRun = vi.fn();
@@ -35,18 +26,13 @@ const mockApproveInterestRun = vi.fn();
 const mockPostInterestRun = vi.fn();
 const mockFetchInterestRunDetail = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/trust-accounting/interest/actions",
-  () => ({
-    createInterestRun: (...args: unknown[]) => mockCreateInterestRun(...args),
-    calculateInterest: (...args: unknown[]) => mockCalculateInterest(...args),
-    approveInterestRun: (...args: unknown[]) =>
-      mockApproveInterestRun(...args),
-    postInterestRun: (...args: unknown[]) => mockPostInterestRun(...args),
-    fetchInterestRunDetail: (...args: unknown[]) =>
-      mockFetchInterestRunDetail(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/trust-accounting/interest/actions", () => ({
+  createInterestRun: (...args: unknown[]) => mockCreateInterestRun(...args),
+  calculateInterest: (...args: unknown[]) => mockCalculateInterest(...args),
+  approveInterestRun: (...args: unknown[]) => mockApproveInterestRun(...args),
+  postInterestRun: (...args: unknown[]) => mockPostInterestRun(...args),
+  fetchInterestRunDetail: (...args: unknown[]) => mockFetchInterestRunDetail(...args),
+}));
 
 // -- Mock parent trust actions --------------------------------------------
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
@@ -182,7 +168,7 @@ describe("Epic 455 — Investment Basis", () => {
         open={true}
         onOpenChange={vi.fn()}
         onSuccess={vi.fn()}
-      />,
+      />
     );
 
     expect(screen.getByText("Investment initiated by")).toBeInTheDocument();
@@ -198,7 +184,7 @@ describe("Epic 455 — Investment Basis", () => {
         open={true}
         onOpenChange={vi.fn()}
         onSuccess={vi.fn()}
-      />,
+      />
     );
 
     // Default is FIRM_DISCRETION
@@ -209,9 +195,7 @@ describe("Epic 455 — Investment Basis", () => {
     const clientRadio = screen.getByLabelText("Client instruction");
     fireEvent.click(clientRadio);
 
-    expect(helpText.textContent).toContain(
-      "5% to the LPFF (Section 86(5))",
-    );
+    expect(helpText.textContent).toContain("5% to the LPFF (Section 86(5))");
   });
 
   // Test 3: 86(6) advisory note renders in dialog
@@ -222,12 +206,12 @@ describe("Epic 455 — Investment Basis", () => {
         open={true}
         onOpenChange={vi.fn()}
         onSuccess={vi.fn()}
-      />,
+      />
     );
 
     expect(screen.getByTestId("section-86-6-advisory")).toBeInTheDocument();
     expect(
-      screen.getByText(/Legal Practitioners Fidelity Fund \(Section 86\(6\)\)/),
+      screen.getByText(/Legal Practitioners Fidelity Fund \(Section 86\(6\)\)/)
     ).toBeInTheDocument();
   });
 
@@ -278,10 +262,7 @@ describe("Epic 455 — Investment Basis", () => {
     await renderInvestmentsPage({ investmentBasis: "CLIENT_INSTRUCTION" });
 
     expect(screen.getByTestId("investment-basis-filter")).toBeInTheDocument();
-    expect(mockFetchInvestments).toHaveBeenCalledWith(
-      "acc-1",
-      "CLIENT_INSTRUCTION",
-    );
+    expect(mockFetchInvestments).toHaveBeenCalledWith("acc-1", "CLIENT_INSTRUCTION");
   });
 
   // Test 7: Interest allocation shows "5% (statutory)" for 86(4) allocations
@@ -349,7 +330,7 @@ describe("Epic 455 — Investment Basis", () => {
         onSuccess={vi.fn()}
         canApprove={true}
         currency="ZAR"
-      />,
+      />
     );
 
     // Fill period dates and submit step 1
@@ -372,7 +353,7 @@ describe("Epic 455 — Investment Basis", () => {
       // Verify footnote
       expect(screen.getByTestId("statutory-footnote")).toBeInTheDocument();
       expect(
-        screen.getByText(/Section 86\(5\): client-instructed investments/),
+        screen.getByText(/Section 86\(5\): client-instructed investments/)
       ).toBeInTheDocument();
     });
   });
@@ -432,7 +413,7 @@ describe("Epic 455 — Investment Basis", () => {
         onSuccess={vi.fn()}
         canApprove={true}
         currency="ZAR"
-      />,
+      />
     );
 
     // Fill period dates and submit step 1

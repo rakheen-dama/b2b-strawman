@@ -45,9 +45,7 @@ export default async function EditRequestTemplatePage({
 
       <div className="flex items-center gap-3">
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          {template.source === "PLATFORM"
-            ? template.name
-            : "Edit Template"}
+          {template.source === "PLATFORM" ? template.name : "Edit Template"}
         </h1>
         <TemplateSourceBadge source={template.source} />
       </div>

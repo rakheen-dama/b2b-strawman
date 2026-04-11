@@ -66,7 +66,7 @@ describe("CompleteProjectDialog", () => {
     render(
       <CompleteProjectDialog slug="test-org" projectId="proj-1" projectName="Test Project">
         <button>Open Complete Dialog</button>
-      </CompleteProjectDialog>,
+      </CompleteProjectDialog>
     );
 
     await user.click(screen.getByText("Open Complete Dialog"));
@@ -85,7 +85,7 @@ describe("CompleteProjectDialog", () => {
     render(
       <CompleteProjectDialog slug="test-org" projectId="proj-1" projectName="Test Project">
         <button>Open Unbilled Dialog</button>
-      </CompleteProjectDialog>,
+      </CompleteProjectDialog>
     );
 
     await user.click(screen.getByText("Open Unbilled Dialog"));
@@ -105,14 +105,14 @@ describe("CompleteProjectDialog", () => {
     render(
       <CompleteProjectDialog slug="test-org" projectId="proj-1" projectName="Test Project">
         <button>Open Blocking Dialog</button>
-      </CompleteProjectDialog>,
+      </CompleteProjectDialog>
     );
 
     await user.click(screen.getByText("Open Blocking Dialog"));
     await user.click(screen.getByTestId("confirm-complete-btn"));
 
     expect(
-      await screen.findByText("Cannot complete: project has 3 open tasks."),
+      await screen.findByText("Cannot complete: project has 3 open tasks.")
     ).toBeInTheDocument();
     // Should NOT show "Complete Anyway" for blocking errors
     expect(screen.queryByTestId("complete-anyway-btn")).not.toBeInTheDocument();
@@ -132,7 +132,7 @@ describe("ProjectLifecycleActions", () => {
         projectId="proj-1"
         projectName="Test Project"
         projectStatus="ACTIVE"
-      />,
+      />
     );
 
     expect(screen.getByTestId("complete-project-btn")).toBeInTheDocument();
@@ -147,7 +147,7 @@ describe("ProjectLifecycleActions", () => {
         projectId="proj-1"
         projectName="Test Project"
         projectStatus="COMPLETED"
-      />,
+      />
     );
 
     expect(screen.getByTestId("archive-project-btn")).toBeInTheDocument();
@@ -162,7 +162,7 @@ describe("ProjectLifecycleActions", () => {
         projectId="proj-1"
         projectName="Test Project"
         projectStatus="ARCHIVED"
-      />,
+      />
     );
 
     expect(screen.getByTestId("restore-project-btn")).toBeInTheDocument();
@@ -182,9 +182,7 @@ describe("ArchivedProjectBanner", () => {
     render(<ArchivedProjectBanner slug="test-org" projectId="proj-1" canRestore />);
 
     expect(screen.getByTestId("archived-project-banner")).toBeInTheDocument();
-    expect(
-      screen.getByText("This project is archived. It is read-only."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("This project is archived. It is read-only.")).toBeInTheDocument();
     expect(screen.getByText("Restore")).toBeInTheDocument();
   });
 
@@ -192,9 +190,7 @@ describe("ArchivedProjectBanner", () => {
     render(<ArchivedProjectBanner slug="test-org" projectId="proj-1" canRestore={false} />);
 
     expect(screen.getByTestId("archived-project-banner")).toBeInTheDocument();
-    expect(
-      screen.getByText("This project is archived. It is read-only."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("This project is archived. It is read-only.")).toBeInTheDocument();
     expect(screen.queryByText("Restore")).not.toBeInTheDocument();
   });
 
@@ -241,7 +237,7 @@ describe("CustomerProjectsPanel", () => {
         slug="test-org"
         customerId="cust-1"
         canManage={false}
-      />,
+      />
     );
 
     const statusBadges = screen.getAllByTestId("customer-project-status-badge");

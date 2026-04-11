@@ -39,12 +39,12 @@ export function GenerationClauseStep({
   initialClauses,
   onNext,
 }: GenerationClauseStepProps) {
-  const [clauses, setClauses] = useState<SelectedClause[]>(
-    initialClauses ?? [],
-  );
+  const [clauses, setClauses] = useState<SelectedClause[]>(initialClauses ?? []);
   const [checkedIds, setCheckedIds] = useState<Set<string>>(new Set());
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
-  const [clauseBodyPreviews, setClauseBodyPreviews] = useState<Map<string, string | null>>(new Map());
+  const [clauseBodyPreviews, setClauseBodyPreviews] = useState<Map<string, string | null>>(
+    new Map()
+  );
   const [isLoading, setIsLoading] = useState(!initialClauses);
   const [error, setError] = useState<string | null>(null);
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -60,7 +60,7 @@ export function GenerationClauseStep({
           description: tc.description,
           required: tc.required,
           sortOrder: idx,
-        }),
+        })
       );
   }, []);
 
@@ -145,7 +145,7 @@ export function GenerationClauseStep({
       category: string;
       description: string | null;
       legacyBody: string | null;
-    }>,
+    }>
   ) {
     setClauses((prev) => {
       const existingIds = new Set(prev.map((c) => c.clauseId));
@@ -195,7 +195,7 @@ export function GenerationClauseStep({
   if (error) {
     return (
       <div className="flex h-48 items-center justify-center">
-        <p className="text-sm text-destructive">{error}</p>
+        <p className="text-destructive text-sm">{error}</p>
       </div>
     );
   }
@@ -203,14 +203,8 @@ export function GenerationClauseStep({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-slate-950 dark:text-slate-50">
-          Select Clauses
-        </h3>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setPickerOpen(true)}
-        >
+        <h3 className="text-sm font-semibold text-slate-950 dark:text-slate-50">Select Clauses</h3>
+        <Button variant="outline" size="sm" onClick={() => setPickerOpen(true)}>
           <Plus className="mr-1 size-3.5" />
           Add from library
         </Button>
@@ -218,9 +212,7 @@ export function GenerationClauseStep({
 
       {clauses.length === 0 ? (
         <div className="flex h-32 items-center justify-center rounded-lg border border-dashed border-slate-300 dark:border-slate-700">
-          <p className="text-sm text-slate-500">
-            No clauses available for this template.
-          </p>
+          <p className="text-sm text-slate-500">No clauses available for this template.</p>
         </div>
       ) : (
         <div className="max-h-[400px] space-y-2 overflow-y-auto">

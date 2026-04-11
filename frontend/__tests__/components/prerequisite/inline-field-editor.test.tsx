@@ -9,9 +9,7 @@ afterEach(() => {
   cleanup();
 });
 
-function makeField(
-  overrides: Partial<InlineFieldEditorField> = {},
-): InlineFieldEditorField {
+function makeField(overrides: Partial<InlineFieldEditorField> = {}): InlineFieldEditorField {
   return {
     id: "field-1",
     name: "Test Field",
@@ -32,7 +30,7 @@ describe("InlineFieldEditor", () => {
         fieldDefinition={makeField({ fieldType: "TEXT" })}
         value=""
         onChange={onChange}
-      />,
+      />
     );
 
     const input = screen.getByRole("textbox");
@@ -49,7 +47,7 @@ describe("InlineFieldEditor", () => {
         })}
         value=""
         onChange={onChange}
-      />,
+      />
     );
 
     const input = document.getElementById("inline-date_field");
@@ -64,7 +62,7 @@ describe("InlineFieldEditor", () => {
         fieldDefinition={makeField({ fieldType: "TEXT" })}
         value=""
         onChange={onChange}
-      />,
+      />
     );
 
     const input = screen.getByRole("textbox");

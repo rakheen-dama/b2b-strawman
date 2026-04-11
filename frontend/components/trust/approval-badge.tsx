@@ -26,10 +26,7 @@ import {
   approveTransaction,
   rejectTransaction,
 } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
-import {
-  rejectionReasonSchema,
-  type RejectionReasonFormData,
-} from "@/lib/schemas/trust";
+import { rejectionReasonSchema, type RejectionReasonFormData } from "@/lib/schemas/trust";
 
 interface ApprovalBadgeProps {
   transactionId: string;
@@ -86,9 +83,7 @@ export function ApprovalBadge({ transactionId, status }: ApprovalBadgeProps) {
         <XCircle className="mr-1 size-3" />
         Reject
       </Button>
-      {error && (
-        <span className="text-xs text-destructive">{error}</span>
-      )}
+      {error && <span className="text-destructive text-xs">{error}</span>}
       <RejectDialog
         transactionId={transactionId}
         open={rejectDialogOpen}
@@ -156,10 +151,7 @@ function RejectDialog({
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="reason"
@@ -179,7 +171,7 @@ function RejectDialog({
               )}
             />
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
 
             <DialogFooter>
               <Button

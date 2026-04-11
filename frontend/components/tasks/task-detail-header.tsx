@@ -54,11 +54,15 @@ export function TaskDetailHeader({
   const statusBadge = STATUS_BADGE[task.status];
 
   function handleLifecycleAction(
-    action: (slug: string, taskId: string, projectId: string) => Promise<{
+    action: (
+      slug: string,
+      taskId: string,
+      projectId: string
+    ) => Promise<{
       success: boolean;
       error?: string;
       nextInstance?: Task | null;
-    }>,
+    }>
   ) {
     setActionError(null);
     startTransition(async () => {
@@ -97,24 +101,18 @@ export function TaskDetailHeader({
   return (
     <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-4 dark:border-slate-800">
       <div className="min-w-0 flex-1">
-        <h2 className="text-base font-semibold leading-snug text-slate-950 dark:text-slate-50">
+        <h2 className="text-base leading-snug font-semibold text-slate-950 dark:text-slate-50">
           {task.title}
         </h2>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {canChangeStatus ? (
             <TaskStatusSelect value={task.status} onChange={onStatusChange} />
           ) : (
-            statusBadge && (
-              <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
-            )
+            statusBadge && <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
           )}
-          {priorityBadge && (
-            <Badge variant={priorityBadge.variant}>{priorityBadge.label}</Badge>
-          )}
+          {priorityBadge && <Badge variant={priorityBadge.variant}>{priorityBadge.label}</Badge>}
           {task.type && (
-            <span className="text-xs text-slate-500 dark:text-slate-400">
-              {task.type}
-            </span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">{task.type}</span>
           )}
         </div>
 
@@ -122,21 +120,13 @@ export function TaskDetailHeader({
         {canChangeStatus && (
           <div className="mt-2 flex items-center gap-2">
             {canMarkDone && (
-              <Button
-                size="sm"
-                variant="soft"
-                onClick={() => handleLifecycleAction(completeTask)}
-              >
+              <Button size="sm" variant="soft" onClick={() => handleLifecycleAction(completeTask)}>
                 <Check className="mr-1 size-3" />
                 Mark Done
               </Button>
             )}
             {isTerminal && canChangeStatus && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => handleLifecycleAction(reopenTask)}
-              >
+              <Button size="sm" variant="outline" onClick={() => handleLifecycleAction(reopenTask)}>
                 <RotateCcw className="mr-1 size-3" />
                 Reopen
               </Button>

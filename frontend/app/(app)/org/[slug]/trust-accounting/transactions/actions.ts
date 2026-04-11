@@ -49,7 +49,7 @@ export async function fetchTransactions(
     projectId?: string;
     page?: number;
     size?: number;
-  } = {},
+  } = {}
 ): Promise<TransactionPage> {
   const queryParams = new URLSearchParams();
   if (params.dateFrom) queryParams.set("dateFrom", params.dateFrom);
@@ -64,7 +64,7 @@ export async function fetchTransactions(
 
   const qs = queryParams.toString();
   const result = await api.get<PaginatedResponse<TrustTransaction>>(
-    `/api/trust-accounts/${accountId}/transactions${qs ? `?${qs}` : ""}`,
+    `/api/trust-accounts/${accountId}/transactions${qs ? `?${qs}` : ""}`
   );
 
   return {
@@ -80,7 +80,7 @@ export async function fetchTransactions(
 
 export async function recordDeposit(
   accountId: string,
-  data: RecordDepositFormData,
+  data: RecordDepositFormData
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/trust-accounts/${accountId}/transactions/deposit`, {
@@ -96,15 +96,14 @@ export async function recordDeposit(
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to record deposit",
+      error: error instanceof Error ? error.message : "Failed to record deposit",
     };
   }
 }
 
 export async function recordPayment(
   accountId: string,
-  data: RecordPaymentFormData,
+  data: RecordPaymentFormData
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/trust-accounts/${accountId}/transactions/payment`, {
@@ -120,15 +119,14 @@ export async function recordPayment(
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to record payment",
+      error: error instanceof Error ? error.message : "Failed to record payment",
     };
   }
 }
 
 export async function recordTransfer(
   accountId: string,
-  data: RecordTransferFormData,
+  data: RecordTransferFormData
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/trust-accounts/${accountId}/transactions/transfer`, {
@@ -145,42 +143,35 @@ export async function recordTransfer(
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to record transfer",
+      error: error instanceof Error ? error.message : "Failed to record transfer",
     };
   }
 }
 
 export async function recordFeeTransfer(
   accountId: string,
-  data: RecordFeeTransferFormData,
+  data: RecordFeeTransferFormData
 ): Promise<ActionResult> {
   try {
-    await api.post(
-      `/api/trust-accounts/${accountId}/transactions/fee-transfer`,
-      {
-        customerId: data.customerId,
-        invoiceId: data.invoiceId,
-        amount: data.amount,
-        reference: data.reference,
-      },
-    );
+    await api.post(`/api/trust-accounts/${accountId}/transactions/fee-transfer`, {
+      customerId: data.customerId,
+      invoiceId: data.invoiceId,
+      amount: data.amount,
+      reference: data.reference,
+    });
     revalidatePath("/", "layout");
     return { success: true };
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to record fee transfer",
+      error: error instanceof Error ? error.message : "Failed to record fee transfer",
     };
   }
 }
 
 export async function recordRefund(
   accountId: string,
-  data: RecordRefundFormData,
+  data: RecordRefundFormData
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/trust-accounts/${accountId}/transactions/refund`, {
@@ -195,17 +186,14 @@ export async function recordRefund(
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to record refund",
+      error: error instanceof Error ? error.message : "Failed to record refund",
     };
   }
 }
 
 // ── Approval actions ──────────────────────────────────────────────
 
-export async function approveTransaction(
-  transactionId: string,
-): Promise<ActionResult> {
+export async function approveTransaction(transactionId: string): Promise<ActionResult> {
   try {
     await api.post(`/api/trust-transactions/${transactionId}/approve`);
     revalidatePath("/", "layout");
@@ -213,17 +201,14 @@ export async function approveTransaction(
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to approve transaction",
+      error: error instanceof Error ? error.message : "Failed to approve transaction",
     };
   }
 }
 
 export async function rejectTransaction(
   transactionId: string,
-  reason: string,
+  reason: string
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/trust-transactions/${transactionId}/reject`, {
@@ -234,17 +219,14 @@ export async function rejectTransaction(
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to reject transaction",
+      error: error instanceof Error ? error.message : "Failed to reject transaction",
     };
   }
 }
 
 export async function reverseTransaction(
   transactionId: string,
-  reason: string,
+  reason: string
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/trust-transactions/${transactionId}/reverse`, {
@@ -255,10 +237,7 @@ export async function reverseTransaction(
   } catch (error) {
     return {
       success: false,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to reverse transaction",
+      error: error instanceof Error ? error.message : "Failed to reverse transaction",
     };
   }
 }

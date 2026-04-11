@@ -54,12 +54,7 @@ describe("VariablePicker", () => {
 
   it("renders variable groups when open", async () => {
     render(
-      <VariablePicker
-        entityType="PROJECT"
-        onSelect={vi.fn()}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
+      <VariablePicker entityType="PROJECT" onSelect={vi.fn()} open={true} onOpenChange={vi.fn()} />
     );
 
     await waitFor(() => {
@@ -76,12 +71,7 @@ describe("VariablePicker", () => {
     const user = userEvent.setup();
 
     render(
-      <VariablePicker
-        entityType="PROJECT"
-        onSelect={vi.fn()}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
+      <VariablePicker entityType="PROJECT" onSelect={vi.fn()} open={true} onOpenChange={vi.fn()} />
     );
 
     await waitFor(() => {
@@ -102,12 +92,7 @@ describe("VariablePicker", () => {
     const onSelect = vi.fn();
 
     render(
-      <VariablePicker
-        entityType="PROJECT"
-        onSelect={onSelect}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
+      <VariablePicker entityType="PROJECT" onSelect={onSelect} open={true} onOpenChange={vi.fn()} />
     );
 
     await waitFor(() => {

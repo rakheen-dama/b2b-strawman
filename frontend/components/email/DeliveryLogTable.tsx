@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { getDeliveryLog } from "@/lib/actions/email";
-import type {
-  EmailDeliveryLogEntry,
-  EmailDeliveryStatus,
-} from "@/lib/api/email";
+import type { EmailDeliveryLogEntry, EmailDeliveryStatus } from "@/lib/api/email";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -107,7 +104,9 @@ export function DeliveryLogTable() {
     }
 
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [statusFilter, fromDate, toDate, currentPage]);
 
   const hasFilters = statusFilter !== "ALL" || fromDate !== "" || toDate !== "";
@@ -179,9 +178,7 @@ export function DeliveryLogTable() {
       </div>
 
       {/* Error State */}
-      {error && (
-        <p className="text-sm text-destructive">{error}</p>
-      )}
+      {error && <p className="text-destructive text-sm">{error}</p>}
 
       {/* Table */}
       <div className="rounded-lg border border-slate-200 dark:border-slate-800">
@@ -212,20 +209,18 @@ export function DeliveryLogTable() {
             ) : (
               entries.map((entry) => (
                 <TableRow key={entry.id}>
-                  <TableCell className="whitespace-nowrap text-sm">
+                  <TableCell className="text-sm whitespace-nowrap">
                     {formatDate(entry.createdAt)}
                   </TableCell>
                   <TableCell className="text-sm">{entry.recipientEmail}</TableCell>
                   <TableCell className="text-sm">{entry.templateName}</TableCell>
                   <TableCell>
-                    <Badge variant={getStatusVariant(entry.status)}>
-                      {entry.status}
-                    </Badge>
+                    <Badge variant={getStatusVariant(entry.status)}>{entry.status}</Badge>
                   </TableCell>
                   <TableCell className="font-mono text-xs">
                     {entry.providerMessageId ?? "\u2014"}
                   </TableCell>
-                  <TableCell className="text-sm text-destructive">
+                  <TableCell className="text-destructive text-sm">
                     {entry.errorMessage ?? "\u2014"}
                   </TableCell>
                 </TableRow>

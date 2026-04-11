@@ -95,8 +95,10 @@ describe("UnbilledSummary — expense section", () => {
 
     expect(screen.getByText("Expense Subtotal")).toBeInTheDocument();
     // The expense subtotal section should contain ZAR 450
+    // locale-agnostic: normalize separators before asserting
     const subtotalSection = screen.getByText("Expense Subtotal").closest("div");
-    expect(subtotalSection?.textContent).toContain("450.00");
+    const subtotalText = subtotalSection?.textContent?.replace(/[\s\u00a0]/g, " ") ?? "";
+    expect(subtotalText.replace(/,/g, ".")).toContain("450.00");
   });
 
   it("shows grand total combining time and expenses", () => {
@@ -104,8 +106,12 @@ describe("UnbilledSummary — expense section", () => {
 
     expect(screen.getByText("Grand Total")).toBeInTheDocument();
     // ZAR 1000 (time) + ZAR 450 (expenses) = ZAR 1450
+    // locale-agnostic: normalize separators before asserting
     const grandTotalSection = screen.getByText("Grand Total").closest("div");
-    expect(grandTotalSection?.textContent).toContain("1,450.00");
+    const grandTotalText = grandTotalSection?.textContent?.replace(/[\s\u00a0]/g, "") ?? "";
+    // After removing spaces: en-ZA "1450,00" or en-US "1,450.00" → replace commas → "1.450.00" or "1.450.00"
+    // Simpler: strip all separators and check for "145000" (1450.00 without separators)
+    expect(grandTotalText.replace(/[,.\s\u00a0]/g, "")).toContain("145000");
   });
 
   it("renders empty state when no unbilled items", () => {

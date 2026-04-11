@@ -12,7 +12,13 @@ interface ActionResult {
 
 export async function fetchTasks(
   projectId: string,
-  filters?: { status?: string; assigneeId?: string; priority?: string; viewId?: string; recurring?: boolean }
+  filters?: {
+    status?: string;
+    assigneeId?: string;
+    priority?: string;
+    viewId?: string;
+    recurring?: boolean;
+  }
 ): Promise<Task[]> {
   const params = new URLSearchParams();
   if (filters?.status) params.set("status", filters.status);
@@ -62,9 +68,7 @@ export async function createTask(
     type,
     dueDate,
     estimatedHours:
-      estimatedHours !== undefined && !Number.isNaN(estimatedHours)
-        ? estimatedHours
-        : undefined,
+      estimatedHours !== undefined && !Number.isNaN(estimatedHours) ? estimatedHours : undefined,
     assigneeId: assigneeId ?? undefined,
     recurrenceRule,
     recurrenceEndDate,
@@ -142,7 +146,10 @@ export async function claimTask(
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 400 || error.status === 409) {
-        return { success: false, error: "This task was just claimed by someone else. Please refresh." };
+        return {
+          success: false,
+          error: "This task was just claimed by someone else. Please refresh.",
+        };
       }
       return { success: false, error: error.message };
     }

@@ -123,9 +123,7 @@ describe("EmailIntegrationCard", () => {
     });
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Test email sent successfully.")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Test email sent successfully.")).toBeInTheDocument();
     });
   });
 });

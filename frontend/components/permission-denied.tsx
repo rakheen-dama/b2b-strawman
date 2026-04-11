@@ -21,11 +21,9 @@ export function PermissionDenied({
     : t("permission.denied.heading");
 
   return (
-    <div className="flex flex-col items-center py-24 text-center gap-4">
+    <div className="flex flex-col items-center gap-4 py-24 text-center">
       <ShieldOff className="size-12 text-slate-400" />
-      <h2 className="font-display text-xl text-slate-900 dark:text-slate-100">
-        {heading}
-      </h2>
+      <h2 className="font-display text-xl text-slate-900 dark:text-slate-100">{heading}</h2>
       <p className="max-w-md text-sm text-slate-600 dark:text-slate-400">
         {t("permission.denied.description")}
       </p>

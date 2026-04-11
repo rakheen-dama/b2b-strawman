@@ -38,9 +38,7 @@ describe("renderTiptapToHtml (client-side renderer)", () => {
       content: [
         {
           type: "paragraph",
-          content: [
-            { type: "variable", attrs: { key: "project.name" } },
-          ],
+          content: [{ type: "variable", attrs: { key: "project.name" } }],
         },
       ],
     };
@@ -170,9 +168,7 @@ describe("renderTiptapToHtml (client-side renderer)", () => {
       content: [
         {
           type: "paragraph",
-          content: [
-            { type: "variable", attrs: { key: "nonexistent.path" } },
-          ],
+          content: [{ type: "variable", attrs: { key: "nonexistent.path" } }],
         },
       ],
     };
@@ -222,7 +218,7 @@ describe("renderTiptapToHtml (client-side renderer)", () => {
       doc,
       {},
       new Map(),
-      "body { color: red; }</style><script>alert('xss')</script>",
+      "body { color: red; }</style><script>alert('xss')</script>"
     );
     expect(html).not.toContain("</style><script>");
   });
@@ -413,9 +409,7 @@ describe("PreviewPanel", () => {
 
   it("applies additional className", async () => {
     const { PreviewPanel } = await import("@/components/editor/PreviewPanel");
-    const { container } = render(
-      <PreviewPanel html="<p>Test</p>" className="extra-class" />,
-    );
+    const { container } = render(<PreviewPanel html="<p>Test</p>" className="extra-class" />);
     const wrapper = container.firstChild as HTMLElement;
     expect(wrapper.className).toContain("extra-class");
   });

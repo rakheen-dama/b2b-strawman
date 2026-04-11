@@ -19,12 +19,7 @@ interface Props {
   customers: Customer[];
 }
 
-export function NewFromTemplateWrapper({
-  slug,
-  templates,
-  orgMembers,
-  customers,
-}: Props) {
+export function NewFromTemplateWrapper({ slug, templates, orgMembers, customers }: Props) {
   if (templates.length === 0) return null;
 
   return (

@@ -23,11 +23,7 @@ interface EditTaxRateDialogProps {
   children: React.ReactNode;
 }
 
-export function EditTaxRateDialog({
-  slug,
-  taxRate,
-  children,
-}: EditTaxRateDialogProps) {
+export function EditTaxRateDialog({ slug, taxRate, children }: EditTaxRateDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -103,9 +99,7 @@ export function EditTaxRateDialog({
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>Edit Tax Rate</DialogTitle>
-            <DialogDescription>
-              Update the tax rate details.
-            </DialogDescription>
+            <DialogDescription>Update the tax rate details.</DialogDescription>
           </DialogHeader>
 
           <div className="mt-4 space-y-4">
@@ -143,9 +137,7 @@ export function EditTaxRateDialog({
                 checked={isDefault}
                 onCheckedChange={setIsDefault}
               />
-              <Label htmlFor="edit-tax-rate-default">
-                Set as default tax rate
-              </Label>
+              <Label htmlFor="edit-tax-rate-default">Set as default tax rate</Label>
             </div>
             {isDefault && !taxRate.isDefault && (
               <p className="text-xs text-amber-600 dark:text-amber-400">
@@ -164,14 +156,10 @@ export function EditTaxRateDialog({
                   }
                 }}
               />
-              <Label htmlFor="edit-tax-rate-exempt">
-                Tax exempt (0% rate)
-              </Label>
+              <Label htmlFor="edit-tax-rate-exempt">Tax exempt (0% rate)</Label>
             </div>
 
-            {error && (
-              <p className="text-sm text-destructive">{error}</p>
-            )}
+            {error && <p className="text-destructive text-sm">{error}</p>}
           </div>
 
           <DialogFooter className="mt-6">

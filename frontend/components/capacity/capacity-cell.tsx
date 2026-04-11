@@ -85,20 +85,14 @@ export function CapacityCell({ cell, onClick }: CapacityCellProps) {
         "flex h-16 w-full flex-col justify-between rounded border p-1.5 text-left transition-colors",
         colours.bg,
         colours.border,
-        cell.leaveDays > 0 && "opacity-60",
+        cell.leaveDays > 0 && "opacity-60"
       )}
       data-testid="capacity-cell"
       data-utilization={
-        cell.utilizationPct > 100
-          ? "over"
-          : cell.utilizationPct >= 80
-            ? "warning"
-            : "normal"
+        cell.utilizationPct > 100 ? "over" : cell.utilizationPct >= 80 ? "warning" : "normal"
       }
     >
-      <span
-        className={cn("font-mono text-xs tabular-nums font-medium", colours.text)}
-      >
+      <span className={cn("font-mono text-xs font-medium tabular-nums", colours.text)}>
         {cell.totalAllocated}/{cell.effectiveCapacity}h
       </span>
 
@@ -112,10 +106,7 @@ export function CapacityCell({ cell, onClick }: CapacityCellProps) {
             return (
               <div
                 key={slot.projectId}
-                className={cn(
-                  "h-1.5 rounded-full",
-                  getProjectColour(slot.projectId),
-                )}
+                className={cn("h-1.5 rounded-full", getProjectColour(slot.projectId))}
                 style={{ width: `${Math.max(widthPct, 8)}%` }}
                 title={`${slot.projectName}: ${slot.hours}h`}
               />

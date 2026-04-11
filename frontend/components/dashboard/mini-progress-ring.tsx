@@ -10,11 +10,7 @@ function autoColor(value: number): string {
   return "var(--color-red-500, #ef4444)";
 }
 
-export function MiniProgressRing({
-  value,
-  size = 32,
-  color,
-}: MiniProgressRingProps) {
+export function MiniProgressRing({ value, size = 32, color }: MiniProgressRingProps) {
   const clampedValue = Number.isFinite(value) ? Math.max(0, Math.min(100, value)) : 0;
   const resolvedColor = color ?? autoColor(clampedValue);
 

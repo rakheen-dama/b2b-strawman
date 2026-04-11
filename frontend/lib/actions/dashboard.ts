@@ -16,14 +16,9 @@ import type { InformationRequestSummary } from "@/lib/api/information-requests";
 import { listRules, listExecutions } from "@/lib/api/automations";
 import type { AutomationSummary } from "@/lib/api/automations";
 
-export async function fetchDashboardKpis(
-  from: string,
-  to: string
-): Promise<KpiResponse | null> {
+export async function fetchDashboardKpis(from: string, to: string): Promise<KpiResponse | null> {
   try {
-    return await api.get<KpiResponse>(
-      `/api/dashboard/kpis?from=${from}&to=${to}`
-    );
+    return await api.get<KpiResponse>(`/api/dashboard/kpis?from=${from}&to=${to}`);
   } catch {
     return null;
   }
@@ -42,9 +37,7 @@ export async function fetchTeamWorkload(
   to: string
 ): Promise<TeamWorkloadEntry[] | null> {
   try {
-    return await api.get<TeamWorkloadEntry[]>(
-      `/api/dashboard/team-workload?from=${from}&to=${to}`
-    );
+    return await api.get<TeamWorkloadEntry[]>(`/api/dashboard/team-workload?from=${from}&to=${to}`);
   } catch {
     return null;
   }
@@ -54,9 +47,7 @@ export async function fetchDashboardActivity(
   limit: number = 10
 ): Promise<CrossProjectActivityItem[] | null> {
   try {
-    return await api.get<CrossProjectActivityItem[]>(
-      `/api/dashboard/activity?limit=${limit}`
-    );
+    return await api.get<CrossProjectActivityItem[]>(`/api/dashboard/activity?limit=${limit}`);
   } catch {
     return null;
   }
@@ -87,9 +78,7 @@ export async function fetchPersonalDashboard(
 
 export async function fetchInformationRequestSummary(): Promise<InformationRequestSummary | null> {
   try {
-    return await api.get<InformationRequestSummary>(
-      "/api/information-requests/summary",
-    );
+    return await api.get<InformationRequestSummary>("/api/information-requests/summary");
   } catch {
     return null;
   }
@@ -105,19 +94,13 @@ export async function fetchAutomationSummary(): Promise<AutomationSummary | null
     const todayStart = new Date();
     todayStart.setUTCHours(0, 0, 0, 0);
 
-    const todayExecutions = executions.content.filter(
-      (e) => new Date(e.startedAt) >= todayStart,
-    );
+    const todayExecutions = executions.content.filter((e) => new Date(e.startedAt) >= todayStart);
 
     return {
       activeRulesCount: rules.length,
       todayTotal: todayExecutions.length,
-      todaySucceeded: todayExecutions.filter(
-        (e) => e.status === "ACTIONS_COMPLETED",
-      ).length,
-      todayFailed: todayExecutions.filter(
-        (e) => e.status === "ACTIONS_FAILED",
-      ).length,
+      todaySucceeded: todayExecutions.filter((e) => e.status === "ACTIONS_COMPLETED").length,
+      todayFailed: todayExecutions.filter((e) => e.status === "ACTIONS_FAILED").length,
     };
   } catch {
     return null;
@@ -130,9 +113,7 @@ export async function fetchProjectHealthDetail(
   projectId: string
 ): Promise<ProjectHealthDetail | null> {
   try {
-    return await api.get<ProjectHealthDetail>(
-      `/api/projects/${projectId}/health`
-    );
+    return await api.get<ProjectHealthDetail>(`/api/projects/${projectId}/health`);
   } catch {
     return null;
   }
@@ -142,9 +123,7 @@ export async function fetchProjectTaskSummary(
   projectId: string
 ): Promise<TaskSummaryResponse | null> {
   try {
-    return await api.get<TaskSummaryResponse>(
-      `/api/projects/${projectId}/task-summary`
-    );
+    return await api.get<TaskSummaryResponse>(`/api/projects/${projectId}/task-summary`);
   } catch {
     return null;
   }

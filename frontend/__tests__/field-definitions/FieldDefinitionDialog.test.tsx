@@ -7,17 +7,11 @@ import type { FieldDefinitionResponse } from "@/lib/types";
 const mockCreateFieldDefinition = vi.fn();
 const mockUpdateFieldDefinition = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/custom-fields/actions",
-  () => ({
-    createFieldDefinitionAction: (...args: unknown[]) =>
-      mockCreateFieldDefinition(...args),
-    updateFieldDefinitionAction: (...args: unknown[]) =>
-      mockUpdateFieldDefinition(...args),
-    fetchFieldUsageAction: () =>
-      Promise.resolve({ templates: [], clauses: [] }),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
+  createFieldDefinitionAction: (...args: unknown[]) => mockCreateFieldDefinition(...args),
+  updateFieldDefinitionAction: (...args: unknown[]) => mockUpdateFieldDefinition(...args),
+  fetchFieldUsageAction: () => Promise.resolve({ templates: [], clauses: [] }),
+}));
 
 describe("FieldDefinitionDialog", () => {
   beforeEach(() => {
@@ -34,7 +28,7 @@ describe("FieldDefinitionDialog", () => {
     render(
       <FieldDefinitionDialog slug="acme" entityType="PROJECT">
         <button>Open Field Dialog</button>
-      </FieldDefinitionDialog>,
+      </FieldDefinitionDialog>
     );
 
     await user.click(screen.getByText("Open Field Dialog"));
@@ -53,7 +47,7 @@ describe("FieldDefinitionDialog", () => {
     render(
       <FieldDefinitionDialog slug="acme" entityType="PROJECT">
         <button>Open Dropdown Field Dialog</button>
-      </FieldDefinitionDialog>,
+      </FieldDefinitionDialog>
     );
 
     await user.click(screen.getByText("Open Dropdown Field Dialog"));
@@ -64,9 +58,7 @@ describe("FieldDefinitionDialog", () => {
 
     // Options editor should appear
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: "Add Option" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Add Option" })).toBeInTheDocument();
     });
   });
 
@@ -77,7 +69,7 @@ describe("FieldDefinitionDialog", () => {
     render(
       <FieldDefinitionDialog slug="acme" entityType="PROJECT">
         <button>Open Create Field Dialog</button>
-      </FieldDefinitionDialog>,
+      </FieldDefinitionDialog>
     );
 
     await user.click(screen.getByText("Open Create Field Dialog"));
@@ -93,7 +85,7 @@ describe("FieldDefinitionDialog", () => {
           fieldType: "TEXT",
           required: false,
           sortOrder: 0,
-        }),
+        })
       );
     });
   });
@@ -104,7 +96,7 @@ describe("FieldDefinitionDialog", () => {
     render(
       <FieldDefinitionDialog slug="acme" entityType="CUSTOMER">
         <button>Open Required For Dialog</button>
-      </FieldDefinitionDialog>,
+      </FieldDefinitionDialog>
     );
 
     await user.click(screen.getByText("Open Required For Dialog"));
@@ -126,7 +118,7 @@ describe("FieldDefinitionDialog", () => {
     render(
       <FieldDefinitionDialog slug="acme" entityType="CUSTOMER">
         <button>Open Contexts Create Dialog</button>
-      </FieldDefinitionDialog>,
+      </FieldDefinitionDialog>
     );
 
     await user.click(screen.getByText("Open Contexts Create Dialog"));
@@ -143,7 +135,7 @@ describe("FieldDefinitionDialog", () => {
             "INVOICE_GENERATION",
             "LIFECYCLE_ACTIVATION",
           ]),
-        }),
+        })
       );
     });
   });
@@ -175,13 +167,13 @@ describe("FieldDefinitionDialog", () => {
     render(
       <FieldDefinitionDialog slug="acme" entityType="CUSTOMER" field={packField}>
         <button>Open Pack Field Dialog</button>
-      </FieldDefinitionDialog>,
+      </FieldDefinitionDialog>
     );
 
     await user.click(screen.getByText("Open Pack Field Dialog"));
 
     expect(
-      screen.getByText("Set by field pack — override by changing selections."),
+      screen.getByText("Set by field pack — override by changing selections.")
     ).toBeInTheDocument();
   });
 });

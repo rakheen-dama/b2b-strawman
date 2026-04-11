@@ -21,11 +21,7 @@ import { GraceCountdown } from "@/components/billing/grace-countdown";
 import { PayFastResultPoller } from "@/components/billing/payfast-result-poller";
 import { MethodBadge } from "@/components/billing/method-badge";
 import { getSubscription } from "@/app/(app)/org/[slug]/settings/billing/actions";
-import {
-  formatAmount,
-  formatDate,
-  computeDaysRemaining,
-} from "@/lib/billing-utils";
+import { formatAmount, formatDate, computeDaysRemaining } from "@/lib/billing-utils";
 
 function formatDateNullable(isoString: string | null): string {
   if (!isoString) return "\u2014";
@@ -108,16 +104,12 @@ export default async function BillingPage({
 
       {/* Page header */}
       <div className="flex items-center gap-3">
-        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           Billing
           <HelpTip code="billing.overview" docsPath="/admin/billing" />
         </h1>
-        <Badge variant={statusBadgeVariant(billing.status)}>
-          {statusLabel(billing.status)}
-        </Badge>
-        {billing.adminManaged && (
-          <MethodBadge method={billing.billingMethod} />
-        )}
+        <Badge variant={statusBadgeVariant(billing.status)}>{statusLabel(billing.status)}</Badge>
+        {billing.adminManaged && <MethodBadge method={billing.billingMethod} />}
       </div>
 
       {/* Admin-managed info card */}
@@ -178,9 +170,7 @@ export default async function BillingPage({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {billing.trialEndsAt && (
-                  <TrialCountdown trialEndsAt={billing.trialEndsAt} />
-                )}
+                {billing.trialEndsAt && <TrialCountdown trialEndsAt={billing.trialEndsAt} />}
                 <p className="text-sm text-slate-600 dark:text-slate-400">
                   Subscribe to continue using all features after your trial ends on{" "}
                   {formatDateNullable(billing.trialEndsAt)}.
@@ -191,9 +181,7 @@ export default async function BillingPage({
                 </div>
                 <p className="text-lg font-semibold text-slate-950 dark:text-slate-50">
                   {amount}
-                  <span className="text-sm font-normal text-slate-500">
-                    /month
-                  </span>
+                  <span className="text-sm font-normal text-slate-500">/month</span>
                 </p>
                 {billing.canSubscribe && <SubscribeButton />}
               </CardContent>
@@ -222,14 +210,10 @@ export default async function BillingPage({
                 </div>
                 <p className="text-lg font-semibold text-slate-950 dark:text-slate-50">
                   {amount}
-                  <span className="text-sm font-normal text-slate-500">
-                    /month
-                  </span>
+                  <span className="text-sm font-normal text-slate-500">/month</span>
                 </p>
                 {billing.canCancel && billing.currentPeriodEnd && (
-                  <CancelConfirmDialog
-                    currentPeriodEnd={billing.currentPeriodEnd}
-                  />
+                  <CancelConfirmDialog currentPeriodEnd={billing.currentPeriodEnd} />
                 )}
               </CardContent>
             </Card>
@@ -250,8 +234,8 @@ export default async function BillingPage({
                   <span className="font-semibold text-slate-950 dark:text-slate-50">
                     {formatDateNullable(billing.currentPeriodEnd)}
                   </span>
-                  . You will retain full access until then. After that, your account
-                  enters a read-only grace period.
+                  . You will retain full access until then. After that, your account enters a
+                  read-only grace period.
                 </p>
                 <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                   <Users className="size-4" />
@@ -280,8 +264,8 @@ export default async function BillingPage({
               </CardHeader>
               <CardContent className="space-y-4">
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                  Your latest payment failed. Please update your payment method
-                  through PayFast or subscribe again to maintain access.
+                  Your latest payment failed. Please update your payment method through PayFast or
+                  subscribe again to maintain access.
                 </p>
                 <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                   <Users className="size-4" />
@@ -293,28 +277,19 @@ export default async function BillingPage({
           )}
 
           {/* GRACE_PERIOD / EXPIRED */}
-          {(billing.status === "GRACE_PERIOD" ||
-            billing.status === "EXPIRED") && (
+          {(billing.status === "GRACE_PERIOD" || billing.status === "EXPIRED") && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <XCircle className="size-5 text-red-500" />
-                  {billing.status === "GRACE_PERIOD"
-                    ? "Grace Period"
-                    : "Subscription Expired"}
+                  {billing.status === "GRACE_PERIOD" ? "Grace Period" : "Subscription Expired"}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {billing.graceEndsAt && (
-                  <GraceCountdown graceEndsAt={billing.graceEndsAt} />
-                )}
+                {billing.graceEndsAt && <GraceCountdown graceEndsAt={billing.graceEndsAt} />}
                 <div className="rounded-lg bg-red-50 p-3 text-sm text-red-800 dark:bg-red-950 dark:text-red-200">
                   Your account is in read-only mode.{" "}
-                  {billing.graceEndsAt && (
-                    <>
-                      Grace period ends {formatDate(billing.graceEndsAt)}.
-                    </>
-                  )}
+                  {billing.graceEndsAt && <>Grace period ends {formatDate(billing.graceEndsAt)}.</>}
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
                   <Users className="size-4" />
@@ -322,9 +297,7 @@ export default async function BillingPage({
                 </div>
                 <p className="text-lg font-semibold text-slate-950 dark:text-slate-50">
                   {amount}
-                  <span className="text-sm font-normal text-slate-500">
-                    /month
-                  </span>
+                  <span className="text-sm font-normal text-slate-500">/month</span>
                 </p>
                 {billing.canSubscribe && <SubscribeButton />}
               </CardContent>
@@ -371,15 +344,12 @@ export default async function BillingPage({
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Your account has been locked due to an expired subscription.
-                    Your data is preserved and will be accessible once you
-                    resubscribe.
+                    Your account has been locked due to an expired subscription. Your data is
+                    preserved and will be accessible once you resubscribe.
                   </p>
                   <p className="text-lg font-semibold text-slate-950 dark:text-slate-50">
                     {amount}
-                    <span className="text-sm font-normal text-slate-500">
-                      /month
-                    </span>
+                    <span className="text-sm font-normal text-slate-500">/month</span>
                   </p>
                   {billing.canSubscribe && <SubscribeButton />}
                 </CardContent>
@@ -394,11 +364,7 @@ export default async function BillingPage({
                 <CardTitle>Payment History</CardTitle>
               </CardHeader>
               <CardContent>
-                <Suspense
-                  fallback={
-                    <p className="text-sm text-slate-500">Loading payments...</p>
-                  }
-                >
+                <Suspense fallback={<p className="text-sm text-slate-500">Loading payments...</p>}>
                   <PaymentHistory />
                 </Suspense>
               </CardContent>

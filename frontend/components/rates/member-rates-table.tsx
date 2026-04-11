@@ -25,7 +25,7 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import type { OrgMember, BillingRate, CostRate } from "@/lib/types";
 
 function getActiveRate<T extends { effectiveFrom: string; effectiveTo: string | null }>(
-  rates: T[],
+  rates: T[]
 ): T | undefined {
   const today = new Date().toLocaleDateString("en-CA");
   return rates.find((r) => {
@@ -144,7 +144,8 @@ export function MemberRatesTable({
       <div className="flex items-start gap-2 rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
         <HelpTip code="rates.snapshots" />
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          Rate changes only affect new time entries. Existing entries and invoices retain their original snapshotted rate.
+          Rate changes only affect new time entries. Existing entries and invoices retain their
+          original snapshotted rate.
         </p>
       </div>
 
@@ -174,7 +175,10 @@ export function MemberRatesTable({
                   const activeRate = getActiveRate(memberRates);
 
                   return (
-                    <TableRow key={member.id} data-testid={`billing-rate-${member.orgRole?.toLowerCase() ?? member.id}`}>
+                    <TableRow
+                      key={member.id}
+                      data-testid={`billing-rate-${member.orgRole?.toLowerCase() ?? member.id}`}
+                    >
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <AvatarCircle name={member.name} size={32} />
@@ -191,57 +195,40 @@ export function MemberRatesTable({
                       <TableCell>
                         {activeRate ? (
                           <span className="font-medium">
-                            {formatCurrency(
-                              activeRate.hourlyRate,
-                              activeRate.currency,
-                            )}
+                            {formatCurrency(activeRate.hourlyRate, activeRate.currency)}
                           </span>
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-600">
-                            Not set
-                          </span>
+                          <span className="text-slate-400 dark:text-slate-600">Not set</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {activeRate ? (
                           activeRate.currency
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-600">
-                            —
-                          </span>
+                          <span className="text-slate-400 dark:text-slate-600">—</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {activeRate ? (
                           formatDate(activeRate.effectiveFrom)
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-600">
-                            —
-                          </span>
+                          <span className="text-slate-400 dark:text-slate-600">—</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {activeRate?.effectiveTo ? (
                           formatDate(activeRate.effectiveTo)
                         ) : activeRate ? (
-                          <span className="text-slate-400 dark:text-slate-600">
-                            Ongoing
-                          </span>
+                          <span className="text-slate-400 dark:text-slate-600">Ongoing</span>
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-600">
-                            —
-                          </span>
+                          <span className="text-slate-400 dark:text-slate-600">—</span>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           {activeRate ? (
                             <>
-                              <EditRateDialog
-                                slug={slug}
-                                rate={activeRate}
-                                rateType="billing"
-                              >
+                              <EditRateDialog slug={slug} rate={activeRate} rateType="billing">
                                 <Button
                                   variant="plain"
                                   size="sm"
@@ -266,11 +253,7 @@ export function MemberRatesTable({
                               </DeleteRateDialog>
                             </>
                           ) : (
-                            <AddRateDialog
-                              slug={slug}
-                              member={member}
-                              defaultCurrency={currency}
-                            >
+                            <AddRateDialog slug={slug} member={member} defaultCurrency={currency}>
                               <Button
                                 variant="plain"
                                 size="sm"
@@ -314,7 +297,10 @@ export function MemberRatesTable({
                   const activeRate = getActiveRate(memberRates);
 
                   return (
-                    <TableRow key={member.id} data-testid={`cost-rate-${member.orgRole?.toLowerCase() ?? member.id}`}>
+                    <TableRow
+                      key={member.id}
+                      data-testid={`cost-rate-${member.orgRole?.toLowerCase() ?? member.id}`}
+                    >
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <AvatarCircle name={member.name} size={32} />
@@ -331,57 +317,40 @@ export function MemberRatesTable({
                       <TableCell>
                         {activeRate ? (
                           <span className="font-medium">
-                            {formatCurrency(
-                              activeRate.hourlyCost,
-                              activeRate.currency,
-                            )}
+                            {formatCurrency(activeRate.hourlyCost, activeRate.currency)}
                           </span>
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-600">
-                            Not set
-                          </span>
+                          <span className="text-slate-400 dark:text-slate-600">Not set</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {activeRate ? (
                           activeRate.currency
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-600">
-                            —
-                          </span>
+                          <span className="text-slate-400 dark:text-slate-600">—</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {activeRate ? (
                           formatDate(activeRate.effectiveFrom)
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-600">
-                            —
-                          </span>
+                          <span className="text-slate-400 dark:text-slate-600">—</span>
                         )}
                       </TableCell>
                       <TableCell>
                         {activeRate?.effectiveTo ? (
                           formatDate(activeRate.effectiveTo)
                         ) : activeRate ? (
-                          <span className="text-slate-400 dark:text-slate-600">
-                            Ongoing
-                          </span>
+                          <span className="text-slate-400 dark:text-slate-600">Ongoing</span>
                         ) : (
-                          <span className="text-slate-400 dark:text-slate-600">
-                            —
-                          </span>
+                          <span className="text-slate-400 dark:text-slate-600">—</span>
                         )}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
                           {activeRate ? (
                             <>
-                              <EditRateDialog
-                                slug={slug}
-                                rate={activeRate}
-                                rateType="cost"
-                              >
+                              <EditRateDialog slug={slug} rate={activeRate} rateType="cost">
                                 <Button
                                   variant="plain"
                                   size="sm"
@@ -406,11 +375,7 @@ export function MemberRatesTable({
                               </DeleteRateDialog>
                             </>
                           ) : (
-                            <AddRateDialog
-                              slug={slug}
-                              member={member}
-                              defaultCurrency={currency}
-                            >
+                            <AddRateDialog slug={slug} member={member} defaultCurrency={currency}>
                               <Button
                                 variant="plain"
                                 size="sm"

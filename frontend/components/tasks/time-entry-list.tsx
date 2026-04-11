@@ -14,12 +14,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { EditTimeEntryDialog } from "@/components/tasks/edit-time-entry-dialog";
 import { DeleteTimeEntryDialog } from "@/components/tasks/delete-time-entry-dialog";
 import { BillingStatusBadge } from "@/components/time-entries/billing-status-badge";
@@ -57,8 +52,7 @@ export function TimeEntryList({
   isAdmin = false,
   canManage = false,
 }: TimeEntryListProps) {
-  const [billingFilter, setBillingFilter] =
-    useState<BillingStatusFilter>("all");
+  const [billingFilter, setBillingFilter] = useState<BillingStatusFilter>("all");
 
   // Apply client-side billing status filter
   const filteredEntries =
@@ -70,10 +64,7 @@ export function TimeEntryList({
           ? entries.filter((e) => !!e.invoiceId)
           : entries.filter((e) => !e.billable);
 
-  const totalMinutes = filteredEntries.reduce(
-    (sum, e) => sum + e.durationMinutes,
-    0,
-  );
+  const totalMinutes = filteredEntries.reduce((sum, e) => sum + e.durationMinutes, 0);
 
   // Determine if the current user has elevated privileges (lead/admin/owner)
   const isElevated = canManage || isAdmin;
@@ -100,27 +91,19 @@ export function TimeEntryList({
   }
 
   // Check if we need an actions column: show if any entry is editable by the current user
-  const showActionsColumn =
-    actionsEnabled &&
-    filteredEntries.some((e) => canEditEntry(e));
+  const showActionsColumn = actionsEnabled && filteredEntries.some((e) => canEditEntry(e));
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
-            Time Entries
-          </h3>
+          <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">Time Entries</h3>
           <Badge variant="neutral">{formatDuration(totalMinutes)}</Badge>
         </div>
       </div>
 
       {/* Billing status filter toggle */}
-      <div
-        className="flex flex-wrap gap-2"
-        role="group"
-        aria-label="Billing status filter"
-      >
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Billing status filter">
         {BILLING_STATUS_FILTER_OPTIONS.map((option) => (
           <button
             key={option.key}
@@ -130,7 +113,7 @@ export function TimeEntryList({
               "rounded-full px-3 py-1 text-sm font-medium transition-colors",
               billingFilter === option.key
                 ? "bg-slate-900 text-slate-50 dark:bg-slate-100 dark:text-slate-900"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700",
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
             )}
           >
             {option.label}
@@ -149,26 +132,26 @@ export function TimeEntryList({
           <Table>
             <TableHeader>
               <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
-                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Date
                 </TableHead>
-                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Duration
                 </TableHead>
-                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+                <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                   Member
                 </TableHead>
-                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Billing
                 </TableHead>
-                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+                <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                   Value
                 </TableHead>
-                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+                <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                   Description
                 </TableHead>
                 {showActionsColumn && (
-                  <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                  <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                     Actions
                   </TableHead>
                 )}
@@ -202,13 +185,9 @@ export function TimeEntryList({
                       />
                     </TableCell>
                     <TableCell className="hidden text-sm text-slate-600 sm:table-cell dark:text-slate-400">
-                      {entry.billableValue != null &&
-                      entry.billingRateCurrency ? (
+                      {entry.billableValue != null && entry.billingRateCurrency ? (
                         <span className="font-medium text-slate-700 dark:text-slate-300">
-                          {formatCurrencySafe(
-                            entry.billableValue,
-                            entry.billingRateCurrency,
-                          )}
+                          {formatCurrencySafe(entry.billableValue, entry.billingRateCurrency)}
                         </span>
                       ) : (
                         "\u2014"
@@ -239,9 +218,8 @@ export function TimeEntryList({
                                     </TooltipTrigger>
                                     <TooltipContent>
                                       <p>
-                                        Time entry is part of invoice{" "}
-                                        {entry.invoiceNumber}. Void the invoice
-                                        to unlock.
+                                        Time entry is part of invoice {entry.invoiceNumber}. Void
+                                        the invoice to unlock.
                                       </p>
                                     </TooltipContent>
                                   </Tooltip>
@@ -260,9 +238,8 @@ export function TimeEntryList({
                                     </TooltipTrigger>
                                     <TooltipContent>
                                       <p>
-                                        Time entry is part of invoice{" "}
-                                        {entry.invoiceNumber}. Void the invoice
-                                        to unlock.
+                                        Time entry is part of invoice {entry.invoiceNumber}. Void
+                                        the invoice to unlock.
                                       </p>
                                     </TooltipContent>
                                   </Tooltip>

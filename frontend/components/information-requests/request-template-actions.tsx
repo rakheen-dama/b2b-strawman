@@ -42,12 +42,7 @@ export function RequestTemplateActions({
   }
 
   async function handleDeactivate() {
-    if (
-      !window.confirm(
-        `Deactivate request template "${templateName}"?`,
-      )
-    )
-      return;
+    if (!window.confirm(`Deactivate request template "${templateName}"?`)) return;
     setDeactivating(true);
     setError(null);
     try {
@@ -66,26 +61,15 @@ export function RequestTemplateActions({
     <div className="space-y-1">
       <div className="flex items-center justify-end gap-1">
         {source === "CUSTOM" && (
-          <Link
-            href={`/org/${slug}/settings/request-templates/${templateId}`}
-          >
+          <Link href={`/org/${slug}/settings/request-templates/${templateId}`}>
             <Button variant="ghost" size="sm">
               <Pencil className="size-4" />
               <span className="sr-only">Edit {templateName}</span>
             </Button>
           </Link>
         )}
-        <Button
-          variant="ghost"
-          size="sm"
-          disabled={duplicating}
-          onClick={handleDuplicate}
-        >
-          {duplicating ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Copy className="size-4" />
-          )}
+        <Button variant="ghost" size="sm" disabled={duplicating} onClick={handleDuplicate}>
+          {duplicating ? <Loader2 className="size-4 animate-spin" /> : <Copy className="size-4" />}
           <span className="sr-only">Duplicate {templateName}</span>
         </Button>
         {source === "CUSTOM" && (
@@ -105,11 +89,7 @@ export function RequestTemplateActions({
           </Button>
         )}
       </div>
-      {error && (
-        <p className="text-right text-xs text-red-600 dark:text-red-400">
-          {error}
-        </p>
-      )}
+      {error && <p className="text-right text-xs text-red-600 dark:text-red-400">{error}</p>}
     </div>
   );
 }

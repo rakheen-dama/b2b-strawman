@@ -7,8 +7,7 @@ import type { NotificationPreference } from "@/lib/actions/notifications";
 const mockUpdateNotificationPreferences = vi.fn();
 
 vi.mock("@/lib/actions/notifications", () => ({
-  updateNotificationPreferences: (...args: unknown[]) =>
-    mockUpdateNotificationPreferences(...args),
+  updateNotificationPreferences: (...args: unknown[]) => mockUpdateNotificationPreferences(...args),
 }));
 
 function makePreferences(): NotificationPreference[] {
@@ -46,9 +45,7 @@ describe("NotificationPreferencesForm", () => {
   });
 
   it("renders all 20 notification types with human-readable labels and toggles", () => {
-    render(
-      <NotificationPreferencesForm initialPreferences={makePreferences()} />
-    );
+    render(<NotificationPreferencesForm initialPreferences={makePreferences()} />);
 
     expect(screen.getByText("Task Assigned")).toBeInTheDocument();
     expect(screen.getByText("Task Claimed")).toBeInTheDocument();
@@ -77,9 +74,7 @@ describe("NotificationPreferencesForm", () => {
   });
 
   it("displays category headers for grouped notification types", () => {
-    render(
-      <NotificationPreferencesForm initialPreferences={makePreferences()} />
-    );
+    render(<NotificationPreferencesForm initialPreferences={makePreferences()} />);
 
     expect(screen.getByText("Tasks")).toBeInTheDocument();
     expect(screen.getByText("Collaboration")).toBeInTheDocument();
@@ -89,9 +84,7 @@ describe("NotificationPreferencesForm", () => {
   });
 
   it("email toggles are not disabled", () => {
-    render(
-      <NotificationPreferencesForm initialPreferences={makePreferences()} />
-    );
+    render(<NotificationPreferencesForm initialPreferences={makePreferences()} />);
 
     const switches = screen.getAllByRole("switch");
     // All switches should be enabled (not disabled)
@@ -103,18 +96,14 @@ describe("NotificationPreferencesForm", () => {
   it("toggling an in-app switch and saving updates preferences", async () => {
     const preferences = makePreferences();
     const updatedPreferences = preferences.map((p) =>
-      p.notificationType === "TASK_ASSIGNED"
-        ? { ...p, inAppEnabled: false }
-        : p
+      p.notificationType === "TASK_ASSIGNED" ? { ...p, inAppEnabled: false } : p
     );
 
     mockUpdateNotificationPreferences.mockResolvedValue({
       preferences: updatedPreferences,
     });
 
-    render(
-      <NotificationPreferencesForm initialPreferences={preferences} />
-    );
+    render(<NotificationPreferencesForm initialPreferences={preferences} />);
 
     const user = userEvent.setup();
 
@@ -143,27 +132,21 @@ describe("NotificationPreferencesForm", () => {
 
     // Success message appears
     await waitFor(() => {
-      expect(
-        screen.getByText("Preferences saved successfully.")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Preferences saved successfully.")).toBeInTheDocument();
     });
   });
 
   it("toggling an email switch and saving sends correct payload", async () => {
     const preferences = makePreferences();
     const updatedPreferences = preferences.map((p) =>
-      p.notificationType === "COMMENT_ADDED"
-        ? { ...p, emailEnabled: true }
-        : p
+      p.notificationType === "COMMENT_ADDED" ? { ...p, emailEnabled: true } : p
     );
 
     mockUpdateNotificationPreferences.mockResolvedValue({
       preferences: updatedPreferences,
     });
 
-    render(
-      <NotificationPreferencesForm initialPreferences={preferences} />
-    );
+    render(<NotificationPreferencesForm initialPreferences={preferences} />);
 
     const user = userEvent.setup();
 

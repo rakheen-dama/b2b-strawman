@@ -22,11 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { updateRetainerAction } from "@/app/(app)/org/[slug]/retainers/[id]/actions";
-import {
-  FREQUENCY_LABELS,
-  TYPE_LABELS,
-  ROLLOVER_LABELS,
-} from "@/lib/retainer-constants";
+import { FREQUENCY_LABELS, TYPE_LABELS, ROLLOVER_LABELS } from "@/lib/retainer-constants";
 import { formatLocalDate } from "@/lib/format";
 import type { RetainerResponse, UpdateRetainerRequest, RolloverPolicy } from "@/lib/api/retainers";
 
@@ -36,27 +32,21 @@ interface EditRetainerDialogProps {
   children: React.ReactNode;
 }
 
-export function EditRetainerDialog({
-  slug,
-  retainer,
-  children,
-}: EditRetainerDialogProps) {
+export function EditRetainerDialog({ slug, retainer, children }: EditRetainerDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [name, setName] = useState(retainer.name);
   const [allocatedHours, setAllocatedHours] = useState<number | string>(
-    retainer.allocatedHours ?? "",
+    retainer.allocatedHours ?? ""
   );
-  const [periodFee, setPeriodFee] = useState<number | string>(
-    retainer.periodFee ?? "",
-  );
+  const [periodFee, setPeriodFee] = useState<number | string>(retainer.periodFee ?? "");
   const [rolloverPolicy, setRolloverPolicy] = useState<RolloverPolicy | "">(
-    retainer.rolloverPolicy ?? "",
+    retainer.rolloverPolicy ?? ""
   );
   const [rolloverCapHours, setRolloverCapHours] = useState<number | string>(
-    retainer.rolloverCapHours ?? "",
+    retainer.rolloverCapHours ?? ""
   );
   const [endDate, setEndDate] = useState(retainer.endDate ?? "");
   const [notes, setNotes] = useState(retainer.notes ?? "");
@@ -118,9 +108,7 @@ export function EditRetainerDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Edit Retainer</DialogTitle>
-          <DialogDescription>
-            Changes take effect on the next period.
-          </DialogDescription>
+          <DialogDescription>Changes take effect on the next period.</DialogDescription>
         </DialogHeader>
 
         <div className="max-h-[60vh] space-y-4 overflow-y-auto py-2">
@@ -134,25 +122,19 @@ export function EditRetainerDialog({
                 </dd>
               </div>
               <div className="flex gap-2">
-                <dt className="text-slate-500 dark:text-slate-400">
-                  Frequency:
-                </dt>
+                <dt className="text-slate-500 dark:text-slate-400">Frequency:</dt>
                 <dd className="font-medium text-slate-900 dark:text-slate-100">
                   {FREQUENCY_LABELS[retainer.frequency]}
                 </dd>
               </div>
               <div className="flex gap-2">
-                <dt className="text-slate-500 dark:text-slate-400">
-                  Start Date:
-                </dt>
+                <dt className="text-slate-500 dark:text-slate-400">Start Date:</dt>
                 <dd className="font-medium text-slate-900 dark:text-slate-100">
                   {formatLocalDate(retainer.startDate)}
                 </dd>
               </div>
               <div className="flex gap-2">
-                <dt className="text-slate-500 dark:text-slate-400">
-                  Customer:
-                </dt>
+                <dt className="text-slate-500 dark:text-slate-400">Customer:</dt>
                 <dd className="font-medium text-slate-900 dark:text-slate-100">
                   {retainer.customerName}
                 </dd>
@@ -163,11 +145,7 @@ export function EditRetainerDialog({
           {/* Editable fields */}
           <div className="space-y-1.5">
             <Label htmlFor="edit-name">Name</Label>
-            <Input
-              id="edit-name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
+            <Input id="edit-name" value={name} onChange={(e) => setName(e.target.value)} />
           </div>
 
           {retainer.type === "HOUR_BANK" && (
@@ -207,13 +185,13 @@ export function EditRetainerDialog({
                   <SelectValue placeholder="Select policy" />
                 </SelectTrigger>
                 <SelectContent>
-                  {(
-                    Object.entries(ROLLOVER_LABELS) as [RolloverPolicy, string][]
-                  ).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
+                  {(Object.entries(ROLLOVER_LABELS) as [RolloverPolicy, string][]).map(
+                    ([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    )
+                  )}
                 </SelectContent>
               </Select>
             </div>
@@ -253,7 +231,7 @@ export function EditRetainerDialog({
             />
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
         </div>
 
         <DialogFooter>

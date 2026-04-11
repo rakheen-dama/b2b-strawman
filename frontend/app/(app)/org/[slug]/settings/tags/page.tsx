@@ -6,11 +6,7 @@ import { HelpTip } from "@/components/help-tip";
 import { TagsContent } from "./tags-content";
 import type { TagResponse } from "@/lib/types";
 
-export default async function TagsSettingsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function TagsSettingsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const caps = await fetchMyCapabilities();
 
@@ -34,7 +30,7 @@ export default async function TagsSettingsPage({
       </Link>
 
       <div>
-        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           Tags
           <HelpTip code="tags.overview" />
         </h1>

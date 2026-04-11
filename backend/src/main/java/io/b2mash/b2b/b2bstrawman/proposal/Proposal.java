@@ -77,6 +77,17 @@ public class Proposal {
   @Column(name = "retainer_hours_included", precision = 6, scale = 1)
   private BigDecimal retainerHoursIncluded;
 
+  // --- Contingency fee fields (LPC Rule 59 / Contingency Fees Act 66 of 1997) ---
+
+  @Column(name = "contingency_percent", precision = 5, scale = 2)
+  private BigDecimal contingencyPercent;
+
+  @Column(name = "contingency_cap_percent", precision = 5, scale = 2)
+  private BigDecimal contingencyCapPercent;
+
+  @Column(name = "contingency_description", length = 500)
+  private String contingencyDescription;
+
   // --- Document content (Tiptap JSON) ---
 
   @JdbcTypeCode(SqlTypes.JSON)
@@ -278,6 +289,24 @@ public class Proposal {
     this.updatedAt = Instant.now();
   }
 
+  public void setContingencyPercent(BigDecimal contingencyPercent) {
+    requireEditable();
+    this.contingencyPercent = contingencyPercent;
+    this.updatedAt = Instant.now();
+  }
+
+  public void setContingencyCapPercent(BigDecimal contingencyCapPercent) {
+    requireEditable();
+    this.contingencyCapPercent = contingencyCapPercent;
+    this.updatedAt = Instant.now();
+  }
+
+  public void setContingencyDescription(String contingencyDescription) {
+    requireEditable();
+    this.contingencyDescription = contingencyDescription;
+    this.updatedAt = Instant.now();
+  }
+
   public void setProjectTemplateId(UUID projectTemplateId) {
     requireEditable();
     this.projectTemplateId = projectTemplateId;
@@ -366,6 +395,18 @@ public class Proposal {
 
   public BigDecimal getRetainerHoursIncluded() {
     return retainerHoursIncluded;
+  }
+
+  public BigDecimal getContingencyPercent() {
+    return contingencyPercent;
+  }
+
+  public BigDecimal getContingencyCapPercent() {
+    return contingencyCapPercent;
+  }
+
+  public String getContingencyDescription() {
+    return contingencyDescription;
   }
 
   public Map<String, Object> getContentJson() {

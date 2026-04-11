@@ -3,18 +3,10 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  CheckCircle2,
-  AlertTriangle,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, AlertTriangle, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ResolveConflictDialog } from "@/components/legal/resolve-conflict-dialog";
-import type {
-  ConflictCheck,
-  ConflictCheckResult,
-  ConflictMatch,
-} from "@/lib/types";
+import type { ConflictCheck, ConflictCheckResult, ConflictMatch } from "@/lib/types";
 
 function resultIcon(result: ConflictCheckResult) {
   switch (result) {
@@ -112,19 +104,19 @@ export function ConflictCheckResultDisplay({
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-700">
-                <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Party Name
                 </th>
-                <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Match Type
                 </th>
-                <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Score
                 </th>
-                <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Linked Matter
                 </th>
-                <th className="px-3 py-2 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-3 py-2 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Relationship
                 </th>
               </tr>
@@ -158,11 +150,7 @@ export function ConflictCheckResultDisplay({
       {/* Action buttons */}
       {result.result !== "NO_CONFLICT" && !result.resolution && (
         <div className="mt-4 flex flex-wrap gap-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => setResolveOpen(true)}
-          >
+          <Button size="sm" variant="outline" onClick={() => setResolveOpen(true)}>
             Resolve Conflict
           </Button>
         </div>

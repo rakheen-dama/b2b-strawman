@@ -42,7 +42,5 @@ export function MethodBadge({ method }: MethodBadgeProps) {
   }
 
   const variant = methodVariantMap[method] ?? "neutral";
-  return (
-    <Badge variant={variant}>{methodLabelMap[method] ?? method}</Badge>
-  );
+  return <Badge variant={variant}>{methodLabelMap[method] ?? method}</Badge>;
 }

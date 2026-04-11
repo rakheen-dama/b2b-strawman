@@ -5,10 +5,7 @@
  * @param dateStr - ISO date string or null
  * @param fallback - Text to display when dateStr is null (default: "N/A")
  */
-export function formatDate(
-  dateStr: string | null,
-  fallback: string = "N/A",
-): string {
+export function formatDate(dateStr: string | null, fallback: string = "N/A"): string {
   if (!dateStr) return fallback;
   return new Date(dateStr).toLocaleDateString("en-ZA", {
     year: "numeric",

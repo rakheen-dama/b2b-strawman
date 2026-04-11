@@ -13,10 +13,7 @@ import {
 } from "@/components/ui/table";
 import { formatCurrency, formatCurrencySafe } from "@/lib/format";
 import { getOrgProfitability } from "@/app/(app)/org/[slug]/profitability/actions";
-import type {
-  OrgProfitabilityResponse,
-  ProjectProfitabilitySummary,
-} from "@/lib/types";
+import type { OrgProfitabilityResponse, ProjectProfitabilitySummary } from "@/lib/types";
 import { ArrowUpDown, ChevronDown, ChevronRight } from "lucide-react";
 
 interface CustomerProfitabilitySectionProps {
@@ -36,9 +33,7 @@ interface CustomerAggregate {
   projects: ProjectProfitabilitySummary[];
 }
 
-function aggregateByCustomer(
-  projects: ProjectProfitabilitySummary[],
-): CustomerAggregate[] {
+function aggregateByCustomer(projects: ProjectProfitabilitySummary[]): CustomerAggregate[] {
   const map = new Map<string, CustomerAggregate>();
 
   for (const p of projects) {
@@ -72,27 +67,19 @@ function aggregateByCustomer(
   for (const agg of map.values()) {
     if (agg.costValue != null) {
       agg.margin = agg.billableValue - agg.costValue;
-      agg.marginPercent =
-        agg.billableValue > 0
-          ? (agg.margin / agg.billableValue) * 100
-          : 0;
+      agg.marginPercent = agg.billableValue > 0 ? (agg.margin / agg.billableValue) * 100 : 0;
     }
   }
 
   return Array.from(map.values());
 }
 
-type SortField =
-  | "customerName"
-  | "billableValue"
-  | "costValue"
-  | "margin"
-  | "marginPercent";
+type SortField = "customerName" | "billableValue" | "costValue" | "margin" | "marginPercent";
 
 function sortCustomers(
   customers: CustomerAggregate[],
   field: SortField,
-  dir: "asc" | "desc",
+  dir: "asc" | "desc"
 ): CustomerAggregate[] {
   return [...customers].sort((a, b) => {
     let cmp = 0;
@@ -166,7 +153,7 @@ export function CustomerProfitabilitySection({
   const aggregated = useMemo(() => aggregateByCustomer(data.projects), [data]);
   const sorted = useMemo(
     () => sortCustomers(aggregated, sortField, sortDir),
-    [aggregated, sortField, sortDir],
+    [aggregated, sortField, sortDir]
   );
 
   return (
@@ -175,10 +162,7 @@ export function CustomerProfitabilitySection({
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <CardTitle>Customer Profitability</CardTitle>
           <div className="flex items-center gap-2">
-            <label
-              htmlFor="cust-prof-from"
-              className="text-sm text-slate-600 dark:text-slate-400"
-            >
+            <label htmlFor="cust-prof-from" className="text-sm text-slate-600 dark:text-slate-400">
               From
             </label>
             <input
@@ -188,10 +172,7 @@ export function CustomerProfitabilitySection({
               onChange={(e) => handleDateChange(e.target.value, to)}
               className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-900 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
             />
-            <label
-              htmlFor="cust-prof-to"
-              className="text-sm text-slate-600 dark:text-slate-400"
-            >
+            <label htmlFor="cust-prof-to" className="text-sm text-slate-600 dark:text-slate-400">
               To
             </label>
             <input
@@ -205,14 +186,8 @@ export function CustomerProfitabilitySection({
         </div>
       </CardHeader>
       <CardContent>
-        {isPending && (
-          <div className="mb-4 text-sm text-slate-500">Loading...</div>
-        )}
-        {error && (
-          <div className="mb-4 text-sm text-red-600 dark:text-red-400">
-            {error}
-          </div>
-        )}
+        {isPending && <div className="mb-4 text-sm text-slate-500">Loading...</div>}
+        {error && <div className="mb-4 text-sm text-red-600 dark:text-red-400">{error}</div>}
         {sorted.length === 0 ? (
           <p className="py-8 text-center text-sm text-slate-500">
             No customer profitability data for this period
@@ -276,10 +251,7 @@ export function CustomerProfitabilitySection({
                 const isExpanded = expandedRows.has(key);
                 return (
                   <Fragment key={key}>
-                    <TableRow
-                      className="cursor-pointer"
-                      onClick={() => toggleExpand(key)}
-                    >
+                    <TableRow className="cursor-pointer" onClick={() => toggleExpand(key)}>
                       <TableCell className="w-8 px-2">
                         {isExpanded ? (
                           <ChevronDown className="size-4 text-slate-500" />
@@ -287,21 +259,13 @@ export function CustomerProfitabilitySection({
                           <ChevronRight className="size-4 text-slate-500" />
                         )}
                       </TableCell>
-                      <TableCell className="font-medium">
-                        {customer.customerName}
-                      </TableCell>
+                      <TableCell className="font-medium">{customer.customerName}</TableCell>
                       <TableCell>{customer.currency}</TableCell>
                       <TableCell className="text-right">
-                        {formatCurrency(
-                          customer.billableValue,
-                          customer.currency,
-                        )}
+                        {formatCurrency(customer.billableValue, customer.currency)}
                       </TableCell>
                       <TableCell className="text-right">
-                        {formatCurrencySafe(
-                          customer.costValue,
-                          customer.currency,
-                        )}
+                        {formatCurrencySafe(customer.costValue, customer.currency)}
                       </TableCell>
                       <TableCell className="text-right">
                         {customer.margin != null ? (
@@ -309,13 +273,10 @@ export function CustomerProfitabilitySection({
                             className={cn(
                               customer.margin >= 0
                                 ? "text-green-600 dark:text-green-400"
-                                : "text-red-600 dark:text-red-400",
+                                : "text-red-600 dark:text-red-400"
                             )}
                           >
-                            {formatCurrency(
-                              customer.margin,
-                              customer.currency,
-                            )}
+                            {formatCurrency(customer.margin, customer.currency)}
                           </span>
                         ) : (
                           <span className="text-slate-400">&mdash;</span>
@@ -327,7 +288,7 @@ export function CustomerProfitabilitySection({
                             className={cn(
                               customer.marginPercent >= 0
                                 ? "text-green-600 dark:text-green-400"
-                                : "text-red-600 dark:text-red-400",
+                                : "text-red-600 dark:text-red-400"
                             )}
                           >
                             {customer.marginPercent.toFixed(1)}%
@@ -351,16 +312,10 @@ export function CustomerProfitabilitySection({
                             {project.currency}
                           </TableCell>
                           <TableCell className="text-right text-sm">
-                            {formatCurrency(
-                              project.billableValue,
-                              project.currency,
-                            )}
+                            {formatCurrency(project.billableValue, project.currency)}
                           </TableCell>
                           <TableCell className="text-right text-sm">
-                            {formatCurrencySafe(
-                              project.costValue,
-                              project.currency,
-                            )}
+                            {formatCurrencySafe(project.costValue, project.currency)}
                           </TableCell>
                           <TableCell className="text-right text-sm">
                             {project.margin != null ? (
@@ -368,13 +323,10 @@ export function CustomerProfitabilitySection({
                                 className={cn(
                                   project.margin >= 0
                                     ? "text-green-600 dark:text-green-400"
-                                    : "text-red-600 dark:text-red-400",
+                                    : "text-red-600 dark:text-red-400"
                                 )}
                               >
-                                {formatCurrency(
-                                  project.margin,
-                                  project.currency,
-                                )}
+                                {formatCurrency(project.margin, project.currency)}
                               </span>
                             ) : (
                               <span className="text-slate-400">&mdash;</span>
@@ -386,7 +338,7 @@ export function CustomerProfitabilitySection({
                                 className={cn(
                                   project.marginPercent >= 0
                                     ? "text-green-600 dark:text-green-400"
-                                    : "text-red-600 dark:text-red-400",
+                                    : "text-red-600 dark:text-red-400"
                                 )}
                               >
                                 {project.marginPercent.toFixed(1)}%

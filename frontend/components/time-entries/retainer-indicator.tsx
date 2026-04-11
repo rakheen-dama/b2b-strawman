@@ -17,7 +17,7 @@ function formatPeriodDate(dateStr: string): string {
 function isOutsidePeriod(
   date: string,
   periodStart: string | null,
-  periodEnd: string | null,
+  periodEnd: string | null
 ): boolean {
   if (!periodStart || !periodEnd || !date) return false;
   return date < periodStart || date >= periodEnd;
@@ -30,19 +30,14 @@ interface RetainerIndicatorProps {
   className?: string;
 }
 
-export function RetainerIndicator({
-  summary,
-  selectedDate,
-  className,
-}: RetainerIndicatorProps) {
+export function RetainerIndicator({ summary, selectedDate, className }: RetainerIndicatorProps) {
   if (!summary || !summary.hasActiveRetainer) {
     return null;
   }
 
   const hasPeriodDates = !!summary.periodStart && !!summary.periodEnd;
   const outsidePeriod =
-    !!selectedDate &&
-    isOutsidePeriod(selectedDate, summary.periodStart, summary.periodEnd);
+    !!selectedDate && isOutsidePeriod(selectedDate, summary.periodStart, summary.periodEnd);
 
   // FIXED_FEE: show simple label
   if (summary.type === "FIXED_FEE") {
@@ -78,8 +73,8 @@ export function RetainerIndicator({
             data-testid="retainer-period-warning"
           >
             <p className="text-sm text-amber-700 dark:text-amber-400">
-              This date is outside the current retainer period &mdash; hours
-              won&apos;t count toward the retainer.
+              This date is outside the current retainer period &mdash; hours won&apos;t count toward
+              the retainer.
             </p>
           </div>
         )}
@@ -112,9 +107,7 @@ export function RetainerIndicator({
           Retainer: {remainingHours.toFixed(1)} hrs remaining
         </p>
         {summary.agreementName && (
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            {summary.agreementName}
-          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{summary.agreementName}</p>
         )}
         {hasPeriodDates && (
           <p
@@ -134,8 +127,8 @@ export function RetainerIndicator({
           data-testid="retainer-period-warning"
         >
           <p className="text-sm text-amber-700 dark:text-amber-400">
-            This date is outside the current retainer period &mdash; hours
-            won&apos;t count toward the retainer.
+            This date is outside the current retainer period &mdash; hours won&apos;t count toward
+            the retainer.
           </p>
         </div>
       )}

@@ -6,18 +6,14 @@ import type { Task, TagResponse } from "@/lib/types";
 
 const mockSaveAsTemplate = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/project-templates/actions",
-  () => ({
-    saveAsTemplateAction: (...args: unknown[]) =>
-      mockSaveAsTemplate(...args),
-    deleteTemplateAction: vi.fn(),
-    duplicateTemplateAction: vi.fn(),
-    createProjectTemplateAction: vi.fn(),
-    updateProjectTemplateAction: vi.fn(),
-    instantiateTemplateAction: vi.fn(),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/project-templates/actions", () => ({
+  saveAsTemplateAction: (...args: unknown[]) => mockSaveAsTemplate(...args),
+  deleteTemplateAction: vi.fn(),
+  duplicateTemplateAction: vi.fn(),
+  createProjectTemplateAction: vi.fn(),
+  updateProjectTemplateAction: vi.fn(),
+  instantiateTemplateAction: vi.fn(),
+}));
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
@@ -71,7 +67,7 @@ describe("SaveAsTemplateDialog", () => {
         projectTags={SAMPLE_TAGS}
       >
         <button>Save as Template trigger</button>
-      </SaveAsTemplateDialog>,
+      </SaveAsTemplateDialog>
     );
     await user.click(screen.getByText("Save as Template trigger"));
     expect(screen.getByText("Template name")).toBeInTheDocument();
@@ -87,7 +83,7 @@ describe("SaveAsTemplateDialog", () => {
         projectTags={SAMPLE_TAGS}
       >
         <button>Open SaveDialog</button>
-      </SaveAsTemplateDialog>,
+      </SaveAsTemplateDialog>
     );
     await user.click(screen.getByText("Open SaveDialog"));
     expect(screen.getByText("Collect documents")).toBeInTheDocument();
@@ -104,7 +100,7 @@ describe("SaveAsTemplateDialog", () => {
         projectTags={[]}
       >
         <button>Open SaveDialog</button>
-      </SaveAsTemplateDialog>,
+      </SaveAsTemplateDialog>
     );
     await user.click(screen.getByText("Open SaveDialog"));
     const checkboxes = screen.getAllByRole("checkbox");
@@ -127,7 +123,7 @@ describe("SaveAsTemplateDialog", () => {
         projectTags={SAMPLE_TAGS}
       >
         <button>Open SaveDialog</button>
-      </SaveAsTemplateDialog>,
+      </SaveAsTemplateDialog>
     );
     await user.click(screen.getByText("Open SaveDialog"));
     await user.type(screen.getByLabelText("Template name"), "Test Template");
@@ -135,9 +131,7 @@ describe("SaveAsTemplateDialog", () => {
     fireEvent.change(screen.getByLabelText("Name pattern"), {
       target: { value: "{customer} — Test {year}" },
     });
-    await user.click(
-      screen.getByRole("button", { name: "Save as Template" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Save as Template" }));
     await waitFor(() => {
       expect(mockSaveAsTemplate).toHaveBeenCalledWith(
         "acme",
@@ -145,7 +139,7 @@ describe("SaveAsTemplateDialog", () => {
         expect.objectContaining({
           name: "Test Template",
           namePattern: "{customer} — Test {year}",
-        }),
+        })
       );
     });
   });
@@ -164,16 +158,14 @@ describe("SaveAsTemplateDialog", () => {
         projectTags={[]}
       >
         <button>Open SaveDialog</button>
-      </SaveAsTemplateDialog>,
+      </SaveAsTemplateDialog>
     );
     await user.click(screen.getByText("Open SaveDialog"));
     await user.type(screen.getByLabelText("Template name"), "Test Template");
     fireEvent.change(screen.getByLabelText("Name pattern"), {
       target: { value: "{customer} — {year}" },
     });
-    await user.click(
-      screen.getByRole("button", { name: "Save as Template" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Save as Template" }));
     await waitFor(() => {
       expect(screen.getByText(/saved successfully/)).toBeInTheDocument();
     });
@@ -193,16 +185,14 @@ describe("SaveAsTemplateDialog", () => {
         projectTags={[]}
       >
         <button>Open SaveDialog</button>
-      </SaveAsTemplateDialog>,
+      </SaveAsTemplateDialog>
     );
     await user.click(screen.getByText("Open SaveDialog"));
     await user.type(screen.getByLabelText("Template name"), "Test Template");
     fireEvent.change(screen.getByLabelText("Name pattern"), {
       target: { value: "{customer}" },
     });
-    await user.click(
-      screen.getByRole("button", { name: "Save as Template" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Save as Template" }));
     await waitFor(() => {
       expect(screen.getByText("Permission denied")).toBeInTheDocument();
     });

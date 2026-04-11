@@ -1,11 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  cleanup,
-  render,
-  screen,
-  waitFor,
-  fireEvent,
-} from "@testing-library/react";
+import { cleanup, render, screen, waitFor, fireEvent } from "@testing-library/react";
 
 // -- Mock server-only -----------------------------------------------------
 vi.mock("server-only", () => ({}));
@@ -17,24 +11,19 @@ const mockRecordInterest = vi.fn();
 const mockWithdrawInvestment = vi.fn();
 const mockFetchMaturing = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/trust-accounting/investments/actions",
-  () => ({
-    fetchInvestments: (...args: unknown[]) => mockFetchInvestments(...args),
-    placeInvestment: (...args: unknown[]) => mockPlaceInvestment(...args),
-    recordInterest: (...args: unknown[]) => mockRecordInterest(...args),
-    withdrawInvestment: (...args: unknown[]) =>
-      mockWithdrawInvestment(...args),
-    fetchMaturing: (...args: unknown[]) => mockFetchMaturing(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/trust-accounting/investments/actions", () => ({
+  fetchInvestments: (...args: unknown[]) => mockFetchInvestments(...args),
+  placeInvestment: (...args: unknown[]) => mockPlaceInvestment(...args),
+  recordInterest: (...args: unknown[]) => mockRecordInterest(...args),
+  withdrawInvestment: (...args: unknown[]) => mockWithdrawInvestment(...args),
+  fetchMaturing: (...args: unknown[]) => mockFetchMaturing(...args),
+}));
 
 // -- Mock report definitions API ------------------------------------------
 const mockGetReportDefinitions = vi.fn();
 
 vi.mock("@/lib/api/reports", () => ({
-  getReportDefinitions: (...args: unknown[]) =>
-    mockGetReportDefinitions(...args),
+  getReportDefinitions: (...args: unknown[]) => mockGetReportDefinitions(...args),
 }));
 
 // -- Mock parent trust actions --------------------------------------------
@@ -210,7 +199,7 @@ describe("Trust Investments & Reports", () => {
         open={true}
         onOpenChange={vi.fn()}
         onSuccess={vi.fn()}
-      />,
+      />
     );
 
     const clientInput = screen.getByPlaceholderText("Client UUID");
@@ -218,16 +207,12 @@ describe("Trust Investments & Reports", () => {
       target: { value: "a1b2c3d4-e5f6-7890-abcd-ef1234567890" },
     });
 
-    const institutionInput = screen.getByPlaceholderText(
-      "e.g. FNB Money Market",
-    );
+    const institutionInput = screen.getByPlaceholderText("e.g. FNB Money Market");
     fireEvent.change(institutionInput, {
       target: { value: "ABSA Fixed Deposit" },
     });
 
-    const accountInput = screen.getByPlaceholderText(
-      "Investment account number",
-    );
+    const accountInput = screen.getByPlaceholderText("Investment account number");
     fireEvent.change(accountInput, { target: { value: "INV-999" } });
 
     const principalInput = screen.getByLabelText("Principal");
@@ -248,7 +233,7 @@ describe("Trust Investments & Reports", () => {
           accountNumber: "INV-999",
           principal: 100000,
           interestRate: 8.5,
-        }),
+        })
       );
     });
   });
@@ -302,7 +287,8 @@ describe("Trust Investments & Reports", () => {
             {
               slug: "trust-receipts-payments",
               name: "Trust Receipts & Payments",
-              description: "Chronological journal of all trust receipts and payments for a date range",
+              description:
+                "Chronological journal of all trust receipts and payments for a date range",
             },
             {
               slug: "client-trust-balances",
@@ -322,7 +308,8 @@ describe("Trust Investments & Reports", () => {
             {
               slug: "investment-register",
               name: "Investment Register",
-              description: "List of all trust investments with status, principal, and interest earned",
+              description:
+                "List of all trust investments with status, principal, and interest earned",
             },
             {
               slug: "interest-allocation",
@@ -332,7 +319,8 @@ describe("Trust Investments & Reports", () => {
             {
               slug: "section-35-data-pack",
               name: "Section 35 Data Pack",
-              description: "Composite report combining all trust sub-reports for Section 35 compliance",
+              description:
+                "Composite report combining all trust sub-reports for Section 35 compliance",
             },
           ],
         },
@@ -370,7 +358,7 @@ describe("Trust Investments & Reports", () => {
     // Verify links point to existing report runner
     const links = screen.getAllByRole("link");
     const reportLinks = links.filter((l) =>
-      l.getAttribute("href")?.startsWith("/org/acme/reports/"),
+      l.getAttribute("href")?.startsWith("/org/acme/reports/")
     );
     expect(reportLinks).toHaveLength(7);
   });

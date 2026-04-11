@@ -76,9 +76,7 @@ export default async function RetainerDetailPage({
             </h1>
             <RetainerStatusBadge status={retainer.status} />
           </div>
-          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            {retainer.customerName}
-          </p>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{retainer.customerName}</p>
           <div className="mt-3 flex flex-wrap items-center gap-3">
             <span className="inline-flex items-center rounded-md bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
               {TYPE_LABELS[retainer.type]}
@@ -121,9 +119,7 @@ export default async function RetainerDetailPage({
           <dl className="grid grid-cols-2 gap-x-8 gap-y-3 text-sm sm:grid-cols-3">
             {retainer.type === "HOUR_BANK" && retainer.allocatedHours != null && (
               <div>
-                <dt className="text-slate-500 dark:text-slate-400">
-                  Allocated Hours
-                </dt>
+                <dt className="text-slate-500 dark:text-slate-400">Allocated Hours</dt>
                 <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
                   {retainer.allocatedHours.toFixed(1)}h / period
                 </dd>
@@ -131,9 +127,7 @@ export default async function RetainerDetailPage({
             )}
             {retainer.periodFee != null && (
               <div>
-                <dt className="text-slate-500 dark:text-slate-400">
-                  Period Fee
-                </dt>
+                <dt className="text-slate-500 dark:text-slate-400">Period Fee</dt>
                 <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
                   {formatCurrency(retainer.periodFee, defaultCurrency)}
                 </dd>
@@ -141,9 +135,7 @@ export default async function RetainerDetailPage({
             )}
             {retainer.type === "HOUR_BANK" && retainer.rolloverPolicy && (
               <div>
-                <dt className="text-slate-500 dark:text-slate-400">
-                  Rollover Policy
-                </dt>
+                <dt className="text-slate-500 dark:text-slate-400">Rollover Policy</dt>
                 <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
                   {retainer.rolloverPolicy === "FORFEIT"
                     ? "Forfeit"
@@ -155,9 +147,7 @@ export default async function RetainerDetailPage({
             )}
           </dl>
           {retainer.notes && (
-            <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">
-              {retainer.notes}
-            </p>
+            <p className="mt-4 text-sm text-slate-500 dark:text-slate-400">{retainer.notes}</p>
           )}
         </CardContent>
       </Card>
@@ -178,9 +168,7 @@ export default async function RetainerDetailPage({
               retainer.allocatedHours > 0 &&
               (() => {
                 const consumptionPercent =
-                  (retainer.currentPeriod.consumedHours /
-                    retainer.allocatedHours) *
-                  100;
+                  (retainer.currentPeriod.consumedHours / retainer.allocatedHours) * 100;
                 if (consumptionPercent >= 100) {
                   return (
                     <Alert variant="destructive">
@@ -196,8 +184,7 @@ export default async function RetainerDetailPage({
                     <Alert variant="warning">
                       <AlertTriangle className="size-4" />
                       <AlertDescription>
-                        Retainer at {Math.round(consumptionPercent)}% capacity —
-                        approaching limit.
+                        Retainer at {Math.round(consumptionPercent)}% capacity — approaching limit.
                       </AlertDescription>
                     </Alert>
                   );
@@ -216,8 +203,8 @@ export default async function RetainerDetailPage({
             />
             {retainer.currentPeriod.rolloverHoursIn > 0 && (
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Includes {retainer.currentPeriod.rolloverHoursIn.toFixed(1)}h
-                rolled over from previous period
+                Includes {retainer.currentPeriod.rolloverHoursIn.toFixed(1)}h rolled over from
+                previous period
               </p>
             )}
           </CardContent>

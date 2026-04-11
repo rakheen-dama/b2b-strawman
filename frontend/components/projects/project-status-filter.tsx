@@ -41,7 +41,7 @@ export function ProjectStatusFilter({ slug }: ProjectStatusFilterProps) {
               "rounded-full px-3 py-1 text-sm font-medium transition-colors",
               isActive
                 ? "bg-slate-900 text-slate-50 dark:bg-slate-100 dark:text-slate-900"
-                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700",
+                : "bg-slate-100 text-slate-600 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-700"
             )}
           >
             {chip.label}

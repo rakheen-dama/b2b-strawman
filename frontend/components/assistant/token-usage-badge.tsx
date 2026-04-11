@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TokenUsageBadgeProps {
   inputTokens: number;
@@ -19,10 +14,7 @@ function formatTokens(count: number): string {
   return `~${count}`;
 }
 
-export function TokenUsageBadge({
-  inputTokens,
-  outputTokens,
-}: TokenUsageBadgeProps) {
+export function TokenUsageBadge({ inputTokens, outputTokens }: TokenUsageBadgeProps) {
   const total = inputTokens + outputTokens;
 
   return (

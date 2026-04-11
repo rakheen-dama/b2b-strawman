@@ -25,7 +25,7 @@ interface UnbilledTimeResult {
 export async function fetchUnbilledTime(
   customerId: string,
   from?: string,
-  to?: string,
+  to?: string
 ): Promise<UnbilledTimeResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -57,13 +57,14 @@ interface ValidationResult {
 export async function validateInvoiceGeneration(
   customerId: string,
   timeEntryIds: string[],
-  templateId?: string,
+  templateId?: string
 ): Promise<ValidationResult> {
   try {
-    const checks = await api.post<ValidationCheck[]>(
-      "/api/invoices/validate-generation",
-      { customerId, timeEntryIds, templateId: templateId ?? null },
-    );
+    const checks = await api.post<ValidationCheck[]>("/api/invoices/validate-generation", {
+      customerId,
+      timeEntryIds,
+      templateId: templateId ?? null,
+    });
     return { success: true, checks };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -76,7 +77,7 @@ export async function validateInvoiceGeneration(
 export async function createInvoiceDraft(
   slug: string,
   customerId: string,
-  request: CreateInvoiceDraftRequest,
+  request: CreateInvoiceDraftRequest
 ): Promise<CreateDraftResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {

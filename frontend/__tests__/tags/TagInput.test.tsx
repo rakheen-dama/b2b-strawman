@@ -60,7 +60,7 @@ describe("TagInput", () => {
         editable={false}
         canInlineCreate={false}
         slug="acme"
-      />,
+      />
     );
 
     expect(screen.getByText("Urgent")).toBeInTheDocument();
@@ -77,7 +77,7 @@ describe("TagInput", () => {
         editable={false}
         canInlineCreate={false}
         slug="acme"
-      />,
+      />
     );
 
     expect(screen.getByText("No tags")).toBeInTheDocument();
@@ -93,12 +93,10 @@ describe("TagInput", () => {
         editable={true}
         canInlineCreate={false}
         slug="acme"
-      />,
+      />
     );
 
-    expect(
-      screen.getByRole("button", { name: /Add Tag/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Add Tag/i })).toBeInTheDocument();
   });
 
   it("does not show Add Tag button in read-only mode", () => {
@@ -111,12 +109,10 @@ describe("TagInput", () => {
         editable={false}
         canInlineCreate={false}
         slug="acme"
-      />,
+      />
     );
 
-    expect(
-      screen.queryByRole("button", { name: /Add Tag/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Add Tag/i })).not.toBeInTheDocument();
   });
 
   it("shows remove button on badges when editable", () => {
@@ -129,12 +125,10 @@ describe("TagInput", () => {
         editable={true}
         canInlineCreate={false}
         slug="acme"
-      />,
+      />
     );
 
-    expect(
-      screen.getByRole("button", { name: /Remove Urgent/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Remove Urgent/i })).toBeInTheDocument();
   });
 
   it("calls setEntityTagsAction when removing a tag", async () => {
@@ -150,20 +144,13 @@ describe("TagInput", () => {
         editable={true}
         canInlineCreate={false}
         slug="acme"
-      />,
+      />
     );
 
-    await user.click(
-      screen.getByRole("button", { name: /Remove Urgent/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /Remove Urgent/i }));
 
     await waitFor(() => {
-      expect(mockSetEntityTags).toHaveBeenCalledWith(
-        "acme",
-        "PROJECT",
-        "proj-1",
-        ["tag-2"],
-      );
+      expect(mockSetEntityTags).toHaveBeenCalledWith("acme", "PROJECT", "proj-1", ["tag-2"]);
     });
   });
 
@@ -180,13 +167,11 @@ describe("TagInput", () => {
         editable={true}
         canInlineCreate={false}
         slug="acme"
-      />,
+      />
     );
 
     // Open popover
-    await user.click(
-      screen.getByRole("button", { name: /Add Tag/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /Add Tag/i }));
 
     // Wait for popover content to appear and click Internal
     await waitFor(() => {
@@ -196,12 +181,10 @@ describe("TagInput", () => {
     await user.click(screen.getByText("Internal"));
 
     await waitFor(() => {
-      expect(mockSetEntityTags).toHaveBeenCalledWith(
-        "acme",
-        "PROJECT",
-        "proj-1",
-        ["tag-1", "tag-3"],
-      );
+      expect(mockSetEntityTags).toHaveBeenCalledWith("acme", "PROJECT", "proj-1", [
+        "tag-1",
+        "tag-3",
+      ]);
     });
   });
 });

@@ -12,11 +12,7 @@ import { OrgProfileProvider } from "@/lib/org-profile";
 
 function withOrgProfile(
   children: React.ReactNode,
-  enabledModules: string[] = [
-    "resource_planning",
-    "automation_builder",
-    "bulk_billing",
-  ],
+  enabledModules: string[] = ["resource_planning", "automation_builder", "bulk_billing"]
 ) {
   return (
     <OrgProfileProvider
@@ -38,11 +34,9 @@ import type { TeamCapacityGrid } from "@/lib/api/capacity";
 
 // Mock recharts to avoid rendering issues in happy-dom
 vi.mock("recharts", () => ({
-  ResponsiveContainer: ({
-    children,
-  }: {
-    children: React.ReactNode;
-  }) => <div data-testid="responsive-container">{children}</div>,
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="responsive-container">{children}</div>
+  ),
   BarChart: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="bar-chart">{children}</div>
   ),
@@ -229,25 +223,19 @@ describe("TeamWorkloadWidget", () => {
     render(<TeamWorkloadWidget data={mockWorkloadData} isAdmin={false} />);
     expect(screen.getByText("Team Time")).toBeInTheDocument();
     expect(screen.getByTestId("team-time-panel")).toBeInTheDocument();
-    expect(
-      screen.getByText("Contact an admin to see team-wide data.")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Contact an admin to see team-wide data.")).toBeInTheDocument();
   });
 
   it("renders empty state when data is empty array", () => {
     render(<TeamWorkloadWidget data={[]} isAdmin={true} />);
     expect(screen.getByText("Team Time")).toBeInTheDocument();
-    expect(
-      screen.getByText("No time logged")
-    ).toBeInTheDocument();
+    expect(screen.getByText("No time logged")).toBeInTheDocument();
   });
 
   it("renders error state when data is null", () => {
     render(<TeamWorkloadWidget data={null} isAdmin={true} />);
     expect(screen.getByText("Team Time")).toBeInTheDocument();
-    expect(
-      screen.getByText("Unable to load team workload. Please try again.")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Unable to load team workload. Please try again.")).toBeInTheDocument();
   });
 });
 
@@ -257,19 +245,11 @@ describe("RecentActivityWidget", () => {
   });
 
   it("renders activity items with icons and project badges", () => {
-    render(
-      <RecentActivityWidget items={mockActivityItems} orgSlug="acme" />
-    );
+    render(<RecentActivityWidget items={mockActivityItems} orgSlug="acme" />);
     expect(screen.getByText("Recent Activity")).toBeInTheDocument();
-    expect(
-      screen.getByText("Alice created task 'Fix login bug'")
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Bob commented on 'API spec review'")
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Carol logged 2h on 'Dashboard feature'")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Alice created task 'Fix login bug'")).toBeInTheDocument();
+    expect(screen.getByText("Bob commented on 'API spec review'")).toBeInTheDocument();
+    expect(screen.getByText("Carol logged 2h on 'Dashboard feature'")).toBeInTheDocument();
 
     // Initials avatars
     expect(screen.getByText("AJ")).toBeInTheDocument();
@@ -280,17 +260,13 @@ describe("RecentActivityWidget", () => {
   it("renders empty state when items is empty array", () => {
     render(<RecentActivityWidget items={[]} orgSlug="acme" />);
     expect(screen.getByText("Recent Activity")).toBeInTheDocument();
-    expect(
-      screen.getByText("No recent activity")
-    ).toBeInTheDocument();
+    expect(screen.getByText("No recent activity")).toBeInTheDocument();
   });
 
   it("renders error state when items is null", () => {
     render(<RecentActivityWidget items={null} orgSlug="acme" />);
     expect(screen.getByText("Recent Activity")).toBeInTheDocument();
-    expect(
-      screen.getByText("Unable to load activity. Please try again.")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Unable to load activity. Please try again.")).toBeInTheDocument();
   });
 });
 
@@ -306,8 +282,8 @@ describe("Dashboard Layout Components", () => {
           kpis={mockKpis}
           capacityData={mockCapacityData}
           projectHealth={mockProjectHealth}
-        />,
-      ),
+        />
+      )
     );
     expect(screen.getByTestId("metrics-strip")).toBeInTheDocument();
     expect(screen.getByTestId("metric-active-projects")).toBeInTheDocument();
@@ -318,7 +294,7 @@ describe("Dashboard Layout Components", () => {
       <>
         <ProjectHealthWidget projects={mockProjectHealth} orgSlug="acme" />
         <TeamWorkloadWidget data={mockWorkloadData} isAdmin={true} />
-      </>,
+      </>
     );
     expect(screen.getByText("Project Health")).toBeInTheDocument();
     expect(screen.getByText("Team Time")).toBeInTheDocument();
@@ -349,8 +325,8 @@ describe("Dashboard Layout Components", () => {
             todayFailed: 1,
           }}
           orgSlug="acme"
-        />,
-      ),
+        />
+      )
     );
     expect(screen.getByTestId("admin-stats-column")).toBeInTheDocument();
     expect(screen.getByText("Incomplete profiles")).toBeInTheDocument();
@@ -359,9 +335,7 @@ describe("Dashboard Layout Components", () => {
   });
 
   it("member role shows MyWeekColumn", () => {
-    render(
-      <MyWeekColumn kpis={mockKpis} activity={mockActivityItems} />,
-    );
+    render(<MyWeekColumn kpis={mockKpis} activity={mockActivityItems} />);
     expect(screen.getByTestId("my-week-column")).toBeInTheDocument();
     expect(screen.getByText("My Week")).toBeInTheDocument();
     expect(screen.getByText("Avg. daily hours")).toBeInTheDocument();

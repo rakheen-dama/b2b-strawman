@@ -90,7 +90,7 @@ describe("ClausePickerDialog", () => {
         onOpenChange={mockOnOpenChange}
         existingClauseIds={[]}
         onConfirm={mockOnConfirm}
-      />,
+      />
     );
 
     await waitFor(() => {
@@ -111,7 +111,7 @@ describe("ClausePickerDialog", () => {
         onOpenChange={mockOnOpenChange}
         existingClauseIds={["c-1"]}
         onConfirm={mockOnConfirm}
-      />,
+      />
     );
 
     await waitFor(() => {
@@ -133,7 +133,7 @@ describe("ClausePickerDialog", () => {
         onOpenChange={mockOnOpenChange}
         existingClauseIds={[]}
         onConfirm={mockOnConfirm}
-      />,
+      />
     );
 
     await waitFor(() => {
@@ -156,7 +156,7 @@ describe("ClausePickerDialog", () => {
         onOpenChange={mockOnOpenChange}
         existingClauseIds={[]}
         onConfirm={mockOnConfirm}
-      />,
+      />
     );
 
     await waitFor(() => {
@@ -201,7 +201,7 @@ describe("ClausePickerDialog", () => {
         onOpenChange={mockOnOpenChange}
         existingClauseIds={[]}
         onConfirm={mockOnConfirm}
-      />,
+      />
     );
 
     await waitFor(() => {

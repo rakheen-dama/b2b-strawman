@@ -18,7 +18,7 @@ interface ActionResult {
 export async function createExpense(
   slug: string,
   projectId: string,
-  formData: FormData,
+  formData: FormData
 ): Promise<ActionResult> {
   const date = formData.get("date")?.toString().trim() ?? "";
   if (!date) {
@@ -36,17 +36,13 @@ export async function createExpense(
     return { success: false, error: "Amount must be a positive number." };
   }
 
-  const category =
-    (formData.get("category")?.toString() as ExpenseCategory) ?? "OTHER";
-  const currency =
-    formData.get("currency")?.toString().trim() || undefined;
+  const category = (formData.get("category")?.toString() as ExpenseCategory) ?? "OTHER";
+  const currency = formData.get("currency")?.toString().trim() || undefined;
   const taskId = formData.get("taskId")?.toString().trim() || null;
-  const receiptDocumentId =
-    formData.get("receiptDocumentId")?.toString().trim() || null;
+  const receiptDocumentId = formData.get("receiptDocumentId")?.toString().trim() || null;
 
   const markupStr = formData.get("markupPercent")?.toString().trim();
-  const markupPercent =
-    markupStr && markupStr !== "" ? parseFloat(markupStr) : null;
+  const markupPercent = markupStr && markupStr !== "" ? parseFloat(markupStr) : null;
 
   const billableStr = formData.get("billable")?.toString();
   const billable = billableStr === "on" || billableStr === "true";
@@ -67,10 +63,7 @@ export async function createExpense(
   };
 
   try {
-    await api.post<ExpenseResponse>(
-      `/api/projects/${projectId}/expenses`,
-      body,
-    );
+    await api.post<ExpenseResponse>(`/api/projects/${projectId}/expenses`, body);
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -86,13 +79,10 @@ export async function updateExpense(
   slug: string,
   projectId: string,
   expenseId: string,
-  data: UpdateExpenseRequest,
+  data: UpdateExpenseRequest
 ): Promise<ActionResult> {
   try {
-    await api.put<ExpenseResponse>(
-      `/api/projects/${projectId}/expenses/${expenseId}`,
-      data,
-    );
+    await api.put<ExpenseResponse>(`/api/projects/${projectId}/expenses/${expenseId}`, data);
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 403) {
@@ -113,7 +103,7 @@ export async function updateExpense(
 export async function deleteExpense(
   slug: string,
   projectId: string,
-  expenseId: string,
+  expenseId: string
 ): Promise<ActionResult> {
   try {
     await api.delete(`/api/projects/${projectId}/expenses/${expenseId}`);
@@ -137,13 +127,10 @@ export async function deleteExpense(
 export async function writeOffExpense(
   slug: string,
   projectId: string,
-  expenseId: string,
+  expenseId: string
 ): Promise<ActionResult> {
   try {
-    await api.patch(
-      `/api/projects/${projectId}/expenses/${expenseId}/write-off`,
-      {},
-    );
+    await api.patch(`/api/projects/${projectId}/expenses/${expenseId}/write-off`, {});
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -158,13 +145,10 @@ export async function writeOffExpense(
 export async function restoreExpense(
   slug: string,
   projectId: string,
-  expenseId: string,
+  expenseId: string
 ): Promise<ActionResult> {
   try {
-    await api.patch(
-      `/api/projects/${projectId}/expenses/${expenseId}/restore`,
-      {},
-    );
+    await api.patch(`/api/projects/${projectId}/expenses/${expenseId}/restore`, {});
   } catch (error) {
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
@@ -185,7 +169,7 @@ export async function listExpenses(
     memberId?: string;
     page?: number;
     size?: number;
-  },
+  }
 ): Promise<PaginatedExpenseResponse> {
   const searchParams = new URLSearchParams();
   if (params?.category) searchParams.set("category", params.category);

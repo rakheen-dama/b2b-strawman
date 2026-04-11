@@ -16,15 +16,15 @@ export function PricingPreview() {
   return (
     <section id="pricing" className="px-6 py-24 lg:py-32">
       <div className="mx-auto max-w-3xl">
-        <p className="text-center text-sm font-semibold uppercase tracking-[0.2em] text-teal-600">
+        <p className="text-center text-sm font-semibold tracking-[0.2em] text-teal-600 uppercase">
           Pricing
         </p>
-        <h2 className="mt-4 text-center font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h2 className="font-display mt-4 text-center text-3xl text-slate-950 dark:text-slate-50">
           Transparent pricing for your practice size
         </h2>
         <p className="mx-auto mt-4 max-w-lg text-center text-base text-slate-600 dark:text-slate-400">
-          Every practice is different. We&apos;ll put together a plan that fits
-          your team size, feature needs, and growth trajectory.
+          Every practice is different. We&apos;ll put together a plan that fits your team size,
+          feature needs, and growth trajectory.
         </p>
 
         <div className="mt-14 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm sm:p-10 dark:border-slate-800 dark:bg-slate-900">

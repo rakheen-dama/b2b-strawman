@@ -24,10 +24,7 @@ export interface ActionResult {
   data?: AutomationRuleResponse;
 }
 
-export async function toggleRuleAction(
-  slug: string,
-  ruleId: string,
-): Promise<ActionResult> {
+export async function toggleRuleAction(slug: string, ruleId: string): Promise<ActionResult> {
   try {
     await toggleRule(ruleId);
   } catch (error) {
@@ -48,10 +45,7 @@ export async function toggleRuleAction(
   return { success: true };
 }
 
-export async function deleteRuleAction(
-  slug: string,
-  ruleId: string,
-): Promise<ActionResult> {
+export async function deleteRuleAction(slug: string, ruleId: string): Promise<ActionResult> {
   try {
     await deleteRule(ruleId);
   } catch (error) {
@@ -73,7 +67,7 @@ export async function deleteRuleAction(
 
 export async function activateTemplateAction(
   slug: string,
-  templateSlug: string,
+  templateSlug: string
 ): Promise<ActionResult> {
   try {
     await activateTemplate(templateSlug);
@@ -97,7 +91,7 @@ export async function activateTemplateAction(
 export async function updateRuleAction(
   slug: string,
   id: string,
-  data: UpdateRuleRequest,
+  data: UpdateRuleRequest
 ): Promise<ActionResult> {
   try {
     const updated = await updateRule(id, data);
@@ -127,10 +121,7 @@ export async function fetchExecutionsAction(params?: {
   return listExecutions(params);
 }
 
-export async function duplicateRuleAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function duplicateRuleAction(slug: string, id: string): Promise<ActionResult> {
   try {
     const duplicated = await duplicateRule(id);
     revalidatePath(`/org/${slug}/settings/automations`);

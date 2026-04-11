@@ -10,7 +10,7 @@ interface ActionResult {
 
 export async function updateAcceptanceSettings(
   slug: string,
-  acceptanceExpiryDays: number,
+  acceptanceExpiryDays: number
 ): Promise<ActionResult> {
   try {
     await api.patch("/api/settings/acceptance", { acceptanceExpiryDays });

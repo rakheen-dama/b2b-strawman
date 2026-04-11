@@ -22,7 +22,7 @@ vi.mock("@/lib/actions/acceptance-actions", async () => {
 });
 
 function makeRequest(
-  overrides: Partial<AcceptanceRequestResponse> = {},
+  overrides: Partial<AcceptanceRequestResponse> = {}
 ): AcceptanceRequestResponse {
   return {
     id: "req-1",
@@ -67,18 +67,14 @@ describe("AcceptanceDetailPanel", () => {
   });
 
   it("renders recipient info", () => {
-    render(
-      <AcceptanceDetailPanel request={makeRequest()} isAdmin />,
-    );
+    render(<AcceptanceDetailPanel request={makeRequest()} isAdmin />);
 
     expect(screen.getByText("Jane Smith")).toBeInTheDocument();
     expect(screen.getByText("jane@client.com")).toBeInTheDocument();
   });
 
   it("renders status timeline with sent date", () => {
-    render(
-      <AcceptanceDetailPanel request={makeRequest()} isAdmin />,
-    );
+    render(<AcceptanceDetailPanel request={makeRequest()} isAdmin />);
 
     expect(screen.getByText("Sent")).toBeInTheDocument();
     expect(screen.getByText("Viewed")).toBeInTheDocument();
@@ -96,23 +92,17 @@ describe("AcceptanceDetailPanel", () => {
           certificateFileName: "acceptance-cert.pdf",
         })}
         isAdmin
-      />,
+      />
     );
 
-    expect(
-      screen.getByRole("button", { name: /Download Certificate/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Download Certificate/i })).toBeInTheDocument();
     expect(screen.getByText(/Accepted by/)).toBeInTheDocument();
   });
 
   it("shows remind button for sent status when admin", () => {
-    render(
-      <AcceptanceDetailPanel request={makeRequest({ status: "SENT" })} isAdmin />,
-    );
+    render(<AcceptanceDetailPanel request={makeRequest({ status: "SENT" })} isAdmin />);
 
-    expect(
-      screen.getByRole("button", { name: /Remind/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Remind/i })).toBeInTheDocument();
   });
 
   it("shows revoke button for active status (SENT/VIEWED) when admin", () => {
@@ -120,12 +110,10 @@ describe("AcceptanceDetailPanel", () => {
       <AcceptanceDetailPanel
         request={makeRequest({ status: "VIEWED", viewedAt: "2026-02-21T10:00:00Z" })}
         isAdmin
-      />,
+      />
     );
 
-    expect(
-      screen.getByRole("button", { name: /Revoke/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Revoke/i })).toBeInTheDocument();
   });
 
   it("hides actions for terminal status (ACCEPTED/EXPIRED/REVOKED)", () => {
@@ -138,15 +126,11 @@ describe("AcceptanceDetailPanel", () => {
           hasCertificate: false,
         })}
         isAdmin
-      />,
+      />
     );
 
-    expect(
-      screen.queryByRole("button", { name: /Remind/i }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /Revoke/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Remind/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Revoke/i })).not.toBeInTheDocument();
   });
 
   it("calls remindAcceptance and dispatches refresh event on remind", async () => {
@@ -154,9 +138,7 @@ describe("AcceptanceDetailPanel", () => {
     const dispatchSpy = vi.spyOn(window, "dispatchEvent");
 
     const user = userEvent.setup();
-    render(
-      <AcceptanceDetailPanel request={makeRequest({ status: "SENT" })} isAdmin />,
-    );
+    render(<AcceptanceDetailPanel request={makeRequest({ status: "SENT" })} isAdmin />);
 
     await user.click(screen.getByRole("button", { name: /Remind/i }));
 
@@ -165,23 +147,17 @@ describe("AcceptanceDetailPanel", () => {
     });
 
     expect(dispatchSpy).toHaveBeenCalledWith(
-      expect.objectContaining({ type: "acceptance-requests-refresh" }),
+      expect.objectContaining({ type: "acceptance-requests-refresh" })
     );
 
     dispatchSpy.mockRestore();
   });
 
   it("hides Remind and Revoke buttons when isAdmin is false", () => {
-    render(
-      <AcceptanceDetailPanel request={makeRequest({ status: "SENT" })} />,
-    );
+    render(<AcceptanceDetailPanel request={makeRequest({ status: "SENT" })} />);
 
-    expect(
-      screen.queryByRole("button", { name: /Remind/i }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /Revoke/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Remind/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Revoke/i })).not.toBeInTheDocument();
   });
 
   it("displays action error message when a server action fails", async () => {
@@ -191,9 +167,7 @@ describe("AcceptanceDetailPanel", () => {
     });
 
     const user = userEvent.setup();
-    render(
-      <AcceptanceDetailPanel request={makeRequest({ status: "SENT" })} isAdmin />,
-    );
+    render(<AcceptanceDetailPanel request={makeRequest({ status: "SENT" })} isAdmin />);
 
     await user.click(screen.getByRole("button", { name: /Remind/i }));
 
@@ -211,7 +185,7 @@ describe("AcceptanceDetailPanel", () => {
           lastRemindedAt: "2026-02-24T10:00:00Z",
         })}
         isAdmin
-      />,
+      />
     );
 
     expect(screen.getByText(/Reminded 3 times/)).toBeInTheDocument();

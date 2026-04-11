@@ -37,9 +37,7 @@ describe("DemoProvisionForm", () => {
     expect(screen.getByText("Accounting")).toBeInTheDocument();
     expect(screen.getByText("Legal")).toBeInTheDocument();
     expect(screen.getByText("Seed Demo Data")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Create Demo Tenant" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Create Demo Tenant" })).toBeInTheDocument();
   });
 
   it("submits with valid data and calls action", async () => {
@@ -59,19 +57,11 @@ describe("DemoProvisionForm", () => {
 
     render(<DemoProvisionForm />);
 
-    await user.type(
-      screen.getByLabelText("Organization Name"),
-      "Demo Accounting Firm",
-    );
+    await user.type(screen.getByLabelText("Organization Name"), "Demo Accounting Firm");
     await user.click(screen.getByRole("radio", { name: /Accounting/ }));
-    await user.type(
-      screen.getByLabelText("Admin Email"),
-      "admin@example.com",
-    );
+    await user.type(screen.getByLabelText("Admin Email"), "admin@example.com");
 
-    await user.click(
-      screen.getByRole("button", { name: "Create Demo Tenant" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Create Demo Tenant" }));
 
     await waitFor(() => {
       expect(mockProvisionDemo).toHaveBeenCalledWith({
@@ -88,10 +78,7 @@ describe("DemoProvisionForm", () => {
 
     const { container } = render(<DemoProvisionForm />);
 
-    await user.type(
-      screen.getByLabelText("Organization Name"),
-      "Test Org",
-    );
+    await user.type(screen.getByLabelText("Organization Name"), "Test Org");
     await user.type(screen.getByLabelText("Admin Email"), "not-an-email");
 
     // Submit the form directly to ensure form submission triggers
@@ -122,34 +109,22 @@ describe("DemoProvisionForm", () => {
 
     render(<DemoProvisionForm />);
 
-    await user.type(
-      screen.getByLabelText("Organization Name"),
-      "Demo Legal Firm",
-    );
+    await user.type(screen.getByLabelText("Organization Name"), "Demo Legal Firm");
     await user.click(screen.getByRole("radio", { name: /Legal/ }));
-    await user.type(
-      screen.getByLabelText("Admin Email"),
-      "legal@example.com",
-    );
+    await user.type(screen.getByLabelText("Admin Email"), "legal@example.com");
     // Toggle seed data off
     await user.click(screen.getByRole("switch"));
 
-    await user.click(
-      screen.getByRole("button", { name: "Create Demo Tenant" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Create Demo Tenant" }));
 
     await waitFor(() => {
       expect(screen.getByText("Demo Legal Firm")).toBeInTheDocument();
     });
 
     expect(screen.getByText("LEGAL")).toBeInTheDocument();
-    expect(
-      screen.getByText("https://app.example.com/sign-in"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("https://app.example.com/sign-in")).toBeInTheDocument();
     expect(screen.getByText("No")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Create Another" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Create Another" })).toBeInTheDocument();
   });
 
   it("selects vertical profile radio and submits correct value", async () => {
@@ -174,24 +149,16 @@ describe("DemoProvisionForm", () => {
     await user.click(accountingRadio);
     expect(accountingRadio).toBeChecked();
 
-    await user.type(
-      screen.getByLabelText("Organization Name"),
-      "Accounting Demo",
-    );
-    await user.type(
-      screen.getByLabelText("Admin Email"),
-      "test@example.com",
-    );
+    await user.type(screen.getByLabelText("Organization Name"), "Accounting Demo");
+    await user.type(screen.getByLabelText("Admin Email"), "test@example.com");
 
-    await user.click(
-      screen.getByRole("button", { name: "Create Demo Tenant" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Create Demo Tenant" }));
 
     await waitFor(() => {
       expect(mockProvisionDemo).toHaveBeenCalledWith(
         expect.objectContaining({
           verticalProfile: "ACCOUNTING",
-        }),
+        })
       );
     });
   });

@@ -47,16 +47,11 @@ const PRESCRIPTION_TYPES = [
   { value: "CUSTOM", label: "Custom" },
 ] as const;
 
-export function CreatePrescriptionDialog({
-  slug,
-  onSuccess,
-}: CreatePrescriptionDialogProps) {
+export function CreatePrescriptionDialog({ slug, onSuccess }: CreatePrescriptionDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [projects, setProjects] = useState<
-    { id: string; name: string }[]
-  >([]);
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
   const [projectsLoading, setProjectsLoading] = useState(false);
   const [projectsError, setProjectsError] = useState<string | null>(null);
 
@@ -100,10 +95,7 @@ export function CreatePrescriptionDialog({
         projectId: values.projectId,
         causeOfActionDate: values.causeOfActionDate,
         prescriptionType: values.prescriptionType,
-        customYears:
-          values.prescriptionType === "CUSTOM"
-            ? values.customYears
-            : undefined,
+        customYears: values.prescriptionType === "CUSTOM" ? values.customYears : undefined,
         notes: values.notes || undefined,
       });
       if (result.success) {
@@ -139,9 +131,7 @@ export function CreatePrescriptionDialog({
       <DialogContent data-testid="create-prescription-dialog">
         <DialogHeader>
           <DialogTitle>Create Prescription Tracker</DialogTitle>
-          <DialogDescription>
-            Track prescription periods for a matter.
-          </DialogDescription>
+          <DialogDescription>Track prescription periods for a matter.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -156,12 +146,10 @@ export function CreatePrescriptionDialog({
                       value={field.value}
                       onChange={field.onChange}
                       disabled={projectsLoading}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
                     >
                       <option value="">
-                        {projectsLoading
-                          ? "Loading matters..."
-                          : "-- Select matter --"}
+                        {projectsLoading ? "Loading matters..." : "-- Select matter --"}
                       </option>
                       {projects.map((p) => (
                         <option key={p.id} value={p.id}>
@@ -170,9 +158,7 @@ export function CreatePrescriptionDialog({
                       ))}
                     </select>
                   </FormControl>
-                  {projectsError && (
-                    <p className="text-sm text-red-600">{projectsError}</p>
-                  )}
+                  {projectsError && <p className="text-sm text-red-600">{projectsError}</p>}
                   <FormMessage />
                 </FormItem>
               )}
@@ -202,7 +188,7 @@ export function CreatePrescriptionDialog({
                     <select
                       value={field.value}
                       onChange={field.onChange}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
                     >
                       {PRESCRIPTION_TYPES.map((pt) => (
                         <option key={pt.value} value={pt.value}>
@@ -232,11 +218,7 @@ export function CreatePrescriptionDialog({
                         {...field}
                         value={field.value ?? ""}
                         onChange={(e) =>
-                          field.onChange(
-                            e.target.value === ""
-                              ? undefined
-                              : Number(e.target.value)
-                          )
+                          field.onChange(e.target.value === "" ? undefined : Number(e.target.value))
                         }
                       />
                     </FormControl>
@@ -252,10 +234,7 @@ export function CreatePrescriptionDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Notes{" "}
-                    <span className="font-normal text-slate-500">
-                      (optional)
-                    </span>
+                    Notes <span className="font-normal text-slate-500">(optional)</span>
                   </FormLabel>
                   <FormControl>
                     <Textarea

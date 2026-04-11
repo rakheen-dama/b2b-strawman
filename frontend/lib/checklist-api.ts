@@ -8,7 +8,7 @@ import type {
 } from "@/lib/types";
 
 export async function getCustomerChecklists(
-  customerId: string,
+  customerId: string
 ): Promise<ChecklistInstanceResponse[]> {
   return api.get<ChecklistInstanceResponse[]>(`/api/customers/${customerId}/checklists`);
 }
@@ -19,14 +19,14 @@ export async function getChecklistInstance(id: string): Promise<ChecklistInstanc
 
 export async function completeItem(
   id: string,
-  body: { notes?: string; documentId?: string },
+  body: { notes?: string; documentId?: string }
 ): Promise<ChecklistInstanceItemResponse> {
   return api.put<ChecklistInstanceItemResponse>(`/api/checklist-items/${id}/complete`, body);
 }
 
 export async function skipItem(
   id: string,
-  body: { reason: string },
+  body: { reason: string }
 ): Promise<ChecklistInstanceItemResponse> {
   return api.put<ChecklistInstanceItemResponse>(`/api/checklist-items/${id}/skip`, body);
 }
@@ -37,7 +37,7 @@ export async function reopenItem(id: string): Promise<ChecklistInstanceItemRespo
 
 export async function instantiateChecklist(
   customerId: string,
-  templateId: string,
+  templateId: string
 ): Promise<ChecklistInstanceResponse> {
   return api.post<ChecklistInstanceResponse>(`/api/customers/${customerId}/checklists`, {
     templateId,
@@ -45,7 +45,7 @@ export async function instantiateChecklist(
 }
 
 export async function getChecklistTemplates(
-  customerType?: string,
+  customerType?: string
 ): Promise<ChecklistTemplateResponse[]> {
   const params = customerType ? `?customerType=${encodeURIComponent(customerType)}` : "";
   return api.get<ChecklistTemplateResponse[]>(`/api/checklist-templates${params}`);

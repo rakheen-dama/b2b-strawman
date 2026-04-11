@@ -34,10 +34,7 @@ function getDaysInOnboarding(changedAt: string | null): number {
   return Math.floor((Date.now() - new Date(changedAt).getTime()) / 86400000);
 }
 
-export function OnboardingPipelineSection({
-  customers,
-  orgSlug,
-}: OnboardingPipelineSectionProps) {
+export function OnboardingPipelineSection({ customers, orgSlug }: OnboardingPipelineSectionProps) {
   const sorted = [...customers].sort((a, b) => {
     const daysA = getDaysInOnboarding(a.lifecycleStatusChangedAt);
     const daysB = getDaysInOnboarding(b.lifecycleStatusChangedAt);
@@ -85,7 +82,10 @@ export function OnboardingPipelineSection({
                         {customer.name}
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-400" suppressHydrationWarning>
+                    <td
+                      className="px-4 py-3 text-slate-600 dark:text-slate-400"
+                      suppressHydrationWarning
+                    >
                       In onboarding {days} {days === 1 ? "day" : "days"}
                     </td>
                     <td className="w-48 px-4 py-3">

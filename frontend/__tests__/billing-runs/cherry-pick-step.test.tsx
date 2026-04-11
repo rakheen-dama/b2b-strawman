@@ -13,33 +13,20 @@ const mockExcludeCustomer = vi.fn();
 const mockIncludeCustomer = vi.fn();
 const mockGetRetainerPreview = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions",
-  () => ({
-    createBillingRunAction: vi.fn(),
-    loadPreviewAction: vi.fn(),
-    getUnbilledSummaryAction: vi.fn().mockResolvedValue({ success: true }),
-    getUnbilledTimeAction: (...args: unknown[]) =>
-      mockGetUnbilledTime(...args),
-    getUnbilledExpensesAction: (...args: unknown[]) =>
-      mockGetUnbilledExpenses(...args),
-    updateSelectionsAction: (...args: unknown[]) =>
-      mockUpdateSelections(...args),
-    excludeCustomerAction: (...args: unknown[]) =>
-      mockExcludeCustomer(...args),
-    includeCustomerAction: (...args: unknown[]) =>
-      mockIncludeCustomer(...args),
-    getRetainerPreviewAction: (...args: unknown[]) =>
-      mockGetRetainerPreview(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions", () => ({
+  createBillingRunAction: vi.fn(),
+  loadPreviewAction: vi.fn(),
+  getUnbilledSummaryAction: vi.fn().mockResolvedValue({ success: true }),
+  getUnbilledTimeAction: (...args: unknown[]) => mockGetUnbilledTime(...args),
+  getUnbilledExpensesAction: (...args: unknown[]) => mockGetUnbilledExpenses(...args),
+  updateSelectionsAction: (...args: unknown[]) => mockUpdateSelections(...args),
+  excludeCustomerAction: (...args: unknown[]) => mockExcludeCustomer(...args),
+  includeCustomerAction: (...args: unknown[]) => mockIncludeCustomer(...args),
+  getRetainerPreviewAction: (...args: unknown[]) => mockGetRetainerPreview(...args),
+}));
 
 import { CherryPickStep } from "@/components/billing-runs/cherry-pick-step";
-import type {
-  BillingRunItem,
-  UnbilledTimeEntry,
-  UnbilledExpense,
-} from "@/lib/api/billing-runs";
+import type { BillingRunItem, UnbilledTimeEntry, UnbilledExpense } from "@/lib/api/billing-runs";
 
 afterEach(() => {
   cleanup();
@@ -133,7 +120,7 @@ describe("CherryPickStep", () => {
         items={mockItems}
         onBack={vi.fn()}
         onNext={vi.fn()}
-      />,
+      />
     );
 
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
@@ -162,7 +149,7 @@ describe("CherryPickStep", () => {
         items={mockItems}
         onBack={vi.fn()}
         onNext={vi.fn()}
-      />,
+      />
     );
 
     // Expand Acme Corp section
@@ -178,12 +165,8 @@ describe("CherryPickStep", () => {
     expect(screen.getByText("Software license")).toBeInTheDocument();
 
     // Check checkboxes are rendered
-    expect(
-      screen.getByLabelText("Include time entry Development work"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByLabelText("Include expense Software license"),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Include time entry Development work")).toBeInTheDocument();
+    expect(screen.getByLabelText("Include expense Software license")).toBeInTheDocument();
   });
 
   it("entry toggle updates subtotal display", async () => {
@@ -211,7 +194,7 @@ describe("CherryPickStep", () => {
         items={mockItems}
         onBack={vi.fn()}
         onNext={vi.fn()}
-      />,
+      />
     );
 
     // Expand Acme Corp
@@ -222,15 +205,15 @@ describe("CherryPickStep", () => {
     });
 
     // Initially subtotal should include both time entries (500 + 300 = 800)
-    expect(screen.getByText("Subtotal: R 800.00")).toBeInTheDocument();
+    // locale-agnostic: accepts en-ZA "R 800,00" or en-US "R 800.00"
+    expect(screen.getByText(/Subtotal:\s*R[\s\u00a0]800[,.]00/)).toBeInTheDocument();
 
     // Uncheck first time entry
-    await user.click(
-      screen.getByLabelText("Include time entry Development work"),
-    );
+    await user.click(screen.getByLabelText("Include time entry Development work"));
 
     // Subtotal should now be 300 only
-    expect(screen.getByText("Subtotal: R 300.00")).toBeInTheDocument();
+    // locale-agnostic: accepts en-ZA "R 300,00" or en-US "R 300.00"
+    expect(screen.getByText(/Subtotal:\s*R[\s\u00a0]300[,.]00/)).toBeInTheDocument();
   });
 
   it("exclude customer button updates status", async () => {
@@ -258,21 +241,17 @@ describe("CherryPickStep", () => {
         items={mockItems}
         onBack={vi.fn()}
         onNext={vi.fn()}
-      />,
+      />
     );
 
     // Expand Acme Corp
     await user.click(screen.getByText("Acme Corp"));
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("button", { name: "Exclude Customer" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Exclude Customer" })).toBeInTheDocument();
     });
 
-    await user.click(
-      screen.getByRole("button", { name: "Exclude Customer" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Exclude Customer" }));
 
     await waitFor(() => {
       expect(screen.getByText("Excluded")).toBeInTheDocument();
@@ -304,7 +283,7 @@ describe("CherryPickStep", () => {
         items={mockItems}
         onBack={vi.fn()}
         onNext={vi.fn()}
-      />,
+      />
     );
 
     await waitFor(() => {
@@ -312,8 +291,6 @@ describe("CherryPickStep", () => {
     });
 
     expect(screen.getByText("40.5")).toBeInTheDocument();
-    expect(
-      screen.getByLabelText("Include retainer for Acme Corp"),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Include retainer for Acme Corp")).toBeInTheDocument();
   });
 });

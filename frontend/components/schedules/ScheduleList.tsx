@@ -47,9 +47,7 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
   const [isPausingId, setIsPausingId] = useState<string | null>(null);
 
   const filtered =
-    activeTab === "ALL"
-      ? schedules
-      : schedules.filter((s) => s.status === activeTab);
+    activeTab === "ALL" ? schedules : schedules.filter((s) => s.status === activeTab);
 
   async function handlePause(id: string) {
     setIsPausingId(id);
@@ -128,7 +126,7 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <CalendarClock className="size-12 text-slate-300 dark:text-slate-700" />
-          <h2 className="mt-4 font-display text-lg text-slate-900 dark:text-slate-100">
+          <h2 className="font-display mt-4 text-lg text-slate-900 dark:text-slate-100">
             No {activeTab === "ALL" ? "" : activeTab.toLowerCase() + " "}schedules found.
           </h2>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
@@ -146,28 +144,28 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Template
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Customer
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Frequency
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Next Execution
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Last Executed
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Executions
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Status
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Actions
                 </th>
               </tr>
@@ -200,19 +198,13 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
                     {schedule.customerName}
                   </td>
                   <td className="px-4 py-3">
-                    <Badge variant="neutral">
-                      {FREQUENCY_LABELS[schedule.frequency]}
-                    </Badge>
+                    <Badge variant="neutral">{FREQUENCY_LABELS[schedule.frequency]}</Badge>
                   </td>
                   <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
-                    {schedule.nextExecutionDate
-                      ? formatDate(schedule.nextExecutionDate)
-                      : "\u2014"}
+                    {schedule.nextExecutionDate ? formatDate(schedule.nextExecutionDate) : "\u2014"}
                   </td>
                   <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
-                    {schedule.lastExecutedAt
-                      ? formatDate(schedule.lastExecutedAt)
-                      : "\u2014"}
+                    {schedule.lastExecutedAt ? formatDate(schedule.lastExecutedAt) : "\u2014"}
                   </td>
                   <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
                     {schedule.executionCount}
@@ -254,7 +246,9 @@ export function ScheduleList({ slug, schedules }: ScheduleListProps) {
                                 </AlertDialogDescription>
                               </AlertDialogHeader>
                               <AlertDialogFooter>
-                                <AlertDialogCancel disabled={isPausingId === schedule.id}>Cancel</AlertDialogCancel>
+                                <AlertDialogCancel disabled={isPausingId === schedule.id}>
+                                  Cancel
+                                </AlertDialogCancel>
                                 <AlertDialogAction
                                   onClick={() => handlePause(schedule.id)}
                                   disabled={isPausingId === schedule.id}

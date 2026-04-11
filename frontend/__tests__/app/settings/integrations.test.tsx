@@ -4,7 +4,9 @@ import IntegrationsSettingsPage from "@/app/(app)/org/[slug]/settings/integratio
 
 vi.mock("@/lib/api", () => ({
   api: {
-    get: vi.fn().mockResolvedValue({ status: "ACTIVE", limits: { maxMembers: 10, currentMembers: 1 } }),
+    get: vi
+      .fn()
+      .mockResolvedValue({ status: "ACTIVE", limits: { maxMembers: 10, currentMembers: 1 } }),
   },
 }));
 
@@ -22,7 +24,18 @@ vi.mock("@/app/(app)/org/[slug]/settings/integrations/actions", () => ({
 }));
 
 vi.mock("@/lib/actions/email", () => ({
-  getEmailStats: vi.fn().mockResolvedValue({ success: true, data: { sent24h: 0, bounced7d: 0, failed7d: 0, rateLimited7d: 0, currentHourUsage: 0, hourlyLimit: 100, providerSlug: null } }),
+  getEmailStats: vi.fn().mockResolvedValue({
+    success: true,
+    data: {
+      sent24h: 0,
+      bounced7d: 0,
+      failed7d: 0,
+      rateLimited7d: 0,
+      currentHourUsage: 0,
+      hourlyLimit: 100,
+      providerSlug: null,
+    },
+  }),
   sendTestEmail: vi.fn().mockResolvedValue({ success: true }),
 }));
 

@@ -39,9 +39,6 @@ export const defaultSWROptions: SWRConfiguration = {
  * Example:
  *   useSWR(conditionalKey(open, "customers"), () => fetchCustomers())
  */
-export function conditionalKey(
-  condition: boolean,
-  key: string
-): string | null {
+export function conditionalKey(condition: boolean, key: string): string | null {
   return condition ? key : null;
 }

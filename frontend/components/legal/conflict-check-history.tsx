@@ -58,15 +58,11 @@ export function ConflictCheckHistory({
   const [isPending, startTransition] = useTransition();
 
   // Filter state
-  const [resultFilter, setResultFilter] = useState<
-    ConflictCheckResultType | ""
-  >("");
+  const [resultFilter, setResultFilter] = useState<ConflictCheckResultType | "">("");
   const [typeFilter, setTypeFilter] = useState<ConflictCheckType | "">("");
 
   // Resolve dialog
-  const [resolveTarget, setResolveTarget] = useState<ConflictCheck | null>(
-    null
-  );
+  const [resolveTarget, setResolveTarget] = useState<ConflictCheck | null>(null);
 
   const refetch = useCallback(() => {
     startTransition(async () => {
@@ -99,9 +95,7 @@ export function ConflictCheckHistory({
       <div className="flex flex-wrap items-center gap-3">
         <select
           value={resultFilter}
-          onChange={(e) =>
-            setResultFilter(e.target.value as ConflictCheckResultType | "")
-          }
+          onChange={(e) => setResultFilter(e.target.value as ConflictCheckResultType | "")}
           className="flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800"
         >
           <option value="">All Results</option>
@@ -112,9 +106,7 @@ export function ConflictCheckHistory({
 
         <select
           value={typeFilter}
-          onChange={(e) =>
-            setTypeFilter(e.target.value as ConflictCheckType | "")
-          }
+          onChange={(e) => setTypeFilter(e.target.value as ConflictCheckType | "")}
           className="flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800"
         >
           <option value="">All Types</option>
@@ -129,38 +121,31 @@ export function ConflictCheckHistory({
       </div>
 
       {/* Table */}
-      <div
-        className={cn(
-          "overflow-x-auto",
-          isPending && "opacity-50 transition-opacity"
-        )}
-      >
+      <div className={cn("overflow-x-auto", isPending && "opacity-50 transition-opacity")}>
         {checks.length === 0 ? (
           <div className="rounded-lg border border-slate-200 p-8 text-center dark:border-slate-800">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              No conflict checks found.
-            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">No conflict checks found.</p>
           </div>
         ) : (
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Date
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Checked Name
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Type
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Result
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Resolution
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Actions
                 </th>
               </tr>

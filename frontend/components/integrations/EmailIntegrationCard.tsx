@@ -4,13 +4,7 @@ import { useEffect, useState } from "react";
 import { Mail, Send, ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getEmailStats, sendTestEmail } from "@/lib/actions/email";
 import type { EmailDeliveryStats } from "@/lib/api/email";
 
@@ -60,19 +54,15 @@ export function EmailIntegrationCard() {
             <div className="flex size-10 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800">
               <Mail className="size-5 text-slate-600 dark:text-slate-400" />
             </div>
-            <CardTitle className="font-display text-lg">
-              Email Delivery
-            </CardTitle>
+            <CardTitle className="font-display text-lg">Email Delivery</CardTitle>
           </div>
           <Badge variant="success">Active</Badge>
         </div>
-        <CardDescription>
-          Platform email delivery with optional BYOAK configuration
-        </CardDescription>
+        <CardDescription>Platform email delivery with optional BYOAK configuration</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {error && (
-          <p className="text-sm text-destructive" role="alert">
+          <p className="text-destructive text-sm" role="alert">
             {error}
           </p>
         )}
@@ -94,25 +84,19 @@ export function EmailIntegrationCard() {
               <p className="font-mono text-lg font-semibold text-slate-900 dark:text-slate-100">
                 {stats.sent24h}
               </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Sent (24h)
-              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Sent (24h)</p>
             </div>
             <div className="rounded-md border border-slate-200 px-3 py-2 dark:border-slate-800">
               <p className="font-mono text-lg font-semibold text-slate-900 dark:text-slate-100">
                 {stats.bounced7d}
               </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Bounced (7d)
-              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Bounced (7d)</p>
             </div>
             <div className="rounded-md border border-slate-200 px-3 py-2 dark:border-slate-800">
               <p className="font-mono text-lg font-semibold text-slate-900 dark:text-slate-100">
                 {stats.currentHourUsage}/{stats.hourlyLimit}
               </p>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Rate Limit
-              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Rate Limit</p>
             </div>
           </div>
         ) : null}
@@ -135,11 +119,7 @@ export function EmailIntegrationCard() {
             <Send className="mr-1.5 size-4" />
             {isSendingTest ? "Sending..." : "Send Test Email"}
           </Button>
-          {testResult && (
-            <p className="text-sm text-green-600 dark:text-green-400">
-              {testResult}
-            </p>
-          )}
+          {testResult && <p className="text-sm text-green-600 dark:text-green-400">{testResult}</p>}
         </div>
 
         {/* Expandable BYOAK section */}
@@ -150,17 +130,13 @@ export function EmailIntegrationCard() {
             onClick={() => setExpanded(!expanded)}
           >
             <span>Bring Your Own API Key (SendGrid)</span>
-            {expanded ? (
-              <ChevronUp className="size-4" />
-            ) : (
-              <ChevronDown className="size-4" />
-            )}
+            {expanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
           </button>
           {expanded && (
             <div className="mt-3 rounded-md bg-slate-50 px-3 py-3 dark:bg-slate-900">
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                BYOAK configuration coming soon. You will be able to connect
-                your own SendGrid API key for custom email delivery.
+                BYOAK configuration coming soon. You will be able to connect your own SendGrid API
+                key for custom email delivery.
               </p>
             </div>
           )}

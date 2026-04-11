@@ -69,7 +69,7 @@ describe("CreateViewDialog", () => {
         onSave={mockOnSave}
       >
         <button>Create View Button</button>
-      </CreateViewDialog>,
+      </CreateViewDialog>
     );
 
     await user.click(screen.getByText("Create View Button"));
@@ -96,7 +96,7 @@ describe("CreateViewDialog", () => {
         onSave={mockOnSave}
       >
         <button>Create View Nav</button>
-      </CreateViewDialog>,
+      </CreateViewDialog>
     );
 
     await user.click(screen.getByText("Create View Nav"));
@@ -129,7 +129,7 @@ describe("CreateViewDialog", () => {
         onSave={mockOnSave}
       >
         <button>Create View Save</button>
-      </CreateViewDialog>,
+      </CreateViewDialog>
     );
 
     await user.click(screen.getByText("Create View Save"));
@@ -166,7 +166,7 @@ describe("CreateViewDialog", () => {
         onSave={mockOnSave}
       >
         <button>Create View Submit</button>
-      </CreateViewDialog>,
+      </CreateViewDialog>
     );
 
     await user.click(screen.getByText("Create View Submit"));
@@ -197,7 +197,7 @@ describe("CreateViewDialog", () => {
           name: "My Test View",
           shared: false,
           sortOrder: 0,
-        }),
+        })
       );
     });
   });
@@ -215,7 +215,7 @@ describe("CreateViewDialog", () => {
         onSave={mockOnSave}
       >
         <button>Create View NonAdmin</button>
-      </CreateViewDialog>,
+      </CreateViewDialog>
     );
 
     await user.click(screen.getByText("Create View NonAdmin"));
@@ -252,7 +252,7 @@ describe("CreateViewDialog", () => {
         onSave={mockOnSave}
       >
         <button>Create View Previous</button>
-      </CreateViewDialog>,
+      </CreateViewDialog>
     );
 
     await user.click(screen.getByText("Create View Previous"));
@@ -291,7 +291,7 @@ describe("CreateViewDialog", () => {
         onSave={mockOnSave}
       >
         <button>Create View Error</button>
-      </CreateViewDialog>,
+      </CreateViewDialog>
     );
 
     await user.click(screen.getByText("Create View Error"));

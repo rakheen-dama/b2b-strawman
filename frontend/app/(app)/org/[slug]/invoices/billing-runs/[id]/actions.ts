@@ -23,7 +23,7 @@ interface BatchActionResult {
 
 export async function cancelBillingRunAction(
   slug: string,
-  billingRunId: string,
+  billingRunId: string
 ): Promise<ActionResult> {
   try {
     await cancelBillingRun(billingRunId);
@@ -40,7 +40,7 @@ export async function cancelBillingRunAction(
 
 export async function batchApproveAction(
   slug: string,
-  billingRunId: string,
+  billingRunId: string
 ): Promise<BatchActionResult> {
   try {
     const data = await batchApprove(billingRunId);
@@ -57,7 +57,7 @@ export async function batchApproveAction(
 export async function batchSendAction(
   slug: string,
   billingRunId: string,
-  request: BatchSendRequest,
+  request: BatchSendRequest
 ): Promise<BatchActionResult> {
   try {
     const data = await batchSend(billingRunId, request);

@@ -32,16 +32,17 @@ describe("CustomerAddressBlock", () => {
           postalCode: "8001",
           country: "ZA",
         }}
-      />,
+      />
     );
     expect(screen.getByText("100 Main St")).toBeInTheDocument();
     expect(screen.getByText("Suite 5")).toBeInTheDocument();
     expect(
-      screen.getByText((content) =>
-        content.includes("Cape Town") &&
-        content.includes("Western Cape") &&
-        content.includes("8001"),
-      ),
+      screen.getByText(
+        (content) =>
+          content.includes("Cape Town") &&
+          content.includes("Western Cape") &&
+          content.includes("8001")
+      )
     ).toBeInTheDocument();
     expect(screen.getByText("ZA")).toBeInTheDocument();
   });
@@ -63,7 +64,7 @@ describe("CustomerAddressBlock", () => {
           postalCode: "2000",
           country: "ZA",
         }}
-      />,
+      />
     );
     expect(screen.getByText("10 Oak Rd")).toBeInTheDocument();
     expect(screen.getByText("Johannesburg, 2000")).toBeInTheDocument();

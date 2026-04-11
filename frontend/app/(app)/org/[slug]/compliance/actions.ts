@@ -39,7 +39,7 @@ interface DashboardData {
 }
 
 export async function getComplianceDashboardData(
-  orgSlug: string,
+  orgSlug: string
 ): Promise<{ success: boolean; data?: DashboardData; error?: string }> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -73,7 +73,7 @@ export async function getComplianceDashboardData(
 }
 
 export async function runDormancyCheck(
-  orgSlug: string,
+  orgSlug: string
 ): Promise<{ success: boolean; candidates?: DormancyCandidate[]; error?: string }> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -91,10 +91,7 @@ export async function runDormancyCheck(
   }
 }
 
-export async function markCustomerDormant(
-  customerId: string,
-  slug: string,
-): Promise<ActionResult> {
+export async function markCustomerDormant(customerId: string, slug: string): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can mark customers as dormant." };

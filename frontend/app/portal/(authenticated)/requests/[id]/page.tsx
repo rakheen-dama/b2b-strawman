@@ -22,15 +22,8 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { ACCEPT_ATTRIBUTE, validateFile } from "@/lib/upload-validation";
-import {
-  getPortalRequest,
-  initiateUpload,
-  submitItem,
-} from "@/lib/api/portal-requests";
-import type {
-  PortalRequestDetail,
-  PortalRequestItemDetail,
-} from "@/lib/api/portal-requests";
+import { getPortalRequest, initiateUpload, submitItem } from "@/lib/api/portal-requests";
+import type { PortalRequestDetail, PortalRequestItemDetail } from "@/lib/api/portal-requests";
 
 // --- Item status badge ---
 
@@ -133,9 +126,7 @@ export default function PortalRequestDetailPage() {
           }
         };
         xhr.onload = () =>
-          xhr.status >= 200 && xhr.status < 300
-            ? resolve()
-            : reject(new Error("Upload failed"));
+          xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error("Upload failed"));
         xhr.onerror = () => reject(new Error("Network error"));
         xhr.open("PUT", uploadUrl);
         xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
@@ -232,9 +223,7 @@ export default function PortalRequestDetailPage() {
           <PortalRequestStatusBadge status={request.status} />
         </div>
         {request.projectName && (
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            {request.projectName}
-          </p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">{request.projectName}</p>
         )}
       </div>
 
@@ -270,9 +259,7 @@ export default function PortalRequestDetailPage() {
 
       {/* Items list */}
       <div className="space-y-3">
-        <h2 className="font-display text-lg text-slate-900 dark:text-slate-100">
-          Items
-        </h2>
+        <h2 className="font-display text-lg text-slate-900 dark:text-slate-100">Items</h2>
         {sortedItems.map((item) => (
           <ItemRow
             key={item.id}
@@ -281,9 +268,7 @@ export default function PortalRequestDetailPage() {
             uploadProgress={uploadProgress}
             submittingItemId={submittingItemId}
             textValue={textInputs[item.id] ?? ""}
-            onTextChange={(val) =>
-              setTextInputs((prev) => ({ ...prev, [item.id]: val }))
-            }
+            onTextChange={(val) => setTextInputs((prev) => ({ ...prev, [item.id]: val }))}
             onFileUpload={(file) => handleFileUpload(item.id, file)}
             onTextSubmit={() => handleTextSubmit(item.id)}
           />
@@ -326,7 +311,7 @@ function ItemRow({
     <div
       className={cn(
         "rounded-lg border border-slate-200 p-4 dark:border-slate-700",
-        getItemBgClass(item.status),
+        getItemBgClass(item.status)
       )}
     >
       {/* Item header */}
@@ -338,9 +323,7 @@ function ItemRow({
             <Type className="mt-0.5 size-4 text-slate-500 dark:text-slate-400" />
           )}
           <div>
-            <p className="font-medium text-slate-900 dark:text-slate-100">
-              {item.name}
-            </p>
+            <p className="font-medium text-slate-900 dark:text-slate-100">{item.name}</p>
             {item.description && (
               <p className="mt-0.5 text-sm text-slate-600 dark:text-slate-400">
                 {item.description}
@@ -417,9 +400,7 @@ function ItemRow({
             <Clock className="size-4" />
             <span>Awaiting review</span>
             {item.documentId && (
-              <span className="ml-2 text-slate-500 dark:text-slate-400">
-                File uploaded
-              </span>
+              <span className="ml-2 text-slate-500 dark:text-slate-400">File uploaded</span>
             )}
             {item.textResponse && (
               <span className="ml-2 text-slate-500 dark:text-slate-400">
@@ -435,9 +416,7 @@ function ItemRow({
             <Check className="size-4" />
             <span>Accepted</span>
             {item.documentId && (
-              <span className="ml-2 text-slate-500 dark:text-slate-400">
-                File uploaded
-              </span>
+              <span className="ml-2 text-slate-500 dark:text-slate-400">File uploaded</span>
             )}
             {item.textResponse && (
               <span className="ml-2 text-slate-500 dark:text-slate-400">
@@ -539,13 +518,13 @@ function FileUploadArea({
       className={cn(
         "rounded-lg border-2 border-dashed p-4 text-center transition-colors",
         disabled
-          ? "cursor-not-allowed opacity-50 border-slate-300 dark:border-slate-600"
+          ? "cursor-not-allowed border-slate-300 opacity-50 dark:border-slate-600"
           : "cursor-pointer",
         !disabled && isDragOver
           ? "border-teal-500 bg-teal-50 dark:bg-teal-950/20"
           : !disabled
             ? "border-slate-300 hover:border-slate-400 dark:border-slate-600 dark:hover:border-slate-500"
-            : "",
+            : ""
       )}
     >
       <input

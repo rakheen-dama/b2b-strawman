@@ -69,10 +69,7 @@ export function WithdrawInvestmentDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent
-        className="sm:max-w-md"
-        data-testid="withdraw-investment-dialog"
-      >
+      <DialogContent className="sm:max-w-md" data-testid="withdraw-investment-dialog">
         <DialogHeader>
           <DialogTitle>Withdraw Investment</DialogTitle>
           <DialogDescription>
@@ -82,34 +79,28 @@ export function WithdrawInvestmentDialog({
 
         <div className="space-y-3 rounded-lg border border-slate-200 p-4 dark:border-slate-700">
           <div className="flex justify-between text-sm">
-            <span className="text-slate-600 dark:text-slate-400">
-              Principal
-            </span>
-            <span className="font-mono tabular-nums text-slate-950 dark:text-slate-50">
+            <span className="text-slate-600 dark:text-slate-400">Principal</span>
+            <span className="font-mono text-slate-950 tabular-nums dark:text-slate-50">
               {formatCurrency(principal, currency)}
             </span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-slate-600 dark:text-slate-400">
-              Interest Earned
-            </span>
-            <span className="font-mono tabular-nums text-slate-950 dark:text-slate-50">
+            <span className="text-slate-600 dark:text-slate-400">Interest Earned</span>
+            <span className="font-mono text-slate-950 tabular-nums dark:text-slate-50">
               {formatCurrency(interestEarned, currency)}
             </span>
           </div>
           <div className="border-t border-slate-200 pt-2 dark:border-slate-700">
             <div className="flex justify-between text-sm font-semibold">
-              <span className="text-slate-950 dark:text-slate-50">
-                Total Withdrawal
-              </span>
-              <span className="font-mono tabular-nums text-slate-950 dark:text-slate-50">
+              <span className="text-slate-950 dark:text-slate-50">Total Withdrawal</span>
+              <span className="font-mono text-slate-950 tabular-nums dark:text-slate-50">
                 {formatCurrency(totalWithdrawal, currency)}
               </span>
             </div>
           </div>
         </div>
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
 
         <DialogFooter>
           <Button

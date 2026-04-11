@@ -75,7 +75,7 @@ export function DeletionConfirmDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
-      <AlertDialogContent className="border-t-4 border-t-red-500 max-w-md">
+      <AlertDialogContent className="max-w-md border-t-4 border-t-red-500">
         {summary ? (
           <>
             <AlertDialogHeader>
@@ -86,7 +86,7 @@ export function DeletionConfirmDialog({
             </AlertDialogHeader>
             <div className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
               <p>Anonymization summary:</p>
-              <ul className="list-disc pl-4 space-y-1 text-slate-600 dark:text-slate-400">
+              <ul className="list-disc space-y-1 pl-4 text-slate-600 dark:text-slate-400">
                 <li>Customer anonymized: {summary.customerAnonymized ? "Yes" : "No"}</li>
                 <li>Documents deleted: {summary.documentsDeleted}</li>
                 <li>Comments redacted: {summary.commentsRedacted}</li>
@@ -116,7 +116,7 @@ export function DeletionConfirmDialog({
 
             <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
               <p className="font-medium">The following will happen:</p>
-              <ul className="list-disc pl-4 space-y-1 text-slate-600 dark:text-slate-400">
+              <ul className="list-disc space-y-1 pl-4 text-slate-600 dark:text-slate-400">
                 <li>Customer PII will be anonymized</li>
                 <li>Documents will be permanently deleted</li>
                 <li>Comments will be redacted</li>
@@ -141,7 +141,7 @@ export function DeletionConfirmDialog({
               />
             </div>
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
 
             <AlertDialogFooter>
               <AlertDialogCancel variant="plain" disabled={isPending}>

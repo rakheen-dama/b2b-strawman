@@ -7,9 +7,7 @@ import React from "react";
 // findBy* queries or waitFor() to handle the async resolution.
 vi.mock("next/dynamic", () => ({
   __esModule: true,
-  default: (
-    importFn: () => Promise<unknown>,
-  ) => {
+  default: (importFn: () => Promise<unknown>) => {
     const LazyComponent = React.lazy(() =>
       importFn().then((mod) => {
         if (typeof mod === "function") {
@@ -17,14 +15,14 @@ vi.mock("next/dynamic", () => ({
         }
         const m = mod as Record<string, unknown>;
         return { default: (m.default ?? mod) as unknown as React.ComponentType };
-      }),
+      })
     );
 
     const DynamicComponent = (props: Record<string, unknown>) =>
       React.createElement(
         React.Suspense,
         { fallback: null },
-        React.createElement(LazyComponent, props),
+        React.createElement(LazyComponent, props)
       );
     DynamicComponent.displayName = "DynamicComponent";
     return DynamicComponent;
@@ -33,16 +31,12 @@ vi.mock("next/dynamic", () => ({
 
 // Polyfill pointer capture methods for Radix UI components (Select, etc.) in happy-dom
 if (typeof Element !== "undefined") {
-  Element.prototype.hasPointerCapture =
-    Element.prototype.hasPointerCapture || (() => false);
-  Element.prototype.setPointerCapture =
-    Element.prototype.setPointerCapture || (() => {});
-  Element.prototype.releasePointerCapture =
-    Element.prototype.releasePointerCapture || (() => {});
+  Element.prototype.hasPointerCapture = Element.prototype.hasPointerCapture || (() => false);
+  Element.prototype.setPointerCapture = Element.prototype.setPointerCapture || (() => {});
+  Element.prototype.releasePointerCapture = Element.prototype.releasePointerCapture || (() => {});
 }
 
 // Polyfill scrollIntoView for Radix Select items in happy-dom
 if (typeof Element !== "undefined") {
-  Element.prototype.scrollIntoView =
-    Element.prototype.scrollIntoView || (() => {});
+  Element.prototype.scrollIntoView = Element.prototype.scrollIntoView || (() => {});
 }

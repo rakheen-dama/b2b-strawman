@@ -4,13 +4,9 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 vi.mock("next/link", () => ({
-  default: ({
-    children,
-    href,
-  }: {
-    children: React.ReactNode;
-    href: string;
-  }) => <a href={href}>{children}</a>,
+  default: ({ children, href }: { children: React.ReactNode; href: string }) => (
+    <a href={href}>{children}</a>
+  ),
 }));
 
 const mockInviteMember = vi.fn();
@@ -33,9 +29,7 @@ describe("InviteMemberForm", () => {
     orgSlug: string;
   }) {
     const { InviteMemberForm } = await import("./invite-member-form");
-    const result = render(
-      <InviteMemberForm {...props} roles={[]} />,
-    );
+    const result = render(<InviteMemberForm {...props} roles={[]} />);
     // Wait for listInvitations useEffect to settle
     await waitFor(() => {});
     return result;
@@ -90,7 +84,12 @@ describe("InviteMemberForm", () => {
     await user.click(screen.getByRole("button", { name: "Send Invite" }));
 
     await waitFor(() => {
-      expect(mockInviteMember).toHaveBeenCalledWith("test@example.com", "org:member", undefined, undefined);
+      expect(mockInviteMember).toHaveBeenCalledWith(
+        "test@example.com",
+        "org:member",
+        undefined,
+        undefined
+      );
     });
     expect(await screen.findByText(/Invitation sent to test@example.com/)).toBeInTheDocument();
   });

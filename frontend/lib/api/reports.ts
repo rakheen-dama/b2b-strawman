@@ -82,9 +82,7 @@ export async function getReportDefinitions(): Promise<ReportListResponse> {
   return api.get<ReportListResponse>("/api/report-definitions");
 }
 
-export async function getReportDefinition(
-  slug: string,
-): Promise<ReportDefinitionDetail> {
+export async function getReportDefinition(slug: string): Promise<ReportDefinitionDetail> {
   return api.get<ReportDefinitionDetail>(`/api/report-definitions/${slug}`);
 }
 
@@ -92,11 +90,11 @@ export async function executeReport(
   slug: string,
   parameters: Record<string, unknown>,
   page: number,
-  size: number,
+  size: number
 ): Promise<ReportExecutionResponse> {
   return api.post<ReportExecutionResponse>(
     `/api/report-definitions/${encodeURIComponent(slug)}/execute`,
-    { parameters, page, size },
+    { parameters, page, size }
   );
 }
 
@@ -114,7 +112,7 @@ function buildExportQueryParams(parameters: Record<string, unknown>): string {
 
 export async function exportReportCsv(
   slug: string,
-  parameters: Record<string, unknown>,
+  parameters: Record<string, unknown>
 ): Promise<string> {
   let token: string;
   try {
@@ -130,7 +128,7 @@ export async function exportReportCsv(
       headers: {
         Authorization: `Bearer ${token}`,
       },
-    },
+    }
   );
 
   if (!response.ok) {
@@ -142,7 +140,7 @@ export async function exportReportCsv(
 
 export async function exportReportPdf(
   slug: string,
-  parameters: Record<string, unknown>,
+  parameters: Record<string, unknown>
 ): Promise<string> {
   let token: string;
   try {
@@ -158,7 +156,7 @@ export async function exportReportPdf(
       headers: {
         Authorization: `Bearer ${token}`,
       },
-    },
+    }
   );
 
   if (!response.ok) {

@@ -48,7 +48,7 @@
   --color-slate-300: oklch(85.5% 0.012 260);
   --color-slate-400: oklch(70% 0.018 260);
   --color-slate-500: oklch(55.5% 0.025 260);
-  --color-slate-600: oklch(44.5% 0.020 260);
+  --color-slate-600: oklch(44.5% 0.02 260);
   --color-slate-700: oklch(37% 0.018 260);
   --color-slate-800: oklch(26% 0.014 260);
   --color-slate-900: oklch(20.5% 0.011 260);
@@ -83,7 +83,7 @@
   --slate-300: oklch(85.5% 0.012 260);
   --slate-400: oklch(70% 0.018 260);
   --slate-500: oklch(55.5% 0.025 260);
-  --slate-600: oklch(44.5% 0.020 260);
+  --slate-600: oklch(44.5% 0.02 260);
   --slate-700: oklch(37% 0.018 260);
   --slate-800: oklch(26% 0.014 260);
   --slate-900: oklch(20.5% 0.011 260);
@@ -194,6 +194,10 @@
     radial-gradient(farthest-side at 50% 0, oklch(0% 0 0 / 8%), transparent) center top,
     radial-gradient(farthest-side at 50% 100%, oklch(0% 0 0 / 8%), transparent) center bottom;
   background-repeat: no-repeat;
-  background-size: 100% 40px, 100% 40px, 100% 14px, 100% 14px;
+  background-size:
+    100% 40px,
+    100% 40px,
+    100% 14px,
+    100% 14px;
   background-attachment: local, local, scroll, scroll;
 }

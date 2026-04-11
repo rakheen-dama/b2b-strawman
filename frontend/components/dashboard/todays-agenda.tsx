@@ -37,24 +37,18 @@ export function TodaysAgenda({
     .slice(0, 5);
 
   // Today's logged minutes
-  const loggedMinutes = todayEntries.reduce(
-    (sum, e) => sum + e.durationMinutes,
-    0,
-  );
-  const progressPct = Math.min(
-    100,
-    (loggedMinutes / dailyTargetMinutes) * 100,
-  );
+  const loggedMinutes = todayEntries.reduce((sum, e) => sum + e.durationMinutes, 0);
+  const progressPct = Math.min(100, (loggedMinutes / dailyTargetMinutes) * 100);
 
   // Next deadline — first entry (already sorted by backend)
   const nextDeadline = upcomingDeadlines[0] ?? null;
 
   return (
-    <div className="rounded-lg border bg-card p-4">
+    <div className="bg-card rounded-lg border p-4">
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
         {/* Section 1: Today's Tasks */}
         <div data-testid="todays-tasks">
-          <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-slate-500">
+          <p className="mb-2 text-[11px] font-medium tracking-wider text-slate-500 uppercase">
             Today&apos;s Tasks
           </p>
           {urgentTasks.length === 0 ? (
@@ -62,18 +56,13 @@ export function TodaysAgenda({
           ) : (
             <div className="space-y-1">
               {urgentTasks.map((task) => (
-                <div
-                  key={task.id}
-                  className="flex h-9 items-center gap-2 text-sm"
-                >
-                  <span className="flex-1 truncate font-medium text-slate-900">
-                    {task.title}
-                  </span>
+                <div key={task.id} className="flex h-9 items-center gap-2 text-sm">
+                  <span className="flex-1 truncate font-medium text-slate-900">{task.title}</span>
                   <Badge variant="member" className="shrink-0 text-[10px]">
                     {task.projectName}
                   </Badge>
                   {task.totalTimeMinutes > 0 && (
-                    <span className="shrink-0 font-mono text-xs tabular-nums text-slate-500">
+                    <span className="shrink-0 font-mono text-xs text-slate-500 tabular-nums">
                       {formatDuration(task.totalTimeMinutes)}
                     </span>
                   )}
@@ -85,15 +74,15 @@ export function TodaysAgenda({
 
         {/* Section 2: Time Logged Today */}
         <div data-testid="time-progress-today">
-          <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-slate-500">
+          <p className="mb-2 text-[11px] font-medium tracking-wider text-slate-500 uppercase">
             Time Today
           </p>
           <div className="space-y-2">
             <div className="flex items-center justify-between text-sm">
-              <span className="font-mono font-medium tabular-nums text-slate-900">
+              <span className="font-mono font-medium text-slate-900 tabular-nums">
                 {formatDuration(loggedMinutes)}
               </span>
-              <span className="font-mono text-xs tabular-nums text-slate-400">
+              <span className="font-mono text-xs text-slate-400 tabular-nums">
                 / {formatDuration(dailyTargetMinutes)}
               </span>
             </div>
@@ -108,27 +97,19 @@ export function TodaysAgenda({
 
         {/* Section 3: Next Deadline */}
         <div data-testid="next-deadline">
-          <p className="mb-2 text-[11px] font-medium uppercase tracking-wider text-slate-500">
+          <p className="mb-2 text-[11px] font-medium tracking-wider text-slate-500 uppercase">
             Next Deadline
           </p>
           {!nextDeadline ? (
             <p className="text-sm text-slate-400">No upcoming deadlines</p>
           ) : (
             <div>
-              <p className="truncate text-sm font-medium text-slate-900">
-                {nextDeadline.taskName}
-              </p>
-              <p className="truncate text-xs text-slate-500">
-                {nextDeadline.projectName}
-              </p>
+              <p className="truncate text-sm font-medium text-slate-900">{nextDeadline.taskName}</p>
+              <p className="truncate text-xs text-slate-500">{nextDeadline.projectName}</p>
               {(() => {
                 const days = getDaysRemaining(nextDeadline.dueDate);
                 const colorClass =
-                  days < 0
-                    ? "text-red-600"
-                    : days <= 2
-                      ? "text-amber-600"
-                      : "text-slate-600";
+                  days < 0 ? "text-red-600" : days <= 2 ? "text-amber-600" : "text-slate-600";
                 return (
                   <span className={cn("text-xs font-medium", colorClass)}>
                     {days < 0

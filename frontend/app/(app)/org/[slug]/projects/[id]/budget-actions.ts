@@ -15,10 +15,7 @@ export async function upsertBudget(
   data: UpsertBudgetRequest
 ): Promise<ActionResult> {
   try {
-    await api.put<BudgetStatusResponse>(
-      `/api/projects/${projectId}/budget`,
-      data
-    );
+    await api.put<BudgetStatusResponse>(`/api/projects/${projectId}/budget`, data);
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 403) {
@@ -36,10 +33,7 @@ export async function upsertBudget(
   return { success: true };
 }
 
-export async function deleteBudget(
-  slug: string,
-  projectId: string
-): Promise<ActionResult> {
+export async function deleteBudget(slug: string, projectId: string): Promise<ActionResult> {
   try {
     await api.delete(`/api/projects/${projectId}/budget`);
   } catch (error) {

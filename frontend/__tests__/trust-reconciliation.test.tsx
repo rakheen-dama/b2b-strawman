@@ -1,11 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  cleanup,
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-} from "@testing-library/react";
+import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
 
 // ── Mock server-only ─────────────────────────────────────────────
 vi.mock("server-only", () => ({}));
@@ -24,31 +18,20 @@ const mockFetchBankStatement = vi.fn();
 const mockFetchBankStatements = vi.fn();
 const mockFetchReconciliation = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions",
-  () => ({
-    fetchReconciliations: (...args: unknown[]) =>
-      mockFetchReconciliations(...args),
-    uploadBankStatement: (...args: unknown[]) =>
-      mockUploadBankStatement(...args),
-    autoMatch: (...args: unknown[]) => mockAutoMatch(...args),
-    manualMatch: (...args: unknown[]) => mockManualMatch(...args),
-    unmatch: (...args: unknown[]) => mockUnmatch(...args),
-    excludeLine: (...args: unknown[]) => mockExcludeLine(...args),
-    createReconciliation: (...args: unknown[]) =>
-      mockCreateReconciliation(...args),
-    calculateReconciliation: (...args: unknown[]) =>
-      mockCalculateReconciliation(...args),
-    completeReconciliation: (...args: unknown[]) =>
-      mockCompleteReconciliation(...args),
-    fetchBankStatement: (...args: unknown[]) =>
-      mockFetchBankStatement(...args),
-    fetchBankStatements: (...args: unknown[]) =>
-      mockFetchBankStatements(...args),
-    fetchReconciliation: (...args: unknown[]) =>
-      mockFetchReconciliation(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/trust-accounting/reconciliation/actions", () => ({
+  fetchReconciliations: (...args: unknown[]) => mockFetchReconciliations(...args),
+  uploadBankStatement: (...args: unknown[]) => mockUploadBankStatement(...args),
+  autoMatch: (...args: unknown[]) => mockAutoMatch(...args),
+  manualMatch: (...args: unknown[]) => mockManualMatch(...args),
+  unmatch: (...args: unknown[]) => mockUnmatch(...args),
+  excludeLine: (...args: unknown[]) => mockExcludeLine(...args),
+  createReconciliation: (...args: unknown[]) => mockCreateReconciliation(...args),
+  calculateReconciliation: (...args: unknown[]) => mockCalculateReconciliation(...args),
+  completeReconciliation: (...args: unknown[]) => mockCompleteReconciliation(...args),
+  fetchBankStatement: (...args: unknown[]) => mockFetchBankStatement(...args),
+  fetchBankStatements: (...args: unknown[]) => mockFetchBankStatements(...args),
+  fetchReconciliation: (...args: unknown[]) => mockFetchReconciliation(...args),
+}));
 
 // ── Mock parent trust actions ────────────────────────────────────
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
@@ -74,18 +57,15 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
 }));
 
 // ── Mock transaction actions ─────────────────────────────────────
-vi.mock(
-  "@/app/(app)/org/[slug]/trust-accounting/transactions/actions",
-  () => ({
-    fetchTransactions: vi.fn().mockResolvedValue({
-      content: [],
-      totalElements: 0,
-      totalPages: 0,
-      pageSize: 20,
-      pageNumber: 0,
-    }),
+vi.mock("@/app/(app)/org/[slug]/trust-accounting/transactions/actions", () => ({
+  fetchTransactions: vi.fn().mockResolvedValue({
+    content: [],
+    totalElements: 0,
+    totalPages: 0,
+    pageSize: 20,
+    pageNumber: 0,
   }),
-);
+}));
 
 // ── Mock org settings & capabilities ─────────────────────────��───
 vi.mock("@/lib/api/settings", () => ({
@@ -297,7 +277,7 @@ describe("Trust Reconciliation", () => {
         accountId="acc-1"
         onUploadComplete={mockOnComplete}
         uploadAction={mockUpload}
-      />,
+      />
     );
 
     // Simulate file selection
@@ -332,9 +312,7 @@ describe("Trust Reconciliation", () => {
       }),
     ];
 
-    const transactions = [
-      makeTx({ id: "tx-1", amount: 15000, reference: "DEP-001" }),
-    ];
+    const transactions = [makeTx({ id: "tx-1", amount: 15000, reference: "DEP-001" })];
 
     render(
       <ReconciliationSplitPane
@@ -347,12 +325,10 @@ describe("Trust Reconciliation", () => {
         onUnmatch={vi.fn()}
         onComplete={vi.fn()}
         isCompleting={false}
-      />,
+      />
     );
 
-    expect(
-      screen.getByTestId("reconciliation-split-pane"),
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("reconciliation-split-pane")).toBeInTheDocument();
     expect(screen.getByTestId("bank-line-line-1")).toBeInTheDocument();
     expect(screen.getByTestId("bank-line-line-2")).toBeInTheDocument();
     expect(screen.getByTestId("transaction-tx-1")).toBeInTheDocument();
@@ -370,9 +346,7 @@ describe("Trust Reconciliation", () => {
       }),
     ];
 
-    const transactions = [
-      makeTx({ id: "tx-1", amount: 15000, reference: "DEP-001" }),
-    ];
+    const transactions = [makeTx({ id: "tx-1", amount: 15000, reference: "DEP-001" })];
 
     render(
       <ReconciliationSplitPane
@@ -385,7 +359,7 @@ describe("Trust Reconciliation", () => {
         onUnmatch={vi.fn()}
         onComplete={vi.fn()}
         isCompleting={false}
-      />,
+      />
     );
 
     // Click bank line to select it
@@ -416,13 +390,11 @@ describe("Trust Reconciliation", () => {
         onUnmatch={vi.fn()}
         onComplete={vi.fn()}
         isCompleting={false}
-      />,
+      />
     );
 
     const completeBtn = screen.getByTestId("complete-reconciliation-btn");
     expect(completeBtn).toBeDisabled();
-    expect(
-      screen.getByText("Reconciliation is not balanced"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Reconciliation is not balanced")).toBeInTheDocument();
   });
 });

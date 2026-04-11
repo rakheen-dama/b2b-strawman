@@ -2,13 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { Users, AlertTriangle } from "lucide-react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
@@ -33,9 +27,7 @@ export function TeamCapacityWidget({ data, orgSlug }: TeamCapacityWidgetProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground italic">
-            Unable to load team capacity data.
-          </p>
+          <p className="text-muted-foreground text-sm italic">Unable to load team capacity data.</p>
         </CardContent>
       </Card>
     );
@@ -69,13 +61,11 @@ export function TeamCapacityWidget({ data, orgSlug }: TeamCapacityWidgetProps) {
 
   // Count over-allocated members (any week)
   const overAllocatedCount = data.members.filter((m) =>
-    m.weeks.some((w) => w.overAllocated),
+    m.weeks.some((w) => w.overAllocated)
   ).length;
 
   // Count under-utilized members (avg < 50%)
-  const underUtilizedCount = data.members.filter(
-    (m) => m.avgUtilizationPct < 50,
-  ).length;
+  const underUtilizedCount = data.members.filter((m) => m.avgUtilizationPct < 50).length;
 
   return (
     <Card>
@@ -90,7 +80,8 @@ export function TeamCapacityWidget({ data, orgSlug }: TeamCapacityWidgetProps) {
           <MiniProgressRing value={teamUtilization} size={64} />
           <div>
             <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-              <span className="font-mono tabular-nums">{Math.round(teamUtilization)}%</span> utilized
+              <span className="font-mono tabular-nums">{Math.round(teamUtilization)}%</span>{" "}
+              utilized
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400">
               <span className="font-mono tabular-nums">{totalAllocated}h</span> /{" "}

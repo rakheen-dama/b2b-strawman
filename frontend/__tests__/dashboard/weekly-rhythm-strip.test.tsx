@@ -36,9 +36,7 @@ describe("WeeklyRhythmStrip", () => {
 
   it("calls onDaySelect on click", () => {
     const onDaySelect = vi.fn();
-    render(
-      <WeeklyRhythmStrip {...defaultProps} onDaySelect={onDaySelect} />,
-    );
+    render(<WeeklyRhythmStrip {...defaultProps} onDaySelect={onDaySelect} />);
 
     fireEvent.click(screen.getByTestId("rhythm-day-2"));
     expect(onDaySelect).toHaveBeenCalledWith(2);

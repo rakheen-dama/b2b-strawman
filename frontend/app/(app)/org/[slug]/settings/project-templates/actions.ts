@@ -32,10 +32,7 @@ interface ActionResult {
   data?: ProjectTemplateResponse;
 }
 
-export async function deleteTemplateAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deleteTemplateAction(slug: string, id: string): Promise<ActionResult> {
   try {
     await deleteProjectTemplate(id);
     revalidatePath(`/org/${slug}/settings/project-templates`);
@@ -51,8 +48,7 @@ export async function deleteTemplateAction(
       if (error.status === 409) {
         return {
           success: false,
-          error:
-            "Template has active schedules and cannot be deleted. Deactivate it instead.",
+          error: "Template has active schedules and cannot be deleted. Deactivate it instead.",
         };
       }
       return { success: false, error: error.message };
@@ -61,10 +57,7 @@ export async function deleteTemplateAction(
   }
 }
 
-export async function duplicateTemplateAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function duplicateTemplateAction(slug: string, id: string): Promise<ActionResult> {
   try {
     const data = await duplicateProjectTemplate(id);
     revalidatePath(`/org/${slug}/settings/project-templates`);
@@ -85,7 +78,7 @@ export async function duplicateTemplateAction(
 
 export async function createProjectTemplateAction(
   slug: string,
-  data: CreateProjectTemplateRequest,
+  data: CreateProjectTemplateRequest
 ): Promise<ActionResult> {
   try {
     const created = await createProjectTemplate(data);
@@ -108,7 +101,7 @@ export async function createProjectTemplateAction(
 export async function updateProjectTemplateAction(
   slug: string,
   id: string,
-  data: UpdateProjectTemplateRequest,
+  data: UpdateProjectTemplateRequest
 ): Promise<ActionResult> {
   try {
     const updated = await updateProjectTemplate(id, data);
@@ -131,7 +124,7 @@ export async function updateProjectTemplateAction(
 export async function saveAsTemplateAction(
   slug: string,
   projectId: string,
-  data: SaveFromProjectRequest,
+  data: SaveFromProjectRequest
 ): Promise<ActionResult> {
   try {
     const created = await saveProjectFromTemplate(projectId, data);
@@ -154,7 +147,7 @@ export async function saveAsTemplateAction(
 export async function updateRequiredCustomerFieldsAction(
   slug: string,
   templateId: string,
-  fieldDefinitionIds: string[],
+  fieldDefinitionIds: string[]
 ): Promise<{ success: boolean; error?: string }> {
   try {
     await updateTemplateRequiredCustomerFields(templateId, fieldDefinitionIds);
@@ -177,7 +170,7 @@ export async function updateRequiredCustomerFieldsAction(
 export async function instantiateTemplateAction(
   slug: string,
   templateId: string,
-  data: InstantiateTemplateRequest,
+  data: InstantiateTemplateRequest
 ): Promise<{ success: boolean; error?: string; projectId?: string }> {
   try {
     const result = await instantiateProjectTemplate(templateId, data);
@@ -188,8 +181,7 @@ export async function instantiateTemplateAction(
       if (error.status === 403) {
         return {
           success: false,
-          error:
-            "You do not have permission to create projects from templates.",
+          error: "You do not have permission to create projects from templates.",
         };
       }
       if (error.status === 400) {

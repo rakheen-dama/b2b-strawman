@@ -44,7 +44,10 @@ export default function PortalProjectListPage() {
 
   if (error) {
     return (
-      <div className="flex items-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300" role="alert">
+      <div
+        className="flex items-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-950 dark:text-red-300"
+        role="alert"
+      >
         <AlertCircle className="size-4 shrink-0" />
         {error}
       </div>
@@ -56,9 +59,7 @@ export default function PortalProjectListPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
-            Projects
-          </h1>
+          <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">Projects</h1>
           <Badge variant="neutral">{projects.length}</Badge>
         </div>
       </div>
@@ -89,7 +90,7 @@ export default function PortalProjectListPage() {
                       {project.description}
                     </p>
                   ) : (
-                    <p className="mt-1 text-sm italic text-slate-400 dark:text-slate-600">
+                    <p className="mt-1 text-sm text-slate-400 italic dark:text-slate-600">
                       No description
                     </p>
                   )}

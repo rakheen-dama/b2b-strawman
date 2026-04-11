@@ -107,9 +107,7 @@ export function ProjectMembersPanel({
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
         <h2 className="font-semibold text-slate-900 dark:text-slate-100">Members</h2>
-        {members.length > 0 && (
-          <Badge variant="neutral">{members.length}</Badge>
-        )}
+        {members.length > 0 && <Badge variant="neutral">{members.length}</Badge>}
       </div>
       {canManage && (
         <AddMemberDialog slug={slug} projectId={projectId} existingMembers={members}>
@@ -143,16 +141,16 @@ export function ProjectMembersPanel({
         <Table>
           <TableHeader>
             <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
-              <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Member
               </TableHead>
-              <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+              <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                 Email
               </TableHead>
-              <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Role
               </TableHead>
-              <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+              <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                 Added
               </TableHead>
               {canManage && <TableHead className="w-[60px]" />}

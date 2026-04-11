@@ -12,7 +12,9 @@ vi.mock("@/app/(app)/org/[slug]/customers/[id]/actions", () => ({
 }));
 
 vi.mock("@/app/(app)/org/[slug]/projects/[id]/actions", () => ({
-  getDownloadUrl: vi.fn().mockResolvedValue({ success: true, presignedUrl: "https://example.com/file" }),
+  getDownloadUrl: vi
+    .fn()
+    .mockResolvedValue({ success: true, presignedUrl: "https://example.com/file" }),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -95,31 +97,15 @@ describe("CustomerDocumentsPanel", () => {
 
   // 42.10: Empty state renders for no customer documents
   it("shows empty state when no documents exist", () => {
-    render(
-      <CustomerDocumentsPanel
-        documents={[]}
-        slug="acme"
-        customerId="c1"
-        canManage={true}
-      />
-    );
+    render(<CustomerDocumentsPanel documents={[]} slug="acme" customerId="c1" canManage={true} />);
 
     expect(screen.getByText("No customer documents yet")).toBeInTheDocument();
-    expect(
-      screen.getByText("Upload your first document for this customer.")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Upload your first document for this customer.")).toBeInTheDocument();
   });
 
   // 42.10: Empty state message differs for non-admin
   it("shows different empty state message for non-admin", () => {
-    render(
-      <CustomerDocumentsPanel
-        documents={[]}
-        slug="acme"
-        customerId="c1"
-        canManage={false}
-      />
-    );
+    render(<CustomerDocumentsPanel documents={[]} slug="acme" customerId="c1" canManage={false} />);
 
     expect(
       screen.getByText("No documents have been uploaded for this customer.")
@@ -205,9 +191,7 @@ describe("CustomerDocumentsPanel", () => {
     // "Uploaded" appears both as column header and as status badge.
     // Find badges specifically by data-slot attribute.
     const uploadedBadges = screen.getAllByText("Uploaded");
-    const uploadedBadge = uploadedBadges.find(
-      (el) => el.getAttribute("data-slot") === "badge"
-    );
+    const uploadedBadge = uploadedBadges.find((el) => el.getAttribute("data-slot") === "badge");
     expect(uploadedBadge).toHaveAttribute("data-variant", "success");
 
     const pendingBadge = screen.getByText("Pending");

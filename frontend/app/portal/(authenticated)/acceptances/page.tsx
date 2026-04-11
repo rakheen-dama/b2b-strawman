@@ -3,12 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  ClipboardCheck,
-  Loader2,
-  AlertCircle,
-  ExternalLink,
-} from "lucide-react";
+import { ClipboardCheck, Loader2, AlertCircle, ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
@@ -16,9 +11,7 @@ import { portalApi, PortalApiError, clearPortalAuth } from "@/lib/portal-api";
 import { formatDate } from "@/lib/format";
 import type { PendingAcceptance } from "@/lib/types/document";
 
-function statusBadgeVariant(
-  status: string,
-): "warning" | "success" | "destructive" | "neutral" {
+function statusBadgeVariant(status: string): "warning" | "success" | "destructive" | "neutral" {
   switch (status) {
     case "PENDING":
       return "warning";
@@ -48,7 +41,7 @@ export default function PortalAcceptancesPage() {
     async function fetchAcceptances() {
       try {
         const data = await portalApi.get<PendingAcceptance[]>(
-          "/portal/acceptance-requests/pending",
+          "/portal/acceptance-requests/pending"
         );
         setAcceptances(data);
       } catch (err) {
@@ -57,9 +50,7 @@ export default function PortalAcceptancesPage() {
           router.replace("/portal");
           return;
         }
-        setError(
-          err instanceof Error ? err.message : "Failed to load acceptances",
-        );
+        setError(err instanceof Error ? err.message : "Failed to load acceptances");
       } finally {
         setIsLoading(false);
       }
@@ -100,9 +91,7 @@ export default function PortalAcceptancesPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
-            Acceptances
-          </h1>
+          <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">Acceptances</h1>
           <Badge variant="neutral">{acceptances.length}</Badge>
         </div>
       </div>
@@ -133,9 +122,7 @@ export default function PortalAcceptancesPage() {
                   </div>
 
                   <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
-                    {acceptance.sentAt && (
-                      <span>Sent {formatDate(acceptance.sentAt)}</span>
-                    )}
+                    {acceptance.sentAt && <span>Sent {formatDate(acceptance.sentAt)}</span>}
                     {acceptance.expiresAt && (
                       <span
                         className={

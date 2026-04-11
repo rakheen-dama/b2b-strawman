@@ -24,7 +24,7 @@ interface VoidActionResult {
 export async function acceptItemAction(
   slug: string,
   requestId: string,
-  itemId: string,
+  itemId: string
 ): Promise<ActionResult> {
   try {
     const data = await acceptItem(requestId, itemId);
@@ -42,7 +42,7 @@ export async function rejectItemAction(
   slug: string,
   requestId: string,
   itemId: string,
-  reason: string,
+  reason: string
 ): Promise<ActionResult> {
   try {
     const data = await rejectItem(requestId, itemId, reason);
@@ -56,10 +56,7 @@ export async function rejectItemAction(
   }
 }
 
-export async function cancelRequestAction(
-  slug: string,
-  requestId: string,
-): Promise<ActionResult> {
+export async function cancelRequestAction(slug: string, requestId: string): Promise<ActionResult> {
   try {
     const data = await cancelRequest(requestId);
     revalidatePath(`/org/${slug}/information-requests/${requestId}`);
@@ -72,9 +69,7 @@ export async function cancelRequestAction(
   }
 }
 
-export async function resendNotificationAction(
-  requestId: string,
-): Promise<VoidActionResult> {
+export async function resendNotificationAction(requestId: string): Promise<VoidActionResult> {
   try {
     await resendNotification(requestId);
     return { success: true };

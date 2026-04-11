@@ -36,32 +36,17 @@ describe("VisibilityToggle", () => {
   // Internal visibility renders Lock icon and "Internal" label
   it("renders Internal label with lock icon for INTERNAL visibility", () => {
     render(
-      <VisibilityToggle
-        documentId="doc1"
-        visibility="INTERNAL"
-        slug="acme"
-        customerId="c1"
-      />
+      <VisibilityToggle documentId="doc1" visibility="INTERNAL" slug="acme" customerId="c1" />
     );
 
     const button = screen.getByRole("button", { name: /Internal/i });
     expect(button).toBeInTheDocument();
-    expect(button).toHaveAttribute(
-      "title",
-      "Internal only. Click to share with customer."
-    );
+    expect(button).toHaveAttribute("title", "Internal only. Click to share with customer.");
   });
 
   // Shared visibility renders Globe icon and "Shared" label
   it("renders Shared label with globe icon for SHARED visibility", () => {
-    render(
-      <VisibilityToggle
-        documentId="doc1"
-        visibility="SHARED"
-        slug="acme"
-        customerId="c1"
-      />
-    );
+    render(<VisibilityToggle documentId="doc1" visibility="SHARED" slug="acme" customerId="c1" />);
 
     const button = screen.getByRole("button", { name: /Shared/i });
     expect(button).toBeInTheDocument();
@@ -76,12 +61,7 @@ describe("VisibilityToggle", () => {
     const user = userEvent.setup();
 
     render(
-      <VisibilityToggle
-        documentId="doc1"
-        visibility="INTERNAL"
-        slug="acme"
-        customerId="c1"
-      />
+      <VisibilityToggle documentId="doc1" visibility="INTERNAL" slug="acme" customerId="c1" />
     );
 
     await user.click(screen.getByRole("button", { name: /Internal/i }));
@@ -95,14 +75,7 @@ describe("VisibilityToggle", () => {
   it("calls toggleDocumentVisibility with INTERNAL when clicking Shared toggle", async () => {
     const user = userEvent.setup();
 
-    render(
-      <VisibilityToggle
-        documentId="doc1"
-        visibility="SHARED"
-        slug="acme"
-        customerId="c1"
-      />
-    );
+    render(<VisibilityToggle documentId="doc1" visibility="SHARED" slug="acme" customerId="c1" />);
 
     await user.click(screen.getByRole("button", { name: /Shared/i }));
 
@@ -131,12 +104,7 @@ describe("VisibilityToggle", () => {
     const user = userEvent.setup();
 
     render(
-      <VisibilityToggle
-        documentId="doc1"
-        visibility="INTERNAL"
-        slug="acme"
-        customerId="c1"
-      />
+      <VisibilityToggle documentId="doc1" visibility="INTERNAL" slug="acme" customerId="c1" />
     );
 
     await user.click(screen.getByRole("button", { name: /Internal/i }));

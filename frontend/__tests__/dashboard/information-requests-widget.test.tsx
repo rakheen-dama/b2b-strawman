@@ -29,9 +29,7 @@ describe("InformationRequestsWidget", () => {
   });
 
   it("renders summary data with pending review, overdue count, and completion rate", () => {
-    render(
-      <InformationRequestsWidget data={baseSummary} orgSlug="acme" />,
-    );
+    render(<InformationRequestsWidget data={baseSummary} orgSlug="acme" />);
 
     expect(screen.getByText("Information Requests")).toBeInTheDocument();
     expect(screen.getByText("8")).toBeInTheDocument(); // pending review
@@ -43,9 +41,7 @@ describe("InformationRequestsWidget", () => {
 
   it("navigates to customers page on click-through", async () => {
     const user = userEvent.setup();
-    render(
-      <InformationRequestsWidget data={baseSummary} orgSlug="acme" />,
-    );
+    render(<InformationRequestsWidget data={baseSummary} orgSlug="acme" />);
 
     const link = screen.getByRole("button", {
       name: /view customer requests/i,
@@ -56,23 +52,17 @@ describe("InformationRequestsWidget", () => {
   });
 
   it("shows overdue warning indicator when overdue count is positive", () => {
-    render(
-      <InformationRequestsWidget data={baseSummary} orgSlug="acme" />,
-    );
+    render(<InformationRequestsWidget data={baseSummary} orgSlug="acme" />);
 
     expect(screen.getByText("Overdue")).toBeInTheDocument();
     expect(screen.getByText(/requests are overdue/)).toBeInTheDocument();
   });
 
   it("handles null data state gracefully", () => {
-    render(
-      <InformationRequestsWidget data={null} orgSlug="acme" />,
-    );
+    render(<InformationRequestsWidget data={null} orgSlug="acme" />);
 
     expect(screen.getByText("Information Requests")).toBeInTheDocument();
-    expect(
-      screen.getByText("Unable to load request data."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Unable to load request data.")).toBeInTheDocument();
   });
 
   it("falls back to count-based metrics when dashboard fields are absent", () => {
@@ -85,12 +75,7 @@ describe("InformationRequestsWidget", () => {
       cancelledCount: 0,
     };
 
-    render(
-      <InformationRequestsWidget
-        data={summaryWithoutDashboardFields}
-        orgSlug="acme"
-      />,
-    );
+    render(<InformationRequestsWidget data={summaryWithoutDashboardFields} orgSlug="acme" />);
 
     // Fallback: sentCount + inProgressCount = 5
     expect(screen.getByText("5")).toBeInTheDocument();

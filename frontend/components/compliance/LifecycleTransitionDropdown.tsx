@@ -14,10 +14,7 @@ import { TransitionConfirmDialog } from "@/components/compliance/TransitionConfi
 import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
 import { checkPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
 import type { LifecycleStatus } from "@/lib/types";
-import type {
-  PrerequisiteCheck,
-  PrerequisiteViolation,
-} from "@/components/prerequisite/types";
+import type { PrerequisiteCheck, PrerequisiteViolation } from "@/components/prerequisite/types";
 
 // Valid transitions per status (mirrors LifecycleStatus.java)
 const ALLOWED_TRANSITIONS: Record<LifecycleStatus, LifecycleStatus[]> = {
@@ -47,7 +44,7 @@ const DESTRUCTIVE_TARGETS = new Set<LifecycleStatus>(["OFFBOARDING", "OFFBOARDED
 /** Transitions that require a prerequisite check before proceeding */
 function requiresPrerequisiteCheck(
   fromStatus: LifecycleStatus,
-  toStatus: LifecycleStatus,
+  toStatus: LifecycleStatus
 ): boolean {
   return toStatus === "ACTIVE" && fromStatus === "ONBOARDING";
 }
@@ -89,7 +86,7 @@ export function LifecycleTransitionDropdown({
         const check: PrerequisiteCheck = await checkPrerequisitesAction(
           "LIFECYCLE_ACTIVATION",
           "CUSTOMER",
-          customerId,
+          customerId
         );
         if (check.passed) {
           // Prerequisites met — show confirm dialog

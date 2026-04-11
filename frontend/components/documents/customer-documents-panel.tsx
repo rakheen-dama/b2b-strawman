@@ -89,9 +89,7 @@ export function CustomerDocumentsPanel({
               : "No documents have been uploaded for this customer."
           }
           action={
-            canManage ? (
-              <CustomerDocumentUpload slug={slug} customerId={customerId} />
-            ) : undefined
+            canManage ? <CustomerDocumentUpload slug={slug} customerId={customerId} /> : undefined
           }
         />
       ) : (
@@ -99,19 +97,19 @@ export function CustomerDocumentsPanel({
           <Table>
             <TableHeader>
               <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
-                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   File
                 </TableHead>
-                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+                <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                   Size
                 </TableHead>
-                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Status
                 </TableHead>
-                <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Visibility
                 </TableHead>
-                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+                <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                   Uploaded
                 </TableHead>
                 <TableHead className="w-[60px]" />

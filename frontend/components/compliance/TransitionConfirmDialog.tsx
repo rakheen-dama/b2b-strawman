@@ -111,7 +111,7 @@ export function TransitionConfirmDialog({
         slug,
         customerId,
         targetStatus,
-        notes.trim() || undefined,
+        notes.trim() || undefined
       );
       if (result.success) {
         onOpenChange(false);
@@ -174,7 +174,7 @@ export function TransitionConfirmDialog({
           />
         </div>
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
 
         <AlertDialogFooter>
           <AlertDialogCancel variant="plain" disabled={isPending}>

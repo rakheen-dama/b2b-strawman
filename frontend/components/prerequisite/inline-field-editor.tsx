@@ -55,9 +55,7 @@ const CURRENCY_CODES = [
 ] as const;
 
 /** Mapping of simple input field types to their HTML input type and placeholder */
-const SIMPLE_INPUT_TYPES: Partial<
-  Record<FieldType, { type: string; placeholder?: string }>
-> = {
+const SIMPLE_INPUT_TYPES: Partial<Record<FieldType, { type: string; placeholder?: string }>> = {
   TEXT: { type: "text" },
   NUMBER: { type: "number" },
   PHONE: { type: "tel", placeholder: "+1 (555) 000-0000" },
@@ -67,9 +65,7 @@ const SIMPLE_INPUT_TYPES: Partial<
 
 function ErrorMessage({ error }: { error?: string }) {
   if (!error) return null;
-  return (
-    <p className="text-xs text-red-600 dark:text-red-400">{error}</p>
-  );
+  return <p className="text-xs text-red-600 dark:text-red-400">{error}</p>;
 }
 
 export function InlineFieldEditor({
@@ -94,9 +90,7 @@ export function InlineFieldEditor({
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
           aria-invalid={!!error}
-          placeholder={
-            simpleConfig.placeholder ?? fieldDefinition.description ?? undefined
-          }
+          placeholder={simpleConfig.placeholder ?? fieldDefinition.description ?? undefined}
         />
         <ErrorMessage error={error} />
       </div>
@@ -127,11 +121,7 @@ export function InlineFieldEditor({
             onValueChange={(val) => onChange(val)}
             disabled={disabled}
           >
-            <SelectTrigger
-              id={id}
-              className="w-full"
-              aria-invalid={!!error}
-            >
+            <SelectTrigger id={id} className="w-full" aria-invalid={!!error}>
               <SelectValue placeholder="Select..." />
             </SelectTrigger>
             <SelectContent>
@@ -165,8 +155,7 @@ export function InlineFieldEditor({
       );
 
     case "CURRENCY": {
-      const currencyObj =
-        (value as { amount?: number | string; currency?: string }) ?? {};
+      const currencyObj = (value as { amount?: number | string; currency?: string }) ?? {};
       return (
         <div className="space-y-1">
           <div className="flex gap-2">
@@ -179,9 +168,7 @@ export function InlineFieldEditor({
               onChange={(e) =>
                 onChange({
                   ...currencyObj,
-                  amount: e.target.value
-                    ? parseFloat(e.target.value)
-                    : "",
+                  amount: e.target.value ? parseFloat(e.target.value) : "",
                 })
               }
               disabled={disabled}
@@ -190,9 +177,7 @@ export function InlineFieldEditor({
             />
             <Select
               value={currencyObj.currency ?? ""}
-              onValueChange={(val) =>
-                onChange({ ...currencyObj, currency: val })
-              }
+              onValueChange={(val) => onChange({ ...currencyObj, currency: val })}
               disabled={disabled}
             >
               <SelectTrigger className="w-28" aria-label="Currency">

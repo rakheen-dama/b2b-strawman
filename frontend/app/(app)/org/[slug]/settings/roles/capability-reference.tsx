@@ -3,11 +3,7 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { CAPABILITY_META } from "@/lib/capabilities";
 
 export function CapabilityReference() {
@@ -17,9 +13,7 @@ export function CapabilityReference() {
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <CollapsibleTrigger asChild>
         <Button variant="ghost" size="sm" className="gap-1.5">
-          <ChevronDown
-            className={`size-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
-          />
+          <ChevronDown className={`size-4 transition-transform ${isOpen ? "rotate-180" : ""}`} />
           Capability Reference
         </Button>
       </CollapsibleTrigger>

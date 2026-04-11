@@ -31,7 +31,7 @@ describe("TransferLeadDialog", () => {
     render(
       <TransferLeadDialog {...defaultProps}>
         <button>Open Transfer</button>
-      </TransferLeadDialog>,
+      </TransferLeadDialog>
     );
 
     await user.click(screen.getByText("Open Transfer"));
@@ -47,7 +47,7 @@ describe("TransferLeadDialog", () => {
     render(
       <TransferLeadDialog {...defaultProps}>
         <button>Open Transfer</button>
-      </TransferLeadDialog>,
+      </TransferLeadDialog>
     );
 
     await user.click(screen.getByText("Open Transfer"));
@@ -65,7 +65,7 @@ describe("TransferLeadDialog", () => {
     render(
       <TransferLeadDialog {...defaultProps}>
         <button>Open Transfer</button>
-      </TransferLeadDialog>,
+      </TransferLeadDialog>
     );
 
     await user.click(screen.getByText("Open Transfer"));
@@ -78,14 +78,14 @@ describe("TransferLeadDialog", () => {
 
   it("disables buttons during transfer", async () => {
     mockTransferLead.mockImplementation(
-      () => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 500)),
+      () => new Promise((resolve) => setTimeout(() => resolve({ success: true }), 500))
     );
     const user = userEvent.setup();
 
     render(
       <TransferLeadDialog {...defaultProps}>
         <button>Open Transfer</button>
-      </TransferLeadDialog>,
+      </TransferLeadDialog>
     );
 
     await user.click(screen.getByText("Open Transfer"));

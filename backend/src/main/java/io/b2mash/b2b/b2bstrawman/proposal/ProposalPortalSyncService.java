@@ -98,6 +98,8 @@ public class ProposalPortalSyncService {
       case FIXED -> proposal.getFixedFeeAmount();
       case RETAINER -> proposal.getRetainerAmount();
       case HOURLY -> null;
+      // Contingency fees are expressed as a percentage of recovery, not a fixed monetary amount.
+      case CONTINGENCY -> null;
     };
   }
 
@@ -106,6 +108,7 @@ public class ProposalPortalSyncService {
       case FIXED -> proposal.getFixedFeeCurrency();
       case RETAINER -> proposal.getRetainerCurrency();
       case HOURLY -> null;
+      case CONTINGENCY -> null;
     };
   }
 }

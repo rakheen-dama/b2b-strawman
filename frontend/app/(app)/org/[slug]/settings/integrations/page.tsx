@@ -89,7 +89,7 @@ export default async function IntegrationsSettingsPage({
       </Link>
 
       <div>
-        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           Integrations
           <HelpTip code="integrations.overview" docsPath="/admin/integrations" />
         </h1>
@@ -100,8 +100,7 @@ export default async function IntegrationsSettingsPage({
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {DOMAIN_CONFIG.map((config) => {
-          const integration =
-            integrations.find((i) => i.domain === config.domain) ?? null;
+          const integration = integrations.find((i) => i.domain === config.domain) ?? null;
           const domainProviders = providers[config.domain] ?? [];
 
           if (config.domain === "EMAIL") {
@@ -120,13 +119,7 @@ export default async function IntegrationsSettingsPage({
           }
 
           if (config.domain === "KYC_VERIFICATION") {
-            return (
-              <KycIntegrationCard
-                key={config.domain}
-                integration={integration}
-                slug={slug}
-              />
-            );
+            return <KycIntegrationCard key={config.domain} integration={integration} slug={slug} />;
           }
 
           return (

@@ -7,15 +7,10 @@ import type { FieldDefinitionResponse, FieldGroupResponse } from "@/lib/types";
 const mockCreateFieldGroup = vi.fn();
 const mockUpdateFieldGroup = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/custom-fields/actions",
-  () => ({
-    createFieldGroupAction: (...args: unknown[]) =>
-      mockCreateFieldGroup(...args),
-    updateFieldGroupAction: (...args: unknown[]) =>
-      mockUpdateFieldGroup(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
+  createFieldGroupAction: (...args: unknown[]) => mockCreateFieldGroup(...args),
+  updateFieldGroupAction: (...args: unknown[]) => mockUpdateFieldGroup(...args),
+}));
 
 function makeAvailableFields(): FieldDefinitionResponse[] {
   return [
@@ -71,13 +66,9 @@ describe("FieldGroupDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <FieldGroupDialog
-        slug="acme"
-        entityType="PROJECT"
-        availableFields={makeAvailableFields()}
-      >
+      <FieldGroupDialog slug="acme" entityType="PROJECT" availableFields={makeAvailableFields()}>
         <button>Open Group Dialog</button>
-      </FieldGroupDialog>,
+      </FieldGroupDialog>
     );
 
     await user.click(screen.getByText("Open Group Dialog"));
@@ -94,13 +85,9 @@ describe("FieldGroupDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <FieldGroupDialog
-        slug="acme"
-        entityType="PROJECT"
-        availableFields={makeAvailableFields()}
-      >
+      <FieldGroupDialog slug="acme" entityType="PROJECT" availableFields={makeAvailableFields()}>
         <button>Open Create Group Dialog</button>
-      </FieldGroupDialog>,
+      </FieldGroupDialog>
     );
 
     await user.click(screen.getByText("Open Create Group Dialog"));
@@ -115,7 +102,7 @@ describe("FieldGroupDialog", () => {
           name: "Test Group",
           sortOrder: 0,
           fieldDefinitionIds: [],
-        }),
+        })
       );
     });
   });
@@ -162,7 +149,7 @@ describe("FieldGroupDialog", () => {
         allGroups={allGroups}
       >
         <button>Open Dep Dialog</button>
-      </FieldGroupDialog>,
+      </FieldGroupDialog>
     );
 
     await user.click(screen.getByText("Open Dep Dialog"));
@@ -219,7 +206,7 @@ describe("FieldGroupDialog", () => {
         allGroups={allGroups}
       >
         <button>Open Self Exclude Dialog</button>
-      </FieldGroupDialog>,
+      </FieldGroupDialog>
     );
 
     await user.click(screen.getByText("Open Self Exclude Dialog"));
@@ -227,8 +214,9 @@ describe("FieldGroupDialog", () => {
     // Click on the dependencies combobox to open it
     const depButtons = screen.getAllByRole("combobox");
     // The dependencies combobox is the second one (first is fields)
-    const depsCombobox = depButtons.find((btn) =>
-      btn.textContent?.includes("dependenc") || btn.textContent?.includes("Select dependencies"),
+    const depsCombobox = depButtons.find(
+      (btn) =>
+        btn.textContent?.includes("dependenc") || btn.textContent?.includes("Select dependencies")
     );
     expect(depsCombobox).toBeDefined();
     await user.click(depsCombobox!);

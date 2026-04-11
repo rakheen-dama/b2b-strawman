@@ -118,9 +118,7 @@ export function ConditionBuilder({
   }
 
   function updateCondition(index: number, updates: Partial<ConditionRow>) {
-    const updated = conditions.map((c, i) =>
-      i === index ? { ...c, ...updates } : c,
-    );
+    const updated = conditions.map((c, i) => (i === index ? { ...c, ...updates } : c));
     onConditionsChange(updated);
   }
 
@@ -131,8 +129,7 @@ export function ConditionBuilder({
   return (
     <div className="space-y-3">
       <p className="text-xs text-slate-500 dark:text-slate-400">
-        All conditions must be true (AND logic). For OR logic, create separate
-        rules.
+        All conditions must be true (AND logic). For OR logic, create separate rules.
       </p>
 
       {conditions.map((condition, index) => (
@@ -158,9 +155,7 @@ export function ConditionBuilder({
             onValueChange={(val) =>
               updateCondition(index, {
                 operator: val as ConditionOperator,
-                value: NULLARY_OPERATORS.has(val as ConditionOperator)
-                  ? ""
-                  : condition.value,
+                value: NULLARY_OPERATORS.has(val as ConditionOperator) ? "" : condition.value,
               })
             }
           >
@@ -179,9 +174,7 @@ export function ConditionBuilder({
           {!NULLARY_OPERATORS.has(condition.operator) && (
             <Input
               value={condition.value}
-              onChange={(e) =>
-                updateCondition(index, { value: e.target.value })
-              }
+              onChange={(e) => updateCondition(index, { value: e.target.value })}
               placeholder="Value"
               className="flex-1"
             />

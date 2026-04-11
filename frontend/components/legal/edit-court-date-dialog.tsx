@@ -22,10 +22,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  editCourtDateSchema,
-  type EditCourtDateFormData,
-} from "@/lib/schemas/legal";
+import { editCourtDateSchema, type EditCourtDateFormData } from "@/lib/schemas/legal";
 import { updateCourtDate } from "@/app/(app)/org/[slug]/court-calendar/actions";
 import type { CourtDate } from "@/lib/types";
 
@@ -122,9 +119,7 @@ export function EditCourtDateDialog({
       <DialogContent data-testid="edit-court-date-dialog">
         <DialogHeader>
           <DialogTitle>Edit Court Date</DialogTitle>
-          <DialogDescription>
-            Update the details for this court date.
-          </DialogDescription>
+          <DialogDescription>Update the details for this court date.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -138,7 +133,7 @@ export function EditCourtDateDialog({
                     <select
                       value={field.value}
                       onChange={field.onChange}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:placeholder:text-slate-400 dark:focus-visible:ring-slate-300"
                     >
                       {DATE_TYPES.map((dt) => (
                         <option key={dt.value} value={dt.value}>
@@ -173,10 +168,7 @@ export function EditCourtDateDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Time{" "}
-                      <span className="font-normal text-slate-500">
-                        (optional)
-                      </span>
+                      Time <span className="font-normal text-slate-500">(optional)</span>
                     </FormLabel>
                     <FormControl>
                       <Input type="time" {...field} />
@@ -194,11 +186,7 @@ export function EditCourtDateDialog({
                 <FormItem>
                   <FormLabel>Court Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. Johannesburg High Court"
-                      maxLength={255}
-                      {...field}
-                    />
+                    <Input placeholder="e.g. Johannesburg High Court" maxLength={255} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -211,17 +199,10 @@ export function EditCourtDateDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Court Reference{" "}
-                    <span className="font-normal text-slate-500">
-                      (optional)
-                    </span>
+                    Court Reference <span className="font-normal text-slate-500">(optional)</span>
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Case number or reference"
-                      maxLength={255}
-                      {...field}
-                    />
+                    <Input placeholder="Case number or reference" maxLength={255} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -235,9 +216,7 @@ export function EditCourtDateDialog({
                 <FormItem>
                   <FormLabel>
                     Judge / Magistrate{" "}
-                    <span className="font-normal text-slate-500">
-                      (optional)
-                    </span>
+                    <span className="font-normal text-slate-500">(optional)</span>
                   </FormLabel>
                   <FormControl>
                     <Input maxLength={255} {...field} />
@@ -253,10 +232,7 @@ export function EditCourtDateDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Description{" "}
-                    <span className="font-normal text-slate-500">
-                      (optional)
-                    </span>
+                    Description <span className="font-normal text-slate-500">(optional)</span>
                   </FormLabel>
                   <FormControl>
                     <Textarea
@@ -284,11 +260,7 @@ export function EditCourtDateDialog({
                       max={365}
                       {...field}
                       onChange={(e) =>
-                        field.onChange(
-                          e.target.value === ""
-                            ? 7
-                            : Number(e.target.value)
-                        )
+                        field.onChange(e.target.value === "" ? 7 : Number(e.target.value))
                       }
                     />
                   </FormControl>

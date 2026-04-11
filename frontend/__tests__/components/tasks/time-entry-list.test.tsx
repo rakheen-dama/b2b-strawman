@@ -68,7 +68,7 @@ describe("TimeEntryList", () => {
         projectId="p1"
         currentMemberId="current-member"
         isAdmin={false}
-      />,
+      />
     );
 
     // Check header with total duration: 90 + 45 = 135 min = "2h 15m"
@@ -99,12 +99,12 @@ describe("TimeEntryList", () => {
         projectId="p1"
         currentMemberId="current-member"
         isAdmin={false}
-      />,
+      />
     );
 
     expect(screen.getByText("No time logged yet")).toBeInTheDocument();
     expect(
-      screen.getByText("Use the Log Time button to record time spent on this task"),
+      screen.getByText("Use the Log Time button to record time spent on this task")
     ).toBeInTheDocument();
   });
 
@@ -116,15 +116,15 @@ describe("TimeEntryList", () => {
         projectId="p1"
         currentMemberId="current-member"
         isAdmin={false}
-      />,
+      />
     );
 
     const table = screen.getByRole("table");
     expect(
-      within(table).getByRole("button", { name: /edit time entry by me/i }),
+      within(table).getByRole("button", { name: /edit time entry by me/i })
     ).toBeInTheDocument();
     expect(
-      within(table).getByRole("button", { name: /delete time entry by me/i }),
+      within(table).getByRole("button", { name: /delete time entry by me/i })
     ).toBeInTheDocument();
   });
 
@@ -136,17 +136,13 @@ describe("TimeEntryList", () => {
         projectId="p1"
         currentMemberId="current-member"
         isAdmin={false}
-      />,
+      />
     );
 
     // With only another member's entry and org:member role,
     // no actions column should be shown at all
-    expect(
-      screen.queryByRole("button", { name: /edit time entry/i }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /delete time entry/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /edit time entry/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /delete time entry/i })).not.toBeInTheDocument();
   });
 
   it("shows edit/delete buttons for all entries when user is admin", () => {
@@ -157,22 +153,22 @@ describe("TimeEntryList", () => {
         projectId="p1"
         currentMemberId="current-member"
         isAdmin={true}
-      />,
+      />
     );
 
     const table = screen.getByRole("table");
     // Admin should see edit/delete on both entries
     expect(
-      within(table).getByRole("button", { name: /edit time entry by me/i }),
+      within(table).getByRole("button", { name: /edit time entry by me/i })
     ).toBeInTheDocument();
     expect(
-      within(table).getByRole("button", { name: /edit time entry by bob/i }),
+      within(table).getByRole("button", { name: /edit time entry by bob/i })
     ).toBeInTheDocument();
     expect(
-      within(table).getByRole("button", { name: /delete time entry by me/i }),
+      within(table).getByRole("button", { name: /delete time entry by me/i })
     ).toBeInTheDocument();
     expect(
-      within(table).getByRole("button", { name: /delete time entry by bob/i }),
+      within(table).getByRole("button", { name: /delete time entry by bob/i })
     ).toBeInTheDocument();
   });
 
@@ -185,23 +181,23 @@ describe("TimeEntryList", () => {
         currentMemberId="current-member"
         isAdmin={false}
         canManage={true}
-      />,
+      />
     );
 
     const table = screen.getByRole("table");
     // Project lead (canManage=true) should see edit/delete on all entries
     // even with org:member role
     expect(
-      within(table).getByRole("button", { name: /edit time entry by me/i }),
+      within(table).getByRole("button", { name: /edit time entry by me/i })
     ).toBeInTheDocument();
     expect(
-      within(table).getByRole("button", { name: /edit time entry by bob/i }),
+      within(table).getByRole("button", { name: /edit time entry by bob/i })
     ).toBeInTheDocument();
     expect(
-      within(table).getByRole("button", { name: /delete time entry by me/i }),
+      within(table).getByRole("button", { name: /delete time entry by me/i })
     ).toBeInTheDocument();
     expect(
-      within(table).getByRole("button", { name: /delete time entry by bob/i }),
+      within(table).getByRole("button", { name: /delete time entry by bob/i })
     ).toBeInTheDocument();
   });
 
@@ -214,16 +210,12 @@ describe("TimeEntryList", () => {
         currentMemberId="current-member"
         isAdmin={false}
         canManage={false}
-      />,
+      />
     );
 
     // Non-lead member should not see edit/delete on other member's entries
-    expect(
-      screen.queryByRole("button", { name: /edit time entry/i }),
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /delete time entry/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /edit time entry/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /delete time entry/i })).not.toBeInTheDocument();
   });
 
   it("disables edit/delete buttons for billed entries with tooltip", () => {
@@ -243,7 +235,7 @@ describe("TimeEntryList", () => {
         projectId="p1"
         currentMemberId="current-member"
         isAdmin={true}
-      />,
+      />
     );
 
     // Edit and delete buttons should be disabled
@@ -274,7 +266,7 @@ describe("TimeEntryList", () => {
         projectId="p1"
         currentMemberId="current-member"
         isAdmin={false}
-      />,
+      />
     );
 
     // Scope to table body to avoid matching the filter button "Billed"
@@ -304,15 +296,13 @@ describe("TimeEntryList", () => {
         projectId="p1"
         currentMemberId="m1"
         isAdmin={false}
-      />,
+      />
     );
 
     // Click "Unbilled" filter button
     await user.click(screen.getByRole("button", { name: "Unbilled" }));
 
     expect(screen.getByText("No matching time entries")).toBeInTheDocument();
-    expect(
-      screen.getByText("Try a different billing status filter."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Try a different billing status filter.")).toBeInTheDocument();
   });
 });

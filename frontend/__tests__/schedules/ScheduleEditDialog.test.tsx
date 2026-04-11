@@ -65,9 +65,15 @@ describe("ScheduleEditDialog", () => {
   it("renders pre-filled nameOverride field", async () => {
     const user = userEvent.setup();
     render(
-      <ScheduleEditDialog slug="acme" schedule={SCHEDULE} orgMembers={MEMBERS} documentTemplates={[]} requestTemplates={[]}>
+      <ScheduleEditDialog
+        slug="acme"
+        schedule={SCHEDULE}
+        orgMembers={MEMBERS}
+        documentTemplates={[]}
+        requestTemplates={[]}
+      >
         <button>Edit Schedule Trigger</button>
-      </ScheduleEditDialog>,
+      </ScheduleEditDialog>
     );
     await user.click(screen.getByText("Edit Schedule Trigger"));
     const nameInput = screen.getByLabelText(/Name Override/);
@@ -77,9 +83,15 @@ describe("ScheduleEditDialog", () => {
   it("displays read-only template and customer name", async () => {
     const user = userEvent.setup();
     render(
-      <ScheduleEditDialog slug="acme" schedule={SCHEDULE} orgMembers={MEMBERS} documentTemplates={[]} requestTemplates={[]}>
+      <ScheduleEditDialog
+        slug="acme"
+        schedule={SCHEDULE}
+        orgMembers={MEMBERS}
+        documentTemplates={[]}
+        requestTemplates={[]}
+      >
         <button>Edit Schedule RO Trigger</button>
-      </ScheduleEditDialog>,
+      </ScheduleEditDialog>
     );
     await user.click(screen.getByText("Edit Schedule RO Trigger"));
     expect(screen.getByText("Monthly Bookkeeping")).toBeInTheDocument();
@@ -89,9 +101,15 @@ describe("ScheduleEditDialog", () => {
   it("leadTimeDays accepts number input", async () => {
     const user = userEvent.setup();
     render(
-      <ScheduleEditDialog slug="acme" schedule={SCHEDULE} orgMembers={MEMBERS} documentTemplates={[]} requestTemplates={[]}>
+      <ScheduleEditDialog
+        slug="acme"
+        schedule={SCHEDULE}
+        orgMembers={MEMBERS}
+        documentTemplates={[]}
+        requestTemplates={[]}
+      >
         <button>Edit Schedule LT Trigger</button>
-      </ScheduleEditDialog>,
+      </ScheduleEditDialog>
     );
     await user.click(screen.getByText("Edit Schedule LT Trigger"));
     const leadTimeInput = screen.getByLabelText("Lead Time (days)");
@@ -103,9 +121,15 @@ describe("ScheduleEditDialog", () => {
     mockUpdateSchedule.mockResolvedValue({ success: true });
     const user = userEvent.setup();
     render(
-      <ScheduleEditDialog slug="acme" schedule={SCHEDULE} orgMembers={MEMBERS} documentTemplates={[]} requestTemplates={[]}>
+      <ScheduleEditDialog
+        slug="acme"
+        schedule={SCHEDULE}
+        orgMembers={MEMBERS}
+        documentTemplates={[]}
+        requestTemplates={[]}
+      >
         <button>Edit Schedule Submit Trigger</button>
-      </ScheduleEditDialog>,
+      </ScheduleEditDialog>
     );
     await user.click(screen.getByText("Edit Schedule Submit Trigger"));
     await user.click(screen.getByText("Save Changes"));
@@ -113,7 +137,7 @@ describe("ScheduleEditDialog", () => {
       expect(mockUpdateSchedule).toHaveBeenCalledWith(
         "acme",
         "sch-1",
-        expect.objectContaining({ leadTimeDays: 3 }),
+        expect.objectContaining({ leadTimeDays: 3 })
       );
     });
   });

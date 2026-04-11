@@ -11,9 +11,7 @@ import { listPortalProposals } from "@/lib/api/portal-proposals";
 import { formatDate, formatCurrencySafe } from "@/lib/format";
 import type { PortalProposalSummary } from "@/lib/types/document";
 
-function statusBadgeVariant(
-  status: string,
-): "warning" | "success" | "destructive" | "neutral" {
+function statusBadgeVariant(status: string): "warning" | "success" | "destructive" | "neutral" {
   switch (status) {
     case "SENT":
       return "warning";
@@ -77,9 +75,7 @@ export default function PortalProposalListPage() {
           router.replace("/portal");
           return;
         }
-        setError(
-          err instanceof Error ? err.message : "Failed to load proposals",
-        );
+        setError(err instanceof Error ? err.message : "Failed to load proposals");
       } finally {
         setIsLoading(false);
       }
@@ -112,9 +108,7 @@ export default function PortalProposalListPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
-            Proposals
-          </h1>
+          <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">Proposals</h1>
           <Badge variant="neutral">{proposals.length}</Badge>
         </div>
       </div>
@@ -146,19 +140,12 @@ export default function PortalProposalListPage() {
                   </div>
 
                   <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-slate-500 dark:text-slate-400">
-                    <span className="font-mono tabular-nums">
-                      {proposal.proposalNumber}
-                    </span>
+                    <span className="font-mono tabular-nums">{proposal.proposalNumber}</span>
                     <span>{feeModelLabel(proposal.feeModel)}</span>
-                    <span className="font-mono tabular-nums font-medium text-slate-700 dark:text-slate-300">
-                      {formatCurrencySafe(
-                        proposal.feeAmount,
-                        proposal.feeCurrency,
-                      )}
+                    <span className="font-mono font-medium text-slate-700 tabular-nums dark:text-slate-300">
+                      {formatCurrencySafe(proposal.feeAmount, proposal.feeCurrency)}
                     </span>
-                    {proposal.sentAt && (
-                      <span>Sent {formatDate(proposal.sentAt)}</span>
-                    )}
+                    {proposal.sentAt && <span>Sent {formatDate(proposal.sentAt)}</span>}
                   </div>
                 </div>
               </div>

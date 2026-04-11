@@ -9,11 +9,7 @@ import { DeadlineCalendarView } from "@/components/deadlines/DeadlineCalendarVie
 import { DeadlineSummaryCards } from "@/components/deadlines/DeadlineSummaryCards";
 import { BatchFilingActions } from "@/components/deadlines/BatchFilingActions";
 import { fetchDeadlines, fetchDeadlineSummary } from "./actions";
-import type {
-  CalculatedDeadline,
-  DeadlineFiltersType,
-  DeadlineSummary,
-} from "@/lib/types";
+import type { CalculatedDeadline, DeadlineFiltersType, DeadlineSummary } from "@/lib/types";
 
 type ViewMode = "list" | "calendar" | "summary";
 
@@ -42,19 +38,14 @@ export function DeadlinePageClient({
   const [isPending, startTransition] = useTransition();
 
   const handleFilterChange = useCallback(
-    (
-      filters: Partial<DeadlineFiltersType>,
-      newYear: number,
-      newMonth: number
-    ) => {
+    (filters: Partial<DeadlineFiltersType>, newYear: number, newMonth: number) => {
       setYear(newYear);
       setMonth(newMonth);
       setSelectedIds(new Set());
       startTransition(async () => {
         try {
           const result = await fetchDeadlines(
-            filters.from ??
-              `${newYear}-${String(newMonth).padStart(2, "0")}-01`,
+            filters.from ?? `${newYear}-${String(newMonth).padStart(2, "0")}-01`,
             filters.to ??
               `${newYear}-${String(newMonth).padStart(2, "0")}-${new Date(newYear, newMonth, 0).getDate()}`,
             filters
@@ -127,12 +118,8 @@ export function DeadlinePageClient({
           </TabsList>
         </Tabs>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-slate-600 dark:text-slate-400">
-            {total} deadlines
-          </span>
-          {overdueCount > 0 && (
-            <Badge variant="destructive">{overdueCount} overdue</Badge>
-          )}
+          <span className="text-sm text-slate-600 dark:text-slate-400">{total} deadlines</span>
+          {overdueCount > 0 && <Badge variant="destructive">{overdueCount} overdue</Badge>}
         </div>
       </div>
 
@@ -147,11 +134,7 @@ export function DeadlinePageClient({
           />
         )}
         {view === "calendar" && (
-          <DeadlineCalendarView
-            deadlines={deadlines}
-            year={year}
-            month={month}
-          />
+          <DeadlineCalendarView deadlines={deadlines} year={year} month={month} />
         )}
         {view === "summary" && <DeadlineSummaryCards summaries={summaries} />}
       </div>

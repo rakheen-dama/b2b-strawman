@@ -6,10 +6,7 @@ import { UtilizationTable } from "@/components/profitability/utilization-table";
 import { ProjectProfitabilityTable } from "@/components/profitability/project-profitability-table";
 import { CustomerProfitabilitySection } from "@/components/profitability/customer-profitability-section";
 import { getOrgProfitability } from "@/app/(app)/org/[slug]/profitability/actions";
-import type {
-  UtilizationResponse,
-  OrgProfitabilityResponse,
-} from "@/lib/types";
+import type { UtilizationResponse, OrgProfitabilityResponse } from "@/lib/types";
 
 interface ProfitabilityContentProps {
   initialUtilization: UtilizationResponse;
@@ -35,12 +32,7 @@ export function ProfitabilityContent({
     setIncludeProjections(checked);
     setError(null);
     startTransition(async () => {
-      const result = await getOrgProfitability(
-        initialFrom,
-        initialTo,
-        undefined,
-        checked,
-      );
+      const result = await getOrgProfitability(initialFrom, initialTo, undefined, checked);
       if (result.data) {
         setProfitability(result.data);
       } else {
@@ -65,15 +57,9 @@ export function ProfitabilityContent({
           Include Projections
         </label>
         {isPending && (
-          <span className="text-xs text-slate-400 dark:text-slate-500">
-            Loading...
-          </span>
+          <span className="text-xs text-slate-400 dark:text-slate-500">Loading...</span>
         )}
-        {error && (
-          <span className="text-xs text-red-600 dark:text-red-400">
-            {error}
-          </span>
-        )}
+        {error && <span className="text-xs text-red-600 dark:text-red-400">{error}</span>}
       </div>
 
       <UtilizationTable
@@ -84,7 +70,7 @@ export function ProfitabilityContent({
 
       <div className={includeProjections ? "relative" : undefined}>
         {includeProjections && (
-          <p className="mb-2 text-xs italic text-slate-500 dark:text-slate-400">
+          <p className="mb-2 text-xs text-slate-500 italic dark:text-slate-400">
             Projected values included
           </p>
         )}

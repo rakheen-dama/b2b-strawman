@@ -11,31 +11,29 @@ import type {
 export async function checkPrerequisites(
   context: PrerequisiteContext,
   entityType: EntityType,
-  entityId: string,
+  entityId: string
 ): Promise<PrerequisiteCheck> {
   const params = new URLSearchParams({
     context,
     entityType,
     entityId,
   });
-  return api.get<PrerequisiteCheck>(
-    `/api/prerequisites/check?${params.toString()}`,
-  );
+  return api.get<PrerequisiteCheck>(`/api/prerequisites/check?${params.toString()}`);
 }
 
 export async function fetchIntakeFields(
-  entityType: EntityType,
+  entityType: EntityType
 ): Promise<IntakeFieldGroupsResponse> {
   return api.get<IntakeFieldGroupsResponse>(
-    `/api/field-definitions/intake?entityType=${encodeURIComponent(entityType)}`,
+    `/api/field-definitions/intake?entityType=${encodeURIComponent(entityType)}`
   );
 }
 
 export async function checkEngagementPrerequisites(
   templateId: string,
-  customerId: string,
+  customerId: string
 ): Promise<PrerequisiteCheck> {
   return api.get<PrerequisiteCheck>(
-    `/api/project-templates/${templateId}/prerequisite-check?customerId=${encodeURIComponent(customerId)}`,
+    `/api/project-templates/${templateId}/prerequisite-check?customerId=${encodeURIComponent(customerId)}`
   );
 }

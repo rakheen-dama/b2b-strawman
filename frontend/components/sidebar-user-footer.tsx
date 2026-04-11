@@ -13,7 +13,7 @@ interface SidebarUserFooterProps {
 function getInitials(
   firstName: string | null,
   lastName: string | null,
-  email: string | null,
+  email: string | null
 ): string {
   const fi = firstName?.charAt(0) ?? "";
   const li = lastName?.charAt(0) ?? "";
@@ -28,12 +28,12 @@ function MockUserFooter() {
   const initials = getInitials(
     user?.firstName ?? null,
     user?.lastName ?? null,
-    user?.email ?? null,
+    user?.email ?? null
   );
   const name =
     user?.firstName && user?.lastName
       ? `${user.firstName} ${user.lastName}`
-      : user?.firstName ?? "User";
+      : (user?.firstName ?? "User");
 
   return <UserFooterUI initials={initials} name={name} email={user?.email ?? ""} />;
 }

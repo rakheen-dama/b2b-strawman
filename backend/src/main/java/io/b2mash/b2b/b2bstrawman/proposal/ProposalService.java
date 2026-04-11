@@ -114,6 +114,9 @@ public class ProposalService {
       BigDecimal retainerAmount,
       String retainerCurrency,
       BigDecimal retainerHoursIncluded,
+      BigDecimal contingencyPercent,
+      BigDecimal contingencyCapPercent,
+      String contingencyDescription,
       Map<String, Object> contentJson,
       UUID projectTemplateId,
       Instant expiresAt) {
@@ -124,7 +127,8 @@ public class ProposalService {
         .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
     // Validate fee fields per model
-    validateFeeConfiguration(feeModel, fixedFeeAmount, retainerAmount);
+    validateFeeConfiguration(
+        feeModel, fixedFeeAmount, retainerAmount, contingencyPercent, contingencyCapPercent);
 
     // Allocate proposal number
     String proposalNumber = proposalNumberService.allocateNumber();
@@ -140,6 +144,15 @@ public class ProposalService {
     if (retainerAmount != null) proposal.setRetainerAmount(retainerAmount);
     if (retainerCurrency != null) proposal.setRetainerCurrency(retainerCurrency);
     if (retainerHoursIncluded != null) proposal.setRetainerHoursIncluded(retainerHoursIncluded);
+    // Contingency fields apply only to CONTINGENCY fee model (Contingency Fees Act 66 of 1997).
+    // Silently ignore any contingency inputs supplied for other fee models to avoid persisting
+    // stale fee data.
+    if (feeModel == FeeModel.CONTINGENCY) {
+      if (contingencyPercent != null) proposal.setContingencyPercent(contingencyPercent);
+      if (contingencyCapPercent != null) proposal.setContingencyCapPercent(contingencyCapPercent);
+      if (contingencyDescription != null)
+        proposal.setContingencyDescription(contingencyDescription);
+    }
     if (contentJson != null) proposal.setContentJson(contentJson);
     if (projectTemplateId != null) proposal.setProjectTemplateId(projectTemplateId);
     if (expiresAt != null) proposal.setExpiresAt(expiresAt);
@@ -217,6 +230,9 @@ public class ProposalService {
       BigDecimal retainerAmount,
       String retainerCurrency,
       BigDecimal retainerHoursIncluded,
+      BigDecimal contingencyPercent,
+      BigDecimal contingencyCapPercent,
+      String contingencyDescription,
       Map<String, Object> contentJson,
       UUID projectTemplateId,
       Instant expiresAt) {
@@ -242,7 +258,16 @@ public class ProposalService {
         fixedFeeAmount != null ? fixedFeeAmount : proposal.getFixedFeeAmount();
     BigDecimal effectiveRetainerAmount =
         retainerAmount != null ? retainerAmount : proposal.getRetainerAmount();
-    validateFeeConfiguration(effectiveFeeModel, effectiveFixedAmount, effectiveRetainerAmount);
+    BigDecimal effectiveContingencyPercent =
+        contingencyPercent != null ? contingencyPercent : proposal.getContingencyPercent();
+    BigDecimal effectiveContingencyCapPercent =
+        contingencyCapPercent != null ? contingencyCapPercent : proposal.getContingencyCapPercent();
+    validateFeeConfiguration(
+        effectiveFeeModel,
+        effectiveFixedAmount,
+        effectiveRetainerAmount,
+        effectiveContingencyPercent,
+        effectiveContingencyCapPercent);
 
     // Clear stale fee fields when switching fee models
     if (feeModel != null && feeModel != proposal.getFeeModel()) {
@@ -257,6 +282,11 @@ public class ProposalService {
           proposal.setRetainerHoursIncluded(null);
         }
         case HOURLY -> proposal.setHourlyRateNote(null);
+        case CONTINGENCY -> {
+          proposal.setContingencyPercent(null);
+          proposal.setContingencyCapPercent(null);
+          proposal.setContingencyDescription(null);
+        }
       }
       proposal.setFeeModel(feeModel);
     }
@@ -271,6 +301,15 @@ public class ProposalService {
     if (retainerAmount != null) proposal.setRetainerAmount(retainerAmount);
     if (retainerCurrency != null) proposal.setRetainerCurrency(retainerCurrency);
     if (retainerHoursIncluded != null) proposal.setRetainerHoursIncluded(retainerHoursIncluded);
+    // Contingency fields apply only to CONTINGENCY fee model — silently ignore inputs for
+    // other fee models to avoid re-introducing stale values after the clear-on-transition
+    // logic above.
+    if (effectiveFeeModel == FeeModel.CONTINGENCY) {
+      if (contingencyPercent != null) proposal.setContingencyPercent(contingencyPercent);
+      if (contingencyCapPercent != null) proposal.setContingencyCapPercent(contingencyCapPercent);
+      if (contingencyDescription != null)
+        proposal.setContingencyDescription(contingencyDescription);
+    }
     if (contentJson != null) proposal.setContentJson(contentJson);
     if (projectTemplateId != null) proposal.setProjectTemplateId(projectTemplateId);
     if (expiresAt != null) proposal.setExpiresAt(expiresAt);
@@ -583,7 +622,11 @@ public class ProposalService {
 
     // 3. Validate fee configuration
     validateFeeConfiguration(
-        proposal.getFeeModel(), proposal.getFixedFeeAmount(), proposal.getRetainerAmount());
+        proposal.getFeeModel(),
+        proposal.getFixedFeeAmount(),
+        proposal.getRetainerAmount(),
+        proposal.getContingencyPercent(),
+        proposal.getContingencyCapPercent());
 
     // 3b. Validate currency is set for fee models that create billing entities (GAP-PE-009)
     if (proposal.getFeeModel() == FeeModel.FIXED) {
@@ -763,6 +806,15 @@ public class ProposalService {
 
   private void validateFeeConfiguration(
       FeeModel feeModel, BigDecimal fixedFeeAmount, BigDecimal retainerAmount) {
+    validateFeeConfiguration(feeModel, fixedFeeAmount, retainerAmount, null, null);
+  }
+
+  private void validateFeeConfiguration(
+      FeeModel feeModel,
+      BigDecimal fixedFeeAmount,
+      BigDecimal retainerAmount,
+      BigDecimal contingencyPercent,
+      BigDecimal contingencyCapPercent) {
     switch (feeModel) {
       case FIXED -> {
         if (fixedFeeAmount == null || fixedFeeAmount.compareTo(BigDecimal.ZERO) <= 0) {
@@ -779,6 +831,25 @@ public class ProposalService {
       case HOURLY -> {
         // No amount requirement
       }
+      case CONTINGENCY -> {
+        // Contingency Fees Act 66 of 1997 caps fees at 25% of the recovery.
+        if (contingencyPercent != null
+            && (contingencyPercent.compareTo(BigDecimal.ZERO) < 0
+                || contingencyPercent.compareTo(CONTINGENCY_MAX_PERCENT) > 0)) {
+          throw new InvalidStateException(
+              "Invalid fee configuration",
+              "contingencyPercent must be between 0 and 25 (Contingency Fees Act 66 of 1997)");
+        }
+        if (contingencyCapPercent != null
+            && (contingencyCapPercent.compareTo(BigDecimal.ZERO) < 0
+                || contingencyCapPercent.compareTo(CONTINGENCY_MAX_PERCENT) > 0)) {
+          throw new InvalidStateException(
+              "Invalid fee configuration",
+              "contingencyCapPercent must be between 0 and 25 (Contingency Fees Act 66 of 1997)");
+        }
+      }
     }
   }
+
+  private static final BigDecimal CONTINGENCY_MAX_PERCENT = new BigDecimal("25");
 }

@@ -9,11 +9,7 @@ export const demoProvisionSchema = z.object({
   verticalProfile: z.enum(["GENERIC", "ACCOUNTING", "LEGAL"], {
     message: "Please select a vertical profile",
   }),
-  adminEmail: z
-    .string()
-    .trim()
-    .min(1, "Email is required")
-    .email("Invalid email address"),
+  adminEmail: z.string().trim().min(1, "Email is required").email("Invalid email address"),
   seedDemoData: z.boolean(),
 });
 

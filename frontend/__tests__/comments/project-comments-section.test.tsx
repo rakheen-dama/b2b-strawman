@@ -8,10 +8,8 @@ const mockFetchProjectComments = vi.fn();
 const mockCreateProjectComment = vi.fn();
 
 vi.mock("@/lib/actions/comments", () => ({
-  fetchProjectComments: (...args: unknown[]) =>
-    mockFetchProjectComments(...args),
-  createProjectComment: (...args: unknown[]) =>
-    mockCreateProjectComment(...args),
+  fetchProjectComments: (...args: unknown[]) => mockFetchProjectComments(...args),
+  createProjectComment: (...args: unknown[]) => mockCreateProjectComment(...args),
 }));
 
 vi.mock("@/components/ui/relative-date", () => ({
@@ -49,9 +47,7 @@ describe("ProjectCommentsSection", () => {
   it("renders empty state when no comments", async () => {
     mockFetchProjectComments.mockResolvedValue([]);
     render(<ProjectCommentsSection projectId="p1" orgSlug="test-org" />);
-    expect(
-      await screen.findByText(/no customer comments yet/i)
-    ).toBeInTheDocument();
+    expect(await screen.findByText(/no customer comments yet/i)).toBeInTheDocument();
   });
 
   it("renders portal comments with Customer badge", async () => {
@@ -75,12 +71,8 @@ describe("ProjectCommentsSection", () => {
     mockFetchProjectComments.mockResolvedValue([]);
     render(<ProjectCommentsSection projectId="p1" orgSlug="test-org" />);
     await screen.findByText(/no customer comments yet/i);
-    expect(
-      screen.getByPlaceholderText(/reply to the customer thread/i)
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /post reply/i })
-    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/reply to the customer thread/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /post reply/i })).toBeInTheDocument();
   });
 
   it("disables Post Reply button when textarea is empty", async () => {
@@ -96,39 +88,25 @@ describe("ProjectCommentsSection", () => {
     render(<ProjectCommentsSection projectId="p1" orgSlug="test-org" />);
     await screen.findByText(/no customer comments yet/i);
 
-    await user.type(
-      screen.getByPlaceholderText(/reply to the customer thread/i),
-      "A reply"
-    );
-    expect(
-      screen.getByRole("button", { name: /post reply/i })
-    ).not.toBeDisabled();
+    await user.type(screen.getByPlaceholderText(/reply to the customer thread/i), "A reply");
+    expect(screen.getByRole("button", { name: /post reply/i })).not.toBeDisabled();
   });
 
   it("calls createProjectComment on submit and refreshes comments", async () => {
     mockFetchProjectComments
       .mockResolvedValueOnce([]) // initial load
-      .mockResolvedValueOnce([
-        makeComment({ body: "New reply", source: "INTERNAL" }),
-      ]); // after submit
+      .mockResolvedValueOnce([makeComment({ body: "New reply", source: "INTERNAL" })]); // after submit
     mockCreateProjectComment.mockResolvedValue({ success: true });
     const user = userEvent.setup();
 
     render(<ProjectCommentsSection projectId="p1" orgSlug="test-org" />);
     await screen.findByText(/no customer comments yet/i);
 
-    await user.type(
-      screen.getByPlaceholderText(/reply to the customer thread/i),
-      "New reply"
-    );
+    await user.type(screen.getByPlaceholderText(/reply to the customer thread/i), "New reply");
     await user.click(screen.getByRole("button", { name: /post reply/i }));
 
     await waitFor(() => {
-      expect(mockCreateProjectComment).toHaveBeenCalledWith(
-        "test-org",
-        "p1",
-        "New reply"
-      );
+      expect(mockCreateProjectComment).toHaveBeenCalledWith("test-org", "p1", "New reply");
     });
   });
 

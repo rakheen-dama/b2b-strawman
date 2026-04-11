@@ -53,9 +53,7 @@ export async function fetchNotifications(
   params.set("size", "10");
 
   const query = params.toString();
-  return api.get<NotificationsResponse>(
-    `/api/notifications${query ? `?${query}` : ""}`
-  );
+  return api.get<NotificationsResponse>(`/api/notifications${query ? `?${query}` : ""}`);
 }
 
 export async function fetchUnreadCount(): Promise<UnreadCountResponse> {

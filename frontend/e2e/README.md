@@ -27,6 +27,7 @@ docker compose -f docker-compose.e2e.yml logs -f seed
 When you see `E2E Boot-Seed Complete!`, the stack is ready.
 
 Services exposed on the host:
+
 - Frontend: http://localhost:3001 (mapped from container port 3000)
 - Backend: http://localhost:8081
 - Mock IDP: http://localhost:8090
@@ -121,19 +122,19 @@ npx playwright test --config e2e/playwright.legal-lifecycle.config.ts --list
 The `captureScreenshot()` helper in `e2e/helpers/screenshot.ts` supports both modes:
 
 ```typescript
-import { captureScreenshot } from '../../helpers/screenshot'
+import { captureScreenshot } from "../../helpers/screenshot";
 
 // Regression baseline (default) — compared against committed snapshot
-await captureScreenshot(page, 'day-05-matter-list')
+await captureScreenshot(page, "day-05-matter-list");
 
 // Curated documentation shot — saved to documentation/screenshots/
-await captureScreenshot(page, 'matter-list-overview', { curated: true })
+await captureScreenshot(page, "matter-list-overview", { curated: true });
 
 // Full-page capture
-await captureScreenshot(page, 'day-05-full-dashboard', { fullPage: true })
+await captureScreenshot(page, "day-05-full-dashboard", { fullPage: true });
 
 // Capture a specific element
-await captureScreenshot(page, 'day-05-sidebar', { locator: page.locator('nav') })
+await captureScreenshot(page, "day-05-sidebar", { locator: page.locator("nav") });
 ```
 
 ## Notes

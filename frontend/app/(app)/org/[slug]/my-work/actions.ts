@@ -1,11 +1,7 @@
 "use server";
 
 import { api, ApiError } from "@/lib/api";
-import type {
-  MyWorkTasksResponse,
-  MyWorkTimeEntryItem,
-  MyWorkTimeSummary,
-} from "@/lib/types";
+import type { MyWorkTasksResponse, MyWorkTimeEntryItem, MyWorkTimeSummary } from "@/lib/types";
 
 export async function fetchMyTasks(
   filter?: string,
@@ -46,9 +42,7 @@ export async function fetchMyTimeSummary(
   params.set("to", to);
 
   try {
-    return await api.get<MyWorkTimeSummary>(
-      `/api/my-work/time-summary?${params.toString()}`
-    );
+    return await api.get<MyWorkTimeSummary>(`/api/my-work/time-summary?${params.toString()}`);
   } catch (error) {
     if (error instanceof ApiError) {
       return null;

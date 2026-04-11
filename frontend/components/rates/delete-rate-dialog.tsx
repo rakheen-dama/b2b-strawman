@@ -13,10 +13,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle } from "lucide-react";
-import {
-  deleteBillingRate,
-  deleteCostRate,
-} from "@/app/(app)/org/[slug]/settings/rates/actions";
+import { deleteBillingRate, deleteCostRate } from "@/app/(app)/org/[slug]/settings/rates/actions";
 
 interface DeleteRateDialogProps {
   slug: string;
@@ -82,20 +79,15 @@ export function DeleteRateDialog({
             Delete {rateType === "billing" ? "Billing" : "Cost"} Rate
           </AlertDialogTitle>
           <AlertDialogDescription className="text-center">
-            Delete the {typeLabel} rate for {memberName}? This action cannot be
-            undone.
+            Delete the {typeLabel} rate for {memberName}? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
         <AlertDialogFooter>
           <AlertDialogCancel variant="plain" disabled={isDeleting}>
             Cancel
           </AlertDialogCancel>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
+          <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
             {isDeleting ? "Deleting..." : "Delete"}
           </Button>
         </AlertDialogFooter>

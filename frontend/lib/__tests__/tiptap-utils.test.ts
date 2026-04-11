@@ -30,9 +30,7 @@ describe("extractTextFromBody", () => {
         },
       ],
     };
-    expect(extractTextFromBody(body)).toBe(
-      "Issued by {org.name} to {customer.name}",
-    );
+    expect(extractTextFromBody(body)).toBe("Issued by {org.name} to {customer.name}");
   });
 
   it("handles mixed text and variable nodes across paragraphs", () => {
@@ -55,9 +53,7 @@ describe("extractTextFromBody", () => {
         },
       ],
     };
-    expect(extractTextFromBody(body)).toBe(
-      "Project: {project.name}\nBudget: {budget.amount}",
-    );
+    expect(extractTextFromBody(body)).toBe("Project: {project.name}\nBudget: {budget.amount}");
   });
 
   it("handles variable node with missing attrs", () => {
@@ -66,10 +62,7 @@ describe("extractTextFromBody", () => {
       content: [
         {
           type: "paragraph",
-          content: [
-            { type: "text", text: "Hello " },
-            { type: "variable" },
-          ],
+          content: [{ type: "text", text: "Hello " }, { type: "variable" }],
         },
       ],
     };

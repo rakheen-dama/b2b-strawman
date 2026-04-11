@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  PieChart,
-  Pie,
-  Cell,
-  Legend,
-  ResponsiveContainer,
-  Tooltip,
-} from "recharts";
+import { PieChart, Pie, Cell, Legend, ResponsiveContainer, Tooltip } from "recharts";
 import { CHART_THEME } from "@/lib/chart-theme";
 import { ChartTooltip } from "@/components/dashboard/chart-tooltip";
 import { cn } from "@/lib/utils";
@@ -37,7 +30,7 @@ export function DonutChart({
 }: DonutChartProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="flex h-48 items-center justify-center text-sm text-muted-foreground">
+      <div className="text-muted-foreground flex h-48 items-center justify-center text-sm">
         No data available
       </div>
     );
@@ -61,10 +54,7 @@ export function DonutChart({
             labelLine={false}
           >
             {data.map((entry, i) => (
-              <Cell
-                key={i}
-                fill={entry.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length]}
-              />
+              <Cell key={i} fill={entry.color || DEFAULT_COLORS[i % DEFAULT_COLORS.length]} />
             ))}
           </Pie>
           <Tooltip content={<ChartTooltip />} />
@@ -77,13 +67,9 @@ export function DonutChart({
         </PieChart>
       </ResponsiveContainer>
       {(centerValue || centerLabel) && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-          {centerValue && (
-            <span className="font-mono text-lg font-bold">{centerValue}</span>
-          )}
-          {centerLabel && (
-            <span className="text-xs opacity-60">{centerLabel}</span>
-          )}
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+          {centerValue && <span className="font-mono text-lg font-bold">{centerValue}</span>}
+          {centerLabel && <span className="text-xs opacity-60">{centerLabel}</span>}
         </div>
       )}
     </div>

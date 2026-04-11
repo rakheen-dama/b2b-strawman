@@ -59,11 +59,7 @@ export function InterruptDialog({
     setIsSubmitting(true);
 
     try {
-      const result = await interruptPrescription(
-        slug,
-        prescriptionId,
-        values
-      );
+      const result = await interruptPrescription(slug, prescriptionId, values);
       if (result.success) {
         form.reset();
         onOpenChange(false);

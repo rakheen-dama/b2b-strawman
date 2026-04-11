@@ -8,7 +8,7 @@ import type { PlaceInvestmentFormData } from "@/lib/schemas/trust";
 
 export async function fetchInvestments(
   accountId: string,
-  investmentBasis?: string,
+  investmentBasis?: string
 ): Promise<TrustInvestment[]> {
   let url = `/api/trust-accounts/${accountId}/investments?size=100&sort=depositDate,desc`;
   if (investmentBasis) {
@@ -23,7 +23,7 @@ export async function fetchInvestments(
 
 export async function placeInvestment(
   accountId: string,
-  data: PlaceInvestmentFormData,
+  data: PlaceInvestmentFormData
 ): Promise<{ success: boolean; investment?: TrustInvestment; error?: string }> {
   try {
     // Backend stores interestRate as decimal (0.075 = 7.5%), form collects percentage
@@ -33,53 +33,46 @@ export async function placeInvestment(
     };
     const investment = await api.post<TrustInvestment>(
       `/api/trust-accounts/${accountId}/investments`,
-      payload,
+      payload
     );
     return { success: true, investment };
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Failed to place investment";
+    const message = err instanceof Error ? err.message : "Failed to place investment";
     return { success: false, error: message };
   }
 }
 
 export async function recordInterest(
   investmentId: string,
-  amount: number,
+  amount: number
 ): Promise<{ success: boolean; investment?: TrustInvestment; error?: string }> {
   try {
     const investment = await api.put<TrustInvestment>(
       `/api/trust-investments/${investmentId}/interest`,
-      { amount },
+      { amount }
     );
     return { success: true, investment };
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Failed to record interest";
+    const message = err instanceof Error ? err.message : "Failed to record interest";
     return { success: false, error: message };
   }
 }
 
 export async function withdrawInvestment(
-  investmentId: string,
+  investmentId: string
 ): Promise<{ success: boolean; investment?: TrustInvestment; error?: string }> {
   try {
     const investment = await api.post<TrustInvestment>(
       `/api/trust-investments/${investmentId}/withdraw`,
-      {},
+      {}
     );
     return { success: true, investment };
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Failed to withdraw investment";
+    const message = err instanceof Error ? err.message : "Failed to withdraw investment";
     return { success: false, error: message };
   }
 }
 
-export async function fetchMaturing(
-  accountId: string,
-): Promise<TrustInvestment[]> {
-  return api.get<TrustInvestment[]>(
-    `/api/trust-accounts/${accountId}/investments/maturing`,
-  );
+export async function fetchMaturing(accountId: string): Promise<TrustInvestment[]> {
+  return api.get<TrustInvestment[]>(`/api/trust-accounts/${accountId}/investments/maturing`);
 }

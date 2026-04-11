@@ -2,10 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import PortalRequestDetailPage from "@/app/portal/(authenticated)/requests/[id]/page";
-import type {
-  PortalRequestDetail,
-  PortalRequestItemDetail,
-} from "@/lib/api/portal-requests";
+import type { PortalRequestDetail, PortalRequestItemDetail } from "@/lib/api/portal-requests";
 
 // --- Mocks ---
 
@@ -52,7 +49,7 @@ vi.mock("@/lib/api/portal-requests", () => ({
 // --- Test Data ---
 
 function makeItem(
-  overrides: Partial<PortalRequestItemDetail> & { id: string; name: string },
+  overrides: Partial<PortalRequestItemDetail> & { id: string; name: string }
 ): PortalRequestItemDetail {
   return {
     description: null,
@@ -164,9 +161,7 @@ describe("Portal Request Detail", () => {
       expect(screen.getByText("Company Description")).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByPlaceholderText("Enter your response..."),
-    ).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Enter your response...")).toBeInTheDocument();
     expect(screen.getByText("Submit Response")).toBeInTheDocument();
   });
 
@@ -193,9 +188,7 @@ describe("Portal Request Detail", () => {
       expect(screen.getByText("Bank Statement")).toBeInTheDocument();
     });
 
-    expect(
-      screen.getByText(/Document is expired, please upload a recent one/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Document is expired, please upload a recent one/)).toBeInTheDocument();
 
     // Rejected FILE_UPLOAD items should still show the dropzone for re-upload
     // There should be at least 2 dropzones (PENDING item-1 and REJECTED item-4)
@@ -273,7 +266,8 @@ describe("Portal Request Detail", () => {
     });
 
     // Find the dropzone and simulate a drop
-    const dropzone = screen.getByText("Drop a file here, or click to browse")
+    const dropzone = screen
+      .getByText("Drop a file here, or click to browse")
       .closest("[role='button']") as HTMLElement;
 
     const dataTransfer = {

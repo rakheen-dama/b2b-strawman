@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useState,
-  useTransition,
-  useCallback,
-  useEffect,
-  useRef,
-} from "react";
+import { useState, useTransition, useCallback, useEffect, useRef } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -52,9 +46,7 @@ function partyTypeBadge(partyType: AdversePartyType) {
       );
     case "CLOSE_CORPORATION":
       return (
-        <Badge className="bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300">
-          CC
-        </Badge>
+        <Badge className="bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300">CC</Badge>
       );
     case "PARTNERSHIP":
       return (
@@ -96,10 +88,7 @@ export function AdversePartyRegistryClient({
   const refetch = useCallback(() => {
     startTransition(async () => {
       try {
-        const result = await fetchAdverseParties(
-          search || undefined,
-          typeFilter || undefined
-        );
+        const result = await fetchAdverseParties(search || undefined, typeFilter || undefined);
         setParties(result.content);
         setTotal(result.page.totalElements);
       } catch (err) {
@@ -150,7 +139,7 @@ export function AdversePartyRegistryClient({
       {/* Search & filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 sm:max-w-xs">
-          <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+          <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
           <Input
             placeholder="Search parties..."
             value={search}
@@ -161,9 +150,7 @@ export function AdversePartyRegistryClient({
 
         <select
           value={typeFilter}
-          onChange={(e) =>
-            setTypeFilter(e.target.value as AdversePartyType | "")
-          }
+          onChange={(e) => setTypeFilter(e.target.value as AdversePartyType | "")}
           className="flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800"
         >
           <option value="">All Types</option>
@@ -186,38 +173,31 @@ export function AdversePartyRegistryClient({
       </div>
 
       {/* Table */}
-      <div
-        className={cn(
-          "overflow-x-auto",
-          isPending && "opacity-50 transition-opacity"
-        )}
-      >
+      <div className={cn("overflow-x-auto", isPending && "opacity-50 transition-opacity")}>
         {parties.length === 0 ? (
           <div className="rounded-lg border border-slate-200 p-8 text-center dark:border-slate-800">
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              No adverse parties found.
-            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">No adverse parties found.</p>
           </div>
         ) : (
           <table className="w-full" data-testid="adverse-party-table">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Name
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   ID Number
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Reg. Number
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Type
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Links
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Actions
                 </th>
               </tr>
@@ -237,37 +217,26 @@ export function AdversePartyRegistryClient({
                   <td className="px-4 py-3 font-mono text-sm text-slate-600 dark:text-slate-400">
                     {party.registrationNumber ?? "-"}
                   </td>
-                  <td className="px-4 py-3">
-                    {partyTypeBadge(party.partyType)}
-                  </td>
+                  <td className="px-4 py-3">{partyTypeBadge(party.partyType)}</td>
                   <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
                     {party.linkedMatterCount}
                   </td>
                   <td className="px-4 py-3 text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="size-8 p-0"
-                        >
+                        <Button variant="ghost" size="sm" className="size-8 p-0">
                           <MoreHorizontal className="size-4" />
                           <span className="sr-only">Actions</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          onClick={() => setLinkTarget(party)}
-                        >
+                        <DropdownMenuItem onClick={() => setLinkTarget(party)}>
                           <Link2 className="mr-2 size-4" />
                           Link to Matter
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           onClick={() => setDeleteTarget(party)}
-                          disabled={
-                            deleting === party.id ||
-                            party.linkedMatterCount > 0
-                          }
+                          disabled={deleting === party.id || party.linkedMatterCount > 0}
                           className="text-red-600 focus:text-red-600"
                         >
                           <Trash2 className="mr-2 size-4" />
@@ -310,8 +279,8 @@ export function AdversePartyRegistryClient({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Adverse Party</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{deleteTarget?.name}&quot;?
-              This action cannot be undone.
+              Are you sure you want to delete &quot;{deleteTarget?.name}&quot;? This action cannot
+              be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

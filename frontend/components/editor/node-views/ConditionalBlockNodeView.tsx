@@ -1,11 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  NodeViewWrapper,
-  NodeViewContent,
-  type NodeViewProps,
-} from "@tiptap/react";
+import { NodeViewWrapper, NodeViewContent, type NodeViewProps } from "@tiptap/react";
 import { GitBranch, Settings2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ConditionalBlockConfig } from "../ConditionalBlockConfig";
@@ -19,11 +15,7 @@ const OPERATOR_LABELS: Record<string, string> = {
   in: "is one of",
 };
 
-export function ConditionalBlockNodeView({
-  node,
-  updateAttributes,
-  deleteNode,
-}: NodeViewProps) {
+export function ConditionalBlockNodeView({ node, updateAttributes, deleteNode }: NodeViewProps) {
   const [configOpen, setConfigOpen] = useState(false);
   const fieldKey = (node.attrs.fieldKey ?? "") as string;
   const operator = (node.attrs.operator ?? "isNotEmpty") as string;
@@ -43,9 +35,7 @@ export function ConditionalBlockNodeView({
           <span className="flex-1 truncate text-xs text-amber-700 dark:text-amber-300">
             {isConfigured ? (
               <>
-                Show if:{" "}
-                <span className="font-mono font-medium">{fieldKey}</span>{" "}
-                {operatorLabel}
+                Show if: <span className="font-mono font-medium">{fieldKey}</span> {operatorLabel}
                 {showValue && value && (
                   <>
                     {" "}

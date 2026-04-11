@@ -81,7 +81,7 @@ export function EditorToolbar({ editor, entityType, scope = "template" }: Editor
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()}
           className={cn(
-            editor.isActive("heading", { level: 1 }) && "bg-slate-200 dark:bg-slate-700",
+            editor.isActive("heading", { level: 1 }) && "bg-slate-200 dark:bg-slate-700"
           )}
           aria-label="Heading 1"
         >
@@ -93,7 +93,7 @@ export function EditorToolbar({ editor, entityType, scope = "template" }: Editor
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
           className={cn(
-            editor.isActive("heading", { level: 2 }) && "bg-slate-200 dark:bg-slate-700",
+            editor.isActive("heading", { level: 2 }) && "bg-slate-200 dark:bg-slate-700"
           )}
           aria-label="Heading 2"
         >
@@ -105,7 +105,7 @@ export function EditorToolbar({ editor, entityType, scope = "template" }: Editor
           type="button"
           onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
           className={cn(
-            editor.isActive("heading", { level: 3 }) && "bg-slate-200 dark:bg-slate-700",
+            editor.isActive("heading", { level: 3 }) && "bg-slate-200 dark:bg-slate-700"
           )}
           aria-label="Heading 3"
         >

@@ -93,10 +93,7 @@ describe("DeadlineWidget", () => {
     render(<DeadlineWidget orgSlug="acme" />);
 
     const link = screen.getByRole("link", { name: /view all/i });
-    expect(link).toHaveAttribute(
-      "href",
-      expect.stringContaining("/deadlines"),
-    );
+    expect(link).toHaveAttribute("href", expect.stringContaining("/deadlines"));
     expect(link).toHaveAttribute("href", "/org/acme/deadlines");
   });
 
@@ -109,20 +106,14 @@ describe("DeadlineWidget", () => {
     } as ReturnType<typeof useSWR>);
 
     render(
-      <OrgProfileProvider
-        verticalProfile={null}
-        enabledModules={[]}
-        terminologyNamespace={null}
-      >
+      <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
         <ModuleGate module="regulatory_deadlines">
           <DeadlineWidget orgSlug="acme" />
         </ModuleGate>
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
 
-    expect(
-      screen.queryByText("Deadlines"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Deadlines")).not.toBeInTheDocument();
   });
 
   it("renders deadline-widget data-testid", () => {

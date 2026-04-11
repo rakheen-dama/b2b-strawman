@@ -35,10 +35,7 @@ vi.mock("@/lib/actions/module-settings", () => ({
 // --- Imports after mocks ---
 
 import { FeaturesSettingsForm } from "@/components/settings/features-settings-form";
-import {
-  updateModuleSettings,
-  type ModuleStatus,
-} from "@/lib/actions/module-settings";
+import { updateModuleSettings, type ModuleStatus } from "@/lib/actions/module-settings";
 
 afterEach(() => cleanup());
 beforeEach(() => {
@@ -69,31 +66,23 @@ const mockModules: ModuleStatus[] = [
 
 describe("FeaturesSettingsForm", () => {
   it("renders all 3 feature cards with names and descriptions", () => {
-    render(
-      <FeaturesSettingsForm initialModules={mockModules} canManage={true} />,
-    );
+    render(<FeaturesSettingsForm initialModules={mockModules} canManage={true} />);
 
     expect(screen.getByText("Resource Planning")).toBeInTheDocument();
     expect(screen.getByText("Bulk Billing Runs")).toBeInTheDocument();
     expect(screen.getByText("Automation Rule Builder")).toBeInTheDocument();
-    expect(
-      screen.getByText("Team allocation grid and capacity forecasting."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Team allocation grid and capacity forecasting.")).toBeInTheDocument();
   });
 
   it("shows Switch controls when canManage is true", () => {
-    render(
-      <FeaturesSettingsForm initialModules={mockModules} canManage={true} />,
-    );
+    render(<FeaturesSettingsForm initialModules={mockModules} canManage={true} />);
 
     const switches = screen.getAllByRole("switch");
     expect(switches).toHaveLength(3);
   });
 
   it("shows read-only state without switches when canManage is false", () => {
-    render(
-      <FeaturesSettingsForm initialModules={mockModules} canManage={false} />,
-    );
+    render(<FeaturesSettingsForm initialModules={mockModules} canManage={false} />);
 
     expect(screen.queryAllByRole("switch")).toHaveLength(0);
     // Two disabled + one enabled labels
@@ -107,18 +96,14 @@ describe("FeaturesSettingsForm", () => {
       success: true,
       data: {
         modules: mockModules.map((m) =>
-          m.id === "resource_planning" ? { ...m, enabled: true } : m,
+          m.id === "resource_planning" ? { ...m, enabled: true } : m
         ),
       },
     });
 
-    render(
-      <FeaturesSettingsForm initialModules={mockModules} canManage={true} />,
-    );
+    render(<FeaturesSettingsForm initialModules={mockModules} canManage={true} />);
 
-    const resourcePlanningSwitch = screen.getByLabelText(
-      "Toggle Resource Planning",
-    );
+    const resourcePlanningSwitch = screen.getByLabelText("Toggle Resource Planning");
     await user.click(resourcePlanningSwitch);
 
     await waitFor(() => {
@@ -138,14 +123,12 @@ describe("FeaturesSettingsForm", () => {
       success: true,
       data: {
         modules: mockModules.map((m) =>
-          m.id === "resource_planning" ? { ...m, enabled: true } : m,
+          m.id === "resource_planning" ? { ...m, enabled: true } : m
         ),
       },
     });
 
-    render(
-      <FeaturesSettingsForm initialModules={mockModules} canManage={true} />,
-    );
+    render(<FeaturesSettingsForm initialModules={mockModules} canManage={true} />);
 
     await user.click(screen.getByLabelText("Toggle Resource Planning"));
 
@@ -161,15 +144,13 @@ describe("FeaturesSettingsForm", () => {
       error: "You do not have permission to manage features.",
     });
 
-    render(
-      <FeaturesSettingsForm initialModules={mockModules} canManage={true} />,
-    );
+    render(<FeaturesSettingsForm initialModules={mockModules} canManage={true} />);
 
     await user.click(screen.getByLabelText("Toggle Resource Planning"));
 
     await waitFor(() => {
       expect(
-        screen.getByText("You do not have permission to manage features."),
+        screen.getByText("You do not have permission to manage features.")
       ).toBeInTheDocument();
     });
     expect(mockRefresh).not.toHaveBeenCalled();

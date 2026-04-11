@@ -21,12 +21,7 @@ interface DeleteRoleDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function DeleteRoleDialog({
-  slug,
-  role,
-  open,
-  onOpenChange,
-}: DeleteRoleDialogProps) {
+export function DeleteRoleDialog({ slug, role, open, onOpenChange }: DeleteRoleDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const hasMembers = role.memberCount > 0;
@@ -60,8 +55,7 @@ export function DeleteRoleDialog({
               <>
                 The role &quot;{role.name}&quot; has{" "}
                 <strong>
-                  {role.memberCount}{" "}
-                  {role.memberCount === 1 ? "member" : "members"}
+                  {role.memberCount} {role.memberCount === 1 ? "member" : "members"}
                 </strong>{" "}
                 assigned. Reassign all members to another role before deleting.
               </>
@@ -73,7 +67,7 @@ export function DeleteRoleDialog({
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
           <AlertDialogAction

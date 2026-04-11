@@ -16,17 +16,14 @@ const STATUS_CONFIG: Record<
   DRAFT: { label: "Draft", variant: "neutral" },
   SENT: {
     label: "Sent",
-    className:
-      "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
+    className: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300",
   },
   IN_PROGRESS: { label: "In Progress", variant: "warning" },
   COMPLETED: { label: "Completed", variant: "success" },
   CANCELLED: { label: "Cancelled", variant: "destructive" },
 };
 
-export function PortalRequestStatusBadge({
-  status,
-}: PortalRequestStatusBadgeProps) {
+export function PortalRequestStatusBadge({ status }: PortalRequestStatusBadgeProps) {
   const config = STATUS_CONFIG[status];
 
   if (!config) {

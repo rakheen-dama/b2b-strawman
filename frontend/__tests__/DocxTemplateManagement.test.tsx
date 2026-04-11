@@ -10,8 +10,7 @@ const mockResetTemplate = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/settings/templates/template-crud-actions", () => ({
   cloneTemplateAction: (...args: unknown[]) => mockCloneTemplate(...args),
-  deactivateTemplateAction: (...args: unknown[]) =>
-    mockDeactivateTemplate(...args),
+  deactivateTemplateAction: (...args: unknown[]) => mockDeactivateTemplate(...args),
   resetTemplateAction: (...args: unknown[]) => mockResetTemplate(...args),
 }));
 
@@ -74,7 +73,7 @@ describe("Template List — Format Badges", () => {
         templates={[TIPTAP_TEMPLATE, DOCX_TEMPLATE]}
         settings={null}
         canManage={true}
-      />,
+      />
     );
 
     expect(screen.getByText("Tiptap")).toBeInTheDocument();
@@ -88,7 +87,7 @@ describe("Template List — Format Badges", () => {
         templates={[DOCX_TEMPLATE]}
         settings={null}
         canManage={true}
-      />,
+      />
     );
 
     expect(screen.getByText(/engagement-letter\.docx/)).toBeInTheDocument();
@@ -106,7 +105,7 @@ describe("Template List — Format Filter", () => {
         templates={[TIPTAP_TEMPLATE, DOCX_TEMPLATE]}
         settings={null}
         canManage={true}
-      />,
+      />
     );
 
     // Both templates visible initially
@@ -121,9 +120,7 @@ describe("Template List — Format Filter", () => {
 
     // Only DOCX template visible
     expect(screen.getByText("Word Engagement Letter")).toBeInTheDocument();
-    expect(
-      screen.queryByText("Standard Engagement Letter"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Standard Engagement Letter")).not.toBeInTheDocument();
   });
 
   it("shows all templates when All Formats is selected", async () => {
@@ -135,7 +132,7 @@ describe("Template List — Format Filter", () => {
         templates={[TIPTAP_TEMPLATE, DOCX_TEMPLATE]}
         settings={null}
         canManage={true}
-      />,
+      />
     );
 
     // Open filter, select "Word" first

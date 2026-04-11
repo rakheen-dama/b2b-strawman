@@ -2,13 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { ClipboardList, AlertTriangle, CheckCircle2 } from "lucide-react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardFooter,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import type { InformationRequestSummary } from "@/lib/api/information-requests";
 
@@ -17,10 +11,7 @@ interface InformationRequestsWidgetProps {
   orgSlug: string;
 }
 
-export function InformationRequestsWidget({
-  data,
-  orgSlug,
-}: InformationRequestsWidgetProps) {
+export function InformationRequestsWidget({ data, orgSlug }: InformationRequestsWidgetProps) {
   const router = useRouter();
 
   if (data === null) {
@@ -33,22 +24,17 @@ export function InformationRequestsWidget({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground italic">
-            Unable to load request data.
-          </p>
+          <p className="text-muted-foreground text-sm italic">Unable to load request data.</p>
         </CardContent>
       </Card>
     );
   }
 
-  const pendingReview =
-    data.itemsPendingReview ?? data.sentCount + data.inProgressCount;
+  const pendingReview = data.itemsPendingReview ?? data.sentCount + data.inProgressCount;
   const overdueCount = data.overdueRequests ?? 0;
   const completionRate =
     data.completionRateLast30Days ??
-    (data.totalRequests > 0
-      ? data.completedCount / data.totalRequests
-      : 0);
+    (data.totalRequests > 0 ? data.completedCount / data.totalRequests : 0);
 
   const hasNoRequests = data.totalRequests === 0;
 
@@ -62,9 +48,7 @@ export function InformationRequestsWidget({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            No information requests yet.
-          </p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">No information requests yet.</p>
         </CardContent>
       </Card>
     );
@@ -81,12 +65,10 @@ export function InformationRequestsWidget({
       <CardContent className="space-y-3">
         <div className="grid grid-cols-3 gap-3">
           <div className="text-center">
-            <p className="font-mono text-2xl font-semibold tabular-nums text-slate-950 dark:text-slate-50">
+            <p className="font-mono text-2xl font-semibold text-slate-950 tabular-nums dark:text-slate-50">
               {pendingReview}
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Pending Review
-            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Pending Review</p>
           </div>
           <div className="text-center">
             <p
@@ -98,17 +80,13 @@ export function InformationRequestsWidget({
             >
               {overdueCount}
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Overdue
-            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Overdue</p>
           </div>
           <div className="text-center">
-            <p className="font-mono text-2xl font-semibold tabular-nums text-slate-950 dark:text-slate-50">
+            <p className="font-mono text-2xl font-semibold text-slate-950 tabular-nums dark:text-slate-50">
               {Math.round(completionRate * 100)}%
             </p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Completed
-            </p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">Completed</p>
           </div>
         </div>
 
@@ -116,9 +94,7 @@ export function InformationRequestsWidget({
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-4 w-4 shrink-0 text-amber-500" />
             <p className="text-sm text-slate-700 dark:text-slate-300">
-              <span className="font-mono font-semibold tabular-nums">
-                {overdueCount}
-              </span>{" "}
+              <span className="font-mono font-semibold tabular-nums">{overdueCount}</span>{" "}
               {overdueCount === 1 ? "request is" : "requests are"} overdue
             </p>
           </div>

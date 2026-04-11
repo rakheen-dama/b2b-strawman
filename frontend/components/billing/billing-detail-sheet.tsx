@@ -25,10 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/billing/status-badge";
 import { MethodBadge } from "@/components/billing/method-badge";
 import { formatDate } from "@/components/billing/utils";
-import {
-  overrideBilling,
-  extendTrial,
-} from "@/app/(app)/platform-admin/billing/actions";
+import { overrideBilling, extendTrial } from "@/app/(app)/platform-admin/billing/actions";
 import type { AdminTenantBilling } from "@/app/(app)/platform-admin/billing/actions";
 
 const STATUS_OPTIONS = [
@@ -60,9 +57,7 @@ export function BillingDetailSheet({
   onSuccess,
 }: BillingDetailSheetProps) {
   const [status, setStatus] = useState(tenant?.subscriptionStatus ?? "");
-  const [billingMethod, setBillingMethod] = useState(
-    tenant?.billingMethod ?? "",
-  );
+  const [billingMethod, setBillingMethod] = useState(tenant?.billingMethod ?? "");
   const [trialDays, setTrialDays] = useState("");
   const [adminNote, setAdminNote] = useState(tenant?.adminNote ?? "");
   const [noteError, setNoteError] = useState("");
@@ -108,8 +103,7 @@ export function BillingDetailSheet({
       if (hasChanges) {
         const overrideResult = await overrideBilling(tenant.organizationId, {
           status: status !== tenant.subscriptionStatus ? status : null,
-          billingMethod:
-            billingMethod !== tenant.billingMethod ? billingMethod : null,
+          billingMethod: billingMethod !== tenant.billingMethod ? billingMethod : null,
           adminNote: adminNote.trim(),
         });
 
@@ -132,31 +126,23 @@ export function BillingDetailSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
+      <SheetContent side="right" className="w-full overflow-y-auto sm:max-w-lg">
         <SheetHeader>
-          <SheetTitle data-testid="sheet-org-name">
-            {tenant.organizationName}
-          </SheetTitle>
+          <SheetTitle data-testid="sheet-org-name">{tenant.organizationName}</SheetTitle>
           <SheetDescription>Manage billing for this tenant</SheetDescription>
           <div className="flex items-center gap-2 pt-1">
             <Badge variant="neutral">{tenant.verticalProfile}</Badge>
-            {tenant.isDemoTenant && (
-              <Badge variant="warning">Demo</Badge>
-            )}
+            {tenant.isDemoTenant && <Badge variant="warning">Demo</Badge>}
           </div>
         </SheetHeader>
 
         <div className="flex-1 space-y-6 px-4">
           {/* Key Dates */}
           <div>
-            <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">
-              Key Dates
-            </h3>
+            <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">Key Dates</h3>
             <dl className="mt-2 grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
               <div>
-                <dt className="text-slate-500 dark:text-slate-400">
-                  Trial Ends
-                </dt>
+                <dt className="text-slate-500 dark:text-slate-400">Trial Ends</dt>
                 <dd
                   className="font-medium text-slate-900 dark:text-slate-100"
                   data-testid="trial-ends"
@@ -165,9 +151,7 @@ export function BillingDetailSheet({
                 </dd>
               </div>
               <div>
-                <dt className="text-slate-500 dark:text-slate-400">
-                  Period End
-                </dt>
+                <dt className="text-slate-500 dark:text-slate-400">Period End</dt>
                 <dd
                   className="font-medium text-slate-900 dark:text-slate-100"
                   data-testid="period-end"
@@ -176,9 +160,7 @@ export function BillingDetailSheet({
                 </dd>
               </div>
               <div>
-                <dt className="text-slate-500 dark:text-slate-400">
-                  Grace Ends
-                </dt>
+                <dt className="text-slate-500 dark:text-slate-400">Grace Ends</dt>
                 <dd className="font-medium text-slate-900 dark:text-slate-100">
                   {formatDate(tenant.graceEndsAt)}
                 </dd>
@@ -194,9 +176,7 @@ export function BillingDetailSheet({
 
           {/* Stats */}
           <div>
-            <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">
-              Stats
-            </h3>
+            <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">Stats</h3>
             <div className="mt-2 flex items-center gap-4 text-sm">
               <span className="text-slate-500 dark:text-slate-400">
                 Members:{" "}
@@ -224,14 +204,14 @@ export function BillingDetailSheet({
               <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">
                 Current Admin Note
               </h3>
-              <p className="mt-1 text-sm text-slate-600 dark:text-slate-400 rounded-md bg-slate-50 dark:bg-slate-800 p-3">
+              <p className="mt-1 rounded-md bg-slate-50 p-3 text-sm text-slate-600 dark:bg-slate-800 dark:text-slate-400">
                 {tenant.adminNote}
               </p>
             </div>
           )}
 
           {/* Override Form */}
-          <div className="space-y-4 border-t border-slate-200 dark:border-slate-700 pt-4">
+          <div className="space-y-4 border-t border-slate-200 pt-4 dark:border-slate-700">
             <h3 className="text-sm font-medium text-slate-900 dark:text-slate-100">
               Override Settings
             </h3>
@@ -308,11 +288,7 @@ export function BillingDetailSheet({
         </div>
 
         <SheetFooter>
-          <Button
-            onClick={handleSave}
-            disabled={isSaving}
-            className="w-full"
-          >
+          <Button onClick={handleSave} disabled={isSaving} className="w-full">
             {isSaving ? "Saving..." : "Save Changes"}
           </Button>
         </SheetFooter>

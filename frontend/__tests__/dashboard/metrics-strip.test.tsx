@@ -9,14 +9,10 @@ import type { TeamCapacityGrid } from "@/lib/api/capacity";
 
 // Mock recharts to avoid rendering issues in happy-dom
 vi.mock("recharts", () => ({
-  ResponsiveContainer: ({
-    children,
-  }: {
-    children: React.ReactNode;
-  }) => <div data-testid="responsive-container">{children}</div>,
-  PieChart: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="responsive-container">{children}</div>
   ),
+  PieChart: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   Pie: () => <div />,
   Cell: () => <div />,
   Legend: () => <div />,
@@ -96,7 +92,7 @@ const mockProjectHealth: ProjectHealth[] = [
 
 function renderWithProvider(
   ui: React.ReactElement,
-  enabledModules: string[] = ["resource_planning"],
+  enabledModules: string[] = ["resource_planning"]
 ) {
   return render(
     <OrgProfileProvider
@@ -105,7 +101,7 @@ function renderWithProvider(
       terminologyNamespace={null}
     >
       <TerminologyProvider verticalProfile={null}>{ui}</TerminologyProvider>
-    </OrgProfileProvider>,
+    </OrgProfileProvider>
   );
 }
 
@@ -120,7 +116,7 @@ describe("MetricsStrip", () => {
         kpis={mockKpis}
         capacityData={mockCapacityData}
         projectHealth={mockProjectHealth}
-      />,
+      />
     );
 
     expect(screen.getByTestId("metrics-strip")).toBeInTheDocument();
@@ -133,13 +129,7 @@ describe("MetricsStrip", () => {
   });
 
   it("handles null/undefined KPI values gracefully", () => {
-    renderWithProvider(
-      <MetricsStrip
-        kpis={null}
-        capacityData={null}
-        projectHealth={null}
-      />,
-    );
+    renderWithProvider(<MetricsStrip kpis={null} capacityData={null} projectHealth={null} />);
 
     expect(screen.getByTestId("metrics-strip")).toBeInTheDocument();
     // Should show 0 for active projects when kpis is null
@@ -154,12 +144,10 @@ describe("MetricsStrip", () => {
         kpis={mockKpis}
         capacityData={mockCapacityData}
         projectHealth={mockProjectHealth}
-      />,
+      />
     );
 
-    expect(screen.getByTestId("metric-active-projects")).toHaveTextContent(
-      "12",
-    );
+    expect(screen.getByTestId("metric-active-projects")).toHaveTextContent("12");
   });
 
   it("displays overdue tasks with severity color", () => {
@@ -168,7 +156,7 @@ describe("MetricsStrip", () => {
         kpis={mockKpis}
         capacityData={mockCapacityData}
         projectHealth={mockProjectHealth}
-      />,
+      />
     );
 
     // 8 overdue tasks >= 5, should have red styling
@@ -181,7 +169,7 @@ describe("MetricsStrip", () => {
         kpis={mockKpis}
         capacityData={mockCapacityData}
         projectHealth={mockProjectHealth}
-      />,
+      />
     );
 
     const budgetCell = screen.getByTestId("metric-budget-health");
@@ -195,12 +183,10 @@ describe("MetricsStrip", () => {
         kpis={mockKpis}
         capacityData={mockCapacityData}
         projectHealth={mockProjectHealth}
-      />,
+      />
     );
 
-    expect(screen.getByTestId("metric-team-utilization")).toHaveTextContent(
-      "75%",
-    );
+    expect(screen.getByTestId("metric-team-utilization")).toHaveTextContent("75%");
   });
 
   it("hides team utilization metric when resource_planning module is disabled", () => {
@@ -210,7 +196,7 @@ describe("MetricsStrip", () => {
         capacityData={mockCapacityData}
         projectHealth={mockProjectHealth}
       />,
-      [], // empty enabledModules — resource_planning is OFF
+      [] // empty enabledModules — resource_planning is OFF
     );
 
     expect(screen.getByTestId("metrics-strip")).toBeInTheDocument();
@@ -221,8 +207,6 @@ describe("MetricsStrip", () => {
     expect(screen.getByTestId("metric-overdue-tasks")).toBeInTheDocument();
     expect(screen.getByTestId("metric-budget-health")).toBeInTheDocument();
     // The gated cell is HIDDEN
-    expect(
-      screen.queryByTestId("metric-team-utilization"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("metric-team-utilization")).not.toBeInTheDocument();
   });
 });

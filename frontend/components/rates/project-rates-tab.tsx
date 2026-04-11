@@ -58,9 +58,7 @@ export function ProjectRatesTab({
   slug,
   defaultCurrency,
 }: ProjectRatesTabProps) {
-  const projectRates = billingRates.filter(
-    (r) => r.scope === "PROJECT_OVERRIDE",
-  );
+  const projectRates = billingRates.filter((r) => r.scope === "PROJECT_OVERRIDE");
 
   if (projectRates.length === 0) {
     return (
@@ -145,18 +143,12 @@ export function ProjectRatesTab({
                   {rate.effectiveTo ? (
                     formatDate(rate.effectiveTo)
                   ) : (
-                    <span className="text-slate-400 dark:text-slate-600">
-                      Ongoing
-                    </span>
+                    <span className="text-slate-400 dark:text-slate-600">Ongoing</span>
                   )}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <EditProjectRateDialog
-                      slug={slug}
-                      projectId={projectId}
-                      rate={rate}
-                    >
+                    <EditProjectRateDialog slug={slug} projectId={projectId} rate={rate}>
                       <Button
                         variant="plain"
                         size="sm"
@@ -199,12 +191,7 @@ interface EditProjectRateDialogProps {
   children: React.ReactNode;
 }
 
-function EditProjectRateDialog({
-  slug,
-  projectId,
-  rate,
-  children,
-}: EditProjectRateDialogProps) {
+function EditProjectRateDialog({ slug, projectId, rate, children }: EditProjectRateDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -291,11 +278,7 @@ function EditProjectRateDialog({
 
           <div className="space-y-2">
             <Label>Currency</Label>
-            <CurrencySelector
-              value={currency}
-              onChange={setCurrency}
-              className="w-full"
-            />
+            <CurrencySelector value={currency} onChange={setCurrency} className="w-full" />
           </div>
 
           <div className="space-y-2">
@@ -311,8 +294,7 @@ function EditProjectRateDialog({
 
           <div className="space-y-2">
             <Label htmlFor="edit-project-rate-to">
-              Effective To{" "}
-              <span className="font-normal text-slate-500">(optional)</span>
+              Effective To <span className="font-normal text-slate-500">(optional)</span>
             </Label>
             <Input
               id="edit-project-rate-to"
@@ -322,7 +304,7 @@ function EditProjectRateDialog({
             />
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <DialogFooter>
             <Button
@@ -400,24 +382,17 @@ function DeleteProjectRateDialog({
               <AlertTriangle className="size-6 text-red-600 dark:text-red-400" />
             </div>
           </div>
-          <AlertDialogTitle className="text-center">
-            Delete Project Rate Override
-          </AlertDialogTitle>
+          <AlertDialogTitle className="text-center">Delete Project Rate Override</AlertDialogTitle>
           <AlertDialogDescription className="text-center">
-            Delete the project billing rate override for {memberName}? This
-            action cannot be undone.
+            Delete the project billing rate override for {memberName}? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
         <AlertDialogFooter>
           <AlertDialogCancel variant="plain" disabled={isDeleting}>
             Cancel
           </AlertDialogCancel>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
+          <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
             {isDeleting ? "Deleting..." : "Delete"}
           </Button>
         </AlertDialogFooter>

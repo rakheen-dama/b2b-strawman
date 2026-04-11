@@ -27,8 +27,7 @@ export function InformationOfficerSection({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
 
-  const hasChanges =
-    name !== (initialName ?? "") || email !== (initialEmail ?? "");
+  const hasChanges = name !== (initialName ?? "") || email !== (initialEmail ?? "");
 
   async function handleSave() {
     setError(null);
@@ -74,8 +73,8 @@ export function InformationOfficerSection({
         Information Officer
       </h2>
       <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-        The designated information officer responsible for data protection
-        compliance. Required for DSAR handling.
+        The designated information officer responsible for data protection compliance. Required for
+        DSAR handling.
       </p>
 
       <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -98,9 +97,7 @@ export function InformationOfficerSection({
             disabled={isSubmitting}
           />
           {fieldErrors.informationOfficerName && (
-            <p className="text-sm text-destructive">
-              {fieldErrors.informationOfficerName}
-            </p>
+            <p className="text-destructive text-sm">{fieldErrors.informationOfficerName}</p>
           )}
         </div>
         <div className="space-y-2">
@@ -123,28 +120,21 @@ export function InformationOfficerSection({
             disabled={isSubmitting}
           />
           {fieldErrors.informationOfficerEmail && (
-            <p className="text-sm text-destructive">
-              {fieldErrors.informationOfficerEmail}
-            </p>
+            <p className="text-destructive text-sm">{fieldErrors.informationOfficerEmail}</p>
           )}
         </div>
       </div>
 
       <div className="mt-4 flex items-center gap-3">
-        <Button
-          onClick={handleSave}
-          disabled={!hasChanges || isSubmitting}
-        >
+        <Button onClick={handleSave} disabled={!hasChanges || isSubmitting}>
           {isSubmitting ? "Saving..." : "Save"}
         </Button>
         {saved && (
-          <span className="text-sm text-teal-600 dark:text-teal-400">
-            Saved successfully.
-          </span>
+          <span className="text-sm text-teal-600 dark:text-teal-400">Saved successfully.</span>
         )}
       </div>
 
-      {error && <p className="mt-3 text-sm text-destructive">{error}</p>}
+      {error && <p className="text-destructive mt-3 text-sm">{error}</p>}
     </div>
   );
 }

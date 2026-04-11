@@ -17,9 +17,7 @@ import { updateScheduleAction } from "@/app/(app)/org/[slug]/schedules/actions";
 import { FREQUENCY_LABELS } from "@/lib/schedule-constants";
 import type { ScheduleResponse, UpdateScheduleRequest } from "@/lib/api/schedules";
 import type { OrgMember } from "@/lib/types";
-import {
-  PostCreateActionsSection,
-} from "@/components/schedules/PostCreateActionsSection";
+import { PostCreateActionsSection } from "@/components/schedules/PostCreateActionsSection";
 import type {
   DocumentTemplateOption,
   RequestTemplateOption,
@@ -54,10 +52,11 @@ export function ScheduleEditDialog({
   const [endDate, setEndDate] = useState(schedule.endDate ?? "");
   const [leadTimeDays, setLeadTimeDays] = useState(schedule.leadTimeDays);
   const [projectLeadMemberId, setProjectLeadMemberId] = useState(
-    schedule.projectLeadMemberId ?? "",
+    schedule.projectLeadMemberId ?? ""
   );
-  const [postCreateActions, setPostCreateActions] =
-    useState<PostCreateActions | null>(schedule.postCreateActions ?? null);
+  const [postCreateActions, setPostCreateActions] = useState<PostCreateActions | null>(
+    schedule.postCreateActions ?? null
+  );
 
   function handleOpenChange(newOpen: boolean) {
     if (isSubmitting) return;
@@ -142,8 +141,7 @@ export function ScheduleEditDialog({
           {/* Name Override */}
           <div className="space-y-2">
             <Label htmlFor="edit-name-override">
-              Name Override{" "}
-              <span className="font-normal text-muted-foreground">(optional)</span>
+              Name Override <span className="text-muted-foreground font-normal">(optional)</span>
             </Label>
             <Input
               id="edit-name-override"
@@ -157,8 +155,7 @@ export function ScheduleEditDialog({
           {/* End Date */}
           <div className="space-y-2">
             <Label htmlFor="edit-end-date">
-              End Date{" "}
-              <span className="font-normal text-muted-foreground">(optional)</span>
+              End Date <span className="text-muted-foreground font-normal">(optional)</span>
             </Label>
             <Input
               id="edit-end-date"
@@ -187,8 +184,7 @@ export function ScheduleEditDialog({
           {orgMembers.length > 0 && (
             <div className="space-y-2">
               <Label htmlFor="edit-lead-member">
-                Project Lead{" "}
-                <span className="font-normal text-muted-foreground">(optional)</span>
+                Project Lead <span className="text-muted-foreground font-normal">(optional)</span>
               </Label>
               <select
                 id="edit-lead-member"
@@ -213,7 +209,7 @@ export function ScheduleEditDialog({
             onChange={setPostCreateActions}
           />
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
         </div>
 
         <DialogFooter>

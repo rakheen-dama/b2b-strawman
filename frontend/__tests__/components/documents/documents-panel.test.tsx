@@ -8,9 +8,7 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/actions", () => ({
   initiateUpload: vi.fn().mockResolvedValue({ success: true }),
   confirmUpload: vi.fn().mockResolvedValue({ success: true }),
   cancelUpload: vi.fn().mockResolvedValue({ success: true }),
-  getDownloadUrl: vi
-    .fn()
-    .mockResolvedValue({ success: true, presignedUrl: "https://example.com" }),
+  getDownloadUrl: vi.fn().mockResolvedValue({ success: true, presignedUrl: "https://example.com" }),
 }));
 
 vi.mock("next/navigation", () => ({
@@ -30,15 +28,13 @@ describe("DocumentsPanel", () => {
   });
 
   it("shows empty state with correct description when no documents", () => {
-    render(
-      <DocumentsPanel documents={[]} projectId="p1" slug="acme" />,
-    );
+    render(<DocumentsPanel documents={[]} projectId="p1" slug="acme" />);
 
     expect(screen.getByText("No documents yet")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Documents live inside projects. Create proposals, contracts, reports, or any other document your team needs.",
-      ),
+        "Documents live inside projects. Create proposals, contracts, reports, or any other document your team needs."
+      )
     ).toBeInTheDocument();
   });
 });

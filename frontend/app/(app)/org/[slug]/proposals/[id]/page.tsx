@@ -24,6 +24,7 @@ const FEE_MODEL_LABELS: Record<string, string> = {
   FIXED: "Fixed Fee",
   HOURLY: "Hourly",
   RETAINER: "Retainer",
+  CONTINGENCY: "Contingency",
 };
 
 export default async function ProposalDetailPage({
@@ -34,11 +35,7 @@ export default async function ProposalDetailPage({
   const { slug, id } = await params;
   const caps = await fetchMyCapabilities();
 
-  if (
-    !caps.isAdmin &&
-    !caps.isOwner &&
-    !caps.capabilities.includes("INVOICING")
-  ) {
+  if (!caps.isAdmin && !caps.isOwner && !caps.capabilities.includes("INVOICING")) {
     notFound();
   }
 
@@ -104,26 +101,18 @@ export default async function ProposalDetailPage({
               </dd>
             </div>
 
-            {proposal.feeModel === "FIXED" &&
-              proposal.fixedFeeAmount != null && (
-                <div>
-                  <dt className="text-slate-500 dark:text-slate-400">
-                    Fixed Fee
-                  </dt>
-                  <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
-                    {formatCurrencySafe(
-                      proposal.fixedFeeAmount,
-                      proposal.fixedFeeCurrency,
-                    )}
-                  </dd>
-                </div>
-              )}
+            {proposal.feeModel === "FIXED" && proposal.fixedFeeAmount != null && (
+              <div>
+                <dt className="text-slate-500 dark:text-slate-400">Fixed Fee</dt>
+                <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
+                  {formatCurrencySafe(proposal.fixedFeeAmount, proposal.fixedFeeCurrency)}
+                </dd>
+              </div>
+            )}
 
             {proposal.feeModel === "HOURLY" && proposal.hourlyRateNote && (
               <div>
-                <dt className="text-slate-500 dark:text-slate-400">
-                  Hourly Rate
-                </dt>
+                <dt className="text-slate-500 dark:text-slate-400">Hourly Rate</dt>
                 <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
                   {proposal.hourlyRateNote}
                 </dd>
@@ -134,24 +123,46 @@ export default async function ProposalDetailPage({
               <>
                 {proposal.retainerAmount != null && (
                   <div>
-                    <dt className="text-slate-500 dark:text-slate-400">
-                      Retainer Amount
-                    </dt>
+                    <dt className="text-slate-500 dark:text-slate-400">Retainer Amount</dt>
                     <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
-                      {formatCurrencySafe(
-                        proposal.retainerAmount,
-                        proposal.retainerCurrency,
-                      )}
+                      {formatCurrencySafe(proposal.retainerAmount, proposal.retainerCurrency)}
                     </dd>
                   </div>
                 )}
                 {proposal.retainerHoursIncluded != null && (
                   <div>
-                    <dt className="text-slate-500 dark:text-slate-400">
-                      Hours Included
-                    </dt>
+                    <dt className="text-slate-500 dark:text-slate-400">Hours Included</dt>
                     <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
                       {proposal.retainerHoursIncluded}h
+                    </dd>
+                  </div>
+                )}
+              </>
+            )}
+
+            {proposal.feeModel === "CONTINGENCY" && (
+              <>
+                {proposal.contingencyPercent != null && (
+                  <div>
+                    <dt className="text-slate-500 dark:text-slate-400">Contingency Percent</dt>
+                    <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
+                      {proposal.contingencyPercent}%
+                    </dd>
+                  </div>
+                )}
+                {proposal.contingencyCapPercent != null && (
+                  <div>
+                    <dt className="text-slate-500 dark:text-slate-400">Contingency Cap</dt>
+                    <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
+                      {proposal.contingencyCapPercent}%
+                    </dd>
+                  </div>
+                )}
+                {proposal.contingencyDescription && (
+                  <div className="col-span-2 sm:col-span-3">
+                    <dt className="text-slate-500 dark:text-slate-400">Description</dt>
+                    <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
+                      {proposal.contingencyDescription}
                     </dd>
                   </div>
                 )}
@@ -167,9 +178,7 @@ export default async function ProposalDetailPage({
 
             {proposal.expiresAt && (
               <div>
-                <dt className="text-slate-500 dark:text-slate-400">
-                  Expires
-                </dt>
+                <dt className="text-slate-500 dark:text-slate-400">Expires</dt>
                 <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
                   {formatDate(proposal.expiresAt)}
                 </dd>
@@ -187,9 +196,7 @@ export default async function ProposalDetailPage({
 
             {proposal.acceptedAt && (
               <div>
-                <dt className="text-slate-500 dark:text-slate-400">
-                  Accepted
-                </dt>
+                <dt className="text-slate-500 dark:text-slate-400">Accepted</dt>
                 <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
                   {formatDate(proposal.acceptedAt)}
                 </dd>
@@ -198,9 +205,7 @@ export default async function ProposalDetailPage({
 
             {proposal.declinedAt && (
               <div>
-                <dt className="text-slate-500 dark:text-slate-400">
-                  Declined
-                </dt>
+                <dt className="text-slate-500 dark:text-slate-400">Declined</dt>
                 <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
                   {formatDate(proposal.declinedAt)}
                 </dd>
@@ -210,9 +215,7 @@ export default async function ProposalDetailPage({
 
           {proposal.declineReason && (
             <div className="mt-4">
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Decline Reason
-              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Decline Reason</p>
               <p className="mt-0.5 text-sm text-slate-900 dark:text-slate-100">
                 {proposal.declineReason}
               </p>

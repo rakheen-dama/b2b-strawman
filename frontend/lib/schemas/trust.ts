@@ -11,16 +11,11 @@ export const createTrustAccountSchema = z.object({
   openedDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
   isPrimary: z.boolean().optional(),
   requireDualApproval: z.boolean(),
-  paymentApprovalThreshold: z
-    .number()
-    .positive("Threshold must be positive")
-    .optional(),
+  paymentApprovalThreshold: z.number().positive("Threshold must be positive").optional(),
   notes: z.string().max(2000).optional().or(z.literal("")),
 });
 
-export type CreateTrustAccountFormData = z.infer<
-  typeof createTrustAccountSchema
->;
+export type CreateTrustAccountFormData = z.infer<typeof createTrustAccountSchema>;
 
 export const recordDepositSchema = z.object({
   customerId: z.string().uuid("Must be a valid client UUID"),
@@ -63,9 +58,7 @@ export const recordFeeTransferSchema = z.object({
   reference: z.string().min(1, "Reference is required").max(200),
 });
 
-export type RecordFeeTransferFormData = z.infer<
-  typeof recordFeeTransferSchema
->;
+export type RecordFeeTransferFormData = z.infer<typeof recordFeeTransferSchema>;
 
 export const recordRefundSchema = z.object({
   customerId: z.string().uuid("Must be a valid client UUID"),
@@ -120,7 +113,11 @@ export const placeInvestmentSchema = z.object({
   principal: z.number().positive("Principal must be greater than zero"),
   interestRate: z.number().min(0, "Rate must be non-negative").max(100, "Rate cannot exceed 100"),
   depositDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),
-  maturityDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD").optional().or(z.literal("")),
+  maturityDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD")
+    .optional()
+    .or(z.literal("")),
   notes: z.string().max(2000).optional().or(z.literal("")),
   investmentBasis: z.enum(["FIRM_DISCRETION", "CLIENT_INSTRUCTION"], {
     message: "Investment basis is required",

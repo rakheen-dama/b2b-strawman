@@ -36,7 +36,7 @@ describe("ArchiveCustomerDialog", () => {
     render(
       <ArchiveCustomerDialog slug="acme" customerId="c1" customerName="Acme Corp">
         <button>Archive Trigger</button>
-      </ArchiveCustomerDialog>,
+      </ArchiveCustomerDialog>
     );
 
     await user.click(screen.getByText("Archive Trigger"));
@@ -52,7 +52,7 @@ describe("ArchiveCustomerDialog", () => {
     render(
       <ArchiveCustomerDialog slug="acme" customerId="c1" customerName="Acme Corp">
         <button>Archive Trigger</button>
-      </ArchiveCustomerDialog>,
+      </ArchiveCustomerDialog>
     );
 
     await user.click(screen.getByText("Archive Trigger"));
@@ -74,7 +74,7 @@ describe("ArchiveCustomerDialog", () => {
     render(
       <ArchiveCustomerDialog slug="acme" customerId="c1" customerName="Acme Corp">
         <button>Archive Trigger</button>
-      </ArchiveCustomerDialog>,
+      </ArchiveCustomerDialog>
     );
 
     await user.click(screen.getByText("Archive Trigger"));

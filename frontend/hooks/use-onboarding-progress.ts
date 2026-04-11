@@ -37,9 +37,7 @@ export function useOnboardingProgress() {
   }, [mutate]);
 
   const percentComplete =
-    data && data.totalCount > 0
-      ? Math.round((data.completedCount / data.totalCount) * 100)
-      : 0;
+    data && data.totalCount > 0 ? Math.round((data.completedCount / data.totalCount) * 100) : 0;
   const allComplete = data ? data.completedCount === data.totalCount : false;
 
   return {

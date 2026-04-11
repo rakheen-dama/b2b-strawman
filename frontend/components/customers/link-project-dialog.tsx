@@ -18,10 +18,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  fetchProjects,
-  linkProject,
-} from "@/app/(app)/org/[slug]/customers/[id]/actions";
+import { fetchProjects, linkProject } from "@/app/(app)/org/[slug]/customers/[id]/actions";
 import type { Project } from "@/lib/types";
 
 interface LinkProjectDialogProps {
@@ -45,10 +42,7 @@ export function LinkProjectDialog({
     data: allProjects,
     error: fetchError,
     isLoading,
-  } = useSWR<Project[]>(
-    open ? "link-project-list" : null,
-    () => fetchProjects()
-  );
+  } = useSWR<Project[]>(open ? "link-project-list" : null, () => fetchProjects());
 
   const availableProjects = useMemo(() => {
     if (!allProjects) return [];
@@ -97,11 +91,13 @@ export function LinkProjectDialog({
           <CommandInput placeholder="Search projects..." disabled={isLoading || isLinking} />
           <CommandList>
             {isLoading ? (
-              <div className="py-6 text-center text-sm text-muted-foreground">
+              <div className="text-muted-foreground py-6 text-center text-sm">
                 Loading projects...
               </div>
             ) : fetchError ? (
-              <div className="py-6 text-center text-sm text-destructive">Failed to load projects.</div>
+              <div className="text-destructive py-6 text-center text-sm">
+                Failed to load projects.
+              </div>
             ) : availableProjects.length === 0 ? (
               <CommandEmpty>
                 {!allProjects || allProjects.length === 0
@@ -133,9 +129,7 @@ export function LinkProjectDialog({
           </CommandList>
         </Command>
 
-        {linkError && (
-          <p className="px-4 pb-4 text-sm text-destructive">{linkError}</p>
-        )}
+        {linkError && <p className="text-destructive px-4 pb-4 text-sm">{linkError}</p>}
       </DialogContent>
     </Dialog>
   );

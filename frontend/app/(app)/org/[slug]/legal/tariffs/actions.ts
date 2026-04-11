@@ -17,9 +17,7 @@ export async function fetchTariffSchedules(): Promise<TariffSchedule[]> {
   return api.get<TariffSchedule[]>("/api/tariff-schedules");
 }
 
-export async function fetchTariffSchedule(
-  id: string,
-): Promise<TariffSchedule> {
+export async function fetchTariffSchedule(id: string): Promise<TariffSchedule> {
   return api.get<TariffSchedule>(`/api/tariff-schedules/${id}`);
 }
 
@@ -39,17 +37,14 @@ export async function createSchedule(
     description?: string;
     effectiveFrom: string;
     effectiveTo?: string;
-  },
+  }
 ): Promise<ActionResult> {
   try {
     await api.post("/api/tariff-schedules", data);
     revalidatePath(`/org/${slug}/legal/tariffs`);
     return { success: true };
   } catch (error) {
-    const message =
-      error instanceof ApiError
-        ? error.message
-        : "Failed to create tariff schedule";
+    const message = error instanceof ApiError ? error.message : "Failed to create tariff schedule";
     return { success: false, error: message };
   }
 }
@@ -57,34 +52,25 @@ export async function createSchedule(
 export async function updateSchedule(
   slug: string,
   id: string,
-  data: Record<string, unknown>,
+  data: Record<string, unknown>
 ): Promise<ActionResult> {
   try {
     await api.put(`/api/tariff-schedules/${id}`, data);
     revalidatePath(`/org/${slug}/legal/tariffs`);
     return { success: true };
   } catch (error) {
-    const message =
-      error instanceof ApiError
-        ? error.message
-        : "Failed to update tariff schedule";
+    const message = error instanceof ApiError ? error.message : "Failed to update tariff schedule";
     return { success: false, error: message };
   }
 }
 
-export async function cloneSchedule(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function cloneSchedule(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.post(`/api/tariff-schedules/${id}/clone`, {});
     revalidatePath(`/org/${slug}/legal/tariffs`);
     return { success: true };
   } catch (error) {
-    const message =
-      error instanceof ApiError
-        ? error.message
-        : "Failed to clone tariff schedule";
+    const message = error instanceof ApiError ? error.message : "Failed to clone tariff schedule";
     return { success: false, error: message };
   }
 }
@@ -94,16 +80,14 @@ export async function cloneSchedule(
 export async function fetchTariffItems(
   scheduleId: string,
   search?: string,
-  section?: string,
+  section?: string
 ): Promise<TariffItem[]> {
   const params = new URLSearchParams();
   params.set("scheduleId", scheduleId);
   if (search) params.set("search", search);
   if (section) params.set("section", section);
 
-  return api.get<TariffItem[]>(
-    `/api/tariff-items?${params.toString()}`,
-  );
+  return api.get<TariffItem[]>(`/api/tariff-items?${params.toString()}`);
 }
 
 export async function createItem(
@@ -115,17 +99,14 @@ export async function createItem(
     unit: string;
     amount: number;
     notes?: string;
-  },
+  }
 ): Promise<ActionResult> {
   try {
     await api.post(`/api/tariff-schedules/${scheduleId}/items`, data);
     revalidatePath(`/org/${slug}/legal/tariffs`);
     return { success: true };
   } catch (error) {
-    const message =
-      error instanceof ApiError
-        ? error.message
-        : "Failed to create tariff item";
+    const message = error instanceof ApiError ? error.message : "Failed to create tariff item";
     return { success: false, error: message };
   }
 }
@@ -133,34 +114,25 @@ export async function createItem(
 export async function updateItem(
   slug: string,
   id: string,
-  data: Record<string, unknown>,
+  data: Record<string, unknown>
 ): Promise<ActionResult> {
   try {
     await api.put(`/api/tariff-items/${id}`, data);
     revalidatePath(`/org/${slug}/legal/tariffs`);
     return { success: true };
   } catch (error) {
-    const message =
-      error instanceof ApiError
-        ? error.message
-        : "Failed to update tariff item";
+    const message = error instanceof ApiError ? error.message : "Failed to update tariff item";
     return { success: false, error: message };
   }
 }
 
-export async function deleteItem(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deleteItem(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.delete(`/api/tariff-items/${id}`);
     revalidatePath(`/org/${slug}/legal/tariffs`);
     return { success: true };
   } catch (error) {
-    const message =
-      error instanceof ApiError
-        ? error.message
-        : "Failed to delete tariff item";
+    const message = error instanceof ApiError ? error.message : "Failed to delete tariff item";
     return { success: false, error: message };
   }
 }

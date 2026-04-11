@@ -5,11 +5,7 @@ import { fetchDsarRequests } from "./actions";
 import { DsarRequestsTable } from "@/components/data-protection/dsar-requests-table";
 import { LogDsarRequestDialog } from "@/components/data-protection/log-dsar-dialog";
 
-export default async function DsarRequestsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function DsarRequestsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const caps = await fetchMyCapabilities();
 
@@ -23,12 +19,10 @@ export default async function DsarRequestsPage({
           <ChevronLeft className="size-4" />
           Data Protection
         </Link>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          DSAR Requests
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">DSAR Requests</h1>
         <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to manage DSAR requests. Only admins and
-          owners can access this page.
+          You do not have permission to manage DSAR requests. Only admins and owners can access this
+          page.
         </p>
       </div>
     );
@@ -40,8 +34,7 @@ export default async function DsarRequestsPage({
     requests = await fetchDsarRequests(slug);
   } catch (error) {
     console.error("Failed to fetch DSAR requests:", error);
-    fetchError =
-      error instanceof Error ? error.message : "Failed to load DSAR requests.";
+    fetchError = error instanceof Error ? error.message : "Failed to load DSAR requests.";
   }
 
   return (
@@ -56,9 +49,7 @@ export default async function DsarRequestsPage({
 
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            DSAR Requests
-          </h1>
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">DSAR Requests</h1>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
             Track and manage data subject access requests.
           </p>
@@ -68,9 +59,7 @@ export default async function DsarRequestsPage({
 
       {fetchError && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 dark:border-red-800 dark:bg-red-950">
-          <p className="text-sm text-red-700 dark:text-red-300">
-            {fetchError}
-          </p>
+          <p className="text-sm text-red-700 dark:text-red-300">{fetchError}</p>
         </div>
       )}
 

@@ -11,13 +11,11 @@ const mockCheckPrerequisitesAction = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/customers/[id]/invoice-actions", () => ({
   fetchUnbilledTime: (...args: unknown[]) => mockFetchUnbilledTime(...args),
   createInvoiceDraft: (...args: unknown[]) => mockCreateInvoiceDraft(...args),
-  validateInvoiceGeneration: (...args: unknown[]) =>
-    mockValidateInvoiceGeneration(...args),
+  validateInvoiceGeneration: (...args: unknown[]) => mockValidateInvoiceGeneration(...args),
 }));
 
 vi.mock("@/lib/actions/prerequisite-actions", () => ({
-  checkPrerequisitesAction: (...args: unknown[]) =>
-    mockCheckPrerequisitesAction(...args),
+  checkPrerequisitesAction: (...args: unknown[]) => mockCheckPrerequisitesAction(...args),
   updateEntityCustomFieldsAction: vi.fn(),
 }));
 
@@ -54,7 +52,7 @@ describe("InvoiceGenerationDialog — prerequisite gate", () => {
         customerName="Acme Corp"
         slug="acme"
         defaultCurrency="USD"
-      />,
+      />
     );
 
     await user.click(screen.getByRole("button", { name: /New Invoice/i }));
@@ -63,14 +61,12 @@ describe("InvoiceGenerationDialog — prerequisite gate", () => {
       expect(mockCheckPrerequisitesAction).toHaveBeenCalledWith(
         "INVOICE_GENERATION",
         "CUSTOMER",
-        "c1",
+        "c1"
       );
     });
 
     await waitFor(() => {
-      expect(
-        screen.getByText("Prerequisites: Invoice Generation"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Prerequisites: Invoice Generation")).toBeInTheDocument();
     });
   });
 
@@ -88,7 +84,7 @@ describe("InvoiceGenerationDialog — prerequisite gate", () => {
         customerName="Acme Corp"
         slug="acme"
         defaultCurrency="USD"
-      />,
+      />
     );
 
     await user.click(screen.getByRole("button", { name: /New Invoice/i }));
@@ -98,8 +94,6 @@ describe("InvoiceGenerationDialog — prerequisite gate", () => {
     });
 
     // PrerequisiteModal should NOT be visible
-    expect(
-      screen.queryByText("Prerequisites: Invoice Generation"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Prerequisites: Invoice Generation")).not.toBeInTheDocument();
   });
 });

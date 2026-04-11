@@ -1,33 +1,19 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach } from "vitest";
-import {
-  cleanup,
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-} from "@testing-library/react";
+import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { BatchBillingSettings } from "@/components/settings/batch-billing-settings";
 
 const mockUpdateBatchBillingSettings = vi.fn();
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/batch-billing/actions",
-  () => ({
-    updateBatchBillingSettings: (...args: unknown[]) =>
-      mockUpdateBatchBillingSettings(...args),
-  })
-);
+vi.mock("@/app/(app)/org/[slug]/settings/batch-billing/actions", () => ({
+  updateBatchBillingSettings: (...args: unknown[]) => mockUpdateBatchBillingSettings(...args),
+}));
 
 afterEach(() => {
   cleanup();
   mockUpdateBatchBillingSettings.mockReset();
 });
 
-function renderForm(
-  overrides: Partial<
-    React.ComponentProps<typeof BatchBillingSettings>
-  > = {}
-) {
+function renderForm(overrides: Partial<React.ComponentProps<typeof BatchBillingSettings>> = {}) {
   const defaultProps: React.ComponentProps<typeof BatchBillingSettings> = {
     slug: "acme",
     billingBatchAsyncThreshold: 50,
@@ -43,9 +29,7 @@ describe("BatchBillingSettings", () => {
     renderForm();
     expect(screen.getByLabelText("Async Threshold")).toBeInTheDocument();
     expect(screen.getByLabelText("Email Rate Limit")).toBeInTheDocument();
-    expect(
-      screen.getByLabelText("Default Billing Run Currency")
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText("Default Billing Run Currency")).toBeInTheDocument();
   });
 
   it("displays current values passed as props", () => {
@@ -56,18 +40,14 @@ describe("BatchBillingSettings", () => {
     });
     expect(screen.getByLabelText("Async Threshold")).toHaveValue(100);
     expect(screen.getByLabelText("Email Rate Limit")).toHaveValue(10);
-    expect(
-      screen.getByLabelText("Default Billing Run Currency")
-    ).toHaveValue("ZAR");
+    expect(screen.getByLabelText("Default Billing Run Currency")).toHaveValue("ZAR");
   });
 
   it("validates numeric inputs on save", async () => {
     renderForm({ billingBatchAsyncThreshold: 1, billingEmailRateLimit: 1 });
 
     // Change async threshold to invalid value via direct state (component clamps, so test the currency field)
-    const currencyInput = screen.getByLabelText(
-      "Default Billing Run Currency"
-    );
+    const currencyInput = screen.getByLabelText("Default Billing Run Currency");
     fireEvent.change(currencyInput, { target: { value: "AB" } });
 
     fireEvent.click(screen.getByRole("button", { name: /Save Settings/i }));

@@ -43,9 +43,7 @@ export function AddLineForm({
 }: AddLineFormProps) {
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
-      <h3 className="mb-3 font-medium text-slate-900 dark:text-slate-100">
-        Add Line Item
-      </h3>
+      <h3 className="mb-3 font-medium text-slate-900 dark:text-slate-100">Add Line Item</h3>
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="sm:col-span-3">
           <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">
@@ -56,20 +54,18 @@ export function AddLineForm({
             value={description}
             onChange={(e) => onDescriptionChange(e.target.value)}
             placeholder="Line item description"
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-600"
+            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-600"
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">
-            Quantity
-          </label>
+          <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">Quantity</label>
           <input
             type="number"
             value={quantity}
             onChange={(e) => onQuantityChange(e.target.value)}
             min="0.01"
             step="0.01"
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
           />
         </div>
         <div>
@@ -82,7 +78,7 @@ export function AddLineForm({
             onChange={(e) => onUnitPriceChange(e.target.value)}
             min="0"
             step="0.01"
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
           />
         </div>
         {taxRates.length > 0 && (
@@ -106,12 +102,7 @@ export function AddLineForm({
           >
             Add
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onCancel}
-            disabled={isPending}
-          >
+          <Button variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
             Cancel
           </Button>
         </div>
@@ -153,9 +144,7 @@ export function EditLineForm({
 }: EditLineFormProps) {
   return (
     <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
-      <h3 className="mb-3 font-medium text-slate-900 dark:text-slate-100">
-        Edit Line Item
-      </h3>
+      <h3 className="mb-3 font-medium text-slate-900 dark:text-slate-100">Edit Line Item</h3>
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="sm:col-span-3">
           <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">
@@ -165,20 +154,18 @@ export function EditLineForm({
             type="text"
             value={description}
             onChange={(e) => onDescriptionChange(e.target.value)}
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
           />
         </div>
         <div>
-          <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">
-            Quantity
-          </label>
+          <label className="mb-1 block text-sm text-slate-600 dark:text-slate-400">Quantity</label>
           <input
             type="number"
             value={quantity}
             onChange={(e) => onQuantityChange(e.target.value)}
             min="0.01"
             step="0.01"
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
           />
         </div>
         <div>
@@ -191,7 +178,7 @@ export function EditLineForm({
             onChange={(e) => onUnitPriceChange(e.target.value)}
             min="0"
             step="0.01"
-            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
+            className="w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100"
           />
         </div>
         {taxRates.length > 0 && (
@@ -215,12 +202,7 @@ export function EditLineForm({
           >
             Save
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onCancel}
-            disabled={isPending}
-          >
+          <Button variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
             Cancel
           </Button>
         </div>

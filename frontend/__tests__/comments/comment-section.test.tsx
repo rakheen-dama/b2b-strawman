@@ -83,12 +83,8 @@ describe("CommentItem", () => {
       />
     );
 
-    expect(
-      screen.getByRole("button", { name: /edit comment by me/i })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /delete comment by me/i })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /edit comment by me/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /delete comment by me/i })).toBeInTheDocument();
   });
 
   it("hides edit and delete buttons for other users' comments", () => {
@@ -102,12 +98,8 @@ describe("CommentItem", () => {
       />
     );
 
-    expect(
-      screen.queryByRole("button", { name: /edit comment/i })
-    ).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", { name: /delete comment/i })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /edit comment/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /delete comment/i })).not.toBeInTheDocument();
   });
 });
 

@@ -53,19 +53,17 @@ export default async function UtilizationPage({
 
   return (
     <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-              Utilization
-            </h1>
-            <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              Team utilization metrics and trends
-            </p>
-          </div>
-          <WeekRangeSelector weekStart={weekStart} weekCount={weekCount} />
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Utilization</h1>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            Team utilization metrics and trends
+          </p>
         </div>
+        <WeekRangeSelector weekStart={weekStart} weekCount={weekCount} />
+      </div>
 
-        <UtilizationTable data={data} slug={slug} />
+      <UtilizationTable data={data} slug={slug} />
 
       <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-700 dark:bg-slate-900">
         <UtilizationChart data={data} />

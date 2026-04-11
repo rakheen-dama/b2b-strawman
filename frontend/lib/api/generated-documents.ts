@@ -15,7 +15,7 @@ export async function generateDocument(
   entityId: string,
   saveToDocuments: boolean,
   acknowledgeWarnings: boolean = false,
-  clauses?: Array<{ clauseId: string; sortOrder: number }>,
+  clauses?: Array<{ clauseId: string; sortOrder: number }>
 ): Promise<GenerateDocumentResponse | Blob> {
   let authOptions: { headers: Record<string, string>; credentials?: RequestCredentials };
   try {
@@ -24,18 +24,20 @@ export async function generateDocument(
     redirect("/sign-in");
   }
 
-  const response = await fetch(
-    `${API_BASE}/api/templates/${templateId}/generate`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...authOptions.headers,
-      },
-      body: JSON.stringify({ entityId, saveToDocuments, acknowledgeWarnings, ...(clauses?.length ? { clauses } : {}) }),
-      credentials: authOptions.credentials,
+  const response = await fetch(`${API_BASE}/api/templates/${templateId}/generate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...authOptions.headers,
     },
-  );
+    body: JSON.stringify({
+      entityId,
+      saveToDocuments,
+      acknowledgeWarnings,
+      ...(clauses?.length ? { clauses } : {}),
+    }),
+    credentials: authOptions.credentials,
+  });
 
   if (!response.ok) {
     let message = response.statusText;
@@ -57,10 +59,10 @@ export async function generateDocument(
 
 export async function fetchGeneratedDocuments(
   entityType: TemplateEntityType,
-  entityId: string,
+  entityId: string
 ): Promise<GeneratedDocumentListResponse[]> {
   return api.get<GeneratedDocumentListResponse[]>(
-    `/api/generated-documents?entityType=${entityType}&entityId=${entityId}`,
+    `/api/generated-documents?entityType=${entityType}&entityId=${entityId}`
   );
 }
 
@@ -76,17 +78,14 @@ export async function downloadGeneratedDocument(id: string): Promise<Blob> {
     redirect("/sign-in");
   }
 
-  const response = await fetch(
-    `${API_BASE}/api/generated-documents/${id}/download`,
-    {
-      method: "GET",
-      headers: {
-        ...authOptions.headers,
-      },
-      redirect: "follow",
-      credentials: authOptions.credentials,
+  const response = await fetch(`${API_BASE}/api/generated-documents/${id}/download`, {
+    method: "GET",
+    headers: {
+      ...authOptions.headers,
     },
-  );
+    redirect: "follow",
+    credentials: authOptions.credentials,
+  });
 
   if (!response.ok) {
     let message = response.statusText;
@@ -110,17 +109,14 @@ export async function downloadDocxGeneratedDocument(id: string): Promise<Blob> {
     redirect("/sign-in");
   }
 
-  const response = await fetch(
-    `${API_BASE}/api/generated-documents/${id}/download-docx`,
-    {
-      method: "GET",
-      headers: {
-        ...authOptions.headers,
-      },
-      redirect: "follow",
-      credentials: authOptions.credentials,
+  const response = await fetch(`${API_BASE}/api/generated-documents/${id}/download-docx`, {
+    method: "GET",
+    headers: {
+      ...authOptions.headers,
     },
-  );
+    redirect: "follow",
+    credentials: authOptions.credentials,
+  });
 
   if (!response.ok) {
     let message = response.statusText;
@@ -144,17 +140,14 @@ export async function downloadCertificateBlob(id: string): Promise<Blob> {
     redirect("/sign-in");
   }
 
-  const response = await fetch(
-    `${API_BASE}/api/acceptance-requests/${id}/certificate`,
-    {
-      method: "GET",
-      headers: {
-        ...authOptions.headers,
-      },
-      redirect: "follow",
-      credentials: authOptions.credentials,
+  const response = await fetch(`${API_BASE}/api/acceptance-requests/${id}/certificate`, {
+    method: "GET",
+    headers: {
+      ...authOptions.headers,
     },
-  );
+    redirect: "follow",
+    credentials: authOptions.credentials,
+  });
 
   if (!response.ok) {
     let message = response.statusText;

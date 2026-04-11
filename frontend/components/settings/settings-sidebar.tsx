@@ -22,8 +22,8 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
       (item) =>
         (!item.adminOnly || isAdmin) &&
         !item.comingSoon &&
-        (!item.requiredModule || isModuleEnabled(item.requiredModule)),
-    ),
+        (!item.requiredModule || isModuleEnabled(item.requiredModule))
+    )
   );
 
   return (
@@ -41,7 +41,7 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
                   "shrink-0 rounded-full px-3 py-1.5 text-sm whitespace-nowrap transition-colors",
                   isActive
                     ? "bg-teal-600 text-white"
-                    : "bg-muted text-muted-foreground hover:bg-muted/80",
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
                 )}
               >
                 {item.label}
@@ -60,14 +60,14 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
           const visibleItems = group.items.filter(
             (item) =>
               (!item.adminOnly || isAdmin) &&
-              (!item.requiredModule || isModuleEnabled(item.requiredModule)),
+              (!item.requiredModule || isModuleEnabled(item.requiredModule))
           );
           if (visibleItems.length === 0) return null;
 
           return (
             <div key={group.id}>
               {index > 0 && <div className="my-2 border-t border-slate-100" />}
-              <div className="px-3 pb-1 pt-3 text-[11px] font-medium uppercase tracking-widest text-slate-400 dark:text-slate-500">
+              <div className="px-3 pt-3 pb-1 text-[11px] font-medium tracking-widest text-slate-400 uppercase dark:text-slate-500">
                 {group.label}
               </div>
               {visibleItems.map((item) => {
@@ -77,10 +77,10 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
                     <span
                       key={item.href || item.label}
                       aria-disabled="true"
-                      className="flex cursor-not-allowed items-center pl-3 py-1.5 text-sm rounded-r-md border-l-2 border-transparent text-slate-600 opacity-50"
+                      className="flex cursor-not-allowed items-center rounded-r-md border-l-2 border-transparent py-1.5 pl-3 text-sm text-slate-600 opacity-50"
                     >
                       {item.label}
-                      <Badge variant="neutral" className="ml-auto text-[10px] py-0">
+                      <Badge variant="neutral" className="ml-auto py-0 text-[10px]">
                         Coming soon
                       </Badge>
                     </span>
@@ -91,10 +91,10 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
                     key={item.href}
                     href={`/org/${slug}/settings/${item.href}`}
                     className={cn(
-                      "flex items-center pl-3 py-1.5 text-sm rounded-r-md transition-colors",
+                      "flex items-center rounded-r-md py-1.5 pl-3 text-sm transition-colors",
                       isActive
-                        ? "border-l-2 border-teal-600 bg-teal-50 text-slate-900 font-medium"
-                        : "border-l-2 border-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-50",
+                        ? "border-l-2 border-teal-600 bg-teal-50 font-medium text-slate-900"
+                        : "border-l-2 border-transparent text-slate-600 hover:bg-slate-50 hover:text-slate-900"
                     )}
                   >
                     {item.label}

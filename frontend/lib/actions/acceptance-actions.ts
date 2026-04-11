@@ -4,13 +4,7 @@ import { api, ApiError } from "@/lib/api";
 
 // ---- Types ----
 
-export type AcceptanceStatus =
-  | "PENDING"
-  | "SENT"
-  | "VIEWED"
-  | "ACCEPTED"
-  | "EXPIRED"
-  | "REVOKED";
+export type AcceptanceStatus = "PENDING" | "SENT" | "VIEWED" | "ACCEPTED" | "EXPIRED" | "REVOKED";
 
 export interface ActionResult<T = void> {
   success: boolean;
@@ -64,17 +58,14 @@ export interface AcceptanceRequestResponse {
 export async function sendForAcceptance(
   generatedDocumentId: string,
   portalContactId: string,
-  expiryDays?: number,
+  expiryDays?: number
 ): Promise<ActionResult<AcceptanceRequestResponse>> {
   try {
-    const data = await api.post<AcceptanceRequestResponse>(
-      "/api/acceptance-requests",
-      {
-        generatedDocumentId,
-        portalContactId,
-        ...(expiryDays != null ? { expiryDays } : {}),
-      },
-    );
+    const data = await api.post<AcceptanceRequestResponse>("/api/acceptance-requests", {
+      generatedDocumentId,
+      portalContactId,
+      ...(expiryDays != null ? { expiryDays } : {}),
+    });
     return { success: true, data };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -100,7 +91,7 @@ export async function getAcceptanceRequests(opts: {
     if (opts.customerId) params.set("customerId", opts.customerId);
     const query = params.toString();
     return await api.get<AcceptanceRequestResponse[]>(
-      `/api/acceptance-requests${query ? `?${query}` : ""}`,
+      `/api/acceptance-requests${query ? `?${query}` : ""}`
     );
   } catch (error) {
     console.warn("Failed to fetch acceptance requests (returning empty list):", error);
@@ -109,12 +100,10 @@ export async function getAcceptanceRequests(opts: {
 }
 
 export async function remindAcceptance(
-  id: string,
+  id: string
 ): Promise<ActionResult<AcceptanceRequestResponse>> {
   try {
-    const data = await api.post<AcceptanceRequestResponse>(
-      `/api/acceptance-requests/${id}/remind`,
-    );
+    const data = await api.post<AcceptanceRequestResponse>(`/api/acceptance-requests/${id}/remind`);
     return { success: true, data };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -131,12 +120,10 @@ export async function remindAcceptance(
 }
 
 export async function revokeAcceptance(
-  id: string,
+  id: string
 ): Promise<ActionResult<AcceptanceRequestResponse>> {
   try {
-    const data = await api.post<AcceptanceRequestResponse>(
-      `/api/acceptance-requests/${id}/revoke`,
-    );
+    const data = await api.post<AcceptanceRequestResponse>(`/api/acceptance-requests/${id}/revoke`);
     return { success: true, data };
   } catch (error) {
     if (error instanceof ApiError) {
@@ -152,13 +139,9 @@ export async function revokeAcceptance(
   }
 }
 
-export async function getAcceptanceDetail(
-  id: string,
-): Promise<AcceptanceRequestResponse | null> {
+export async function getAcceptanceDetail(id: string): Promise<AcceptanceRequestResponse | null> {
   try {
-    return await api.get<AcceptanceRequestResponse>(
-      `/api/acceptance-requests/${id}`,
-    );
+    return await api.get<AcceptanceRequestResponse>(`/api/acceptance-requests/${id}`);
   } catch (error) {
     console.error("Failed to fetch acceptance detail:", error);
     return null;
@@ -166,7 +149,7 @@ export async function getAcceptanceDetail(
 }
 
 export async function downloadCertificate(
-  id: string,
+  id: string
 ): Promise<{ success: boolean; pdfBase64?: string; error?: string }> {
   try {
     const { downloadCertificateBlob } = await import("@/lib/api");
@@ -182,12 +165,10 @@ export async function downloadCertificate(
   }
 }
 
-export async function fetchPortalContacts(
-  customerId: string,
-): Promise<PortalContactSummary[]> {
+export async function fetchPortalContacts(customerId: string): Promise<PortalContactSummary[]> {
   try {
     const contacts = await api.get<PortalContactSummary[]>(
-      `/api/customers/${customerId}/portal-contacts`,
+      `/api/customers/${customerId}/portal-contacts`
     );
     return contacts;
   } catch (error) {

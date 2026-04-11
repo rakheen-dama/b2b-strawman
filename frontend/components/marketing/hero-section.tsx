@@ -30,7 +30,7 @@ export function HeroSection() {
               <ArrowRight className="size-3.5" />
             </div>
 
-            <h1 className="mt-8 font-display text-4xl leading-[1.1] tracking-tight text-white text-balance sm:text-6xl lg:text-7xl">
+            <h1 className="font-display mt-8 text-4xl leading-[1.1] tracking-tight text-balance text-white sm:text-6xl lg:text-7xl">
               Practice management,{" "}
               <span className="bg-gradient-to-r from-teal-400 to-teal-300 bg-clip-text text-transparent">
                 built for Africa
@@ -38,9 +38,9 @@ export function HeroSection() {
             </h1>
 
             <p className="mt-6 max-w-xl text-lg leading-8 text-slate-400">
-              Time tracking, invoicing, compliance, and profitability — in one
-              platform that understands South African regulations and workflows.
-              Built for accounting firms, consultancies, and professional services.
+              Time tracking, invoicing, compliance, and profitability — in one platform that
+              understands South African regulations and workflows. Built for accounting firms,
+              consultancies, and professional services.
             </p>
 
             <div className="mt-10 flex flex-wrap gap-4">

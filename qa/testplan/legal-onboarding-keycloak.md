@@ -144,15 +144,11 @@ Actor: **Thandi** (registering for the first time)
 
 ---
 
-## Session 2 — Plan upgrade, team invites, legal-za activation (Simple) (≈ 25 min)
+## Session 2 — Team invites, legal-za activation, rates & tax (Simple) (≈ 25 min)
 
 Actor: **Thandi** (Owner — logged in from Session 1)
 
-### Phase A — Plan upgrade
-
-- [ ] **2.1** Navigate to **Settings → Billing** → verify current plan = **Starter**
-- [ ] **2.2** Click **Upgrade to Pro** → confirm in dialog → plan now shows **Pro**
-- [ ] **2.3** Reload page → plan persists as Pro
+> **Note (2026-04-11)**: Phase A (Plan upgrade) was removed. The product has no plan-tier subscriptions by design — teams can invite any number of members without an upgrade gate. Previous steps 2.1–2.3 were a scenario error.
 
 ### Phase B — Verify legal-za profile is active
 

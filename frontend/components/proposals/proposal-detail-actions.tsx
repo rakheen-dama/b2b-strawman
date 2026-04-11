@@ -67,7 +67,7 @@ export function ProposalDetailActions({
         setContacts(result);
       } catch {
         setError(
-          "Could not load portal contacts. Please configure them in the customer's portal settings.",
+          "Could not load portal contacts. Please configure them in the customer's portal settings."
         );
       } finally {
         setIsLoadingContacts(false);
@@ -111,31 +111,20 @@ export function ProposalDetailActions({
     <>
       <div className="flex gap-2">
         {status === "DRAFT" && (
-          <Button
-            variant="accent"
-            size="sm"
-            onClick={() => setSendDialogOpen(true)}
-          >
+          <Button variant="accent" size="sm" onClick={() => setSendDialogOpen(true)}>
             <Send className="mr-1.5 size-4" />
             Send Proposal
           </Button>
         )}
         {status === "SENT" && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleWithdraw}
-            disabled={isWithdrawing}
-          >
+          <Button variant="outline" size="sm" onClick={handleWithdraw} disabled={isWithdrawing}>
             <XCircle className="mr-1.5 size-4" />
             {isWithdrawing ? "Withdrawing..." : "Withdraw"}
           </Button>
         )}
       </div>
 
-      {error && status !== "DRAFT" && (
-        <p className="mt-2 text-sm text-destructive">{error}</p>
-      )}
+      {error && status !== "DRAFT" && <p className="text-destructive mt-2 text-sm">{error}</p>}
 
       {/* Send Dialog */}
       <Dialog open={sendDialogOpen} onOpenChange={setSendDialogOpen}>
@@ -152,8 +141,7 @@ export function ProposalDetailActions({
 
           {noContacts && !error && (
             <p className="py-4 text-sm text-slate-500">
-              No portal contacts configured for this customer. Please add a
-              portal contact first.
+              No portal contacts configured for this customer. Please add a portal contact first.
             </p>
           )}
 
@@ -161,10 +149,7 @@ export function ProposalDetailActions({
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="send-recipient">Recipient</Label>
-                <Select
-                  value={selectedContactId}
-                  onValueChange={setSelectedContactId}
-                >
+                <Select value={selectedContactId} onValueChange={setSelectedContactId}>
                   <SelectTrigger id="send-recipient">
                     <SelectValue placeholder="Select a contact" />
                   </SelectTrigger>
@@ -180,25 +165,16 @@ export function ProposalDetailActions({
             </div>
           )}
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <DialogFooter>
-            <Button
-              variant="plain"
-              onClick={() => setSendDialogOpen(false)}
-              disabled={isSending}
-            >
+            <Button variant="plain" onClick={() => setSendDialogOpen(false)} disabled={isSending}>
               Cancel
             </Button>
             <Button
               variant="accent"
               onClick={handleSend}
-              disabled={
-                isLoadingContacts ||
-                isSending ||
-                !selectedContactId ||
-                noContacts
-              }
+              disabled={isLoadingContacts || isSending || !selectedContactId || noContacts}
             >
               {isSending ? "Sending..." : "Send"}
             </Button>

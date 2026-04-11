@@ -7,10 +7,7 @@ interface RequestProgressBarProps {
   acceptedItems: number;
 }
 
-export function RequestProgressBar({
-  totalItems,
-  acceptedItems,
-}: RequestProgressBarProps) {
+export function RequestProgressBar({ totalItems, acceptedItems }: RequestProgressBarProps) {
   const percentage = totalItems > 0 ? Math.round((acceptedItems / totalItems) * 100) : 0;
 
   return (

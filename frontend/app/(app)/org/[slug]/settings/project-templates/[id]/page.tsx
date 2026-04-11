@@ -95,7 +95,13 @@ export default async function TemplateEditorPage({
         </h1>
       </div>
 
-      <TemplateEditor slug={slug} template={template} availableTags={tags} availableCustomerFields={availableCustomerFields} availableRequestTemplates={requestTemplates.map((rt) => ({ id: rt.id, name: rt.name }))} />
+      <TemplateEditor
+        slug={slug}
+        template={template}
+        availableTags={tags}
+        availableCustomerFields={availableCustomerFields}
+        availableRequestTemplates={requestTemplates.map((rt) => ({ id: rt.id, name: rt.name }))}
+      />
     </div>
   );
 }

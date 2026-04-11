@@ -4,25 +4,19 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getReportDefinitions } from "@/lib/api/reports";
 import { PermissionDenied } from "@/components/permission-denied";
 import type { ReportListResponse } from "@/lib/api/reports";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { EmptyState } from "@/components/empty-state";
 import { docsLink } from "@/lib/docs";
 
-export default async function ReportsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function ReportsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const capData = await fetchMyCapabilities();
 
-  if (!capData.isAdmin && !capData.isOwner && !capData.capabilities.includes("FINANCIAL_VISIBILITY")) {
+  if (
+    !capData.isAdmin &&
+    !capData.isOwner &&
+    !capData.capabilities.includes("FINANCIAL_VISIBILITY")
+  ) {
     return <PermissionDenied featureName="Reports" dashboardHref={`/org/${slug}/dashboard`} />;
   }
 
@@ -39,9 +33,7 @@ export default async function ReportsPage({
     <div className="space-y-8">
       {/* Page Header */}
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Reports
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Reports</h1>
       </div>
 
       {/* Category Sections */}
@@ -64,10 +56,7 @@ export default async function ReportsPage({
             </h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {category.reports.map((report) => (
-                <Link
-                  key={report.slug}
-                  href={`/org/${slug}/reports/${report.slug}`}
-                >
+                <Link key={report.slug} href={`/org/${slug}/reports/${report.slug}`}>
                   <Card className="h-full transition-shadow hover:shadow-md">
                     <CardHeader>
                       <CardTitle className="text-slate-950 dark:text-slate-50">

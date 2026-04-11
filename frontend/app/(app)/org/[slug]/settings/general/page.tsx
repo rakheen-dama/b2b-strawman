@@ -34,25 +34,19 @@ export default async function GeneralSettingsPage({
           <ChevronLeft className="size-4" />
           Settings
         </Link>
-        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           General
           <HelpTip code="org.general" docsPath="/admin/org-settings" />
         </h1>
 
-        <OrgDocumentsSection
-          slug={slug}
-          documents={documents}
-          isAdmin={false}
-        />
+        <OrgDocumentsSection slug={slug} documents={documents} isAdmin={false} />
       </div>
     );
   }
 
   let settings: OrgSettings = { defaultCurrency: "USD" };
 
-  const settingsResult = await api
-    .get<OrgSettings>("/api/settings")
-    .catch(() => null);
+  const settingsResult = await api.get<OrgSettings>("/api/settings").catch(() => null);
   if (settingsResult) {
     settings = settingsResult;
   }
@@ -68,13 +62,12 @@ export default async function GeneralSettingsPage({
       </Link>
 
       <div>
-        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           General
           <HelpTip code="org.general" docsPath="/admin/org-settings" />
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Manage your organization&apos;s currency, tax configuration, and
-          branding.
+          Manage your organization&apos;s currency, tax configuration, and branding.
         </p>
       </div>
 
@@ -95,11 +88,7 @@ export default async function GeneralSettingsPage({
         taxInclusive={settings.taxInclusive ?? false}
       />
 
-      <OrgDocumentsSection
-        slug={slug}
-        documents={documents}
-        isAdmin={true}
-      />
+      <OrgDocumentsSection slug={slug} documents={documents} isAdmin={true} />
     </div>
   );
 }

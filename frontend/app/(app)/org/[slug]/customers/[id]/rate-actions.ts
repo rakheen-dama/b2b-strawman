@@ -2,11 +2,7 @@
 
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type {
-  BillingRate,
-  CreateBillingRateRequest,
-  UpdateBillingRateRequest,
-} from "@/lib/types";
+import type { BillingRate, CreateBillingRateRequest, UpdateBillingRateRequest } from "@/lib/types";
 
 interface ActionResult {
   success: boolean;
@@ -16,7 +12,7 @@ interface ActionResult {
 export async function createCustomerBillingRate(
   slug: string,
   customerId: string,
-  data: CreateBillingRateRequest,
+  data: CreateBillingRateRequest
 ): Promise<ActionResult> {
   try {
     await api.post<BillingRate>("/api/billing-rates", {
@@ -51,7 +47,7 @@ export async function updateCustomerBillingRate(
   slug: string,
   customerId: string,
   id: string,
-  data: UpdateBillingRateRequest,
+  data: UpdateBillingRateRequest
 ): Promise<ActionResult> {
   try {
     await api.put<BillingRate>(`/api/billing-rates/${id}`, data);
@@ -82,7 +78,7 @@ export async function updateCustomerBillingRate(
 export async function deleteCustomerBillingRate(
   slug: string,
   customerId: string,
-  id: string,
+  id: string
 ): Promise<ActionResult> {
   try {
     await api.delete(`/api/billing-rates/${id}`);

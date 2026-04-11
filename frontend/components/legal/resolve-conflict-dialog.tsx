@@ -21,10 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  resolveConflictSchema,
-  type ResolveConflictFormData,
-} from "@/lib/schemas/legal";
+import { resolveConflictSchema, type ResolveConflictFormData } from "@/lib/schemas/legal";
 import { resolveConflict } from "@/app/(app)/org/[slug]/conflict-check/actions";
 
 const RESOLUTIONS = [
@@ -96,9 +93,7 @@ export function ResolveConflictDialog({
       <DialogContent data-testid="resolve-conflict-dialog">
         <DialogHeader>
           <DialogTitle>Resolve Conflict</DialogTitle>
-          <DialogDescription>
-            Choose how to resolve this conflict of interest.
-          </DialogDescription>
+          <DialogDescription>Choose how to resolve this conflict of interest.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -112,7 +107,7 @@ export function ResolveConflictDialog({
                     <select
                       value={field.value}
                       onChange={field.onChange}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-950 dark:border-slate-800 dark:focus-visible:ring-slate-300"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-950 focus-visible:outline-none dark:border-slate-800 dark:focus-visible:ring-slate-300"
                     >
                       {RESOLUTIONS.map((r) => (
                         <option key={r.value} value={r.value}>
@@ -133,11 +128,7 @@ export function ResolveConflictDialog({
                 <FormItem>
                   <FormLabel>Notes</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Add resolution notes..."
-                      rows={3}
-                      {...field}
-                    />
+                    <Textarea placeholder="Add resolution notes..." rows={3} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

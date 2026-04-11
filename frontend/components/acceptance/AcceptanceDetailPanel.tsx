@@ -37,17 +37,15 @@ function TimelineStage({
       <div className="flex flex-col items-center">
         <div
           className={cn(
-            "size-2.5 rounded-full ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-950 mt-0.5",
+            "mt-0.5 size-2.5 rounded-full ring-2 ring-offset-2 ring-offset-white dark:ring-offset-slate-950",
             isComplete
               ? "bg-teal-600 ring-teal-600"
               : isActive
                 ? "bg-slate-400 ring-slate-400"
-                : "bg-slate-200 ring-slate-200 dark:bg-slate-700 dark:ring-slate-700",
+                : "bg-slate-200 ring-slate-200 dark:bg-slate-700 dark:ring-slate-700"
           )}
         />
-        {!isLast && (
-          <div className="mt-1 flex-1 w-px bg-slate-200 dark:bg-slate-800 min-h-6" />
-        )}
+        {!isLast && <div className="mt-1 min-h-6 w-px flex-1 bg-slate-200 dark:bg-slate-800" />}
       </div>
 
       <div className={cn("pb-4", isLast && "pb-0")}>
@@ -56,15 +54,13 @@ function TimelineStage({
             "text-sm font-medium",
             isComplete || isActive
               ? "text-slate-900 dark:text-slate-100"
-              : "text-slate-400 dark:text-slate-600",
+              : "text-slate-400 dark:text-slate-600"
           )}
         >
           {label}
         </p>
         {date && (
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
-            {formatDate(date)}
-          </p>
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{formatDate(date)}</p>
         )}
         {children}
       </div>
@@ -147,8 +143,7 @@ export function AcceptanceDetailPanel({
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download =
-          request.certificateFileName ?? `acceptance-certificate.pdf`;
+        a.download = request.certificateFileName ?? `acceptance-certificate.pdf`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -179,9 +174,7 @@ export function AcceptanceDetailPanel({
           <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
             {request.contact.displayName}
           </p>
-          <p className="text-xs text-slate-500 dark:text-slate-400">
-            {request.contact.email}
-          </p>
+          <p className="text-xs text-slate-500 dark:text-slate-400">{request.contact.email}</p>
         </div>
         <AcceptanceStatusBadge status={request.status} />
       </div>
@@ -210,20 +203,10 @@ export function AcceptanceDetailPanel({
           />
         )}
         {showRevokedStage && (
-          <TimelineStage
-            label="Revoked"
-            date={request.revokedAt}
-            isComplete
-            isLast
-          />
+          <TimelineStage label="Revoked" date={request.revokedAt} isComplete isLast />
         )}
         {showExpiredStage && (
-          <TimelineStage
-            label="Expired"
-            date={request.expiresAt}
-            isComplete
-            isLast
-          />
+          <TimelineStage label="Expired" date={request.expiresAt} isComplete isLast />
         )}
       </div>
 
@@ -231,8 +214,7 @@ export function AcceptanceDetailPanel({
       {isAccepted && request.acceptorName && (
         <div className="mb-4 rounded-md border border-teal-200 bg-teal-50 p-3 dark:border-teal-900 dark:bg-teal-950/30">
           <p className="text-sm text-slate-700 dark:text-slate-300">
-            Accepted by:{" "}
-            <span className="font-medium">{request.acceptorName}</span>
+            Accepted by: <span className="font-medium">{request.acceptorName}</span>
           </p>
           {request.acceptedAt && (
             <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">
@@ -252,9 +234,7 @@ export function AcceptanceDetailPanel({
             disabled={isDownloadingCert}
           >
             <Download className="mr-1.5 size-3.5" />
-            {isDownloadingCert
-              ? "Downloading..."
-              : "Download Certificate"}
+            {isDownloadingCert ? "Downloading..." : "Download Certificate"}
           </Button>
         </div>
       )}
@@ -262,11 +242,8 @@ export function AcceptanceDetailPanel({
       {/* Reminder history */}
       {request.reminderCount > 0 && (
         <p className="mb-4 text-xs text-slate-500 dark:text-slate-400">
-          Reminded {request.reminderCount}{" "}
-          {request.reminderCount === 1 ? "time" : "times"}
-          {request.lastRemindedAt && (
-            <>, last on {formatDate(request.lastRemindedAt)}</>
-          )}
+          Reminded {request.reminderCount} {request.reminderCount === 1 ? "time" : "times"}
+          {request.lastRemindedAt && <>, last on {formatDate(request.lastRemindedAt)}</>}
         </p>
       )}
 
@@ -307,9 +284,7 @@ export function AcceptanceDetailPanel({
       )}
 
       {/* Action error */}
-      {actionError && (
-        <p className="mt-2 text-sm text-destructive">{actionError}</p>
-      )}
+      {actionError && <p className="text-destructive mt-2 text-sm">{actionError}</p>}
     </div>
   );
 }

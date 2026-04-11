@@ -18,23 +18,14 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: mockPush }),
 }));
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/request-templates/actions",
-  () => ({
-    createTemplateAction: (...args: unknown[]) =>
-      mockCreateTemplateAction(...args),
-    updateTemplateAction: (...args: unknown[]) =>
-      mockUpdateTemplateAction(...args),
-    deactivateTemplateAction: (...args: unknown[]) =>
-      mockDeactivateTemplateAction(...args),
-    duplicateTemplateAction: (...args: unknown[]) =>
-      mockDuplicateTemplateAction(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/request-templates/actions", () => ({
+  createTemplateAction: (...args: unknown[]) => mockCreateTemplateAction(...args),
+  updateTemplateAction: (...args: unknown[]) => mockUpdateTemplateAction(...args),
+  deactivateTemplateAction: (...args: unknown[]) => mockDeactivateTemplateAction(...args),
+  duplicateTemplateAction: (...args: unknown[]) => mockDuplicateTemplateAction(...args),
+}));
 
-function makeTemplate(
-  overrides?: Partial<RequestTemplateResponse>,
-): RequestTemplateResponse {
+function makeTemplate(overrides?: Partial<RequestTemplateResponse>): RequestTemplateResponse {
   return {
     id: "t1",
     name: "Tax Documents",
@@ -106,9 +97,7 @@ describe("RequestTemplates", () => {
 
     expect(screen.getByDisplayValue("Tax Documents")).toBeInTheDocument();
     expect(screen.getByDisplayValue("ID Copy")).toBeInTheDocument();
-    expect(
-      screen.getByDisplayValue("Tax Reference Number"),
-    ).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Tax Reference Number")).toBeInTheDocument();
   });
 
   it("adds a new item to the editor", async () => {
@@ -130,9 +119,7 @@ describe("RequestTemplates", () => {
 
     // Should have 2 items initially
     expect(screen.getByDisplayValue("ID Copy")).toBeInTheDocument();
-    expect(
-      screen.getByDisplayValue("Tax Reference Number"),
-    ).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Tax Reference Number")).toBeInTheDocument();
 
     // Click the first delete button
     const deleteButtons = screen.getAllByRole("button", { name: "" });
@@ -166,7 +153,7 @@ describe("RequestTemplates", () => {
       expect(mockUpdateTemplateAction).toHaveBeenCalledWith(
         "acme",
         "t1",
-        expect.objectContaining({ name: "Updated Template" }),
+        expect.objectContaining({ name: "Updated Template" })
       );
     });
   });
@@ -177,9 +164,7 @@ describe("RequestTemplates", () => {
 
     // Should show the template name as text, not an input
     expect(screen.getByText("Tax Documents")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /duplicate to customize/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /duplicate to customize/i })).toBeInTheDocument();
 
     // Should NOT have editable inputs
     expect(screen.queryByDisplayValue("Tax Documents")).not.toBeInTheDocument();
@@ -228,9 +213,7 @@ describe("RequestTemplates", () => {
     });
 
     await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith(
-        "/org/acme/settings/request-templates/t3",
-      );
+      expect(mockPush).toHaveBeenCalledWith("/org/acme/settings/request-templates/t3");
     });
   });
 
@@ -241,18 +224,12 @@ describe("RequestTemplates", () => {
         templateId="t1"
         templateName="Tax Documents"
         source="CUSTOM"
-      />,
+      />
     );
 
-    expect(
-      screen.getByRole("button", { name: /edit tax documents/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /duplicate tax documents/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /deactivate tax documents/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /edit tax documents/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /duplicate tax documents/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /deactivate tax documents/i })).toBeInTheDocument();
   });
 
   it("renders actions without edit/deactivate for platform templates", () => {
@@ -262,17 +239,17 @@ describe("RequestTemplates", () => {
         templateId="t1"
         templateName="Platform Template"
         source="PLATFORM"
-      />,
+      />
     );
 
     expect(
-      screen.queryByRole("button", { name: /edit platform template/i }),
+      screen.queryByRole("button", { name: /edit platform template/i })
     ).not.toBeInTheDocument();
     expect(
-      screen.getByRole("button", { name: /duplicate platform template/i }),
+      screen.getByRole("button", { name: /duplicate platform template/i })
     ).toBeInTheDocument();
     expect(
-      screen.queryByRole("button", { name: /deactivate platform template/i }),
+      screen.queryByRole("button", { name: /deactivate platform template/i })
     ).not.toBeInTheDocument();
   });
 });

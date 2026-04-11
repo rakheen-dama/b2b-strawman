@@ -98,7 +98,7 @@ describe("ClosePeriodDialog", () => {
         currency="USD"
         open={true}
         onOpenChange={vi.fn()}
-      />,
+      />
     );
 
     // Base fee
@@ -110,14 +110,10 @@ describe("ClosePeriodDialog", () => {
     expect(screen.getByText("Calculated at close")).toBeInTheDocument();
 
     // Overage warning banner
-    expect(
-      screen.getByText(/8\.0 overage hours recorded/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/8\.0 overage hours recorded/)).toBeInTheDocument();
 
     // Confirm button
-    expect(
-      screen.getByText("Close Period & Generate Invoice"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Close Period & Generate Invoice")).toBeInTheDocument();
   });
 
   it("renders without crashing for FIXED_FEE retainer with null hour fields", () => {
@@ -130,7 +126,7 @@ describe("ClosePeriodDialog", () => {
         currency="USD"
         open={true}
         onOpenChange={vi.fn()}
-      />,
+      />
     );
 
     // Consumed hours should still show
@@ -149,8 +145,6 @@ describe("ClosePeriodDialog", () => {
     expect(screen.getAllByText("$3,000.00").length).toBeGreaterThanOrEqual(1);
 
     // Confirm button should still work
-    expect(
-      screen.getByText("Close Period & Generate Invoice"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Close Period & Generate Invoice")).toBeInTheDocument();
   });
 });

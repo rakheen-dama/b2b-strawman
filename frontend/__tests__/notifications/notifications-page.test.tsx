@@ -22,14 +22,11 @@ const mockMarkAllNotificationsRead = vi.fn();
 
 vi.mock("@/lib/actions/notifications", () => ({
   fetchNotifications: (...args: unknown[]) => mockFetchNotifications(...args),
-  markAllNotificationsRead: (...args: unknown[]) =>
-    mockMarkAllNotificationsRead(...args),
+  markAllNotificationsRead: (...args: unknown[]) => mockMarkAllNotificationsRead(...args),
   markNotificationRead: vi.fn().mockResolvedValue({ success: true }),
 }));
 
-function makeNotification(
-  overrides: Partial<Notification> = {}
-): Notification {
+function makeNotification(overrides: Partial<Notification> = {}): Notification {
   return {
     id: "n1",
     type: "TASK_ASSIGNED",
@@ -83,11 +80,7 @@ describe("NotificationsPageClient", () => {
 
   it("shows empty state when no notifications", () => {
     render(
-      <NotificationsPageClient
-        initialNotifications={[]}
-        initialTotalPages={0}
-        orgSlug="acme"
-      />
+      <NotificationsPageClient initialNotifications={[]} initialTotalPages={0} orgSlug="acme" />
     );
 
     expect(screen.getByText("You're all caught up")).toBeInTheDocument();
@@ -130,9 +123,7 @@ describe("NotificationsPageClient", () => {
   });
 
   it("mark all as read button calls server action", async () => {
-    const notifications = [
-      makeNotification({ id: "n1", isRead: false }),
-    ];
+    const notifications = [makeNotification({ id: "n1", isRead: false })];
 
     render(
       <NotificationsPageClient

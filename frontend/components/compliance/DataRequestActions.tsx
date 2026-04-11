@@ -89,7 +89,7 @@ export function DataRequestActions({ request, slug }: DataRequestActionsProps) {
             Download Export
           </Button>
         )}
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
       </div>
     );
   }
@@ -98,22 +98,13 @@ export function DataRequestActions({ request, slug }: DataRequestActionsProps) {
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
         {status === "RECEIVED" && (
-          <Button
-            size="sm"
-            onClick={() => handleAction("START_PROCESSING")}
-            disabled={isPending}
-          >
+          <Button size="sm" onClick={() => handleAction("START_PROCESSING")} disabled={isPending}>
             {isPending ? "Processing..." : "Start Processing"}
           </Button>
         )}
 
         {status === "IN_PROGRESS" && requestType === "ACCESS" && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleGenerateExport}
-            disabled={isPending}
-          >
+          <Button variant="outline" size="sm" onClick={handleGenerateExport} disabled={isPending}>
             {isPending ? "Generating..." : "Generate Export"}
           </Button>
         )}
@@ -129,15 +120,14 @@ export function DataRequestActions({ request, slug }: DataRequestActionsProps) {
           </Button>
         )}
 
-        {status === "IN_PROGRESS" && (requestType === "ACCESS" || requestType === "CORRECTION" || requestType === "OBJECTION") && (
-          <Button
-            size="sm"
-            onClick={() => handleAction("COMPLETE")}
-            disabled={isPending}
-          >
-            {isPending ? "Completing..." : "Complete"}
-          </Button>
-        )}
+        {status === "IN_PROGRESS" &&
+          (requestType === "ACCESS" ||
+            requestType === "CORRECTION" ||
+            requestType === "OBJECTION") && (
+            <Button size="sm" onClick={() => handleAction("COMPLETE")} disabled={isPending}>
+              {isPending ? "Completing..." : "Complete"}
+            </Button>
+          )}
 
         {status === "IN_PROGRESS" && !showRejectForm && (
           <Button
@@ -190,7 +180,7 @@ export function DataRequestActions({ request, slug }: DataRequestActionsProps) {
       {successMessage && (
         <p className="text-sm text-teal-600 dark:text-teal-400">{successMessage}</p>
       )}
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
 
       <DeletionConfirmDialog
         open={deletionDialogOpen}

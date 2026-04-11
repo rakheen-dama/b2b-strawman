@@ -94,8 +94,7 @@ export function TimeTrackingSettingsForm({
       }
     }
 
-    const daysCSV = DAYS_OF_WEEK
-      .filter((d) => selectedDays.has(d.key))
+    const daysCSV = DAYS_OF_WEEK.filter((d) => selectedDays.has(d.key))
       .map((d) => d.key)
       .join(",");
 
@@ -127,9 +126,7 @@ export function TimeTrackingSettingsForm({
     <div className="space-y-6">
       {/* Time Reminders Section */}
       <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-          Time Reminders
-        </h2>
+        <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Time Reminders</h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Configure automatic reminders for team members to log their time.
         </p>
@@ -190,8 +187,8 @@ export function TimeTrackingSettingsForm({
               className="mt-1 w-40"
             />
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Note: Time is interpreted as UTC. For SAST (UTC+2), enter 2 hours
-              earlier than your local time.
+              Note: Time is interpreted as UTC. For SAST (UTC+2), enter 2 hours earlier than your
+              local time.
             </p>
           </div>
 
@@ -216,8 +213,7 @@ export function TimeTrackingSettingsForm({
               className="mt-1 w-40"
             />
             <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-              Members who log fewer than this many hours on a working day will
-              receive a reminder.
+              Members who log fewer than this many hours on a working day will receive a reminder.
             </p>
           </div>
         </div>
@@ -229,8 +225,7 @@ export function TimeTrackingSettingsForm({
           Default Expense Markup
         </h2>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Set a default markup percentage applied to all expenses unless
-          overridden per-expense.
+          Set a default markup percentage applied to all expenses unless overridden per-expense.
         </p>
 
         <div className="mt-4">
@@ -252,8 +247,7 @@ export function TimeTrackingSettingsForm({
             className="mt-1 w-40"
           />
           <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-            Applied to all expenses unless overridden per-expense. Leave blank
-            for no markup.
+            Applied to all expenses unless overridden per-expense. Leave blank for no markup.
           </p>
         </div>
       </div>
@@ -267,9 +261,7 @@ export function TimeTrackingSettingsForm({
         {message && (
           <p
             className={`text-sm ${
-              isError
-                ? "text-red-600 dark:text-red-400"
-                : "text-green-600 dark:text-green-400"
+              isError ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
             }`}
           >
             {message}

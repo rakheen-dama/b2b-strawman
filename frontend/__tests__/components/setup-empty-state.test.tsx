@@ -19,13 +19,11 @@ describe("SetupEmptyState", () => {
         icon={FileText}
         title="No documents yet"
         description="Upload or generate your first document."
-      />,
+      />
     );
 
     expect(screen.getByText("No documents yet")).toBeInTheDocument();
-    expect(
-      screen.getByText("Upload or generate your first document."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Upload or generate your first document.")).toBeInTheDocument();
   });
 
   it("renders Link button when actionHref and actionLabel provided", () => {
@@ -36,7 +34,7 @@ describe("SetupEmptyState", () => {
         description="Get started."
         actionLabel="Upload Document"
         actionHref="/documents/upload"
-      />,
+      />
     );
 
     const link = screen.getByRole("link", { name: "Upload Document" });
@@ -54,7 +52,7 @@ describe("SetupEmptyState", () => {
         description="Get started."
         actionLabel="Create Document"
         onAction={handleAction}
-      />,
+      />
     );
 
     const button = screen.getByRole("button", { name: "Create Document" });
@@ -63,13 +61,7 @@ describe("SetupEmptyState", () => {
   });
 
   it("renders no action area when no actionLabel", () => {
-    render(
-      <EmptyState
-        icon={FileText}
-        title="No documents"
-        description="Nothing here yet."
-      />,
-    );
+    render(<EmptyState icon={FileText} title="No documents" description="Nothing here yet." />);
 
     expect(screen.queryByRole("button")).not.toBeInTheDocument();
     expect(screen.queryByRole("link")).not.toBeInTheDocument();

@@ -67,23 +67,17 @@ export function DeleteTimeEntryDialog({
               <AlertTriangle className="size-6 text-red-600 dark:text-red-400" />
             </div>
           </div>
-          <AlertDialogTitle className="text-center">
-            Delete Time Entry
-          </AlertDialogTitle>
+          <AlertDialogTitle className="text-center">Delete Time Entry</AlertDialogTitle>
           <AlertDialogDescription className="text-center">
             Delete this time entry? This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
         <AlertDialogFooter>
           <AlertDialogCancel variant="plain" disabled={isDeleting}>
             Cancel
           </AlertDialogCancel>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
+          <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
             {isDeleting ? "Deleting..." : "Delete"}
           </Button>
         </AlertDialogFooter>

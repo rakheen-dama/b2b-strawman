@@ -149,12 +149,7 @@ describe("ExpenseList", () => {
     ];
 
     render(
-      <ExpenseList
-        {...defaultProps}
-        expenses={expenses}
-        isAdmin={false}
-        currentMemberId="m1"
-      />
+      <ExpenseList {...defaultProps} expenses={expenses} isAdmin={false} currentMemberId="m1" />
     );
 
     // Should have edit and delete buttons (not disabled)

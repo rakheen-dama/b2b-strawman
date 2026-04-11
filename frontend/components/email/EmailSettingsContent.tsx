@@ -9,9 +9,7 @@ import { DeliveryLogTable } from "./DeliveryLogTable";
 function StatCard({ value, label }: { value: string | number; label: string }) {
   return (
     <div className="rounded-md border border-slate-200 px-3 py-2 dark:border-slate-800">
-      <p className="font-mono text-lg font-semibold text-slate-900 dark:text-slate-100">
-        {value}
-      </p>
+      <p className="font-mono text-lg font-semibold text-slate-900 dark:text-slate-100">{value}</p>
       <p className="text-xs text-slate-500 dark:text-slate-400">{label}</p>
     </div>
   );
@@ -35,7 +33,9 @@ function OverviewTab() {
       setIsLoading(false);
     }
     load();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   if (isLoading) {
@@ -43,7 +43,7 @@ function OverviewTab() {
   }
 
   if (error) {
-    return <p className="text-sm text-destructive">{error}</p>;
+    return <p className="text-destructive text-sm">{error}</p>;
   }
 
   if (!stats) {
@@ -65,10 +65,7 @@ function OverviewTab() {
             value={`${stats.currentHourUsage}/${stats.hourlyLimit}`}
             label="Current Hour Usage"
           />
-          <StatCard
-            value={stats.providerSlug ?? "Platform"}
-            label="Provider"
-          />
+          <StatCard value={stats.providerSlug ?? "Platform"} label="Provider" />
         </div>
       </div>
     </div>
@@ -81,10 +78,7 @@ export function EmailSettingsContent() {
   const [activeTab, setActiveTab] = useState<TabValue>("overview");
 
   return (
-    <Tabs
-      value={activeTab}
-      onValueChange={(v) => setActiveTab(v as TabValue)}
-    >
+    <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)}>
       <TabsList variant="line">
         <TabsTrigger value="overview">Overview</TabsTrigger>
         <TabsTrigger value="delivery-log">Delivery Log</TabsTrigger>

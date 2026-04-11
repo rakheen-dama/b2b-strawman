@@ -51,28 +51,22 @@ vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock(
-  "@/app/(app)/org/[slug]/trust-accounting/transactions/actions",
-  () => ({
-    fetchTransactions: vi.fn().mockResolvedValue({ content: [] }),
-    recordDeposit: vi.fn(),
-    recordPayment: vi.fn(),
-    recordFeeTransfer: vi.fn(),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/trust-accounting/transactions/actions", () => ({
+  fetchTransactions: vi.fn().mockResolvedValue({ content: [] }),
+  recordDeposit: vi.fn(),
+  recordPayment: vi.fn(),
+  recordFeeTransfer: vi.fn(),
+}));
 
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
   fetchTrustAccounts: vi.fn().mockResolvedValue([]),
   fetchDashboardData: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock(
-  "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions",
-  () => ({
-    fetchClientLedger: vi.fn().mockResolvedValue(null),
-    fetchClientHistory: vi.fn().mockResolvedValue({ content: [] }),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions", () => ({
+  fetchClientLedger: vi.fn().mockResolvedValue(null),
+  fetchClientHistory: vi.fn().mockResolvedValue({ content: [] }),
+}));
 
 // --- Imports after mocks ---
 
@@ -119,7 +113,7 @@ function withAccountingProfile(ui: React.ReactElement) {
 describe("Trust coexistence -- nav visibility", () => {
   it("no trust nav items for accounting-profile org", () => {
     const trustNavItems = NAV_GROUPS.flatMap((g) => g.items).filter(
-      (item) => item.requiredModule === TRUST_MODULE,
+      (item) => item.requiredModule === TRUST_MODULE
     );
 
     // Sanity: there should be 7 trust nav items in the nav definition
@@ -130,26 +124,22 @@ describe("Trust coexistence -- nav visibility", () => {
         <>
           {trustNavItems.map((item) => (
             <ModuleGate key={item.label} module={item.requiredModule!}>
-              <span data-testid={`trust-nav-${item.label}`}>
-                {item.label}
-              </span>
+              <span data-testid={`trust-nav-${item.label}`}>{item.label}</span>
             </ModuleGate>
           ))}
-        </>,
-      ),
+        </>
+      )
     );
 
     // None of the 7 trust nav items should be visible
     for (const item of trustNavItems) {
-      expect(
-        screen.queryByTestId(`trust-nav-${item.label}`),
-      ).not.toBeInTheDocument();
+      expect(screen.queryByTestId(`trust-nav-${item.label}`)).not.toBeInTheDocument();
     }
   });
 
   it("trust nav items visible for legal-profile org with trust_accounting", () => {
     const trustNavItems = NAV_GROUPS.flatMap((g) => g.items).filter(
-      (item) => item.requiredModule === TRUST_MODULE,
+      (item) => item.requiredModule === TRUST_MODULE
     );
 
     const { unmount } = render(
@@ -157,45 +147,35 @@ describe("Trust coexistence -- nav visibility", () => {
         <>
           {trustNavItems.map((item) => (
             <ModuleGate key={item.label} module={item.requiredModule!}>
-              <span data-testid={`trust-nav-${item.label}`}>
-                {item.label}
-              </span>
+              <span data-testid={`trust-nav-${item.label}`}>{item.label}</span>
             </ModuleGate>
           ))}
-        </>,
-      ),
+        </>
+      )
     );
 
     // All 7 trust nav items should be visible
     for (const item of trustNavItems) {
-      expect(
-        screen.getByTestId(`trust-nav-${item.label}`),
-      ).toBeInTheDocument();
+      expect(screen.getByTestId(`trust-nav-${item.label}`)).toBeInTheDocument();
     }
 
     unmount();
   });
 
   it("trust settings item hidden for non-trust-enabled org", () => {
-    const trustSettingsItem = SETTINGS_ITEMS.find(
-      (item) => item.requiredModule === TRUST_MODULE,
-    );
+    const trustSettingsItem = SETTINGS_ITEMS.find((item) => item.requiredModule === TRUST_MODULE);
 
     expect(trustSettingsItem).toBeDefined();
 
     render(
       withAccountingProfile(
         <ModuleGate module={trustSettingsItem!.requiredModule!}>
-          <span data-testid="trust-settings-coex">
-            {trustSettingsItem!.title}
-          </span>
-        </ModuleGate>,
-      ),
+          <span data-testid="trust-settings-coex">{trustSettingsItem!.title}</span>
+        </ModuleGate>
+      )
     );
 
-    expect(
-      screen.queryByTestId("trust-settings-coex"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("trust-settings-coex")).not.toBeInTheDocument();
   });
 });
 
@@ -270,22 +250,18 @@ describe("Trust smoke tests", () => {
 
     render(
       withTrustEnabled(
-        <TrustBalanceCard
-          customerId="cust-1"
-          slug="acme"
-          showQuickActions={false}
-        />,
-      ),
+        <TrustBalanceCard customerId="cust-1" slug="acme" showQuickActions={false} />
+      )
     );
 
     // Verify the balance card renders with the post-approval balance
     expect(screen.getByText("Trust Balance")).toBeInTheDocument();
     expect(screen.getByText("Funds Held")).toBeInTheDocument();
-    // ZAR formatting: "R 50,000.00" (en-ZA locale with Intl.NumberFormat)
-    expect(screen.getByText(/R[\s\u00a0]50,000\.00/)).toBeInTheDocument();
+    // ZAR formatting: locale-agnostic — accepts en-ZA "R 50 000,00" or en-US "R 50,000.00"
+    expect(screen.getByText(/R[\s\u00a0]50[\s\u00a0,]000[,.]00/)).toBeInTheDocument();
     // Verify deposit and payment breakdowns
-    expect(screen.getByText(/R[\s\u00a0]80,000\.00/)).toBeInTheDocument();
-    expect(screen.getByText(/R[\s\u00a0]25,000\.00/)).toBeInTheDocument();
+    expect(screen.getByText(/R[\s\u00a0]80[\s\u00a0,]000[,.]00/)).toBeInTheDocument();
+    expect(screen.getByText(/R[\s\u00a0]25[\s\u00a0,]000[,.]00/)).toBeInTheDocument();
   });
 
   it("trust dashboard summary cards render with mock data", () => {
@@ -355,23 +331,19 @@ describe("Trust smoke tests", () => {
 
     render(
       withTrustEnabled(
-        <TrustBalanceCard
-          customerId="cust-summary"
-          slug="acme"
-          showQuickActions={false}
-        />,
-      ),
+        <TrustBalanceCard customerId="cust-summary" slug="acme" showQuickActions={false} />
+      )
     );
 
     // Verify summary data renders
     expect(screen.getByText("Trust Balance")).toBeInTheDocument();
     expect(screen.getByText("Funds Held")).toBeInTheDocument();
-    // Total balance: R 125,750.50 (en-ZA locale)
-    expect(screen.getByText(/R[\s\u00a0]125,750\.50/)).toBeInTheDocument();
-    // Deposits: R 200,000.00
-    expect(screen.getByText(/R[\s\u00a0]200,000\.00/)).toBeInTheDocument();
-    // Payments: R 70,000.00
-    expect(screen.getByText(/R[\s\u00a0]70,000\.00/)).toBeInTheDocument();
+    // Total balance: locale-agnostic — accepts en-ZA "R 125 750,50" or en-US "R 125,750.50"
+    expect(screen.getByText(/R[\s\u00a0]125[\s\u00a0,]750[,.]50/)).toBeInTheDocument();
+    // Deposits: locale-agnostic "R 200 000,00" or "R 200,000.00"
+    expect(screen.getByText(/R[\s\u00a0]200[\s\u00a0,]000[,.]00/)).toBeInTheDocument();
+    // Payments: locale-agnostic "R 70 000,00" or "R 70,000.00"
+    expect(screen.getByText(/R[\s\u00a0]70[\s\u00a0,]000[,.]00/)).toBeInTheDocument();
     // Last transaction date should be rendered
     expect(screen.getByText(/Last transaction/)).toBeInTheDocument();
   });

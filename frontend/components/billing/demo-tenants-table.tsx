@@ -29,9 +29,7 @@ interface DemoTenantsTableProps {
 export function DemoTenantsTable({ tenants }: DemoTenantsTableProps) {
   const router = useRouter();
   const [reseedingId, setReseedingId] = useState<string | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<AdminTenantBilling | null>(
-    null,
-  );
+  const [deleteTarget, setDeleteTarget] = useState<AdminTenantBilling | null>(null);
 
   // Tenants are already filtered to PILOT/COMPLIMENTARY by the server action
   const demoTenants = tenants;
@@ -88,9 +86,7 @@ export function DemoTenantsTable({ tenants }: DemoTenantsTableProps) {
               key={tenant.organizationId}
               data-testid={`demo-tenant-row-${tenant.organizationName}`}
             >
-              <TableCell className="font-medium">
-                {tenant.organizationName}
-              </TableCell>
+              <TableCell className="font-medium">{tenant.organizationName}</TableCell>
               <TableCell>
                 <Badge variant="outline">{tenant.verticalProfile}</Badge>
               </TableCell>
@@ -101,9 +97,7 @@ export function DemoTenantsTable({ tenants }: DemoTenantsTableProps) {
                 <MethodBadge method={tenant.billingMethod} />
               </TableCell>
               <TableCell>{formatDate(tenant.createdAt)}</TableCell>
-              <TableCell className="text-right">
-                {tenant.memberCount}
-              </TableCell>
+              <TableCell className="text-right">{tenant.memberCount}</TableCell>
               <TableCell className="text-right">
                 <div className="flex justify-end gap-2">
                   <Button
@@ -121,11 +115,7 @@ export function DemoTenantsTable({ tenants }: DemoTenantsTableProps) {
                       "Reseed Data"
                     )}
                   </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => setDeleteTarget(tenant)}
-                  >
+                  <Button variant="destructive" size="sm" onClick={() => setDeleteTarget(tenant)}>
                     Delete Tenant
                   </Button>
                 </div>

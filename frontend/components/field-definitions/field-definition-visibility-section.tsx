@@ -3,10 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  CONDITION_OPERATORS,
-  type ConditionOperator,
-} from "./field-definition-constants";
+import { CONDITION_OPERATORS, type ConditionOperator } from "./field-definition-constants";
 import type { FieldDefinitionResponse } from "@/lib/types";
 
 interface VisibilitySectionProps {
@@ -34,22 +31,17 @@ export function VisibilityConditionSection({
   onClearCondition,
   availableControllingFields,
 }: VisibilitySectionProps) {
-  const controllingField = availableControllingFields.find(
-    (f) => f.slug === conditionFieldSlug,
-  );
+  const controllingField = availableControllingFields.find((f) => f.slug === conditionFieldSlug);
   const isControllingDropdown = controllingField?.fieldType === "DROPDOWN";
 
   const conditionPreview = getConditionPreview();
 
   function getConditionPreview(): string | null {
     if (!showConditionally || !conditionFieldSlug || !conditionValue) return null;
-    const ctrlField = availableControllingFields.find(
-      (f) => f.slug === conditionFieldSlug,
-    );
+    const ctrlField = availableControllingFields.find((f) => f.slug === conditionFieldSlug);
     const fieldName = ctrlField?.name ?? conditionFieldSlug;
     const operatorLabel =
-      CONDITION_OPERATORS.find((o) => o.value === conditionOperator)?.label ??
-      conditionOperator;
+      CONDITION_OPERATORS.find((o) => o.value === conditionOperator)?.label ?? conditionOperator;
 
     if (conditionOperator === "in") {
       const values = conditionValue
@@ -105,7 +97,7 @@ export function VisibilityConditionSection({
                 onConditionFieldSlugChange(e.target.value);
                 onConditionValueChange("");
               }}
-              className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 dark:border-slate-700"
+              className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none dark:border-slate-700"
             >
               <option value="">Select a field...</option>
               {availableControllingFields.map((f) => (
@@ -123,7 +115,7 @@ export function VisibilityConditionSection({
               id="fd-condition-operator"
               value={conditionOperator}
               onChange={(e) => onConditionOperatorChange(e.target.value as ConditionOperator)}
-              className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 dark:border-slate-700"
+              className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none dark:border-slate-700"
             >
               {CONDITION_OPERATORS.map((op) => (
                 <option key={op.value} value={op.value}>
@@ -136,14 +128,12 @@ export function VisibilityConditionSection({
           {/* Value input */}
           <div className="space-y-1">
             <Label htmlFor="fd-condition-value">Value</Label>
-            {isControllingDropdown &&
-            conditionOperator !== "in" &&
-            controllingField?.options ? (
+            {isControllingDropdown && conditionOperator !== "in" && controllingField?.options ? (
               <select
                 id="fd-condition-value"
                 value={conditionValue}
                 onChange={(e) => onConditionValueChange(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 dark:border-slate-700"
+                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none dark:border-slate-700"
               >
                 <option value="">Select a value...</option>
                 {controllingField.options.map((opt) => (
@@ -186,9 +176,7 @@ export function VisibilityConditionSection({
 
           {/* Preview */}
           {conditionPreview && (
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              {conditionPreview}
-            </p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">{conditionPreview}</p>
           )}
 
           {/* Clear button */}

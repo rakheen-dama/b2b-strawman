@@ -1,7 +1,15 @@
 "use client";
 
 import { useRouter, usePathname } from "next/navigation";
-import { LogOut, FolderOpen, FileText, Inbox, ClipboardCheck, FileSignature, User } from "lucide-react";
+import {
+  LogOut,
+  FolderOpen,
+  FileText,
+  Inbox,
+  ClipboardCheck,
+  FileSignature,
+  User,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { clearPortalAuth, getPortalCustomerName } from "@/lib/portal-api";
 import { cn } from "@/lib/utils";
@@ -40,8 +48,7 @@ export function PortalHeader() {
 
           <nav className="hidden items-center gap-1 sm:flex">
             {NAV_ITEMS.map((item) => {
-              const isActive =
-                pathname === item.href || pathname.startsWith(item.href + "/");
+              const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
               return (
                 <Link
                   key={item.href}
@@ -50,7 +57,7 @@ export function PortalHeader() {
                     "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
                     isActive
                       ? "bg-slate-100 text-slate-900 dark:bg-slate-800 dark:text-slate-100"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-100",
+                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-900 dark:hover:text-slate-100"
                   )}
                 >
                   <item.icon className="size-4" />

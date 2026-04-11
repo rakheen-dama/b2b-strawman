@@ -38,9 +38,7 @@ export function AddProjectRateDialog({
   const [memberId, setMemberId] = useState("");
   const [hourlyRate, setHourlyRate] = useState("");
   const [currency, setCurrency] = useState(defaultCurrency);
-  const [effectiveFrom, setEffectiveFrom] = useState(
-    new Date().toLocaleDateString("en-CA"),
-  );
+  const [effectiveFrom, setEffectiveFrom] = useState(new Date().toLocaleDateString("en-CA"));
   const [effectiveTo, setEffectiveTo] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
@@ -123,7 +121,7 @@ export function AddProjectRateDialog({
               id="project-rate-member"
               value={memberId}
               onChange={(e) => setMemberId(e.target.value)}
-              className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal-500 disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:placeholder:text-slate-400"
+              className="flex h-9 w-full rounded-md border border-slate-200 bg-white px-3 py-1 text-sm shadow-xs transition-colors placeholder:text-slate-500 focus-visible:ring-1 focus-visible:ring-teal-500 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-800 dark:bg-slate-950 dark:placeholder:text-slate-400"
               required
             >
               <option value="">Select a member...</option>
@@ -151,11 +149,7 @@ export function AddProjectRateDialog({
 
           <div className="space-y-2">
             <Label>Currency</Label>
-            <CurrencySelector
-              value={currency}
-              onChange={setCurrency}
-              className="w-full"
-            />
+            <CurrencySelector value={currency} onChange={setCurrency} className="w-full" />
           </div>
 
           <div className="space-y-2">
@@ -171,8 +165,7 @@ export function AddProjectRateDialog({
 
           <div className="space-y-2">
             <Label htmlFor="project-rate-to">
-              Effective To{" "}
-              <span className="font-normal text-slate-500">(optional)</span>
+              Effective To <span className="font-normal text-slate-500">(optional)</span>
             </Label>
             <Input
               id="project-rate-to"
@@ -182,7 +175,7 @@ export function AddProjectRateDialog({
             />
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <DialogFooter>
             <Button

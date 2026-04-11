@@ -5,10 +5,7 @@ import { createMessages } from "@/lib/messages";
 import { EmptyState } from "@/components/empty-state";
 import { PermissionDenied } from "@/components/permission-denied";
 import { TerminologyHeading } from "@/components/terminology-heading";
-import type {
-  UtilizationResponse,
-  OrgProfitabilityResponse,
-} from "@/lib/types";
+import type { UtilizationResponse, OrgProfitabilityResponse } from "@/lib/types";
 import { ProfitabilityContent } from "@/components/profitability/profitability-content";
 
 /** Returns first day of current month and today as 'YYYY-MM-DD'. */
@@ -21,17 +18,19 @@ function getCurrentMonthRange(): { from: string; to: string } {
   };
 }
 
-export default async function ProfitabilityPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function ProfitabilityPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const capData = await fetchMyCapabilities();
   const { t } = createMessages("empty-states");
 
-  if (!capData.isAdmin && !capData.isOwner && !capData.capabilities.includes("FINANCIAL_VISIBILITY")) {
-    return <PermissionDenied featureName="Profitability" dashboardHref={`/org/${slug}/dashboard`} />;
+  if (
+    !capData.isAdmin &&
+    !capData.isOwner &&
+    !capData.capabilities.includes("FINANCIAL_VISIBILITY")
+  ) {
+    return (
+      <PermissionDenied featureName="Profitability" dashboardHref={`/org/${slug}/dashboard`} />
+    );
   }
 
   const { from, to } = getCurrentMonthRange();
@@ -41,12 +40,8 @@ export default async function ProfitabilityPage({
 
   try {
     [utilization, profitability] = await Promise.all([
-      api.get<UtilizationResponse>(
-        `/api/reports/utilization?from=${from}&to=${to}`,
-      ),
-      api.get<OrgProfitabilityResponse>(
-        `/api/reports/profitability?from=${from}&to=${to}`,
-      ),
+      api.get<UtilizationResponse>(`/api/reports/utilization?from=${from}&to=${to}`),
+      api.get<OrgProfitabilityResponse>(`/api/reports/profitability?from=${from}&to=${to}`),
     ]);
   } catch {
     // Non-fatal: show empty state
@@ -59,8 +54,8 @@ export default async function ProfitabilityPage({
           <TerminologyHeading term="Profitability" />
         </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Team utilization, project profitability, and customer profitability
-          across your organization
+          Team utilization, project profitability, and customer profitability across your
+          organization
         </p>
       </div>
 

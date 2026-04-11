@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useState,
-  useEffect,
-  useRef,
-  useCallback,
-  useTransition,
-} from "react";
+import { useState, useEffect, useRef, useCallback, useTransition } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Search, ChevronRight, ChevronDown } from "lucide-react";
@@ -79,7 +73,7 @@ export function TariffItemBrowser({
         }
       });
     },
-    [scheduleId],
+    [scheduleId]
   );
 
   // Initial load
@@ -122,7 +116,7 @@ export function TariffItemBrowser({
     <div data-testid="tariff-item-browser" className="space-y-3">
       {/* Search */}
       <div className="relative max-w-xs">
-        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+        <Search className="absolute top-1/2 left-3 size-4 -translate-y-1/2 text-slate-400" />
         <Input
           placeholder="Search items..."
           value={search}
@@ -133,12 +127,7 @@ export function TariffItemBrowser({
       </div>
 
       {/* Items */}
-      <div
-        className={cn(
-          "space-y-1",
-          isPending && "opacity-50 transition-opacity",
-        )}
-      >
+      <div className={cn("space-y-1", isPending && "opacity-50 transition-opacity")}>
         {items.length === 0 && !isPending ? (
           <p className="py-4 text-center text-sm text-slate-500 dark:text-slate-400">
             No tariff items found.
@@ -150,7 +139,7 @@ export function TariffItemBrowser({
               <button
                 type="button"
                 onClick={() => toggleSection(group.section)}
-                className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+                className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs font-semibold tracking-wide text-slate-600 uppercase hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
                 data-testid={`section-header-${group.section}`}
               >
                 {collapsedSections.has(group.section) ? (
@@ -177,7 +166,7 @@ export function TariffItemBrowser({
                             : "",
                           isSelected
                             ? "bg-teal-50 ring-1 ring-teal-200 dark:bg-teal-950 dark:ring-teal-800"
-                            : "",
+                            : ""
                         )}
                         onClick={() => onSelectItem?.(item)}
                         data-testid={`tariff-item-${item.id}`}

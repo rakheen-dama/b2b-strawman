@@ -23,12 +23,10 @@ export default async function TimeTrackingSettingsPage({
           <ChevronLeft className="size-4" />
           Settings
         </Link>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Time Tracking
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Time Tracking</h1>
         <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to manage time tracking settings. Only
-          admins and owners can access this page.
+          You do not have permission to manage time tracking settings. Only admins and owners can
+          access this page.
         </p>
       </div>
     );
@@ -36,9 +34,7 @@ export default async function TimeTrackingSettingsPage({
 
   let settings: OrgSettings = { defaultCurrency: "USD" };
 
-  const settingsResult = await api
-    .get<OrgSettings>("/api/settings")
-    .catch(() => null);
+  const settingsResult = await api.get<OrgSettings>("/api/settings").catch(() => null);
   if (settingsResult) {
     settings = settingsResult;
   }
@@ -54,12 +50,9 @@ export default async function TimeTrackingSettingsPage({
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Time Tracking
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Time Tracking</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure time reminders and default expense markup for your
-          organization.
+          Configure time reminders and default expense markup for your organization.
         </p>
       </div>
 
@@ -69,9 +62,7 @@ export default async function TimeTrackingSettingsPage({
         timeReminderDays={settings.timeReminderDays ?? "MON,TUE,WED,THU,FRI"}
         timeReminderTime={settings.timeReminderTime ?? "17:00"}
         timeReminderMinHours={settings.timeReminderMinHours ?? 4.0}
-        defaultExpenseMarkupPercent={
-          settings.defaultExpenseMarkupPercent ?? null
-        }
+        defaultExpenseMarkupPercent={settings.defaultExpenseMarkupPercent ?? null}
       />
     </div>
   );

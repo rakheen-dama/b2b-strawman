@@ -21,11 +21,7 @@ interface DeleteBudgetDialogProps {
   children: ReactNode;
 }
 
-export function DeleteBudgetDialog({
-  slug,
-  projectId,
-  children,
-}: DeleteBudgetDialogProps) {
+export function DeleteBudgetDialog({ slug, projectId, children }: DeleteBudgetDialogProps) {
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,24 +54,18 @@ export function DeleteBudgetDialog({
               <AlertTriangle className="size-6 text-red-600 dark:text-red-400" />
             </div>
           </div>
-          <AlertDialogTitle className="text-center">
-            Delete Budget
-          </AlertDialogTitle>
+          <AlertDialogTitle className="text-center">Delete Budget</AlertDialogTitle>
           <AlertDialogDescription className="text-center">
-            This will remove the budget configuration for this project. Time
-            entries and billing data will not be affected.
+            This will remove the budget configuration for this project. Time entries and billing
+            data will not be affected.
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
         <AlertDialogFooter>
           <AlertDialogCancel variant="plain" disabled={isDeleting}>
             Cancel
           </AlertDialogCancel>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={isDeleting}
-          >
+          <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
             {isDeleting ? "Deleting..." : "Delete Budget"}
           </Button>
         </AlertDialogFooter>

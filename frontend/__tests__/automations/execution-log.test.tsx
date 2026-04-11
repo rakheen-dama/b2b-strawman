@@ -3,27 +3,21 @@ import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import { ExecutionLog } from "@/components/automations/execution-log";
 import { ExecutionDetail } from "@/components/automations/execution-detail";
 import { AutomationsWidget } from "@/components/automations/automations-widget";
-import type {
-  AutomationExecutionResponse,
-  PaginatedResponse,
-} from "@/lib/api/automations";
+import type { AutomationExecutionResponse, PaginatedResponse } from "@/lib/api/automations";
 
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),
   usePathname: () => "/org/acme/settings/automations/executions",
 }));
 
-const mockFetchExecutions = vi
-  .fn()
-  .mockResolvedValue({ content: [], page: { totalElements: 0, totalPages: 0, size: 20, number: 0 } });
+const mockFetchExecutions = vi.fn().mockResolvedValue({
+  content: [],
+  page: { totalElements: 0, totalPages: 0, size: 20, number: 0 },
+});
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/automations/actions",
-  () => ({
-    fetchExecutionsAction: (...args: unknown[]) =>
-      mockFetchExecutions(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/automations/actions", () => ({
+  fetchExecutionsAction: (...args: unknown[]) => mockFetchExecutions(...args),
+}));
 
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
@@ -83,11 +77,10 @@ const failedExecution: AutomationExecutionResponse = {
   ],
 };
 
-const samplePaginatedResponse: PaginatedResponse<AutomationExecutionResponse> =
-  {
-    content: [sampleExecution, failedExecution],
-    page: { totalElements: 2, totalPages: 1, size: 20, number: 0 },
-  };
+const samplePaginatedResponse: PaginatedResponse<AutomationExecutionResponse> = {
+  content: [sampleExecution, failedExecution],
+  page: { totalElements: 2, totalPages: 1, size: 20, number: 0 },
+};
 
 describe("ExecutionLog", () => {
   beforeEach(() => {
@@ -99,36 +92,22 @@ describe("ExecutionLog", () => {
   });
 
   it("renders execution rows", () => {
-    render(
-      <ExecutionLog
-        initialExecutions={samplePaginatedResponse}
-      />,
-    );
+    render(<ExecutionLog initialExecutions={samplePaginatedResponse} />);
     expect(screen.getByText("Auto-assign tasks")).toBeInTheDocument();
     expect(screen.getByText("Send invoice email")).toBeInTheDocument();
   });
 
   it("shows correct status badges", () => {
-    render(
-      <ExecutionLog
-        initialExecutions={samplePaginatedResponse}
-      />,
-    );
+    render(<ExecutionLog initialExecutions={samplePaginatedResponse} />);
     expect(screen.getByText("Completed")).toBeInTheDocument();
     expect(screen.getByText("Failed")).toBeInTheDocument();
   });
 
   it("opens detail sheet on row click", () => {
-    render(
-      <ExecutionLog
-        initialExecutions={samplePaginatedResponse}
-      />,
-    );
+    render(<ExecutionLog initialExecutions={samplePaginatedResponse} />);
     fireEvent.click(screen.getByText("Auto-assign tasks"));
     expect(screen.getByText("Execution Detail")).toBeInTheDocument();
-    expect(
-      screen.getByText('Execution of "Auto-assign tasks"'),
-    ).toBeInTheDocument();
+    expect(screen.getByText('Execution of "Auto-assign tasks"')).toBeInTheDocument();
   });
 
   it("shows empty state when no executions", () => {
@@ -136,9 +115,7 @@ describe("ExecutionLog", () => {
       content: [],
       page: { totalElements: 0, totalPages: 0, size: 20, number: 0 },
     };
-    render(
-      <ExecutionLog initialExecutions={empty} />,
-    );
+    render(<ExecutionLog initialExecutions={empty} />);
     expect(screen.getByText("No executions found.")).toBeInTheDocument();
   });
 });
@@ -153,25 +130,13 @@ describe("ExecutionDetail", () => {
   });
 
   it("shows trigger event data", () => {
-    render(
-      <ExecutionDetail
-        execution={sampleExecution}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ExecutionDetail execution={sampleExecution} open={true} onOpenChange={vi.fn()} />);
     expect(screen.getByText("taskId:")).toBeInTheDocument();
     expect(screen.getByText("task-123")).toBeInTheDocument();
   });
 
   it("shows per-action results", () => {
-    render(
-      <ExecutionDetail
-        execution={sampleExecution}
-        open={true}
-        onOpenChange={vi.fn()}
-      />,
-    );
+    render(<ExecutionDetail execution={sampleExecution} open={true} onOpenChange={vi.fn()} />);
     expect(screen.getByText("Assign Member")).toBeInTheDocument();
     expect(screen.getByText("Actions (1)")).toBeInTheDocument();
   });
@@ -196,7 +161,7 @@ describe("AutomationsWidget", () => {
           todayFailed: 2,
         }}
         orgSlug="acme"
-      />,
+      />
     );
     expect(screen.getByText("5")).toBeInTheDocument();
     expect(screen.getByText("12")).toBeInTheDocument();
@@ -213,7 +178,7 @@ describe("AutomationsWidget", () => {
           todayFailed: 3,
         }}
         orgSlug="acme"
-      />,
+      />
     );
     expect(screen.getByText("3 failed")).toBeInTheDocument();
   });

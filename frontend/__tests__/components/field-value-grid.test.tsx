@@ -3,9 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { FieldValueGrid } from "@/components/setup/field-value-grid";
 import type { FieldValueProps } from "@/components/setup/types";
 
-function makeFields(
-  overrides: Partial<FieldValueProps>[] = [],
-): FieldValueProps[] {
+function makeFields(overrides: Partial<FieldValueProps>[] = []): FieldValueProps[] {
   const defaults: FieldValueProps[] = [
     {
       name: "Company Reg",
@@ -90,12 +88,7 @@ describe("FieldValueGrid", () => {
       },
     ];
 
-    render(
-      <FieldValueGrid
-        fields={fields}
-        groups={[{ id: "legal", name: "Legal Info" }]}
-      />,
-    );
+    render(<FieldValueGrid fields={fields} groups={[{ id: "legal", name: "Legal Info" }]} />);
 
     expect(screen.getByText("Legal Info")).toBeInTheDocument();
     expect(screen.getByText("Other")).toBeInTheDocument();

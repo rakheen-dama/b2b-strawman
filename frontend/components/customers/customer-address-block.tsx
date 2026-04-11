@@ -35,9 +35,9 @@ export function CustomerAddressBlock({ customer }: CustomerAddressBlockProps) {
       </CardHeader>
       <CardContent>
         {lines.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No address on file.</p>
+          <p className="text-muted-foreground text-sm">No address on file.</p>
         ) : (
-          <address className="not-italic text-sm text-slate-700 dark:text-slate-300">
+          <address className="text-sm text-slate-700 not-italic dark:text-slate-300">
             {lines.map((line, i) => (
               <div key={i}>{line}</div>
             ))}

@@ -30,7 +30,9 @@ export function DesktopSidebar({ slug, groups = [], userName, userEmail }: Deskt
       </div>
       <div className="mx-4 border-t border-white/10" />
       <div className="flex items-center gap-2 px-4 py-3">
-        <span className="truncate text-teal-500/80 font-mono text-xs tracking-wider uppercase">{slug}</span>
+        <span className="truncate font-mono text-xs tracking-wider text-teal-500/80 uppercase">
+          {slug}
+        </span>
       </div>
       <div className="mx-4 border-t border-white/10" />
 
@@ -39,20 +41,18 @@ export function DesktopSidebar({ slug, groups = [], userName, userEmail }: Deskt
         type="button"
         aria-label="Search, Command K"
         onClick={() => setOpen(true)}
-        className="mx-4 mb-2 flex w-[calc(100%-2rem)] items-center gap-2 rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/40 hover:bg-white/10 hover:text-white/60 transition-colors"
+        className="mx-4 mb-2 flex w-[calc(100%-2rem)] items-center gap-2 rounded-md border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/40 transition-colors hover:bg-white/10 hover:text-white/60"
       >
         <Search className="h-3.5 w-3.5" />
         Search...
-        <kbd className="ml-auto rounded bg-white/10 px-1 py-0.5 text-[10px] font-mono">⌘K</kbd>
+        <kbd className="ml-auto rounded bg-white/10 px-1 py-0.5 font-mono text-[10px]">⌘K</kbd>
       </button>
 
       {/* Nav body — zone-based */}
       <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-0 p-2">
         {NAV_GROUPS.map((group, index) => (
           <Fragment key={group.id}>
-            {index > 0 && (
-              <div className="my-1 mx-2 border-t border-white/5" />
-            )}
+            {index > 0 && <div className="mx-2 my-1 border-t border-white/5" />}
             <NavZone zone={group} slug={slug} />
           </Fragment>
         ))}
@@ -69,7 +69,7 @@ export function DesktopSidebar({ slug, groups = [], userName, userEmail }: Deskt
                 "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
                 pathname.startsWith("/platform-admin")
                   ? "bg-white/5 text-white"
-                  : "text-white/60 hover:bg-slate-800 hover:text-white",
+                  : "text-white/60 hover:bg-slate-800 hover:text-white"
               )}
             >
               <Shield className="h-4 w-4" />
@@ -92,7 +92,7 @@ export function DesktopSidebar({ slug, groups = [], userName, userEmail }: Deskt
                 href={href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white text-white/60 hover:bg-slate-800 hover:text-white"
+                className="relative flex items-center gap-2 rounded-md px-3 py-2 text-sm text-white/60 transition-colors hover:bg-slate-800 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
               >
                 <item.icon className="h-4 w-4" />
                 {item.label}
@@ -100,9 +100,7 @@ export function DesktopSidebar({ slug, groups = [], userName, userEmail }: Deskt
             );
           }
 
-          const isActive = item.exact
-            ? pathname === href
-            : pathname.startsWith(href);
+          const isActive = item.exact ? pathname === href : pathname.startsWith(href);
 
           return (
             <Link
@@ -112,14 +110,14 @@ export function DesktopSidebar({ slug, groups = [], userName, userEmail }: Deskt
                 "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
                 isActive
                   ? "bg-white/5 text-white"
-                  : "text-white/60 hover:bg-slate-800 hover:text-white",
+                  : "text-white/60 hover:bg-slate-800 hover:text-white"
               )}
             >
               {isActive && (
                 <motion.div
                   layoutId="sidebar-indicator"
                   aria-hidden="true"
-                  className="absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-teal-500"
+                  className="absolute top-1 bottom-1 left-0 w-0.5 rounded-full bg-teal-500"
                   transition={{ type: "spring", stiffness: 350, damping: 30 }}
                 />
               )}

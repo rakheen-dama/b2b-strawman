@@ -4,10 +4,7 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { Button } from "@/components/ui/button";
 import { TemplateSourceBadge } from "@/components/information-requests/template-source-badge";
 import { RequestTemplateActions } from "@/components/information-requests/request-template-actions";
-import {
-  listRequestTemplates,
-  type RequestTemplateResponse,
-} from "@/lib/api/information-requests";
+import { listRequestTemplates, type RequestTemplateResponse } from "@/lib/api/information-requests";
 
 export default async function RequestTemplatesPage({
   params,
@@ -32,8 +29,8 @@ export default async function RequestTemplatesPage({
           Request Templates
         </h1>
         <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to manage request templates. Only admins and
-          owners can access this page.
+          You do not have permission to manage request templates. Only admins and owners can access
+          this page.
         </p>
       </div>
     );
@@ -78,12 +75,11 @@ export default async function RequestTemplatesPage({
       {templates.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <ClipboardList className="size-12 text-slate-300 dark:text-slate-700" />
-          <h2 className="mt-4 font-display text-lg text-slate-900 dark:text-slate-100">
+          <h2 className="font-display mt-4 text-lg text-slate-900 dark:text-slate-100">
             No request templates yet
           </h2>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-            Create your first request template to streamline information
-            gathering.
+            Create your first request template to streamline information gathering.
           </p>
         </div>
       ) : (
@@ -91,19 +87,19 @@ export default async function RequestTemplatesPage({
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Name
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Source
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Items
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Status
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Actions
                 </th>
               </tr>

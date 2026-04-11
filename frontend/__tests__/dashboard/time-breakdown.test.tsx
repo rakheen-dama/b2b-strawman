@@ -5,11 +5,9 @@ import type { PersonalProjectBreakdown } from "@/lib/dashboard-types";
 
 // Mock recharts to avoid rendering issues in happy-dom
 vi.mock("recharts", () => ({
-  ResponsiveContainer: ({
-    children,
-  }: {
-    children: React.ReactNode;
-  }) => <div data-testid="responsive-container">{children}</div>,
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="responsive-container">{children}</div>
+  ),
   PieChart: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="pie-chart">{children}</div>
   ),
@@ -71,9 +69,7 @@ describe("TimeBreakdown", () => {
     render(<TimeBreakdown data={[]} />);
 
     expect(screen.getByText("Time Breakdown")).toBeInTheDocument();
-    expect(
-      screen.getByText("No time logged this period.")
-    ).toBeInTheDocument();
+    expect(screen.getByText("No time logged this period.")).toBeInTheDocument();
   });
 
   it("renders error state when data is null", () => {

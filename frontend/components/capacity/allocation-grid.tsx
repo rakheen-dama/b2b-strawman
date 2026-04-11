@@ -28,11 +28,7 @@ function formatWeekHeader(weekStart: string): string {
   return date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 }
 
-export function AllocationGrid({
-  grid,
-  projects,
-  slug,
-}: AllocationGridProps) {
+export function AllocationGrid({ grid, projects, slug }: AllocationGridProps) {
   const [filteredGrid, setFilteredGrid] = useState<TeamCapacityGrid>(grid);
   const [selectedMember, setSelectedMember] = useState<MemberRow | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
@@ -47,8 +43,7 @@ export function AllocationGrid({
     return (
       <div className="rounded-lg border border-slate-200 bg-white p-8 text-center dark:border-slate-700 dark:bg-slate-800">
         <p className="text-slate-600 dark:text-slate-400">
-          No team members found. Add members to your organization to start
-          planning capacity.
+          No team members found. Add members to your organization to start planning capacity.
         </p>
       </div>
     );
@@ -64,11 +59,7 @@ export function AllocationGrid({
   return (
     <div className="space-y-4">
       {projects.length > 0 && (
-        <GridFilters
-          grid={grid}
-          projects={projects}
-          onFilteredGrid={handleFilteredGrid}
-        />
+        <GridFilters grid={grid} projects={projects} onFilteredGrid={handleFilteredGrid} />
       )}
 
       <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
@@ -103,13 +94,8 @@ export function AllocationGrid({
                     onClick={() => handleMemberClick(member)}
                     data-testid={`member-name-${member.memberId}`}
                   >
-                    {member.avatarUrl &&
-                    /^https?:\/\//.test(member.avatarUrl) ? (
-                      <img
-                        src={member.avatarUrl}
-                        alt=""
-                        className="h-7 w-7 rounded-full"
-                      />
+                    {member.avatarUrl && /^https?:\/\//.test(member.avatarUrl) ? (
+                      <img src={member.avatarUrl} alt="" className="h-7 w-7 rounded-full" />
                     ) : (
                       <div className="flex h-7 w-7 items-center justify-center rounded-full bg-slate-200 text-xs font-medium text-slate-600 dark:bg-slate-700 dark:text-slate-300">
                         {(member.memberName || "?")
@@ -156,12 +142,12 @@ export function AllocationGrid({
                 <td
                   key={ws.weekStart}
                   className={cn(
-                    "px-2 py-3 text-center font-mono text-xs tabular-nums font-medium",
+                    "px-2 py-3 text-center font-mono text-xs font-medium tabular-nums",
                     ws.teamUtilizationPct > 100
                       ? "text-red-600 dark:text-red-400"
                       : ws.teamUtilizationPct >= 80
                         ? "text-amber-600 dark:text-amber-400"
-                        : "text-emerald-600 dark:text-emerald-400",
+                        : "text-emerald-600 dark:text-emerald-400"
                   )}
                 >
                   {ws.teamTotalAllocated}/{ws.teamTotalCapacity}h
@@ -171,10 +157,8 @@ export function AllocationGrid({
                 {weekSummaries.length > 0 && (
                   <UtilizationBadge
                     percentage={Math.round(
-                      weekSummaries.reduce(
-                        (sum, ws) => sum + ws.teamUtilizationPct,
-                        0,
-                      ) / weekSummaries.length,
+                      weekSummaries.reduce((sum, ws) => sum + ws.teamUtilizationPct, 0) /
+                        weekSummaries.length
                     )}
                   />
                 )}

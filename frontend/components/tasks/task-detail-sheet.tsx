@@ -1,18 +1,8 @@
 "use client";
 
 import { useEffect, useReducer, useTransition } from "react";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TimeEntryList } from "@/components/tasks/time-entry-list";
 import { CommentSectionClient } from "@/components/comments/comment-section-client";
 import { TagInput } from "@/components/tags/TagInput";
@@ -22,10 +12,7 @@ import { TaskDetailHeader } from "@/components/tasks/task-detail-header";
 import { TaskDetailMetadata } from "@/components/tasks/task-detail-metadata";
 import { RecurrenceEditor } from "@/components/tasks/task-recurrence-editor";
 import { toast } from "sonner";
-import {
-  fetchTask,
-  updateTask,
-} from "@/app/(app)/org/[slug]/projects/[id]/task-actions";
+import { fetchTask, updateTask } from "@/app/(app)/org/[slug]/projects/[id]/task-actions";
 import { fetchTimeEntries } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
 import type {
   Task,
@@ -147,7 +134,9 @@ export function TaskDetailSheet({
         if (!cancelled) dispatch({ type: "ENTRIES_ERROR" });
       });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [taskId, projectId]);
 
   const effectiveProjectId = projectId ?? task?.projectId ?? "";
@@ -157,9 +146,7 @@ export function TaskDetailSheet({
     const prevAssigneeId = task.assigneeId;
     const prevAssigneeName = task.assigneeName;
     const newAssigneeName =
-      newAssigneeId != null
-        ? (members.find((m) => m.id === newAssigneeId)?.name ?? null)
-        : null;
+      newAssigneeId != null ? (members.find((m) => m.id === newAssigneeId)?.name ?? null) : null;
 
     dispatch({
       type: "UPDATE_TASK",
@@ -224,7 +211,9 @@ export function TaskDetailSheet({
   return (
     <Sheet
       open={isOpen}
-      onOpenChange={(open) => { if (!open) onClose(); }}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
     >
       <SheetContent
         side="right"
@@ -250,7 +239,9 @@ export function TaskDetailSheet({
 
         {error && !loadingTask && (
           <div className="flex flex-1 items-center justify-center p-8">
-            <p className="text-sm text-red-600 dark:text-red-400" role="alert">{error}</p>
+            <p className="text-sm text-red-600 dark:text-red-400" role="alert">
+              {error}
+            </p>
           </div>
         )}
 
@@ -278,7 +269,7 @@ export function TaskDetailSheet({
             {/* Editable Recurrence */}
             {canChangeStatus && !isTerminal && (
               <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
-                <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                <h3 className="mb-2 text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
                   Edit Recurrence
                 </h3>
                 <RecurrenceEditor
@@ -293,10 +284,10 @@ export function TaskDetailSheet({
             {/* Description */}
             {task.description && (
               <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
-                <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                <h3 className="mb-2 text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
                   Description
                 </h3>
-                <p className="whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300">
+                <p className="text-sm whitespace-pre-wrap text-slate-700 dark:text-slate-300">
                   {task.description}
                 </p>
               </div>
@@ -304,7 +295,7 @@ export function TaskDetailSheet({
 
             {/* Tags */}
             <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
-              <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              <h3 className="mb-2 text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
                 Tags
               </h3>
               <TagInput
@@ -321,7 +312,7 @@ export function TaskDetailSheet({
             {/* Custom Fields */}
             {hasCustomFields && (
               <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
-                <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                <h3 className="mb-2 text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
                   Custom Fields
                 </h3>
                 <CustomFieldSection

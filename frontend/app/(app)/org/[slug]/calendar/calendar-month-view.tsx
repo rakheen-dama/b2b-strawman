@@ -4,11 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, ClipboardList, FolderOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { CalendarItem } from "./calendar-types";
@@ -88,17 +84,11 @@ export function CalendarMonthView({
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const isCurrentMonth =
-    today.getFullYear() === year && today.getMonth() + 1 === month;
+  const isCurrentMonth = today.getFullYear() === year && today.getMonth() + 1 === month;
   const todayDate = today.getDate();
 
   return (
-    <div
-      className={cn(
-        "transition-opacity duration-200",
-        isPending && "opacity-50"
-      )}
-    >
+    <div className={cn("transition-opacity duration-200", isPending && "opacity-50")}>
       {/* Month Header with Navigation */}
       <div className="mb-4 flex items-center justify-between">
         <Button
@@ -144,7 +134,7 @@ export function CalendarMonthView({
         {Array.from({ length: firstDayOfMonth }).map((_, i) => (
           <div
             key={`empty-${i}`}
-            className="min-h-[80px] border-b border-r border-slate-100 dark:border-slate-800"
+            className="min-h-[80px] border-r border-b border-slate-100 dark:border-slate-800"
           />
         ))}
 
@@ -166,7 +156,7 @@ export function CalendarMonthView({
                 <button
                   type="button"
                   className={cn(
-                    "min-h-[80px] border-b border-r border-slate-100 p-1.5 text-left transition-colors hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50",
+                    "min-h-[80px] border-r border-b border-slate-100 p-1.5 text-left transition-colors hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-800/50",
                     dayItems.length > 0 && "cursor-pointer"
                   )}
                   disabled={dayItems.length === 0}
@@ -184,11 +174,7 @@ export function CalendarMonthView({
                   {dayItems.length > 0 && (
                     <div className="mt-1 flex flex-wrap gap-1">
                       {dayItems.slice(0, maxDots).map((item) => {
-                        const urgency = getDueDateColor(
-                          item.dueDate,
-                          item.status,
-                          today
-                        );
+                        const urgency = getDueDateColor(item.dueDate, item.status, today);
                         return (
                           <span
                             key={item.id}
@@ -237,19 +223,12 @@ export function CalendarMonthView({
                           </p>
                           <div className="mt-0.5 flex items-center gap-1.5">
                             <Badge
-                              variant={
-                                item.itemType === "TASK"
-                                  ? "neutral"
-                                  : "default"
-                              }
+                              variant={item.itemType === "TASK" ? "neutral" : "default"}
                               className="text-[10px]"
                             >
                               {item.itemType}
                             </Badge>
-                            <Badge
-                              variant={getStatusVariant(item.status)}
-                              className="text-[10px]"
-                            >
+                            <Badge variant={getStatusVariant(item.status)} className="text-[10px]">
                               {item.status}
                             </Badge>
                           </div>

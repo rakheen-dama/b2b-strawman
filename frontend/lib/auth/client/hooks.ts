@@ -16,8 +16,7 @@ function normalizeRole(role: string): string {
 // In production, Keycloak-authenticated requests go through the BFF gateway.
 // Since this module is only loaded when NEXT_PUBLIC_AUTH_PROVIDER=mock,
 // there is no security concern with the browser calling the backend directly.
-const BACKEND_URL =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
 
 // --- useAuthUser ---
 
@@ -42,6 +41,7 @@ export function useOrgMembers(): {
     if (!contextLoaded) return;
     // Context loaded but no token — no members to fetch
     if (!token) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- auth init must mark loaded synchronously to avoid stale UI; refactor tracked separately
       setIsLoaded(true);
       return;
     }

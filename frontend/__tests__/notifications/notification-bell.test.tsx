@@ -24,8 +24,7 @@ vi.mock("@/lib/actions/notifications", () => ({
   fetchUnreadCount: (...args: unknown[]) => mockFetchUnreadCount(...args),
   fetchNotifications: (...args: unknown[]) => mockFetchNotifications(...args),
   markNotificationRead: vi.fn().mockResolvedValue({ success: true }),
-  markAllNotificationsRead: (...args: unknown[]) =>
-    mockMarkAllNotificationsRead(...args),
+  markAllNotificationsRead: (...args: unknown[]) => mockMarkAllNotificationsRead(...args),
   dismissNotification: vi.fn().mockResolvedValue({ success: true }),
 }));
 
@@ -33,7 +32,10 @@ describe("NotificationBell", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockFetchUnreadCount.mockResolvedValue({ count: 0 });
-    mockFetchNotifications.mockResolvedValue({ content: [], page: { totalElements: 0, totalPages: 0, size: 10, number: 0 } });
+    mockFetchNotifications.mockResolvedValue({
+      content: [],
+      page: { totalElements: 0, totalPages: 0, size: 10, number: 0 },
+    });
     mockMarkAllNotificationsRead.mockResolvedValue({ success: true });
   });
 
@@ -44,7 +46,11 @@ describe("NotificationBell", () => {
   it("renders bell icon without badge when unread count is 0", async () => {
     mockFetchUnreadCount.mockResolvedValue({ count: 0 });
 
-    render(<SWRTestProvider><NotificationBell orgSlug="acme" /></SWRTestProvider>);
+    render(
+      <SWRTestProvider>
+        <NotificationBell orgSlug="acme" />
+      </SWRTestProvider>
+    );
 
     const button = screen.getByRole("button", { name: /notifications/i });
     expect(button).toBeInTheDocument();
@@ -61,7 +67,11 @@ describe("NotificationBell", () => {
   it("renders badge with count when unread count is greater than 0", async () => {
     mockFetchUnreadCount.mockResolvedValue({ count: 5 });
 
-    render(<SWRTestProvider><NotificationBell orgSlug="acme" /></SWRTestProvider>);
+    render(
+      <SWRTestProvider>
+        <NotificationBell orgSlug="acme" />
+      </SWRTestProvider>
+    );
 
     await waitFor(() => {
       expect(screen.getByText("5")).toBeInTheDocument();
@@ -71,7 +81,11 @@ describe("NotificationBell", () => {
   it("renders 99+ when unread count exceeds 99", async () => {
     mockFetchUnreadCount.mockResolvedValue({ count: 150 });
 
-    render(<SWRTestProvider><NotificationBell orgSlug="acme" /></SWRTestProvider>);
+    render(
+      <SWRTestProvider>
+        <NotificationBell orgSlug="acme" />
+      </SWRTestProvider>
+    );
 
     await waitFor(() => {
       expect(screen.getByText("99+")).toBeInTheDocument();
@@ -81,7 +95,11 @@ describe("NotificationBell", () => {
   it("opens dropdown when bell is clicked", async () => {
     mockFetchUnreadCount.mockResolvedValue({ count: 3 });
 
-    render(<SWRTestProvider><NotificationBell orgSlug="acme" /></SWRTestProvider>);
+    render(
+      <SWRTestProvider>
+        <NotificationBell orgSlug="acme" />
+      </SWRTestProvider>
+    );
 
     await waitFor(() => {
       expect(screen.getByText("3")).toBeInTheDocument();

@@ -14,10 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  createRoleAction,
-  updateRoleAction,
-} from "@/app/(app)/org/[slug]/settings/roles/actions";
+import { createRoleAction, updateRoleAction } from "@/app/(app)/org/[slug]/settings/roles/actions";
 import { CAPABILITY_META } from "@/lib/capabilities";
 import type { OrgRole } from "@/lib/api/org-roles";
 
@@ -139,19 +136,14 @@ export function RoleDialog({ slug, role, open, onOpenChange }: RoleDialogProps) 
               <Label>Capabilities</Label>
               <div className="space-y-3">
                 {CAPABILITY_META.map((cap) => (
-                  <label
-                    key={cap.value}
-                    className="flex items-start gap-3 cursor-pointer"
-                  >
+                  <label key={cap.value} className="flex cursor-pointer items-start gap-3">
                     <Checkbox
                       checked={capabilities.has(cap.value)}
                       onCheckedChange={() => toggleCapability(cap.value)}
                       aria-label={cap.label}
                     />
                     <div className="space-y-0.5">
-                      <span className="text-sm font-medium leading-none">
-                        {cap.label}
-                      </span>
+                      <span className="text-sm leading-none font-medium">{cap.label}</span>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         {cap.description}
                       </p>
@@ -161,9 +153,7 @@ export function RoleDialog({ slug, role, open, onOpenChange }: RoleDialogProps) 
               </div>
             </div>
 
-            {error && (
-              <p className="text-sm text-destructive">{error}</p>
-            )}
+            {error && <p className="text-destructive text-sm">{error}</p>}
           </div>
 
           <DialogFooter className="mt-6">

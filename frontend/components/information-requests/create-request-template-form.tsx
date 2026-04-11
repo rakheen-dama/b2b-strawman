@@ -12,9 +12,7 @@ interface CreateRequestTemplateFormProps {
   slug: string;
 }
 
-export function CreateRequestTemplateForm({
-  slug,
-}: CreateRequestTemplateFormProps) {
+export function CreateRequestTemplateForm({ slug }: CreateRequestTemplateFormProps) {
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
@@ -33,9 +31,7 @@ export function CreateRequestTemplateForm({
         description: description.trim() || undefined,
       });
       if (result.success && result.data) {
-        router.push(
-          `/org/${slug}/settings/request-templates/${result.data.id}`,
-        );
+        router.push(`/org/${slug}/settings/request-templates/${result.data.id}`);
       } else {
         setError(result.error ?? "Failed to create request template.");
       }
@@ -69,14 +65,12 @@ export function CreateRequestTemplateForm({
         />
       </div>
 
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
 
       <div className="flex justify-end gap-3">
         <Button
           variant="soft"
-          onClick={() =>
-            router.push(`/org/${slug}/settings/request-templates`)
-          }
+          onClick={() => router.push(`/org/${slug}/settings/request-templates`)}
         >
           Cancel
         </Button>

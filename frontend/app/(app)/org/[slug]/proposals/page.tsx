@@ -23,19 +23,11 @@ const emptySummary: ProposalSummaryDto = {
   pendingOverdue: [],
 };
 
-export default async function ProposalsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function ProposalsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const caps = await fetchMyCapabilities();
 
-  if (
-    !caps.isAdmin &&
-    !caps.isOwner &&
-    !caps.capabilities.includes("INVOICING")
-  ) {
+  if (!caps.isAdmin && !caps.isOwner && !caps.capabilities.includes("INVOICING")) {
     notFound();
   }
 
@@ -60,13 +52,9 @@ export default async function ProposalsPage({
     customersResult.status === "fulfilled"
       ? (Array.isArray(customersResult.value)
           ? customersResult.value
-          : (customersResult.value as unknown as { content: Customer[] }).content ?? []
+          : ((customersResult.value as unknown as { content: Customer[] }).content ?? [])
         )
-          .filter(
-            (c) =>
-              c.lifecycleStatus !== "OFFBOARDED" &&
-              c.lifecycleStatus !== "PROSPECT",
-          )
+          .filter((c) => c.lifecycleStatus !== "OFFBOARDED" && c.lifecycleStatus !== "PROSPECT")
           .map((c) => ({ id: c.id, name: c.name, email: c.email }))
       : [];
 
@@ -103,7 +91,9 @@ export default async function ProposalsPage({
         <EmptyState
           icon={FileText}
           title={<TerminologyText template="No {proposals} yet" />}
-          description={<TerminologyText template="Create a {proposal} to start tracking client engagements." />}
+          description={
+            <TerminologyText template="Create a {proposal} to start tracking client engagements." />
+          }
           secondaryLink={{ label: "Read the guide", href: docsLink("/features/proposals") }}
         />
       ) : (

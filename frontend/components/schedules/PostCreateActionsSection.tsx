@@ -11,12 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { PostCreateActions } from "@/lib/api/schedules";
 
 export type { PostCreateActions };
@@ -44,24 +39,15 @@ export function PostCreateActionsSection({
   value,
   onChange,
 }: PostCreateActionsSectionProps) {
-  const [generateDocumentEnabled, setGenerateDocumentEnabled] = useState(
-    !!value?.generateDocument,
-  );
+  const [generateDocumentEnabled, setGenerateDocumentEnabled] = useState(!!value?.generateDocument);
   const [selectedDocTemplateSlug, setSelectedDocTemplateSlug] = useState(
-    value?.generateDocument?.templateSlug ?? documentTemplates[0]?.slug ?? "",
+    value?.generateDocument?.templateSlug ?? documentTemplates[0]?.slug ?? ""
   );
-  const [sendInfoRequestEnabled, setSendInfoRequestEnabled] = useState(
-    !!value?.sendInfoRequest,
+  const [sendInfoRequestEnabled, setSendInfoRequestEnabled] = useState(!!value?.sendInfoRequest);
+  const [selectedRequestTemplateSlug, setSelectedRequestTemplateSlug] = useState(
+    value?.sendInfoRequest?.requestTemplateSlug ?? requestTemplates[0]?.slug ?? ""
   );
-  const [selectedRequestTemplateSlug, setSelectedRequestTemplateSlug] =
-    useState(
-      value?.sendInfoRequest?.requestTemplateSlug ??
-        requestTemplates[0]?.slug ??
-        "",
-    );
-  const [dueDays, setDueDays] = useState(
-    value?.sendInfoRequest?.dueDays ?? 14,
-  );
+  const [dueDays, setDueDays] = useState(value?.sendInfoRequest?.dueDays ?? 14);
 
   const emitOnChange = useCallback(
     (overrides: {
@@ -103,18 +89,17 @@ export function PostCreateActionsSection({
       selectedRequestTemplateSlug,
       dueDays,
       onChange,
-    ],
+    ]
   );
 
   return (
     <div className="space-y-3 border-t border-slate-200 pt-4 dark:border-slate-800">
       <div>
-        <p className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        <p className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
           After Creation (Optional)
         </p>
         <p className="mt-0.5 text-xs text-slate-400 dark:text-slate-500">
-          These actions run automatically each time this schedule creates an
-          engagement.
+          These actions run automatically each time this schedule creates an engagement.
         </p>
       </div>
 
@@ -130,10 +115,7 @@ export function PostCreateActionsSection({
             }}
             size="sm"
           />
-          <Label
-            htmlFor="post-create-generate-doc"
-            className="cursor-pointer text-sm"
-          >
+          <Label htmlFor="post-create-generate-doc" className="cursor-pointer text-sm">
             Generate document
           </Label>
         </div>
@@ -141,9 +123,7 @@ export function PostCreateActionsSection({
         {generateDocumentEnabled && (
           <div className="ml-8 space-y-2">
             {documentTemplates.length === 0 ? (
-              <p className="text-xs text-slate-400">
-                No document templates available.
-              </p>
+              <p className="text-xs text-slate-400">No document templates available.</p>
             ) : (
               <Select
                 value={selectedDocTemplateSlug}
@@ -205,10 +185,7 @@ export function PostCreateActionsSection({
             }}
             size="sm"
           />
-          <Label
-            htmlFor="post-create-send-info-request"
-            className="cursor-pointer text-sm"
-          >
+          <Label htmlFor="post-create-send-info-request" className="cursor-pointer text-sm">
             Send information request
           </Label>
         </div>
@@ -216,9 +193,7 @@ export function PostCreateActionsSection({
         {sendInfoRequestEnabled && (
           <div className="ml-8 space-y-2">
             {requestTemplates.length === 0 ? (
-              <p className="text-xs text-slate-400">
-                No request templates available.
-              </p>
+              <p className="text-xs text-slate-400">No request templates available.</p>
             ) : (
               <Select
                 value={selectedRequestTemplateSlug}
@@ -243,7 +218,7 @@ export function PostCreateActionsSection({
             <div className="flex items-center gap-2">
               <Label
                 htmlFor="post-create-due-days"
-                className="whitespace-nowrap text-xs text-slate-600 dark:text-slate-400"
+                className="text-xs whitespace-nowrap text-slate-600 dark:text-slate-400"
               >
                 Due in
               </Label>
@@ -260,9 +235,7 @@ export function PostCreateActionsSection({
                 }}
                 className="w-20"
               />
-              <span className="text-xs text-slate-500 dark:text-slate-400">
-                days
-              </span>
+              <span className="text-xs text-slate-500 dark:text-slate-400">days</span>
             </div>
           </div>
         )}

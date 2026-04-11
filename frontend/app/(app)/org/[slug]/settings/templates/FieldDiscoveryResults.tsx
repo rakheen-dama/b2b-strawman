@@ -21,18 +21,13 @@ export function FieldDiscoveryResults({ fields }: FieldDiscoveryResultsProps) {
       </h3>
       <ul className="divide-y divide-slate-200 rounded-md border border-slate-200 dark:divide-slate-700 dark:border-slate-700">
         {fields.map((field) => (
-          <li
-            key={field.path}
-            className="flex items-center justify-between px-3 py-2"
-          >
+          <li key={field.path} className="flex items-center justify-between px-3 py-2">
             <div className="min-w-0 flex-1">
               <p className="truncate font-mono text-sm text-slate-950 dark:text-slate-50">
                 {field.path}
               </p>
               {field.label && (
-                <p className="truncate text-xs text-slate-500 dark:text-slate-400">
-                  {field.label}
-                </p>
+                <p className="truncate text-xs text-slate-500 dark:text-slate-400">{field.label}</p>
               )}
             </div>
             <div className="ml-3 shrink-0">

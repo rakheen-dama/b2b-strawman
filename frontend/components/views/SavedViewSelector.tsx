@@ -23,10 +23,7 @@ export function SavedViewSelector({
   onCreateClick,
 }: SavedViewSelectorProps) {
   return (
-    <div
-      className="flex items-center gap-3"
-      data-testid="saved-view-selector"
-    >
+    <div className="flex items-center gap-3" data-testid="saved-view-selector">
       <div className="flex items-center gap-1">
         <Eye className="size-4 text-slate-400" />
         <HelpTip code="views.saved" />
@@ -51,12 +48,7 @@ export function SavedViewSelector({
       </Tabs>
 
       {canCreate && (
-        <Button
-          variant="outline"
-          size="sm"
-          className="h-7 gap-1 text-xs"
-          onClick={onCreateClick}
-        >
+        <Button variant="outline" size="sm" className="h-7 gap-1 text-xs" onClick={onCreateClick}>
           <Plus className="size-3" />
           Save View
         </Button>

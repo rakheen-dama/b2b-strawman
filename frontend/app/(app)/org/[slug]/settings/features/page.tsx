@@ -10,10 +10,7 @@ export default async function FeaturesSettingsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const [caps, modulesResponse] = await Promise.all([
-    fetchMyCapabilities(),
-    getModuleSettings(),
-  ]);
+  const [caps, modulesResponse] = await Promise.all([fetchMyCapabilities(), getModuleSettings()]);
 
   const canManage = caps.isAdmin || caps.isOwner;
 
@@ -28,12 +25,10 @@ export default async function FeaturesSettingsPage({
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Features
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Features</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Enable additional features for your organization. These can be turned
-          on or off at any time.
+          Enable additional features for your organization. These can be turned on or off at any
+          time.
         </p>
         {!canManage && (
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
@@ -42,10 +37,7 @@ export default async function FeaturesSettingsPage({
         )}
       </div>
 
-      <FeaturesSettingsForm
-        initialModules={modulesResponse.modules}
-        canManage={canManage}
-      />
+      <FeaturesSettingsForm initialModules={modulesResponse.modules} canManage={canManage} />
     </div>
   );
 }

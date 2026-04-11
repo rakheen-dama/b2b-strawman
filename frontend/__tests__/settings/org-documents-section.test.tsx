@@ -13,13 +13,9 @@ vi.mock("next/navigation", () => ({
 // Mock motion/react to avoid animation issues in tests
 vi.mock("motion/react", () => ({
   motion: {
-    div: ({ children, ...props }: React.ComponentProps<"div">) => (
-      <div {...props}>{children}</div>
-    ),
+    div: ({ children, ...props }: React.ComponentProps<"div">) => <div {...props}>{children}</div>,
   },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 // Mock server-only
@@ -40,9 +36,7 @@ vi.mock("@/components/sidebar-user-footer", () => ({
 // Mock command-palette-provider
 vi.mock("@/components/command-palette-provider", () => ({
   useCommandPalette: vi.fn(() => ({ open: false, setOpen: vi.fn() })),
-  CommandPaletteProvider: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
+  CommandPaletteProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 import { OrgDocumentsSection } from "@/components/settings/org-documents-section";
@@ -90,13 +84,7 @@ const MOCK_DOCUMENTS: Document[] = [
 
 describe("OrgDocumentsSection", () => {
   it("renders document list with correct columns", () => {
-    render(
-      <OrgDocumentsSection
-        slug="test-org"
-        documents={MOCK_DOCUMENTS}
-        isAdmin={true}
-      />,
-    );
+    render(<OrgDocumentsSection slug="test-org" documents={MOCK_DOCUMENTS} isAdmin={true} />);
 
     expect(screen.getByText("File")).toBeInTheDocument();
     expect(screen.getByText("Size")).toBeInTheDocument();
@@ -109,66 +97,34 @@ describe("OrgDocumentsSection", () => {
   });
 
   it("renders empty state when no documents", () => {
-    render(
-      <OrgDocumentsSection
-        slug="test-org"
-        documents={[]}
-        isAdmin={false}
-      />,
-    );
+    render(<OrgDocumentsSection slug="test-org" documents={[]} isAdmin={false} />);
 
+    expect(screen.getByText("No organization documents yet")).toBeInTheDocument();
     expect(
-      screen.getByText("No organization documents yet"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("No organization documents have been uploaded yet."),
+      screen.getByText("No organization documents have been uploaded yet.")
     ).toBeInTheDocument();
   });
 
   it("renders upload button for admin users", () => {
-    render(
-      <OrgDocumentsSection
-        slug="test-org"
-        documents={MOCK_DOCUMENTS}
-        isAdmin={true}
-      />,
-    );
+    render(<OrgDocumentsSection slug="test-org" documents={MOCK_DOCUMENTS} isAdmin={true} />);
 
     expect(screen.getByTestId("org-upload-btn")).toBeInTheDocument();
   });
 
   it("hides upload button for non-admin users", () => {
-    render(
-      <OrgDocumentsSection
-        slug="test-org"
-        documents={MOCK_DOCUMENTS}
-        isAdmin={false}
-      />,
-    );
+    render(<OrgDocumentsSection slug="test-org" documents={MOCK_DOCUMENTS} isAdmin={false} />);
 
     expect(screen.queryByTestId("org-upload-btn")).not.toBeInTheDocument();
   });
 
   it("renders document count badge", () => {
-    render(
-      <OrgDocumentsSection
-        slug="test-org"
-        documents={MOCK_DOCUMENTS}
-        isAdmin={true}
-      />,
-    );
+    render(<OrgDocumentsSection slug="test-org" documents={MOCK_DOCUMENTS} isAdmin={true} />);
 
     expect(screen.getByText("2")).toBeInTheDocument();
   });
 
   it("has data-testid on root element", () => {
-    render(
-      <OrgDocumentsSection
-        slug="test-org"
-        documents={[]}
-        isAdmin={false}
-      />,
-    );
+    render(<OrgDocumentsSection slug="test-org" documents={[]} isAdmin={false} />);
 
     expect(screen.getByTestId("org-documents-section")).toBeInTheDocument();
   });
@@ -177,22 +133,13 @@ describe("OrgDocumentsSection", () => {
 describe("Sidebar nav label changes", () => {
   function renderSidebar() {
     return render(
-      <OrgProfileProvider
-        verticalProfile={null}
-        enabledModules={[]}
-        terminologyNamespace={null}
-      >
+      <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
         <TerminologyProvider verticalProfile={null}>
-          <CapabilityProvider
-            capabilities={[]}
-            role="Admin"
-            isAdmin={true}
-            isOwner={false}
-          >
+          <CapabilityProvider capabilities={[]} role="Admin" isAdmin={true} isOwner={false}>
             <DesktopSidebar slug="test-org" />
           </CapabilityProvider>
         </TerminologyProvider>
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
   }
 
@@ -218,9 +165,7 @@ describe("Sidebar nav label changes", () => {
   it("does not render Documents item in sidebar", () => {
     renderSidebar();
 
-    expect(
-      screen.queryByRole("link", { name: "Documents" }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Documents" })).not.toBeInTheDocument();
   });
 
   it("renders Proposals in Clients group", async () => {

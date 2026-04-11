@@ -24,10 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Loader2 } from "lucide-react";
 import { recordRefund } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
-import {
-  recordRefundSchema,
-  type RecordRefundFormData,
-} from "@/lib/schemas/trust";
+import { recordRefundSchema, type RecordRefundFormData } from "@/lib/schemas/trust";
 
 interface RecordRefundDialogProps {
   accountId: string;
@@ -47,11 +44,7 @@ function getDefaultValues() {
   };
 }
 
-export function RecordRefundDialog({
-  accountId,
-  open,
-  onOpenChange,
-}: RecordRefundDialogProps) {
+export function RecordRefundDialog({ accountId, open, onOpenChange }: RecordRefundDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -91,16 +84,11 @@ export function RecordRefundDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Record Refund</DialogTitle>
-          <DialogDescription>
-            Refund trust funds back to the client.
-          </DialogDescription>
+          <DialogDescription>Refund trust funds back to the client.</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="customerId"
@@ -128,9 +116,7 @@ export function RecordRefundDialog({
                       min="0.01"
                       placeholder="0.00"
                       {...field}
-                      onChange={(e) =>
-                        field.onChange(parseFloat(e.target.value) || 0)
-                      }
+                      onChange={(e) => field.onChange(parseFloat(e.target.value) || 0)}
                     />
                   </FormControl>
                   <FormMessage />
@@ -145,11 +131,7 @@ export function RecordRefundDialog({
                 <FormItem>
                   <FormLabel>Reference</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g. REF/2026/001"
-                      maxLength={200}
-                      {...field}
-                    />
+                    <Input placeholder="e.g. REF/2026/001" maxLength={200} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -163,11 +145,7 @@ export function RecordRefundDialog({
                 <FormItem>
                   <FormLabel>Description (Optional)</FormLabel>
                   <FormControl>
-                    <Textarea
-                      placeholder="Reason for refund"
-                      maxLength={2000}
-                      {...field}
-                    />
+                    <Textarea placeholder="Reason for refund" maxLength={2000} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -188,7 +166,7 @@ export function RecordRefundDialog({
               )}
             />
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
 
             <DialogFooter>
               <Button

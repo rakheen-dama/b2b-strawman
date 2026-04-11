@@ -2,11 +2,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { CreateTemplateForm } from "@/components/templates/CreateTemplateForm";
 
-export default async function NewTemplatePage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function NewTemplatePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
   return (
@@ -20,9 +16,7 @@ export default async function NewTemplatePage({
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          New Template
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">New Template</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Create a custom document template.
         </p>

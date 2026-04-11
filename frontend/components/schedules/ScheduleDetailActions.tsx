@@ -77,7 +77,7 @@ export function ScheduleDetailActions({ slug, schedule }: ScheduleDetailActionsP
 
   return (
     <>
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
 
       {schedule.status === "ACTIVE" && (
         <>
@@ -117,12 +117,7 @@ export function ScheduleDetailActions({ slug, schedule }: ScheduleDetailActionsP
       )}
 
       {schedule.status === "PAUSED" && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleResume}
-          disabled={actionInProgress}
-        >
+        <Button variant="ghost" size="sm" onClick={handleResume} disabled={actionInProgress}>
           <Play className="mr-1.5 size-4" />
           Resume
         </Button>

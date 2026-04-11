@@ -14,10 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CurrencySelector } from "@/components/rates/currency-selector";
-import {
-  updateBillingRate,
-  updateCostRate,
-} from "@/app/(app)/org/[slug]/settings/rates/actions";
+import { updateBillingRate, updateCostRate } from "@/app/(app)/org/[slug]/settings/rates/actions";
 import type { BillingRate, CostRate } from "@/lib/types";
 
 interface EditBillingRateDialogProps {
@@ -41,9 +38,7 @@ export function EditRateDialog(props: EditRateDialogProps) {
   const rate = props.rate;
 
   const initialRate =
-    rateType === "billing"
-      ? (rate as BillingRate).hourlyRate
-      : (rate as CostRate).hourlyCost;
+    rateType === "billing" ? (rate as BillingRate).hourlyRate : (rate as CostRate).hourlyCost;
 
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -115,21 +110,16 @@ export function EditRateDialog(props: EditRateDialogProps) {
   }
 
   const memberName =
-    rateType === "billing"
-      ? (rate as BillingRate).memberName
-      : (rate as CostRate).memberName;
+    rateType === "billing" ? (rate as BillingRate).memberName : (rate as CostRate).memberName;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>
-            Edit {rateType === "billing" ? "Billing" : "Cost"} Rate
-          </DialogTitle>
+          <DialogTitle>Edit {rateType === "billing" ? "Billing" : "Cost"} Rate</DialogTitle>
           <DialogDescription>
-            Update the {rateType === "billing" ? "billing" : "cost"} rate for{" "}
-            {memberName}.
+            Update the {rateType === "billing" ? "billing" : "cost"} rate for {memberName}.
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -151,11 +141,7 @@ export function EditRateDialog(props: EditRateDialogProps) {
 
           <div className="space-y-2">
             <Label>Currency</Label>
-            <CurrencySelector
-              value={currency}
-              onChange={setCurrency}
-              className="w-full"
-            />
+            <CurrencySelector value={currency} onChange={setCurrency} className="w-full" />
           </div>
 
           <div className="space-y-2">
@@ -171,8 +157,7 @@ export function EditRateDialog(props: EditRateDialogProps) {
 
           <div className="space-y-2">
             <Label htmlFor="edit-effective-to">
-              Effective To{" "}
-              <span className="font-normal text-slate-500">(optional)</span>
+              Effective To <span className="font-normal text-slate-500">(optional)</span>
             </Label>
             <Input
               id="edit-effective-to"
@@ -182,7 +167,7 @@ export function EditRateDialog(props: EditRateDialogProps) {
             />
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <DialogFooter>
             <Button

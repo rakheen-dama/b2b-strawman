@@ -16,7 +16,7 @@ export interface ViewActionResult {
 export async function createSavedViewAction(
   slug: string,
   entityPath: string,
-  req: CreateSavedViewRequest,
+  req: CreateSavedViewRequest
 ): Promise<ViewActionResult> {
   try {
     await api.post<SavedViewResponse>("/api/views", req);
@@ -41,7 +41,7 @@ export async function updateSavedViewAction(
   slug: string,
   entityPath: string,
   viewId: string,
-  req: UpdateSavedViewRequest,
+  req: UpdateSavedViewRequest
 ): Promise<ViewActionResult> {
   try {
     await api.put<SavedViewResponse>(`/api/views/${viewId}`, req);
@@ -65,7 +65,7 @@ export async function updateSavedViewAction(
 export async function deleteSavedViewAction(
   slug: string,
   entityPath: string,
-  viewId: string,
+  viewId: string
 ): Promise<ViewActionResult> {
   try {
     await api.delete(`/api/views/${viewId}`);

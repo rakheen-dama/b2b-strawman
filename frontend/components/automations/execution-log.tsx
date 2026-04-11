@@ -37,17 +37,14 @@ interface ExecutionLogProps {
   rules?: { id: string; name: string }[];
 }
 
-export function ExecutionLog({
-  initialExecutions,
-  ruleId,
-  rules,
-}: ExecutionLogProps) {
+export function ExecutionLog({ initialExecutions, ruleId, rules }: ExecutionLogProps) {
   const [executions, setExecutions] =
     useState<PaginatedResponse<AutomationExecutionResponse>>(initialExecutions);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [ruleFilter, setRuleFilter] = useState<string>(ruleId ?? "all");
-  const [selectedExecution, setSelectedExecution] =
-    useState<AutomationExecutionResponse | null>(null);
+  const [selectedExecution, setSelectedExecution] = useState<AutomationExecutionResponse | null>(
+    null
+  );
   const [detailOpen, setDetailOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [currentPage, setCurrentPage] = useState(0);
@@ -58,10 +55,7 @@ export function ExecutionLog({
       try {
         const result = await fetchExecutionsAction({
           ruleId: ruleFilter !== "all" ? ruleFilter : undefined,
-          status:
-            statusFilter !== "all"
-              ? (statusFilter as ExecutionStatus)
-              : undefined,
+          status: statusFilter !== "all" ? (statusFilter as ExecutionStatus) : undefined,
           page: targetPage,
           size: 20,
         });
@@ -99,10 +93,7 @@ export function ExecutionLog({
       try {
         const result = await fetchExecutionsAction({
           ruleId: value !== "all" ? value : undefined,
-          status:
-            statusFilter !== "all"
-              ? (statusFilter as ExecutionStatus)
-              : undefined,
+          status: statusFilter !== "all" ? (statusFilter as ExecutionStatus) : undefined,
           page: 0,
           size: 20,
         });
@@ -153,22 +144,15 @@ export function ExecutionLog({
             <SelectItem value="CONDITIONS_NOT_MET">Skipped</SelectItem>
           </SelectContent>
         </Select>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => handleRefresh()}
-          disabled={isPending}
-        >
-          <RefreshCw
-            className={`mr-1 size-4 ${isPending ? "animate-spin" : ""}`}
-          />
+        <Button variant="outline" size="sm" onClick={() => handleRefresh()} disabled={isPending}>
+          <RefreshCw className={`mr-1 size-4 ${isPending ? "animate-spin" : ""}`} />
           Refresh
         </Button>
       </div>
 
       {/* Table */}
       {items.length === 0 ? (
-        <p className="py-8 text-center text-sm italic text-slate-500 dark:text-slate-400">
+        <p className="py-8 text-center text-sm text-slate-500 italic dark:text-slate-400">
           No executions found.
         </p>
       ) : (
@@ -192,17 +176,9 @@ export function ExecutionLog({
                   className="cursor-pointer"
                   onClick={() => handleRowClick(execution)}
                 >
-                  {!ruleId && (
-                    <TableCell className="font-medium">
-                      {execution.ruleName}
-                    </TableCell>
-                  )}
+                  {!ruleId && <TableCell className="font-medium">{execution.ruleName}</TableCell>}
                   <TableCell>
-                    <TriggerTypeBadge
-                      triggerType={
-                        execution.triggerEventType as TriggerType
-                      }
-                    />
+                    <TriggerTypeBadge triggerType={execution.triggerEventType as TriggerType} />
                   </TableCell>
                   <TableCell className="text-sm text-slate-600 dark:text-slate-400">
                     <RelativeDate iso={execution.startedAt} />
@@ -221,10 +197,7 @@ export function ExecutionLog({
                     {execution.actionExecutions.length}
                   </TableCell>
                   <TableCell className="font-mono text-sm tabular-nums">
-                    {computeDuration(
-                      execution.startedAt,
-                      execution.completedAt,
-                    )}
+                    {computeDuration(execution.startedAt, execution.completedAt)}
                   </TableCell>
                 </TableRow>
               ))}

@@ -40,7 +40,7 @@ interface LeaveListResult extends ActionResult {
 export async function createLeaveAction(
   slug: string,
   memberId: string,
-  data: CreateLeaveRequest,
+  data: CreateLeaveRequest
 ): Promise<LeaveActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -63,7 +63,7 @@ export async function updateLeaveAction(
   slug: string,
   memberId: string,
   id: string,
-  data: UpdateLeaveRequest,
+  data: UpdateLeaveRequest
 ): Promise<LeaveActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -85,7 +85,7 @@ export async function updateLeaveAction(
 export async function deleteLeaveAction(
   slug: string,
   memberId: string,
-  id: string,
+  id: string
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -104,10 +104,7 @@ export async function deleteLeaveAction(
   }
 }
 
-export async function listLeaveAction(
-  _slug: string,
-  memberId: string,
-): Promise<LeaveListResult> {
+export async function listLeaveAction(_slug: string, memberId: string): Promise<LeaveListResult> {
   try {
     const blocks = await listLeaveForMember(memberId);
     return { success: true, blocks };
@@ -132,7 +129,7 @@ interface CapacityListResult extends ActionResult {
 export async function createCapacityRecordAction(
   slug: string,
   memberId: string,
-  data: CreateCapacityRequest,
+  data: CreateCapacityRequest
 ): Promise<CapacityActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -158,7 +155,7 @@ export async function updateCapacityRecordAction(
   slug: string,
   memberId: string,
   id: string,
-  data: UpdateCapacityRequest,
+  data: UpdateCapacityRequest
 ): Promise<CapacityActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -183,7 +180,7 @@ export async function updateCapacityRecordAction(
 export async function deleteCapacityRecordAction(
   slug: string,
   memberId: string,
-  id: string,
+  id: string
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -207,7 +204,7 @@ export async function deleteCapacityRecordAction(
 
 export async function listCapacityRecordsAction(
   _slug: string,
-  memberId: string,
+  memberId: string
 ): Promise<CapacityListResult> {
   try {
     const records = await listCapacityRecords(memberId);

@@ -44,9 +44,7 @@ export function KycConfigurationDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isTesting, setIsTesting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [testStatus, setTestStatus] = useState<
-    "idle" | "success" | "error"
-  >("idle");
+  const [testStatus, setTestStatus] = useState<"idle" | "success" | "error">("idle");
   const [testMessage, setTestMessage] = useState<string | null>(null);
 
   function handleOpenChange(nextOpen: boolean) {
@@ -78,9 +76,7 @@ export function KycConfigurationDialog({
           setTestMessage("Connection successful");
         } else {
           setTestStatus("error");
-          setTestMessage(
-            result.data.errorMessage ?? "Connection test failed.",
-          );
+          setTestMessage(result.data.errorMessage ?? "Connection test failed.");
         }
       } else {
         setTestStatus("error");
@@ -104,11 +100,9 @@ export function KycConfigurationDialog({
 
     try {
       // Upsert integration with selected provider
-      const upsertResult = await upsertIntegrationAction(
-        slug,
-        "KYC_VERIFICATION",
-        { providerSlug: provider },
-      );
+      const upsertResult = await upsertIntegrationAction(slug, "KYC_VERIFICATION", {
+        providerSlug: provider,
+      });
       if (!upsertResult.success) {
         setError(upsertResult.error ?? "Failed to save configuration.");
         return;
@@ -146,11 +140,7 @@ export function KycConfigurationDialog({
         <div className="space-y-4 py-2">
           <div className="space-y-2">
             <Label htmlFor="kyc-provider">Provider</Label>
-            <Select
-              value={provider}
-              onValueChange={setProvider}
-              disabled={isSubmitting}
-            >
+            <Select value={provider} onValueChange={setProvider} disabled={isSubmitting}>
               <SelectTrigger id="kyc-provider">
                 <SelectValue placeholder="Select provider" />
               </SelectTrigger>
@@ -193,7 +183,7 @@ export function KycConfigurationDialog({
               </span>
             )}
             {testStatus === "error" && testMessage && (
-              <span className="flex items-center gap-1 text-sm text-destructive">
+              <span className="text-destructive flex items-center gap-1 text-sm">
                 <XCircle className="size-4" />
                 {testMessage}
               </span>
@@ -201,7 +191,7 @@ export function KycConfigurationDialog({
           </div>
 
           {error && (
-            <p className="text-sm text-destructive" role="alert">
+            <p className="text-destructive text-sm" role="alert">
               {error}
             </p>
           )}
@@ -216,11 +206,7 @@ export function KycConfigurationDialog({
           >
             Cancel
           </Button>
-          <Button
-            type="button"
-            onClick={handleSave}
-            disabled={isSubmitting || !provider}
-          >
+          <Button type="button" onClick={handleSave} disabled={isSubmitting || !provider}>
             {isSubmitting ? "Saving..." : "Save"}
           </Button>
         </DialogFooter>

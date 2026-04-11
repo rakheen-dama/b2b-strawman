@@ -53,9 +53,7 @@ export function CommentSectionClient({
 
   return (
     <div className="space-y-4">
-      <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100">
-        Comments
-      </h4>
+      <h4 className="text-sm font-medium text-slate-900 dark:text-slate-100">Comments</h4>
 
       {error && <p className="text-sm text-red-600">Failed to load comments.</p>}
 

@@ -10,19 +10,13 @@ import type {
 
 const mockUpdateEntityCustomFields = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/custom-fields/actions",
-  () => ({
-    updateEntityCustomFieldsAction: (...args: unknown[]) =>
-      mockUpdateEntityCustomFields(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
+  updateEntityCustomFieldsAction: (...args: unknown[]) => mockUpdateEntityCustomFields(...args),
+}));
 
 // --- Test Data ---
 
-function makeFieldDef(
-  overrides: Partial<FieldDefinitionResponse>,
-): FieldDefinitionResponse {
+function makeFieldDef(overrides: Partial<FieldDefinitionResponse>): FieldDefinitionResponse {
   return {
     id: "fd-1",
     entityType: "PROJECT",
@@ -117,14 +111,12 @@ const testGroup: FieldGroupResponse = {
   updatedAt: "2025-01-01T00:00:00Z",
 };
 
-const testGroupMembers: FieldGroupMemberResponse[] = allFields.map(
-  (f, i) => ({
-    id: `gm-${i}`,
-    fieldGroupId: "grp-1",
-    fieldDefinitionId: f.id,
-    sortOrder: i,
-  }),
-);
+const testGroupMembers: FieldGroupMemberResponse[] = allFields.map((f, i) => ({
+  id: `gm-${i}`,
+  fieldGroupId: "grp-1",
+  fieldDefinitionId: f.id,
+  sortOrder: i,
+}));
 
 const defaultProps = {
   entityType: "PROJECT" as const,
@@ -208,12 +200,7 @@ describe("CustomFieldSection", () => {
     const user = userEvent.setup();
     mockUpdateEntityCustomFields.mockResolvedValue({ success: true });
 
-    render(
-      <CustomFieldSection
-        {...defaultProps}
-        customFields={{ priority_level: "high" }}
-      />,
-    );
+    render(<CustomFieldSection {...defaultProps} customFields={{ priority_level: "high" }} />);
 
     // Fill in a text field
     const caseInput = screen.getByLabelText(/Case Number/);
@@ -229,7 +216,7 @@ describe("CustomFieldSection", () => {
         expect.objectContaining({
           case_number: "2025/12345",
           priority_level: "high",
-        }),
+        })
       );
     });
   });
@@ -243,7 +230,7 @@ describe("CustomFieldSection", () => {
           case_number: "2025/99999",
           is_urgent: true,
         }}
-      />,
+      />
     );
 
     // Should show formatted values, not inputs
@@ -251,25 +238,22 @@ describe("CustomFieldSection", () => {
     expect(screen.getByText("Yes")).toBeInTheDocument();
 
     // No save button
-    expect(
-      screen.queryByRole("button", { name: /Save Custom Fields/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Save Custom Fields/i })).not.toBeInTheDocument();
   });
 
   it("shows empty state when no field groups are applied", () => {
-    render(
-      <CustomFieldSection {...defaultProps} appliedFieldGroups={[]} />,
-    );
+    render(<CustomFieldSection {...defaultProps} appliedFieldGroups={[]} />);
 
     expect(screen.getByText("No custom fields configured")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Custom fields let you track additional information specific to your workflow.",
-      ),
+        "Custom fields let you track additional information specific to your workflow."
+      )
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("link", { name: "Configure Fields" }),
-    ).toHaveAttribute("href", "/org/acme/settings/custom-fields");
+    expect(screen.getByRole("link", { name: "Configure Fields" })).toHaveAttribute(
+      "href",
+      "/org/acme/settings/custom-fields"
+    );
   });
 
   it("renders group name as card header", () => {
@@ -282,12 +266,7 @@ describe("CustomFieldSection", () => {
     const user = userEvent.setup();
     mockUpdateEntityCustomFields.mockResolvedValue({ success: true });
 
-    render(
-      <CustomFieldSection
-        {...defaultProps}
-        customFields={{ priority_level: "high" }}
-      />,
-    );
+    render(<CustomFieldSection {...defaultProps} customFields={{ priority_level: "high" }} />);
 
     await user.click(screen.getByRole("button", { name: /Save Custom Fields/i }));
 
@@ -303,12 +282,7 @@ describe("CustomFieldSection", () => {
       error: "Validation failed on server",
     });
 
-    render(
-      <CustomFieldSection
-        {...defaultProps}
-        customFields={{ priority_level: "high" }}
-      />,
-    );
+    render(<CustomFieldSection {...defaultProps} customFields={{ priority_level: "high" }} />);
 
     await user.click(screen.getByRole("button", { name: /Save Custom Fields/i }));
 
@@ -378,16 +352,20 @@ describe("CustomFieldSection", () => {
       },
     });
 
-    const visibilityFields = [controllingField, dependentFieldEq, dependentFieldNeq, dependentFieldIn, requiredHiddenField];
+    const visibilityFields = [
+      controllingField,
+      dependentFieldEq,
+      dependentFieldNeq,
+      dependentFieldIn,
+      requiredHiddenField,
+    ];
 
-    const visibilityMembers: FieldGroupMemberResponse[] = visibilityFields.map(
-      (f, i) => ({
-        id: `gm-vis-${i}`,
-        fieldGroupId: "grp-vis",
-        fieldDefinitionId: f.id,
-        sortOrder: i,
-      }),
-    );
+    const visibilityMembers: FieldGroupMemberResponse[] = visibilityFields.map((f, i) => ({
+      id: `gm-vis-${i}`,
+      fieldGroupId: "grp-vis",
+      fieldDefinitionId: f.id,
+      sortOrder: i,
+    }));
 
     const visibilityGroup: FieldGroupResponse = {
       id: "grp-vis",
@@ -414,10 +392,7 @@ describe("CustomFieldSection", () => {
 
     it("shows eq-dependent field when controlling field matches", () => {
       render(
-        <CustomFieldSection
-          {...visibilityProps}
-          customFields={{ matter_type: "litigation" }}
-        />,
+        <CustomFieldSection {...visibilityProps} customFields={{ matter_type: "litigation" }} />
       );
 
       expect(screen.getByLabelText(/Court Name/)).toBeInTheDocument();
@@ -425,10 +400,7 @@ describe("CustomFieldSection", () => {
 
     it("hides eq-dependent field when controlling field does not match", () => {
       render(
-        <CustomFieldSection
-          {...visibilityProps}
-          customFields={{ matter_type: "advisory" }}
-        />,
+        <CustomFieldSection {...visibilityProps} customFields={{ matter_type: "advisory" }} />
       );
 
       expect(screen.queryByLabelText(/Court Name/)).not.toBeInTheDocument();
@@ -436,10 +408,7 @@ describe("CustomFieldSection", () => {
 
     it("shows neq-dependent field when controlling field does not match", () => {
       render(
-        <CustomFieldSection
-          {...visibilityProps}
-          customFields={{ matter_type: "advisory" }}
-        />,
+        <CustomFieldSection {...visibilityProps} customFields={{ matter_type: "advisory" }} />
       );
 
       expect(screen.getByLabelText(/Advisory Scope/)).toBeInTheDocument();
@@ -447,10 +416,7 @@ describe("CustomFieldSection", () => {
 
     it("shows in-dependent field when controlling field matches one of the values", () => {
       render(
-        <CustomFieldSection
-          {...visibilityProps}
-          customFields={{ matter_type: "litigation" }}
-        />,
+        <CustomFieldSection {...visibilityProps} customFields={{ matter_type: "litigation" }} />
       );
 
       expect(screen.getByLabelText(/Tribunal Ref/)).toBeInTheDocument();
@@ -462,10 +428,7 @@ describe("CustomFieldSection", () => {
 
       // matter_type = "advisory" hides the required court_reference field (it requires "litigation")
       render(
-        <CustomFieldSection
-          {...visibilityProps}
-          customFields={{ matter_type: "advisory" }}
-        />,
+        <CustomFieldSection {...visibilityProps} customFields={{ matter_type: "advisory" }} />
       );
 
       // court_reference is hidden and required, but should not block save
@@ -529,21 +492,12 @@ describe("CustomFieldSection", () => {
       const user = userEvent.setup();
       mockUpdateEntityCustomFields.mockResolvedValue({ success: true });
 
-      render(
-        <CustomFieldSection
-          {...dateProps}
-          customFields={{ start_date: "2024-06-15" }}
-        />,
-      );
+      render(<CustomFieldSection {...dateProps} customFields={{ start_date: "2024-06-15" }} />);
 
-      await user.click(
-        screen.getByRole("button", { name: /Save Custom Fields/i }),
-      );
+      await user.click(screen.getByRole("button", { name: /Save Custom Fields/i }));
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Must be on or after 2025-01-01"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("Must be on or after 2025-01-01")).toBeInTheDocument();
       });
 
       expect(mockUpdateEntityCustomFields).not.toHaveBeenCalled();
@@ -553,21 +507,12 @@ describe("CustomFieldSection", () => {
       const user = userEvent.setup();
       mockUpdateEntityCustomFields.mockResolvedValue({ success: true });
 
-      render(
-        <CustomFieldSection
-          {...dateProps}
-          customFields={{ start_date: "2026-03-01" }}
-        />,
-      );
+      render(<CustomFieldSection {...dateProps} customFields={{ start_date: "2026-03-01" }} />);
 
-      await user.click(
-        screen.getByRole("button", { name: /Save Custom Fields/i }),
-      );
+      await user.click(screen.getByRole("button", { name: /Save Custom Fields/i }));
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Must be on or before 2025-12-31"),
-        ).toBeInTheDocument();
+        expect(screen.getByText("Must be on or before 2025-12-31")).toBeInTheDocument();
       });
 
       expect(mockUpdateEntityCustomFields).not.toHaveBeenCalled();

@@ -23,9 +23,7 @@ type FormFieldContextValue<
   name: TName;
 };
 
-const FormFieldContext = React.createContext<FormFieldContextValue>(
-  {} as FormFieldContextValue,
-);
+const FormFieldContext = React.createContext<FormFieldContextValue>({} as FormFieldContextValue);
 
 function FormField<
   TFieldValues extends FieldValues = FieldValues,
@@ -42,9 +40,7 @@ type FormItemContextValue = {
   id: string;
 };
 
-const FormItemContext = React.createContext<FormItemContextValue>(
-  {} as FormItemContextValue,
-);
+const FormItemContext = React.createContext<FormItemContextValue>({} as FormItemContextValue);
 
 const useFormField = () => {
   const fieldContext = React.useContext(FormFieldContext);
@@ -74,53 +70,34 @@ function FormItem({ className, ...props }: React.ComponentProps<"div">) {
 
   return (
     <FormItemContext.Provider value={{ id }}>
-      <div
-        data-slot="form-item"
-        className={cn("space-y-2", className)}
-        {...props}
-      />
+      <div data-slot="form-item" className={cn("space-y-2", className)} {...props} />
     </FormItemContext.Provider>
   );
 }
 
-function FormLabel({
-  className,
-  ...props
-}: React.ComponentProps<typeof LabelPrimitive.Root>) {
+function FormLabel({ className, ...props }: React.ComponentProps<typeof LabelPrimitive.Root>) {
   const { error, formItemId } = useFormField();
 
   return (
-    <Label
-      className={cn(error && "text-destructive", className)}
-      htmlFor={formItemId}
-      {...props}
-    />
+    <Label className={cn(error && "text-destructive", className)} htmlFor={formItemId} {...props} />
   );
 }
 
 function FormControl({ ...props }: React.ComponentProps<typeof React.Fragment>) {
-  const { error, formItemId, formDescriptionId, formMessageId } =
-    useFormField();
+  const { error, formItemId, formDescriptionId, formMessageId } = useFormField();
 
   // We pass the props to the child element
-  const child = React.Children.only(props.children) as React.ReactElement<
-    Record<string, unknown>
-  >;
+  const child = React.Children.only(props.children) as React.ReactElement<Record<string, unknown>>;
 
   return React.cloneElement(child, {
     id: formItemId,
-    "aria-describedby": !error
-      ? formDescriptionId
-      : `${formDescriptionId} ${formMessageId}`,
+    "aria-describedby": !error ? formDescriptionId : `${formDescriptionId} ${formMessageId}`,
     "aria-invalid": !!error,
     ...child.props,
   });
 }
 
-function FormDescription({
-  className,
-  ...props
-}: React.ComponentProps<"p">) {
+function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
   const { formDescriptionId } = useFormField();
 
   return (
@@ -133,11 +110,7 @@ function FormDescription({
   );
 }
 
-function FormMessage({
-  className,
-  children,
-  ...props
-}: React.ComponentProps<"p">) {
+function FormMessage({ className, children, ...props }: React.ComponentProps<"p">) {
   const { error, formMessageId } = useFormField();
   const body = error ? String(error?.message) : children;
 

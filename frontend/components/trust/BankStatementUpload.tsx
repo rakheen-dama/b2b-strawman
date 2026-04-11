@@ -3,13 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { Upload, FileText, CheckCircle2, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import type { BankStatementResponse } from "@/lib/types";
 
 interface BankStatementUploadProps {
@@ -17,7 +11,7 @@ interface BankStatementUploadProps {
   onUploadComplete: (statement: BankStatementResponse) => void;
   uploadAction: (
     accountId: string,
-    file: File,
+    file: File
   ) => Promise<{
     success: boolean;
     data?: BankStatementResponse;
@@ -52,14 +46,12 @@ export function BankStatementUpload({
           setError(response.error ?? "Upload failed");
         }
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to upload statement",
-        );
+        setError(err instanceof Error ? err.message : "Failed to upload statement");
       } finally {
         setUploading(false);
       }
     },
-    [accountId, onUploadComplete, uploadAction],
+    [accountId, onUploadComplete, uploadAction]
   );
 
   const handleInputChange = useCallback(
@@ -68,16 +60,14 @@ export function BankStatementUpload({
       if (file) handleFileSelect(file);
       e.target.value = ""; // Reset so the same file can be re-selected
     },
-    [handleFileSelect],
+    [handleFileSelect]
   );
 
   return (
     <Card data-testid="bank-statement-upload">
       <CardHeader>
         <CardTitle>Upload Bank Statement</CardTitle>
-        <CardDescription>
-          Upload a CSV bank statement file to begin reconciliation
-        </CardDescription>
+        <CardDescription>Upload a CSV bank statement file to begin reconciliation</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center gap-3">
@@ -97,11 +87,7 @@ export function BankStatementUpload({
             disabled={uploading}
           >
             <Upload className="mr-1.5 size-3.5" />
-            {uploading
-              ? "Uploading..."
-              : fileName
-                ? "Choose Different File"
-                : "Choose CSV File"}
+            {uploading ? "Uploading..." : fileName ? "Choose Different File" : "Choose CSV File"}
           </Button>
           {fileName && !uploading && (
             <span className="flex items-center gap-1.5 text-sm text-slate-600 dark:text-slate-400">

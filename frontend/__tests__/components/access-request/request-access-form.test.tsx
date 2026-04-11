@@ -6,8 +6,7 @@ import { RequestAccessForm } from "@/components/access-request/request-access-fo
 const mockSubmitAccessRequest = vi.fn();
 
 vi.mock("@/app/request-access/actions", () => ({
-  submitAccessRequest: (...args: unknown[]) =>
-    mockSubmitAccessRequest(...args),
+  submitAccessRequest: (...args: unknown[]) => mockSubmitAccessRequest(...args),
 }));
 
 describe("RequestAccessForm", () => {
@@ -27,16 +26,14 @@ describe("RequestAccessForm", () => {
     expect(screen.getByLabelText("Organisation Name")).toBeInTheDocument();
     expect(screen.getByText("Select a country")).toBeInTheDocument();
     expect(screen.getByText("Select an industry")).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: "Request Access" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Request Access" })).toBeInTheDocument();
   });
 
   it("renders the card title and description", () => {
     render(<RequestAccessForm />);
 
     expect(
-      screen.getByText("Fill in your details to request access to DocTeams."),
+      screen.getByText("Fill in your details to request access to DocTeams.")
     ).toBeInTheDocument();
     // "Request Access" appears as both heading and button
     expect(screen.getAllByText("Request Access")).toHaveLength(2);
@@ -48,9 +45,7 @@ describe("RequestAccessForm", () => {
 
     await user.type(screen.getByLabelText("Work Email"), "test@gmail.com");
 
-    expect(
-      screen.getByText("Please use a company email address."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Please use a company email address.")).toBeInTheDocument();
   });
 
   it("shows blocked domain error for yahoo", async () => {
@@ -59,9 +54,7 @@ describe("RequestAccessForm", () => {
 
     await user.type(screen.getByLabelText("Work Email"), "test@yahoo.com");
 
-    expect(
-      screen.getByText("Please use a company email address."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Please use a company email address.")).toBeInTheDocument();
   });
 
   it("shows blocked domain error for hotmail", async () => {
@@ -70,9 +63,7 @@ describe("RequestAccessForm", () => {
 
     await user.type(screen.getByLabelText("Work Email"), "user@hotmail.com");
 
-    expect(
-      screen.getByText("Please use a company email address."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Please use a company email address.")).toBeInTheDocument();
   });
 
   it("does not show blocked domain error for company email", async () => {
@@ -81,9 +72,7 @@ describe("RequestAccessForm", () => {
 
     await user.type(screen.getByLabelText("Work Email"), "test@acme.com");
 
-    expect(
-      screen.queryByText("Please use a company email address."),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Please use a company email address.")).not.toBeInTheDocument();
   });
 
   it("clears blocked domain error when email is corrected", async () => {
@@ -92,15 +81,11 @@ describe("RequestAccessForm", () => {
 
     const emailInput = screen.getByLabelText("Work Email");
     await user.type(emailInput, "test@gmail.com");
-    expect(
-      screen.getByText("Please use a company email address."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Please use a company email address.")).toBeInTheDocument();
 
     await user.clear(emailInput);
     await user.type(emailInput, "test@acme.com");
-    expect(
-      screen.queryByText("Please use a company email address."),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Please use a company email address.")).not.toBeInTheDocument();
   });
 
   it("sets aria-invalid on email input when domain is blocked", async () => {

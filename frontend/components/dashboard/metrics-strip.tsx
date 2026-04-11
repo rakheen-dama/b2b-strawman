@@ -24,7 +24,7 @@ function formatHours(hours: number): string {
 
 function computeTrendDirection(
   current: number | null | undefined,
-  previous: number | null | undefined,
+  previous: number | null | undefined
 ): "up" | "down" | null {
   if (current == null || previous == null) return null;
   if (current > previous) return "up";
@@ -32,35 +32,23 @@ function computeTrendDirection(
   return null;
 }
 
-export function MetricsStrip({
-  kpis,
-  capacityData,
-  projectHealth,
-}: MetricsStripProps) {
+export function MetricsStrip({ kpis, capacityData, projectHealth }: MetricsStripProps) {
   const { t } = useTerminology();
   const { isModuleEnabled } = useOrgProfile();
   const resourcePlanningEnabled = isModuleEnabled("resource_planning");
   const trendValues = kpis?.trend?.map((t) => t.value) ?? [];
-  const billableHours = kpis
-    ? (kpis.totalHoursLogged * (kpis.billablePercent ?? 0)) / 100
-    : 0;
-  const nonBillableHours = kpis
-    ? kpis.totalHoursLogged - billableHours
-    : 0;
+  const billableHours = kpis ? (kpis.totalHoursLogged * (kpis.billablePercent ?? 0)) / 100 : 0;
+  const nonBillableHours = kpis ? kpis.totalHoursLogged - billableHours : 0;
 
-  const utilization =
-    capacityData?.weekSummaries?.[0]?.teamUtilizationPct ?? 0;
+  const utilization = capacityData?.weekSummaries?.[0]?.teamUtilizationPct ?? 0;
 
-  const onTrack =
-    projectHealth?.filter((p) => p.healthStatus === "HEALTHY").length ?? 0;
-  const atRisk =
-    projectHealth?.filter((p) => p.healthStatus === "AT_RISK").length ?? 0;
-  const over =
-    projectHealth?.filter((p) => p.healthStatus === "CRITICAL").length ?? 0;
+  const onTrack = projectHealth?.filter((p) => p.healthStatus === "HEALTHY").length ?? 0;
+  const atRisk = projectHealth?.filter((p) => p.healthStatus === "AT_RISK").length ?? 0;
+  const over = projectHealth?.filter((p) => p.healthStatus === "CRITICAL").length ?? 0;
 
   const marginDirection = computeTrendDirection(
     kpis?.averageMarginPercent,
-    kpis?.previousPeriod?.averageMarginPercent,
+    kpis?.previousPeriod?.averageMarginPercent
   );
 
   const overdueCount = kpis?.overdueTaskCount ?? 0;
@@ -73,9 +61,9 @@ export function MetricsStrip({
       {/* Active Projects */}
       <div
         data-testid="metric-active-projects"
-        className="rounded-lg border border-slate-200/60 bg-card p-3"
+        className="bg-card rounded-lg border border-slate-200/60 p-3"
       >
-        <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+        <p className="text-[11px] font-medium tracking-wider text-slate-500 uppercase">
           {t("Active Projects")}
         </p>
         <div className="mt-1 flex items-center justify-between">
@@ -95,9 +83,9 @@ export function MetricsStrip({
       {/* Hours This Month */}
       <div
         data-testid="metric-hours-month"
-        className="rounded-lg border border-slate-200/60 bg-card p-3"
+        className="bg-card rounded-lg border border-slate-200/60 p-3"
       >
-        <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+        <p className="text-[11px] font-medium tracking-wider text-slate-500 uppercase">
           Hours This Month
         </p>
         <div className="mt-1 flex items-center justify-between">
@@ -126,9 +114,9 @@ export function MetricsStrip({
       {/* Avg. Margin */}
       <div
         data-testid="metric-revenue"
-        className="rounded-lg border border-slate-200/60 bg-card p-3"
+        className="bg-card rounded-lg border border-slate-200/60 p-3"
       >
-        <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+        <p className="text-[11px] font-medium tracking-wider text-slate-500 uppercase">
           Avg. Margin
         </p>
         <div className="mt-1 flex items-center gap-2">
@@ -137,21 +125,17 @@ export function MetricsStrip({
               ? `${Math.round(kpis.averageMarginPercent)}%`
               : "--"}
           </span>
-          {marginDirection === "up" && (
-            <TrendingUp className="size-4 text-teal-500" />
-          )}
-          {marginDirection === "down" && (
-            <TrendingDown className="size-4 text-red-500" />
-          )}
+          {marginDirection === "up" && <TrendingUp className="size-4 text-teal-500" />}
+          {marginDirection === "down" && <TrendingDown className="size-4 text-red-500" />}
         </div>
       </div>
 
       {/* Overdue Tasks */}
       <div
         data-testid="metric-overdue-tasks"
-        className="rounded-lg border border-slate-200/60 bg-card p-3"
+        className="bg-card rounded-lg border border-slate-200/60 p-3"
       >
-        <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+        <p className="text-[11px] font-medium tracking-wider text-slate-500 uppercase">
           Overdue Tasks
         </p>
         <div className="mt-1">
@@ -173,9 +157,9 @@ export function MetricsStrip({
       {resourcePlanningEnabled && (
         <div
           data-testid="metric-team-utilization"
-          className="rounded-lg border border-slate-200/60 bg-card p-3"
+          className="bg-card rounded-lg border border-slate-200/60 p-3"
         >
-          <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+          <p className="text-[11px] font-medium tracking-wider text-slate-500 uppercase">
             Team Utilization
           </p>
           <div className="mt-1 flex items-center justify-between">
@@ -190,29 +174,23 @@ export function MetricsStrip({
       {/* Budget Health */}
       <div
         data-testid="metric-budget-health"
-        className="rounded-lg border border-slate-200/60 bg-card p-3"
+        className="bg-card rounded-lg border border-slate-200/60 p-3"
       >
-        <p className="text-[11px] font-medium uppercase tracking-wider text-slate-500">
+        <p className="text-[11px] font-medium tracking-wider text-slate-500 uppercase">
           Budget Health
         </p>
         <div className="mt-1 flex items-center gap-2">
           <div className="flex items-center gap-1.5">
             <span className="inline-block size-2.5 rounded-full bg-green-500" />
-            <span className="font-mono text-sm font-bold tabular-nums">
-              {onTrack}
-            </span>
+            <span className="font-mono text-sm font-bold tabular-nums">{onTrack}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="inline-block size-2.5 rounded-full bg-amber-500" />
-            <span className="font-mono text-sm font-bold tabular-nums">
-              {atRisk}
-            </span>
+            <span className="font-mono text-sm font-bold tabular-nums">{atRisk}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="inline-block size-2.5 rounded-full bg-red-500" />
-            <span className="font-mono text-sm font-bold tabular-nums">
-              {over}
-            </span>
+            <span className="font-mono text-sm font-bold tabular-nums">{over}</span>
           </div>
         </div>
       </div>

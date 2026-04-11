@@ -18,14 +18,11 @@ vi.mock("@/app/(app)/org/[slug]/customers/[id]/checklist-actions", () => ({
 }));
 
 // Mock kyc-actions to avoid server-only import chain
-vi.mock(
-  "@/app/(app)/org/[slug]/customers/[id]/kyc-actions",
-  () => ({
-    verifyKycAction: vi.fn().mockResolvedValue({ success: true }),
-    getKycStatusAction: vi.fn().mockResolvedValue({ configured: false, provider: null }),
-    getKycResultAction: vi.fn().mockResolvedValue({ success: true, data: null }),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/customers/[id]/kyc-actions", () => ({
+  verifyKycAction: vi.fn().mockResolvedValue({ success: true }),
+  getKycStatusAction: vi.fn().mockResolvedValue({ configured: false, provider: null }),
+  getKycResultAction: vi.fn().mockResolvedValue({ success: true, data: null }),
+}));
 
 const mockInstances: ChecklistInstanceResponse[] = [
   {
@@ -137,7 +134,7 @@ describe("ChecklistInstancePanel", () => {
         isAdmin={false}
         slug="acme"
         templateNames={{}}
-      />,
+      />
     );
     expect(screen.getByText("No checklists yet.")).toBeInTheDocument();
   });
@@ -150,7 +147,7 @@ describe("ChecklistInstancePanel", () => {
         isAdmin={false}
         slug="acme"
         templateNames={templateNames}
-      />,
+      />
     );
     expect(screen.getByText("Generic Onboarding")).toBeInTheDocument();
     expect(screen.getByText("In Progress")).toBeInTheDocument();
@@ -164,7 +161,7 @@ describe("ChecklistInstancePanel", () => {
         isAdmin={false}
         slug="acme"
         templateNames={templateNames}
-      />,
+      />
     );
     // 1 completed out of 3 total, 1 required completed out of 2 required
     expect(screen.getByText("1/3 completed (1/2 required)")).toBeInTheDocument();
@@ -179,7 +176,7 @@ describe("ChecklistInstancePanel", () => {
         slug="acme"
         templateNames={templateNames}
         templates={mockTemplates}
-      />,
+      />
     );
     expect(screen.getByText("Manually Add Checklist")).toBeInTheDocument();
   });
@@ -192,7 +189,7 @@ describe("ChecklistInstancePanel", () => {
         isAdmin={false}
         slug="acme"
         templateNames={templateNames}
-      />,
+      />
     );
     expect(screen.queryByText("Manually Add Checklist")).not.toBeInTheDocument();
   });

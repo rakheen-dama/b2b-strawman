@@ -17,7 +17,7 @@ export function ErrorFallback({ onReset }: ErrorFallbackProps) {
   const { t } = createMessages("errors");
 
   return (
-    <div className="flex flex-col items-center py-24 text-center gap-4">
+    <div className="flex flex-col items-center gap-4 py-24 text-center">
       <AlertTriangle className="size-12 text-red-500" />
       <h2 className="font-display text-xl text-slate-900 dark:text-slate-100">
         {t("boundary.heading")}
@@ -29,11 +29,7 @@ export function ErrorFallback({ onReset }: ErrorFallbackProps) {
         <Button size="sm" variant="outline" onClick={onReset}>
           {t("boundary.tryAgain")}
         </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={() => window.location.reload()}
-        >
+        <Button size="sm" variant="outline" onClick={() => window.location.reload()}>
           {t("boundary.refreshPage")}
         </Button>
         <Button size="sm" variant="outline" onClick={() => router.back()}>
@@ -56,10 +52,7 @@ interface ErrorBoundaryState {
   error: Error | null;
 }
 
-export class ErrorBoundary extends Component<
-  ErrorBoundaryProps,
-  ErrorBoundaryState
-> {
+export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };

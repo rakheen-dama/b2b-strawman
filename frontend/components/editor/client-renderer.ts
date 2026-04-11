@@ -90,7 +90,7 @@ export function formatValue(value: unknown, typeHint?: string): string {
       const num = Number(str);
       if (isNaN(num)) return escapeHtml(str);
       return escapeHtml(
-        new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR" }).format(num),
+        new Intl.NumberFormat("en-ZA", { style: "currency", currency: "ZAR" }).format(num)
       );
     }
     case "date": {
@@ -119,7 +119,7 @@ export function formatValue(value: unknown, typeHint?: string): string {
 function resolveVariable(
   key: string | null | undefined,
   context: Record<string, unknown>,
-  formatHints?: Record<string, string>,
+  formatHints?: Record<string, string>
 ): string {
   if (!key || key.trim() === "") return "";
   const segments = key.split(".");
@@ -135,7 +135,7 @@ function resolveVariable(
 
 function resolveVariableRaw(
   key: string | null | undefined,
-  context: Record<string, unknown>,
+  context: Record<string, unknown>
 ): unknown {
   if (!key || key.trim() === "") return null;
   const segments = key.split(".");
@@ -151,7 +151,7 @@ function resolveVariableRaw(
 export function evaluateCondition(
   fieldValue: unknown,
   operator: string,
-  condValue: unknown,
+  condValue: unknown
 ): boolean {
   const asStr = (o: unknown): string => (o == null ? "" : String(o));
 
@@ -178,7 +178,7 @@ export function evaluateCondition(
 
 function resolveDataSource(
   path: string | null | undefined,
-  context: Record<string, unknown>,
+  context: Record<string, unknown>
 ): Record<string, unknown>[] | null {
   if (!path || path.trim() === "") return null;
   const segments = path.split(".");
@@ -235,10 +235,7 @@ function renderText(node: TiptapNode): string {
   return openTags + escaped + closeTags;
 }
 
-function renderLoopTable(
-  attrs: Record<string, unknown>,
-  context: Record<string, unknown>,
-): string {
+function renderLoopTable(attrs: Record<string, unknown>, context: Record<string, unknown>): string {
   const dataSource = attrs.dataSource as string | undefined;
   const columns = (attrs.columns ?? []) as Array<{
     header?: string;
@@ -275,7 +272,7 @@ function renderTableCell(
   context: Record<string, unknown>,
   clauses: Map<string, TiptapNode>,
   depth: number,
-  formatHints?: Record<string, string>,
+  formatHints?: Record<string, string>
 ): string {
   let sb = "<" + tag;
   const colspan = attrs.colspan;
@@ -297,7 +294,7 @@ function renderChildren(
   context: Record<string, unknown>,
   clauses: Map<string, TiptapNode>,
   depth: number,
-  formatHints?: Record<string, string>,
+  formatHints?: Record<string, string>
 ): string {
   if (!node.content) return "";
   let sb = "";
@@ -313,16 +310,10 @@ function wrapTag(
   context: Record<string, unknown>,
   clauses: Map<string, TiptapNode>,
   depth: number,
-  formatHints?: Record<string, string>,
+  formatHints?: Record<string, string>
 ): string {
   return (
-    "<" +
-    tag +
-    ">" +
-    renderChildren(node, context, clauses, depth, formatHints) +
-    "</" +
-    tag +
-    ">"
+    "<" + tag + ">" + renderChildren(node, context, clauses, depth, formatHints) + "</" + tag + ">"
   );
 }
 
@@ -331,7 +322,7 @@ function renderNode(
   context: Record<string, unknown>,
   clauses: Map<string, TiptapNode>,
   depth: number,
-  formatHints?: Record<string, string>,
+  formatHints?: Record<string, string>
 ): string {
   const type = node.type;
   if (!type) return "";
@@ -452,7 +443,7 @@ export function renderTiptapToHtml(
   context: Record<string, unknown>,
   clauses: Map<string, TiptapNode>,
   templateCss?: string,
-  formatHints?: Record<string, string>,
+  formatHints?: Record<string, string>
 ): string {
   const body = renderNode(doc, context, clauses, 0, formatHints);
   const safeCss = templateCss ? templateCss.replace(/<\/style>/gi, "") : "";
@@ -473,7 +464,7 @@ export function renderTiptapToHtml(
  */
 export function buildPreviewContext(
   entityType: "PROJECT" | "CUSTOMER" | "INVOICE",
-  entityData: Record<string, unknown>,
+  entityData: Record<string, unknown>
 ): Record<string, unknown> {
   switch (entityType) {
     case "PROJECT":
@@ -514,10 +505,7 @@ export function extractClauseIds(node: TiptapNode): string[] {
  * Extracts all unique variable keys from a Tiptap document tree.
  * Optionally walks clause bodies when a clauses map is provided.
  */
-export function extractVariableKeys(
-  node: TiptapNode,
-  clauses?: Map<string, TiptapNode>,
-): string[] {
+export function extractVariableKeys(node: TiptapNode, clauses?: Map<string, TiptapNode>): string[] {
   const keys = new Set<string>();
   function walk(n: TiptapNode) {
     if (n.type === "variable" && n.attrs?.key) {
@@ -544,7 +532,7 @@ export function extractVariableKeys(
 export function findMissingVariables(
   node: TiptapNode,
   context: Record<string, unknown>,
-  clauses?: Map<string, TiptapNode>,
+  clauses?: Map<string, TiptapNode>
 ): Set<string> {
   const allKeys = extractVariableKeys(node, clauses);
   const missing = new Set<string>();

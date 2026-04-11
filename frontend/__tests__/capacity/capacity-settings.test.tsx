@@ -4,22 +4,16 @@ import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/re
 import { DefaultCapacitySettings } from "@/components/capacity/default-capacity-settings";
 
 const mockUpdateCapacitySettings = vi.fn();
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/capacity/actions",
-  () => ({
-    updateCapacitySettings: (...args: unknown[]) =>
-      mockUpdateCapacitySettings(...args),
-  })
-);
+vi.mock("@/app/(app)/org/[slug]/settings/capacity/actions", () => ({
+  updateCapacitySettings: (...args: unknown[]) => mockUpdateCapacitySettings(...args),
+}));
 
 afterEach(() => {
   cleanup();
   mockUpdateCapacitySettings.mockReset();
 });
 
-function renderForm(
-  overrides: Partial<React.ComponentProps<typeof DefaultCapacitySettings>> = {}
-) {
+function renderForm(overrides: Partial<React.ComponentProps<typeof DefaultCapacitySettings>> = {}) {
   const defaultProps: React.ComponentProps<typeof DefaultCapacitySettings> = {
     slug: "acme",
     defaultWeeklyCapacityHours: 40,

@@ -23,10 +23,7 @@ import {
 } from "@/components/ui/form";
 import { RotateCcw, Loader2 } from "lucide-react";
 import { reverseTransaction } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
-import {
-  reversalReasonSchema,
-  type ReversalReasonFormData,
-} from "@/lib/schemas/trust";
+import { reversalReasonSchema, type ReversalReasonFormData } from "@/lib/schemas/trust";
 
 interface ReversalButtonProps {
   transactionId: string;
@@ -92,10 +89,7 @@ export function ReversalButton({ transactionId }: ReversalButtonProps) {
           </DialogHeader>
 
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(handleSubmit)}
-              className="space-y-4"
-            >
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
               <FormField
                 control={form.control}
                 name="reason"
@@ -115,7 +109,7 @@ export function ReversalButton({ transactionId }: ReversalButtonProps) {
                 )}
               />
 
-              {error && <p className="text-sm text-destructive">{error}</p>}
+              {error && <p className="text-destructive text-sm">{error}</p>}
 
               <DialogFooter>
                 <Button

@@ -59,9 +59,7 @@ export default async function InvoiceDetailPage({
   let paymentEvents: PaymentEvent[] = [];
   if (invoice!.status === "SENT" || invoice!.status === "PAID") {
     try {
-      paymentEvents = await api.get<PaymentEvent[]>(
-        `/api/invoices/${id}/payment-events`,
-      );
+      paymentEvents = await api.get<PaymentEvent[]>(`/api/invoices/${id}/payment-events`);
     } catch {
       // Non-fatal: payment events section won't render data
     }
@@ -88,7 +86,7 @@ export default async function InvoiceDetailPage({
     const appliedGroups = invoice!.appliedFieldGroups ?? [];
     if (appliedGroups.length > 0) {
       const memberResults = await Promise.allSettled(
-        appliedGroups.map((gId) => getGroupMembers(gId)),
+        appliedGroups.map((gId) => getGroupMembers(gId))
       );
       memberResults.forEach((result, i) => {
         if (result.status === "fulfilled") {

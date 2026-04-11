@@ -22,9 +22,7 @@ export interface CalendarFilters {
   overdue?: boolean;
 }
 
-export function getStatusVariant(
-  status: string
-): "neutral" | "warning" | "success" | "secondary" {
+export function getStatusVariant(status: string): "neutral" | "warning" | "success" | "secondary" {
   switch (status) {
     case "OPEN":
       return "neutral";

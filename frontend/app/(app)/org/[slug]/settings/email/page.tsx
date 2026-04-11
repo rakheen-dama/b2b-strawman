@@ -3,11 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { EmailSettingsContent } from "@/components/email/EmailSettingsContent";
 
-export default async function EmailSettingsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function EmailSettingsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const caps = await fetchMyCapabilities();
 
@@ -21,12 +17,10 @@ export default async function EmailSettingsPage({
           <ChevronLeft className="size-4" />
           Settings
         </Link>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Email
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Email</h1>
         <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to manage email settings. Only admins and
-          owners can access this page.
+          You do not have permission to manage email settings. Only admins and owners can access
+          this page.
         </p>
       </div>
     );
@@ -42,9 +36,7 @@ export default async function EmailSettingsPage({
         Settings
       </Link>
 
-      <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-        Email
-      </h1>
+      <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Email</h1>
 
       <EmailSettingsContent />
     </div>

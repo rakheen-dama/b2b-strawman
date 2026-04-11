@@ -18,31 +18,25 @@ const mockBatchApprove = vi.fn();
 const mockBatchSend = vi.fn();
 const mockGetBillingRun = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions",
-  () => ({
-    createBillingRunAction: vi.fn(),
-    loadPreviewAction: vi.fn(),
-    getUnbilledSummaryAction: vi.fn().mockResolvedValue({ success: true }),
-    getUnbilledTimeAction: vi.fn().mockResolvedValue({ success: true, entries: [] }),
-    getUnbilledExpensesAction: vi.fn().mockResolvedValue({ success: true, entries: [] }),
-    updateSelectionsAction: vi.fn().mockResolvedValue({ success: true }),
-    excludeCustomerAction: vi.fn().mockResolvedValue({ success: true }),
-    includeCustomerAction: vi.fn().mockResolvedValue({ success: true }),
-    getRetainerPreviewAction: vi.fn().mockResolvedValue({ success: true, retainers: [] }),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions", () => ({
+  createBillingRunAction: vi.fn(),
+  loadPreviewAction: vi.fn(),
+  getUnbilledSummaryAction: vi.fn().mockResolvedValue({ success: true }),
+  getUnbilledTimeAction: vi.fn().mockResolvedValue({ success: true, entries: [] }),
+  getUnbilledExpensesAction: vi.fn().mockResolvedValue({ success: true, entries: [] }),
+  updateSelectionsAction: vi.fn().mockResolvedValue({ success: true }),
+  excludeCustomerAction: vi.fn().mockResolvedValue({ success: true }),
+  includeCustomerAction: vi.fn().mockResolvedValue({ success: true }),
+  getRetainerPreviewAction: vi.fn().mockResolvedValue({ success: true, retainers: [] }),
+}));
 
-vi.mock(
-  "@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-step-actions",
-  () => ({
-    generateAction: (...args: unknown[]) => mockGenerate(...args),
-    getItemsAction: (...args: unknown[]) => mockGetItems(...args),
-    batchApproveAction: (...args: unknown[]) => mockBatchApprove(...args),
-    batchSendAction: (...args: unknown[]) => mockBatchSend(...args),
-    getBillingRunAction: (...args: unknown[]) => mockGetBillingRun(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-step-actions", () => ({
+  generateAction: (...args: unknown[]) => mockGenerate(...args),
+  getItemsAction: (...args: unknown[]) => mockGetItems(...args),
+  batchApproveAction: (...args: unknown[]) => mockBatchApprove(...args),
+  batchSendAction: (...args: unknown[]) => mockBatchSend(...args),
+  getBillingRunAction: (...args: unknown[]) => mockGetBillingRun(...args),
+}));
 
 // Mock invoice actions
 vi.mock("@/app/(app)/org/[slug]/invoices/invoice-crud-actions", () => ({
@@ -123,7 +117,7 @@ describe("ReviewDraftsStep", () => {
         currency="ZAR"
         onBack={vi.fn()}
         onNext={vi.fn()}
-      />,
+      />
     );
 
     await waitFor(() => {
@@ -143,15 +137,13 @@ describe("ReviewDraftsStep", () => {
         currency="ZAR"
         onBack={vi.fn()}
         onNext={vi.fn()}
-      />,
+      />
     );
 
     await waitFor(() => {
       expect(screen.getByText("Failed Invoices")).toBeInTheDocument();
     });
-    expect(
-      screen.getByText("Widget Inc: Customer has no billing address"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Widget Inc: Customer has no billing address")).toBeInTheDocument();
   });
 
   it("calls batchApprove and advances on Approve All click", async () => {
@@ -174,7 +166,7 @@ describe("ReviewDraftsStep", () => {
         currency="ZAR"
         onBack={vi.fn()}
         onNext={onNext}
-      />,
+      />
     );
 
     await waitFor(() => {
@@ -200,14 +192,7 @@ describe("SendStep", () => {
   it("shows approved invoices table", async () => {
     mockGetItems.mockResolvedValue({ success: true, items: mockApprovedItems });
 
-    render(
-      <SendStep
-        slug="test-org"
-        billingRunId="run-1"
-        currency="ZAR"
-        onBack={vi.fn()}
-      />,
-    );
+    render(<SendStep slug="test-org" billingRunId="run-1" currency="ZAR" onBack={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText("Acme Corp")).toBeInTheDocument();
@@ -218,14 +203,7 @@ describe("SendStep", () => {
   it("shows send confirmation dialog when Send All is clicked", async () => {
     mockGetItems.mockResolvedValue({ success: true, items: mockApprovedItems });
 
-    render(
-      <SendStep
-        slug="test-org"
-        billingRunId="run-1"
-        currency="ZAR"
-        onBack={vi.fn()}
-      />,
-    );
+    render(<SendStep slug="test-org" billingRunId="run-1" currency="ZAR" onBack={vi.fn()} />);
 
     await waitFor(() => {
       expect(screen.getByText("Acme Corp")).toBeInTheDocument();
@@ -250,14 +228,7 @@ describe("SendStep", () => {
       billingRun: { id: "run-1" },
     });
 
-    render(
-      <SendStep
-        slug="test-org"
-        billingRunId="run-1"
-        currency="ZAR"
-        onBack={vi.fn()}
-      />,
-    );
+    render(<SendStep slug="test-org" billingRunId="run-1" currency="ZAR" onBack={vi.fn()} />);
 
     // Wait for items to load
     await waitFor(() => {

@@ -63,7 +63,7 @@ describe("Completeness Visibility (Epic 251B)", () => {
         overallComplete={false}
         steps={makeSteps()}
         contextGroups={makeContextGroups()}
-      />,
+      />
     );
 
     expect(screen.getByText("Field Completeness")).toBeInTheDocument();
@@ -80,16 +80,14 @@ describe("Completeness Visibility (Epic 251B)", () => {
         overallComplete={false}
         steps={makeSteps()}
         contextGroups={makeContextGroups()}
-      />,
+      />
     );
 
     // Missing fields should not be visible initially
     expect(screen.queryByText("Billing Address")).not.toBeInTheDocument();
 
     // Click the context group to expand
-    await user.click(
-      screen.getByRole("button", { name: "Toggle Required Fields details" }),
-    );
+    await user.click(screen.getByRole("button", { name: "Toggle Required Fields details" }));
 
     // Missing fields should now be visible
     expect(screen.getByText("Billing Address")).toBeInTheDocument();
@@ -105,9 +103,7 @@ describe("Completeness Visibility (Epic 251B)", () => {
   });
 
   it("dashboard widget shows incomplete count", () => {
-    render(
-      <IncompleteProfilesWidget data={makeAggregatedData()} orgSlug="test-org" />,
-    );
+    render(<IncompleteProfilesWidget data={makeAggregatedData()} orgSlug="test-org" />);
 
     expect(screen.getByText("5")).toBeInTheDocument();
     expect(screen.getByText("12")).toBeInTheDocument();
@@ -119,17 +115,13 @@ describe("Completeness Visibility (Epic 251B)", () => {
   it("dashboard widget click navigates to filtered customer list", async () => {
     const user = userEvent.setup();
 
-    render(
-      <IncompleteProfilesWidget data={makeAggregatedData()} orgSlug="test-org" />,
-    );
+    render(<IncompleteProfilesWidget data={makeAggregatedData()} orgSlug="test-org" />);
 
     // Click a missing field row
     const billingRow = screen.getByText("Billing Address").closest("button");
     expect(billingRow).not.toBeNull();
     await user.click(billingRow!);
 
-    expect(mockPush).toHaveBeenCalledWith(
-      "/org/test-org/customers?showIncomplete=true",
-    );
+    expect(mockPush).toHaveBeenCalledWith("/org/test-org/customers?showIncomplete=true");
   });
 });

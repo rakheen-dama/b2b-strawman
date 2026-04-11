@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.seeder;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplate;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateItemRepository;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
@@ -34,6 +36,7 @@ class LegalPackSeederIntegrationTest {
   @Autowired private FieldDefinitionRepository fieldDefinitionRepository;
   @Autowired private DocumentTemplateRepository documentTemplateRepository;
   @Autowired private ChecklistTemplateRepository checklistTemplateRepository;
+  @Autowired private ChecklistTemplateItemRepository checklistTemplateItemRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String legalSchema;
@@ -124,9 +127,60 @@ class LegalPackSeederIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var template =
-                      checklistTemplateRepository.findBySlug("legal-za-client-onboarding");
-                  assertThat(template).isPresent();
+                  // GAP-S4-02: the legal pack is now split by customerType. Verify both the
+                  // INDIVIDUAL and TRUST variants are seeded for legal-za tenants.
+                  var individual =
+                      checklistTemplateRepository.findBySlug(
+                          "legal-za-individual-client-onboarding");
+                  assertThat(individual).isPresent();
+
+                  var trust =
+                      checklistTemplateRepository.findBySlug("legal-za-trust-client-onboarding");
+                  assertThat(trust).isPresent();
+
+                  // GAP-S4-02 regression guard: ensure the TRUST pack actually loaded all
+                  // 12 FICA checklist items and that the item-key dependencies resolved to
+                  // real item IDs during seeding (second pass of CompliancePackSeeder).
+                  var trustTemplate = trust.orElseThrow();
+                  assertThat(trustTemplate.getCustomerType()).isEqualTo("TRUST");
+
+                  var trustItems =
+                      checklistTemplateItemRepository.findByTemplateIdOrderBySortOrder(
+                          trustTemplate.getId());
+                  assertThat(trustItems).hasSize(12);
+
+                  // Locate the dependency-anchor items by name (slugs generated from names).
+                  var proofOfTrustBanking =
+                      trustItems.stream()
+                          .filter(i -> "Proof of Trust Banking".equals(i.getName()))
+                          .findFirst()
+                          .orElseThrow();
+                  var trustee1Id =
+                      trustItems.stream()
+                          .filter(i -> "Trustee 1 ID".equals(i.getName()))
+                          .findFirst()
+                          .orElseThrow();
+
+                  // FICA Risk Assessment depends on proof-of-trust-banking.
+                  var riskAssessment =
+                      trustItems.stream()
+                          .filter(i -> "FICA Risk Assessment".equals(i.getName()))
+                          .findFirst()
+                          .orElseThrow();
+                  assertThat(riskAssessment.getDependsOnItemId())
+                      .isEqualTo(proofOfTrustBanking.getId());
+
+                  // Sanctions Screening depends on trustee-1-id.
+                  var sanctions =
+                      trustItems.stream()
+                          .filter(i -> "Sanctions Screening".equals(i.getName()))
+                          .findFirst()
+                          .orElseThrow();
+                  assertThat(sanctions.getDependsOnItemId()).isEqualTo(trustee1Id.getId());
+
+                  // And the INDIVIDUAL variant should not bleed into the TRUST count.
+                  ChecklistTemplate individualTpl = individual.orElseThrow();
+                  assertThat(individualTpl.getCustomerType()).isEqualTo("INDIVIDUAL");
                 }));
   }
 

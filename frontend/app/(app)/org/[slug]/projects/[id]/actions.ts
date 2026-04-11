@@ -3,7 +3,13 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type { Customer, CustomerProject, UploadInitRequest, UploadInitResponse, PresignDownloadResponse } from "@/lib/types";
+import type {
+  Customer,
+  CustomerProject,
+  UploadInitRequest,
+  UploadInitResponse,
+  PresignDownloadResponse,
+} from "@/lib/types";
 
 interface ActionResult {
   success: boolean;

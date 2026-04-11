@@ -7,12 +7,7 @@ import { portalApi } from "@/lib/portal-api";
 
 // --- Types ---
 
-export type PortalRequestStatus =
-  | "DRAFT"
-  | "SENT"
-  | "IN_PROGRESS"
-  | "COMPLETED"
-  | "CANCELLED";
+export type PortalRequestStatus = "DRAFT" | "SENT" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
 
 export interface PortalRequestListItem {
   id: string;
@@ -76,21 +71,18 @@ export function getPortalRequest(id: string): Promise<PortalRequestDetail> {
 export function initiateUpload(
   requestId: string,
   itemId: string,
-  data: UploadInitiationRequest,
+  data: UploadInitiationRequest
 ): Promise<UploadInitiationResponse> {
   return portalApi.post<UploadInitiationResponse>(
     `/portal/requests/${requestId}/items/${itemId}/upload`,
-    data,
+    data
   );
 }
 
 export function submitItem(
   requestId: string,
   itemId: string,
-  data: SubmitItemRequest,
+  data: SubmitItemRequest
 ): Promise<void> {
-  return portalApi.post<void>(
-    `/portal/requests/${requestId}/items/${itemId}/submit`,
-    data,
-  );
+  return portalApi.post<void>(`/portal/requests/${requestId}/items/${itemId}/submit`, data);
 }

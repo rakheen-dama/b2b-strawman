@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MiniProgressRing } from "@/components/dashboard/mini-progress-ring";
 import type { ProjectStaffingResponse } from "@/lib/api/capacity";
@@ -18,9 +13,7 @@ export function ProjectStaffingTab({ staffing }: ProjectStaffingTabProps) {
   if (staffing === null) {
     return (
       <div className="space-y-6">
-        <p className="text-sm text-muted-foreground italic">
-          Unable to load staffing data.
-        </p>
+        <p className="text-muted-foreground text-sm italic">Unable to load staffing data.</p>
       </div>
     );
   }
@@ -28,7 +21,7 @@ export function ProjectStaffingTab({ staffing }: ProjectStaffingTabProps) {
   if (staffing.members.length === 0) {
     return (
       <div className="space-y-6">
-        <p className="text-sm text-muted-foreground italic">
+        <p className="text-muted-foreground text-sm italic">
           No team members allocated to this project.
         </p>
       </div>
@@ -37,7 +30,7 @@ export function ProjectStaffingTab({ staffing }: ProjectStaffingTabProps) {
 
   // Collect all unique week starts across all members
   const weekStarts = Array.from(
-    new Set(staffing.members.flatMap((m) => m.weeks.map((w) => w.weekStart))),
+    new Set(staffing.members.flatMap((m) => m.weeks.map((w) => w.weekStart)))
   ).sort();
 
   const formatWeekLabel = (weekStart: string) => {
@@ -83,20 +76,18 @@ export function ProjectStaffingTab({ staffing }: ProjectStaffingTabProps) {
                       {member.memberName}
                     </td>
                     {weekStarts.map((ws) => {
-                      const weekCell = member.weeks.find(
-                        (w) => w.weekStart === ws,
-                      );
+                      const weekCell = member.weeks.find((w) => w.weekStart === ws);
                       const hours = weekCell?.allocatedHours ?? 0;
                       return (
                         <td
                           key={ws}
-                          className="px-3 py-2 text-center font-mono tabular-nums text-slate-600 dark:text-slate-400"
+                          className="px-3 py-2 text-center font-mono text-slate-600 tabular-nums dark:text-slate-400"
                         >
                           {hours > 0 ? `${hours}h` : "-"}
                         </td>
                       );
                     })}
-                    <td className="py-2 pl-4 text-right font-mono font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+                    <td className="py-2 pl-4 text-right font-mono font-semibold text-slate-900 tabular-nums dark:text-slate-100">
                       {member.totalAllocatedHours}h
                     </td>
                   </tr>
@@ -111,26 +102,15 @@ export function ProjectStaffingTab({ staffing }: ProjectStaffingTabProps) {
       {staffing.budgetHours !== null && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">
-              Planned Hours vs Budget
-            </CardTitle>
+            <CardTitle className="text-base">Planned Hours vs Budget</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex items-center gap-4">
-              <MiniProgressRing
-                value={staffing.budgetUsedPct ?? 0}
-                size={56}
-              />
+              <MiniProgressRing value={staffing.budgetUsedPct ?? 0} size={56} />
               <div>
                 <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                  <span className="font-mono tabular-nums">
-                    {staffing.totalPlannedHours}h
-                  </span>{" "}
-                  of{" "}
-                  <span className="font-mono tabular-nums">
-                    {staffing.budgetHours}h
-                  </span>{" "}
-                  budget
+                  <span className="font-mono tabular-nums">{staffing.totalPlannedHours}h</span> of{" "}
+                  <span className="font-mono tabular-nums">{staffing.budgetHours}h</span> budget
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
                   <span className="font-mono tabular-nums">
@@ -142,8 +122,7 @@ export function ProjectStaffingTab({ staffing }: ProjectStaffingTabProps) {
             </div>
             {(staffing.budgetUsedPct ?? 0) > 100 && (
               <Badge variant="destructive" className="text-xs">
-                Over budget by{" "}
-                {staffing.totalPlannedHours - (staffing.budgetHours ?? 0)}h
+                Over budget by {staffing.totalPlannedHours - (staffing.budgetHours ?? 0)}h
               </Badge>
             )}
           </CardContent>

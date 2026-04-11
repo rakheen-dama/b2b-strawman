@@ -9,7 +9,7 @@ export function MockOrgSwitcher() {
   return (
     <div className="flex items-center gap-2">
       {orgSlug && (
-        <span className="truncate font-mono text-xs uppercase tracking-wider text-teal-500/80">
+        <span className="truncate font-mono text-xs tracking-wider text-teal-500/80 uppercase">
           {orgSlug}
         </span>
       )}

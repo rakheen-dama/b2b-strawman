@@ -13,11 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -26,12 +22,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -43,11 +34,8 @@ import dynamic from "next/dynamic";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const DocumentEditor = dynamic(
-  () =>
-    import("@/components/editor/DocumentEditor").then(
-      (mod) => mod.DocumentEditor,
-    ),
-  { loading: () => <Skeleton className="h-64 w-full" />, ssr: false },
+  () => import("@/components/editor/DocumentEditor").then((mod) => mod.DocumentEditor),
+  { loading: () => <Skeleton className="h-64 w-full" />, ssr: false }
 );
 import {
   EntityPicker,
@@ -56,11 +44,7 @@ import {
   buildPreviewContext,
 } from "@/components/editor";
 import type { TiptapNode } from "@/components/editor";
-import {
-  createClause,
-  updateClause,
-  cloneClause,
-} from "@/lib/actions/clause-actions";
+import { createClause, updateClause, cloneClause } from "@/lib/actions/clause-actions";
 import type { Clause } from "@/lib/actions/clause-actions";
 import type { TemplateEntityType } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -170,7 +154,7 @@ export function ClauseEditorSheet({
         onSuccess(
           isEditing
             ? `Clause "${title.trim()}" updated successfully.`
-            : `Clause "${title.trim()}" created successfully.`,
+            : `Clause "${title.trim()}" created successfully.`
         );
       } else {
         setError(result.error ?? "An unexpected error occurred.");
@@ -211,19 +195,11 @@ export function ClauseEditorSheet({
     });
   }
 
-  const sheetTitle = isSystem
-    ? "System Clause"
-    : isEditing
-      ? "Edit Clause"
-      : "New Clause";
+  const sheetTitle = isSystem ? "System Clause" : isEditing ? "Edit Clause" : "New Clause";
 
   const bodyContent = (editorBody as { content?: unknown[] })?.content;
   const hasBody = Array.isArray(bodyContent) && bodyContent.length > 0;
-  const canSubmit =
-    title.trim().length > 0 &&
-    category.trim().length > 0 &&
-    hasBody &&
-    !isSystem;
+  const canSubmit = title.trim().length > 0 && category.trim().length > 0 && hasBody && !isSystem;
 
   return (
     <Sheet
@@ -254,16 +230,9 @@ export function ClauseEditorSheet({
 
         {/* Header */}
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-4 dark:border-slate-800">
-          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-            {sheetTitle}
-          </h2>
+          <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">{sheetTitle}</h2>
           <SheetClose asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="shrink-0"
-              aria-label="Close"
-            >
+            <Button variant="ghost" size="icon" className="shrink-0" aria-label="Close">
               <X className="size-4" />
             </Button>
           </SheetClose>
@@ -387,7 +356,7 @@ export function ClauseEditorSheet({
                           <Check
                             className={cn(
                               "mr-2 size-4",
-                              category === cat ? "opacity-100" : "opacity-0",
+                              category === cat ? "opacity-100" : "opacity-0"
                             )}
                           />
                           {cat}
@@ -416,9 +385,7 @@ export function ClauseEditorSheet({
 
           {/* DocumentEditor */}
           <div className="space-y-2">
-            <Label>
-              Body {!isSystem && <span className="text-red-500">*</span>}
-            </Label>
+            <Label>Body {!isSystem && <span className="text-red-500">*</span>}</Label>
             <DocumentEditor
               content={clause?.body ?? null}
               onUpdate={(json) => setEditorBody(json)}
@@ -427,7 +394,7 @@ export function ClauseEditorSheet({
             />
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
         </div>
 
         {/* Footer */}
@@ -467,10 +434,7 @@ export function ClauseEditorSheet({
                   Cancel
                 </Button>
               </SheetClose>
-              <Button
-                onClick={handleSave}
-                disabled={isSubmitting || !canSubmit}
-              >
+              <Button onClick={handleSave} disabled={isSubmitting || !canSubmit}>
                 {isSubmitting
                   ? isEditing
                     ? "Saving..."

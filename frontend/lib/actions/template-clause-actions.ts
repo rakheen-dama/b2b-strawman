@@ -27,13 +27,9 @@ export interface TemplateClauseActionResult {
   error?: string;
 }
 
-export async function getTemplateClauses(
-  templateId: string,
-): Promise<TemplateClauseDetail[]> {
+export async function getTemplateClauses(templateId: string): Promise<TemplateClauseDetail[]> {
   try {
-    return await api.get<TemplateClauseDetail[]>(
-      `/api/templates/${templateId}/clauses`,
-    );
+    return await api.get<TemplateClauseDetail[]>(`/api/templates/${templateId}/clauses`);
   } catch (error) {
     console.error("Failed to fetch template clauses:", error);
     return [];
@@ -43,7 +39,7 @@ export async function getTemplateClauses(
 export async function setTemplateClauses(
   templateId: string,
   clauses: TemplateClauseConfig[],
-  slug?: string,
+  slug?: string
 ): Promise<TemplateClauseActionResult> {
   try {
     await api.put(`/api/templates/${templateId}/clauses`, { clauses });
@@ -69,7 +65,7 @@ export async function addClauseToTemplate(
   templateId: string,
   clauseId: string,
   required: boolean,
-  slug?: string,
+  slug?: string
 ): Promise<TemplateClauseActionResult> {
   try {
     await api.post(`/api/templates/${templateId}/clauses`, {
@@ -103,7 +99,7 @@ export async function addClauseToTemplate(
 export async function removeClauseFromTemplate(
   templateId: string,
   clauseId: string,
-  slug?: string,
+  slug?: string
 ): Promise<TemplateClauseActionResult> {
   try {
     await api.delete(`/api/templates/${templateId}/clauses/${clauseId}`);

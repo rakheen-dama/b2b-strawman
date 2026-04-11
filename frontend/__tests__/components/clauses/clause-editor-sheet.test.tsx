@@ -8,7 +8,7 @@ const mockGetJSON = vi.fn(
   (): Record<string, unknown> => ({
     type: "doc",
     content: [{ type: "paragraph", content: [{ type: "text", text: "test" }] }],
-  }),
+  })
 );
 const mockSetEditable = vi.fn();
 const mockOn = vi.fn();
@@ -37,18 +37,14 @@ vi.mock("@tiptap/react", () => ({
   useEditor: vi.fn((opts: Record<string, unknown>) => {
     capturedEditable = opts.editable as boolean;
     // Simulate editor triggering onUpdate so parent state receives body content
-    const onUpdateCb = opts.onUpdate as
-      | ((p: { editor: typeof mockEditor }) => void)
-      | undefined;
+    const onUpdateCb = opts.onUpdate as ((p: { editor: typeof mockEditor }) => void) | undefined;
     if (onUpdateCb) {
       setTimeout(() => onUpdateCb({ editor: mockEditor }), 0);
     }
     return mockEditor;
   }),
   EditorContent: vi.fn(({ editor }: { editor: unknown }) =>
-    editor ? (
-      <div data-testid="editor-content" contentEditable={capturedEditable} />
-    ) : null,
+    editor ? <div data-testid="editor-content" contentEditable={capturedEditable} /> : null
   ),
 }));
 
@@ -94,7 +90,10 @@ const baseClause: Clause = {
   title: "Test Clause",
   slug: "test-clause",
   description: "A test clause",
-  body: { type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "clause body" }] }] },
+  body: {
+    type: "doc",
+    content: [{ type: "paragraph", content: [{ type: "text", text: "clause body" }] }],
+  },
   legacyBody: null,
   category: "General",
   source: "CUSTOM",
@@ -174,9 +173,7 @@ describe("ClauseEditorSheet", () => {
 
     // "System Clause" appears in both sr-only SheetTitle and visible h2
     expect(screen.getAllByText("System Clause")).toHaveLength(2);
-    expect(
-      screen.getByText("This is a system clause. Clone to customize."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("This is a system clause. Clone to customize.")).toBeInTheDocument();
     expect(screen.getByText("Clone")).toBeInTheDocument();
     // No Save/Create button for system clauses
     expect(screen.queryByText("Save Changes")).not.toBeInTheDocument();
@@ -189,9 +186,7 @@ describe("ClauseEditorSheet", () => {
     // "Edit Clause" appears in both sr-only SheetTitle and visible h2
     expect(screen.getAllByText("Edit Clause")).toHaveLength(2);
     expect(
-      screen.getByText(
-        "Editing this clause will affect all templates that use it.",
-      ),
+      screen.getByText("Editing this clause will affect all templates that use it.")
     ).toBeInTheDocument();
     expect(screen.getByText("Save Changes")).toBeInTheDocument();
   });

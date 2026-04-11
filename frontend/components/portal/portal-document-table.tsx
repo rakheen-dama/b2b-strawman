@@ -33,11 +33,7 @@ function getFileIcon(contentType: string) {
     contentType.includes("csv")
   )
     return FileSpreadsheet;
-  if (
-    contentType.includes("zip") ||
-    contentType.includes("gzip") ||
-    contentType.includes("tar")
-  )
+  if (contentType.includes("zip") || contentType.includes("gzip") || contentType.includes("tar"))
     return FileArchive;
   return File;
 }
@@ -66,25 +62,23 @@ export function PortalDocumentTable({
 
   return (
     <div className="space-y-3">
-      <h2 className="font-semibold text-slate-900 dark:text-slate-100">
-        {title}
-      </h2>
+      <h2 className="font-semibold text-slate-900 dark:text-slate-100">{title}</h2>
       <div className="rounded-lg border border-slate-200 dark:border-slate-800">
         <Table>
           <TableHeader>
             <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
-              <TableHead className="text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <TableHead className="text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 File
               </TableHead>
-              <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+              <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                 Size
               </TableHead>
               {showProject && (
-                <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+                <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                   Project
                 </TableHead>
               )}
-              <TableHead className="hidden text-xs uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+              <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                 Uploaded
               </TableHead>
               <TableHead className="w-[60px]" />
@@ -124,10 +118,7 @@ export function PortalDocumentTable({
                     </span>
                   </TableCell>
                   <TableCell>
-                    <PortalDownloadButton
-                      documentId={doc.id}
-                      fileName={doc.fileName}
-                    />
+                    <PortalDownloadButton documentId={doc.id} fileName={doc.fileName} />
                   </TableCell>
                 </TableRow>
               );
@@ -139,13 +130,7 @@ export function PortalDocumentTable({
   );
 }
 
-function PortalDownloadButton({
-  documentId,
-  fileName,
-}: {
-  documentId: string;
-  fileName: string;
-}) {
+function PortalDownloadButton({ documentId, fileName }: { documentId: string; fileName: string }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -155,7 +140,7 @@ function PortalDownloadButton({
 
     try {
       const result = await portalApi.get<PresignDownloadResponse>(
-        `/portal/documents/${documentId}/presign-download`,
+        `/portal/documents/${documentId}/presign-download`
       );
 
       const a = document.createElement("a");
@@ -182,16 +167,10 @@ function PortalDownloadButton({
         onClick={handleDownload}
         disabled={isLoading}
       >
-        {isLoading ? (
-          <Loader2 className="size-4 animate-spin" />
-        ) : (
-          <Download className="size-4" />
-        )}
+        {isLoading ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
         <span className="sr-only">Download {fileName}</span>
       </Button>
-      {error && (
-        <span className="text-xs text-red-600 dark:text-red-400">{error}</span>
-      )}
+      {error && <span className="text-xs text-red-600 dark:text-red-400">{error}</span>}
     </div>
   );
 }

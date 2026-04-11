@@ -16,9 +16,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 const GenerateDocumentDialog = dynamic(
   () =>
     import("@/components/templates/GenerateDocumentDialog").then(
-      (mod) => mod.GenerateDocumentDialog,
+      (mod) => mod.GenerateDocumentDialog
     ),
-  { loading: () => <Skeleton className="h-96 w-full" />, ssr: false },
+  { loading: () => <Skeleton className="h-96 w-full" />, ssr: false }
 );
 import { GenerateDocxDialog } from "@/components/templates/GenerateDocxDialog";
 import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
@@ -46,8 +46,7 @@ export function GenerateDocumentDropdown({
   slug,
 }: GenerateDocumentDropdownProps) {
   const searchParams = useSearchParams();
-  const [selectedTemplate, setSelectedTemplate] =
-    useState<TemplateListResponse | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<TemplateListResponse | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   // Prerequisite gate state
@@ -103,7 +102,7 @@ export function GenerateDocumentDropdown({
                   const check = await checkPrerequisitesAction(
                     "DOCUMENT_GENERATION",
                     entityType as EntityType,
-                    entityId,
+                    entityId
                   );
                   if (check.passed) {
                     setTimeout(() => setDialogOpen(true), 150);

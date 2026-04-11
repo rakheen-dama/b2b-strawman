@@ -71,9 +71,7 @@ export function Breadcrumbs({ slug }: BreadcrumbsProps) {
 
   // Strip the /org/[slug]/ prefix to get the relative path segments
   const prefix = `/org/${slug}/`;
-  const relativePath = pathname.startsWith(prefix)
-    ? pathname.slice(prefix.length)
-    : "";
+  const relativePath = pathname.startsWith(prefix) ? pathname.slice(prefix.length) : "";
   const segments = relativePath.split("/").filter(Boolean);
 
   if (segments.length === 0) return null;
@@ -83,7 +81,7 @@ export function Breadcrumbs({ slug }: BreadcrumbsProps) {
       {/* Org slug as root link */}
       <Link
         href={`/org/${slug}/dashboard`}
-        className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
+        className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
       >
         {slug}
       </Link>
@@ -94,7 +92,7 @@ export function Breadcrumbs({ slug }: BreadcrumbsProps) {
         const rawLabel =
           SEGMENT_LABELS[segment] ??
           (isUuid(segment) && parentSegment
-            ? PARENT_SEGMENT_FALLBACKS[parentSegment] ?? segment
+            ? (PARENT_SEGMENT_FALLBACKS[parentSegment] ?? segment)
             : segment);
         const label = t(rawLabel);
 
@@ -105,13 +103,11 @@ export function Breadcrumbs({ slug }: BreadcrumbsProps) {
           <span key={href} className="flex items-center gap-1">
             <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
             {isLast ? (
-              <span className="font-medium text-slate-900 dark:text-white">
-                {label}
-              </span>
+              <span className="font-medium text-slate-900 dark:text-white">{label}</span>
             ) : (
               <Link
                 href={href}
-                className="text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white transition-colors"
+                className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
               >
                 {label}
               </Link>

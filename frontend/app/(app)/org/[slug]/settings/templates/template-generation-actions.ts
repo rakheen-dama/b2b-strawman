@@ -9,11 +9,22 @@ export async function generateDocumentAction(
   entityId: string,
   saveToDocuments: boolean,
   acknowledgeWarnings: boolean = false,
-  clauses?: Array<{ clauseId: string; sortOrder: number }>,
-): Promise<{ success: boolean; data?: import("@/lib/types").GenerateDocumentResponse; pdfBase64?: string; error?: string }> {
+  clauses?: Array<{ clauseId: string; sortOrder: number }>
+): Promise<{
+  success: boolean;
+  data?: import("@/lib/types").GenerateDocumentResponse;
+  pdfBase64?: string;
+  error?: string;
+}> {
   try {
     const { generateDocument } = await import("@/lib/api");
-    const result = await generateDocument(templateId, entityId, saveToDocuments, acknowledgeWarnings, clauses);
+    const result = await generateDocument(
+      templateId,
+      entityId,
+      saveToDocuments,
+      acknowledgeWarnings,
+      clauses
+    );
 
     if (saveToDocuments) {
       return {
@@ -38,12 +49,12 @@ export async function generateDocumentAction(
 export async function generateDocxAction(
   templateId: string,
   entityId: string,
-  outputFormat: string,
+  outputFormat: string
 ): Promise<{ success: boolean; data?: import("@/lib/types").GenerateDocxResult; error?: string }> {
   try {
     const data = await api.post<import("@/lib/types").GenerateDocxResult>(
       `/api/templates/${templateId}/generate-docx`,
-      { entityId, outputFormat },
+      { entityId, outputFormat }
     );
     return { success: true, data };
   } catch (error) {
@@ -56,8 +67,12 @@ export async function generateDocxAction(
 
 export async function fetchGeneratedDocumentsAction(
   entityType: import("@/lib/types").TemplateEntityType,
-  entityId: string,
-): Promise<{ success: boolean; data?: import("@/lib/types").GeneratedDocumentListResponse[]; error?: string }> {
+  entityId: string
+): Promise<{
+  success: boolean;
+  data?: import("@/lib/types").GeneratedDocumentListResponse[];
+  error?: string;
+}> {
   try {
     const { fetchGeneratedDocuments } = await import("@/lib/api");
     const data = await fetchGeneratedDocuments(entityType, entityId);
@@ -71,7 +86,7 @@ export async function fetchGeneratedDocumentsAction(
 }
 
 export async function deleteGeneratedDocumentAction(
-  id: string,
+  id: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const { deleteGeneratedDocument } = await import("@/lib/api");
@@ -86,7 +101,7 @@ export async function deleteGeneratedDocumentAction(
 }
 
 export async function downloadGeneratedDocumentAction(
-  id: string,
+  id: string
 ): Promise<{ success: boolean; pdfBase64?: string; fileName?: string; error?: string }> {
   try {
     const { downloadGeneratedDocument } = await import("@/lib/api");
@@ -103,7 +118,7 @@ export async function downloadGeneratedDocumentAction(
 }
 
 export async function downloadDocxGeneratedDocumentAction(
-  id: string,
+  id: string
 ): Promise<{ success: boolean; docxBase64?: string; fileName?: string; error?: string }> {
   try {
     const { downloadDocxGeneratedDocument } = await import("@/lib/api");

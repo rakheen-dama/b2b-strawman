@@ -24,10 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Loader2, Plus } from "lucide-react";
 import { createDsarRequest } from "@/app/(app)/org/[slug]/settings/data-protection/requests/actions";
-import {
-  logDsarRequestSchema,
-  type LogDsarRequestFormData,
-} from "@/lib/schemas/data-protection";
+import { logDsarRequestSchema, type LogDsarRequestFormData } from "@/lib/schemas/data-protection";
 
 const REQUEST_TYPES = [
   { value: "ACCESS", label: "Access" },
@@ -121,10 +118,7 @@ export function LogDsarRequestDialog({ slug }: LogDsarRequestDialogProps) {
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-4 py-2"
-          >
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 py-2">
             <FormField
               control={form.control}
               name="subjectName"
@@ -150,10 +144,7 @@ export function LogDsarRequestDialog({ slug }: LogDsarRequestDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Email{" "}
-                    <span className="font-normal text-muted-foreground">
-                      (optional)
-                    </span>
+                    Email <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -178,7 +169,7 @@ export function LogDsarRequestDialog({ slug }: LogDsarRequestDialogProps) {
                     <select
                       value={field.value}
                       onChange={field.onChange}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
                     >
                       {REQUEST_TYPES.map((rt) => (
                         <option key={rt.value} value={rt.value}>
@@ -227,7 +218,7 @@ export function LogDsarRequestDialog({ slug }: LogDsarRequestDialogProps) {
               )}
             />
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
 
             <DialogFooter>
               <Button

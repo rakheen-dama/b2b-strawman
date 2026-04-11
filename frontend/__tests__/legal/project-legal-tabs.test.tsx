@@ -29,30 +29,22 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/app/(app)/org/[slug]/court-calendar/actions", () => ({
-  fetchCourtDates: vi
-    .fn()
-    .mockResolvedValue({ content: [], page: { totalElements: 0 } }),
+  fetchCourtDates: vi.fn().mockResolvedValue({ content: [], page: { totalElements: 0 } }),
   fetchCourtDate: vi.fn(),
   createCourtDate: vi.fn().mockResolvedValue({ success: true }),
   updateCourtDate: vi.fn().mockResolvedValue({ success: true }),
   postponeCourtDate: vi.fn().mockResolvedValue({ success: true }),
   cancelCourtDate: vi.fn().mockResolvedValue({ success: true }),
   recordOutcome: vi.fn().mockResolvedValue({ success: true }),
-  fetchPrescriptionTrackers: vi
-    .fn()
-    .mockResolvedValue({ content: [], page: { totalElements: 0 } }),
+  fetchPrescriptionTrackers: vi.fn().mockResolvedValue({ content: [], page: { totalElements: 0 } }),
   createPrescriptionTracker: vi.fn().mockResolvedValue({ success: true }),
   interruptPrescription: vi.fn().mockResolvedValue({ success: true }),
   fetchProjects: vi.fn().mockResolvedValue([]),
-  fetchUpcoming: vi
-    .fn()
-    .mockResolvedValue({ courtDates: [], prescriptionWarnings: [] }),
+  fetchUpcoming: vi.fn().mockResolvedValue({ courtDates: [], prescriptionWarnings: [] }),
 }));
 
 vi.mock("@/app/(app)/org/[slug]/legal/adverse-parties/actions", () => ({
-  fetchAdverseParties: vi
-    .fn()
-    .mockResolvedValue({ content: [], page: { totalElements: 0 } }),
+  fetchAdverseParties: vi.fn().mockResolvedValue({ content: [], page: { totalElements: 0 } }),
   fetchProjectAdverseParties: vi.fn().mockResolvedValue([]),
   unlinkAdverseParty: vi.fn().mockResolvedValue({ success: true }),
   fetchProjects: vi.fn().mockResolvedValue([]),
@@ -120,9 +112,7 @@ function makeCourtDate(overrides: Partial<CourtDate> = {}): CourtDate {
   };
 }
 
-function makeAdversePartyLink(
-  overrides: Partial<AdversePartyLink> = {},
-): AdversePartyLink {
+function makeAdversePartyLink(overrides: Partial<AdversePartyLink> = {}): AdversePartyLink {
   return {
     id: "link-1",
     adversePartyId: "ap-1",
@@ -152,11 +142,7 @@ function withLegalProfile(ui: React.ReactElement) {
 
 function withNoModules(ui: React.ReactElement) {
   return (
-    <OrgProfileProvider
-      verticalProfile={null}
-      enabledModules={[]}
-      terminologyNamespace={null}
-    >
+    <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
       {ui}
     </OrgProfileProvider>
   );
@@ -179,11 +165,7 @@ describe("ProjectCourtDatesTab", () => {
       mutate: vi.fn(),
     } as ReturnType<typeof useSWR>);
 
-    render(
-      withLegalProfile(
-        <ProjectCourtDatesTab projectId="proj-1" slug="acme" />,
-      ),
-    );
+    render(withLegalProfile(<ProjectCourtDatesTab projectId="proj-1" slug="acme" />));
 
     const tab = screen.getByTestId("project-court-dates-tab");
     expect(tab).toBeInTheDocument();
@@ -205,13 +187,11 @@ describe("ProjectCourtDatesTab", () => {
       withNoModules(
         <ModuleGate module="court_calendar">
           <ProjectCourtDatesTab projectId="proj-1" slug="acme" />
-        </ModuleGate>,
-      ),
+        </ModuleGate>
+      )
     );
 
-    expect(
-      screen.queryByTestId("project-court-dates-tab"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("project-court-dates-tab")).not.toBeInTheDocument();
   });
 });
 
@@ -231,11 +211,7 @@ describe("ProjectAdversePartiesTab", () => {
       mutate: vi.fn(),
     } as ReturnType<typeof useSWR>);
 
-    render(
-      withLegalProfile(
-        <ProjectAdversePartiesTab projectId="proj-1" slug="acme" />,
-      ),
-    );
+    render(withLegalProfile(<ProjectAdversePartiesTab projectId="proj-1" slug="acme" />));
 
     const tab = screen.getByTestId("project-adverse-parties-tab");
     expect(tab).toBeInTheDocument();
@@ -269,11 +245,7 @@ describe("UpcomingCourtDatesWidget", () => {
       mutate: vi.fn(),
     } as ReturnType<typeof useSWR>);
 
-    render(
-      withLegalProfile(
-        <UpcomingCourtDatesWidget orgSlug="acme" />,
-      ),
-    );
+    render(withLegalProfile(<UpcomingCourtDatesWidget orgSlug="acme" />));
 
     const widget = screen.getByTestId("upcoming-court-dates-widget");
     expect(widget).toBeInTheDocument();
@@ -290,32 +262,24 @@ describe("Sidebar nav items", () => {
   it("legal nav items have correct requiredModule values", () => {
     // Court Calendar
     const workGroup = NAV_GROUPS.find((g) => g.id === "work");
-    const courtCalItem = workGroup?.items.find(
-      (i) => i.label === "Court Calendar",
-    );
+    const courtCalItem = workGroup?.items.find((i) => i.label === "Court Calendar");
     expect(courtCalItem).toBeDefined();
     expect(courtCalItem?.requiredModule).toBe("court_calendar");
 
     // Conflict Check
     const clientsGroup = NAV_GROUPS.find((g) => g.id === "clients");
-    const conflictItem = clientsGroup?.items.find(
-      (i) => i.label === "Conflict Check",
-    );
+    const conflictItem = clientsGroup?.items.find((i) => i.label === "Conflict Check");
     expect(conflictItem).toBeDefined();
     expect(conflictItem?.requiredModule).toBe("conflict_check");
 
     // Adverse Parties
-    const adverseItem = clientsGroup?.items.find(
-      (i) => i.label === "Adverse Parties",
-    );
+    const adverseItem = clientsGroup?.items.find((i) => i.label === "Adverse Parties");
     expect(adverseItem).toBeDefined();
     expect(adverseItem?.requiredModule).toBe("conflict_check");
 
     // Tariffs
     const financeGroup = NAV_GROUPS.find((g) => g.id === "finance");
-    const tariffItem = financeGroup?.items.find(
-      (i) => i.label === "Tariffs",
-    );
+    const tariffItem = financeGroup?.items.find((i) => i.label === "Tariffs");
     expect(tariffItem).toBeDefined();
     expect(tariffItem?.requiredModule).toBe("lssa_tariff");
   });

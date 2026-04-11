@@ -29,7 +29,7 @@ describe("CustomerContactCard", () => {
           contactEmail: "jane@acme.com",
           contactPhone: "+27215550100",
         }}
-      />,
+      />
     );
 
     const emailLink = screen.getByRole("link", { name: "jane@acme.com" });

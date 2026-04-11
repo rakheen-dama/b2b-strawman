@@ -18,9 +18,7 @@ interface ClauseContentResult {
 const clauseCache = new Map<string, { body: Record<string, unknown>; title: string }>();
 
 export function useClauseContent(clauseId: string): ClauseContentResult {
-  const [state, setState] = useState<ClauseContentState>(() =>
-    resolveInitial(clauseId),
-  );
+  const [state, setState] = useState<ClauseContentState>(() => resolveInitial(clauseId));
 
   // Fetch clause content when clauseId changes and not cached
   useEffect(() => {
@@ -73,7 +71,6 @@ export function useClauseContent(clauseId: string): ClauseContentResult {
 function resolveInitial(clauseId: string): ClauseContentState {
   if (!clauseId) return { body: null, title: null, isLoading: false };
   const cached = clauseCache.get(clauseId);
-  if (cached)
-    return { body: cached.body, title: cached.title, isLoading: false };
+  if (cached) return { body: cached.body, title: cached.title, isLoading: false };
   return { body: null, title: null, isLoading: true };
 }

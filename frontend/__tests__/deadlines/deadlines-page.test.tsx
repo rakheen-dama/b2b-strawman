@@ -29,9 +29,7 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/app/(app)/org/[slug]/deadlines/actions", () => ({
   fetchDeadlines: vi.fn().mockResolvedValue({ deadlines: [], total: 0 }),
   fetchDeadlineSummary: vi.fn().mockResolvedValue({ summaries: [] }),
-  updateFilingStatus: vi
-    .fn()
-    .mockResolvedValue({ success: true, results: [] }),
+  updateFilingStatus: vi.fn().mockResolvedValue({ success: true, results: [] }),
 }));
 
 // --- Imports after mocks ---
@@ -44,9 +42,7 @@ import type { CalculatedDeadline } from "@/lib/types";
 afterEach(() => cleanup());
 beforeEach(() => vi.clearAllMocks());
 
-function makeDeadline(
-  overrides: Partial<CalculatedDeadline> = {}
-): CalculatedDeadline {
+function makeDeadline(overrides: Partial<CalculatedDeadline> = {}): CalculatedDeadline {
   return {
     customerId: "cust-1",
     customerName: "Acme Pty Ltd",
@@ -116,9 +112,7 @@ describe("DeadlineListView", () => {
 
 describe("DeadlineCalendarView", () => {
   it("renders month grid with correct day count for March 2026", () => {
-    render(
-      <DeadlineCalendarView deadlines={[]} year={2026} month={3} />
-    );
+    render(<DeadlineCalendarView deadlines={[]} year={2026} month={3} />);
     // March has 31 days
     for (let d = 1; d <= 31; d++) {
       const cells = screen.getAllByText(String(d));
@@ -144,13 +138,7 @@ describe("DeadlineFilters", () => {
   it("calls onFilterChange with updated category when dropdown changes", async () => {
     const user = userEvent.setup();
     const onFilterChange = vi.fn();
-    render(
-      <DeadlineFilters
-        initialYear={2026}
-        initialMonth={3}
-        onFilterChange={onFilterChange}
-      />
-    );
+    render(<DeadlineFilters initialYear={2026} initialMonth={3} onFilterChange={onFilterChange} />);
     // Previous month button
     const prevBtn = screen.getByRole("button", { name: /previous month/i });
     await user.click(prevBtn);
@@ -162,19 +150,9 @@ describe("DeadlineFilters", () => {
   });
 
   it("renders month navigation buttons", () => {
-    render(
-      <DeadlineFilters
-        initialYear={2026}
-        initialMonth={3}
-        onFilterChange={() => {}}
-      />
-    );
-    expect(
-      screen.getByRole("button", { name: /previous month/i })
-    ).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /next month/i })
-    ).toBeInTheDocument();
+    render(<DeadlineFilters initialYear={2026} initialMonth={3} onFilterChange={() => {}} />);
+    expect(screen.getByRole("button", { name: /previous month/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /next month/i })).toBeInTheDocument();
     expect(screen.getByText(/March 2026/)).toBeInTheDocument();
   });
 });
@@ -184,9 +162,7 @@ describe("Nav item requiredModule", () => {
     const { NAV_GROUPS } = await import("@/lib/nav-items");
     const clientsGroup = NAV_GROUPS.find((g) => g.id === "clients");
     expect(clientsGroup).toBeDefined();
-    const deadlinesItem = clientsGroup!.items.find(
-      (item) => item.label === "Deadlines"
-    );
+    const deadlinesItem = clientsGroup!.items.find((item) => item.label === "Deadlines");
     expect(deadlinesItem).toBeDefined();
     expect(deadlinesItem!.requiredModule).toBe("regulatory_deadlines");
   });

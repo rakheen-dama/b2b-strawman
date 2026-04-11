@@ -12,7 +12,7 @@ describe("BillingStatusBadge", () => {
         invoiceId="inv-123"
         invoiceNumber="INV-0001"
         slug="acme"
-      />,
+      />
     );
 
     const badge = screen.getByText("Billed");
@@ -25,12 +25,7 @@ describe("BillingStatusBadge", () => {
 
   it("renders gray Unbilled badge when billable with no invoiceId", () => {
     render(
-      <BillingStatusBadge
-        billable={true}
-        invoiceId={null}
-        invoiceNumber={null}
-        slug="acme"
-      />,
+      <BillingStatusBadge billable={true} invoiceId={null} invoiceNumber={null} slug="acme" />
     );
 
     const badge = screen.getByText("Unbilled");
@@ -40,25 +35,14 @@ describe("BillingStatusBadge", () => {
 
   it("renders nothing when not billable", () => {
     const { container } = render(
-      <BillingStatusBadge
-        billable={false}
-        invoiceId={null}
-        invoiceNumber={null}
-        slug="acme"
-      />,
+      <BillingStatusBadge billable={false} invoiceId={null} invoiceNumber={null} slug="acme" />
     );
 
     expect(container.firstChild).toBeNull();
   });
 
   it("renders Billed badge without link when slug is not provided", () => {
-    render(
-      <BillingStatusBadge
-        billable={true}
-        invoiceId="inv-789"
-        invoiceNumber="INV-0003"
-      />,
-    );
+    render(<BillingStatusBadge billable={true} invoiceId="inv-789" invoiceNumber="INV-0003" />);
 
     const badge = screen.getByText("Billed");
     expect(badge).toBeInTheDocument();

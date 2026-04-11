@@ -61,12 +61,8 @@ describe("RetainerIndicator", () => {
       periodEnd: "2026-04-01",
     };
 
-    render(
-      <RetainerIndicator summary={summary} selectedDate="2026-03-15" />,
-    );
-    expect(
-      screen.getByText(/Retainer fully consumed/),
-    ).toBeInTheDocument();
+    render(<RetainerIndicator summary={summary} selectedDate="2026-03-15" />);
+    expect(screen.getByText(/Retainer fully consumed/)).toBeInTheDocument();
     expect(screen.getByRole("alert")).toBeInTheDocument();
   });
 
@@ -126,13 +122,9 @@ describe("RetainerIndicator", () => {
       periodEnd: "2026-04-01",
     };
 
-    render(
-      <RetainerIndicator summary={summary} selectedDate="2026-05-15" />,
-    );
+    render(<RetainerIndicator summary={summary} selectedDate="2026-05-15" />);
     expect(screen.getByTestId("retainer-period-warning")).toBeInTheDocument();
-    expect(
-      screen.getByText(/outside the current retainer period/),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/outside the current retainer period/)).toBeInTheDocument();
   });
 
   it("does not show warning when selected date is within retainer period", () => {
@@ -150,12 +142,8 @@ describe("RetainerIndicator", () => {
       periodEnd: "2026-04-01",
     };
 
-    render(
-      <RetainerIndicator summary={summary} selectedDate="2026-03-15" />,
-    );
-    expect(
-      screen.queryByTestId("retainer-period-warning"),
-    ).not.toBeInTheDocument();
+    render(<RetainerIndicator summary={summary} selectedDate="2026-03-15" />);
+    expect(screen.queryByTestId("retainer-period-warning")).not.toBeInTheDocument();
   });
 
   it("shows period warning instead of overage warning when date is outside period", () => {
@@ -173,14 +161,10 @@ describe("RetainerIndicator", () => {
       periodEnd: "2026-04-01",
     };
 
-    render(
-      <RetainerIndicator summary={summary} selectedDate="2026-05-15" />,
-    );
+    render(<RetainerIndicator summary={summary} selectedDate="2026-05-15" />);
     // Should show the period warning, not the overage warning
     expect(screen.getByTestId("retainer-period-warning")).toBeInTheDocument();
-    expect(
-      screen.queryByTestId("retainer-overage-warning"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("retainer-overage-warning")).not.toBeInTheDocument();
   });
 
   it("shows period range for FIXED_FEE retainer with warning when date outside", () => {
@@ -198,9 +182,7 @@ describe("RetainerIndicator", () => {
       periodEnd: "2026-04-01",
     };
 
-    render(
-      <RetainerIndicator summary={summary} selectedDate="2026-05-15" />,
-    );
+    render(<RetainerIndicator summary={summary} selectedDate="2026-05-15" />);
     expect(screen.getByTestId("retainer-period-range")).toBeInTheDocument();
     expect(screen.getByTestId("retainer-period-warning")).toBeInTheDocument();
   });

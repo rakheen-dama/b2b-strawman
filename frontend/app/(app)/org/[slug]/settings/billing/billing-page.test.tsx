@@ -10,13 +10,7 @@ vi.mock("@/app/(app)/org/[slug]/settings/billing/actions", () => ({
 }));
 
 vi.mock("@/components/ui/badge", () => ({
-  Badge: ({
-    children,
-    variant,
-  }: {
-    children: React.ReactNode;
-    variant: string;
-  }) => (
+  Badge: ({ children, variant }: { children: React.ReactNode; variant: string }) => (
     <span data-testid="badge" data-variant={variant}>
       {children}
     </span>
@@ -24,13 +18,7 @@ vi.mock("@/components/ui/badge", () => ({
 }));
 
 vi.mock("@/components/ui/card", () => ({
-  Card: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
+  Card: ({ children, className }: { children: React.ReactNode; className?: string }) => (
     <div data-testid="card" className={className}>
       {children}
     </div>
@@ -38,24 +26,12 @@ vi.mock("@/components/ui/card", () => ({
   CardHeader: ({ children }: { children: React.ReactNode }) => (
     <div data-testid="card-header">{children}</div>
   ),
-  CardTitle: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
+  CardTitle: ({ children, className }: { children: React.ReactNode; className?: string }) => (
     <h2 data-testid="card-title" className={className}>
       {children}
     </h2>
   ),
-  CardContent: ({
-    children,
-    className,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => (
+  CardContent: ({ children, className }: { children: React.ReactNode; className?: string }) => (
     <div data-testid="card-content" className={className}>
       {children}
     </div>
@@ -63,17 +39,11 @@ vi.mock("@/components/ui/card", () => ({
 }));
 
 vi.mock("@/components/billing/subscribe-button", () => ({
-  SubscribeButton: () => (
-    <button data-testid="subscribe-button">Subscribe</button>
-  ),
+  SubscribeButton: () => <button data-testid="subscribe-button">Subscribe</button>,
 }));
 
 vi.mock("@/components/billing/cancel-confirm-dialog", () => ({
-  CancelConfirmDialog: ({
-    currentPeriodEnd,
-  }: {
-    currentPeriodEnd: string;
-  }) => (
+  CancelConfirmDialog: ({ currentPeriodEnd }: { currentPeriodEnd: string }) => (
     <button data-testid="cancel-dialog" data-period-end={currentPeriodEnd}>
       Cancel Subscription
     </button>
@@ -81,9 +51,7 @@ vi.mock("@/components/billing/cancel-confirm-dialog", () => ({
 }));
 
 vi.mock("@/components/billing/payment-history", () => ({
-  PaymentHistory: () => (
-    <div data-testid="payment-history">Payment History Table</div>
-  ),
+  PaymentHistory: () => <div data-testid="payment-history">Payment History Table</div>,
 }));
 
 vi.mock("@/components/billing/trial-countdown", () => ({
@@ -112,14 +80,10 @@ vi.mock("@/components/billing/payfast-result-poller", () => ({
 
 afterEach(() => cleanup());
 
-const { getSubscription } = await import(
-  "@/app/(app)/org/[slug]/settings/billing/actions"
-);
+const { getSubscription } = await import("@/app/(app)/org/[slug]/settings/billing/actions");
 const mockGetSubscription = getSubscription as ReturnType<typeof vi.fn>;
 
-function makeBilling(
-  overrides: Partial<BillingResponse> = {}
-): BillingResponse {
+function makeBilling(overrides: Partial<BillingResponse> = {}): BillingResponse {
   return {
     status: "ACTIVE",
     trialEndsAt: null,
@@ -160,9 +124,7 @@ describe("BillingPage", () => {
 
     expect(screen.getByText("Trial Period")).toBeInTheDocument();
     expect(screen.getByTestId("trial-countdown")).toBeInTheDocument();
-    expect(
-      screen.getByTestId("trial-countdown").getAttribute("data-trial-ends-at")
-    ).toBe(trialEnd);
+    expect(screen.getByTestId("trial-countdown").getAttribute("data-trial-ends-at")).toBe(trialEnd);
   });
 
   it("renders subscribe CTA for TRIALING", async () => {
@@ -281,9 +243,7 @@ describe("BillingPage", () => {
     // "Grace Period" appears in both the badge and card title
     expect(screen.getAllByText("Grace Period").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByTestId("grace-countdown")).toBeInTheDocument();
-    expect(
-      screen.getByTestId("grace-countdown").getAttribute("data-grace-ends-at")
-    ).toBe(graceEnd);
+    expect(screen.getByTestId("grace-countdown").getAttribute("data-grace-ends-at")).toBe(graceEnd);
     expect(screen.getByText(/read-only mode/)).toBeInTheDocument();
   });
 

@@ -6,10 +6,7 @@ interface ProposalsAttentionListProps {
   slug: string;
 }
 
-export function ProposalsAttentionList({
-  summary,
-  slug,
-}: ProposalsAttentionListProps) {
+export function ProposalsAttentionList({ summary, slug }: ProposalsAttentionListProps) {
   const overdue = summary.pendingOverdue;
 
   if (overdue.length === 0) {
@@ -24,20 +21,18 @@ export function ProposalsAttentionList({
 
   return (
     <div className="space-y-3">
-      <h2 className="text-sm font-medium text-slate-600 dark:text-slate-400">
-        Needs Attention
-      </h2>
+      <h2 className="text-sm font-medium text-slate-600 dark:text-slate-400">Needs Attention</h2>
       <div className="overflow-x-auto rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-800">
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Customer
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Project
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Days Overdue
               </th>
             </tr>

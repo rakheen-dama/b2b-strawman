@@ -23,33 +23,26 @@ export async function listProviders(): Promise<Partial<Record<IntegrationDomain,
 
 export async function upsertIntegration(
   domain: IntegrationDomain,
-  data: UpsertIntegrationRequest,
+  data: UpsertIntegrationRequest
 ): Promise<OrgIntegration> {
   return api.put<OrgIntegration>(`/api/integrations/${domain}`, data);
 }
 
-export async function setApiKey(
-  domain: IntegrationDomain,
-  data: SetApiKeyRequest,
-): Promise<void> {
+export async function setApiKey(domain: IntegrationDomain, data: SetApiKeyRequest): Promise<void> {
   return api.post<void>(`/api/integrations/${domain}/set-key`, data);
 }
 
-export async function testConnection(
-  domain: IntegrationDomain,
-): Promise<ConnectionTestResult> {
+export async function testConnection(domain: IntegrationDomain): Promise<ConnectionTestResult> {
   return api.post<ConnectionTestResult>(`/api/integrations/${domain}/test`);
 }
 
-export async function deleteApiKey(
-  domain: IntegrationDomain,
-): Promise<void> {
+export async function deleteApiKey(domain: IntegrationDomain): Promise<void> {
   return api.delete<void>(`/api/integrations/${domain}/key`);
 }
 
 export async function toggleIntegration(
   domain: IntegrationDomain,
-  data: ToggleIntegrationRequest,
+  data: ToggleIntegrationRequest
 ): Promise<OrgIntegration> {
   return api.patch<OrgIntegration>(`/api/integrations/${domain}/toggle`, data);
 }

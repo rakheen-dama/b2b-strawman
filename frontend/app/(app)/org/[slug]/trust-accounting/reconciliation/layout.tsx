@@ -7,11 +7,7 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
  * Gates on trust_accounting module and VIEW_TRUST capability so that
  * direct navigation to /reconciliation/new cannot bypass authorisation.
  */
-export default async function ReconciliationLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default async function ReconciliationLayout({ children }: { children: React.ReactNode }) {
   // Module gating
   let settings;
   try {
@@ -28,9 +24,7 @@ export default async function ReconciliationLayout({
   // Capability check
   const capData = await fetchMyCapabilities();
   const hasViewTrust =
-    capData.isAdmin ||
-    capData.isOwner ||
-    capData.capabilities.includes("VIEW_TRUST");
+    capData.isAdmin || capData.isOwner || capData.capabilities.includes("VIEW_TRUST");
   if (!hasViewTrust) {
     notFound();
   }

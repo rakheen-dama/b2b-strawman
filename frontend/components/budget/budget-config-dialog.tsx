@@ -37,9 +37,7 @@ export function BudgetConfigDialog({
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [currency, setCurrency] = useState(
-    existing?.budgetCurrency ?? defaultCurrency
-  );
+  const [currency, setCurrency] = useState(existing?.budgetCurrency ?? defaultCurrency);
   function handleOpenChange(next: boolean) {
     setOpen(next);
     if (next) {
@@ -118,11 +116,16 @@ export function BudgetConfigDialog({
             <HelpTip code="budget.types" />
           </DialogTitle>
           <DialogDescription>
-            Configure budget limits for this project. Set hours, amount, or
-            both.
+            Configure budget limits for this project. Set hours, amount, or both.
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={async (e) => { e.preventDefault(); await handleSubmit(new FormData(e.currentTarget)); }} className="space-y-4">
+        <form
+          onSubmit={async (e) => {
+            e.preventDefault();
+            await handleSubmit(new FormData(e.currentTarget));
+          }}
+          className="space-y-4"
+        >
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label htmlFor="budgetHours">Budget Hours</Label>
@@ -152,11 +155,7 @@ export function BudgetConfigDialog({
 
           <div className="space-y-2">
             <Label>Currency</Label>
-            <CurrencySelector
-              value={currency}
-              onChange={setCurrency}
-              className="w-full"
-            />
+            <CurrencySelector value={currency} onChange={setCurrency} className="w-full" />
           </div>
 
           <div className="space-y-2">
@@ -173,8 +172,7 @@ export function BudgetConfigDialog({
               defaultValue={existing?.alertThresholdPct ?? 80}
             />
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              You will be alerted when consumption reaches this percentage
-              (50-100%).
+              You will be alerted when consumption reaches this percentage (50-100%).
             </p>
           </div>
 
@@ -189,7 +187,7 @@ export function BudgetConfigDialog({
             />
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <DialogFooter>
             <Button

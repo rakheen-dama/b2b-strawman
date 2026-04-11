@@ -21,10 +21,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  cancelCourtDateSchema,
-  type CancelCourtDateFormData,
-} from "@/lib/schemas/legal";
+import { cancelCourtDateSchema, type CancelCourtDateFormData } from "@/lib/schemas/legal";
 import { cancelCourtDate } from "@/app/(app)/org/[slug]/court-calendar/actions";
 
 interface CancelCourtDateDialogProps {
@@ -86,9 +83,7 @@ export function CancelCourtDateDialog({
       <DialogContent data-testid="cancel-court-date-dialog">
         <DialogHeader>
           <DialogTitle>Cancel Court Date</DialogTitle>
-          <DialogDescription>
-            Provide a reason for cancelling this court date.
-          </DialogDescription>
+          <DialogDescription>Provide a reason for cancelling this court date.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -122,11 +117,7 @@ export function CancelCourtDateDialog({
               >
                 Keep
               </Button>
-              <Button
-                type="submit"
-                variant="destructive"
-                disabled={isSubmitting}
-              >
+              <Button type="submit" variant="destructive" disabled={isSubmitting}>
                 {isSubmitting ? "Cancelling..." : "Cancel Court Date"}
               </Button>
             </DialogFooter>

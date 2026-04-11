@@ -65,24 +65,16 @@ export function BillingTenantsTable({ tenants }: BillingTenantsTableProps) {
   const [methodFilter, setMethodFilter] = useState(ALL_VALUE);
   const [profileFilter, setProfileFilter] = useState(ALL_VALUE);
   const [search, setSearch] = useState("");
-  const [selectedTenant, setSelectedTenant] =
-    useState<AdminTenantBilling | null>(null);
+  const [selectedTenant, setSelectedTenant] = useState<AdminTenantBilling | null>(null);
   const [sheetOpen, setSheetOpen] = useState(false);
   const router = useRouter();
 
   const filtered = useMemo(() => {
     return tenants.filter((t) => {
-      if (statusFilter !== ALL_VALUE && t.subscriptionStatus !== statusFilter)
-        return false;
-      if (methodFilter !== ALL_VALUE && t.billingMethod !== methodFilter)
-        return false;
-      if (profileFilter !== ALL_VALUE && t.verticalProfile !== profileFilter)
-        return false;
-      if (
-        search &&
-        !t.organizationName.toLowerCase().includes(search.toLowerCase())
-      )
-        return false;
+      if (statusFilter !== ALL_VALUE && t.subscriptionStatus !== statusFilter) return false;
+      if (methodFilter !== ALL_VALUE && t.billingMethod !== methodFilter) return false;
+      if (profileFilter !== ALL_VALUE && t.verticalProfile !== profileFilter) return false;
+      if (search && !t.organizationName.toLowerCase().includes(search.toLowerCase())) return false;
       return true;
     });
   }, [tenants, statusFilter, methodFilter, profileFilter, search]);
@@ -90,10 +82,9 @@ export function BillingTenantsTable({ tenants }: BillingTenantsTableProps) {
   const sorted = useMemo(
     () =>
       [...filtered].sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       ),
-    [filtered],
+    [filtered]
   );
 
   function handleOpenDetail(tenant: AdminTenantBilling) {
@@ -108,7 +99,7 @@ export function BillingTenantsTable({ tenants }: BillingTenantsTableProps) {
   return (
     <div data-testid="billing-tenants-page">
       {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 mb-6">
+      <div className="mb-6 flex flex-wrap items-center gap-3">
         <Input
           placeholder="Search by org name..."
           value={search}
@@ -177,12 +168,8 @@ export function BillingTenantsTable({ tenants }: BillingTenantsTableProps) {
           <TableBody>
             {sorted.map((tenant) => (
               <TableRow key={tenant.organizationId}>
-                <TableCell className="font-medium">
-                  {tenant.organizationName}
-                </TableCell>
-                <TableCell className="text-sm text-slate-500">
-                  {tenant.verticalProfile}
-                </TableCell>
+                <TableCell className="font-medium">{tenant.organizationName}</TableCell>
+                <TableCell className="text-sm text-slate-500">{tenant.verticalProfile}</TableCell>
                 <TableCell>
                   <StatusBadge status={tenant.subscriptionStatus} />
                 </TableCell>
@@ -194,18 +181,10 @@ export function BillingTenantsTable({ tenants }: BillingTenantsTableProps) {
                     ? formatDate(tenant.trialEndsAt, "\u2014")
                     : formatDate(tenant.currentPeriodEnd, "\u2014")}
                 </TableCell>
+                <TableCell className="text-right">{tenant.memberCount}</TableCell>
+                <TableCell className="text-sm">{formatDate(tenant.createdAt, "\u2014")}</TableCell>
                 <TableCell className="text-right">
-                  {tenant.memberCount}
-                </TableCell>
-                <TableCell className="text-sm">
-                  {formatDate(tenant.createdAt, "\u2014")}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleOpenDetail(tenant)}
-                  >
+                  <Button variant="outline" size="sm" onClick={() => handleOpenDetail(tenant)}>
                     Open
                   </Button>
                 </TableCell>

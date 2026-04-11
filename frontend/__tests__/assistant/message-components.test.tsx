@@ -58,9 +58,7 @@ describe("ToolUseCard", () => {
     };
     render(<ToolUseCard message={message} isLoading={false} />);
     expect(screen.getByText(/Looked up/i)).toBeInTheDocument();
-    expect(
-      screen.getByRole("button", { name: /expand result/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /expand result/i })).toBeInTheDocument();
   });
 });
 

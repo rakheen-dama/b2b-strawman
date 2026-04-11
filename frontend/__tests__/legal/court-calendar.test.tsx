@@ -27,24 +27,18 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/app/(app)/org/[slug]/court-calendar/actions", () => ({
-  fetchCourtDates: vi
-    .fn()
-    .mockResolvedValue({ content: [], page: { totalElements: 0 } }),
+  fetchCourtDates: vi.fn().mockResolvedValue({ content: [], page: { totalElements: 0 } }),
   fetchCourtDate: vi.fn(),
   createCourtDate: vi.fn().mockResolvedValue({ success: true }),
   updateCourtDate: vi.fn().mockResolvedValue({ success: true }),
   postponeCourtDate: vi.fn().mockResolvedValue({ success: true }),
   cancelCourtDate: vi.fn().mockResolvedValue({ success: true }),
   recordOutcome: vi.fn().mockResolvedValue({ success: true }),
-  fetchPrescriptionTrackers: vi
-    .fn()
-    .mockResolvedValue({ content: [], page: { totalElements: 0 } }),
+  fetchPrescriptionTrackers: vi.fn().mockResolvedValue({ content: [], page: { totalElements: 0 } }),
   createPrescriptionTracker: vi.fn().mockResolvedValue({ success: true }),
   interruptPrescription: vi.fn().mockResolvedValue({ success: true }),
   fetchProjects: vi.fn().mockResolvedValue([]),
-  fetchUpcoming: vi
-    .fn()
-    .mockResolvedValue({ courtDates: [], prescriptionWarnings: [] }),
+  fetchUpcoming: vi.fn().mockResolvedValue({ courtDates: [], prescriptionWarnings: [] }),
 }));
 
 vi.mock("@/lib/api", () => ({
@@ -73,19 +67,14 @@ import { CreatePrescriptionDialog } from "@/components/legal/create-prescription
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { ModuleGate } from "@/components/module-gate";
 import { NAV_GROUPS } from "@/lib/nav-items";
-import type {
-  CourtDate,
-  PrescriptionTracker,
-} from "@/lib/types";
+import type { CourtDate, PrescriptionTracker } from "@/lib/types";
 
 afterEach(() => cleanup());
 beforeEach(() => vi.clearAllMocks());
 
 // --- Helpers ---
 
-function makeCourtDate(
-  overrides: Partial<CourtDate> = {}
-): CourtDate {
+function makeCourtDate(overrides: Partial<CourtDate> = {}): CourtDate {
   return {
     id: "cd-1",
     projectId: "proj-1",
@@ -109,9 +98,7 @@ function makeCourtDate(
   };
 }
 
-function makeTracker(
-  overrides: Partial<PrescriptionTracker> = {}
-): PrescriptionTracker {
+function makeTracker(overrides: Partial<PrescriptionTracker> = {}): PrescriptionTracker {
   return {
     id: "pt-1",
     projectId: "proj-1",
@@ -175,9 +162,7 @@ describe("CourtDateListView", () => {
       />
     );
 
-    expect(
-      screen.getByText("No court dates found for this period.")
-    ).toBeInTheDocument();
+    expect(screen.getByText("No court dates found for this period.")).toBeInTheDocument();
   });
 });
 
@@ -213,9 +198,7 @@ describe("PrescriptionTab", () => {
       makeTracker({ id: "pt-3", status: "EXPIRED" }),
     ];
 
-    render(
-      <PrescriptionTab trackers={trackers} slug="acme" onRefresh={vi.fn()} />
-    );
+    render(<PrescriptionTab trackers={trackers} slug="acme" onRefresh={vi.fn()} />);
 
     const tab = screen.getByTestId("prescription-tab");
     expect(tab).toBeInTheDocument();
@@ -227,13 +210,9 @@ describe("PrescriptionTab", () => {
   });
 
   it("shows empty state when no trackers", () => {
-    render(
-      <PrescriptionTab trackers={[]} slug="acme" onRefresh={vi.fn()} />
-    );
+    render(<PrescriptionTab trackers={[]} slug="acme" onRefresh={vi.fn()} />);
 
-    expect(
-      screen.getByText("No prescription trackers found.")
-    ).toBeInTheDocument();
+    expect(screen.getByText("No prescription trackers found.")).toBeInTheDocument();
   });
 });
 
@@ -247,9 +226,7 @@ describe("CreateCourtDateDialog", () => {
 
     const dialog = screen.getByTestId("create-court-date-dialog");
     expect(dialog).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: "Schedule Court Date" })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Schedule Court Date" })).toBeInTheDocument();
     expect(screen.getByLabelText("Matter")).toBeInTheDocument();
     expect(screen.getByLabelText("Type")).toBeInTheDocument();
     expect(screen.getByLabelText("Date")).toBeInTheDocument();
@@ -257,9 +234,7 @@ describe("CreateCourtDateDialog", () => {
   });
 
   it("populates matter dropdown with projects", async () => {
-    const { fetchProjects } = await import(
-      "@/app/(app)/org/[slug]/court-calendar/actions"
-    );
+    const { fetchProjects } = await import("@/app/(app)/org/[slug]/court-calendar/actions");
     vi.mocked(fetchProjects).mockResolvedValueOnce([
       { id: "p-1", name: "Smith v Jones" },
       { id: "p-2", name: "Doe v City" },
@@ -283,9 +258,7 @@ describe("CreateCourtDateDialog", () => {
   });
 
   it("shows error message when fetchProjects fails", async () => {
-    const { fetchProjects } = await import(
-      "@/app/(app)/org/[slug]/court-calendar/actions"
-    );
+    const { fetchProjects } = await import("@/app/(app)/org/[slug]/court-calendar/actions");
     vi.mocked(fetchProjects).mockRejectedValueOnce(new Error("Network error"));
 
     const user = userEvent.setup();
@@ -294,9 +267,7 @@ describe("CreateCourtDateDialog", () => {
     await user.click(screen.getByTestId("create-court-date-trigger"));
 
     await vi.waitFor(() => {
-      expect(
-        screen.getByText("Failed to load matters. Please try again.")
-      ).toBeInTheDocument();
+      expect(screen.getByText("Failed to load matters. Please try again.")).toBeInTheDocument();
     });
   });
 });
@@ -327,9 +298,7 @@ describe("CreatePrescriptionDialog", () => {
 describe("Nav items", () => {
   it("court-calendar nav item has requiredModule and no requiredCapability", () => {
     const workGroup = NAV_GROUPS.find((g) => g.id === "work");
-    const courtCalItem = workGroup?.items.find(
-      (i) => i.label === "Court Calendar"
-    );
+    const courtCalItem = workGroup?.items.find((i) => i.label === "Court Calendar");
     expect(courtCalItem).toBeDefined();
     expect(courtCalItem?.requiredModule).toBe("court_calendar");
     expect(courtCalItem?.requiredCapability).toBeUndefined();
@@ -337,20 +306,14 @@ describe("Nav items", () => {
 
   it("court-calendar is hidden when module is disabled", () => {
     render(
-      <OrgProfileProvider
-        verticalProfile={null}
-        enabledModules={[]}
-        terminologyNamespace={null}
-      >
+      <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
         <ModuleGate module="court_calendar">
           <span>Court Calendar Content</span>
         </ModuleGate>
       </OrgProfileProvider>
     );
 
-    expect(
-      screen.queryByText("Court Calendar Content")
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Court Calendar Content")).not.toBeInTheDocument();
   });
 
   it("court-calendar is visible when module is enabled", () => {
@@ -408,8 +371,6 @@ describe("Court date detail actions", () => {
     );
 
     // HEARD status should have no actions dropdown
-    expect(
-      screen.queryByRole("button", { name: "Actions" })
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Actions" })).not.toBeInTheDocument();
   });
 });

@@ -13,10 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  createTagAction,
-  updateTagAction,
-} from "@/app/(app)/org/[slug]/settings/tags/actions";
+import { createTagAction, updateTagAction } from "@/app/(app)/org/[slug]/settings/tags/actions";
 import type { TagResponse } from "@/lib/types";
 
 interface TagDialogProps {
@@ -136,14 +133,10 @@ export function TagDialog({ slug, tag, children }: TagDialogProps) {
                   />
                 )}
               </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                Hex format, e.g. #FF5733
-              </p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Hex format, e.g. #FF5733</p>
             </div>
 
-            {error && (
-              <p className="text-sm text-destructive">{error}</p>
-            )}
+            {error && <p className="text-destructive text-sm">{error}</p>}
           </div>
 
           <DialogFooter className="mt-6">

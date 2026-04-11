@@ -212,8 +212,8 @@ export interface DataRequestResponse {
   status: DataRequestStatus;
   description: string;
   rejectionReason: string | null;
-  deadline: string;          // "YYYY-MM-DD" local date
-  requestedAt: string;       // ISO instant
+  deadline: string; // "YYYY-MM-DD" local date
+  requestedAt: string; // ISO instant
   requestedBy: string;
   requestedByName: string | null;
   completedAt: string | null;

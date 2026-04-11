@@ -19,7 +19,7 @@ interface ActionResult {
 
 export async function updateComplianceSettings(
   slug: string,
-  data: UpdateComplianceSettingsRequest,
+  data: UpdateComplianceSettingsRequest
 ): Promise<ActionResult> {
   try {
     await api.patch("/api/settings/compliance", data);
@@ -49,7 +49,7 @@ export async function updateComplianceSettings(
 
 export async function createRetentionPolicy(
   slug: string,
-  data: CreateRetentionPolicyRequest,
+  data: CreateRetentionPolicyRequest
 ): Promise<ActionResult> {
   try {
     await api.post<RetentionPolicy>("/api/retention-policies", data);
@@ -73,7 +73,7 @@ export async function createRetentionPolicy(
 export async function updateRetentionPolicy(
   slug: string,
   id: string,
-  data: UpdateRetentionPolicyRequest,
+  data: UpdateRetentionPolicyRequest
 ): Promise<ActionResult> {
   try {
     await api.put<RetentionPolicy>(`/api/retention-policies/${id}`, data);
@@ -94,10 +94,7 @@ export async function updateRetentionPolicy(
   return { success: true };
 }
 
-export async function deleteRetentionPolicy(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deleteRetentionPolicy(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.delete(`/api/retention-policies/${id}`);
   } catch (error) {
@@ -142,7 +139,7 @@ export async function runRetentionCheck(): Promise<{
 export async function executePurge(
   slug: string,
   recordType: string,
-  recordIds: string[],
+  recordIds: string[]
 ): Promise<{ success: boolean; error?: string; result?: PurgeResult }> {
   try {
     const result = await api.post<PurgeResult>("/api/retention-policies/purge", {
@@ -166,11 +163,11 @@ export async function executePurge(
 }
 
 export async function getCompliancePackDetail(
-  packId: string,
+  packId: string
 ): Promise<CompliancePackDetail | null> {
   try {
     return await api.get<CompliancePackDetail>(
-      `/api/compliance-packs/${encodeURIComponent(packId)}`,
+      `/api/compliance-packs/${encodeURIComponent(packId)}`
     );
   } catch (error) {
     if (error instanceof ApiError) {

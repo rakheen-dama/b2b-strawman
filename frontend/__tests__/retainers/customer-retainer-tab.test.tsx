@@ -97,12 +97,10 @@ describe("CustomerRetainerTab", () => {
         slug="acme"
         customerId="cust-1"
         canManage={true}
-      />,
+      />
     );
 
-    expect(
-      screen.getByText("Monthly Bookkeeping Retainer"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Monthly Bookkeeping Retainer")).toBeInTheDocument();
     expect(screen.getByText("Active")).toBeInTheDocument();
     // RetainerProgress renders "25.0 of 40.0 hrs"
     expect(screen.getByText(/25\.0 of 40\.0 hrs/)).toBeInTheDocument();
@@ -117,7 +115,7 @@ describe("CustomerRetainerTab", () => {
         slug="acme"
         customerId="cust-1"
         canManage={true}
-      />,
+      />
     );
 
     expect(screen.getByText("No retainer agreement")).toBeInTheDocument();
@@ -126,27 +124,17 @@ describe("CustomerRetainerTab", () => {
   });
 
   it("renders period history table with open and closed periods", () => {
-    render(
-      <PeriodHistoryTable
-        periods={[OPEN_PERIOD, CLOSED_PERIOD]}
-        slug="acme"
-      />,
-    );
+    render(<PeriodHistoryTable periods={[OPEN_PERIOD, CLOSED_PERIOD]} slug="acme" />);
 
     expect(screen.getByText("Open")).toBeInTheDocument();
     expect(screen.getByText("Closed")).toBeInTheDocument();
   });
 
   it("renders invoice link in period history row", () => {
-    render(
-      <PeriodHistoryTable periods={[CLOSED_PERIOD]} slug="acme" />,
-    );
+    render(<PeriodHistoryTable periods={[CLOSED_PERIOD]} slug="acme" />);
 
     const invoiceLink = screen.getByRole("link", { name: "View Invoice" });
-    expect(invoiceLink).toHaveAttribute(
-      "href",
-      "/org/acme/invoices/inv-abc",
-    );
+    expect(invoiceLink).toHaveAttribute("href", "/org/acme/invoices/inv-abc");
   });
 
   it("renders amber progress bar at 90% consumption", () => {
@@ -167,7 +155,7 @@ describe("CustomerRetainerTab", () => {
         slug="acme"
         customerId="cust-1"
         canManage={true}
-      />,
+      />
     );
 
     const progressBar = screen.getByTestId("progress-bar");

@@ -1,6 +1,7 @@
-const DOCS_URL = (
-  process.env.NEXT_PUBLIC_DOCS_URL ?? "https://docs.heykazi.com"
-).replace(/\/+$/, "");
+const DOCS_URL = (process.env.NEXT_PUBLIC_DOCS_URL ?? "https://docs.heykazi.com").replace(
+  /\/+$/,
+  ""
+);
 
 /**
  * Construct a full URL to a documentation page.

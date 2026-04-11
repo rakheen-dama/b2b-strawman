@@ -19,12 +19,7 @@ const STATUS_DOT: Record<CourtDateStatus, string> = {
   CANCELLED: "bg-slate-400",
 };
 
-export function CourtCalendarView({
-  courtDates,
-  year,
-  month,
-  onDayClick,
-}: CourtCalendarViewProps) {
+export function CourtCalendarView({ courtDates, year, month, onDayClick }: CourtCalendarViewProps) {
   // Group court dates by day
   const byDay = new Map<number, CourtDate[]>();
   for (const cd of courtDates) {
@@ -39,8 +34,7 @@ export function CourtCalendarView({
   const firstDayOfMonth = new Date(year, month - 1, 1).getDay(); // 0=Sun
   const daysInMonth = new Date(year, month, 0).getDate();
   const today = new Date();
-  const isCurrentMonth =
-    today.getFullYear() === year && today.getMonth() + 1 === month;
+  const isCurrentMonth = today.getFullYear() === year && today.getMonth() + 1 === month;
   const todayDate = today.getDate();
 
   return (
@@ -63,7 +57,7 @@ export function CourtCalendarView({
         {Array.from({ length: firstDayOfMonth }).map((_, i) => (
           <div
             key={`empty-${i}`}
-            className="min-h-[80px] border-b border-r border-slate-100 dark:border-slate-800"
+            className="min-h-[80px] border-r border-b border-slate-100 dark:border-slate-800"
           />
         ))}
 
@@ -87,14 +81,11 @@ export function CourtCalendarView({
             <button
               key={day}
               type="button"
-              onClick={() =>
-                total > 0 && onDayClick?.(isoDate, dayCases ?? [])
-              }
+              onClick={() => total > 0 && onDayClick?.(isoDate, dayCases ?? [])}
               disabled={total === 0}
               className={cn(
-                "min-h-[80px] border-b border-r border-slate-100 p-1.5 text-left transition-colors dark:border-slate-800",
-                total > 0 &&
-                  "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                "min-h-[80px] border-r border-b border-slate-100 p-1.5 text-left transition-colors dark:border-slate-800",
+                total > 0 && "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50"
               )}
             >
               <span
@@ -109,21 +100,16 @@ export function CourtCalendarView({
               </span>
               {dayCases && (
                 <div className="mt-1 space-y-0.5">
-                  {(
-                    Object.entries(statusCounts) as [CourtDateStatus, number][]
-                  ).map(([status, count]) => (
-                    <div key={status} className="flex items-center gap-1">
-                      <span
-                        className={cn(
-                          "size-2 shrink-0 rounded-full",
-                          STATUS_DOT[status]
-                        )}
-                      />
-                      <span className="text-[10px] leading-none text-slate-600 dark:text-slate-400">
-                        {count}
-                      </span>
-                    </div>
-                  ))}
+                  {(Object.entries(statusCounts) as [CourtDateStatus, number][]).map(
+                    ([status, count]) => (
+                      <div key={status} className="flex items-center gap-1">
+                        <span className={cn("size-2 shrink-0 rounded-full", STATUS_DOT[status])} />
+                        <span className="text-[10px] leading-none text-slate-600 dark:text-slate-400">
+                          {count}
+                        </span>
+                      </div>
+                    )
+                  )}
                 </div>
               )}
             </button>

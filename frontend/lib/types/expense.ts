@@ -18,7 +18,7 @@ export interface ExpenseResponse {
   taskId: string | null;
   memberId: string;
   memberName: string | null;
-  date: string;               // YYYY-MM-DD
+  date: string; // YYYY-MM-DD
   description: string;
   amount: number;
   currency: string;

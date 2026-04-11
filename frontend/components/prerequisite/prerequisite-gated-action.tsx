@@ -4,10 +4,7 @@ import React, { useState, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
 import { checkPrerequisitesAction } from "@/lib/actions/prerequisite-actions";
-import type {
-  PrerequisiteContext,
-  PrerequisiteViolation,
-} from "@/components/prerequisite/types";
+import type { PrerequisiteContext, PrerequisiteViolation } from "@/components/prerequisite/types";
 import type { EntityType } from "@/lib/types";
 
 interface PrerequisiteGatedActionProps {
@@ -59,8 +56,10 @@ export function PrerequisiteGatedAction({
   const childrenWithDisabled = checking
     ? React.Children.map(children, (child) =>
         React.isValidElement(child)
-          ? React.cloneElement(child as React.ReactElement<{ disabled?: boolean }>, { disabled: true })
-          : child,
+          ? React.cloneElement(child as React.ReactElement<{ disabled?: boolean }>, {
+              disabled: true,
+            })
+          : child
       )
     : children;
 

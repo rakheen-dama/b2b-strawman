@@ -94,7 +94,7 @@ export function NewFromTemplateDialog({
     const resolvedName = resolveNameTokens(
       selectedTemplate.namePattern,
       selectedCustomerName,
-      new Date(),
+      new Date()
     );
     setProjectName(resolvedName);
     setDescription(selectedTemplate.description ?? "");
@@ -164,9 +164,17 @@ export function NewFromTemplateDialog({
     setCustomerId(newCustomerId);
     if (selectedTemplate) {
       const oldCustomerName = customers.find((c) => c.id === oldCustomerId)?.name;
-      const oldPreview = resolveNameTokens(selectedTemplate.namePattern, oldCustomerName, new Date());
+      const oldPreview = resolveNameTokens(
+        selectedTemplate.namePattern,
+        oldCustomerName,
+        new Date()
+      );
       const newCustomerName = customers.find((c) => c.id === newCustomerId)?.name;
-      const newPreview = resolveNameTokens(selectedTemplate.namePattern, newCustomerName, new Date());
+      const newPreview = resolveNameTokens(
+        selectedTemplate.namePattern,
+        newCustomerName,
+        new Date()
+      );
       // Only auto-update if user hasn't manually changed the name
       if (projectName === oldPreview || projectName === selectedTemplate.namePattern) {
         setProjectName(newPreview);
@@ -237,7 +245,7 @@ export function NewFromTemplateDialog({
                 <div className="space-y-2">
                   <Label htmlFor="new-proj-desc">
                     Description{" "}
-                    <span className="font-normal text-muted-foreground">(optional)</span>
+                    <span className="text-muted-foreground font-normal">(optional)</span>
                   </Label>
                   <Textarea
                     id="new-proj-desc"
@@ -253,14 +261,13 @@ export function NewFromTemplateDialog({
                 {customers.length > 0 && (
                   <div className="space-y-2">
                     <Label htmlFor="new-proj-customer">
-                      Customer{" "}
-                      <span className="font-normal text-muted-foreground">(optional)</span>
+                      Customer <span className="text-muted-foreground font-normal">(optional)</span>
                     </Label>
                     <select
                       id="new-proj-customer"
                       value={customerId}
                       onChange={(e) => handleCustomerChange(e.target.value)}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
                     >
                       <option value="">None</option>
                       {customers.map((c) => (
@@ -277,13 +284,13 @@ export function NewFromTemplateDialog({
                   <div className="space-y-2">
                     <Label htmlFor="new-proj-lead">
                       Project lead{" "}
-                      <span className="font-normal text-muted-foreground">(optional)</span>
+                      <span className="text-muted-foreground font-normal">(optional)</span>
                     </Label>
                     <select
                       id="new-proj-lead"
                       value={projectLeadMemberId}
                       onChange={(e) => setProjectLeadMemberId(e.target.value)}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-500 focus-visible:outline-none dark:border-slate-800"
                     >
                       <option value="">Unassigned</option>
                       {orgMembers.map((m) => (
@@ -295,7 +302,7 @@ export function NewFromTemplateDialog({
                   </div>
                 )}
 
-                {error && <p className="text-sm text-destructive">{error}</p>}
+                {error && <p className="text-destructive text-sm">{error}</p>}
               </div>
               <DialogFooter>
                 <Button type="button" variant="plain" onClick={handleBack} disabled={isSubmitting}>
@@ -320,9 +327,7 @@ export function NewFromTemplateDialog({
           entityType="CUSTOMER"
           entityId={customerId}
           slug={slug}
-          onRecheck={() =>
-            checkEngagementPrerequisitesAction(selectedTemplateId, customerId)
-          }
+          onRecheck={() => checkEngagementPrerequisitesAction(selectedTemplateId, customerId)}
           onResolved={() => {
             setPrereqModalOpen(false);
             void doCreateProject();

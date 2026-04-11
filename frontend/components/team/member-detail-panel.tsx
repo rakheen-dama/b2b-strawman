@@ -78,9 +78,7 @@ export function MemberDetailPanel({
         setOverrides(caps.overrides);
       } else {
         // Fallback: try to match by system role
-        const sysRole = roles.find(
-          (r) => r.isSystem && `org:${r.slug}` === member.role,
-        );
+        const sysRole = roles.find((r) => r.isSystem && `org:${r.slug}` === member.role);
         if (sysRole) {
           setSelectedRoleId(sysRole.id);
         }
@@ -109,9 +107,7 @@ export function MemberDetailPanel({
     return roleCapabilities.has(cap);
   }
 
-  function getOverrideStatus(
-    cap: string,
-  ): "added" | "removed" | "default" {
+  function getOverrideStatus(cap: string): "added" | "removed" | "default" {
     if (overrides.includes(`+${cap}`)) return "added";
     if (overrides.includes(`-${cap}`)) return "removed";
     return "default";
@@ -146,12 +142,7 @@ export function MemberDetailPanel({
     setIsLoading(true);
     setError(null);
     try {
-      const result = await assignMemberRole(
-        slug,
-        member.id,
-        selectedRoleId,
-        overrides,
-      );
+      const result = await assignMemberRole(slug, member.id, selectedRoleId, overrides);
       if (result.success) {
         onOpenChange(false);
       } else {
@@ -187,20 +178,13 @@ export function MemberDetailPanel({
         {/* Header */}
         <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-4 dark:border-slate-800">
           <div className="min-w-0 flex-1">
-            <h2 className="text-base font-semibold leading-snug text-slate-950 dark:text-slate-50">
+            <h2 className="text-base leading-snug font-semibold text-slate-950 dark:text-slate-50">
               {member.name}
             </h2>
-            <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">
-              {member.email}
-            </p>
+            <p className="mt-0.5 text-sm text-slate-500 dark:text-slate-400">{member.email}</p>
           </div>
           <SheetClose asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="shrink-0"
-              aria-label="Close"
-            >
+            <Button variant="ghost" size="icon" className="shrink-0" aria-label="Close">
               <X className="size-4" />
             </Button>
           </SheetClose>
@@ -221,10 +205,7 @@ export function MemberDetailPanel({
             {/* Role section */}
             <div className="border-b border-slate-200 px-6 py-4 dark:border-slate-800">
               <Label className="mb-2 block text-sm font-medium">Role</Label>
-              <Select
-                value={selectedRoleId}
-                onValueChange={handleRoleChange}
-              >
+              <Select value={selectedRoleId} onValueChange={handleRoleChange}>
                 <SelectTrigger className="h-9 w-full">
                   <SelectValue placeholder="Select a role..." />
                 </SelectTrigger>
@@ -255,19 +236,14 @@ export function MemberDetailPanel({
 
             {/* Capabilities section */}
             <div className="flex-1 px-6 py-4">
-              <Label className="mb-3 block text-sm font-medium">
-                Capabilities
-              </Label>
+              <Label className="mb-3 block text-sm font-medium">Capabilities</Label>
               <div className="space-y-3">
                 {CAPABILITY_META.map((cap) => {
                   const enabled = isEffectivelyEnabled(cap.value);
                   const status = getOverrideStatus(cap.value);
 
                   return (
-                    <label
-                      key={cap.value}
-                      className="flex items-start gap-3 cursor-pointer"
-                    >
+                    <label key={cap.value} className="flex cursor-pointer items-start gap-3">
                       <Checkbox
                         checked={enabled}
                         onCheckedChange={() => toggleCapability(cap.value)}
@@ -275,18 +251,12 @@ export function MemberDetailPanel({
                       />
                       <div className="flex-1 space-y-0.5">
                         <div className="flex items-center gap-1.5">
-                          <span className="text-sm font-medium leading-none">
-                            {cap.label}
-                          </span>
+                          <span className="text-sm leading-none font-medium">{cap.label}</span>
                           {status === "added" && (
-                            <span className="text-xs font-medium text-teal-600">
-                              +
-                            </span>
+                            <span className="text-xs font-medium text-teal-600">+</span>
                           )}
                           {status === "removed" && (
-                            <span className="text-xs font-medium text-destructive">
-                              &minus;
-                            </span>
+                            <span className="text-destructive text-xs font-medium">&minus;</span>
                           )}
                         </div>
                         <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -303,17 +273,10 @@ export function MemberDetailPanel({
 
         {/* Footer */}
         <div className="mt-auto flex flex-col gap-2 p-4">
-          <Button
-            onClick={handleSave}
-            disabled={isLoading || isFetching || !selectedRoleId}
-          >
+          <Button onClick={handleSave} disabled={isLoading || isFetching || !selectedRoleId}>
             {isLoading ? "Saving..." : "Save"}
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isLoading}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
             Cancel
           </Button>
         </div>

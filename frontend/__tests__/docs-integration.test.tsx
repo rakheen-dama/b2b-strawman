@@ -33,9 +33,7 @@ describe("docsLink", () => {
     delete process.env.NEXT_PUBLIC_DOCS_URL;
     const { docsLink } = await import("@/lib/docs");
 
-    expect(docsLink("/features/invoicing")).toBe(
-      "https://docs.heykazi.com/features/invoicing",
-    );
+    expect(docsLink("/features/invoicing")).toBe("https://docs.heykazi.com/features/invoicing");
   });
 
   it("uses NEXT_PUBLIC_DOCS_URL override when set", async () => {
@@ -43,9 +41,7 @@ describe("docsLink", () => {
     process.env.NEXT_PUBLIC_DOCS_URL = "http://localhost:3003";
     const { docsLink } = await import("@/lib/docs");
 
-    expect(docsLink("/features/tasks")).toBe(
-      "http://localhost:3003/features/tasks",
-    );
+    expect(docsLink("/features/tasks")).toBe("http://localhost:3003/features/tasks");
   });
 });
 
@@ -59,9 +55,7 @@ describe("HelpTip docsPath", () => {
     const user = userEvent.setup();
     const { HelpTip } = await import("@/components/help-tip");
 
-    render(
-      <HelpTip code="rates.hierarchy" docsPath="/features/rate-cards-budgets" />,
-    );
+    render(<HelpTip code="rates.hierarchy" docsPath="/features/rate-cards-budgets" />);
 
     // Open popover
     await user.click(screen.getByRole("button", { name: /help/i }));
@@ -70,10 +64,7 @@ describe("HelpTip docsPath", () => {
     expect(link).toBeInTheDocument();
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
-    expect(link).toHaveAttribute(
-      "href",
-      "https://docs.heykazi.com/features/rate-cards-budgets",
-    );
+    expect(link).toHaveAttribute("href", "https://docs.heykazi.com/features/rate-cards-budgets");
   });
 
   it("does NOT render Learn more link when docsPath is omitted", async () => {
@@ -106,14 +97,11 @@ describe("EmptyState secondaryLink external URL", () => {
           label: "Read the guide",
           href: "https://docs.heykazi.com/features/projects",
         }}
-      />,
+      />
     );
 
     const link = screen.getByText("Read the guide");
-    expect(link.closest("a")).toHaveAttribute(
-      "href",
-      "https://docs.heykazi.com/features/projects",
-    );
+    expect(link.closest("a")).toHaveAttribute("href", "https://docs.heykazi.com/features/projects");
     expect(link.closest("a")).toHaveAttribute("target", "_blank");
     expect(link.closest("a")).toHaveAttribute("rel", "noopener noreferrer");
   });
@@ -127,7 +115,7 @@ describe("EmptyState secondaryLink external URL", () => {
         title="No customers"
         description="Add one."
         secondaryLink={{ label: "Learn more", href: "/help" }}
-      />,
+      />
     );
 
     const link = screen.getByText("Learn more");

@@ -80,11 +80,7 @@ describe("GenerateDocumentDropdown", () => {
 
   it("renders Generate Document dropdown button when templates exist", () => {
     render(
-      <GenerateDocumentDropdown
-        templates={TEMPLATES}
-        entityId="proj-1"
-        entityType="PROJECT"
-      />,
+      <GenerateDocumentDropdown templates={TEMPLATES} entityId="proj-1" entityType="PROJECT" />
     );
 
     const button = screen.getByRole("button", { name: /Generate Document/i });
@@ -93,13 +89,7 @@ describe("GenerateDocumentDropdown", () => {
   });
 
   it("renders disabled button when no templates available", () => {
-    render(
-      <GenerateDocumentDropdown
-        templates={[]}
-        entityId="proj-1"
-        entityType="PROJECT"
-      />,
-    );
+    render(<GenerateDocumentDropdown templates={[]} entityId="proj-1" entityType="PROJECT" />);
 
     const button = screen.getByRole("button", { name: /Generate Document/i });
     expect(button).toBeDisabled();
@@ -109,17 +99,11 @@ describe("GenerateDocumentDropdown", () => {
     const user = userEvent.setup();
 
     render(
-      <GenerateDocumentDropdown
-        templates={TEMPLATES}
-        entityId="proj-1"
-        entityType="PROJECT"
-      />,
+      <GenerateDocumentDropdown templates={TEMPLATES} entityId="proj-1" entityType="PROJECT" />
     );
 
     // Open dropdown
-    await user.click(
-      screen.getByRole("button", { name: /Generate Document/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /Generate Document/i }));
 
     // Click on Engagement Letter
     await waitFor(() => {
@@ -129,9 +113,7 @@ describe("GenerateDocumentDropdown", () => {
 
     // Dialog should open with the template name
     await waitFor(() => {
-      expect(
-        screen.getByText("Generate: Engagement Letter"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Generate: Engagement Letter")).toBeInTheDocument();
     });
 
     // Preview should be called with correct args

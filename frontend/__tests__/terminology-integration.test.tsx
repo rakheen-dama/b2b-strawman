@@ -10,13 +10,9 @@ vi.mock("next/navigation", () => ({
 
 vi.mock("motion/react", () => ({
   motion: {
-    div: ({ children, ...props }: React.ComponentProps<"div">) => (
-      <div {...props}>{children}</div>
-    ),
+    div: ({ children, ...props }: React.ComponentProps<"div">) => <div {...props}>{children}</div>,
   },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 import { usePathname } from "next/navigation";
@@ -57,17 +53,12 @@ describe("364B: terminology in sidebar nav", () => {
 
     render(
       <OrgProfileProvider verticalProfile={null} enabledModules={[]} terminologyNamespace={null}>
-        <CapabilityProvider
-          capabilities={[]}
-          role="owner"
-          isAdmin={false}
-          isOwner={true}
-        >
+        <CapabilityProvider capabilities={[]} role="owner" isAdmin={false} isOwner={true}>
           <TerminologyProvider verticalProfile="accounting-za">
             <NavZone zone={deliveryZone} slug="test-org" />
           </TerminologyProvider>
         </CapabilityProvider>
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
 
     expect(screen.getByText("Engagements")).toBeInTheDocument();
@@ -84,7 +75,7 @@ describe("364B: terminology in breadcrumbs", () => {
     render(
       <TerminologyProvider verticalProfile="accounting-za">
         <Breadcrumbs slug="test-org" />
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     expect(screen.getByText("Engagements")).toBeInTheDocument();
@@ -97,7 +88,7 @@ describe("364B: terminology in breadcrumbs", () => {
     render(
       <TerminologyProvider verticalProfile="accounting-za">
         <Breadcrumbs slug="test-org" />
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     expect(screen.getByText("Clients")).toBeInTheDocument();
@@ -110,7 +101,7 @@ describe("364B: terminology in breadcrumbs", () => {
     render(
       <TerminologyProvider verticalProfile="accounting-za">
         <Breadcrumbs slug="test-org" />
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     expect(screen.getByText("Engagement Letters")).toBeInTheDocument();
@@ -127,7 +118,7 @@ describe("364B: terminology in page heading component", () => {
         <h1>
           <TerminologyHeading term="Projects" />
         </h1>
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Engagements");
@@ -141,7 +132,7 @@ describe("364B: terminology heading with count", () => {
     render(
       <TerminologyProvider verticalProfile="accounting-za">
         <TerminologyHeading count={3} term="projects" singularTerm="project" />
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     expect(screen.getByText("3 engagements")).toBeInTheDocument();
@@ -151,7 +142,7 @@ describe("364B: terminology heading with count", () => {
     render(
       <TerminologyProvider verticalProfile="accounting-za">
         <TerminologyHeading count={1} term="projects" singularTerm="project" />
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     expect(screen.getByText("1 engagement")).toBeInTheDocument();
@@ -161,7 +152,7 @@ describe("364B: terminology heading with count", () => {
     render(
       <TerminologyProvider verticalProfile={null}>
         <TerminologyHeading count={3} term="projects" singularTerm="project" />
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     expect(screen.getByText("3 projects")).toBeInTheDocument();
@@ -175,7 +166,7 @@ describe("364B: terminology text template replacement", () => {
     render(
       <TerminologyProvider verticalProfile="accounting-za">
         <TerminologyText template="No {proposals} yet" />
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     expect(screen.getByText("No engagement letters yet")).toBeInTheDocument();
@@ -185,7 +176,7 @@ describe("364B: terminology text template replacement", () => {
     render(
       <TerminologyProvider verticalProfile="accounting-za">
         <TerminologyText template="Create a {proposal} to get started." />
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     expect(screen.getByText("Create a engagement letter to get started.")).toBeInTheDocument();
@@ -195,7 +186,7 @@ describe("364B: terminology text template replacement", () => {
     render(
       <TerminologyProvider verticalProfile={null}>
         <TerminologyText template="No {proposals} yet" />
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     expect(screen.getByText("No proposals yet")).toBeInTheDocument();
@@ -214,7 +205,7 @@ describe("372B: legal-za terminology overrides", () => {
     render(
       <TerminologyProvider verticalProfile="legal-za">
         <TestConsumer />
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     expect(screen.getByTestId("result").textContent).toBe("Matter");
@@ -229,7 +220,7 @@ describe("372B: legal-za terminology overrides", () => {
     render(
       <TerminologyProvider verticalProfile="legal-za">
         <TestConsumer />
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     expect(screen.getByTestId("result").textContent).toBe("Client");
@@ -244,7 +235,7 @@ describe("372B: legal-za terminology overrides", () => {
     render(
       <TerminologyProvider verticalProfile="legal-za">
         <TestConsumer />
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     expect(screen.getByTestId("result").textContent).toBe("Document");
@@ -263,7 +254,7 @@ describe("465: legal-za terminology fixes", () => {
     render(
       <TerminologyProvider verticalProfile="legal-za">
         <TestConsumer />
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     expect(screen.getByTestId("result").textContent).toBe("Fee Note");
@@ -278,7 +269,7 @@ describe("465: legal-za terminology fixes", () => {
     render(
       <TerminologyProvider verticalProfile="legal-za">
         <TestConsumer />
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     expect(screen.getByTestId("result").textContent).toBe("Action Item");

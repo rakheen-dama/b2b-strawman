@@ -24,12 +24,7 @@ export default async function ExecutionLogPage({
 
   // Server-side module gate — short-circuit BEFORE invoking backend data fetches.
   if (!(await isModuleEnabledServer("automation_builder"))) {
-    return (
-      <ModuleDisabledFallback
-        moduleName="Automation Rule Builder"
-        slug={slug}
-      />
-    );
+    return <ModuleDisabledFallback moduleName="Automation Rule Builder" slug={slug} />;
   }
 
   const caps = await fetchMyCapabilities();
@@ -46,9 +41,7 @@ export default async function ExecutionLogPage({
   let rules: { id: string; name: string }[] = [];
 
   try {
-    const statusParam = resolvedSearchParams.status as
-      | ExecutionStatus
-      | undefined;
+    const statusParam = resolvedSearchParams.status as ExecutionStatus | undefined;
     const [executionsResult, rulesResult] = await Promise.all([
       listExecutions({
         status: statusParam,
@@ -73,9 +66,7 @@ export default async function ExecutionLogPage({
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Execution Log
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Execution Log</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           View the history of all automation rule executions.
         </p>

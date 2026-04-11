@@ -16,11 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -35,11 +31,7 @@ import {
   createFieldGroupAction,
   updateFieldGroupAction,
 } from "@/app/(app)/org/[slug]/settings/custom-fields/actions";
-import type {
-  EntityType,
-  FieldGroupResponse,
-  FieldDefinitionResponse,
-} from "@/lib/types";
+import type { EntityType, FieldGroupResponse, FieldDefinitionResponse } from "@/lib/types";
 
 const ENTITY_TYPES: { value: EntityType; label: string }[] = [
   { value: "PROJECT", label: "Projects" },
@@ -73,28 +65,22 @@ export function FieldGroupDialog({
   const [popoverOpen, setPopoverOpen] = useState(false);
 
   const [entityType, setEntityType] = useState<EntityType>(
-    group?.entityType ?? initialEntityType ?? "PROJECT",
+    group?.entityType ?? initialEntityType ?? "PROJECT"
   );
   const [name, setName] = useState(group?.name ?? "");
   const [slugField, setSlugField] = useState(group?.slug ?? "");
   const [description, setDescription] = useState(group?.description ?? "");
   const [sortOrder, setSortOrder] = useState(group?.sortOrder ?? 0);
-  const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>(
-    initialFieldIds ?? [],
-  );
+  const [selectedFieldIds, setSelectedFieldIds] = useState<string[]>(initialFieldIds ?? []);
   const [autoApply, setAutoApply] = useState(group?.autoApply ?? false);
   const [dependsOn, setDependsOn] = useState<string[]>(group?.dependsOn ?? []);
   const [depsPopoverOpen, setDepsPopoverOpen] = useState(false);
 
   // Filter available dependency groups: same entityType, active, exclude self
-  const availableDeps = allGroups.filter(
-    (g) => g.active && g.id !== group?.id,
-  );
+  const availableDeps = allGroups.filter((g) => g.active && g.id !== group?.id);
 
   // Filter available fields by entityType
-  const filteredFields = availableFields.filter(
-    (f) => f.entityType === entityType && f.active,
-  );
+  const filteredFields = availableFields.filter((f) => f.entityType === entityType && f.active);
 
   useEffect(() => {
     if (!isEditing) {
@@ -137,9 +123,7 @@ export function FieldGroupDialog({
 
   function toggleField(fieldId: string) {
     setSelectedFieldIds((prev) =>
-      prev.includes(fieldId)
-        ? prev.filter((id) => id !== fieldId)
-        : [...prev, fieldId],
+      prev.includes(fieldId) ? prev.filter((id) => id !== fieldId) : [...prev, fieldId]
     );
   }
 
@@ -149,9 +133,7 @@ export function FieldGroupDialog({
 
   function toggleDep(depId: string) {
     setDependsOn((prev) =>
-      prev.includes(depId)
-        ? prev.filter((id) => id !== depId)
-        : [...prev, depId],
+      prev.includes(depId) ? prev.filter((id) => id !== depId) : [...prev, depId]
     );
   }
 
@@ -218,9 +200,7 @@ export function FieldGroupDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? "Edit Field Group" : "Add Field Group"}
-          </DialogTitle>
+          <DialogTitle>{isEditing ? "Edit Field Group" : "Add Field Group"}</DialogTitle>
           <DialogDescription>
             {isEditing
               ? "Update the field group settings."
@@ -235,10 +215,7 @@ export function FieldGroupDialog({
             {isEditing ? (
               <Input
                 id="fg-entity-type"
-                value={
-                  ENTITY_TYPES.find((t) => t.value === entityType)?.label ??
-                  entityType
-                }
+                value={ENTITY_TYPES.find((t) => t.value === entityType)?.label ?? entityType}
                 readOnly
                 className="bg-slate-50 dark:bg-slate-900"
               />
@@ -247,7 +224,7 @@ export function FieldGroupDialog({
                 id="fg-entity-type"
                 value={entityType}
                 onChange={(e) => setEntityType(e.target.value as EntityType)}
-                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-400 dark:border-slate-700"
+                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:outline-none dark:border-slate-700"
               >
                 {ENTITY_TYPES.map((t) => (
                   <option key={t.value} value={t.value}>
@@ -323,7 +300,8 @@ export function FieldGroupDialog({
                 Auto-apply to new entities
               </Label>
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                When enabled, this group is automatically applied when a new entity of this type is created.
+                When enabled, this group is automatically applied when a new entity of this type is
+                created.
               </p>
             </div>
           </div>
@@ -362,9 +340,7 @@ export function FieldGroupDialog({
                             <Check
                               className={cn(
                                 "mr-2 size-4",
-                                dependsOn.includes(dep.id)
-                                  ? "opacity-100"
-                                  : "opacity-0",
+                                dependsOn.includes(dep.id) ? "opacity-100" : "opacity-0"
                               )}
                             />
                             <span className="flex-1">{dep.name}</span>
@@ -383,11 +359,7 @@ export function FieldGroupDialog({
                     const dep = allGroups.find((g) => g.id === depId);
                     if (!dep) return null;
                     return (
-                      <Badge
-                        key={depId}
-                        variant="secondary"
-                        className="gap-1"
-                      >
+                      <Badge key={depId} variant="secondary" className="gap-1">
                         {dep.name}
                         <button
                           type="button"
@@ -403,8 +375,7 @@ export function FieldGroupDialog({
               )}
 
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                When this group is applied, dependency groups are automatically
-                co-applied.
+                When this group is applied, dependency groups are automatically co-applied.
               </p>
             </div>
           )}
@@ -442,9 +413,7 @@ export function FieldGroupDialog({
                           <Check
                             className={cn(
                               "mr-2 size-4",
-                              selectedFieldIds.includes(field.id)
-                                ? "opacity-100"
-                                : "opacity-0",
+                              selectedFieldIds.includes(field.id) ? "opacity-100" : "opacity-0"
                             )}
                           />
                           <span className="flex-1">{field.name}</span>
@@ -463,16 +432,10 @@ export function FieldGroupDialog({
             {selectedFieldIds.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
                 {selectedFieldIds.map((fieldId) => {
-                  const field = availableFields.find(
-                    (f) => f.id === fieldId,
-                  );
+                  const field = availableFields.find((f) => f.id === fieldId);
                   if (!field) return null;
                   return (
-                    <Badge
-                      key={fieldId}
-                      variant="secondary"
-                      className="gap-1"
-                    >
+                    <Badge key={fieldId} variant="secondary" className="gap-1">
                       {field.name}
                       <button
                         type="button"
@@ -488,7 +451,7 @@ export function FieldGroupDialog({
             )}
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <DialogFooter>
             <Button

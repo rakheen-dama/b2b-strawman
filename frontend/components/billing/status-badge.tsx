@@ -1,9 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 
-const statusVariantMap: Record<
-  string,
-  "success" | "warning" | "destructive" | "neutral"
-> = {
+const statusVariantMap: Record<string, "success" | "warning" | "destructive" | "neutral"> = {
   ACTIVE: "success",
   GRACE_PERIOD: "warning",
   LOCKED: "destructive",
@@ -41,7 +38,5 @@ export function StatusBadge({ status }: StatusBadgeProps) {
   }
 
   const variant = statusVariantMap[status] ?? "neutral";
-  return (
-    <Badge variant={variant}>{statusLabelMap[status] ?? status}</Badge>
-  );
+  return <Badge variant={variant}>{statusLabelMap[status] ?? status}</Badge>;
 }

@@ -54,11 +54,7 @@ export function ChecklistTemplateActions({
           </Button>
         </Link>
         <Button variant="ghost" size="sm" disabled={cloning} onClick={handleClone}>
-          {cloning ? (
-            <Loader2 className="size-4 animate-spin" />
-          ) : (
-            <Copy className="size-4" />
-          )}
+          {cloning ? <Loader2 className="size-4 animate-spin" /> : <Copy className="size-4" />}
           <span className="sr-only">Clone {templateName}</span>
         </Button>
         {source !== "PLATFORM" && (
@@ -78,9 +74,7 @@ export function ChecklistTemplateActions({
           </Button>
         )}
       </div>
-      {error && (
-        <p className="text-right text-xs text-red-600 dark:text-red-400">{error}</p>
-      )}
+      {error && <p className="text-right text-xs text-red-600 dark:text-red-400">{error}</p>}
     </div>
   );
 }

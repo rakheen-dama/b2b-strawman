@@ -59,26 +59,16 @@ function DeadlineCell({
   const isTerminal = status === "COMPLETED" || status === "REJECTED";
 
   if (isTerminal) {
-    return (
-      <span className="text-sm text-slate-500 dark:text-slate-400">
-        {deadline}
-      </span>
-    );
+    return <span className="text-sm text-slate-500 dark:text-slate-400">{deadline}</span>;
   }
 
   const today = new Date();
   today.setUTCHours(0, 0, 0, 0);
   const deadlineDate = new Date(deadline + "T00:00:00Z");
-  const diffDays = Math.ceil(
-    (deadlineDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24),
-  );
+  const diffDays = Math.ceil((deadlineDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
 
   if (deadlineStatus === "OVERDUE") {
-    return (
-      <span className="text-sm font-medium text-red-600 dark:text-red-400">
-        Overdue
-      </span>
-    );
+    return <span className="text-sm font-medium text-red-600 dark:text-red-400">Overdue</span>;
   }
 
   if (deadlineStatus === "DUE_SOON") {
@@ -140,9 +130,7 @@ function ResolutionDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>
-            Please provide resolution notes before proceeding.
-          </DialogDescription>
+          <DialogDescription>Please provide resolution notes before proceeding.</DialogDescription>
         </DialogHeader>
         <div className="space-y-3 py-2">
           <Textarea
@@ -152,22 +140,13 @@ function ResolutionDialog({
             rows={4}
             maxLength={2000}
           />
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
         </div>
         <DialogFooter>
-          <Button
-            type="button"
-            variant="plain"
-            onClick={handleClose}
-            disabled={isSubmitting}
-          >
+          <Button type="button" variant="plain" onClick={handleClose} disabled={isSubmitting}>
             Cancel
           </Button>
-          <Button
-            type="button"
-            onClick={handleConfirm}
-            disabled={isSubmitting}
-          >
+          <Button type="button" onClick={handleConfirm} disabled={isSubmitting}>
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-1.5 size-4 animate-spin" />
@@ -195,9 +174,7 @@ function RowActions({ request, slug, onActionComplete }: RowActionsProps) {
   const [isPending, startTransition] = useTransition();
   const [actionError, setActionError] = useState<string | null>(null);
   const [resolutionDialogOpen, setResolutionDialogOpen] = useState(false);
-  const [pendingAction, setPendingAction] = useState<
-    "COMPLETE" | "REJECT" | null
-  >(null);
+  const [pendingAction, setPendingAction] = useState<"COMPLETE" | "REJECT" | null>(null);
 
   function handleSimpleAction(action: "START_PROCESSING") {
     setActionError(null);
@@ -220,12 +197,7 @@ function RowActions({ request, slug, onActionComplete }: RowActionsProps) {
     if (!pendingAction) return;
     setActionError(null);
     startTransition(async () => {
-      const result = await updateDsarStatus(
-        slug,
-        request.id,
-        pendingAction,
-        notes,
-      );
+      const result = await updateDsarStatus(slug, request.id, pendingAction, notes);
       if (!result.success) {
         setActionError(result.error ?? "Action failed.");
       } else {
@@ -285,9 +257,7 @@ function RowActions({ request, slug, onActionComplete }: RowActionsProps) {
       )}
       <ResolutionDialog
         open={resolutionDialogOpen}
-        title={
-          pendingAction === "COMPLETE" ? "Complete Request" : "Deny Request"
-        }
+        title={pendingAction === "COMPLETE" ? "Complete Request" : "Deny Request"}
         onClose={() => {
           setResolutionDialogOpen(false);
           setPendingAction(null);
@@ -306,10 +276,7 @@ interface DsarRequestsTableProps {
   slug: string;
 }
 
-export function DsarRequestsTable({
-  requests,
-  slug,
-}: DsarRequestsTableProps) {
+export function DsarRequestsTable({ requests, slug }: DsarRequestsTableProps) {
   const router = useRouter();
 
   function onActionComplete() {
@@ -320,8 +287,7 @@ export function DsarRequestsTable({
     return (
       <div className="rounded-lg border border-slate-200 bg-white p-8 text-center dark:border-slate-800 dark:bg-slate-950">
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          No DSAR requests found. Use the &quot;Log new request&quot; button to
-          record one.
+          No DSAR requests found. Use the &quot;Log new request&quot; button to record one.
         </p>
       </div>
     );
@@ -356,11 +322,7 @@ export function DsarRequestsTable({
           <tbody>
             {requests.map((req) => {
               const statusBadge = STATUS_BADGE[req.status];
-              const deadlineVariant:
-                | "success"
-                | "destructive"
-                | "warning"
-                | "neutral" =
+              const deadlineVariant: "success" | "destructive" | "warning" | "neutral" =
                 req.deadlineStatus === "OVERDUE"
                   ? "destructive"
                   : req.deadlineStatus === "DUE_SOON"
@@ -392,25 +354,18 @@ export function DsarRequestsTable({
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <Badge variant="neutral">
-                      {REQUEST_TYPE_LABEL[req.requestType]}
-                    </Badge>
+                    <Badge variant="neutral">{REQUEST_TYPE_LABEL[req.requestType]}</Badge>
                   </td>
                   <td className="px-4 py-3">
-                    <Badge variant={statusBadge.variant}>
-                      {statusBadge.label}
-                    </Badge>
+                    <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
                   </td>
                   <td className="px-4 py-3 text-slate-700 dark:text-slate-300">
                     {req.requestedAt
-                      ? new Date(req.requestedAt).toLocaleDateString(
-                          undefined,
-                          {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          },
-                        )
+                      ? new Date(req.requestedAt).toLocaleDateString(undefined, {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })
                       : "\u2014"}
                   </td>
                   <td className="px-4 py-3">
@@ -424,19 +379,13 @@ export function DsarRequestsTable({
                         req.status !== "COMPLETED" &&
                         req.status !== "REJECTED" && (
                           <Badge variant={deadlineVariant} className="w-fit">
-                            {req.deadlineStatus === "OVERDUE"
-                              ? "Overdue"
-                              : "Due Soon"}
+                            {req.deadlineStatus === "OVERDUE" ? "Overdue" : "Due Soon"}
                           </Badge>
                         )}
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    <RowActions
-                      request={req}
-                      slug={slug}
-                      onActionComplete={onActionComplete}
-                    />
+                    <RowActions request={req} slug={slug} onActionComplete={onActionComplete} />
                   </td>
                 </tr>
               );

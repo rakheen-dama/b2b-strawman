@@ -56,13 +56,9 @@ interface ChecklistInstancePanelProps {
 function computeProgress(instance: ChecklistInstanceResponse) {
   const items = instance.items ?? [];
   const total = items.length;
-  const completed = items.filter(
-    (i) => i.status === "COMPLETED" || i.status === "SKIPPED",
-  ).length;
+  const completed = items.filter((i) => i.status === "COMPLETED" || i.status === "SKIPPED").length;
   const requiredTotal = items.filter((i) => i.required).length;
-  const requiredCompleted = items.filter(
-    (i) => i.required && i.status === "COMPLETED",
-  ).length;
+  const requiredCompleted = items.filter((i) => i.required && i.status === "COMPLETED").length;
   return { completed, total, requiredCompleted, requiredTotal };
 }
 
@@ -184,7 +180,7 @@ export function ChecklistInstancePanel({
                         "w-full rounded-lg border p-3 text-left transition-colors",
                         selectedTemplateId === t.id
                           ? "border-teal-500 bg-teal-50 dark:bg-teal-950"
-                          : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600",
+                          : "border-slate-200 hover:border-slate-300 dark:border-slate-700 dark:hover:border-slate-600"
                       )}
                     >
                       <p className="font-medium text-slate-900 dark:text-slate-100">{t.name}</p>
@@ -201,9 +197,7 @@ export function ChecklistInstancePanel({
                   </p>
                 )}
               </div>
-              {instantiateError && (
-                <p className="text-sm text-destructive">{instantiateError}</p>
-              )}
+              {instantiateError && <p className="text-destructive text-sm">{instantiateError}</p>}
               <DialogFooter>
                 <Button
                   onClick={handleInstantiate}
@@ -233,8 +227,7 @@ export function ChecklistInstancePanel({
           variant: "neutral" as const,
         };
         const progress = computeProgress(instance);
-        const templateName =
-          templateNames[instance.templateId] ?? `Checklist ${index + 1}`;
+        const templateName = templateNames[instance.templateId] ?? `Checklist ${index + 1}`;
 
         return (
           <div

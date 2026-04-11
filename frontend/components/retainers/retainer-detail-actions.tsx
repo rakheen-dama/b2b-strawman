@@ -28,11 +28,7 @@ interface RetainerDetailActionsProps {
   currency: string;
 }
 
-export function RetainerDetailActions({
-  slug,
-  retainer,
-  currency,
-}: RetainerDetailActionsProps) {
+export function RetainerDetailActions({ slug, retainer, currency }: RetainerDetailActionsProps) {
   const router = useRouter();
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
   const [terminateDialogOpen, setTerminateDialogOpen] = useState(false);
@@ -90,136 +86,132 @@ export function RetainerDetailActions({
 
   return (
     <div className="flex flex-col gap-2">
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
 
       <div className="flex items-center gap-2">
-      {/* Close Period */}
-      {currentPeriod?.readyToClose && (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setClosePeriodOpen(true)}
-          disabled={actionInProgress}
-        >
-          <FileCheck className="mr-1.5 size-4" />
-          Close Period
-        </Button>
-      )}
-
-      {/* Pause (ACTIVE only) */}
-      {status === "ACTIVE" && (
-        <>
+        {/* Close Period */}
+        {currentPeriod?.readyToClose && (
           <Button
-            variant="ghost"
+            variant="outline"
             size="sm"
-            onClick={() => setPauseDialogOpen(true)}
+            onClick={() => setClosePeriodOpen(true)}
             disabled={actionInProgress}
           >
-            <Pause className="mr-1.5 size-4" />
-            Pause
+            <FileCheck className="mr-1.5 size-4" />
+            Close Period
           </Button>
+        )}
 
-          <AlertDialog
-            open={pauseDialogOpen}
-            onOpenChange={(o) => {
-              if (!actionInProgress) setPauseDialogOpen(o);
-            }}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Pause Retainer</AlertDialogTitle>
-                <AlertDialogDescription>
-                  Pausing this retainer will stop time tracking against it. You
-                  can resume it at any time.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={actionInProgress}>
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={(e) => { e.preventDefault(); handlePause(); }}
-                  disabled={actionInProgress}
-                >
-                  {actionInProgress ? "Pausing..." : "Pause Retainer"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </>
-      )}
+        {/* Pause (ACTIVE only) */}
+        {status === "ACTIVE" && (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setPauseDialogOpen(true)}
+              disabled={actionInProgress}
+            >
+              <Pause className="mr-1.5 size-4" />
+              Pause
+            </Button>
 
-      {/* Resume (PAUSED only) */}
-      {status === "PAUSED" && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleResume}
-          disabled={actionInProgress}
-        >
-          <Play className="mr-1.5 size-4" />
-          Resume
-        </Button>
-      )}
+            <AlertDialog
+              open={pauseDialogOpen}
+              onOpenChange={(o) => {
+                if (!actionInProgress) setPauseDialogOpen(o);
+              }}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Pause Retainer</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Pausing this retainer will stop time tracking against it. You can resume it at
+                    any time.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={actionInProgress}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handlePause();
+                    }}
+                    disabled={actionInProgress}
+                  >
+                    {actionInProgress ? "Pausing..." : "Pause Retainer"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
+        )}
 
-      {/* Terminate (ACTIVE or PAUSED) */}
-      {(status === "ACTIVE" || status === "PAUSED") && (
-        <>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-red-600 hover:bg-red-50 hover:text-red-700"
-            onClick={() => setTerminateDialogOpen(true)}
-            disabled={actionInProgress}
-          >
-            <XCircle className="mr-1.5 size-4" />
-            Terminate
+        {/* Resume (PAUSED only) */}
+        {status === "PAUSED" && (
+          <Button variant="ghost" size="sm" onClick={handleResume} disabled={actionInProgress}>
+            <Play className="mr-1.5 size-4" />
+            Resume
           </Button>
+        )}
 
-          <AlertDialog
-            open={terminateDialogOpen}
-            onOpenChange={(o) => {
-              if (!actionInProgress) setTerminateDialogOpen(o);
-            }}
-          >
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Terminate Retainer</AlertDialogTitle>
-                <AlertDialogDescription>
-                  This will permanently end the retainer agreement. Any open
-                  period will need to be closed separately. This action cannot be
-                  undone.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel disabled={actionInProgress}>
-                  Cancel
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  variant="destructive"
-                  onClick={(e) => { e.preventDefault(); handleTerminate(); }}
-                  disabled={actionInProgress}
-                >
-                  {actionInProgress ? "Terminating..." : "Terminate"}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        </>
-      )}
+        {/* Terminate (ACTIVE or PAUSED) */}
+        {(status === "ACTIVE" || status === "PAUSED") && (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-red-600 hover:bg-red-50 hover:text-red-700"
+              onClick={() => setTerminateDialogOpen(true)}
+              disabled={actionInProgress}
+            >
+              <XCircle className="mr-1.5 size-4" />
+              Terminate
+            </Button>
 
-      {/* Close Period Dialog */}
-      {currentPeriod && (
-        <ClosePeriodDialog
-          slug={slug}
-          retainerId={retainer.id}
-          period={currentPeriod}
-          retainer={retainer}
-          currency={currency}
-          open={closePeriodOpen}
-          onOpenChange={setClosePeriodOpen}
-        />
-      )}
+            <AlertDialog
+              open={terminateDialogOpen}
+              onOpenChange={(o) => {
+                if (!actionInProgress) setTerminateDialogOpen(o);
+              }}
+            >
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Terminate Retainer</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This will permanently end the retainer agreement. Any open period will need to
+                    be closed separately. This action cannot be undone.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel disabled={actionInProgress}>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    variant="destructive"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleTerminate();
+                    }}
+                    disabled={actionInProgress}
+                  >
+                    {actionInProgress ? "Terminating..." : "Terminate"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
+        )}
+
+        {/* Close Period Dialog */}
+        {currentPeriod && (
+          <ClosePeriodDialog
+            slug={slug}
+            retainerId={retainer.id}
+            period={currentPeriod}
+            retainer={retainer}
+            currency={currency}
+            open={closePeriodOpen}
+            onOpenChange={setClosePeriodOpen}
+          />
+        )}
       </div>
     </div>
   );

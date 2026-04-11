@@ -76,7 +76,7 @@ export interface MemberCapabilities {
 }
 
 export async function fetchMemberCapabilities(
-  memberId: string,
+  memberId: string
 ): Promise<MemberCapabilities | null> {
   const caps = await fetchMyCapabilities();
 
@@ -86,7 +86,7 @@ export async function fetchMemberCapabilities(
 
   try {
     return await api.get<MemberCapabilities>(
-      `/api/members/${encodeURIComponent(memberId)}/capabilities`,
+      `/api/members/${encodeURIComponent(memberId)}/capabilities`
     );
   } catch {
     return null;
@@ -97,7 +97,7 @@ export async function assignMemberRole(
   slug: string,
   memberId: string,
   orgRoleId: string,
-  capabilityOverrides: string[],
+  capabilityOverrides: string[]
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
 
@@ -109,13 +109,10 @@ export async function assignMemberRole(
   }
 
   try {
-    await api.put<unknown>(
-      `/api/members/${encodeURIComponent(memberId)}/role`,
-      {
-        orgRoleId,
-        capabilityOverrides,
-      },
-    );
+    await api.put<unknown>(`/api/members/${encodeURIComponent(memberId)}/role`, {
+      orgRoleId,
+      capabilityOverrides,
+    });
   } catch (err: unknown) {
     if (err instanceof ApiError) {
       if (err.status === 403) {

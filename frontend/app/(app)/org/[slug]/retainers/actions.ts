@@ -19,7 +19,7 @@ interface ActionResult {
 
 export async function createRetainerAction(
   slug: string,
-  data: CreateRetainerRequest,
+  data: CreateRetainerRequest
 ): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
@@ -47,10 +47,7 @@ export async function createRetainerAction(
   }
 }
 
-export async function pauseRetainerAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function pauseRetainerAction(slug: string, id: string): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "You do not have permission to perform this action." };
@@ -75,10 +72,7 @@ export async function pauseRetainerAction(
   }
 }
 
-export async function resumeRetainerAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function resumeRetainerAction(slug: string, id: string): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "You do not have permission to perform this action." };
@@ -103,10 +97,7 @@ export async function resumeRetainerAction(
   }
 }
 
-export async function terminateRetainerAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function terminateRetainerAction(slug: string, id: string): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "You do not have permission to perform this action." };

@@ -24,11 +24,7 @@ import {
   FormControl,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,
   CommandEmpty,
@@ -54,6 +50,7 @@ const FEE_MODEL_LABELS: Record<FeeModel, string> = {
   FIXED: "Fixed Fee",
   HOURLY: "Hourly",
   RETAINER: "Retainer",
+  CONTINGENCY: "Contingency",
 };
 
 interface CreateProposalDialogProps {
@@ -62,11 +59,7 @@ interface CreateProposalDialogProps {
   children: React.ReactNode;
 }
 
-export function CreateProposalDialog({
-  slug,
-  customers,
-  children,
-}: CreateProposalDialogProps) {
+export function CreateProposalDialog({ slug, customers, children }: CreateProposalDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -85,6 +78,9 @@ export function CreateProposalDialog({
       retainerAmount: undefined,
       retainerCurrency: "ZAR",
       retainerHoursIncluded: undefined,
+      contingencyPercent: 25,
+      contingencyCapPercent: 25,
+      contingencyDescription: "",
       expiresAt: "",
     },
   });
@@ -126,6 +122,17 @@ export function CreateProposalDialog({
             retainerHoursIncluded: values.retainerHoursIncluded,
           }),
         }),
+        ...(values.feeModel === "CONTINGENCY" && {
+          ...(values.contingencyPercent != null && {
+            contingencyPercent: values.contingencyPercent,
+          }),
+          ...(values.contingencyCapPercent != null && {
+            contingencyCapPercent: values.contingencyCapPercent,
+          }),
+          ...(values.contingencyDescription && {
+            contingencyDescription: values.contingencyDescription,
+          }),
+        }),
         ...(values.expiresAt && {
           expiresAt: `${values.expiresAt}T23:59:59Z`,
         }),
@@ -149,9 +156,7 @@ export function CreateProposalDialog({
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>New Proposal</DialogTitle>
-          <DialogDescription>
-            Create a proposal for a client engagement.
-          </DialogDescription>
+          <DialogDescription>Create a proposal for a client engagement.</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -165,10 +170,7 @@ export function CreateProposalDialog({
                   <FormItem>
                     <FormLabel>Title</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="e.g. Annual Audit Proposal"
-                        {...field}
-                      />
+                      <Input placeholder="e.g. Annual Audit Proposal" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -196,9 +198,7 @@ export function CreateProposalDialog({
                             aria-expanded={customerPopoverOpen}
                             className="w-full justify-between font-normal"
                           >
-                            {selectedCustomer
-                              ? selectedCustomer.name
-                              : "Select a customer..."}
+                            {selectedCustomer ? selectedCustomer.name : "Select a customer..."}
                             <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
                           </Button>
                         </FormControl>
@@ -222,15 +222,11 @@ export function CreateProposalDialog({
                                   <Check
                                     className={cn(
                                       "size-4 shrink-0",
-                                      field.value === customer.id
-                                        ? "opacity-100"
-                                        : "opacity-0",
+                                      field.value === customer.id ? "opacity-100" : "opacity-0"
                                     )}
                                   />
                                   <div className="min-w-0 flex-1">
-                                    <p className="truncate text-sm font-medium">
-                                      {customer.name}
-                                    </p>
+                                    <p className="truncate text-sm font-medium">{customer.name}</p>
                                     {customer.email && (
                                       <p className="truncate text-xs text-slate-500">
                                         {customer.email}
@@ -256,23 +252,18 @@ export function CreateProposalDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Fee Model</FormLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
+                    <Select value={field.value} onValueChange={field.onChange}>
                       <FormControl>
                         <SelectTrigger className="w-full">
                           <SelectValue />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {Object.entries(FEE_MODEL_LABELS).map(
-                          ([value, label]) => (
-                            <SelectItem key={value} value={value}>
-                              {label}
-                            </SelectItem>
-                          ),
-                        )}
+                        {Object.entries(FEE_MODEL_LABELS).map(([value, label]) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -334,15 +325,10 @@ export function CreateProposalDialog({
                     <FormItem>
                       <FormLabel>
                         Hourly Rate Note{" "}
-                        <span className="font-normal text-muted-foreground">
-                          (optional)
-                        </span>
+                        <span className="text-muted-foreground font-normal">(optional)</span>
                       </FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="e.g. R850/hr"
-                          {...field}
-                        />
+                        <Input placeholder="e.g. R850/hr" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -399,9 +385,7 @@ export function CreateProposalDialog({
                       <FormItem>
                         <FormLabel>
                           Hours Included{" "}
-                          <span className="font-normal text-muted-foreground">
-                            (optional)
-                          </span>
+                          <span className="text-muted-foreground font-normal">(optional)</span>
                         </FormLabel>
                         <FormControl>
                           <Input
@@ -426,6 +410,92 @@ export function CreateProposalDialog({
                 </>
               )}
 
+              {/* CONTINGENCY fee fields */}
+              {feeModel === "CONTINGENCY" && (
+                <>
+                  <p
+                    className="rounded-md border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200"
+                    data-testid="contingency-disclosure"
+                  >
+                    LPC Rule 59 (Contingency Fees Act 66 of 1997) caps contingency fees at 25% of
+                    amounts recovered. Ensure a written agreement is in place with the client.
+                  </p>
+                  <FormField
+                    control={form.control}
+                    name="contingencyPercent"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Contingency Percent (%)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="25"
+                            step="0.01"
+                            placeholder="e.g. 25"
+                            value={field.value ?? ""}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              field.onChange(val === "" ? undefined : Number(val));
+                            }}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="contingencyCapPercent"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Contingency Cap (%)</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min="0"
+                            max="25"
+                            step="0.01"
+                            placeholder="e.g. 25"
+                            value={field.value ?? ""}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              field.onChange(val === "" ? undefined : Number(val));
+                            }}
+                            onBlur={field.onBlur}
+                            name={field.name}
+                            ref={field.ref}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="contingencyDescription"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          Description{" "}
+                          <span className="text-muted-foreground font-normal">(optional)</span>
+                        </FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="e.g. RAF plaintiff claim — 25% contingency per LPC Rule 59"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
               {/* Expiry Date */}
               <FormField
                 control={form.control}
@@ -434,9 +504,7 @@ export function CreateProposalDialog({
                   <FormItem>
                     <FormLabel>
                       Expiry Date{" "}
-                      <span className="font-normal text-muted-foreground">
-                        (optional)
-                      </span>
+                      <span className="text-muted-foreground font-normal">(optional)</span>
                     </FormLabel>
                     <FormControl>
                       <Input type="date" {...field} />
@@ -446,9 +514,7 @@ export function CreateProposalDialog({
                 )}
               />
 
-              {error && (
-                <p className="text-sm text-destructive">{error}</p>
-              )}
+              {error && <p className="text-destructive text-sm">{error}</p>}
             </div>
 
             <DialogFooter className="mt-4">

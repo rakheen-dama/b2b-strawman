@@ -17,14 +17,11 @@ vi.mock("next/navigation", () => ({
 }));
 
 // Mock kyc-actions to avoid server-only import chain
-vi.mock(
-  "@/app/(app)/org/[slug]/customers/[id]/kyc-actions",
-  () => ({
-    verifyKycAction: vi.fn().mockResolvedValue({ success: true }),
-    getKycStatusAction: vi.fn().mockResolvedValue({ configured: false, provider: null }),
-    getKycResultAction: vi.fn().mockResolvedValue({ success: true, data: null }),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/customers/[id]/kyc-actions", () => ({
+  verifyKycAction: vi.fn().mockResolvedValue({ success: true }),
+  getKycStatusAction: vi.fn().mockResolvedValue({ configured: false, provider: null }),
+  getKycResultAction: vi.fn().mockResolvedValue({ success: true, data: null }),
+}));
 
 const baseItem: ChecklistInstanceItemResponse = {
   id: "item-1",
@@ -68,7 +65,7 @@ describe("ChecklistInstanceItemRow", () => {
         onSkip={mockOnSkip}
         onReopen={mockOnReopen}
         isAdmin={false}
-      />,
+      />
     );
     expect(screen.getByText("Verify identity document")).toBeInTheDocument();
     expect(screen.getByText("Pending")).toBeInTheDocument();
@@ -83,7 +80,7 @@ describe("ChecklistInstanceItemRow", () => {
         onSkip={mockOnSkip}
         onReopen={mockOnReopen}
         isAdmin={true}
-      />,
+      />
     );
     expect(screen.getByText("Mark Complete")).toBeInTheDocument();
   });
@@ -97,7 +94,7 @@ describe("ChecklistInstanceItemRow", () => {
         onSkip={mockOnSkip}
         onReopen={mockOnReopen}
         isAdmin={false}
-      />,
+      />
     );
     expect(screen.queryByText("Mark Complete")).not.toBeInTheDocument();
     expect(screen.queryByText("Skip")).not.toBeInTheDocument();
@@ -112,7 +109,7 @@ describe("ChecklistInstanceItemRow", () => {
         onSkip={mockOnSkip}
         onReopen={mockOnReopen}
         isAdmin={true}
-      />,
+      />
     );
     expect(screen.queryByText("Skip")).not.toBeInTheDocument();
   });
@@ -126,7 +123,7 @@ describe("ChecklistInstanceItemRow", () => {
         onSkip={mockOnSkip}
         onReopen={mockOnReopen}
         isAdmin={true}
-      />,
+      />
     );
     expect(screen.getByText("Skip")).toBeInTheDocument();
   });
@@ -149,7 +146,7 @@ describe("ChecklistInstanceItemRow", () => {
         onSkip={mockOnSkip}
         onReopen={mockOnReopen}
         isAdmin={true}
-      />,
+      />
     );
     expect(screen.getByText("Reopen")).toBeInTheDocument();
     unmount();
@@ -163,7 +160,7 @@ describe("ChecklistInstanceItemRow", () => {
         onSkip={mockOnSkip}
         onReopen={mockOnReopen}
         isAdmin={false}
-      />,
+      />
     );
     expect(screen.queryByText("Reopen")).not.toBeInTheDocument();
   });
@@ -215,7 +212,7 @@ describe("ChecklistInstanceItemRow", () => {
         onReopen={mockOnReopen}
         isAdmin={true}
         customerDocuments={mockDocs}
-      />,
+      />
     );
 
     // Open the complete form
@@ -258,7 +255,7 @@ describe("ChecklistInstanceItemRow", () => {
         onReopen={mockOnReopen}
         isAdmin={true}
         customerDocuments={pendingDocs}
-      />,
+      />
     );
 
     // Open the complete form
@@ -279,7 +276,7 @@ describe("ChecklistInstanceItemRow", () => {
         onReopen={mockOnReopen}
         isAdmin={true}
         customerDocuments={[]}
-      />,
+      />
     );
 
     await user.click(screen.getByText("Mark Complete"));

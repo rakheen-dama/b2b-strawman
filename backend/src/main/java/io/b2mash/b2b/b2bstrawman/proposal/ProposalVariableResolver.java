@@ -60,6 +60,10 @@ public class ProposalVariableResolver {
       case RETAINER ->
           proposal.getRetainerAmount() != null ? proposal.getRetainerAmount().toPlainString() : "";
       case HOURLY -> "";
+      case CONTINGENCY ->
+          proposal.getContingencyPercent() != null
+              ? proposal.getContingencyPercent().toPlainString() + "%"
+              : "";
     };
   }
 }

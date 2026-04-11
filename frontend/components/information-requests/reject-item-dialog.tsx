@@ -58,15 +58,13 @@ export function RejectItemDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Reject Item</AlertDialogTitle>
           <AlertDialogDescription>
-            Provide a reason for rejecting &quot;{itemName}&quot;. The client
-            will be notified and can resubmit.
+            Provide a reason for rejecting &quot;{itemName}&quot;. The client will be notified and
+            can resubmit.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
         <div className="space-y-2">
-          <label className="text-sm text-slate-600 dark:text-slate-400">
-            Rejection reason
-          </label>
+          <label className="text-sm text-slate-600 dark:text-slate-400">Rejection reason</label>
           <Textarea
             placeholder="Explain why this item is being rejected..."
             value={reason}
@@ -77,7 +75,7 @@ export function RejectItemDialog({
           />
         </div>
 
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>

@@ -7,10 +7,7 @@ import { Label } from "@/components/ui/label";
 import { updateNotificationPreferences } from "@/lib/actions/notifications";
 import type { NotificationPreference } from "@/lib/actions/notifications";
 
-const NOTIFICATION_TYPE_LABELS: Record<
-  string,
-  { label: string; category: string }
-> = {
+const NOTIFICATION_TYPE_LABELS: Record<string, { label: string; category: string }> = {
   // Tasks
   TASK_ASSIGNED: { label: "Task Assigned", category: "Tasks" },
   TASK_CLAIMED: { label: "Task Claimed", category: "Tasks" },
@@ -44,15 +41,24 @@ const NOTIFICATION_TYPE_LABELS: Record<
   BILLING_RUN_SENT: { label: "Billing Run Sent", category: "Billing & Invoicing" },
   BILLING_RUN_FAILURES: { label: "Billing Run Failures", category: "Billing & Invoicing" },
   // Client Requests
-  INFORMATION_REQUEST_ITEM_SUBMITTED: { label: "Request Item Submitted", category: "Client Requests" },
+  INFORMATION_REQUEST_ITEM_SUBMITTED: {
+    label: "Request Item Submitted",
+    category: "Client Requests",
+  },
   INFORMATION_REQUEST_COMPLETED: { label: "Request Completed", category: "Client Requests" },
-  INFORMATION_REQUEST_DRAFT_CREATED: { label: "Request Draft Created", category: "Client Requests" },
+  INFORMATION_REQUEST_DRAFT_CREATED: {
+    label: "Request Draft Created",
+    category: "Client Requests",
+  },
   // Scheduling
   RECURRING_PROJECT_CREATED: { label: "Recurring Project Created", category: "Scheduling" },
   SCHEDULE_SKIPPED: { label: "Schedule Skipped", category: "Scheduling" },
   SCHEDULE_COMPLETED: { label: "Schedule Completed", category: "Scheduling" },
   // Retainers
-  RETAINER_PERIOD_READY_TO_CLOSE: { label: "Retainer Period Ready to Close", category: "Retainers" },
+  RETAINER_PERIOD_READY_TO_CLOSE: {
+    label: "Retainer Period Ready to Close",
+    category: "Retainers",
+  },
   RETAINER_PERIOD_CLOSED: { label: "Retainer Period Closed", category: "Retainers" },
   RETAINER_APPROACHING_CAPACITY: { label: "Retainer Approaching Capacity", category: "Retainers" },
   RETAINER_FULLY_CONSUMED: { label: "Retainer Fully Consumed", category: "Retainers" },
@@ -78,8 +84,7 @@ interface NotificationPreferencesFormProps {
 export function NotificationPreferencesForm({
   initialPreferences,
 }: NotificationPreferencesFormProps) {
-  const [preferences, setPreferences] =
-    useState<NotificationPreference[]>(initialPreferences);
+  const [preferences, setPreferences] = useState<NotificationPreference[]>(initialPreferences);
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
 
@@ -89,11 +94,7 @@ export function NotificationPreferencesForm({
     checked: boolean
   ) {
     setPreferences((prev) =>
-      prev.map((p) =>
-        p.notificationType === notificationType
-          ? { ...p, [field]: checked }
-          : p
-      )
+      prev.map((p) => (p.notificationType === notificationType ? { ...p, [field]: checked } : p))
     );
     setSaveMessage(null);
   }
@@ -113,9 +114,7 @@ export function NotificationPreferencesForm({
   }
 
   // Group preferences by category
-  const grouped = preferences.reduce<
-    Record<string, NotificationPreference[]>
-  >((acc, pref) => {
+  const grouped = preferences.reduce<Record<string, NotificationPreference[]>>((acc, pref) => {
     const meta = NOTIFICATION_TYPE_LABELS[pref.notificationType];
     const category = meta?.category ?? "Other";
     if (!acc[category]) acc[category] = [];
@@ -162,7 +161,7 @@ export function NotificationPreferencesForm({
           <div key={category}>
             {/* Category header */}
             <div className="border-b border-slate-100 bg-slate-50 px-4 py-2 dark:border-slate-800 dark:bg-slate-900">
-              <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+              <p className="text-xs font-semibold tracking-wider text-slate-500 uppercase dark:text-slate-400">
                 {category}
               </p>
             </div>
@@ -190,11 +189,7 @@ export function NotificationPreferencesForm({
                       id={inAppId}
                       checked={pref.inAppEnabled}
                       onCheckedChange={(checked: boolean) =>
-                        handleToggle(
-                          pref.notificationType,
-                          "inAppEnabled",
-                          checked
-                        )
+                        handleToggle(pref.notificationType, "inAppEnabled", checked)
                       }
                     />
                   </div>
@@ -203,11 +198,7 @@ export function NotificationPreferencesForm({
                       id={emailId}
                       checked={pref.emailEnabled}
                       onCheckedChange={(checked: boolean) =>
-                        handleToggle(
-                          pref.notificationType,
-                          "emailEnabled",
-                          checked
-                        )
+                        handleToggle(pref.notificationType, "emailEnabled", checked)
                       }
                     />
                   </div>

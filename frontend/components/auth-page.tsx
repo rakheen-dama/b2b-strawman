@@ -20,7 +20,10 @@ export function AuthPage({ heading, subtitle, children }: AuthPageProps) {
           </Link>
         </div>
         <div className="flex flex-1 flex-col items-center justify-center px-12">
-          <h1 className="font-display text-3xl text-slate-900 dark:text-slate-100" aria-hidden="true">
+          <h1
+            className="font-display text-3xl text-slate-900 dark:text-slate-100"
+            aria-hidden="true"
+          >
             {heading}
           </h1>
           <p className="mt-3 text-slate-700 dark:text-slate-300">{subtitle}</p>

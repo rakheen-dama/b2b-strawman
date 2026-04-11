@@ -43,12 +43,8 @@ export function MobileSidebar({ slug, groups = [], userName, userEmail }: Mobile
       >
         {/* Header */}
         <div className="flex h-14 items-center px-4">
-          <SheetTitle className="text-base font-semibold text-white">
-            DocTeams
-          </SheetTitle>
-          <SheetDescription className="sr-only">
-            Main navigation menu
-          </SheetDescription>
+          <SheetTitle className="text-base font-semibold text-white">DocTeams</SheetTitle>
+          <SheetDescription className="sr-only">Main navigation menu</SheetDescription>
         </div>
         <div className="mx-4 border-t border-white/10" />
         <div className="flex items-center gap-2 px-4 py-3">
@@ -60,9 +56,7 @@ export function MobileSidebar({ slug, groups = [], userName, userEmail }: Mobile
         <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-0 p-2">
           {NAV_GROUPS.map((group, index) => (
             <Fragment key={group.id}>
-              {index > 0 && (
-                <div className="my-1 mx-2 border-t border-white/5" />
-              )}
+              {index > 0 && <div className="mx-2 my-1 border-t border-white/5" />}
               <NavZone zone={group} slug={slug} onNavItemClick={() => setOpen(false)} />
             </Fragment>
           ))}
@@ -103,7 +97,7 @@ export function MobileSidebar({ slug, groups = [], userName, userEmail }: Mobile
                   href={href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white text-white/60 hover:bg-slate-800 hover:text-white"
+                  className="relative flex items-center gap-2 rounded-md px-3 py-2 text-sm text-white/60 transition-colors hover:bg-slate-800 hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
                 >
                   <item.icon className="h-4 w-4" />
                   {item.label}
@@ -111,9 +105,7 @@ export function MobileSidebar({ slug, groups = [], userName, userEmail }: Mobile
               );
             }
 
-            const isActive = item.exact
-              ? pathname === href
-              : pathname.startsWith(href);
+            const isActive = item.exact ? pathname === href : pathname.startsWith(href);
 
             return (
               <Link
@@ -124,14 +116,14 @@ export function MobileSidebar({ slug, groups = [], userName, userEmail }: Mobile
                   "relative flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white",
                   isActive
                     ? "bg-white/5 text-white"
-                    : "text-white/60 hover:bg-slate-800 hover:text-white",
+                    : "text-white/60 hover:bg-slate-800 hover:text-white"
                 )}
               >
                 {isActive && (
                   <motion.div
                     layoutId="mobile-sidebar-indicator"
                     aria-hidden="true"
-                    className="absolute left-0 top-1 bottom-1 w-0.5 rounded-full bg-teal-500"
+                    className="absolute top-1 bottom-1 left-0 w-0.5 rounded-full bg-teal-500"
                     transition={{ type: "spring", stiffness: 350, damping: 30 }}
                   />
                 )}

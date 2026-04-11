@@ -28,7 +28,7 @@ interface ActionResult<T = undefined> {
 export async function upsertIntegrationAction(
   slug: string,
   domain: IntegrationDomain,
-  data: UpsertIntegrationRequest,
+  data: UpsertIntegrationRequest
 ): Promise<ActionResult> {
   try {
     await upsertIntegration(domain, data);
@@ -48,7 +48,7 @@ export async function upsertIntegrationAction(
 export async function setApiKeyAction(
   slug: string,
   domain: IntegrationDomain,
-  data: SetApiKeyRequest,
+  data: SetApiKeyRequest
 ): Promise<ActionResult> {
   try {
     await setApiKey(domain, data);
@@ -67,7 +67,7 @@ export async function setApiKeyAction(
 
 export async function deleteApiKeyAction(
   slug: string,
-  domain: IntegrationDomain,
+  domain: IntegrationDomain
 ): Promise<ActionResult> {
   try {
     await deleteApiKey(domain);
@@ -87,7 +87,7 @@ export async function deleteApiKeyAction(
 export async function toggleIntegrationAction(
   slug: string,
   domain: IntegrationDomain,
-  data: ToggleIntegrationRequest,
+  data: ToggleIntegrationRequest
 ): Promise<ActionResult> {
   try {
     await toggleIntegration(domain, data);
@@ -106,7 +106,7 @@ export async function toggleIntegrationAction(
 
 export async function testConnectionAction(
   slug: string,
-  domain: IntegrationDomain,
+  domain: IntegrationDomain
 ): Promise<ActionResult<ConnectionTestResult>> {
   try {
     const result = await testConnection(domain);

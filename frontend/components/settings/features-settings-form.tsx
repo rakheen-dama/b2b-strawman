@@ -5,20 +5,14 @@ import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import {
-  updateModuleSettings,
-  type ModuleStatus,
-} from "@/lib/actions/module-settings";
+import { updateModuleSettings, type ModuleStatus } from "@/lib/actions/module-settings";
 
 interface FeaturesSettingsFormProps {
   initialModules: ModuleStatus[];
   canManage: boolean;
 }
 
-export function FeaturesSettingsForm({
-  initialModules,
-  canManage,
-}: FeaturesSettingsFormProps) {
+export function FeaturesSettingsForm({ initialModules, canManage }: FeaturesSettingsFormProps) {
   const router = useRouter();
   const [modules, setModules] = useState<ModuleStatus[]>(initialModules);
   const [isPending, startTransition] = useTransition();
@@ -27,9 +21,7 @@ export function FeaturesSettingsForm({
   function handleToggle(moduleId: string, checked: boolean) {
     setError(null);
     const previous = modules;
-    const next = modules.map((m) =>
-      m.id === moduleId ? { ...m, enabled: checked } : m,
-    );
+    const next = modules.map((m) => (m.id === moduleId ? { ...m, enabled: checked } : m));
     setModules(next);
     const enabledIds = next.filter((m) => m.enabled).map((m) => m.id);
 
@@ -49,11 +41,7 @@ export function FeaturesSettingsForm({
   }
 
   if (modules.length === 0) {
-    return (
-      <p className="text-sm text-slate-600 dark:text-slate-400">
-        No features available.
-      </p>
-    );
+    return <p className="text-sm text-slate-600 dark:text-slate-400">No features available.</p>;
   }
 
   return (
@@ -68,9 +56,7 @@ export function FeaturesSettingsForm({
               >
                 {mod.name}
               </Label>
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                {mod.description}
-              </p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">{mod.description}</p>
             </div>
             {canManage ? (
               <Switch
@@ -92,10 +78,7 @@ export function FeaturesSettingsForm({
         </Card>
       ))}
       {error && (
-        <p
-          className="text-sm text-red-600 dark:text-red-400"
-          role="alert"
-        >
+        <p className="text-sm text-red-600 dark:text-red-400" role="alert">
           {error}
         </p>
       )}

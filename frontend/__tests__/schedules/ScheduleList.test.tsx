@@ -126,7 +126,7 @@ describe("ScheduleList", () => {
     render(<ScheduleList slug="acme" schedules={[ACTIVE_SCHEDULE]} />);
     await user.click(screen.getByTitle("Pause schedule"));
     expect(
-      screen.getByText(/Pausing this schedule will stop automatic project creation/),
+      screen.getByText(/Pausing this schedule will stop automatic project creation/)
     ).toBeInTheDocument();
   });
 

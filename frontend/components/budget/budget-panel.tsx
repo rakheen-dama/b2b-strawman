@@ -29,13 +29,7 @@ const STATUS_BADGE: Record<
   OVER_BUDGET: { label: "Over Budget", variant: "destructive" },
 };
 
-function BudgetProgressBar({
-  value,
-  status,
-}: {
-  value: number;
-  status: BudgetStatus;
-}) {
+function BudgetProgressBar({ value, status }: { value: number; status: BudgetStatus }) {
   const clamped = Math.min(100, Math.max(0, value));
   const barColor =
     status === "OVER_BUDGET"
@@ -71,7 +65,7 @@ function StatCard({
 }) {
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+      <p className="text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
         {label}
       </p>
       <p className={valueClassName ?? "text-slate-950 dark:text-slate-50"}>
@@ -121,7 +115,7 @@ export function BudgetPanel({
       {/* Header with status and actions */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h3 className="flex items-center gap-2 font-display text-lg text-slate-950 dark:text-slate-50">
+          <h3 className="font-display flex items-center gap-2 text-lg text-slate-950 dark:text-slate-50">
             Budget Status
             <HelpTip code="budget.vsActual" />
           </h3>
@@ -158,36 +152,20 @@ export function BudgetPanel({
       {hasHours && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              Hours
-            </h4>
+            <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">Hours</h4>
             <Badge variant={STATUS_BADGE[budget.hoursStatus].variant} className="text-xs">
               {STATUS_BADGE[budget.hoursStatus].label}
             </Badge>
           </div>
-          <BudgetProgressBar
-            value={budget.hoursConsumedPct}
-            status={budget.hoursStatus}
-          />
+          <BudgetProgressBar value={budget.hoursConsumedPct} status={budget.hoursStatus} />
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <StatCard
-              label="Budget"
-              value={formatDuration(budget.budgetHours! * 60)}
-            />
-            <StatCard
-              label="Consumed"
-              value={formatDuration(budget.hoursConsumed * 60)}
-            />
+            <StatCard label="Budget" value={formatDuration(budget.budgetHours! * 60)} />
+            <StatCard label="Consumed" value={formatDuration(budget.hoursConsumed * 60)} />
             <StatCard
               label="Remaining"
-              value={formatDuration(
-                Math.max(0, budget.hoursRemaining) * 60
-              )}
+              value={formatDuration(Math.max(0, budget.hoursRemaining) * 60)}
             />
-            <StatCard
-              label="Used"
-              value={`${Math.round(budget.hoursConsumedPct)}%`}
-            />
+            <StatCard label="Used" value={`${Math.round(budget.hoursConsumedPct)}%`} />
           </div>
         </div>
       )}
@@ -196,43 +174,26 @@ export function BudgetPanel({
       {hasAmount && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">
-              Amount
-            </h4>
+            <h4 className="text-sm font-medium text-slate-700 dark:text-slate-300">Amount</h4>
             <Badge variant={STATUS_BADGE[budget.amountStatus].variant} className="text-xs">
               {STATUS_BADGE[budget.amountStatus].label}
             </Badge>
           </div>
-          <BudgetProgressBar
-            value={budget.amountConsumedPct}
-            status={budget.amountStatus}
-          />
+          <BudgetProgressBar value={budget.amountConsumedPct} status={budget.amountStatus} />
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             <StatCard
               label="Budget"
-              value={formatCurrency(
-                budget.budgetAmount!,
-                budget.budgetCurrency!
-              )}
+              value={formatCurrency(budget.budgetAmount!, budget.budgetCurrency!)}
             />
             <StatCard
               label="Consumed"
-              value={formatCurrency(
-                budget.amountConsumed,
-                budget.budgetCurrency!
-              )}
+              value={formatCurrency(budget.amountConsumed, budget.budgetCurrency!)}
             />
             <StatCard
               label="Remaining"
-              value={formatCurrency(
-                Math.max(0, budget.amountRemaining),
-                budget.budgetCurrency!
-              )}
+              value={formatCurrency(Math.max(0, budget.amountRemaining), budget.budgetCurrency!)}
             />
-            <StatCard
-              label="Used"
-              value={`${Math.round(budget.amountConsumedPct)}%`}
-            />
+            <StatCard label="Used" value={`${Math.round(budget.amountConsumedPct)}%`} />
           </div>
         </div>
       )}
@@ -240,8 +201,7 @@ export function BudgetPanel({
       {/* Alert threshold and notes */}
       <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 dark:border-slate-800 dark:bg-slate-900/50">
         <p className="text-sm text-slate-600 dark:text-slate-400">
-          <span className="font-medium">Alert threshold:</span>{" "}
-          {budget.alertThresholdPct}%
+          <span className="font-medium">Alert threshold:</span> {budget.alertThresholdPct}%
         </p>
         {budget.notes && (
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">

@@ -1,11 +1,6 @@
 import Link from "next/link";
 import { Users, ClipboardList, Zap } from "lucide-react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { ModuleGate } from "@/components/module-gate";
 import type { AggregatedCompletenessResponse } from "@/lib/types";
 import type { InformationRequestSummary } from "@/lib/api/information-requests";
@@ -27,7 +22,7 @@ export function AdminStatsColumn({
   const incompleteProfiles = aggregatedCompleteness?.incompleteCount ?? 0;
   const pendingRequests =
     requestSummary?.itemsPendingReview ??
-    ((requestSummary?.sentCount ?? 0) + (requestSummary?.inProgressCount ?? 0));
+    (requestSummary?.sentCount ?? 0) + (requestSummary?.inProgressCount ?? 0);
   const automationRuns = automationSummary?.todayTotal ?? 0;
 
   return (
@@ -41,9 +36,7 @@ export function AdminStatsColumn({
           className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900"
         >
           <Users className="size-4 shrink-0 text-slate-400" />
-          <span className="font-mono text-sm font-bold tabular-nums">
-            {incompleteProfiles}
-          </span>
+          <span className="font-mono text-sm font-bold tabular-nums">{incompleteProfiles}</span>
           <span className="text-xs text-slate-500">Incomplete profiles</span>
         </Link>
 
@@ -52,9 +45,7 @@ export function AdminStatsColumn({
           className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900"
         >
           <ClipboardList className="size-4 shrink-0 text-slate-400" />
-          <span className="font-mono text-sm font-bold tabular-nums">
-            {pendingRequests}
-          </span>
+          <span className="font-mono text-sm font-bold tabular-nums">{pendingRequests}</span>
           <span className="text-xs text-slate-500">Pending requests</span>
         </Link>
 
@@ -64,12 +55,8 @@ export function AdminStatsColumn({
             className="flex items-center gap-3 rounded-md px-2 py-2 transition-colors hover:bg-slate-50 dark:hover:bg-slate-900"
           >
             <Zap className="size-4 shrink-0 text-slate-400" />
-            <span className="font-mono text-sm font-bold tabular-nums">
-              {automationRuns}
-            </span>
-            <span className="text-xs text-slate-500">
-              Automation runs today
-            </span>
+            <span className="font-mono text-sm font-bold tabular-nums">{automationRuns}</span>
+            <span className="text-xs text-slate-500">Automation runs today</span>
           </Link>
         </ModuleGate>
       </CardContent>

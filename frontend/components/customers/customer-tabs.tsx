@@ -20,7 +20,17 @@ interface CustomerTabsProps {
   trustPanel?: ReactNode;
 }
 
-type TabId = "projects" | "documents" | "onboarding" | "rates" | "financials" | "invoices" | "retainer" | "requests" | "generated" | "trust";
+type TabId =
+  | "projects"
+  | "documents"
+  | "onboarding"
+  | "rates"
+  | "financials"
+  | "invoices"
+  | "retainer"
+  | "requests"
+  | "generated"
+  | "trust";
 
 interface TabDef {
   id: TabId;
@@ -40,7 +50,18 @@ const baseTabs: TabDef[] = [
   { id: "trust", label: "Trust" },
 ];
 
-const validTabIds = new Set<string>(["projects", "documents", "onboarding", "invoices", "retainer", "requests", "rates", "generated", "financials", "trust"]);
+const validTabIds = new Set<string>([
+  "projects",
+  "documents",
+  "onboarding",
+  "invoices",
+  "retainer",
+  "requests",
+  "rates",
+  "generated",
+  "financials",
+  "trust",
+]);
 
 export function CustomerTabs({
   projectsPanel,
@@ -77,13 +98,20 @@ export function CustomerTabs({
       if (t.id === "trust" && !showTrust) return false;
       return true;
     });
-  }, [onboardingPanel, invoicesPanel, retainerPanel, requestsPanel, ratesPanel, financialsPanel, generatedPanel, showTrust]);
+  }, [
+    onboardingPanel,
+    invoicesPanel,
+    retainerPanel,
+    requestsPanel,
+    ratesPanel,
+    financialsPanel,
+    generatedPanel,
+    showTrust,
+  ]);
 
   // Validate activeTab is in the rendered tabs; fall back to "projects" if not
   const activeTab: TabId =
-    requestedTab && tabs.some((t) => t.id === requestedTab)
-      ? requestedTab
-      : "projects";
+    requestedTab && tabs.some((t) => t.id === requestedTab) ? requestedTab : "projects";
 
   return (
     <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setUserTab(v as TabId)}>
@@ -96,7 +124,7 @@ export function CustomerTabs({
               "relative pb-3 text-sm font-medium transition-colors outline-none",
               "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",
               "data-[state=active]:text-slate-950 dark:data-[state=active]:text-slate-50",
-              "focus-visible:outline-2 focus-visible:outline-teal-500 focus-visible:outline-offset-2"
+              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
             )}
           >
             {tab.label}

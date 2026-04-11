@@ -82,22 +82,15 @@ describe("Time Entry Billable UI", () => {
     const user = userEvent.setup();
 
     render(
-      <LogTimeDialog
-        slug="acme"
-        projectId="p1"
-        taskId="t1"
-        memberId="m1"
-      >
+      <LogTimeDialog slug="acme" projectId="p1" taskId="t1" memberId="m1">
         <button>Open Log Time Dialog</button>
-      </LogTimeDialog>,
+      </LogTimeDialog>
     );
 
     await user.click(screen.getByText("Open Log Time Dialog"));
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: "Log Time" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Log Time" })).toBeInTheDocument();
     });
 
     const checkbox = screen.getByRole("checkbox", { name: /billable/i });
@@ -115,22 +108,15 @@ describe("Time Entry Billable UI", () => {
     const user = userEvent.setup();
 
     render(
-      <LogTimeDialog
-        slug="acme"
-        projectId="p1"
-        taskId="t1"
-        memberId="m1"
-      >
+      <LogTimeDialog slug="acme" projectId="p1" taskId="t1" memberId="m1">
         <button>Open Log Time Rate Preview</button>
-      </LogTimeDialog>,
+      </LogTimeDialog>
     );
 
     await user.click(screen.getByText("Open Log Time Rate Preview"));
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: "Log Time" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Log Time" })).toBeInTheDocument();
     });
 
     // Rate preview should appear (after debounce + resolve)
@@ -159,22 +145,15 @@ describe("Time Entry Billable UI", () => {
     const user = userEvent.setup();
 
     render(
-      <LogTimeDialog
-        slug="acme"
-        projectId="p1"
-        taskId="t1"
-        memberId="m1"
-      >
+      <LogTimeDialog slug="acme" projectId="p1" taskId="t1" memberId="m1">
         <button>Open Log Time Rate Resolve</button>
-      </LogTimeDialog>,
+      </LogTimeDialog>
     );
 
     await user.click(screen.getByText("Open Log Time Rate Resolve"));
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: "Log Time" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Log Time" })).toBeInTheDocument();
     });
 
     // Wait for rate resolution
@@ -254,21 +233,15 @@ describe("Time Entry Billable UI", () => {
     const user = userEvent.setup();
 
     render(
-      <EditTimeEntryDialog
-        entry={entry}
-        slug="acme"
-        projectId="p1"
-      >
+      <EditTimeEntryDialog entry={entry} slug="acme" projectId="p1">
         <button>Open Edit Time Entry</button>
-      </EditTimeEntryDialog>,
+      </EditTimeEntryDialog>
     );
 
     await user.click(screen.getByText("Open Edit Time Entry"));
 
     await waitFor(() => {
-      expect(
-        screen.getByRole("heading", { name: "Edit Time Entry" }),
-      ).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Edit Time Entry" })).toBeInTheDocument();
     });
 
     // Rate snapshot should show

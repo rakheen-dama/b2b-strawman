@@ -6,21 +6,12 @@ import { isModuleEnabledServer } from "@/lib/api/settings";
 import { CreateRuleClient } from "./create-rule-client";
 import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
 
-export default async function NewAutomationPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function NewAutomationPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
   // Server-side module gate — short-circuit before any further work.
   if (!(await isModuleEnabledServer("automation_builder"))) {
-    return (
-      <ModuleDisabledFallback
-        moduleName="Automation Rule Builder"
-        slug={slug}
-      />
-    );
+    return <ModuleDisabledFallback moduleName="Automation Rule Builder" slug={slug} />;
   }
 
   const caps = await fetchMyCapabilities();

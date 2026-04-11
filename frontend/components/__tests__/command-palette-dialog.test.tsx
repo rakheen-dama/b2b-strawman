@@ -10,13 +10,9 @@ vi.mock("next/navigation", () => ({
 // Mock motion/react — avoid animation issues in tests
 vi.mock("motion/react", () => ({
   motion: {
-    div: ({ children, ...props }: React.ComponentProps<"div">) => (
-      <div {...props}>{children}</div>
-    ),
+    div: ({ children, ...props }: React.ComponentProps<"div">) => <div {...props}>{children}</div>,
   },
-  AnimatePresence: ({ children }: { children: React.ReactNode }) => (
-    <>{children}</>
-  ),
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
 // Mock recent-items-provider — control recentItems in tests
@@ -74,7 +70,7 @@ function renderDialog({
       >
         <CommandPaletteDialog slug="test-org" open={true} onOpenChange={vi.fn()} />
       </CapabilityProvider>
-    </OrgProfileProvider>,
+    </OrgProfileProvider>
   );
 }
 

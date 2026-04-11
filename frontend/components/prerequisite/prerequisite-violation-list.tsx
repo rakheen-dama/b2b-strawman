@@ -59,47 +59,43 @@ export function PrerequisiteViolationList({
               const fieldDef = slug ? fieldDefinitions[slug] : undefined;
 
               return (
-              <li
-                key={`${violation.code}-${slug ?? idx}`}
-                className="rounded-md border border-slate-200 p-3 dark:border-slate-700"
-              >
-                {slug && fieldDef ? (
-                  <div className="space-y-2">
+                <li
+                  key={`${violation.code}-${slug ?? idx}`}
+                  className="rounded-md border border-slate-200 p-3 dark:border-slate-700"
+                >
+                  {slug && fieldDef ? (
+                    <div className="space-y-2">
+                      <div className="flex items-start gap-2">
+                        <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                            {fieldDef.name}
+                          </p>
+                          <p className="text-muted-foreground text-xs">{violation.message}</p>
+                        </div>
+                      </div>
+                      <InlineFieldEditor
+                        fieldDefinition={fieldDef}
+                        value={fieldValues[slug]}
+                        onChange={(val) => onFieldChange?.(slug, val)}
+                      />
+                    </div>
+                  ) : (
                     <div className="flex items-start gap-2">
-                      <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-500" />
+                      <Info className="mt-0.5 size-4 shrink-0 text-slate-400" />
                       <div className="min-w-0 flex-1">
-                        <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
-                          {fieldDef.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-sm text-slate-900 dark:text-slate-100">
                           {violation.message}
                         </p>
+                        {violation.resolution && (
+                          <p className="text-muted-foreground mt-1 text-xs">
+                            {violation.resolution}
+                          </p>
+                        )}
                       </div>
                     </div>
-                    <InlineFieldEditor
-                      fieldDefinition={fieldDef}
-                      value={fieldValues[slug]}
-                      onChange={(val) =>
-                        onFieldChange?.(slug, val)
-                      }
-                    />
-                  </div>
-                ) : (
-                  <div className="flex items-start gap-2">
-                    <Info className="mt-0.5 size-4 shrink-0 text-slate-400" />
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm text-slate-900 dark:text-slate-100">
-                        {violation.message}
-                      </p>
-                      {violation.resolution && (
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          {violation.resolution}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </li>
+                  )}
+                </li>
               );
             })}
           </ul>

@@ -7,11 +7,7 @@ import type { BillingResponse } from "@/lib/internal-api";
 import { fetchOrgRoles } from "@/lib/api/org-roles";
 import type { OrgRole } from "@/lib/api/org-roles";
 
-export default async function TeamPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function TeamPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const caps = await fetchMyCapabilities();
 
@@ -32,7 +28,7 @@ export default async function TeamPage({
     <div className="space-y-8">
       {/* Page header */}
       <div className="flex items-center gap-3">
-        <h1 className="flex items-center gap-2 font-display text-3xl text-slate-950 dark:text-slate-50">
+        <h1 className="font-display flex items-center gap-2 text-3xl text-slate-950 dark:text-slate-50">
           Team
           <HelpTip code="team.overview" docsPath="/admin/team-permissions" />
         </h1>

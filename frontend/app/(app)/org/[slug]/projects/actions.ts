@@ -11,7 +11,7 @@ import { createMessages } from "@/lib/messages";
 const PROJECT_PRIORITIES = ["LOW", "MEDIUM", "HIGH"] as const;
 
 function parseProjectPriority(
-  raw: string | undefined,
+  raw: string | undefined
 ): CreateProjectRequest["priority"] | undefined {
   if (!raw) return undefined;
   return (PROJECT_PRIORITIES as readonly string[]).includes(raw)
@@ -75,12 +75,11 @@ export async function updateProject(
   const name = formData.get("name")?.toString().trim() ?? "";
   const description = formData.get("description")?.toString().trim() || undefined;
   const customerIdRaw = formData.get("customerId")?.toString().trim();
-  const customerId = customerIdRaw === "" ? null : customerIdRaw ?? undefined;
+  const customerId = customerIdRaw === "" ? null : (customerIdRaw ?? undefined);
   const dueDateRaw = formData.get("dueDate")?.toString().trim();
-  const dueDate = dueDateRaw === "" ? null : dueDateRaw ?? undefined;
+  const dueDate = dueDateRaw === "" ? null : (dueDateRaw ?? undefined);
   const referenceNumberRaw = formData.get("referenceNumber")?.toString().trim();
-  const referenceNumber =
-    referenceNumberRaw === "" ? null : referenceNumberRaw ?? undefined;
+  const referenceNumber = referenceNumberRaw === "" ? null : (referenceNumberRaw ?? undefined);
   const priorityRaw = formData.get("priority")?.toString().trim();
   let priority: UpdateProjectRequest["priority"];
   if (priorityRaw === "" || priorityRaw === undefined) {
@@ -93,7 +92,7 @@ export async function updateProject(
     priority = parsedPriority;
   }
   const workTypeRaw = formData.get("workType")?.toString().trim();
-  const workType = workTypeRaw === "" ? null : workTypeRaw ?? undefined;
+  const workType = workTypeRaw === "" ? null : (workTypeRaw ?? undefined);
 
   if (!name) {
     return { success: false, error: "Project name is required." };
@@ -176,10 +175,7 @@ export async function completeProject(
   return { success: true };
 }
 
-export async function archiveProject(
-  slug: string,
-  projectId: string
-): Promise<ActionResult> {
+export async function archiveProject(slug: string, projectId: string): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can archive projects." };
@@ -202,10 +198,7 @@ export async function archiveProject(
   return { success: true };
 }
 
-export async function reopenProject(
-  slug: string,
-  projectId: string
-): Promise<ActionResult> {
+export async function reopenProject(slug: string, projectId: string): Promise<ActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can reopen projects." };

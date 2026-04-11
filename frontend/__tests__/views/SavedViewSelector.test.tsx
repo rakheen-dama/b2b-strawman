@@ -64,7 +64,7 @@ describe("SavedViewSelector", () => {
         currentViewId={null}
         onViewChange={mockOnViewChange}
         canCreate={false}
-      />,
+      />
     );
 
     expect(screen.getByText("All")).toBeInTheDocument();
@@ -81,7 +81,7 @@ describe("SavedViewSelector", () => {
         currentViewId={null}
         onViewChange={mockOnViewChange}
         canCreate={false}
-      />,
+      />
     );
 
     // shared views have "(shared)" text
@@ -97,7 +97,7 @@ describe("SavedViewSelector", () => {
         currentViewId="view-2"
         onViewChange={mockOnViewChange}
         canCreate={false}
-      />,
+      />
     );
 
     // The "VIP Clients" tab should be the active one
@@ -119,7 +119,7 @@ describe("SavedViewSelector", () => {
         currentViewId="view-1"
         onViewChange={mockOnViewChange}
         canCreate={false}
-      />,
+      />
     );
 
     await user.click(screen.getByText("All"));
@@ -137,7 +137,7 @@ describe("SavedViewSelector", () => {
         currentViewId={null}
         onViewChange={mockOnViewChange}
         canCreate={false}
-      />,
+      />
     );
 
     await user.click(screen.getByText("My Queue"));
@@ -153,7 +153,7 @@ describe("SavedViewSelector", () => {
         currentViewId={null}
         onViewChange={mockOnViewChange}
         canCreate={false}
-      />,
+      />
     );
 
     expect(screen.queryByText("Save View")).not.toBeInTheDocument();
@@ -170,7 +170,7 @@ describe("SavedViewSelector", () => {
         onViewChange={mockOnViewChange}
         canCreate={true}
         onCreateClick={mockOnCreateClick}
-      />,
+      />
     );
 
     expect(screen.getByText("Save View")).toBeInTheDocument();

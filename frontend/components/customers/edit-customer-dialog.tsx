@@ -25,10 +25,7 @@ import {
 } from "@/components/ui/form";
 import { updateCustomer } from "@/app/(app)/org/[slug]/customers/actions";
 import type { Customer, CustomerType } from "@/lib/types";
-import {
-  editCustomerSchema,
-  type EditCustomerFormData,
-} from "@/lib/schemas/customer";
+import { editCustomerSchema, type EditCustomerFormData } from "@/lib/schemas/customer";
 import { COUNTRIES } from "@/lib/constants/countries";
 import { ENTITY_TYPES } from "@/lib/constants/entity-types";
 import { nativeSelectClassName } from "@/lib/styles/native-select";
@@ -157,10 +154,7 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Type{" "}
-                    <span className="font-normal text-muted-foreground">
-                      (not editable)
-                    </span>
+                    Type <span className="text-muted-foreground font-normal">(not editable)</span>
                   </FormLabel>
                   <FormControl>
                     <select
@@ -199,7 +193,7 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Phone <span className="font-normal text-muted-foreground">(optional)</span>
+                    Phone <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
                     <Input type="tel" maxLength={50} {...field} />
@@ -214,7 +208,7 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    ID Number <span className="font-normal text-muted-foreground">(optional)</span>
+                    ID Number <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
                     <Input maxLength={100} {...field} />
@@ -229,7 +223,7 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Notes <span className="font-normal text-muted-foreground">(optional)</span>
+                    Notes <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
                     <Textarea maxLength={2000} rows={3} {...field} />
@@ -241,7 +235,7 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
 
             {/* Address Section */}
             <div className="border-t pt-4">
-              <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              <h3 className="mb-3 text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
                 Address
               </h3>
               <div className="space-y-4">
@@ -252,7 +246,7 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
                     <FormItem>
                       <FormLabel>
                         Address Line 1{" "}
-                        <span className="font-normal text-muted-foreground">(optional)</span>
+                        <span className="text-muted-foreground font-normal">(optional)</span>
                       </FormLabel>
                       <FormControl>
                         <Input maxLength={255} {...field} />
@@ -268,7 +262,7 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
                     <FormItem>
                       <FormLabel>
                         Address Line 2{" "}
-                        <span className="font-normal text-muted-foreground">(optional)</span>
+                        <span className="text-muted-foreground font-normal">(optional)</span>
                       </FormLabel>
                       <FormControl>
                         <Input maxLength={255} {...field} />
@@ -332,12 +326,9 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
                             className={nativeSelectClassName}
                           >
                             <option value="">Select country…</option>
-                            {field.value &&
-                              !COUNTRIES.find((c) => c.code === field.value) && (
-                                <option value={field.value}>
-                                  {field.value} (legacy)
-                                </option>
-                              )}
+                            {field.value && !COUNTRIES.find((c) => c.code === field.value) && (
+                              <option value={field.value}>{field.value} (legacy)</option>
+                            )}
                             {COUNTRIES.map((c) => (
                               <option key={c.code} value={c.code}>
                                 {c.name} ({c.code})
@@ -355,7 +346,7 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
 
             {/* Contact Section */}
             <div className="border-t pt-4">
-              <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              <h3 className="mb-3 text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
                 Contact
               </h3>
               <div className="space-y-4">
@@ -403,7 +394,7 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
 
             {/* Business Details Section */}
             <div className="border-t pt-4">
-              <h3 className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-slate-400">
+              <h3 className="mb-3 text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
                 Business Details
               </h3>
               <div className="space-y-4">
@@ -446,12 +437,9 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
                           className={nativeSelectClassName}
                         >
                           <option value="">Select entity type…</option>
-                          {field.value &&
-                            !ENTITY_TYPES.find((et) => et.value === field.value) && (
-                              <option value={field.value}>
-                                {field.value} (legacy)
-                              </option>
-                            )}
+                          {field.value && !ENTITY_TYPES.find((et) => et.value === field.value) && (
+                            <option value={field.value}>{field.value} (legacy)</option>
+                          )}
                           {ENTITY_TYPES.map((et) => (
                             <option key={et.value} value={et.value}>
                               {et.label}
@@ -479,7 +467,7 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
               </div>
             </div>
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
             <DialogFooter>
               <Button
                 type="button"

@@ -9,46 +9,32 @@ import type {
   CompletenessScore,
 } from "@/lib/types";
 
-export async function fetchProjectSetupStatus(
-  projectId: string,
-): Promise<ProjectSetupStatus> {
-  return api.get<ProjectSetupStatus>(
-    `/api/projects/${projectId}/setup-status`,
-  );
+export async function fetchProjectSetupStatus(projectId: string): Promise<ProjectSetupStatus> {
+  return api.get<ProjectSetupStatus>(`/api/projects/${projectId}/setup-status`);
 }
 
-export async function fetchCustomerReadiness(
-  customerId: string,
-): Promise<CustomerReadiness> {
-  return api.get<CustomerReadiness>(
-    `/api/customers/${customerId}/readiness`,
-  );
+export async function fetchCustomerReadiness(customerId: string): Promise<CustomerReadiness> {
+  return api.get<CustomerReadiness>(`/api/customers/${customerId}/readiness`);
 }
 
-export async function fetchProjectUnbilledSummary(
-  projectId: string,
-): Promise<UnbilledTimeSummary> {
-  return api.get<UnbilledTimeSummary>(
-    `/api/projects/${projectId}/unbilled-summary`,
-  );
+export async function fetchProjectUnbilledSummary(projectId: string): Promise<UnbilledTimeSummary> {
+  return api.get<UnbilledTimeSummary>(`/api/projects/${projectId}/unbilled-summary`);
 }
 
 export async function fetchCustomerUnbilledSummary(
-  customerId: string,
+  customerId: string
 ): Promise<UnbilledTimeSummary> {
-  return api.get<UnbilledTimeSummary>(
-    `/api/customers/${customerId}/unbilled-summary`,
-  );
+  return api.get<UnbilledTimeSummary>(`/api/customers/${customerId}/unbilled-summary`);
 }
 
 export async function fetchCompletenessScore(
-  customerId: string,
+  customerId: string
 ): Promise<CompletenessScore | null> {
   try {
     const params = new URLSearchParams();
     params.append("customerIds", customerId);
     const result = await api.get<Record<string, CompletenessScore>>(
-      `/api/customers/completeness-summary?${params.toString()}`,
+      `/api/customers/completeness-summary?${params.toString()}`
     );
     return result[customerId] ?? null;
   } catch {
@@ -58,9 +44,9 @@ export async function fetchCompletenessScore(
 
 export async function fetchTemplateReadiness(
   entityType: "PROJECT" | "CUSTOMER",
-  entityId: string,
+  entityId: string
 ): Promise<TemplateReadiness[]> {
   return api.get<TemplateReadiness[]>(
-    `/api/templates/readiness?entityType=${encodeURIComponent(entityType)}&entityId=${encodeURIComponent(entityId)}`,
+    `/api/templates/readiness?entityType=${encodeURIComponent(entityType)}&entityId=${encodeURIComponent(entityId)}`
   );
 }

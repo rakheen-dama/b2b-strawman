@@ -8,10 +8,7 @@ export type PrerequisiteContext =
   | "DOCUMENT_GENERATION"
   | "PROJECT_CREATION";
 
-export const PREREQUISITE_CONTEXT_LABELS: Record<
-  PrerequisiteContext,
-  string
-> = {
+export const PREREQUISITE_CONTEXT_LABELS: Record<PrerequisiteContext, string> = {
   LIFECYCLE_ACTIVATION: "Customer Activation",
   INVOICE_GENERATION: "Invoice Generation",
   PROPOSAL_SEND: "Proposal Sending",

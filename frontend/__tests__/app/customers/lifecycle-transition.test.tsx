@@ -73,7 +73,7 @@ describe("LifecycleTransitionDropdown — prerequisite integration", () => {
           customerId="cust-1"
           slug="test-org"
         />
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     // Open the dropdown
@@ -84,25 +84,15 @@ describe("LifecycleTransitionDropdown — prerequisite integration", () => {
 
     // Should have called prerequisite check
     await waitFor(() => {
-      expect(mockCheckPrereqs).toHaveBeenCalledWith(
-        "LIFECYCLE_ACTIVATION",
-        "CUSTOMER",
-        "cust-1",
-      );
+      expect(mockCheckPrereqs).toHaveBeenCalledWith("LIFECYCLE_ACTIVATION", "CUSTOMER", "cust-1");
     });
 
     // PrerequisiteModal should be shown with violations
     await waitFor(() => {
-      expect(
-        screen.getByText("Prerequisites: Customer Activation"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Prerequisites: Customer Activation")).toBeInTheDocument();
     });
-    expect(
-      screen.getByText("VAT number is required for activation"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("A portal contact must be assigned"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("VAT number is required for activation")).toBeInTheDocument();
+    expect(screen.getByText("A portal contact must be assigned")).toBeInTheDocument();
   });
 
   it("opens TransitionConfirmDialog directly when prerequisites are met", async () => {
@@ -116,18 +106,14 @@ describe("LifecycleTransitionDropdown — prerequisite integration", () => {
           customerId="cust-1"
           slug="test-org"
         />
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     await user.click(screen.getByRole("button", { name: /change status/i }));
     await user.click(screen.getByRole("menuitem", { name: /activate/i }));
 
     await waitFor(() => {
-      expect(mockCheckPrereqs).toHaveBeenCalledWith(
-        "LIFECYCLE_ACTIVATION",
-        "CUSTOMER",
-        "cust-1",
-      );
+      expect(mockCheckPrereqs).toHaveBeenCalledWith("LIFECYCLE_ACTIVATION", "CUSTOMER", "cust-1");
     });
 
     // TransitionConfirmDialog should be shown (not PrerequisiteModal)
@@ -135,9 +121,7 @@ describe("LifecycleTransitionDropdown — prerequisite integration", () => {
       expect(screen.getByText("Activate Customer")).toBeInTheDocument();
     });
     // Should NOT show prerequisite modal
-    expect(
-      screen.queryByText("Prerequisites: Customer Activation"),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText("Prerequisites: Customer Activation")).not.toBeInTheDocument();
   });
 
   it("opens PrerequisiteModal when backend returns 422 during transition", async () => {
@@ -159,7 +143,7 @@ describe("LifecycleTransitionDropdown — prerequisite integration", () => {
           customerId="cust-1"
           slug="test-org"
         />
-      </TerminologyProvider>,
+      </TerminologyProvider>
     );
 
     await user.click(screen.getByRole("button", { name: /change status/i }));
@@ -175,9 +159,7 @@ describe("LifecycleTransitionDropdown — prerequisite integration", () => {
 
     // Backend returned 422 — should switch to PrerequisiteModal
     await waitFor(() => {
-      expect(
-        screen.getByText("Prerequisites: Customer Activation"),
-      ).toBeInTheDocument();
+      expect(screen.getByText("Prerequisites: Customer Activation")).toBeInTheDocument();
     });
   });
 });
@@ -197,16 +179,12 @@ describe("SetupProgressCard — activation blockers", () => {
           "VAT number is required for activation",
           "A portal contact must be assigned",
         ]}
-      />,
+      />
     );
 
     expect(screen.getByText("Blocking activation")).toBeInTheDocument();
-    expect(
-      screen.getByText("VAT number is required for activation"),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("A portal contact must be assigned"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("VAT number is required for activation")).toBeInTheDocument();
+    expect(screen.getByText("A portal contact must be assigned")).toBeInTheDocument();
   });
 
   it("does not display blocker section when no blockers", () => {
@@ -216,7 +194,7 @@ describe("SetupProgressCard — activation blockers", () => {
         completionPercentage={100}
         overallComplete={false}
         steps={[{ label: "Projects linked", complete: true }]}
-      />,
+      />
     );
 
     expect(screen.queryByText("Blocking activation")).not.toBeInTheDocument();

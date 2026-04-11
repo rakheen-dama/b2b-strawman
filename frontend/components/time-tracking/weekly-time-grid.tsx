@@ -74,14 +74,12 @@ function cellKey(taskId: string, dayIndex: number): CellKey {
 
 function buildCellValuesFromEntries(
   entries: MyWorkTimeEntryItem[],
-  monday: Date,
+  monday: Date
 ): Record<CellKey, number> {
   const values: Record<CellKey, number> = {};
   for (const entry of entries) {
     const entryDate = parseIsoDate(entry.date);
-    const diff = Math.round(
-      (entryDate.getTime() - monday.getTime()) / 86400000,
-    );
+    const diff = Math.round((entryDate.getTime() - monday.getTime()) / 86400000);
     if (diff >= 0 && diff <= 6) {
       const key = cellKey(entry.taskId, diff);
       values[key] = (values[key] ?? 0) + entry.durationMinutes / 60;
@@ -119,11 +117,9 @@ export function WeeklyTimeGrid({
   slug,
 }: WeeklyTimeGridProps) {
   const [taskRows, setTaskRows] = useState<GridTaskRow[]>(initialTasks);
-  const [weekStart, setWeekStart] = useState(() =>
-    parseIsoDate(initialWeekStart),
-  );
+  const [weekStart, setWeekStart] = useState(() => parseIsoDate(initialWeekStart));
   const [cellValues, setCellValues] = useState<Record<CellKey, number>>(() =>
-    buildCellValuesFromEntries(existingEntries, parseIsoDate(initialWeekStart)),
+    buildCellValuesFromEntries(existingEntries, parseIsoDate(initialWeekStart))
   );
   const [cellErrors, setCellErrors] = useState<Record<CellKey, string>>({});
   const [dirty, setDirty] = useState(false);
@@ -143,23 +139,14 @@ export function WeeklyTimeGrid({
   }
 
   function rowTotal(taskId: string): number {
-    return DAYS.reduce<number>(
-      (sum, d) => sum + (cellValues[cellKey(taskId, d)] ?? 0),
-      0,
-    );
+    return DAYS.reduce<number>((sum, d) => sum + (cellValues[cellKey(taskId, d)] ?? 0), 0);
   }
 
   function columnTotal(dayIndex: number): number {
-    return taskRows.reduce(
-      (sum, t) => sum + (cellValues[cellKey(t.id, dayIndex)] ?? 0),
-      0,
-    );
+    return taskRows.reduce((sum, t) => sum + (cellValues[cellKey(t.id, dayIndex)] ?? 0), 0);
   }
 
-  const grandTotal = DAYS.reduce<number>(
-    (sum, d) => sum + columnTotal(d),
-    0,
-  );
+  const grandTotal = DAYS.reduce<number>((sum, d) => sum + columnTotal(d), 0);
 
   function navigateWeek(direction: -1 | 1) {
     if (dirty && !confirm("You have unsaved changes. Discard?")) return;
@@ -229,13 +216,11 @@ export function WeeklyTimeGrid({
 
       if (result.totalErrors === 0) {
         toast.success(
-          `Saved ${result.totalCreated} ${result.totalCreated === 1 ? "entry" : "entries"}`,
+          `Saved ${result.totalCreated} ${result.totalCreated === 1 ? "entry" : "entries"}`
         );
         setDirty(false);
       } else if (result.totalCreated > 0) {
-        toast.warning(
-          `Saved ${result.totalCreated} entries, ${result.totalErrors} failed`,
-        );
+        toast.warning(`Saved ${result.totalCreated} entries, ${result.totalErrors} failed`);
         const newCellErrors = mapErrorsToCells(result.errors, batchEntries);
         setCellErrors(newCellErrors);
       } else {
@@ -250,16 +235,14 @@ export function WeeklyTimeGrid({
 
   function mapErrorsToCells(
     errors: Array<{ index: number; taskId: string; message: string }>,
-    batchEntries: Array<{ taskId: string; date: string }>,
+    batchEntries: Array<{ taskId: string; date: string }>
   ): Record<CellKey, string> {
     const newCellErrors: Record<CellKey, string> = {};
     for (const err of errors) {
       const original = batchEntries[err.index];
       if (original) {
         const entryDate = parseIsoDate(original.date);
-        const diff = Math.round(
-          (entryDate.getTime() - weekStart.getTime()) / 86400000,
-        );
+        const diff = Math.round((entryDate.getTime() - weekStart.getTime()) / 86400000);
         if (diff >= 0 && diff <= 6) {
           newCellErrors[cellKey(original.taskId, diff)] = err.message;
         }
@@ -274,7 +257,7 @@ export function WeeklyTimeGrid({
       !taskRows.some((r) => r.id === t.id) &&
       (addTaskQuery === "" ||
         t.title.toLowerCase().includes(addTaskQuery.toLowerCase()) ||
-        t.projectName.toLowerCase().includes(addTaskQuery.toLowerCase())),
+        t.projectName.toLowerCase().includes(addTaskQuery.toLowerCase()))
   );
 
   function addTask(task: GridTaskRow) {
@@ -291,7 +274,7 @@ export function WeeklyTimeGrid({
     if (hasData) {
       if (
         !confirm(
-          "Current week has data. Copy previous week will overwrite existing entries. Continue?",
+          "Current week has data. Copy previous week will overwrite existing entries. Continue?"
         )
       ) {
         return;
@@ -341,10 +324,7 @@ export function WeeklyTimeGrid({
       }
 
       // Build cell values from shifted entries
-      const newCellValues = buildCellValuesFromEntries(
-        shiftedEntries,
-        weekStart,
-      );
+      const newCellValues = buildCellValuesFromEntries(shiftedEntries, weekStart);
       setCellValues(newCellValues);
       setCellErrors({});
       setDirty(true);
@@ -365,7 +345,7 @@ export function WeeklyTimeGrid({
       hours: number;
       description: string;
       billable: boolean;
-    }>,
+    }>
   ) {
     if (rows.length === 0) return;
 
@@ -382,9 +362,7 @@ export function WeeklyTimeGrid({
     const skippedCount = totalRows - inWeekRows.length;
 
     if (inWeekRows.length === 0) {
-      toast.warning(
-        `No entries fell within the current week (${totalRows} outside range)`,
-      );
+      toast.warning(`No entries fell within the current week (${totalRows} outside range)`);
       return;
     }
 
@@ -416,10 +394,7 @@ export function WeeklyTimeGrid({
       description: row.description || null,
     }));
 
-    const importedCellValues = buildCellValuesFromEntries(
-      importedEntries,
-      weekStart,
-    );
+    const importedCellValues = buildCellValuesFromEntries(importedEntries, weekStart);
 
     // Merge with existing cell values (imported values overwrite)
     setCellValues((prev) => ({ ...prev, ...importedCellValues }));
@@ -428,7 +403,7 @@ export function WeeklyTimeGrid({
 
     if (skippedCount > 0) {
       toast.warning(
-        `Imported ${inWeekRows.length} of ${totalRows} entries (${skippedCount} outside current week)`,
+        `Imported ${inWeekRows.length} of ${totalRows} entries (${skippedCount} outside current week)`
       );
     } else {
       toast.success(`Imported ${inWeekRows.length} entries from CSV`);
@@ -463,12 +438,7 @@ export function WeeklyTimeGrid({
           >
             <ChevronRight className="size-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={goToThisWeek}
-            disabled={isNavigating}
-          >
+          <Button variant="ghost" size="sm" onClick={goToThisWeek} disabled={isNavigating}>
             This Week
           </Button>
         </div>
@@ -482,19 +452,13 @@ export function WeeklyTimeGrid({
             <Copy className="mr-1.5 size-3.5" />
             {isCopying ? "Copying..." : "Copy Previous Week"}
           </Button>
-          <CsvImportDialog
-            availableTasks={allTasks}
-            onImport={handleCsvImport}
-          >
+          <CsvImportDialog availableTasks={allTasks} onImport={handleCsvImport}>
             <Button variant="outline" size="sm">
               <Upload className="mr-1.5 size-3.5" />
               Import CSV
             </Button>
           </CsvImportDialog>
-          <Button
-            onClick={handleSave}
-            disabled={!dirty || isSaving || isNavigating}
-          >
+          <Button onClick={handleSave} disabled={!dirty || isSaving || isNavigating}>
             {isSaving ? "Saving..." : "Save"}
           </Button>
         </div>
@@ -505,28 +469,25 @@ export function WeeklyTimeGrid({
         <Table>
           <TableHeader>
             <TableRow className="border-slate-200 hover:bg-transparent dark:border-slate-800">
-              <TableHead className="min-w-[200px] text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <TableHead className="min-w-[200px] text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Task
               </TableHead>
               {DAYS.map((d) => (
                 <TableHead
                   key={d}
-                  className="w-16 text-center text-xs uppercase tracking-wide text-slate-600 dark:text-slate-400"
+                  className="w-16 text-center text-xs tracking-wide text-slate-600 uppercase dark:text-slate-400"
                 >
                   {formatDayHeader(weekStart, d)}
                 </TableHead>
               ))}
-              <TableHead className="w-16 text-center text-xs font-semibold uppercase tracking-wide text-slate-700 dark:text-slate-300">
+              <TableHead className="w-16 text-center text-xs font-semibold tracking-wide text-slate-700 uppercase dark:text-slate-300">
                 Total
               </TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {taskRows.map((task) => (
-              <TableRow
-                key={task.id}
-                className="border-slate-100 dark:border-slate-800/50"
-              >
+              <TableRow key={task.id} className="border-slate-100 dark:border-slate-800/50">
                 <TableCell>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-slate-950 dark:text-slate-50">
@@ -554,9 +515,7 @@ export function WeeklyTimeGrid({
                   );
                 })}
                 <TableCell className="text-center text-sm font-medium text-slate-700 dark:text-slate-300">
-                  {rowTotal(task.id) > 0
-                    ? `${rowTotal(task.id)}h`
-                    : "\u2014"}
+                  {rowTotal(task.id) > 0 ? `${rowTotal(task.id)}h` : "\u2014"}
                 </TableCell>
               </TableRow>
             ))}
@@ -591,7 +550,7 @@ export function WeeklyTimeGrid({
           onChange={(e) => setAddTaskQuery(e.target.value)}
           className={cn(
             "w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm",
-            "focus:outline-none focus:ring-2 focus:ring-slate-400 dark:border-slate-700 dark:bg-slate-950",
+            "focus:ring-2 focus:ring-slate-400 focus:outline-none dark:border-slate-700 dark:bg-slate-950"
           )}
         />
         {addTaskQuery.length > 0 && availableToAdd.length > 0 && (
@@ -602,7 +561,7 @@ export function WeeklyTimeGrid({
                 type="button"
                 onClick={() => addTask(task)}
                 className={cn(
-                  "flex w-full flex-col px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800",
+                  "flex w-full flex-col px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800"
                 )}
               >
                 <span className="text-sm font-medium text-slate-900 dark:text-slate-100">

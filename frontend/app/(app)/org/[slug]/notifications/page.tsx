@@ -2,11 +2,7 @@ import { fetchNotifications } from "@/lib/actions/notifications";
 import { NotificationsPageClient } from "@/components/notifications/notifications-page-client";
 import type { NotificationsResponse } from "@/lib/actions/notifications";
 
-export default async function NotificationsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function NotificationsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
   let initialNotifications: NotificationsResponse = {
@@ -26,9 +22,7 @@ export default async function NotificationsPage({
 
   return (
     <div className="space-y-8">
-      <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-        Notifications
-      </h1>
+      <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Notifications</h1>
 
       <NotificationsPageClient
         initialNotifications={initialNotifications.content}

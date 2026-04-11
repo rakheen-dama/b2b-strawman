@@ -21,8 +21,7 @@ describe("parseSseEvents", () => {
   });
 
   it("returns partial chunk as remainder when buffer ends mid-event", () => {
-    const buffer =
-      'event: text_delta\ndata: {"text":"Hello"}\n\nevent: usage\ndata: {"input';
+    const buffer = 'event: text_delta\ndata: {"text":"Hello"}\n\nevent: usage\ndata: {"input';
 
     const { parsed, remainder } = parseSseEvents(buffer);
 

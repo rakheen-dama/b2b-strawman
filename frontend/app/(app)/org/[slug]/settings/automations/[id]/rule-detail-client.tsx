@@ -5,12 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -156,9 +151,7 @@ export function RuleDetailClient({ slug, rule, initialExecutions }: RuleDetailCl
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-3">
-            <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-              {rule.name}
-            </h1>
+            <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">{rule.name}</h1>
             <Switch
               checked={rule.enabled}
               size="sm"
@@ -204,19 +197,11 @@ export function RuleDetailClient({ slug, rule, initialExecutions }: RuleDetailCl
         </TabsList>
 
         <TabsContent value="configuration" className="mt-6">
-          <RuleForm
-            rule={rule}
-            onSave={handleSave}
-            onCancel={handleCancel}
-            isSaving={isSaving}
-          />
+          <RuleForm rule={rule} onSave={handleSave} onCancel={handleCancel} isSaving={isSaving} />
         </TabsContent>
 
         <TabsContent value="execution-log" className="mt-6">
-          <ExecutionLog
-            initialExecutions={initialExecutions}
-            ruleId={rule.id}
-          />
+          <ExecutionLog initialExecutions={initialExecutions} ruleId={rule.id} />
         </TabsContent>
       </Tabs>
     </div>

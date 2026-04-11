@@ -75,14 +75,14 @@ describe("ErrorBoundary", () => {
     render(
       <ErrorBoundary>
         <ThrowingComponent />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
 
     expect(screen.getByText("Something went wrong")).toBeInTheDocument();
     expect(
       screen.getByText(
-        "An unexpected error occurred while loading this page. Try refreshing, or go back and try again.",
-      ),
+        "An unexpected error occurred while loading this page. Try refreshing, or go back and try again."
+      )
     ).toBeInTheDocument();
 
     spy.mockRestore();
@@ -104,7 +104,7 @@ describe("ErrorBoundary", () => {
     render(
       <ErrorBoundary>
         <ConditionalThrow />
-      </ErrorBoundary>,
+      </ErrorBoundary>
     );
 
     expect(screen.getByText("Something went wrong")).toBeInTheDocument();

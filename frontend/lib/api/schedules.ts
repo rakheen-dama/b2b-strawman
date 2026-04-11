@@ -80,9 +80,7 @@ export interface ListSchedulesParams {
 
 // ---- API Functions ----
 
-export async function getSchedules(
-  params?: ListSchedulesParams,
-): Promise<ScheduleResponse[]> {
+export async function getSchedules(params?: ListSchedulesParams): Promise<ScheduleResponse[]> {
   const qs = new URLSearchParams();
   if (params?.status) qs.set("status", params.status);
   if (params?.customerId) qs.set("customerId", params.customerId);
@@ -95,15 +93,13 @@ export async function getSchedule(id: string): Promise<ScheduleResponse> {
   return api.get<ScheduleResponse>(`/api/schedules/${id}`);
 }
 
-export async function createSchedule(
-  data: CreateScheduleRequest,
-): Promise<ScheduleResponse> {
+export async function createSchedule(data: CreateScheduleRequest): Promise<ScheduleResponse> {
   return api.post<ScheduleResponse>("/api/schedules", data);
 }
 
 export async function updateSchedule(
   id: string,
-  data: UpdateScheduleRequest,
+  data: UpdateScheduleRequest
 ): Promise<ScheduleResponse> {
   return api.put<ScheduleResponse>(`/api/schedules/${id}`, data);
 }
@@ -120,8 +116,6 @@ export async function resumeSchedule(id: string): Promise<ScheduleResponse> {
   return api.post<ScheduleResponse>(`/api/schedules/${id}/resume`);
 }
 
-export async function getExecutions(
-  scheduleId: string,
-): Promise<ScheduleExecutionResponse[]> {
+export async function getExecutions(scheduleId: string): Promise<ScheduleExecutionResponse[]> {
   return api.get<ScheduleExecutionResponse[]>(`/api/schedules/${scheduleId}/executions`);
 }

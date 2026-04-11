@@ -43,27 +43,21 @@ vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
 }));
 
-vi.mock(
-  "@/app/(app)/org/[slug]/trust-accounting/transactions/actions",
-  () => ({
-    fetchTransactions: vi.fn().mockResolvedValue({ content: [] }),
-    recordDeposit: vi.fn(),
-    recordPayment: vi.fn(),
-    recordFeeTransfer: vi.fn(),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/trust-accounting/transactions/actions", () => ({
+  fetchTransactions: vi.fn().mockResolvedValue({ content: [] }),
+  recordDeposit: vi.fn(),
+  recordPayment: vi.fn(),
+  recordFeeTransfer: vi.fn(),
+}));
 
 vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
   fetchTrustAccounts: vi.fn().mockResolvedValue([]),
 }));
 
-vi.mock(
-  "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions",
-  () => ({
-    fetchClientLedger: vi.fn().mockResolvedValue(null),
-    fetchClientHistory: vi.fn().mockResolvedValue({ content: [] }),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions", () => ({
+  fetchClientLedger: vi.fn().mockResolvedValue(null),
+  fetchClientHistory: vi.fn().mockResolvedValue({ content: [] }),
+}));
 
 // --- Imports after mocks ---
 
@@ -73,12 +67,7 @@ import { TerminologyProvider } from "@/lib/terminology";
 import { ModuleGate } from "@/components/module-gate";
 import { TrustBalanceCard } from "@/components/customers/trust-balance-card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Scale, Gavel } from "lucide-react";
 
 afterEach(() => cleanup());
@@ -93,10 +82,7 @@ beforeEach(() => {
 });
 
 // -- Helper: renders content inside OrgProfileProvider with given modules --
-function renderWithModules(
-  enabledModules: string[],
-  ui: React.ReactNode,
-) {
+function renderWithModules(enabledModules: string[], ui: React.ReactNode) {
   return render(
     <OrgProfileProvider
       verticalProfile="legal-za"
@@ -104,13 +90,14 @@ function renderWithModules(
       terminologyNamespace="en-ZA-legal"
     >
       {ui}
-    </OrgProfileProvider>,
+    </OrgProfileProvider>
   );
 }
 
 describe("Stub pages — trust accounting", () => {
   it("renders Coming Soon badge and description when trust_accounting module is enabled", () => {
-    renderWithModules(["trust_accounting"], (
+    renderWithModules(
+      ["trust_accounting"],
       <ModuleGate module="trust_accounting">
         <Card>
           <CardHeader>
@@ -120,13 +107,13 @@ describe("Stub pages — trust accounting", () => {
               <Badge variant="neutral">Coming Soon</Badge>
             </div>
             <CardDescription>
-              Manage client trust accounts, track deposits and withdrawals, and
-              generate trust accounting reports in compliance with LSSA requirements.
+              Manage client trust accounts, track deposits and withdrawals, and generate trust
+              accounting reports in compliance with LSSA requirements.
             </CardDescription>
           </CardHeader>
         </Card>
       </ModuleGate>
-    ));
+    );
 
     expect(screen.getByText("Coming Soon")).toBeInTheDocument();
     expect(screen.getByText("Trust Accounting")).toBeInTheDocument();
@@ -136,7 +123,8 @@ describe("Stub pages — trust accounting", () => {
 
 describe("Stub pages — court calendar", () => {
   it("renders Coming Soon badge and description when court_calendar module is enabled", () => {
-    renderWithModules(["court_calendar"], (
+    renderWithModules(
+      ["court_calendar"],
       <ModuleGate module="court_calendar">
         <Card>
           <CardHeader>
@@ -151,7 +139,7 @@ describe("Stub pages — court calendar", () => {
           </CardHeader>
         </Card>
       </ModuleGate>
-    ));
+    );
 
     expect(screen.getByText("Coming Soon")).toBeInTheDocument();
     expect(screen.getByText("Court Calendar")).toBeInTheDocument();
@@ -176,7 +164,8 @@ describe("Conditional trust balance card", () => {
 
 describe("Conditional conflict check section", () => {
   it("renders conflict check section when conflict_check module is enabled", () => {
-    renderWithModules(["conflict_check"], (
+    renderWithModules(
+      ["conflict_check"],
       <ModuleGate module="conflict_check">
         <div>
           <p>Conflict Check</p>
@@ -185,7 +174,7 @@ describe("Conditional conflict check section", () => {
           <button disabled>Run Conflict Check</button>
         </div>
       </ModuleGate>
-    ));
+    );
 
     expect(screen.getByText("Conflict Check")).toBeInTheDocument();
     expect(screen.getByText("Coming Soon")).toBeInTheDocument();
@@ -194,14 +183,15 @@ describe("Conditional conflict check section", () => {
   });
 
   it("does NOT render conflict check section when conflict_check module is disabled", () => {
-    renderWithModules([], (
+    renderWithModules(
+      [],
       <ModuleGate module="conflict_check">
         <div>
           <p>Conflict Check</p>
           <button disabled>Run Conflict Check</button>
         </div>
       </ModuleGate>
-    ));
+    );
 
     expect(screen.queryByText("Conflict Check")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Run Conflict Check" })).not.toBeInTheDocument();
@@ -221,7 +211,7 @@ describe("372B: trust balance card under legal-za profile context", () => {
         <TerminologyProvider verticalProfile="legal-za">
           <TrustBalanceCard customerId="cust-1" slug="acme" />
         </TerminologyProvider>
-      </OrgProfileProvider>,
+      </OrgProfileProvider>
     );
 
     expect(screen.getByText("Trust Balance")).toBeInTheDocument();

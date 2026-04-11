@@ -33,14 +33,10 @@ interface ProposalTableProps {
 }
 
 export function ProposalTable({ proposals, slug, now }: ProposalTableProps) {
-  const [activeFilter, setActiveFilter] = useState<ProposalStatus | "ALL">(
-    "ALL",
-  );
+  const [activeFilter, setActiveFilter] = useState<ProposalStatus | "ALL">("ALL");
 
   const filtered =
-    activeFilter === "ALL"
-      ? proposals
-      : proposals.filter((p) => p.status === activeFilter);
+    activeFilter === "ALL" ? proposals : proposals.filter((p) => p.status === activeFilter);
 
   return (
     <div className="space-y-4">
@@ -73,19 +69,19 @@ export function ProposalTable({ proposals, slug, now }: ProposalTableProps) {
           <table className="w-full">
             <thead>
               <tr className="border-b border-slate-200 dark:border-slate-800">
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Title
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Number
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+                <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Status
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 sm:table-cell dark:text-slate-400">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                   Sent Date
                 </th>
-                <th className="hidden px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 lg:table-cell dark:text-slate-400">
+                <th className="hidden px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase lg:table-cell dark:text-slate-400">
                   Days Since Sent
                 </th>
               </tr>
@@ -94,10 +90,7 @@ export function ProposalTable({ proposals, slug, now }: ProposalTableProps) {
               {filtered.map((proposal) => {
                 const badge = STATUS_BADGE[proposal.status];
                 const daysSinceSent = proposal.sentAt
-                  ? Math.floor(
-                      (now - new Date(proposal.sentAt).getTime()) /
-                        (1000 * 60 * 60 * 24),
-                    )
+                  ? Math.floor((now - new Date(proposal.sentAt).getTime()) / (1000 * 60 * 60 * 24))
                   : null;
 
                 return (
@@ -120,9 +113,7 @@ export function ProposalTable({ proposals, slug, now }: ProposalTableProps) {
                       <Badge variant={badge.variant}>{badge.label}</Badge>
                     </td>
                     <td className="hidden px-4 py-3 text-sm text-slate-600 sm:table-cell dark:text-slate-400">
-                      {proposal.sentAt
-                        ? formatDate(proposal.sentAt)
-                        : "\u2014"}
+                      {proposal.sentAt ? formatDate(proposal.sentAt) : "\u2014"}
                     </td>
                     <td className="hidden px-4 py-3 text-sm text-slate-600 lg:table-cell dark:text-slate-400">
                       {daysSinceSent !== null ? `${daysSinceSent}` : "\u2014"}

@@ -45,9 +45,7 @@ export function ComplianceSettingsForm({
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-      <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-        General Settings
-      </h2>
+      <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">General Settings</h2>
       <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
         Configure dormancy detection and data request processing deadlines.
       </p>
@@ -101,9 +99,7 @@ export function ComplianceSettingsForm({
         {message && (
           <p
             className={`text-sm ${
-              isError
-                ? "text-red-600 dark:text-red-400"
-                : "text-green-600 dark:text-green-400"
+              isError ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
             }`}
           >
             {message}

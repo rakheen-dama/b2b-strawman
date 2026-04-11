@@ -16,8 +16,7 @@ vi.mock("@/app/(app)/org/[slug]/team/invitation-actions", () => ({
 }));
 
 vi.mock("@/lib/format", () => ({
-  formatDate: (d: string | Date) =>
-    typeof d === "string" ? d : new Date(d).toISOString(),
+  formatDate: (d: string | Date) => (typeof d === "string" ? d : new Date(d).toISOString()),
 }));
 
 // Must import after mocks and env stubs are set up

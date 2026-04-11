@@ -43,9 +43,7 @@ describe("TagsContent", () => {
   });
 
   it("renders tags in table", () => {
-    render(
-      <TagsContent slug="acme" tags={sampleTags} canManage={false} />,
-    );
+    render(<TagsContent slug="acme" tags={sampleTags} canManage={false} />);
 
     expect(screen.getByText("Urgent")).toBeInTheDocument();
     expect(screen.getByText("VIP")).toBeInTheDocument();
@@ -54,22 +52,14 @@ describe("TagsContent", () => {
   });
 
   it("admin sees Add Tag button", () => {
-    render(
-      <TagsContent slug="acme" tags={sampleTags} canManage={true} />,
-    );
+    render(<TagsContent slug="acme" tags={sampleTags} canManage={true} />);
 
-    expect(
-      screen.getAllByRole("button", { name: /Add Tag/i }).length,
-    ).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByRole("button", { name: /Add Tag/i }).length).toBeGreaterThanOrEqual(1);
   });
 
   it("member does not see Add Tag button", () => {
-    render(
-      <TagsContent slug="acme" tags={sampleTags} canManage={false} />,
-    );
+    render(<TagsContent slug="acme" tags={sampleTags} canManage={false} />);
 
-    expect(
-      screen.queryByRole("button", { name: /Add Tag/i }),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Add Tag/i })).not.toBeInTheDocument();
   });
 });

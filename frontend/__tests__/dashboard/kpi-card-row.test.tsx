@@ -42,9 +42,7 @@ const mockKpis: KpiResponse = {
 };
 
 function renderWithProvider(ui: React.ReactElement) {
-  return render(
-    <TerminologyProvider verticalProfile={null}>{ui}</TerminologyProvider>,
-  );
+  return render(<TerminologyProvider verticalProfile={null}>{ui}</TerminologyProvider>);
 }
 
 describe("KpiCardRow", () => {
@@ -53,9 +51,7 @@ describe("KpiCardRow", () => {
   });
 
   it("renders 5 cards for admin users", () => {
-    renderWithProvider(
-      <KpiCardRow kpis={mockKpis} isAdmin={true} orgSlug="acme" />
-    );
+    renderWithProvider(<KpiCardRow kpis={mockKpis} isAdmin={true} orgSlug="acme" />);
 
     expect(screen.getByText("Active Projects")).toBeInTheDocument();
     expect(screen.getByText("Hours Logged")).toBeInTheDocument();
@@ -65,9 +61,7 @@ describe("KpiCardRow", () => {
   });
 
   it("renders 3 cards for non-admin users (hides Billable % and Avg. Margin)", () => {
-    renderWithProvider(
-      <KpiCardRow kpis={mockKpis} isAdmin={false} orgSlug="acme" />
-    );
+    renderWithProvider(<KpiCardRow kpis={mockKpis} isAdmin={false} orgSlug="acme" />);
 
     expect(screen.getByText("Active Projects")).toBeInTheDocument();
     expect(screen.getByText("Hours Logged")).toBeInTheDocument();
@@ -77,46 +71,34 @@ describe("KpiCardRow", () => {
   });
 
   it("renders empty state when kpis is null", () => {
-    renderWithProvider(
-      <KpiCardRow kpis={null} isAdmin={false} orgSlug="acme" />
-    );
+    renderWithProvider(<KpiCardRow kpis={null} isAdmin={false} orgSlug="acme" />);
 
     expect(screen.getByText("Active Projects")).toBeInTheDocument();
     expect(screen.getAllByText("No data")).toHaveLength(3);
   });
 
   it("displays active project count value", () => {
-    renderWithProvider(
-      <KpiCardRow kpis={mockKpis} isAdmin={true} orgSlug="acme" />
-    );
+    renderWithProvider(<KpiCardRow kpis={mockKpis} isAdmin={true} orgSlug="acme" />);
 
     expect(screen.getByText("12")).toBeInTheDocument();
   });
 
   it("links active projects card to projects page", () => {
-    renderWithProvider(
-      <KpiCardRow kpis={mockKpis} isAdmin={false} orgSlug="acme" />
-    );
+    renderWithProvider(<KpiCardRow kpis={mockKpis} isAdmin={false} orgSlug="acme" />);
 
     const links = screen.getAllByRole("link");
-    const projectsLink = links.find(
-      (l) => l.getAttribute("href") === "/org/acme/projects"
-    );
+    const projectsLink = links.find((l) => l.getAttribute("href") === "/org/acme/projects");
     expect(projectsLink).toBeDefined();
   });
 
   it("displays formatted hours value", () => {
-    renderWithProvider(
-      <KpiCardRow kpis={mockKpis} isAdmin={false} orgSlug="acme" />
-    );
+    renderWithProvider(<KpiCardRow kpis={mockKpis} isAdmin={false} orgSlug="acme" />);
 
     expect(screen.getByText("847.5h")).toBeInTheDocument();
   });
 
   it("displays overdue task count", () => {
-    renderWithProvider(
-      <KpiCardRow kpis={mockKpis} isAdmin={false} orgSlug="acme" />
-    );
+    renderWithProvider(<KpiCardRow kpis={mockKpis} isAdmin={false} orgSlug="acme" />);
 
     expect(screen.getByText("8")).toBeInTheDocument();
   });

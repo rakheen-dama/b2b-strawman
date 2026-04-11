@@ -31,21 +31,13 @@ vi.mock("recharts", () => ({
   XAxis: () => <div data-testid="x-axis" />,
   YAxis: () => <div data-testid="y-axis" />,
   Tooltip: () => <div data-testid="tooltip" />,
-  Legend: ({
-    children,
-    ...props
-  }: {
-    children?: React.ReactNode;
-    [key: string]: unknown;
-  }) => (
+  Legend: ({ children, ...props }: { children?: React.ReactNode; [key: string]: unknown }) => (
     <div data-testid="legend" {...(props as Record<string, unknown>)}>
       {children}
     </div>
   ),
   CartesianGrid: () => <div data-testid="cartesian-grid" />,
-  ReferenceLine: ({ x }: { x?: number }) => (
-    <div data-testid="reference-line" data-value={x} />
-  ),
+  ReferenceLine: ({ x }: { x?: number }) => <div data-testid="reference-line" data-value={x} />,
 }));
 
 const SAMPLE_DATA = [

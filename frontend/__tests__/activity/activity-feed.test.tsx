@@ -7,16 +7,11 @@ import type { ActivityItem as ActivityItemType } from "@/lib/actions/activity";
 
 const mockLoadMoreActivity = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/projects/[id]/activity-actions",
-  () => ({
-    loadMoreActivity: (...args: unknown[]) => mockLoadMoreActivity(...args),
-  })
-);
+vi.mock("@/app/(app)/org/[slug]/projects/[id]/activity-actions", () => ({
+  loadMoreActivity: (...args: unknown[]) => mockLoadMoreActivity(...args),
+}));
 
-function makeActivityItem(
-  overrides: Partial<ActivityItemType> = {}
-): ActivityItemType {
+function makeActivityItem(overrides: Partial<ActivityItemType> = {}): ActivityItemType {
   return {
     id: "a1",
     message: "Alice created task Fix login bug",
@@ -40,9 +35,7 @@ describe("ActivityItem", () => {
     render(<ActivityItem item={makeActivityItem()} />);
 
     expect(screen.getByText("AJ")).toBeInTheDocument();
-    expect(
-      screen.getByText("Alice created task Fix login bug")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Alice created task Fix login bug")).toBeInTheDocument();
   });
 
   it("renders avatar image when actorAvatarUrl is provided", () => {
@@ -70,13 +63,7 @@ describe("ActivityFeedClient", () => {
   });
 
   it("shows empty state when no activity items", () => {
-    render(
-      <ActivityFeedClient
-        projectId="p1"
-        initialItems={[]}
-        initialTotalPages={0}
-      />
-    );
+    render(<ActivityFeedClient projectId="p1" initialItems={[]} initialTotalPages={0} />);
 
     expect(screen.getByText("No activity yet")).toBeInTheDocument();
   });
@@ -91,20 +78,10 @@ describe("ActivityFeedClient", () => {
       }),
     ];
 
-    render(
-      <ActivityFeedClient
-        projectId="p1"
-        initialItems={items}
-        initialTotalPages={1}
-      />
-    );
+    render(<ActivityFeedClient projectId="p1" initialItems={items} initialTotalPages={1} />);
 
-    expect(
-      screen.getByText("Alice created task Fix bug")
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText("Bob uploaded document Spec.pdf")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Alice created task Fix bug")).toBeInTheDocument();
+    expect(screen.getByText("Bob uploaded document Spec.pdf")).toBeInTheDocument();
 
     // Filter chips are rendered
     expect(screen.getByText("All")).toBeInTheDocument();

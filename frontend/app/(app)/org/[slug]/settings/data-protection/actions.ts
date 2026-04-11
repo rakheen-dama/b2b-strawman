@@ -20,7 +20,7 @@ interface ActionResult<T = undefined> {
 
 export async function updateDataProtectionSettings(
   slug: string,
-  data: UpdateDataProtectionSettingsRequest,
+  data: UpdateDataProtectionSettingsRequest
 ): Promise<ActionResult> {
   try {
     await api.patch("/api/settings/data-protection", data);
@@ -42,13 +42,9 @@ export async function updateDataProtectionSettings(
 
 // --- Retention Policies ---
 
-export async function fetchRetentionPolicies(
-  _slug: string,
-): Promise<RetentionPolicyExtended[]> {
+export async function fetchRetentionPolicies(_slug: string): Promise<RetentionPolicyExtended[]> {
   try {
-    return await api.get<RetentionPolicyExtended[]>(
-      "/api/settings/retention-policies",
-    );
+    return await api.get<RetentionPolicyExtended[]>("/api/settings/retention-policies");
   } catch (error) {
     if (error instanceof ApiError) {
       throw new Error(error.message);
@@ -65,7 +61,7 @@ export async function updateRetentionPolicy(
     action?: string;
     enabled?: boolean;
     description?: string;
-  },
+  }
 ): Promise<ActionResult> {
   try {
     await api.put(`/api/settings/retention-policies/${id}`, data);
@@ -86,11 +82,11 @@ export async function updateRetentionPolicy(
 }
 
 export async function evaluateRetentionPolicies(
-  _slug: string,
+  _slug: string
 ): Promise<ActionResult<RetentionEvaluationResult>> {
   try {
     const result = await api.post<RetentionEvaluationResult>(
-      "/api/settings/retention-policies/evaluate",
+      "/api/settings/retention-policies/evaluate"
     );
     return { success: true, data: result };
   } catch (error) {
@@ -108,11 +104,11 @@ export async function evaluateRetentionPolicies(
 }
 
 export async function executeRetentionPurge(
-  slug: string,
+  slug: string
 ): Promise<ActionResult<RetentionExecuteResult>> {
   try {
     const result = await api.post<RetentionExecuteResult>(
-      "/api/settings/retention-policies/execute",
+      "/api/settings/retention-policies/execute"
     );
     revalidatePath(`/org/${slug}/settings/data-protection`);
     return { success: true, data: result };
@@ -142,12 +138,10 @@ interface PageResponse<T> {
   };
 }
 
-export async function fetchProcessingActivities(
-  _slug: string,
-): Promise<ProcessingActivity[]> {
+export async function fetchProcessingActivities(_slug: string): Promise<ProcessingActivity[]> {
   try {
     const response = await api.get<PageResponse<ProcessingActivity>>(
-      "/api/settings/processing-activities?size=100",
+      "/api/settings/processing-activities?size=100"
     );
     return response.content;
   } catch (error) {
@@ -160,13 +154,10 @@ export async function fetchProcessingActivities(
 
 export async function createProcessingActivity(
   slug: string,
-  data: CreateProcessingActivityRequest,
+  data: CreateProcessingActivityRequest
 ): Promise<ActionResult<ProcessingActivity>> {
   try {
-    const result = await api.post<ProcessingActivity>(
-      "/api/settings/processing-activities",
-      data,
-    );
+    const result = await api.post<ProcessingActivity>("/api/settings/processing-activities", data);
     revalidatePath(`/org/${slug}/settings/data-protection`);
     return { success: true, data: result };
   } catch (error) {
@@ -186,12 +177,12 @@ export async function createProcessingActivity(
 export async function updateProcessingActivity(
   slug: string,
   id: string,
-  data: CreateProcessingActivityRequest,
+  data: CreateProcessingActivityRequest
 ): Promise<ActionResult<ProcessingActivity>> {
   try {
     const result = await api.put<ProcessingActivity>(
       `/api/settings/processing-activities/${id}`,
-      data,
+      data
     );
     revalidatePath(`/org/${slug}/settings/data-protection`);
     return { success: true, data: result };
@@ -209,10 +200,7 @@ export async function updateProcessingActivity(
   }
 }
 
-export async function deleteProcessingActivity(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deleteProcessingActivity(slug: string, id: string): Promise<ActionResult> {
   try {
     await api.delete(`/api/settings/processing-activities/${id}`);
   } catch (error) {
@@ -234,12 +222,10 @@ export async function deleteProcessingActivity(
 // --- PAIA Manual ---
 
 export async function generatePaiaManual(
-  _slug: string,
+  _slug: string
 ): Promise<ActionResult<PaiaGenerateResponse>> {
   try {
-    const result = await api.post<PaiaGenerateResponse>(
-      "/api/settings/paia-manual/generate",
-    );
+    const result = await api.post<PaiaGenerateResponse>("/api/settings/paia-manual/generate");
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof ApiError) {

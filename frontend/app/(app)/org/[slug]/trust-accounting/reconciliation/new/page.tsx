@@ -4,13 +4,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { BankStatementUpload } from "@/components/trust/BankStatementUpload";
 import { ReconciliationSplitPane } from "@/components/trust/ReconciliationSplitPane";
@@ -52,11 +46,7 @@ const STEP_LABELS = [
 
 // ── Page ────────────────────────────────────────────────────��─────
 
-export default function NewReconciliationPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default function NewReconciliationPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = React.use(params);
   const router = useRouter();
   const [currentStep, setCurrentStep] = useState(1);
@@ -68,9 +58,7 @@ export default function NewReconciliationPage({
   const [loadingAccounts, setLoadingAccounts] = useState(true);
 
   // Step 2: Upload
-  const [statement, setStatement] = useState<BankStatementResponse | null>(
-    null,
-  );
+  const [statement, setStatement] = useState<BankStatementResponse | null>(null);
 
   // Step 3: Auto-match
   const [autoMatchResult, setAutoMatchResult] = useState<{
@@ -81,11 +69,8 @@ export default function NewReconciliationPage({
 
   // Step 4: Review
   const [lines, setLines] = useState<BankStatementLineResponse[]>([]);
-  const [unmatchedTransactions, setUnmatchedTransactions] = useState<
-    TrustTransaction[]
-  >([]);
-  const [reconciliation, setReconciliation] =
-    useState<TrustReconciliationResponse | null>(null);
+  const [unmatchedTransactions, setUnmatchedTransactions] = useState<TrustTransaction[]>([]);
+  const [reconciliation, setReconciliation] = useState<TrustReconciliationResponse | null>(null);
 
   // Step 5: Complete
   const [isCompleting, setIsCompleting] = useState(false);
@@ -135,7 +120,7 @@ export default function NewReconciliationPage({
       setStatement(stmt);
       setLines(stmt.lines);
     },
-    [resetFromStep3],
+    [resetFromStep3]
   );
 
   // Handle auto-match
@@ -155,9 +140,7 @@ export default function NewReconciliationPage({
         setError(result.error ?? "Auto-match failed");
       }
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Auto-match failed",
-      );
+      setError(err instanceof Error ? err.message : "Auto-match failed");
     } finally {
       setAutoMatching(false);
     }
@@ -176,9 +159,7 @@ export default function NewReconciliationPage({
         size: 1000, // TODO: implement proper pagination for large trust accounts
       });
       // Filter to transactions without bankStatementLineId
-      const unmatched = txPage.content.filter(
-        (tx) => !tx.bankStatementLineId,
-      );
+      const unmatched = txPage.content.filter((tx) => !tx.bankStatementLineId);
       setUnmatchedTransactions(unmatched);
 
       // Create reconciliation if not already created
@@ -197,9 +178,7 @@ export default function NewReconciliationPage({
 
       setCurrentStep(4);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to load review data",
-      );
+      setError(err instanceof Error ? err.message : "Failed to load review data");
     }
   }, [selectedAccountId, statement, periodEnd, reconciliation]);
 
@@ -219,12 +198,10 @@ export default function NewReconciliationPage({
                     matchStatus: "MANUALLY_MATCHED" as const,
                     trustTransactionId: transactionId,
                   }
-                : l,
-            ),
+                : l
+            )
           );
-          setUnmatchedTransactions((prev) =>
-            prev.filter((tx) => tx.id !== transactionId),
-          );
+          setUnmatchedTransactions((prev) => prev.filter((tx) => tx.id !== transactionId));
           // Recalculate reconciliation
           if (reconciliation) {
             const calcResult = await calculateReconciliation(reconciliation.id);
@@ -239,7 +216,7 @@ export default function NewReconciliationPage({
         setError(err instanceof Error ? err.message : "Failed to match line");
       }
     },
-    [reconciliation],
+    [reconciliation]
   );
 
   // Handle exclude
@@ -250,11 +227,7 @@ export default function NewReconciliationPage({
         const result = await excludeLine(lineId, "Non-trust item");
         if (result.success) {
           setLines((prev) =>
-            prev.map((l) =>
-              l.id === lineId
-                ? { ...l, matchStatus: "EXCLUDED" as const }
-                : l,
-            ),
+            prev.map((l) => (l.id === lineId ? { ...l, matchStatus: "EXCLUDED" as const } : l))
           );
           // Recalculate reconciliation
           if (reconciliation) {
@@ -267,12 +240,10 @@ export default function NewReconciliationPage({
           setError(result.error ?? "Failed to exclude line");
         }
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to exclude line",
-        );
+        setError(err instanceof Error ? err.message : "Failed to exclude line");
       }
     },
-    [reconciliation],
+    [reconciliation]
   );
 
   // Handle unmatch
@@ -290,8 +261,8 @@ export default function NewReconciliationPage({
                     matchStatus: "UNMATCHED" as const,
                     trustTransactionId: null,
                   }
-                : l,
-            ),
+                : l
+            )
           );
           // Refresh unmatched transactions
           if (selectedAccountId) {
@@ -300,9 +271,7 @@ export default function NewReconciliationPage({
               page: 0,
               size: 1000, // TODO: implement proper pagination for large trust accounts
             });
-            setUnmatchedTransactions(
-              txPage.content.filter((tx) => !tx.bankStatementLineId),
-            );
+            setUnmatchedTransactions(txPage.content.filter((tx) => !tx.bankStatementLineId));
           }
           // Recalculate
           if (reconciliation) {
@@ -315,12 +284,10 @@ export default function NewReconciliationPage({
           setError(result.error ?? "Failed to unmatch line");
         }
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to unmatch line",
-        );
+        setError(err instanceof Error ? err.message : "Failed to unmatch line");
       }
     },
-    [selectedAccountId, reconciliation],
+    [selectedAccountId, reconciliation]
   );
 
   // Handle complete
@@ -337,11 +304,7 @@ export default function NewReconciliationPage({
         setError(result.error ?? "Failed to complete reconciliation");
       }
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to complete reconciliation",
-      );
+      setError(err instanceof Error ? err.message : "Failed to complete reconciliation");
     } finally {
       setIsCompleting(false);
     }
@@ -352,9 +315,7 @@ export default function NewReconciliationPage({
       {/* Back link */}
       <button
         type="button"
-        onClick={() =>
-          router.push(`/org/${slug}/trust-accounting/reconciliation`)
-        }
+        onClick={() => router.push(`/org/${slug}/trust-accounting/reconciliation`)}
         className="inline-flex items-center gap-1 text-sm text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
       >
         <ArrowLeft className="size-4" />
@@ -449,8 +410,7 @@ export default function NewReconciliationPage({
                   >
                     {accounts.map((acct) => (
                       <option key={acct.id} value={acct.id}>
-                        {acct.accountName} ({acct.bankName} -{" "}
-                        {acct.accountNumber})
+                        {acct.accountName} ({acct.bankName} - {acct.accountNumber})
                       </option>
                     ))}
                   </select>
@@ -501,11 +461,7 @@ export default function NewReconciliationPage({
             uploadAction={uploadBankStatement}
           />
           <div className="flex justify-between">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setCurrentStep(1)}
-            >
+            <Button type="button" variant="outline" onClick={() => setCurrentStep(1)}>
               Back
             </Button>
             <Button
@@ -526,8 +482,8 @@ export default function NewReconciliationPage({
           <CardHeader>
             <CardTitle>Auto-Match Transactions</CardTitle>
             <CardDescription>
-              Automatically match bank statement lines with trust transactions
-              based on reference, amount, and date
+              Automatically match bank statement lines with trust transactions based on reference,
+              amount, and date
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -548,10 +504,7 @@ export default function NewReconciliationPage({
                 </Button>
               </div>
             ) : (
-              <div
-                className="space-y-2"
-                data-testid="auto-match-result"
-              >
+              <div className="space-y-2" data-testid="auto-match-result">
                 <p className="text-sm text-green-600 dark:text-green-400">
                   Auto-matched {autoMatchResult.autoMatched} lines
                 </p>
@@ -562,11 +515,7 @@ export default function NewReconciliationPage({
             )}
 
             <div className="flex justify-between pt-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setCurrentStep(2)}
-              >
+              <Button type="button" variant="outline" onClick={() => setCurrentStep(2)}>
                 Back
               </Button>
               <Button
@@ -597,11 +546,7 @@ export default function NewReconciliationPage({
             isCompleting={isCompleting}
           />
           <div className="flex justify-start">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setCurrentStep(3)}
-            >
+            <Button type="button" variant="outline" onClick={() => setCurrentStep(3)}>
               Back
             </Button>
           </div>
@@ -613,9 +558,7 @@ export default function NewReconciliationPage({
         <Card data-testid="step-complete">
           <CardHeader>
             <CardTitle>Reconciliation Complete</CardTitle>
-            <CardDescription>
-              The reconciliation has been completed successfully
-            </CardDescription>
+            <CardDescription>The reconciliation has been completed successfully</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {reconciliation && (
@@ -624,7 +567,7 @@ export default function NewReconciliationPage({
                   <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                     Bank Balance
                   </p>
-                  <p className="mt-1 font-mono text-lg tabular-nums text-slate-950 dark:text-slate-50">
+                  <p className="mt-1 font-mono text-lg text-slate-950 tabular-nums dark:text-slate-50">
                     {formatCurrency(reconciliation.bankBalance, DEFAULT_CURRENCY)}
                   </p>
                 </div>
@@ -632,7 +575,7 @@ export default function NewReconciliationPage({
                   <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                     Cashbook Balance
                   </p>
-                  <p className="mt-1 font-mono text-lg tabular-nums text-slate-950 dark:text-slate-50">
+                  <p className="mt-1 font-mono text-lg text-slate-950 tabular-nums dark:text-slate-50">
                     {formatCurrency(reconciliation.cashbookBalance, DEFAULT_CURRENCY)}
                   </p>
                 </div>
@@ -640,7 +583,7 @@ export default function NewReconciliationPage({
                   <p className="text-xs font-medium text-slate-500 dark:text-slate-400">
                     Client Ledger Total
                   </p>
-                  <p className="mt-1 font-mono text-lg tabular-nums text-slate-950 dark:text-slate-50">
+                  <p className="mt-1 font-mono text-lg text-slate-950 tabular-nums dark:text-slate-50">
                     {formatCurrency(reconciliation.clientLedgerTotal, DEFAULT_CURRENCY)}
                   </p>
                 </div>
@@ -649,11 +592,7 @@ export default function NewReconciliationPage({
             <div className="flex justify-end pt-2">
               <Button
                 type="button"
-                onClick={() =>
-                  router.push(
-                    `/org/${slug}/trust-accounting/reconciliation`,
-                  )
-                }
+                onClick={() => router.push(`/org/${slug}/trust-accounting/reconciliation`)}
               >
                 Done
               </Button>

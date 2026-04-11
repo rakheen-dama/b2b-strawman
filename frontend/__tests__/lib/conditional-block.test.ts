@@ -1,8 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  evaluateCondition,
-  renderTiptapToHtml,
-} from "@/components/editor/client-renderer";
+import { evaluateCondition, renderTiptapToHtml } from "@/components/editor/client-renderer";
 import type { TiptapNode } from "@/components/editor/client-renderer";
 
 describe("evaluateCondition", () => {
@@ -82,7 +79,7 @@ describe("renderTiptapToHtml with conditionalBlock", () => {
     fieldKey: string,
     operator: string,
     value: string,
-    text: string,
+    text: string
   ): TiptapNode {
     return {
       type: "conditionalBlock",
@@ -178,7 +175,7 @@ describe("renderTiptapToHtml with conditionalBlock", () => {
     const html1 = renderTiptapToHtml(
       doc,
       { customer: { type: "company", taxNumber: "VAT123" } },
-      clauses,
+      clauses
     );
     expect(html1).toContain("Tax info");
 
@@ -190,7 +187,7 @@ describe("renderTiptapToHtml with conditionalBlock", () => {
     const html3 = renderTiptapToHtml(
       doc,
       { customer: { type: "individual", taxNumber: "VAT123" } },
-      clauses,
+      clauses
     );
     expect(html3).not.toContain("Tax info");
   });

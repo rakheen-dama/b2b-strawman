@@ -20,9 +20,7 @@ export function BatchBillingSettings({
   billingEmailRateLimit,
   defaultBillingRunCurrency,
 }: BatchBillingSettingsProps) {
-  const [asyncThreshold, setAsyncThreshold] = useState(
-    billingBatchAsyncThreshold
-  );
+  const [asyncThreshold, setAsyncThreshold] = useState(billingBatchAsyncThreshold);
   const [emailRateLimit, setEmailRateLimit] = useState(billingEmailRateLimit);
   const [currency, setCurrency] = useState(defaultBillingRunCurrency ?? "");
   const [saving, setSaving] = useState(false);
@@ -34,22 +32,14 @@ export function BatchBillingSettings({
     setMessage(null);
     setIsError(false);
 
-    if (
-      !Number.isFinite(asyncThreshold) ||
-      asyncThreshold < 1 ||
-      asyncThreshold > 1000
-    ) {
+    if (!Number.isFinite(asyncThreshold) || asyncThreshold < 1 || asyncThreshold > 1000) {
       setMessage("Async threshold must be between 1 and 1000.");
       setIsError(true);
       setSaving(false);
       return;
     }
 
-    if (
-      !Number.isFinite(emailRateLimit) ||
-      emailRateLimit < 1 ||
-      emailRateLimit > 100
-    ) {
+    if (!Number.isFinite(emailRateLimit) || emailRateLimit < 1 || emailRateLimit > 100) {
       setMessage("Email rate limit must be between 1 and 100.");
       setIsError(true);
       setSaving(false);
@@ -109,9 +99,7 @@ export function BatchBillingSettings({
               value={asyncThreshold}
               onChange={(e) => {
                 const val = parseInt(e.target.value, 10);
-                setAsyncThreshold(
-                  Number.isFinite(val) ? Math.max(1, Math.min(1000, val)) : 1
-                );
+                setAsyncThreshold(Number.isFinite(val) ? Math.max(1, Math.min(1000, val)) : 1);
               }}
             />
             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -130,9 +118,7 @@ export function BatchBillingSettings({
               value={emailRateLimit}
               onChange={(e) => {
                 const val = parseInt(e.target.value, 10);
-                setEmailRateLimit(
-                  Number.isFinite(val) ? Math.max(1, Math.min(100, val)) : 1
-                );
+                setEmailRateLimit(Number.isFinite(val) ? Math.max(1, Math.min(100, val)) : 1);
               }}
             />
             <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -141,9 +127,7 @@ export function BatchBillingSettings({
           </div>
 
           <div className="max-w-xs space-y-2">
-            <Label htmlFor="default-billing-currency">
-              Default Billing Run Currency
-            </Label>
+            <Label htmlFor="default-billing-currency">Default Billing Run Currency</Label>
             <Input
               id="default-billing-currency"
               type="text"
@@ -153,8 +137,7 @@ export function BatchBillingSettings({
               onChange={(e) => setCurrency(e.target.value)}
             />
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Pre-fill currency on new billing runs. Falls back to org default
-              currency if empty.
+              Pre-fill currency on new billing runs. Falls back to org default currency if empty.
             </p>
           </div>
         </div>
@@ -168,9 +151,7 @@ export function BatchBillingSettings({
         {message && (
           <p
             className={`text-sm ${
-              isError
-                ? "text-red-600 dark:text-red-400"
-                : "text-green-600 dark:text-green-400"
+              isError ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"
             }`}
           >
             {message}

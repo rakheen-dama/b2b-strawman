@@ -119,16 +119,10 @@ export function FilingStatusDialog({
                 <FormItem>
                   <FormLabel>
                     Reference Number{" "}
-                    <span className="font-normal text-muted-foreground">
-                      (optional)
-                    </span>
+                    <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      maxLength={100}
-                      placeholder="e.g. SARS-2026-001"
-                      {...field}
-                    />
+                    <Input maxLength={100} placeholder="e.g. SARS-2026-001" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -140,10 +134,7 @@ export function FilingStatusDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Notes{" "}
-                    <span className="font-normal text-muted-foreground">
-                      (optional)
-                    </span>
+                    Notes <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
                     <Textarea
@@ -157,7 +148,7 @@ export function FilingStatusDialog({
                 </FormItem>
               )}
             />
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
             <DialogFooter>
               <Button
                 type="button"

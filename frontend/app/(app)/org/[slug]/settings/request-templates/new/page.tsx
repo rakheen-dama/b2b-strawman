@@ -26,8 +26,8 @@ export default async function NewRequestTemplatePage({
           New Request Template
         </h1>
         <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to create request templates. Only admins and
-          owners can access this page.
+          You do not have permission to create request templates. Only admins and owners can access
+          this page.
         </p>
       </div>
     );

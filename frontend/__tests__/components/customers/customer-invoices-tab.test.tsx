@@ -12,7 +12,9 @@ vi.mock("@/app/(app)/org/[slug]/customers/[id]/invoice-actions", () => ({
 
 // Mock prerequisite actions (needed because InvoiceGenerationDialog now imports them)
 vi.mock("@/lib/actions/prerequisite-actions", () => ({
-  checkPrerequisitesAction: vi.fn().mockResolvedValue({ passed: true, context: "INVOICE_GENERATION", violations: [] }),
+  checkPrerequisitesAction: vi
+    .fn()
+    .mockResolvedValue({ passed: true, context: "INVOICE_GENERATION", violations: [] }),
   updateEntityCustomFieldsAction: vi.fn(),
 }));
 
@@ -93,7 +95,7 @@ describe("CustomerInvoicesTab", () => {
         slug="acme"
         canManage={true}
         defaultCurrency="USD"
-      />,
+      />
     );
 
     expect(screen.getByText("Invoices")).toBeInTheDocument();
@@ -118,7 +120,7 @@ describe("CustomerInvoicesTab", () => {
         slug="acme"
         canManage={true}
         defaultCurrency="USD"
-      />,
+      />
     );
 
     const newInvoiceButton = screen.getByRole("button", { name: /new invoice/i });
@@ -138,7 +140,7 @@ describe("CustomerInvoicesTab", () => {
         slug="acme"
         canManage={false}
         defaultCurrency="USD"
-      />,
+      />
     );
 
     expect(screen.queryByRole("button", { name: /new invoice/i })).toBeNull();
@@ -155,12 +157,10 @@ describe("CustomerInvoicesTab", () => {
         slug="acme"
         canManage={true}
         defaultCurrency="USD"
-      />,
+      />
     );
 
     expect(screen.getByText("No invoices yet")).toBeInTheDocument();
-    expect(
-      screen.getByText("Generate an invoice from unbilled time entries"),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Generate an invoice from unbilled time entries")).toBeInTheDocument();
   });
 });

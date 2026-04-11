@@ -49,16 +49,13 @@ function relationshipBadge(relationship: AdversePartyRelationship) {
   }
 }
 
-export function ProjectAdversePartiesTab({
-  projectId,
-  slug,
-}: ProjectAdversePartiesTabProps) {
+export function ProjectAdversePartiesTab({ projectId, slug }: ProjectAdversePartiesTabProps) {
   const [unlinking, setUnlinking] = useState<string | null>(null);
 
   const { data, isLoading, mutate } = useSWR(
     `project-adverse-parties-${projectId}`,
     () => fetchProjectAdverseParties(projectId),
-    { dedupingInterval: 2000 },
+    { dedupingInterval: 2000 }
   );
 
   const parties = data ?? [];
@@ -83,9 +80,7 @@ export function ProjectAdversePartiesTab({
   if (isLoading) {
     return (
       <div data-testid="project-adverse-parties-tab">
-        <p className="text-xs italic text-slate-500">
-          Loading adverse parties&hellip;
-        </p>
+        <p className="text-xs text-slate-500 italic">Loading adverse parties&hellip;</p>
       </div>
     );
   }
@@ -122,19 +117,19 @@ export function ProjectAdversePartiesTab({
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-200 dark:border-slate-800">
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Party Name
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Relationship
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Description
               </th>
-              <th className="px-4 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Linked
               </th>
-              <th className="px-4 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-600 dark:text-slate-400">
+              <th className="px-4 py-3 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                 Actions
               </th>
             </tr>
@@ -148,9 +143,7 @@ export function ProjectAdversePartiesTab({
                 <td className="px-4 py-3 text-sm font-medium text-slate-950 dark:text-slate-50">
                   {link.adversePartyName}
                 </td>
-                <td className="px-4 py-3">
-                  {relationshipBadge(link.relationship)}
-                </td>
+                <td className="px-4 py-3">{relationshipBadge(link.relationship)}</td>
                 <td className="px-4 py-3 text-sm text-slate-600 dark:text-slate-400">
                   {link.description ?? "\u2014"}
                 </td>

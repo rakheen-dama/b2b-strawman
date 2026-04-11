@@ -2,12 +2,7 @@
 
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type {
-  CourtDate,
-  CourtDateStatus,
-  CourtDateType,
-  PrescriptionTracker,
-} from "@/lib/types";
+import type { CourtDate, CourtDateStatus, CourtDateType, PrescriptionTracker } from "@/lib/types";
 
 // ── Response types ─────────────────────────────────────────────────
 
@@ -51,9 +46,7 @@ export async function fetchCourtDates(
   if (filters?.projectId) params.set("projectId", filters.projectId);
   params.set("size", "100");
 
-  return api.get<PaginatedResponse<CourtDate>>(
-    `/api/court-dates?${params.toString()}`
-  );
+  return api.get<PaginatedResponse<CourtDate>>(`/api/court-dates?${params.toString()}`);
 }
 
 export async function fetchCourtDate(id: string): Promise<CourtDate> {
@@ -79,10 +72,7 @@ export async function createCourtDate(
     revalidatePath(`/org/${slug}/court-calendar`);
     return { success: true };
   } catch (error) {
-    const message =
-      error instanceof ApiError
-        ? error.message
-        : "Failed to create court date";
+    const message = error instanceof ApiError ? error.message : "Failed to create court date";
     return { success: false, error: message };
   }
 }
@@ -97,10 +87,7 @@ export async function updateCourtDate(
     revalidatePath(`/org/${slug}/court-calendar`);
     return { success: true };
   } catch (error) {
-    const message =
-      error instanceof ApiError
-        ? error.message
-        : "Failed to update court date";
+    const message = error instanceof ApiError ? error.message : "Failed to update court date";
     return { success: false, error: message };
   }
 }
@@ -115,10 +102,7 @@ export async function postponeCourtDate(
     revalidatePath(`/org/${slug}/court-calendar`);
     return { success: true };
   } catch (error) {
-    const message =
-      error instanceof ApiError
-        ? error.message
-        : "Failed to postpone court date";
+    const message = error instanceof ApiError ? error.message : "Failed to postpone court date";
     return { success: false, error: message };
   }
 }
@@ -133,10 +117,7 @@ export async function cancelCourtDate(
     revalidatePath(`/org/${slug}/court-calendar`);
     return { success: true };
   } catch (error) {
-    const message =
-      error instanceof ApiError
-        ? error.message
-        : "Failed to cancel court date";
+    const message = error instanceof ApiError ? error.message : "Failed to cancel court date";
     return { success: false, error: message };
   }
 }
@@ -151,19 +132,16 @@ export async function recordOutcome(
     revalidatePath(`/org/${slug}/court-calendar`);
     return { success: true };
   } catch (error) {
-    const message =
-      error instanceof ApiError
-        ? error.message
-        : "Failed to record outcome";
+    const message = error instanceof ApiError ? error.message : "Failed to record outcome";
     return { success: false, error: message };
   }
 }
 
 // ── Prescription Tracker actions ───────────────────────────────────
 
-export async function fetchPrescriptionTrackers(
-  filters?: { customerId?: string }
-): Promise<PaginatedResponse<PrescriptionTracker>> {
+export async function fetchPrescriptionTrackers(filters?: {
+  customerId?: string;
+}): Promise<PaginatedResponse<PrescriptionTracker>> {
   const params = new URLSearchParams();
   if (filters?.customerId) params.set("customerId", filters.customerId);
   params.set("size", "100");
@@ -189,9 +167,7 @@ export async function createPrescriptionTracker(
     return { success: true };
   } catch (error) {
     const message =
-      error instanceof ApiError
-        ? error.message
-        : "Failed to create prescription tracker";
+      error instanceof ApiError ? error.message : "Failed to create prescription tracker";
     return { success: false, error: message };
   }
 }
@@ -206,22 +182,15 @@ export async function interruptPrescription(
     revalidatePath(`/org/${slug}/court-calendar`);
     return { success: true };
   } catch (error) {
-    const message =
-      error instanceof ApiError
-        ? error.message
-        : "Failed to interrupt prescription";
+    const message = error instanceof ApiError ? error.message : "Failed to interrupt prescription";
     return { success: false, error: message };
   }
 }
 
 // ── Projects (for dialogs) ─────────────────────────────────────────
 
-export async function fetchProjects(): Promise<
-  { id: string; name: string }[]
-> {
-  const result = await api.get<{ id: string; name: string }[]>(
-    "/api/projects?size=200"
-  );
+export async function fetchProjects(): Promise<{ id: string; name: string }[]> {
+  const result = await api.get<{ id: string; name: string }[]>("/api/projects?size=200");
   return result ?? [];
 }
 

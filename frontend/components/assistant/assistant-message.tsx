@@ -10,24 +10,21 @@ interface AssistantMessageProps {
   isStreaming?: boolean;
 }
 
-export function AssistantMessage({
-  message,
-  isStreaming = false,
-}: AssistantMessageProps) {
+export function AssistantMessage({ message, isStreaming = false }: AssistantMessageProps) {
   return (
     <div
       className={cn(
         "max-w-[85%] rounded-lg px-3 py-2 text-sm",
-        "bg-white border border-slate-200 text-slate-900",
-        "dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100",
+        "border border-slate-200 bg-white text-slate-900",
+        "dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
       )}
     >
-      <div className="prose prose-sm prose-slate max-w-none dark:prose-invert">
+      <div className="prose prose-sm prose-slate dark:prose-invert max-w-none">
         <ReactMarkdown>{message.content}</ReactMarkdown>
       </div>
       {isStreaming && (
         <span
-          className="inline-block text-teal-600 ml-0.5 font-normal animate-pulse"
+          className="ml-0.5 inline-block animate-pulse font-normal text-teal-600"
           aria-hidden="true"
         >
           |

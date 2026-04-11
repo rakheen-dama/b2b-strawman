@@ -9,17 +9,11 @@ vi.mock("server-only", () => ({}));
 
 // Mock the entity options fetch action
 const mockFetchEntityOptions = vi.fn();
-vi.mock(
-  "@/app/(app)/org/[slug]/reports/[reportSlug]/actions",
-  () => ({
-    fetchEntityOptionsAction: (...args: unknown[]) =>
-      mockFetchEntityOptions(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/reports/[reportSlug]/actions", () => ({
+  fetchEntityOptionsAction: (...args: unknown[]) => mockFetchEntityOptions(...args),
+}));
 
-function makeSchema(
-  overrides: Partial<ParameterSchema> = {},
-): ParameterSchema {
+function makeSchema(overrides: Partial<ParameterSchema> = {}): ParameterSchema {
   return {
     parameters: [
       {
@@ -64,13 +58,7 @@ describe("ReportParameterForm", () => {
   });
 
   it("renders a date input for type='date' parameters", () => {
-    render(
-      <ReportParameterForm
-        schema={makeSchema()}
-        onSubmit={vi.fn()}
-        isLoading={false}
-      />,
-    );
+    render(<ReportParameterForm schema={makeSchema()} onSubmit={vi.fn()} isLoading={false} />);
 
     const dateInput = screen.getByLabelText(/date from/i);
     expect(dateInput).toBeInTheDocument();
@@ -78,29 +66,15 @@ describe("ReportParameterForm", () => {
   });
 
   it("renders a select trigger for type='enum' parameters", () => {
-    render(
-      <ReportParameterForm
-        schema={makeSchema()}
-        onSubmit={vi.fn()}
-        isLoading={false}
-      />,
-    );
+    render(<ReportParameterForm schema={makeSchema()} onSubmit={vi.fn()} isLoading={false} />);
 
     expect(screen.getByText(/group by/i)).toBeInTheDocument();
     // Select trigger should be present (use name to avoid matching entity picker)
-    expect(
-      screen.getByRole("combobox", { name: /group by/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: /group by/i })).toBeInTheDocument();
   });
 
   it("renders an entity picker button for uuid params with entityType", () => {
-    render(
-      <ReportParameterForm
-        schema={makeSchema()}
-        onSubmit={vi.fn()}
-        isLoading={false}
-      />,
-    );
+    render(<ReportParameterForm schema={makeSchema()} onSubmit={vi.fn()} isLoading={false} />);
 
     // Should render a picker button instead of a text input
     const pickerButton = document.getElementById("param-projectId");
@@ -108,9 +82,7 @@ describe("ReportParameterForm", () => {
     expect(pickerButton!.tagName).toBe("BUTTON");
     expect(pickerButton!.textContent).toMatch(/select a project/i);
     // Should NOT have a text input with UUID placeholder
-    expect(
-      screen.queryByPlaceholderText(/project id \(uuid\)/i),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByPlaceholderText(/project id \(uuid\)/i)).not.toBeInTheDocument();
   });
 
   it("renders a text input for uuid params without entityType", () => {
@@ -125,13 +97,7 @@ describe("ReportParameterForm", () => {
       ],
     });
 
-    render(
-      <ReportParameterForm
-        schema={schema}
-        onSubmit={vi.fn()}
-        isLoading={false}
-      />,
-    );
+    render(<ReportParameterForm schema={schema} onSubmit={vi.fn()} isLoading={false} />);
 
     const uuidInput = screen.getByPlaceholderText(/entity id \(uuid\)/i);
     expect(uuidInput).toBeInTheDocument();
@@ -142,19 +108,11 @@ describe("ReportParameterForm", () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
 
-    render(
-      <ReportParameterForm
-        schema={makeSchema()}
-        onSubmit={onSubmit}
-        isLoading={false}
-      />,
-    );
+    render(<ReportParameterForm schema={makeSchema()} onSubmit={onSubmit} isLoading={false} />);
 
     await user.click(screen.getByRole("button", { name: /run report/i }));
 
-    expect(
-      screen.getByText(/date from is required/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/date from is required/i)).toBeInTheDocument();
     expect(onSubmit).not.toHaveBeenCalled();
   });
 
@@ -162,13 +120,7 @@ describe("ReportParameterForm", () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
 
-    render(
-      <ReportParameterForm
-        schema={makeSchema()}
-        onSubmit={onSubmit}
-        isLoading={false}
-      />,
-    );
+    render(<ReportParameterForm schema={makeSchema()} onSubmit={onSubmit} isLoading={false} />);
 
     const dateInput = screen.getByLabelText(/date from/i);
     await user.type(dateInput, "2026-01-01");
@@ -181,19 +133,13 @@ describe("ReportParameterForm", () => {
           dateFrom: "2026-01-01",
           groupBy: "member",
           projectId: "",
-        }),
+        })
       );
     });
   });
 
   it("pre-selects enum default value", () => {
-    render(
-      <ReportParameterForm
-        schema={makeSchema()}
-        onSubmit={vi.fn()}
-        isLoading={false}
-      />,
-    );
+    render(<ReportParameterForm schema={makeSchema()} onSubmit={vi.fn()} isLoading={false} />);
 
     // The select trigger should show the default value
     const trigger = screen.getByRole("combobox", { name: /group by/i });
@@ -201,13 +147,7 @@ describe("ReportParameterForm", () => {
   });
 
   it("disables inputs and button when isLoading is true", () => {
-    render(
-      <ReportParameterForm
-        schema={makeSchema()}
-        onSubmit={vi.fn()}
-        isLoading={true}
-      />,
-    );
+    render(<ReportParameterForm schema={makeSchema()} onSubmit={vi.fn()} isLoading={true} />);
 
     const dateInput = screen.getByLabelText(/date from/i);
     expect(dateInput).toBeDisabled();
@@ -251,13 +191,7 @@ describe("ReportParameterForm", () => {
       ],
     });
 
-    render(
-      <ReportParameterForm
-        schema={mixedSchema}
-        onSubmit={vi.fn()}
-        isLoading={false}
-      />,
-    );
+    render(<ReportParameterForm schema={mixedSchema} onSubmit={vi.fn()} isLoading={false} />);
 
     // Date renders as date input
     expect(screen.getByLabelText(/start date/i)).toHaveAttribute("type", "date");
@@ -273,8 +207,6 @@ describe("ReportParameterForm", () => {
     expect(rawInput).toHaveAttribute("type", "text");
 
     // Enum renders as combobox (select)
-    expect(
-      screen.getByRole("combobox", { name: /status/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: /status/i })).toBeInTheDocument();
   });
 });

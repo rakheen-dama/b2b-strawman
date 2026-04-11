@@ -20,8 +20,7 @@ import { cn } from "@/lib/utils";
 import { uploadDocxTemplateAction } from "./template-support-actions";
 import type { TemplateCategory, TemplateEntityType } from "@/lib/types";
 
-const DOCX_MIME_TYPE =
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+const DOCX_MIME_TYPE = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 const MAX_DOCX_SIZE = 10 * 1024 * 1024; // 10MB
 const MAX_DOCX_SIZE_LABEL = "10 MB";
 
@@ -125,7 +124,7 @@ export function UploadDocxDialog({ slug, children }: UploadDocxDialogProps) {
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [name],
+    [name]
   );
 
   const handleInputChange = useCallback(
@@ -137,7 +136,7 @@ export function UploadDocxDialog({ slug, children }: UploadDocxDialogProps) {
       e.target.value = "";
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [name],
+    [name]
   );
 
   async function handleSubmit() {
@@ -161,9 +160,7 @@ export function UploadDocxDialog({ slug, children }: UploadDocxDialogProps) {
       if (result.success && result.data) {
         setOpen(false);
         resetForm();
-        router.push(
-          `/org/${slug}/settings/templates/${result.data.id}/edit`,
-        );
+        router.push(`/org/${slug}/settings/templates/${result.data.id}/edit`);
       } else {
         setError(result.error ?? "Failed to upload template.");
       }
@@ -187,8 +184,7 @@ export function UploadDocxDialog({ slug, children }: UploadDocxDialogProps) {
         <DialogHeader>
           <DialogTitle>Upload Word Template</DialogTitle>
           <DialogDescription>
-            Upload a .docx file with merge fields (e.g.{" "}
-            {"{{customer.name}}"}) to create a template.
+            Upload a .docx file with merge fields (e.g. {"{{customer.name}}"}) to create a template.
           </DialogDescription>
         </DialogHeader>
 
@@ -215,7 +211,7 @@ export function UploadDocxDialog({ slug, children }: UploadDocxDialogProps) {
                 isDragOver
                   ? "border-primary bg-primary/5"
                   : "border-slate-300 hover:border-slate-400 dark:border-slate-600 dark:hover:border-slate-500",
-                isUploading && "cursor-not-allowed opacity-50",
+                isUploading && "cursor-not-allowed opacity-50"
               )}
             >
               <input
@@ -248,9 +244,7 @@ export function UploadDocxDialog({ slug, children }: UploadDocxDialogProps) {
                 </>
               )}
             </div>
-            {fileError && (
-              <p className="mt-1 text-sm text-destructive">{fileError}</p>
-            )}
+            {fileError && <p className="text-destructive mt-1 text-sm">{fileError}</p>}
           </div>
 
           {/* Name */}
@@ -304,9 +298,7 @@ export function UploadDocxDialog({ slug, children }: UploadDocxDialogProps) {
             <select
               id="docx-template-entity-type"
               value={entityType}
-              onChange={(e) =>
-                setEntityType(e.target.value as TemplateEntityType)
-              }
+              onChange={(e) => setEntityType(e.target.value as TemplateEntityType)}
               disabled={isUploading}
               className="mt-1 w-full rounded-md border border-slate-300 bg-transparent px-3 py-2 text-sm dark:border-slate-600"
             >
@@ -318,7 +310,7 @@ export function UploadDocxDialog({ slug, children }: UploadDocxDialogProps) {
             </select>
           </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
+          {error && <p className="text-destructive text-sm">{error}</p>}
         </div>
 
         <DialogFooter>
@@ -332,10 +324,7 @@ export function UploadDocxDialog({ slug, children }: UploadDocxDialogProps) {
           >
             Cancel
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={isUploading || !file || !name.trim()}
-          >
+          <Button onClick={handleSubmit} disabled={isUploading || !file || !name.trim()}>
             {isUploading ? "Uploading..." : "Upload Template"}
           </Button>
         </DialogFooter>

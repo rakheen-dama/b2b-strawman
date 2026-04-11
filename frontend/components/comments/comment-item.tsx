@@ -82,12 +82,10 @@ export function CommentItem({
           <span className="text-xs text-slate-500 dark:text-slate-400">
             <RelativeDate iso={comment.createdAt} />
           </span>
-          {comment.visibility === "SHARED" && (
-            <Badge variant="success">Customer visible</Badge>
-          )}
+          {comment.visibility === "SHARED" && <Badge variant="success">Customer visible</Badge>}
         </div>
 
-        <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700 dark:text-slate-300">
+        <p className="mt-1 text-sm whitespace-pre-wrap text-slate-700 dark:text-slate-300">
           {comment.body}
         </p>
 
@@ -100,11 +98,7 @@ export function CommentItem({
               canManageVisibility={canManageVisibility}
               onCommentChange={onCommentChange}
             >
-              <Button
-                variant="ghost"
-                size="xs"
-                aria-label={`Edit comment by ${authorName}`}
-              >
+              <Button variant="ghost" size="xs" aria-label={`Edit comment by ${authorName}`}>
                 <Pencil className="size-3" />
                 Edit
               </Button>
@@ -112,11 +106,7 @@ export function CommentItem({
 
             <AlertDialog open={deleteOpen} onOpenChange={handleDeleteOpenChange}>
               <AlertDialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="xs"
-                  aria-label={`Delete comment by ${authorName}`}
-                >
+                <Button variant="ghost" size="xs" aria-label={`Delete comment by ${authorName}`}>
                   <Trash2 className="size-3" />
                   Delete
                 </Button>
@@ -128,25 +118,17 @@ export function CommentItem({
                       <AlertTriangle className="size-6 text-red-600 dark:text-red-400" />
                     </div>
                   </div>
-                  <AlertDialogTitle className="text-center">
-                    Delete Comment
-                  </AlertDialogTitle>
+                  <AlertDialogTitle className="text-center">Delete Comment</AlertDialogTitle>
                   <AlertDialogDescription className="text-center">
                     Delete this comment? This action cannot be undone.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                {deleteError && (
-                  <p className="text-sm text-destructive">{deleteError}</p>
-                )}
+                {deleteError && <p className="text-destructive text-sm">{deleteError}</p>}
                 <AlertDialogFooter>
                   <AlertDialogCancel variant="plain" disabled={isDeleting}>
                     Cancel
                   </AlertDialogCancel>
-                  <Button
-                    variant="destructive"
-                    onClick={handleDelete}
-                    disabled={isDeleting}
-                  >
+                  <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
                     {isDeleting ? "Deleting..." : "Delete"}
                   </Button>
                 </AlertDialogFooter>

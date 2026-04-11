@@ -41,7 +41,7 @@ export function InvoiceHeaderActions({
     <div className="flex items-start justify-between gap-4">
       <div className="min-w-0">
         <div className="flex items-center gap-3">
-          <h1 className="flex items-center gap-2 font-display text-2xl text-slate-950 dark:text-slate-50">
+          <h1 className="font-display flex items-center gap-2 text-2xl text-slate-950 dark:text-slate-50">
             {invoice.invoiceNumber ?? "Draft Invoice"}
             <HelpTip code="invoices.numbering" />
           </h1>
@@ -49,12 +49,8 @@ export function InvoiceHeaderActions({
         </div>
         <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
           <span>Customer: {invoice.customerName}</span>
-          {invoice.issueDate && (
-            <span>Issued: {formatDate(invoice.issueDate)}</span>
-          )}
-          {invoice.dueDate && !isDraft && (
-            <span>Due: {formatDate(invoice.dueDate)}</span>
-          )}
+          {invoice.issueDate && <span>Issued: {formatDate(invoice.issueDate)}</span>}
+          {invoice.dueDate && !isDraft && <span>Due: {formatDate(invoice.dueDate)}</span>}
           <span>Currency: {invoice.currency}</span>
         </div>
       </div>
@@ -70,61 +66,31 @@ export function InvoiceHeaderActions({
             {isDraft && (
               <>
                 <RequiresCapability cap="INVOICING">
-                  <Button
-                    variant="accent"
-                    size="sm"
-                    onClick={onApprove}
-                    disabled={isPending}
-                  >
+                  <Button variant="accent" size="sm" onClick={onApprove} disabled={isPending}>
                     Approve
                   </Button>
                 </RequiresCapability>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={onDelete}
-                  disabled={isPending}
-                >
+                <Button variant="destructive" size="sm" onClick={onDelete} disabled={isPending}>
                   Delete Draft
                 </Button>
               </>
             )}
             {isApproved && (
               <>
-                <Button
-                  variant="accent"
-                  size="sm"
-                  onClick={onSend}
-                  disabled={isPending}
-                >
+                <Button variant="accent" size="sm" onClick={onSend} disabled={isPending}>
                   Send Invoice
                 </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={onVoid}
-                  disabled={isPending}
-                >
+                <Button variant="destructive" size="sm" onClick={onVoid} disabled={isPending}>
                   Void
                 </Button>
               </>
             )}
             {isSent && (
               <>
-                <Button
-                  variant="accent"
-                  size="sm"
-                  onClick={onShowPaymentForm}
-                  disabled={isPending}
-                >
+                <Button variant="accent" size="sm" onClick={onShowPaymentForm} disabled={isPending}>
                   Record Payment
                 </Button>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={onVoid}
-                  disabled={isPending}
-                >
+                <Button variant="destructive" size="sm" onClick={onVoid} disabled={isPending}>
                   Void
                 </Button>
               </>

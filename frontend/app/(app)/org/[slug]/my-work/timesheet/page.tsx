@@ -7,11 +7,7 @@ function getCurrentWeekMonday(): string {
   const now = new Date();
   const day = now.getDay();
   const diff = day === 0 ? -6 : 1 - day;
-  const monday = new Date(
-    now.getFullYear(),
-    now.getMonth(),
-    now.getDate() + diff,
-  );
+  const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate() + diff);
   return monday.toLocaleDateString("en-CA");
 }
 
@@ -46,7 +42,7 @@ export default async function TimesheetPage({
   let existingEntries: MyWorkTimeEntryItem[] = [];
   try {
     existingEntries = await api.get<MyWorkTimeEntryItem[]>(
-      `/api/my-work/time-entries?from=${weekStart}&to=${weekEnd}`,
+      `/api/my-work/time-entries?from=${weekStart}&to=${weekEnd}`
     );
   } catch (error) {
     console.error("Failed to fetch time entries for timesheet:", error);

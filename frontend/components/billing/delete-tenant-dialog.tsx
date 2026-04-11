@@ -48,10 +48,7 @@ export function DeleteTenantDialog({
     setIsLoading(true);
 
     try {
-      const result = await deleteDemoTenant(
-        tenant.organizationId,
-        confirmInput,
-      );
+      const result = await deleteDemoTenant(tenant.organizationId, confirmInput);
 
       if (result.success) {
         toast.success("Demo tenant deleted successfully.");
@@ -82,9 +79,8 @@ export function DeleteTenantDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Delete Demo Tenant</AlertDialogTitle>
           <AlertDialogDescription>
-            This will permanently delete the organization, all its data, the
-            database schema, and Keycloak resources. This action cannot be
-            undone.
+            This will permanently delete the organization, all its data, the database schema, and
+            Keycloak resources. This action cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -96,16 +92,16 @@ export function DeleteTenantDialog({
             <Badge variant="outline">{tenant.verticalProfile}</Badge>
           </div>
           <div className="text-slate-600 dark:text-slate-400">
-            <span>{tenant.memberCount} member{tenant.memberCount !== 1 ? "s" : ""}</span>
+            <span>
+              {tenant.memberCount} member{tenant.memberCount !== 1 ? "s" : ""}
+            </span>
             <span className="mx-2">&middot;</span>
             <span>Created {formatDate(tenant.createdAt)}</span>
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="confirm-name">
-            Type the organization name to confirm
-          </Label>
+          <Label htmlFor="confirm-name">Type the organization name to confirm</Label>
           <Input
             id="confirm-name"
             value={confirmInput}
@@ -117,11 +113,7 @@ export function DeleteTenantDialog({
 
         <AlertDialogFooter>
           <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={!isNameMatch || isLoading}
-          >
+          <Button variant="destructive" onClick={handleDelete} disabled={!isNameMatch || isLoading}>
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

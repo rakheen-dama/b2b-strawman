@@ -8,7 +8,7 @@ export default async function AccessRequestsPage() {
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
       <h1 className="text-2xl font-bold tracking-tight">Access Requests</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
+      <p className="text-muted-foreground mt-2 text-sm">
         Review and manage organization access requests.
       </p>
       {!result.success && (

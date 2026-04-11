@@ -33,11 +33,7 @@ interface UseInvoiceDetailOptions {
   taxRates: TaxRateResponse[];
 }
 
-export function useInvoiceDetail({
-  initialInvoice,
-  slug,
-  taxRates,
-}: UseInvoiceDetailOptions) {
+export function useInvoiceDetail({ initialInvoice, slug, taxRates }: UseInvoiceDetailOptions) {
   const router = useRouter();
   const [invoice, setInvoice] = useState(initialInvoice);
   const [isPending, startTransition] = useTransition();
@@ -49,9 +45,9 @@ export function useInvoiceDetail({
   const [paymentTerms, setPaymentTerms] = useState(invoice.paymentTerms ?? "");
   const [taxAmount, setTaxAmount] = useState(String(invoice.taxAmount ?? 0));
   const [poNumber, setPoNumber] = useState(invoice.poNumber ?? "");
-  const [taxType, setTaxType] = useState<
-    NonNullable<UpdateInvoiceRequest["taxType"]> | ""
-  >(invoice.taxType ?? "");
+  const [taxType, setTaxType] = useState<NonNullable<UpdateInvoiceRequest["taxType"]> | "">(
+    invoice.taxType ?? ""
+  );
   const TAX_TYPES: ReadonlyArray<NonNullable<UpdateInvoiceRequest["taxType"]>> = [
     "VAT",
     "GST",
@@ -65,12 +61,8 @@ export function useInvoiceDetail({
       setTaxType(value as NonNullable<UpdateInvoiceRequest["taxType"]>);
     }
   };
-  const [billingPeriodStart, setBillingPeriodStart] = useState(
-    invoice.billingPeriodStart ?? "",
-  );
-  const [billingPeriodEnd, setBillingPeriodEnd] = useState(
-    invoice.billingPeriodEnd ?? "",
-  );
+  const [billingPeriodStart, setBillingPeriodStart] = useState(invoice.billingPeriodStart ?? "");
+  const [billingPeriodEnd, setBillingPeriodEnd] = useState(invoice.billingPeriodEnd ?? "");
 
   // Default tax rate for new lines
   const defaultTaxRate = taxRates.find((r) => r.isDefault && r.active);
@@ -80,14 +72,10 @@ export function useInvoiceDetail({
   const [newLineDesc, setNewLineDesc] = useState("");
   const [newLineQty, setNewLineQty] = useState("1");
   const [newLineRate, setNewLineRate] = useState("0");
-  const [newLineTaxRateId, setNewLineTaxRateId] = useState(
-    defaultTaxRate?.id ?? "none",
-  );
+  const [newLineTaxRateId, setNewLineTaxRateId] = useState(defaultTaxRate?.id ?? "none");
 
   // Edit line dialog state
-  const [editingLine, setEditingLine] = useState<InvoiceLineResponse | null>(
-    null,
-  );
+  const [editingLine, setEditingLine] = useState<InvoiceLineResponse | null>(null);
   const [editLineDesc, setEditLineDesc] = useState("");
   const [editLineQty, setEditLineQty] = useState("");
   const [editLineRate, setEditLineRate] = useState("");
@@ -130,11 +118,7 @@ export function useInvoiceDetail({
   function handleRegenerateLink() {
     setError(null);
     startTransition(async () => {
-      const result = await refreshPaymentLink(
-        slug,
-        invoice.id,
-        invoice.customerId,
-      );
+      const result = await refreshPaymentLink(slug, invoice.id, invoice.customerId);
       if (result.success && result.invoice) {
         setInvoice(result.invoice);
       } else {
@@ -150,7 +134,7 @@ export function useInvoiceDetail({
         dueDate: dueDate || undefined,
         notes: notes || undefined,
         paymentTerms: paymentTerms || undefined,
-        taxAmount: invoice.hasPerLineTax ? undefined : (parseFloat(taxAmount) || 0),
+        taxAmount: invoice.hasPerLineTax ? undefined : parseFloat(taxAmount) || 0,
         poNumber: poNumber || undefined,
         taxType: taxType === "" ? undefined : taxType,
         billingPeriodStart: billingPeriodStart || undefined,
@@ -225,7 +209,7 @@ export function useInvoiceDetail({
         slug,
         invoice.id,
         invoice.customerId,
-        paymentRef ? { paymentReference: paymentRef } : undefined,
+        paymentRef ? { paymentReference: paymentRef } : undefined
       );
       if (result.success && result.invoice) {
         setInvoice(result.invoice);
@@ -238,8 +222,7 @@ export function useInvoiceDetail({
   }
 
   function handleVoid() {
-    if (!confirm("Are you sure you want to void this invoice? This cannot be undone."))
-      return;
+    if (!confirm("Are you sure you want to void this invoice? This cannot be undone.")) return;
     setError(null);
     startTransition(async () => {
       const result = await voidInvoice(slug, invoice.id, invoice.customerId);
@@ -316,7 +299,7 @@ export function useInvoiceDetail({
         invoice.id,
         editingLine!.id,
         invoice.customerId,
-        request,
+        request
       );
       if (result.success && result.invoice) {
         setInvoice(result.invoice);
@@ -335,13 +318,10 @@ export function useInvoiceDetail({
         setInvoice((prev) => ({
           ...prev,
           lines: prev.lines.filter((l) => l.id !== lineId),
-          subtotal: prev.lines
-            .filter((l) => l.id !== lineId)
-            .reduce((sum, l) => sum + l.amount, 0),
+          subtotal: prev.lines.filter((l) => l.id !== lineId).reduce((sum, l) => sum + l.amount, 0),
           total:
-            prev.lines
-              .filter((l) => l.id !== lineId)
-              .reduce((sum, l) => sum + l.amount, 0) + prev.taxAmount,
+            prev.lines.filter((l) => l.id !== lineId).reduce((sum, l) => sum + l.amount, 0) +
+            prev.taxAmount,
         }));
       } else {
         handleError(result);

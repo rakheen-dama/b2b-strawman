@@ -6,7 +6,16 @@ import { fetchRetainerSummary } from "@/lib/api/retainers";
 import type { RetainerSummaryResponse } from "@/lib/types";
 import { getProjectTemplates } from "@/lib/api/templates";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
-import type { Project, ProjectRole, LightweightBudgetStatus, FieldDefinitionResponse, SavedViewResponse, TagResponse, OrgMember, Customer } from "@/lib/types";
+import type {
+  Project,
+  ProjectRole,
+  LightweightBudgetStatus,
+  FieldDefinitionResponse,
+  SavedViewResponse,
+  TagResponse,
+  OrgMember,
+  Customer,
+} from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
 import { BudgetStatusDot } from "@/components/projects/budget-status-dot";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
@@ -50,7 +59,8 @@ export default async function ProjectsPage({
   const caps = await fetchMyCapabilities();
 
   const isAdmin = caps.isAdmin || caps.isOwner;
-  const currentViewId = typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : null;
+  const currentViewId =
+    typeof resolvedSearchParams.view === "string" ? resolvedSearchParams.view : null;
 
   // Fetch saved views for project entity type
   let views: SavedViewResponse[] = [];
@@ -62,14 +72,14 @@ export default async function ProjectsPage({
 
   // Build query string with view and status filters
   const VALID_STATUSES = new Set(["ACTIVE", "COMPLETED", "ARCHIVED"]);
-  const rawStatus = typeof resolvedSearchParams.status === "string" ? resolvedSearchParams.status : null;
+  const rawStatus =
+    typeof resolvedSearchParams.status === "string" ? resolvedSearchParams.status : null;
   const statusParam = rawStatus && VALID_STATUSES.has(rawStatus) ? rawStatus : null;
   const queryParts: string[] = [];
   if (currentViewId) queryParts.push(`view=${currentViewId}`);
   if (statusParam) queryParts.push(`status=${statusParam}`);
-  const projectsEndpoint = queryParts.length > 0
-    ? `/api/projects?${queryParts.join("&")}`
-    : "/api/projects";
+  const projectsEndpoint =
+    queryParts.length > 0 ? `/api/projects?${queryParts.join("&")}` : "/api/projects";
 
   let projects: Project[] = [];
   try {
@@ -122,9 +132,7 @@ export default async function ProjectsPage({
   const budgetStatuses = new Map<string, LightweightBudgetStatus>();
   if (isAdmin && projects.length > 0) {
     const results = await Promise.allSettled(
-      projects.map((p) =>
-        api.get<LightweightBudgetStatus>(`/api/projects/${p.id}/budget/status`),
-      ),
+      projects.map((p) => api.get<LightweightBudgetStatus>(`/api/projects/${p.id}/budget/status`))
     );
     results.forEach((result, i) => {
       if (result.status === "fulfilled" && result.value) {
@@ -142,7 +150,7 @@ export default async function ProjectsPage({
   if (projects.length > 0) {
     try {
       const customerResults = await Promise.allSettled(
-        projects.map((p) => api.get<Customer[]>(`/api/projects/${p.id}/customers`)),
+        projects.map((p) => api.get<Customer[]>(`/api/projects/${p.id}/customers`))
       );
       customerResults.forEach((result, i) => {
         if (result.status === "fulfilled" && result.value?.length > 0) {
@@ -153,7 +161,7 @@ export default async function ProjectsPage({
       const uniqueCustomerIds = [...new Set(projectCustomerMap.values())];
       if (uniqueCustomerIds.length > 0) {
         const summaryResults = await Promise.allSettled(
-          uniqueCustomerIds.map((cid) => fetchRetainerSummary(cid)),
+          uniqueCustomerIds.map((cid) => fetchRetainerSummary(cid))
         );
         summaryResults.forEach((result, i) => {
           if (result.status === "fulfilled") {
@@ -178,7 +186,9 @@ export default async function ProjectsPage({
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50"><TerminologyHeading term="Projects" /></h1>
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+            <TerminologyHeading term="Projects" />
+          </h1>
           <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
             <TerminologyHeading count={projects.length} term="projects" singularTerm="project" />
           </p>
@@ -220,7 +230,9 @@ export default async function ProjectsPage({
         <EmptyState
           icon={FolderOpen}
           title={t("projects.list.heading")}
-          description={isAdmin ? t("projects.list.description") : t("projects.list.descriptionMember")}
+          description={
+            isAdmin ? t("projects.list.description") : t("projects.list.descriptionMember")
+          }
           action={<CreateProjectDialog slug={slug} />}
           secondaryLink={{ label: "Read the guide", href: docsLink("/features/projects") }}
         />
@@ -252,11 +264,17 @@ export default async function ProjectsPage({
                     {budgetStatus?.overallStatus && (
                       <BudgetStatusDot status={budgetStatus.overallStatus} />
                     )}
-                    {project.status && project.status !== "ACTIVE" && PROJECT_STATUS_BADGE[project.status] && (
-                      <Badge variant={PROJECT_STATUS_BADGE[project.status].variant} className="shrink-0" data-testid="project-status-badge">
-                        {PROJECT_STATUS_BADGE[project.status].label}
-                      </Badge>
-                    )}
+                    {project.status &&
+                      project.status !== "ACTIVE" &&
+                      PROJECT_STATUS_BADGE[project.status] && (
+                        <Badge
+                          variant={PROJECT_STATUS_BADGE[project.status].variant}
+                          className="shrink-0"
+                          data-testid="project-status-badge"
+                        >
+                          {PROJECT_STATUS_BADGE[project.status].label}
+                        </Badge>
+                      )}
                     {hasRetainer && (
                       <span
                         className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2 py-0.5 text-xs font-medium text-teal-700 dark:bg-teal-900/30 dark:text-teal-400"
@@ -275,7 +293,7 @@ export default async function ProjectsPage({
                       {project.description}
                     </p>
                   ) : (
-                    <p className="mt-2 text-sm italic text-slate-400 dark:text-slate-600">
+                    <p className="mt-2 text-sm text-slate-400 italic dark:text-slate-600">
                       No description
                     </p>
                   )}
@@ -307,9 +325,7 @@ export default async function ProjectsPage({
                         {formatLocalDate(project.dueDate)}
                       </span>
                     )}
-                    {project.createdAt && (
-                      <span>{formatDate(project.createdAt)}</span>
-                    )}
+                    {project.createdAt && <span>{formatDate(project.createdAt)}</span>}
                   </div>
 
                   {/* Tag badges */}
@@ -321,9 +337,7 @@ export default async function ProjectsPage({
                           variant="outline"
                           className="text-xs"
                           style={
-                            tag.color
-                              ? { borderColor: tag.color, color: tag.color }
-                              : undefined
+                            tag.color ? { borderColor: tag.color, color: tag.color } : undefined
                           }
                         >
                           {tag.name}

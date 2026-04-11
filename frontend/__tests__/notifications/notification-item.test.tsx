@@ -20,13 +20,10 @@ vi.mock("next/navigation", () => ({
 const mockMarkNotificationRead = vi.fn();
 
 vi.mock("@/lib/actions/notifications", () => ({
-  markNotificationRead: (...args: unknown[]) =>
-    mockMarkNotificationRead(...args),
+  markNotificationRead: (...args: unknown[]) => mockMarkNotificationRead(...args),
 }));
 
-function makeNotification(
-  overrides: Partial<Notification> = {}
-): Notification {
+function makeNotification(overrides: Partial<Notification> = {}): Notification {
   return {
     id: "n1",
     type: "TASK_ASSIGNED",
@@ -52,42 +49,22 @@ describe("NotificationItem", () => {
   });
 
   it("renders unread indicator for unread notification", () => {
-    render(
-      <NotificationItem
-        notification={makeNotification({ isRead: false })}
-        orgSlug="acme"
-      />
-    );
+    render(<NotificationItem notification={makeNotification({ isRead: false })} orgSlug="acme" />);
 
-    expect(
-      screen.getByText("Alice assigned you to Fix login bug")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Alice assigned you to Fix login bug")).toBeInTheDocument();
     expect(screen.getByLabelText("Unread")).toBeInTheDocument();
   });
 
   it("does not render unread indicator for read notification", () => {
-    render(
-      <NotificationItem
-        notification={makeNotification({ isRead: true })}
-        orgSlug="acme"
-      />
-    );
+    render(<NotificationItem notification={makeNotification({ isRead: true })} orgSlug="acme" />);
 
-    expect(
-      screen.getByText("Alice assigned you to Fix login bug")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Alice assigned you to Fix login bug")).toBeInTheDocument();
     expect(screen.queryByLabelText("Unread")).not.toBeInTheDocument();
   });
 
   it("calls markNotificationRead and navigates on click", async () => {
     const onRead = vi.fn();
-    render(
-      <NotificationItem
-        notification={makeNotification()}
-        orgSlug="acme"
-        onRead={onRead}
-      />
-    );
+    render(<NotificationItem notification={makeNotification()} orgSlug="acme" onRead={onRead} />);
 
     const user = userEvent.setup();
     const button = screen.getByRole("button");

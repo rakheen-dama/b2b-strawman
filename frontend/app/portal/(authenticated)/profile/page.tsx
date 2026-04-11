@@ -3,12 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { User, Loader2, AlertCircle } from "lucide-react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { portalApi, PortalApiError, clearPortalAuth } from "@/lib/portal-api";
 import type { PortalProfile } from "@/lib/types";
 
@@ -29,9 +24,7 @@ export default function PortalProfilePage() {
           router.replace("/portal");
           return;
         }
-        setError(
-          err instanceof Error ? err.message : "Failed to load profile",
-        );
+        setError(err instanceof Error ? err.message : "Failed to load profile");
       } finally {
         setIsLoading(false);
       }
@@ -65,9 +58,7 @@ export default function PortalProfilePage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
-          Profile
-        </h1>
+        <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">Profile</h1>
       </div>
 
       {/* Profile Card */}
@@ -81,26 +72,18 @@ export default function PortalProfilePage() {
         <CardContent>
           <dl className="grid gap-4 sm:grid-cols-2">
             <div>
-              <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                Email
-              </dt>
-              <dd className="mt-1 text-sm text-slate-900 dark:text-slate-100">
-                {profile.email}
-              </dd>
+              <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">Email</dt>
+              <dd className="mt-1 text-sm text-slate-900 dark:text-slate-100">{profile.email}</dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                Customer
-              </dt>
+              <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">Customer</dt>
               <dd className="mt-1 text-sm text-slate-900 dark:text-slate-100">
                 {profile.customerName}
               </dd>
             </div>
             <div>
-              <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">
-                Role
-              </dt>
-              <dd className="mt-1 text-sm capitalize text-slate-900 dark:text-slate-100">
+              <dt className="text-sm font-medium text-slate-500 dark:text-slate-400">Role</dt>
+              <dd className="mt-1 text-sm text-slate-900 capitalize dark:text-slate-100">
                 {profile.role.toLowerCase()}
               </dd>
             </div>

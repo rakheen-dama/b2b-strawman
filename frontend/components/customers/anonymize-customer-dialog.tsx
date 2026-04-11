@@ -50,9 +50,8 @@ export function AnonymizeCustomerDialog({
     data: previewResult,
     error: previewError,
     isLoading: previewLoading,
-  } = useSWR(
-    open && step === "preview" ? `anonymize-preview-${customerId}` : null,
-    () => fetchAnonymizationPreview(customerId),
+  } = useSWR(open && step === "preview" ? `anonymize-preview-${customerId}` : null, () =>
+    fetchAnonymizationPreview(customerId)
   );
 
   const preview = previewResult?.data;
@@ -100,7 +99,7 @@ export function AnonymizeCustomerDialog({
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
-      <AlertDialogContent className="border-t-4 border-t-red-500 max-w-lg">
+      <AlertDialogContent className="max-w-lg border-t-4 border-t-red-500">
         {step === "preview" && (
           <>
             <AlertDialogHeader>
@@ -123,22 +122,20 @@ export function AnonymizeCustomerDialog({
             )}
 
             {previewError && (
-              <p className="text-sm text-destructive text-center">
+              <p className="text-destructive text-center text-sm">
                 Failed to load anonymization preview.
               </p>
             )}
 
             {previewResult && !previewResult.success && (
-              <p className="text-sm text-destructive text-center">
-                {previewResult.error}
-              </p>
+              <p className="text-destructive text-center text-sm">{previewResult.error}</p>
             )}
 
             {preview && (
               <div className="space-y-4">
                 <div className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
                   <p className="font-medium">Affected entities:</p>
-                  <ul className="list-disc pl-4 space-y-1 text-slate-600 dark:text-slate-400">
+                  <ul className="list-disc space-y-1 pl-4 text-slate-600 dark:text-slate-400">
                     <li>Portal contacts: {preview.affectedEntities.portalContacts}</li>
                     <li>Projects: {preview.affectedEntities.projects}</li>
                     <li>Documents: {preview.affectedEntities.documents}</li>
@@ -170,7 +167,11 @@ export function AnonymizeCustomerDialog({
               <Button
                 variant="destructive"
                 onClick={() => setStep("confirm")}
-                disabled={previewLoading || !!previewError || (previewResult != null && !previewResult.success)}
+                disabled={
+                  previewLoading ||
+                  !!previewError ||
+                  (previewResult != null && !previewResult.success)
+                }
               >
                 Continue
               </Button>
@@ -194,7 +195,7 @@ export function AnonymizeCustomerDialog({
 
             <div className="space-y-3 text-sm text-slate-700 dark:text-slate-300">
               <p className="font-medium">The following will happen:</p>
-              <ul className="list-disc pl-4 space-y-1 text-slate-600 dark:text-slate-400">
+              <ul className="list-disc space-y-1 pl-4 text-slate-600 dark:text-slate-400">
                 <li>Customer PII will be anonymized</li>
                 <li>Documents will be permanently deleted</li>
                 <li>Comments will be redacted</li>
@@ -211,7 +212,7 @@ export function AnonymizeCustomerDialog({
               <select
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="border-input focus-visible:ring-ring flex h-9 w-full rounded-md border bg-transparent px-3 py-1 text-sm shadow-xs transition-colors focus-visible:ring-1 focus-visible:outline-none"
               >
                 <option value="Data subject request">Data subject request</option>
                 <option value="Regulatory compliance">Regulatory compliance</option>
@@ -237,7 +238,7 @@ export function AnonymizeCustomerDialog({
               />
             </div>
 
-            {error && <p className="text-sm text-destructive">{error}</p>}
+            {error && <p className="text-destructive text-sm">{error}</p>}
 
             <AlertDialogFooter>
               <AlertDialogCancel variant="plain" disabled={isPending}>
@@ -270,7 +271,7 @@ export function AnonymizeCustomerDialog({
 
             <div className="space-y-2 text-sm text-slate-700 dark:text-slate-300">
               <p>Anonymization summary:</p>
-              <ul className="list-disc pl-4 space-y-1 text-slate-600 dark:text-slate-400">
+              <ul className="list-disc space-y-1 pl-4 text-slate-600 dark:text-slate-400">
                 <li>Customer anonymized: {result.summary.customerAnonymized ? "Yes" : "No"}</li>
                 <li>Documents deleted: {result.summary.documentsDeleted}</li>
                 <li>Comments redacted: {result.summary.commentsRedacted}</li>

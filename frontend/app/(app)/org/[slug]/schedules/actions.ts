@@ -23,7 +23,7 @@ interface ActionResult {
 
 export async function createScheduleAction(
   slug: string,
-  data: CreateScheduleRequest,
+  data: CreateScheduleRequest
 ): Promise<ActionResult> {
   try {
     const created = await createSchedule(data);
@@ -46,7 +46,7 @@ export async function createScheduleAction(
 export async function updateScheduleAction(
   slug: string,
   id: string,
-  data: UpdateScheduleRequest,
+  data: UpdateScheduleRequest
 ): Promise<ActionResult> {
   try {
     const updated = await updateSchedule(id, data);
@@ -67,10 +67,7 @@ export async function updateScheduleAction(
   }
 }
 
-export async function deleteScheduleAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function deleteScheduleAction(slug: string, id: string): Promise<ActionResult> {
   try {
     await deleteSchedule(id);
     revalidatePath(`/org/${slug}/schedules`);
@@ -90,10 +87,7 @@ export async function deleteScheduleAction(
   }
 }
 
-export async function pauseScheduleAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function pauseScheduleAction(slug: string, id: string): Promise<ActionResult> {
   try {
     const data = await pauseSchedule(id);
     revalidatePath(`/org/${slug}/schedules`);
@@ -113,10 +107,7 @@ export async function pauseScheduleAction(
   }
 }
 
-export async function resumeScheduleAction(
-  slug: string,
-  id: string,
-): Promise<ActionResult> {
+export async function resumeScheduleAction(slug: string, id: string): Promise<ActionResult> {
   try {
     const data = await resumeSchedule(id);
     revalidatePath(`/org/${slug}/schedules`);

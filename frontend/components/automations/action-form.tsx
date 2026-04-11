@@ -47,10 +47,7 @@ const TARGET_ENTITY_OPTIONS = [
   { value: "INVOICE", label: "Invoice" },
 ];
 
-const STATUS_OPTIONS_BY_ENTITY: Record<
-  string,
-  { value: string; label: string }[]
-> = {
+const STATUS_OPTIONS_BY_ENTITY: Record<string, { value: string; label: string }[]> = {
   TASK: [
     { value: "OPEN", label: "Open" },
     { value: "IN_PROGRESS", label: "In Progress" },
@@ -80,10 +77,7 @@ const ROLE_OPTIONS = [
   { value: "MEMBER", label: "Member" },
 ];
 
-function insertVariable(
-  currentValue: string,
-  variablePath: string,
-): string {
+function insertVariable(currentValue: string, variablePath: string): string {
   return `${currentValue}{{${variablePath}}}`;
 }
 
@@ -109,10 +103,7 @@ export function ActionForm({
                 onInsert={(v) =>
                   updateField(
                     "taskName",
-                    insertVariable(
-                      (actionConfig.taskName as string) ?? "",
-                      v,
-                    ),
+                    insertVariable((actionConfig.taskName as string) ?? "", v)
                   )
                 }
               />
@@ -158,9 +149,7 @@ export function ActionForm({
               <Input
                 id="action-member-id"
                 value={(actionConfig.specificMemberId as string) ?? ""}
-                onChange={(e) =>
-                  updateField("specificMemberId", e.target.value)
-                }
+                onChange={(e) => updateField("specificMemberId", e.target.value)}
                 placeholder="Member UUID"
               />
             </div>
@@ -195,10 +184,7 @@ export function ActionForm({
               <VariableInserter
                 triggerType={triggerType}
                 onInsert={(v) =>
-                  updateField(
-                    "title",
-                    insertVariable((actionConfig.title as string) ?? "", v),
-                  )
+                  updateField("title", insertVariable((actionConfig.title as string) ?? "", v))
                 }
               />
             </div>
@@ -215,13 +201,7 @@ export function ActionForm({
               <VariableInserter
                 triggerType={triggerType}
                 onInsert={(v) =>
-                  updateField(
-                    "message",
-                    insertVariable(
-                      (actionConfig.message as string) ?? "",
-                      v,
-                    ),
-                  )
+                  updateField("message", insertVariable((actionConfig.message as string) ?? "", v))
                 }
               />
             </div>
@@ -263,13 +243,7 @@ export function ActionForm({
               <VariableInserter
                 triggerType={triggerType}
                 onInsert={(v) =>
-                  updateField(
-                    "subject",
-                    insertVariable(
-                      (actionConfig.subject as string) ?? "",
-                      v,
-                    ),
-                  )
+                  updateField("subject", insertVariable((actionConfig.subject as string) ?? "", v))
                 }
               />
             </div>
@@ -286,10 +260,7 @@ export function ActionForm({
               <VariableInserter
                 triggerType={triggerType}
                 onInsert={(v) =>
-                  updateField(
-                    "body",
-                    insertVariable((actionConfig.body as string) ?? "", v),
-                  )
+                  updateField("body", insertVariable((actionConfig.body as string) ?? "", v))
                 }
               />
             </div>
@@ -306,9 +277,7 @@ export function ActionForm({
 
     case "UPDATE_STATUS": {
       const entityType = (actionConfig.targetEntityType as string) ?? "";
-      const statusOptions = entityType
-        ? (STATUS_OPTIONS_BY_ENTITY[entityType] ?? [])
-        : [];
+      const statusOptions = entityType ? (STATUS_OPTIONS_BY_ENTITY[entityType] ?? []) : [];
       return (
         <div className="space-y-3">
           <div className="space-y-1.5">

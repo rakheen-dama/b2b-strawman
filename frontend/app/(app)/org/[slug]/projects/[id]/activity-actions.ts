@@ -8,10 +8,5 @@ export async function loadMoreActivity(
   entityType?: string,
   page?: number
 ): Promise<ActivityResponse> {
-  return fetchProjectActivity(
-    projectId,
-    entityType || undefined,
-    page ?? 0,
-    20
-  );
+  return fetchProjectActivity(projectId, entityType || undefined, page ?? 0, 20);
 }

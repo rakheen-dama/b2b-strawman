@@ -33,7 +33,7 @@ describe("AssistantProvider + AssistantTrigger", () => {
     render(
       <AssistantProvider aiEnabled={true}>
         <AssistantTrigger />
-      </AssistantProvider>,
+      </AssistantProvider>
     );
 
     expect(screen.getByLabelText("Open assistant")).toBeInTheDocument();
@@ -43,7 +43,7 @@ describe("AssistantProvider + AssistantTrigger", () => {
     render(
       <AssistantProvider aiEnabled={false}>
         <AssistantTrigger />
-      </AssistantProvider>,
+      </AssistantProvider>
     );
 
     expect(screen.queryByLabelText("Open assistant")).not.toBeInTheDocument();
@@ -55,7 +55,7 @@ describe("AssistantProvider + AssistantTrigger", () => {
     render(
       <AssistantProvider aiEnabled={true}>
         <AssistantTrigger />
-      </AssistantProvider>,
+      </AssistantProvider>
     );
 
     const trigger = screen.getByLabelText("Open assistant");

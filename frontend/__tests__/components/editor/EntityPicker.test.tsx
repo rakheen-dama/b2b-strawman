@@ -8,14 +8,11 @@ const mockFetchProjects = vi.fn();
 const mockFetchCustomers = vi.fn();
 const mockFetchInvoices = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/templates/template-support-actions",
-  () => ({
-    fetchProjectsForPicker: (...args: unknown[]) => mockFetchProjects(...args),
-    fetchCustomersForPicker: (...args: unknown[]) => mockFetchCustomers(...args),
-    fetchInvoicesForPicker: (...args: unknown[]) => mockFetchInvoices(...args),
-  }),
-);
+vi.mock("@/app/(app)/org/[slug]/settings/templates/template-support-actions", () => ({
+  fetchProjectsForPicker: (...args: unknown[]) => mockFetchProjects(...args),
+  fetchCustomersForPicker: (...args: unknown[]) => mockFetchCustomers(...args),
+  fetchInvoicesForPicker: (...args: unknown[]) => mockFetchInvoices(...args),
+}));
 
 // Mock server-only
 vi.mock("server-only", () => ({}));
@@ -49,12 +46,7 @@ afterEach(() => {
 describe("EntityPicker", () => {
   it("renders with PROJECT entity type and shows project label", async () => {
     render(
-      <EntityPicker
-        entityType="PROJECT"
-        open={true}
-        onOpenChange={vi.fn()}
-        onSelect={vi.fn()}
-      />,
+      <EntityPicker entityType="PROJECT" open={true} onOpenChange={vi.fn()} onSelect={vi.fn()} />
     );
 
     await waitFor(() => {
@@ -65,12 +57,7 @@ describe("EntityPicker", () => {
 
   it("renders with CUSTOMER entity type and shows customer label", async () => {
     render(
-      <EntityPicker
-        entityType="CUSTOMER"
-        open={true}
-        onOpenChange={vi.fn()}
-        onSelect={vi.fn()}
-      />,
+      <EntityPicker entityType="CUSTOMER" open={true} onOpenChange={vi.fn()} onSelect={vi.fn()} />
     );
 
     await waitFor(() => {
@@ -81,12 +68,7 @@ describe("EntityPicker", () => {
 
   it("renders with INVOICE entity type and shows invoice label", async () => {
     render(
-      <EntityPicker
-        entityType="INVOICE"
-        open={true}
-        onOpenChange={vi.fn()}
-        onSelect={vi.fn()}
-      />,
+      <EntityPicker entityType="INVOICE" open={true} onOpenChange={vi.fn()} onSelect={vi.fn()} />
     );
 
     await waitFor(() => {
@@ -100,12 +82,7 @@ describe("EntityPicker", () => {
     mockFetchProjects.mockReturnValue(new Promise(() => {}));
 
     render(
-      <EntityPicker
-        entityType="PROJECT"
-        open={true}
-        onOpenChange={vi.fn()}
-        onSelect={vi.fn()}
-      />,
+      <EntityPicker entityType="PROJECT" open={true} onOpenChange={vi.fn()} onSelect={vi.fn()} />
     );
 
     await waitFor(() => {
@@ -124,7 +101,7 @@ describe("EntityPicker", () => {
         open={true}
         onOpenChange={onOpenChange}
         onSelect={onSelect}
-      />,
+      />
     );
 
     // Wait for entities to load
@@ -144,7 +121,10 @@ describe("EntityPicker", () => {
     const selectButton = screen.getByRole("button", { name: "Select" });
     await user.click(selectButton);
 
-    expect(onSelect).toHaveBeenCalledWith("p1", expect.objectContaining({ id: "p1", name: "Alpha Project" }));
+    expect(onSelect).toHaveBeenCalledWith(
+      "p1",
+      expect.objectContaining({ id: "p1", name: "Alpha Project" })
+    );
     expect(onOpenChange).toHaveBeenCalledWith(false);
   });
 
@@ -152,12 +132,7 @@ describe("EntityPicker", () => {
     mockFetchProjects.mockRejectedValue(new Error("Network error"));
 
     render(
-      <EntityPicker
-        entityType="PROJECT"
-        open={true}
-        onOpenChange={vi.fn()}
-        onSelect={vi.fn()}
-      />,
+      <EntityPicker entityType="PROJECT" open={true} onOpenChange={vi.fn()} onSelect={vi.fn()} />
     );
 
     await waitFor(() => {
@@ -167,12 +142,7 @@ describe("EntityPicker", () => {
 
   it("disables Select button when no entity is selected", async () => {
     render(
-      <EntityPicker
-        entityType="PROJECT"
-        open={true}
-        onOpenChange={vi.fn()}
-        onSelect={vi.fn()}
-      />,
+      <EntityPicker entityType="PROJECT" open={true} onOpenChange={vi.fn()} onSelect={vi.fn()} />
     );
 
     await waitFor(() => {

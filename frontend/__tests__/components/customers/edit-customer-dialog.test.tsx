@@ -38,7 +38,7 @@ describe("EditCustomerDialog", () => {
     render(
       <EditCustomerDialog customer={mockCustomer} slug="acme">
         <button>Edit Customer</button>
-      </EditCustomerDialog>,
+      </EditCustomerDialog>
     );
 
     await user.click(screen.getByText("Edit Customer"));
@@ -54,7 +54,7 @@ describe("EditCustomerDialog", () => {
     render(
       <EditCustomerDialog customer={mockCustomer} slug="acme">
         <button>Edit Customer</button>
-      </EditCustomerDialog>,
+      </EditCustomerDialog>
     );
 
     await user.click(screen.getByText("Edit Customer"));
@@ -68,7 +68,7 @@ describe("EditCustomerDialog", () => {
       expect(mockUpdateCustomer).toHaveBeenCalledWith(
         "acme",
         "c1",
-        expect.objectContaining({ name: "Acme Inc", email: "contact@acme.com" }),
+        expect.objectContaining({ name: "Acme Inc", email: "contact@acme.com" })
       );
     });
   });
@@ -89,7 +89,7 @@ describe("EditCustomerDialog", () => {
     render(
       <EditCustomerDialog customer={customerWithPromoted} slug="acme">
         <button>Edit Customer</button>
-      </EditCustomerDialog>,
+      </EditCustomerDialog>
     );
 
     await user.click(screen.getByText("Edit Customer"));
@@ -111,7 +111,7 @@ describe("EditCustomerDialog", () => {
           country: "ZA",
           contactEmail: "jane@acme.com",
           entityType: "PTY_LTD",
-        }),
+        })
       );
     });
   });
@@ -123,7 +123,7 @@ describe("EditCustomerDialog", () => {
     render(
       <EditCustomerDialog customer={mockCustomer} slug="acme">
         <button>Edit Customer</button>
-      </EditCustomerDialog>,
+      </EditCustomerDialog>
     );
 
     await user.click(screen.getByText("Edit Customer"));

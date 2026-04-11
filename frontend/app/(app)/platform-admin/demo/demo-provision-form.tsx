@@ -15,14 +15,8 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  demoProvisionSchema,
-  type DemoProvisionFormData,
-} from "@/lib/schemas/demo-provision";
-import {
-  provisionDemo,
-  type DemoProvisionResponse,
-} from "@/app/(app)/platform-admin/demo/actions";
+import { demoProvisionSchema, type DemoProvisionFormData } from "@/lib/schemas/demo-provision";
+import { provisionDemo, type DemoProvisionResponse } from "@/app/(app)/platform-admin/demo/actions";
 
 const VERTICAL_OPTIONS = [
   {
@@ -111,9 +105,7 @@ export function DemoProvisionForm() {
           </div>
           <div>
             <dt className="font-medium text-slate-500">Seed Data</dt>
-            <dd className="mt-0.5 text-slate-900">
-              {result.demoDataSeeded ? "Yes" : "No"}
-            </dd>
+            <dd className="mt-0.5 text-slate-900">{result.demoDataSeeded ? "Yes" : "No"}</dd>
           </div>
           {result.adminNote && (
             <div>
@@ -144,10 +136,7 @@ export function DemoProvisionForm() {
             <FormItem>
               <FormLabel>Organization Name</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Demo — Accounting Firm"
-                  {...field}
-                />
+                <Input placeholder="Demo — Accounting Firm" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -176,12 +165,8 @@ export function DemoProvisionForm() {
                         className="h-4 w-4 text-teal-600"
                       />
                       <div>
-                        <div className="text-sm font-medium">
-                          {option.label}
-                        </div>
-                        <div className="text-xs text-slate-500">
-                          {option.description}
-                        </div>
+                        <div className="text-sm font-medium">{option.label}</div>
+                        <div className="text-xs text-slate-500">{option.description}</div>
                       </div>
                     </label>
                   ))}
@@ -199,11 +184,7 @@ export function DemoProvisionForm() {
             <FormItem>
               <FormLabel>Admin Email</FormLabel>
               <FormControl>
-                <Input
-                  type="email"
-                  placeholder="admin@example.com"
-                  {...field}
-                />
+                <Input type="email" placeholder="admin@example.com" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -222,19 +203,14 @@ export function DemoProvisionForm() {
                   onCheckedChange={field.onChange}
                 />
               </FormControl>
-              <FormLabel
-                htmlFor="seed-demo-data"
-                className="cursor-pointer font-normal"
-              >
+              <FormLabel htmlFor="seed-demo-data" className="cursor-pointer font-normal">
                 Seed Demo Data
               </FormLabel>
             </FormItem>
           )}
         />
 
-        {error && (
-          <p className="text-sm text-destructive">{error}</p>
-        )}
+        {error && <p className="text-destructive text-sm">{error}</p>}
 
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Creating..." : "Create Demo Tenant"}

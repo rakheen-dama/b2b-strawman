@@ -18,7 +18,7 @@ This phase extends the Phase 49 vertical module gating infrastructure to cover t
 |------|------|-------|------|--------|--------|--------|
 | 470 | Module Registry Extension + Toggle API | Backend | -- | M | 470A, 470B | **Done** (PR #990) |
 | 471 | Service-Layer Guards for Horizontal Modules | Backend | 470 | M | 471A | **Done** (PR #991) |
-| 472 | Settings Features Page + Nav Gating | Frontend | 470 | M | 472A, 472B | |
+| 472 | Settings Features Page + Nav Gating | Frontend | 470 | M | 472A, 472B | **Done** (PR #992) |
 
 ---
 
@@ -86,13 +86,13 @@ MODULE REGISTRY + TOGGLE API          SERVICE-LAYER GUARDS
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 1a (parallel) | 471 | 471A | Service-layer guards on `ResourceAllocationService`, `CapacityService`, `UtilizationService`, `BillingRunService`, `AutomationRuleService` (CRUD only), `AutomationTemplateService` + controller-level guard on `AutomationExecutionController`. Integration tests. Backend only. | **Done** (PR #991) |
-| 1b (parallel) | 472 | 472A | Settings Features page (`settings/features/page.tsx`), `ModuleDisabledFallback` component, API client functions (`module-settings.ts`), `settings-nav-groups.ts` "Features" group, tests. Frontend only. | |
+| 1b (parallel) | 472 | 472A | Settings Features page (`settings/features/page.tsx`), `ModuleDisabledFallback` component, API client functions (`module-settings.ts`), `settings-nav-groups.ts` "Features" group, tests. Frontend only. | **Done** (PR #992) |
 
 ### Stage 2: Frontend Gating (after 472A)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a | 472 | 472B | `requiredModule` additions to `nav-items.ts` for sidebar gating, page-level `ModuleGate` wrappers on ~10 pages, dashboard widget gating, tests. Frontend only. | |
+| 2a | 472 | 472B | `requiredModule` additions to `nav-items.ts` for sidebar gating, page-level `ModuleGate` wrappers on ~10 pages, dashboard widget gating, tests. Frontend only. | **Done** (PR #992) |
 
 ---
 
@@ -212,8 +212,8 @@ MODULE REGISTRY + TOGGLE API          SERVICE-LAYER GUARDS
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **472A** | 472.1--472.7 | Settings Features page, `ModuleDisabledFallback` component, API client functions, `settings-nav-groups.ts` update, Vitest tests. Frontend only. ~8 files. | |
-| **472B** | 472.8--472.14 | `requiredModule` additions on sidebar nav items, page-level `ModuleGate` wrappers on ~10 pages, dashboard widget gating, Vitest tests. Frontend only. ~12 files. | |
+| **472A** | 472.1--472.7 | Settings Features page, `ModuleDisabledFallback` component, API client functions, `settings-nav-groups.ts` update, Vitest tests. Frontend only. ~8 files. | **Done** (PR #992) |
+| **472B** | 472.8--472.14 | `requiredModule` additions on sidebar nav items, page-level `ModuleGate` wrappers on ~10 pages, dashboard widget gating, Vitest tests. Frontend only. ~12 files. | **Done** (PR #992) |
 
 ### Tasks
 

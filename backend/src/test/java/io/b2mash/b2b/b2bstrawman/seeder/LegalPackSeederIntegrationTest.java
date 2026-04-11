@@ -124,9 +124,16 @@ class LegalPackSeederIntegrationTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var template =
-                      checklistTemplateRepository.findBySlug("legal-za-client-onboarding");
-                  assertThat(template).isPresent();
+                  // GAP-S4-02: the legal pack is now split by customerType. Verify both the
+                  // INDIVIDUAL and TRUST variants are seeded for legal-za tenants.
+                  var individual =
+                      checklistTemplateRepository.findBySlug(
+                          "legal-za-individual-client-onboarding");
+                  assertThat(individual).isPresent();
+
+                  var trust =
+                      checklistTemplateRepository.findBySlug("legal-za-trust-client-onboarding");
+                  assertThat(trust).isPresent();
                 }));
   }
 

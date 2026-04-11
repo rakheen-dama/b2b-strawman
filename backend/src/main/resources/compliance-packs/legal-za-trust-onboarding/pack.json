@@ -1,0 +1,126 @@
+{
+  "packId": "legal-za-trust-onboarding",
+  "name": "SA Legal — Trust Client Onboarding",
+  "description": "South African FICA checklist for trust clients per FIC Act s21A — trustee verification, trust deed, Master's Office Letters of Authority, and trust banking.",
+  "version": "1.0.0",
+  "verticalProfile": "legal-za",
+  "jurisdiction": "ZA",
+  "customerType": "TRUST",
+  "checklistTemplate": {
+    "name": "Legal Trust Client Onboarding",
+    "slug": "legal-za-trust-client-onboarding",
+    "autoInstantiate": true,
+    "items": [
+      {
+        "name": "Trust Deed",
+        "description": "Certified copy of the trust deed, including all amendments.",
+        "sortOrder": 1,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Certified copy of trust deed",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Letters of Authority",
+        "description": "Master's Office Letters of Authority confirming trustee appointments.",
+        "sortOrder": 2,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Letters of Authority (Master of the High Court)",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Trustee 1 ID",
+        "description": "Certified ID copy of the first trustee.",
+        "sortOrder": 3,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Certified ID — Trustee 1",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Trustee 2 ID",
+        "description": "Certified ID copy of the second trustee (if applicable).",
+        "sortOrder": 4,
+        "required": false,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Certified ID — Trustee 2",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Proof of Trust Banking",
+        "description": "Trust bank account confirmation letter or statement.",
+        "sortOrder": 5,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Trust banking confirmation",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "SARS Trust Tax Number",
+        "description": "SARS trust tax registration number.",
+        "sortOrder": 6,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Beneficial Ownership Declaration",
+        "description": "Declaration of trust beneficial owners per FIC Act s21A(2)(b).",
+        "sortOrder": 7,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Beneficial ownership declaration",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Source of Funds Declaration",
+        "description": "Declaration of the source of trust funds.",
+        "sortOrder": 8,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Source of funds declaration",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Engagement Letter Signed",
+        "description": "Signed engagement letter returned by the trustees.",
+        "sortOrder": 9,
+        "required": true,
+        "requiresDocument": true,
+        "requiredDocumentLabel": "Signed engagement letter",
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "Conflict Check Performed",
+        "description": "Conflict of interest check run against the trust name and all trustees.",
+        "sortOrder": 10,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnItemKey": null
+      },
+      {
+        "name": "FICA Risk Assessment",
+        "description": "Risk rating completed per FIC Act Risk Management and Compliance Programme.",
+        "sortOrder": 11,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnItemKey": "proof-of-trust-banking"
+      },
+      {
+        "name": "Sanctions Screening",
+        "description": "Trust and all trustees screened against UN and SA sanctions lists.",
+        "sortOrder": 12,
+        "required": true,
+        "requiresDocument": false,
+        "requiredDocumentLabel": null,
+        "dependsOnItemKey": "trustee-1-id"
+      }
+    ]
+  },
+  "fieldDefinitions": [],
+  "retentionOverrides": null
+}

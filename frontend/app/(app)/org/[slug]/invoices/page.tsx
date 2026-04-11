@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
+import { getOrgSettings } from "@/lib/api/settings";
 import type { InvoiceResponse, InvoiceStatus } from "@/lib/types";
 import type { Customer } from "@/lib/types/customer";
 import { StatusBadge } from "@/components/invoices/status-badge";
@@ -14,13 +15,14 @@ import { HelpTip } from "@/components/help-tip";
 import { TerminologyHeading } from "@/components/terminology-heading";
 import { docsLink } from "@/lib/docs";
 
-function computeSummary(invoices: InvoiceResponse[]) {
+function computeSummary(invoices: InvoiceResponse[], fallbackCurrency: string) {
   const now = new Date();
   const todayStr = now.toLocaleDateString("en-CA"); // YYYY-MM-DD
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-  // Use the first invoice's currency as the default, falling back to USD
-  const defaultCurrency = invoices.length > 0 ? invoices[0].currency : "USD";
+  // Use the first invoice's currency as the default, falling back to the org's
+  // configured default currency (ZAR for legal-za tenants) instead of USD.
+  const defaultCurrency = invoices.length > 0 ? invoices[0].currency : fallbackCurrency;
 
   let outstanding = 0;
   let overdue = 0;
@@ -94,8 +96,18 @@ export default async function InvoicesPage({
     // Non-fatal — button will be hidden if no customers
   }
 
+  // Resolve the org's configured default currency so empty-state KPIs display
+  // using the tenant's currency (e.g. ZAR) rather than a hardcoded USD fallback.
+  let fallbackCurrency = "USD";
+  try {
+    const orgSettings = await getOrgSettings();
+    fallbackCurrency = orgSettings.defaultCurrency ?? "USD";
+  } catch {
+    // Non-fatal — fall through to USD.
+  }
+
   // Compute summary from all invoices (when no filter applied, or from filtered set)
-  const summary = computeSummary(invoices);
+  const summary = computeSummary(invoices, fallbackCurrency);
 
   const { t } = createMessages("empty-states");
 

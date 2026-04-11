@@ -21,14 +21,22 @@ interface AddRateDialogProps {
   slug: string;
   member: OrgMember;
   defaultCurrency: string;
+  /** Which rate type the dialog should open on. Matches the tab the user clicked Add Rate from. */
+  defaultRateType?: "billing" | "cost";
   children: React.ReactNode;
 }
 
-export function AddRateDialog({ slug, member, defaultCurrency, children }: AddRateDialogProps) {
+export function AddRateDialog({
+  slug,
+  member,
+  defaultCurrency,
+  defaultRateType = "billing",
+  children,
+}: AddRateDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [rateType, setRateType] = useState<"billing" | "cost">("billing");
+  const [rateType, setRateType] = useState<"billing" | "cost">(defaultRateType);
   const [hourlyRate, setHourlyRate] = useState("");
   const [currency, setCurrency] = useState(defaultCurrency);
   const [effectiveFrom, setEffectiveFrom] = useState(new Date().toLocaleDateString("en-CA"));
@@ -88,7 +96,7 @@ export function AddRateDialog({ slug, member, defaultCurrency, children }: AddRa
   }
 
   function resetForm() {
-    setRateType("billing");
+    setRateType(defaultRateType);
     setHourlyRate("");
     setCurrency(defaultCurrency);
     setEffectiveFrom(new Date().toLocaleDateString("en-CA"));

@@ -152,7 +152,11 @@ class ChecklistInstantiationServiceTest {
         () -> {
           var tpl = createAutoInstantiateTemplate("ANY");
           createTemplateItem(tpl.getId());
-          var customer = createCustomer(CustomerType.INDIVIDUAL, LifecycleStatus.PROSPECT);
+          // GAP-S5-05: use COMPANY (not INDIVIDUAL) so the ANY-fallback path is deterministic
+          // regardless of test order. Other tests in this class leave active INDIVIDUAL
+          // templates in the shared schema, which would trigger the most-specific-type filter
+          // and cause this test's ANY template to be skipped.
+          var customer = createCustomer(CustomerType.COMPANY, LifecycleStatus.PROSPECT);
 
           // First call — creates instance
           var first = instantiationService.instantiateForCustomer(customer);
@@ -177,7 +181,9 @@ class ChecklistInstantiationServiceTest {
         () -> {
           var tpl = createAutoInstantiateTemplate("ANY");
           createTemplateItem(tpl.getId());
-          var customer = createCustomer(CustomerType.INDIVIDUAL, LifecycleStatus.PROSPECT);
+          // GAP-S5-05: use COMPANY for deterministic ANY-fallback under the new filter
+          // (see comment on idempotentRetransitionDoesNotDuplicate).
+          var customer = createCustomer(CustomerType.COMPANY, LifecycleStatus.PROSPECT);
 
           instantiationService.instantiateForCustomer(customer);
 

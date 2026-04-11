@@ -41,6 +41,7 @@ import {
   createProjectSchema,
   type CreateProjectFormData,
 } from "@/lib/schemas/project";
+import { nativeSelectClassName } from "@/lib/styles/native-select";
 
 interface CreateProjectDialogProps {
   slug: string;
@@ -61,6 +62,9 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
       description: "",
       dueDate: "",
       customerId: "",
+      referenceNumber: "",
+      priority: "",
+      workType: "",
     },
   });
 
@@ -84,6 +88,9 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
       formData.set("description", values.description ?? "");
       formData.set("dueDate", values.dueDate ?? "");
       formData.set("customerId", values.customerId ?? "");
+      formData.set("referenceNumber", values.referenceNumber ?? "");
+      formData.set("priority", values.priority ?? "");
+      formData.set("workType", values.workType ?? "");
 
       const result = await createProject(slug, formData);
       if (result.success) {
@@ -206,6 +213,71 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                         </option>
                       ))}
                     </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="referenceNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Reference Number{" "}
+                    <span className="font-normal text-muted-foreground">(optional)</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g. PRJ-2026-001"
+                      maxLength={100}
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="priority"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Priority{" "}
+                    <span className="font-normal text-muted-foreground">(optional)</span>
+                  </FormLabel>
+                  <FormControl>
+                    <select
+                      value={field.value ?? ""}
+                      onChange={field.onChange}
+                      className={nativeSelectClassName}
+                    >
+                      <option value="">Select priority…</option>
+                      <option value="LOW">Low</option>
+                      <option value="MEDIUM">Medium</option>
+                      <option value="HIGH">High</option>
+                    </select>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="workType"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>
+                    Work Type{" "}
+                    <span className="font-normal text-muted-foreground">(optional)</span>
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="e.g. Consulting, Litigation"
+                      maxLength={50}
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

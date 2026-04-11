@@ -47,6 +47,11 @@ export async function createTask(
   const priority = formData.get("priority")?.toString() || undefined;
   const type = formData.get("type")?.toString().trim() || undefined;
   const dueDate = formData.get("dueDate")?.toString() || undefined;
+  const estimatedHoursRaw = formData.get("estimatedHours")?.toString().trim();
+  const estimatedHours =
+    estimatedHoursRaw && estimatedHoursRaw !== ""
+      ? Number.parseFloat(estimatedHoursRaw)
+      : undefined;
   const recurrenceRule = formData.get("recurrenceRule")?.toString() || undefined;
   const recurrenceEndDate = formData.get("recurrenceEndDate")?.toString() || undefined;
 
@@ -56,6 +61,10 @@ export async function createTask(
     priority: priority as CreateTaskRequest["priority"],
     type,
     dueDate,
+    estimatedHours:
+      estimatedHours !== undefined && !Number.isNaN(estimatedHours)
+        ? estimatedHours
+        : undefined,
     assigneeId: assigneeId ?? undefined,
     recurrenceRule,
     recurrenceEndDate,

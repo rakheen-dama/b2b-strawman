@@ -7,6 +7,7 @@ import type {
   InvoiceLineResponse,
   AddLineItemRequest,
   UpdateLineItemRequest,
+  UpdateInvoiceRequest,
   ValidationCheck,
   TaxRateResponse,
 } from "@/lib/types";
@@ -47,6 +48,14 @@ export function useInvoiceDetail({
   const [notes, setNotes] = useState(invoice.notes ?? "");
   const [paymentTerms, setPaymentTerms] = useState(invoice.paymentTerms ?? "");
   const [taxAmount, setTaxAmount] = useState(String(invoice.taxAmount ?? 0));
+  const [poNumber, setPoNumber] = useState(invoice.poNumber ?? "");
+  const [taxType, setTaxType] = useState<string>(invoice.taxType ?? "");
+  const [billingPeriodStart, setBillingPeriodStart] = useState(
+    invoice.billingPeriodStart ?? "",
+  );
+  const [billingPeriodEnd, setBillingPeriodEnd] = useState(
+    invoice.billingPeriodEnd ?? "",
+  );
 
   // Default tax rate for new lines
   const defaultTaxRate = taxRates.find((r) => r.isDefault && r.active);
@@ -127,6 +136,12 @@ export function useInvoiceDetail({
         notes: notes || undefined,
         paymentTerms: paymentTerms || undefined,
         taxAmount: invoice.hasPerLineTax ? undefined : (parseFloat(taxAmount) || 0),
+        poNumber: poNumber || undefined,
+        taxType: taxType
+          ? (taxType as NonNullable<UpdateInvoiceRequest["taxType"]>)
+          : undefined,
+        billingPeriodStart: billingPeriodStart || undefined,
+        billingPeriodEnd: billingPeriodEnd || undefined,
       });
       if (result.success && result.invoice) {
         setInvoice(result.invoice);
@@ -341,6 +356,14 @@ export function useInvoiceDetail({
     setPaymentTerms,
     taxAmount,
     setTaxAmount,
+    poNumber,
+    setPoNumber,
+    taxType,
+    setTaxType,
+    billingPeriodStart,
+    setBillingPeriodStart,
+    billingPeriodEnd,
+    setBillingPeriodEnd,
     // Add line state
     showAddLine,
     setShowAddLine,

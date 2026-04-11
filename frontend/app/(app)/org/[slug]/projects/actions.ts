@@ -18,12 +18,24 @@ export async function createProject(slug: string, formData: FormData): Promise<A
   const description = formData.get("description")?.toString().trim() || undefined;
   const customerId = formData.get("customerId")?.toString().trim() || undefined;
   const dueDate = formData.get("dueDate")?.toString().trim() || undefined;
+  const referenceNumber = formData.get("referenceNumber")?.toString().trim() || undefined;
+  const priorityRaw = formData.get("priority")?.toString().trim() || undefined;
+  const priority = priorityRaw as CreateProjectRequest["priority"];
+  const workType = formData.get("workType")?.toString().trim() || undefined;
 
   if (!name) {
     return { success: false, error: "Project name is required." };
   }
 
-  const body: CreateProjectRequest = { name, description, customerId, dueDate };
+  const body: CreateProjectRequest = {
+    name,
+    description,
+    customerId,
+    dueDate,
+    referenceNumber,
+    priority,
+    workType,
+  };
 
   try {
     await api.post<Project>("/api/projects", body);
@@ -52,12 +64,30 @@ export async function updateProject(
   const customerId = customerIdRaw === "" ? null : customerIdRaw ?? undefined;
   const dueDateRaw = formData.get("dueDate")?.toString().trim();
   const dueDate = dueDateRaw === "" ? null : dueDateRaw ?? undefined;
+  const referenceNumberRaw = formData.get("referenceNumber")?.toString().trim();
+  const referenceNumber =
+    referenceNumberRaw === "" ? null : referenceNumberRaw ?? undefined;
+  const priorityRaw = formData.get("priority")?.toString().trim();
+  const priority =
+    priorityRaw === "" || priorityRaw === undefined
+      ? null
+      : (priorityRaw as UpdateProjectRequest["priority"]);
+  const workTypeRaw = formData.get("workType")?.toString().trim();
+  const workType = workTypeRaw === "" ? null : workTypeRaw ?? undefined;
 
   if (!name) {
     return { success: false, error: "Project name is required." };
   }
 
-  const body: UpdateProjectRequest = { name, description, customerId, dueDate };
+  const body: UpdateProjectRequest = {
+    name,
+    description,
+    customerId,
+    dueDate,
+    referenceNumber,
+    priority,
+    workType,
+  };
 
   try {
     await api.put<Project>(`/api/projects/${id}`, body);

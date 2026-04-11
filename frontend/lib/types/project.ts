@@ -5,6 +5,8 @@ import type { ProjectRole } from "./member";
 
 export type ProjectStatus = "ACTIVE" | "COMPLETED" | "ARCHIVED";
 
+export type ProjectPriority = "LOW" | "MEDIUM" | "HIGH";
+
 export interface Project {
   id: string;
   name: string;
@@ -12,6 +14,9 @@ export interface Project {
   status: ProjectStatus;
   customerId: string | null;
   dueDate: string | null;
+  referenceNumber: string | null;
+  priority: ProjectPriority | null;
+  workType: string | null;
   createdBy: string;
   createdByName: string | null;
   createdAt: string;
@@ -31,6 +36,9 @@ export interface CreateProjectRequest {
   description?: string;
   customerId?: string;
   dueDate?: string;
+  referenceNumber?: string;
+  priority?: ProjectPriority;
+  workType?: string;
 }
 
 export interface UpdateProjectRequest {
@@ -38,6 +46,9 @@ export interface UpdateProjectRequest {
   description?: string;
   customerId?: string | null;
   dueDate?: string | null;
+  referenceNumber?: string | null;
+  priority?: ProjectPriority | null;
+  workType?: string | null;
 }
 
 // ---- Time Summaries (from ProjectTimeSummaryController.java) ----

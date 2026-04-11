@@ -122,6 +122,14 @@ export function InvoiceDetailClient({
           onPaymentTermsChange={h.setPaymentTerms}
           taxAmount={h.taxAmount}
           onTaxAmountChange={h.setTaxAmount}
+          poNumber={h.poNumber}
+          onPoNumberChange={h.setPoNumber}
+          taxType={h.taxType}
+          onTaxTypeChange={h.setTaxType}
+          billingPeriodStart={h.billingPeriodStart}
+          onBillingPeriodStartChange={h.setBillingPeriodStart}
+          billingPeriodEnd={h.billingPeriodEnd}
+          onBillingPeriodEndChange={h.setBillingPeriodEnd}
           hasPerLineTax={h.invoice.hasPerLineTax}
           isPending={h.isPending}
           onSave={h.handleSaveDraft}

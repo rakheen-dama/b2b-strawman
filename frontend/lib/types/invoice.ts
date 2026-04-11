@@ -4,6 +4,8 @@ import type { ExpenseCategory } from "./expense";
 
 export type InvoiceStatus = "DRAFT" | "APPROVED" | "SENT" | "PAID" | "VOID";
 
+export type TaxType = "VAT" | "GST" | "SALES_TAX" | "NONE";
+
 export type InvoiceLineType = "TIME" | "EXPENSE" | "RETAINER" | "MANUAL" | "TARIFF" | "FIXED_FEE";
 
 export interface InvoiceLineResponse {
@@ -47,6 +49,10 @@ export interface InvoiceResponse {
   total: number;
   notes: string | null;
   paymentTerms: string | null;
+  poNumber: string | null;
+  taxType: TaxType | null;
+  billingPeriodStart: string | null;
+  billingPeriodEnd: string | null;
   paymentReference: string | null;
   paidAt: string | null;
   customerName: string;
@@ -109,6 +115,10 @@ export interface UpdateInvoiceRequest {
   notes?: string;
   paymentTerms?: string;
   taxAmount?: number;
+  poNumber?: string;
+  taxType?: TaxType;
+  billingPeriodStart?: string;
+  billingPeriodEnd?: string;
 }
 
 export interface AddLineItemRequest {

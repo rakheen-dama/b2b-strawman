@@ -5,7 +5,7 @@
 - **QA Position**: **Cycle 5 Dev batch fully VERIFIED.** All 5 FIXED items re-verified in Cycle 5 QA turn 2: GAP-S5-05 (duplicate FICA packs eliminated, INDIVIDUAL 9/TRUST 12), GAP-S5-04 (Adverse Party customer select populated + end-to-end link persisted), GAP-S5-06 (Proposal Customer combobox populated with 6 PROSPECT/ONBOARDING clients), GAP-S4-06 (Trust tab empty state clean, no 500), GAP-S4-05 (Trust dashboard nav links present for Client Ledgers/Record Transaction/View all). GAP-S5-01 promoted from VERIFIED_DIALOG → VERIFIED end-to-end (Contingency engagement letter persisted to DB with fee_model=CONTINGENCY, 25% percent, 25% cap, customer=Lerato). No regressions, no new HIGH blockers. Remaining work is LOW-severity SPEC_READY terminology/UX queue + long-term blocker GAP-S3-03 (FICA doc upload for PROSPECT→ACTIVE lifecycle).
 - **Cycle**: 5 (QA turn 2 complete — 5 Dev fixes re-verified + GAP-S5-01 end-to-end closed)
 - **Dev Stack**: READY
-- **NEEDS_REBUILD**: true (GAP-S3-04 backend change in PR #1007 — `ProjectTemplateService.instantiateTemplate` now attaches auto-apply field groups; backend container must be rebuilt before QA re-verifies Session 3 step 3.20)
+- **NEEDS_REBUILD**: false (backend restarted via `svc.sh restart backend` after PR #1007 merge on 2026-04-12 — PID 17782, healthy on :8080)
 - **Branch**: `bugfix_cycle_kc_2026-04-12`
 - **Scenario**: `qa/testplan/legal-onboarding-keycloak.md`
 - **Focus**: Legal vertical onboarding via real Keycloak OIDC. End-to-end: access request → admin approval → KC registration → plan upgrade → legal-za profile → team invites → 3 client onboardings (Litigation, Deceased Estate, RAF) → engagement letters, trust account, court calendar, adverse parties, activity/audit sign-off.

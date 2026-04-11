@@ -41,12 +41,13 @@ export interface CreateTrustAccountInput {
   notes?: string;
 }
 
+export type CreateTrustAccountResult =
+  | { success: true; account: TrustAccount }
+  | { success: false; error: string };
+
 export async function createTrustAccount(
   input: CreateTrustAccountInput,
-): Promise<
-  | { success: true; account: TrustAccount }
-  | { success: false; error: string }
-> {
+): Promise<CreateTrustAccountResult> {
   try {
     const account = await api.post<TrustAccount>(
       "/api/trust-accounts",

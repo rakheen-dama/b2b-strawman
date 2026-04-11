@@ -144,9 +144,15 @@ public class ProposalService {
     if (retainerAmount != null) proposal.setRetainerAmount(retainerAmount);
     if (retainerCurrency != null) proposal.setRetainerCurrency(retainerCurrency);
     if (retainerHoursIncluded != null) proposal.setRetainerHoursIncluded(retainerHoursIncluded);
-    if (contingencyPercent != null) proposal.setContingencyPercent(contingencyPercent);
-    if (contingencyCapPercent != null) proposal.setContingencyCapPercent(contingencyCapPercent);
-    if (contingencyDescription != null) proposal.setContingencyDescription(contingencyDescription);
+    // Contingency fields apply only to CONTINGENCY fee model (Contingency Fees Act 66 of 1997).
+    // Silently ignore any contingency inputs supplied for other fee models to avoid persisting
+    // stale fee data.
+    if (feeModel == FeeModel.CONTINGENCY) {
+      if (contingencyPercent != null) proposal.setContingencyPercent(contingencyPercent);
+      if (contingencyCapPercent != null) proposal.setContingencyCapPercent(contingencyCapPercent);
+      if (contingencyDescription != null)
+        proposal.setContingencyDescription(contingencyDescription);
+    }
     if (contentJson != null) proposal.setContentJson(contentJson);
     if (projectTemplateId != null) proposal.setProjectTemplateId(projectTemplateId);
     if (expiresAt != null) proposal.setExpiresAt(expiresAt);
@@ -295,9 +301,15 @@ public class ProposalService {
     if (retainerAmount != null) proposal.setRetainerAmount(retainerAmount);
     if (retainerCurrency != null) proposal.setRetainerCurrency(retainerCurrency);
     if (retainerHoursIncluded != null) proposal.setRetainerHoursIncluded(retainerHoursIncluded);
-    if (contingencyPercent != null) proposal.setContingencyPercent(contingencyPercent);
-    if (contingencyCapPercent != null) proposal.setContingencyCapPercent(contingencyCapPercent);
-    if (contingencyDescription != null) proposal.setContingencyDescription(contingencyDescription);
+    // Contingency fields apply only to CONTINGENCY fee model — silently ignore inputs for
+    // other fee models to avoid re-introducing stale values after the clear-on-transition
+    // logic above.
+    if (effectiveFeeModel == FeeModel.CONTINGENCY) {
+      if (contingencyPercent != null) proposal.setContingencyPercent(contingencyPercent);
+      if (contingencyCapPercent != null) proposal.setContingencyCapPercent(contingencyCapPercent);
+      if (contingencyDescription != null)
+        proposal.setContingencyDescription(contingencyDescription);
+    }
     if (contentJson != null) proposal.setContentJson(contentJson);
     if (projectTemplateId != null) proposal.setProjectTemplateId(projectTemplateId);
     if (expiresAt != null) proposal.setExpiresAt(expiresAt);

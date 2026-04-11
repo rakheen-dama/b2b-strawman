@@ -4,7 +4,7 @@
 
 - **QA Position**: NOT_STARTED — Session 0 (Stack startup & sanity)
 - **Cycle**: 0 (pre-flight)
-- **Dev Stack**: UNKNOWN — needs verification
+- **Dev Stack**: READY
 - **NEEDS_REBUILD**: false
 - **Branch**: `bugfix_cycle_kc_2026-04-11`
 - **Scenario**: `qa/testplan/legal-onboarding-keycloak.md`
@@ -15,13 +15,13 @@
 
 | Service | URL | Status |
 |---------|-----|--------|
-| Frontend (kc mode) | http://localhost:3000 | UNKNOWN |
-| Backend (local, local+keycloak profile) | http://localhost:8080 | UNKNOWN |
-| Gateway (BFF) | http://localhost:8443 | UNKNOWN |
-| Portal | http://localhost:3002 | UNKNOWN |
-| Keycloak | http://localhost:8180 | UNKNOWN |
-| Mailpit UI | http://localhost:8025 | UNKNOWN |
-| Postgres (docteams) | localhost:5432 | UNKNOWN |
+| Frontend (kc mode) | http://localhost:3000 | UP |
+| Backend (local, local+keycloak profile) | http://localhost:8080 | UP |
+| Gateway (BFF) | http://localhost:8443 | UP |
+| Portal | http://localhost:3002 | UP |
+| Keycloak | http://localhost:8180 | UP |
+| Mailpit UI | http://localhost:8025 | UP |
+| Postgres (docteams) | localhost:5432 | UP |
 
 ## Test Plan Structure
 
@@ -45,3 +45,4 @@ _No gaps yet — cycle not started._
 ## Log
 
 - 2026-04-11 — Branch `bugfix_cycle_kc_2026-04-11` created from `main`. Previous E2E mock-auth cycle state archived to `qa_cycle/_archive_2026-04-06_e2e/`. Fresh status.md scaffolded for Keycloak legal onboarding scenario.
+- 2026-04-11 — Infra: dev stack up. Docker infra started (postgres, localstack, mailpit, keycloak); keycloak-bootstrap.sh ran successfully (padmin + org_role backfill); backend (30s) + gateway (6s) started via svc.sh. All 4 services RUNNING + HEALTHY. Health checks: backend/gateway UP, frontend HTTP 200, mailpit v1.29.2 responding. Ready for QA Session 0.

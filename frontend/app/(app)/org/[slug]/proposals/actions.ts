@@ -113,9 +113,15 @@ export async function fetchCustomersAction(): Promise<
       ? result
       : ((result as unknown as { content: Customer[] }).content ?? []);
     return customers
-      .filter((c) => c.lifecycleStatus !== "OFFBOARDED" && c.lifecycleStatus !== "PROSPECT")
+      .filter(
+        (c) =>
+          c.lifecycleStatus !== "OFFBOARDED" &&
+          c.lifecycleStatus !== "OFFBOARDING" &&
+          c.lifecycleStatus !== "ANONYMIZED"
+      )
       .map((c) => ({ id: c.id, name: c.name, email: c.email }));
-  } catch {
+  } catch (error) {
+    console.error("fetchCustomersAction failed:", error);
     return [];
   }
 }

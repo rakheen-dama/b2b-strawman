@@ -48,6 +48,7 @@ import {
 } from "@/lib/schemas/customer";
 import { COUNTRIES } from "@/lib/constants/countries";
 import { ENTITY_TYPES } from "@/lib/constants/entity-types";
+import { nativeSelectClassName } from "@/lib/styles/native-select";
 
 const CUSTOMER_TYPES: { value: CustomerType; label: string }[] = [
   { value: "INDIVIDUAL", label: "Individual" },
@@ -299,7 +300,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                         <select
                           value={field.value}
                           onChange={field.onChange}
-                          className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                          className={nativeSelectClassName}
                         >
                           {CUSTOMER_TYPES.map((ct) => (
                             <option key={ct.value} value={ct.value}>
@@ -483,7 +484,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                               <select
                                 value={field.value ?? ""}
                                 onChange={field.onChange}
-                                className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                                className={nativeSelectClassName}
                               >
                                 <option value="">Select country…</option>
                                 {COUNTRIES.map((c) => (
@@ -591,7 +592,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                             <select
                               value={field.value ?? ""}
                               onChange={field.onChange}
-                              className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                              className={nativeSelectClassName}
                             >
                               <option value="">Select entity type…</option>
                               {ENTITY_TYPES.map((et) => (

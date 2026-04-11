@@ -1,17 +1,12 @@
 import { z } from "zod";
+import { ENTITY_TYPES } from "@/lib/constants/entity-types";
 
 const customerTypeEnum = z.enum(["INDIVIDUAL", "COMPANY", "TRUST"]);
 
-const entityTypeEnum = z.enum([
-  "INDIVIDUAL",
-  "SOLE_PROP",
-  "PTY_LTD",
-  "CC",
-  "PARTNERSHIP",
-  "TRUST",
-  "NON_PROFIT",
-  "PUBLIC_COMPANY",
-]);
+// Derive the enum values from the shared constant so the schema cannot drift
+// from the UI Select options.
+const entityTypeValues = ENTITY_TYPES.map((t) => t.value) as [string, ...string[]];
+const entityTypeEnum = z.enum(entityTypeValues);
 
 /**
  * 13 promoted customer fields (Epic 463 / Phase 63 — custom field graduation).
@@ -39,11 +34,7 @@ const promotedCustomerFields = {
   contactPhone: z.string().max(50).optional().or(z.literal("")),
   registrationNumber: z.string().max(100).optional().or(z.literal("")),
   entityType: entityTypeEnum.optional().or(z.literal("")),
-  financialYearEnd: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date")
-    .optional()
-    .or(z.literal("")),
+  financialYearEnd: z.iso.date().or(z.literal("")).optional(),
 };
 
 export const createCustomerSchema = z.object({

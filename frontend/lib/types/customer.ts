@@ -99,7 +99,6 @@ export interface UpdateCustomerRequest {
   phone?: string;
   idNumber?: string;
   notes?: string;
-  customerType?: CustomerType;
   // Promoted customer fields (Epic 463 / Phase 63)
   addressLine1?: string;
   addressLine2?: string;

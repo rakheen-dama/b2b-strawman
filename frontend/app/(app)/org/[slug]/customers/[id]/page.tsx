@@ -609,7 +609,10 @@ export default async function CustomerDetailPage({
                     Financial Year End
                   </dt>
                   <dd className="mt-1 text-slate-700 dark:text-slate-300">
-                    {formatDate(customer.financialYearEnd)}
+                    {/* Append T00:00:00 so the date is parsed in the local
+                        timezone, not UTC — otherwise west-of-UTC users see
+                        the previous day. */}
+                    {formatDate(new Date(customer.financialYearEnd + "T00:00:00"))}
                   </dd>
                 </div>
               )}

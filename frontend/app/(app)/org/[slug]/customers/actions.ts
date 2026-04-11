@@ -42,7 +42,6 @@ export interface UpdateCustomerData {
   phone?: string;
   idNumber?: string;
   notes?: string;
-  customerType?: string;
   // Promoted customer fields (Epic 463)
   addressLine1?: string;
   addressLine2?: string;
@@ -160,7 +159,6 @@ export async function updateCustomer(
     phone: data.phone?.trim() || undefined,
     idNumber: data.idNumber?.trim() || undefined,
     notes: data.notes?.trim() || undefined,
-    customerType: (data.customerType as UpdateCustomerRequest["customerType"]) || undefined,
     addressLine1: data.addressLine1?.trim() || undefined,
     addressLine2: data.addressLine2?.trim() || undefined,
     city: data.city?.trim() || undefined,

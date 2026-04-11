@@ -31,6 +31,7 @@ import {
 } from "@/lib/schemas/customer";
 import { COUNTRIES } from "@/lib/constants/countries";
 import { ENTITY_TYPES } from "@/lib/constants/entity-types";
+import { nativeSelectClassName } from "@/lib/styles/native-select";
 
 const CUSTOMER_TYPES: { value: CustomerType; label: string }[] = [
   { value: "INDIVIDUAL", label: "Individual" },
@@ -57,12 +58,16 @@ function buildDefaults(customer: Customer): EditCustomerFormData {
     city: customer.city ?? "",
     stateProvince: customer.stateProvince ?? "",
     postalCode: customer.postalCode ?? "",
+    // Preserve raw value even if it is not in the curated COUNTRIES list —
+    // the render adds a "(legacy)" fallback option so existing data never
+    // silently disappears when the list changes.
     country: customer.country ?? "",
     taxNumber: customer.taxNumber ?? "",
     contactName: customer.contactName ?? "",
     contactEmail: customer.contactEmail ?? "",
     contactPhone: customer.contactPhone ?? "",
     registrationNumber: customer.registrationNumber ?? "",
+    // Preserve raw value even if it is not in the curated ENTITY_TYPES list.
     entityType: (customer.entityType as EditCustomerFormData["entityType"]) ?? "",
     financialYearEnd: customer.financialYearEnd ?? "",
   };
@@ -86,7 +91,6 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
       const result = await updateCustomer(slug, customer.id, {
         name: values.name.trim(),
         email: values.email.trim(),
-        customerType: values.customerType,
         phone: values.phone?.trim() || undefined,
         idNumber: values.idNumber?.trim() || undefined,
         notes: values.notes?.trim() || undefined,
@@ -152,12 +156,18 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
               name="customerType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Type</FormLabel>
+                  <FormLabel>
+                    Type{" "}
+                    <span className="font-normal text-muted-foreground">
+                      (not editable)
+                    </span>
+                  </FormLabel>
                   <FormControl>
                     <select
                       value={field.value}
                       onChange={field.onChange}
-                      className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                      disabled
+                      className={`${nativeSelectClassName} disabled:cursor-not-allowed disabled:opacity-60`}
                     >
                       {CUSTOMER_TYPES.map((ct) => (
                         <option key={ct.value} value={ct.value}>
@@ -319,9 +329,15 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
                           <select
                             value={field.value ?? ""}
                             onChange={field.onChange}
-                            className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                            className={nativeSelectClassName}
                           >
                             <option value="">Select country…</option>
+                            {field.value &&
+                              !COUNTRIES.find((c) => c.code === field.value) && (
+                                <option value={field.value}>
+                                  {field.value} (legacy)
+                                </option>
+                              )}
                             {COUNTRIES.map((c) => (
                               <option key={c.code} value={c.code}>
                                 {c.name} ({c.code})
@@ -427,9 +443,15 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
                         <select
                           value={field.value ?? ""}
                           onChange={field.onChange}
-                          className="flex h-9 w-full rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-slate-500 dark:border-slate-800"
+                          className={nativeSelectClassName}
                         >
                           <option value="">Select entity type…</option>
+                          {field.value &&
+                            !ENTITY_TYPES.find((et) => et.value === field.value) && (
+                              <option value={field.value}>
+                                {field.value} (legacy)
+                              </option>
+                            )}
                           {ENTITY_TYPES.map((et) => (
                             <option key={et.value} value={et.value}>
                               {et.label}

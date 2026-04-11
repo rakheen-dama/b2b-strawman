@@ -123,7 +123,13 @@ class AutomationModuleGuardTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(CREATE_RULE_BODY))
         .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
         .andExpect(jsonPath("$.title").value("Module not enabled"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "This feature is not enabled for your organization. "
+                        + "An admin can enable it in Settings → Features."))
         .andExpect(jsonPath("$.moduleId").value("automation_builder"));
   }
 
@@ -146,7 +152,14 @@ class AutomationModuleGuardTest {
             get("/api/automation-executions")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
         .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.title").value("Module not enabled"));
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Module not enabled"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "This feature is not enabled for your organization. "
+                        + "An admin can enable it in Settings → Features."))
+        .andExpect(jsonPath("$.moduleId").value("automation_builder"));
   }
 
   @Test
@@ -156,7 +169,14 @@ class AutomationModuleGuardTest {
             get("/api/automation-templates")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_auto_owner")))
         .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.title").value("Module not enabled"));
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Module not enabled"))
+        .andExpect(
+            jsonPath("$.detail")
+                .value(
+                    "This feature is not enabled for your organization. "
+                        + "An admin can enable it in Settings → Features."))
+        .andExpect(jsonPath("$.moduleId").value("automation_builder"));
   }
 
   @Test

@@ -1,4 +1,4 @@
-package io.b2mash.b2b.b2bstrawman.capacity;
+package io.b2mash.b2b.b2bstrawman.billingrun;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -26,17 +26,17 @@ import org.springframework.test.web.servlet.MockMvc;
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class ResourcePlanningModuleGuardTest {
+class BillingRunModuleGuardTest {
 
-  private static final String ORG_ID = "org_resource_planning_guard";
+  private static final String ORG_ID = "org_billing_run_guard";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
 
   @BeforeAll
   void setup() throws Exception {
-    provisioningService.provisionTenant(ORG_ID, "Resource Planning Guard Test", null);
-    TestMemberHelper.syncMember(mockMvc, ORG_ID, "user_rp_owner", "rp@test.com", "Owner", "owner");
+    provisioningService.provisionTenant(ORG_ID, "Billing Run Guard Test", null);
+    TestMemberHelper.syncMember(mockMvc, ORG_ID, "user_br_owner", "br@test.com", "Owner", "owner");
   }
 
   @BeforeEach
@@ -44,7 +44,7 @@ class ResourcePlanningModuleGuardTest {
     mockMvc
         .perform(
             put("/api/settings/modules")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rp_owner"))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_br_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -57,17 +57,16 @@ class ResourcePlanningModuleGuardTest {
     mockMvc
         .perform(
             put("/api/settings/modules")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rp_owner"))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_br_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"enabledModules\": [\"" + moduleId + "\"]}"))
         .andExpect(status().isOk());
   }
 
   @Test
-  void getResourceAllocations_returns403_whenResourcePlanningDisabled() throws Exception {
+  void getBillingRuns_returns403_whenBulkBillingDisabled() throws Exception {
     mockMvc
-        .perform(
-            get("/api/resource-allocations").with(TestJwtFactory.ownerJwt(ORG_ID, "user_rp_owner")))
+        .perform(get("/api/billing-runs").with(TestJwtFactory.ownerJwt(ORG_ID, "user_br_owner")))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.status").value(403))
         .andExpect(jsonPath("$.title").value("Module not enabled"))
@@ -76,34 +75,14 @@ class ResourcePlanningModuleGuardTest {
                 .value(
                     "This feature is not enabled for your organization. "
                         + "An admin can enable it in Settings → Features."))
-        .andExpect(jsonPath("$.moduleId").value("resource_planning"));
+        .andExpect(jsonPath("$.moduleId").value("bulk_billing"));
   }
 
   @Test
-  void getResourceAllocations_returns200_whenResourcePlanningEnabled() throws Exception {
-    enableModule("resource_planning");
+  void getBillingRuns_returns200_whenBulkBillingEnabled() throws Exception {
+    enableModule("bulk_billing");
     mockMvc
-        .perform(
-            get("/api/resource-allocations").with(TestJwtFactory.ownerJwt(ORG_ID, "user_rp_owner")))
+        .perform(get("/api/billing-runs").with(TestJwtFactory.ownerJwt(ORG_ID, "user_br_owner")))
         .andExpect(status().isOk());
-  }
-
-  @Test
-  void getTeamUtilization_returns403_whenResourcePlanningDisabled() throws Exception {
-    mockMvc
-        .perform(
-            get("/api/utilization/team")
-                .param("weekStart", "2026-04-06") // Monday
-                .param("weekEnd", "2026-04-13")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rp_owner")))
-        .andExpect(status().isForbidden())
-        .andExpect(jsonPath("$.status").value(403))
-        .andExpect(jsonPath("$.title").value("Module not enabled"))
-        .andExpect(
-            jsonPath("$.detail")
-                .value(
-                    "This feature is not enabled for your organization. "
-                        + "An admin can enable it in Settings → Features."))
-        .andExpect(jsonPath("$.moduleId").value("resource_planning"));
   }
 }

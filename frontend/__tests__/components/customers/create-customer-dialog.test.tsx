@@ -196,7 +196,7 @@ describe("CreateCustomerDialog", () => {
     expect(screen.getByLabelText(/^city$/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/state.*province/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/postal code/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/^country$/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/^country\b/i)).toBeInTheDocument();
   });
 
   it("country dropdown contains ZA and US options", async () => {
@@ -209,7 +209,7 @@ describe("CreateCustomerDialog", () => {
     );
 
     await user.click(screen.getByText("New Customer"));
-    const countrySelect = await screen.findByLabelText(/^country$/i);
+    const countrySelect = await screen.findByLabelText(/^country\b/i);
     // Native <select> renders <option> children
     expect(countrySelect.querySelector('option[value="ZA"]')).not.toBeNull();
     expect(countrySelect.querySelector('option[value="US"]')).not.toBeNull();
@@ -267,7 +267,7 @@ describe("CreateCustomerDialog", () => {
     await user.type(screen.getByLabelText("Email"), "billing@acme.com");
     await user.type(screen.getByLabelText(/address line 1/i), "100 Main St");
     await user.type(screen.getByLabelText(/^city$/i), "Cape Town");
-    await user.selectOptions(screen.getByLabelText(/^country$/i), "ZA");
+    await user.selectOptions(screen.getByLabelText(/^country\b/i), "ZA");
     await user.type(screen.getByLabelText(/contact name/i), "Jane Doe");
     await user.type(screen.getByLabelText(/contact email/i), "jane@acme.com");
     await user.type(screen.getByLabelText(/registration number/i), "2024/123456/07");

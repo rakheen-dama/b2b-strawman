@@ -283,4 +283,70 @@ describe("ChecklistInstanceItemRow", () => {
 
     expect(screen.queryByText("Select a document...")).not.toBeInTheDocument();
   });
+
+  // GAP-S3-03 — Confirm button must be disabled (not silent no-op) when a
+  // requiresDocument item has no document selected, and inline guidance must
+  // be shown so users know what to do.
+  it("disables Confirm and explains the gate when requiresDocument and no document selected", async () => {
+    const user = userEvent.setup();
+    const docItem: ChecklistInstanceItemResponse = {
+      ...baseItem,
+      requiresDocument: true,
+      requiredDocumentLabel: "Certified copy of SA ID / passport",
+    };
+
+    render(
+      <ChecklistInstanceItemRow
+        item={docItem}
+        instanceItems={[docItem]}
+        onComplete={mockOnComplete}
+        onSkip={mockOnSkip}
+        onReopen={mockOnReopen}
+        isAdmin={true}
+        customerDocuments={[]}
+      />
+    );
+
+    await user.click(screen.getByText("Mark Complete"));
+
+    const confirmBtn = screen.getByRole("button", { name: /Confirm$/ });
+    expect(confirmBtn).toBeDisabled();
+    // Inline guidance must instruct the user to upload the named document.
+    expect(
+      screen.getByText(/Upload Certified copy of SA ID \/ passport/i)
+    ).toBeInTheDocument();
+    // The completion handler must NOT have been invoked.
+    await user.click(confirmBtn);
+    expect(mockOnComplete).not.toHaveBeenCalled();
+  });
+
+  it("surfaces backend errors inline (sticky) and does not auto-clear", async () => {
+    const user = userEvent.setup();
+    const docItem: ChecklistInstanceItemResponse = {
+      ...baseItem,
+      requiresDocument: false,
+    };
+    const failingComplete = vi
+      .fn()
+      .mockRejectedValueOnce(new Error("Document required"));
+
+    render(
+      <ChecklistInstanceItemRow
+        item={docItem}
+        instanceItems={[docItem]}
+        onComplete={failingComplete}
+        onSkip={mockOnSkip}
+        onReopen={mockOnReopen}
+        isAdmin={true}
+      />
+    );
+
+    await user.click(screen.getByText("Mark Complete"));
+    await user.click(screen.getByRole("button", { name: /Confirm$/ }));
+
+    // Sticky error message visible.
+    expect(await screen.findByText("Document required")).toBeInTheDocument();
+    // Dismiss button is reachable for the user.
+    expect(screen.getByLabelText("Dismiss error")).toBeInTheDocument();
+  });
 });

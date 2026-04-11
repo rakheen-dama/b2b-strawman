@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -75,11 +75,9 @@ export function ChecklistInstanceItemRow({
 
   const clearError = useCallback(() => setError(null), []);
 
-  useEffect(() => {
-    if (!error) return;
-    const timer = setTimeout(clearError, 3000);
-    return () => clearTimeout(timer);
-  }, [error, clearError]);
+  // Errors stay visible until the user retries or dismisses them — auto-clearing
+  // after a few seconds caused users to miss "Document required" failures and
+  // perceive the Confirm button as a silent no-op (GAP-S3-03).
 
   const config = STATUS_CONFIG[item.status] ?? { label: item.status, variant: "neutral" as const };
   const icon = STATUS_ICON[item.status] ?? <Circle className="size-4 text-slate-400" />;
@@ -201,64 +199,98 @@ export function ChecklistInstanceItemRow({
             </div>
           )}
 
-          {/* Error message */}
-          {error && <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>}
-
-          {/* Complete form */}
-          {showCompleteForm && (
-            <div className="mt-3 space-y-2 rounded-md border border-slate-200 p-3 dark:border-slate-700">
-              <Textarea
-                placeholder="Notes (optional)"
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="resize-none"
-                rows={2}
-              />
-              {item.requiresDocument &&
-                (() => {
-                  const uploadedDocs = (customerDocuments ?? []).filter(
-                    (d) => d.status === "UPLOADED"
-                  );
-                  return (
-                    <Select value={documentId} onValueChange={setDocumentId}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a document..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {uploadedDocs.length > 0 ? (
-                          uploadedDocs.map((doc) => (
-                            <SelectItem key={doc.id} value={doc.id}>
-                              {doc.fileName}
-                            </SelectItem>
-                          ))
-                        ) : (
-                          <SelectItem value="__none__" disabled>
-                            No documents uploaded
-                          </SelectItem>
-                        )}
-                      </SelectContent>
-                    </Select>
-                  );
-                })()}
-              <div className="flex gap-2">
-                <Button size="sm" onClick={handleComplete} disabled={isPending}>
-                  {isPending ? "Saving..." : "Confirm"}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    setShowCompleteForm(false);
-                    setNotes("");
-                    setDocumentId("");
-                  }}
-                  disabled={isPending}
-                >
-                  Cancel
-                </Button>
-              </div>
+          {/* Error message — sticky until the user retries or dismisses */}
+          {error && (
+            <div className="mt-2 flex items-start justify-between gap-2 rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+              <p className="flex-1">{error}</p>
+              <button
+                type="button"
+                onClick={clearError}
+                className="shrink-0 text-red-500 hover:text-red-700 dark:text-red-400"
+                aria-label="Dismiss error"
+              >
+                <XCircle className="size-3.5" />
+              </button>
             </div>
           )}
+
+          {/* Complete form */}
+          {showCompleteForm &&
+            (() => {
+              const uploadedDocs = (customerDocuments ?? []).filter(
+                (d) => d.status === "UPLOADED"
+              );
+              const hasUploadedDocs = uploadedDocs.length > 0;
+              const requiresDoc = item.requiresDocument === true;
+              const missingDoc = requiresDoc && !documentId;
+              const confirmDisabledReason = missingDoc
+                ? hasUploadedDocs
+                  ? "Select an uploaded document for this item before confirming."
+                  : `Upload ${item.requiredDocumentLabel ?? "the required document"} on the Documents tab, then return here to link it.`
+                : undefined;
+
+              return (
+                <div className="mt-3 space-y-2 rounded-md border border-slate-200 p-3 dark:border-slate-700">
+                  <Textarea
+                    placeholder="Notes (optional)"
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    className="resize-none"
+                    rows={2}
+                  />
+                  {requiresDoc && (
+                    <>
+                      <Select value={documentId} onValueChange={setDocumentId}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a document..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {hasUploadedDocs ? (
+                            uploadedDocs.map((doc) => (
+                              <SelectItem key={doc.id} value={doc.id}>
+                                {doc.fileName}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="__none__" disabled>
+                              No documents uploaded
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
+                      {missingDoc && (
+                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                          {confirmDisabledReason}
+                        </p>
+                      )}
+                    </>
+                  )}
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      onClick={handleComplete}
+                      disabled={isPending || missingDoc}
+                      title={confirmDisabledReason}
+                    >
+                      {isPending ? "Saving..." : "Confirm"}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setShowCompleteForm(false);
+                        setNotes("");
+                        setDocumentId("");
+                        setError(null);
+                      }}
+                      disabled={isPending}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              );
+            })()}
 
           {/* Skip form */}
           {showSkipForm && (

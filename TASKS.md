@@ -533,7 +533,7 @@
 | 469 | Lifecycle Execution + Gap Report | Process/E2E | 467, 468 | L | 469A, 469B | **Done** (PR #968) |
 | **Phase 62 — Feature Module Gating (Progressive Disclosure)** | | | | | | See [tasks/phase62-feature-module-gating.md](tasks/phase62-feature-module-gating.md) |
 | 470 | Module Registry Extension + Toggle API | Backend | -- | M | 470A, 470B | **Done** (PR #990) |
-| 471 | Service-Layer Guards for Horizontal Modules | Backend | 470 | M | 471A | |
+| 471 | Service-Layer Guards for Horizontal Modules | Backend | 470 | M | 471A | **Done** (PR #991) |
 | 472 | Settings Features Page + Nav Gating | Frontend | 470 | M | 472A, 472B | |
 
 ---

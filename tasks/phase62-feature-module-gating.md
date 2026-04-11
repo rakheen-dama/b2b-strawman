@@ -17,7 +17,7 @@ This phase extends the Phase 49 vertical module gating infrastructure to cover t
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 470 | Module Registry Extension + Toggle API | Backend | -- | M | 470A, 470B | **Done** (PR #990) |
-| 471 | Service-Layer Guards for Horizontal Modules | Backend | 470 | M | 471A | |
+| 471 | Service-Layer Guards for Horizontal Modules | Backend | 470 | M | 471A | **Done** (PR #991) |
 | 472 | Settings Features Page + Nav Gating | Frontend | 470 | M | 472A, 472B | |
 
 ---
@@ -85,7 +85,7 @@ MODULE REGISTRY + TOGGLE API          SERVICE-LAYER GUARDS
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a (parallel) | 471 | 471A | Service-layer guards on `ResourceAllocationService`, `CapacityService`, `UtilizationService`, `BillingRunService`, `AutomationRuleService` (CRUD only), `AutomationTemplateService` + controller-level guard on `AutomationExecutionController`. Integration tests. Backend only. | |
+| 1a (parallel) | 471 | 471A | Service-layer guards on `ResourceAllocationService`, `CapacityService`, `UtilizationService`, `BillingRunService`, `AutomationRuleService` (CRUD only), `AutomationTemplateService` + controller-level guard on `AutomationExecutionController`. Integration tests. Backend only. | **Done** (PR #991) |
 | 1b (parallel) | 472 | 472A | Settings Features page (`settings/features/page.tsx`), `ModuleDisabledFallback` component, API client functions (`module-settings.ts`), `settings-nav-groups.ts` "Features" group, tests. Frontend only. | |
 
 ### Stage 2: Frontend Gating (after 472A)
@@ -166,7 +166,7 @@ MODULE REGISTRY + TOGGLE API          SERVICE-LAYER GUARDS
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **471A** | 471.1--471.9 | Service-layer guards on `ResourceAllocationService`, `CapacityService`, `UtilizationService`, `BillingRunService`, `AutomationRuleService` (CRUD only), `AutomationTemplateService` + controller-level guard on `AutomationExecutionController`. Integration tests. Backend only. ~10 files. | |
+| **471A** | 471.1--471.9 | Service-layer guards on `ResourceAllocationService`, `CapacityService`, `UtilizationService`, `BillingRunService`, `AutomationRuleService` (CRUD only), `AutomationTemplateService` + controller-level guard on `AutomationExecutionController`. Integration tests. Backend only. ~10 files. | **Done** (PR #991) |
 
 ### Tasks
 

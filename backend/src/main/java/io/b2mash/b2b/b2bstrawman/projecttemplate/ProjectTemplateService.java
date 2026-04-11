@@ -518,6 +518,13 @@ public class ProjectTemplateService {
 
     // 5. Create project
     var project = new Project(resolvedName, description, memberId);
+    // GAP-S5-03: set FK before save so project.customer_id is never NULL when a
+    // customer is linked. The customer_projects join row below is still written
+    // for legacy many-to-many queries, but toResponse() and downstream services
+    // (court calendar, adverse party lookups) read project.customer_id directly.
+    if (customer != null) {
+      project.setCustomerId(customer.getId());
+    }
     project = projectRepository.save(project);
 
     // 6. Link to customer
@@ -632,6 +639,12 @@ public class ProjectTemplateService {
       UUID actingMemberId) {
     // 1. Create project
     var project = new Project(resolvedName, template.getDescription(), actingMemberId);
+    // GAP-S5-03: set FK before save so project.customer_id is never NULL when a
+    // customer is linked. Mirrors the fix in instantiateTemplate — this path is
+    // used by the scheduler for recurring engagements.
+    if (customer != null) {
+      project.setCustomerId(customer.getId());
+    }
     project = projectRepository.save(project);
 
     // 2. Link to customer

@@ -63,9 +63,10 @@ function isUuid(value: string): boolean {
 
 interface BreadcrumbsProps {
   slug: string;
+  orgName?: string | null;
 }
 
-export function Breadcrumbs({ slug }: BreadcrumbsProps) {
+export function Breadcrumbs({ slug, orgName }: BreadcrumbsProps) {
   const pathname = usePathname();
   const { t } = useTerminology();
 
@@ -78,12 +79,12 @@ export function Breadcrumbs({ slug }: BreadcrumbsProps) {
 
   return (
     <nav aria-label="Breadcrumb" className="flex items-center gap-1 text-sm">
-      {/* Org slug as root link */}
+      {/* Org name as root link (falls back to slug) */}
       <Link
         href={`/org/${slug}/dashboard`}
         className="text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-white"
       >
-        {slug}
+        {orgName ?? slug}
       </Link>
 
       {segments.map((segment, index) => {

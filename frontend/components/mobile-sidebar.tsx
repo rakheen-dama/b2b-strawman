@@ -20,12 +20,13 @@ import { SidebarUserFooter } from "@/components/sidebar-user-footer";
 
 interface MobileSidebarProps {
   slug: string;
+  orgName?: string | null;
   groups?: string[];
   userName?: string | null;
   userEmail?: string | null;
 }
 
-export function MobileSidebar({ slug, groups = [], userName, userEmail }: MobileSidebarProps) {
+export function MobileSidebar({ slug, orgName, groups = [], userName, userEmail }: MobileSidebarProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -48,7 +49,7 @@ export function MobileSidebar({ slug, groups = [], userName, userEmail }: Mobile
         </div>
         <div className="mx-4 border-t border-white/10" />
         <div className="flex items-center gap-2 px-4 py-3">
-          <span className="truncate text-sm text-white/60">{slug}</span>
+          <span className="truncate text-sm text-white/60">{orgName ?? slug}</span>
         </div>
         <div className="mx-4 border-t border-white/10" />
 

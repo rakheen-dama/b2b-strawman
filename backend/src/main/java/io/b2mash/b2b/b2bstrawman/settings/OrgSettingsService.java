@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionService;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder;
@@ -50,6 +51,7 @@ public class OrgSettingsService {
       java.util.Set.of("image/png", "image/jpeg", "image/svg+xml");
 
   private final OrgSettingsRepository orgSettingsRepository;
+  private final OrganizationRepository organizationRepository;
   private final AuditService auditService;
   private final StorageService storageService;
   private final VerticalProfileRegistry verticalProfileRegistry;
@@ -63,6 +65,7 @@ public class OrgSettingsService {
 
   public OrgSettingsService(
       OrgSettingsRepository orgSettingsRepository,
+      OrganizationRepository organizationRepository,
       AuditService auditService,
       StorageService storageService,
       VerticalProfileRegistry verticalProfileRegistry,
@@ -74,6 +77,7 @@ public class OrgSettingsService {
       SchedulePackSeeder schedulePackSeeder,
       VerticalModuleRegistry moduleRegistry) {
     this.orgSettingsRepository = orgSettingsRepository;
+    this.organizationRepository = organizationRepository;
     this.auditService = auditService;
     this.storageService = storageService;
     this.verticalProfileRegistry = verticalProfileRegistry;
@@ -106,6 +110,7 @@ public class OrgSettingsService {
         .map(this::toSettingsResponse)
         .orElse(
             new SettingsResponse(
+                resolveOrgName(),
                 DEFAULT_CURRENCY,
                 null, // logoUrl
                 null, // brandColor
@@ -298,10 +303,20 @@ public class OrgSettingsService {
     return toSettingsResponse(settings);
   }
 
+  /** Resolves the org display name from the organizations table via the current ORG_ID scope. */
+  private String resolveOrgName() {
+    String orgId = RequestScopes.getOrgIdOrNull();
+    if (orgId == null) {
+      return null;
+    }
+    return organizationRepository.findByExternalOrgId(orgId).map(org -> org.getName()).orElse(null);
+  }
+
   /** Maps an OrgSettings entity to a SettingsResponse DTO including compliance and tax fields. */
   private SettingsResponse toSettingsResponse(OrgSettings settings) {
     String logoUrl = generateLogoUrl(settings.getLogoS3Key());
     return new SettingsResponse(
+        resolveOrgName(),
         settings.getDefaultCurrency(),
         logoUrl,
         settings.getBrandColor(),

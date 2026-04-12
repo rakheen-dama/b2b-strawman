@@ -39,6 +39,7 @@ public class KeycloakProvisioningClient {
   private final String adminUsername;
   private final String adminPassword;
   private final String frontendBaseUrl;
+  private final String organizationRedirectUrl;
 
   private volatile String cachedToken;
   private volatile Instant tokenExpiry = Instant.MIN;
@@ -75,6 +76,7 @@ public class KeycloakProvisioningClient {
     this.adminUsername = adminUsername;
     this.adminPassword = adminPassword;
     this.frontendBaseUrl = frontendBaseUrl;
+    this.organizationRedirectUrl = frontendBaseUrl.replaceAll("/+$", "") + "/dashboard";
   }
 
   /**
@@ -85,7 +87,11 @@ public class KeycloakProvisioningClient {
    */
   @SuppressWarnings("unchecked")
   public String createOrganization(String name, String slug) {
-    var body = Map.of("name", name, "alias", slug, "enabled", true, "redirectUrl", frontendBaseUrl);
+    // redirectUrl targets /dashboard so post-registration flows through the gateway's OAuth2
+    // login (defaultSuccessUrl=/dashboard), rather than landing on the marketing page at /.
+    var body =
+        Map.of(
+            "name", name, "alias", slug, "enabled", true, "redirectUrl", organizationRedirectUrl);
     try {
       var response =
           restClient

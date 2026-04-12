@@ -158,7 +158,7 @@ export interface UnbilledTimeEntry {
   billingRateCurrency: string | null;
   billableValue: number | null;
   description: string | null;
-  rateSource: string | null;
+  rateSource: "SNAPSHOT" | "RESOLVED" | null;
 }
 
 export interface UnbilledProjectGroup {

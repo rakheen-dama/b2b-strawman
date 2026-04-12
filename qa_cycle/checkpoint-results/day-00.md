@@ -64,7 +64,7 @@ After cleanup: 0 mathebula KC users, 0 KC orgs, 0 DB rows, 0 tenant schemas, Mai
 
 ### CP 0.11: Login as padmin
 - **Result**: PASS
-- **Evidence**: 2-step form — submitted email, password "password" → POST → 302 to http://localhost:3000/platform-admin/access-requests
+- **Evidence**: 2-step form — submitted email, password `<redacted>` → POST → 302 to http://localhost:3000/platform-admin/access-requests
 - **Gap**: —
 
 ### CP 0.12: Navigate to /platform-admin/access-requests
@@ -143,7 +143,7 @@ After cleanup: 0 mathebula KC users, 0 KC orgs, 0 DB rows, 0 tenant schemas, Mai
 
 ### CP 0.21: Fill and submit registration
 - **Result**: PASS
-- **Evidence**: Filled First name=Thandi, Last name=Mathebula, Password/Confirm=SecureP@ss1, clicked Register
+- **Evidence**: Filled First name=Thandi, Last name=Mathebula, Password/Confirm=`<redacted>`, clicked Register
 - **Gap**: —
 
 ### CP 0.22: Redirected to app / org dashboard

@@ -19,6 +19,7 @@ import { HelpTip } from "@/components/help-tip";
 import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
 import { useInvoiceGeneration } from "@/components/invoices/use-invoice-generation";
 import { TerminologyText } from "@/components/terminology-text";
+import { cn } from "@/lib/utils";
 
 /** Wraps formatCurrency in a try-catch to handle invalid currency codes gracefully. */
 function safeFormatCurrency(amount: number, curr: string): string {
@@ -408,7 +409,12 @@ function ExpenseSelectionSection({
                   return (
                     <label
                       key={expense.id}
-                      className={`flex items-center gap-3 px-4 py-2 text-sm ${currencyMismatch ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50"}`}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-2 text-sm",
+                        currencyMismatch
+                          ? "cursor-not-allowed opacity-50"
+                          : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50",
+                      )}
                     >
                       <input
                         type="checkbox"
@@ -466,7 +472,12 @@ function EntryRow({
 
   return (
     <label
-      className={`flex items-center gap-3 px-4 py-2 text-sm ${disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50"}`}
+      className={cn(
+        "flex items-center gap-3 px-4 py-2 text-sm",
+        disabled
+          ? "cursor-not-allowed opacity-50"
+          : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50",
+      )}
     >
       <input
         type="checkbox"

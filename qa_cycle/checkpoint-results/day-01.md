@@ -9,7 +9,7 @@
 
 ### CP-1.01: Login as Bob
 - **Result**: PASS
-- **Evidence**: Navigated to `/dashboard`, redirected to KC login, entered `bob@mathebula-test.local` / `SecureP@ss2`, redirected to `/org/mathebula-partners/dashboard`. Sidebar shows "Bob Ndlovu" and "Mathebula & Partners".
+- **Evidence**: Navigated to `/dashboard`, redirected to KC login, entered `bob@mathebula-test.local` / `<redacted>`, redirected to `/org/mathebula-partners/dashboard`. Sidebar shows "Bob Ndlovu" and "Mathebula & Partners".
 - **Gap**: —
 
 ### CP-1.02: Navigate to Conflict Check page
@@ -39,27 +39,27 @@
 
 ### CP-1.07: Fill standard fields
 - **Result**: PASS
-- **Evidence**: Filled: Name = "Sipho Dlamini", Email = `sipho.dlamini@email.co.za`, Phone = `+27-82-555-0101`.
+- **Evidence**: Filled: Name = "Sipho Dlamini", Email = `sipho.dlamini@email.co.za`, Phone = `+27 XX XXX XXXX`.
 - **Gap**: —
 
 ### CP-1.08: Fill promoted fields — verify inline rendering
 - **Result**: PASS
-- **Evidence**: Promoted fields rendered inline in Step 1 form: Type (client_type) = "Individual", Address (physical_address) = "42 Commissioner St, Johannesburg, 2001, South Africa (ZA)", ID Number (id_passport_number) = "8501015800083". Step 2 "Additional Information" shows non-promoted custom fields only: "SA Legal — Client Details" section (empty — all fields promoted to step 1) and "Additional Information (4)" section with: ID / Passport Number, Postal Address, Preferred Correspondence, Referred By. No duplication of promoted fields in step 2.
+- **Evidence**: Promoted fields rendered inline in Step 1 form: Type (client_type) = "Individual", Address (physical_address) = "<redacted-street>, Johannesburg, South Africa (ZA)", ID Number (id_passport_number) = "<redacted-id>". Step 2 "Additional Information" shows non-promoted custom fields only: "SA Legal — Client Details" section (empty — all fields promoted to step 1) and "Additional Information (4)" section with: ID / Passport Number, Postal Address, Preferred Correspondence, Referred By. No duplication of promoted fields in step 2.
 - **Gap**: —
 
 ### CP-1.09: Save — verify client appears in list with status PROSPECT
 - **Result**: PASS
-- **Evidence**: Clicked "Create Client". Client list now shows count "1". Table row: Name = "Sipho Dlamini" (linked), Email = sipho.dlamini@email.co.za, Phone = +27-82-555-0101, Lifecycle = "Prospect", Status = "Active", Completeness = "N/A", Created = "Apr 12, 2026".
+- **Evidence**: Clicked "Create Client". Client list now shows count "1". Table row: Name = "Sipho Dlamini" (linked), Email = sipho.dlamini@email.co.za, Phone = +27 XX XXX XXXX, Lifecycle = "Prospect", Status = "Active", Completeness = "N/A", Created = "Apr 12, 2026".
 - **Gap**: —
 
 ### CP-1.10: Click into client detail — verify lifecycle badge shows PROSPECT
 - **Result**: PASS
-- **Evidence**: Clicked into Sipho Dlamini detail page. Heading "Sipho Dlamini" with two badges: "Active" and "Prospect". Subtitle: `sipho.dlamini@email.co.za`. Detail line: `+27-82-555-0101 · 8501015800083 · Created Apr 12, 2026 · 0 projects`. Breadcrumb: "Mathebula & Partners > Clients > Client".
+- **Evidence**: Clicked into Sipho Dlamini detail page. Heading "Sipho Dlamini" with two badges: "Active" and "Prospect". Subtitle: `sipho.dlamini@email.co.za`. Detail line: `+27 XX XXX XXXX · <redacted-id> · Created Apr 12, 2026 · 0 projects`. Breadcrumb: "Mathebula & Partners > Clients > Client".
 - **Gap**: LOW — detail line says "0 projects" instead of "0 matters". See GAP-D1-02. Also breadcrumb terminal segment says "Client" instead of client name "Sipho Dlamini" — cosmetic, not a gap.
 
 ### CP-1.11: Verify promoted fields render inline at top, NOT in sidebar CustomFieldSection
 - **Result**: PASS
-- **Evidence**: Client detail page top section shows: Address card ("42 Commissioner St", "Johannesburg, 2001", "ZA") and Primary Contact card ("No contact on file."). These are promoted fields rendered inline. Below, the custom fields section "SA Legal — Client Details" shows only non-promoted fields: ID / Passport Number, Postal Address, Preferred Correspondence, Referred By. No duplication.
+- **Evidence**: Client detail page top section shows: Address card ("<redacted-street>", "Johannesburg", "ZA") and Primary Contact card ("No contact on file."). These are promoted fields rendered inline. Below, the custom fields section "SA Legal — Client Details" shows only non-promoted fields: ID / Passport Number, Postal Address, Preferred Correspondence, Referred By. No duplication.
 - **Gap**: —
 
 ## D0-10 Verification (Member terminology)

@@ -274,3 +274,188 @@ Day 0 Phases D–K (team invites, settings, rates, custom fields, templates, mod
   - **GAP-D0-09** (HIGH) — stale-org reuse path does not seed vertical profile / org_settings
 - **Day 0 Phases D–K**: NOT executed — blocked on GAP-D0-09
 - **Recommendation**: Delete all stale KC orgs from prior cycles before re-running. The GAP-D0-01 fix handles the org-creation 409 correctly, but the downstream reuse path is incomplete. For a clean demo run, the pre-run cleanup (Session 0.A/0.B) MUST include deleting stale KC orgs, not just KC users and DB rows.
+
+---
+
+## Turn 3 — Clean Re-Run — Day 0 Full — 2026-04-12
+
+**Executed by**: QA Agent, Turn 3
+**Scope**: Full Day 0 re-run from scratch. Environment cleaned by `demo-cleanup.sh` (PR #1017). 0 KC orgs, 0 KC users (except padmin), 0 DB rows, 0 tenant schemas, 0 Mailpit messages confirmed before start.
+**Pre-conditions**: Completely clean Keycloak realm — no stale-org reuse path possible. This is the clean creation path.
+
+### Phase A: Access Request & OTP (CP 0.1–0.8)
+
+#### CP 0.1: Landing page loads
+- **Result**: PASS
+- **Evidence**: http://localhost:3000 → 200, title "Kazi — Practice management, built for Africa", 0 console errors
+
+#### CP 0.2: Navigate to /request-access
+- **Result**: PASS
+- **Evidence**: "Get Started" link → /request-access, page title "Request Access | Kazi"
+
+#### CP 0.3: Form fields present
+- **Result**: PASS
+- **Evidence**: 5 fields: Work Email, Full Name, Organisation Name, Country, Industry
+
+#### CP 0.4: Fill form
+- **Result**: PASS
+- **Evidence**: Filled all fields. Industry dropdown shows "Legal Services" (GAP-D0-05 fix confirmed on clean path).
+
+#### CP 0.5: Submit transitions to OTP step
+- **Result**: PASS
+- **Evidence**: "Check Your Email" card with OTP input + countdown
+
+#### CP 0.6: OTP email in Mailpit
+- **Result**: PASS
+- **Evidence**: Mailpit message `UHzs8h6bbcpyerPuAF3X5m`, Subject "Your DocTeams verification code", OTP `135175`
+- **Gap**: GAP-D0-02 still present (branding "DocTeams")
+
+#### CP 0.7: Enter OTP and verify
+- **Result**: PASS
+- **Evidence**: OTP accepted
+
+#### CP 0.8: Success card
+- **Result**: PASS
+- **Evidence**: "Request Submitted" + "Your access request has been submitted for review."
+
+### Phase B: Platform Admin Approval (CP 0.9–0.18)
+
+#### CP 0.9–0.10: Redirect to KC login
+- **Result**: PASS
+- **Evidence**: Navigated to gateway OAuth2 → KC login form. GAP-D0-03 still present ("Sign in to DocTeams").
+
+#### CP 0.11: Login as padmin
+- **Result**: PASS
+- **Evidence**: 2-step KC login (email, then password), redirected to `/platform-admin/access-requests`
+
+#### CP 0.12: Access requests page
+- **Result**: PASS
+- **Evidence**: Page loaded with Pending tab selected, 1 row visible
+
+#### CP 0.13: Mathebula visible with correct fields
+- **Result**: PASS
+- **Evidence**: "Mathebula & Partners | thandi@mathebula-test.local | Thandi Mathebula | South Africa | Legal Services | PENDING"
+
+#### CP 0.14: Detail view
+- **Result**: PARTIAL
+- **Evidence**: No drill-down view (known GAP-D0-04 WONT_FIX), all fields visible inline
+- **Gap**: GAP-D0-04
+
+#### CP 0.15: Approve → AlertDialog → Confirm
+- **Result**: PASS
+- **Evidence**: AlertDialog appeared (via JS click), confirmed "Approve". Dialog dismissed, Pending tab shows "No access requests". DB: `access_requests.status = APPROVED`, `organizations.provisioning_status = COMPLETED`, tenant schema `tenant_5039f2d497cf` created with 93 Flyway migrations applied. No 409, no 500. GAP-D0-01 clean path works perfectly.
+- **Gap**: —
+
+#### CP 0.16: Status changes to Approved, no error banner
+- **Result**: PASS
+- **Evidence**: Dialog auto-dismissed, no error banners
+
+#### CP 0.17: Vertical profile auto-assigned to legal-za
+- **Result**: **FAIL**
+- **Evidence**: `SELECT vertical_profile, default_currency, terminology_namespace, enabled_modules FROM tenant_5039f2d497cf.org_settings` returns:
+  - `vertical_profile = ''` (empty)
+  - `default_currency = USD` (should be ZAR)
+  - `terminology_namespace = ''` (should be `en-ZA-legal`)
+  - `enabled_modules = []` (should include court_calendar, conflict_check, lssa_tariff, trust_accounting)
+  - `field_pack_status` only has `common-project`, `common-task` (missing `legal-za-customer`, `legal-za-project`)
+  - `compliance_pack_status` has generic packs only (missing legal-za variants)
+  - `project_template_pack_status` is empty (missing legal-za templates)
+- **Gap**: **GAP-D0-09 REOPENED** — vertical profile seeder does NOT run on the clean org creation path. Only common/generic packs are seeded. The `legal-za` vertical profile, enabled modules, terminology, and all legal-specific packs are missing. This is NOT a stale-org issue — this is a fundamental bug in the provisioning flow. The cleanup script (PR #1017) does not fix this; it only masks it by preventing the stale-org path.
+
+#### CP 0.18: KC invitation email
+- **Result**: PASS
+- **Evidence**: Mailpit message `mZEfEU38QSHMY7uYe2Pmx6`, Subject "Invitation to join the Mathebula & Partners organization"
+- **Gap**: GAP-D0-02 still present (branding)
+
+### Phase C: Owner KC Registration & Dashboard (CP 0.19–0.25)
+
+#### CP 0.19–0.20: Open invite link, registration page
+- **Result**: PASS
+- **Evidence**: KC "Create your account" form, email pre-filled as `thandi@mathebula-test.local`
+
+#### CP 0.21: Fill and submit registration
+- **Result**: PASS (with session conflict workaround)
+- **Evidence**: Registration completed in KC (user created, verified in KC Admin API). Initial registration redirect failed due to padmin KC session conflict ("You are already authenticated as different user"). This is a test-tooling issue (single browser context sharing KC cookies), not a product bug. Workaround: cleared all cookies, logged in directly via gateway OAuth2.
+
+#### CP 0.22: Redirect to org dashboard
+- **Result**: PASS — **GAP-D0-06 VERIFIED**
+- **Evidence**: After KC login as Thandi via gateway OAuth2, redirect chain: KC → gateway callback → `/dashboard` → `/org/mathebula-partners/dashboard`. No `/?code=...` landing page. JWT invite token `reduri` field confirmed as `http://localhost:3000/dashboard` (PR #1014 fix working on clean path).
+- **Gap**: —
+
+#### CP 0.23: Sidebar shows org name + user
+- **Result**: PASS — **GAP-D0-07 VERIFIED**
+- **Evidence**: Sidebar shows "Mathebula & Partners" (ref=e9), breadcrumb shows "Mathebula & Partners > Dashboard" (ref=e99), user chip "TM | Thandi Mathebula | thandi@mathebula-test.local"
+- **Gap**: —
+
+#### CP 0.24: Legal terminology in sidebar
+- **Result**: **FAIL**
+- **Evidence**: Sidebar shows generic terminology: "PROJECTS" group with "Projects" item (should be "MATTERS" / "Matters"). "Clients" group label is correct. No Court Calendar, Trust Accounting, Conflict Check, or Tariffs in sidebar. KPI cards say "Active Projects" (should be "Active Matters"). Dashboard subtitle says "Company overview and project health".
+- **Gap**: GAP-D0-09 (vertical profile not seeded)
+
+#### CP 0.25: Dashboard screenshot
+- **Result**: FAIL (captured but shows generic, not legal)
+- **Evidence**: `qa_cycle/screenshots/cycle-1/turn3-d0-dashboard-no-vertical-profile.png` — dashboard loads cleanly (0 console errors, no 500s) but with generic terminology, no legal modules in sidebar, "Active Projects" KPIs
+- **Gap**: GAP-D0-09
+
+### Phases D–K: NOT executed
+
+**Blocked by GAP-D0-09 (HIGH)**. The vertical profile is not seeded, so:
+- Phase D (Team invites): Could execute but would not test legal-specific behavior
+- Phase E (Settings/branding): ZAR currency not pre-seeded, brand colour testable but not meaningful without vertical
+- Phase F (Rates): Testable but rates would be in USD, not ZAR
+- Phase G (Custom fields): `legal-za-customer` and `legal-za-project` field packs NOT present — field promotion checkpoints would all fail
+- Phase H (Templates): `legal-za-project-templates` pack NOT present — 0 legal matter templates
+- Phase I (Progressive disclosure): All 4 legal modules NOT enabled — entire phase fails
+- Phase J (Trust account): Trust accounting module NOT enabled — navigation doesn't exist
+- Phase K (Billing): Testable but not meaningful without the vertical context
+
+### Verification Results
+
+| GAP_ID | Previous Status | Turn 3 Result | New Status |
+|--------|----------------|---------------|------------|
+| GAP-D0-01 | VERIFIED | PASS (clean path, no 409) | VERIFIED |
+| GAP-D0-05 | VERIFIED | PASS (dropdown shows "Legal Services") | VERIFIED |
+| GAP-D0-06 | INCONCLUSIVE | PASS (redirect to /dashboard, not /?code=...) | **VERIFIED** |
+| GAP-D0-07 | VERIFIED | PASS (sidebar + breadcrumb show display name) | VERIFIED |
+| GAP-D0-09 | FIXED | **FAIL** (vertical profile not seeded on clean path) | **REOPENED** |
+
+### Root Cause Analysis: GAP-D0-09
+
+The Turn 2 diagnosis was incorrect. GAP-D0-09 was attributed to the stale-org reuse path, but the underlying bug is that the **vertical profile seeder never runs during the approval flow at all** — not on the stale-org path, and not on the clean creation path.
+
+Backend logs show the provisioning flow seeds only common/generic packs:
+- `common-project v2`, `common-task v2` (field packs)
+- `common v1`, `compliance-za v1` (template packs)
+- `standard-clauses v1` (clause pack)
+- `generic-onboarding v1.0.0`, `sa-fica-company v1.0.0`, `sa-fica-individual v1.0.0` (compliance packs)
+- `standard-reports v1`, `annual-audit v1`, `company-registration v1`, `monthly-bookkeeping v1`, `tax-return v1` (report/request packs)
+- `automation-common v2` (automation pack)
+
+Notably absent: any `legal-za-*` pack. The `VerticalProfileSeeder` (or equivalent) is either not called, or it only handles the `vertical_profile` column in org_settings without actually applying legal-za-specific packs and settings. The access request has `industry = Legal Services` and `country = South Africa`, which should trigger `legal-za` profile assignment, but the seeder is not populating:
+1. `org_settings.vertical_profile` = `legal-za`
+2. `org_settings.default_currency` = `ZAR`
+3. `org_settings.terminology_namespace` = `en-ZA-legal`
+4. `org_settings.enabled_modules` = `["court_calendar","conflict_check","lssa_tariff","trust_accounting"]`
+5. Legal-specific field packs (`legal-za-customer`, `legal-za-project`)
+6. Legal-specific template packs (`legal-za-project-templates`)
+7. Legal-specific compliance packs (trust-onboarding variants)
+8. Legal-specific clause packs (`legal-za-clauses`)
+9. Legal-specific automation packs (`automation-legal-za`)
+
+The cleanup script (PR #1017) is still useful for environment hygiene but does not fix this bug. The fix must be in the backend provisioning service — the vertical profile seeder must be invoked after tenant schema creation and common pack seeding.
+
+### Summary
+
+- **Executed**: 25 checkpoints (CP 0.1–0.25)
+- **PASS**: 20
+- **FAIL**: 3 (CP 0.17 vertical profile, CP 0.24 terminology, CP 0.25 screenshot shows generic)
+- **PARTIAL**: 2 (CP 0.14 no detail view, CP 0.21 session conflict workaround)
+- **New gaps**: 0 (GAP-D0-09 REOPENED, not new)
+- **Verification status**:
+  - GAP-D0-01: VERIFIED (clean path)
+  - GAP-D0-05: VERIFIED (clean path)
+  - GAP-D0-06: **VERIFIED** (clean path — was INCONCLUSIVE in Turn 2)
+  - GAP-D0-07: VERIFIED (clean path)
+  - GAP-D0-09: **REOPENED** (was FIXED — bug exists on clean path, not just stale-org path)
+- **Day 0 Phases D–K**: NOT executed — blocked on GAP-D0-09
+- **Stopping reason**: HIGH blocker. The vertical profile seeder does not run during org provisioning. The entire legal-za demo cannot proceed without legal terminology, modules, field packs, and templates.

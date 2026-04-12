@@ -160,7 +160,7 @@ class PlatformAdminControllerTest {
   }
 
   private AccessRequest createPendingRequest(String email, String orgName) {
-    var request = new AccessRequest(email, "Test User", orgName, "ZA", "Legal");
+    var request = new AccessRequest(email, "Test User", orgName, "ZA", "Legal Services");
     request.setStatus(AccessRequestStatus.PENDING);
     return accessRequestRepository.save(request);
   }

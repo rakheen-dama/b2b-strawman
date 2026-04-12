@@ -31,6 +31,21 @@ public final class TestChecklistHelper {
       MockMvc mockMvc, String customerId, JwtRequestPostProcessor jwt) throws Exception {
     completeChecklistItems(mockMvc, customerId, jwt);
     fillStructuralPrerequisiteFields(mockMvc, customerId, jwt);
+
+    // GAP-D2-02: fillStructuralPrerequisiteFields now triggers auto-transition when all
+    // checklists are already complete. Check if customer is already ACTIVE before attempting
+    // the explicit transition.
+    var getResult =
+        mockMvc
+            .perform(get("/api/customers/" + customerId).with(jwt))
+            .andExpect(status().isOk())
+            .andReturn();
+    String currentStatus =
+        JsonPath.read(getResult.getResponse().getContentAsString(), "$.lifecycleStatus");
+    if ("ACTIVE".equals(currentStatus)) {
+      return; // Already auto-transitioned
+    }
+
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")

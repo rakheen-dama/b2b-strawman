@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.customer;
 import io.b2mash.b2b.b2bstrawman.audit.AuditDeltaBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceService;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerUpdatedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.DeleteGuard;
@@ -51,6 +52,7 @@ public class CustomerService {
   private final InvoiceRepository invoiceRepository;
   private final RetainerAgreementRepository retainerAgreementRepository;
   private final io.b2mash.b2b.b2bstrawman.member.MemberNameResolver memberNameResolver;
+  private final ChecklistInstanceService checklistInstanceService;
 
   public CustomerService(
       CustomerRepository repository,
@@ -64,7 +66,8 @@ public class CustomerService {
       CustomerProjectRepository customerProjectRepository,
       InvoiceRepository invoiceRepository,
       RetainerAgreementRepository retainerAgreementRepository,
-      io.b2mash.b2b.b2bstrawman.member.MemberNameResolver memberNameResolver) {
+      io.b2mash.b2b.b2bstrawman.member.MemberNameResolver memberNameResolver,
+      ChecklistInstanceService checklistInstanceService) {
     this.repository = repository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
@@ -77,6 +80,7 @@ public class CustomerService {
     this.invoiceRepository = invoiceRepository;
     this.retainerAgreementRepository = retainerAgreementRepository;
     this.memberNameResolver = memberNameResolver;
+    this.checklistInstanceService = checklistInstanceService;
   }
 
   @Transactional(readOnly = true)
@@ -418,6 +422,15 @@ public class CustomerService {
     eventPublisher.publishEvent(
         new CustomerUpdatedEvent(
             saved.getId(), saved.getName(), saved.getEmail(), saved.getStatus(), orgId, tenantId));
+
+    // GAP-D2-02: Re-check lifecycle auto-transition when an ONBOARDING customer is updated.
+    // If checklists were already complete but a prerequisite field (e.g. tax_number) was missing,
+    // adding it via Edit should trigger the ONBOARDING -> ACTIVE transition.
+    if (saved.getLifecycleStatus() == LifecycleStatus.ONBOARDING) {
+      UUID actorId =
+          RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : saved.getCreatedBy();
+      checklistInstanceService.recheckLifecycleAdvance(saved.getId(), actorId);
+    }
 
     return saved;
   }

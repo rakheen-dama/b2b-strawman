@@ -505,6 +505,15 @@ public class ChecklistInstanceService {
                 Member::getId, m -> m.getName() != null ? m.getName() : "", (a, b) -> a));
   }
 
+  /**
+   * Re-checks whether a customer in ONBOARDING status can auto-transition to ACTIVE. Called after
+   * checklist item completion and after customer field updates (to handle the case where a
+   * prerequisite field like tax_number is filled after checklists are already complete).
+   */
+  public void recheckLifecycleAdvance(UUID customerId, UUID actorId) {
+    checkLifecycleAdvance(customerId, actorId);
+  }
+
   private void checkLifecycleAdvance(UUID customerId, UUID actorId) {
     var customer =
         customerRepository

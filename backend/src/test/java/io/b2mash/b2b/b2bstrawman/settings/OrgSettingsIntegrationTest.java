@@ -160,11 +160,12 @@ class OrgSettingsIntegrationTest {
   }
 
   @Test
-  void getSettings_memberGetsForbidden() throws Exception {
+  void getSettings_memberCanReadSettings() throws Exception {
     mockMvc
         .perform(
             get("/api/settings").with(TestJwtFactory.memberJwt(ORG_ID, "user_settings_member")))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.defaultCurrency").exists());
   }
 
   @Test

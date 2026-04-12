@@ -36,7 +36,6 @@ public class OrgSettingsController {
   }
 
   @GetMapping
-  @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<SettingsResponse> getSettings() {
     return ResponseEntity.ok(orgSettingsService.getSettingsWithBranding());
   }

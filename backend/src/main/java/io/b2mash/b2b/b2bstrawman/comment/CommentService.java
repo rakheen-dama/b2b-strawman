@@ -100,9 +100,10 @@ public class CommentService {
     // Verify entity exists and belongs to project
     validateEntityBelongsToProject(entityType, entityId, projectId);
 
-    // SHARED visibility requires canEdit (lead/admin/owner)
+    // SHARED visibility requires canEdit (lead/admin/owner) — except for PROJECT-level comments
+    // which are inherently SHARED (the Client Comments thread is open to all project members)
     String resolvedVisibility = visibility != null ? visibility : "INTERNAL";
-    if ("SHARED".equals(resolvedVisibility) && !access.canEdit()) {
+    if ("SHARED".equals(resolvedVisibility) && !access.canEdit() && !"PROJECT".equals(entityType)) {
       throw new ForbiddenException(
           "Cannot create shared comment",
           "Only leads, admins, and owners can create SHARED comments");

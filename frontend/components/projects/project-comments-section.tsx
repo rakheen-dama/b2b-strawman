@@ -25,10 +25,17 @@ export function ProjectCommentsSection({ projectId, orgSlug }: ProjectCommentsSe
       .finally(() => setIsLoading(false));
   }, [projectId]);
 
+  const [error, setError] = useState<string | null>(null);
+
   function handleSubmit() {
     if (!body.trim()) return;
+    setError(null);
     startTransition(async () => {
-      await createProjectComment(orgSlug, projectId, body);
+      const result = await createProjectComment(orgSlug, projectId, body);
+      if (!result.success) {
+        setError(result.error ?? "Failed to post comment.");
+        return;
+      }
       setBody("");
       const updated = await fetchProjectComments(projectId);
       setComments(updated);
@@ -84,6 +91,7 @@ export function ProjectCommentsSection({ projectId, orgSlug }: ProjectCommentsSe
         <Button onClick={handleSubmit} disabled={isPending || !body.trim()} size="sm">
           {isPending ? "Sending..." : "Post Reply"}
         </Button>
+        {error && <p className="text-destructive text-sm">{error}</p>}
       </div>
     </div>
   );

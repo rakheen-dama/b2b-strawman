@@ -5,7 +5,7 @@
 - **QA Position**: Day 0 blocked at CP 0.15 — GAP-D0-01 (HIGH) — waiting for triage. Day 0 Phases A–C executed (CP 0.1–0.25), GAP-D0-01 surfaced at first Approve attempt, manually worked past it to capture downstream evidence through first login. Day 0 Phases D–K (team invites, settings, rates, custom fields, templates, modules, trust account, billing) NOT executed — will resume after GAP-D0-01 is FIXED. 7 new gaps total (1 HIGH, 2 MED, 4 LOW).
 - **Cycle**: 1 (fresh)
 - **Dev Stack**: READY
-- **NEEDS_REBUILD**: true (backend changed — GAP-D0-07 adds orgName to /api/settings response)
+- **NEEDS_REBUILD**: false
 - **Branch**: `bugfix_cycle_demo_legal_2026-04-12`
 - **Scenario**: `qa/testplan/demos/legal-za-90day-keycloak.md`
 - **Focus**: 90-day legal-ZA demo walkthrough executed end-to-end against the real Keycloak dev stack. Goal is to prove the scripted customer demo runs clean — access request → admin approval → KC registration → plan upgrade → legal-za profile → team invites → 3 client lifecycles (Litigation, Deceased Estate, RAF) → engagement letters, trust accounting, court calendar, adverse parties, activity feed, audit sign-off. Any sharp edges that break the demo narrative become fix-spec targets.
@@ -52,3 +52,4 @@
 - 2026-04-12 — Dev Turn 2: GAP-D0-06 FIXED via PR #1014 (squash commit 9639a4f6). `KeycloakProvisioningClient.createOrganization` now sets KC org `redirectUrl` to `frontendBaseUrl + "/dashboard"` instead of bare `frontendBaseUrl`. New `organizationRedirectUrl` field derived in constructor with trailing-slash guard. 16 tests pass (AccessRequestApprovalServiceTest: 9, PlatformAdminControllerTest: 7). Backend changed → NEEDS_REBUILD=true.
 - 2026-04-12 — Dev Turn 3: GAP-D0-07 FIXED via PR #1015 (squash commit 8d1cc50d). Added `orgName` field to `SettingsResponse` DTO, populated from `public.organizations` table via `OrganizationRepository.findByExternalOrgId(RequestScopes.ORG_ID)`. Frontend sidebar (desktop + mobile) and breadcrumbs now render `orgName` with fallback to slug. 7 files changed across backend + frontend. Build green: backend compile clean, frontend lint 0 errors, build green, 1932 tests pass. NEEDS_REBUILD=true (backend changed).
 - 2026-04-12 — Dev Turn 4: GAP-D0-05 FIXED via PR #1016 (squash commit cab293bd). Renamed industry label "Legal" to "Legal Services" in `frontend/lib/access-request-data.ts` + updated test fixture. Frontend-only, HMR picks it up.
+- 2026-04-12 — Infra Turn 3: backend restarted after D0-06+D0-07 fixes (PRs #1014, #1015). Old PID 83247 → new PID 95751. Health UP (`/actuator/health` → `{"status":"UP"}`). svc.sh status: backend/gateway/frontend/portal all running+healthy. NEEDS_REBUILD cleared.

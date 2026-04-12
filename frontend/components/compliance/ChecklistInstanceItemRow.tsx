@@ -217,9 +217,7 @@ export function ChecklistInstanceItemRow({
           {/* Complete form */}
           {showCompleteForm &&
             (() => {
-              const uploadedDocs = (customerDocuments ?? []).filter(
-                (d) => d.status === "UPLOADED"
-              );
+              const uploadedDocs = (customerDocuments ?? []).filter((d) => d.status === "UPLOADED");
               const hasUploadedDocs = uploadedDocs.length > 0;
               const requiresDoc = item.requiresDocument === true;
               const missingDoc = requiresDoc && !documentId;

@@ -32,9 +32,7 @@ describe("RequestAccessForm", () => {
   it("renders the card title and description", () => {
     render(<RequestAccessForm />);
 
-    expect(
-      screen.getByText("Fill in your details to request access to Kazi.")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Fill in your details to request access to Kazi.")).toBeInTheDocument();
     // "Request Access" appears as both heading and button
     expect(screen.getAllByText("Request Access")).toHaveLength(2);
   });

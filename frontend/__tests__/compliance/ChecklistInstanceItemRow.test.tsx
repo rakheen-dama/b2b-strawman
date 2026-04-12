@@ -312,9 +312,7 @@ describe("ChecklistInstanceItemRow", () => {
     const confirmBtn = screen.getByRole("button", { name: /Confirm$/ });
     expect(confirmBtn).toBeDisabled();
     // Inline guidance must instruct the user to upload the named document.
-    expect(
-      screen.getByText(/Upload Certified copy of SA ID \/ passport/i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Upload Certified copy of SA ID \/ passport/i)).toBeInTheDocument();
     // The completion handler must NOT have been invoked.
     await user.click(confirmBtn);
     expect(mockOnComplete).not.toHaveBeenCalled();
@@ -326,9 +324,7 @@ describe("ChecklistInstanceItemRow", () => {
       ...baseItem,
       requiresDocument: false,
     };
-    const failingComplete = vi
-      .fn()
-      .mockRejectedValueOnce(new Error("Document required"));
+    const failingComplete = vi.fn().mockRejectedValueOnce(new Error("Document required"));
 
     render(
       <ChecklistInstanceItemRow

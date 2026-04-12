@@ -29,17 +29,13 @@ export default async function NewProjectRedirectPage({
   query.set("new", "1");
 
   const customerId =
-    typeof resolvedSearchParams.customerId === "string"
-      ? resolvedSearchParams.customerId
-      : null;
+    typeof resolvedSearchParams.customerId === "string" ? resolvedSearchParams.customerId : null;
   if (customerId) {
     query.set("customerId", customerId);
   }
 
   const templateId =
-    typeof resolvedSearchParams.templateId === "string"
-      ? resolvedSearchParams.templateId
-      : null;
+    typeof resolvedSearchParams.templateId === "string" ? resolvedSearchParams.templateId : null;
   if (templateId) {
     query.set("templateId", templateId);
   }

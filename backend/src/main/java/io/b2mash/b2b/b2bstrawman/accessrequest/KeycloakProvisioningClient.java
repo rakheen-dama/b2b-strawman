@@ -113,20 +113,58 @@ public class KeycloakProvisioningClient {
     }
   }
 
+  /**
+   * Looks up an organization by alias. Keycloak's {@code /organizations?search=...} query matches
+   * on organization <b>name</b>, not alias, so we must fetch the candidate list and filter
+   * client-side on the {@code alias} field. See GAP-D0-01.
+   */
+  @SuppressWarnings("unchecked")
   private String findOrganizationByAlias(String alias) {
-    var orgs =
-        restClient
-            .get()
-            .uri("/organizations?search={alias}&exact=true", alias)
-            .header("Authorization", "Bearer " + getAdminToken())
-            .retrieve()
-            .body(List.class);
-    if (orgs == null || orgs.isEmpty()) {
-      throw new IllegalStateException(
-          "Keycloak returned 409 but no org found with alias: " + alias);
+    // First attempt: narrow by search (matches name, but may coincidentally contain the alias).
+    List<Map<String, Object>> orgs =
+        (List<Map<String, Object>>)
+            restClient
+                .get()
+                .uri("/organizations?search={alias}", alias)
+                .header("Authorization", "Bearer " + getAdminToken())
+                .retrieve()
+                .body(List.class);
+    String id = matchByAlias(orgs, alias);
+    if (id != null) {
+      return id;
     }
-    var org = (Map<String, Object>) orgs.getFirst();
-    return (String) org.get("id");
+
+    // Fallback: list all orgs (up to 200) and match client-side. This path is only exercised in
+    // anomaly/idempotency scenarios, so the extra call is acceptable.
+    log.info(
+        "findOrganizationByAlias: narrow search did not find alias '{}', falling back to list-all",
+        alias);
+    orgs =
+        (List<Map<String, Object>>)
+            restClient
+                .get()
+                .uri("/organizations?first=0&max=200")
+                .header("Authorization", "Bearer " + getAdminToken())
+                .retrieve()
+                .body(List.class);
+    id = matchByAlias(orgs, alias);
+    if (id != null) {
+      return id;
+    }
+
+    throw new IllegalStateException("Keycloak returned 409 but no org found with alias: " + alias);
+  }
+
+  private static String matchByAlias(List<Map<String, Object>> orgs, String alias) {
+    if (orgs == null || orgs.isEmpty()) {
+      return null;
+    }
+    for (Map<String, Object> org : orgs) {
+      if (alias.equals(org.get("alias"))) {
+        return (String) org.get("id");
+      }
+    }
+    return null;
   }
 
   /**

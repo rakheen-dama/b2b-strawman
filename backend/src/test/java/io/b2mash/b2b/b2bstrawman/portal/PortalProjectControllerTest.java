@@ -159,4 +159,34 @@ class PortalProjectControllerTest {
   void getProjectDetailReturns401WithoutToken() throws Exception {
     mockMvc.perform(get("/portal/projects/{id}", projectId)).andExpect(status().isUnauthorized());
   }
+
+  @Test
+  void listProjectsReturnsProjectsFromReadModel() throws Exception {
+    mockMvc
+        .perform(get("/portal/projects").header("Authorization", "Bearer " + portalToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].id").value(projectId.toString()))
+        .andExpect(jsonPath("$[0].name").value("Website Redesign"))
+        .andExpect(jsonPath("$[0].documentCount").value(5));
+  }
+
+  @Test
+  void listAndDetailUseConsistentDataSource() throws Exception {
+    // List endpoint should return the same project that the detail endpoint can resolve
+    var listResult =
+        mockMvc
+            .perform(get("/portal/projects").header("Authorization", "Bearer " + portalToken))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$[0].id").exists())
+            .andReturn();
+
+    String listedId = JsonPath.read(listResult.getResponse().getContentAsString(), "$[0].id");
+
+    // Detail endpoint must also succeed for the same project ID
+    mockMvc
+        .perform(
+            get("/portal/projects/{id}", listedId).header("Authorization", "Bearer " + portalToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(listedId));
+  }
 }

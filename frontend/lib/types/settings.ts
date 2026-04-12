@@ -3,6 +3,7 @@
 import type { CompliancePackEntry } from "./customer";
 
 export interface OrgSettings {
+  orgName?: string | null;
   defaultCurrency: string;
   logoUrl?: string;
   brandColor?: string;

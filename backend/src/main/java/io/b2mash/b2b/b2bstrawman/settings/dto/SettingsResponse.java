@@ -9,6 +9,7 @@ import java.util.Map;
  * billing, vertical/horizontal modules, and data protection fields.
  */
 public record SettingsResponse(
+    String orgName,
     String defaultCurrency,
     String logoUrl,
     String brandColor,

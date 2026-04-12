@@ -13,12 +13,13 @@ import { useCommandPalette } from "@/components/command-palette-provider";
 
 interface DesktopSidebarProps {
   slug: string;
+  orgName?: string | null;
   groups?: string[];
   userName?: string | null;
   userEmail?: string | null;
 }
 
-export function DesktopSidebar({ slug, groups = [], userName, userEmail }: DesktopSidebarProps) {
+export function DesktopSidebar({ slug, orgName, groups = [], userName, userEmail }: DesktopSidebarProps) {
   const pathname = usePathname();
   const { setOpen } = useCommandPalette();
 
@@ -30,8 +31,8 @@ export function DesktopSidebar({ slug, groups = [], userName, userEmail }: Deskt
       </div>
       <div className="mx-4 border-t border-white/10" />
       <div className="flex items-center gap-2 px-4 py-3">
-        <span className="truncate font-mono text-xs tracking-wider text-teal-500/80 uppercase">
-          {slug}
+        <span className="truncate text-xs font-medium text-teal-500/80">
+          {orgName ?? slug}
         </span>
       </div>
       <div className="mx-4 border-t border-white/10" />

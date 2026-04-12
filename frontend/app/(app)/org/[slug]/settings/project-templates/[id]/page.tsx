@@ -87,7 +87,7 @@ export default async function TemplateEditorPage({
         className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
       >
         <ChevronLeft className="size-4" />
-        Project Templates
+        <TerminologyText template="{Project} Templates" />
       </Link>
 
       <div>

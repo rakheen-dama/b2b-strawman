@@ -1,7 +1,7 @@
 # QA Cycle KC 2026-04-12 — QA Turn 1 (Path B re-verification)
 
 **Timestamp**: 2026-04-12 (local 2026-04-11T23:56Z)
-**Actor**: Thandi Mathebula (owner, `thandi@mathebula-test.local` / `SecureP@ss1`)
+**Actor**: Thandi Mathebula (owner, `thandi@mathebula-test.local` / `REDACTED` — credentials in local dev notes)
 **Tenant**: `mathebula-partners` (tenant_5039f2d497cf), legal-za profile, ZAR
 **Branch**: `bugfix_cycle_kc_2026-04-12`
 **Stack**: Keycloak dev (backend :8080, gateway :8443, frontend :3000, portal :3002)
@@ -23,7 +23,7 @@
 | 10 | GAP-S6-04 | LOW | #1008 | **VERIFIED** | `/invoices` page titled "Fee Notes", "New Fee Note" button, tabs "Fee Notes" + "Billing Runs", empty-state "No fee notes yet — Generate fee notes from tracked time or create them manually. You'll need at least one matter with logged time." Zero "invoice" or "project" references in page body copy. Screenshot 04. |
 | 11 | GAP-S2-03 | LOW | #1009 | **VERIFIED** | Deleted Carol's cost rate, clicked "Add Rate" button from the Cost Rates tab row — dialog opened with Rate Type toggle defaulting to **"Cost Rate"** (teal highlight), "Billing Rate" secondary. Field label reads "Hourly Cost". Cost rate restored at R200 successfully via `CostRateService.Created cost rate bea60d15-…`. Screenshots 11/11b/12/12a/12b. |
 | 12 | GAP-S6-05 | LOW | #1010 | **VERIFIED** | `/invoices` KPIs render in ZAR: "Total Outstanding R 0.00", "Total Overdue R 0.00", "Paid This Month R 0.00". No `$` symbols anywhere on page. Screenshot 04. |
-| 13 | GAP-S6-06 | LOW | #1011 | **VERIFIED** | Created new Litigation matter `31ae3e62-d0dd-4247-b9ae-31d4a956a62d` which triggers the "Matter Onboarding Reminder" automation rule. `grep "No recipients resolved|ORG_ADMINS|ERROR" /.svc/logs/backend.log` returns **zero matches** post-creation. Only harmless WARNs present (Hibernate dialect deprecation, LibreOffice unavailable in dev). The ALL_ADMINS/ORG_ADMINS multi-label case arm resolves correctly. |
+| 13 | GAP-S6-06 | LOW | #1011 | **VERIFIED** | Created new Litigation matter `31ae3e62-d0dd-4247-b9ae-31d4a956a62d` which triggers the "Matter Onboarding Reminder" automation rule. `grep -e "No recipients resolved" -e "ORG_ADMINS" -e "ERROR" /.svc/logs/backend.log` returns **zero matches** post-creation. Only harmless WARNs present (Hibernate dialect deprecation, LibreOffice unavailable in dev). The ALL_ADMINS/ORG_ADMINS multi-label case arm resolves correctly. |
 
 **13 VERIFIED / 0 REOPENED / 0 PARTIAL / 0 SKIPPED**
 

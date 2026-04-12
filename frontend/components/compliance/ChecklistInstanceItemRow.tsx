@@ -201,7 +201,11 @@ export function ChecklistInstanceItemRow({
 
           {/* Error message — sticky until the user retries or dismisses */}
           {error && (
-            <div className="mt-2 flex items-start justify-between gap-2 rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300">
+            <div
+              role="alert"
+              aria-live="assertive"
+              className="mt-2 flex items-start justify-between gap-2 rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
+            >
               <p className="flex-1">{error}</p>
               <button
                 type="button"

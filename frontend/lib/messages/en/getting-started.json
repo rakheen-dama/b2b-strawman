@@ -30,6 +30,6 @@
   },
   "create_invoice": {
     "label": "Generate your first invoice",
-    "description": "Pull tracked time into a professional fee note. Send it to your client directly from Kazi."
+    "description": "Pull tracked time into a professional invoice. Send it to your client directly from Kazi."
   }
 }

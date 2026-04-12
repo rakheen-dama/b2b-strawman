@@ -63,9 +63,7 @@ export function CustomerInvoicesTab({
         <EmptyState
           icon={FileText}
           title={<TerminologyText template="No {invoices} yet" />}
-          description={
-            <TerminologyText template="Generate an {invoice} from unbilled time entries" />
-          }
+          description={<TerminologyText template="Generate {invoice} from unbilled time entries" />}
         />
       </div>
     );

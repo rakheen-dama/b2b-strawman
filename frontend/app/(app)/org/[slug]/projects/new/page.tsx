@@ -13,6 +13,11 @@ import { redirect } from "next/navigation";
  * when `customerId` is supplied (used by deep-links such as "New Matter for
  * this client" on customer detail pages).
  *
+ * Note: `templateId` is intentionally NOT forwarded. The downstream
+ * `/projects` page currently only reads `new` and `customerId` from the query
+ * string, so forwarding a template id would be dead weight. Add template
+ * pre-selection in a follow-up if product requires it.
+ *
  * Spec: qa_cycle/fix-specs/GAP-S3-05.md
  */
 export default async function NewProjectRedirectPage({
@@ -32,12 +37,6 @@ export default async function NewProjectRedirectPage({
     typeof resolvedSearchParams.customerId === "string" ? resolvedSearchParams.customerId : null;
   if (customerId) {
     query.set("customerId", customerId);
-  }
-
-  const templateId =
-    typeof resolvedSearchParams.templateId === "string" ? resolvedSearchParams.templateId : null;
-  if (templateId) {
-    query.set("templateId", templateId);
   }
 
   redirect(`/org/${slug}/projects?${query.toString()}`);

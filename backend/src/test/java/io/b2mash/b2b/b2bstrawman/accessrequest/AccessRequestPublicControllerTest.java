@@ -97,7 +97,7 @@ class AccessRequestPublicControllerTest {
                       "fullName": "Duplicate User",
                       "organizationName": "Test Corp",
                       "country": "South Africa",
-                      "industry": "Legal"
+                      "industry": "Legal Services"
                     }
                     """))
         .andExpect(status().isOk());
@@ -114,7 +114,7 @@ class AccessRequestPublicControllerTest {
                       "fullName": "Duplicate User",
                       "organizationName": "Test Corp",
                       "country": "South Africa",
-                      "industry": "Legal"
+                      "industry": "Legal Services"
                     }
                     """))
         .andExpect(status().isOk())
@@ -250,7 +250,7 @@ class AccessRequestPublicControllerTest {
                       "fullName": "Rejected User",
                       "organizationName": "Resubmit Corp",
                       "country": "South Africa",
-                      "industry": "Legal"
+                      "industry": "Legal Services"
                     }
                     """
                         .formatted(email)))

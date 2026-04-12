@@ -19,6 +19,7 @@ import { HelpTip } from "@/components/help-tip";
 import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
 import { useInvoiceGeneration } from "@/components/invoices/use-invoice-generation";
 import { TerminologyText } from "@/components/terminology-text";
+import { cn } from "@/lib/utils";
 
 /** Wraps formatCurrency in a try-catch to handle invalid currency codes gracefully. */
 function safeFormatCurrency(amount: number, curr: string): string {
@@ -408,7 +409,12 @@ function ExpenseSelectionSection({
                   return (
                     <label
                       key={expense.id}
-                      className={`flex items-center gap-3 px-4 py-2 text-sm ${currencyMismatch ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50"}`}
+                      className={cn(
+                        "flex items-center gap-3 px-4 py-2 text-sm",
+                        currencyMismatch
+                          ? "cursor-not-allowed opacity-50"
+                          : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50",
+                      )}
                     >
                       <input
                         type="checkbox"
@@ -460,17 +466,24 @@ function EntryRow({
   isSelected: boolean;
   onToggle: (id: string) => void;
 }) {
-  const currencyMismatch = entry.billingRateCurrency !== currency;
+  const noRate = entry.billingRateCurrency == null;
+  const currencyMismatch = !noRate && entry.billingRateCurrency !== currency;
+  const disabled = noRate || currencyMismatch;
 
   return (
     <label
-      className={`flex items-center gap-3 px-4 py-2 text-sm ${currencyMismatch ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50"}`}
+      className={cn(
+        "flex items-center gap-3 px-4 py-2 text-sm",
+        disabled
+          ? "cursor-not-allowed opacity-50"
+          : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50",
+      )}
     >
       <input
         type="checkbox"
         checked={isSelected}
         onChange={() => onToggle(entry.id)}
-        disabled={currencyMismatch}
+        disabled={disabled}
         className="size-4 rounded accent-teal-600"
       />
       <div className="min-w-0 flex-1">
@@ -479,6 +492,14 @@ function EntryRow({
           {currencyMismatch && (
             <span className="text-xs text-slate-400">({entry.billingRateCurrency})</span>
           )}
+          {entry.rateSource === "RESOLVED" && (
+            <span
+              className="rounded bg-teal-50 px-1.5 py-0.5 text-[10px] font-medium text-teal-700 dark:bg-teal-900/30 dark:text-teal-300"
+              title="Rate resolved from current rate card (not snapshotted at log time)"
+            >
+              Rate card
+            </span>
+          )}
         </div>
         <div className="text-xs text-slate-500">
           {entry.memberName} &middot; {formatDate(entry.date)} &middot;{" "}
@@ -486,7 +507,9 @@ function EntryRow({
         </div>
       </div>
       <span className="shrink-0 text-right font-medium text-slate-700 dark:text-slate-300">
-        {formatCurrency(entry.billableValue, entry.billingRateCurrency)}
+        {entry.billableValue != null && entry.billingRateCurrency
+          ? formatCurrency(entry.billableValue, entry.billingRateCurrency)
+          : "N/A"}
       </span>
     </label>
   );

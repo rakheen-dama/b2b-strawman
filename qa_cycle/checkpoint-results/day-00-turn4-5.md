@@ -40,10 +40,10 @@ Screenshots: `turn4-d0-dashboard-legal-verified.png`, `turn4-request-access-form
   - "Invitation to join the Mathebula & Partners organization" → carol@mathebula-test.local
 
 #### CP 0.31–0.33: Bob registers via invitation link
-- **PASS** — KC registration page shows "Create your account" with bob@mathebula-test.local pre-filled. Registered: First Name = Bob, Last Name = Ndlovu, Password = SecureP@ss2. Redirected to `/org/mathebula-partners/dashboard`. Dashboard shows legal terminology: Matters, Court Calendar, Clients.
+- **PASS** — KC registration page shows "Create your account" with bob@mathebula-test.local pre-filled. Registered: First Name = Bob, Last Name = Ndlovu, Password = `<redacted>`. Redirected to `/org/mathebula-partners/dashboard`. Dashboard shows legal terminology: Matters, Court Calendar, Clients.
 
 #### CP 0.34–0.36: Carol registers via invitation link
-- **PASS** — KC registration page with carol@mathebula-test.local pre-filled. Registered: First Name = Carol, Last Name = Mokoena, Password = SecureP@ss3. Redirected to `/org/mathebula-partners/dashboard`.
+- **PASS** — KC registration page with carol@mathebula-test.local pre-filled. Registered: First Name = Carol, Last Name = Mokoena, Password = `<redacted>`. Redirected to `/org/mathebula-partners/dashboard`.
 - **NEW GAP-D0-10 (MED)**: Carol (Member role) sees generic terminology: "Projects" not "Matters", "mathebula-partners" (slug) not "Mathebula & Partners" (display name), no Court Calendar / Clients / Finance sections. Console error: "Failed to fetch org settings for terminology: Insufficient permissions for this operation". The org_settings endpoint returns 403 for Member-role users, causing sidebar to fall back to generic terminology.
 
 ### Phase E: General Settings & Branding

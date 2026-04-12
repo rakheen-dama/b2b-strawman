@@ -226,7 +226,7 @@ export function CherryPickStep({
     if (!data?.isLoaded) return itemStates[itemId]?.totalUnbilledAmount ?? 0;
     const timeTotal = data.timeEntries
       .filter((e) => data.includedTimeIds.has(e.id))
-      .reduce((sum, e) => sum + e.billableValue, 0);
+      .reduce((sum, e) => sum + (e.billableValue ?? 0), 0);
     const expenseTotal = data.expenses
       .filter((e) => data.includedExpenseIds.has(e.id))
       .reduce((sum, e) => sum + e.billableAmount, 0);

@@ -2,11 +2,11 @@
 
 ## Current State
 
-- **QA Position**: Day 0 COMPLETE (all phases A–K executed). Turn 4 completed Phases A–C (PASS). Turn 5 completed Phases D–K (28 PASS, 2 PARTIAL, 7 SKIPPED, 0 FAIL). GAP-D0-09 VERIFIED. 2 new MED/LOW gaps specced (D0-10: member role sees generic terminology; D0-11: custom fields tab labels not localized). 11 gaps total (0 HIGH, 0 MED open, 0 LOW open, 2 WONT_FIX, 4 SPEC_READY, 5 VERIFIED).
-- **Cycle**: 1 (fresh)
-- **Dev Stack**: READY
-- **NEEDS_REBUILD**: true (GAP-D0-10 backend fix merged via PR #1020)
-- **Branch**: `bugfix_cycle_demo_legal_2026-04-12`
+- **QA Position**: Day 0 COMPLETE. Advancing to Day 1. All Day 0 fixes merged to main (PR #1021). D0-10 + D0-11 FIXED. Org state from Day 0 is live in Keycloak/Postgres (Mathebula & Partners, legal-za profile, 3 team members).
+- **Cycle**: 2 (Day 1 start)
+- **Dev Stack**: READY (backend restarted from main with all Day 0 fixes)
+- **NEEDS_REBUILD**: false
+- **Branch**: `bugfix_cycle_demo_legal_day1_2026-04-12`
 - **Scenario**: `qa/testplan/demos/legal-za-90day-keycloak.md`
 - **Focus**: 90-day legal-ZA demo walkthrough executed end-to-end against the real Keycloak dev stack. Goal is to prove the scripted customer demo runs clean — access request → admin approval → KC registration → plan upgrade → legal-za profile → team invites → 3 client lifecycles (Litigation, Deceased Estate, RAF) → engagement letters, trust accounting, court calendar, adverse parties, activity feed, audit sign-off. Any sharp edges that break the demo narrative become fix-spec targets.
 - **Auth Mode**: Keycloak (real OIDC — platform admin `padmin@docteams.local` is pre-seeded via `keycloak-bootstrap.sh`; all other users come through the onboarding flow).

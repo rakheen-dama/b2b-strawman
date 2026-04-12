@@ -3,7 +3,7 @@ import { z } from "zod";
 export const createCourtDateSchema = z.object({
   projectId: z.string().uuid("Please select a matter"),
   dateType: z.enum(
-    ["HEARING", "TRIAL", "MOTION", "CONFERENCE", "MEDIATION", "ARBITRATION", "MENTION", "OTHER"],
+    ["HEARING", "TRIAL", "MOTION", "MEDIATION", "ARBITRATION", "PRE_TRIAL", "CASE_MANAGEMENT", "TAXATION", "OTHER"],
     { message: "Date type is required" }
   ),
   scheduledDate: z.string().min(1, "Scheduled date is required"),
@@ -19,7 +19,7 @@ export type CreateCourtDateFormData = z.infer<typeof createCourtDateSchema>;
 
 export const editCourtDateSchema = z.object({
   dateType: z.enum(
-    ["HEARING", "TRIAL", "MOTION", "CONFERENCE", "MEDIATION", "ARBITRATION", "MENTION", "OTHER"],
+    ["HEARING", "TRIAL", "MOTION", "MEDIATION", "ARBITRATION", "PRE_TRIAL", "CASE_MANAGEMENT", "TAXATION", "OTHER"],
     { message: "Date type is required" }
   ),
   scheduledDate: z.string().min(1, "Scheduled date is required"),

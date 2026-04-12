@@ -38,10 +38,11 @@ const DATE_TYPES = [
   { value: "HEARING", label: "Hearing" },
   { value: "TRIAL", label: "Trial" },
   { value: "MOTION", label: "Motion" },
-  { value: "CONFERENCE", label: "Conference" },
   { value: "MEDIATION", label: "Mediation" },
   { value: "ARBITRATION", label: "Arbitration" },
-  { value: "MENTION", label: "Mention" },
+  { value: "PRE_TRIAL", label: "Pre-Trial" },
+  { value: "CASE_MANAGEMENT", label: "Case Management" },
+  { value: "TAXATION", label: "Taxation" },
   { value: "OTHER", label: "Other" },
 ] as const;
 

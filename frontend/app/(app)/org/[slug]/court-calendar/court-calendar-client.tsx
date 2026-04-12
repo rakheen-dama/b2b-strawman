@@ -178,10 +178,11 @@ export function CourtCalendarClient({
           <option value="HEARING">Hearing</option>
           <option value="TRIAL">Trial</option>
           <option value="MOTION">Motion</option>
-          <option value="CONFERENCE">Conference</option>
           <option value="MEDIATION">Mediation</option>
           <option value="ARBITRATION">Arbitration</option>
-          <option value="MENTION">Mention</option>
+          <option value="PRE_TRIAL">Pre-Trial</option>
+          <option value="CASE_MANAGEMENT">Case Management</option>
+          <option value="TAXATION">Taxation</option>
           <option value="OTHER">Other</option>
         </select>
 

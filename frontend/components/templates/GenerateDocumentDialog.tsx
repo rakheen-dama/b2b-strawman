@@ -274,7 +274,7 @@ export function GenerateDocumentDialog({
 
         {!isCheckingClauses && step === "preview" && (
           <>
-            <div className="space-y-4">
+            <div className="max-h-[60vh] space-y-4 overflow-y-auto">
               {isLoadingPreview && (
                 <div className="flex h-[500px] items-center justify-center rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50">
                   <p className="text-sm text-slate-500">Generating preview...</p>

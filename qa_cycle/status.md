@@ -2,7 +2,7 @@
 
 ## Current State
 
-- **QA Position**: Cycle 1 — not yet started. Infra verification pending, then QA Agent runs Day 0 (pre-demo sanity + access request).
+- **QA Position**: Day 0 blocked at CP 0.15 — GAP-D0-01 (HIGH) — waiting for triage. Day 0 Phases A–C executed (CP 0.1–0.25), GAP-D0-01 surfaced at first Approve attempt, manually worked past it to capture downstream evidence through first login. Day 0 Phases D–K (team invites, settings, rates, custom fields, templates, modules, trust account, billing) NOT executed — will resume after GAP-D0-01 is FIXED. 7 new gaps total (1 HIGH, 2 MED, 4 LOW).
 - **Cycle**: 1 (fresh)
 - **Dev Stack**: READY
 - **NEEDS_REBUILD**: false
@@ -27,8 +27,13 @@
 
 | GAP_ID | Day / Checkpoint | Severity | Status | Summary | Owner | Retries |
 |--------|------------------|----------|--------|---------|-------|---------|
-
-_Empty — gaps will be added as the QA Agent discovers them._
+| GAP-D0-01 | Day 0 / CP-0-15 | HIGH | OPEN | `KeycloakProvisioningClient.findOrganizationByAlias` broken — KC `/organizations?search=alias&exact=true` matches name not alias, so 409 retry path crashes with `IllegalStateException` whenever a stale KC org exists. Blocks idempotent re-approval. | Dev | 0 |
+| GAP-D0-02 | Day 0 / CP-0-06 & CP-0-18 | LOW | OPEN | OTP + invitation emails still branded "DocTeams" (subject, from `noreply@docteams.local`, body); should be Kazi / `noreply@kazi.africa`. | Product | 0 |
+| GAP-D0-03 | Day 0 / CP-0-10 | LOW | OPEN | Keycloak realm theme still says "DocTeams" (page title, heading "Sign in to DocTeams", footer "© 2026 DocTeams"). | Product | 0 |
+| GAP-D0-04 | Day 0 / CP-0-14 | LOW | OPEN | No detail drill-down view on access-request rows; scenario step says "click into the request → verify detail view". Inline row exposes all fields, so content requirement satisfied. | Product | 0 |
+| GAP-D0-05 | Day 0 / CP-0-04 | LOW | OPEN | Industry dropdown says "Legal" instead of "Legal Services" — scenario mismatch (minor copy drift). | Product | 0 |
+| GAP-D0-06 | Day 0 / CP-0-22 | MED | OPEN | Post-registration redirect lands on `/?code=...` marketing landing page instead of `/org/{slug}/dashboard`. Session cookie is set but the code param is discarded and user must manually navigate. | Dev | 0 |
+| GAP-D0-07 | Day 0 / CP-0-23 | MED | OPEN | Sidebar + breadcrumb show org **slug** (`MATHEBULA-PARTNERS`) instead of display name (`Mathebula & Partners`). Breaks demo polish. | Dev | 0 |
 
 ## Legend
 
@@ -40,3 +45,4 @@ _Empty — gaps will be added as the QA Agent discovers them._
 
 - 2026-04-12 — Cycle 1 initialized. Prior cycle (KC 2026-04-12, legal-onboarding scenario) closed as ALL_DAYS_COMPLETE and archived to `qa_cycle/_archive_2026-04-12_legal-onboarding-kc/`. Branch `bugfix_cycle_demo_legal_2026-04-12` created from main. Scenario: `qa/testplan/demos/legal-za-90day-keycloak.md`.
 - 2026-04-12 — Infra Turn 1: Verified KC dev stack health — all 4 Docker containers (b2b-postgres, b2b-keycloak, b2b-localstack, b2b-mailpit) reporting healthy (Up 17 hours). Keycloak `docteams` realm responds 200. svc.sh reports backend/gateway/frontend/portal all running and healthy (PIDs 55326/55489/90632/90679). Endpoint spot-checks: backend :8080 /actuator/health UP, gateway :8443 /actuator/health UP, frontend :3000 HTTP 200, portal :3002 HTTP 200, Mailpit API returning messages. No services required starting. Dev Stack READY for QA walkthrough.
+- 2026-04-12 — QA Turn 1 (Day 0): 21 pass, 1 fail (CP 0.15 on first attempt), 3 partial. Pre-run cleanup found residual state from prior cycle (3 KC users, 1 KC org, 1 org row, 1 access_request, 1 tenant schema) — cleaned via Admin API + psql. New gaps: GAP-D0-01 (HIGH), GAP-D0-02 (LOW), GAP-D0-03 (LOW), GAP-D0-04 (LOW), GAP-D0-05 (LOW), GAP-D0-06 (MED), GAP-D0-07 (MED). Stopping point: CP 0.25 (dashboard wow-moment screenshot captured). Day 0 Phases D–K not executed this turn — blocked on GAP-D0-01 triage. Full details in `qa_cycle/checkpoint-results/day-00.md`.

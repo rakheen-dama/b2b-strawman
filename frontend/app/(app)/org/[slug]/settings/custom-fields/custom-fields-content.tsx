@@ -31,13 +31,16 @@ import {
 import { EmptyState } from "@/components/empty-state";
 import { HelpTip } from "@/components/help-tip";
 import { createMessages } from "@/lib/messages";
+import { useTerminology } from "@/lib/terminology";
 
-const ENTITY_TYPE_TABS: { value: EntityType; label: string }[] = [
-  { value: "PROJECT", label: "Projects" },
-  { value: "TASK", label: "Tasks" },
-  { value: "CUSTOMER", label: "Customers" },
-  { value: "INVOICE", label: "Invoices" },
-];
+const ENTITY_TYPES: EntityType[] = ["PROJECT", "TASK", "CUSTOMER", "INVOICE"];
+
+const ENTITY_TYPE_LABELS: Record<EntityType, string> = {
+  PROJECT: "Projects",
+  TASK: "Tasks",
+  CUSTOMER: "Customers",
+  INVOICE: "Invoices",
+};
 
 interface CustomFieldsContentProps {
   slug: string;
@@ -52,8 +55,14 @@ export function CustomFieldsContent({
   groupsByType,
   canManage,
 }: CustomFieldsContentProps) {
-  const { t } = createMessages("empty-states");
+  const { t: tMsg } = createMessages("empty-states");
+  const { t } = useTerminology();
   const [activeTab, setActiveTab] = useState<EntityType>("PROJECT");
+
+  const entityTypeTabs = ENTITY_TYPES.map((value) => ({
+    value,
+    label: t(ENTITY_TYPE_LABELS[value]),
+  }));
 
   const allFields = [
     ...fieldsByType.PROJECT,
@@ -66,7 +75,7 @@ export function CustomFieldsContent({
     <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as EntityType)}>
       <div className="flex items-center gap-2">
         <TabsList variant="line">
-          {ENTITY_TYPE_TABS.map((tab) => (
+          {entityTypeTabs.map((tab) => (
             <TabsTrigger key={tab.value} value={tab.value}>
               {tab.label}
             </TabsTrigger>
@@ -75,7 +84,7 @@ export function CustomFieldsContent({
         <HelpTip code="fields.scoping" />
       </div>
 
-      {ENTITY_TYPE_TABS.map((tab) => (
+      {entityTypeTabs.map((tab) => (
         <TabsContent key={tab.value} value={tab.value} className="space-y-8">
           {/* Field Definitions Section */}
           <div className="space-y-4">
@@ -100,8 +109,8 @@ export function CustomFieldsContent({
             {fieldsByType[tab.value].length === 0 ? (
               <EmptyState
                 icon={Settings2}
-                title={t("customFields.settings.heading")}
-                description={t("customFields.settings.description")}
+                title={tMsg("customFields.settings.heading")}
+                description={tMsg("customFields.settings.description")}
               />
             ) : (
               <Table>

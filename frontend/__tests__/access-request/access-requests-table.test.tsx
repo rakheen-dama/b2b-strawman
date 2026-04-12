@@ -45,7 +45,7 @@ const approvedRequest: AccessRequest = {
   fullName: "Bob Johnson",
   organizationName: "Beta Inc",
   country: "United States",
-  industry: "Legal",
+  industry: "Legal Services",
   status: "APPROVED",
   otpVerifiedAt: "2026-03-06T10:00:00Z",
   createdAt: "2026-03-06T08:00:00Z",

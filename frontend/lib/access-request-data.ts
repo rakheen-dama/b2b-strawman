@@ -12,7 +12,7 @@ export const BLOCKED_EMAIL_DOMAINS = [
 
 export const INDUSTRIES = [
   "Accounting",
-  "Legal",
+  "Legal Services",
   "Consulting",
   "Engineering",
   "Architecture",

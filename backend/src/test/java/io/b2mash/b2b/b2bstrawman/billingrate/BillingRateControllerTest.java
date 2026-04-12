@@ -273,7 +273,7 @@ class BillingRateControllerTest {
 
   @Test
   @Order(7)
-  void resolveReturnsNullWhenNoRateFound() throws Exception {
+  void resolveReturns404WhenNoRateFound() throws Exception {
     mockMvc
         .perform(
             get("/api/billing-rates/resolve")
@@ -281,11 +281,7 @@ class BillingRateControllerTest {
                 .param("projectId", projectId)
                 .param("date", "2025-06-15")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_brc_owner")))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.hourlyRate").isEmpty())
-        .andExpect(jsonPath("$.currency").isEmpty())
-        .andExpect(jsonPath("$.source").isEmpty())
-        .andExpect(jsonPath("$.billingRateId").isEmpty());
+        .andExpect(status().isNotFound());
   }
 
   @Test
@@ -427,7 +423,7 @@ class BillingRateControllerTest {
 
   @Test
   @Order(14)
-  void resolveInTenantBReturnsNullForTenantAMember() throws Exception {
+  void resolveInTenantBReturns404ForTenantAMember() throws Exception {
     // Resolve in tenant B with tenant A's member — should not find any rate
     mockMvc
         .perform(
@@ -436,8 +432,7 @@ class BillingRateControllerTest {
                 .param("projectId", projectId)
                 .param("date", "2025-06-15")
                 .with(TestJwtFactory.ownerJwt(ORG_ID_B, "user_brc_owner_b")))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.hourlyRate").isEmpty());
+        .andExpect(status().isNotFound());
   }
 
   @Test

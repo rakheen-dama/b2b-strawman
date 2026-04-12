@@ -1,210 +1,84 @@
-# Fix Spec: GAP-D0-09 — Pre-demo cleanup script (stale KC/DB state)
+# Fix Spec: GAP-D0-09 — Fix industry-to-profile key mismatch (v2)
 
 ## Problem
-When the Day 0 approval flow reuses a stale Keycloak organization (via the GAP-D0-01 fix's 409-retry path), the newly created tenant schema does not get seeded with `org_settings` (vertical profile, enabled modules, terminology, pack statuses). Result: generic terminology ("Projects" not "Matters"), no legal modules, 500 errors on the dashboard. This blocks the entire demo walkthrough.
+QA Turn 3 clean re-run (0 stale KC orgs, pristine DB) proved: after admin approves an access request with `industry = "Legal Services"`, the provisioned tenant has empty `vertical_profile`, `default_currency = USD`, empty `terminology_namespace`, `enabled_modules = []`. Dashboard shows generic "Projects" instead of "Matters". No legal-za field packs, template packs, compliance packs, or modules. Only common/generic packs are seeded.
 
-The root cause is that the stale-org reuse path is incomplete — but fixing production idempotency is out of scope for this demo QA cycle. Instead, we ensure the demo always starts from a pristine environment by providing a cleanup script that purges all prior-cycle state.
+## Root Cause (confirmed)
 
-## Strategy
-**Approach B (Demo pragmatic)**: Add `compose/scripts/demo-cleanup.sh` that resets both Keycloak and Postgres to the post-bootstrap baseline state. With no stale orgs/users/schemas, the approval flow always takes the clean-create path (which seeds `org_settings` correctly, as verified in QA Turn 1 CP 0.17).
+The vertical profile wiring DOES exist end-to-end:
 
-This also subsumes GAP-D0-08 (stale-org `inviteUser` 409 and `redirectUrl` not updated) — with no stale orgs, those code paths never fire.
+1. `AccessRequestApprovalService.approve()` (line 105) resolves the vertical profile:
+   ```java
+   String verticalProfile = INDUSTRY_TO_PROFILE.get(request.getIndustry());
+   ```
+2. Passes it to `TenantProvisioningService.provisionTenant(slug, orgName, verticalProfile)` (line 106).
+3. `TenantProvisioningService.provisionTenant()` (line 129) calls `setVerticalProfile(schemaName, clerkOrgId, verticalProfile)` when non-null.
+4. `setVerticalProfile()` (lines 193-224) correctly reads the `VerticalProfileRegistry`, sets `vertical_profile`, `enabled_modules`, `terminology_namespace`, and `currency` on `OrgSettings`.
+5. All pack seeders (`AbstractPackSeeder.doSeedPacks()`, lines 119-129) filter packs by comparing `packProfile` against `settings.getVerticalProfile()` — if vertical profile is null, vertical-specific packs are skipped.
 
-## Scope
-One new file: `compose/scripts/demo-cleanup.sh`
+**The bug is a key mismatch.** GAP-D0-05 (PR #1016, commit `cab293bd`) renamed the frontend industry label from `"Legal"` to `"Legal Services"` in `frontend/lib/access-request-data.ts`. This value is stored as-is in `access_requests.industry`. But the backend map was not updated:
+
+```java
+// AccessRequestApprovalService.java lines 29-32
+private static final Map<String, String> INDUSTRY_TO_PROFILE =
+    Map.of(
+        "Accounting", "accounting-za",    // Frontend sends "Accounting" — matches
+        "Legal", "legal-za");             // Frontend sends "Legal Services" — NO MATCH
+```
+
+`INDUSTRY_TO_PROFILE.get("Legal Services")` returns `null`. So `verticalProfile` is `null`, `setVerticalProfile()` is never called, and all vertical-specific packs are skipped by the `AbstractPackSeeder` profile filter.
 
 ## Fix
 
-### File: `compose/scripts/demo-cleanup.sh` (new)
+### Step 1: Update `INDUSTRY_TO_PROFILE` map key
 
-```bash
-#!/usr/bin/env bash
-# demo-cleanup.sh — Reset Keycloak + Postgres to pristine post-bootstrap state.
-# Safe to run multiple times (idempotent). Intended for pre-demo cleanup so the
-# QA walkthrough always starts from a clean environment.
-#
-# After running:
-#   - Only padmin@docteams.local exists in KC (platform-admin)
-#   - Zero KC organizations in docteams realm
-#   - Zero access_requests, organizations, subscriptions, org_schema_mappings rows
-#   - Zero tenant_* schemas
-#   - Mailpit inbox cleared
-#
-# Prerequisites:
-#   - Keycloak running on localhost:8180 with realm "docteams"
-#   - Postgres running on localhost:5432 (or b2mash.local:5432)
-#   - Mailpit running on localhost:8025
-#   - Admin credentials: admin/admin (default dev setup)
-#
-# Usage: bash compose/scripts/demo-cleanup.sh
-set -euo pipefail
+**File**: `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestApprovalService.java`
+**Line**: 31
 
-KEYCLOAK_URL="${KEYCLOAK_URL:-http://localhost:8180}"
-KEYCLOAK_ADMIN="${KEYCLOAK_ADMIN:-admin}"
-KEYCLOAK_ADMIN_PASSWORD="${KEYCLOAK_ADMIN_PASSWORD:-admin}"
-REALM="docteams"
-MAILPIT_URL="${MAILPIT_URL:-http://localhost:8025}"
-PG_HOST="${PG_HOST:-b2mash.local}"
-PG_PORT="${PG_PORT:-5432}"
-PG_USER="${PG_USER:-postgres}"
-PG_PASSWORD="${PG_PASSWORD:-changeme}"
-PG_DB="${PG_DB:-app}"
-
-echo "=== Demo Cleanup ==="
-echo ""
-
-# ---- 1. Authenticate with Keycloak ----
-echo "[1/5] Authenticating with Keycloak..."
-TOKEN=$(curl -sf "${KEYCLOAK_URL}/realms/master/protocol/openid-connect/token" \
-  -d "grant_type=password&client_id=admin-cli&username=${KEYCLOAK_ADMIN}&password=${KEYCLOAK_ADMIN_PASSWORD}" \
-  | jq -r '.access_token')
-
-if [[ -z "$TOKEN" || "$TOKEN" == "null" ]]; then
-  echo "  ERROR: Could not authenticate with Keycloak"
-  exit 1
-fi
-echo "  Authenticated."
-
-# ---- 2. Delete all KC organizations (and their memberships) ----
-echo "[2/5] Deleting all Keycloak organizations in realm '${REALM}'..."
-ORGS_JSON=$(curl -sf "${KEYCLOAK_URL}/admin/realms/${REALM}/organizations?first=0&max=200" \
-  -H "Authorization: Bearer ${TOKEN}" || echo "[]")
-ORG_COUNT=$(echo "$ORGS_JSON" | jq 'length' 2>/dev/null || echo "0")
-
-if [[ "$ORG_COUNT" -eq 0 ]]; then
-  echo "  No organizations found — nothing to delete."
-else
-  for i in $(seq 0 $((ORG_COUNT - 1))); do
-    ORG_ID=$(echo "$ORGS_JSON" | jq -r ".[$i].id")
-    ORG_NAME=$(echo "$ORGS_JSON" | jq -r ".[$i].name")
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
-      "${KEYCLOAK_URL}/admin/realms/${REALM}/organizations/${ORG_ID}" \
-      -H "Authorization: Bearer ${TOKEN}")
-    if [[ "$HTTP_CODE" == "204" ]]; then
-      echo "  Deleted org: ${ORG_NAME} (${ORG_ID})"
-    else
-      echo "  WARN: Failed to delete org ${ORG_NAME} (HTTP ${HTTP_CODE})"
-    fi
-  done
-fi
-
-# ---- 3. Delete all non-platform-admin users ----
-echo "[3/5] Deleting all non-platform-admin users from realm '${REALM}'..."
-PADMIN_EMAIL="padmin@docteams.local"
-
-# Fetch all users (paginated, up to 500 — sufficient for dev realm)
-USERS_JSON=$(curl -sf "${KEYCLOAK_URL}/admin/realms/${REALM}/users?first=0&max=500" \
-  -H "Authorization: Bearer ${TOKEN}" || echo "[]")
-USER_COUNT=$(echo "$USERS_JSON" | jq 'length' 2>/dev/null || echo "0")
-
-DELETED=0
-KEPT=0
-for i in $(seq 0 $((USER_COUNT - 1))); do
-  USER_ID=$(echo "$USERS_JSON" | jq -r ".[$i].id")
-  USER_EMAIL=$(echo "$USERS_JSON" | jq -r ".[$i].email // empty")
-
-  if [[ "$USER_EMAIL" == "$PADMIN_EMAIL" ]]; then
-    echo "  Kept: ${USER_EMAIL} (platform admin)"
-    KEPT=$((KEPT + 1))
-    continue
-  fi
-
-  HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE \
-    "${KEYCLOAK_URL}/admin/realms/${REALM}/users/${USER_ID}" \
-    -H "Authorization: Bearer ${TOKEN}")
-  if [[ "$HTTP_CODE" == "204" ]]; then
-    DELETED=$((DELETED + 1))
-    echo "  Deleted: ${USER_EMAIL:-unknown} (${USER_ID})"
-  else
-    echo "  WARN: Failed to delete user ${USER_EMAIL:-unknown} (HTTP ${HTTP_CODE})"
-  fi
-done
-echo "  Summary: ${DELETED} deleted, ${KEPT} kept."
-
-# ---- 4. Clean Postgres tables and tenant schemas ----
-echo "[4/5] Cleaning Postgres..."
-export PGPASSWORD="${PG_PASSWORD}"
-
-# Truncate global tables (order matters for FK constraints)
-psql -h "${PG_HOST}" -p "${PG_PORT}" -U "${PG_USER}" -d "${PG_DB}" -q <<'SQL'
--- Truncate in dependency order (subscriptions → organizations → access_requests)
-TRUNCATE TABLE public.subscriptions CASCADE;
-TRUNCATE TABLE public.org_schema_mapping CASCADE;
-TRUNCATE TABLE public.organizations CASCADE;
-TRUNCATE TABLE public.access_requests CASCADE;
-
--- Drop all tenant_* schemas
-DO $$
-DECLARE
-  s TEXT;
-BEGIN
-  FOR s IN
-    SELECT schema_name FROM information_schema.schemata
-    WHERE schema_name LIKE 'tenant_%'
-  LOOP
-    EXECUTE format('DROP SCHEMA %I CASCADE', s);
-    RAISE NOTICE 'Dropped schema: %', s;
-  END LOOP;
-END
-$$;
-SQL
-
-echo "  Tables truncated: subscriptions, org_schema_mapping, organizations, access_requests"
-echo "  Tenant schemas dropped."
-
-# ---- 5. Clear Mailpit inbox ----
-echo "[5/5] Clearing Mailpit inbox..."
-HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE "${MAILPIT_URL}/api/v1/messages" 2>/dev/null || echo "000")
-if [[ "$HTTP_CODE" == "200" ]]; then
-  echo "  Mailpit inbox cleared."
-else
-  echo "  WARN: Could not clear Mailpit (HTTP ${HTTP_CODE}) — may need manual clear."
-fi
-
-echo ""
-echo "=== Demo Cleanup Complete ==="
-echo ""
-echo "  Keycloak:  0 orgs, only padmin@docteams.local remains"
-echo "  Postgres:  0 access_requests, 0 organizations, 0 tenant schemas"
-echo "  Mailpit:   inbox cleared"
-echo ""
-echo "  Ready for demo walkthrough."
-echo ""
+Change:
+```java
+"Legal", "legal-za"
+```
+To:
+```java
+"Legal Services", "legal-za"
 ```
 
-## Implementation Notes
+This aligns the backend key with the frontend industry label that gets stored in the database.
 
-### Keycloak API endpoints used
-All are standard Admin REST API endpoints already used in `KeycloakProvisioningClient.java` and `KeycloakAdminClient.java`:
-- `GET /admin/realms/{realm}/organizations?first=0&max=200` — list all orgs (same pattern as `findOrganizationByAlias`)
-- `DELETE /admin/realms/{realm}/organizations/{id}` — delete org (same as `KeycloakAdminClient.deleteOrganization`)
-- `GET /admin/realms/{realm}/users?first=0&max=500` — list all users (same pattern as `findUserIdByEmail`)
-- `DELETE /admin/realms/{realm}/users/{id}` — delete user (same as `KeycloakAdminClient.deleteUser`)
-- `POST /realms/master/protocol/openid-connect/token` — admin auth (same as `getAdminToken`)
+### That's it.
 
-### Postgres schema naming
-Tenant schemas use `tenant_<12-hex-chars>` naming (confirmed in `SchemaNameGenerator` and QA evidence: `tenant_5039f2d497cf`). The `LIKE 'tenant_%'` filter is safe and specific.
+The entire vertical profile wiring chain is already correct:
+- `AccessRequestApprovalService.approve()` line 105-106: resolves profile and passes to provisioning
+- `TenantProvisioningService.provisionTenant()` line 129-131: calls `setVerticalProfile()` when non-null
+- `TenantProvisioningService.setVerticalProfile()` lines 193-224: reads `VerticalProfileRegistry`, applies `enabledModules`, `terminologyNamespace`, `currency`
+- `VerticalProfileRegistry` loads `legal-za.json` from `classpath:vertical-profiles/legal-za.json`
+- `AbstractPackSeeder.doSeedPacks()` lines 119-129: filters packs by `settings.getVerticalProfile()`
 
-### Postgres host
-Uses `b2mash.local` as default (per MEMORY.md: "Postgres host: `b2mash.local:5432`"). Overridable via `PG_HOST` env var.
+The only thing broken is the single map key.
 
-### Idempotency
-- Deleting a non-existent org/user returns 404, which the script logs as WARN and continues.
-- `TRUNCATE ... CASCADE` is safe on empty tables.
-- `DROP SCHEMA IF EXISTS` equivalent via the PL/pgSQL loop.
-- Mailpit `DELETE /api/v1/messages` on empty inbox returns 200.
+## Scope
+- Backend only
+- **Files to modify**: 1
+  - `backend/src/main/java/io/b2mash/b2b/b2bstrawman/accessrequest/AccessRequestApprovalService.java` (line 31, one word change)
+- **Files to create**: none
+- **Migration needed**: no
 
-### Integration with QA workflow
-QA Turn 3 should run `bash compose/scripts/demo-cleanup.sh` as the pre-run step (replacing the ad-hoc manual cleanup done in QA Turn 1 "Session 0.A/0.B"). This gives a documented, repeatable, one-command reset.
+## Verification
+Re-run QA Day 0 from CP 0.14 (approve access request with `industry = "Legal Services"`). After approval + registration + first login:
+- `org_settings.vertical_profile = "legal-za"`
+- `org_settings.default_currency = "ZAR"`
+- `org_settings.terminology_namespace = "en-ZA-legal"`
+- `org_settings.enabled_modules = ["court_calendar", "conflict_check", "lssa_tariff", "trust_accounting"]`
+- Dashboard shows "Matters" (not "Projects")
+- Sidebar has Court Calendar, Trust Accounting, Conflict Checks, LSSA Tariff modules
+- Vertical-specific packs seeded: `legal-za-customer` field pack, `legal-za-project` field pack, `fica-kyc-za` compliance pack, `legal-za` template pack
 
-## Testing
-1. Run `bash compose/scripts/demo-cleanup.sh` — should complete with all steps OK.
-2. Verify: `curl -sf http://localhost:8180/admin/realms/docteams/organizations -H "Authorization: Bearer $TOKEN"` returns `[]`.
-3. Verify: `psql -h b2mash.local -U postgres -d app -c "SELECT count(*) FROM public.organizations"` returns 0.
-4. Verify: `psql -h b2mash.local -U postgres -d app -c "SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'tenant_%'"` returns 0 rows.
-5. Run the cleanup script a second time — should complete cleanly (idempotent).
-6. Run Day 0 walkthrough — approval should seed `org_settings` with `vertical_profile=legal-za`.
+## Estimated Effort
+**S** (Small) — one word change in one file. 5 minutes including test verification.
 
-## Out of Scope
-- Production idempotency for stale-org reuse path (GAP-D0-08 + the seeding gap). Tracked for a future production-hardening epic.
-- Deleting the platform-admin user — `padmin@docteams.local` is always preserved.
+## Priority
+HIGH blocker — QA cannot advance past Day 0 Phase B without this. Every subsequent checkpoint depends on the legal-za vertical profile being active.
+
+## Post-Mortem Note
+This is a classic case of a "cosmetic" fix (GAP-D0-05) having an invisible downstream dependency. The industry label serves double duty: UI display AND backend lookup key. The GAP-D0-05 fix changed the display value without realizing the backend depended on the exact string. A future hardening epic should decouple the display label from the lookup key (e.g., use a stable enum/slug like `LEGAL` as the stored value, with the display label living only in the frontend).

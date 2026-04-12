@@ -354,6 +354,28 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                 />
                 <FormField
                   control={form.control}
+                  name="taxNumber"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>
+                        Tax Number{" "}
+                        <span className="text-muted-foreground font-normal">
+                          (required for activation)
+                        </span>
+                      </FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="e.g. VAT or tax registration number"
+                          maxLength={100}
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name="notes"
                   render={({ field }) => (
                     <FormItem>
@@ -546,24 +568,6 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                       render={({ field }) => (
                         <FormItem>
                           <FormLabel>Registration Number</FormLabel>
-                          <FormControl>
-                            <Input maxLength={100} {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="taxNumber"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>
-                            Tax Number{" "}
-                            <span className="text-muted-foreground font-normal">
-                              (required for activation)
-                            </span>
-                          </FormLabel>
                           <FormControl>
                             <Input maxLength={100} {...field} />
                           </FormControl>

@@ -98,9 +98,9 @@ export interface UnbilledTimeEntry {
   durationMinutes: number;
   description: string | null;
   billable: boolean;
-  billingRateSnapshot: number;
-  billingRateCurrency: string;
-  billableValue: number;
+  billingRateSnapshot: number | null;
+  billingRateCurrency: string | null;
+  billableValue: number | null;
 }
 
 export interface UnbilledExpense {

@@ -86,7 +86,7 @@ public class UnbilledTimeService {
             JOIN customer_projects cp ON cp.project_id = p.id AND cp.customer_id = c.id
             WHERE te.billable = true
               AND te.invoice_id IS NULL
-              AND (te.billing_rate_currency = :currency OR te.billing_rate_currency IS NULL)
+              AND te.billing_rate_currency = :currency
               AND te.date >= :periodFrom
               AND te.date <= :periodTo
         ) time_agg ON true
@@ -219,6 +219,8 @@ public class UnbilledTimeService {
 
       String rateSource = null;
       if (rate == null) {
+        // TODO: N+1 — resolveRate is called per entry. Batch rate resolution would
+        // pre-load rates for all (memberId, projectId) pairs in one query.
         // Fall back to live rate card resolution for null-snapshot entries
         UUID memberId = row.get("te_member_id", UUID.class);
         var resolved = billingRateService.resolveRate(memberId, projectId, entryDate);

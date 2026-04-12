@@ -495,7 +495,7 @@ public class BillingRunSelectionService {
         LEFT JOIN time_entries te ON te.task_id = t.id
             AND te.billable = true
             AND te.invoice_id IS NULL
-            AND (te.billing_rate_currency = :currency OR te.billing_rate_currency IS NULL)
+            AND te.billing_rate_currency = :currency
             AND te.date >= :periodFrom
             AND te.date <= :periodTo
         LEFT JOIN expenses e ON e.project_id = p.id
@@ -554,7 +554,7 @@ public class BillingRunSelectionService {
         WHERE cp.customer_id = :customerId
           AND te.billable = true
           AND te.invoice_id IS NULL
-          AND (te.billing_rate_currency = :currency OR te.billing_rate_currency IS NULL)
+          AND te.billing_rate_currency = :currency
           AND te.date >= :periodFrom
           AND te.date <= :periodTo
         """;

@@ -125,10 +125,14 @@ export function CherryPickCustomerDetail({
                           {(entry.durationMinutes / 60).toFixed(1)}
                         </td>
                         <td className="py-2 pr-3 text-right text-slate-600 dark:text-slate-400">
-                          {formatCurrency(entry.billingRateSnapshot, currency)}
+                          {entry.billingRateSnapshot != null
+                            ? formatCurrency(entry.billingRateSnapshot, currency)
+                            : "N/A"}
                         </td>
                         <td className="py-2 text-right font-medium text-slate-950 dark:text-slate-50">
-                          {formatCurrency(entry.billableValue, currency)}
+                          {entry.billableValue != null
+                            ? formatCurrency(entry.billableValue, currency)
+                            : "N/A"}
                         </td>
                       </tr>
                     ))}

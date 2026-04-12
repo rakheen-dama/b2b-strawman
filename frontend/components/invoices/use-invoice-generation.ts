@@ -215,7 +215,7 @@ export function useInvoiceGeneration({
           sum +
           project.entries
             .filter((e) => selectedEntryIds.has(e.id))
-            .reduce((s, e) => s + e.billableValue, 0),
+            .reduce((s, e) => s + (e.billableValue ?? 0), 0),
         0
       )
     : 0;
@@ -232,7 +232,7 @@ export function useInvoiceGeneration({
   const nullRateEntries = unbilledData
     ? unbilledData.projects.flatMap((p) =>
         p.entries
-          .filter((e) => e.billingRateSnapshot == null)
+          .filter((e) => e.billingRateSnapshot == null && e.rateSource !== "RESOLVED")
           .map((e) => ({ ...e, projectName: p.projectName }))
       )
     : [];

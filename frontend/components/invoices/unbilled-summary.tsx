@@ -90,7 +90,9 @@ export function UnbilledSummary({ data }: UnbilledSummaryProps) {
                           </div>
                         </div>
                         <span className="shrink-0 font-medium text-slate-700 dark:text-slate-300">
-                          {formatCurrency(entry.billableValue, entry.billingRateCurrency)}
+                          {entry.billableValue != null && entry.billingRateCurrency
+                            ? formatCurrency(entry.billableValue, entry.billingRateCurrency)
+                            : "N/A"}
                         </span>
                       </div>
                     ))}

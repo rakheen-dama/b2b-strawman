@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
+import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -41,6 +42,7 @@ public class UnbilledTimeService {
   private final OrgSettingsRepository orgSettingsRepository;
   private final ExpenseRepository expenseRepository;
   private final PrerequisiteService prerequisiteService;
+  private final BillingRateService billingRateService;
 
   public UnbilledTimeService(
       CustomerRepository customerRepository,
@@ -48,13 +50,15 @@ public class UnbilledTimeService {
       EntityManager entityManager,
       OrgSettingsRepository orgSettingsRepository,
       ExpenseRepository expenseRepository,
-      PrerequisiteService prerequisiteService) {
+      PrerequisiteService prerequisiteService,
+      BillingRateService billingRateService) {
     this.customerRepository = customerRepository;
     this.projectRepository = projectRepository;
     this.entityManager = entityManager;
     this.orgSettingsRepository = orgSettingsRepository;
     this.expenseRepository = expenseRepository;
     this.prerequisiteService = prerequisiteService;
+    this.billingRateService = billingRateService;
   }
 
   @Transactional(readOnly = true)
@@ -82,7 +86,7 @@ public class UnbilledTimeService {
             JOIN customer_projects cp ON cp.project_id = p.id AND cp.customer_id = c.id
             WHERE te.billable = true
               AND te.invoice_id IS NULL
-              AND te.billing_rate_currency = :currency
+              AND (te.billing_rate_currency = :currency OR te.billing_rate_currency IS NULL)
               AND te.date >= :periodFrom
               AND te.date <= :periodTo
         ) time_agg ON true
@@ -167,6 +171,7 @@ public class UnbilledTimeService {
         SELECT te.id AS te_id, te.date AS te_date, te.duration_minutes AS te_duration,
                te.billing_rate_snapshot AS te_rate, te.billing_rate_currency AS te_currency,
                te.description AS te_description,
+               te.member_id AS te_member_id,
                t.title AS task_title,
                p.id AS project_id, p.name AS project_name,
                m.name AS member_name
@@ -204,6 +209,28 @@ public class UnbilledTimeService {
       String currency = row.get("te_currency", String.class);
       int durationMinutes = ((Number) row.get("te_duration")).intValue();
 
+      Object dateObj = row.get("te_date");
+      LocalDate entryDate;
+      if (dateObj instanceof LocalDate ld) {
+        entryDate = ld;
+      } else {
+        entryDate = ((java.sql.Date) dateObj).toLocalDate();
+      }
+
+      String rateSource = null;
+      if (rate == null) {
+        // Fall back to live rate card resolution for null-snapshot entries
+        UUID memberId = row.get("te_member_id", UUID.class);
+        var resolved = billingRateService.resolveRate(memberId, projectId, entryDate);
+        if (resolved.isPresent()) {
+          rate = resolved.get().hourlyRate();
+          currency = resolved.get().currency();
+          rateSource = "RESOLVED";
+        }
+      } else {
+        rateSource = "SNAPSHOT";
+      }
+
       BigDecimal billableValue = null;
       if (rate != null) {
         billableValue =
@@ -211,14 +238,6 @@ public class UnbilledTimeService {
                 .divide(BigDecimal.valueOf(60), 4, RoundingMode.HALF_UP)
                 .multiply(rate)
                 .setScale(2, RoundingMode.HALF_UP);
-      }
-
-      Object dateObj = row.get("te_date");
-      LocalDate entryDate;
-      if (dateObj instanceof LocalDate ld) {
-        entryDate = ld;
-      } else {
-        entryDate = ((java.sql.Date) dateObj).toLocalDate();
       }
 
       var entry =
@@ -231,7 +250,8 @@ public class UnbilledTimeService {
               rate,
               currency,
               billableValue,
-              row.get("te_description", String.class));
+              row.get("te_description", String.class),
+              rateSource);
 
       grouped.computeIfAbsent(projectId, k -> new ArrayList<>()).add(entry);
     }

@@ -275,7 +275,7 @@ public class ProposalOrchestrationService {
   private Project createProject(Proposal proposal) {
     if (proposal.getProjectTemplateId() != null) {
       var request =
-          new InstantiateTemplateRequest(proposal.getTitle(), proposal.getCustomerId(), null, null);
+          new InstantiateTemplateRequest(proposal.getTitle(), proposal.getCustomerId(), null, null, null, null, null);
       return projectTemplateService.instantiateTemplate(
           proposal.getProjectTemplateId(), request, proposal.getCreatedById());
     } else {

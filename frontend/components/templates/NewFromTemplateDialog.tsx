@@ -21,6 +21,7 @@ import { checkEngagementPrerequisitesAction } from "@/lib/actions/prerequisite-a
 import { toast } from "sonner";
 import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
 import { resolveNameTokens } from "@/lib/name-token-resolver";
+import { nativeSelectClassName } from "@/lib/styles/native-select";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type { OrgMember, Customer } from "@/lib/types";
 import type { PrerequisiteViolation } from "@/components/prerequisite/types";
@@ -69,6 +70,9 @@ export function NewFromTemplateDialog({
   const [description, setDescription] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [projectLeadMemberId, setProjectLeadMemberId] = useState("");
+  const [referenceNumber, setReferenceNumber] = useState("");
+  const [priority, setPriority] = useState("");
+  const [workType, setWorkType] = useState("");
 
   // Auto-open on mount when the `?new=1` query param redirect lands us here
   // (GAP-S3-05). We only run this once; the effect intentionally ignores
@@ -107,6 +111,9 @@ export function NewFromTemplateDialog({
       setDescription("");
       setCustomerId("");
       setProjectLeadMemberId("");
+      setReferenceNumber("");
+      setPriority("");
+      setWorkType("");
       setError(null);
     }
     setOpen(newOpen);
@@ -147,6 +154,9 @@ export function NewFromTemplateDialog({
         customerId: customerId || undefined,
         projectLeadMemberId: projectLeadMemberId || undefined,
         description: description.trim() || undefined,
+        referenceNumber: referenceNumber.trim() || undefined,
+        priority: priority || undefined,
+        workType: workType.trim() || undefined,
       });
 
       if (result.success && result.projectId) {
@@ -329,6 +339,53 @@ export function NewFromTemplateDialog({
                     </select>
                   </div>
                 )}
+
+                {/* Reference Number */}
+                <div className="space-y-2">
+                  <Label htmlFor="new-proj-ref">
+                    Reference Number{" "}
+                    <span className="text-muted-foreground font-normal">(optional)</span>
+                  </Label>
+                  <Input
+                    id="new-proj-ref"
+                    value={referenceNumber}
+                    onChange={(e) => setReferenceNumber(e.target.value)}
+                    placeholder="e.g. PRJ-2026-001"
+                    maxLength={100}
+                  />
+                </div>
+
+                {/* Priority */}
+                <div className="space-y-2">
+                  <Label htmlFor="new-proj-priority">
+                    Priority <span className="text-muted-foreground font-normal">(optional)</span>
+                  </Label>
+                  <select
+                    id="new-proj-priority"
+                    value={priority}
+                    onChange={(e) => setPriority(e.target.value)}
+                    className={nativeSelectClassName}
+                  >
+                    <option value="">Select priority...</option>
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HIGH">High</option>
+                  </select>
+                </div>
+
+                {/* Work Type (matter_type / engagement_type) */}
+                <div className="space-y-2">
+                  <Label htmlFor="new-proj-worktype">
+                    Work Type <span className="text-muted-foreground font-normal">(optional)</span>
+                  </Label>
+                  <Input
+                    id="new-proj-worktype"
+                    value={workType}
+                    onChange={(e) => setWorkType(e.target.value)}
+                    placeholder="e.g. Litigation, Consulting"
+                    maxLength={50}
+                  />
+                </div>
 
                 {error && <p className="text-destructive text-sm">{error}</p>}
               </div>

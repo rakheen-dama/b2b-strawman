@@ -104,7 +104,7 @@ class InstantiateTemplateIntegrationTest {
                               null,
                               memberId)));
 
-          var request = new InstantiateTemplateRequest("My Explicit Name", null, null, null);
+          var request = new InstantiateTemplateRequest("My Explicit Name", null, null, null, null, null, null);
           var project = templateService.instantiateTemplate(template.getId(), request, memberId);
 
           assertThat(project.getName()).isEqualTo("My Explicit Name");
@@ -134,7 +134,7 @@ class InstantiateTemplateIntegrationTest {
                               null,
                               memberId)));
 
-          var request = new InstantiateTemplateRequest(null, customer.getId(), null, null);
+          var request = new InstantiateTemplateRequest(null, customer.getId(), null, null, null, null, null);
           var project = templateService.instantiateTemplate(template.getId(), request, memberId);
 
           assertThat(project.getName()).contains("Acme Corp");
@@ -163,7 +163,7 @@ class InstantiateTemplateIntegrationTest {
                               null,
                               memberId)));
 
-          var request = new InstantiateTemplateRequest(null, customer.getId(), null, null);
+          var request = new InstantiateTemplateRequest(null, customer.getId(), null, null, null, null, null);
           var project = templateService.instantiateTemplate(template.getId(), request, memberId);
 
           var links = customerProjectRepository.findByProjectId(project.getId());
@@ -189,7 +189,7 @@ class InstantiateTemplateIntegrationTest {
                               null,
                               memberId)));
 
-          var request = new InstantiateTemplateRequest("No Customer Project", null, null, null);
+          var request = new InstantiateTemplateRequest("No Customer Project", null, null, null, null, null, null);
           var project = templateService.instantiateTemplate(template.getId(), request, memberId);
 
           var links = customerProjectRepository.findByProjectId(project.getId());
@@ -214,7 +214,7 @@ class InstantiateTemplateIntegrationTest {
                               null,
                               memberId)));
 
-          var request = new InstantiateTemplateRequest("Lead Project", null, leadMemberId, null);
+          var request = new InstantiateTemplateRequest("Lead Project", null, leadMemberId, null, null, null, null);
           var project = templateService.instantiateTemplate(template.getId(), request, memberId);
 
           var members = projectMemberRepository.findByProjectId(project.getId());
@@ -241,7 +241,7 @@ class InstantiateTemplateIntegrationTest {
                       new TemplateTask(
                           template.getId(), "Review Files", null, null, 1, true, "UNASSIGNED"));
 
-                  var request = new InstantiateTemplateRequest("Task Project", null, null, null);
+                  var request = new InstantiateTemplateRequest("Task Project", null, null, null, null, null, null);
                   var project =
                       templateService.instantiateTemplate(template.getId(), request, memberId);
 
@@ -277,7 +277,7 @@ class InstantiateTemplateIntegrationTest {
                     return template.getId();
                   });
 
-          var request = new InstantiateTemplateRequest("Tagged Project", null, null, null);
+          var request = new InstantiateTemplateRequest("Tagged Project", null, null, null, null, null, null);
           var project = templateService.instantiateTemplate(templateId, request, memberId);
 
           var entityTags =
@@ -308,7 +308,7 @@ class InstantiateTemplateIntegrationTest {
                           template.getId(), "Lead Task", null, null, 0, true, "PROJECT_LEAD"));
 
                   var request =
-                      new InstantiateTemplateRequest("Assignee Project", null, leadMemberId, null);
+                      new InstantiateTemplateRequest("Assignee Project", null, leadMemberId, null, null, null, null);
                   var project =
                       templateService.instantiateTemplate(template.getId(), request, memberId);
 
@@ -344,7 +344,7 @@ class InstantiateTemplateIntegrationTest {
                   });
 
           // Assert: call outside TransactionTemplate so rollback-only doesn't propagate
-          var request = new InstantiateTemplateRequest("Should Fail", null, null, null);
+          var request = new InstantiateTemplateRequest("Should Fail", null, null, null, null, null, null);
           assertThatThrownBy(
                   () -> templateService.instantiateTemplate(templateId, request, memberId))
               .isInstanceOf(InvalidStateException.class);
@@ -355,7 +355,7 @@ class InstantiateTemplateIntegrationTest {
   void instantiate_unknownTemplate_throwsNotFound() {
     runInTenant(
         () -> {
-          var request = new InstantiateTemplateRequest("Should Fail", null, null, null);
+          var request = new InstantiateTemplateRequest("Should Fail", null, null, null, null, null, null);
           assertThatThrownBy(
                   () -> templateService.instantiateTemplate(UUID.randomUUID(), request, memberId))
               .isInstanceOf(ResourceNotFoundException.class);
@@ -383,7 +383,7 @@ class InstantiateTemplateIntegrationTest {
                           template.getId(), "Open Task", null, null, 0, true, "ANY_MEMBER"));
 
                   var request =
-                      new InstantiateTemplateRequest("Open Task Project", null, leadMemberId, null);
+                      new InstantiateTemplateRequest("Open Task Project", null, leadMemberId, null, null, null, null);
                   var project =
                       templateService.instantiateTemplate(template.getId(), request, memberId);
 
@@ -443,7 +443,7 @@ class InstantiateTemplateIntegrationTest {
                               null,
                               memberId)));
 
-          var request = new InstantiateTemplateRequest("Auto-Apply Project", null, null, null);
+          var request = new InstantiateTemplateRequest("Auto-Apply Project", null, null, null, null, null, null);
           var project = templateService.instantiateTemplate(template.getId(), request, memberId);
 
           var reloaded = projectRepository.findById(project.getId()).orElseThrow();
@@ -470,7 +470,7 @@ class InstantiateTemplateIntegrationTest {
                               null,
                               memberId)));
 
-          var request = new InstantiateTemplateRequest("Desc Project", null, null, "Override Desc");
+          var request = new InstantiateTemplateRequest("Desc Project", null, null, "Override Desc", null, null, null);
           var project = templateService.instantiateTemplate(template.getId(), request, memberId);
 
           assertThat(project.getDescription()).isEqualTo("Override Desc");

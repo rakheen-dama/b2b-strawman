@@ -111,7 +111,7 @@ class AutoDraftInformationRequestTest {
                   template.setRequestTemplateId(requestTemplate.getId());
                   templateRepository.saveAndFlush(template);
 
-                  var request = new InstantiateTemplateRequest(null, customer.getId(), null, null);
+                  var request = new InstantiateTemplateRequest(null, customer.getId(), null, null, null, null, null);
                   var project =
                       templateService.instantiateTemplate(template.getId(), request, memberId);
 
@@ -154,7 +154,7 @@ class AutoDraftInformationRequestTest {
                   template.setRequestTemplateId(requestTemplate.getId());
                   templateRepository.saveAndFlush(template);
 
-                  var request = new InstantiateTemplateRequest(null, customer.getId(), null, null);
+                  var request = new InstantiateTemplateRequest(null, customer.getId(), null, null, null, null, null);
                   var project =
                       templateService.instantiateTemplate(template.getId(), request, memberId);
 
@@ -198,7 +198,7 @@ class AutoDraftInformationRequestTest {
                   template.setRequestTemplateId(requestTemplate.getId());
                   templateRepository.saveAndFlush(template);
 
-                  var request = new InstantiateTemplateRequest(null, customer.getId(), null, null);
+                  var request = new InstantiateTemplateRequest(null, customer.getId(), null, null, null, null, null);
                   var project =
                       templateService.instantiateTemplate(template.getId(), request, memberId);
 
@@ -241,7 +241,7 @@ class AutoDraftInformationRequestTest {
                               memberId));
                   // No requestTemplateId set
 
-                  var request = new InstantiateTemplateRequest(null, customer.getId(), null, null);
+                  var request = new InstantiateTemplateRequest(null, customer.getId(), null, null, null, null, null);
                   var project =
                       templateService.instantiateTemplate(template.getId(), request, memberId);
 
@@ -271,7 +271,7 @@ class AutoDraftInformationRequestTest {
                   template.setRequestTemplateId(requestTemplate.getId());
                   templateRepository.saveAndFlush(template);
 
-                  var request = new InstantiateTemplateRequest("No Cust Project", null, null, null);
+                  var request = new InstantiateTemplateRequest("No Cust Project", null, null, null, null, null, null);
                   var project =
                       templateService.instantiateTemplate(template.getId(), request, memberId);
 
@@ -306,7 +306,7 @@ class AutoDraftInformationRequestTest {
                   template.setRequestTemplateId(requestTemplate.getId());
                   templateRepository.saveAndFlush(template);
 
-                  var request = new InstantiateTemplateRequest(null, customer.getId(), null, null);
+                  var request = new InstantiateTemplateRequest(null, customer.getId(), null, null, null, null, null);
                   var project =
                       templateService.instantiateTemplate(template.getId(), request, memberId);
 
@@ -347,7 +347,7 @@ class AutoDraftInformationRequestTest {
                   template.setRequestTemplateId(requestTemplate.getId());
                   templateRepository.saveAndFlush(template);
 
-                  var request = new InstantiateTemplateRequest(null, customer.getId(), null, null);
+                  var request = new InstantiateTemplateRequest(null, customer.getId(), null, null, null, null, null);
                   var project =
                       templateService.instantiateTemplate(template.getId(), request, memberId);
 

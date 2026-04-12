@@ -3,6 +3,7 @@ import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { ProjectNamingSettings } from "@/components/project-naming/project-naming-settings";
+import { TerminologyText } from "@/components/terminology-text";
 import type { OrgSettings } from "@/lib/types";
 
 export default async function ProjectNamingPage({ params }: { params: Promise<{ slug: string }> }) {
@@ -19,10 +20,11 @@ export default async function ProjectNamingPage({ params }: { params: Promise<{ 
           <ChevronLeft className="size-4" />
           Settings
         </Link>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Project Naming</h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+          <TerminologyText template="{Project} Naming" />
+        </h1>
         <p className="text-slate-600 dark:text-slate-400">
-          You do not have permission to manage project naming settings. Only admins and owners can
-          access this page.
+          <TerminologyText template="You do not have permission to manage {project} naming settings. Only admins and owners can access this page." />
         </p>
       </div>
     );
@@ -46,9 +48,11 @@ export default async function ProjectNamingPage({ params }: { params: Promise<{ 
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Project Naming</h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
+          <TerminologyText template="{Project} Naming" />
+        </h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Configure an auto-naming pattern for new projects.
+          <TerminologyText template="Configure an auto-naming pattern for new {projects}." />
         </p>
       </div>
 

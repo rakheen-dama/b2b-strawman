@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Request Access",
-  description: "Request access to DocTeams for your organisation",
+  description: "Request access to Kazi for your organisation",
 };
 
 export default function RequestAccessLayout({ children }: { children: React.ReactNode }) {
@@ -11,7 +11,7 @@ export default function RequestAccessLayout({ children }: { children: React.Reac
       <div className="w-full max-w-lg">
         <div className="mb-8 text-center">
           <h1 className="font-display text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
-            DocTeams
+            Kazi
           </h1>
         </div>
         {children}

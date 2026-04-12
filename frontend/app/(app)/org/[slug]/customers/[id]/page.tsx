@@ -33,6 +33,7 @@ import type {
 } from "@/lib/types";
 import type { SetupStep, ContextGroup } from "@/components/setup/types";
 import { MiniProgressRing } from "@/components/dashboard/mini-progress-ring";
+import { TerminologyText } from "@/components/terminology-text";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
@@ -437,7 +438,7 @@ export default async function CustomerDetailPage({
           className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <ArrowLeft className="mr-1.5 size-4" />
-          Back to Customers
+          <TerminologyText template="Back to {Customers}" />
         </Link>
       </div>
 
@@ -666,7 +667,7 @@ export default async function CustomerDetailPage({
       {/* Setup Guidance Cards — Epic 113A */}
       {customerReadiness && (
         <SetupProgressCard
-          title="Customer Readiness"
+          title={<TerminologyText template="{Client} Readiness" />}
           completionPercentage={customerReadinessPercentage}
           overallComplete={customerReadinessComplete}
           steps={customerSetupSteps}

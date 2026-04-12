@@ -1,6 +1,6 @@
 {
   "card": {
-    "title": "Getting started with DocTeams",
+    "title": "Getting started with Kazi",
     "subtitle": "Complete these steps to set up your organisation",
     "progress": "{{completed}} of {{total}} complete",
     "allComplete": "You're all set! Your organisation is ready to go.",
@@ -30,6 +30,6 @@
   },
   "create_invoice": {
     "label": "Generate your first invoice",
-    "description": "Pull tracked time into a professional invoice. Send it to your client directly from DocTeams."
+    "description": "Pull tracked time into a professional invoice. Send it to your client directly from Kazi."
   }
 }

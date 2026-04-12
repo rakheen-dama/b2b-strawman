@@ -318,7 +318,12 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
                     name="country"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Country</FormLabel>
+                        <FormLabel>
+                          Country{" "}
+                          <span className="text-muted-foreground font-normal">
+                            (required for activation)
+                          </span>
+                        </FormLabel>
                         <FormControl>
                           <select
                             value={field.value ?? ""}
@@ -416,7 +421,12 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
                   name="taxNumber"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tax Number</FormLabel>
+                      <FormLabel>
+                        Tax Number{" "}
+                        <span className="text-muted-foreground font-normal">
+                          (required for activation)
+                        </span>
+                      </FormLabel>
                       <FormControl>
                         <Input maxLength={100} {...field} />
                       </FormControl>

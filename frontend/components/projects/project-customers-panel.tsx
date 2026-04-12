@@ -9,6 +9,7 @@ import { LinkCustomerDialog } from "@/components/projects/link-customer-dialog";
 import { unlinkCustomerFromProject } from "@/app/(app)/org/[slug]/projects/[id]/actions";
 import { formatDate } from "@/lib/format";
 import type { Customer } from "@/lib/types";
+import { useTerminology } from "@/lib/terminology";
 import Link from "next/link";
 
 interface ProjectCustomersPanelProps {
@@ -27,6 +28,7 @@ export function ProjectCustomersPanel({
   const [isPending, startTransition] = useTransition();
   const [unlinkingCustomerId, setUnlinkingCustomerId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTerminology();
 
   function handleUnlink(customerId: string) {
     setError(null);
@@ -49,14 +51,14 @@ export function ProjectCustomersPanel({
   const header = (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
-        <h2 className="font-semibold text-slate-900 dark:text-slate-100">Customers</h2>
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">{t("Customers")}</h2>
         {customers.length > 0 && <Badge variant="neutral">{customers.length}</Badge>}
       </div>
       {canManage && (
         <LinkCustomerDialog slug={slug} projectId={projectId} existingCustomers={customers}>
           <Button size="sm" variant="outline">
             <Plus className="mr-1.5 size-4" />
-            Link Customer
+            {`Link ${t("Customer")}`}
           </Button>
         </LinkCustomerDialog>
       )}
@@ -69,8 +71,8 @@ export function ProjectCustomersPanel({
         {header}
         <EmptyState
           icon={Users}
-          title="No linked customers"
-          description="Link customers to this project to track client work"
+          title={`No linked ${t("customers")}`}
+          description={`Link ${t("customers")} to this ${t("project")} to track client work`}
         />
       </div>
     );

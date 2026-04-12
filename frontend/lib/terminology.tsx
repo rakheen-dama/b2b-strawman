@@ -35,10 +35,17 @@ export function TerminologyProvider({ verticalProfile, children }: TerminologyPr
 
 // ---- Hook ----
 
+/**
+ * Returns the active terminology. When no `TerminologyProvider` is mounted
+ * (e.g. in unit tests that don't wrap the component under test), falls back
+ * to an identity translation so the default (English, generic) terms render.
+ */
+const DEFAULT_TERMINOLOGY: TerminologyContextValue = {
+  verticalProfile: null,
+  t: (term: string) => term,
+};
+
 export function useTerminology(): TerminologyContextValue {
   const ctx = useContext(TerminologyContext);
-  if (!ctx) {
-    throw new Error("useTerminology must be used within a TerminologyProvider");
-  }
-  return ctx;
+  return ctx ?? DEFAULT_TERMINOLOGY;
 }

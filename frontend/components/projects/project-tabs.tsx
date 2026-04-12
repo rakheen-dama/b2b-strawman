@@ -6,6 +6,7 @@ import { Tabs as TabsPrimitive } from "radix-ui";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useOrgProfile } from "@/lib/org-profile";
+import { useTerminology } from "@/lib/terminology";
 
 interface ProjectTabsProps {
   overviewPanel: ReactNode;
@@ -53,26 +54,28 @@ interface TabDef {
   label: string;
 }
 
-const baseTabs: TabDef[] = [
-  { id: "overview", label: "Overview" },
-  { id: "documents", label: "Documents" },
-  { id: "members", label: "Members" },
-  { id: "customers", label: "Customers" },
-  { id: "tasks", label: "Tasks" },
-  { id: "time", label: "Time" },
-  { id: "expenses", label: "Expenses" },
-  { id: "budget", label: "Budget" },
-  { id: "financials", label: "Financials" },
-  { id: "staffing", label: "Staffing" },
-  { id: "rates", label: "Rates" },
-  { id: "generated", label: "Generated Docs" },
-  { id: "requests", label: "Requests" },
-  { id: "customer-comments", label: "Customer Comments" },
-  { id: "court-dates", label: "Court Dates" },
-  { id: "adverse-parties", label: "Adverse Parties" },
-  { id: "trust", label: "Trust" },
-  { id: "activity", label: "Activity" },
-];
+function buildBaseTabs(t: (term: string) => string): TabDef[] {
+  return [
+    { id: "overview", label: "Overview" },
+    { id: "documents", label: "Documents" },
+    { id: "members", label: "Members" },
+    { id: "customers", label: t("Customers") },
+    { id: "tasks", label: t("Tasks") },
+    { id: "time", label: "Time" },
+    { id: "expenses", label: t("Expenses") },
+    { id: "budget", label: t("Budget") },
+    { id: "financials", label: "Financials" },
+    { id: "staffing", label: "Staffing" },
+    { id: "rates", label: "Rates" },
+    { id: "generated", label: "Generated Docs" },
+    { id: "requests", label: "Requests" },
+    { id: "customer-comments", label: `${t("Client")} Comments` },
+    { id: "court-dates", label: "Court Dates" },
+    { id: "adverse-parties", label: "Adverse Parties" },
+    { id: "trust", label: "Trust" },
+    { id: "activity", label: "Activity" },
+  ];
+}
 
 const validTabIds = new Set<string>([
   "overview",
@@ -120,6 +123,8 @@ export function ProjectTabs({
   const urlTab = tabParam && validTabIds.has(tabParam) ? (tabParam as TabId) : null;
   const [userTab, setUserTab] = useState<TabId | null>(null);
   const { isModuleEnabled } = useOrgProfile();
+  const { t } = useTerminology();
+  const baseTabs = useMemo(() => buildBaseTabs(t), [t]);
 
   const requestedTab = urlTab ?? userTab;
 
@@ -142,6 +147,7 @@ export function ProjectTabs({
     if (!showTrust) filtered = filtered.filter((t) => t.id !== "trust");
     return filtered;
   }, [
+    baseTabs,
     ratesPanel,
     financialsPanel,
     expensesPanel,

@@ -87,7 +87,7 @@ export default async function ProposalsPage({ params }: { params: Promise<{ slug
         <CreateProposalDialog slug={slug} customers={customers}>
           <Button>
             <Plus className="mr-2 size-4" />
-            New Proposal
+            <TerminologyText template="New {Proposal}" />
           </Button>
         </CreateProposalDialog>
       </div>

@@ -304,7 +304,7 @@ export function RequestAccessForm() {
     <Card>
       <CardHeader>
         <CardTitle className="font-display text-lg">Request Access</CardTitle>
-        <CardDescription>Fill in your details to request access to DocTeams.</CardDescription>
+        <CardDescription>Fill in your details to request access to Kazi.</CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} data-testid="request-access-form" className="space-y-4">

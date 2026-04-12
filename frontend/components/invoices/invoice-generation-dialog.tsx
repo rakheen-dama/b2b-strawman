@@ -18,6 +18,7 @@ import { Plus, ArrowLeft, CheckCircle2, AlertTriangle, Loader2 } from "lucide-re
 import { HelpTip } from "@/components/help-tip";
 import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
 import { useInvoiceGeneration } from "@/components/invoices/use-invoice-generation";
+import { TerminologyText } from "@/components/terminology-text";
 
 /** Wraps formatCurrency in a try-catch to handle invalid currency codes gracefully. */
 function safeFormatCurrency(amount: number, curr: string): string {
@@ -51,20 +52,28 @@ export function InvoiceGenerationDialog({
         ) : (
           <Plus className="mr-1.5 size-4" />
         )}
-        New Invoice
+        <TerminologyText template="New {Invoice}" />
       </Button>
 
       <Dialog open={h.open} onOpenChange={h.handleOpenChange}>
         <DialogContent className={h.step === 2 ? "sm:max-w-2xl" : undefined}>
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              {h.step === 1 ? "Generate Invoice" : "Select Unbilled Items"}
+              {h.step === 1 ? (
+                <TerminologyText template="Generate {Invoice}" />
+              ) : (
+                "Select Unbilled Items"
+              )}
               {h.step === 1 && <HelpTip code="invoices.unbilledTime" />}
             </DialogTitle>
             <DialogDescription>
-              {h.step === 1
-                ? `Create a new invoice for ${customerName} from unbilled time entries and expenses.`
-                : `${h.totalItemCount} items selected for ${customerName}`}
+              {h.step === 1 ? (
+                <TerminologyText
+                  template={`Create a new {invoice} for ${customerName} from unbilled time entries and expenses.`}
+                />
+              ) : (
+                `${h.totalItemCount} items selected for ${customerName}`
+              )}
             </DialogDescription>
           </DialogHeader>
 

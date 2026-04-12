@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: {
-    default: "Portal | DocTeams",
-    template: "%s | Portal | DocTeams",
+    default: "Portal | Kazi",
+    template: "%s | Portal | Kazi",
   },
   description: "Customer portal for viewing shared documents and projects",
 };

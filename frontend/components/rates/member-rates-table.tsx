@@ -253,7 +253,12 @@ export function MemberRatesTable({
                               </DeleteRateDialog>
                             </>
                           ) : (
-                            <AddRateDialog slug={slug} member={member} defaultCurrency={currency}>
+                            <AddRateDialog
+                              slug={slug}
+                              member={member}
+                              defaultCurrency={currency}
+                              defaultRateType="billing"
+                            >
                               <Button
                                 variant="plain"
                                 size="sm"
@@ -375,7 +380,12 @@ export function MemberRatesTable({
                               </DeleteRateDialog>
                             </>
                           ) : (
-                            <AddRateDialog slug={slug} member={member} defaultCurrency={currency}>
+                            <AddRateDialog
+                              slug={slug}
+                              member={member}
+                              defaultCurrency={currency}
+                              defaultRateType="cost"
+                            >
                               <Button
                                 variant="plain"
                                 size="sm"

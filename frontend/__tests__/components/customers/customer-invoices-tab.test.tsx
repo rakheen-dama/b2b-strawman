@@ -161,6 +161,6 @@ describe("CustomerInvoicesTab", () => {
     );
 
     expect(screen.getByText("No invoices yet")).toBeInTheDocument();
-    expect(screen.getByText("Generate an invoice from unbilled time entries")).toBeInTheDocument();
+    expect(screen.getByText("Generate invoice from unbilled time entries")).toBeInTheDocument();
   });
 });

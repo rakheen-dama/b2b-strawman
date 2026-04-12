@@ -84,7 +84,7 @@ export function AssistantPanel({ slug, orgRole }: AssistantPanelProps) {
         <SheetHeader className="flex-row items-center justify-between border-b border-slate-200 pb-3 dark:border-slate-700">
           <div className="flex items-center gap-2">
             <Sparkles className="size-4 text-teal-600" />
-            <SheetTitle className="text-base">DocTeams Assistant</SheetTitle>
+            <SheetTitle className="text-base">Kazi Assistant</SheetTitle>
           </div>
           <div className="flex items-center gap-2">
             {(tokenUsage.input > 0 || tokenUsage.output > 0) && (
@@ -96,7 +96,7 @@ export function AssistantPanel({ slug, orgRole }: AssistantPanelProps) {
           </div>
         </SheetHeader>
 
-        <SheetDescription className="sr-only">Chat with the DocTeams AI assistant</SheetDescription>
+        <SheetDescription className="sr-only">Chat with the Kazi AI assistant</SheetDescription>
 
         {/* Messages */}
         <div className="flex-1 overflow-y-auto px-1 py-3">

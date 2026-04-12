@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -28,6 +29,7 @@ export function CompleteProjectDialog({
   projectName,
   children,
 }: CompleteProjectDialogProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -46,6 +48,7 @@ export function CompleteProjectDialog({
       if (result.success) {
         setOpen(false);
         setShowUnbilledConfirm(false);
+        router.refresh();
       } else {
         const errorMsg = result.error ?? "Failed to complete project.";
         // Check if this is an unbilled time warning (409)

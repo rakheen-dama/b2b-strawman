@@ -154,10 +154,11 @@ export interface UnbilledTimeEntry {
   memberName: string;
   date: string;
   durationMinutes: number;
-  billingRateSnapshot: number;
-  billingRateCurrency: string;
-  billableValue: number;
+  billingRateSnapshot: number | null;
+  billingRateCurrency: string | null;
+  billableValue: number | null;
   description: string | null;
+  rateSource: string | null;
 }
 
 export interface UnbilledProjectGroup {

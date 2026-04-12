@@ -13,4 +13,5 @@ public record UnbilledTimeEntry(
     BigDecimal billingRateSnapshot,
     String billingRateCurrency,
     BigDecimal billableValue,
-    String description) {}
+    String description,
+    String rateSource) {}

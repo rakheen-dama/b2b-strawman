@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.invoice;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateService;
 import io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.compliance.LifecycleAction;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
@@ -72,6 +73,7 @@ public class InvoiceCreationService {
   private final VerticalModuleGuard verticalModuleGuard;
   private final InvoiceTaxService invoiceTaxService;
   private final InvoiceRenderingService invoiceRenderingService;
+  private final BillingRateService billingRateService;
 
   public InvoiceCreationService(
       InvoiceRepository invoiceRepository,
@@ -93,7 +95,8 @@ public class InvoiceCreationService {
       TariffItemRepository tariffItemRepository,
       VerticalModuleGuard verticalModuleGuard,
       InvoiceTaxService invoiceTaxService,
-      InvoiceRenderingService invoiceRenderingService) {
+      InvoiceRenderingService invoiceRenderingService,
+      BillingRateService billingRateService) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.customerRepository = customerRepository;
@@ -114,6 +117,7 @@ public class InvoiceCreationService {
     this.verticalModuleGuard = verticalModuleGuard;
     this.invoiceTaxService = invoiceTaxService;
     this.invoiceRenderingService = invoiceRenderingService;
+    this.billingRateService = billingRateService;
   }
 
   @Transactional
@@ -674,10 +678,32 @@ public class InvoiceCreationService {
       BigDecimal quantity =
           BigDecimal.valueOf(timeEntry.getDurationMinutes())
               .divide(BigDecimal.valueOf(60), 4, RoundingMode.HALF_UP);
-      BigDecimal unitPrice =
-          timeEntry.getBillingRateSnapshot() != null
-              ? timeEntry.getBillingRateSnapshot()
-              : BigDecimal.ZERO;
+      BigDecimal unitPrice = timeEntry.getBillingRateSnapshot();
+      if (unitPrice == null && projectId != null) {
+        var resolved =
+            billingRateService.resolveRate(timeEntry.getMemberId(), projectId, timeEntry.getDate());
+        if (resolved.isPresent()) {
+          unitPrice = resolved.get().hourlyRate();
+          if (timeEntry.getBillingRateCurrency() == null) {
+            // Currency mismatch check above already passed for non-null currencies,
+            // but for null-currency entries we should validate the resolved currency
+            String resolvedCurrency = resolved.get().currency();
+            if (!resolvedCurrency.equals(currency)) {
+              throw new InvalidStateException(
+                  "Currency mismatch",
+                  "Time entry "
+                      + timeEntryId
+                      + " resolves to currency "
+                      + resolvedCurrency
+                      + " but invoice currency is "
+                      + currency);
+            }
+          }
+        }
+      }
+      if (unitPrice == null) {
+        unitPrice = BigDecimal.ZERO;
+      }
 
       var line =
           new InvoiceLine(

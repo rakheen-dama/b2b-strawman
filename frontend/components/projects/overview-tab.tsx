@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TerminologyText } from "@/components/terminology-text";
 import type { SetupStep } from "@/components/setup/types";
 import { HealthBadge } from "@/components/dashboard/health-badge";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
@@ -566,7 +567,7 @@ export async function OverviewTab({
                           href={`/org/${slug}/customers/${customerId}?tab=invoices`}
                           className="text-xs font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
                         >
-                          Generate Invoice
+                          <TerminologyText template="Generate {Invoice}" />
                         </Link>
                       )}
                       <Link

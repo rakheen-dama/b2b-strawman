@@ -51,7 +51,9 @@ export function InvoiceHeaderActions({
           <StatusBadge status={invoice.status} />
         </div>
         <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
-          <span>{t("Customer")}: {invoice.customerName}</span>
+          <span>
+            {t("Customer")}: {invoice.customerName}
+          </span>
           {invoice.issueDate && <span>Issued: {formatDate(invoice.issueDate)}</span>}
           {invoice.dueDate && !isDraft && <span>Due: {formatDate(invoice.dueDate)}</span>}
           <span>Currency: {invoice.currency}</span>

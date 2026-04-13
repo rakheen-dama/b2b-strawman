@@ -90,7 +90,10 @@ export function LinkProjectDialog({
         </DialogHeader>
 
         <Command className="border-t">
-          <CommandInput placeholder={`Search ${t("projects")}...`} disabled={isLoading || isLinking} />
+          <CommandInput
+            placeholder={`Search ${t("projects")}...`}
+            disabled={isLoading || isLinking}
+          />
           <CommandList>
             {isLoading ? (
               <div className="text-muted-foreground py-6 text-center text-sm">

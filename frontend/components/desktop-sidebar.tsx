@@ -19,7 +19,13 @@ interface DesktopSidebarProps {
   userEmail?: string | null;
 }
 
-export function DesktopSidebar({ slug, orgName, groups = [], userName, userEmail }: DesktopSidebarProps) {
+export function DesktopSidebar({
+  slug,
+  orgName,
+  groups = [],
+  userName,
+  userEmail,
+}: DesktopSidebarProps) {
   const pathname = usePathname();
   const { setOpen } = useCommandPalette();
 
@@ -31,9 +37,7 @@ export function DesktopSidebar({ slug, orgName, groups = [], userName, userEmail
       </div>
       <div className="mx-4 border-t border-white/10" />
       <div className="flex items-center gap-2 px-4 py-3">
-        <span className="truncate text-xs font-medium text-teal-500/80">
-          {orgName ?? slug}
-        </span>
+        <span className="truncate text-xs font-medium text-teal-500/80">{orgName ?? slug}</span>
       </div>
       <div className="mx-4 border-t border-white/10" />
 

@@ -93,7 +93,10 @@ export function LinkCustomerDialog({
         </DialogHeader>
 
         <Command className="border-t">
-          <CommandInput placeholder={`Search ${t("customers")}...`} disabled={isLoading || isLinking} />
+          <CommandInput
+            placeholder={`Search ${t("customers")}...`}
+            disabled={isLoading || isLinking}
+          />
           <CommandList>
             {isLoading ? (
               <div className="text-muted-foreground py-6 text-center text-sm">

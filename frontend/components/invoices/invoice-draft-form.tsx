@@ -54,7 +54,9 @@ export function InvoiceDraftForm({
   const { t } = useTerminology();
   return (
     <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
-      <h2 className="mb-4 font-semibold text-slate-900 dark:text-slate-100">{t("Invoice")} Details</h2>
+      <h2 className="mb-4 font-semibold text-slate-900 dark:text-slate-100">
+        {t("Invoice")} Details
+      </h2>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="invoice-due-date" className={labelClass}>

@@ -12,7 +12,7 @@ export default function LoginUsername(
   const { msg, msgStr } = i18n;
 
   return (
-    <Layout title="Sign in to DocTeams">
+    <Layout title="Sign in to Kazi">
       {/* Error/info message from Keycloak */}
       {message && message.type !== "success" && (
         <div

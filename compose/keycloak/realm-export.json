@@ -1,7 +1,7 @@
 {
   "id": "docteams",
   "realm": "docteams",
-  "displayName": "DocTeams",
+  "displayName": "Kazi",
   "loginTheme": "docteams",
   "emailTheme": "docteams",
   "enabled": true,
@@ -109,7 +109,7 @@
     "host": "mailpit",
     "port": "1025",
     "from": "noreply@docteams.local",
-    "fromDisplayName": "DocTeams",
+    "fromDisplayName": "Kazi",
     "ssl": "false",
     "starttls": "false",
     "auth": "false"

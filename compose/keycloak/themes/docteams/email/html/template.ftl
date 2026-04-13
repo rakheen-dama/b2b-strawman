@@ -105,7 +105,7 @@
     <div class="email-content" style="max-width:560px;margin:0 auto;">
       <!-- Logo -->
       <div class="email-logo" style="text-align:center;padding-bottom:32px;">
-        <span style="font-family:'Sora',-apple-system,BlinkMacSystemFont,sans-serif;font-size:22px;font-weight:600;color:#020617;letter-spacing:-0.025em;">DocTeams</span>
+        <span style="font-family:'Sora',-apple-system,BlinkMacSystemFont,sans-serif;font-size:22px;font-weight:600;color:#020617;letter-spacing:-0.025em;">Kazi</span>
       </div>
 
       <!-- Card -->
@@ -115,7 +115,7 @@
 
       <!-- Footer -->
       <div class="email-footer" style="text-align:center;padding-top:32px;">
-        <p style="font-size:12px;color:#94a3b8;margin:0;">&copy; ${.now?string('yyyy')} DocTeams. All rights reserved.</p>
+        <p style="font-size:12px;color:#94a3b8;margin:0;">&copy; ${.now?string('yyyy')} Kazi. All rights reserved.</p>
       </div>
     </div>
   </div>

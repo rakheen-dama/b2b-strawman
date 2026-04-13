@@ -10,7 +10,7 @@ export function Layout({ title, children }: LayoutProps) {
         {/* Logo */}
         <div className="mb-8 text-center">
           <span className="font-['Sora'] text-2xl font-semibold tracking-tight text-slate-950">
-            DocTeams
+            Kazi
           </span>
         </div>
 
@@ -24,7 +24,7 @@ export function Layout({ title, children }: LayoutProps) {
 
         {/* Footer */}
         <p className="mt-8 text-center text-xs text-slate-400">
-          &copy; {new Date().getFullYear()} DocTeams
+          &copy; {new Date().getFullYear()} Kazi
         </p>
       </div>
     </div>

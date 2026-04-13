@@ -43,6 +43,9 @@ public class ActivityMessageFormatter {
           "%s updated document \"%s\"".formatted(actorName, getFileName(details));
       case "document.deleted" ->
           "%s deleted document \"%s\"".formatted(actorName, getFileName(details));
+      case "document.generated", "docx_document.generated" ->
+          "%s generated document \"%s\" from template \"%s\""
+              .formatted(actorName, getFileName(details), getTemplateName(details));
       case "comment.created" ->
           "%s commented on %s \"%s\""
               .formatted(actorName, getParentType(details), getParentName(details));
@@ -242,6 +245,11 @@ public class ActivityMessageFormatter {
     return name instanceof String s ? s : fallback;
   }
 
+  private String getTemplateName(Map<String, Object> details) {
+    Object name = details.get("template_name");
+    return name instanceof String s ? s : "unknown template";
+  }
+
   private String resolveEntityName(String entityType, Map<String, Object> details) {
     return switch (entityType) {
       case "task" -> getTitle(details);
@@ -255,6 +263,7 @@ public class ActivityMessageFormatter {
       case "proposal" -> getProposalNumber(details);
       case "information_request" -> getRequestNumber(details);
       case "request_item" -> getItemName(details);
+      case "generated_document" -> getFileName(details);
       default -> "unknown";
     };
   }

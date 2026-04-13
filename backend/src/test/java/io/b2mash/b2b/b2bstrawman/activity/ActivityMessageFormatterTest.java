@@ -254,4 +254,29 @@ class ActivityMessageFormatterTest {
     var item = formatter.format(event, Map.of());
     assertThat(item.actorName()).isEqualTo("Jane Customer");
   }
+
+  @Test
+  void documentGeneratedProducesCorrectMessage() {
+    var event =
+        createEvent(
+            "document.generated",
+            "generated_document",
+            Map.of("file_name", "engagement-letter.pdf", "template_name", "Engagement Letter"));
+    var item = formatter.format(event, actorMap());
+    assertThat(item.message())
+        .isEqualTo(
+            "Alice generated document \"engagement-letter.pdf\" from template \"Engagement Letter\"");
+    assertThat(item.entityName()).isEqualTo("engagement-letter.pdf");
+  }
+
+  @Test
+  void docxDocumentGeneratedProducesCorrectMessage() {
+    var event =
+        createEvent(
+            "docx_document.generated",
+            "generated_document",
+            Map.of("fileName", "invoice-acme.docx", "template_name", "Invoice Template"));
+    var item = formatter.format(event, actorMap());
+    assertThat(item.message()).contains("generated document").contains("Invoice Template");
+  }
 }

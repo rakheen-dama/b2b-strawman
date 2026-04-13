@@ -413,7 +413,7 @@ function ExpenseSelectionSection({
                         "flex items-center gap-3 px-4 py-2 text-sm",
                         currencyMismatch
                           ? "cursor-not-allowed opacity-50"
-                          : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50",
+                          : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50"
                       )}
                     >
                       <input
@@ -476,7 +476,7 @@ function EntryRow({
         "flex items-center gap-3 px-4 py-2 text-sm",
         disabled
           ? "cursor-not-allowed opacity-50"
-          : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50",
+          : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50"
       )}
     >
       <input

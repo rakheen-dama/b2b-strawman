@@ -1,6 +1,7 @@
 "use client";
 
 import { formatDate } from "@/lib/format";
+import { useTerminology } from "@/lib/terminology";
 import type { InvoiceResponse, TaxType } from "@/lib/types";
 
 interface InvoiceDetailsReadonlyProps {
@@ -15,11 +16,14 @@ const TAX_TYPE_LABEL: Record<TaxType, string> = {
 };
 
 export function InvoiceDetailsReadonly({ invoice }: InvoiceDetailsReadonlyProps) {
+  const { t } = useTerminology();
   const hasBillingPeriod = Boolean(invoice.billingPeriodStart || invoice.billingPeriodEnd);
 
   return (
     <div className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
-      <h2 className="mb-4 font-semibold text-slate-900 dark:text-slate-100">Invoice Details</h2>
+      <h2 className="mb-4 font-semibold text-slate-900 dark:text-slate-100">
+        {t("Invoice")} Details
+      </h2>
       <dl className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
         {invoice.dueDate && (
           <div>

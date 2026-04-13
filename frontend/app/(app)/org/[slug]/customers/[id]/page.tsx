@@ -690,7 +690,7 @@ export default async function CustomerDetailPage({
           primaryAction={
             isAdmin
               ? {
-                  label: "Create Invoice",
+                  label: <TerminologyText template="Create {Invoice}" />,
                   href: `?tab=invoices`,
                 }
               : undefined

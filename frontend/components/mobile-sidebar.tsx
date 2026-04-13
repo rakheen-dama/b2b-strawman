@@ -26,7 +26,13 @@ interface MobileSidebarProps {
   userEmail?: string | null;
 }
 
-export function MobileSidebar({ slug, orgName, groups = [], userName, userEmail }: MobileSidebarProps) {
+export function MobileSidebar({
+  slug,
+  orgName,
+  groups = [],
+  userName,
+  userEmail,
+}: MobileSidebarProps) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 

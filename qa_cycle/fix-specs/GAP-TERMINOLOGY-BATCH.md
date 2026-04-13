@@ -67,19 +67,7 @@ to:
 label: "Create Fee Note",
 ```
 
-**Wait** — this is a cross-vertical change. The correct approach is to use the terminology system. Since the customers page is a Server Component, and `TerminologyHeading` is a client component, the best approach is:
-
-The `ActionCard` component accepts a string `label`. We need the page to pass the right label. Looking at how `TerminologyHeading` is used on the same page (line 122 area), it's used inside JSX. But `ActionCard` takes a string prop, not JSX.
-
-**Recommended fix**: Change the hardcoded string to use a server-side terminology lookup. If no server-side terminology exists, the simplest fix is to hardcode "Create Fee Note" only for legal verticals. But since the `TerminologyHeading` pattern is already used on this page, convert the label to use terminology:
-
-Change `label: "Create Invoice"` to `label: "Create " + t("Invoice")` where `t` is available. If server-side, use `createMessages("terminology")` or equivalent.
-
-**Actual simplest fix**: The page already uses `TerminologyHeading` in other places, meaning there IS a server-side terminology lookup. Check the imports. The page imports `TerminologyHeading` which is a client component. For the `ActionCard` label (a string prop), we need server-side resolution.
-
-For this QA cycle, the pragmatic fix: wrap the label resolution. The `ActionCard` component should accept `ReactNode` for label instead of just string. OR use the messages system.
-
-**Final recommendation**: All four fixes below use the simplest approach for each context.
+Since the customers page is a Server Component and `ActionCard` takes a string `label` prop, the pragmatic fix is to widen `ActionCard`'s label type to accept `ReactNode`, or use a server-side terminology resolver. The page already uses `TerminologyHeading` (a client component) in other places.
 
 ### GAP-D38-02: invoice-details-readonly.tsx line 22 + invoice-draft-form.tsx line 55
 Both are `"use client"` components. Add `useTerminology` import and use `t("Invoice")`:

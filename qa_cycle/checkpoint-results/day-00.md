@@ -15,7 +15,7 @@
 | 0.3 | PASS | Form fields visible: Work Email, Full Name, Organisation Name, Country (combobox), Industry (combobox) |
 | 0.4 | PASS | Form filled: thandi@mathebula-test.local, Thandi Mathebula, Mathebula & Partners, South Africa, Legal Services |
 | 0.5 | PASS | Submit transitions to OTP verification step (same page, step 2). Shows "Check Your Email" with code input |
-| 0.6 | PASS | Mailpit received OTP email to thandi@mathebula-test.local, subject "Your Kazi verification code", code 330460 |
+| 0.6 | PASS | Mailpit received OTP email to thandi@mathebula-test.local, subject "Your Kazi verification code", code [REDACTED] |
 | 0.7 | PASS | OTP entered and verified successfully |
 | 0.8 | PASS | Success card: "Request Submitted" — "Your access request has been submitted for review" |
 
@@ -40,7 +40,7 @@
 |----|--------|----------|
 | 0.19 | PASS | Invitation link opens Keycloak registration page (after properly logging out padmin from Keycloak) |
 | 0.20 | PASS | Email pre-filled: thandi@mathebula-test.local. Heading: "Create your account" |
-| 0.21 | PASS | Filled: First Name=Thandi, Last Name=Mathebula, Password=SecureP@ss1 |
+| 0.21 | PASS | Filled: First Name=Thandi, Last Name=Mathebula, Password=[REDACTED] |
 | 0.22 | PASS | After login (registration consumed token in first attempt, needed manual login), redirected to /org/mathebula-partners/dashboard |
 | 0.23 | PASS | Sidebar: org name "Mathebula & Partners", user "Thandi Mathebula" with email |
 | 0.24 | PASS | Sidebar shows "Matters" (not "Projects"), "Clients" (not "Customers"), "Court Calendar" visible |
@@ -56,10 +56,10 @@
 | 0.29 | PASS | Carol invited: carol@mathebula-test.local, Member. Success: "Invitation sent to carol@mathebula-test.local" |
 | 0.30 | PASS | Mailpit: 2 Keycloak invitation emails (bob + carol), subject "Invitation to join the Mathebula & Partners organization" |
 | 0.31 | PASS | Bob invitation link opens Keycloak registration, email pre-filled: bob@mathebula-test.local |
-| 0.32 | PASS | Bob registered: First=Bob, Last=Ndlovu, Password=SecureP@ss2 |
+| 0.32 | PASS | Bob registered: First=Bob, Last=Ndlovu, Password=[REDACTED] |
 | 0.33 | PASS | Bob redirected to /org/mathebula-partners/dashboard |
 | 0.34 | PASS | Carol invitation link opens Keycloak registration, email pre-filled: carol@mathebula-test.local |
-| 0.35 | PASS | Carol registered: First=Carol, Last=Mokoena, Password=SecureP@ss3 |
+| 0.35 | PASS | Carol registered: First=Carol, Last=Mokoena, Password=[REDACTED] |
 | 0.36 | PASS | Carol redirected to /org/mathebula-partners/dashboard |
 
 ## Phase E: General Settings & Branding

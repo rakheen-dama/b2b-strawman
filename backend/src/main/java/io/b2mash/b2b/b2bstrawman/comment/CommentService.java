@@ -97,8 +97,9 @@ public class CommentService {
           "Invalid entity type", "entityType must be TASK, DOCUMENT, or PROJECT");
     }
 
-    // Verify entity exists and belongs to project
-    validateEntityBelongsToProject(entityType, entityId, projectId);
+    // Verify entity exists and belongs to project (also resolves entity name to avoid duplicate DB
+    // read)
+    String entityName = validateEntityBelongsToProject(entityType, entityId, projectId);
 
     // SHARED visibility requires canEdit (lead/admin/owner) — except for PROJECT-level comments
     // which are inherently SHARED (the Client Comments thread is open to all project members)
@@ -118,8 +119,6 @@ public class CommentService {
         entityType,
         entityId,
         projectId);
-
-    String entityName = resolveEntityName(entityType, entityId);
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("comment.created")
@@ -354,9 +353,13 @@ public class CommentService {
     return commentRepository.findByTargetAndProject(entityType, entityId, projectId, pageable);
   }
 
-  private void validateEntityBelongsToProject(String entityType, UUID entityId, UUID projectId) {
+  /**
+   * Validates that the entity belongs to the given project and returns the entity name. This
+   * consolidates validation and name resolution into a single DB read per entity.
+   */
+  private String validateEntityBelongsToProject(String entityType, UUID entityId, UUID projectId) {
     if ("PROJECT".equals(entityType)) {
-      return; // PROJECT comments reference the project itself
+      return "project";
     }
     if ("TASK".equals(entityType)) {
       var task =
@@ -366,6 +369,7 @@ public class CommentService {
       if (!task.getProjectId().equals(projectId)) {
         throw new ResourceNotFoundException("Task", entityId);
       }
+      return task.getTitle();
     } else if ("DOCUMENT".equals(entityType)) {
       var document =
           documentRepository
@@ -374,21 +378,13 @@ public class CommentService {
       if (!document.getProjectId().equals(projectId)) {
         throw new ResourceNotFoundException("Document", entityId);
       }
+      return document.getFileName();
     }
+    return entityType.toLowerCase();
   }
 
   private String resolveActorName(UUID memberId) {
     return memberNameResolver.resolveName(memberId);
-  }
-
-  private String resolveEntityName(String entityType, UUID entityId) {
-    return switch (entityType) {
-      case "TASK" -> taskRepository.findById(entityId).map(task -> task.getTitle()).orElse("task");
-      case "DOCUMENT" ->
-          documentRepository.findById(entityId).map(doc -> doc.getFileName()).orElse("document");
-      case "PROJECT" -> "project";
-      default -> entityType.toLowerCase();
-    };
   }
 
   // --- Author Resolution (moved from controller for BE-007) ---

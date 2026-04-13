@@ -10,7 +10,7 @@
 
 | ID | Result | Evidence |
 |----|--------|----------|
-| 1.1 | PASS | Logged out Thandi, navigated to /dashboard, Keycloak login appeared, logged in as bob@mathebula-test.local / SecureP@ss2. Redirected to /org/mathebula-partners/dashboard. Sidebar shows "BN" avatar, "Bob Ndlovu". 0 console errors. |
+| 1.1 | PASS | Logged out Thandi, navigated to /dashboard, Keycloak login appeared, logged in as bob@mathebula-test.local. Redirected to /org/mathebula-partners/dashboard. Sidebar shows "BN" avatar, "Bob Ndlovu". 0 console errors. |
 | 1.2 | PASS | Navigated to Conflict Check page via sidebar Clients > Conflict Check. URL: /org/mathebula-partners/conflict-check. Page heading "Conflict Check", tabs "Run Check" and "History (0)". Form fields: Name to Check, ID Number, Registration Number, Check Type, Customer, Matter. |
 | 1.3 | PASS | Searched "Sipho Dlamini" → result: "No Conflict" with green checkmark. Checked at 13/04/2026, 19:59:14. History tab updated to "(1)". |
 | 1.4 | PASS | Screenshot captured: day-01-screenshot-conflict-clear.png — shows green "No Conflict" result with full form and sidebar. |

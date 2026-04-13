@@ -133,7 +133,7 @@ public class ActivityMessageFormatter {
     }
     if (title instanceof Map<?, ?> m) {
       Object toVal = m.get("to");
-      if (toVal instanceof String s && !s.isEmpty()) {
+      if (toVal instanceof String s && !s.isBlank()) {
         return s;
       }
       Object fromVal = m.get("from");
@@ -159,7 +159,7 @@ public class ActivityMessageFormatter {
 
   private String getParentName(Map<String, Object> details) {
     Object entityName = details.get("entity_name");
-    if (entityName instanceof String s && !s.isEmpty()) {
+    if (entityName instanceof String s && !s.isBlank()) {
       return s;
     }
     return getParentType(details);

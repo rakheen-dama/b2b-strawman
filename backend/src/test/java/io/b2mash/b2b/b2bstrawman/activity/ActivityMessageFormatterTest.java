@@ -129,7 +129,23 @@ class ActivityMessageFormatterTest {
   }
 
   @Test
-  void commentCreatedProducesCorrectMessage() {
+  void commentCreatedWithEntityNameProducesCorrectMessage() {
+    var event =
+        createEvent(
+            "comment.created",
+            "comment",
+            Map.of(
+                "entity_type", "TASK",
+                "entity_id", UUID.randomUUID().toString(),
+                "entity_name", "Pre-trial conference preparation",
+                "body", "Great work!"));
+    var item = formatter.format(event, actorMap());
+    assertThat(item.message())
+        .isEqualTo("Alice commented on task \"Pre-trial conference preparation\"");
+  }
+
+  @Test
+  void commentCreatedWithoutEntityNameFallsBackToEntityType() {
     var event =
         createEvent(
             "comment.created",
@@ -139,7 +155,7 @@ class ActivityMessageFormatterTest {
                 "entity_id", UUID.randomUUID().toString(),
                 "body", "Great work!"));
     var item = formatter.format(event, actorMap());
-    assertThat(item.message()).contains("Alice commented on task");
+    assertThat(item.message()).isEqualTo("Alice commented on task \"task\"");
   }
 
   @Test

@@ -158,7 +158,10 @@ public class ActivityMessageFormatter {
   }
 
   private String getParentName(Map<String, Object> details) {
-    // Comment details store entity_type and entity_id but not entity name
+    Object entityName = details.get("entity_name");
+    if (entityName instanceof String s && !s.isEmpty()) {
+      return s;
+    }
     return getParentType(details);
   }
 

@@ -26,6 +26,7 @@ import { useTerminology } from "@/lib/terminology";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type { OrgMember, Customer } from "@/lib/types";
 import type { PrerequisiteViolation } from "@/components/prerequisite/types";
+import type { ProjectPriority } from "@/lib/types/project";
 
 interface NewFromTemplateDialogProps {
   slug: string;
@@ -73,7 +74,7 @@ export function NewFromTemplateDialog({
   const [customerId, setCustomerId] = useState("");
   const [projectLeadMemberId, setProjectLeadMemberId] = useState("");
   const [referenceNumber, setReferenceNumber] = useState("");
-  const [priority, setPriority] = useState("");
+  const [priority, setPriority] = useState<ProjectPriority | "">("");
   const [workType, setWorkType] = useState("");
 
   // Auto-open on mount when the `?new=1` query param redirect lands us here
@@ -301,7 +302,8 @@ export function NewFromTemplateDialog({
                 {customers.length > 0 && (
                   <div className="space-y-2">
                     <Label htmlFor="new-proj-customer">
-                      {t("Customer")} <span className="text-muted-foreground font-normal">(optional)</span>
+                      {t("Customer")}{" "}
+                      <span className="text-muted-foreground font-normal">(optional)</span>
                     </Label>
                     <select
                       id="new-proj-customer"
@@ -365,7 +367,7 @@ export function NewFromTemplateDialog({
                   <select
                     id="new-proj-priority"
                     value={priority}
-                    onChange={(e) => setPriority(e.target.value)}
+                    onChange={(e) => setPriority(e.target.value as ProjectPriority | "")}
                     className={nativeSelectClassName}
                   >
                     <option value="">Select priority...</option>

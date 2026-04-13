@@ -493,6 +493,8 @@ public class GeneratedDocumentService {
     auditDetails.put("outputFormat", storedFormat.name());
     auditDetails.put("requestedFormat", requestedFormat.name());
     auditDetails.put("fileName", primaryFileName);
+    auditDetails.put("file_name", primaryFileName);
+    auditDetails.put("template_name", template.getName());
     // Include project_id so the activity feed picks up document generation events
     if (template.getPrimaryEntityType() == TemplateEntityType.PROJECT) {
       auditDetails.put("project_id", entityId.toString());

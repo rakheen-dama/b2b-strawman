@@ -851,7 +851,9 @@ public class NotificationService {
       return Set.of();
     }
 
-    // Load all members in the tenant and match by first name or full name
+    // TODO: Replace findAll() with a targeted query once Member has separate firstName/lastName
+    // columns. Currently, first-name matching requires splitting the full `name` field in Java,
+    // which prevents a pure SQL solution.
     var allMembers = memberRepository.findAll();
     var matched = new HashSet<UUID>();
     for (var member : allMembers) {

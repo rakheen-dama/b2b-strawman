@@ -22,6 +22,7 @@ import {
   fetchCustomers,
   linkCustomerToProject,
 } from "@/app/(app)/org/[slug]/projects/[id]/actions";
+import { useTerminology } from "@/lib/terminology";
 import type { Customer } from "@/lib/types";
 
 interface LinkCustomerDialogProps {
@@ -40,6 +41,7 @@ export function LinkCustomerDialog({
   const [open, setOpen] = useState(false);
   const [isLinking, setIsLinking] = useState(false);
   const [linkError, setLinkError] = useState<string | null>(null);
+  const { t } = useTerminology();
 
   const {
     data: allCustomers,
@@ -84,28 +86,28 @@ export function LinkCustomerDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="max-w-md p-0">
         <DialogHeader className="px-4 pt-4">
-          <DialogTitle>Link Customer</DialogTitle>
+          <DialogTitle>Link {t("Customer")}</DialogTitle>
           <DialogDescription>
-            Search and select a customer to link to this project.
+            Search and select a {t("customer")} to link to this {t("project")}.
           </DialogDescription>
         </DialogHeader>
 
         <Command className="border-t">
-          <CommandInput placeholder="Search customers..." disabled={isLoading || isLinking} />
+          <CommandInput placeholder={`Search ${t("customers")}...`} disabled={isLoading || isLinking} />
           <CommandList>
             {isLoading ? (
               <div className="text-muted-foreground py-6 text-center text-sm">
-                Loading customers...
+                Loading {t("customers")}...
               </div>
             ) : fetchError ? (
               <div className="text-destructive py-6 text-center text-sm">
-                Failed to load customers.
+                Failed to load {t("customers")}.
               </div>
             ) : availableCustomers.length === 0 ? (
               <CommandEmpty>
                 {!allCustomers || allCustomers.length === 0
-                  ? "No customers found."
-                  : "All customers are already linked to this project."}
+                  ? `No ${t("customers")} found.`
+                  : `All ${t("customers")} are already linked to this ${t("project")}.`}
               </CommandEmpty>
             ) : (
               <CommandGroup>

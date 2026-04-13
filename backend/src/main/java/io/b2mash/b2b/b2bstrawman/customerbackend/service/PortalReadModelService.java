@@ -59,6 +59,11 @@ public class PortalReadModelService {
     this.objectMapper = objectMapper;
   }
 
+  /** Lists all portal projects for the given customer and org via the read model. */
+  public List<PortalProjectView> listProjects(String orgId, UUID customerId) {
+    return readModelRepository.findProjectsByCustomer(orgId, customerId);
+  }
+
   /** Returns the portal project detail for the given project, customer, and org. */
   public PortalProjectView getProjectDetail(UUID projectId, UUID customerId, String orgId) {
     return readModelRepository

@@ -231,6 +231,11 @@ public class GeneratedDocumentService {
     auditDetails.put("file_name", pdfResult.fileName());
     auditDetails.put("file_size", pdfResult.pdfBytes().length);
     auditDetails.put("save_to_documents", saveToDocuments);
+    // Include project_id so the activity feed picks up document generation events
+    UUID resolvedProjectId = resolveProjectId(templateDetail, entityId);
+    if (resolvedProjectId != null) {
+      auditDetails.put("project_id", resolvedProjectId.toString());
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("document.generated")
@@ -488,6 +493,12 @@ public class GeneratedDocumentService {
     auditDetails.put("outputFormat", storedFormat.name());
     auditDetails.put("requestedFormat", requestedFormat.name());
     auditDetails.put("fileName", primaryFileName);
+    auditDetails.put("file_name", primaryFileName);
+    auditDetails.put("template_name", template.getName());
+    // Include project_id so the activity feed picks up document generation events
+    if (template.getPrimaryEntityType() == TemplateEntityType.PROJECT) {
+      auditDetails.put("project_id", entityId.toString());
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("docx_document.generated")

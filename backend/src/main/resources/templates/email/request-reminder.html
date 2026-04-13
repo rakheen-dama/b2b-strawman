@@ -6,7 +6,7 @@
   <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #374151;">
     This is a reminder that you have <strong th:text="${outstandingCount}">0</strong> outstanding item(s)
     for information request <strong th:text="${requestNumber}">REQ-0001</strong>
-    from <span th:text="${orgName != null ? orgName : 'DocTeams'}">DocTeams</span>.
+    from <span th:text="${orgName != null ? orgName : 'Kazi'}">Kazi</span>.
   </p>
   <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 16px 0; width: 100%; border-collapse: collapse;" th:if="${items != null and !items.isEmpty()}">
     <tr>
@@ -32,6 +32,6 @@
   </table>
   <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #374151;">
     Best,<br/>
-    <span th:text="${orgName != null ? orgName : 'DocTeams'}">DocTeams</span>
+    <span th:text="${orgName != null ? orgName : 'Kazi'}">Kazi</span>
   </p>
 </div>

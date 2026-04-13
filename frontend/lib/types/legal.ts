@@ -3,10 +3,11 @@ export type CourtDateType =
   | "HEARING"
   | "TRIAL"
   | "MOTION"
-  | "CONFERENCE"
   | "MEDIATION"
   | "ARBITRATION"
-  | "MENTION"
+  | "PRE_TRIAL"
+  | "CASE_MANAGEMENT"
+  | "TAXATION"
   | "OTHER";
 
 export type CourtDateStatus = "SCHEDULED" | "POSTPONED" | "HEARD" | "CANCELLED";

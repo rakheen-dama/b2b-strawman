@@ -99,6 +99,9 @@ export interface InstantiateTemplateRequest {
   customerId?: string;
   projectLeadMemberId?: string;
   description?: string;
+  referenceNumber?: string;
+  priority?: string;
+  workType?: string;
 }
 
 // ---- API Functions ----

@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.util.HexFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
@@ -38,6 +39,7 @@ public class AcceptanceCertificateService {
   private final StorageService storageService;
   private final PdfRenderingService pdfRenderingService;
   private final TemplateEngine templateEngine;
+  private final String productName;
 
   public AcceptanceCertificateService(
       GeneratedDocumentRepository generatedDocumentRepository,
@@ -46,7 +48,8 @@ public class AcceptanceCertificateService {
       OrganizationRepository organizationRepository,
       StorageService storageService,
       PdfRenderingService pdfRenderingService,
-      TemplateEngine templateEngine) {
+      TemplateEngine templateEngine,
+      @Value("${docteams.app.product-name:Kazi}") String productName) {
     this.generatedDocumentRepository = generatedDocumentRepository;
     this.portalContactRepository = portalContactRepository;
     this.orgSettingsRepository = orgSettingsRepository;
@@ -54,6 +57,7 @@ public class AcceptanceCertificateService {
     this.storageService = storageService;
     this.pdfRenderingService = pdfRenderingService;
     this.templateEngine = templateEngine;
+    this.productName = productName;
   }
 
   /**
@@ -162,12 +166,12 @@ public class AcceptanceCertificateService {
   private String resolveOrgName() {
     String orgId = RequestScopes.getOrgIdOrNull();
     if (orgId == null) {
-      return "DocTeams";
+      return productName;
     }
     return organizationRepository
         .findByClerkOrgId(orgId)
         .map(org -> org.getName())
-        .orElse("DocTeams");
+        .orElse(productName);
   }
 
   private String resolveLogoUrl(OrgSettings settings) {

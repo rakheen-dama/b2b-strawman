@@ -19,12 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/portal/projects")
 public class PortalProjectController {
 
-  private final PortalQueryService portalQueryService;
   private final PortalReadModelService portalReadModelService;
 
-  public PortalProjectController(
-      PortalQueryService portalQueryService, PortalReadModelService portalReadModelService) {
-    this.portalQueryService = portalQueryService;
+  public PortalProjectController(PortalReadModelService portalReadModelService) {
     this.portalReadModelService = portalReadModelService;
   }
 
@@ -32,18 +29,15 @@ public class PortalProjectController {
   @GetMapping
   public ResponseEntity<List<PortalProjectResponse>> listProjects() {
     UUID customerId = RequestScopes.requireCustomerId();
-    var projects = portalQueryService.listCustomerProjects(customerId);
+    String orgId = RequestScopes.requireOrgId();
+    var projects = portalReadModelService.listProjects(orgId, customerId);
 
     var response =
         projects.stream()
             .map(
                 p ->
                     new PortalProjectResponse(
-                        p.getId(),
-                        p.getName(),
-                        p.getDescription(),
-                        portalQueryService.countSharedProjectDocuments(p.getId()),
-                        p.getCreatedAt()))
+                        p.id(), p.name(), p.description(), p.documentCount(), p.createdAt()))
             .toList();
 
     return ResponseEntity.ok(response);

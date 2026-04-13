@@ -244,9 +244,8 @@ public abstract class BaseDemoDataSeeder {
 
     BigDecimal taxAmount =
         subtotal.multiply(new BigDecimal("0.15")).setScale(2, RoundingMode.HALF_UP);
-    // updateDraft sets taxAmount and recalculates total = subtotal + taxAmount
-    invoice.recalculateTotals(subtotal, false, BigDecimal.ZERO, false);
-    invoice.updateDraft(null, null, null, taxAmount);
+    // Pass taxAmount as perLineTaxSum so recalculateTotals sets total = subtotal + taxAmount
+    invoice.recalculateTotals(subtotal, true, taxAmount, false);
     invoiceRepository.save(invoice);
 
     return invoice.getId();

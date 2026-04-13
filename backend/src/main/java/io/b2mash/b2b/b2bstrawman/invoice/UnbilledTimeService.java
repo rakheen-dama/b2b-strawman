@@ -197,6 +197,13 @@ public class UnbilledTimeService {
             .setParameter("toDate", to)
             .getResultList();
 
+    // Pre-load org settings to use the default currency as fallback for null-rate entries
+    var orgSettings = orgSettingsRepository.findForCurrentTenant().orElse(null);
+    String fallbackCurrency =
+        orgSettings != null && orgSettings.getDefaultCurrency() != null
+            ? orgSettings.getDefaultCurrency()
+            : "USD";
+
     Map<UUID, List<UnbilledTimeEntry>> grouped = new LinkedHashMap<>();
     Map<UUID, String> projectNames = new LinkedHashMap<>();
 
@@ -271,7 +278,7 @@ public class UnbilledTimeService {
       Map<String, BigDecimal> projAmounts = new LinkedHashMap<>();
 
       for (var e : entries) {
-        String cur = e.billingRateCurrency() != null ? e.billingRateCurrency() : "UNKNOWN";
+        String cur = e.billingRateCurrency() != null ? e.billingRateCurrency() : fallbackCurrency;
         double hours = e.durationMinutes() / 60.0;
         projHours.computeIfAbsent(cur, k -> new double[1])[0] += hours;
         projAmounts.merge(
@@ -304,7 +311,7 @@ public class UnbilledTimeService {
     }
 
     var unbilledExpenses = expenseRepository.findUnbilledBillableByCustomerId(customerId);
-    var orgSettings = orgSettingsRepository.findForCurrentTenant().orElse(null);
+    // orgSettings already loaded above for currency fallback
     BigDecimal orgMarkup =
         orgSettings != null ? orgSettings.getDefaultExpenseMarkupPercent() : null;
 

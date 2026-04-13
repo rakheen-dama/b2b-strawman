@@ -31,8 +31,11 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -266,6 +269,8 @@ public class NotificationService {
       var doc = docOpt.get();
       recipients.add(doc.getUploadedBy());
       title = "%s commented on document \"%s\"".formatted(event.actorName(), doc.getFileName());
+    } else if ("PROJECT".equals(event.targetEntityType())) {
+      title = "%s commented on project".formatted(event.actorName());
     } else {
       log.warn("Unknown target entity type for comment: {}", event.targetEntityType());
       return List.of();
@@ -276,6 +281,13 @@ public class NotificationService {
         commentRepository.findDistinctAuthorsByEntity(
             event.targetEntityType(), event.targetEntityId());
     recipients.addAll(priorCommenters);
+
+    // Parse @mentions from comment body and resolve to member IDs
+    var body = (String) event.details().get("body");
+    if (body != null) {
+      var mentionedIds = resolveMentionedMemberIds(body);
+      recipients.addAll(mentionedIds);
+    }
 
     // Exclude the comment author
     recipients.remove(event.actorMemberId());
@@ -818,6 +830,44 @@ public class NotificationService {
       created.add(notification);
     }
     return created;
+  }
+
+  // --- @mention resolution ---
+
+  /** Regex matching {@code @FirstName} or {@code @FirstName LastName} in comment text. */
+  private static final Pattern MENTION_PATTERN = Pattern.compile("@(\\w+(?:\\s+\\w+)?)");
+
+  /**
+   * Parses {@code @Name} patterns from the comment body and resolves them to member IDs by matching
+   * against org member names (case-insensitive first-name or full-name match).
+   */
+  Set<UUID> resolveMentionedMemberIds(String body) {
+    var mentionTokens = new HashSet<String>();
+    Matcher matcher = MENTION_PATTERN.matcher(body);
+    while (matcher.find()) {
+      mentionTokens.add(matcher.group(1).toLowerCase());
+    }
+    if (mentionTokens.isEmpty()) {
+      return Set.of();
+    }
+
+    // TODO: Replace findAll() with a targeted query once Member has separate firstName/lastName
+    // columns. Currently, first-name matching requires splitting the full `name` field in Java,
+    // which prevents a pure SQL solution.
+    var allMembers = memberRepository.findAll();
+    var matched = new HashSet<UUID>();
+    for (var member : allMembers) {
+      if (member.getName() == null) continue;
+      String fullNameLower = member.getName().toLowerCase();
+      String firstNameLower = member.getName().split("\\s+")[0].toLowerCase();
+      for (var token : mentionTokens) {
+        if (token.equals(firstNameLower) || token.equals(fullNameLower)) {
+          matched.add(member.getId());
+          break;
+        }
+      }
+    }
+    return matched;
   }
 
   // --- Private helpers ---

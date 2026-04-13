@@ -439,7 +439,7 @@ export default async function ProjectDetailPage({
           className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
         >
           <ArrowLeft className="mr-1.5 size-4" />
-          Back to Projects
+          <TerminologyText template="Back to {Projects}" />
         </Link>
       </div>
 
@@ -506,7 +506,7 @@ export default async function ProjectDetailPage({
               className="mt-2 text-sm text-slate-400 dark:text-slate-600"
               data-testid="project-internal-label"
             >
-              Internal Project
+              <TerminologyText template="Internal {Project}" />
             </p>
           )}
           {/* Promoted fields (Epic 464 / Phase 63) */}

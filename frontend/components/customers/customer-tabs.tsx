@@ -6,6 +6,7 @@ import { Tabs as TabsPrimitive } from "radix-ui";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useOrgProfile } from "@/lib/org-profile";
+import { useTerminology } from "@/lib/terminology";
 
 interface CustomerTabsProps {
   projectsPanel: ReactNode;
@@ -37,18 +38,20 @@ interface TabDef {
   label: string;
 }
 
-const baseTabs: TabDef[] = [
-  { id: "projects", label: "Projects" },
-  { id: "documents", label: "Documents" },
-  { id: "onboarding", label: "Onboarding" },
-  { id: "invoices", label: "Invoices" },
-  { id: "retainer", label: "Retainer" },
-  { id: "requests", label: "Requests" },
-  { id: "rates", label: "Rates" },
-  { id: "generated", label: "Generated Docs" },
-  { id: "financials", label: "Financials" },
-  { id: "trust", label: "Trust" },
-];
+function buildBaseTabs(t: (term: string) => string): TabDef[] {
+  return [
+    { id: "projects", label: t("Projects") },
+    { id: "documents", label: "Documents" },
+    { id: "onboarding", label: "Onboarding" },
+    { id: "invoices", label: t("Invoices") },
+    { id: "retainer", label: t("Retainer") },
+    { id: "requests", label: "Requests" },
+    { id: "rates", label: "Rates" },
+    { id: "generated", label: "Generated Docs" },
+    { id: "financials", label: "Financials" },
+    { id: "trust", label: "Trust" },
+  ];
+}
 
 const validTabIds = new Set<string>([
   "projects",
@@ -80,6 +83,8 @@ export function CustomerTabs({
   const urlTab = tabParam && validTabIds.has(tabParam) ? (tabParam as TabId) : null;
   const [userTab, setUserTab] = useState<TabId | null>(null);
   const { isModuleEnabled } = useOrgProfile();
+  const { t } = useTerminology();
+  const baseTabs = useMemo(() => buildBaseTabs(t), [t]);
 
   const requestedTab = urlTab ?? userTab;
 
@@ -99,6 +104,7 @@ export function CustomerTabs({
       return true;
     });
   }, [
+    baseTabs,
     onboardingPanel,
     invoicesPanel,
     retainerPanel,

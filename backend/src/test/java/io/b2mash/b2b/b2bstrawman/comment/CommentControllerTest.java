@@ -357,6 +357,85 @@ class CommentControllerTest extends AbstractIntegrationTest {
         .andExpect(status().isBadRequest());
   }
 
+  @Test
+  void memberCanPostProjectLevelSharedComment() throws Exception {
+    // Member-role users must be able to post PROJECT-level (Client Comments) which are SHARED
+    mockMvc
+        .perform(
+            post("/api/projects/" + projectId + "/comments")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "entityType": "PROJECT",
+                      "entityId": "%s",
+                      "body": "Member reply to client thread",
+                      "visibility": "SHARED"
+                    }
+                    """
+                        .formatted(projectId)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.authorMemberId").value(memberIdMember))
+        .andExpect(jsonPath("$.visibility").value("SHARED"))
+        .andExpect(jsonPath("$.entityType").value("PROJECT"));
+  }
+
+  @Test
+  void memberCannotPostSharedCommentOnTask() throws Exception {
+    // SHARED visibility on TASK comments still requires canEdit
+    mockMvc
+        .perform(
+            post("/api/projects/" + projectId + "/comments")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "entityType": "TASK",
+                      "entityId": "%s",
+                      "body": "Member tries shared on task",
+                      "visibility": "SHARED"
+                    }
+                    """
+                        .formatted(taskId)))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").isNotEmpty());
+  }
+
+  @Test
+  void memberProjectCommentVisibleAfterReload() throws Exception {
+    // Post as member
+    mockMvc
+        .perform(
+            post("/api/projects/" + projectId + "/comments")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_cc_member"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "entityType": "PROJECT",
+                      "entityId": "%s",
+                      "body": "Member comment persists",
+                      "visibility": "SHARED"
+                    }
+                    """
+                        .formatted(projectId)))
+        .andExpect(status().isCreated());
+
+    // List as different user — member's comment must be present
+    mockMvc
+        .perform(
+            get("/api/projects/" + projectId + "/comments")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cc_admin"))
+                .param("entityType", "PROJECT"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath("$[?(@.body == 'Member comment persists')].authorMemberId")
+                .value(org.hamcrest.Matchers.hasItem(memberIdMember)));
+  }
+
   // --- Helpers ---
 
   private String createComment(JwtRequestPostProcessor jwt, String body) throws Exception {

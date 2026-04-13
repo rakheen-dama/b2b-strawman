@@ -110,7 +110,7 @@ public class BillingRateController {
       return ResponseEntity.ok(
           new ResolvedRateResponse(r.hourlyRate(), r.currency(), r.source(), r.billingRateId()));
     }
-    return ResponseEntity.ok(new ResolvedRateResponse(null, null, null, null));
+    return ResponseEntity.notFound().build();
   }
 
   // --- DTOs ---

@@ -62,6 +62,7 @@ class CustomerLifecyclePrerequisiteTest {
   @Autowired private ChecklistInstantiationService instantiationService;
   @Autowired private ChecklistInstanceService instanceService;
   @Autowired private CustomerRepository customerRepository;
+  @Autowired private io.b2mash.b2b.b2bstrawman.customer.CustomerService customerService;
   @Autowired private FieldDefinitionRepository fieldDefinitionRepository;
   @Autowired private ChecklistTemplateRepository templateRepository;
   @Autowired private ChecklistTemplateItemRepository templateItemRepository;
@@ -292,6 +293,67 @@ class CustomerLifecyclePrerequisiteTest {
     } finally {
       cleanupFieldDefinitions(fieldDefs);
     }
+  }
+
+  // ---- GAP-D2-02: Field update triggers auto-transition ----
+
+  @Test
+  void updateCustomer_fillsMissingPrerequisite_triggersAutoTransitionToActive() {
+    // Scenario: checklists are 100% complete but tax_number was missing at checklist completion
+    // time. Updating the customer to add tax_number should now auto-transition to ACTIVE.
+    UUID customerId =
+        runInTenant(
+            () -> {
+              var customer =
+                  TestCustomerFactory.createCustomerWithStatus(
+                      "Late Tax Corp " + (++counter),
+                      "late_tax_" + counter + "@test.com",
+                      memberId,
+                      LifecycleStatus.ONBOARDING);
+              // Fill all structural fields EXCEPT tax_number
+              customer.setAddressLine1("123 Test Street");
+              customer.setCity("Test City");
+              customer.setCountry("ZA");
+              // tax_number intentionally omitted
+              return customerRepository.save(customer).getId();
+            });
+
+    // Complete all checklist items - auto-transition should be BLOCKED (missing tax_number)
+    completeAllChecklistItems(customerId);
+
+    // Verify customer is still ONBOARDING
+    var beforeUpdate = runInTenant(() -> customerRepository.findById(customerId).orElseThrow());
+    assertThat(beforeUpdate.getLifecycleStatus()).isEqualTo(LifecycleStatus.ONBOARDING);
+
+    // Now update customer to fill the missing tax_number via CustomerService.updateCustomer()
+    runInTenant(
+        () ->
+            customerService.updateCustomer(
+                customerId,
+                beforeUpdate.getName(),
+                beforeUpdate.getEmail(),
+                beforeUpdate.getPhone(),
+                beforeUpdate.getIdNumber(),
+                beforeUpdate.getNotes(),
+                beforeUpdate.getCustomFields(),
+                beforeUpdate.getAppliedFieldGroups(),
+                beforeUpdate.getRegistrationNumber(),
+                beforeUpdate.getAddressLine1(),
+                beforeUpdate.getAddressLine2(),
+                beforeUpdate.getCity(),
+                beforeUpdate.getStateProvince(),
+                beforeUpdate.getPostalCode(),
+                beforeUpdate.getCountry(),
+                "VAT999888", // <-- filling the missing tax_number
+                beforeUpdate.getContactName(),
+                beforeUpdate.getContactEmail(),
+                beforeUpdate.getContactPhone(),
+                beforeUpdate.getEntityType(),
+                beforeUpdate.getFinancialYearEnd()));
+
+    // Verify customer auto-transitioned to ACTIVE
+    var afterUpdate = runInTenant(() -> customerRepository.findById(customerId).orElseThrow());
+    assertThat(afterUpdate.getLifecycleStatus()).isEqualTo(LifecycleStatus.ACTIVE);
   }
 
   @Test

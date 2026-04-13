@@ -34,6 +34,7 @@ import type {
 import type { SetupStep, ContextGroup } from "@/components/setup/types";
 import { MiniProgressRing } from "@/components/dashboard/mini-progress-ring";
 import { TerminologyText } from "@/components/terminology-text";
+import { TerminologyHeading } from "@/components/terminology-heading";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
@@ -464,8 +465,12 @@ export default async function CustomerDetailPage({
           <p className="mt-3 text-sm text-slate-400 dark:text-slate-600">
             {customer.phone && <>{customer.phone} &middot; </>}
             {customer.idNumber && <>{customer.idNumber} &middot; </>}
-            Created {formatDate(customer.createdAt)} &middot; {linkedProjects.length}{" "}
-            {linkedProjects.length === 1 ? "project" : "projects"}
+            Created {formatDate(customer.createdAt)} &middot;{" "}
+            <TerminologyHeading
+              term="projects"
+              singularTerm="project"
+              count={linkedProjects.length}
+            />
           </p>
           {customer.notes && (
             <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">{customer.notes}</p>

@@ -538,6 +538,16 @@ public class ProjectTemplateService {
       project.setAppliedFieldGroups(autoApplyFieldGroupIds);
     }
     project = projectRepository.save(project);
+    // GAP-D3-02: apply promoted fields supplied from the creation dialog
+    if (request.referenceNumber() != null) {
+      project.setReferenceNumber(request.referenceNumber());
+    }
+    if (request.priority() != null) {
+      project.setPriority(request.priority());
+    }
+    if (request.workType() != null) {
+      project.setWorkType(request.workType());
+    }
 
     // 6. Link to customer
     if (customer != null) {

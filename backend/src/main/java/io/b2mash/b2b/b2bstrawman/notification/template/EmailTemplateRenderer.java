@@ -52,7 +52,7 @@ public class EmailTemplateRenderer {
     String fullHtml = emailTemplateEngine.process("base", ctx);
 
     String plainTextBody = toPlainText(fullHtml);
-    String subject = context.containsKey("subject") ? (String) context.get("subject") : "DocTeams";
+    String subject = context.containsKey("subject") ? (String) context.get("subject") : "Kazi";
 
     log.debug("Rendered email template '{}', HTML size={}", templateName, fullHtml.length());
 

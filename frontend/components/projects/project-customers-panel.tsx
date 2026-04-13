@@ -131,7 +131,7 @@ export function ProjectCustomersPanel({
                         className="size-8 p-0 text-slate-400 hover:text-red-600 dark:text-slate-600 dark:hover:text-red-400"
                         onClick={() => handleUnlink(customer.id)}
                         disabled={isUnlinking || isPending}
-                        title="Unlink customer"
+                        title={`Unlink ${t("customer")}`}
                       >
                         <X className="size-4" />
                         <span className="sr-only">Unlink</span>

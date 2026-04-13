@@ -4,10 +4,12 @@ import userEvent from "@testing-library/user-event";
 
 vi.mock("server-only", () => ({}));
 
+const mockRouterRefresh = vi.fn();
+const mockRouterPush = vi.fn();
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: vi.fn(),
-    refresh: vi.fn(),
+    push: mockRouterPush,
+    refresh: mockRouterRefresh,
   }),
 }));
 
@@ -93,6 +95,23 @@ describe("CompleteProjectDialog", () => {
 
     expect(await screen.findByText("Unbilled Time Warning")).toBeInTheDocument();
     expect(screen.getByTestId("complete-anyway-btn")).toBeInTheDocument();
+  });
+
+  it("calls router.refresh after successful completion", async () => {
+    const user = userEvent.setup();
+    mockCompleteProject.mockResolvedValueOnce({ success: true });
+
+    render(
+      <CompleteProjectDialog slug="test-org" projectId="proj-1" projectName="Test Project">
+        <button>Open Success Dialog</button>
+      </CompleteProjectDialog>
+    );
+
+    await user.click(screen.getByText("Open Success Dialog"));
+    await user.click(screen.getByTestId("confirm-complete-btn"));
+
+    // Dialog should close and router.refresh should be called
+    expect(mockRouterRefresh).toHaveBeenCalledTimes(1);
   });
 
   it("shows blocking error on 400-like error (open tasks)", async () => {

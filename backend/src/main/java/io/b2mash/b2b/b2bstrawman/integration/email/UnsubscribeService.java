@@ -159,7 +159,7 @@ public class UnsubscribeService {
         <body>
           <h1>You have been unsubscribed</h1>
           <p>You have been unsubscribed from <strong>%s</strong> emails.</p>
-          <p>You can re-enable email notifications in your DocTeams settings.</p>
+          <p>You can re-enable email notifications in your account settings.</p>
         </body>
         </html>
         """

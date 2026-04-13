@@ -21,9 +21,12 @@ import { checkEngagementPrerequisitesAction } from "@/lib/actions/prerequisite-a
 import { toast } from "sonner";
 import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
 import { resolveNameTokens } from "@/lib/name-token-resolver";
+import { nativeSelectClassName } from "@/lib/styles/native-select";
+import { useTerminology } from "@/lib/terminology";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type { OrgMember, Customer } from "@/lib/types";
 import type { PrerequisiteViolation } from "@/components/prerequisite/types";
+import type { ProjectPriority } from "@/lib/types/project";
 
 interface NewFromTemplateDialogProps {
   slug: string;
@@ -56,6 +59,7 @@ export function NewFromTemplateDialog({
   initialCustomerId,
 }: NewFromTemplateDialogProps) {
   const router = useRouter();
+  const { t } = useTerminology();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -69,6 +73,9 @@ export function NewFromTemplateDialog({
   const [description, setDescription] = useState("");
   const [customerId, setCustomerId] = useState("");
   const [projectLeadMemberId, setProjectLeadMemberId] = useState("");
+  const [referenceNumber, setReferenceNumber] = useState("");
+  const [priority, setPriority] = useState<ProjectPriority | "">("");
+  const [workType, setWorkType] = useState("");
 
   // Auto-open on mount when the `?new=1` query param redirect lands us here
   // (GAP-S3-05). We only run this once; the effect intentionally ignores
@@ -107,6 +114,9 @@ export function NewFromTemplateDialog({
       setDescription("");
       setCustomerId("");
       setProjectLeadMemberId("");
+      setReferenceNumber("");
+      setPriority("");
+      setWorkType("");
       setError(null);
     }
     setOpen(newOpen);
@@ -147,6 +157,9 @@ export function NewFromTemplateDialog({
         customerId: customerId || undefined,
         projectLeadMemberId: projectLeadMemberId || undefined,
         description: description.trim() || undefined,
+        referenceNumber: referenceNumber.trim() || undefined,
+        priority: priority || undefined,
+        workType: workType.trim() || undefined,
       });
 
       if (result.success && result.projectId) {
@@ -223,7 +236,7 @@ export function NewFromTemplateDialog({
             </DialogTitle>
             <DialogDescription>
               {step === 1
-                ? "Choose a template to create a new project."
+                ? `Choose a template to create a new ${t("project")}.`
                 : `Creating from: ${selectedTemplate?.name}`}
             </DialogDescription>
           </DialogHeader>
@@ -251,12 +264,12 @@ export function NewFromTemplateDialog({
               <div className="space-y-4 py-2">
                 {/* Project Name */}
                 <div className="space-y-2">
-                  <Label htmlFor="new-proj-name">Project name</Label>
+                  <Label htmlFor="new-proj-name">{t("Project")} name</Label>
                   <Input
                     id="new-proj-name"
                     value={projectName}
                     onChange={(e) => setProjectName(e.target.value)}
-                    placeholder="Project name..."
+                    placeholder={`${t("Project")} name...`}
                     maxLength={255}
                   />
                   {namePreview && projectName !== namePreview && (
@@ -289,7 +302,8 @@ export function NewFromTemplateDialog({
                 {customers.length > 0 && (
                   <div className="space-y-2">
                     <Label htmlFor="new-proj-customer">
-                      Customer <span className="text-muted-foreground font-normal">(optional)</span>
+                      {t("Customer")}{" "}
+                      <span className="text-muted-foreground font-normal">(optional)</span>
                     </Label>
                     <select
                       id="new-proj-customer"
@@ -311,7 +325,7 @@ export function NewFromTemplateDialog({
                 {orgMembers.length > 0 && (
                   <div className="space-y-2">
                     <Label htmlFor="new-proj-lead">
-                      Project lead{" "}
+                      {t("Project")} lead{" "}
                       <span className="text-muted-foreground font-normal">(optional)</span>
                     </Label>
                     <select
@@ -330,6 +344,53 @@ export function NewFromTemplateDialog({
                   </div>
                 )}
 
+                {/* Reference Number */}
+                <div className="space-y-2">
+                  <Label htmlFor="new-proj-ref">
+                    Reference Number{" "}
+                    <span className="text-muted-foreground font-normal">(optional)</span>
+                  </Label>
+                  <Input
+                    id="new-proj-ref"
+                    value={referenceNumber}
+                    onChange={(e) => setReferenceNumber(e.target.value)}
+                    placeholder="e.g. PRJ-2026-001"
+                    maxLength={100}
+                  />
+                </div>
+
+                {/* Priority */}
+                <div className="space-y-2">
+                  <Label htmlFor="new-proj-priority">
+                    Priority <span className="text-muted-foreground font-normal">(optional)</span>
+                  </Label>
+                  <select
+                    id="new-proj-priority"
+                    value={priority}
+                    onChange={(e) => setPriority(e.target.value as ProjectPriority | "")}
+                    className={nativeSelectClassName}
+                  >
+                    <option value="">Select priority...</option>
+                    <option value="LOW">Low</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="HIGH">High</option>
+                  </select>
+                </div>
+
+                {/* Work Type (matter_type / engagement_type) */}
+                <div className="space-y-2">
+                  <Label htmlFor="new-proj-worktype">
+                    Work Type <span className="text-muted-foreground font-normal">(optional)</span>
+                  </Label>
+                  <Input
+                    id="new-proj-worktype"
+                    value={workType}
+                    onChange={(e) => setWorkType(e.target.value)}
+                    placeholder="e.g. Litigation, Consulting"
+                    maxLength={50}
+                  />
+                </div>
+
                 {error && <p className="text-destructive text-sm">{error}</p>}
               </div>
               <DialogFooter>
@@ -337,7 +398,7 @@ export function NewFromTemplateDialog({
                   Back
                 </Button>
                 <Button type="button" onClick={handleSubmit} disabled={isSubmitting}>
-                  {isSubmitting ? "Creating..." : "Create Project"}
+                  {isSubmitting ? "Creating..." : `Create ${t("Project")}`}
                 </Button>
               </DialogFooter>
             </>

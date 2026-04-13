@@ -58,6 +58,10 @@ class PortalIntegrationTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
 
   @Autowired
+  private io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository
+      readModelRepo;
+
+  @Autowired
   private io.b2mash.b2b.b2bstrawman.compliance.CustomerLifecycleService customerLifecycleService;
 
   private UUID customerIdA;
@@ -249,6 +253,17 @@ class PortalIntegrationTest {
               custDoc = documentRepository.save(custDoc);
               customerSharedDocId = custDoc.getId();
             });
+
+    // Seed portal read-model so list + detail endpoints use consistent data source
+    readModelRepo.upsertPortalProject(
+        projectId,
+        customerIdA,
+        ORG_ID,
+        "Portal Project",
+        "ACTIVE",
+        "A test project",
+        java.time.Instant.now());
+    readModelRepo.setDocumentCount(projectId, customerIdA, 1);
 
     // Create a customer in org B with the same email (cross-tenant test)
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchemaB)

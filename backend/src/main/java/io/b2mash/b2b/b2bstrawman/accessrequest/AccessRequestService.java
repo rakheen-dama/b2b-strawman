@@ -33,6 +33,7 @@ public class AccessRequestService {
   private final SecureRandom secureRandom;
   private final Optional<JavaMailSender> mailSender;
   private final String senderAddress;
+  private final String productName;
 
   public AccessRequestService(
       AccessRequestRepository accessRequestRepository,
@@ -40,13 +41,15 @@ public class AccessRequestService {
       EmailDomainValidator emailDomainValidator,
       PasswordEncoder passwordEncoder,
       Optional<JavaMailSender> mailSender,
-      @Value("${docteams.email.sender-address:noreply@docteams.app}") String senderAddress) {
+      @Value("${docteams.email.sender-address:noreply@docteams.app}") String senderAddress,
+      @Value("${docteams.app.product-name:Kazi}") String productName) {
     this.accessRequestRepository = accessRequestRepository;
     this.configProperties = configProperties;
     this.emailDomainValidator = emailDomainValidator;
     this.passwordEncoder = passwordEncoder;
     this.mailSender = mailSender;
     this.senderAddress = senderAddress;
+    this.productName = productName;
     try {
       this.secureRandom = SecureRandom.getInstanceStrong();
     } catch (NoSuchAlgorithmException e) {
@@ -140,10 +143,10 @@ public class AccessRequestService {
       MimeMessageHelper helper = new MimeMessageHelper(message, false);
       helper.setFrom(senderAddress);
       helper.setTo(recipientEmail);
-      helper.setSubject("Your DocTeams verification code");
+      helper.setSubject("Your %s verification code".formatted(productName));
       helper.setText(
-          "Hi %s,\n\nYour DocTeams verification code is: %s\n\nThis code expires in %d minutes.\n\nIf you did not request this, please ignore this email."
-              .formatted(fullName, otp, expiryMinutes),
+          "Hi %s,\n\nYour %s verification code is: %s\n\nThis code expires in %d minutes.\n\nIf you did not request this, please ignore this email."
+              .formatted(fullName, productName, otp, expiryMinutes),
           false);
       mailSender.get().send(message);
       log.debug("OTP email sent to {}", recipientEmail);

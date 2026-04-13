@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -13,6 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { completeProject } from "@/app/(app)/org/[slug]/projects/actions";
+import { useTerminology } from "@/lib/terminology";
 import { CheckCircle, AlertTriangle } from "lucide-react";
 
 interface CompleteProjectDialogProps {
@@ -28,10 +30,12 @@ export function CompleteProjectDialog({
   projectName,
   children,
 }: CompleteProjectDialogProps) {
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showUnbilledConfirm, setShowUnbilledConfirm] = useState(false);
+  const { t } = useTerminology();
 
   async function handleComplete(acknowledgeUnbilledTime = false) {
     setError(null);
@@ -46,6 +50,7 @@ export function CompleteProjectDialog({
       if (result.success) {
         setOpen(false);
         setShowUnbilledConfirm(false);
+        router.refresh();
       } else {
         const errorMsg = result.error ?? "Failed to complete project.";
         // Check if this is an unbilled time warning (409)
@@ -88,7 +93,7 @@ export function CompleteProjectDialog({
             </div>
           </div>
           <AlertDialogTitle className="text-center">
-            {showUnbilledConfirm ? "Unbilled Time Warning" : "Complete Project"}
+            {showUnbilledConfirm ? "Unbilled Time Warning" : `Complete ${t("Project")}`}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-center">
             {showUnbilledConfirm ? (

@@ -39,11 +39,11 @@ export interface ActionCardProps {
   title: string;
   description: string;
   primaryAction?: {
-    label: string;
+    label: ReactNode;
     href: string;
   };
   secondaryAction?: {
-    label: string;
+    label: ReactNode;
     href: string;
   };
   variant?: "default" | "accent";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AlertTriangle, Calendar, FolderKanban, Plus, X } from "lucide-react";
+import { AlertTriangle, Calendar, FolderKanban, LayoutTemplate, Plus, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
@@ -64,12 +64,20 @@ export function CustomerProjectsPanel({
         {projects.length > 0 && <Badge variant="neutral">{projects.length}</Badge>}
       </div>
       {canManage && (
-        <LinkProjectDialog slug={slug} customerId={customerId} existingProjects={projects}>
-          <Button size="sm" variant="outline">
-            <Plus className="mr-1.5 size-4" />
-            Link {t("Project")}
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" asChild>
+            <Link href={`/org/${slug}/projects?new=1&customerId=${customerId}`}>
+              <LayoutTemplate className="mr-1.5 size-4" />
+              New {t("Project")}
+            </Link>
           </Button>
-        </LinkProjectDialog>
+          <LinkProjectDialog slug={slug} customerId={customerId} existingProjects={projects}>
+            <Button size="sm" variant="outline">
+              <Plus className="mr-1.5 size-4" />
+              Link {t("Project")}
+            </Button>
+          </LinkProjectDialog>
+        </div>
       )}
     </div>
   );

@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { completeProject } from "@/app/(app)/org/[slug]/projects/actions";
+import { useTerminology } from "@/lib/terminology";
 import { CheckCircle, AlertTriangle } from "lucide-react";
 
 interface CompleteProjectDialogProps {
@@ -34,6 +35,7 @@ export function CompleteProjectDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showUnbilledConfirm, setShowUnbilledConfirm] = useState(false);
+  const { t } = useTerminology();
 
   async function handleComplete(acknowledgeUnbilledTime = false) {
     setError(null);
@@ -91,7 +93,7 @@ export function CompleteProjectDialog({
             </div>
           </div>
           <AlertDialogTitle className="text-center">
-            {showUnbilledConfirm ? "Unbilled Time Warning" : "Complete Project"}
+            {showUnbilledConfirm ? "Unbilled Time Warning" : `Complete ${t("Project")}`}
           </AlertDialogTitle>
           <AlertDialogDescription className="text-center">
             {showUnbilledConfirm ? (

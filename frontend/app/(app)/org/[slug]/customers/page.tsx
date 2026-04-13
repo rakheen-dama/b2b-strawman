@@ -23,6 +23,7 @@ import { UserRound, Users } from "lucide-react";
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
 import { TerminologyHeading } from "@/components/terminology-heading";
+import { TerminologyText } from "@/components/terminology-text";
 import { createMessages } from "@/lib/messages";
 import { docsLink } from "@/lib/docs";
 import { PermissionDenied } from "@/components/permission-denied";
@@ -278,13 +279,13 @@ export default async function CustomersPage({
         showIncomplete ? (
           <EmptyState
             icon={UserRound}
-            title="All customers are complete"
-            description="All customers have 100% completeness."
+            title={<TerminologyText template="All {customers} are complete" />}
+            description={<TerminologyText template="All {customers} have 100% completeness." />}
           />
         ) : (
           <EmptyState
             icon={Users}
-            title={t("customers.list.heading")}
+            title={<TerminologyText template="No {customers} yet" />}
             description={
               isAdmin ? t("customers.list.description") : t("customers.list.descriptionMember")
             }

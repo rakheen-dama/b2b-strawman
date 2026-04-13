@@ -6,6 +6,7 @@ import { Eye } from "lucide-react";
 import { HelpTip } from "@/components/help-tip";
 import { formatDate } from "@/lib/format";
 import { RequiresCapability } from "@/lib/capabilities";
+import { useTerminology } from "@/lib/terminology";
 import type { InvoiceResponse } from "@/lib/types";
 
 interface InvoiceHeaderActionsProps {
@@ -37,18 +38,20 @@ export function InvoiceHeaderActions({
   onVoid,
   onShowPaymentForm,
 }: InvoiceHeaderActionsProps) {
+  const { t } = useTerminology();
+
   return (
     <div className="flex items-start justify-between gap-4">
       <div className="min-w-0">
         <div className="flex items-center gap-3">
           <h1 className="font-display flex items-center gap-2 text-2xl text-slate-950 dark:text-slate-50">
-            {invoice.invoiceNumber ?? "Draft Invoice"}
+            {invoice.invoiceNumber ?? `Draft ${t("Invoice")}`}
             <HelpTip code="invoices.numbering" />
           </h1>
           <StatusBadge status={invoice.status} />
         </div>
         <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-600 dark:text-slate-400">
-          <span>Customer: {invoice.customerName}</span>
+          <span>{t("Customer")}: {invoice.customerName}</span>
           {invoice.issueDate && <span>Issued: {formatDate(invoice.issueDate)}</span>}
           {invoice.dueDate && !isDraft && <span>Due: {formatDate(invoice.dueDate)}</span>}
           <span>Currency: {invoice.currency}</span>
@@ -78,7 +81,7 @@ export function InvoiceHeaderActions({
             {isApproved && (
               <>
                 <Button variant="accent" size="sm" onClick={onSend} disabled={isPending}>
-                  Send Invoice
+                  Send {t("Invoice")}
                 </Button>
                 <Button variant="destructive" size="sm" onClick={onVoid} disabled={isPending}>
                   Void

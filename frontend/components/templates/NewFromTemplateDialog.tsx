@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
 import { resolveNameTokens } from "@/lib/name-token-resolver";
 import { nativeSelectClassName } from "@/lib/styles/native-select";
+import { useTerminology } from "@/lib/terminology";
 import type { ProjectTemplateResponse } from "@/lib/api/templates";
 import type { OrgMember, Customer } from "@/lib/types";
 import type { PrerequisiteViolation } from "@/components/prerequisite/types";
@@ -57,6 +58,7 @@ export function NewFromTemplateDialog({
   initialCustomerId,
 }: NewFromTemplateDialogProps) {
   const router = useRouter();
+  const { t } = useTerminology();
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -233,7 +235,7 @@ export function NewFromTemplateDialog({
             </DialogTitle>
             <DialogDescription>
               {step === 1
-                ? "Choose a template to create a new project."
+                ? `Choose a template to create a new ${t("project")}.`
                 : `Creating from: ${selectedTemplate?.name}`}
             </DialogDescription>
           </DialogHeader>
@@ -261,12 +263,12 @@ export function NewFromTemplateDialog({
               <div className="space-y-4 py-2">
                 {/* Project Name */}
                 <div className="space-y-2">
-                  <Label htmlFor="new-proj-name">Project name</Label>
+                  <Label htmlFor="new-proj-name">{t("Project")} name</Label>
                   <Input
                     id="new-proj-name"
                     value={projectName}
                     onChange={(e) => setProjectName(e.target.value)}
-                    placeholder="Project name..."
+                    placeholder={`${t("Project")} name...`}
                     maxLength={255}
                   />
                   {namePreview && projectName !== namePreview && (
@@ -299,7 +301,7 @@ export function NewFromTemplateDialog({
                 {customers.length > 0 && (
                   <div className="space-y-2">
                     <Label htmlFor="new-proj-customer">
-                      Customer <span className="text-muted-foreground font-normal">(optional)</span>
+                      {t("Customer")} <span className="text-muted-foreground font-normal">(optional)</span>
                     </Label>
                     <select
                       id="new-proj-customer"
@@ -321,7 +323,7 @@ export function NewFromTemplateDialog({
                 {orgMembers.length > 0 && (
                   <div className="space-y-2">
                     <Label htmlFor="new-proj-lead">
-                      Project lead{" "}
+                      {t("Project")} lead{" "}
                       <span className="text-muted-foreground font-normal">(optional)</span>
                     </Label>
                     <select
@@ -394,7 +396,7 @@ export function NewFromTemplateDialog({
                   Back
                 </Button>
                 <Button type="button" onClick={handleSubmit} disabled={isSubmitting}>
-                  {isSubmitting ? "Creating..." : "Create Project"}
+                  {isSubmitting ? "Creating..." : `Create ${t("Project")}`}
                 </Button>
               </DialogFooter>
             </>

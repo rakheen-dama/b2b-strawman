@@ -2,7 +2,7 @@
 
 ## Current State
 
-- **QA Position**: Day 0, Checkpoint 0 (not started)
+- **QA Position**: Day 1, Checkpoint 1.1 (Day 0 complete)
 - **Cycle**: 1
 - **Dev Stack**: READY
 - **NEEDS_REBUILD**: false
@@ -27,7 +27,8 @@
 
 | GAP_ID | Day / Checkpoint | Severity | Status | Summary | Owner | Retries |
 |--------|------------------|----------|--------|---------|-------|---------|
-| (none yet) | | | | | | |
+| GAP-D0-01 | Day 0 / 0.25 | LOW | OPEN | Dashboard subtitle "project health" should be "matter health" for legal-za | Dev | 0 |
+| GAP-D0-02 | Day 0 / 0.22 | LOW | OPEN | KC invite token single-use: if user still logged in as another KC user, registration succeeds but redirect shows error page | Dev | 0 |
 
 ## Legend
 
@@ -39,3 +40,4 @@
 
 - 2026-04-13 — Cycle 1 initialized. Prior cycle (2026-04-12) archived to `qa_cycle/_archive_2026-04-12_legal-90day-kc/`. Branch `bugfix_cycle_2026-04-13` created from main (includes all fixes from PRs #1012–#1025). Fresh scenario run from Day 0.
 - 2026-04-13 — **Infra Turn 1**: Stack verified, all 7 services UP. Demo cleanup completed: 1 KC org deleted (Mathebula & Partners), 1 tenant schema dropped (tenant_5039f2d497cf), DB tables truncated, Mailpit cleared. KC has only padmin@docteams.local, 0 orgs. Dev Stack set to READY.
+- 2026-04-13 — **QA Turn 1**: Day 0 executed. All critical checkpoints PASS. Access request -> OTP -> padmin approval -> KC registration -> 3 users created -> settings configured. Vertical profile legal-za active. Rates (billing+cost) for 3 members. VAT 15% pre-seeded. 4 matter templates. All 4 legal modules in sidebar. No tier gates. 2 LOW gaps found (dashboard terminology leak, KC invite UX). QA Position advanced to Day 1.

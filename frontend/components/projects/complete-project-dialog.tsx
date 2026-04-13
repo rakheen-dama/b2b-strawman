@@ -15,7 +15,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { completeProject } from "@/app/(app)/org/[slug]/projects/actions";
 import { useTerminology } from "@/lib/terminology";
-import { CheckCircle, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CheckCircle, AlertTriangle, CircleAlert } from "lucide-react";
 
 interface CompleteProjectDialogProps {
   slug: string;
@@ -110,7 +111,12 @@ export function CompleteProjectDialog({
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>
-        {error && <p className="text-destructive text-center text-sm">{error}</p>}
+        {error && (
+          <Alert variant="destructive" data-testid="complete-error-alert">
+            <CircleAlert className="size-4" />
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
+        )}
         <AlertDialogFooter>
           <AlertDialogCancel variant="plain" disabled={isSubmitting}>
             Cancel

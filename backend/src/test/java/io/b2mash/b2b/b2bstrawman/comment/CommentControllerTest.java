@@ -399,7 +399,9 @@ class CommentControllerTest extends AbstractIntegrationTest {
                     }
                     """
                         .formatted(taskId)))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").isNotEmpty());
   }
 
   @Test

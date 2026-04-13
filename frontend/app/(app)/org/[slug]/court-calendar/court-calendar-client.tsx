@@ -138,6 +138,18 @@ export function CourtCalendarClient({
     "December",
   ];
 
+  const courtDateTypeLabels: Record<string, string> = {
+    HEARING: "Hearing",
+    TRIAL: "Trial",
+    MOTION: "Motion",
+    MEDIATION: "Mediation",
+    ARBITRATION: "Arbitration",
+    PRE_TRIAL: "Pre-Trial",
+    CASE_MANAGEMENT: "Case Management",
+    TAXATION: "Taxation",
+    OTHER: "Other",
+  };
+
   // Client-side text filter on customer/matter name
   const filteredCourtDates = useMemo(() => {
     if (!clientSearch.trim()) return courtDates;
@@ -308,10 +320,7 @@ export function CourtCalendarClient({
               <div>
                 <dt className="text-slate-500 dark:text-slate-400">Type</dt>
                 <dd className="text-slate-700 dark:text-slate-300">
-                  {selectedCourtDate.dateType
-                    .split("_")
-                    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                    .join("-")}
+                  {courtDateTypeLabels[selectedCourtDate.dateType] ?? selectedCourtDate.dateType}
                 </dd>
               </div>
               <div>

@@ -269,6 +269,8 @@ public class NotificationService {
       var doc = docOpt.get();
       recipients.add(doc.getUploadedBy());
       title = "%s commented on document \"%s\"".formatted(event.actorName(), doc.getFileName());
+    } else if ("PROJECT".equals(event.targetEntityType())) {
+      title = "%s commented on project".formatted(event.actorName());
     } else {
       log.warn("Unknown target entity type for comment: {}", event.targetEntityType());
       return List.of();

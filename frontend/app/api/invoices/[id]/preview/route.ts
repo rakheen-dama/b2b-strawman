@@ -15,8 +15,15 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   let caps;
   try {
     caps = await fetchMyCapabilities();
-  } catch {
-    return new NextResponse("Unauthorized", { status: 401 });
+  } catch (err: unknown) {
+    const status =
+      err != null && typeof err === "object" && "status" in err
+        ? (err as { status: number }).status
+        : 0;
+    if (status === 401 || status === 403) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+    return new NextResponse("Upstream Error", { status: 502 });
   }
 
   if (!caps.isAdmin && !caps.isOwner) {
@@ -26,8 +33,15 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   let authOptions: { headers: Record<string, string>; credentials?: RequestCredentials };
   try {
     authOptions = await getAuthFetchOptions("GET");
-  } catch {
-    return new NextResponse("Unauthorized", { status: 401 });
+  } catch (err: unknown) {
+    const status =
+      err != null && typeof err === "object" && "status" in err
+        ? (err as { status: number }).status
+        : 0;
+    if (status === 401 || status === 403) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+    return new NextResponse("Upstream Error", { status: 502 });
   }
 
   const response = await fetch(`${API_BASE}/api/invoices/${id}/preview`, {

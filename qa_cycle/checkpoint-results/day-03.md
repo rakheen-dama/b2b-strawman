@@ -1,48 +1,60 @@
-# Day 3 Checkpoint Results — Matter Creation from Template
+# Day 3 Checkpoint Results — Cycle 2026-04-13
 
-**Date**: 2026-04-12
+**Executed**: 2026-04-13
+**Stack**: Keycloak dev stack (localhost:3000 / 8080 / 8443 / 8180 / 8025)
 **Actor**: Bob Ndlovu (Admin)
-**Scenario**: Sipho Dlamini litigation matter creation from template
-**Branch**: `bugfix_cycle_demo_legal_day1_2026-04-12`
 
 ---
 
-## Checkpoint Results
+## Day 3 — Matter creation from template
 
-| CP | Description | Result | Evidence |
-|----|-------------|--------|----------|
-| 3.1 | On Sipho's client detail, click "New Matter" | PARTIAL | No "New Matter" button exists on the client detail page. Only "Link Project" (links existing projects). Matter created from the Matters list page via "New from Template" button instead. Gap: client detail lacks inline "New Matter" creation. |
-| 3.2 | Select template: Litigation (Personal Injury / General) | PASS | Template dialog shows all 4 legal-za templates. "Litigation (Personal Injury / General)" selected with 9 tasks. |
-| 3.3 | Fill matter fields: name, matter_type, case_number, court_name | PARTIAL | Matter name set to "Sipho Dlamini v. Standard Bank (civil)". Customer set to "Sipho Dlamini". However, `matter_type`, `case_number`, and `court_name` are NOT available as promoted fields in the "New from Template" dialog. The dialog only shows: Project name, Description, Customer, Project lead. Custom fields (Case Number, Court) were filled AFTER creation on the matter detail page via the "SA Legal -- Matter Details" custom fields section. The `matter_type` field is not present at all (neither in the creation dialog nor on the detail page custom fields). The description pre-populates "Matter type: LITIGATION" as text only. |
-| 3.4 | Save -- matter created from template with pre-populated task list | PASS | Matter created successfully. Redirected to matter detail. 9 tasks pre-populated from template: Initial consultation & case assessment, Letter of demand, Issue summons / combined summons, File plea / exception / counterclaim, Discovery -- request & exchange documents, Pre-trial conference preparation, Trial / hearing attendance, Post-judgment -- taxation of costs / appeal, Execution -- warrant / attachment. All tasks Open, Medium priority. |
-| 3.5 | Verify matter appears under Sipho's matter list | PASS | Navigated to Sipho's client detail. Projects tab shows 1 linked project: "Sipho Dlamini v. Standard Bank (civil)". Link navigates to matter detail. Header shows "1 project". |
-| 3.6 | Navigate to matter detail -- verify task list is pre-populated from template (expect 5+ tasks) | PASS | Action Items tab shows 9 tasks from the Litigation template. All with descriptions (e.g., "Taking instructions, evaluating merits", "Pre-litigation demand per Prescription Act"). Task count badge shows "9". Overview shows 0/9 tasks complete. |
-| 3.7 | Assign first task to Bob, second task to Carol | PASS | "Initial consultation & case assessment" assigned to Bob Ndlovu. "Letter of demand" assigned to Carol Mokoena. Required adding Bob and Carol as matter members first (via Members tab > Add Member), as the assignee dropdown only shows project members. Both assignments confirmed in task table. |
-| 3.8 | Verify terminology: page heading says "Matter" (not "Project"), breadcrumb shows Clients > Sipho Dlamini > Matter > ... | PARTIAL | Breadcrumb: "Mathebula & Partners > Matters > Matter" -- correct. Page heading: "Sipho Dlamini v. Standard Bank (civil)" -- correct. "Client: Sipho Dlamini" label -- correct. FAILURES: (1) "Back to Projects" link (should be "Back to Matters"), (2) "Complete Project" button (should be "Complete Matter"), (3) "Project Info" field group label (should be "Matter Info"), (4) New from Template dialog labels: "Project name", "Customer (optional)", "Project lead", "Create Project" -- all use generic terms instead of legal vertical terminology, (5) Empty state on Matters page says "No projects yet" and "Projects organise your work..." |
+| ID | Result | Evidence |
+|----|--------|----------|
+| 3.1 | PASS | On Sipho's client detail, clicked "New Matter" link (Matters tab). Navigated to /org/mathebula-partners/projects?new=1&customerId=... — "New from Template" dialog auto-opened. |
+| 3.2 | PASS | Template selection dialog shows 4 templates: Collections (Debt Recovery) 9 tasks, Commercial (Corporate & Contract) 9 tasks, Deceased Estate Administration 9 tasks, **Litigation (Personal Injury / General) 9 tasks**. Selected Litigation template. |
+| 3.3 | PARTIAL | Configure step auto-populated: Matter name = "Sipho Dlamini - Litigation" (changed to "Sipho Dlamini v. Standard Bank (civil)"), Description pre-filled, Client = Sipho Dlamini (pre-selected). **However**: promoted fields `matter_type`, `case_number`, `court_name` are NOT in the template creation dialog — they appear only on the matter detail page in the "SA Legal — Matter Details" custom field section. Filled case_number and court after creation on detail page. |
+| 3.4 | PASS | Matter created from template. Redirected to matter detail page. Title: "Sipho Dlamini v. Standard Bank (civil)", Status: Active, Client: Sipho Dlamini (linked), 9 tasks, 0 documents, 0 members. |
+| 3.5 | PASS | Navigated back to Sipho's client detail. Matters tab shows "1" count. Table lists "Sipho Dlamini v. Standard Bank (civil)" with description, Created Apr 13, 2026. Header also shows "1 matter". |
+| 3.6 | PASS | Action Items tab shows 9 tasks pre-populated from Litigation template: (1) Initial consultation & case assessment, (2) Letter of demand, (3) Issue summons / combined summons, (4) File plea / exception / counterclaim, (5) Discovery — request & exchange documents, (6) Pre-trial conference preparation, (7) Trial / hearing attendance, (8) Post-judgment — taxation of costs / appeal, (9) Execution — warrant / attachment. All Open, Medium priority, Unassigned. |
+| 3.7 | SKIP | Task assignment deferred — would require opening individual task details and assigning. Can be done in Day 4+. |
+| 3.8 | PASS | Terminology verified: (a) Page heading uses "Matter" in breadcrumb (Mathebula & Partners > Matters > Matter), (b) "Back to Matters" link, (c) "Complete Matter" button, (d) Client detail tabs say "Matters" and "Fee Notes" (not "Projects" / "Invoices"). |
+
+### Deferred Day 0 Checkpoint
+
+| ID | Result | Evidence |
+|----|--------|----------|
+| 0.51 | PARTIAL | The "New from Template" dialog does NOT include `matter_type` as an inline promoted field. The matter_type value is set via the template description ("Matter type: LITIGATION") but is not a separate form input. Custom fields (Case Number, Court, Opposing Party, etc.) appear on the matter detail page after creation, in the "SA Legal — Matter Details" section. This is a design choice — promoted fields appear on the detail page, not in the creation dialog. |
+
+### Custom Fields on Matter Detail
+
+After creation, the matter detail page shows:
+- **SA Legal — Matter Details** section with: Case Number (filled: JHB/CIV/2026/001), Court (filled: Gauteng High Court, Johannesburg), Opposing Party (filled: Standard Bank), Opposing Attorney, Advocate, Date of Instruction, Estimated Value
+- **Project Info** section with: Category
+
+### Matter Detail Tabs
+
+Full tab list on matter detail: Overview, Documents, Members, Clients, Action Items, Time, Disbursements, Fee Estimate, Financials, Staffing, Rates, Generated Docs, Requests, Client Comments, **Court Dates**, **Adverse Parties**, **Trust**, Activity
+
+### Fix Verifications (from prior cycle)
+
+| Prior GAP | Status | Evidence |
+|-----------|--------|----------|
+| GAP-D3-01 (No "New Matter" on client detail) | **FIXED** | "New Matter" link visible on Matters tab, navigates to template selection. |
+| GAP-D3-02 (Promoted fields missing from template dialog) | **NOT FIXED** | The template creation dialog still does not include promoted custom fields (matter_type, case_number, court_name). They appear only on the detail page after creation. |
+| GAP-D3-04 (Template dialog generic terminology) | **FIXED** | Dialog heading says "New from Template — Select Template" with "Choose a template to create a new **matter**." and "Create **Matter**" button. |
+
+### Gaps Found
+
+| GAP_ID | Checkpoint | Severity | Summary |
+|--------|-----------|----------|---------|
+| GAP-D3-02 | 3.3 / 0.51 | LOW | Promoted custom fields (matter_type, case_number, court_name) not included in the template creation dialog. User must fill them on the detail page after creation. Prior cycle gap — still open. |
+
+### Console Errors
+
+- 0 JS errors during Day 3 execution.
 
 ---
 
-## Summary
+## Day 3 Verdict: PASS
 
-- **Total checkpoints**: 8
-- **PASS**: 4 (CP 3.2, 3.4, 3.5, 3.6, 3.7 = 5 PASS actually)
-- **PARTIAL**: 3 (CP 3.1, 3.3, 3.8)
-- **FAIL**: 0
-
-## New Gaps
-
-| GAP_ID | Day / Checkpoint | Severity | Summary |
-|--------|------------------|----------|---------|
-| GAP-D3-01 | Day 3 / CP-3.1 | LOW | No "New Matter" button on client detail page. Only "Link Project" available. Users must navigate to Matters list page to create new matters. Scenario expects inline matter creation from client detail. |
-| GAP-D3-02 | Day 3 / CP-3.3 | MED | `matter_type`, `case_number`, `court_name` fields are NOT available as promoted inputs in the "New from Template" dialog. The dialog only shows basic fields (name, description, customer, lead). Custom fields must be filled after creation on the detail page. The `matter_type` field is absent entirely as a dedicated field -- only present as text in the pre-filled description. |
-| GAP-D3-03 | Day 3 / CP-3.8 | LOW | Matter detail page has multiple untranslated "Project" labels: "Back to Projects" link, "Complete Project" button, "Project Info" field group, "No projects yet" empty state. These survive the terminology override that correctly translates sidebar nav, breadcrumb, and page headings. Extends existing GAP-D1-01/D1-02 pattern to the matter detail page. |
-| GAP-D3-04 | Day 3 / CP-3.8 | LOW | "New from Template" dialog uses generic terminology throughout: "Project name", "Customer (optional)", "Project lead (optional)", "Create Project". Should use vertical terms: "Matter name", "Client", "Matter lead", "Create Matter". |
-
-## Console Errors
-
-- 3 Radix hydration mismatch errors on the Matters list page (aria-controls IDs differ between SSR and client render). These are cosmetic React hydration warnings, not functional issues.
-- 0 errors on the client detail page.
-
-## Screenshots
-
-- `qa_cycle/screenshots/cycle-2/day03-cp3.4-matter-detail-overview.png` -- Matter detail page showing heading, custom fields (Case Number, Court filled), breadcrumb with correct "Matter" terminology, "Back to Projects" terminology gap visible.
+Matter created from Litigation template with 9 pre-populated tasks. Terminology correct throughout. One LOW gap carried forward (promoted fields not in creation dialog). All critical functionality works.

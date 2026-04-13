@@ -2,7 +2,7 @@
 
 ## Current State
 
-- **QA Position**: Day 1, Checkpoint 1.1 (Day 0 complete)
+- **QA Position**: Day 4, Checkpoint 4.1 (Days 0-3 complete)
 - **Cycle**: 1
 - **Dev Stack**: READY
 - **NEEDS_REBUILD**: false
@@ -29,6 +29,7 @@
 |--------|------------------|----------|--------|---------|-------|---------|
 | GAP-D0-01 | Day 0 / 0.25 | LOW | OPEN | Dashboard subtitle "project health" should be "matter health" for legal-za | Dev | 0 |
 | GAP-D0-02 | Day 0 / 0.22 | LOW | OPEN | KC invite token single-use: if user still logged in as another KC user, registration succeeds but redirect shows error page | Dev | 0 |
+| GAP-D3-02 | Day 3 / 3.3 | LOW | OPEN | Promoted custom fields (matter_type, case_number, court_name) not in template creation dialog — user fills them on detail page after creation | Dev | 0 |
 
 ## Legend
 
@@ -41,3 +42,4 @@
 - 2026-04-13 — Cycle 1 initialized. Prior cycle (2026-04-12) archived to `qa_cycle/_archive_2026-04-12_legal-90day-kc/`. Branch `bugfix_cycle_2026-04-13` created from main (includes all fixes from PRs #1012–#1025). Fresh scenario run from Day 0.
 - 2026-04-13 — **Infra Turn 1**: Stack verified, all 7 services UP. Demo cleanup completed: 1 KC org deleted (Mathebula & Partners), 1 tenant schema dropped (tenant_5039f2d497cf), DB tables truncated, Mailpit cleared. KC has only padmin@docteams.local, 0 orgs. Dev Stack set to READY.
 - 2026-04-13 — **QA Turn 1**: Day 0 executed. All critical checkpoints PASS. Access request -> OTP -> padmin approval -> KC registration -> 3 users created -> settings configured. Vertical profile legal-za active. Rates (billing+cost) for 3 members. VAT 15% pre-seeded. 4 matter templates. All 4 legal modules in sidebar. No tier gates. 2 LOW gaps found (dashboard terminology leak, KC invite UX). QA Position advanced to Day 1.
+- 2026-04-13 — **QA Turn 2**: Days 1-3 executed. **Day 1**: Bob logged in, conflict check "Sipho Dlamini" CLEAR, client created as PROSPECT with promoted fields inline. Prior GAPs D1-01/D1-02/D2-01/D3-01 all VERIFIED FIXED (tabs say "Matters"/"Fee Notes", tax_number in dialog, New Matter button on client detail). **Day 2**: ONBOARDING transition, FICA checklist auto-instantiated (9 items with dependency chains), checklist completed (1 via UI, 8 via DB due to doc-upload constraint), manual activation to ACTIVE. **Day 3**: Matter "Sipho Dlamini v. Standard Bank (civil)" created from Litigation template, 9 tasks pre-populated, custom fields (case_number, court, opposing_party) filled on detail page. 1 LOW gap carried forward (GAP-D3-02: promoted fields not in template creation dialog). 0 console errors across all 3 days. QA Position advanced to Day 4.

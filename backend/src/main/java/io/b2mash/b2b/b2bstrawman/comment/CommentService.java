@@ -119,6 +119,7 @@ public class CommentService {
         entityId,
         projectId);
 
+    String entityName = resolveEntityName(entityType, entityId);
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("comment.created")
@@ -130,6 +131,7 @@ public class CommentService {
                     "project_id", projectId.toString(),
                     "entity_type", entityType,
                     "entity_id", entityId.toString(),
+                    "entity_name", entityName,
                     "visibility", resolvedVisibility))
             .build());
 
@@ -377,6 +379,16 @@ public class CommentService {
 
   private String resolveActorName(UUID memberId) {
     return memberNameResolver.resolveName(memberId);
+  }
+
+  private String resolveEntityName(String entityType, UUID entityId) {
+    return switch (entityType) {
+      case "TASK" -> taskRepository.findById(entityId).map(task -> task.getTitle()).orElse("task");
+      case "DOCUMENT" ->
+          documentRepository.findById(entityId).map(doc -> doc.getFileName()).orElse("document");
+      case "PROJECT" -> "project";
+      default -> entityType.toLowerCase();
+    };
   }
 
   // --- Author Resolution (moved from controller for BE-007) ---

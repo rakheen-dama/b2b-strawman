@@ -27,16 +27,19 @@ public class EmailContextBuilder {
   private final OrganizationRepository organizationRepository;
   private final StorageService storageService;
   private final String appBaseUrl;
+  private final String productName;
 
   public EmailContextBuilder(
       OrgSettingsRepository orgSettingsRepository,
       OrganizationRepository organizationRepository,
       StorageService storageService,
-      @Value("${docteams.app.base-url:http://localhost:3000}") String appBaseUrl) {
+      @Value("${docteams.app.base-url:http://localhost:3000}") String appBaseUrl,
+      @Value("${docteams.app.product-name:Kazi}") String productName) {
     this.orgSettingsRepository = orgSettingsRepository;
     this.organizationRepository = organizationRepository;
     this.storageService = storageService;
     this.appBaseUrl = appBaseUrl;
+    this.productName = productName;
   }
 
   /**
@@ -80,12 +83,12 @@ public class EmailContextBuilder {
   private String resolveOrgName() {
     String orgId = RequestScopes.getOrgIdOrNull();
     if (orgId == null) {
-      return "DocTeams";
+      return productName;
     }
     return organizationRepository
         .findByClerkOrgId(orgId)
         .map(org -> org.getName())
-        .orElse("DocTeams");
+        .orElse(productName);
   }
 
   private String generateLogoUrl(String logoS3Key) {

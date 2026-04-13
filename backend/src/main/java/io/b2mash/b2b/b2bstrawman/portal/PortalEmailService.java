@@ -36,6 +36,7 @@ public class PortalEmailService {
   private final EmailRateLimiter emailRateLimiter;
   private final OrganizationRepository organizationRepository;
   private final String portalBaseUrl;
+  private final String productName;
 
   public PortalEmailService(
       IntegrationRegistry integrationRegistry,
@@ -44,7 +45,8 @@ public class PortalEmailService {
       EmailDeliveryLogService deliveryLogService,
       EmailRateLimiter emailRateLimiter,
       OrganizationRepository organizationRepository,
-      @Value("${docteams.app.portal-base-url:http://localhost:3002}") String portalBaseUrl) {
+      @Value("${docteams.app.portal-base-url:http://localhost:3002}") String portalBaseUrl,
+      @Value("${docteams.app.product-name:Kazi}") String productName) {
     this.integrationRegistry = integrationRegistry;
     this.emailTemplateRenderer = emailTemplateRenderer;
     this.emailContextBuilder = emailContextBuilder;
@@ -52,6 +54,7 @@ public class PortalEmailService {
     this.emailRateLimiter = emailRateLimiter;
     this.organizationRepository = organizationRepository;
     this.portalBaseUrl = portalBaseUrl;
+    this.productName = productName;
   }
 
   /**
@@ -136,14 +139,14 @@ public class PortalEmailService {
     }
   }
 
-  /** Resolves the org name from the global organizations table, falling back to "DocTeams". */
+  /** Resolves the org name from the global organizations table, falling back to product name. */
   private String resolveOrgName(String orgId) {
     if (orgId == null) {
-      return "DocTeams";
+      return productName;
     }
     return organizationRepository
         .findByClerkOrgId(orgId)
         .map(org -> org.getName())
-        .orElse("DocTeams");
+        .orElse(productName);
   }
 }

@@ -9,23 +9,20 @@ import io.b2mash.b2b.b2bstrawman.notification.Notification;
  */
 public enum EmailTemplate {
   TASK_ASSIGNED(
-      "You've been assigned to a task",
-      "Hi,\n\n%s\n\nView the task in DocTeams.\n\nBest,\nDocTeams"),
+      "You've been assigned to a task", "Hi,\n\n%s\n\nView the task in Kazi.\n\nBest,\nKazi"),
   TASK_CLAIMED(
       "A task you were working on was claimed",
-      "Hi,\n\n%s\n\nView the task in DocTeams.\n\nBest,\nDocTeams"),
+      "Hi,\n\n%s\n\nView the task in Kazi.\n\nBest,\nKazi"),
   TASK_UPDATED(
       "A task you're assigned to was updated",
-      "Hi,\n\n%s\n\nView the task in DocTeams.\n\nBest,\nDocTeams"),
+      "Hi,\n\n%s\n\nView the task in Kazi.\n\nBest,\nKazi"),
   COMMENT_ADDED(
-      "New comment on your task", "Hi,\n\n%s\n\nView the comment in DocTeams.\n\nBest,\nDocTeams"),
+      "New comment on your task", "Hi,\n\n%s\n\nView the comment in Kazi.\n\nBest,\nKazi"),
   DOCUMENT_SHARED(
-      "New document in your project",
-      "Hi,\n\n%s\n\nView the document in DocTeams.\n\nBest,\nDocTeams"),
+      "New document in your project", "Hi,\n\n%s\n\nView the document in Kazi.\n\nBest,\nKazi"),
   MEMBER_INVITED(
-      "You've been added to a project",
-      "Hi,\n\n%s\n\nView the project in DocTeams.\n\nBest,\nDocTeams"),
-  DEFAULT("DocTeams notification", "Hi,\n\n%s\n\nBest,\nDocTeams");
+      "You've been added to a project", "Hi,\n\n%s\n\nView the project in Kazi.\n\nBest,\nKazi"),
+  DEFAULT("Kazi notification", "Hi,\n\n%s\n\nBest,\nKazi");
 
   private final String subjectTemplate;
   private final String bodyTemplate;

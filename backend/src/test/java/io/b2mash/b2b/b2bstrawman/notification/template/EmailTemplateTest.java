@@ -51,6 +51,6 @@ class EmailTemplateTest {
 
     assertThat(body).contains(title);
     assertThat(body).startsWith("Hi,");
-    assertThat(body).endsWith("Best,\nDocTeams");
+    assertThat(body).endsWith("Best,\nKazi");
   }
 }

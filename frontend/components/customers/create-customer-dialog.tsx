@@ -217,8 +217,15 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
     }
   }
 
+  // Filter out trust-variant groups when the selected customer type is not TRUST
+  const selectedCustomerType = form.watch("customerType");
+  const filteredIntakeGroups =
+    selectedCustomerType === "TRUST"
+      ? intakeGroups
+      : intakeGroups.filter((g) => !g.slug.includes("trust"));
+
   // Compute whether all visible required fields are filled
-  const allRequiredFilled = intakeGroups.every((group) =>
+  const allRequiredFilled = filteredIntakeGroups.every((group) =>
     group.fields
       .filter((f) => f.required && isFieldVisible(f, fieldValues))
       .every((f) => {
@@ -628,17 +635,17 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                 </div>
               ) : fetchError ? (
                 <p className="text-destructive text-sm">{fetchError}</p>
-              ) : intakeGroups.length === 0 ? (
+              ) : filteredIntakeGroups.length === 0 ? (
                 <p className="text-sm text-slate-500">No additional fields required.</p>
               ) : (
                 <IntakeFieldsSection
-                  groups={intakeGroups}
+                  groups={filteredIntakeGroups}
                   values={fieldValues}
                   onChange={handleFieldChange}
                 />
               )}
 
-              {allRequiredFilled && !isLoadingFields && intakeGroups.length > 0 && (
+              {allRequiredFilled && !isLoadingFields && filteredIntakeGroups.length > 0 && (
                 <div className="pt-1">
                   <button
                     type="button"

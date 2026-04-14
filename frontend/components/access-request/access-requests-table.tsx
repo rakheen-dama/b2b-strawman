@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Tabs as TabsPrimitive } from "radix-ui";
+import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { ClipboardList } from "lucide-react";
@@ -41,20 +42,112 @@ interface AccessRequestsTableProps {
   requests: AccessRequest[];
 }
 
+function RequestTable({
+  requests,
+  onApprove,
+  onReject,
+}: {
+  requests: AccessRequest[];
+  onApprove: (r: AccessRequest) => void;
+  onReject: (r: AccessRequest) => void;
+}) {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Org Name</TableHead>
+          <TableHead>Email</TableHead>
+          <TableHead>Name</TableHead>
+          <TableHead>Country</TableHead>
+          <TableHead>Industry</TableHead>
+          <TableHead>Submitted</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {requests.map((request) => (
+          <TableRow key={request.id} data-testid={`request-row-${request.organizationName}`}>
+            <TableCell className="font-medium">{request.organizationName}</TableCell>
+            <TableCell>{request.email}</TableCell>
+            <TableCell>{request.fullName}</TableCell>
+            <TableCell>{request.country}</TableCell>
+            <TableCell>{request.industry}</TableCell>
+            <TableCell>
+              <RelativeDate iso={request.createdAt} />
+            </TableCell>
+            <TableCell>
+              <Badge variant={statusBadgeVariant[request.status] ?? "neutral"}>
+                {request.status}
+              </Badge>
+            </TableCell>
+            <TableCell className="text-right">
+              {request.status === "PENDING" && (
+                <div className="flex justify-end gap-2">
+                  <Button
+                    variant="accent"
+                    size="sm"
+                    data-testid="approve-btn"
+                    onClick={() => onApprove(request)}
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => onReject(request)}
+                  >
+                    Reject
+                  </Button>
+                </div>
+              )}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  );
+}
+
 export function AccessRequestsTable({ requests }: AccessRequestsTableProps) {
   const [activeTab, setActiveTab] = useState<TabId>("PENDING");
   const [approveTarget, setApproveTarget] = useState<AccessRequest | null>(null);
   const [rejectTarget, setRejectTarget] = useState<AccessRequest | null>(null);
   const router = useRouter();
 
-  const filtered = activeTab === "ALL" ? requests : requests.filter((r) => r.status === activeTab);
-
-  const sorted = [...filtered].sort(
-    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-  );
+  function filterAndSort(status: TabId) {
+    const filtered = status === "ALL" ? requests : requests.filter((r) => r.status === status);
+    return [...filtered].sort(
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+  }
 
   function handleSuccess() {
     router.refresh();
+  }
+
+  function renderContent(status: TabId) {
+    const sorted = filterAndSort(status);
+    if (sorted.length === 0) {
+      return (
+        <EmptyState
+          icon={ClipboardList}
+          title="No access requests"
+          description={
+            status === "ALL"
+              ? "No access requests have been submitted yet."
+              : `No ${status.toLowerCase()} access requests.`
+          }
+        />
+      );
+    }
+    return (
+      <RequestTable
+        requests={sorted}
+        onApprove={setApproveTarget}
+        onReject={setRejectTarget}
+      />
+    );
   }
 
   return (
@@ -70,84 +163,28 @@ export function AccessRequestsTable({ requests }: AccessRequestsTableProps) {
                 "relative pb-3 text-sm font-medium transition-colors outline-none",
                 "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",
                 "data-[state=active]:text-slate-950 dark:data-[state=active]:text-slate-50",
-                "border-b-2 border-transparent data-[state=active]:border-teal-500",
                 "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
               )}
             >
               {tab.label}
+              {activeTab === tab.id && (
+                <motion.span
+                  className="absolute inset-x-0 bottom-0 h-0.5 bg-teal-500"
+                  layoutId="access-request-tab-indicator"
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  aria-hidden="true"
+                />
+              )}
             </TabsPrimitive.Trigger>
           ))}
         </TabsPrimitive.List>
-      </TabsPrimitive.Root>
 
-      <div className="mt-6">
-        {sorted.length === 0 ? (
-          <EmptyState
-            icon={ClipboardList}
-            title="No access requests"
-            description={
-              activeTab === "ALL"
-                ? "No access requests have been submitted yet."
-                : `No ${activeTab.toLowerCase()} access requests.`
-            }
-          />
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Org Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Country</TableHead>
-                <TableHead>Industry</TableHead>
-                <TableHead>Submitted</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sorted.map((request) => (
-                <TableRow key={request.id} data-testid={`request-row-${request.organizationName}`}>
-                  <TableCell className="font-medium">{request.organizationName}</TableCell>
-                  <TableCell>{request.email}</TableCell>
-                  <TableCell>{request.fullName}</TableCell>
-                  <TableCell>{request.country}</TableCell>
-                  <TableCell>{request.industry}</TableCell>
-                  <TableCell>
-                    <RelativeDate iso={request.createdAt} />
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant={statusBadgeVariant[request.status] ?? "neutral"}>
-                      {request.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    {request.status === "PENDING" && (
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="accent"
-                          size="sm"
-                          data-testid="approve-btn"
-                          onClick={() => setApproveTarget(request)}
-                        >
-                          Approve
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => setRejectTarget(request)}
-                        >
-                          Reject
-                        </Button>
-                      </div>
-                    )}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </div>
+        {tabs.map((tab) => (
+          <TabsPrimitive.Content key={tab.id} value={tab.id} className="mt-6 outline-none">
+            {renderContent(tab.id)}
+          </TabsPrimitive.Content>
+        ))}
+      </TabsPrimitive.Root>
 
       {approveTarget && (
         <ApproveDialog

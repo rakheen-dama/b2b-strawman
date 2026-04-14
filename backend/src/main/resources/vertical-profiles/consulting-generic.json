@@ -1,6 +1,24 @@
 {
   "profileId": "consulting-generic",
-  "name": "IT Consulting",
-  "description": "General consulting and professional services",
-  "enabledModules": []
+  "name": "Consulting & Professional Services",
+  "description": "General consulting, agencies, and professional services firms. ZAR defaults for South African practices.",
+  "enabledModules": [],
+  "locale": "en-ZA",
+  "currency": "ZAR",
+  "rateCardDefaults": {
+    "currency": "ZAR",
+    "billingRates": [
+      { "roleName": "Owner", "hourlyRate": 1800 },
+      { "roleName": "Admin", "hourlyRate": 1200 },
+      { "roleName": "Member", "hourlyRate": 750 }
+    ],
+    "costRates": [
+      { "roleName": "Owner", "hourlyRate": 800 },
+      { "roleName": "Admin", "hourlyRate": 550 },
+      { "roleName": "Member", "hourlyRate": 350 }
+    ]
+  },
+  "taxDefaults": [
+    { "name": "VAT", "rate": 15.00, "default": true }
+  ]
 }

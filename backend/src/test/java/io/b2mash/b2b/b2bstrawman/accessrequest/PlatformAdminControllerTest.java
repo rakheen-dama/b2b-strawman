@@ -101,7 +101,7 @@ class PlatformAdminControllerTest {
 
     when(keycloakProvisioningClient.createOrganization(anyString(), anyString()))
         .thenReturn("kc-org-123");
-    when(tenantProvisioningService.provisionTenant(anyString(), anyString(), any()))
+    when(tenantProvisioningService.provisionTenant(anyString(), anyString(), any(), any()))
         .thenReturn(ProvisioningResult.success("tenant_kc-org-123"));
 
     mockMvc

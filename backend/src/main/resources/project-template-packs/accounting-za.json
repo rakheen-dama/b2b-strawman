@@ -1,0 +1,303 @@
+{
+  "packId": "accounting-za-project-templates",
+  "verticalProfile": "accounting-za",
+  "version": 1,
+  "templates": [
+    {
+      "name": "Year-End Pack (Annual Financial Statements)",
+      "namePattern": "{customer} - Year-End {year}",
+      "description": "Annual financial statements and CIPC filing for a company or CC. Covers trial balance review through to final AFS package.",
+      "billableDefault": true,
+      "tasks": [
+        {
+          "name": "Request & receive trial balance",
+          "description": "Obtain year-end trial balance from client's accounting system",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 1.0
+        },
+        {
+          "name": "Trial balance review & adjusting journals",
+          "description": "Review TB for errors, prepare adjusting journal entries",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 4.0
+        },
+        {
+          "name": "Draft annual financial statements",
+          "description": "Prepare AFS in compliance with IFRS for SMEs / IFRS",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 6.0
+        },
+        {
+          "name": "Director / member approval",
+          "description": "Submit draft AFS to directors for review and sign-off",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 1.0
+        },
+        {
+          "name": "CIPC annual return filing",
+          "description": "File annual return with CIPC (CoR30.1)",
+          "priority": "MEDIUM",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 1.0
+        },
+        {
+          "name": "Tax computation & ITR14 preparation",
+          "description": "Calculate provisional/final tax and prepare ITR14",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 3.0
+        },
+        {
+          "name": "Final package & archiving",
+          "description": "Compile final signed AFS, tax return, and supporting schedules",
+          "priority": "LOW",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 1.0
+        }
+      ]
+    },
+    {
+      "name": "Monthly Bookkeeping",
+      "namePattern": "{customer} - Bookkeeping {month}",
+      "description": "Recurring monthly bookkeeping engagement including bank reconciliation, creditors/debtors, VAT, and management accounts.",
+      "billableDefault": true,
+      "tasks": [
+        {
+          "name": "Bank reconciliation",
+          "description": "Reconcile all bank accounts to bank statements",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "Creditors reconciliation",
+          "description": "Reconcile creditors/accounts payable to supplier statements",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 1.5
+        },
+        {
+          "name": "Debtors reconciliation",
+          "description": "Reconcile debtors/accounts receivable and follow up on overdue accounts",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 1.5
+        },
+        {
+          "name": "VAT calculation & reconciliation",
+          "description": "Calculate input/output VAT for the period, reconcile VAT control account",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 1.5
+        },
+        {
+          "name": "Management accounts preparation",
+          "description": "Prepare income statement, balance sheet, and cash flow for the month",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "Month-end close & review",
+          "description": "Final review, close the period, and send management pack to client",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 1.0
+        }
+      ]
+    },
+    {
+      "name": "Tax Return — Individual (ITR12)",
+      "namePattern": "{customer} - ITR12 {year}",
+      "description": "Individual income tax return preparation and SARS eFiling submission.",
+      "billableDefault": true,
+      "tasks": [
+        {
+          "name": "Collect IRP5/IT3(a) certificates",
+          "description": "Obtain all employer tax certificates and third-party data from SARS",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 1.0
+        },
+        {
+          "name": "Medical aid & retirement fund certificates",
+          "description": "Collect medical aid tax certificates (IT3(a)) and retirement fund contributions",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 0.5
+        },
+        {
+          "name": "Rental income schedule",
+          "description": "Prepare schedule of rental income and deductible expenses (if applicable)",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 1.5
+        },
+        {
+          "name": "Capital gains schedule",
+          "description": "Calculate capital gains/losses on disposal of assets (if applicable)",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 1.0
+        },
+        {
+          "name": "Prepare ITR12",
+          "description": "Complete the ITR12 return with all income, deductions, and rebates",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "SARS eFiling submission",
+          "description": "Submit ITR12 via SARS eFiling and confirm receipt",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 0.5
+        },
+        {
+          "name": "Review assessment & sign-off",
+          "description": "Review SARS assessment, advise client, and archive",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 0.5
+        }
+      ]
+    },
+    {
+      "name": "Tax Return — Company (ITR14)",
+      "namePattern": "{customer} - ITR14 {year}",
+      "description": "Company income tax return preparation including tax computation and SARS eFiling submission.",
+      "billableDefault": true,
+      "tasks": [
+        {
+          "name": "Collect trial balance & AFS",
+          "description": "Obtain finalised trial balance and annual financial statements",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 0.5
+        },
+        {
+          "name": "Tax computation",
+          "description": "Calculate taxable income with permanent and temporary differences",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 3.0
+        },
+        {
+          "name": "Provisional tax review (IRP6)",
+          "description": "Review provisional tax payments and calculate any penalties/interest",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 1.0
+        },
+        {
+          "name": "Prepare ITR14",
+          "description": "Complete the ITR14 return with all schedules",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "Supporting schedules",
+          "description": "Prepare fixed asset register, lease schedule, and other required annexures",
+          "priority": "MEDIUM",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "SARS eFiling submission",
+          "description": "Submit ITR14 via SARS eFiling and confirm receipt",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 0.5
+        },
+        {
+          "name": "Director sign-off & archive",
+          "description": "Obtain director approval, archive tax file",
+          "priority": "LOW",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 0.5
+        }
+      ]
+    },
+    {
+      "name": "VAT Return (VAT201)",
+      "namePattern": "{customer} - VAT {period}",
+      "description": "Bi-monthly or monthly VAT201 return preparation and SARS submission.",
+      "billableDefault": true,
+      "tasks": [
+        {
+          "name": "Collect invoices & receipts",
+          "description": "Gather all tax invoices, credit notes, and receipts for the VAT period",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 1.5
+        },
+        {
+          "name": "VAT reconciliation",
+          "description": "Reconcile VAT input/output to accounting records, check apportionments",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "Prepare VAT201",
+          "description": "Complete the VAT201 return form",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 1.0
+        },
+        {
+          "name": "SARS eFiling submission",
+          "description": "Submit VAT201 via SARS eFiling before deadline",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 0.5
+        },
+        {
+          "name": "Payment instruction",
+          "description": "Prepare payment instruction for VAT liability or note refund due",
+          "priority": "MEDIUM",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 0.5
+        }
+      ]
+    }
+  ]
+}

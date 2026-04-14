@@ -124,8 +124,8 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
       </TooltipProvider>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create Project</DialogTitle>
-          <DialogDescription>Add a new project to your organization.</DialogDescription>
+          <DialogTitle>Create {t("Project")}</DialogTitle>
+          <DialogDescription>Add a new {t("project")} to your organization.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -287,7 +287,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create Project"}
+                {isSubmitting ? "Creating..." : `Create ${t("Project")}`}
               </Button>
             </DialogFooter>
           </form>

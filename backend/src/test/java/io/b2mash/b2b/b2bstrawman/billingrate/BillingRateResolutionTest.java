@@ -214,10 +214,10 @@ class BillingRateResolutionTest {
 
   @Test
   @Order(6)
-  void resolveRate_futureRateNotResolved() {
+  void resolveRate_futureOpenEndedRateFallsBackForBackdatedEntries() {
     runInTenant(
         () -> {
-          // Create a rate that starts in the future for a different member
+          // Create an open-ended rate that starts in the future
           billingRateService.createRate(
               memberIdMember,
               null,
@@ -228,10 +228,14 @@ class BillingRateResolutionTest {
               null,
               new ActorContext(memberIdOwner, "owner"));
 
+          // When no rate covers the entry date but an open-ended rate exists,
+          // the fallback returns the earliest open-ended rate (for backdated entries)
           var result =
               billingRateService.resolveRate(memberIdMember, projectId, LocalDate.of(2024, 6, 15));
 
-          assertThat(result).isEmpty();
+          assertThat(result).isPresent();
+          assertThat(result.get().hourlyRate()).isEqualByComparingTo("300.00");
+          assertThat(result.get().source()).isEqualTo("MEMBER_DEFAULT");
           return null;
         });
   }
@@ -293,16 +297,19 @@ class BillingRateResolutionTest {
 
   @Test
   @Order(9)
-  void resolveRate_expiredRateNotReturned() {
+  void resolveRate_expiredRateNotReturnedButOpenEndedFallbackUsed() {
     runInTenant(
         () -> {
-          // The future rate for memberIdMember (created in test 6, starts 2030) should not resolve
-          // in 2025. The date range rates (test 7) end 2024-12-31. Check 2025 -- nothing should
-          // match.
+          // The date range rates (test 7) end 2024-12-31 -- expired.
+          // The future rate (test 6, starts 2030) is open-ended.
+          // Query for 2025 falls in the gap -- exact match returns empty,
+          // but fallback finds the 2030 open-ended rate.
           var result =
               billingRateService.resolveRate(memberIdMember, projectId, LocalDate.of(2025, 6, 15));
 
-          assertThat(result).isEmpty();
+          assertThat(result).isPresent();
+          assertThat(result.get().hourlyRate()).isEqualByComparingTo("300.00");
+          assertThat(result.get().source()).isEqualTo("MEMBER_DEFAULT");
           return null;
         });
   }

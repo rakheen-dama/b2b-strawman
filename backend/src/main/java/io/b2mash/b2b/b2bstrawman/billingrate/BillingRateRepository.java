@@ -66,6 +66,54 @@ public interface BillingRateRepository extends JpaRepository<BillingRate, UUID> 
       @Param("memberId") UUID memberId, @Param("date") LocalDate date);
 
   /**
+   * Finds the earliest open-ended project-level override rate for a member on a project. Only
+   * returns rates with no effectiveTo (open-ended), ordered by effectiveFrom ASC. Used as fallback
+   * when no rate covers the time entry date (e.g., backdated entries before a rate's start date).
+   */
+  @Query(
+      """
+      SELECT br FROM BillingRate br
+      WHERE br.memberId = :memberId
+        AND br.projectId = :projectId
+        AND br.customerId IS NULL
+        AND br.effectiveTo IS NULL
+      ORDER BY br.effectiveFrom ASC
+      """)
+  List<BillingRate> findProjectOverrideEarliest(
+      @Param("memberId") UUID memberId, @Param("projectId") UUID projectId);
+
+  /**
+   * Finds the earliest open-ended customer-level override rate for a member. Used as fallback when
+   * no rate covers the time entry date.
+   */
+  @Query(
+      """
+      SELECT br FROM BillingRate br
+      WHERE br.memberId = :memberId
+        AND br.customerId = :customerId
+        AND br.projectId IS NULL
+        AND br.effectiveTo IS NULL
+      ORDER BY br.effectiveFrom ASC
+      """)
+  List<BillingRate> findCustomerOverrideEarliest(
+      @Param("memberId") UUID memberId, @Param("customerId") UUID customerId);
+
+  /**
+   * Finds the earliest open-ended member-default rate. Used as fallback when no rate covers the
+   * time entry date.
+   */
+  @Query(
+      """
+      SELECT br FROM BillingRate br
+      WHERE br.memberId = :memberId
+        AND br.projectId IS NULL
+        AND br.customerId IS NULL
+        AND br.effectiveTo IS NULL
+      ORDER BY br.effectiveFrom ASC
+      """)
+  List<BillingRate> findMemberDefaultEarliest(@Param("memberId") UUID memberId);
+
+  /**
    * Finds billing rates that overlap with the given date range at the same scope level (same
    * member, project, and customer combination). Used for overlap validation before create/update.
    *

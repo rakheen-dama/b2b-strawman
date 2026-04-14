@@ -2,7 +2,7 @@
 
 ## Current State
 
-- **QA Position**: Day 36 (Days 0-34 complete; 3 clients active, 4 engagements, ~20.5h logged across 4 engagements, 1 task marked Done, comments + documents added, profitability verified; first invoices + payment flows next)
+- **QA Position**: Day 36 BLOCKED (Days 0-34 complete; Day 36 attempted -- invoice generation dialog opens but Fetch Unbilled Time does not advance to step 2; 2 HIGH gaps block all Days 36-60 invoice/payment checkpoints)
 - **Cycle**: 1
 - **Dev Stack**: READY
 - **NEEDS_REBUILD**: false
@@ -34,6 +34,8 @@
 | GAP-D0-05 | Day 0 / 0.41 | MED | OPEN | Engagement templates not pre-seeded from accounting-za profile -- no Year-End Pack, Monthly Bookkeeping, Tax Return templates | Dev | 0 |
 | GAP-D0-06 | Day 0 / 0.43 | LOW | OPEN | Automation rules not pre-seeded from accounting-za profile; feature toggle disabled by default | Dev | 0 |
 | GAP-D0-07 | Day 2 / 2.2 | MED | OPEN | No onboarding checklist seeded for accounting-za profile -- no FICA/KYC items; manual activation required | Dev | 0 |
+| GAP-D36-01 | Day 36 / 36.2 | HIGH | OPEN | Prerequisite check for INVOICE_GENERATION returns 403 "Module not enabled" -- accounting-za profile does not auto-enable invoicing module; Settings > Features has no Invoicing toggle | Dev | 0 |
+| GAP-D36-02 | Day 36 / 36.2 | HIGH | OPEN | Invoice generation dialog "Fetch Unbilled Time" button does not advance from step 1 to step 2 -- server action returns 200 but data does not populate; likely owner capabilities not resolving through Keycloak BFF | Dev | 0 |
 
 ## Legend
 
@@ -51,3 +53,4 @@
 - 2026-04-14 — **QA Agent: Days 7-14 executed.** 8 checkpoints: 8 PASS. All 3 users added to all engagements. Time logging tested end-to-end: Carol 1.5h on Sipho tax return (R450/hr), Thandi 2h on year-end pack (R1,500/hr), Bob 3h on bookkeeping (R850/hr), Carol 2h on bookkeeping (R450/hr), Bob 1h on year-end pack (R850/hr). Document upload verified (bank statement). Comments posted on tasks (Thandi @Bob + Bob reply). Budget configured on year-end pack (40h / R60,000 / ZAR / 80% alert). Budget tracking shows correct consumed hours and amounts. No new gaps.
 - 2026-04-14 — **QA Agent: Days 15-21 executed.** 9 checkpoints: 8 PASS, 1 N/A, 1 DEFERRED. Moroka Family Trust created with Trust type. Step 2 correctly surfaced trust-specific fields (Registration Number, Deed Date, Trust Type) from `accounting-za-customer-trust` variant. Trust activated via ONBOARDING → ACTIVE (auto-activation, GAP-D0-07). Trust AFS engagement created with 4 manual tasks. Thandi logged 2.5h and Bob logged 4h on trust tasks — billing rate snapshots correct. 4 engagements total across 3 active clients. No new gaps.
 - 2026-04-14 — **QA Agent: Days 22-34 executed.** 11 checkpoints: 7 PASS, 2 PARTIAL, 1 N/A, 1 DEFERRED. 3 additional time entries logged (Thandi: 1.5h bookkeeping, 2h year-end, 1h bookkeeping). Task "Mar bank recon + creditors" marked Done (requires Open→In Progress→Done two-step transition). Comment posted on Moroka AFS with @Carol mention. Working papers uploaded to year-end pack. Profitability page verified with 4 engagements, 3 clients, 3 team members all in ZAR. Cost/Margin show N/A (cost rates not configured). No client/engagement-type filter on profitability (date range only). Automation check N/A (GAP-D0-06). 4th client deferred. No new gaps.
+- 2026-04-14 — **QA Agent: Day 36 attempted — BLOCKED.** 6 checkpoints attempted: 0 PASS, 1 PARTIAL, 1 FAIL, 4 BLOCKED. Navigated to Kgosi Holdings client → Invoices tab. "New Invoice" button triggers prerequisite check that returns 403 "Module not enabled" (GAP-D36-01). Dialog opens anyway (error caught) but "Fetch Unbilled Time" does not advance to step 2 (GAP-D36-02). Both gaps are HIGH severity blockers. All Days 36-60 invoice/payment checkpoints blocked. Keycloak session expired during testing (re-auth required after ~30min inactivity). Engagement Financials tab confirmed working (7.5h billable, R7,200 revenue for bookkeeping). Customer Unbilled Time card shows R14,050 across 12.5h (both Kgosi engagements).

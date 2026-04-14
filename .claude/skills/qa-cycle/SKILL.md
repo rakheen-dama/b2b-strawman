@@ -164,6 +164,18 @@ Commit checkpoint results + status.md to {BRANCH} and push.
 Message: `qa: Day {N} checkpoint results (cycle {CYCLE})`
 
 Do NOT fix issues yourself. Test and document only.
+
+## CRITICAL: No SQL Shortcuts
+Do NOT use direct SQL queries (INSERT, UPDATE, DELETE) to create or modify data.
+ALL operations must go through the REST API or browser UI:
+- Customer creation: POST /api/customers
+- Lifecycle transitions: POST /api/customers/{id}/transition
+- Checklist completion: POST /api/checklists/{id}/items/{itemId}/complete
+- Document uploads: POST /api/projects/{id}/documents/upload-init → PUT to S3 → POST /api/documents/{id}/confirm
+- Time entries: POST /api/time-entries
+- Invoices: POST /api/invoices
+- Member management: POST /internal/members/sync
+If an API step fails, log it as a gap — do NOT work around it with SQL.
 ```
 
 ### Product Agent
@@ -359,3 +371,4 @@ When `ALL_DAYS_COMPLETE` appears in status.md OR max cycles reached:
 - **Infra commits directly**: Seed/rebuild changes go straight to the parent branch
 - **No blind retries**: If something fails, diagnose WHY before retrying
 - **Commit after every turn**: Each agent commits its state changes before returning
+- **NEVER use direct SQL to bypass steps**: QA agents must use REST APIs or browser UI for ALL operations — customer creation, lifecycle transitions, checklist completion, document uploads, time entries, invoices, member management. If an API step fails, log it as a gap. Do NOT work around it with SQL INSERT/UPDATE. Document uploads use the presigned-URL flow: `POST /api/projects/{id}/documents/upload-init` → `PUT` to S3 presigned URL → `POST /api/documents/{id}/confirm`. SQL shortcuts mask real bugs and defeat the purpose of QA.

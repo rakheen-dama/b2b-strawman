@@ -171,8 +171,14 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
 
     try {
       const values = form.getValues();
+      // Only submit fields that are visible for the selected customer type
+      // (trust-variant fields are hidden for non-TRUST types)
+      const visibleFieldSlugs = new Set(
+        filteredIntakeGroups.flatMap((group) => group.fields.map((field) => field.slug))
+      );
       const customFields: Record<string, unknown> = {};
       for (const [fieldSlug, value] of Object.entries(fieldValues)) {
+        if (!visibleFieldSlugs.has(fieldSlug)) continue;
         if (value !== null && value !== undefined && value !== "") {
           customFields[fieldSlug] = value;
         }

@@ -8,6 +8,7 @@
       "namePattern": "{customer} - Year-End {year}",
       "description": "Annual financial statements and CIPC filing for a company or CC. Covers trial balance review through to final AFS package.",
       "billableDefault": true,
+      "matterType": "YEAR_END",
       "tasks": [
         {
           "name": "Request & receive trial balance",
@@ -72,6 +73,7 @@
       "namePattern": "{customer} - Bookkeeping {month}",
       "description": "Recurring monthly bookkeeping engagement including bank reconciliation, creditors/debtors, VAT, and management accounts.",
       "billableDefault": true,
+      "matterType": "BOOKKEEPING",
       "tasks": [
         {
           "name": "Bank reconciliation",
@@ -128,6 +130,7 @@
       "namePattern": "{customer} - ITR12 {year}",
       "description": "Individual income tax return preparation and SARS eFiling submission.",
       "billableDefault": true,
+      "matterType": "TAX_RETURN",
       "tasks": [
         {
           "name": "Collect IRP5/IT3(a) certificates",
@@ -192,6 +195,7 @@
       "namePattern": "{customer} - ITR14 {year}",
       "description": "Company income tax return preparation including tax computation and SARS eFiling submission.",
       "billableDefault": true,
+      "matterType": "TAX_RETURN",
       "tasks": [
         {
           "name": "Collect trial balance & AFS",
@@ -256,6 +260,7 @@
       "namePattern": "{customer} - VAT {period}",
       "description": "Bi-monthly or monthly VAT201 return preparation and SARS submission.",
       "billableDefault": true,
+      "matterType": "VAT_RETURN",
       "tasks": [
         {
           "name": "Collect invoices & receipts",

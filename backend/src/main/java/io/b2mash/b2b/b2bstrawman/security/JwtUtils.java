@@ -63,6 +63,17 @@ public final class JwtUtils {
     return jwt.getClaimAsString("email");
   }
 
+  /** Extracts the org role from JWT. Tries Clerk v2 nested format, then flat claims. */
+  public static String extractOrgRole(Jwt jwt) {
+    // Clerk v2: o.rol
+    String clerkRole = extractClerkClaim(jwt, "rol");
+    if (clerkRole != null) return clerkRole;
+    // Flat claims: "role" (mock-auth) or "org_role" (Keycloak protocol mapper)
+    String flatRole = jwt.getClaimAsString("role");
+    if (flatRole != null && !flatRole.isBlank()) return flatRole;
+    return jwt.getClaimAsString("org_role");
+  }
+
   /** Returns true if this JWT uses Keycloak format (has "organization" claim). */
   public static boolean isKeycloakJwt(Jwt jwt) {
     Object claim = jwt.getClaim(KEYCLOAK_ORG_CLAIM);

@@ -2,7 +2,7 @@
 
 ## Current State
 
-- **QA Position**: Day 36 — checkpoint 36.1 (invoicing phase pending)
+- **QA Position**: Day 90 — ALL_DAYS_COMPLETE
 - **Cycle**: 1
 - **Dev Stack**: READY
 - **NEEDS_REBUILD**: false
@@ -10,7 +10,7 @@
 - **Scenario**: `qa/testplan/demos/consulting-agency-90day-keycloak.md`
 - **Focus**: Fresh tenant run — full onboarding through 90-day consulting agency lifecycle.
 - **Auth Mode**: Keycloak (real OIDC)
-- **ALL_DAYS_COMPLETE**: false
+- **ALL_DAYS_COMPLETE**: true
 
 ## Environment
 
@@ -35,6 +35,8 @@
 | GAP-C-05 | D0 / 0.40 | MED | OPEN | No templates pre-seeded for consulting-generic | Product | 0 |
 | GAP-C-06 | D0 / 0.43 | MED | OPEN | No automation pack for consulting-generic | Product | 0 |
 | GAP-C-07 | D9 / 9.3 | HIGH | OPEN | No retainer primitive — manual project-per-cycle workaround | Product | 0 |
+| GAP-C-08 | D40 / 40.3 | MED | OPEN | Retainer invoice indistinguishable from project invoice — no hours consumed/remaining summary | Product | 0 |
+| GAP-C-09 | D42 / 42.3 | HIGH | OPEN | Manual retainer project re-creation every month (2nd occurrence of GAP-C-07 pattern) | Product | 0 |
 
 ## Legend
 
@@ -50,3 +52,4 @@
 - 2026-04-14 — QA Agent: Day 0 complete (Phases E-I). All billing/cost rates created (Zolani R1800/R800, Bob R1200/R550, Carol R750/R350). VAT 15% already present. Custom field promotion verified on Customer + Project dialogs. Template "Website Redesign Project" (6 tasks) created manually. Progressive disclosure verified: zero legal/accounting leaks. Tier removal verified: flat billing UI. 6 profile-content gaps logged (GAP-C-01 to GAP-C-06).
 - 2026-04-14 — QA Agent: Days 1-7 complete. BrightCup Coffee Roasters created (PROSPECT -> ACTIVE). First project created from template (6 tasks). 9 hours logged across 3 tasks (Discovery 2h, Wireframes 3h, Design 4h). Budget configured (40h/R40,000, 23%/41% consumed, On Track). All tabs load with generic terminology. No product bugs found.
 - 2026-04-14 — QA Agent: Days 8-35 complete. Ubuntu Startup + Masakhane Foundation created and activated. Retainer project (5 tasks, 20h/R24,000 budget, 55%/83% consumed) + NGO project (6 tasks, 60h/R60,000 budget, 21%/38% consumed) created. 32.5 total hours logged. Profitability page renders all 3 projects with ZAR currency, margins, utilization. 1 new gap logged (GAP-C-07: no retainer primitive). No product bugs.
+- 2026-04-14 — QA Agent: Days 36-90 complete. ALL_DAYS_COMPLETE. 3 invoices created (INV-0001 BrightCup R18,630 PAID, INV-0002 Ubuntu R32,085 PAID, INV-0003 Masakhane R25,875 SENT). Total invoiced R76,590, paid R50,715, outstanding R25,875. April retainer cycle created (7h logged). May retainer cycle scaffolded. Portal magic link verified for BrightCup. Profitability page renders 4 projects with ~55% margins. Utilization: Zolani 32.5h, Carol 14h, Bob 7h (all 100%). Audit log filters by entity/actor work. Final regression sweep: zero terminology leaks, zero legal module exposure, flat billing UI, no console errors. 53.5 total hours, 5 projects, 3 customers. 2 new gaps logged (GAP-C-08: retainer invoice format, GAP-C-09: manual retainer re-creation). No product bugs found. Cycle complete.

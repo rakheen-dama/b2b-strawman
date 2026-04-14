@@ -1,6 +1,5 @@
 "use server";
 
-import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import type {
@@ -27,11 +26,6 @@ export async function fetchUnbilledTime(
   from?: string,
   to?: string
 ): Promise<UnbilledTimeResult> {
-  const caps = await fetchMyCapabilities();
-  if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can view unbilled time." };
-  }
-
   try {
     const params = new URLSearchParams();
     if (from) params.set("from", from);
@@ -79,11 +73,6 @@ export async function createInvoiceDraft(
   customerId: string,
   request: CreateInvoiceDraftRequest
 ): Promise<CreateDraftResult> {
-  const caps = await fetchMyCapabilities();
-  if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can create invoices." };
-  }
-
   try {
     const invoice = await api.post<InvoiceResponse>("/api/invoices", request);
     revalidatePath(`/org/${slug}/customers/${customerId}`);

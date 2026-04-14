@@ -110,6 +110,44 @@ public class BillingRateService {
               rate.getHourlyRate(), rate.getCurrency(), "MEMBER_DEFAULT", rate.getId()));
     }
 
+    // 4. Fallback: no rate covers the entry date (e.g., backdated entries before the rate's
+    //    effectiveFrom). Try the earliest rate at each scope regardless of date.
+    return resolveRateFallback(memberId, projectId, customerId.orElse(null));
+  }
+
+  /**
+   * Fallback rate resolution when no rate covers the entry date. Checks the same three-level
+   * cascade but ignores effectiveFrom/effectiveTo constraints. Returns the earliest-dated rate
+   * found at the highest-priority scope.
+   */
+  private Optional<ResolvedRate> resolveRateFallback(
+      UUID memberId, UUID projectId, UUID customerId) {
+    var projectRates = billingRateRepository.findProjectOverrideEarliest(memberId, projectId);
+    if (!projectRates.isEmpty()) {
+      var rate = projectRates.getFirst();
+      return Optional.of(
+          new ResolvedRate(
+              rate.getHourlyRate(), rate.getCurrency(), "PROJECT_OVERRIDE", rate.getId()));
+    }
+
+    if (customerId != null) {
+      var customerRates = billingRateRepository.findCustomerOverrideEarliest(memberId, customerId);
+      if (!customerRates.isEmpty()) {
+        var rate = customerRates.getFirst();
+        return Optional.of(
+            new ResolvedRate(
+                rate.getHourlyRate(), rate.getCurrency(), "CUSTOMER_OVERRIDE", rate.getId()));
+      }
+    }
+
+    var defaultRates = billingRateRepository.findMemberDefaultEarliest(memberId);
+    if (!defaultRates.isEmpty()) {
+      var rate = defaultRates.getFirst();
+      return Optional.of(
+          new ResolvedRate(
+              rate.getHourlyRate(), rate.getCurrency(), "MEMBER_DEFAULT", rate.getId()));
+    }
+
     return Optional.empty();
   }
 

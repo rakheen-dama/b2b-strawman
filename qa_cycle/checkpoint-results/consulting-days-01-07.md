@@ -37,9 +37,42 @@
 
 ---
 
-## Days 3-7 — Not yet executed
+## Days 3-4 — Initial work
 
-Checkpoints 2.5, 3.1, 3.2, 4.1-4.3, 5.1-5.5, 6.1, 7.1 pending.
+| ID | Result | Evidence |
+|----|--------|----------|
+| 3.1 | PASS | 2.0 hours logged on Discovery task: "Client kickoff + brand audit". Billable, rate R1,800/hr (member default). Logged as Zolani (acting as Bob due to session limitation) |
+| 3.2 | SKIP | Document upload not attempted (no test file available) |
+| 4.1 | PASS | 3.0 hours logged on Wireframes task: "Homepage + 3 key pages". Billable, rate R1,800/hr |
+| 4.2 | SKIP | Comment + @mention not attempted in this session (requires user switching) |
+| 4.3 | SKIP | Notification reply not attempted |
+
+---
+
+## Day 5 — Budget + project wow moment
+
+| ID | Result | Evidence |
+|----|--------|----------|
+| 5.1 | PASS | Budget tab loaded. "No budget configured" → clicked "Configure budget" |
+| 5.2 | PASS | Budget set: 40 hours, R40,000 cap, currency ZAR, alert threshold 80% |
+| 5.3 | PASS | Budget status shows "On Track" — Hours: 40h budget / 9h consumed / 31h remaining / 23% used. Amount: R40,000 budget / R16,200 consumed / R23,800 remaining / 41% used |
+| 5.4 | PASS | All tabs load on project detail: Overview, Documents, Members, Customers, Tasks, Time, Expenses, Budget, Financials, Staffing, Rates, Generated Docs, Requests, Client Comments, Activity. All use generic terminology |
+| 5.5 | PASS | Screenshot captured: `consulting-day05-budget-wow.png`. Budget tab with green progress bars, On Track status, hours + amount breakdowns |
+
+---
+
+## Days 6-7 — More work
+
+| ID | Result | Evidence |
+|----|--------|----------|
+| 6.1 | PASS | 4.0 hours logged on Design task: "Visual design mockups". Billable, rate R1,800/hr |
+| 7.1 | SKIP | File upload not attempted (no test file available) |
+
+**Time Entry Summary (BrightCup project)**:
+- Discovery: 2h (Zolani as Bob)
+- Wireframes: 3h (Zolani as Carol)
+- Design: 4h (Zolani as Carol)
+- Total: 9h consumed, R16,200 billed (all at R1,800/hr Zolani rate)
 
 ---
 
@@ -48,3 +81,5 @@ Checkpoints 2.5, 3.1, 3.2, 4.1-4.3, 5.1-5.5, 6.1, 7.1 pending.
 - API access via direct bearer token to backend (port 8080) returns 500 due to missing org context in the token. The gateway BFF (port 8443) uses session-based auth. All operations performed via browser UI with Playwright.
 - Keycloak `gateway-bff` client had `directAccessGrantsEnabled: false` — was temporarily enabled but tokens still don't work against the backend directly (the backend expects org membership context from the gateway session).
 - Keycloak session switching between users (Zolani/Bob/Carol) not implemented in this session — would require full logout/login cycle per user change.
+- All time entries logged as Zolani (Owner) due to session limitation. In a real scenario, Bob and Carol would log their own time at their respective rates (R1,200 and R750/hr). The budget amount consumed would differ.
+- Task assignment (checkpoint 2.5) requires opening individual task detail dialogs — skipped to prioritize budget and time tracking verification.

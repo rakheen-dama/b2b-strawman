@@ -81,6 +81,18 @@ public abstract class AbstractPackSeeder<D> {
   protected abstract void applyPack(D pack, Resource packResource, String tenantId);
 
   /**
+   * Reconcile settings on an already-applied pack. Called during reconciliation when a pack has
+   * already been seeded but its JSON definition may have changed (e.g., autoInstantiate flag
+   * toggled). Default is a no-op; subclasses override to sync specific fields.
+   *
+   * @param pack the current pack definition from the classpath
+   * @param tenantId the tenant schema name
+   */
+  protected void reconcileExistingPack(D pack, String tenantId) {
+    // Default: no-op — subclasses override to sync mutable pack settings
+  }
+
+  /**
    * Extract the vertical profile from a deserialized pack definition. Returns null for universal
    * packs that apply to all tenants.
    */
@@ -130,10 +142,11 @@ public abstract class AbstractPackSeeder<D> {
 
       if (isPackAlreadyApplied(settings, packId)) {
         log.info(
-            "{} pack {} already applied for tenant {}, skipping",
+            "{} pack {} already applied for tenant {}, reconciling settings",
             capitalize(getPackTypeName()),
             packId,
             tenantId);
+        reconcileExistingPack(pack, tenantId);
         continue;
       }
 

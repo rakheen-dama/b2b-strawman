@@ -114,6 +114,27 @@ public class CompliancePackSeeder extends AbstractPackSeeder<CompliancePackDefin
   }
 
   @Override
+  protected void reconcileExistingPack(CompliancePackDefinition pack, String tenantId) {
+    CompliancePackChecklistTemplate tpl = pack.checklistTemplate();
+    checklistTemplateRepository
+        .findByPackIdAndPackTemplateKey(pack.packId(), tpl.slug())
+        .ifPresent(
+            existing -> {
+              if (existing.isAutoInstantiate() != tpl.autoInstantiate()) {
+                log.info(
+                    "Updating autoInstantiate on checklist template '{}' from {} to {} (pack {})",
+                    existing.getSlug(),
+                    existing.isAutoInstantiate(),
+                    tpl.autoInstantiate(),
+                    pack.packId());
+                existing.update(
+                    existing.getName(), existing.getDescription(), tpl.autoInstantiate());
+                checklistTemplateRepository.save(existing);
+              }
+            });
+  }
+
+  @Override
   protected void applyPack(CompliancePackDefinition pack, Resource packResource, String tenantId) {
     // 1. Create checklist template
     CompliancePackChecklistTemplate tpl = pack.checklistTemplate();

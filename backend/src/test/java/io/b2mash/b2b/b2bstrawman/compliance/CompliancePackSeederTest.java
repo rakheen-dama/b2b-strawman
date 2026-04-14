@@ -220,6 +220,40 @@ class CompliancePackSeederTest {
   }
 
   @Test
+  void reconciliationSyncsAutoInstantiateFromPackJson() {
+    // Manually flip autoInstantiate to the opposite of what pack.json says,
+    // then re-run the seeder and verify the reconciliation corrects it.
+    runInTenant(
+        tenantSchema,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var template =
+                      templateRepository.findBySlug("generic-client-onboarding").orElseThrow();
+                  // pack.json has autoInstantiate=false, so flip it to true
+                  assertThat(template.isAutoInstantiate()).isFalse();
+                  template.update(template.getName(), template.getDescription(), true);
+                  templateRepository.save(template);
+                }));
+
+    // Re-seed — pack is already applied, but reconciliation should fix autoInstantiate
+    compliancePackSeeder.seedPacksForTenant(tenantSchema, ORG_ID);
+
+    runInTenant(
+        tenantSchema,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var template =
+                      templateRepository.findBySlug("generic-client-onboarding").orElseThrow();
+                  // Should be corrected back to false (matching pack.json)
+                  assertThat(template.isAutoInstantiate())
+                      .as("Reconciliation should sync autoInstantiate from pack.json")
+                      .isFalse();
+                }));
+  }
+
+  @Test
   void ficaIndividualRetentionOverrideCreated() {
     runInTenant(
         tenantSchema,

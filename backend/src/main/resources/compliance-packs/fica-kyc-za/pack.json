@@ -9,7 +9,7 @@
   "checklistTemplate": {
     "name": "FICA KYC — SA Accounting",
     "slug": "fica-kyc-za-accounting",
-    "autoInstantiate": false,
+    "autoInstantiate": true,
     "items": [
       {
         "name": "Certified ID Copy",

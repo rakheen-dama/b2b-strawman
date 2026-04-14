@@ -18,4 +18,6 @@ public interface ChecklistTemplateRepository extends JpaRepository<ChecklistTemp
   boolean existsBySlug(String slug);
 
   Optional<ChecklistTemplate> findBySlug(String slug);
+
+  Optional<ChecklistTemplate> findByPackIdAndPackTemplateKey(String packId, String packTemplateKey);
 }

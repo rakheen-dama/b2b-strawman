@@ -171,8 +171,14 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
 
     try {
       const values = form.getValues();
+      // Only submit fields that are visible for the selected customer type
+      // (trust-variant fields are hidden for non-TRUST types)
+      const visibleFieldSlugs = new Set(
+        filteredIntakeGroups.flatMap((group) => group.fields.map((field) => field.slug))
+      );
       const customFields: Record<string, unknown> = {};
       for (const [fieldSlug, value] of Object.entries(fieldValues)) {
+        if (!visibleFieldSlugs.has(fieldSlug)) continue;
         if (value !== null && value !== undefined && value !== "") {
           customFields[fieldSlug] = value;
         }
@@ -217,8 +223,15 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
     }
   }
 
+  // Filter out trust-variant groups when the selected customer type is not TRUST
+  const selectedCustomerType = form.watch("customerType");
+  const filteredIntakeGroups =
+    selectedCustomerType === "TRUST"
+      ? intakeGroups
+      : intakeGroups.filter((g) => !g.slug.includes("trust"));
+
   // Compute whether all visible required fields are filled
-  const allRequiredFilled = intakeGroups.every((group) =>
+  const allRequiredFilled = filteredIntakeGroups.every((group) =>
     group.fields
       .filter((f) => f.required && isFieldVisible(f, fieldValues))
       .every((f) => {
@@ -628,17 +641,17 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                 </div>
               ) : fetchError ? (
                 <p className="text-destructive text-sm">{fetchError}</p>
-              ) : intakeGroups.length === 0 ? (
+              ) : filteredIntakeGroups.length === 0 ? (
                 <p className="text-sm text-slate-500">No additional fields required.</p>
               ) : (
                 <IntakeFieldsSection
-                  groups={intakeGroups}
+                  groups={filteredIntakeGroups}
                   values={fieldValues}
                   onChange={handleFieldChange}
                 />
               )}
 
-              {allRequiredFilled && !isLoadingFields && intakeGroups.length > 0 && (
+              {allRequiredFilled && !isLoadingFields && filteredIntakeGroups.length > 0 && (
                 <div className="pt-1">
                   <button
                     type="button"

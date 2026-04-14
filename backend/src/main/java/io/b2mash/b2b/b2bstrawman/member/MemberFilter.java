@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ScopedFilterChain;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
+import io.b2mash.b2b.b2bstrawman.security.JwtUtils;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -165,9 +166,10 @@ public class MemberFilter extends OncePerRequestFilter {
       }
     }
 
-    // If no invitation, check JWT for explicit role claim (mock-auth / Keycloak)
+    // If no invitation, check JWT for explicit role claim.
+    // Supports Clerk v2 nested (o.rol), mock-auth flat (role), and Keycloak (org_role).
     if (Roles.ORG_MEMBER.equals(effectiveRole)) {
-      String jwtRole = jwt.getClaimAsString("role");
+      String jwtRole = JwtUtils.extractOrgRole(jwt);
       if (jwtRole != null && !jwtRole.isBlank()) {
         effectiveRole = jwtRole;
         log.info("Using JWT role claim '{}' for user {}", jwtRole, clerkUserId);

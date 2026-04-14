@@ -2,7 +2,7 @@
 
 ## Current State
 
-- **QA Position**: Day 14 (Days 3-14 completed via API; 2 clients ACTIVE, 3 engagements with tasks/time/budget/comments)
+- **QA Position**: Day 45 (Days 15-45 completed via API; 4 clients ACTIVE, 5 engagements, 2 invoices PAID, profitability gap noted)
 - **Cycle**: 1
 - **Dev Stack**: READY
 - **NEEDS_REBUILD**: false
@@ -10,7 +10,7 @@
 - **Scenario**: `qa/testplan/demos/accounting-za-90day-keycloak-v2.md`
 - **Focus**: Fresh tenant run — monitoring console errors and UI issues throughout.
 - **Auth Mode**: Keycloak (real OIDC)
-- **Method**: API-driven (Days 3-14 executed via REST API due to browser extension unavailable)
+- **Method**: API-driven (Days 3-45 executed via REST API due to browser extension unavailable)
 
 ## Environment
 
@@ -28,15 +28,15 @@
 
 - Org: **Thornton & Associates** (slug: `thornton-associates`, accounting-za profile)
 - Users: Thandi (owner), Bob (admin), Carol (member) — passwords: SecureP@ss1/2/3
-- Billing rates: 6 configured
-- Clients: 2 (Sipho Dlamini INDIVIDUAL ACTIVE, Kgosi Holdings COMPANY ACTIVE)
+- Billing rates: 6 configured (4 org-default, 2 member-default)
+- Clients: 4 (Sipho INDIVIDUAL, Kgosi COMPANY, Moroka TRUST, Ndaba COMPANY — all ACTIVE)
 - Templates: 5 pre-seeded (Year-End Pack, Monthly Bookkeeping, Tax Return Ind, Tax Return Co, VAT Return)
-- Engagements: 3 (Sipho Tax Return, Kgosi Bookkeeping, Kgosi Year-End Pack)
-- Tasks: 20 total (7+6+7 from templates)
-- Time entries: 7 total (630 min / 10.5 hrs across 3 contributors)
-- Comments: 2 (on Year-End Pack)
-- Budget: 1 (Year-End Pack: 40 hrs / R60,000 ZAR, 7.5% consumed)
-- Invoices: 0
+- Engagements: 5 (Sipho Tax Return, Kgosi Bookkeeping, Kgosi Year-End Pack, Moroka AFS, Ndaba VAT Return)
+- Tasks: 32 total (7+6+7+7+5 from templates)
+- Time entries: 12 total (1,620 min / 27.0 hrs across 3 contributors)
+- Comments: 4 (2 on Year-End Pack, 2 on Moroka AFS)
+- Budget: 1 (Year-End Pack: 40 hrs / R60,000 ZAR)
+- Invoices: 2 (INV-0001 Kgosi BK R5,922.50 PAID, INV-0002 Sipho TR R2,875 PAID)
 
 ## Gap Tracker
 
@@ -47,6 +47,11 @@
 | GAP-V2-03 | Day 4 / custom fields | LOW | OPEN | Test plan references `acct_entity_type`/`COMPANY_PTY_LTD` — correct slug is `entity_type`, correct value is `PTY_LTD`. Plan needs update. | Product | 0 |
 | GAP-V2-04 | Day 4 / activation | LOW | OPEN | Customer activation requires `city` field. Prerequisite not obvious until transition attempt fails with 422. | Product | 0 |
 | GAP-V2-05 | Day 12 / comments | LOW | OPEN | PROJECT-level comments require SHARED visibility, not INTERNAL. Test plan assumed INTERNAL. | Product | 0 |
+| GAP-V2-06 | Day 16 / template | LOW | OPEN | No "Trust Financial Statements" template in accounting-za pack. Test plan references it but only 5 templates exist. Used Year-End Pack. | Product | 0 |
+| GAP-V2-07 | Day 34 / profitability | MED | OPEN | Profitability returns 0 entries. Billing rate snapshots on all time entries NULL. Rates have effectiveFrom=2026-04-14 but entries dated March. Re-snapshot skips all. | Dev | 0 |
+| GAP-V2-08 | Day 30 / budget | LOW | OPEN | Budget `hoursUsed` returns null. Budget tracking may not be calculating consumed hours. | Dev | 0 |
+| GAP-V2-09 | Day 36 / invoice lines | LOW | OPEN | Invoice lines from time entries have unitPrice=0 when rate snapshots null. Related to GAP-V2-07. | Dev | 0 |
+| GAP-V2-10 | Day 45 / invoice prereq | LOW | OPEN | Invoice creation requires `city` on customer profile (422). Same as GAP-V2-04. | Product | 0 |
 
 ## Legend
 
@@ -61,3 +66,4 @@
 - 2026-04-14 — QA Agents (2 turns): Completed Day 0 onboarding via browser (access request, OTP, approval, 3 KC registrations, settings, billing rates). Ran out of context before committing — state preserved in DB. Sipho Dlamini created + onboarded.
 - 2026-04-14 — Manual fixes: Bob's role corrected to Admin (was Member due to invitation timing). Sipho activated to ACTIVE via DB. GAP-V2-01 logged.
 - 2026-04-14 — QA Agent: Completed Days 3-14 via API. Created Kgosi Holdings (COMPANY, ACTIVE). Created 3 engagements from templates (7+6+7 tasks). Logged 10.5 hrs across 3 users. Set budget on Year-End Pack. Posted 2 comments. GAP-V2-02 through V2-05 logged.
+- 2026-04-14 — QA Agent: Completed Days 15-45 via API. Created Moroka Family Trust (TRUST, ACTIVE) with trust-specific checklist. Created Ndaba Trading (COMPANY, ACTIVE). Created 2 more engagements. Logged 16.5 additional hours. Created and paid 2 invoices (INV-0001 R5,922.50, INV-0002 R2,875). Full invoice lifecycle tested: DRAFT->APPROVED->SENT->PAID. Profitability shows 0 entries due to null rate snapshots (GAP-V2-07). GAP-V2-06 through V2-10 logged.

@@ -2,7 +2,7 @@
 
 ## Current State
 
-- **QA Position**: Day 36 BLOCKED (Days 0-34 complete; Day 36 attempted -- invoice generation dialog opens but Fetch Unbilled Time does not advance to step 2; 2 HIGH gaps block all Days 36-60 invoice/payment checkpoints)
+- **QA Position**: Day 90 PARTIAL (Days 0-34 complete; Day 36 verified + invoice created; Days 38-90 executed with 15 PASS, 3 PARTIAL, 1 FAIL, 13 DEFERRED, 3 N/A; deferred items are non-core features -- PDF generation, portal, additional invoice cycles, CSV export, Mailpit)
 - **Cycle**: 1
 - **Dev Stack**: READY
 - **NEEDS_REBUILD**: false
@@ -34,8 +34,10 @@
 | GAP-D0-05 | Day 0 / 0.41 | MED | SPEC_READY | Engagement templates not pre-seeded from accounting-za profile -- no Year-End Pack, Monthly Bookkeeping, Tax Return templates | Dev | 0 |
 | GAP-D0-06 | Day 0 / 0.43 | LOW | WONT_FIX | Automation rules not pre-seeded from accounting-za profile; feature toggle disabled by default — by design: automation_builder is horizontal opt-in module per ADR-239 | Dev | 0 |
 | GAP-D0-07 | Day 2 / 2.2 | MED | SPEC_READY | No onboarding checklist seeded for accounting-za profile -- FICA pack has autoInstantiate=false; needs to be true | Dev | 0 |
-| GAP-D36-01 | Day 36 / 36.2 | HIGH | FIXED | MemberFilter.lazyCreateMember() only read "role" JWT claim (mock-auth); Keycloak uses "org_role". Now checks both. PR #1030 merged. | Dev | 0 |
-| GAP-D36-02 | Day 36 / 36.2 | HIGH | FIXED | Removed redundant fetchMyCapabilities() gates in invoice-actions.ts; backend @RequiresCapability handles auth. PR #1030 merged. | Dev | 0 |
+| GAP-D36-01 | Day 36 / 36.2 | HIGH | VERIFIED | MemberFilter.lazyCreateMember() only read "role" JWT claim (mock-auth); Keycloak uses "org_role". Now checks both. PR #1030 merged. Backend returns 200 for Bob (admin). | Dev | 0 |
+| GAP-D36-02 | Day 36 / 36.2 | HIGH | VERIFIED | Removed redundant fetchMyCapabilities() gates in invoice-actions.ts; backend @RequiresCapability handles auth. PR #1030 merged. Fetch Unbilled Time now advances to step 2. | Dev | 0 |
+| GAP-D36-03 | Day 36 / page load | LOW | OPEN | Module guard 500 errors on customer invoices tab load (non-blocking, swallowed by error boundary). ModuleNotEnabledException for unidentified module. | Dev | 0 |
+| GAP-D85-01 | Day 85 / 85.1 | MED | OPEN | No frontend audit log page. /audit and /settings/audit-log both 404. Backend audit events exist (Phase 6) but no browsable UI. | Dev | 0 |
 
 ## Legend
 
@@ -57,3 +59,4 @@
 - 2026-04-14 — **Product Agent: Triage complete.** All 9 OPEN items triaged. 7 → SPEC_READY, 2 → WONT_FIX. Fix specs written to `qa_cycle/fix-specs/`. Key findings: (1) GAP-D36-01/02 are likely the same root cause — MemberFilter capability resolution failing, causing empty capabilities set → all @RequiresCapability checks fail with 403. Invoicing is NOT a module — it's a core capability. The "Module not enabled" error was likely misattributed by QA. (2) GAP-D0-07 fix is trivial: set autoInstantiate=true in fica-kyc-za pack.json. (3) GAP-D0-03 fix is trivial: wrap hardcoded "Create Project" in TerminologyText. (4) GAP-D0-05 requires creating accounting-za.json in project-template-packs/. (5) GAP-D0-02 and GAP-D0-06 are WONT_FIX — working as designed. Priority order: GAP-D36-01 → GAP-D36-02 → GAP-D0-03 → GAP-D0-07 → GAP-D0-05 → GAP-D0-04 → GAP-D0-01.
 - 2026-04-14 — **Dev Agent (GAP-D36-01+02)**: Root cause: `MemberFilter.lazyCreateMember()` read `jwt.getClaimAsString("role")` but Keycloak maps the org role to `org_role` claim (via protocol mapper in realm-export.json). Non-founding members (Bob/Admin, Carol/Member) were JIT-created with default "member" role regardless of their Keycloak role, causing empty capabilities for admin-only features. Fix: check both `role` and `org_role` claims. Also removed redundant `fetchMyCapabilities()` gates in `invoice-actions.ts` (fetchUnbilledTime + createInvoiceDraft) — backend `@RequiresCapability` handles authorization. 2 files changed, 5 additions, 12 deletions. All tests green (37 backend, 1933 frontend). PR #1030 merged. NEEDS_REBUILD=true (backend MemberFilter changed).
 - 2026-04-14 — **Infra Agent: backend restarted after PR #1030 merge.** Backend service restarted (MemberFilter capability resolution fix). Health check passed in 30s. All 4 services verified healthy (backend:8080, gateway:8443, frontend:3000, portal:3002). NEEDS_REBUILD set to false. QA can resume Day 36 verification.
+- 2026-04-14 — **QA Agent: Days 36-90 executed (verification + forward progress).** Both HIGH gaps verified fixed: GAP-D36-01 (backend returns 200 for Bob admin on prerequisite check), GAP-D36-02 (Fetch Unbilled Time advances to step 2 with all entries). Kgosi bookkeeping invoice created from 4 time entries (R7,200 + 15% VAT = R8,280). Invoice approved (INV-0001), sent, and payment recorded (PAID). Invoice detail page shows all promoted slugs inline (PO Number, Tax Type, Billing Period Start/End). Line items show Description, Project, Qty, Rate, Amount, Tax with correct VAT calculations. My Work and Profitability pages verified. Terminology sweep clean (no legal terms in UI). Progressive disclosure confirmed (no legal modules). 2 new gaps found: GAP-D36-03 (LOW, module guard 500 on page load), GAP-D85-01 (MED, no audit log frontend page). 13 checkpoints deferred (PDF generation, portal, additional invoices, CSV export, Mailpit).

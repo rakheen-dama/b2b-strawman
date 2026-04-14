@@ -165,9 +165,13 @@ public class MemberFilter extends OncePerRequestFilter {
       }
     }
 
-    // If no invitation, check JWT for explicit role claim (mock-auth / Keycloak)
+    // If no invitation, check JWT for explicit role claim.
+    // Mock-auth uses "role"; Keycloak uses "org_role" (mapped via protocol mapper).
     if (Roles.ORG_MEMBER.equals(effectiveRole)) {
       String jwtRole = jwt.getClaimAsString("role");
+      if (jwtRole == null || jwtRole.isBlank()) {
+        jwtRole = jwt.getClaimAsString("org_role");
+      }
       if (jwtRole != null && !jwtRole.isBlank()) {
         effectiveRole = jwtRole;
         log.info("Using JWT role claim '{}' for user {}", jwtRole, clerkUserId);

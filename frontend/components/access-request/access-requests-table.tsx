@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Tabs as TabsPrimitive } from "radix-ui";
-import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { ClipboardList } from "lucide-react";
@@ -71,18 +70,11 @@ export function AccessRequestsTable({ requests }: AccessRequestsTableProps) {
                 "relative pb-3 text-sm font-medium transition-colors outline-none",
                 "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",
                 "data-[state=active]:text-slate-950 dark:data-[state=active]:text-slate-50",
+                "border-b-2 border-transparent data-[state=active]:border-teal-500",
                 "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
               )}
             >
               {tab.label}
-              {activeTab === tab.id && (
-                <motion.span
-                  className="absolute inset-x-0 bottom-0 h-0.5 bg-teal-500"
-                  layoutId="access-request-tab-indicator"
-                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                  aria-hidden="true"
-                />
-              )}
             </TabsPrimitive.Trigger>
           ))}
         </TabsPrimitive.List>

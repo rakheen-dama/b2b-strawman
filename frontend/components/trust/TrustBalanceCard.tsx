@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { ModuleGate } from "@/components/module-gate";
+import { useOrgProfile } from "@/lib/org-profile";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -46,13 +47,16 @@ export function TrustBalanceCard({
 }: TrustBalanceCardProps) {
   // _projectId reserved for future per-project transaction filtering
   void _projectId;
+  const { isModuleEnabled } = useOrgProfile();
+  const moduleEnabled = isModuleEnabled("trust_accounting");
   const [depositOpen, setDepositOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [feeTransferOpen, setFeeTransferOpen] = useState(false);
   const { mutate: globalMutate } = useSWRConfig();
 
   // Fetch trust accounts to find primary if not provided
-  const accountsCacheKey = !trustAccountId ? `trust-accounts-${slug}` : null;
+  // Gate on module being enabled to avoid 403/500 errors for tenants without trust_accounting
+  const accountsCacheKey = moduleEnabled && !trustAccountId ? `trust-accounts-${slug}` : null;
   const { data: accounts, isLoading: accountsLoading } = useSWR<TrustAccount[]>(
     accountsCacheKey,
     () => fetchTrustAccounts()

@@ -2,7 +2,7 @@
 
 ## Current State
 
-- **QA Position**: Day 0 — Phase E checkpoint 0.28 (rates creation in progress)
+- **QA Position**: Day 2 — checkpoint 2.5 (task assignment pending)
 - **Cycle**: 1
 - **Dev Stack**: READY
 - **NEEDS_REBUILD**: false
@@ -31,6 +31,9 @@
 | GAP-C-01 | D0 / 0.10 | LOW | OPEN | `vertical_profile` not auto-assigned for "Marketing" industry | Product | 0 |
 | GAP-C-02 | D0 / 0.24 | LOW | OPEN | Default currency USD not ZAR for SA-registered org | Product | 0 |
 | GAP-C-03 | D0 / 0.28 | MED | OPEN | `consulting-generic` has no rate-card defaults | Product | 0 |
+| GAP-C-04 | D0 / 0.34 | MED | OPEN | No agency-flavoured custom field pack | Product | 0 |
+| GAP-C-05 | D0 / 0.40 | MED | OPEN | No templates pre-seeded for consulting-generic | Product | 0 |
+| GAP-C-06 | D0 / 0.43 | MED | OPEN | No automation pack for consulting-generic | Product | 0 |
 
 ## Legend
 
@@ -43,3 +46,5 @@
 - 2026-04-14 — Cycle initialized for consulting agency 90-day demo.
 - 2026-04-14 — Infra Agent: Clean teardown (volumes wiped), fresh Docker infra started, Keycloak bootstrapped (padmin@docteams.local), all 4 services UP (backend:8080, gateway:8443, frontend:3000, portal:3002). Dev stack READY.
 - 2026-04-14 — QA Agent: Day 0 Phases A-D complete. Access request, OTP, admin approval, Keycloak registration, team invites all PASS. 3 users registered (Zolani/Owner, Bob/Admin, Carol/Member). Phase E in progress — currency set to ZAR, brand colour #F97316, Zolani billing rate R1800/hr created. 3 profile-content gaps logged (GAP-C-01 to GAP-C-03).
+- 2026-04-14 — QA Agent: Day 0 complete (Phases E-I). All billing/cost rates created (Zolani R1800/R800, Bob R1200/R550, Carol R750/R350). VAT 15% already present. Custom field promotion verified on Customer + Project dialogs. Template "Website Redesign Project" (6 tasks) created manually. Progressive disclosure verified: zero legal/accounting leaks. Tier removal verified: flat billing UI. 6 profile-content gaps logged (GAP-C-01 to GAP-C-06).
+- 2026-04-14 — QA Agent: Days 1-2 started. BrightCup Coffee Roasters created as customer (PROSPECT -> ONBOARDING -> ACTIVE). First project "BrightCup -- Brand Refresh + Website Redesign" created from template with 6 tasks (Discovery, Wireframes, Design, Development, QA, Launch). Reference BC-2026-001, priority HIGH. No product bugs found — all profile-content gaps only.

@@ -44,6 +44,7 @@ public class DemoProvisionService {
   private final OrgSchemaMappingRepository orgSchemaMappingRepository;
   private final TenantTransactionHelper tenantTransactionHelper;
   private final VerticalProfileRegistry verticalProfileRegistry;
+  private final DemoWelcomeEmailService demoWelcomeEmailService;
   private final JdbcTemplate jdbcTemplate;
   private final String baseUrl;
 
@@ -58,6 +59,7 @@ public class DemoProvisionService {
       OrgSchemaMappingRepository orgSchemaMappingRepository,
       TenantTransactionHelper tenantTransactionHelper,
       VerticalProfileRegistry verticalProfileRegistry,
+      DemoWelcomeEmailService demoWelcomeEmailService,
       JdbcTemplate jdbcTemplate,
       @Value("${app.base-url:http://localhost:3000}") String baseUrl) {
     this.keycloakAdminClient = keycloakAdminClient;
@@ -70,6 +72,7 @@ public class DemoProvisionService {
     this.orgSchemaMappingRepository = orgSchemaMappingRepository;
     this.tenantTransactionHelper = tenantTransactionHelper;
     this.verticalProfileRegistry = verticalProfileRegistry;
+    this.demoWelcomeEmailService = demoWelcomeEmailService;
     this.jdbcTemplate = jdbcTemplate;
     this.baseUrl = baseUrl;
   }
@@ -201,6 +204,13 @@ public class DemoProvisionService {
           subscriptionStatusCache.evict(org.getId());
         });
 
+    // Compute login URL (needed for welcome email and response)
+    String loginUrl = baseUrl + "/org/" + slug;
+
+    // Step 5b: Send welcome email (non-fatal — provisioning succeeds even if email fails)
+    demoWelcomeEmailService.sendWelcomeEmail(
+        adminEmail, name, slug, verticalProfile, loginUrl, tempPassword);
+
     // Step 6: Demo data seeding (non-fatal — tenant is usable without demo data)
     boolean demoDataSeeded = false;
     if (request.seedDemoData()) {
@@ -229,8 +239,6 @@ public class DemoProvisionService {
             "admin_user_id", adminUserId,
             "demo_data_seeded", String.valueOf(demoDataSeeded));
     log.info("AUDIT: Demo tenant provisioned for org {}: {}", org.getId(), auditDetails);
-
-    String loginUrl = baseUrl + "/org/" + slug;
 
     return new DemoProvisionResponse(
         org.getId(),

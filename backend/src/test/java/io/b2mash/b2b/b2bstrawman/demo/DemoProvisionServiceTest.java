@@ -64,7 +64,7 @@ class DemoProvisionServiceTest {
                     """
                     {
                       "organizationName": "Demo Accounting Firm",
-                      "verticalProfile": "accounting",
+                      "verticalProfile": "accounting-za",
                       "adminEmail": "demo@example.com",
                       "seedDemoData": false
                     }
@@ -72,7 +72,7 @@ class DemoProvisionServiceTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.organizationSlug").value("demo-accounting-firm"))
         .andExpect(jsonPath("$.organizationName").value("Demo Accounting Firm"))
-        .andExpect(jsonPath("$.verticalProfile").value("accounting"))
+        .andExpect(jsonPath("$.verticalProfile").value("accounting-za"))
         .andExpect(jsonPath("$.tempPassword").isNotEmpty());
 
     verify(keycloakAdminClient)
@@ -97,7 +97,7 @@ class DemoProvisionServiceTest {
                     """
                     {
                       "organizationName": "Pilot Org",
-                      "verticalProfile": "legal",
+                      "verticalProfile": "legal-za",
                       "adminEmail": "pilot@example.com",
                       "seedDemoData": false
                     }
@@ -131,7 +131,7 @@ class DemoProvisionServiceTest {
                     """
                     {
                       "organizationName": "Existing User Org",
-                      "verticalProfile": "accounting",
+                      "verticalProfile": "accounting-za",
                       "adminEmail": "existing@example.com",
                       "seedDemoData": false
                     }
@@ -160,7 +160,7 @@ class DemoProvisionServiceTest {
                     """
                     {
                       "organizationName": "No Seed Org",
-                      "verticalProfile": "accounting",
+                      "verticalProfile": "accounting-za",
                       "adminEmail": "noseed@example.com",
                       "seedDemoData": false
                     }
@@ -185,7 +185,7 @@ class DemoProvisionServiceTest {
                     """
                     {
                       "organizationName": "Login Url Org",
-                      "verticalProfile": "legal",
+                      "verticalProfile": "legal-za",
                       "adminEmail": "login@example.com",
                       "seedDemoData": false
                     }
@@ -212,13 +212,34 @@ class DemoProvisionServiceTest {
                     """
                     {
                       "organizationName": "Audit Org",
-                      "verticalProfile": "accounting",
+                      "verticalProfile": "accounting-za",
                       "adminEmail": "audit@example.com",
                       "seedDemoData": false
                     }
                     """))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.organizationId").exists());
+  }
+
+  @Test
+  void provision_unknownVerticalProfile_returns400() throws Exception {
+    mockMvc
+        .perform(
+            post(BASE_PATH + "/provision")
+                .with(adminJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "organizationName": "Unknown Profile Org",
+                      "verticalProfile": "BOGUS",
+                      "adminEmail": "bogus@example.com",
+                      "seedDemoData": false
+                    }
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Unknown vertical profile"))
+        .andExpect(jsonPath("$.detail", containsString("not registered")));
   }
 
   @Test

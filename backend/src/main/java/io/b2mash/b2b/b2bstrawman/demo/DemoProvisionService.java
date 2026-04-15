@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import java.security.SecureRandom;
 import java.util.Map;
 import java.util.UUID;
@@ -42,6 +43,7 @@ public class DemoProvisionService {
   private final DemoDataSeeder demoDataSeeder;
   private final OrgSchemaMappingRepository orgSchemaMappingRepository;
   private final TenantTransactionHelper tenantTransactionHelper;
+  private final VerticalProfileRegistry verticalProfileRegistry;
   private final JdbcTemplate jdbcTemplate;
   private final String baseUrl;
 
@@ -55,6 +57,7 @@ public class DemoProvisionService {
       DemoDataSeeder demoDataSeeder,
       OrgSchemaMappingRepository orgSchemaMappingRepository,
       TenantTransactionHelper tenantTransactionHelper,
+      VerticalProfileRegistry verticalProfileRegistry,
       JdbcTemplate jdbcTemplate,
       @Value("${app.base-url:http://localhost:3000}") String baseUrl) {
     this.keycloakAdminClient = keycloakAdminClient;
@@ -66,6 +69,7 @@ public class DemoProvisionService {
     this.demoDataSeeder = demoDataSeeder;
     this.orgSchemaMappingRepository = orgSchemaMappingRepository;
     this.tenantTransactionHelper = tenantTransactionHelper;
+    this.verticalProfileRegistry = verticalProfileRegistry;
     this.jdbcTemplate = jdbcTemplate;
     this.baseUrl = baseUrl;
   }
@@ -93,6 +97,18 @@ public class DemoProvisionService {
       throw new InvalidStateException(
           "Invalid organization name",
           "Organization name must contain at least one alphanumeric character");
+    }
+
+    // Validate vertical profile exists in registry
+    if (!verticalProfileRegistry.exists(verticalProfile)) {
+      throw new InvalidStateException(
+          "Unknown vertical profile",
+          "Vertical profile '%s' is not registered. Available profiles: %s"
+              .formatted(
+                  verticalProfile,
+                  verticalProfileRegistry.getAllProfiles().stream()
+                      .map(p -> p.profileId())
+                      .toList()));
     }
 
     log.info(

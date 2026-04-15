@@ -303,12 +303,13 @@ class DemoDataSeederIntegrationTest {
   void dispatcher_routesToCorrectSeeder_accounting() {
     // Provision a separate tenant for accounting profile
     String slug = "acct-dispatch-test-" + UUID.randomUUID().toString().substring(0, 8);
-    tenantProvisioningService.provisionTenant(slug, "Accounting Dispatch Test Org", "accounting");
+    tenantProvisioningService.provisionTenant(
+        slug, "Accounting Dispatch Test Org", "accounting-za");
     String acctSchema = mappingRepository.findByExternalOrgId(slug).orElseThrow().getSchemaName();
     UUID acctOrgId = organizationRepository.findByExternalOrgId(slug).orElseThrow().getId();
 
     // Use the dispatcher to seed — should route to AccountingDemoDataSeeder
-    demoDataSeeder.seed(acctSchema, acctOrgId, "accounting");
+    demoDataSeeder.seed(acctSchema, acctOrgId, "accounting-za");
 
     var customerNames = new AtomicReference<List<String>>();
     tenantTransactionHelper.executeInTenantTransaction(

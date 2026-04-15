@@ -40,8 +40,8 @@ public class DemoDataSeeder {
 
     BaseDemoDataSeeder seeder =
         switch (verticalProfile == null ? "" : verticalProfile.toLowerCase()) {
-          case "accounting" -> accountingSeeder;
-          case "legal" -> legalSeeder;
+          case "accounting-za" -> accountingSeeder;
+          case "legal-za" -> legalSeeder;
           default -> genericSeeder;
         };
     seeder.seed(schemaName, orgId);

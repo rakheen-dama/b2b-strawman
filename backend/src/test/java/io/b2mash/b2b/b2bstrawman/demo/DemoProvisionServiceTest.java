@@ -253,7 +253,7 @@ class DemoProvisionServiceTest {
                     """
                     {
                       "organizationName": "Forbidden Org",
-                      "verticalProfile": "accounting",
+                      "verticalProfile": "accounting-za",
                       "adminEmail": "forbidden@example.com",
                       "seedDemoData": false
                     }
@@ -272,7 +272,7 @@ class DemoProvisionServiceTest {
                     """
                     {
                       "organizationName": "Bad Email Org",
-                      "verticalProfile": "accounting",
+                      "verticalProfile": "accounting-za",
                       "adminEmail": "not-an-email",
                       "seedDemoData": false
                     }

@@ -32,7 +32,8 @@ public class DemoDataSeeder {
    *
    * @param schemaName the tenant schema name (e.g. "tenant_a1b2c3d4e5f6")
    * @param orgId the organization UUID
-   * @param verticalProfile the vertical profile (e.g. "generic", "accounting", "legal")
+   * @param verticalProfile the vertical profile (e.g. "consulting-generic", "accounting-za",
+   *     "legal-za")
    */
   public void seed(String schemaName, UUID orgId, String verticalProfile) {
     log.info(

@@ -131,14 +131,15 @@ public class DemoProvisionService {
 
     // Step 1: Find or create Keycloak user
     String tempPassword = generateTempPassword();
-    String userId =
-        keycloakAdminClient
-            .findUserByEmail(adminEmail)
-            .orElseGet(
-                () -> {
-                  log.info("Creating Keycloak user for {}", adminEmail);
-                  return keycloakAdminClient.createUser(adminEmail, "Demo", "Admin", tempPassword);
-                });
+    var existingUserId = keycloakAdminClient.findUserByEmail(adminEmail);
+    boolean isNewUser = existingUserId.isEmpty();
+    String userId;
+    if (isNewUser) {
+      log.info("Creating Keycloak user for {}", adminEmail);
+      userId = keycloakAdminClient.createUser(adminEmail, "Demo", "Admin", tempPassword);
+    } else {
+      userId = existingUserId.get();
+    }
 
     // Step 2: Create Keycloak organization
     String kcOrgId;
@@ -207,9 +208,11 @@ public class DemoProvisionService {
     // Compute login URL (needed for welcome email and response)
     String loginUrl = baseUrl + "/org/" + slug;
 
-    // Step 5b: Send welcome email (non-fatal — provisioning succeeds even if email fails)
-    demoWelcomeEmailService.sendWelcomeEmail(
-        adminEmail, name, slug, verticalProfile, loginUrl, tempPassword);
+    // Step 5b: Send welcome email (only for new users — existing users already have credentials)
+    if (isNewUser) {
+      demoWelcomeEmailService.sendWelcomeEmail(
+          adminEmail, name, slug, verticalProfile, loginUrl, tempPassword);
+    }
 
     // Step 6: Demo data seeding (non-fatal — tenant is usable without demo data)
     boolean demoDataSeeded = false;
@@ -248,7 +251,7 @@ public class DemoProvisionService {
         loginUrl,
         demoDataSeeded,
         adminNote,
-        tempPassword);
+        isNewUser ? tempPassword : null);
   }
 
   /**

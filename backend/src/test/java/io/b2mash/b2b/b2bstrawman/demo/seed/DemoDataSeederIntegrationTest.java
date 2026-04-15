@@ -1,6 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.demo.seed;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
@@ -17,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
@@ -55,6 +58,7 @@ class DemoDataSeederIntegrationTest {
   private final InvoiceLineRepository invoiceLineRepository;
   private final MemberRepository memberRepository;
   private final ProjectMemberRepository projectMemberRepository;
+  private final OrgSettingsRepository orgSettingsRepository;
 
   private String schemaName;
   private UUID orgId;
@@ -75,7 +79,8 @@ class DemoDataSeederIntegrationTest {
       InvoiceRepository invoiceRepository,
       InvoiceLineRepository invoiceLineRepository,
       MemberRepository memberRepository,
-      ProjectMemberRepository projectMemberRepository) {
+      ProjectMemberRepository projectMemberRepository,
+      OrgSettingsRepository orgSettingsRepository) {
     this.genericDemoDataSeeder = genericDemoDataSeeder;
     this.accountingDemoDataSeeder = accountingDemoDataSeeder;
     this.demoDataSeeder = demoDataSeeder;
@@ -91,6 +96,7 @@ class DemoDataSeederIntegrationTest {
     this.invoiceLineRepository = invoiceLineRepository;
     this.memberRepository = memberRepository;
     this.projectMemberRepository = projectMemberRepository;
+    this.orgSettingsRepository = orgSettingsRepository;
   }
 
   @BeforeAll
@@ -331,5 +337,33 @@ class DemoDataSeederIntegrationTest {
     assertTrue(
         hasAccountingCustomer,
         "Accounting seeder should create accounting-specific customers, found: " + names);
+  }
+
+  @Test
+  void legalProfile_installsVerticalSpecificPacks() {
+    String slug = "legal-pack-test-" + UUID.randomUUID().toString().substring(0, 8);
+    tenantProvisioningService.provisionTenant(slug, "Legal Pack Test Org", "legal-za");
+    String legalSchema = mappingRepository.findByExternalOrgId(slug).orElseThrow().getSchemaName();
+    UUID legalOrgId = organizationRepository.findByExternalOrgId(slug).orElseThrow().getId();
+
+    var result = new AtomicReference<io.b2mash.b2b.b2bstrawman.settings.OrgSettings>();
+    tenantTransactionHelper.executeInTenantTransaction(
+        legalSchema,
+        legalOrgId.toString(),
+        t -> {
+          result.set(orgSettingsRepository.findForCurrentTenant().orElseThrow());
+        });
+
+    var settings = result.get();
+    assertEquals("legal-za", settings.getVerticalProfile());
+    assertNotNull(settings.getEnabledModules(), "Enabled modules should be set");
+    assertTrue(
+        settings.getEnabledModules().contains("trust_accounting"),
+        "Legal profile should enable trust_accounting module");
+    assertTrue(
+        settings.getEnabledModules().contains("court_calendar"),
+        "Legal profile should enable court_calendar module");
+    assertEquals("en-ZA-legal", settings.getTerminologyNamespace());
+    assertEquals("ZAR", settings.getDefaultCurrency());
   }
 }

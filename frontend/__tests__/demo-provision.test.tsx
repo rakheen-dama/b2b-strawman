@@ -66,7 +66,7 @@ describe("DemoProvisionForm", () => {
     await waitFor(() => {
       expect(mockProvisionDemo).toHaveBeenCalledWith({
         organizationName: "Demo Accounting Firm",
-        verticalProfile: "ACCOUNTING",
+        verticalProfile: "accounting-za",
         adminEmail: "admin@example.com",
         seedDemoData: true,
       });
@@ -144,7 +144,7 @@ describe("DemoProvisionForm", () => {
 
     render(<DemoProvisionForm />);
 
-    // Default is GENERIC — click Accounting radio
+    // Default is consulting-generic — click Accounting radio
     const accountingRadio = screen.getByRole("radio", { name: /Accounting/ });
     await user.click(accountingRadio);
     expect(accountingRadio).toBeChecked();
@@ -157,7 +157,7 @@ describe("DemoProvisionForm", () => {
     await waitFor(() => {
       expect(mockProvisionDemo).toHaveBeenCalledWith(
         expect.objectContaining({
-          verticalProfile: "ACCOUNTING",
+          verticalProfile: "accounting-za",
         })
       );
     });

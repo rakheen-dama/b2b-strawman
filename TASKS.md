@@ -536,7 +536,7 @@
 | 471 | Service-Layer Guards for Horizontal Modules | Backend | 470 | M | 471A | **Done** (PR #991) |
 | 472 | Settings Features Page + Nav Gating | Frontend | 470 | M | 472A, 472B | **Done** (PR #992) |
 | **Phase 65 — Kazi Packs Catalog & Install Pipeline** | | | | | | See [tasks/phase65-packs-catalog-install-pipeline.md](tasks/phase65-packs-catalog-install-pipeline.md) |
-| 473 | PackInstall Entity + Migrations | Backend | -- | M | 473A, 473B | |
+| 473 | PackInstall Entity + Migrations | Backend | -- | M | 473A, 473B | **Done** (PR #1040) |
 | 474 | PackInstaller Interface + Implementations | Backend | 473 | M | 474A, 474B | |
 | 475 | PackCatalogService + PackInstallService | Backend | 474 | M | 475A | |
 | 476 | Profile Provisioning Refactor | Backend | 475 | M | 476A | |

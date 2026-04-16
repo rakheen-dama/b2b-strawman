@@ -26,7 +26,7 @@ Phase 65 introduces Kazi Packs as a first-class product surface: a unified catal
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 473 | PackInstall Entity + Migrations | Backend | -- (Phase 12, 13, 8 complete) | M | 473A, 473B | |
+| 473 | PackInstall Entity + Migrations | Backend | -- (Phase 12, 13, 8 complete) | M | 473A, 473B | **Done** (PR #1040) |
 | 474 | PackInstaller Interface + Implementations | Backend | 473 | M | 474A, 474B | |
 | 475 | PackCatalogService + PackInstallService | Backend | 474 | M | 475A | |
 | 476 | Profile Provisioning Refactor | Backend | 475 | M | 476A | |
@@ -118,13 +118,13 @@ PHASE 8 (OrgSettings), PHASE 6 (Audit), PHASE 44 (Settings Layout)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 0a | 473 | 473A | V94 tenant migration (create `pack_install` table + add `source_pack_install_id` FK and `content_hash` columns to `document_templates` and `automation_rules`). `PackInstall` entity, `PackType` enum, `PackCatalogEntry` record, `UninstallCheck` record, `ContentHashUtil` utility, `PackInstallRepository`. Backend only. | |
+| 0a | 473 | 473A | V94 tenant migration (create `pack_install` table + add `source_pack_install_id` FK and `content_hash` columns to `document_templates` and `automation_rules`). `PackInstall` entity, `PackType` enum, `PackCatalogEntry` record, `UninstallCheck` record, `ContentHashUtil` utility, `PackInstallRepository`. Backend only. | **Done** (PR #1040) |
 
 ### Stage 1: Backfill Migration + Entity Extensions
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 1a | 473 | 473B | V95 backfill migration (synthetic `PackInstall` rows from OrgSettings JSONB). Add `sourcePackInstallId` and `contentHash` fields to `DocumentTemplate` and `AutomationRule` entities. Add repository methods to `DocumentTemplateRepository`, `AutomationRuleRepository`, `GeneratedDocumentRepository`, `AutomationExecutionRepository`. Backend only. | |
+| 1a | 473 | 473B | V95 backfill migration (synthetic `PackInstall` rows from OrgSettings JSONB). Add `sourcePackInstallId` and `contentHash` fields to `DocumentTemplate` and `AutomationRule` entities. Add repository methods to `DocumentTemplateRepository`, `AutomationRuleRepository`, `GeneratedDocumentRepository`, `AutomationExecutionRepository`. Backend only. | **Done** (PR #1040) |
 
 ### Stage 2: PackInstaller Interface + TemplatePackInstaller
 
@@ -201,8 +201,8 @@ Stage 8:  [479A]                                          <- E2E test
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **473A** | 473.1--473.8 | V94 tenant migration (create `pack_install` table, add `source_pack_install_id` FK and `content_hash` columns to `document_templates` and `automation_rules`). `PackType` enum. `PackInstall` entity with `@Entity`, `@Table`, all 8 fields. `PackInstallRepository` with `findByPackId()`. `PackCatalogEntry` record. `UninstallCheck` record. `ContentHashUtil` (SHA-256 over canonical JSON). Migration smoke test + entity CRUD test + ContentHashUtil unit test (~4 tests). Backend only. | |
-| **473B** | 473.9--473.14 | V95 backfill migration (synthetic `PackInstall` rows from OrgSettings JSONB for document template and automation template packs). Add `sourcePackInstallId` (UUID) and `contentHash` (String) fields to `DocumentTemplate` entity. Add same fields to `AutomationRule` entity. Add `findBySourcePackInstallId()` and `countBySourcePackInstallId()` to `DocumentTemplateRepository` and `AutomationRuleRepository`. Add `existsByTemplateIdIn()` to `GeneratedDocumentRepository`. Add `existsByRuleIdIn()` to `AutomationExecutionRepository`. Backfill integration test (~3 tests). Backend only. | |
+| **473A** | 473.1--473.8 | V94 tenant migration (create `pack_install` table, add `source_pack_install_id` FK and `content_hash` columns to `document_templates` and `automation_rules`). `PackType` enum. `PackInstall` entity with `@Entity`, `@Table`, all 8 fields. `PackInstallRepository` with `findByPackId()`. `PackCatalogEntry` record. `UninstallCheck` record. `ContentHashUtil` (SHA-256 over canonical JSON). Migration smoke test + entity CRUD test + ContentHashUtil unit test (~4 tests). Backend only. | **Done** (PR #1040) |
+| **473B** | 473.9--473.14 | V95 backfill migration (synthetic `PackInstall` rows from OrgSettings JSONB for document template and automation template packs). Add `sourcePackInstallId` (UUID) and `contentHash` (String) fields to `DocumentTemplate` entity. Add same fields to `AutomationRule` entity. Add `findBySourcePackInstallId()` and `countBySourcePackInstallId()` to `DocumentTemplateRepository` and `AutomationRuleRepository`. Add `existsByTemplateIdIn()` to `GeneratedDocumentRepository`. Add `existsByRuleIdIn()` to `AutomationExecutionRepository`. Backfill integration test (~3 tests). Backend only. | **Done** (PR #1040) |
 
 ### Tasks
 

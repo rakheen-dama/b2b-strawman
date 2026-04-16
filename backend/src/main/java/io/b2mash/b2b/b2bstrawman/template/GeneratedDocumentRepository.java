@@ -24,4 +24,9 @@ public interface GeneratedDocumentRepository extends JpaRepository<GeneratedDocu
       @Param("generatedBy") UUID generatedBy);
 
   boolean existsByTemplateIdIn(List<UUID> templateIds);
+
+  @Query(
+      "SELECT COUNT(DISTINCT gd.templateId) FROM GeneratedDocument gd"
+          + " WHERE gd.templateId IN :templateIds")
+  long countDistinctTemplatesWithGeneratedDocuments(@Param("templateIds") List<UUID> templateIds);
 }

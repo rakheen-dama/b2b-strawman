@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
@@ -88,25 +89,28 @@ public class TemplatePackInstaller implements PackInstaller {
 
     TemplatePackDefinition pack = loadedPack.definition();
 
-    // Create PackInstall row
-    var install =
-        new PackInstall(
-            packId,
-            PackType.DOCUMENT_TEMPLATE,
-            String.valueOf(pack.version()),
-            pack.name(),
-            Instant.now(),
-            memberId != null ? UUID.fromString(memberId) : null,
-            pack.templates().size());
-    install = packInstallRepository.save(install);
+    // Create PackInstall row — catch constraint violation for TOCTOU race
+    PackInstall install;
+    try {
+      install =
+          new PackInstall(
+              packId,
+              PackType.DOCUMENT_TEMPLATE,
+              String.valueOf(pack.version()),
+              pack.name(),
+              Instant.now(),
+              memberId != null ? UUID.fromString(memberId) : null,
+              pack.templates().size());
+      install = packInstallRepository.save(install);
+    } catch (DataIntegrityViolationException e) {
+      log.info("Template pack {} already installed (concurrent request), skipping", packId);
+      return;
+    }
 
     // Check if templates already exist from a prior seeder run (e.g., during provisioning).
     // If so, tag them with this install. Otherwise, create them fresh.
-    var existingTemplates = documentTemplateRepository.findByActiveTrueOrderBySortOrder();
     var untaggedPackTemplates =
-        existingTemplates.stream()
-            .filter(dt -> packId.equals(dt.getPackId()) && dt.getSourcePackInstallId() == null)
-            .toList();
+        documentTemplateRepository.findByPackIdAndSourcePackInstallIdIsNull(packId);
 
     UUID installId = install.getId();
     if (!untaggedPackTemplates.isEmpty()) {
@@ -114,21 +118,20 @@ public class TemplatePackInstaller implements PackInstaller {
       for (DocumentTemplate dt : untaggedPackTemplates) {
         dt.setSourcePackInstallId(installId);
         dt.setContentHash(computeTemplateHash(dt));
-        documentTemplateRepository.save(dt);
       }
+      documentTemplateRepository.saveAll(untaggedPackTemplates);
     } else {
       // No existing templates — create via seeder
       templatePackSeeder.applyPackContent(pack, loadedPack.resource(), tenantId);
 
       // Tag the newly created templates
-      var allTemplates = documentTemplateRepository.findByActiveTrueOrderBySortOrder();
-      for (DocumentTemplate dt : allTemplates) {
-        if (packId.equals(dt.getPackId()) && dt.getSourcePackInstallId() == null) {
-          dt.setSourcePackInstallId(installId);
-          dt.setContentHash(computeTemplateHash(dt));
-          documentTemplateRepository.save(dt);
-        }
+      var freshUntagged =
+          documentTemplateRepository.findByPackIdAndSourcePackInstallIdIsNull(packId);
+      for (DocumentTemplate dt : freshUntagged) {
+        dt.setSourcePackInstallId(installId);
+        dt.setContentHash(computeTemplateHash(dt));
       }
+      documentTemplateRepository.saveAll(freshUntagged);
     }
 
     log.info(
@@ -146,6 +149,41 @@ public class TemplatePackInstaller implements PackInstaller {
             .findByPackId(packId)
             .orElseThrow(() -> new ResourceNotFoundException("PackInstall", packId));
 
+    return computeUninstallCheck(install);
+  }
+
+  @Override
+  @Transactional
+  public void uninstall(String packId, String tenantId, String memberId) {
+    var install =
+        packInstallRepository
+            .findByPackId(packId)
+            .orElseThrow(() -> new ResourceNotFoundException("PackInstall", packId));
+
+    var check = computeUninstallCheck(install);
+    if (!check.canUninstall()) {
+      throw new ResourceConflictException("Uninstall blocked", check.blockingReason());
+    }
+
+    // Delete all templates created by this install
+    var templates = documentTemplateRepository.findBySourcePackInstallId(install.getId());
+    documentTemplateRepository.deleteAll(templates);
+
+    // Delete the PackInstall row
+    packInstallRepository.delete(install);
+
+    log.info(
+        "Uninstalled template pack {} ({} templates removed) for tenant {}",
+        packId,
+        templates.size(),
+        tenantId);
+  }
+
+  /**
+   * Core uninstall gate logic. Private so it runs in whatever transaction the caller provides,
+   * avoiding self-invocation proxy bypass.
+   */
+  private UninstallCheck computeUninstallCheck(PackInstall install) {
     var templates = documentTemplateRepository.findBySourcePackInstallId(install.getId());
     if (templates.isEmpty()) {
       return new UninstallCheck(true, null);
@@ -166,26 +204,20 @@ public class TemplatePackInstaller implements PackInstaller {
       reasons.add(editedCount + " of " + totalCount + " templates have been edited");
     }
 
-    // Gate 2: Generated document references
+    // Gate 2: Generated document references (single bulk query, no N+1)
     List<UUID> templateIds = templates.stream().map(DocumentTemplate::getId).toList();
-    if (generatedDocumentRepository.existsByTemplateIdIn(templateIds)) {
-      long genCount =
-          templates.stream()
-              .filter(dt -> generatedDocumentRepository.existsByTemplateIdIn(List.of(dt.getId())))
-              .count();
+    long genCount =
+        generatedDocumentRepository.countDistinctTemplatesWithGeneratedDocuments(templateIds);
+    if (genCount > 0) {
       reasons.add(
           genCount
               + (genCount == 1 ? " template has" : " templates have")
               + " been used to generate documents");
     }
 
-    // Gate 3: Clone references
-    if (documentTemplateRepository.existsBySourceTemplateIdIn(templateIds)) {
-      long cloneCount =
-          templates.stream()
-              .filter(
-                  dt -> documentTemplateRepository.existsBySourceTemplateIdIn(List.of(dt.getId())))
-              .count();
+    // Gate 3: Clone references (single bulk query, no N+1)
+    long cloneCount = documentTemplateRepository.countDistinctTemplatesWithClones(templateIds);
+    if (cloneCount > 0) {
       reasons.add(
           cloneCount + (cloneCount == 1 ? " template has" : " templates have") + " been cloned");
     }
@@ -196,38 +228,17 @@ public class TemplatePackInstaller implements PackInstaller {
     return new UninstallCheck(false, String.join("; ", reasons));
   }
 
-  @Override
-  @Transactional
-  public void uninstall(String packId, String tenantId, String memberId) {
-    var check = checkUninstallable(packId, tenantId);
-    if (!check.canUninstall()) {
-      throw new ResourceConflictException("Uninstall blocked", check.blockingReason());
-    }
-
-    var install =
-        packInstallRepository
-            .findByPackId(packId)
-            .orElseThrow(() -> new ResourceNotFoundException("PackInstall", packId));
-
-    // Delete all templates created by this install
-    var templates = documentTemplateRepository.findBySourcePackInstallId(install.getId());
-    documentTemplateRepository.deleteAll(templates);
-
-    // Delete the PackInstall row
-    packInstallRepository.delete(install);
-
-    log.info(
-        "Uninstalled template pack {} ({} templates removed) for tenant {}",
-        packId,
-        templates.size(),
-        tenantId);
-  }
-
   private String computeTemplateHash(DocumentTemplate dt) {
     if (dt.getContent() == null) {
       return null;
     }
-    var node = objectMapper.valueToTree(dt.getContent());
+    // Include both content and css in the hash
+    var hashInput = new java.util.LinkedHashMap<String, Object>();
+    hashInput.put("content", dt.getContent());
+    if (dt.getCss() != null) {
+      hashInput.put("css", dt.getCss());
+    }
+    var node = objectMapper.valueToTree(hashInput);
     String canonical = ContentHashUtil.canonicalizeJson(node);
     return ContentHashUtil.computeHash(canonical);
   }

@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.automation.AutomationActionRepository;
 import io.b2mash.b2b.b2bstrawman.automation.AutomationExecutionRepository;
 import io.b2mash.b2b.b2bstrawman.automation.AutomationRule;
 import io.b2mash.b2b.b2bstrawman.automation.AutomationRuleRepository;
+import io.b2mash.b2b.b2bstrawman.automation.RuleSource;
 import io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateDefinition.AutomationTemplatePack;
 import io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -17,6 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
@@ -95,58 +97,52 @@ public class AutomationPackInstaller implements PackInstaller {
 
     AutomationTemplatePack pack = loadedPack.definition();
 
-    // Create PackInstall row
-    var install =
-        new PackInstall(
-            packId,
-            PackType.AUTOMATION_TEMPLATE,
-            String.valueOf(pack.version()),
-            pack.packId(),
-            Instant.now(),
-            memberId != null ? UUID.fromString(memberId) : null,
-            pack.templates().size());
-    install = packInstallRepository.save(install);
+    // Create PackInstall row — catch constraint violation for TOCTOU race
+    PackInstall install;
+    try {
+      install =
+          new PackInstall(
+              packId,
+              PackType.AUTOMATION_TEMPLATE,
+              String.valueOf(pack.version()),
+              pack.packId(),
+              Instant.now(),
+              memberId != null ? UUID.fromString(memberId) : null,
+              pack.templates().size());
+      install = packInstallRepository.save(install);
+    } catch (DataIntegrityViolationException e) {
+      log.info("Automation pack {} already installed (concurrent request), skipping", packId);
+      return;
+    }
 
     // Check if rules already exist from a prior seeder run (e.g., during provisioning).
     // If so, tag them with this install. Otherwise, create them fresh.
-    var allRules = ruleRepository.findAllByOrderByCreatedAtDesc();
-    UUID installId = install.getId();
+    List<String> templateSlugs = pack.templates().stream().map(t -> t.slug()).toList();
     var untaggedRules =
-        allRules.stream()
-            .filter(
-                rule ->
-                    rule.getSourcePackInstallId() == null
-                        && io.b2mash.b2b.b2bstrawman.automation.RuleSource.TEMPLATE.equals(
-                            rule.getSource())
-                        && pack.templates().stream()
-                            .anyMatch(t -> t.slug().equals(rule.getTemplateSlug())))
-            .toList();
+        ruleRepository.findByTemplateSlugInAndSourcePackInstallIdIsNullAndSource(
+            templateSlugs, RuleSource.TEMPLATE);
 
+    UUID installId = install.getId();
     if (!untaggedRules.isEmpty()) {
       // Rules already created by seeder — tag them
       for (AutomationRule rule : untaggedRules) {
         rule.setSourcePackInstallId(installId);
         rule.setContentHash(computeRuleHash(rule));
-        ruleRepository.save(rule);
       }
+      ruleRepository.saveAll(untaggedRules);
     } else {
       // No existing rules — create via seeder
       automationTemplateSeeder.applyPackContent(pack, loadedPack.resource(), tenantId);
 
       // Tag the newly created rules
-      var freshRules = ruleRepository.findAllByOrderByCreatedAtDesc();
-      for (AutomationRule rule : freshRules) {
-        if (rule.getSourcePackInstallId() == null
-            && io.b2mash.b2b.b2bstrawman.automation.RuleSource.TEMPLATE.equals(rule.getSource())) {
-          boolean belongsToPack =
-              pack.templates().stream().anyMatch(t -> t.slug().equals(rule.getTemplateSlug()));
-          if (belongsToPack) {
-            rule.setSourcePackInstallId(installId);
-            rule.setContentHash(computeRuleHash(rule));
-            ruleRepository.save(rule);
-          }
-        }
+      var freshUntagged =
+          ruleRepository.findByTemplateSlugInAndSourcePackInstallIdIsNullAndSource(
+              templateSlugs, RuleSource.TEMPLATE);
+      for (AutomationRule rule : freshUntagged) {
+        rule.setSourcePackInstallId(installId);
+        rule.setContentHash(computeRuleHash(rule));
       }
+      ruleRepository.saveAll(freshUntagged);
     }
 
     log.info(
@@ -164,6 +160,44 @@ public class AutomationPackInstaller implements PackInstaller {
             .findByPackId(packId)
             .orElseThrow(() -> new ResourceNotFoundException("PackInstall", packId));
 
+    return computeUninstallCheck(install);
+  }
+
+  @Override
+  @Transactional
+  public void uninstall(String packId, String tenantId, String memberId) {
+    var install =
+        packInstallRepository
+            .findByPackId(packId)
+            .orElseThrow(() -> new ResourceNotFoundException("PackInstall", packId));
+
+    var check = computeUninstallCheck(install);
+    if (!check.canUninstall()) {
+      throw new ResourceConflictException("Uninstall blocked", check.blockingReason());
+    }
+
+    // Delete all rules and their actions created by this install
+    var rules = ruleRepository.findBySourcePackInstallId(install.getId());
+    for (AutomationRule rule : rules) {
+      actionRepository.deleteByRuleId(rule.getId());
+    }
+    ruleRepository.deleteAll(rules);
+
+    // Delete the PackInstall row
+    packInstallRepository.delete(install);
+
+    log.info(
+        "Uninstalled automation pack {} ({} rules removed) for tenant {}",
+        packId,
+        rules.size(),
+        tenantId);
+  }
+
+  /**
+   * Core uninstall gate logic. Private so it runs in whatever transaction the caller provides,
+   * avoiding self-invocation proxy bypass.
+   */
+  private UninstallCheck computeUninstallCheck(PackInstall install) {
     var rules = ruleRepository.findBySourcePackInstallId(install.getId());
     if (rules.isEmpty()) {
       return new UninstallCheck(true, null);
@@ -184,13 +218,10 @@ public class AutomationPackInstaller implements PackInstaller {
       reasons.add(editedCount + " of " + totalCount + " rules have been edited");
     }
 
-    // Gate 2: Execution references
+    // Gate 2: Execution references (single bulk query, no N+1)
     List<UUID> ruleIds = rules.stream().map(AutomationRule::getId).toList();
-    if (executionRepository.existsByRuleIdIn(ruleIds)) {
-      long execCount =
-          rules.stream()
-              .filter(rule -> executionRepository.existsByRuleIdIn(List.of(rule.getId())))
-              .count();
+    long execCount = executionRepository.countDistinctRulesWithExecutions(ruleIds);
+    if (execCount > 0) {
       reasons.add(execCount + (execCount == 1 ? " rule has" : " rules have") + " been executed");
     }
 
@@ -200,38 +231,9 @@ public class AutomationPackInstaller implements PackInstaller {
     return new UninstallCheck(false, String.join("; ", reasons));
   }
 
-  @Override
-  @Transactional
-  public void uninstall(String packId, String tenantId, String memberId) {
-    var check = checkUninstallable(packId, tenantId);
-    if (!check.canUninstall()) {
-      throw new ResourceConflictException("Uninstall blocked", check.blockingReason());
-    }
-
-    var install =
-        packInstallRepository
-            .findByPackId(packId)
-            .orElseThrow(() -> new ResourceNotFoundException("PackInstall", packId));
-
-    // Delete all rules and their actions created by this install
-    var rules = ruleRepository.findBySourcePackInstallId(install.getId());
-    for (AutomationRule rule : rules) {
-      actionRepository.deleteByRuleId(rule.getId());
-    }
-    ruleRepository.deleteAll(rules);
-
-    // Delete the PackInstall row
-    packInstallRepository.delete(install);
-
-    log.info(
-        "Uninstalled automation pack {} ({} rules removed) for tenant {}",
-        packId,
-        rules.size(),
-        tenantId);
-  }
-
   private String computeRuleHash(AutomationRule rule) {
     Map<String, Object> hashInput = new LinkedHashMap<>();
+    hashInput.put("triggerType", rule.getTriggerType().name());
     hashInput.put("triggerConfig", rule.getTriggerConfig());
     hashInput.put("conditions", rule.getConditions());
 

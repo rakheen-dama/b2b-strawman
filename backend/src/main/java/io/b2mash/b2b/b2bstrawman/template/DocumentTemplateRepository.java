@@ -54,4 +54,11 @@ public interface DocumentTemplateRepository extends JpaRepository<DocumentTempla
   int countBySourcePackInstallId(UUID sourcePackInstallId);
 
   boolean existsBySourceTemplateIdIn(List<UUID> templateIds);
+
+  @Query(
+      "SELECT COUNT(DISTINCT dt.sourceTemplateId) FROM DocumentTemplate dt"
+          + " WHERE dt.sourceTemplateId IN :templateIds")
+  long countDistinctTemplatesWithClones(@Param("templateIds") List<UUID> templateIds);
+
+  List<DocumentTemplate> findByPackIdAndSourcePackInstallIdIsNull(String packId);
 }

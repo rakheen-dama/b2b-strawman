@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
+import tools.jackson.databind.ObjectMapper;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -51,6 +52,7 @@ class PackUninstallGateTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private ObjectMapper objectMapper;
 
   private String tenantSchema;
   private String memberId;
@@ -170,8 +172,12 @@ class PackUninstallGateTest {
                   // so we just force the hash to match so uninstall works for cleanup
                   for (DocumentTemplate dt : templates) {
                     if (dt.getContent() != null) {
-                      var node =
-                          new tools.jackson.databind.json.JsonMapper().valueToTree(dt.getContent());
+                      var hashInput = new java.util.LinkedHashMap<String, Object>();
+                      hashInput.put("content", dt.getContent());
+                      if (dt.getCss() != null) {
+                        hashInput.put("css", dt.getCss());
+                      }
+                      var node = objectMapper.valueToTree(hashInput);
                       dt.setContentHash(
                           ContentHashUtil.computeHash(ContentHashUtil.canonicalizeJson(node)));
                       documentTemplateRepository.save(dt);

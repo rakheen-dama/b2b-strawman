@@ -60,6 +60,12 @@ public class AutomationRule {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
+  @Column(name = "source_pack_install_id")
+  private UUID sourcePackInstallId;
+
+  @Column(name = "content_hash", length = 64)
+  private String contentHash;
+
   protected AutomationRule() {}
 
   public AutomationRule(
@@ -149,5 +155,21 @@ public class AutomationRule {
 
   public Instant getUpdatedAt() {
     return updatedAt;
+  }
+
+  public UUID getSourcePackInstallId() {
+    return sourcePackInstallId;
+  }
+
+  public void setSourcePackInstallId(UUID sourcePackInstallId) {
+    this.sourcePackInstallId = sourcePackInstallId;
+  }
+
+  public String getContentHash() {
+    return contentHash;
+  }
+
+  public void setContentHash(String contentHash) {
+    this.contentHash = contentHash;
   }
 }

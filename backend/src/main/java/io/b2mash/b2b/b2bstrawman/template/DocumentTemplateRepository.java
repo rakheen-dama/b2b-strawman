@@ -48,4 +48,8 @@ public interface DocumentTemplateRepository extends JpaRepository<DocumentTempla
       nativeQuery = true)
   List<DocumentTemplate> findActiveTemplatesContainingVariable(
       @Param("variableKey") String variableKey);
+
+  List<DocumentTemplate> findBySourcePackInstallId(UUID sourcePackInstallId);
+
+  int countBySourcePackInstallId(UUID sourcePackInstallId);
 }

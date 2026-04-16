@@ -12,4 +12,8 @@ public interface AutomationRuleRepository extends JpaRepository<AutomationRule, 
   List<AutomationRule> findByTriggerType(TriggerType triggerType);
 
   List<AutomationRule> findAllByOrderByCreatedAtDesc();
+
+  List<AutomationRule> findBySourcePackInstallId(UUID sourcePackInstallId);
+
+  int countBySourcePackInstallId(UUID sourcePackInstallId);
 }

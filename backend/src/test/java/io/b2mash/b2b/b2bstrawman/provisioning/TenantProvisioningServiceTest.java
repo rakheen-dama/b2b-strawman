@@ -391,7 +391,7 @@ class TenantProvisioningServiceTest {
   }
 
   @Test
-  void provisionTenant_withNullProfile_skipsPackPipeline() throws SQLException {
+  void provisionTenant_withNullProfile_onlyInstallsUniversalPacks() throws SQLException {
     when(mappingRepository.findByClerkOrgId("org_null_pipe")).thenReturn(Optional.empty());
     when(organizationRepository.findByClerkOrgId("org_null_pipe")).thenReturn(Optional.empty());
 

@@ -81,11 +81,9 @@ describe("ScheduleCreateDialog", () => {
         orgMembers={MEMBERS}
         documentTemplates={[]}
         requestTemplates={[]}
-      >
-        <button>Create Schedule trigger</button>
-      </ScheduleCreateDialog>
+      />
     );
-    await user.click(screen.getByText("Create Schedule trigger"));
+    await user.click(screen.getByRole("button", { name: /New Schedule/i }));
     expect(screen.getByText("New Recurring Schedule")).toBeInTheDocument();
   });
 
@@ -99,11 +97,9 @@ describe("ScheduleCreateDialog", () => {
         orgMembers={MEMBERS}
         documentTemplates={[]}
         requestTemplates={[]}
-      >
-        <button>Create Schedule trigger freq</button>
-      </ScheduleCreateDialog>
+      />
     );
-    await user.click(screen.getByText("Create Schedule trigger freq"));
+    await user.click(screen.getByRole("button", { name: /New Schedule/i }));
     const frequencySelect = screen.getByLabelText("Frequency");
     const options = frequencySelect.querySelectorAll("option");
     expect(options).toHaveLength(6);
@@ -125,11 +121,9 @@ describe("ScheduleCreateDialog", () => {
         orgMembers={MEMBERS}
         documentTemplates={[]}
         requestTemplates={[]}
-      >
-        <button>Create Schedule trigger date</button>
-      </ScheduleCreateDialog>
+      />
     );
-    await user.click(screen.getByText("Create Schedule trigger date"));
+    await user.click(screen.getByRole("button", { name: /New Schedule/i }));
     const startDateInput = screen.getByLabelText("Start Date");
     expect(startDateInput).toBeInTheDocument();
     expect(startDateInput).toHaveAttribute("type", "date");
@@ -146,11 +140,9 @@ describe("ScheduleCreateDialog", () => {
         orgMembers={MEMBERS}
         documentTemplates={[]}
         requestTemplates={[]}
-      >
-        <button>Create Schedule trigger preview</button>
-      </ScheduleCreateDialog>
+      />
     );
-    await user.click(screen.getByText("Create Schedule trigger preview"));
+    await user.click(screen.getByRole("button", { name: /New Schedule/i }));
 
     // Select the template
     await user.click(screen.getByText("Monthly Bookkeeping"));
@@ -172,11 +164,9 @@ describe("ScheduleCreateDialog", () => {
         orgMembers={MEMBERS}
         documentTemplates={[]}
         requestTemplates={[]}
-      >
-        <button>Create Schedule trigger submit</button>
-      </ScheduleCreateDialog>
+      />
     );
-    await user.click(screen.getByText("Create Schedule trigger submit"));
+    await user.click(screen.getByRole("button", { name: /New Schedule/i }));
 
     // Fill required fields
     await user.click(screen.getByText("Monthly Bookkeeping"));

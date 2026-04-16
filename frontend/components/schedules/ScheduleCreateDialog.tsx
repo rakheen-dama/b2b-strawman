@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,7 +10,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -34,7 +34,6 @@ interface ScheduleCreateDialogProps {
   orgMembers: OrgMember[];
   documentTemplates: DocumentTemplateOption[];
   requestTemplates: RequestTemplateOption[];
-  children: React.ReactNode;
 }
 
 const selectClasses =
@@ -47,7 +46,6 @@ export function ScheduleCreateDialog({
   orgMembers,
   documentTemplates,
   requestTemplates,
-  children,
 }: ScheduleCreateDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -125,7 +123,10 @@ export function ScheduleCreateDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <Button size="sm" onClick={() => setOpen(true)}>
+        <Plus className="mr-1.5 size-4" />
+        New Schedule
+      </Button>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>New Recurring Schedule</DialogTitle>

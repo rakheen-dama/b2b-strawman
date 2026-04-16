@@ -1,7 +1,5 @@
-import { Plus } from "lucide-react";
 import { notFound } from "next/navigation";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { Button } from "@/components/ui/button";
 import { ScheduleList } from "@/components/schedules/ScheduleList";
 import { ScheduleCreateDialog } from "@/components/schedules/ScheduleCreateDialog";
 import { getSchedules } from "@/lib/api/schedules";
@@ -91,12 +89,7 @@ export default async function SchedulesPage({ params }: { params: Promise<{ slug
             orgMembers={orgMembers}
             documentTemplates={documentTemplates}
             requestTemplates={requestTemplateOptions}
-          >
-            <Button size="sm">
-              <Plus className="mr-1.5 size-4" />
-              New Schedule
-            </Button>
-          </ScheduleCreateDialog>
+          />
         </div>
       )}
 

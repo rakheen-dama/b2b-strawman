@@ -538,7 +538,7 @@
 | **Phase 65 — Kazi Packs Catalog & Install Pipeline** | | | | | | See [tasks/phase65-packs-catalog-install-pipeline.md](tasks/phase65-packs-catalog-install-pipeline.md) |
 | 473 | PackInstall Entity + Migrations | Backend | -- | M | 473A, 473B | **Done** (PR #1040) |
 | 474 | PackInstaller Interface + Implementations | Backend | 473 | M | 474A, 474B | **Done** (PR #1041) |
-| 475 | PackCatalogService + PackInstallService | Backend | 474 | M | 475A | |
+| 475 | PackCatalogService + PackInstallService | Backend | 474 | M | 475A | **Done** (PR #1042) |
 | 476 | Profile Provisioning Refactor | Backend | 475 | M | 476A | |
 | 477 | PackCatalogController + REST API | Backend | 475 | S | 477A | |
 | 478 | Frontend: Settings > Packs Page | Frontend | 477 | M | 478A, 478B | |

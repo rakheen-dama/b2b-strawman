@@ -28,7 +28,7 @@ Phase 65 introduces Kazi Packs as a first-class product surface: a unified catal
 |------|------|-------|------|--------|--------|--------|
 | 473 | PackInstall Entity + Migrations | Backend | -- (Phase 12, 13, 8 complete) | M | 473A, 473B | **Done** (PR #1040) |
 | 474 | PackInstaller Interface + Implementations | Backend | 473 | M | 474A, 474B | **Done** (PR #1041) |
-| 475 | PackCatalogService + PackInstallService | Backend | 474 | M | 475A | |
+| 475 | PackCatalogService + PackInstallService | Backend | 474 | M | 475A | **Done** (PR #1042) |
 | 476 | Profile Provisioning Refactor | Backend | 475 | M | 476A | |
 | 477 | PackCatalogController + REST API | Backend | 475 | M | 477A | |
 | 478 | Frontend: Settings > Packs Page | Frontend | 477 | M | 478A, 478B | |
@@ -142,7 +142,7 @@ PHASE 8 (OrgSettings), PHASE 6 (Audit), PHASE 44 (Settings Layout)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 4a | 475 | 475A | `PackCatalogService` (catalog aggregation, profile filtering, install-state enrichment, `getPackIdsForProfile()`). `PackInstallService` (`install()`, `internalInstall()`, `uninstall()`, `checkUninstallable()`, audit event emission, notification, legacy OrgSettings shim updates). Integration tests (~8). Backend only. | |
+| 4a | 475 | 475A | `PackCatalogService` (catalog aggregation, profile filtering, install-state enrichment, `getPackIdsForProfile()`). `PackInstallService` (`install()`, `internalInstall()`, `uninstall()`, `checkUninstallable()`, audit event emission, notification, legacy OrgSettings shim updates). Integration tests (~8). Backend only. | **Done** (PR #1042) |
 
 ### Stage 5: Provisioning Refactor + REST Controller (parallel)
 
@@ -343,7 +343,7 @@ Stage 8:  [479A]                                          <- E2E test
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **475A** | 475.1--475.8 | `PackCatalogService` (aggregate entries from all `PackInstaller` beans via Spring `List<PackInstaller>` injection, profile filtering by `OrgSettings.verticalProfile`, install-state enrichment via `PackInstallRepository`, `getPackIdsForProfile()`, `findCatalogEntry()`). `PackInstallService` (`install()` with profile affinity + idempotency + installer delegation + OrgSettings shim + audit + notification, `internalInstall()` with explicit tenantId and no profile check, `uninstall()` with gate + content deletion + OrgSettings removal + audit, `checkUninstallable()` delegation). Integration tests (~8). Backend only. | |
+| **475A** | 475.1--475.8 | `PackCatalogService` (aggregate entries from all `PackInstaller` beans via Spring `List<PackInstaller>` injection, profile filtering by `OrgSettings.verticalProfile`, install-state enrichment via `PackInstallRepository`, `getPackIdsForProfile()`, `findCatalogEntry()`). `PackInstallService` (`install()` with profile affinity + idempotency + installer delegation + OrgSettings shim + audit + notification, `internalInstall()` with explicit tenantId and no profile check, `uninstall()` with gate + content deletion + OrgSettings removal + audit, `checkUninstallable()` delegation). Integration tests (~8). Backend only. | **Done** (PR #1042) |
 
 ### Tasks
 

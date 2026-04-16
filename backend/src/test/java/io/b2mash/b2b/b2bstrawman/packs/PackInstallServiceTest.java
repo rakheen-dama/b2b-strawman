@@ -221,7 +221,15 @@ class PackInstallServiceTest {
     runInTenantWithMember(
         () ->
             assertThatThrownBy(() -> packInstallService.uninstall(PACK_ID, memberId))
-                .isInstanceOf(ResourceConflictException.class));
+                .isInstanceOf(ResourceConflictException.class)
+                .satisfies(
+                    thrown -> {
+                      var ex = (ResourceConflictException) thrown;
+                      var problem = ex.getBody();
+                      assertThat(problem.getStatus()).isEqualTo(409);
+                      assertThat(problem.getTitle()).isNotBlank();
+                      assertThat(problem.getDetail()).isNotBlank();
+                    }));
   }
 
   @Test

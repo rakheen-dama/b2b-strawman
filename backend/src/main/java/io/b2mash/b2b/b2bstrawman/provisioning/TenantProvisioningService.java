@@ -19,11 +19,13 @@ import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.LegalTariffSeeder;
 import java.sql.SQLException;
+import java.util.Map;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.lang.Nullable;
 import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
@@ -32,6 +34,29 @@ import org.springframework.stereotype.Service;
 public class TenantProvisioningService {
 
   private static final Logger log = LoggerFactory.getLogger(TenantProvisioningService.class);
+
+  private static final Map<String, String> COUNTRY_TO_CURRENCY =
+      Map.ofEntries(
+          Map.entry("South Africa", "ZAR"),
+          Map.entry("ZA", "ZAR"),
+          Map.entry("Kenya", "KES"),
+          Map.entry("KE", "KES"),
+          Map.entry("Nigeria", "NGN"),
+          Map.entry("NG", "NGN"),
+          Map.entry("United Kingdom", "GBP"),
+          Map.entry("GB", "GBP"),
+          Map.entry("United States", "USD"),
+          Map.entry("US", "USD"),
+          Map.entry("Canada", "CAD"),
+          Map.entry("CA", "CAD"),
+          Map.entry("Australia", "AUD"),
+          Map.entry("AU", "AUD"),
+          Map.entry("India", "INR"),
+          Map.entry("IN", "INR"),
+          Map.entry("Ghana", "GHS"),
+          Map.entry("GH", "GHS"),
+          Map.entry("Tanzania", "TZS"),
+          Map.entry("TZ", "TZS"));
 
   private final OrganizationRepository organizationRepository;
   private final OrgSchemaMappingRepository mappingRepository;
@@ -98,6 +123,16 @@ public class TenantProvisioningService {
       backoff = @Backoff(delay = 1000, multiplier = 2))
   public ProvisioningResult provisionTenant(
       String clerkOrgId, String orgName, String verticalProfile) {
+    return provisionTenant(clerkOrgId, orgName, verticalProfile, null);
+  }
+
+  @Retryable(
+      retryFor = ProvisioningException.class,
+      noRetryFor = IllegalArgumentException.class,
+      maxAttempts = 3,
+      backoff = @Backoff(delay = 1000, multiplier = 2))
+  public ProvisioningResult provisionTenant(
+      String clerkOrgId, String orgName, String verticalProfile, @Nullable String country) {
     // Idempotency check: already fully provisioned?
     var existingMapping = mappingRepository.findByClerkOrgId(clerkOrgId);
     if (existingMapping.isPresent()) {
@@ -126,8 +161,11 @@ public class TenantProvisioningService {
       // schema once all tables and the subscription exist (prevents race).
       createSchema(schemaName);
       runTenantMigrations(schemaName);
+      String defaultCurrency = resolveCurrency(country, verticalProfile);
       if (verticalProfile != null) {
-        setVerticalProfile(schemaName, clerkOrgId, verticalProfile);
+        setVerticalProfile(schemaName, clerkOrgId, verticalProfile, defaultCurrency);
+      } else if (!"USD".equals(defaultCurrency)) {
+        setDefaultCurrency(schemaName, clerkOrgId, defaultCurrency);
       }
       fieldPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       templatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
@@ -190,7 +228,8 @@ public class TenantProvisioningService {
     }
   }
 
-  private void setVerticalProfile(String schemaName, String orgId, String verticalProfile) {
+  private void setVerticalProfile(
+      String schemaName, String orgId, String verticalProfile, String defaultCurrency) {
     tenantTransactionHelper.executeInTenantTransaction(
         schemaName,
         orgId,
@@ -200,7 +239,7 @@ public class TenantProvisioningService {
                   .findForCurrentTenant()
                   .orElseGet(
                       () -> {
-                        var newSettings = new OrgSettings("USD");
+                        var newSettings = new OrgSettings(defaultCurrency);
                         return orgSettingsRepository.save(newSettings);
                       });
           settings.setVerticalProfile(verticalProfile);
@@ -221,6 +260,36 @@ public class TenantProvisioningService {
 
           orgSettingsRepository.save(settings);
         });
+  }
+
+  private void setDefaultCurrency(String schemaName, String orgId, String currency) {
+    tenantTransactionHelper.executeInTenantTransaction(
+        schemaName,
+        orgId,
+        tenantId -> {
+          var settings =
+              orgSettingsRepository
+                  .findForCurrentTenant()
+                  .orElseGet(
+                      () -> {
+                        var newSettings = new OrgSettings(currency);
+                        return orgSettingsRepository.save(newSettings);
+                      });
+          settings.updateCurrency(currency);
+          orgSettingsRepository.save(settings);
+        });
+  }
+
+  String resolveCurrency(@Nullable String country, @Nullable String verticalProfile) {
+    // Profile currency takes priority (checked later in setVerticalProfile)
+    // Country-derived currency is the fallback for the initial OrgSettings default
+    if (country != null) {
+      String countryCurrency = COUNTRY_TO_CURRENCY.get(country);
+      if (countryCurrency != null) {
+        return countryCurrency;
+      }
+    }
+    return "USD";
   }
 
   public record ProvisioningResult(boolean success, String schemaName, boolean alreadyProvisioned) {

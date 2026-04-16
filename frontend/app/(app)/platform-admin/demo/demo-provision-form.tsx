@@ -20,17 +20,17 @@ import { provisionDemo, type DemoProvisionResponse } from "@/app/(app)/platform-
 
 const VERTICAL_OPTIONS = [
   {
-    value: "GENERIC" as const,
+    value: "consulting-generic" as const,
     label: "Generic",
     description: "Marketing agency / consultancy",
   },
   {
-    value: "ACCOUNTING" as const,
+    value: "accounting-za" as const,
     label: "Accounting",
     description: "South African accounting firm",
   },
   {
-    value: "LEGAL" as const,
+    value: "legal-za" as const,
     label: "Legal",
     description: "South African law firm",
   },
@@ -45,7 +45,7 @@ export function DemoProvisionForm() {
     resolver: zodResolver(demoProvisionSchema),
     defaultValues: {
       organizationName: "",
-      verticalProfile: "GENERIC",
+      verticalProfile: "consulting-generic",
       adminEmail: "",
       seedDemoData: true,
     },

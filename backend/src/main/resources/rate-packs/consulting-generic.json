@@ -1,0 +1,11 @@
+{
+  "packId": "rate-pack-consulting-generic",
+  "verticalProfile": "consulting-generic",
+  "version": 1,
+  "rates": [
+    { "description": "Principal / Director", "hourlyRate": 2200.0, "currency": "ZAR" },
+    { "description": "Senior Consultant", "hourlyRate": 1800.0, "currency": "ZAR" },
+    { "description": "Consultant", "hourlyRate": 1200.0, "currency": "ZAR" },
+    { "description": "Junior / Associate", "hourlyRate": 750.0, "currency": "ZAR" }
+  ]
+}

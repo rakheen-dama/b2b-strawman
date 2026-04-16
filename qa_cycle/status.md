@@ -1,4 +1,4 @@
-# QA Cycle Status — Accounting-ZA 90-Day Demo (Fresh Tenant) — 2026-04-14-v2
+# QA Cycle Status — Consulting Agency 90-Day Demo (Fresh Tenant, Keycloak) — 2026-04-14
 
 ## Current State
 
@@ -6,11 +6,10 @@
 - **Cycle**: 1
 - **Dev Stack**: READY
 - **NEEDS_REBUILD**: false
-- **Branch**: `bugfix_cycle_2026-04-14-v2`
-- **Scenario**: `qa/testplan/demos/accounting-za-90day-keycloak-v2.md`
-- **Focus**: Fresh tenant run — monitoring console errors and UI issues throughout.
+- **Branch**: `bugfix_cycle_consulting_2026-04-14`
+- **Scenario**: `qa/testplan/demos/consulting-agency-90day-keycloak.md`
+- **Focus**: Fresh tenant run — full onboarding through 90-day consulting agency lifecycle.
 - **Auth Mode**: Keycloak (real OIDC)
-- **Method**: API-driven (Days 3-90 executed via REST API due to browser extension unavailable)
 - **ALL_DAYS_COMPLETE**: true
 
 ## Environment
@@ -25,46 +24,19 @@
 | Mailpit UI | http://localhost:8025 | UP |
 | Postgres (docteams) | localhost:5432 | UP |
 
-## Final Data Totals
-
-| Metric | Value |
-|--------|-------|
-| Customers (Clients) | 4 (all ACTIVE) |
-| Engagements (Projects) | 5 (1 COMPLETED, 4 ACTIVE) |
-| Tasks | 32 template tasks + follow-ups created/cancelled |
-| Time Entries | 22 (2,730 min / 45.5 hrs) |
-| Invoices | 4 (all PAID, total R19,665.00) |
-| Audit Events | 193 |
-| Notifications | 13 (Thandi) |
-| Budget | 1 (Year-End Pack: 10/40 hrs, 25%, ON_TRACK) |
-
 ## Gap Tracker
 
 | GAP_ID | Day / Checkpoint | Severity | Status | Summary | Owner | Retries |
 |--------|------------------|----------|--------|---------|-------|---------|
-| GAP-V2-01 | Day 0 / setup | LOW | OPEN | Bob assigned Member role instead of Admin during JIT creation | Dev | 0 |
-| GAP-V2-02 | Day 4 / checklist | LOW | OPEN | All FICA checklist items require document uploads. Cannot complete in API-only QA mode | QA | 0 |
-| GAP-V2-03 | Day 4 / custom fields | LOW | OPEN | Test plan references wrong custom field slugs | Product | 0 |
-| GAP-V2-04 | Day 4 / activation | LOW | OPEN | Customer activation requires `city` field | Product | 0 |
-| GAP-V2-05 | Day 12 / comments | LOW | OPEN | PROJECT-level comments require SHARED visibility, not INTERNAL | Product | 0 |
-| GAP-V2-06 | Day 16 / template | LOW | OPEN | No "Trust Financial Statements" template in accounting-za pack | Product | 0 |
-| GAP-V2-07 | Day 34 / profitability | MED | OPEN | Profitability incomplete: rate snapshots NULL for March entries, costValue NULL for all | Dev | 0 |
-| GAP-V2-08 | Day 30 / budget | LOW | RESOLVED | Budget hoursUsed was null, now shows 10.0 hrs correctly | Dev | 0 |
-| GAP-V2-09 | Day 36 / invoice lines | LOW | OPEN | Invoice lines from time entries have unitPrice=0 when rate snapshots null | Dev | 0 |
-| GAP-V2-10 | Day 45 / invoice prereq | LOW | OPEN | Invoice creation requires `city` on customer profile | Product | 0 |
-| GAP-V2-11 | Day 72 / task automation | LOW | OPEN | Cascading "Follow-up" tasks from automation rule on task completion | Dev | 0 |
-| GAP-V2-12 | Day 72 / task claim | LOW | OPEN | Claim rejects already-assigned tasks (assigned member cannot claim their own task) | Dev | 0 |
-| GAP-V2-13 | Day 80 / dashboard | LOW | OPEN | No /api/dashboard endpoint (404) | Dev | 0 |
-| GAP-V2-14 | Day 80 / profitability | LOW | OPEN | No customer/org-level profitability aggregation endpoints | Dev | 0 |
-| GAP-V2-15 | Day 58 / invoice send | LOW | OPEN | Invoice send validation requires 5 customer fields, only 1 set | Product | 0 |
-
-## Skipped Steps (require browser)
-
-- Day 65: Portal magic link generation and terminology check
-- Day 87: Budget alert automation trigger (Year-End Pack only at 25%, needs ~22 more hrs to trigger 80%)
-- Day 90.4: Tier removal sweep (Settings > Billing page)
-- Day 90.5: Console errors
-- Day 90.6: Mailpit sweep
+| GAP-C-01 | D0 / 0.10 | LOW | OPEN | `vertical_profile` not auto-assigned for "Marketing" industry | Product | 0 |
+| GAP-C-02 | D0 / 0.24 | LOW | OPEN | Default currency USD not ZAR for SA-registered org | Product | 0 |
+| GAP-C-03 | D0 / 0.28 | MED | OPEN | `consulting-generic` has no rate-card defaults | Product | 0 |
+| GAP-C-04 | D0 / 0.34 | MED | OPEN | No agency-flavoured custom field pack | Product | 0 |
+| GAP-C-05 | D0 / 0.40 | MED | OPEN | No templates pre-seeded for consulting-generic | Product | 0 |
+| GAP-C-06 | D0 / 0.43 | MED | OPEN | No automation pack for consulting-generic | Product | 0 |
+| GAP-C-07 | D9 / 9.3 | HIGH | OPEN | No retainer primitive — manual project-per-cycle workaround | Product | 0 |
+| GAP-C-08 | D40 / 40.3 | MED | OPEN | Retainer invoice indistinguishable from project invoice — no hours consumed/remaining summary | Product | 0 |
+| GAP-C-09 | D42 / 42.3 | HIGH | OPEN | Manual retainer project re-creation every month (2nd occurrence of GAP-C-07 pattern) | Product | 0 |
 
 ## Legend
 
@@ -74,10 +46,10 @@
 
 ## Log
 
-- 2026-04-14 — Cycle v2 initialized. Fresh tenant run on main after PR #1036 merge.
-- 2026-04-14 — Infra Agent: Dev stack started, all data cleaned, services UP.
-- 2026-04-14 — QA Agents (2 turns): Completed Day 0 onboarding via browser. Sipho Dlamini created + onboarded.
-- 2026-04-14 — Manual fixes: Bob's role corrected to Admin. Sipho activated via DB. GAP-V2-01 logged.
-- 2026-04-14 — QA Agent: Completed Days 3-14 via API. 2 customers, 3 engagements, 10.5 hrs. GAP-V2-02 through V2-05 logged.
-- 2026-04-14 — QA Agent: Completed Days 15-45 via API. 4 customers, 5 engagements, 27 hrs, 2 invoices PAID. GAP-V2-06 through V2-10 logged.
-- 2026-04-14 — QA Agent: Completed Days 50-90 via API. 2 more invoices (INV-0003, INV-0004) created and paid. Ndaba VAT tasks completed. Sipho engagement COMPLETED. Utilization and My Work verified. Audit log sweep: 193 events. Terminology clean. Final totals: 22 time entries (45.5 hrs), 4 invoices (R19,665), 193 audit events. GAP-V2-11 through V2-15 logged. GAP-V2-08 RESOLVED (budget hoursUsed now works).
+- 2026-04-14 — Cycle initialized for consulting agency 90-day demo.
+- 2026-04-14 — Infra Agent: Clean teardown (volumes wiped), fresh Docker infra started, Keycloak bootstrapped (padmin@docteams.local), all 4 services UP (backend:8080, gateway:8443, frontend:3000, portal:3002). Dev stack READY.
+- 2026-04-14 — QA Agent: Day 0 Phases A-D complete. Access request, OTP, admin approval, Keycloak registration, team invites all PASS. 3 users registered (Zolani/Owner, Bob/Admin, Carol/Member). Phase E in progress — currency set to ZAR, brand colour #F97316, Zolani billing rate R1800/hr created. 3 profile-content gaps logged (GAP-C-01 to GAP-C-03).
+- 2026-04-14 — QA Agent: Day 0 complete (Phases E-I). All billing/cost rates created (Zolani R1800/R800, Bob R1200/R550, Carol R750/R350). VAT 15% already present. Custom field promotion verified on Customer + Project dialogs. Template "Website Redesign Project" (6 tasks) created manually. Progressive disclosure verified: zero legal/accounting leaks. Tier removal verified: flat billing UI. 6 profile-content gaps logged (GAP-C-01 to GAP-C-06).
+- 2026-04-14 — QA Agent: Days 1-7 complete. BrightCup Coffee Roasters created (PROSPECT -> ACTIVE). First project created from template (6 tasks). 9 hours logged across 3 tasks (Discovery 2h, Wireframes 3h, Design 4h). Budget configured (40h/R40,000, 23%/41% consumed, On Track). All tabs load with generic terminology. No product bugs found.
+- 2026-04-14 — QA Agent: Days 8-35 complete. Ubuntu Startup + Masakhane Foundation created and activated. Retainer project (5 tasks, 20h/R24,000 budget, 55%/83% consumed) + NGO project (6 tasks, 60h/R60,000 budget, 21%/38% consumed) created. 32.5 total hours logged. Profitability page renders all 3 projects with ZAR currency, margins, utilization. 1 new gap logged (GAP-C-07: no retainer primitive). No product bugs.
+- 2026-04-14 — QA Agent: Days 36-90 complete. ALL_DAYS_COMPLETE. 3 invoices created (INV-0001 BrightCup R18,630 PAID, INV-0002 Ubuntu R32,085 PAID, INV-0003 Masakhane R25,875 SENT). Total invoiced R76,590, paid R50,715, outstanding R25,875. April retainer cycle created (7h logged). May retainer cycle scaffolded. Portal magic link verified for BrightCup. Profitability page renders 4 projects with ~55% margins. Utilization: Zolani 32.5h, Carol 14h, Bob 7h (all 100%). Audit log filters by entity/actor work. Final regression sweep: zero terminology leaks, zero legal module exposure, flat billing UI, no console errors. 53.5 total hours, 5 projects, 3 customers. 2 new gaps logged (GAP-C-08: retainer invoice format, GAP-C-09: manual retainer re-creation). No product bugs found. Cycle complete.

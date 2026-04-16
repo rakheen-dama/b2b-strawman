@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import java.security.SecureRandom;
 import java.util.Map;
 import java.util.UUID;
@@ -42,6 +43,8 @@ public class DemoProvisionService {
   private final DemoDataSeeder demoDataSeeder;
   private final OrgSchemaMappingRepository orgSchemaMappingRepository;
   private final TenantTransactionHelper tenantTransactionHelper;
+  private final VerticalProfileRegistry verticalProfileRegistry;
+  private final DemoWelcomeEmailService demoWelcomeEmailService;
   private final JdbcTemplate jdbcTemplate;
   private final String baseUrl;
 
@@ -55,6 +58,8 @@ public class DemoProvisionService {
       DemoDataSeeder demoDataSeeder,
       OrgSchemaMappingRepository orgSchemaMappingRepository,
       TenantTransactionHelper tenantTransactionHelper,
+      VerticalProfileRegistry verticalProfileRegistry,
+      DemoWelcomeEmailService demoWelcomeEmailService,
       JdbcTemplate jdbcTemplate,
       @Value("${app.base-url:http://localhost:3000}") String baseUrl) {
     this.keycloakAdminClient = keycloakAdminClient;
@@ -66,6 +71,8 @@ public class DemoProvisionService {
     this.demoDataSeeder = demoDataSeeder;
     this.orgSchemaMappingRepository = orgSchemaMappingRepository;
     this.tenantTransactionHelper = tenantTransactionHelper;
+    this.verticalProfileRegistry = verticalProfileRegistry;
+    this.demoWelcomeEmailService = demoWelcomeEmailService;
     this.jdbcTemplate = jdbcTemplate;
     this.baseUrl = baseUrl;
   }
@@ -95,6 +102,18 @@ public class DemoProvisionService {
           "Organization name must contain at least one alphanumeric character");
     }
 
+    // Validate vertical profile exists in registry
+    if (!verticalProfileRegistry.exists(verticalProfile)) {
+      throw new InvalidStateException(
+          "Unknown vertical profile",
+          "Vertical profile '%s' is not registered. Available profiles: %s"
+              .formatted(
+                  verticalProfile,
+                  verticalProfileRegistry.getAllProfiles().stream()
+                      .map(p -> p.profileId())
+                      .toList()));
+    }
+
     log.info(
         "Provisioning demo tenant '{}' (slug: {}, profile: {}) for admin {}",
         name,
@@ -112,14 +131,15 @@ public class DemoProvisionService {
 
     // Step 1: Find or create Keycloak user
     String tempPassword = generateTempPassword();
-    String userId =
-        keycloakAdminClient
-            .findUserByEmail(adminEmail)
-            .orElseGet(
-                () -> {
-                  log.info("Creating Keycloak user for {}", adminEmail);
-                  return keycloakAdminClient.createUser(adminEmail, "Demo", "Admin", tempPassword);
-                });
+    var existingUserId = keycloakAdminClient.findUserByEmail(adminEmail);
+    boolean isNewUser = existingUserId.isEmpty();
+    String userId;
+    if (isNewUser) {
+      log.info("Creating Keycloak user for {}", adminEmail);
+      userId = keycloakAdminClient.createUser(adminEmail, "Demo", "Admin", tempPassword);
+    } else {
+      userId = existingUserId.get();
+    }
 
     // Step 2: Create Keycloak organization
     String kcOrgId;
@@ -185,6 +205,15 @@ public class DemoProvisionService {
           subscriptionStatusCache.evict(org.getId());
         });
 
+    // Compute login URL (needed for welcome email and response)
+    String loginUrl = baseUrl + "/org/" + slug;
+
+    // Step 5b: Send welcome email (only for new users — existing users already have credentials)
+    if (isNewUser) {
+      demoWelcomeEmailService.sendWelcomeEmail(
+          adminEmail, name, slug, verticalProfile, loginUrl, tempPassword);
+    }
+
     // Step 6: Demo data seeding (non-fatal — tenant is usable without demo data)
     boolean demoDataSeeded = false;
     if (request.seedDemoData()) {
@@ -214,8 +243,6 @@ public class DemoProvisionService {
             "demo_data_seeded", String.valueOf(demoDataSeeded));
     log.info("AUDIT: Demo tenant provisioned for org {}: {}", org.getId(), auditDetails);
 
-    String loginUrl = baseUrl + "/org/" + slug;
-
     return new DemoProvisionResponse(
         org.getId(),
         slug,
@@ -224,7 +251,7 @@ public class DemoProvisionService {
         loginUrl,
         demoDataSeeded,
         adminNote,
-        tempPassword);
+        isNewUser ? tempPassword : null);
   }
 
   /**

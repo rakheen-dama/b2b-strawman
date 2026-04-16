@@ -477,6 +477,82 @@ This requires a product decision — pick one approach:
 
 ---
 
+## BUG-012: Demo org provisioning ignores vertical-specific packs — legal/accounting orgs get generic packs only
+
+**Severity**: high
+**Area**: Both — Demo Provisioning / Vertical Profiles / Pack Seeding
+**Found in**: Platform admin demo org scaffolding
+
+**Description**: When a platform admin provisions a demo org with the "Legal" or "Accounting" vertical profile, the org receives only generic packs. Vertical-specific field packs (matter details, case number, court name), template packs, compliance packs, enabled modules (trust accounting, court calendar, conflict check), terminology overrides ("Matter" instead of "Project"), and currency defaults are all missing. The org looks and behaves identically to a generic consulting org.
+
+**Root Cause**: The frontend sends uppercase, simplified vertical profile values (`"LEGAL"`, `"ACCOUNTING"`, `"GENERIC"`) but the backend profile registry keys are lowercase with region suffixes (`"legal-za"`, `"accounting-za"`, `"consulting-generic"`).
+
+The mismatch causes a cascade of failures:
+
+1. **Profile registry lookup fails** — `VerticalProfileRegistry.getProfile("LEGAL")` (line 105) does a direct `Map.get()` with no normalization. Returns `Optional.empty()` because the key is `"legal-za"`.
+
+2. **Modules, terminology, currency never set** — In `TenantProvisioningService.setVerticalProfile()` (line 247), the `profileOpt.isPresent()` check fails, so `enabledModules`, `terminologyNamespace`, and `currency` are skipped. Only the raw string `"LEGAL"` is stored as `OrgSettings.verticalProfile`.
+
+3. **All vertical-specific packs skipped** — In `AbstractPackSeeder.doSeedPacks()` (line 131-141), the seeder compares `tenantProfile="LEGAL"` against `packProfile="legal-za"`. The mismatch causes every vertical-specific pack to be skipped.
+
+4. **Demo data seeder partially works** — `DemoDataSeeder.seed()` (line 42) does `.toLowerCase()` and matches on stems (`"legal"`, `"accounting"`), so it dispatches to the correct seeder. Demo data has the right theme (law firm customers, etc.) but lacks vertical-specific custom fields.
+
+**Affected Files**:
+- `frontend/app/(app)/platform-admin/demo/demo-provision-form.tsx` (lines 21-37) — sends `"LEGAL"`, `"ACCOUNTING"`, `"GENERIC"` as vertical profile values
+- `frontend/lib/schemas/demo-provision.ts` — Zod schema likely constrains to uppercase values
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/VerticalProfileRegistry.java` (line 105) — direct `Map.get()` with no normalization
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/provisioning/TenantProvisioningService.java` (lines 165-166) — passes raw request value to `setVerticalProfile()`
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/seeder/AbstractPackSeeder.java` (lines 131-141) — string comparison between tenant profile and pack profile
+- `backend/src/main/resources/vertical-profiles/*.json` — profile IDs: `"legal-za"`, `"accounting-za"`, `"consulting-generic"`
+
+**Fix Guidance**:
+1. **Change the frontend to send correct profile IDs.** Update `demo-provision-form.tsx` VERTICAL_OPTIONS values to match the backend profile IDs:
+   - `"GENERIC"` → `"consulting-generic"`
+   - `"ACCOUNTING"` → `"accounting-za"`
+   - `"LEGAL"` → `"legal-za"`
+2. **Update the Zod schema** in `frontend/lib/schemas/demo-provision.ts` to accept the new values.
+3. **Update `DemoDataSeeder.seed()`** switch statement (line 42) to match on full profile IDs instead of stems:
+   - `case "accounting"` → `case "accounting-za"`
+   - `case "legal"` → `case "legal-za"`
+   - `default` → handles `"consulting-generic"` and any unknown profile
+4. **Add a backend guard** in `DemoProvisionService.provisionDemo()` or `TenantProvisioningService` that validates the vertical profile exists in the registry before proceeding. Throw `InvalidStateException` if the profile ID is unknown, rather than silently falling through to generic.
+5. **Test**: Provision a demo org with each vertical and verify:
+   - `OrgSettings.verticalProfile` matches the profile ID
+   - `OrgSettings.enabledModules` is populated (e.g., `["trust_accounting", "court_calendar", ...]` for legal)
+   - `OrgSettings.terminologyNamespace` is set (e.g., `"en-ZA-legal"`)
+   - Vertical-specific field packs are installed (e.g., `legal-za-project` fields visible on projects)
+   - Currency is set from the profile (e.g., ZAR for legal-za)
+
+**Impact**: Every demo org provisioned with a non-generic vertical since this feature was built has been missing all vertical-specific functionality. Legal demo orgs have no matter fields, no trust accounting, no court calendar. Accounting demo orgs have no engagement-specific fields. The vertical profile selection on the admin form is effectively decorative. **Status: Fixed** — Frontend aligned to backend profile IDs (consulting-generic, accounting-za, legal-za). Backend validation guard rejects unknown profiles. DemoDataSeeder dispatch updated. All tests updated.
+
+---
+
+## BUG-013: No welcome email sent during demo org provisioning
+
+**Severity**: medium
+**Area**: Backend — Demo Provisioning / Email
+**Found in**: Platform admin demo org scaffolding
+
+**Description**: When a platform admin provisions a demo org, a Keycloak user is created with a temporary password, but no welcome or invite email is sent to the user. The temp password is only returned in the API response and displayed in the admin UI success card. The demo user has no way to know their account exists or how to log in unless the admin manually communicates the credentials.
+
+**Root Cause**: `DemoProvisionService.provisionDemo()` generates a temp password (line 114) and returns it in `DemoProvisionResponse` (line 227), but the method has no email sending logic. The existing email infrastructure (`SmtpEmailProvider`, `SendGridEmailProvider`, notification templates) is not wired into the provisioning flow.
+
+**Affected Files**:
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/demo/DemoProvisionService.java` (lines 81-228) — `provisionDemo()` method, no email call
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/notification/channel/email/` — existing email infrastructure to integrate with
+
+**Fix Guidance**:
+1. **Create a welcome email template** — Add a notification template (or a simple email service method) for demo tenant welcome emails. Include: org name, login URL, email address, temp password, and a note that the password should be changed on first login.
+2. **Integrate into `DemoProvisionService.provisionDemo()`** — After Step 5 (subscription override) and before Step 7 (audit event), send the welcome email to `adminEmail`. Use the existing email channel infrastructure. Make it non-fatal (catch and log errors) so a failed email doesn't block provisioning.
+3. **Consider Keycloak "required action"** — Optionally configure the Keycloak user with a `UPDATE_PASSWORD` required action so they're forced to change the temp password on first login. This can be done via `KeycloakAdminClient.createUser()` if it supports required actions.
+4. **Test**: Provision a demo org and verify the admin email receives a welcome message with login URL and temp password. Verify provisioning still succeeds if email delivery fails (non-fatal).
+
+**Impact**: Demo users cannot self-serve — they depend on the platform admin to manually share credentials. This creates friction in the demo onboarding flow, especially if the admin provisions multiple demo orgs or forgets to share the password. For a product demo experience, this is a poor first impression. **Status: Fixed** — DemoWelcomeEmailService sends Thymeleaf-rendered welcome email via platform SMTP after provisioning. Fire-and-forget (non-fatal). Gracefully skips in environments without mail sender.
+
+---
+
+<!-- Template for new bugs:
+
 ## BUG-NNN: [Short description]
 
 **Severity**: [critical/high/medium/low]

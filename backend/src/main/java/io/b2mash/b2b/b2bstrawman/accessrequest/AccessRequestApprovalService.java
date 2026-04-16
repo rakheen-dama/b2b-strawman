@@ -103,7 +103,8 @@ public class AccessRequestApprovalService {
       // Use the slug (= Keycloak org alias) as the org identifier for schema mapping,
       // because Keycloak JWTs include the alias in the "organization" claim, not the UUID.
       String verticalProfile = INDUSTRY_TO_PROFILE.get(request.getIndustry());
-      tenantProvisioningService.provisionTenant(slug, orgName, verticalProfile);
+      tenantProvisioningService.provisionTenant(
+          slug, orgName, verticalProfile, request.getCountry());
       log.info("Provisioned tenant schema for org {} (slug={})", kcOrgId, slug);
 
       // Step 4: Invite user via Keycloak and mark as org creator

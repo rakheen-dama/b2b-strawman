@@ -48,7 +48,7 @@ describe("DemoProvisionForm", () => {
         organizationId: "org-demo-123",
         organizationSlug: "demo-accounting-firm",
         organizationName: "Demo Accounting Firm",
-        verticalProfile: "ACCOUNTING",
+        verticalProfile: "accounting-za",
         loginUrl: "https://app.example.com/sign-in",
         demoDataSeeded: true,
         adminNote: "Demo tenant created",
@@ -66,7 +66,7 @@ describe("DemoProvisionForm", () => {
     await waitFor(() => {
       expect(mockProvisionDemo).toHaveBeenCalledWith({
         organizationName: "Demo Accounting Firm",
-        verticalProfile: "ACCOUNTING",
+        verticalProfile: "accounting-za",
         adminEmail: "admin@example.com",
         seedDemoData: true,
       });
@@ -100,7 +100,7 @@ describe("DemoProvisionForm", () => {
         organizationId: "org-demo-456",
         organizationSlug: "demo-legal-firm",
         organizationName: "Demo Legal Firm",
-        verticalProfile: "LEGAL",
+        verticalProfile: "legal-za",
         loginUrl: "https://app.example.com/sign-in",
         demoDataSeeded: false,
         adminNote: "Demo tenant created by admin",
@@ -121,7 +121,7 @@ describe("DemoProvisionForm", () => {
       expect(screen.getByText("Demo Legal Firm")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("LEGAL")).toBeInTheDocument();
+    expect(screen.getByText("legal-za")).toBeInTheDocument();
     expect(screen.getByText("https://app.example.com/sign-in")).toBeInTheDocument();
     expect(screen.getByText("No")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Create Another" })).toBeInTheDocument();
@@ -135,7 +135,7 @@ describe("DemoProvisionForm", () => {
         organizationId: "org-demo-789",
         organizationSlug: "demo-accounting",
         organizationName: "Accounting Demo",
-        verticalProfile: "ACCOUNTING",
+        verticalProfile: "accounting-za",
         loginUrl: "https://app.example.com/sign-in",
         demoDataSeeded: true,
         adminNote: "Created",
@@ -144,7 +144,7 @@ describe("DemoProvisionForm", () => {
 
     render(<DemoProvisionForm />);
 
-    // Default is GENERIC — click Accounting radio
+    // Default is consulting-generic — click Accounting radio
     const accountingRadio = screen.getByRole("radio", { name: /Accounting/ });
     await user.click(accountingRadio);
     expect(accountingRadio).toBeChecked();
@@ -157,7 +157,7 @@ describe("DemoProvisionForm", () => {
     await waitFor(() => {
       expect(mockProvisionDemo).toHaveBeenCalledWith(
         expect.objectContaining({
-          verticalProfile: "ACCOUNTING",
+          verticalProfile: "accounting-za",
         })
       );
     });

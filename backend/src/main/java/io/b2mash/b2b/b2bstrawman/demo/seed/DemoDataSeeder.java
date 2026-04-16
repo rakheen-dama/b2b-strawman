@@ -32,7 +32,8 @@ public class DemoDataSeeder {
    *
    * @param schemaName the tenant schema name (e.g. "tenant_a1b2c3d4e5f6")
    * @param orgId the organization UUID
-   * @param verticalProfile the vertical profile (e.g. "generic", "accounting", "legal")
+   * @param verticalProfile the vertical profile (e.g. "consulting-generic", "accounting-za",
+   *     "legal-za")
    */
   public void seed(String schemaName, UUID orgId, String verticalProfile) {
     log.info(
@@ -40,8 +41,8 @@ public class DemoDataSeeder {
 
     BaseDemoDataSeeder seeder =
         switch (verticalProfile == null ? "" : verticalProfile.toLowerCase()) {
-          case "accounting" -> accountingSeeder;
-          case "legal" -> legalSeeder;
+          case "accounting-za" -> accountingSeeder;
+          case "legal-za" -> legalSeeder;
           default -> genericSeeder;
         };
     seeder.seed(schemaName, orgId);

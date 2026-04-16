@@ -279,6 +279,14 @@ public class OrgSettings {
     this.templatePackStatus = status;
   }
 
+  /** Removes a template pack entry from the status list by packId. */
+  public void removeTemplatePackEntry(String packId) {
+    if (this.templatePackStatus != null) {
+      this.templatePackStatus.removeIf(entry -> packId.equals(entry.get("packId")));
+      this.updatedAt = Instant.now();
+    }
+  }
+
   /** Records a template pack application in the status list. */
   public void recordTemplatePackApplication(String packId, int version) {
     if (this.templatePackStatus == null) {
@@ -396,6 +404,14 @@ public class OrgSettings {
 
   public void setAutomationPackStatus(List<Map<String, Object>> status) {
     this.automationPackStatus = status;
+  }
+
+  /** Removes an automation pack entry from the status list by packId. */
+  public void removeAutomationPackEntry(String packId) {
+    if (this.automationPackStatus != null) {
+      this.automationPackStatus.removeIf(entry -> packId.equals(entry.get("packId")));
+      this.updatedAt = Instant.now();
+    }
   }
 
   /** Records an automation pack application in the status list. */

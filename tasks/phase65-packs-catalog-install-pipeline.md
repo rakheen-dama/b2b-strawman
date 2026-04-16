@@ -27,7 +27,7 @@ Phase 65 introduces Kazi Packs as a first-class product surface: a unified catal
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 473 | PackInstall Entity + Migrations | Backend | -- (Phase 12, 13, 8 complete) | M | 473A, 473B | **Done** (PR #1040) |
-| 474 | PackInstaller Interface + Implementations | Backend | 473 | M | 474A, 474B | |
+| 474 | PackInstaller Interface + Implementations | Backend | 473 | M | 474A, 474B | **Done** (PR #1041) |
 | 475 | PackCatalogService + PackInstallService | Backend | 474 | M | 475A | |
 | 476 | Profile Provisioning Refactor | Backend | 475 | M | 476A | |
 | 477 | PackCatalogController + REST API | Backend | 475 | M | 477A | |
@@ -130,13 +130,13 @@ PHASE 8 (OrgSettings), PHASE 6 (Audit), PHASE 44 (Settings Layout)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 2a | 474 | 474A | `PackInstaller` interface. `TemplatePackInstaller` implementation (install, availablePacks, wraps `TemplatePackSeeder.applyPack()`). Refactor `TemplatePackSeeder` to expose `applyPack()` as package-private. Integration tests (~4). Backend only. | |
+| 2a | 474 | 474A | `PackInstaller` interface. `TemplatePackInstaller` implementation (install, availablePacks, wraps `TemplatePackSeeder.applyPack()`). Refactor `TemplatePackSeeder` to expose `applyPack()` as package-private. Integration tests (~4). Backend only. | **Done** (PR #1041) |
 
 ### Stage 3: AutomationPackInstaller + Uninstall Checks
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 3a | 474 | 474B | `AutomationPackInstaller` implementation (install, availablePacks, wraps `AutomationTemplateSeeder.applyPack()`). `checkUninstallable()` + `uninstall()` for both `TemplatePackInstaller` and `AutomationPackInstaller`. Refactor `AutomationTemplateSeeder` to expose `applyPack()`. Integration tests (~4). Backend only. | |
+| 3a | 474 | 474B | `AutomationPackInstaller` implementation (install, availablePacks, wraps `AutomationTemplateSeeder.applyPack()`). `checkUninstallable()` + `uninstall()` for both `TemplatePackInstaller` and `AutomationPackInstaller`. Refactor `AutomationTemplateSeeder` to expose `applyPack()`. Integration tests (~4). Backend only. | **Done** (PR #1041) |
 
 ### Stage 4: Services (Catalog + Install)
 
@@ -278,8 +278,8 @@ Stage 8:  [479A]                                          <- E2E test
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **474A** | 474.1--474.5 | `PackInstaller` interface (5 methods: `type()`, `availablePacks()`, `install()`, `checkUninstallable()`, `uninstall()`). `TemplatePackInstaller` `@Service` implementation: `install()` wraps `TemplatePackSeeder.applyPack()` with PackInstall creation, source_pack_install_id tagging, content_hash computation. `availablePacks()` delegates to classpath scan. Refactor `TemplatePackSeeder` to expose `applyPack()` as package-private. Integration tests (~4). Backend only. | |
-| **474B** | 474.6--474.10 | `AutomationPackInstaller` `@Service` implementation: same pattern as TemplatePackInstaller but wraps `AutomationTemplateSeeder.applyPack()`. Hash includes trigger_config + conditions + serialized actions. Refactor `AutomationTemplateSeeder` to expose `applyPack()`. Implement `checkUninstallable()` for `TemplatePackInstaller` (hash check, generated doc refs, clone refs). Implement `checkUninstallable()` for `AutomationPackInstaller` (hash check, execution refs). Implement `uninstall()` for both. Integration tests (~4). Backend only. | |
+| **474A** | 474.1--474.5 | `PackInstaller` interface (5 methods: `type()`, `availablePacks()`, `install()`, `checkUninstallable()`, `uninstall()`). `TemplatePackInstaller` `@Service` implementation: `install()` wraps `TemplatePackSeeder.applyPack()` with PackInstall creation, source_pack_install_id tagging, content_hash computation. `availablePacks()` delegates to classpath scan. Refactor `TemplatePackSeeder` to expose `applyPack()` as package-private. Integration tests (~4). Backend only. | **Done** (PR #1041) |
+| **474B** | 474.6--474.10 | `AutomationPackInstaller` `@Service` implementation: same pattern as TemplatePackInstaller but wraps `AutomationTemplateSeeder.applyPack()`. Hash includes trigger_config + conditions + serialized actions. Refactor `AutomationTemplateSeeder` to expose `applyPack()`. Implement `checkUninstallable()` for `TemplatePackInstaller` (hash check, generated doc refs, clone refs). Implement `checkUninstallable()` for `AutomationPackInstaller` (hash check, execution refs). Implement `uninstall()` for both. Integration tests (~4). Backend only. | **Done** (PR #1041) |
 
 ### Tasks
 

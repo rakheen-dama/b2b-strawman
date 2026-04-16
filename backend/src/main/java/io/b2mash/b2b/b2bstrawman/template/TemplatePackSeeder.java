@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.Map;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -131,5 +132,22 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
     } catch (IOException e) {
       throw new IllegalStateException("Failed to parse template content JSON file: " + filename, e);
     }
+  }
+
+  /**
+   * Returns all available template packs loaded from the classpath. Used by {@code
+   * TemplatePackInstaller} to build the pack catalog.
+   */
+  public List<LoadedPack<TemplatePackDefinition>> getAvailablePacks() {
+    return loadPacks();
+  }
+
+  /**
+   * Applies a single pack's content (creates DocumentTemplate rows). Public delegate for {@link
+   * #applyPack} to allow cross-package access from {@code TemplatePackInstaller}.
+   */
+  public void applyPackContent(
+      TemplatePackDefinition pack, Resource packResource, String tenantId) {
+    applyPack(pack, packResource, tenantId);
   }
 }

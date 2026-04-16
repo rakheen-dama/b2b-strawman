@@ -163,7 +163,7 @@ public abstract class AbstractPackSeeder<D> {
     orgSettingsRepository.save(settings);
   }
 
-  private List<LoadedPack<D>> loadPacks() {
+  protected List<LoadedPack<D>> loadPacks() {
     try {
       Resource[] resources = resourceResolver.getResources(getPackResourcePattern());
       return Arrays.stream(resources)

@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.seeder.AbstractPackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.ResourcePatternResolver;
@@ -105,5 +106,23 @@ public class AutomationTemplateSeeder extends AbstractPackSeeder<AutomationTempl
         actionRepository.save(action);
       }
     }
+  }
+
+  /**
+   * Returns all available automation packs loaded from the classpath. Used by {@code
+   * AutomationPackInstaller} to build the pack catalog.
+   */
+  public List<LoadedPack<AutomationTemplatePack>> getAvailablePacks() {
+    return loadPacks();
+  }
+
+  /**
+   * Applies a single pack's content (creates AutomationRule and AutomationAction rows). Public
+   * delegate for {@link #applyPack} to allow cross-package access from {@code
+   * AutomationPackInstaller}.
+   */
+  public void applyPackContent(
+      AutomationTemplatePack pack, Resource packResource, String tenantId) {
+    applyPack(pack, packResource, tenantId);
   }
 }

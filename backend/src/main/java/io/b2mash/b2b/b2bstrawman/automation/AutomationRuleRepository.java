@@ -16,4 +16,7 @@ public interface AutomationRuleRepository extends JpaRepository<AutomationRule, 
   List<AutomationRule> findBySourcePackInstallId(UUID sourcePackInstallId);
 
   int countBySourcePackInstallId(UUID sourcePackInstallId);
+
+  List<AutomationRule> findByTemplateSlugInAndSourcePackInstallIdIsNullAndSource(
+      List<String> templateSlugs, RuleSource source);
 }

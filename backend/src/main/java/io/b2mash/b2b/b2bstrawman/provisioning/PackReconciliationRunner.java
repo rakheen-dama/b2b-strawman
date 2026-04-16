@@ -1,23 +1,29 @@
 package io.b2mash.b2b.b2bstrawman.provisioning;
 
-import io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder;
 import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
 import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.packs.PackCatalogService;
+import io.b2mash.b2b.b2bstrawman.packs.PackInstallService;
+import io.b2mash.b2b.b2bstrawman.packs.PackType;
 import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
-import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.LegalTariffSeeder;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Runs on application startup to ensure all existing tenant schemas have all pack seeders applied.
@@ -35,42 +41,48 @@ public class PackReconciliationRunner implements ApplicationRunner {
 
   private final OrgSchemaMappingRepository mappingRepository;
   private final FieldPackSeeder fieldPackSeeder;
-  private final TemplatePackSeeder templatePackSeeder;
+  private final PackCatalogService packCatalogService;
+  private final PackInstallService packInstallService;
+  private final OrgSettingsRepository orgSettingsRepository;
   private final ClausePackSeeder clausePackSeeder;
   private final CompliancePackSeeder compliancePackSeeder;
   private final StandardReportPackSeeder standardReportPackSeeder;
   private final RequestPackSeeder requestPackSeeder;
-  private final AutomationTemplateSeeder automationTemplateSeeder;
   private final RatePackSeeder ratePackSeeder;
   private final ProjectTemplatePackSeeder projectTemplatePackSeeder;
   private final SchedulePackSeeder schedulePackSeeder;
   private final LegalTariffSeeder legalTariffSeeder;
+  private final TransactionTemplate transactionTemplate;
 
   public PackReconciliationRunner(
       OrgSchemaMappingRepository mappingRepository,
       FieldPackSeeder fieldPackSeeder,
-      TemplatePackSeeder templatePackSeeder,
+      PackCatalogService packCatalogService,
+      PackInstallService packInstallService,
+      OrgSettingsRepository orgSettingsRepository,
       ClausePackSeeder clausePackSeeder,
       CompliancePackSeeder compliancePackSeeder,
       StandardReportPackSeeder standardReportPackSeeder,
       RequestPackSeeder requestPackSeeder,
-      AutomationTemplateSeeder automationTemplateSeeder,
       RatePackSeeder ratePackSeeder,
       ProjectTemplatePackSeeder projectTemplatePackSeeder,
       SchedulePackSeeder schedulePackSeeder,
-      LegalTariffSeeder legalTariffSeeder) {
+      LegalTariffSeeder legalTariffSeeder,
+      TransactionTemplate transactionTemplate) {
     this.mappingRepository = mappingRepository;
     this.fieldPackSeeder = fieldPackSeeder;
-    this.templatePackSeeder = templatePackSeeder;
+    this.packCatalogService = packCatalogService;
+    this.packInstallService = packInstallService;
+    this.orgSettingsRepository = orgSettingsRepository;
     this.clausePackSeeder = clausePackSeeder;
     this.compliancePackSeeder = compliancePackSeeder;
     this.standardReportPackSeeder = standardReportPackSeeder;
     this.requestPackSeeder = requestPackSeeder;
-    this.automationTemplateSeeder = automationTemplateSeeder;
     this.ratePackSeeder = ratePackSeeder;
     this.projectTemplatePackSeeder = projectTemplatePackSeeder;
     this.schedulePackSeeder = schedulePackSeeder;
     this.legalTariffSeeder = legalTariffSeeder;
+    this.transactionTemplate = transactionTemplate;
   }
 
   @Override
@@ -91,12 +103,12 @@ public class PackReconciliationRunner implements ApplicationRunner {
         var clerkOrgId = mapping.getClerkOrgId();
 
         fieldPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-        templatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+        installPacksViaPipeline(schemaName, PackType.DOCUMENT_TEMPLATE);
         clausePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
         compliancePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
         standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
         requestPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-        automationTemplateSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+        installPacksViaPipeline(schemaName, PackType.AUTOMATION_TEMPLATE);
         ratePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
         projectTemplatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
         schedulePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
@@ -118,5 +130,35 @@ public class PackReconciliationRunner implements ApplicationRunner {
         allMappings.size(),
         succeeded,
         failed);
+  }
+
+  private void installPacksViaPipeline(String schemaName, PackType packType) {
+    // Always install universal packs (verticalProfile == null in metadata)
+    List<String> universalPackIds = packCatalogService.getUniversalPackIds(packType);
+    for (String packId : universalPackIds) {
+      // internalInstall binds its own tenant scope internally
+      packInstallService.internalInstall(packId, schemaName);
+    }
+
+    // Resolve the tenant's vertical profile (requires tenant scope for DB access)
+    String verticalProfile =
+        ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+            .call(
+                () ->
+                    transactionTemplate.execute(
+                        tx ->
+                            orgSettingsRepository
+                                .findForCurrentTenant()
+                                .map(OrgSettings::getVerticalProfile)
+                                .orElse(null)));
+
+    // Install profile-specific packs only when a profile is set
+    if (verticalProfile != null) {
+      List<String> profilePackIds =
+          packCatalogService.getPackIdsForProfile(verticalProfile, packType);
+      for (String packId : profilePackIds) {
+        packInstallService.internalInstall(packId, schemaName);
+      }
+    }
   }
 }

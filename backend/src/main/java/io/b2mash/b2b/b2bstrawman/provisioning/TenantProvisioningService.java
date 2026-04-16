@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.provisioning;
 
-import io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
 import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
 import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
@@ -9,16 +8,19 @@ import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.packs.PackCatalogService;
+import io.b2mash.b2b.b2bstrawman.packs.PackInstallService;
+import io.b2mash.b2b.b2bstrawman.packs.PackType;
 import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
-import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.LegalTariffSeeder;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
@@ -63,12 +65,12 @@ public class TenantProvisioningService {
   private final DataSource migrationDataSource;
   private final SubscriptionService subscriptionService;
   private final FieldPackSeeder fieldPackSeeder;
-  private final TemplatePackSeeder templatePackSeeder;
+  private final PackCatalogService packCatalogService;
+  private final PackInstallService packInstallService;
   private final ClausePackSeeder clausePackSeeder;
   private final CompliancePackSeeder compliancePackSeeder;
   private final StandardReportPackSeeder standardReportPackSeeder;
   private final RequestPackSeeder requestPackSeeder;
-  private final AutomationTemplateSeeder automationTemplateSeeder;
   private final RatePackSeeder ratePackSeeder;
   private final ProjectTemplatePackSeeder projectTemplatePackSeeder;
   private final SchedulePackSeeder schedulePackSeeder;
@@ -83,12 +85,12 @@ public class TenantProvisioningService {
       @Qualifier("migrationDataSource") DataSource migrationDataSource,
       SubscriptionService subscriptionService,
       FieldPackSeeder fieldPackSeeder,
-      TemplatePackSeeder templatePackSeeder,
+      PackCatalogService packCatalogService,
+      PackInstallService packInstallService,
       ClausePackSeeder clausePackSeeder,
       CompliancePackSeeder compliancePackSeeder,
       StandardReportPackSeeder standardReportPackSeeder,
       RequestPackSeeder requestPackSeeder,
-      AutomationTemplateSeeder automationTemplateSeeder,
       RatePackSeeder ratePackSeeder,
       ProjectTemplatePackSeeder projectTemplatePackSeeder,
       SchedulePackSeeder schedulePackSeeder,
@@ -101,12 +103,12 @@ public class TenantProvisioningService {
     this.migrationDataSource = migrationDataSource;
     this.subscriptionService = subscriptionService;
     this.fieldPackSeeder = fieldPackSeeder;
-    this.templatePackSeeder = templatePackSeeder;
+    this.packCatalogService = packCatalogService;
+    this.packInstallService = packInstallService;
     this.clausePackSeeder = clausePackSeeder;
     this.compliancePackSeeder = compliancePackSeeder;
     this.standardReportPackSeeder = standardReportPackSeeder;
     this.requestPackSeeder = requestPackSeeder;
-    this.automationTemplateSeeder = automationTemplateSeeder;
     this.ratePackSeeder = ratePackSeeder;
     this.projectTemplatePackSeeder = projectTemplatePackSeeder;
     this.schedulePackSeeder = schedulePackSeeder;
@@ -168,12 +170,12 @@ public class TenantProvisioningService {
         setDefaultCurrency(schemaName, clerkOrgId, defaultCurrency);
       }
       fieldPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-      templatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+      installPacksViaPipeline(schemaName, verticalProfile, PackType.DOCUMENT_TEMPLATE);
       clausePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       compliancePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
       requestPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-      automationTemplateSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+      installPacksViaPipeline(schemaName, verticalProfile, PackType.AUTOMATION_TEMPLATE);
       ratePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       projectTemplatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
       schedulePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
@@ -290,6 +292,24 @@ public class TenantProvisioningService {
       }
     }
     return "USD";
+  }
+
+  private void installPacksViaPipeline(
+      String schemaName, String verticalProfile, PackType packType) {
+    // Always install universal packs (verticalProfile == null in metadata)
+    List<String> universalPackIds = packCatalogService.getUniversalPackIds(packType);
+    for (String packId : universalPackIds) {
+      packInstallService.internalInstall(packId, schemaName);
+    }
+
+    // Install profile-specific packs only when a profile is set
+    if (verticalProfile != null) {
+      List<String> profilePackIds =
+          packCatalogService.getPackIdsForProfile(verticalProfile, packType);
+      for (String packId : profilePackIds) {
+        packInstallService.internalInstall(packId, schemaName);
+      }
+    }
   }
 
   public record ProvisioningResult(boolean success, String schemaName, boolean alreadyProvisioned) {

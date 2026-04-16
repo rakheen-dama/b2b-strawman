@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.billingrate.BillingRateRepository;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.packs.PackInstallRepository;
 import io.b2mash.b2b.b2bstrawman.schedule.RecurringScheduleRepository;
 import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -37,6 +38,7 @@ class PackReconciliationRunnerTest {
   @Autowired private BillingRateRepository billingRateRepository;
   @Autowired private RecurringScheduleRepository recurringScheduleRepository;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private PackInstallRepository packInstallRepository;
 
   private String tenantSchema;
 
@@ -152,6 +154,59 @@ class PackReconciliationRunnerTest {
                   assertThat(scheduleCount)
                       .as("Seeder-created schedule count should not increase after reconciliation")
                       .isEqualTo(initialCounts[1]);
+                }));
+  }
+
+  @Test
+  void reconciliationRunnerIdempotentWithPackInstallRows() {
+    // Provision a tenant with a profile that has template/automation packs
+    String profileOrgId = "org_pack_reconciliation_profile_test";
+    provisioningService.provisionTenant(
+        profileOrgId, "Profile Reconciliation Test Org", "legal-za");
+    String profileSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(profileOrgId).orElseThrow().getSchemaName();
+
+    // Count PackInstall rows after initial provisioning
+    long[] initialPackInstallCount = new long[1];
+    runInTenant(
+        profileSchema,
+        profileOrgId,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  initialPackInstallCount[0] = packInstallRepository.count();
+                }));
+
+    // Run reconciliation twice
+    reconciliationRunner.run(null);
+    reconciliationRunner.run(null);
+
+    // Verify PackInstall count has not increased (idempotent)
+    runInTenant(
+        profileSchema,
+        profileOrgId,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  long afterCount = packInstallRepository.count();
+                  assertThat(afterCount)
+                      .as("PackInstall count should not increase after reconciliation")
+                      .isEqualTo(initialPackInstallCount[0]);
+                }));
+
+    // Verify other pack types (field definitions, clauses) are still seeded via direct seeders
+    runInTenant(
+        profileSchema,
+        profileOrgId,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var allTemplates = templateRepository.findAll();
+                  var complianceTemplates =
+                      allTemplates.stream()
+                          .filter(t -> "PLATFORM".equals(t.getSource()) && t.getPackId() != null)
+                          .toList();
+                  assertThat(complianceTemplates).isNotEmpty();
                 }));
   }
 

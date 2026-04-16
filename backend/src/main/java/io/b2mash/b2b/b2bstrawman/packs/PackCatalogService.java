@@ -150,6 +150,24 @@ public class PackCatalogService {
   }
 
   /**
+   * Returns pack IDs for universal packs (verticalProfile == null) of a given type. These packs
+   * apply to all tenants regardless of their profile.
+   *
+   * @param type the pack type to filter by
+   * @return list of universal pack IDs
+   */
+  public List<String> getUniversalPackIds(PackType type) {
+    PackInstaller installer = installersByType.get(type);
+    if (installer == null) {
+      return List.of();
+    }
+    return installer.availablePacks().stream()
+        .filter(entry -> entry.verticalProfile() == null)
+        .map(PackCatalogEntry::packId)
+        .toList();
+  }
+
+  /**
    * Finds a single catalog entry by packId across all installers.
    *
    * @param packId the unique pack identifier

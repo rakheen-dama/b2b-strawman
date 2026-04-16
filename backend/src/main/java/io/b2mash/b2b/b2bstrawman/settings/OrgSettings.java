@@ -279,11 +279,23 @@ public class OrgSettings {
     this.templatePackStatus = status;
   }
 
-  /** Records a template pack application in the status list. */
+  /** Removes a template pack entry from the status list by packId. */
+  public void removeTemplatePackEntry(String packId) {
+    if (this.templatePackStatus != null) {
+      this.templatePackStatus.removeIf(entry -> packId.equals(entry.get("packId")));
+      this.updatedAt = Instant.now();
+    }
+  }
+
+  /**
+   * Records a template pack application in the status list. Idempotent -- removes any existing
+   * entry for the same packId before appending, preventing duplicates on re-install.
+   */
   public void recordTemplatePackApplication(String packId, int version) {
     if (this.templatePackStatus == null) {
       this.templatePackStatus = new ArrayList<>();
     }
+    this.templatePackStatus.removeIf(e -> packId.equals(e.get("packId")));
     var entry = new HashMap<String, Object>();
     entry.put("packId", packId);
     entry.put("version", version);
@@ -398,11 +410,23 @@ public class OrgSettings {
     this.automationPackStatus = status;
   }
 
-  /** Records an automation pack application in the status list. */
+  /** Removes an automation pack entry from the status list by packId. */
+  public void removeAutomationPackEntry(String packId) {
+    if (this.automationPackStatus != null) {
+      this.automationPackStatus.removeIf(entry -> packId.equals(entry.get("packId")));
+      this.updatedAt = Instant.now();
+    }
+  }
+
+  /**
+   * Records an automation pack application in the status list. Idempotent -- removes any existing
+   * entry for the same packId before appending, preventing duplicates on re-install.
+   */
   public void recordAutomationPackApplication(String packId, int version) {
     if (this.automationPackStatus == null) {
       this.automationPackStatus = new ArrayList<>();
     }
+    this.automationPackStatus.removeIf(e -> packId.equals(e.get("packId")));
     var entry = new HashMap<String, Object>();
     entry.put("packId", packId);
     entry.put("version", version);

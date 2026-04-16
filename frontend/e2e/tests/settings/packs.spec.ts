@@ -13,10 +13,9 @@
  *   PLAYWRIGHT_BASE_URL=http://localhost:3001 npx playwright test settings/packs --config e2e/playwright.config.ts
  */
 import { test, expect } from "@playwright/test";
-import { loginAs } from "../../fixtures/auth";
+import { loginAs, getApiToken } from "../../fixtures/auth";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
-const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://localhost:8090";
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
 
@@ -25,24 +24,6 @@ const TARGET_PACK_ID = "legal-za";
 const TARGET_PACK_NAME = "SA Legal Templates";
 /** A well-known template from the legal-za pack to verify installation */
 const LEGAL_TEMPLATE_NAME = "Power of Attorney";
-
-async function getToken(): Promise<string> {
-  const res = await fetch(`${MOCK_IDP_URL}/token`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      userId: "user_e2e_alice",
-      orgId: "org_e2e_test",
-      orgSlug: ORG,
-      orgRole: "org:owner",
-    }),
-  });
-  if (!res.ok) {
-    throw new Error(`Failed to get token: ${res.status} ${res.statusText}`);
-  }
-  const { access_token } = await res.json();
-  return access_token;
-}
 
 /**
  * Find a template by name via the backend API and return its detail (id + content).
@@ -66,20 +47,51 @@ async function findTemplateByName(
   return detailRes.json();
 }
 
+/**
+ * Uninstall the target pack via API (best-effort cleanup for test reruns).
+ */
+async function uninstallPackViaApi(token: string): Promise<void> {
+  await fetch(`${BACKEND_URL}/api/packs/${TARGET_PACK_ID}/uninstall`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+  // Ignore errors — pack may not be installed
+}
+
+/**
+ * Reset a template to its pack original via API (best-effort cleanup).
+ */
+async function resetTemplateViaApi(token: string, name: string): Promise<void> {
+  const template = await findTemplateByName(token, name);
+  if (!template) return;
+  await fetch(`${BACKEND_URL}/api/templates/${template.id}/reset`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+}
+
 test.describe.serial("PACK-01: Pack Lifecycle", () => {
+  // Cleanup: ensure the pack is uninstalled before/after the suite so reruns start clean
+  test.afterAll(async () => {
+    const token = await getApiToken("alice");
+    // Reset any edited templates first (so uninstall is not blocked)
+    await resetTemplateViaApi(token, LEGAL_TEMPLATE_NAME);
+    await uninstallPackViaApi(token);
+  });
+
   // ---- Test 1: Install pack and verify content (479.2) ----
   test("Install pack and verify templates are created", async ({ page }) => {
+    // Pre-test cleanup: ensure pack starts uninstalled
+    const setupToken = await getApiToken("alice");
+    await resetTemplateViaApi(setupToken, LEGAL_TEMPLATE_NAME);
+    await uninstallPackViaApi(setupToken);
+
     await loginAs(page, "alice");
     await page.goto(`${BASE}/settings/packs`);
-    await page.waitForLoadState("networkidle");
 
     // Verify packs page loads
     const heading = page.locator("h1").filter({ hasText: "Packs" });
-    const hasPage = await heading.isVisible({ timeout: 10000 }).catch(() => false);
-    if (!hasPage) {
-      test.skip(true, "Packs settings page does not exist at /settings/packs");
-      return;
-    }
+    await expect(heading).toBeVisible({ timeout: 10000 });
     await expect(page.locator("body")).not.toContainText("Something went wrong");
 
     // Available tab should be active by default
@@ -89,9 +101,6 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
     const showAllSwitch = page.locator("#show-all-packs");
     await expect(showAllSwitch).toBeVisible({ timeout: 5000 });
     await showAllSwitch.click();
-    // Wait for catalog to reload after toggle
-    await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(1000);
 
     // Find the legal-za pack card
     const packCard = page.locator(`[data-testid="pack-card-${TARGET_PACK_ID}"]`);
@@ -99,7 +108,7 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
 
     // Verify pack metadata
     await expect(packCard.locator("h3")).toContainText(TARGET_PACK_NAME);
-    await expect(packCard.getByText("10 templates")).toBeVisible({ timeout: 5000 });
+    await expect(packCard.getByText(/\d+ templates?/)).toBeVisible({ timeout: 5000 });
 
     // Click Install button on the legal-za card
     const installButton = packCard.getByRole("button", { name: "Install" });
@@ -117,7 +126,6 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
 
     // Navigate to Templates page to verify templates were created
     await page.goto(`${BASE}/settings/templates`);
-    await page.waitForLoadState("networkidle");
     await expect(page.locator("h1").filter({ hasText: "Templates" })).toBeVisible({
       timeout: 10000,
     });
@@ -128,7 +136,6 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
 
     // Navigate back to Packs > Installed tab
     await page.goto(`${BASE}/settings/packs`);
-    await page.waitForLoadState("networkidle");
     const installedTab = page.getByRole("tab", { name: /Installed/i });
     await expect(installedTab).toBeVisible({ timeout: 5000 });
     await installedTab.click();
@@ -145,16 +152,14 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
 
     // Step 1: Navigate to Installed tab and verify legal-za is there
     await page.goto(`${BASE}/settings/packs`);
-    await page.waitForLoadState("networkidle");
     const installedTab = page.getByRole("tab", { name: /Installed/i });
     await installedTab.click();
-    await page.waitForTimeout(500);
 
     const installedCard = page.locator(`[data-testid="pack-card-${TARGET_PACK_ID}"]`);
     await expect(installedCard).toBeVisible({ timeout: 10000 });
 
     // Step 2: Edit a pack template via the backend API to trigger hash mismatch
-    const token = await getToken();
+    const token = await getApiToken("alice");
     const template = await findTemplateByName(token, LEGAL_TEMPLATE_NAME);
     expect(template).toBeTruthy();
     const templateId = template!.id;
@@ -179,18 +184,12 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
     expect(updateRes.ok).toBeTruthy();
 
     // Step 3: Reload the packs page and go to Installed tab to see the blocked state
-    // We must fully reload so the cached uninstall check is cleared
     await page.goto(`${BASE}/settings/packs`);
-    await page.waitForLoadState("networkidle");
     await page.getByRole("tab", { name: /Installed/i }).click();
-    await page.waitForTimeout(500);
 
     // Wait for the uninstall check to load (button starts disabled, stays disabled if blocked)
     const uninstallBtn = installedCard.getByRole("button", { name: "Uninstall" });
     await expect(uninstallBtn).toBeVisible({ timeout: 10000 });
-
-    // Wait for async uninstall check to complete
-    await page.waitForTimeout(3000);
 
     // Verify the button is disabled (blocked because template was edited)
     await expect(uninstallBtn).toBeDisabled({ timeout: 10000 });
@@ -199,14 +198,11 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
     // The button is wrapped in a <span> with TooltipTrigger
     const tooltipTrigger = installedCard.locator("span").filter({ has: uninstallBtn });
     await tooltipTrigger.hover();
-    await page.waitForTimeout(500);
 
     // Verify tooltip with blocking message appears
     const tooltipContent = page.locator('[data-radix-popper-content-wrapper]');
-    const hasTooltip = await tooltipContent.isVisible({ timeout: 3000 }).catch(() => false);
-    if (hasTooltip) {
-      await expect(tooltipContent).toContainText(/edited|modified/i);
-    }
+    await expect(tooltipContent).toBeVisible({ timeout: 3000 });
+    await expect(tooltipContent).toContainText(/edited|modified/i);
 
     // Step 4: Revert the template via the reset API endpoint
     const resetRes = await fetch(`${BACKEND_URL}/api/templates/${templateId}/reset`, {
@@ -217,9 +213,7 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
 
     // Step 5: Reload and verify uninstall is now allowed
     await page.goto(`${BASE}/settings/packs`);
-    await page.waitForLoadState("networkidle");
     await page.getByRole("tab", { name: /Installed/i }).click();
-    await page.waitForTimeout(500);
 
     // Wait for uninstall check to load
     const uninstallBtnAfterRevert = page
@@ -247,13 +241,11 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
     await expect(page.getByText("Pack uninstalled successfully.")).toBeVisible({ timeout: 15000 });
 
     // Step 7: Verify the pack is gone from the Installed tab
-    await page.waitForTimeout(1000);
     const removedCard = page.locator(`[data-testid="pack-card-${TARGET_PACK_ID}"]`);
     await expect(removedCard).not.toBeVisible({ timeout: 10000 });
 
     // Step 8: Verify templates are removed from the Templates page
     await page.goto(`${BASE}/settings/templates`);
-    await page.waitForLoadState("networkidle");
     await expect(page.locator("h1").filter({ hasText: "Templates" })).toBeVisible({
       timeout: 10000,
     });

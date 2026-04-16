@@ -52,4 +52,6 @@ public interface DocumentTemplateRepository extends JpaRepository<DocumentTempla
   List<DocumentTemplate> findBySourcePackInstallId(UUID sourcePackInstallId);
 
   int countBySourcePackInstallId(UUID sourcePackInstallId);
+
+  boolean existsBySourceTemplateIdIn(List<UUID> templateIds);
 }

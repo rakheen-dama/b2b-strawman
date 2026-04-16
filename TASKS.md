@@ -540,7 +540,7 @@
 | 474 | PackInstaller Interface + Implementations | Backend | 473 | M | 474A, 474B | **Done** (PR #1041) |
 | 475 | PackCatalogService + PackInstallService | Backend | 474 | M | 475A | **Done** (PR #1042) |
 | 476 | Profile Provisioning Refactor | Backend | 475 | M | 476A | **Done** (PR #1043) |
-| 477 | PackCatalogController + REST API | Backend | 475 | S | 477A | |
+| 477 | PackCatalogController + REST API | Backend | 475 | S | 477A | **Done** (PR #1044) |
 | 478 | Frontend: Settings > Packs Page | Frontend | 477 | M | 478A, 478B | |
 | 479 | Integration Tests + E2E | E2E | 477, 478 | S | 479A | |
 

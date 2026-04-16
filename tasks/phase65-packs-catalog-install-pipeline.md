@@ -30,7 +30,7 @@ Phase 65 introduces Kazi Packs as a first-class product surface: a unified catal
 | 474 | PackInstaller Interface + Implementations | Backend | 473 | M | 474A, 474B | **Done** (PR #1041) |
 | 475 | PackCatalogService + PackInstallService | Backend | 474 | M | 475A | **Done** (PR #1042) |
 | 476 | Profile Provisioning Refactor | Backend | 475 | M | 476A | **Done** (PR #1043) |
-| 477 | PackCatalogController + REST API | Backend | 475 | M | 477A | |
+| 477 | PackCatalogController + REST API | Backend | 475 | M | 477A | **Done** (PR #1044) |
 | 478 | Frontend: Settings > Packs Page | Frontend | 477 | M | 478A, 478B | |
 | 479 | Integration Tests + E2E | E2E | 477, 478 | S | 479A | |
 
@@ -149,7 +149,7 @@ PHASE 8 (OrgSettings), PHASE 6 (Audit), PHASE 44 (Settings Layout)
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
 | 5a (parallel) | 476 | 476A | Modify `TenantProvisioningService` to route document template and automation template packs through `PackInstallService.internalInstall()`. Modify `PackReconciliationRunner` similarly. Keep other 11 pack types unchanged. Integration tests (~4). Backend only. | **Done** (PR #1043) |
-| 5b (parallel) | 477 | 477A | `PackCatalogController` with 5 endpoints (catalog list, installed list, uninstall check, install, uninstall). `PackInstallResponse` record. `@RequiresCapability("TEAM_OVERSIGHT")`. HTTP integration tests (~6). Backend only. | |
+| 5b (parallel) | 477 | 477A | `PackCatalogController` with 5 endpoints (catalog list, installed list, uninstall check, install, uninstall). `PackInstallResponse` record. `@RequiresCapability("TEAM_OVERSIGHT")`. HTTP integration tests (~6). Backend only. | **Done** (PR #1044) |
 
 ### Stage 6: Frontend Available Tab + API Client
 
@@ -444,7 +444,7 @@ Stage 8:  [479A]                                          <- E2E test
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **477A** | 477.1--477.6 | `PackCatalogController` with 5 endpoints. `PackInstallResponse` record (API response DTO mapped from `PackInstall` entity). `@RequiresCapability("TEAM_OVERSIGHT")` on all endpoints. HTTP integration tests covering all 5 endpoints, error paths (404, 409), profile filtering, `?all=true` parameter. (~6 tests). Backend only. | |
+| **477A** | 477.1--477.6 | `PackCatalogController` with 5 endpoints. `PackInstallResponse` record (API response DTO mapped from `PackInstall` entity). `@RequiresCapability("TEAM_OVERSIGHT")` on all endpoints. HTTP integration tests covering all 5 endpoints, error paths (404, 409), profile filtering, `?all=true` parameter. (~6 tests). Backend only. | **Done** (PR #1044) |
 
 ### Tasks
 

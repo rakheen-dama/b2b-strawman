@@ -542,7 +542,7 @@
 | 476 | Profile Provisioning Refactor | Backend | 475 | M | 476A | **Done** (PR #1043) |
 | 477 | PackCatalogController + REST API | Backend | 475 | S | 477A | **Done** (PR #1044) |
 | 478 | Frontend: Settings > Packs Page | Frontend | 477 | M | 478A, 478B | **Done** (PR #1045) |
-| 479 | Integration Tests + E2E | E2E | 477, 478 | S | 479A | |
+| 479 | Integration Tests + E2E | E2E | 477, 478 | S | 479A | **Done** (PR #1046) |
 
 ---
 

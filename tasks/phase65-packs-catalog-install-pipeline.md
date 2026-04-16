@@ -32,7 +32,7 @@ Phase 65 introduces Kazi Packs as a first-class product surface: a unified catal
 | 476 | Profile Provisioning Refactor | Backend | 475 | M | 476A | **Done** (PR #1043) |
 | 477 | PackCatalogController + REST API | Backend | 475 | M | 477A | **Done** (PR #1044) |
 | 478 | Frontend: Settings > Packs Page | Frontend | 477 | M | 478A, 478B | **Done** (PR #1045) |
-| 479 | Integration Tests + E2E | E2E | 477, 478 | S | 479A | |
+| 479 | Integration Tests + E2E | E2E | 477, 478 | S | 479A | **Done** (PR #1046) |
 
 ---
 
@@ -167,7 +167,7 @@ PHASE 8 (OrgSettings), PHASE 6 (Audit), PHASE 44 (Settings Layout)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 8a | 479 | 479A | Playwright E2E test: login > Settings > Packs > install pack > verify content > edit template > blocked uninstall > revert edit > uninstall succeeds. E2E only. | |
+| 8a | 479 | 479A | Playwright E2E test: login > Settings > Packs > install pack > verify content > edit template > blocked uninstall > revert edit > uninstall succeeds. E2E only. | **Done** (PR #1046) |
 
 ### Timeline
 
@@ -565,7 +565,7 @@ Stage 8:  [479A]                                          <- E2E test
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **479A** | 479.1--479.3 | Playwright E2E test (`packs.spec.ts`): full lifecycle flow. Login as admin > navigate to Settings > Packs > verify Available tab shows packs > install a document template pack > verify card moves to Installed state > navigate to Templates page and verify new templates appear > navigate back to Packs > Installed tab > edit one template (change content) > attempt uninstall (verify button disabled, tooltip shows reason) > revert edit (delete the template or restore content) > uninstall succeeds > verify templates removed. E2E only. | |
+| **479A** | 479.1--479.3 | Playwright E2E test (`packs.spec.ts`): full lifecycle flow. Login as admin > navigate to Settings > Packs > verify Available tab shows packs > install a document template pack > verify card moves to Installed state > navigate to Templates page and verify new templates appear > navigate back to Packs > Installed tab > edit one template (change content) > attempt uninstall (verify button disabled, tooltip shows reason) > revert edit (delete the template or restore content) > uninstall succeeds > verify templates removed. E2E only. | **Done** (PR #1046) |
 
 ### Tasks
 

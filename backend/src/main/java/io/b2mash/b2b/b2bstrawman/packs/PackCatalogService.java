@@ -176,11 +176,16 @@ public class PackCatalogService {
   }
 
   private List<PackCatalogEntry> enrichWithInstallState(List<PackCatalogEntry> entries) {
+    // Preload all installs in one query and build a Map for O(1) lookup per entry
+    Map<String, PackInstall> installsByPackId =
+        packInstallRepository.findAll().stream()
+            .collect(Collectors.toMap(PackInstall::getPackId, Function.identity(), (a, b) -> a));
+
     return entries.stream()
         .map(
             entry -> {
-              var install = packInstallRepository.findByPackId(entry.packId());
-              if (install.isPresent()) {
+              var install = installsByPackId.get(entry.packId());
+              if (install != null) {
                 return new PackCatalogEntry(
                     entry.packId(),
                     entry.name(),
@@ -190,7 +195,7 @@ public class PackCatalogService {
                     entry.verticalProfile(),
                     entry.itemCount(),
                     true,
-                    install.get().getInstalledAt().toString());
+                    install.getInstalledAt().toString());
               }
               return entry;
             })

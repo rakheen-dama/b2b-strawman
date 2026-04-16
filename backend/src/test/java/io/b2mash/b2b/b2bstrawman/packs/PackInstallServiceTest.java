@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -141,11 +142,19 @@ class PackInstallServiceTest {
 
           if (profileSpecificPack.isPresent()) {
             String profilePackId = profileSpecificPack.get().packId();
+            String expectedProfile = profileSpecificPack.get().verticalProfile();
             // The install() call is @Transactional itself, so it manages its own transaction.
             // When it throws, its transaction rolls back cleanly.
             assertThatThrownBy(() -> packInstallService.install(profilePackId, memberId))
-                .isInstanceOf(
-                    org.springframework.web.ErrorResponseException.class); // InvalidStateException
+                .isInstanceOf(InvalidStateException.class)
+                .satisfies(
+                    thrown -> {
+                      var ex = (InvalidStateException) thrown;
+                      var problem = ex.getBody();
+                      assertThat(problem.getStatus()).isEqualTo(400);
+                      assertThat(problem.getTitle()).isEqualTo("Profile mismatch");
+                      assertThat(problem.getDetail()).contains(expectedProfile);
+                    });
           }
           // If no profile-specific packs exist, universal packs are proven in Order(1)
         });
@@ -224,19 +233,27 @@ class PackInstallServiceTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  // Check for pack.installed events (from Order 1 and Order 6)
+                  // Filter by entity type "pack_install" to scope assertions to our domain
+                  // Check for pack.installed events (from Order 1 and Order 6 = exactly 2)
                   var installedEvents =
                       auditService.findEvents(
-                          new AuditEventFilter(null, null, null, "pack.installed", null, null),
+                          new AuditEventFilter(
+                              "pack_install", null, null, "pack.installed", null, null),
                           PageRequest.of(0, 50));
-                  assertThat(installedEvents.getTotalElements()).isGreaterThanOrEqualTo(1);
+                  assertThat(installedEvents.getTotalElements()).isEqualTo(2);
+                  assertThat(installedEvents.getContent())
+                      .allSatisfy(
+                          event -> assertThat(event.getDetails().get("packId")).isEqualTo(PACK_ID));
 
-                  // Check for pack.uninstalled events (from Order 5)
+                  // Check for pack.uninstalled events (from Order 5 = exactly 1)
                   var uninstalledEvents =
                       auditService.findEvents(
-                          new AuditEventFilter(null, null, null, "pack.uninstalled", null, null),
+                          new AuditEventFilter(
+                              "pack_install", null, null, "pack.uninstalled", null, null),
                           PageRequest.of(0, 50));
-                  assertThat(uninstalledEvents.getTotalElements()).isGreaterThanOrEqualTo(1);
+                  assertThat(uninstalledEvents.getTotalElements()).isEqualTo(1);
+                  assertThat(uninstalledEvents.getContent().getFirst().getDetails().get("packId"))
+                      .isEqualTo(PACK_ID);
                 }));
   }
 

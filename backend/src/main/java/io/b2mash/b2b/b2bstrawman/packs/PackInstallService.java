@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Orchestrates pack install and uninstall operations. Delegates content creation/deletion to
@@ -32,19 +33,22 @@ public class PackInstallService {
   private final AuditService auditService;
   private final NotificationService notificationService;
   private final OrgSettingsService orgSettingsService;
+  private final TransactionTemplate transactionTemplate;
 
   public PackInstallService(
       PackCatalogService packCatalogService,
       PackInstallRepository packInstallRepository,
       AuditService auditService,
       NotificationService notificationService,
-      OrgSettingsService orgSettingsService) {
+      OrgSettingsService orgSettingsService,
+      TransactionTemplate transactionTemplate) {
     this.packCatalogService = packCatalogService;
     this.packInstallRepository = packInstallRepository;
     this.installersByType = packCatalogService.getInstallersByType();
     this.auditService = auditService;
     this.notificationService = notificationService;
     this.orgSettingsService = orgSettingsService;
+    this.transactionTemplate = transactionTemplate;
   }
 
   /**
@@ -108,50 +112,62 @@ public class PackInstallService {
    * Installs a pack for an explicit tenant (system/provisioning path). No profile affinity check.
    * No notification (no member to notify).
    *
+   * <p>Binds the tenant scope via {@link ScopedValue} so that all JPA operations (repository
+   * queries, OrgSettings mutations) resolve to the correct tenant schema, even when called from a
+   * background/provisioning thread with no HTTP request context. Uses {@link TransactionTemplate}
+   * for programmatic transaction management to avoid Spring proxy self-invocation issues.
+   *
    * @param packId the unique pack identifier
    * @param tenantId the tenant schema name
    */
-  @Transactional
   public void internalInstall(String packId, String tenantId) {
-    // 1. Resolve catalog entry
-    PackCatalogEntry catalogEntry = packCatalogService.findCatalogEntry(packId);
-    if (catalogEntry == null) {
-      throw new ResourceNotFoundException("Pack", packId);
-    }
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantId)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      // 1. Resolve catalog entry
+                      PackCatalogEntry catalogEntry = packCatalogService.findCatalogEntry(packId);
+                      if (catalogEntry == null) {
+                        throw new ResourceNotFoundException("Pack", packId);
+                      }
 
-    // 2. No profile affinity check for internal installs
+                      // 2. No profile affinity check for internal installs
 
-    // 3. Idempotency check
-    var existing = packInstallRepository.findByPackId(packId);
-    if (existing.isPresent()) {
-      log.info("Pack {} already installed (internal path), skipping", packId);
-      return;
-    }
+                      // 3. Idempotency check
+                      var existing = packInstallRepository.findByPackId(packId);
+                      if (existing.isPresent()) {
+                        log.info("Pack {} already installed (internal path), skipping", packId);
+                        return;
+                      }
 
-    // 4. Resolve installer
-    PackInstaller installer = resolveInstaller(catalogEntry.type());
+                      // 4. Resolve installer
+                      PackInstaller installer = resolveInstaller(catalogEntry.type());
 
-    // 5. Delegate to installer (memberId is null for internal installs)
-    installer.install(packId, tenantId, null);
+                      // 5. Delegate to installer (memberId is null for internal installs)
+                      installer.install(packId, tenantId, null);
 
-    // 6. Retrieve the created PackInstall
-    PackInstall install =
-        packInstallRepository
-            .findByPackId(packId)
-            .orElseThrow(
-                () ->
-                    new IllegalStateException(
-                        "PackInstall not found after internal installation of " + packId));
+                      // 6. Retrieve the created PackInstall
+                      PackInstall install =
+                          packInstallRepository
+                              .findByPackId(packId)
+                              .orElseThrow(
+                                  () ->
+                                      new IllegalStateException(
+                                          "PackInstall not found after internal installation of "
+                                              + packId));
 
-    // 7. Update legacy OrgSettings shim
-    updateOrgSettingsOnInstall(catalogEntry);
+                      // 7. Update legacy OrgSettings shim
+                      updateOrgSettingsOnInstall(catalogEntry);
 
-    // 8. Emit audit event (system actor, no member)
-    emitInstallAuditEvent(install, null);
+                      // 8. Emit audit event (system actor, no member)
+                      emitInstallAuditEvent(install, null);
 
-    // 9. No notification for internal installs (no member to notify)
+                      // 9. No notification for internal installs (no member to notify)
 
-    log.info("Internal install of pack {} completed for tenant {}", packId, tenantId);
+                      log.info(
+                          "Internal install of pack {} completed for tenant {}", packId, tenantId);
+                    }));
   }
 
   /**
@@ -173,22 +189,18 @@ public class PackInstallService {
     // 2. Resolve installer
     PackInstaller installer = resolveInstaller(install.getPackType());
 
-    // 3. Check uninstall gates
-    UninstallCheck check = installer.checkUninstallable(packId, tenantId);
-    if (!check.canUninstall()) {
-      // Emit blocked audit event
-      emitUninstallBlockedAuditEvent(install, check.blockingReason());
-      throw new ResourceConflictException("Uninstall blocked", check.blockingReason());
+    // 3+4. Delegate to installer — it enforces uninstall gates internally and throws
+    //       ResourceConflictException if blocked. We catch the exception to emit audit.
+    try {
+      installer.uninstall(packId, tenantId, memberId);
+    } catch (ResourceConflictException e) {
+      emitUninstallBlockedAuditEvent(install, e.getBody().getDetail());
+      throw e;
     }
 
-    // 4. Delegate to installer (deletes content + PackInstall row)
-    installer.uninstall(packId, tenantId, memberId);
-
-    // 5. Remove from legacy OrgSettings shim
-    PackCatalogEntry catalogEntry = packCatalogService.findCatalogEntry(packId);
-    if (catalogEntry != null) {
-      updateOrgSettingsOnUninstall(catalogEntry);
-    }
+    // 5. Remove from legacy OrgSettings shim (use install entity data, not catalog lookup,
+    //    so cleanup works even if the pack definition has been removed from classpath)
+    updateOrgSettingsOnUninstall(install.getPackType(), install.getPackId());
 
     // 6. Emit audit event
     emitUninstallAuditEvent(install);
@@ -256,12 +268,12 @@ public class PackInstallService {
     }
   }
 
-  private void updateOrgSettingsOnUninstall(PackCatalogEntry entry) {
+  private void updateOrgSettingsOnUninstall(PackType type, String packId) {
     OrgSettings settings = orgSettingsService.getOrCreateForCurrentTenant();
 
-    switch (entry.type()) {
-      case DOCUMENT_TEMPLATE -> settings.removeTemplatePackEntry(entry.packId());
-      case AUTOMATION_TEMPLATE -> settings.removeAutomationPackEntry(entry.packId());
+    switch (type) {
+      case DOCUMENT_TEMPLATE -> settings.removeTemplatePackEntry(packId);
+      case AUTOMATION_TEMPLATE -> settings.removeAutomationPackEntry(packId);
     }
   }
 

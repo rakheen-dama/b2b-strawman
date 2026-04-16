@@ -15,10 +15,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionRepository;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,6 +47,9 @@ class DemoProvisionServiceTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private OrganizationRepository organizationRepository;
   @Autowired private SubscriptionRepository subscriptionRepository;
+  @Autowired private MemberRepository memberRepository;
+  @Autowired private OrgSchemaMappingRepository mappingRepository;
+  @Autowired private TenantTransactionHelper tenantTransactionHelper;
 
   @MockitoBean private KeycloakAdminClient keycloakAdminClient;
 
@@ -278,6 +285,55 @@ class DemoProvisionServiceTest {
                     }
                     """))
         .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void provision_preCreatesAdminMemberAsOwner() throws Exception {
+    when(keycloakAdminClient.findUserByEmail("owner-check@example.com"))
+        .thenReturn(Optional.empty());
+    when(keycloakAdminClient.createUser(
+            eq("owner-check@example.com"), eq("Demo"), eq("Admin"), any()))
+        .thenReturn("kc-user-owner-check");
+    when(keycloakAdminClient.createOrganization(
+            "Owner Check Org", "owner-check-org", "kc-user-owner-check"))
+        .thenReturn("kc-org-owner-check");
+
+    mockMvc
+        .perform(
+            post(BASE_PATH + "/provision")
+                .with(adminJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "organizationName": "Owner Check Org",
+                      "verticalProfile": "legal-za",
+                      "adminEmail": "owner-check@example.com",
+                      "seedDemoData": false
+                    }
+                    """))
+        .andExpect(status().isOk());
+
+    var org = organizationRepository.findByExternalOrgId("owner-check-org").orElseThrow();
+    String schemaName =
+        mappingRepository.findByExternalOrgId("owner-check-org").orElseThrow().getSchemaName();
+
+    var adminRoleSlug = new AtomicReference<String>();
+    var adminEmail = new AtomicReference<String>();
+    tenantTransactionHelper.executeInTenantTransaction(
+        schemaName,
+        org.getId().toString(),
+        t -> {
+          var member =
+              memberRepository
+                  .findByClerkUserId("kc-user-owner-check")
+                  .orElseThrow(() -> new AssertionError("Admin Member not found in tenant schema"));
+          adminRoleSlug.set(member.getOrgRoleEntity().getSlug());
+          adminEmail.set(member.getEmail());
+        });
+
+    assertEquals("owner", adminRoleSlug.get(), "Admin Member must be created with owner role");
+    assertEquals("owner-check@example.com", adminEmail.get());
   }
 
   // --- Helpers ---

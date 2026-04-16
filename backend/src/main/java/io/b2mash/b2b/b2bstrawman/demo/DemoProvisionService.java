@@ -12,10 +12,15 @@ import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
+import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleService;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.security.keycloak.KeycloakAdminClient;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import java.security.SecureRandom;
@@ -45,6 +50,8 @@ public class DemoProvisionService {
   private final TenantTransactionHelper tenantTransactionHelper;
   private final VerticalProfileRegistry verticalProfileRegistry;
   private final DemoWelcomeEmailService demoWelcomeEmailService;
+  private final MemberRepository memberRepository;
+  private final OrgRoleService orgRoleService;
   private final JdbcTemplate jdbcTemplate;
   private final String baseUrl;
 
@@ -60,6 +67,8 @@ public class DemoProvisionService {
       TenantTransactionHelper tenantTransactionHelper,
       VerticalProfileRegistry verticalProfileRegistry,
       DemoWelcomeEmailService demoWelcomeEmailService,
+      MemberRepository memberRepository,
+      OrgRoleService orgRoleService,
       JdbcTemplate jdbcTemplate,
       @Value("${app.base-url:http://localhost:3000}") String baseUrl) {
     this.keycloakAdminClient = keycloakAdminClient;
@@ -73,6 +82,8 @@ public class DemoProvisionService {
     this.tenantTransactionHelper = tenantTransactionHelper;
     this.verticalProfileRegistry = verticalProfileRegistry;
     this.demoWelcomeEmailService = demoWelcomeEmailService;
+    this.memberRepository = memberRepository;
+    this.orgRoleService = orgRoleService;
     this.jdbcTemplate = jdbcTemplate;
     this.baseUrl = baseUrl;
   }
@@ -205,10 +216,17 @@ public class DemoProvisionService {
           subscriptionStatusCache.evict(org.getId());
         });
 
+    // Step 5b: Pre-create the admin user's Member row as owner in the tenant schema.
+    // Without this, the demo seeder's fake members bypass the founding-user promotion
+    // in MemberFilter, and the real admin would be lazy-created as a plain member on
+    // first login — losing access to Packs, rate cards, invites, and other owner-only UI.
+    seedAdminOwnerMember(
+        provisioningResult.schemaName(), org.getId(), userId, adminEmail, isNewUser);
+
     // Compute login URL (needed for welcome email and response)
     String loginUrl = baseUrl + "/org/" + slug;
 
-    // Step 5b: Send welcome email (only for new users — existing users already have credentials)
+    // Step 5c: Send welcome email (only for new users — existing users already have credentials)
     if (isNewUser) {
       demoWelcomeEmailService.sendWelcomeEmail(
           adminEmail, name, slug, verticalProfile, loginUrl, tempPassword);
@@ -319,6 +337,30 @@ public class DemoProvisionService {
         adminUserId);
 
     return new DemoReseedResponse(org.getId(), org.getName(), true, verticalProfile, null);
+  }
+
+  private void seedAdminOwnerMember(
+      String schemaName, UUID orgId, String keycloakUserId, String email, boolean isNewUser) {
+    tenantTransactionHelper.executeInTenantTransaction(
+        schemaName,
+        orgId.toString(),
+        t -> {
+          OrgRole ownerRole =
+              orgRoleService
+                  .findSystemRoleBySlug(Roles.ORG_OWNER)
+                  .orElseThrow(
+                      () ->
+                          new InvalidStateException(
+                              "Owner role missing",
+                              "System 'owner' role not found in tenant schema " + schemaName));
+          String name = isNewUser ? "Demo Admin" : null;
+          memberRepository.save(new Member(keycloakUserId, email, name, null, ownerRole));
+          log.info(
+              "Pre-created owner Member for {} ({}) in schema {}",
+              email,
+              keycloakUserId,
+              schemaName);
+        });
   }
 
   private void truncateTransactionalTables(String schemaName) {

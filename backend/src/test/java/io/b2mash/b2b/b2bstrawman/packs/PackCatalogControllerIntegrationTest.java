@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.packs;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -161,6 +162,9 @@ class PackCatalogControllerIntegrationTest {
                   var install = packInstallRepository.findByPackId(PACK_ID).orElseThrow();
                   var templates =
                       documentTemplateRepository.findBySourcePackInstallId(install.getId());
+                  assertThat(templates)
+                      .as("Pack '%s' should have at least one linked template", PACK_ID)
+                      .isNotEmpty();
                   DocumentTemplate template = templates.getFirst();
                   template.setCss(
                       (template.getCss() != null ? template.getCss() : "") + " /* EDITED */");

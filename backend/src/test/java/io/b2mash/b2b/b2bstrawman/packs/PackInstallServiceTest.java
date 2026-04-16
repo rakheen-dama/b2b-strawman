@@ -236,22 +236,27 @@ class PackInstallServiceTest {
   @Order(7)
   void auditEventsEmittedForInstallAndUninstall() {
     // Verify audit events from previous test steps.
-    // Order(1) install + Order(5) uninstall + Order(6) re-install all committed successfully.
+    // Provisioning installs universal packs via internalInstall (system actor, no member).
+    // Order(1) finds "common" already installed (no-op). Order(5) uninstalls. Order(6) re-installs.
+    // So for PACK_ID ("common"): 1 from provisioning + 1 from re-install = 2 pack.installed events.
+    // Other packs (compliance-za, automation-common) also have provisioning audit events.
     runInTenantWithMember(
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  // Filter by entity type "pack_install" to scope assertions to our domain
-                  // Check for pack.installed events (from Order 1 and Order 6 = exactly 2)
-                  var installedEvents =
+                  // Check all pack.installed events — includes provisioning events for all packs
+                  var allInstalledEvents =
                       auditService.findEvents(
                           new AuditEventFilter(
                               "pack_install", null, null, "pack.installed", null, null),
                           PageRequest.of(0, 50));
-                  assertThat(installedEvents.getTotalElements()).isEqualTo(2);
-                  assertThat(installedEvents.getContent())
-                      .allSatisfy(
-                          event -> assertThat(event.getDetails().get("packId")).isEqualTo(PACK_ID));
+                  // Filter to only "common" pack events for precise assertion
+                  var commonPackEvents =
+                      allInstalledEvents.getContent().stream()
+                          .filter(e -> PACK_ID.equals(e.getDetails().get("packId")))
+                          .toList();
+                  // 1 from provisioning (internalInstall) + 1 from Order(6) re-install = 2
+                  assertThat(commonPackEvents).hasSize(2);
 
                   // Check for pack.uninstalled events (from Order 5 = exactly 1)
                   var uninstalledEvents =

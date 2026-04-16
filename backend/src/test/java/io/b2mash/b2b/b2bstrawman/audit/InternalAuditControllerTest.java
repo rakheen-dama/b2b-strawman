@@ -114,15 +114,19 @@ class InternalAuditControllerTest {
   }
 
   @Test
-  void statsEndpointWithNoEventsReturnsEmptyListAndZeroTotal() throws Exception {
+  void statsEndpointWithNoMemberEventsOnlyHasPackInstallEvents() throws Exception {
+    // Provisioning installs universal packs via internalInstall, which emits pack.installed audit
+    // events. This org has no member-driven events (no projects, no tasks, etc.), so the only
+    // audit events are from pack provisioning.
     mockMvc
         .perform(
             get("/internal/audit-events/stats")
                 .header("X-API-KEY", API_KEY)
                 .param("orgId", EMPTY_ORG_ID))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.eventTypeCounts", empty()))
-        .andExpect(jsonPath("$.totalEvents", is(0)));
+        .andExpect(jsonPath("$.eventTypeCounts").isArray())
+        .andExpect(
+            jsonPath("$.eventTypeCounts[?(@.eventType=='pack.installed')].count").isNotEmpty());
   }
 
   @Test

@@ -13,7 +13,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import io.b2mash.b2b.b2bstrawman.automation.template.AutomationTemplateSeeder;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
 import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
 import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
@@ -22,13 +21,15 @@ import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
+import io.b2mash.b2b.b2bstrawman.packs.PackCatalogService;
+import io.b2mash.b2b.b2bstrawman.packs.PackInstallService;
+import io.b2mash.b2b.b2bstrawman.packs.PackType;
 import io.b2mash.b2b.b2bstrawman.reporting.StandardReportPackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
-import io.b2mash.b2b.b2bstrawman.template.TemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileRegistry;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.LegalTariffSeeder;
 import java.sql.Connection;
@@ -58,12 +59,12 @@ class TenantProvisioningServiceTest {
   @Mock private DataSource migrationDataSource;
   @Mock private SubscriptionService subscriptionService;
   @Mock private FieldPackSeeder fieldPackSeeder;
-  @Mock private TemplatePackSeeder templatePackSeeder;
+  @Mock private PackCatalogService packCatalogService;
+  @Mock private PackInstallService packInstallService;
   @Mock private ClausePackSeeder clausePackSeeder;
   @Mock private CompliancePackSeeder compliancePackSeeder;
   @Mock private StandardReportPackSeeder standardReportPackSeeder;
   @Mock private RequestPackSeeder requestPackSeeder;
-  @Mock private AutomationTemplateSeeder automationTemplateSeeder;
   @Mock private RatePackSeeder ratePackSeeder;
   @Mock private ProjectTemplatePackSeeder projectTemplatePackSeeder;
   @Mock private SchedulePackSeeder schedulePackSeeder;
@@ -312,5 +313,119 @@ class TenantProvisioningServiceTest {
     // handles profile mismatch internally (no-op if no matching pack)
     verify(ratePackSeeder).seedPacksForTenant(anyString(), eq("org_no_profile"));
     verify(schedulePackSeeder).seedPacksForTenant(anyString(), eq("org_no_profile"));
+  }
+
+  @Test
+  void provisionTenant_withProfile_usesPackPipelineForTemplateAndAutomationPacks()
+      throws SQLException {
+    when(mappingRepository.findByClerkOrgId("org_pipeline")).thenReturn(Optional.empty());
+    when(organizationRepository.findByClerkOrgId("org_pipeline")).thenReturn(Optional.empty());
+
+    var org = new Organization("org_pipeline", "Pipeline Org");
+    when(organizationRepository.save(any(Organization.class))).thenReturn(org);
+
+    var mockConn = mock(Connection.class);
+    var mockStmt = mock(Statement.class);
+    when(migrationDataSource.getConnection()).thenReturn(mockConn);
+    when(mockConn.createStatement()).thenReturn(mockStmt);
+
+    when(mappingRepository.save(any(OrgSchemaMapping.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    doNothing().when(service).runTenantMigrations(anyString());
+
+    // Mock profile registry
+    var legalProfile =
+        new VerticalProfileRegistry.ProfileDefinition(
+            "legal-za",
+            "Legal (South Africa)",
+            "SA law firm",
+            List.of("trust_accounting"),
+            "en-ZA-legal",
+            "ZAR",
+            Map.of());
+    when(verticalProfileRegistry.getProfile("legal-za")).thenReturn(Optional.of(legalProfile));
+
+    // Mock TenantTransactionHelper to execute the lambda directly
+    when(orgSettingsRepository.findForCurrentTenant()).thenReturn(Optional.empty());
+    var settings = new OrgSettings("USD");
+    when(orgSettingsRepository.save(any(OrgSettings.class))).thenReturn(settings);
+    doAnswer(
+            invocation -> {
+              var consumer = (java.util.function.Consumer<String>) invocation.getArgument(2);
+              consumer.accept("tenant_id");
+              return null;
+            })
+        .when(tenantTransactionHelper)
+        .executeInTenantTransaction(anyString(), anyString(), any());
+
+    // Mock the pack catalog to return universal + profile-specific pack IDs
+    when(packCatalogService.getUniversalPackIds(PackType.DOCUMENT_TEMPLATE))
+        .thenReturn(List.of("common-templates-v1"));
+    when(packCatalogService.getUniversalPackIds(PackType.AUTOMATION_TEMPLATE))
+        .thenReturn(List.of());
+    when(packCatalogService.getPackIdsForProfile("legal-za", PackType.DOCUMENT_TEMPLATE))
+        .thenReturn(List.of("legal-za-templates-v1"));
+    when(packCatalogService.getPackIdsForProfile("legal-za", PackType.AUTOMATION_TEMPLATE))
+        .thenReturn(List.of("legal-za-automation-v1"));
+
+    var result = service.provisionTenant("org_pipeline", "Pipeline Org", "legal-za");
+
+    assertThat(result.success()).isTrue();
+
+    // Verify universal packs are installed
+    verify(packCatalogService).getUniversalPackIds(PackType.DOCUMENT_TEMPLATE);
+    verify(packCatalogService).getUniversalPackIds(PackType.AUTOMATION_TEMPLATE);
+    verify(packInstallService).internalInstall(eq("common-templates-v1"), anyString());
+
+    // Verify profile-specific packs are installed
+    verify(packCatalogService).getPackIdsForProfile("legal-za", PackType.DOCUMENT_TEMPLATE);
+    verify(packCatalogService).getPackIdsForProfile("legal-za", PackType.AUTOMATION_TEMPLATE);
+    verify(packInstallService).internalInstall(eq("legal-za-templates-v1"), anyString());
+    verify(packInstallService).internalInstall(eq("legal-za-automation-v1"), anyString());
+
+    // Verify other seeders are still called directly
+    verify(fieldPackSeeder).seedPacksForTenant(anyString(), eq("org_pipeline"));
+    verify(clausePackSeeder).seedPacksForTenant(anyString(), eq("org_pipeline"));
+    verify(ratePackSeeder).seedPacksForTenant(anyString(), eq("org_pipeline"));
+  }
+
+  @Test
+  void provisionTenant_withNullProfile_onlyInstallsUniversalPacks() throws SQLException {
+    when(mappingRepository.findByClerkOrgId("org_null_pipe")).thenReturn(Optional.empty());
+    when(organizationRepository.findByClerkOrgId("org_null_pipe")).thenReturn(Optional.empty());
+
+    var org = new Organization("org_null_pipe", "Null Pipe Org");
+    when(organizationRepository.save(any(Organization.class))).thenReturn(org);
+
+    var mockConn = mock(Connection.class);
+    var mockStmt = mock(Statement.class);
+    when(migrationDataSource.getConnection()).thenReturn(mockConn);
+    when(mockConn.createStatement()).thenReturn(mockStmt);
+
+    when(mappingRepository.save(any(OrgSchemaMapping.class)))
+        .thenAnswer(invocation -> invocation.getArgument(0));
+
+    doNothing().when(service).runTenantMigrations(anyString());
+
+    // Mock universal packs (always installed regardless of profile)
+    when(packCatalogService.getUniversalPackIds(PackType.DOCUMENT_TEMPLATE))
+        .thenReturn(List.of("common-templates-v1"));
+    when(packCatalogService.getUniversalPackIds(PackType.AUTOMATION_TEMPLATE))
+        .thenReturn(List.of());
+
+    service.provisionTenant("org_null_pipe", "Null Pipe Org", null);
+
+    // Universal packs are still installed even with null profile
+    verify(packCatalogService).getUniversalPackIds(PackType.DOCUMENT_TEMPLATE);
+    verify(packCatalogService).getUniversalPackIds(PackType.AUTOMATION_TEMPLATE);
+    verify(packInstallService).internalInstall(eq("common-templates-v1"), anyString());
+
+    // Profile-specific packs are NOT installed when profile is null
+    verify(packCatalogService, never()).getPackIdsForProfile(anyString(), any(PackType.class));
+
+    // Other seeders are still called
+    verify(fieldPackSeeder).seedPacksForTenant(anyString(), eq("org_null_pipe"));
+    verify(clausePackSeeder).seedPacksForTenant(anyString(), eq("org_null_pipe"));
   }
 }

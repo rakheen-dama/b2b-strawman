@@ -31,7 +31,7 @@ Phase 65 introduces Kazi Packs as a first-class product surface: a unified catal
 | 475 | PackCatalogService + PackInstallService | Backend | 474 | M | 475A | **Done** (PR #1042) |
 | 476 | Profile Provisioning Refactor | Backend | 475 | M | 476A | **Done** (PR #1043) |
 | 477 | PackCatalogController + REST API | Backend | 475 | M | 477A | **Done** (PR #1044) |
-| 478 | Frontend: Settings > Packs Page | Frontend | 477 | M | 478A, 478B | |
+| 478 | Frontend: Settings > Packs Page | Frontend | 477 | M | 478A, 478B | **Done** (PR #1045) |
 | 479 | Integration Tests + E2E | E2E | 477, 478 | S | 479A | |
 
 ---
@@ -155,13 +155,13 @@ PHASE 8 (OrgSettings), PHASE 6 (Audit), PHASE 44 (Settings Layout)
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 6a | 478 | 478A | `lib/api/packs.ts` API client. `PackCard` component. Settings > Packs page with Available tab. Settings nav update (`settings-nav-groups.ts`). Frontend only. | |
+| 6a | 478 | 478A | `lib/api/packs.ts` API client. `PackCard` component. Settings > Packs page with Available tab. Settings nav update (`settings-nav-groups.ts`). Frontend only. | **Done** (PR #1045) |
 
 ### Stage 7: Frontend Installed Tab + Uninstall Flow
 
 | Order | Epic | Slice | Summary | Status |
 |-------|------|-------|---------|--------|
-| 7a | 478 | 478B | Installed tab. Uninstall precheck flow (disabled button + tooltip with blocking reason). Confirmation dialog. Empty states for both tabs. Frontend tests (~6). Frontend only. | |
+| 7a | 478 | 478B | Installed tab. Uninstall precheck flow (disabled button + tooltip with blocking reason). Confirmation dialog. Empty states for both tabs. Frontend tests (~6). Frontend only. | **Done** (PR #1045) |
 
 ### Stage 8: E2E Test
 
@@ -494,8 +494,8 @@ Stage 8:  [479A]                                          <- E2E test
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **478A** | 478.1--478.6 | API client (`lib/api/packs.ts`). TypeScript types (`PackCatalogEntry`, `UninstallCheck`, `PackInstallResponse`). `PackCard` component (reusable card for Available + Installed views). Settings > Packs page (`page.tsx`) with Available tab (header, "Show all packs" toggle, responsive grid, install button). Settings nav update (`settings-nav-groups.ts` -- add "Packs" entry). Frontend only. | |
-| **478B** | 478.7--478.12 | Installed tab (grid of installed pack cards with install date/member info). Uninstall precheck flow (call `checkPackUninstallable` on mount, disable button with `Tooltip` showing blocking reason if blocked). `AlertDialog` confirmation for uninstall. Empty states for both tabs. Server actions for install/uninstall. Frontend tests (~6). Frontend only. | |
+| **478A** | 478.1--478.6 | API client (`lib/api/packs.ts`). TypeScript types (`PackCatalogEntry`, `UninstallCheck`, `PackInstallResponse`). `PackCard` component (reusable card for Available + Installed views). Settings > Packs page (`page.tsx`) with Available tab (header, "Show all packs" toggle, responsive grid, install button). Settings nav update (`settings-nav-groups.ts` -- add "Packs" entry). Frontend only. | **Done** (PR #1045) |
+| **478B** | 478.7--478.12 | Installed tab (grid of installed pack cards with install date/member info). Uninstall precheck flow (call `checkPackUninstallable` on mount, disable button with `Tooltip` showing blocking reason if blocked). `AlertDialog` confirmation for uninstall. Empty states for both tabs. Server actions for install/uninstall. Frontend tests (~6). Frontend only. | **Done** (PR #1045) |
 
 ### Tasks
 

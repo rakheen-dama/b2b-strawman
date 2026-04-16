@@ -80,11 +80,11 @@ afterEach(() => {
 });
 
 beforeEach(() => {
-  // Default: fetchCatalogAction returns catalog, fetchUninstallCheckAction returns uninstallable
-  mockFetchCatalogAction.mockResolvedValue(CATALOG);
+  // Default: fetchCatalogAction returns ActionResult wrapping catalog
+  mockFetchCatalogAction.mockResolvedValue({ success: true, data: CATALOG });
   mockFetchUninstallCheckAction.mockResolvedValue({
-    canUninstall: true,
-    blockingReason: null,
+    success: true,
+    data: { canUninstall: true, blockingReason: null },
   });
 });
 
@@ -131,7 +131,7 @@ describe("PacksPage — Available tab", () => {
         installedAt: null,
       },
     ];
-    mockFetchCatalogAction.mockResolvedValue(allPacks);
+    mockFetchCatalogAction.mockResolvedValue({ success: true, data: allPacks });
 
     renderPage();
 
@@ -177,11 +177,46 @@ describe("PacksPage — Installed tab", () => {
     });
   });
 
+  it("Uninstall button opens confirmation dialog and calls uninstallPackAction on confirm", async () => {
+    const user = userEvent.setup();
+    mockUninstallPackAction.mockResolvedValue({ success: true });
+
+    renderPage();
+
+    // Switch to Installed tab
+    const installedTab = screen.getByRole("tab", { name: /Installed/i });
+    await user.click(installedTab);
+
+    // Wait for uninstall check to load and button to become enabled
+    await waitFor(() => {
+      const uninstallButton = screen.getByRole("button", { name: "Uninstall" });
+      expect(uninstallButton).toBeEnabled();
+    });
+
+    // Click the Uninstall button to open dialog
+    const uninstallButton = screen.getByRole("button", { name: "Uninstall" });
+    await user.click(uninstallButton);
+
+    // Verify dialog is shown
+    await waitFor(() => {
+      expect(screen.getByText("Uninstall Pack")).toBeInTheDocument();
+      expect(screen.getByText(/This will remove 3 templates/)).toBeInTheDocument();
+    });
+
+    // Click confirm button in dialog
+    const confirmButton = screen.getByRole("button", { name: "Uninstall" });
+    await user.click(confirmButton);
+
+    await waitFor(() => {
+      expect(mockUninstallPackAction).toHaveBeenCalledWith("test-org", "common");
+    });
+  });
+
   it("Uninstall button disabled with tooltip when canUninstall is false", async () => {
     const user = userEvent.setup();
     mockFetchUninstallCheckAction.mockResolvedValue({
-      canUninstall: false,
-      blockingReason: "2 templates have been edited",
+      success: true,
+      data: { canUninstall: false, blockingReason: "2 templates have been edited" },
     });
 
     renderPage();
@@ -200,7 +235,7 @@ describe("PacksPage — Installed tab", () => {
 describe("PacksPage — Empty states", () => {
   it("shows empty state text for both tabs", async () => {
     const user = userEvent.setup();
-    mockFetchCatalogAction.mockResolvedValue([]);
+    mockFetchCatalogAction.mockResolvedValue({ success: true, data: [] });
 
     renderPage({ catalog: [], installed: [] });
 

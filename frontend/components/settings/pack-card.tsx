@@ -1,9 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Check, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -55,11 +53,10 @@ interface PackCardProps {
   pack: PackCatalogEntry;
   variant: "available" | "installed";
   onInstall?: (packId: string) => void;
-  onUninstall?: (packId: string) => void;
+  onUninstall?: (packId: string) => Promise<void>;
   uninstallCheck?: UninstallCheck | null;
   isInstalling?: boolean;
   isUninstalling?: boolean;
-  slug: string;
 }
 
 export function PackCard({
@@ -70,9 +67,7 @@ export function PackCard({
   uninstallCheck,
   isInstalling,
   isUninstalling,
-  slug,
 }: PackCardProps) {
-  const router = useRouter();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -82,7 +77,7 @@ export function PackCard({
   async function handleUninstallConfirm() {
     setIsSubmitting(true);
     try {
-      onUninstall?.(pack.packId);
+      await onUninstall?.(pack.packId);
     } finally {
       setIsSubmitting(false);
       setDialogOpen(false);

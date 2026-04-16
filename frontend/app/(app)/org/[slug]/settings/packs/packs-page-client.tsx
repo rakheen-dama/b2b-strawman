@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useCallback, useEffect } from "react";
+import { useState, useTransition, useCallback, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Package } from "lucide-react";
 import { toast } from "sonner";
@@ -57,34 +57,35 @@ export function PacksPageClient({
   // Fetch catalog when "show all" toggle changes
   useEffect(() => {
     startTransition(async () => {
-      try {
-        const data = await fetchCatalogAction(showAll);
-        setCatalog(data);
-      } catch {
-        toast.error("Failed to load pack catalog.");
+      const result = await fetchCatalogAction(showAll);
+      if (result.success && result.data) {
+        setCatalog(result.data);
+      } else {
+        toast.error(result.error ?? "Failed to load pack catalog.");
       }
     });
   }, [showAll]);
 
   // Fetch uninstall checks when Installed tab becomes active
+  const loadedPackIdsRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     if (activeTab !== "installed" || installed.length === 0) return;
 
     for (const pack of installed) {
-      if (uninstallChecks[pack.packId]) continue;
+      if (loadedPackIdsRef.current.has(pack.packId)) continue;
+      loadedPackIdsRef.current.add(pack.packId);
       startTransition(async () => {
-        try {
-          const check = await fetchUninstallCheckAction(pack.packId);
+        const result = await fetchUninstallCheckAction(pack.packId);
+        if (result.success && result.data) {
           setUninstallChecks((prev) => ({
             ...prev,
-            [pack.packId]: check,
+            [pack.packId]: result.data!,
           }));
-        } catch {
-          // Silently fail -- button stays disabled by default
         }
+        // Silently fail -- button stays disabled by default
       });
     }
-  }, [activeTab, installed, uninstallChecks]);
+  }, [activeTab, installed]);
 
   const handleInstall = useCallback(
     (packId: string) => {
@@ -105,24 +106,28 @@ export function PacksPageClient({
   );
 
   const handleUninstall = useCallback(
-    (packId: string) => {
+    async (packId: string) => {
       if (!canManage) return;
       setUninstallingPackId(packId);
-      startTransition(async () => {
-        const result = await uninstallPackAction(slug, packId);
-        setUninstallingPackId(null);
-        if (result.success) {
-          toast.success("Pack uninstalled successfully.");
-          // Clear cached uninstall check
-          setUninstallChecks((prev) => {
-            const next = { ...prev };
-            delete next[packId];
-            return next;
-          });
-          router.refresh();
-        } else {
-          toast.error(result.error ?? "Failed to uninstall pack.");
-        }
+      await new Promise<void>((resolve) => {
+        startTransition(async () => {
+          const result = await uninstallPackAction(slug, packId);
+          setUninstallingPackId(null);
+          if (result.success) {
+            toast.success("Pack uninstalled successfully.");
+            // Clear cached uninstall check
+            setUninstallChecks((prev) => {
+              const next = { ...prev };
+              delete next[packId];
+              return next;
+            });
+            loadedPackIdsRef.current.delete(packId);
+            router.refresh();
+          } else {
+            toast.error(result.error ?? "Failed to uninstall pack.");
+          }
+          resolve();
+        });
       });
     },
     [canManage, slug, router]
@@ -174,7 +179,6 @@ export function PacksPageClient({
                 variant="available"
                 onInstall={canManage ? handleInstall : undefined}
                 isInstalling={installingPackId === pack.packId}
-                slug={slug}
               />
             ))}
           </div>
@@ -202,7 +206,6 @@ export function PacksPageClient({
                 uninstallCheck={uninstallChecks[pack.packId] ?? null}
                 onUninstall={canManage ? handleUninstall : undefined}
                 isUninstalling={uninstallingPackId === pack.packId}
-                slug={slug}
               />
             ))}
           </div>

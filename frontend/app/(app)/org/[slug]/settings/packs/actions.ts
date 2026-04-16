@@ -22,14 +22,36 @@ export interface ActionResult<T = void> {
 
 export async function fetchCatalogAction(
   all: boolean
-): Promise<PackCatalogEntry[]> {
-  return listPackCatalog({ all });
+): Promise<ActionResult<PackCatalogEntry[]>> {
+  try {
+    const data = await listPackCatalog({ all });
+    return { success: true, data };
+  } catch (error) {
+    console.error("[fetchCatalogAction] Failed to fetch catalog:", error);
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
 }
 
 export async function fetchUninstallCheckAction(
   packId: string
-): Promise<UninstallCheck> {
-  return checkPackUninstallable(packId);
+): Promise<ActionResult<UninstallCheck>> {
+  try {
+    const data = await checkPackUninstallable(packId);
+    return { success: true, data };
+  } catch (error) {
+    console.error(
+      "[fetchUninstallCheckAction] Failed to check uninstall:",
+      packId,
+      error
+    );
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
+  }
 }
 
 export async function installPackAction(

@@ -75,11 +75,13 @@ describe("Settings nav groups - automation gating", () => {
 });
 
 describe("Settings nav groups - features group", () => {
-  it("Features group exists with a single Features item", () => {
+  it("Features group exists with Features and Packs items", () => {
     const featuresGroup = SETTINGS_NAV_GROUPS.find((g) => g.id === "features");
     expect(featuresGroup).toBeDefined();
-    expect(featuresGroup?.items).toHaveLength(1);
+    expect(featuresGroup?.items).toHaveLength(2);
     expect(featuresGroup?.items[0]?.href).toBe("features");
+    expect(featuresGroup?.items[1]?.href).toBe("packs");
+    expect(featuresGroup?.items[1]?.adminOnly).toBe(true);
   });
 
   it("Features entry exists in SETTINGS_ITEMS", () => {

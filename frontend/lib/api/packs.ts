@@ -52,15 +52,18 @@ export async function listInstalledPacks(): Promise<PackCatalogEntry[]> {
 export async function checkPackUninstallable(
   packId: string
 ): Promise<UninstallCheck> {
-  return api.get<UninstallCheck>(`/api/packs/${packId}/uninstall-check`);
+  const encodedPackId = encodeURIComponent(packId);
+  return api.get<UninstallCheck>(`/api/packs/${encodedPackId}/uninstall-check`);
 }
 
 export async function installPack(
   packId: string
 ): Promise<PackInstallResponse> {
-  return api.post<PackInstallResponse>(`/api/packs/${packId}/install`);
+  const encodedPackId = encodeURIComponent(packId);
+  return api.post<PackInstallResponse>(`/api/packs/${encodedPackId}/install`);
 }
 
 export async function uninstallPack(packId: string): Promise<void> {
-  return api.delete<void>(`/api/packs/${packId}`);
+  const encodedPackId = encodeURIComponent(packId);
+  return api.delete<void>(`/api/packs/${encodedPackId}`);
 }

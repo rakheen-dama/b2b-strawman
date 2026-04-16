@@ -75,16 +75,17 @@ export function PackCard({
     pack.type === "DOCUMENT_TEMPLATE" ? "templates" : "rules";
 
   async function handleUninstallConfirm() {
+    if (!onUninstall) return;
     setIsSubmitting(true);
     try {
-      await onUninstall?.(pack.packId);
+      await onUninstall(pack.packId);
     } finally {
       setIsSubmitting(false);
       setDialogOpen(false);
     }
   }
 
-  const canUninstall = uninstallCheck?.canUninstall !== false;
+  const canUninstall = uninstallCheck?.canUninstall === true;
 
   return (
     <>
@@ -126,7 +127,7 @@ export function PackCard({
                 <Button
                   size="sm"
                   onClick={() => onInstall?.(pack.packId)}
-                  disabled={isInstalling}
+                  disabled={isInstalling || !onInstall}
                 >
                   {isInstalling && (
                     <Loader2 className="mr-1.5 size-3.5 animate-spin" />
@@ -150,7 +151,7 @@ export function PackCard({
                       <Button
                         variant="outline"
                         size="sm"
-                        disabled={!canUninstall || isUninstalling}
+                        disabled={!canUninstall || isUninstalling || !onUninstall}
                         onClick={() => setDialogOpen(true)}
                       >
                         {isUninstalling && (

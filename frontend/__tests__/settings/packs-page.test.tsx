@@ -147,7 +147,7 @@ describe("PacksPage — Available tab", () => {
     });
   });
 
-  it("Install button calls installPackAction and shows success toast", async () => {
+  it("Install button calls installPackAction", async () => {
     const user = userEvent.setup();
     mockInstallPackAction.mockResolvedValue({ success: true, data: {} });
 

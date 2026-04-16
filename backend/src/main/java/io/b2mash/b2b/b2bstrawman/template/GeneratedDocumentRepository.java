@@ -22,4 +22,6 @@ public interface GeneratedDocumentRepository extends JpaRepository<GeneratedDocu
       "SELECT gd FROM GeneratedDocument gd WHERE gd.generatedBy = :generatedBy ORDER BY gd.generatedAt DESC")
   List<GeneratedDocument> findByGeneratedByOrderByGeneratedAtDesc(
       @Param("generatedBy") UUID generatedBy);
+
+  boolean existsByTemplateIdIn(List<UUID> templateIds);
 }

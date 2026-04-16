@@ -100,6 +100,12 @@ public class DocumentTemplate {
   @Column(name = "discovered_fields", columnDefinition = "jsonb")
   private List<Map<String, Object>> discoveredFields;
 
+  @Column(name = "source_pack_install_id")
+  private UUID sourcePackInstallId;
+
+  @Column(name = "content_hash", length = 64)
+  private String contentHash;
+
   protected DocumentTemplate() {}
 
   public DocumentTemplate(
@@ -319,6 +325,22 @@ public class DocumentTemplate {
 
   public void setDiscoveredFields(List<Map<String, Object>> discoveredFields) {
     this.discoveredFields = discoveredFields;
+  }
+
+  public UUID getSourcePackInstallId() {
+    return sourcePackInstallId;
+  }
+
+  public void setSourcePackInstallId(UUID sourcePackInstallId) {
+    this.sourcePackInstallId = sourcePackInstallId;
+  }
+
+  public String getContentHash() {
+    return contentHash;
+  }
+
+  public void setContentHash(String contentHash) {
+    this.contentHash = contentHash;
   }
 
   /** Explicitly bumps updatedAt — use when mutating DOCX metadata outside updateContent(). */

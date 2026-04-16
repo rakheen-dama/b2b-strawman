@@ -23,4 +23,6 @@ public interface AutomationExecutionRepository extends JpaRepository<AutomationE
   Page<AutomationExecution> findByStatus(ExecutionStatus status, Pageable pageable);
 
   Page<AutomationExecution> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
+  boolean existsByRuleIdIn(List<UUID> ruleIds);
 }

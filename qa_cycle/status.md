@@ -5,7 +5,7 @@
 - **ALL_DAYS_COMPLETE**: false
 - **QA Position**: Day 0 — 0.1 (not started)
 - **Cycle**: 1
-- **Dev Stack**: UNKNOWN (needs Infra Agent verification)
+- **Dev Stack**: READY
 - **NEEDS_REBUILD**: false
 - **Branch**: `bugfix_cycle_legal_2026-04-17`
 - **Scenario**: `qa/testplan/demos/legal-za-90day-keycloak.md`
@@ -16,13 +16,14 @@
 
 | Service | URL | Status |
 |---------|-----|--------|
-| Frontend (kc mode) | http://localhost:3000 | UNKNOWN |
-| Backend (local+keycloak profile) | http://localhost:8080 | UNKNOWN |
-| Gateway (BFF) | http://localhost:8443 | UNKNOWN |
-| Portal | http://localhost:3002 | UNKNOWN |
-| Keycloak | http://localhost:8180 | UNKNOWN |
-| Mailpit UI | http://localhost:8025 | UNKNOWN |
-| Postgres (docteams) | localhost:5432 | UNKNOWN |
+| Frontend (kc mode) | http://localhost:3000 | UP |
+| Backend (local+keycloak profile) | http://localhost:8080 | UP |
+| Gateway (BFF) | http://localhost:8443 | UP |
+| Portal | http://localhost:3002 | UP |
+| Keycloak | http://localhost:8180 | UP |
+| Mailpit UI | http://localhost:8025 | UP |
+| Postgres (docteams) | localhost:5432 | UP |
+| LocalStack (S3) | http://localhost:4566 | UP |
 
 ## Carry-Forward Watch List (from prior legal-za archives)
 
@@ -48,3 +49,4 @@ These are gaps logged during `_archive_2026-04-13_legal-90day-kc-v2` and earlier
 ## Log
 
 - 2026-04-17 — Cycle initialized. Prior consulting-za cycle (ALL_DAYS_COMPLETE 14:32 SAST same day) archived to `_archive_2026-04-17_consulting-complete/`. Fresh branch `bugfix_cycle_legal_2026-04-17` created from `main`. Scenario: `qa/testplan/demos/legal-za-90day-keycloak.md`. First action: Infra Agent to verify stack health and run `keycloak-bootstrap.sh` if needed.
+- 2026-04-17 18:28 SAST — Infra Agent: Dev stack READY. All 4 Docker containers (postgres, keycloak, mailpit, localstack) healthy for 21h; Keycloak `/realms/docteams` returns 200 (platform admin preserved from prior cycles, no bootstrap needed). All 4 local services already running from earlier: backend PID 24024 (maven wrapper, child java PID 24179 on :8080, etime 5h43m), gateway PID 71302 (etime 8h08m, serves HTTP on :8443 — note env ref table said HTTPS but actual is plain HTTP), frontend PID 15582 (ext, next-server v16.1.6, etime 21h05m, curl 200), portal PID 71100 (pnpm dev, etime 8h08m). Nothing started/restarted — all endpoints already responding 200. Backend log post-startup clean of stack-trace ERRORs; only non-fatal AutomationEventListener WARNs about a tenant's malformed `BudgetThresholdTriggerConfig.thresholdPercent` (operational data issue, not infra — pre-existing from prior cycle, handed to QA/Dev to track if it recurs during legal-za flow).

@@ -2,10 +2,10 @@
 
 ## Current State
 
-- **QA Position**: Day 0 — 0.1 (not yet started)
+- **QA Position**: Day 1 — 1.1 (Bob logs in as Account Director, creates BrightCup Coffee Roasters client)
 - **Cycle**: 1
 - **Dev Stack**: READY
-- **NEEDS_REBUILD**: false (GAP-C-01 fix live as of backend restart at 2026-04-17 10:16 SAST)
+- **NEEDS_REBUILD**: false (GAP-C-01 fix live; new gaps GAP-C-02..08 opened but none are blockers)
 - **Branch**: `bugfix_cycle_consulting_2026-04-17`
 - **Scenario**: `qa/testplan/demos/consulting-agency-90day-keycloak.md`
 - **Focus**: Fresh tenant run — full onboarding through 90-day consulting agency lifecycle. Re-run after v1 used wrong vertical profile.
@@ -35,7 +35,14 @@ These are architectural gaps expected to recur on this run — log fresh GAP IDs
 
 | GAP_ID | Day / Checkpoint | Severity | Status | Summary | Owner | Retries |
 |--------|------------------|----------|--------|---------|-------|---------|
-| GAP-C-01 | D0 / 0.10 | HIGH | FIXED | `INDUSTRY_TO_PROFILE` missing Marketing/Consulting → consulting-za entries | Dev | 0 |
+| GAP-C-01 | D0 / 0.10 | HIGH | VERIFIED | `INDUSTRY_TO_PROFILE` missing Marketing/Consulting → consulting-za entries. Fix (PR #1053) confirmed live: Marketing → `consulting-za`, all 8 expected packs installed. | Dev | 0 |
+| GAP-C-02 | D0 / 0.13,0.23 | MED | OPEN | KC invite link is single-use but a pre-existing KC session on the same browser triggers "already authenticated as different user" error, consuming the token. No recovery path in-product (retry shows "The link you clicked is no longer valid"). Users lock themselves out on first click. Product should force-logout KC session or offer "sign in as different user" CTA. | Product | 0 |
+| GAP-C-03 | D0 / 0.16,0.28,0.56 | MED | OPEN | `en-ZA-consulting` terminology override only applies "Customer → Client" in sidebar. "Time Entry → Time Log" and "Rate Card → Billing Rates" are NOT applied (sidebar still shows "Time Tracking" and "Rates & Currency"). | Product | 0 |
+| GAP-C-04 | D0 / 0.17 | MED | OPEN | `TeamUtilizationWidget` shows "Unable to load utilization data." for brand-new tenant with no time logged — same text as error state. Should render graceful empty state ("No utilization yet — log time to see billable %"). Backend server action returns 500 on utilization endpoint for tenants with no billing rates / no time entries. | Dev | 0 |
+| GAP-C-05 | D0 / 0.29 | MED | OPEN | `rate-pack-consulting-za` seeds 8 billing_rates at correct ZAR amounts but Settings > Rates & Currency UI has no "Role" column — just member-scoped rows. Cannot surface "Creative Director — R1,800/hr" etc. Either surface role-defaults in UI, or align scenario with current data model. | Product | 0 |
+| GAP-C-06 | D0 / 0.31 | MED | OPEN | `cost_rates` table empty after consulting-za profile seeding. Rate pack seeder populated `billing_rates` but did not load cost-rate defaults. | Dev | 0 |
+| GAP-C-07 | D0 / 0.51 | LOW | OPEN | Settings > Automations UI shows "Automation Rule Builder is not enabled" feature-flag gate even though consulting-za installed 6 rules. Should allow viewing/listing pack-installed rules without the feature flag. | Product | 0 |
+| GAP-C-08 | D0 / 0.57 | LOW | OPEN | `/trust-accounting` throws "Something went wrong" (generic error boundary). `/court-calendar` and `/conflict-check` correctly render "Module Not Available". Inconsistent progressive-disclosure handling. | Dev | 0 |
 
 ## Legend
 
@@ -49,3 +56,4 @@ These are architectural gaps expected to recur on this run — log fresh GAP IDs
 - 2026-04-17 — Orchestrator pre-diagnosed GAP-C-01 root cause: `AccessRequestApprovalService.java:29-32` has `INDUSTRY_TO_PROFILE` map with only "Accounting" and "Legal Services". "Marketing" and "Consulting" resolve to null. Fix spec written to `qa_cycle/fix-specs/GAP-C-01.md` directly (skipping Product triage since evidence is unambiguous).
 - 2026-04-17 — Dev Agent: GAP-C-01 fixed via PR #1053, merged. Backend needs restart to pick up mapping change.
 - 2026-04-17 10:16 SAST — Infra Agent: Dev stack READY. Docker infra (postgres, keycloak, mailpit, localstack) was already up (13h uptime, healthy). Local services: stale 10h-old backend on port 8080 was holding the port so the svc.sh restart failed silently — killed the stale java PID 41862, started fresh backend (PID 72337, up in 9.2s) which loaded `consulting-za` vertical profile and picked up PR #1053. Gateway was down (stale) — started fresh (PID 71302). Portal was down — started fresh (PID 71100). Frontend (PID 15582, 13h Next.js dev server) left running since HMR handles code changes. All health endpoints return UP / 200. No ERROR entries in backend log after "Started BackendApplication". Non-fatal warnings only (LibreOffice missing → docx4j fallback; Hibernate dialect auto-detect suggestion; CGLIB proxying notes).
+- 2026-04-17 10:40 SAST — QA Agent: Day 0 **DEGRADED PASS** through all phases A-I. **GAP-C-01 VERIFIED**: industry "Marketing" correctly resolves to `consulting-za`, all 8 expected packs (`consulting-za-customer`, `consulting-za-project`, `consulting-za` template, `consulting-za-clauses`, `consulting-za-creative-brief`, `automation-consulting-za`, `rate-pack-consulting-za`, `consulting-za-project-templates`) installed. Vertical profile dropdown in Settings>General shows "South African Agency & Consulting Firm". All 3 users (Zolani/Owner, Bob/Admin, Carol/Member) registered and can log in. 7 new gaps opened (GAP-C-02..08), none blocking. Key findings: invite-link single-use trap (GAP-C-02), terminology override only partially applied (GAP-C-03), utilization widget error vs empty state (GAP-C-04), rate pack UI mismatch (GAP-C-05). Results: `qa_cycle/checkpoint-results/day-00.md`. Screenshots: 3 files in `checkpoint-results/`. Next: Day 1 — 1.1.

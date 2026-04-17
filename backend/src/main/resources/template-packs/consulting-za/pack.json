@@ -1,0 +1,49 @@
+{
+  "packId": "consulting-za",
+  "version": 1,
+  "verticalProfile": "consulting-za",
+  "name": "Agency Templates",
+  "description": "Document templates for South African agencies and consultancies: creative briefs, statements of work, engagement letters, and monthly retainer reports.",
+  "templates": [
+    {
+      "templateKey": "creative-brief",
+      "name": "Creative Brief",
+      "category": "OTHER",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "creative-brief.json",
+      "cssFile": null,
+      "description": "Creative brief capturing campaign type, target audience, deliverables, and timeline for a new agency project.",
+      "sortOrder": 1
+    },
+    {
+      "templateKey": "statement-of-work",
+      "name": "Statement of Work",
+      "category": "STATEMENT_OF_WORK",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "statement-of-work.json",
+      "cssFile": null,
+      "description": "Statement of work covering scope, deliverables, fee basis, and signature blocks for an agency engagement.",
+      "sortOrder": 2
+    },
+    {
+      "templateKey": "engagement-letter",
+      "name": "Engagement Letter",
+      "category": "ENGAGEMENT_LETTER",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "engagement-letter.json",
+      "cssFile": null,
+      "description": "Engagement letter setting out the relationship, terms, and acceptance for an agency engagement.",
+      "sortOrder": 3
+    },
+    {
+      "templateKey": "monthly-retainer-report",
+      "name": "Monthly Retainer Report",
+      "category": "REPORT",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "monthly-retainer-report.json",
+      "cssFile": null,
+      "description": "Monthly retainer activity report showing hours used against the hour bank for a retainer engagement.",
+      "sortOrder": 4
+    }
+  ]
+}

@@ -242,6 +242,55 @@ describe("372B: legal-za terminology overrides", () => {
   });
 });
 
+// ---- 484.4: consulting-za terminology integration tests ----
+
+describe("484: consulting-za terminology overrides", () => {
+  it("t('Customer') returns 'Client' for consulting-za profile", () => {
+    function TestConsumer() {
+      const { t } = useTerminology();
+      return <span data-testid="result">{t("Customer")}</span>;
+    }
+
+    render(
+      <TerminologyProvider verticalProfile="consulting-za">
+        <TestConsumer />
+      </TerminologyProvider>
+    );
+
+    expect(screen.getByTestId("result").textContent).toBe("Client");
+  });
+
+  it("t('Time Entry') returns 'Time Log' for consulting-za profile", () => {
+    function TestConsumer() {
+      const { t } = useTerminology();
+      return <span data-testid="result">{t("Time Entry")}</span>;
+    }
+
+    render(
+      <TerminologyProvider verticalProfile="consulting-za">
+        <TestConsumer />
+      </TerminologyProvider>
+    );
+
+    expect(screen.getByTestId("result").textContent).toBe("Time Log");
+  });
+
+  it("t('Project') passes through for consulting-za (not overridden)", () => {
+    function TestConsumer() {
+      const { t } = useTerminology();
+      return <span data-testid="result">{t("Project")}</span>;
+    }
+
+    render(
+      <TerminologyProvider verticalProfile="consulting-za">
+        <TestConsumer />
+      </TerminologyProvider>
+    );
+
+    expect(screen.getByTestId("result").textContent).toBe("Project");
+  });
+});
+
 // ---- 465.3: Updated legal-za terminology integration tests ----
 
 describe("465: legal-za terminology fixes", () => {

@@ -1,4 +1,18 @@
 export const TERMINOLOGY: Record<string, Record<string, string>> = {
+  "consulting-za": {
+    Customer: "Client",
+    Customers: "Clients",
+    customer: "client",
+    customers: "clients",
+    "Time Entry": "Time Log",
+    "Time Entries": "Time Logs",
+    "time entry": "time log",
+    "time entries": "time logs",
+    "Rate Card": "Billing Rates",
+    "Rate Cards": "Billing Rates",
+    "rate card": "billing rates",
+    "rate cards": "billing rates",
+  },
   "accounting-za": {
     Project: "Engagement",
     Projects: "Engagements",

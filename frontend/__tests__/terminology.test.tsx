@@ -116,6 +116,48 @@ describe("terminology", () => {
     expect(t("Rate Cards")).toBe("Tariff Schedules");
   });
 
+  // 484.3 — consulting-za unit tests
+  it("t('Customer') returns 'Client' for consulting-za", () => {
+    const t = makeTFn("consulting-za");
+    expect(t("Customer")).toBe("Client");
+  });
+
+  it("t('Time Entry') returns 'Time Log' for consulting-za", () => {
+    const t = makeTFn("consulting-za");
+    expect(t("Time Entry")).toBe("Time Log");
+  });
+
+  it("t('Rate Card') returns 'Billing Rates' for consulting-za", () => {
+    const t = makeTFn("consulting-za");
+    expect(t("Rate Card")).toBe("Billing Rates");
+  });
+
+  it("t('Project') passes through for consulting-za (not overridden)", () => {
+    const t = makeTFn("consulting-za");
+    expect(t("Project")).toBe("Project");
+  });
+
+  it("t('Task') passes through for consulting-za (not overridden)", () => {
+    const t = makeTFn("consulting-za");
+    expect(t("Task")).toBe("Task");
+  });
+
+  it("all case variants map correctly for consulting-za", () => {
+    const t = makeTFn("consulting-za");
+    expect(t("Customer")).toBe("Client");
+    expect(t("Customers")).toBe("Clients");
+    expect(t("customer")).toBe("client");
+    expect(t("customers")).toBe("clients");
+    expect(t("Time Entry")).toBe("Time Log");
+    expect(t("Time Entries")).toBe("Time Logs");
+    expect(t("time entry")).toBe("time log");
+    expect(t("time entries")).toBe("time logs");
+    expect(t("Rate Card")).toBe("Billing Rates");
+    expect(t("Rate Cards")).toBe("Billing Rates");
+    expect(t("rate card")).toBe("billing rates");
+    expect(t("rate cards")).toBe("billing rates");
+  });
+
   // 364.5 — Integration test: provider in component tree
   it("useTerminology hook returns correct t() when consumed inside TerminologyProvider", () => {
     function TestConsumer() {

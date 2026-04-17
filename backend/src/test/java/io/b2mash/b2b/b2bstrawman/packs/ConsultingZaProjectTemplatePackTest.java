@@ -206,7 +206,6 @@ class ConsultingZaProjectTemplatePackTest {
   private List<ProjectTemplate> seederTemplates() {
     return projectTemplateRepository.findAllByOrderByNameAsc().stream()
         .filter(t -> "SEEDER".equals(t.getSource()))
-        .filter(t -> EXPECTED_TASK_COUNTS.containsKey(t.getName()))
         .toList();
   }
 

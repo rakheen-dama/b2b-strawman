@@ -4,7 +4,7 @@
   "description": "Configuration for SA digital agencies, creative studios, management consultancies, and professional services firms: campaign-oriented field packs, engagement templates, retainer and SOW content, automation rules for utilization and budget visibility.",
   "locale": "en-ZA",
   "currency": "ZAR",
-  "enabledModules": [],
+  "enabledModules": ["resource_planning", "automation_builder"],
   "packs": {
     "field": ["consulting-za-customer", "consulting-za-project"],
     "template": ["consulting-za"],

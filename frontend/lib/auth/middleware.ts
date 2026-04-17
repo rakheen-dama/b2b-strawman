@@ -12,6 +12,7 @@ const PUBLIC_ROUTES = [
   "/portal(.*)",
   "/mock-login(.*)",
   "/request-access(.*)",
+  "/accept-invite(.*)",
 ];
 
 function isPublicRoute(request: NextRequest): boolean {

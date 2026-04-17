@@ -22,7 +22,10 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-// Mock the server action that fetches the 4-week trend
+// Mock the server action module to prevent `server-only` from being imported
+// into the test environment. The fetcher itself is never invoked because
+// `useSWR` is fully mocked above, but the import chain still runs at module
+// load time — so this stub must remain.
 vi.mock("@/lib/actions/utilization", () => ({
   fetchTeamUtilizationTrend: vi.fn(),
 }));
@@ -115,6 +118,32 @@ describe("TeamUtilizationWidget", () => {
 
     expect(container.firstChild).toBeNull();
     expect(screen.queryByText("Team Billable Utilization")).not.toBeInTheDocument();
+  });
+
+  it("returns null when profile = null (no active profile)", () => {
+    vi.mocked(useProfile).mockReturnValue(null);
+    mockSWRData([]);
+
+    const { container } = render(<TeamUtilizationWidget slug="acme" />);
+
+    expect(container.firstChild).toBeNull();
+    expect(screen.queryByText("Team Billable Utilization")).not.toBeInTheDocument();
+  });
+
+  it("shows empty state when all 4 weeks report zero utilization", () => {
+    vi.mocked(useProfile).mockReturnValue("consulting-za");
+    mockSWRData([
+      { teamAverages: { avgBillableUtilizationPct: 0, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
+      { teamAverages: { avgBillableUtilizationPct: 0, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
+      { teamAverages: { avgBillableUtilizationPct: 0, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
+      { teamAverages: { avgBillableUtilizationPct: 0, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
+    ]);
+
+    render(<TeamUtilizationWidget slug="acme" />);
+
+    // Should render the empty/unable-to-load fallback, not "0%" headline.
+    expect(screen.getByText(/Unable to load/i)).toBeInTheDocument();
+    expect(screen.queryByText("0%")).not.toBeInTheDocument();
   });
 
   it("shows loading state when 4 API calls are pending", () => {

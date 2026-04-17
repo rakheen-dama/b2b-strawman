@@ -13,7 +13,7 @@
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 480 | Profile Manifest + Field Packs | Backend | -- | S | 480A | **Done** (PR #1047) |
-| 481 | Rate Pack + Project Template Pack | Backend | 480 | M | 481A, 481B | |
+| 481 | Rate Pack + Project Template Pack | Backend | 480 | M | 481A, 481B | **Done** (PR #1048) |
 | 482 | Automation Pack + Document Template Pack | Backend | 481 | L | 482A, 482B | |
 | 483 | Clause Pack + Request Pack | Backend | 482 | M | 483A, 483B | |
 | 484 | Terminology Key + Team Utilization Widget | Frontend | 480 | M | 484A, 484B | |
@@ -120,14 +120,14 @@ PHASE 53 (dashboard primitives), generic-onboarding compliance pack
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 1a (parallel) | 481 | 481A | Rate pack JSON (8 roles) + seeder integration test |
+| 1a (parallel) | 481 | 481A | Rate pack JSON (8 roles) + seeder integration test — **Done** (PR #1048) |
 | 1b (parallel) | 484 | 484A | Terminology key + useProfile() hook + unit tests |
 
 ### Stage 2: Project Template Pack + Widget (parallel)
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 2a | 481 | 481B | Project template pack (5 templates) + seeder integration test |
+| 2a | 481 | 481B | Project template pack (5 templates) + seeder integration test — **Done** (PR #1048) |
 | 2b (parallel) | 484 | 484B | TeamUtilizationWidget + dashboard integration + component tests |
 
 ### Stage 3: Automation + Document Templates (sequential, same epic)
@@ -250,8 +250,8 @@ A realistic day-by-day cadence: Epic 480 sets foundations day 1–2; Epic 481 + 
 
 | Slice | Tasks | Summary |
 |-------|-------|---------|
-| **481A** | 481.1–481.3 | `rate-packs/consulting-za.json` (8 SA agency roles with ZAR billing + cost rates). Seeder integration test confirming 8 rates seeded. |
-| **481B** | 481.4–481.9 | `project-template-packs/consulting-za.json` (5 templates: Website Build, Social Media Retainer, Brand Identity, SEO Campaign, Content Marketing Retainer). Each template sets `campaign_type` (and `retainer_tier` for retainers) as default custom-field values, seeds task list with priority + suggested role. Integration test verifying all 5 templates + task counts + campaign_type defaulting. |
+| **481A** | 481.1–481.3 | `rate-packs/consulting-za.json` (8 SA agency roles with ZAR billing + cost rates). Seeder integration test confirming 8 rates seeded. **Done** (PR #1048) |
+| **481B** | 481.4–481.9 | `project-template-packs/consulting-za.json` (5 templates: Website Build, Social Media Retainer, Brand Identity, SEO Campaign, Content Marketing Retainer). Each template sets `campaign_type` (and `retainer_tier` for retainers) as default custom-field values, seeds task list with priority + suggested role. Integration test verifying all 5 templates + task counts + campaign_type defaulting. **Done** (PR #1048) |
 
 ### Tasks
 

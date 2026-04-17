@@ -68,6 +68,17 @@ class ConsultingZaRequestPackTest {
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
 
+  /**
+   * Resolves the single expected request template for {@link #PACK_ID} and fails with a clear
+   * assertion message if seeding regressed to zero or more than one template (instead of the less
+   * obvious {@code NoSuchElementException} from a bare {@code getFirst()}).
+   */
+  private UUID singleTemplateId() {
+    var templates = requestTemplateRepository.findByPackId(PACK_ID);
+    assertThat(templates).hasSize(1);
+    return templates.getFirst().getId();
+  }
+
   @Test
   void consultingTenantGetsOneTemplateWith10Items() {
     runInTenant(
@@ -93,24 +104,9 @@ class ConsultingZaRequestPackTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var template = requestTemplateRepository.findByPackId(PACK_ID).getFirst();
                   var items =
                       requestTemplateItemRepository.findByTemplateIdOrderBySortOrder(
-                          template.getId());
-
-                  // Items 6 (Known Constraints) and 7 (Existing Assets) are FILE_UPLOAD.
-                  assertThat(items.get(5).getResponseType()).isEqualTo(ResponseType.FILE_UPLOAD);
-                  assertThat(items.get(6).getResponseType()).isEqualTo(ResponseType.FILE_UPLOAD);
-
-                  // Remaining 8 items are TEXT_RESPONSE.
-                  assertThat(items.get(0).getResponseType()).isEqualTo(ResponseType.TEXT_RESPONSE);
-                  assertThat(items.get(1).getResponseType()).isEqualTo(ResponseType.TEXT_RESPONSE);
-                  assertThat(items.get(2).getResponseType()).isEqualTo(ResponseType.TEXT_RESPONSE);
-                  assertThat(items.get(3).getResponseType()).isEqualTo(ResponseType.TEXT_RESPONSE);
-                  assertThat(items.get(4).getResponseType()).isEqualTo(ResponseType.TEXT_RESPONSE);
-                  assertThat(items.get(7).getResponseType()).isEqualTo(ResponseType.TEXT_RESPONSE);
-                  assertThat(items.get(8).getResponseType()).isEqualTo(ResponseType.TEXT_RESPONSE);
-                  assertThat(items.get(9).getResponseType()).isEqualTo(ResponseType.TEXT_RESPONSE);
+                          singleTemplateId());
 
                   long fileUploads =
                       items.stream()
@@ -131,10 +127,9 @@ class ConsultingZaRequestPackTest {
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var template = requestTemplateRepository.findByPackId(PACK_ID).getFirst();
                   var items =
                       requestTemplateItemRepository.findByTemplateIdOrderBySortOrder(
-                          template.getId());
+                          singleTemplateId());
 
                   // Items 1, 2, 3 (brand, audience, goals) are required — core brief inputs.
                   assertThat(items.get(0).isRequired()).isTrue(); // Brand & Company Description

@@ -11,19 +11,17 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplateRepository;
-import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
@@ -33,7 +31,6 @@ import org.springframework.transaction.support.TransactionTemplate;
  * pack receive the expected clause associations with the correct {@code required} flags.
  */
 @SpringBootTest
-@AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -56,7 +53,6 @@ class ConsultingZaClausePackTest {
           "consulting-third-party-costs",
           "consulting-termination");
 
-  @Autowired private MockMvc mockMvc;
   @Autowired private ClauseRepository clauseRepository;
   @Autowired private TemplateClauseRepository templateClauseRepository;
   @Autowired private DocumentTemplateRepository documentTemplateRepository;
@@ -67,11 +63,9 @@ class ConsultingZaClausePackTest {
   private String tenantSchema;
 
   @BeforeAll
-  void setup() throws Exception {
+  void setup() {
     provisioningService.provisionTenant(
         ORG_ID, "Consulting ZA Clause Pack Test Org", "consulting-za");
-    TestMemberHelper.syncMember(
-        mockMvc, ORG_ID, "user_czcp_owner", "czcp_owner@test.com", "CZCP Owner", "owner");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
@@ -124,7 +118,7 @@ class ConsultingZaClausePackTest {
                       associations.stream()
                           .filter(TemplateClause::isRequired)
                           .map(TemplateClause::getClauseId)
-                          .collect(java.util.stream.Collectors.toSet());
+                          .collect(Collectors.toSet());
 
                   var paymentTerms =
                       clauseRepository.findBySlug("consulting-payment-terms").orElseThrow();
@@ -136,6 +130,29 @@ class ConsultingZaClausePackTest {
                   assertThat(requiredClauseIds)
                       .containsExactlyInAnyOrder(
                           paymentTerms.getId(), ipOwnership.getId(), changeRequests.getId());
+
+                  // Full-membership assertion: all 7 associated clauseIds must match the expected
+                  // set declared in the clause pack's templateAssociations for statement-of-work.
+                  Set<UUID> allAssociatedClauseIds =
+                      associations.stream()
+                          .map(TemplateClause::getClauseId)
+                          .collect(Collectors.toSet());
+                  var revisionRounds =
+                      clauseRepository.findBySlug("consulting-revision-rounds").orElseThrow();
+                  var killFee = clauseRepository.findBySlug("consulting-kill-fee").orElseThrow();
+                  var thirdPartyCosts =
+                      clauseRepository.findBySlug("consulting-third-party-costs").orElseThrow();
+                  var termination =
+                      clauseRepository.findBySlug("consulting-termination").orElseThrow();
+                  assertThat(allAssociatedClauseIds)
+                      .containsExactlyInAnyOrder(
+                          paymentTerms.getId(),
+                          ipOwnership.getId(),
+                          changeRequests.getId(),
+                          revisionRounds.getId(),
+                          killFee.getId(),
+                          thirdPartyCosts.getId(),
+                          termination.getId());
                 }));
   }
 
@@ -158,7 +175,7 @@ class ConsultingZaClausePackTest {
                       associations.stream()
                           .filter(TemplateClause::isRequired)
                           .map(TemplateClause::getClauseId)
-                          .collect(java.util.stream.Collectors.toSet());
+                          .collect(Collectors.toSet());
 
                   var paymentTerms =
                       clauseRepository.findBySlug("consulting-payment-terms").orElseThrow();
@@ -170,6 +187,24 @@ class ConsultingZaClausePackTest {
                   assertThat(requiredClauseIds)
                       .containsExactlyInAnyOrder(
                           paymentTerms.getId(), termination.getId(), ndaMutual.getId());
+
+                  // Full-membership assertion: all 5 associated clauseIds must match the expected
+                  // set declared in the clause pack's templateAssociations for engagement-letter.
+                  Set<UUID> allAssociatedClauseIds =
+                      associations.stream()
+                          .map(TemplateClause::getClauseId)
+                          .collect(Collectors.toSet());
+                  var ipOwnership =
+                      clauseRepository.findBySlug("consulting-ip-ownership").orElseThrow();
+                  var changeRequests =
+                      clauseRepository.findBySlug("consulting-change-requests").orElseThrow();
+                  assertThat(allAssociatedClauseIds)
+                      .containsExactlyInAnyOrder(
+                          paymentTerms.getId(),
+                          termination.getId(),
+                          ndaMutual.getId(),
+                          ipOwnership.getId(),
+                          changeRequests.getId());
                 }));
   }
 

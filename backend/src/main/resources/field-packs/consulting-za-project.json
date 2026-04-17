@@ -1,0 +1,96 @@
+{
+  "packId": "consulting-za-project",
+  "version": 1,
+  "verticalProfile": "consulting-za",
+  "entityType": "PROJECT",
+  "group": {
+    "slug": "consulting_za_engagement",
+    "name": "SA Consulting — Engagement Details",
+    "description": "South African consulting/agency-specific fields for engagement (project) entities",
+    "autoApply": true
+  },
+  "fields": [
+    {
+      "slug": "campaign_type",
+      "name": "Campaign / Engagement Type",
+      "fieldType": "DROPDOWN",
+      "description": "Shape of the agency engagement — defaults on use-template",
+      "required": true,
+      "sortOrder": 1,
+      "options": [
+        { "value": "WEBSITE_BUILD", "label": "Website Build" },
+        { "value": "BRAND_IDENTITY", "label": "Brand Identity" },
+        { "value": "SOCIAL_MEDIA_RETAINER", "label": "Social Media Retainer" },
+        { "value": "SEO_CAMPAIGN", "label": "SEO Campaign" },
+        { "value": "CONTENT_MARKETING", "label": "Content Marketing" },
+        { "value": "PAID_MEDIA", "label": "Paid Media" },
+        { "value": "DESIGN_SPRINT", "label": "Design Sprint" },
+        { "value": "STRATEGY_CONSULTING", "label": "Strategy Consulting" },
+        { "value": "OTHER", "label": "Other" }
+      ]
+    },
+    {
+      "slug": "channel",
+      "name": "Primary Channel",
+      "fieldType": "DROPDOWN",
+      "description": "Primary channel the engagement targets",
+      "required": false,
+      "sortOrder": 2,
+      "options": [
+        { "value": "WEB", "label": "Web" },
+        { "value": "SOCIAL", "label": "Social" },
+        { "value": "EMAIL", "label": "Email" },
+        { "value": "PAID_SEARCH", "label": "Paid Search" },
+        { "value": "PAID_SOCIAL", "label": "Paid Social" },
+        { "value": "OOH", "label": "Out-of-Home" },
+        { "value": "PRINT", "label": "Print" },
+        { "value": "MULTI_CHANNEL", "label": "Multi-Channel" }
+      ]
+    },
+    {
+      "slug": "deliverable_type",
+      "name": "Deliverable Type",
+      "fieldType": "DROPDOWN",
+      "description": "Primary deliverable shape",
+      "required": false,
+      "sortOrder": 3,
+      "options": [
+        { "value": "DESIGN", "label": "Design" },
+        { "value": "COPY", "label": "Copy" },
+        { "value": "CODE", "label": "Code" },
+        { "value": "STRATEGY_DOC", "label": "Strategy Document" },
+        { "value": "CAMPAIGN_ASSETS", "label": "Campaign Assets" },
+        { "value": "VIDEO", "label": "Video" },
+        { "value": "AUDIO", "label": "Audio" },
+        { "value": "MIXED", "label": "Mixed" }
+      ]
+    },
+    {
+      "slug": "retainer_tier",
+      "name": "Retainer Tier",
+      "fieldType": "DROPDOWN",
+      "description": "Retainer tier for ongoing engagements",
+      "required": false,
+      "sortOrder": 4,
+      "options": [
+        { "value": "NONE", "label": "None" },
+        { "value": "STARTER", "label": "Starter" },
+        { "value": "GROWTH", "label": "Growth" },
+        { "value": "ENTERPRISE", "label": "Enterprise" }
+      ],
+      "visibilityCondition": {
+        "dependsOnSlug": "campaign_type",
+        "operator": "in",
+        "value": ["SOCIAL_MEDIA_RETAINER", "CONTENT_MARKETING"]
+      }
+    },
+    {
+      "slug": "creative_brief_url",
+      "name": "Creative Brief URL",
+      "fieldType": "URL",
+      "description": "Link to the external creative brief (Notion, Google Doc, etc.)",
+      "required": false,
+      "sortOrder": 5
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "profileId": "consulting-za",
+  "name": "South African Agency & Consulting Firm",
+  "description": "Configuration for SA digital agencies, creative studios, management consultancies, and professional services firms: campaign-oriented field packs, engagement templates, retainer and SOW content, automation rules for utilization and budget visibility.",
+  "locale": "en-ZA",
+  "currency": "ZAR",
+  "enabledModules": [],
+  "packs": {
+    "field": ["consulting-za-customer", "consulting-za-project"],
+    "template": ["consulting-za"],
+    "clause": ["consulting-za-clauses"],
+    "automation": ["automation-consulting-za"],
+    "request": ["consulting-za-creative-brief"],
+    "compliance": ["generic-onboarding"]
+  },
+  "rateCardDefaults": {
+    "currency": "ZAR",
+    "billingRates": [
+      { "roleName": "Owner", "hourlyRate": 1800 },
+      { "roleName": "Admin", "hourlyRate": 1200 },
+      { "roleName": "Member", "hourlyRate": 750 }
+    ],
+    "costRates": [
+      { "roleName": "Owner", "hourlyRate": 850 },
+      { "roleName": "Admin", "hourlyRate": 550 },
+      { "roleName": "Member", "hourlyRate": 375 }
+    ]
+  },
+  "taxDefaults": [
+    { "name": "VAT", "rate": 15.00, "default": true }
+  ],
+  "terminologyOverrides": "en-ZA-consulting"
+}

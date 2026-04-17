@@ -14,7 +14,13 @@
 
 const ALLOWED_KC_URL_PREFIXES: readonly string[] = [
   // Local dev Keycloak — the only origin used in this QA cycle.
+  // KC emits two distinct invite URL shapes we need to accept:
+  //   1. /login-actions/action-token?key=…   (e.g., email-verification / reset-credential flows)
+  //   2. /protocol/openid-connect/registrations?client_id=…   (the invite-user endpoint used
+  //      by the org-invite flow in KC 26.5 — discovered in QA 2026-04-17 after PR #1059 only
+  //      whitelisted the first shape and hard-blocked every real invite click).
   "http://localhost:8180/realms/docteams/login-actions/",
+  "http://localhost:8180/realms/docteams/protocol/openid-connect/registrations?",
   // Future: add staging/prod KC origins here when the bounce page ships out of
   // local dev. Keep this list explicit — no wildcards, no regex.
 ];

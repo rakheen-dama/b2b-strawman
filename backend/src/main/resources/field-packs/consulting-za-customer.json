@@ -1,0 +1,78 @@
+{
+  "packId": "consulting-za-customer",
+  "version": 1,
+  "verticalProfile": "consulting-za",
+  "entityType": "CUSTOMER",
+  "group": {
+    "slug": "consulting_za_client",
+    "name": "SA Consulting — Client Details",
+    "description": "South African consulting/agency-specific fields for client entities",
+    "autoApply": true
+  },
+  "fields": [
+    {
+      "slug": "industry",
+      "name": "Industry",
+      "fieldType": "DROPDOWN",
+      "description": "Client's primary industry",
+      "required": false,
+      "sortOrder": 1,
+      "options": [
+        { "value": "RETAIL", "label": "Retail" },
+        { "value": "FINANCIAL_SERVICES", "label": "Financial Services" },
+        { "value": "TECH", "label": "Technology" },
+        { "value": "HEALTHCARE", "label": "Healthcare" },
+        { "value": "MANUFACTURING", "label": "Manufacturing" },
+        { "value": "PROFESSIONAL_SERVICES", "label": "Professional Services" },
+        { "value": "HOSPITALITY", "label": "Hospitality" },
+        { "value": "PUBLIC_SECTOR", "label": "Public Sector" },
+        { "value": "NONPROFIT", "label": "Nonprofit" },
+        { "value": "OTHER", "label": "Other" }
+      ]
+    },
+    {
+      "slug": "company_size",
+      "name": "Company Size",
+      "fieldType": "DROPDOWN",
+      "description": "Headcount band of the client organisation",
+      "required": false,
+      "sortOrder": 2,
+      "options": [
+        { "value": "SOLO", "label": "Solo (1)" },
+        { "value": "SMALL", "label": "Small (2–10)" },
+        { "value": "MEDIUM", "label": "Medium (11–50)" },
+        { "value": "LARGE", "label": "Large (51–250)" },
+        { "value": "ENTERPRISE", "label": "Enterprise (250+)" }
+      ]
+    },
+    {
+      "slug": "primary_stakeholder",
+      "name": "Primary Stakeholder",
+      "fieldType": "TEXT",
+      "description": "Primary decision-maker / day-to-day contact at the client",
+      "required": false,
+      "sortOrder": 3
+    },
+    {
+      "slug": "msa_signed",
+      "name": "MSA Signed",
+      "fieldType": "BOOLEAN",
+      "description": "Whether a Master Services Agreement is in place",
+      "required": false,
+      "sortOrder": 4
+    },
+    {
+      "slug": "msa_start_date",
+      "name": "MSA Start Date",
+      "fieldType": "DATE",
+      "description": "Effective date of the Master Services Agreement",
+      "required": false,
+      "sortOrder": 5,
+      "visibilityCondition": {
+        "dependsOnSlug": "msa_signed",
+        "operator": "eq",
+        "value": true
+      }
+    }
+  ]
+}

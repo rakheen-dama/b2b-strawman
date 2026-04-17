@@ -25,6 +25,11 @@ const VERTICAL_OPTIONS = [
     description: "Marketing agency / consultancy",
   },
   {
+    value: "consulting-za" as const,
+    label: "Consulting ZA",
+    description: "South African digital agency / consulting firm",
+  },
+  {
     value: "accounting-za" as const,
     label: "Accounting",
     description: "South African accounting firm",

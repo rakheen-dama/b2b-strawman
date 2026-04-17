@@ -14,7 +14,7 @@
 |------|------|-------|------|--------|--------|--------|
 | 480 | Profile Manifest + Field Packs | Backend | -- | S | 480A | **Done** (PR #1047) |
 | 481 | Rate Pack + Project Template Pack | Backend | 480 | M | 481A, 481B | **Done** (PR #1048) |
-| 482 | Automation Pack + Document Template Pack | Backend | 481 | L | 482A, 482B | |
+| 482 | Automation Pack + Document Template Pack | Backend | 481 | L | 482A, 482B | **Done** (PR #1049) |
 | 483 | Clause Pack + Request Pack | Backend | 482 | M | 483A, 483B | |
 | 484 | Terminology Key + Team Utilization Widget | Frontend | 480 | M | 484A, 484B | |
 | 485 | QA Lifecycle Retarget + Screenshot Baselines | E2E/Process | 480–484 | M | 485A, 485B | |
@@ -134,8 +134,8 @@ PHASE 53 (dashboard primitives), generic-onboarding compliance pack
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 3a | 482 | 482A | Automation pack (6 rules) via Phase 65 installer + test |
-| 3b | 482 | 482B | Document template pack (4 Tiptap docs + manifest) via Phase 65 installer + variable resolution test |
+| 3a | 482 | 482A | Automation pack (6 rules) via Phase 65 installer + test — **Done** (PR #1049) |
+| 3b | 482 | 482B | Document template pack (4 Tiptap docs + manifest) via Phase 65 installer + variable resolution test — **Done** (PR #1049) |
 
 ### Stage 4: Clauses + Requests (parallel)
 
@@ -312,8 +312,8 @@ A realistic day-by-day cadence: Epic 480 sets foundations day 1–2; Epic 481 + 
 
 | Slice | Tasks | Summary |
 |-------|-------|---------|
-| **482A** | 482.1–482.4 | `automation-templates/consulting-za.json` (6 rules: budget 80%, budget exceeded, retainer closing, task blocked 7d, unbilled time 30d, proposal follow-up). Routes via Phase 65 `AutomationPackInstaller`. Integration test verifying 6 rules installed + content_hash populated + source_pack_install_id tagged. |
-| **482B** | 482.5–482.10 | `template-packs/consulting-za/pack.json` manifest + 4 Tiptap JSON documents: `creative-brief.json`, `statement-of-work.json`, `engagement-letter.json`, `monthly-retainer-report.json`. Routes via Phase 65 `TemplatePackInstaller`. Integration test verifying 4 templates installed, variable resolution succeeds against seeded project/retainer fixtures. |
+| **482A** | 482.1–482.4 | `automation-templates/consulting-za.json` (6 rules: budget 80%, budget exceeded, retainer closing, task blocked 7d, unbilled time 30d, proposal follow-up). Routes via Phase 65 `AutomationPackInstaller`. Integration test verifying 6 rules installed + content_hash populated + source_pack_install_id tagged. — **Done** (PR #1049) |
+| **482B** | 482.5–482.10 | `template-packs/consulting-za/pack.json` manifest + 4 Tiptap JSON documents: `creative-brief.json`, `statement-of-work.json`, `engagement-letter.json`, `monthly-retainer-report.json`. Routes via Phase 65 `TemplatePackInstaller`. Integration test verifying 4 templates installed, variable resolution succeeds against seeded project/retainer fixtures. — **Done** (PR #1049) |
 
 ### Tasks
 

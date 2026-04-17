@@ -5,7 +5,7 @@
 - **QA Position**: Day 8 — 8.1 (Zolani creates Ubuntu Startup retainer client)
 - **Cycle**: 1
 - **Dev Stack**: READY
-- **NEEDS_REBUILD**: false (GAP-C-01 fix live; 6 new gaps SPEC_READY after triage; 2 deferred; none are hard blockers for Day 8)
+- **NEEDS_REBUILD**: true (GAP-C-05+C-06 fix PR #1054 merged — backend restart required; V96 tenant backfill migration will run on restart to seed rates for existing members on `tenant_2a96bc3b208b`)
 - **Branch**: `bugfix_cycle_consulting_2026-04-17`
 - **Scenario**: `qa/testplan/demos/consulting-agency-90day-keycloak.md`
 - **Focus**: Fresh tenant run — full onboarding through 90-day consulting agency lifecycle. Re-run after v1 used wrong vertical profile.

@@ -78,6 +78,25 @@ class ActivityMessageFormatterTest {
   }
 
   @Test
+  void taskUpdatedAssigneeOnlyWithPlainTitleShowsTaskTitle() {
+    // GAP-L-05 regression: when only the assignee changes, TaskService puts a plain-string
+    // "title" into details via putIfAbsent (no delta). The formatter must render the title,
+    // not the literal string "unknown".
+    var event =
+        createEvent(
+            "task.updated",
+            "task",
+            Map.of(
+                "title",
+                "Draft particulars of claim",
+                "assignee_id",
+                Map.of("from", "", "to", UUID.randomUUID().toString())));
+    var item = formatter.format(event, actorMap());
+    assertThat(item.message()).isEqualTo("Alice assigned task \"Draft particulars of claim\"");
+    assertThat(item.message()).doesNotContain("unknown");
+  }
+
+  @Test
   void taskUpdatedWithBothAssigneeAndStatusPrefersAssignment() {
     var event =
         createEvent(

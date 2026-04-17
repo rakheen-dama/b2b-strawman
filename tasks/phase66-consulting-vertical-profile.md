@@ -17,7 +17,7 @@
 | 482 | Automation Pack + Document Template Pack | Backend | 481 | L | 482A, 482B | **Done** (PR #1049) |
 | 483 | Clause Pack + Request Pack | Backend | 482 | M | 483A, 483B | **Done** (PR #1050) |
 | 484 | Terminology Key + Team Utilization Widget | Frontend | 480 | M | 484A, 484B | **Done** (PR #1051) |
-| 485 | QA Lifecycle Retarget + Screenshot Baselines | E2E/Process | 480–484 | M | 485A, 485B | |
+| 485 | QA Lifecycle Retarget + Screenshot Baselines | E2E/Process | 480–484 | M | 485A, 485B | **Done** (PR #1052) |
 
 Slice count: **10 slices across 6 epics**. Every slice pairs pack JSON (or frontend code) with the integration/component test that exercises it.
 
@@ -148,8 +148,8 @@ PHASE 53 (dashboard primitives), generic-onboarding compliance pack
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 5a | 485 | 485A | Retarget consulting-agency-90day-keycloak.md to consulting-za |
-| 5b | 485 | 485B | Playwright screenshot baselines + curated captures |
+| 5a | 485 | 485A | Retarget consulting-agency-90day-keycloak.md to consulting-za — **Done** (PR #1052) |
+| 5b | 485 | 485B | Playwright screenshot baselines + curated captures — **Done** (PR #1052) |
 
 ### Timeline
 
@@ -512,8 +512,8 @@ A realistic day-by-day cadence: Epic 480 sets foundations day 1–2; Epic 481 + 
 
 | Slice | Tasks | Summary |
 |-------|-------|---------|
-| **485A** | 485.1–485.4 | Retarget `qa/testplan/demos/consulting-agency-90day-keycloak.md` from `consulting-generic` to `consulting-za`. Update Day 0 provisioning step, Days 1–3 customer archetypes (new MSA + industry fields), Days 3–7 project creation (all 5 templates), Day 14 creative brief, Day 30 retainer report, Day 45 automation triggers, Day 60 SOW generation, Day 75+ utilization widget. |
-| **485B** | 485.5–485.7 | Playwright screenshot baselines under `frontend/e2e/screenshots/consulting-lifecycle/`. Curated captures under `documentation/screenshots/consulting-vertical/`. New E2E spec(s) or extend existing `demo-recording.spec.ts` pattern. |
+| **485A** | 485.1–485.4 | Retarget `qa/testplan/demos/consulting-agency-90day-keycloak.md` from `consulting-generic` to `consulting-za`. Update Day 0 provisioning step, Days 1–3 customer archetypes (new MSA + industry fields), Days 3–7 project creation (all 5 templates), Day 14 creative brief, Day 30 retainer report, Day 45 automation triggers, Day 60 SOW generation, Day 75+ utilization widget. — **Done** (PR #1052) |
+| **485B** | 485.5–485.7 | Playwright screenshot baselines under `frontend/e2e/screenshots/consulting-lifecycle/`. Curated captures under `documentation/screenshots/consulting-vertical/`. New E2E spec(s) or extend existing `demo-recording.spec.ts` pattern. — **Done** (PR #1052) |
 
 ### Tasks
 

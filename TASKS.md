@@ -549,7 +549,7 @@
 | 482 | Automation Pack + Document Template Pack | Backend | 481 | L | 482A, 482B | **Done** (PR #1049) |
 | 483 | Clause Pack + Request Pack | Backend | 482 | M | 483A, 483B | **Done** (PR #1050) |
 | 484 | Terminology Key + Team Utilization Widget | Frontend | 480 | M | 484A, 484B | **Done** (PR #1051) |
-| 485 | QA Lifecycle Retarget + Screenshot Baselines | E2E/Process | 480–484 | M | 485A, 485B | |
+| 485 | QA Lifecycle Retarget + Screenshot Baselines | E2E/Process | 480–484 | M | 485A, 485B | **Done** (PR #1052) |
 
 ---
 

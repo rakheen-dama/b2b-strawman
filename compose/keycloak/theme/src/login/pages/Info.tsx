@@ -12,7 +12,10 @@ export default function Info(
     kcContext;
   const { advancedMsgStr } = i18n;
 
-  const title = messageHeader ?? "Information";
+  // Run messageHeader through advancedMsgStr so i18n keys emitted by KC core
+  // (e.g. "expiredActionMessage") resolve via keycloakify's default bundle
+  // instead of rendering as raw key strings. See GAP-L-02 fix spec.
+  const title = messageHeader ? advancedMsgStr(messageHeader) : "Information";
 
   // Determine navigation link: pageRedirectUri > actionUri > client.baseUrl
   const linkUrl = pageRedirectUri ?? actionUri ?? client?.baseUrl;

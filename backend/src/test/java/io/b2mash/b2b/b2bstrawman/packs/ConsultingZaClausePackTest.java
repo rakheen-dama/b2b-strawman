@@ -120,39 +120,25 @@ class ConsultingZaClausePackTest {
                           .map(TemplateClause::getClauseId)
                           .collect(Collectors.toSet());
 
-                  var paymentTerms =
-                      clauseRepository.findBySlug("consulting-payment-terms").orElseThrow();
-                  var ipOwnership =
-                      clauseRepository.findBySlug("consulting-ip-ownership").orElseThrow();
-                  var changeRequests =
-                      clauseRepository.findBySlug("consulting-change-requests").orElseThrow();
-
                   assertThat(requiredClauseIds)
                       .containsExactlyInAnyOrder(
-                          paymentTerms.getId(), ipOwnership.getId(), changeRequests.getId());
+                          clauseId("consulting-payment-terms"),
+                          clauseId("consulting-ip-ownership"),
+                          clauseId("consulting-change-requests"));
 
-                  // Full-membership assertion: all 7 associated clauseIds must match the expected
-                  // set declared in the clause pack's templateAssociations for statement-of-work.
                   Set<UUID> allAssociatedClauseIds =
                       associations.stream()
                           .map(TemplateClause::getClauseId)
                           .collect(Collectors.toSet());
-                  var revisionRounds =
-                      clauseRepository.findBySlug("consulting-revision-rounds").orElseThrow();
-                  var killFee = clauseRepository.findBySlug("consulting-kill-fee").orElseThrow();
-                  var thirdPartyCosts =
-                      clauseRepository.findBySlug("consulting-third-party-costs").orElseThrow();
-                  var termination =
-                      clauseRepository.findBySlug("consulting-termination").orElseThrow();
                   assertThat(allAssociatedClauseIds)
                       .containsExactlyInAnyOrder(
-                          paymentTerms.getId(),
-                          ipOwnership.getId(),
-                          changeRequests.getId(),
-                          revisionRounds.getId(),
-                          killFee.getId(),
-                          thirdPartyCosts.getId(),
-                          termination.getId());
+                          clauseId("consulting-payment-terms"),
+                          clauseId("consulting-ip-ownership"),
+                          clauseId("consulting-change-requests"),
+                          clauseId("consulting-revision-rounds"),
+                          clauseId("consulting-kill-fee"),
+                          clauseId("consulting-third-party-costs"),
+                          clauseId("consulting-termination"));
                 }));
   }
 
@@ -177,35 +163,28 @@ class ConsultingZaClausePackTest {
                           .map(TemplateClause::getClauseId)
                           .collect(Collectors.toSet());
 
-                  var paymentTerms =
-                      clauseRepository.findBySlug("consulting-payment-terms").orElseThrow();
-                  var termination =
-                      clauseRepository.findBySlug("consulting-termination").orElseThrow();
-                  var ndaMutual =
-                      clauseRepository.findBySlug("consulting-nda-mutual").orElseThrow();
-
                   assertThat(requiredClauseIds)
                       .containsExactlyInAnyOrder(
-                          paymentTerms.getId(), termination.getId(), ndaMutual.getId());
+                          clauseId("consulting-payment-terms"),
+                          clauseId("consulting-termination"),
+                          clauseId("consulting-nda-mutual"));
 
-                  // Full-membership assertion: all 5 associated clauseIds must match the expected
-                  // set declared in the clause pack's templateAssociations for engagement-letter.
                   Set<UUID> allAssociatedClauseIds =
                       associations.stream()
                           .map(TemplateClause::getClauseId)
                           .collect(Collectors.toSet());
-                  var ipOwnership =
-                      clauseRepository.findBySlug("consulting-ip-ownership").orElseThrow();
-                  var changeRequests =
-                      clauseRepository.findBySlug("consulting-change-requests").orElseThrow();
                   assertThat(allAssociatedClauseIds)
                       .containsExactlyInAnyOrder(
-                          paymentTerms.getId(),
-                          termination.getId(),
-                          ndaMutual.getId(),
-                          ipOwnership.getId(),
-                          changeRequests.getId());
+                          clauseId("consulting-payment-terms"),
+                          clauseId("consulting-termination"),
+                          clauseId("consulting-nda-mutual"),
+                          clauseId("consulting-ip-ownership"),
+                          clauseId("consulting-change-requests"));
                 }));
+  }
+
+  private UUID clauseId(String slug) {
+    return clauseRepository.findBySlug(slug).orElseThrow().getId();
   }
 
   private void runInTenant(Runnable action) {

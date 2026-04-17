@@ -1,0 +1,303 @@
+{
+  "packId": "consulting-za-clauses",
+  "version": 1,
+  "verticalProfile": "consulting-za",
+  "name": "SA Agency & Consulting Clauses",
+  "description": "Clauses for South African agency and consulting engagements, covering IP ownership, revision rounds, kill fees, payment terms, change requests, third-party costs, and termination",
+  "clauses": [
+    {
+      "title": "Intellectual Property Ownership",
+      "slug": "consulting-ip-ownership",
+      "category": "IP",
+      "description": "IP transfers to the client upon final payment; pre-existing IP is retained by the agency",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "All intellectual property rights in the deliverables created by " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " specifically for " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " under this engagement shall transfer to " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " upon receipt by " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " of the final payment for the relevant scope of work." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Pre-existing intellectual property, including tools, templates, frameworks, methodologies, source files, and third-party assets licensed by " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": ", shall remain the exclusive property of " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " or the applicable third-party licensor. " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " grants " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " a non-exclusive, perpetual licence to use such pre-existing IP solely to the extent required to enjoy the deliverables." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 1
+    },
+    {
+      "title": "Revision Rounds",
+      "slug": "consulting-revision-rounds",
+      "category": "Commercial",
+      "description": "Two rounds of revisions included; further rounds billed at the applicable hourly rate",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "The fees quoted by " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " for each deliverable include two (2) rounds of consolidated revisions based on written feedback from " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": ". Each round represents a single consolidated set of changes delivered within five (5) working days of the preceding draft." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Additional rounds of revision, or material changes to direction after approval of a round, shall be billed at " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": "'s then-current hourly rate or as otherwise agreed in writing between the parties." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 2
+    },
+    {
+      "title": "Kill Fee",
+      "slug": "consulting-kill-fee",
+      "category": "Commercial",
+      "description": "50% kill fee on scope cancelled by the client after concept approval",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "If " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " cancels, terminates, or indefinitely postpones any portion of the agreed scope after the relevant creative concept or deliverable direction has been approved in writing, " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " shall pay " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " a kill fee equal to fifty percent (50%) of the remaining unbilled fees attributable to the cancelled scope." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "The kill fee is in addition to any amounts already due for work performed, third-party costs committed, and non-cancellable supplier bookings up to the date of cancellation." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 3
+    },
+    {
+      "title": "Mutual Non-Disclosure",
+      "slug": "consulting-nda-mutual",
+      "category": "Legal",
+      "description": "Mutual non-disclosure obligations with standard carve-outs",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Each of " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " and " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " (the \"Receiving Party\") shall hold in confidence all non-public information disclosed by the other party (the \"Disclosing Party\") in connection with this engagement, including strategies, briefs, creative work-in-progress, pricing, customer lists, and technical information." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "The Receiving Party's obligations shall not apply to information that (a) is or becomes publicly available without breach by the Receiving Party, (b) was lawfully known to the Receiving Party before disclosure, (c) is independently developed without reference to the Disclosing Party's confidential information, or (d) must be disclosed by law, regulation, or court order (provided that reasonable prior notice is given where permitted)." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 4
+    },
+    {
+      "title": "Payment Terms (Agency)",
+      "slug": "consulting-payment-terms",
+      "category": "Commercial",
+      "description": "Deposit, progress, and final payments; interest on overdue amounts; 30-day net terms for retainer invoices",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Unless otherwise agreed in writing, project-based engagements with " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " shall be invoiced in three stages: a fifty percent (50%) deposit on signature, a twenty-five percent (25%) progress payment on approval of the primary concept, and the final twenty-five percent (25%) on delivery of the completed scope to " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": "." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Retainer invoices issued by " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " shall be payable on thirty (30) day net terms from the date of invoice. Any amount outstanding beyond the due date shall attract interest at two percent (2%) per month, calculated on a daily basis, until payment is received in full." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 5
+    },
+    {
+      "title": "Change Requests",
+      "slug": "consulting-change-requests",
+      "category": "Commercial",
+      "description": "Written change-request process with scope-change fees",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Any request by " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " to alter the agreed scope, deliverables, timeline, or budget shall be submitted in writing to " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " as a change request. " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " shall respond with an impact assessment covering fees, schedule, and dependencies." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Work against a change request shall commence only after written approval of the impact assessment by " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": ". Scope-change fees, additional hours, and third-party costs shall be billed in accordance with the approved impact assessment." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 6
+    },
+    {
+      "title": "Third-Party Costs",
+      "slug": "consulting-third-party-costs",
+      "category": "Commercial",
+      "description": "Stock, licences, hosting, and production costs billed at cost plus a 15% administration fee",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Third-party costs incurred by " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " on behalf of " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": ", including but not limited to stock photography, fonts, music licences, software subscriptions, hosting, print production, talent, and freelance resourcing, shall be billed to " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " at actual cost plus a fifteen percent (15%) administration fee." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Any single third-party cost exceeding R10,000 (ten thousand Rand) shall be notified to " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " for written pre-approval before the commitment is made by " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": "." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 7
+    },
+    {
+      "title": "Termination (Agency)",
+      "slug": "consulting-termination",
+      "category": "Legal",
+      "description": "30-day termination notice on either side; work-in-progress billed to the termination date",
+      "body": {
+        "type": "doc",
+        "content": [
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "Either " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " or " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " may terminate this engagement by providing thirty (30) days' written notice to the other party. Termination shall not affect any rights or obligations that accrued prior to the effective date of termination." }
+            ]
+          },
+          {
+            "type": "paragraph",
+            "content": [
+              { "type": "text", "text": "On termination, " },
+              { "type": "variable", "attrs": { "key": "org.name" } },
+              { "type": "text", "text": " shall invoice " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " for all work performed up to the effective termination date, all approved third-party costs committed, and any non-cancellable supplier bookings. Deliverables completed and paid for shall be released to " },
+              { "type": "variable", "attrs": { "key": "customer.name" } },
+              { "type": "text", "text": " in accordance with the IP ownership provisions of this agreement." }
+            ]
+          }
+        ]
+      },
+      "sortOrder": 8
+    }
+  ],
+  "templateAssociations": [
+    {
+      "templatePackId": "consulting-za",
+      "templateKey": "statement-of-work",
+      "clauseSlugs": [
+        "consulting-payment-terms",
+        "consulting-ip-ownership",
+        "consulting-change-requests",
+        "consulting-revision-rounds",
+        "consulting-kill-fee",
+        "consulting-third-party-costs",
+        "consulting-termination"
+      ],
+      "requiredSlugs": [
+        "consulting-payment-terms",
+        "consulting-ip-ownership",
+        "consulting-change-requests"
+      ]
+    },
+    {
+      "templatePackId": "consulting-za",
+      "templateKey": "engagement-letter",
+      "clauseSlugs": [
+        "consulting-payment-terms",
+        "consulting-termination",
+        "consulting-nda-mutual",
+        "consulting-ip-ownership",
+        "consulting-change-requests"
+      ],
+      "requiredSlugs": [
+        "consulting-payment-terms",
+        "consulting-termination",
+        "consulting-nda-mutual"
+      ]
+    }
+  ]
+}

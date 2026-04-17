@@ -1,0 +1,89 @@
+{
+  "packId": "consulting-za-creative-brief",
+  "version": 1,
+  "verticalProfile": "consulting-za",
+  "name": "Creative Brief",
+  "description": "Information request template for new agency and consulting engagements: gathers brand, audience, goals, deliverables, constraints, existing assets, tone of voice, stakeholders, and launch dates from the client via the portal",
+  "items": [
+    {
+      "name": "Brand & Company Description",
+      "description": "Describe your brand and company: what you do, your history, your mission, and what makes you distinct. Long-form narrative is welcome — the more context the better.",
+      "responseType": "TEXT_RESPONSE",
+      "required": true,
+      "fileTypeHints": null,
+      "sortOrder": 1
+    },
+    {
+      "name": "Target Audience",
+      "description": "Describe the primary audience for this engagement and any secondary audiences. Include demographics, psychographics, behaviours, pain points, and the contexts in which they will encounter the work.",
+      "responseType": "TEXT_RESPONSE",
+      "required": true,
+      "fileTypeHints": null,
+      "sortOrder": 2
+    },
+    {
+      "name": "Core Business Goals",
+      "description": "What business outcomes should this engagement deliver? Be specific: revenue targets, growth metrics, brand shifts, launch goals, retention improvements, or operational outcomes.",
+      "responseType": "TEXT_RESPONSE",
+      "required": true,
+      "fileTypeHints": null,
+      "sortOrder": 3
+    },
+    {
+      "name": "Competitive Landscape & Reference Brands",
+      "description": "Who are your direct and indirect competitors? Which brands (in your category or outside it) do you admire or want to learn from? Include links where possible.",
+      "responseType": "TEXT_RESPONSE",
+      "required": false,
+      "fileTypeHints": null,
+      "sortOrder": 4
+    },
+    {
+      "name": "Must-Have Deliverables",
+      "description": "List the deliverables this engagement must produce. For each, note quantity, format, channel, and any hard requirements. Examples: 1x homepage design, 3x social video cut-downs (9:16, 1:1, 16:9), 1x print brochure (A4, 8pp).",
+      "responseType": "TEXT_RESPONSE",
+      "required": false,
+      "fileTypeHints": null,
+      "sortOrder": 5
+    },
+    {
+      "name": "Known Constraints or Brand Guidelines",
+      "description": "Upload any brand guidelines, tone of voice documents, legal or regulatory constraints, accessibility requirements, or prior brand work that defines the creative guardrails for this engagement.",
+      "responseType": "FILE_UPLOAD",
+      "required": false,
+      "fileTypeHints": "PDF, PNG, JPG, SVG, ZIP",
+      "sortOrder": 6
+    },
+    {
+      "name": "Existing Assets or Content",
+      "description": "Upload any existing assets we can reuse or build from: logos, photography, videography, illustrations, fonts, design files, copy decks, product imagery. Favour source files where available.",
+      "responseType": "FILE_UPLOAD",
+      "required": false,
+      "fileTypeHints": "PDF, PNG, JPG, SVG, ZIP",
+      "sortOrder": 7
+    },
+    {
+      "name": "Tone of Voice Preferences",
+      "description": "Describe the tone of voice the creative should hit. Provide adjectives (e.g., warm, irreverent, authoritative), brands whose voice you want to echo, and any tones to avoid. If you have a written tone-of-voice document, attach it to the 'Known Constraints or Brand Guidelines' item above.",
+      "responseType": "TEXT_RESPONSE",
+      "required": false,
+      "fileTypeHints": null,
+      "sortOrder": 8
+    },
+    {
+      "name": "Key Stakeholders & Decision-Making Process",
+      "description": "List the decision-makers, reviewers, and approvers on your side. For each, note their role, the areas they sign off on, and how we should route work to them. Call out the single final approver for each deliverable category.",
+      "responseType": "TEXT_RESPONSE",
+      "required": false,
+      "fileTypeHints": null,
+      "sortOrder": 9
+    },
+    {
+      "name": "Launch & Milestone Dates",
+      "description": "List all fixed dates: launch, campaign go-live, events, trade shows, internal review cycles, and any external-facing milestones that anchor the schedule. Use ISO format (YYYY-MM-DD) where possible.",
+      "responseType": "TEXT_RESPONSE",
+      "required": false,
+      "fileTypeHints": null,
+      "sortOrder": 10
+    }
+  ]
+}

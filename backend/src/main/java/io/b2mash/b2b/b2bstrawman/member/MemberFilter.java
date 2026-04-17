@@ -35,16 +35,19 @@ public class MemberFilter extends OncePerRequestFilter {
   private final MemberRepository memberRepository;
   private final OrgRoleService orgRoleService;
   private final InvitationService invitationService;
+  private final MemberRateSeedingService memberRateSeedingService;
   private final Cache<String, MemberInfo> memberCache =
       Caffeine.newBuilder().maximumSize(50_000).expireAfterWrite(Duration.ofHours(1)).build();
 
   public MemberFilter(
       MemberRepository memberRepository,
       OrgRoleService orgRoleService,
-      InvitationService invitationService) {
+      InvitationService invitationService,
+      MemberRateSeedingService memberRateSeedingService) {
     this.memberRepository = memberRepository;
     this.orgRoleService = orgRoleService;
     this.invitationService = invitationService;
+    this.memberRateSeedingService = memberRateSeedingService;
   }
 
   @Override
@@ -187,6 +190,14 @@ public class MemberFilter extends OncePerRequestFilter {
 
       var member = new Member(clerkUserId, email, name, null, orgRole);
       memberRepository.save(member);
+
+      // Seed MEMBER_DEFAULT billing & cost rates from the tenant's vertical profile
+      // rateCardDefaults block. Idempotent — safe if rates already exist.
+      try {
+        memberRateSeedingService.seedDefaultRatesIfMissing(member);
+      } catch (Exception e) {
+        log.warn("Failed to seed default rates for member {}: {}", member.getId(), e.getMessage());
+      }
 
       // Mark the invitation as accepted after member creation succeeds
       if (finalAcceptedInvitationId != null) {

@@ -211,7 +211,8 @@ class TenantProvisioningServiceTest {
             List.of("trust_accounting", "court_calendar", "conflict_check"),
             "en-ZA-legal",
             "ZAR",
-            Map.of());
+            Map.of(),
+            null);
     when(verticalProfileRegistry.getProfile("legal-za")).thenReturn(Optional.of(legalProfile));
 
     // Mock TenantTransactionHelper to execute the lambda directly
@@ -343,7 +344,8 @@ class TenantProvisioningServiceTest {
             List.of("trust_accounting"),
             "en-ZA-legal",
             "ZAR",
-            Map.of());
+            Map.of(),
+            null);
     when(verticalProfileRegistry.getProfile("legal-za")).thenReturn(Optional.of(legalProfile));
 
     // Mock TenantTransactionHelper to execute the lambda directly

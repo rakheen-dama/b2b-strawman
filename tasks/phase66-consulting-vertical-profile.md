@@ -12,7 +12,7 @@
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 480 | Profile Manifest + Field Packs | Backend | -- | S | 480A | |
+| 480 | Profile Manifest + Field Packs | Backend | -- | S | 480A | **Done** (PR #1047) |
 | 481 | Rate Pack + Project Template Pack | Backend | 480 | M | 481A, 481B | |
 | 482 | Automation Pack + Document Template Pack | Backend | 481 | L | 482A, 482B | |
 | 483 | Clause Pack + Request Pack | Backend | 482 | M | 483A, 483B | |
@@ -114,7 +114,7 @@ PHASE 53 (dashboard primitives), generic-onboarding compliance pack
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 0a | 480 | 480A | Profile manifest + 2 field packs + auto-apply wiring + provisioning integration test |
+| 0a | 480 | 480A | Profile manifest + 2 field packs + auto-apply wiring + provisioning integration test — **Done** (PR #1047) |
 
 ### Stage 1: Rate + Templates, Terminology + Hook (parallel)
 
@@ -190,7 +190,7 @@ A realistic day-by-day cadence: Epic 480 sets foundations day 1–2; Epic 481 + 
 
 | Slice | Tasks | Summary |
 |-------|-------|---------|
-| **480A** | 480.1–480.6 | `vertical-profiles/consulting-za.json` (profile manifest with empty `enabledModules`, 6 pack references, `rateCardDefaults`, `taxDefaults` VAT 15%, `terminologyOverrides: "en-ZA-consulting"`). `field-packs/consulting-za-customer.json` (5 fields, `autoApply: true`). `field-packs/consulting-za-project.json` (5 fields, `autoApply: true`, conditional visibility on `retainer_tier`). Integration test provisioning a test tenant with profile and asserting profile+fields installed. |
+| **480A** | 480.1–480.6 | `vertical-profiles/consulting-za.json` (profile manifest with empty `enabledModules`, 6 pack references, `rateCardDefaults`, `taxDefaults` VAT 15%, `terminologyOverrides: "en-ZA-consulting"`). `field-packs/consulting-za-customer.json` (5 fields, `autoApply: true`). `field-packs/consulting-za-project.json` (5 fields, `autoApply: true`, conditional visibility on `retainer_tier`). Integration test provisioning a test tenant with profile and asserting profile+fields installed. **Done** (PR #1047) |
 
 ### Tasks
 

@@ -544,7 +544,7 @@
 | 478 | Frontend: Settings > Packs Page | Frontend | 477 | M | 478A, 478B | **Done** (PR #1045) |
 | 479 | Integration Tests + E2E | E2E | 477, 478 | S | 479A | **Done** (PR #1046) |
 | **Phase 66 — `consulting-za` Vertical Profile (Pack-Only Agency Content)** | | | | | | See [tasks/phase66-consulting-vertical-profile.md](tasks/phase66-consulting-vertical-profile.md) |
-| 480 | Profile Manifest + Field Packs | Backend | -- | S | 480A | |
+| 480 | Profile Manifest + Field Packs | Backend | -- | S | 480A | **Done** (PR #1047) |
 | 481 | Rate Pack + Project Template Pack | Backend | 480 | M | 481A, 481B | |
 | 482 | Automation Pack + Document Template Pack | Backend | 481 | L | 482A, 482B | |
 | 483 | Clause Pack + Request Pack | Backend | 482 | M | 483A, 483B | |

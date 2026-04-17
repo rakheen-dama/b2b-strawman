@@ -227,8 +227,12 @@ class ConsultingZaTemplatePackTest {
    * Variable resolution test (Task 482.10 part 2): the monthly retainer report references {@code
    * retainer.periodStart}, {@code retainer.periodEnd}, {@code retainer.hoursUsed}, and {@code
    * retainer.hourBank}. There is currently no {@code RetainerContextBuilder} registered, so this
-   * test asserts the underlying {@link RetainerAgreement} fields exist and round-trip — confirming
-   * the template uses variable keys consistent with the entity shape (no invented variables).
+   * test builds an equivalent context map by hand from the seeded {@link RetainerAgreement} fields,
+   * renders the template through {@link TiptapRenderer}, and asserts the resolved values actually
+   * appear in the rendered HTML — proving end-to-end that the template's variable keys are
+   * consistent with the entity shape (no invented variables) and resolve under the existing
+   * dot-walk renderer. The forbidden composed aliases (architecture 66.10) are also asserted absent
+   * from the raw template content.
    */
   @Test
   void retainerReportVariablesMapToRetainerAgreementFields() {
@@ -263,8 +267,8 @@ class ConsultingZaTemplatePackTest {
                   //   retainer.periodStart  -> RetainerAgreement.startDate
                   //   retainer.periodEnd    -> RetainerAgreement.endDate
                   //   retainer.hourBank     -> RetainerAgreement.allocatedHours
-                  //   retainer.hoursUsed    -> aggregated from time entries (test asserts shape
-                  //                            via allocatedHours presence + numeric type).
+                  //   retainer.hoursUsed    -> aggregated from time entries (no aggregator yet;
+                  //                            seeded as 0 for this test).
                   assertThat(saved.getId()).isNotNull();
                   assertThat(saved.getStartDate()).isEqualTo(LocalDate.of(2026, 4, 1));
                   assertThat(saved.getEndDate()).isEqualTo(LocalDate.of(2026, 4, 30));
@@ -286,6 +290,26 @@ class ConsultingZaTemplatePackTest {
                   // Must NOT emit the forbidden composed alias (architecture 66.10).
                   assertThat(contentJson).doesNotContain("retainer.hoursRemaining");
                   assertThat(contentJson).doesNotContain("retainer.customerName");
+
+                  // Build a context map by hand (no RetainerContextBuilder yet) mirroring the
+                  // entity-to-template field mapping in the comment above, then render through
+                  // TiptapRenderer to prove the keys actually resolve end-to-end.
+                  Map<String, Object> retainerCtx =
+                      Map.of(
+                          "periodStart", saved.getStartDate().toString(),
+                          "periodEnd", saved.getEndDate().toString(),
+                          "hoursUsed", BigDecimal.ZERO,
+                          "hourBank", saved.getAllocatedHours());
+                  Map<String, Object> ctx =
+                      Map.of(
+                          "retainer", retainerCtx,
+                          "customer", Map.of("name", customer.getName()),
+                          "org", Map.of("name", "Consulting ZA Template Pack Test Org"));
+
+                  String html = tiptapRenderer.render(template.getContent(), ctx, Map.of(), null);
+                  assertThat(html).contains(saved.getStartDate().toString());
+                  assertThat(html).contains(saved.getEndDate().toString());
+                  assertThat(html).contains(saved.getAllocatedHours().toPlainString());
                 }));
   }
 

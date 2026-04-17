@@ -87,7 +87,8 @@
     {
       "slug": "consulting-za-task-blocked-7d",
       "name": "Task Blocked (7 days idle)",
-      "description": "Notifies the project owner when a task has been idle for 7 days. Trigger gap: the spec calls for TASK_STATUS_UNCHANGED but that trigger does not exist in the current TriggerType registry, so this rule uses FIELD_DATE_APPROACHING with a negative daysBefore (days-after) on task.lastStatusChangeAt as the nearest available scheduled trigger. Tracked as a follow-up.",
+      "description": "Notifies the project owner when a task has been idle for 7 days so blockers can be resolved quickly.",
+      "_comment": "Trigger gap (ADR-244): the spec calls for a TASK_STATUS_UNCHANGED trigger that does not yet exist in the TriggerType registry. This rule uses FIELD_DATE_APPROACHING on task.lastStatusChangeAt as the nearest-fit scheduled trigger and will be inert until a future phase introduces TASK_STATUS_UNCHANGED. The JSON loader ignores unknown fields so this comment ships with the pack but is not persisted on the AutomationRule.",
       "category": "monitoring",
       "triggerType": "FIELD_DATE_APPROACHING",
       "triggerConfig": {
@@ -113,7 +114,8 @@
     {
       "slug": "consulting-za-unbilled-time-30d",
       "name": "Unbilled Time Older Than 30 Days",
-      "description": "Notifies org admins when billable time entries have not been invoiced within 30 days of being logged. Trigger gap: the spec calls for a dedicated unbilled-age trigger, but the current TriggerType registry does not include one, so this rule uses FIELD_DATE_APPROACHING with a negative daysBefore (days-after) on time-entry age as the nearest available scheduled trigger. Tracked as a follow-up.",
+      "description": "Notifies org admins when billable time remains unbilled for over 30 days so invoicing can be actioned promptly.",
+      "_comment": "Trigger gap (ADR-244): the spec calls for a dedicated TIME_ENTRY_AGE trigger that does not yet exist in the TriggerType registry. This rule uses FIELD_DATE_APPROACHING on timeEntry.workDate as the nearest-fit scheduled trigger and will be inert until a future phase introduces TIME_ENTRY_AGE. The JSON loader ignores unknown fields so this comment ships with the pack but is not persisted on the AutomationRule.",
       "category": "billing",
       "triggerType": "FIELD_DATE_APPROACHING",
       "triggerConfig": {

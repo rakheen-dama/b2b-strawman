@@ -31,9 +31,18 @@
       ]
     },
     {
-      "type": "paragraph",
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "customer.addressLine2",
+        "operator": "isNotEmpty"
+      },
       "content": [
-        { "type": "variable", "attrs": { "key": "customer.addressLine2" } }
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "variable", "attrs": { "key": "customer.addressLine2" } }
+          ]
+        }
       ]
     },
     {

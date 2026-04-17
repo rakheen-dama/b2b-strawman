@@ -50,14 +50,14 @@
       "type": "paragraph",
       "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Start date: " },
-        { "type": "variable", "attrs": { "key": "project.customFields.start_date" } }
+        { "type": "variable", "attrs": { "key": "project.startDate" } }
       ]
     },
     {
       "type": "paragraph",
       "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Due date: " },
-        { "type": "variable", "attrs": { "key": "project.customFields.due_date" } }
+        { "type": "variable", "attrs": { "key": "project.dueDate" } }
       ]
     },
     {
@@ -99,7 +99,7 @@
       "type": "paragraph",
       "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Total project budget: " },
-        { "type": "variable", "attrs": { "key": "project.customFields.budget_total" } }
+        { "type": "variable", "attrs": { "key": "budget.amount" } }
       ]
     },
     {

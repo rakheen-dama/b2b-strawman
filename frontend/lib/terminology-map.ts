@@ -12,6 +12,8 @@ export const TERMINOLOGY: Record<string, Record<string, string>> = {
     "Rate Cards": "Billing Rates",
     "rate card": "billing rates",
     "rate cards": "billing rates",
+    "Time Tracking": "Time Logs",
+    "Rates & Currency": "Billing Rates",
   },
   "accounting-za": {
     Project: "Engagement",

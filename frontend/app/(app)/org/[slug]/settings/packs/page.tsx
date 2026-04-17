@@ -9,11 +9,7 @@ export const metadata: Metadata = {
   title: "Packs",
 };
 
-export default async function PacksSettingsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function PacksSettingsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const [caps, catalog, installed] = await Promise.all([
     fetchMyCapabilities(),
@@ -34,9 +30,7 @@ export default async function PacksSettingsPage({
       </Link>
 
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Packs
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Packs</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Extend your workspace with pre-built content from Kazi Packs.
         </p>

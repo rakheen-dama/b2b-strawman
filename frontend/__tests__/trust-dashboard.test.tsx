@@ -187,13 +187,18 @@ describe("TrustAccountingPage", () => {
     expect(screen.getByText("AWAITING APPROVAL")).toBeInTheDocument();
   });
 
-  it("calls notFound when trust_accounting module is disabled", async () => {
+  it("renders Module Not Available when trust_accounting module is disabled", async () => {
     mockGetOrgSettings.mockResolvedValue({
       enabledModules: [],
     });
 
-    await expect(renderPage()).rejects.toThrow("NEXT_NOT_FOUND");
-    expect(mockNotFound).toHaveBeenCalled();
+    await renderPage();
+
+    expect(screen.getByText("Module Not Available")).toBeInTheDocument();
+    expect(
+      screen.getByText("The Trust Accounting module is not enabled for your organization.")
+    ).toBeInTheDocument();
+    expect(mockNotFound).not.toHaveBeenCalled();
   });
 
   it("renders pending approvals warning badge when count > 0", async () => {

@@ -29,7 +29,9 @@ public class AccessRequestApprovalService {
   private static final Map<String, String> INDUSTRY_TO_PROFILE =
       Map.of(
           "Accounting", "accounting-za",
-          "Legal Services", "legal-za");
+          "Legal Services", "legal-za",
+          "Marketing", "consulting-za",
+          "Consulting", "consulting-za");
 
   private static final String DEFAULT_PASSWORD = "password";
 

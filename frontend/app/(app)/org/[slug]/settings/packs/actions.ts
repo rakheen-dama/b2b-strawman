@@ -7,11 +7,7 @@ import {
   uninstallPack,
   checkPackUninstallable,
 } from "@/lib/api/packs";
-import type {
-  PackCatalogEntry,
-  PackInstallResponse,
-  UninstallCheck,
-} from "@/lib/api/packs";
+import type { PackCatalogEntry, PackInstallResponse, UninstallCheck } from "@/lib/api/packs";
 import { revalidatePath } from "next/cache";
 
 export interface ActionResult<T = void> {
@@ -20,9 +16,7 @@ export interface ActionResult<T = void> {
   data?: T;
 }
 
-export async function fetchCatalogAction(
-  all: boolean
-): Promise<ActionResult<PackCatalogEntry[]>> {
+export async function fetchCatalogAction(all: boolean): Promise<ActionResult<PackCatalogEntry[]>> {
   try {
     const data = await listPackCatalog({ all });
     return { success: true, data };
@@ -42,11 +36,7 @@ export async function fetchUninstallCheckAction(
     const data = await checkPackUninstallable(packId);
     return { success: true, data };
   } catch (error) {
-    console.error(
-      "[fetchUninstallCheckAction] Failed to check uninstall:",
-      packId,
-      error
-    );
+    console.error("[fetchUninstallCheckAction] Failed to check uninstall:", packId, error);
     if (error instanceof ApiError) {
       return { success: false, error: error.message };
     }
@@ -83,18 +73,11 @@ export async function installPackAction(
   }
 }
 
-export async function uninstallPackAction(
-  slug: string,
-  packId: string
-): Promise<ActionResult> {
+export async function uninstallPackAction(slug: string, packId: string): Promise<ActionResult> {
   try {
     await uninstallPack(packId);
   } catch (error) {
-    console.error(
-      "[uninstallPackAction] Failed to uninstall pack:",
-      packId,
-      error
-    );
+    console.error("[uninstallPackAction] Failed to uninstall pack:", packId, error);
     if (error instanceof ApiError) {
       if (error.status === 403) {
         return {

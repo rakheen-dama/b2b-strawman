@@ -33,6 +33,7 @@ public class MemberSyncService {
   private final AuditService auditService;
   private final OrgRoleRepository orgRoleRepository;
   private final BillingProperties billingProperties;
+  private final MemberRateSeedingService memberRateSeedingService;
 
   public MemberSyncService(
       MemberRepository memberRepository,
@@ -42,7 +43,8 @@ public class MemberSyncService {
       PlatformTransactionManager txManager,
       AuditService auditService,
       OrgRoleRepository orgRoleRepository,
-      BillingProperties billingProperties) {
+      BillingProperties billingProperties,
+      MemberRateSeedingService memberRateSeedingService) {
     this.memberRepository = memberRepository;
     this.mappingRepository = mappingRepository;
     this.organizationRepository = organizationRepository;
@@ -52,6 +54,7 @@ public class MemberSyncService {
     this.auditService = auditService;
     this.orgRoleRepository = orgRoleRepository;
     this.billingProperties = billingProperties;
+    this.memberRateSeedingService = memberRateSeedingService;
   }
 
   public SyncResult syncMember(
@@ -108,6 +111,17 @@ public class MemberSyncService {
                               new Member(clerkUserId, email, name, avatarUrl, resolvedRole);
                           memberRepository.save(member);
                           log.info("Created member {} in tenant {}", clerkUserId, schemaName);
+
+                          // Seed MEMBER_DEFAULT billing + cost rates from the tenant's vertical
+                          // profile. Idempotent — safe if rates already exist.
+                          try {
+                            memberRateSeedingService.seedDefaultRatesIfMissing(member);
+                          } catch (Exception e) {
+                            log.warn(
+                                "Failed to seed default rates for member {}: {}",
+                                member.getId(),
+                                e.getMessage());
+                          }
 
                           auditService.log(
                               AuditEventBuilder.builder()

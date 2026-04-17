@@ -32,7 +32,8 @@ public record IntakeFieldGroupResponse(List<GroupResponse> groups) {
       String description,
       List<Map<String, String>> options,
       Map<String, Object> defaultValue,
-      List<String> requiredForContexts) {
+      List<String> requiredForContexts,
+      Map<String, Object> visibilityCondition) {
 
     public static IntakeFieldResponse from(FieldDefinition fd) {
       return new IntakeFieldResponse(
@@ -44,7 +45,8 @@ public record IntakeFieldGroupResponse(List<GroupResponse> groups) {
           fd.getDescription(),
           fd.getOptions(),
           fd.getDefaultValue(),
-          fd.getRequiredForContexts());
+          fd.getRequiredForContexts(),
+          fd.getVisibilityCondition());
     }
   }
 }

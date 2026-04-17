@@ -91,11 +91,7 @@ function RequestTable({
                   >
                     Approve
                   </Button>
-                  <Button
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => onReject(request)}
-                  >
+                  <Button variant="destructive" size="sm" onClick={() => onReject(request)}>
                     Reject
                   </Button>
                 </div>
@@ -141,11 +137,7 @@ export function AccessRequestsTable({ requests }: AccessRequestsTableProps) {
       );
     }
     return (
-      <RequestTable
-        requests={sorted}
-        onApprove={setApproveTarget}
-        onReject={setRejectTarget}
-      />
+      <RequestTable requests={sorted} onApprove={setApproveTarget} onReject={setRejectTarget} />
     );
   }
 

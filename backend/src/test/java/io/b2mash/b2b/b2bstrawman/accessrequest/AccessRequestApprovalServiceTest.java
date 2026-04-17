@@ -16,6 +16,8 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
@@ -146,6 +148,40 @@ class AccessRequestApprovalServiceTest {
     verify(keycloakProvisioningClient).inviteUser(KC_ORG_ID, "retry@acme.com");
   }
 
+  @ParameterizedTest(name = "industry {0} -> vertical profile {1}")
+  @CsvSource({
+    "Accounting, accounting-za",
+    "Legal Services, legal-za",
+    "Marketing, consulting-za",
+    "Consulting, consulting-za",
+  })
+  void approve_mapsIndustryToVerticalProfile(String industry, String expectedProfile) {
+    var request = createPendingRequestWithIndustry("profile@acme.com", "Profile Corp", industry);
+    String slug = "profile-corp";
+
+    when(keycloakProvisioningClient.createOrganization("Profile Corp", slug)).thenReturn(KC_ORG_ID);
+    when(tenantProvisioningService.provisionTenant(slug, "Profile Corp", expectedProfile, "ZA"))
+        .thenReturn(ProvisioningResult.success("tenant_profile"));
+
+    approvalService.approve(request.getId(), ADMIN_USER_ID);
+
+    verify(tenantProvisioningService).provisionTenant(slug, "Profile Corp", expectedProfile, "ZA");
+  }
+
+  @Test
+  void approve_unmappedIndustry_provisionsWithNullVerticalProfile() {
+    var request = createPendingRequestWithIndustry("unmapped@acme.com", "Other Corp", "Other");
+
+    when(keycloakProvisioningClient.createOrganization("Other Corp", "other-corp"))
+        .thenReturn(KC_ORG_ID);
+    when(tenantProvisioningService.provisionTenant("other-corp", "Other Corp", null, "ZA"))
+        .thenReturn(ProvisioningResult.success("tenant_other"));
+
+    approvalService.approve(request.getId(), ADMIN_USER_ID);
+
+    verify(tenantProvisioningService).provisionTenant("other-corp", "Other Corp", null, "ZA");
+  }
+
   @Test
   void reject_pendingRequest_setsRejectedStatus() {
     var request = createPendingRequest("reject-happy@acme.com", "Reject Corp");
@@ -171,7 +207,12 @@ class AccessRequestApprovalServiceTest {
   }
 
   private AccessRequest createPendingRequest(String email, String orgName) {
-    var request = new AccessRequest(email, "Test User", orgName, "ZA", "Legal Services");
+    return createPendingRequestWithIndustry(email, orgName, "Legal Services");
+  }
+
+  private AccessRequest createPendingRequestWithIndustry(
+      String email, String orgName, String industry) {
+    var request = new AccessRequest(email, "Test User", orgName, "ZA", industry);
     request.setStatus(AccessRequestStatus.PENDING);
     return accessRequestRepository.save(request);
   }

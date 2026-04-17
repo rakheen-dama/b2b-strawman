@@ -69,9 +69,10 @@ export function TrustBalanceCard({
 
   // Fetch client ledger for this customer
   // Gate on moduleEnabled to avoid 403/500 for tenants without trust_accounting
-  const ledgerCacheKey = moduleEnabled && resolvedAccountId
-    ? `trust-ledger-${slug}-${resolvedAccountId}-${customerId}`
-    : null;
+  const ledgerCacheKey =
+    moduleEnabled && resolvedAccountId
+      ? `trust-ledger-${slug}-${resolvedAccountId}-${customerId}`
+      : null;
   const {
     data: ledger,
     isLoading: ledgerLoading,

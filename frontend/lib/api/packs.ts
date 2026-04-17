@@ -36,9 +36,7 @@ export interface PackInstallResponse {
 
 // === API Functions ===
 
-export async function listPackCatalog(opts?: {
-  all?: boolean;
-}): Promise<PackCatalogEntry[]> {
+export async function listPackCatalog(opts?: { all?: boolean }): Promise<PackCatalogEntry[]> {
   const searchParams = new URLSearchParams();
   if (opts?.all) searchParams.set("all", "true");
   const qs = searchParams.toString();
@@ -49,16 +47,12 @@ export async function listInstalledPacks(): Promise<PackCatalogEntry[]> {
   return api.get<PackCatalogEntry[]>("/api/packs/installed");
 }
 
-export async function checkPackUninstallable(
-  packId: string
-): Promise<UninstallCheck> {
+export async function checkPackUninstallable(packId: string): Promise<UninstallCheck> {
   const encodedPackId = encodeURIComponent(packId);
   return api.get<UninstallCheck>(`/api/packs/${encodedPackId}/uninstall-check`);
 }
 
-export async function installPack(
-  packId: string
-): Promise<PackInstallResponse> {
+export async function installPack(packId: string): Promise<PackInstallResponse> {
   const encodedPackId = encodeURIComponent(packId);
   return api.post<PackInstallResponse>(`/api/packs/${encodedPackId}/install`);
 }

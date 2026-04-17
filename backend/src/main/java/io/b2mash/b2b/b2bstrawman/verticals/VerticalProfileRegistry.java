@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -24,6 +25,19 @@ public class VerticalProfileRegistry {
 
   private static final Logger log = LoggerFactory.getLogger(VerticalProfileRegistry.class);
 
+  /**
+   * Role-keyed rate (e.g. {@code Owner R1800}). The {@code roleName} is matched against an {@link
+   * io.b2mash.b2b.b2bstrawman.orgrole.OrgRole} slug case-insensitively.
+   */
+  public record RoleRate(String roleName, BigDecimal hourlyRate) {}
+
+  /**
+   * Rate card defaults block parsed from a vertical profile JSON. Supplies role-keyed billing and
+   * cost rates used to seed {@code MEMBER_DEFAULT} rates on JIT member creation.
+   */
+  public record RateCardDefaults(
+      String currency, List<RoleRate> billingRates, List<RoleRate> costRates) {}
+
   /** Immutable definition of a vertical profile loaded from a JSON file. */
   public record ProfileDefinition(
       String profileId,
@@ -32,7 +46,8 @@ public class VerticalProfileRegistry {
       List<String> enabledModules,
       String terminologyNamespace,
       String currency,
-      Map<String, Object> packs) {}
+      Map<String, Object> packs,
+      RateCardDefaults rateCardDefaults) {}
 
   private final Map<String, ProfileDefinition> profiles;
 
@@ -77,6 +92,8 @@ public class VerticalProfileRegistry {
         Map<String, Object> packs =
             root.has("packs") ? objectMapper.convertValue(root.get("packs"), Map.class) : Map.of();
 
+        RateCardDefaults rateCardDefaults = parseRateCardDefaults(root.path("rateCardDefaults"));
+
         var profile =
             new ProfileDefinition(
                 profileId,
@@ -85,7 +102,8 @@ public class VerticalProfileRegistry {
                 enabledModules,
                 terminologyNamespace,
                 currency,
-                packs);
+                packs,
+                rateCardDefaults);
         loaded.put(profileId, profile);
 
         log.info("Loaded vertical profile: {}", profileId);
@@ -114,5 +132,44 @@ public class VerticalProfileRegistry {
   /** Returns true if a profile with the given ID exists. */
   public boolean exists(String id) {
     return profiles.containsKey(id);
+  }
+
+  /**
+   * Parses the {@code rateCardDefaults} block from a profile JSON node. Returns {@code null} if the
+   * node is missing or malformed (seeding is simply skipped in that case).
+   */
+  private static RateCardDefaults parseRateCardDefaults(JsonNode node) {
+    if (node == null || node.isMissingNode() || !node.isObject()) {
+      return null;
+    }
+    String currency = node.path("currency").asText(null);
+    List<RoleRate> billing = parseRoleRateArray(node.path("billingRates"));
+    List<RoleRate> cost = parseRoleRateArray(node.path("costRates"));
+    if (currency == null && billing.isEmpty() && cost.isEmpty()) {
+      return null;
+    }
+    return new RateCardDefaults(currency, billing, cost);
+  }
+
+  private static List<RoleRate> parseRoleRateArray(JsonNode arrayNode) {
+    if (arrayNode == null || !arrayNode.isArray()) {
+      return List.of();
+    }
+    List<RoleRate> out = new ArrayList<>();
+    for (JsonNode entry : arrayNode) {
+      String roleName = entry.path("roleName").asText(null);
+      JsonNode rateNode = entry.path("hourlyRate");
+      if (roleName == null || roleName.isBlank() || rateNode.isMissingNode() || rateNode.isNull()) {
+        continue;
+      }
+      BigDecimal hourlyRate;
+      try {
+        hourlyRate = new BigDecimal(rateNode.asText());
+      } catch (NumberFormatException e) {
+        continue;
+      }
+      out.add(new RoleRate(roleName, hourlyRate));
+    }
+    return List.copyOf(out);
   }
 }

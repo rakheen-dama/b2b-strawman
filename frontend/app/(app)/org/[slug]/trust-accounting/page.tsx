@@ -112,7 +112,16 @@ export default async function TrustAccountingPage({
 
   const enabledModules = settings.enabledModules ?? [];
   if (!enabledModules.includes("trust_accounting")) {
-    notFound();
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <h2 className="font-display text-xl font-semibold text-slate-950 dark:text-slate-50">
+          Module Not Available
+        </h2>
+        <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+          The Trust Accounting module is not enabled for your organization.
+        </p>
+      </div>
+    );
   }
 
   // Fetch trust accounts and find the primary one

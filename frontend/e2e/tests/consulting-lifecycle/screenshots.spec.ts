@@ -96,7 +96,10 @@ test.describe.serial("Consulting Lifecycle — Screenshot Baselines", () => {
       (await isVisibleSafe(campaignTypeField, 3_000)) ||
       (await isVisibleSafe(campaignTypeText, 3_000));
     if (!hasCampaignType) {
-      test.skip(true, "campaign_type custom field not surfaced — tenant likely not on consulting-za");
+      test.skip(
+        true,
+        "campaign_type custom field not surfaced — tenant likely not on consulting-za"
+      );
       return;
     }
 
@@ -170,9 +173,7 @@ test.describe.serial("Consulting Lifecycle — Screenshot Baselines", () => {
 
     // Milestone-specific assertion: a Statement of Work / SOW reference must
     // be visible before we lock in this baseline.
-    const sowDoc = page
-      .getByText(/statement of work|\bsow\b/i)
-      .first();
+    const sowDoc = page.getByText(/statement of work|\bsow\b/i).first();
     if (!(await isVisibleSafe(sowDoc, 5_000))) {
       test.skip(true, "Statement of Work not present in documents surface");
       return;

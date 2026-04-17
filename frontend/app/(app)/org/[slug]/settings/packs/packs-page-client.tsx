@@ -34,15 +34,10 @@ export function PacksPageClient({
   const [activeTab, setActiveTab] = useState("available");
   const [showAll, setShowAll] = useState(false);
   const [catalog, setCatalog] = useState<PackCatalogEntry[]>(initialCatalog);
-  const [installed, setInstalled] =
-    useState<PackCatalogEntry[]>(initialInstalled);
-  const [uninstallChecks, setUninstallChecks] = useState<
-    Record<string, UninstallCheck>
-  >({});
+  const [installed, setInstalled] = useState<PackCatalogEntry[]>(initialInstalled);
+  const [uninstallChecks, setUninstallChecks] = useState<Record<string, UninstallCheck>>({});
   const [installingPackId, setInstallingPackId] = useState<string | null>(null);
-  const [uninstallingPackId, setUninstallingPackId] = useState<string | null>(
-    null
-  );
+  const [uninstallingPackId, setUninstallingPackId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   // Re-sync from server when props change (e.g. after revalidatePath)
@@ -150,15 +145,8 @@ export function PacksPageClient({
             Kazi Packs &mdash; extend your workspace with pre-built content
           </p>
           <div className="flex items-center gap-2">
-            <Switch
-              id="show-all-packs"
-              checked={showAll}
-              onCheckedChange={setShowAll}
-            />
-            <Label
-              htmlFor="show-all-packs"
-              className="text-sm text-slate-600 dark:text-slate-400"
-            >
+            <Switch id="show-all-packs" checked={showAll} onCheckedChange={setShowAll} />
+            <Label htmlFor="show-all-packs" className="text-sm text-slate-600 dark:text-slate-400">
               Show all packs
             </Label>
           </div>
@@ -186,9 +174,7 @@ export function PacksPageClient({
       </TabsContent>
 
       <TabsContent value="installed" className="space-y-6">
-        <p className="text-sm text-slate-600 dark:text-slate-400">
-          Installed Packs
-        </p>
+        <p className="text-sm text-slate-600 dark:text-slate-400">Installed Packs</p>
 
         {installed.length === 0 ? (
           <EmptyState

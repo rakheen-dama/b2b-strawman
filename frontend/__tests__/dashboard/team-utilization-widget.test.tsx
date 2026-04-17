@@ -45,7 +45,9 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
-type TrendFixture = Array<Pick<TeamUtilizationResponse, "teamAverages"> & Partial<TeamUtilizationResponse>>;
+type TrendFixture = Array<
+  Pick<TeamUtilizationResponse, "teamAverages"> & Partial<TeamUtilizationResponse>
+>;
 
 function mockSWRData(trend: TrendFixture) {
   vi.mocked(useSWR).mockReturnValue({
@@ -78,10 +80,34 @@ describe("TeamUtilizationWidget", () => {
   it("renders KPI card when profile = consulting-za", () => {
     vi.mocked(useProfile).mockReturnValue("consulting-za");
     mockSWRData([
-      { teamAverages: { avgBillableUtilizationPct: 60, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
-      { teamAverages: { avgBillableUtilizationPct: 64, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
-      { teamAverages: { avgBillableUtilizationPct: 66, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
-      { teamAverages: { avgBillableUtilizationPct: 68, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
+      {
+        teamAverages: {
+          avgBillableUtilizationPct: 60,
+          avgPlannedUtilizationPct: 0,
+          avgActualUtilizationPct: 0,
+        },
+      },
+      {
+        teamAverages: {
+          avgBillableUtilizationPct: 64,
+          avgPlannedUtilizationPct: 0,
+          avgActualUtilizationPct: 0,
+        },
+      },
+      {
+        teamAverages: {
+          avgBillableUtilizationPct: 66,
+          avgPlannedUtilizationPct: 0,
+          avgActualUtilizationPct: 0,
+        },
+      },
+      {
+        teamAverages: {
+          avgBillableUtilizationPct: 68,
+          avgPlannedUtilizationPct: 0,
+          avgActualUtilizationPct: 0,
+        },
+      },
     ]);
 
     render(<TeamUtilizationWidget slug="acme" />);
@@ -133,10 +159,34 @@ describe("TeamUtilizationWidget", () => {
   it("shows empty state when all 4 weeks report zero utilization", () => {
     vi.mocked(useProfile).mockReturnValue("consulting-za");
     mockSWRData([
-      { teamAverages: { avgBillableUtilizationPct: 0, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
-      { teamAverages: { avgBillableUtilizationPct: 0, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
-      { teamAverages: { avgBillableUtilizationPct: 0, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
-      { teamAverages: { avgBillableUtilizationPct: 0, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
+      {
+        teamAverages: {
+          avgBillableUtilizationPct: 0,
+          avgPlannedUtilizationPct: 0,
+          avgActualUtilizationPct: 0,
+        },
+      },
+      {
+        teamAverages: {
+          avgBillableUtilizationPct: 0,
+          avgPlannedUtilizationPct: 0,
+          avgActualUtilizationPct: 0,
+        },
+      },
+      {
+        teamAverages: {
+          avgBillableUtilizationPct: 0,
+          avgPlannedUtilizationPct: 0,
+          avgActualUtilizationPct: 0,
+        },
+      },
+      {
+        teamAverages: {
+          avgBillableUtilizationPct: 0,
+          avgPlannedUtilizationPct: 0,
+          avgActualUtilizationPct: 0,
+        },
+      },
     ]);
 
     render(<TeamUtilizationWidget slug="acme" />);
@@ -167,10 +217,34 @@ describe("TeamUtilizationWidget", () => {
   it("renders sparkline with 4-element data when 4 weeks returned (484.10)", () => {
     vi.mocked(useProfile).mockReturnValue("consulting-za");
     mockSWRData([
-      { teamAverages: { avgBillableUtilizationPct: 60, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
-      { teamAverages: { avgBillableUtilizationPct: 64, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
-      { teamAverages: { avgBillableUtilizationPct: 66, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
-      { teamAverages: { avgBillableUtilizationPct: 68, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
+      {
+        teamAverages: {
+          avgBillableUtilizationPct: 60,
+          avgPlannedUtilizationPct: 0,
+          avgActualUtilizationPct: 0,
+        },
+      },
+      {
+        teamAverages: {
+          avgBillableUtilizationPct: 64,
+          avgPlannedUtilizationPct: 0,
+          avgActualUtilizationPct: 0,
+        },
+      },
+      {
+        teamAverages: {
+          avgBillableUtilizationPct: 66,
+          avgPlannedUtilizationPct: 0,
+          avgActualUtilizationPct: 0,
+        },
+      },
+      {
+        teamAverages: {
+          avgBillableUtilizationPct: 68,
+          avgPlannedUtilizationPct: 0,
+          avgActualUtilizationPct: 0,
+        },
+      },
     ]);
 
     render(<TeamUtilizationWidget slug="acme" />);
@@ -185,10 +259,34 @@ describe("TeamUtilizationWidget", () => {
   it("renders CTA link to the utilization page", () => {
     vi.mocked(useProfile).mockReturnValue("consulting-za");
     mockSWRData([
-      { teamAverages: { avgBillableUtilizationPct: 60, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
-      { teamAverages: { avgBillableUtilizationPct: 64, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
-      { teamAverages: { avgBillableUtilizationPct: 66, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
-      { teamAverages: { avgBillableUtilizationPct: 68, avgPlannedUtilizationPct: 0, avgActualUtilizationPct: 0 } },
+      {
+        teamAverages: {
+          avgBillableUtilizationPct: 60,
+          avgPlannedUtilizationPct: 0,
+          avgActualUtilizationPct: 0,
+        },
+      },
+      {
+        teamAverages: {
+          avgBillableUtilizationPct: 64,
+          avgPlannedUtilizationPct: 0,
+          avgActualUtilizationPct: 0,
+        },
+      },
+      {
+        teamAverages: {
+          avgBillableUtilizationPct: 66,
+          avgPlannedUtilizationPct: 0,
+          avgActualUtilizationPct: 0,
+        },
+      },
+      {
+        teamAverages: {
+          avgBillableUtilizationPct: 68,
+          avgPlannedUtilizationPct: 0,
+          avgActualUtilizationPct: 0,
+        },
+      },
     ]);
 
     render(<TeamUtilizationWidget slug="acme" />);

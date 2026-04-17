@@ -26,8 +26,7 @@ const mockInstallPackAction = vi.fn();
 const mockUninstallPackAction = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/settings/packs/actions", () => ({
   fetchCatalogAction: (...args: unknown[]) => mockFetchCatalogAction(...args),
-  fetchUninstallCheckAction: (...args: unknown[]) =>
-    mockFetchUninstallCheckAction(...args),
+  fetchUninstallCheckAction: (...args: unknown[]) => mockFetchUninstallCheckAction(...args),
   installPackAction: (...args: unknown[]) => mockInstallPackAction(...args),
   uninstallPackAction: (...args: unknown[]) => mockUninstallPackAction(...args),
 }));
@@ -242,9 +241,7 @@ describe("PacksPage — Empty states", () => {
     // Available tab empty state
     await waitFor(() => {
       expect(screen.getByText("No packs available")).toBeInTheDocument();
-      expect(
-        screen.getByText(/Toggle 'Show all packs' to browse everything/)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/Toggle 'Show all packs' to browse everything/)).toBeInTheDocument();
     });
 
     // Switch to Installed tab
@@ -252,8 +249,6 @@ describe("PacksPage — Empty states", () => {
     await user.click(installedTab);
 
     expect(screen.getByText("No packs installed")).toBeInTheDocument();
-    expect(
-      screen.getByText(/Browse the Available tab/)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/Browse the Available tab/)).toBeInTheDocument();
   });
 });

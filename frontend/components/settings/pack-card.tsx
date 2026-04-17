@@ -5,12 +5,7 @@ import { Check, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -71,8 +66,7 @@ export function PackCard({
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const itemLabel =
-    pack.type === "DOCUMENT_TEMPLATE" ? "templates" : "rules";
+  const itemLabel = pack.type === "DOCUMENT_TEMPLATE" ? "templates" : "rules";
 
   async function handleUninstallConfirm() {
     if (!onUninstall) return;
@@ -93,27 +87,19 @@ export function PackCard({
         <CardContent className="space-y-3 p-4">
           <div className="flex items-start justify-between gap-2">
             <div className="space-y-1">
-              <h3 className="font-semibold text-slate-950 dark:text-slate-50">
-                {pack.name}
-              </h3>
-              <p className="text-xs text-slate-500 dark:text-slate-400">
-                v{pack.version}
-              </p>
+              <h3 className="font-semibold text-slate-950 dark:text-slate-50">{pack.name}</h3>
+              <p className="text-xs text-slate-500 dark:text-slate-400">v{pack.version}</p>
             </div>
           </div>
 
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            {pack.description}
-          </p>
+          <p className="text-sm text-slate-600 dark:text-slate-400">{pack.description}</p>
 
           <div className="flex flex-wrap gap-1.5">
             <Badge variant="secondary">
               {pack.itemCount} {itemLabel}
             </Badge>
             <Badge variant="outline">{formatPackType(pack.type)}</Badge>
-            <Badge variant="outline">
-              {formatProfileAffinity(pack.verticalProfile)}
-            </Badge>
+            <Badge variant="outline">{formatProfileAffinity(pack.verticalProfile)}</Badge>
           </div>
 
           {variant === "available" && (
@@ -129,9 +115,7 @@ export function PackCard({
                   onClick={() => onInstall?.(pack.packId)}
                   disabled={isInstalling || !onInstall}
                 >
-                  {isInstalling && (
-                    <Loader2 className="mr-1.5 size-3.5 animate-spin" />
-                  )}
+                  {isInstalling && <Loader2 className="mr-1.5 size-3.5 animate-spin" />}
                   Install
                 </Button>
               )}
@@ -141,8 +125,7 @@ export function PackCard({
           {variant === "installed" && (
             <div className="flex items-center justify-between pt-1">
               <p className="text-xs text-slate-500 dark:text-slate-400">
-                Installed on{" "}
-                {pack.installedAt ? formatDate(pack.installedAt) : "unknown"}
+                Installed on {pack.installedAt ? formatDate(pack.installedAt) : "unknown"}
               </p>
               <TooltipProvider>
                 <Tooltip>
@@ -154,9 +137,7 @@ export function PackCard({
                         disabled={!canUninstall || isUninstalling || !onUninstall}
                         onClick={() => setDialogOpen(true)}
                       >
-                        {isUninstalling && (
-                          <Loader2 className="mr-1.5 size-3.5 animate-spin" />
-                        )}
+                        {isUninstalling && <Loader2 className="mr-1.5 size-3.5 animate-spin" />}
                         Uninstall
                       </Button>
                     </span>
@@ -178,19 +159,13 @@ export function PackCard({
           <AlertDialogHeader>
             <AlertDialogTitle>Uninstall Pack</AlertDialogTitle>
             <AlertDialogDescription>
-              This will remove {pack.itemCount} {itemLabel} created by this
-              pack. Only allowed because none have been used or edited. Continue?
+              This will remove {pack.itemCount} {itemLabel} created by this pack. Only allowed
+              because none have been used or edited. Continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isSubmitting}>
-              Cancel
-            </AlertDialogCancel>
-            <Button
-              variant="destructive"
-              onClick={handleUninstallConfirm}
-              disabled={isSubmitting}
-            >
+            <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
+            <Button variant="destructive" onClick={handleUninstallConfirm} disabled={isSubmitting}>
               {isSubmitting ? "Uninstalling..." : "Uninstall"}
             </Button>
           </AlertDialogFooter>

@@ -31,7 +31,12 @@ const LEGAL_TEMPLATE_NAME = "Power of Attorney";
 async function findTemplateByName(
   token: string,
   name: string
-): Promise<{ id: string; name: string; content: Record<string, unknown>; css: string | null } | null> {
+): Promise<{
+  id: string;
+  name: string;
+  content: Record<string, unknown>;
+  css: string | null;
+} | null> {
   const listRes = await fetch(`${BACKEND_URL}/api/templates`, {
     headers: { Authorization: `Bearer ${token}` },
   });
@@ -117,9 +122,9 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
     await installButton.click();
 
     // Wait for install to complete -- card should show "Installed" state
-    await expect(
-      packCard.getByRole("button", { name: "Installed" })
-    ).toBeVisible({ timeout: 15000 });
+    await expect(packCard.getByRole("button", { name: "Installed" })).toBeVisible({
+      timeout: 15000,
+    });
 
     // Verify toast
     await expect(page.getByText("Pack installed successfully.")).toBeVisible({ timeout: 5000 });
@@ -200,7 +205,7 @@ test.describe.serial("PACK-01: Pack Lifecycle", () => {
     await tooltipTrigger.hover();
 
     // Verify tooltip with blocking message appears
-    const tooltipContent = page.locator('[data-radix-popper-content-wrapper]');
+    const tooltipContent = page.locator("[data-radix-popper-content-wrapper]");
     await expect(tooltipContent).toBeVisible({ timeout: 3000 });
     await expect(tooltipContent).toContainText(/edited|modified/i);
 

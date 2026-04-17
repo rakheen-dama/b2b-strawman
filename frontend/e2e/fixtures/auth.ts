@@ -4,14 +4,27 @@ const MOCK_IDP_URL = process.env.MOCK_IDP_URL || "http://localhost:8090";
 
 type SeedUser = "alice" | "bob" | "carol";
 
-const USERS: Record<
-  SeedUser,
-  { userId: string; orgId: string; orgSlug: string; orgRole: string }
-> = {
-  alice: { userId: "user_e2e_alice", orgId: "org_e2e_test", orgSlug: "e2e-test-org", orgRole: "org:owner" },
-  bob: { userId: "user_e2e_bob", orgId: "org_e2e_test", orgSlug: "e2e-test-org", orgRole: "org:admin" },
-  carol: { userId: "user_e2e_carol", orgId: "org_e2e_test", orgSlug: "e2e-test-org", orgRole: "org:member" },
-};
+const USERS: Record<SeedUser, { userId: string; orgId: string; orgSlug: string; orgRole: string }> =
+  {
+    alice: {
+      userId: "user_e2e_alice",
+      orgId: "org_e2e_test",
+      orgSlug: "e2e-test-org",
+      orgRole: "org:owner",
+    },
+    bob: {
+      userId: "user_e2e_bob",
+      orgId: "org_e2e_test",
+      orgSlug: "e2e-test-org",
+      orgRole: "org:admin",
+    },
+    carol: {
+      userId: "user_e2e_carol",
+      orgId: "org_e2e_test",
+      orgSlug: "e2e-test-org",
+      orgRole: "org:member",
+    },
+  };
 
 /**
  * Get a raw API bearer token for the given seed user.

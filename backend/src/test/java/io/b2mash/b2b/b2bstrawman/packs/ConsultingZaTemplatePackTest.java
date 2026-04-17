@@ -294,11 +294,12 @@ class ConsultingZaTemplatePackTest {
                   // Build a context map by hand (no RetainerContextBuilder yet) mirroring the
                   // entity-to-template field mapping in the comment above, then render through
                   // TiptapRenderer to prove the keys actually resolve end-to-end.
+                  BigDecimal hoursUsed = new BigDecimal("7.25");
                   Map<String, Object> retainerCtx =
                       Map.of(
                           "periodStart", saved.getStartDate().toString(),
                           "periodEnd", saved.getEndDate().toString(),
-                          "hoursUsed", BigDecimal.ZERO,
+                          "hoursUsed", hoursUsed,
                           "hourBank", saved.getAllocatedHours());
                   Map<String, Object> ctx =
                       Map.of(
@@ -309,6 +310,7 @@ class ConsultingZaTemplatePackTest {
                   String html = tiptapRenderer.render(template.getContent(), ctx, Map.of(), null);
                   assertThat(html).contains(saved.getStartDate().toString());
                   assertThat(html).contains(saved.getEndDate().toString());
+                  assertThat(html).contains(hoursUsed.toPlainString());
                   assertThat(html).contains(saved.getAllocatedHours().toPlainString());
                 }));
   }

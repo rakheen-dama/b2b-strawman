@@ -1,5 +1,7 @@
 # Fix Spec: GAP-C-07 — Automations page gated behind disabled feature flag
 
+> **Shipped as PR #1055** (merge `7c64d3ee`), batched with GAP-C-04 into a single JSON change + `V97__enable_consulting_za_modules.sql` migration. Pre-implementation `V96` references below are spec notes; V97 is the actual module-enable backfill.
+
 ## Problem
 
 Day 0 checkpoint 0.51: Settings > Automations shows "Automation Rule Builder is not enabled. This feature is not enabled for your organization. An admin can enable it in Settings → Features." Even though `automation-consulting-za` pack installed 6 rules into the DB (verified via checkpoint 0.52), the UI hides them. Admin cannot see, edit, enable, or disable the pack-installed rules. A consulting-za tenant cannot actually manage their own automation rules without a manual feature-flag enable step.

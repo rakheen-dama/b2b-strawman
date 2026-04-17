@@ -1,5 +1,7 @@
 # Fix Spec: GAP-C-05 + GAP-C-06 — Seeded rates unreachable + cost_rates never seeded
 
+> **Shipped as PR #1054** (merge `2e080193`). Actual migration on this branch: `V96__backfill_consulting_za_rates.sql`. Subsequent work in this branch also adds `V98__member_default_rate_unique_indexes.sql` to close a concurrent-insert race in `MemberRateSeedingService` surfaced during code review. Any `V97` references below are pre-implementation spec notes; V96 is the rates backfill.
+
 ## Problem
 
 Combined root cause: two gaps, one mechanism.

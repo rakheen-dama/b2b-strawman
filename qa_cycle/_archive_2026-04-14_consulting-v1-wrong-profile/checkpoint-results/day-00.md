@@ -15,7 +15,7 @@
 | 0.2 | PASS | Navigated to /request-access via "Get Started" link. Form shows: Work Email, Full Name, Organisation Name, Country, Industry |
 | 0.3 | PASS | Form filled: Email=thandi@thornton-test.local, Name=Thandi Thornton, Org=Thornton & Associates, Country=South Africa, Industry=Accounting |
 | 0.4 | PASS | OTP step appeared: "Check Your Email" with verification code input, countdown timer, sent-to confirmation |
-| 0.5 | PASS | OTP 173346 retrieved from Mailpit. Subject: "Your Kazi verification code" |
+| 0.5 | PASS | OTP [REDACTED 6-digit code] retrieved from Mailpit. Subject: "Your Kazi verification code" |
 | 0.6 | PASS | OTP verified. Confirmation: "Request Submitted" with "Your access request has been submitted for review" |
 
 ## Phase B: Platform admin approval
@@ -37,7 +37,7 @@
 | ID | Result | Evidence |
 |----|--------|----------|
 | 0.14 | PASS | Keycloak registration form loaded with email pre-filled (bob@thornton-test.local). Note: initial attempt hit "already authenticated as padmin" error; required Keycloak logout first. |
-| 0.15 | PASS | Thandi registered: First=Thandi, Last=Thornton, Password=SecureP@ss1. User confirmed in Keycloak admin API with password credential. |
+| 0.15 | PASS | Thandi registered: First=Thandi, Last=Thornton, Password=[REDACTED local-dev password]. User confirmed in Keycloak admin API with password credential. |
 | 0.16 | PASS | Redirected to /org/thornton-associates/dashboard |
 | 0.17 | PASS | Sidebar shows org name "Thornton & Associates" |
 | 0.18 | PASS | Sidebar shows accounting terminology: "ENGAGEMENTS" section (not "Projects"), "CLIENTS" section (not "Customers"). Vertical profile active. |
@@ -51,7 +51,7 @@
 | 0.21 | PASS | Thandi listed as Owner. Invite form shows Email+Role+Send Invite, "1 of 10 members". NO "Upgrade to Pro" or tier gate visible. |
 | 0.22 | PASS | Bob invited as Admin. Success: "Invitation sent to bob@thornton-test.local." Counter: "2 of 10 members" |
 | 0.23 | PASS | Carol invited as Member. Success: "Invitation sent to carol@thornton-test.local." Counter: "3 of 10 members" |
-| 0.24 | PASS | Both registered via invite links: Bob (First=Bob, Last=Ndlovu, SecureP@ss2), Carol (First=Carol, Last=Mokoena, SecureP@ss3). Both redirected to dashboard. Keycloak admin API confirms 4 users total (Thandi, Bob, Carol, padmin). |
+| 0.24 | PASS | Both registered via invite links: Bob (First=Bob, Last=Ndlovu, [REDACTED password]), Carol (First=Carol, Last=Mokoena, [REDACTED password]). Both redirected to dashboard. Keycloak admin API confirms 4 users total (Thandi, Bob, Carol, padmin). |
 
 **Phase A-D Summary Checkpoints:**
 - [x] Org created via real access request -> approval -> Keycloak registration

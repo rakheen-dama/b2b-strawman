@@ -583,6 +583,11 @@ class PrerequisiteControllerTest {
         .andExpect(
             jsonPath(
                     "$.groups[?(@.slug == 'intake_group_prc')].fields[?(@.slug =="
+                        + " 'intake_test_field_prc')].slug")
+                .value(org.hamcrest.Matchers.hasItem("intake_test_field_prc")))
+        .andExpect(
+            jsonPath(
+                    "$.groups[?(@.slug == 'intake_group_prc')].fields[?(@.slug =="
                         + " 'intake_test_field_prc')].visibilityCondition")
                 .value(org.hamcrest.Matchers.everyItem(org.hamcrest.Matchers.nullValue())));
   }

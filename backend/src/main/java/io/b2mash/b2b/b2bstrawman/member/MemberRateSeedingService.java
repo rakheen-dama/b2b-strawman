@@ -14,7 +14,9 @@ import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Seeds per-member billing and cost rates from the tenant's vertical profile's {@code
@@ -51,6 +53,7 @@ public class MemberRateSeedingService {
    * rateCardDefaults}, no role entry matches the member's role slug, or rates already exist for the
    * member.
    */
+  @Transactional
   public void seedDefaultRatesIfMissing(Member member) {
     if (member == null || member.getId() == null) {
       return;
@@ -84,13 +87,12 @@ public class MemberRateSeedingService {
     }
 
     Optional<BigDecimal> billingRate = findRateForRole(defaults.billingRates(), roleSlug);
-    if (billingRate.isPresent()) {
-      boolean alreadyBilling =
-          !billingRateRepository.findMemberDefaultEarliest(member.getId()).isEmpty();
-      if (!alreadyBilling) {
-        var rate =
-            new BillingRate(
-                member.getId(), null, null, currency, billingRate.get(), LocalDate.now(), null);
+    if (billingRate.isPresent()
+        && billingRateRepository.findMemberDefaultEarliest(member.getId()).isEmpty()) {
+      var rate =
+          new BillingRate(
+              member.getId(), null, null, currency, billingRate.get(), LocalDate.now(), null);
+      try {
         billingRateRepository.save(rate);
         log.info(
             "Seeded MEMBER_DEFAULT billing rate {} {} for member {} (role={}) from profile {}",
@@ -99,14 +101,17 @@ public class MemberRateSeedingService {
             member.getId(),
             roleSlug,
             profileId);
+      } catch (DataIntegrityViolationException concurrentInsert) {
+        log.debug(
+            "Concurrent insert won billing-rate seed race for member {} — idempotent no-op",
+            member.getId());
       }
     }
 
     Optional<BigDecimal> costRate = findRateForRole(defaults.costRates(), roleSlug);
-    if (costRate.isPresent()) {
-      boolean alreadyCost = !costRateRepository.findByMemberId(member.getId()).isEmpty();
-      if (!alreadyCost) {
-        var rate = new CostRate(member.getId(), currency, costRate.get(), LocalDate.now(), null);
+    if (costRate.isPresent() && costRateRepository.findByMemberId(member.getId()).isEmpty()) {
+      var rate = new CostRate(member.getId(), currency, costRate.get(), LocalDate.now(), null);
+      try {
         costRateRepository.save(rate);
         log.info(
             "Seeded cost rate {} {} for member {} (role={}) from profile {}",
@@ -115,6 +120,10 @@ public class MemberRateSeedingService {
             member.getId(),
             roleSlug,
             profileId);
+      } catch (DataIntegrityViolationException concurrentInsert) {
+        log.debug(
+            "Concurrent insert won cost-rate seed race for member {} — idempotent no-op",
+            member.getId());
       }
     }
   }

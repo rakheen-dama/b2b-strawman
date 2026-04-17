@@ -1,5 +1,7 @@
 # Fix Spec: GAP-C-04 — Team Utilization widget 500s because module not enabled
 
+> **Shipped as PR #1055** (merge `7c64d3ee`). Actual migration on this branch: `V97__enable_consulting_za_modules.sql` (batched with GAP-C-07's `automation_builder` enablement into the same migration + JSON change). Any `V96` references below are pre-implementation spec notes; see V97 for what actually ran. `enabledModules` in `vertical-profiles/consulting-za.json` is now `["resource_planning", "automation_builder"]`.
+
 ## Problem
 
 `TeamUtilizationWidget` renders "Unable to load utilization data." on every dashboard render for every user on the consulting-za tenant (Zolani/Bob/Carol). Observed during Day 0 checkpoint 0.17 and re-confirmed on Day 1–7 after 9.0h of time was logged (data present ≠ widget works). Each dashboard render generates one 500 in the browser console for the utilization server action. This will be especially painful by Day 75 when the widget is the wow moment of the scenario.

@@ -22,7 +22,9 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -504,6 +506,85 @@ class PrerequisiteControllerTest {
                     }
                     """))
         .andExpect(status().isBadRequest());
+  }
+
+  // --- GAP-C-09(c): visibilityCondition preserved by intake endpoint ---
+
+  @Test
+  void intakeEndpoint_preservesVisibilityCondition() throws Exception {
+    // Seed an auto-apply group with a field that defines a visibilityCondition,
+    // mirroring the consulting-za-customer.json msa_start_date → msa_signed dependency.
+    runInTenant(
+        tenantSchema,
+        ORG_ID,
+        memberIdOwner,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var dependent =
+                      new FieldDefinition(
+                          EntityType.CUSTOMER,
+                          "MSA Start Date PRC",
+                          "msa_start_date_prc",
+                          FieldType.DATE);
+                  Map<String, Object> condition = new HashMap<>();
+                  condition.put("dependsOnSlug", "msa_signed_prc");
+                  condition.put("operator", "eq");
+                  condition.put("value", true);
+                  dependent.setVisibilityCondition(condition);
+                  dependent = fieldDefinitionRepository.save(dependent);
+
+                  var group =
+                      new FieldGroup(
+                          EntityType.CUSTOMER, "Visibility Group PRC", "visibility_group_prc");
+                  group.setAutoApply(true);
+                  group.setSortOrder(3);
+                  group = fieldGroupRepository.save(group);
+
+                  var gm = new FieldGroupMember(group.getId(), dependent.getId(), 1);
+                  fieldGroupMemberRepository.save(gm);
+                }));
+
+    mockMvc
+        .perform(
+            get("/api/field-definitions/intake")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
+                .param("entityType", "CUSTOMER"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath(
+                    "$.groups[?(@.slug == 'visibility_group_prc')]"
+                        + ".fields[?(@.slug == 'msa_start_date_prc')].visibilityCondition"
+                        + ".dependsOnSlug")
+                .value("msa_signed_prc"))
+        .andExpect(
+            jsonPath(
+                    "$.groups[?(@.slug == 'visibility_group_prc')]"
+                        + ".fields[?(@.slug == 'msa_start_date_prc')].visibilityCondition"
+                        + ".operator")
+                .value("eq"))
+        .andExpect(
+            jsonPath(
+                    "$.groups[?(@.slug == 'visibility_group_prc')]"
+                        + ".fields[?(@.slug == 'msa_start_date_prc')].visibilityCondition.value")
+                .value(true));
+  }
+
+  @Test
+  void intakeEndpoint_returnsNullVisibilityCondition_whenNotDefined() throws Exception {
+    // The setup-created "intake_test_field_prc" has no visibilityCondition;
+    // assert the field is returned (regression guard) and the condition is absent/null.
+    mockMvc
+        .perform(
+            get("/api/field-definitions/intake")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prc_owner"))
+                .param("entityType", "CUSTOMER"))
+        .andExpect(status().isOk())
+        .andExpect(
+            jsonPath(
+                    "$.groups[?(@.slug == 'intake_group_prc')].fields[?(@.slug =="
+                        + " 'intake_test_field_prc')].visibilityCondition")
+                .value(org.hamcrest.Matchers.everyItem(org.hamcrest.Matchers.nullValue())));
   }
 
   // --- Helper methods ---

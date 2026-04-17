@@ -547,6 +547,10 @@ public class TaskService {
             .trackAsString("estimatedHours", oldEstimatedHours, estimatedHours)
             .buildMutable();
 
+    // Always include the current task title so the activity feed can identify the task,
+    // even when only non-title fields (assignee, status, priority) changed. When title WAS
+    // changed, the delta map {from, to} from track(...) above is preserved (putIfAbsent).
+    details.putIfAbsent("title", task.getTitle());
     details.put("project_id", task.getProjectId().toString());
 
     auditService.log(

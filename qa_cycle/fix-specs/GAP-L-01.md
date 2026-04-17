@@ -202,3 +202,39 @@ realm-scoped SMTP-template attribute or the `frontendBaseUrl` equivalent used by
 version mismatch, pnpm issues), Phase 3 is OPTIONAL — Phases 1+2 are sufficient to unblock QA.
 Dev agent should verify Phase 1+2 works first, then attempt Phase 3. If Phase 3 stalls, defer it
 and file a follow-up GAP.
+
+## Retry (attempt 2) — allow-list miss discovered 2026-04-17 20:40 SAST
+
+**QA repro result after PR #1059 merge + restart**: the bounce page mechanics work, but the
+`kcUrl` allow-list in `frontend/app/accept-invite/validate.ts` only accepted URLs starting with
+`http://localhost:8180/realms/docteams/login-actions/`. Real invite emails from the
+`KeycloakProvisioningClient.inviteUser()` call (which delegates to Keycloak 26.5's `invite-user`
+endpoint) produce URLs starting with
+`http://localhost:8180/realms/docteams/protocol/openid-connect/registrations?…`. The validator
+rejects them as "Invalid invitation link" — a regression vs. pre-fix (pre-fix: collision error;
+post-fix: hard-block). Evidence:
+`qa_cycle/checkpoint-results/day-00-resume-0.19-bounce-rejects-registrations-url.png`.
+
+**Retry fix** (attempt 2, S ~15 min):
+
+1. Open `frontend/app/accept-invite/validate.ts`.
+2. Extend the `ALLOWED_KC_URL_PREFIXES` array (or equivalent constant) with a second entry:
+   `"http://localhost:8180/realms/docteams/protocol/openid-connect/registrations?"`. Keep the
+   existing `/login-actions/` prefix — both shapes are legitimate KC invite URL formats (they
+   differ by KC 26 feature flag / invite type, and we want both to work).
+3. Preserve the `startsWith` strict matching — no regex, no substring match. Each allow-listed
+   prefix is a literal string prefix.
+4. Add a unit test file `frontend/app/accept-invite/validate.test.ts` (or collocated `.test.tsx`
+   following existing conventions — check neighboring tests first) covering:
+   - `/login-actions/action-token?key=…` → accepted
+   - `/protocol/openid-connect/registrations?client_id=…` → accepted
+   - `http://localhost:8180/other/path` → rejected
+   - `http://evil.com/…` → rejected
+   - Empty / missing → rejected
+5. Build + lint + test must all be green.
+
+**Verification**: re-run Day 0 from 0.19 — padmin re-issues Thandi invite, Thandi clicks email link
+in same-profile tab, bounce routes through KC logout, lands on KC registration form cleanly with
+NO "Invalid invitation link" AND NO "already authenticated" error. Token NOT consumed on retry.
+
+**Do NOT touch** in this retry PR: Info.tsx, Register.tsx (those are GAP-L-02/L-03 scope).

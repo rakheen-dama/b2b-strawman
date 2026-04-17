@@ -5,7 +5,7 @@
 - **QA Position**: Day 0 — 0.1 (not yet started)
 - **Cycle**: 1
 - **Dev Stack**: Unknown — check via svc.sh status
-- **NEEDS_REBUILD**: false (will be true after GAP-C-01 fix merges)
+- **NEEDS_REBUILD**: true (GAP-C-01 fix merged — backend must restart to pick up the mapping)
 - **Branch**: `bugfix_cycle_consulting_2026-04-17`
 - **Scenario**: `qa/testplan/demos/consulting-agency-90day-keycloak.md`
 - **Focus**: Fresh tenant run — full onboarding through 90-day consulting agency lifecycle. Re-run after v1 used wrong vertical profile.
@@ -35,7 +35,7 @@ These are architectural gaps expected to recur on this run — log fresh GAP IDs
 
 | GAP_ID | Day / Checkpoint | Severity | Status | Summary | Owner | Retries |
 |--------|------------------|----------|--------|---------|-------|---------|
-| GAP-C-01 | D0 / 0.10 | HIGH | SPEC_READY | `INDUSTRY_TO_PROFILE` missing Marketing/Consulting → consulting-za entries | Dev | 0 |
+| GAP-C-01 | D0 / 0.10 | HIGH | FIXED | `INDUSTRY_TO_PROFILE` missing Marketing/Consulting → consulting-za entries | Dev | 0 |
 
 ## Legend
 
@@ -47,3 +47,4 @@ These are architectural gaps expected to recur on this run — log fresh GAP IDs
 
 - 2026-04-17 — Cycle initialized. V1 (2026-04-14) archived to `_archive_2026-04-14_consulting-v1-wrong-profile/` — that run hit the industry → profile mapping bug and silently fell back to `consulting-generic`, invalidating 6 downstream profile-content gaps.
 - 2026-04-17 — Orchestrator pre-diagnosed GAP-C-01 root cause: `AccessRequestApprovalService.java:29-32` has `INDUSTRY_TO_PROFILE` map with only "Accounting" and "Legal Services". "Marketing" and "Consulting" resolve to null. Fix spec written to `qa_cycle/fix-specs/GAP-C-01.md` directly (skipping Product triage since evidence is unambiguous).
+- 2026-04-17 — Dev Agent: GAP-C-01 fixed via PR #1053, merged. Backend needs restart to pick up mapping change.

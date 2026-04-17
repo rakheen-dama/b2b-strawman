@@ -16,7 +16,7 @@
 | 481 | Rate Pack + Project Template Pack | Backend | 480 | M | 481A, 481B | **Done** (PR #1048) |
 | 482 | Automation Pack + Document Template Pack | Backend | 481 | L | 482A, 482B | **Done** (PR #1049) |
 | 483 | Clause Pack + Request Pack | Backend | 482 | M | 483A, 483B | **Done** (PR #1050) |
-| 484 | Terminology Key + Team Utilization Widget | Frontend | 480 | M | 484A, 484B | |
+| 484 | Terminology Key + Team Utilization Widget | Frontend | 480 | M | 484A, 484B | **Done** (PR #1051) |
 | 485 | QA Lifecycle Retarget + Screenshot Baselines | E2E/Process | 480–484 | M | 485A, 485B | |
 
 Slice count: **10 slices across 6 epics**. Every slice pairs pack JSON (or frontend code) with the integration/component test that exercises it.
@@ -121,14 +121,14 @@ PHASE 53 (dashboard primitives), generic-onboarding compliance pack
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
 | 1a (parallel) | 481 | 481A | Rate pack JSON (8 roles) + seeder integration test — **Done** (PR #1048) |
-| 1b (parallel) | 484 | 484A | Terminology key + useProfile() hook + unit tests |
+| 1b (parallel) | 484 | 484A | Terminology key + useProfile() hook + unit tests — **Done** (PR #1051) |
 
 ### Stage 2: Project Template Pack + Widget (parallel)
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
 | 2a | 481 | 481B | Project template pack (5 templates) + seeder integration test — **Done** (PR #1048) |
-| 2b (parallel) | 484 | 484B | TeamUtilizationWidget + dashboard integration + component tests |
+| 2b (parallel) | 484 | 484B | TeamUtilizationWidget + dashboard integration + component tests — **Done** (PR #1051) |
 
 ### Stage 3: Automation + Document Templates (sequential, same epic)
 
@@ -441,8 +441,8 @@ A realistic day-by-day cadence: Epic 480 sets foundations day 1–2; Epic 481 + 
 
 | Slice | Tasks | Summary |
 |-------|-------|---------|
-| **484A** | 484.1–484.4 | Add `en-ZA-consulting` entry to `frontend/lib/terminology-map.ts` (3 overrides × 4 case variants = 12 keys). Add `useProfile()` hook in `frontend/lib/hooks/useProfile.ts` reading `OrgProfileProvider` context. Update `frontend/__tests__/terminology.test.tsx` and `terminology-integration.test.tsx` with `en-ZA-consulting` assertions. |
-| **484B** | 484.5–484.10 | `TeamUtilizationWidget.tsx` component (profile-gated to `consulting-za`, 4-week trend via 4 sequential `/api/utilization/team` calls, sparkline, KPI card, CTA link). Dashboard page integration. Component tests (profile gating, loading, empty, error, happy path). |
+| **484A** | 484.1–484.4 | Add `en-ZA-consulting` entry to `frontend/lib/terminology-map.ts` (3 overrides × 4 case variants = 12 keys). Add `useProfile()` hook in `frontend/lib/hooks/useProfile.ts` reading `OrgProfileProvider` context. Update `frontend/__tests__/terminology.test.tsx` and `terminology-integration.test.tsx` with `en-ZA-consulting` assertions. — **Done** (PR #1051) |
+| **484B** | 484.5–484.10 | `TeamUtilizationWidget.tsx` component (profile-gated to `consulting-za`, 4-week trend via 4 sequential `/api/utilization/team` calls, sparkline, KPI card, CTA link). Dashboard page integration. Component tests (profile gating, loading, empty, error, happy path). — **Done** (PR #1051) |
 
 ### Tasks
 

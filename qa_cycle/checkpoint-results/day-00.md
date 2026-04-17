@@ -141,3 +141,69 @@ Tenant provisioning itself succeeded on the backend: dedicated schema `tenant_50
 ## Next
 
 **Do not advance to Day 1 until GAP-L-01 is resolved.** Day 0 remaining scope (0.23–0.68) is blocked. Once resolved, resume from 0.23 (Thandi lands on dashboard → verify sidebar terminology "Matters/Clients", brand colour not yet set → default state).
+
+---
+
+## Resumed at 0.19 (post GAP-L-01 fix) — 2026-04-17 18:35 SAST
+
+**Outcome**: **GAP-L-01 REOPENED**. The PR #1059 fix is partially working (bounce page wraps the invite URL and calls KC `end_session_endpoint` correctly, session-collision resolved) but has a fundamental allow-list mismatch: the bounce page validator only accepts `kcUrl` values starting with `http://localhost:8180/realms/docteams/login-actions/`, but the real Keycloak 26.5 `invite-user` endpoint (used by both the access-request approval flow via `KeycloakProvisioningClient.inviteUser()` and by the admin API for re-invites) emits URLs starting with `http://localhost:8180/realms/docteams/protocol/openid-connect/registrations`. The validator rejects every real-world invite URL with "Invalid invitation link". **NO invite can complete end-to-end on this fix.**
+
+### Timeline
+
+1. **18:31 SAST** — Fresh Chrome session launched; navigated to `/platform-admin/access-requests`, logged in as padmin (email 2-step form, same as prior run). Pending tab empty (Mathebula already approved in prior run). OBS-L-03 (Radix Tabs) reproduces — can't switch to Approved tab via URL param or click.
+2. **18:32 SAST — KC state cleanup** (per "Original token consumed pre-fix; padmin re-issued invite at {time} per recovery protocol" guidance): original Thandi user existed in KC with `emailVerified=false` and no `requiredActions` (the prior 16:55 "Update Your Account" re-invite via admin-api exec-actions-email consumed the ORGIVT token but didn't reset membership). Deleted Thandi from the Mathebula org via `DELETE /admin/realms/docteams/organizations/{orgId}/members/{userId}` (MANAGED member → cascade-deletes the user).
+3. **18:32:27 SAST — Fresh invite #1** (`invite-existing-user` before user-delete): HTTP 204 from `/admin/realms/docteams/organizations/{orgId}/members/invite-existing-user`. Email landed as `PJQzyHjUpwc8AeerCvyZii` with link `http://localhost:3000/accept-invite?kcUrl=http%3A%2F%2Flocalhost%3A8180%2Frealms%2Fdocteams%2Flogin-actions%2Faction-token%3Fkey%3D...` (ORGIVT via `/login-actions/action-token`). **Bounce fix confirmed in email template** — raw KC URL is now URL-encoded and wrapped with `accept-invite?kcUrl=`.
+4. **18:33 SAST — First bounce test (valid-allowlist path)**: Clicked invite link → landed on `/accept-invite` bounce page → auto-redirected to KC's `/protocol/openid-connect/logout` with `post_logout_redirect_uri=/accept-invite/continue?kcUrl=...`. KC required manual-click logout confirmation (no `id_token_hint` on logout request means KC can't skip the confirm step). Clicked Logout → bounced to `/accept-invite/continue` → auto-redirected to the original action-token URL. **No session-collision error** — KC proceeded to the action-token consumer, which returned `expiredActionMessage` with body "You are already a member of the Mathebula & Partners organization." This is correct KC behaviour (Thandi already existed as MANAGED org member); proves the bounce works for `/login-actions/` URLs.
+5. **18:34 SAST — Clean state, then fresh invite #2**: `DELETE FROM keycloak.org_invitation WHERE email LIKE '%mathebula%'` (1 row — clear residual pending-invite state); then `POST /invite-user?email=thandi@mathebula-test.local&firstName=Thandi&lastName=Mathebula` → HTTP 204.
+6. **18:34:40 SAST — Fresh invite email** (`XaPTzqYfESLrWFq2MEwNxu`) with link `http://localhost:3000/accept-invite?kcUrl=http%3A%2F%2Flocalhost%3A8180%2Frealms%2Fdocteams%2Fprotocol%2Fopenid-connect%2Fregistrations%3Fresponse_type%3Dcode%26client_id%3Daccount%26token%3D...`. Note the URL path: **`/protocol/openid-connect/registrations`**, not `/login-actions/...`. This is the canonical invite-new-user URL Keycloak 26.5 produces.
+7. **18:35 SAST — Second bounce test (registrations path — the real-world path)**: Clicked the link → `/accept-invite` page rendered **"Invalid invitation link"** and stopped. Root cause: `frontend/app/accept-invite/validate.ts` allow-list is only `["http://localhost:8180/realms/docteams/login-actions/"]`; the `/protocol/openid-connect/registrations` URL doesn't match `startsWith` and is rejected.
+
+### Evidence
+
+- `day-00-resume-0.19-bounce-member-already.png` — Successful bounce flow (action-token URL, allow-listed) yielded KC error "You are already a member…" — bounce mechanics are correct.
+- `day-00-resume-0.19-bounce-rejects-registrations-url.png` — Fresh `/protocol/openid-connect/registrations` URL rejected by validator; user sees "Invalid invitation link". **This is what every real invite recipient will see.**
+
+### Root cause (actionable)
+
+Two invite URL shapes exist in Keycloak 26.5's org-invite API:
+
+| Admin endpoint | URL shape produced | Used by |
+|---|---|---|
+| `POST /organizations/{id}/members/invite-user` (new user) | `http://localhost:8180/realms/docteams/protocol/openid-connect/registrations?response_type=code&client_id=account&token=...` | Backend `KeycloakProvisioningClient.inviteUser()` — the real approval flow |
+| `POST /organizations/{id}/members/invite-existing-user` | `http://localhost:8180/realms/docteams/login-actions/action-token?key=...` | Only if user already exists in KC |
+
+Since the access-request approval flow (the only real user-facing invitation path) always calls `invite-user` for a brand-new user, **100% of production invites use the `/registrations` path**. The fix's allow-list covers only the `/login-actions/` path, which is never emitted by the real flow. Net effect: the fix breaks all invite-email clicks (was: session-collision; now: "Invalid invitation link") — a **regression in user experience** even though the failure mode changed.
+
+### Fix proposal
+
+Extend `frontend/app/accept-invite/validate.ts` allow-list to include the Keycloak 26 org-invite registrations path:
+
+```ts
+const ALLOWED_KC_URL_PREFIXES: readonly string[] = [
+  "http://localhost:8180/realms/docteams/login-actions/",
+  "http://localhost:8180/realms/docteams/protocol/openid-connect/registrations?",
+  // For robustness, also consider /auth (if KC ever emits one for a logged-in existing user):
+  // "http://localhost:8180/realms/docteams/protocol/openid-connect/auth?",
+];
+```
+
+Keep `startsWith` semantics. The trailing `?` on the registrations prefix ensures the path is exact (not a namespace-like match). Verify with both URL shapes end-to-end before marking VERIFIED.
+
+Add a unit test in `frontend/app/accept-invite/validate.test.ts` that exercises each real-world URL shape.
+
+### Checkpoint results (this resume)
+
+| ID | Result | Note |
+|---|---|---|
+| 0.19 (re-run, valid-allowlist path) | PASS (bounce mechanics) | `/login-actions/action-token` kcUrl bounced through KC logout back to original URL without session-collision |
+| 0.19 (re-run, real `/registrations` path) | **FAIL** | Bounce page rejects the URL ("Invalid invitation link"); user cannot proceed — regression vs pre-fix (pre-fix was session-collision; post-fix is hard-block) |
+| 0.20–0.68 | NOT EXECUTED | Blocked on GAP-L-01 reopen |
+
+### Updated gap
+
+- **GAP-L-01 REOPENED** (HIGH, Dev): PR #1059 bounce-page fix is incomplete. The allow-list `frontend/app/accept-invite/validate.ts#ALLOWED_KC_URL_PREFIXES` only accepts `http://localhost:8180/realms/docteams/login-actions/`, but the real invite URLs emitted by Keycloak 26.5's `POST /organizations/{id}/members/invite-user` endpoint (which the backend uses in `KeycloakProvisioningClient.inviteUser()`) start with `http://localhost:8180/realms/docteams/protocol/openid-connect/registrations`. Result: every real invite email click lands on "Invalid invitation link". Fix mechanics are otherwise correct (bounce → KC logout → continue → original URL chain works when allow-list matches). Proposal above.
+- **OBS-L-04** (LOW, Product/UX): Keycloak `end_session_endpoint` requires manual user confirmation ("Do you want to log out?" with Logout button) because the bounce doesn't include `id_token_hint` (frontend doesn't have it). For first-time invite recipients (no existing KC session at all) this page renders anyway because KC can't distinguish "no session" from "unconfirmed logout". Adds one extra click for every invite recipient. Consider passing a dummy/empty `id_token_hint` or a KC-side config to skip the confirmation when no session exists.
+
+### Next
+
+Hand back to Dev Agent for GAP-L-01 REOPEN fix. Do NOT advance Day 0 or Day 1 until fix ships. Checkpoints 0.19–0.68 remain blocked.

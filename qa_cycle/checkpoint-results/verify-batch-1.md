@@ -58,3 +58,43 @@ Summary: L-02, L-03 fully pass on Keycloak theme side (independent of Next.js bu
   1. **Host `pnpm install` was skipped** — the `@formatjs/intl-numberformat` package is declared in `package.json` but missing from `node_modules`. Infra should run `pnpm install` in `frontend/` before the next frontend restart. (If the goal is "no manual pnpm install", add it to the `svc.sh start frontend` path as a pre-start step when `package.json` is newer than `node_modules/.package-lock.json`.)
   2. **`lib/intl-polyfill.ts` imports `de.js`** — the dev spec explicitly said "omitted en-US/de-DE data since they inherit from parent root locales", but the file as committed still includes `import "@formatjs/intl-numberformat/locale-data/de.js";` (line 22). Either the file must drop this line (preferred, matches spec) OR the file must not import de.js unless the package actually ships it at that subpath. The fix is a one-line deletion.
 - The cycle is **NOT** ready to merge until L-12 is truly green — it blocks every authenticated page end-to-end, not merely a single `/profitability` hydration warning.
+
+## Re-verification of L-12 (batch 1.1)
+
+Run: 2026-04-18 00:32 SAST
+Result: **VERIFIED** — L-12 is now fully closed.
+
+### Method
+
+1. Confirmed frontend HTTP 200 on `http://localhost:3000/` (orchestrator had already run `pnpm install` and restarted the frontend at 00:25 SAST; node_modules now has `@formatjs/intl-numberformat/locale-data/`).
+2. Navigated to `/org/mathebula-partners/profitability` in a fresh Playwright session → redirected to Keycloak login as expected.
+3. Signed in as Thandi (Owner) — `thandi@mathebula-test.local` / `SecureP@ss1` — through the real KC OIDC flow (no mock auth).
+4. Landed on `/org/mathebula-partners/dashboard`, then navigated directly to `/org/mathebula-partners/profitability`.
+5. Waited 2s for hydration, took accessibility snapshot, collected console messages, took full-page screenshot.
+
+### Evidence
+
+- **No Next.js Build Error overlay** — page rendered the Profitability header plus three tables (Team Utilization, Matter Profitability, Customer Profitability) without any module-resolution errors.
+- **Console (all levels, full session)**:
+  ```
+  Total messages: 2 (Errors: 0, Warnings: 0)
+  [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8180/favicon.ico:0
+  ```
+  The only entry is a favicon 404 against the Keycloak origin (port 8180), completely unrelated to L-12. **Zero hydration mismatch warnings.** Zero React `Text content did not match` warnings. Zero application errors.
+- **Currency format on Matter Profitability table** — all values render in proper en-ZA format:
+  - Estate Late Peter Moroka → Revenue `R 18 750,00`, Cost `R 7 500,00`, Margin `R 11 250,00`
+  - Lerato Mthembu — RAF Claim → Revenue `R 5 000,00`, Cost `R 2 000,00`, Margin `R 3 000,00`
+  - Sipho Dlamini v. Standard Bank → Revenue `R 2 900,00`, Cost `R 1 150,00`, Margin `R 1 750,00`
+  Space thousands separator and comma decimal — the @formatjs polyfill is active. Customer Profitability table renders identically.
+- **Screenshot**: `verify-L-12-profitability-final.png` (full-page, shows all three tables with ZAR values).
+
+### Verdict
+
+L-12 meets all 3 PASS criteria:
+1. No build error overlay ✓
+2. No hydration mismatch warnings in console ✓
+3. Currency renders in en-ZA format (`R <space-separated>,<decimal>`) ✓
+
+**Status → VERIFIED.** All 5 user-requested fixes are now closed (L-02, L-03, L-05, L-12 fully VERIFIED; L-08 PARTIAL-VERIFIED per spec — code + DB confirmed, UI path was transitively blocked by L-12 and spec explicitly said not to reopen). The cycle is merge-ready for the user-requested scope.
+
+Root cause retrospective: no code change was needed. PR #1063 shipped a correct polyfill; the failure mode in batch 1 was purely that `pnpm install` hadn't been executed on the dev host after the merge, so the freshly-declared `@formatjs/intl-numberformat` dependency was not present in `node_modules`. The QA agent's secondary claim that `de.js` wasn't published in v9.x was mistaken (orchestrator confirmed v9 ships it). One learning to capture: post-merge Infra dispatch for `package.json`-changing PRs must always run `pnpm install` before restarting the frontend, not just restart.

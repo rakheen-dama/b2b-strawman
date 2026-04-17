@@ -1,0 +1,175 @@
+{
+  "packId": "automation-consulting-za",
+  "version": 1,
+  "verticalProfile": "consulting-za",
+  "templates": [
+    {
+      "slug": "consulting-za-budget-80",
+      "name": "Project Budget Alert (80%)",
+      "description": "Notifies the project owner when an agency project budget reaches 80% consumption so the team can review scope and burn before exceeding the budget.",
+      "category": "monitoring",
+      "triggerType": "BUDGET_THRESHOLD_REACHED",
+      "triggerConfig": { "thresholdPercent": 80 },
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "PROJECT_OWNER",
+            "title": "Budget alert: {{project.name}} at 80%",
+            "message": "The project {{project.name}} for {{customer.name}} has consumed 80% of its budget. Review hours logged and consider whether scope or budget needs adjustment."
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "slug": "consulting-za-budget-exceeded",
+      "name": "Project Budget Exceeded (100%)",
+      "description": "Notifies project owner and org admins when an agency project budget is exceeded so the team can pause work or request a change order.",
+      "category": "monitoring",
+      "triggerType": "BUDGET_THRESHOLD_REACHED",
+      "triggerConfig": { "thresholdPercent": 100 },
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "PROJECT_OWNER",
+            "title": "Budget exceeded: {{project.name}}",
+            "message": "The project {{project.name}} for {{customer.name}} has exceeded its budget. Pause non-essential work, raise a change order, or escalate to {{org.name}} leadership."
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        },
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "ORG_ADMINS",
+            "title": "Budget exceeded: {{project.name}}",
+            "message": "Project {{project.name}} ({{customer.name}}) has consumed 100% of its budget. Review with the project owner and decide whether to pause work or raise a change order."
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 1
+        }
+      ]
+    },
+    {
+      "slug": "consulting-za-retainer-closing",
+      "name": "Retainer Period Closing (3 days)",
+      "description": "Notifies the project owner three days before the retainer period end date so unused hours can be flagged, top-ups requested, or rollover decisions made.",
+      "category": "notifications",
+      "triggerType": "FIELD_DATE_APPROACHING",
+      "triggerConfig": {
+        "fieldName": "retainer.periodEnd",
+        "entityType": "PROJECT",
+        "daysBefore": 3
+      },
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "PROJECT_OWNER",
+            "title": "Retainer closing in 3 days: {{project.name}}",
+            "message": "The retainer period for {{project.name}} ({{customer.name}}) closes in 3 days. Reconcile hours, raise a top-up if needed, or apply the rollover policy."
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "slug": "consulting-za-task-blocked-7d",
+      "name": "Task Blocked (7 days idle)",
+      "description": "Notifies the project owner when a task has been idle for 7 days so blockers can be resolved quickly.",
+      "_comment": "Trigger gap (ADR-244): the spec calls for a TASK_STATUS_UNCHANGED trigger that does not yet exist in the TriggerType registry. This rule uses FIELD_DATE_APPROACHING on task.lastStatusChangeAt as the nearest-fit scheduled trigger and will be inert until a future phase introduces TASK_STATUS_UNCHANGED. The JSON loader ignores unknown fields so this comment ships with the pack but is not persisted on the AutomationRule.",
+      "category": "monitoring",
+      "triggerType": "FIELD_DATE_APPROACHING",
+      "triggerConfig": {
+        "fieldName": "task.lastStatusChangeAt",
+        "entityType": "TASK",
+        "daysBefore": -7
+      },
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "PROJECT_OWNER",
+            "title": "Task idle for 7 days: {{task.title}} ({{project.name}})",
+            "message": "The task {{task.title}} on {{project.name}} for {{customer.name}} has not changed status in 7 days. Check whether it is blocked, reassign it, or close it out."
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "slug": "consulting-za-unbilled-time-30d",
+      "name": "Unbilled Time Older Than 30 Days",
+      "description": "Notifies org admins when billable time remains unbilled for over 30 days so invoicing can be actioned promptly.",
+      "_comment": "Trigger gap (ADR-244): the spec calls for a dedicated TIME_ENTRY_AGE trigger that does not yet exist in the TriggerType registry. This rule uses FIELD_DATE_APPROACHING on timeEntry.workDate as the nearest-fit scheduled trigger and will be inert until a future phase introduces TIME_ENTRY_AGE. The JSON loader ignores unknown fields so this comment ships with the pack but is not persisted on the AutomationRule.",
+      "category": "billing",
+      "triggerType": "FIELD_DATE_APPROACHING",
+      "triggerConfig": {
+        "fieldName": "timeEntry.workDate",
+        "entityType": "TIME_ENTRY",
+        "daysBefore": -30
+      },
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "ORG_ADMINS",
+            "title": "Unbilled time over 30 days: {{customer.name}}",
+            "message": "Billable time on {{project.name}} for {{customer.name}} has been unbilled for more than 30 days. Review and roll the entries into a draft invoice from {{org.name}}."
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "slug": "consulting-za-proposal-followup-5d",
+      "name": "Proposal Follow-Up (5 days)",
+      "description": "Sends a follow-up email and reminder five days after a proposal is sent so the agency can chase a decision before the lead goes cold.",
+      "category": "sales",
+      "triggerType": "PROPOSAL_SENT",
+      "triggerConfig": {},
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "SEND_NOTIFICATION",
+          "actionConfig": {
+            "recipientType": "PROJECT_OWNER",
+            "title": "Follow up on proposal: {{customer.name}}",
+            "message": "It has been 5 days since the proposal for {{customer.name}} (R{{proposal.total}}) was sent. Check in with the client and update the opportunity status."
+          },
+          "delayDuration": 5,
+          "delayUnit": "DAYS",
+          "sortOrder": 0
+        },
+        {
+          "actionType": "SEND_EMAIL",
+          "actionConfig": {
+            "recipientType": "CUSTOMER_CONTACT",
+            "subject": "Following up on our proposal",
+            "body": "Dear {{customer.name}},\n\nWe wanted to check in on the proposal we sent through five days ago for the value of R{{proposal.total}}. Please let us know if you have any questions or if there is anything we can clarify to help you make a decision.\n\nKind regards,\n{{org.name}}"
+          },
+          "delayDuration": 5,
+          "delayUnit": "DAYS",
+          "sortOrder": 1
+        }
+      ]
+    }
+  ]
+}

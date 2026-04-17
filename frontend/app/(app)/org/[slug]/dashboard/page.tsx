@@ -10,6 +10,7 @@ import { RecentActivityWidget } from "@/components/dashboard/recent-activity-wid
 import { AdminStatsColumn } from "@/components/dashboard/admin-stats-column";
 import { MyWeekColumn } from "@/components/dashboard/my-week-column";
 import { DeadlineWidget } from "@/components/dashboard/deadline-widget";
+import { TeamUtilizationWidget } from "@/components/dashboard/team-utilization-widget";
 import { UpcomingCourtDatesWidget } from "@/components/legal/upcoming-court-dates-widget";
 import { ModuleGate } from "@/components/module-gate";
 import {
@@ -116,6 +117,9 @@ export default async function OrgDashboardPage({
         capacityData={capacityGrid}
         projectHealth={projectHealth ?? null}
       />
+
+      {/* Consulting-ZA profile-gated widget (self-gates via useProfile) */}
+      <TeamUtilizationWidget slug={slug} />
 
       {/* Hero two-panel layout */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-5">

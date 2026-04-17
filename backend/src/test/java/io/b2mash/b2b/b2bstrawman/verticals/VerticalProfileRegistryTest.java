@@ -66,6 +66,30 @@ class VerticalProfileRegistryTest {
   }
 
   @Test
+  void consultingZaProfileEnablesResourcePlanningAndAutomationBuilder() {
+    // GAP-C-04 + GAP-C-07: TeamUtilizationWidget depends on resource_planning and the
+    // Automations UI depends on automation_builder. Both modules ship enabled for consulting-za
+    // so fresh tenants can see utilization and manage automation rules out of the box.
+    var profile = registry.getProfile("consulting-za").orElseThrow();
+    assertThat(profile.enabledModules())
+        .containsExactlyInAnyOrder("resource_planning", "automation_builder");
+  }
+
+  @Test
+  void accountingZaProfileKeepsEnabledModulesEmpty() {
+    // Regression guard for GAP-C-04/C-07: the fix must NOT leak modules into accounting-za.
+    var profile = registry.getProfile("accounting-za").orElseThrow();
+    assertThat(profile.enabledModules()).isEmpty();
+  }
+
+  @Test
+  void consultingGenericProfileKeepsEnabledModulesEmpty() {
+    // Regression guard for GAP-C-04/C-07: the fix must stay scoped to consulting-za.
+    var profile = registry.getProfile("consulting-generic").orElseThrow();
+    assertThat(profile.enabledModules()).isEmpty();
+  }
+
+  @Test
   void consultingZaProfileExposesRateCardDefaults() {
     var profile = registry.getProfile("consulting-za").orElseThrow();
     var defaults = profile.rateCardDefaults();

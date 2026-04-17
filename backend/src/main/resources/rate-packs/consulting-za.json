@@ -1,0 +1,15 @@
+{
+  "packId": "rate-pack-consulting-za",
+  "verticalProfile": "consulting-za",
+  "version": 1,
+  "rates": [
+    { "description": "Creative Director", "hourlyRate": 1800.0, "currency": "ZAR" },
+    { "description": "Strategist", "hourlyRate": 1600.0, "currency": "ZAR" },
+    { "description": "Art Director", "hourlyRate": 1400.0, "currency": "ZAR" },
+    { "description": "Account Manager", "hourlyRate": 1200.0, "currency": "ZAR" },
+    { "description": "Senior Designer / Developer", "hourlyRate": 1100.0, "currency": "ZAR" },
+    { "description": "Copywriter", "hourlyRate": 950.0, "currency": "ZAR" },
+    { "description": "Designer / Developer", "hourlyRate": 850.0, "currency": "ZAR" },
+    { "description": "Producer / Junior", "hourlyRate": 600.0, "currency": "ZAR" }
+  ]
+}

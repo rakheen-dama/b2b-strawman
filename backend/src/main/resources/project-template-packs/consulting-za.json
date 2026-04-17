@@ -1,0 +1,348 @@
+{
+  "packId": "consulting-za-project-templates",
+  "verticalProfile": "consulting-za",
+  "version": 1,
+  "templates": [
+    {
+      "name": "Website Design & Build",
+      "namePattern": "{customer} - Website Build",
+      "description": "End-to-end website design and build. Suggested budget: 120 hours / R120,000. Campaign type: WEBSITE_BUILD.",
+      "billableDefault": true,
+      "matterType": "WEBSITE_BUILD",
+      "tasks": [
+        {
+          "name": "Discovery workshop & requirements",
+          "description": "Kick-off workshop, goals, audience, scope and success metrics",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 8.0
+        },
+        {
+          "name": "Sitemap & information architecture",
+          "description": "Site structure, navigation, content hierarchy",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 8.0
+        },
+        {
+          "name": "Wireframes & user flows",
+          "description": "Low-fi wireframes for key templates + primary user journeys",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 12.0
+        },
+        {
+          "name": "Visual design system",
+          "description": "Design tokens, components, typography, colour system",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 16.0
+        },
+        {
+          "name": "Page design -- home + key templates",
+          "description": "High-fi compositions for home and primary page templates",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 20.0
+        },
+        {
+          "name": "Frontend development",
+          "description": "Build out HTML/CSS/JS against approved designs",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 32.0
+        },
+        {
+          "name": "CMS integration / content population",
+          "description": "Wire pages to CMS, migrate / load launch content",
+          "priority": "MEDIUM",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 12.0
+        },
+        {
+          "name": "QA & cross-browser testing",
+          "description": "Functional, accessibility and cross-browser QA pass",
+          "priority": "MEDIUM",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 8.0
+        },
+        {
+          "name": "Launch & handover",
+          "description": "Go-live, DNS cutover, client training and handover docs",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 4.0
+        }
+      ]
+    },
+    {
+      "name": "Social Media Management Retainer",
+      "namePattern": "{customer} - Social Media {month}",
+      "description": "Monthly social media management retainer. Suggested hour bank: 40 hours / month. Campaign type: SOCIAL_MEDIA_RETAINER. Retainer tier: GROWTH.",
+      "billableDefault": true,
+      "matterType": "SOCIAL_MEDIA_RETAINER",
+      "tasks": [
+        {
+          "name": "Monthly content planning & calendar",
+          "description": "Plan themes, topics and posting calendar for the month",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 6.0
+        },
+        {
+          "name": "Content creation -- copy + visuals",
+          "description": "Write copy and produce visual assets for scheduled posts",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 14.0
+        },
+        {
+          "name": "Scheduling & publishing",
+          "description": "Schedule posts across channels and publish",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 4.0
+        },
+        {
+          "name": "Community management & engagement",
+          "description": "Respond to comments, DMs and engage the audience",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 8.0
+        },
+        {
+          "name": "Paid boost management",
+          "description": "Boost best-performing posts, manage spend and creative",
+          "priority": "LOW",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 4.0
+        },
+        {
+          "name": "Monthly performance report",
+          "description": "Compile metrics, insights and recommendations for the month",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 4.0
+        }
+      ]
+    },
+    {
+      "name": "Brand Identity",
+      "namePattern": "{customer} - Brand Identity",
+      "description": "Brand strategy and visual identity system. Suggested budget: 80 hours / R110,000. Campaign type: BRAND_IDENTITY.",
+      "billableDefault": true,
+      "matterType": "BRAND_IDENTITY",
+      "tasks": [
+        {
+          "name": "Brand discovery & strategy workshop",
+          "description": "Kick-off workshop to align on brand purpose, audience and positioning",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 8.0
+        },
+        {
+          "name": "Competitive & market audit",
+          "description": "Review competitors, market landscape and category conventions",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 6.0
+        },
+        {
+          "name": "Brand positioning & voice",
+          "description": "Positioning statement, tone of voice and messaging framework",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 8.0
+        },
+        {
+          "name": "Logo design exploration",
+          "description": "Generate multiple logo directions for client review",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 12.0
+        },
+        {
+          "name": "Logo refinement & finalisation",
+          "description": "Refine chosen direction to final production-ready logo",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 8.0
+        },
+        {
+          "name": "Visual identity system (colour, type, grid)",
+          "description": "Colour palette, typography stack and layout grid definition",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 10.0
+        },
+        {
+          "name": "Brand guidelines document",
+          "description": "Compile guidelines covering logo, colour, type, voice and usage",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 12.0
+        },
+        {
+          "name": "Core asset production (stationery, templates)",
+          "description": "Produce launch assets -- business cards, letterheads, deck templates",
+          "priority": "MEDIUM",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 12.0
+        },
+        {
+          "name": "Brand rollout support",
+          "description": "Support client rollout across touchpoints and handover files",
+          "priority": "LOW",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 4.0
+        }
+      ]
+    },
+    {
+      "name": "SEO Campaign",
+      "namePattern": "{customer} - SEO Campaign",
+      "description": "Search engine optimisation campaign. Suggested budget: 60 hours / R65,000. Campaign type: SEO_CAMPAIGN.",
+      "billableDefault": true,
+      "matterType": "SEO_CAMPAIGN",
+      "tasks": [
+        {
+          "name": "Technical SEO audit",
+          "description": "Crawl site, review indexing, performance and on-site technical issues",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 10.0
+        },
+        {
+          "name": "Keyword research & mapping",
+          "description": "Identify target keywords and map to site pages / content opportunities",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 8.0
+        },
+        {
+          "name": "On-page optimisation",
+          "description": "Apply technical and on-page fixes to target pages",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 12.0
+        },
+        {
+          "name": "Content brief creation",
+          "description": "Produce briefs for new content identified in keyword mapping",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 6.0
+        },
+        {
+          "name": "Content production",
+          "description": "Write and publish SEO-focused content against briefs",
+          "priority": "MEDIUM",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 14.0
+        },
+        {
+          "name": "Link-building outreach",
+          "description": "Outreach to relevant publications / partners for backlinks",
+          "priority": "LOW",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 6.0
+        },
+        {
+          "name": "Monthly ranking & traffic reporting",
+          "description": "Report rankings, organic traffic and next-steps recommendations",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 4.0
+        }
+      ]
+    },
+    {
+      "name": "Content Marketing Retainer",
+      "namePattern": "{customer} - Content Marketing {month}",
+      "description": "Monthly content marketing retainer. Suggested hour bank: 25 hours / month. Campaign type: CONTENT_MARKETING. Retainer tier: STARTER.",
+      "billableDefault": true,
+      "matterType": "CONTENT_MARKETING",
+      "tasks": [
+        {
+          "name": "Editorial calendar planning",
+          "description": "Plan monthly editorial calendar, topics and distribution",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 3.0
+        },
+        {
+          "name": "Article drafting (2-4 articles)",
+          "description": "Draft the month's articles against agreed briefs",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 10.0
+        },
+        {
+          "name": "Editing & SEO optimisation",
+          "description": "Editorial pass plus on-page SEO optimisation for each article",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 4.0
+        },
+        {
+          "name": "Imagery / hero visuals",
+          "description": "Source or produce hero imagery and in-article visuals",
+          "priority": "MEDIUM",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 3.0
+        },
+        {
+          "name": "Publishing & distribution",
+          "description": "Publish to site and distribute across channels / newsletter",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 3.0
+        },
+        {
+          "name": "Monthly reporting",
+          "description": "Report readership, engagement and next-month recommendations",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 2.0
+        }
+      ]
+    }
+  ]
+}

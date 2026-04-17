@@ -6,7 +6,7 @@ Mirrors `frontend/e2e/screenshots/legal-lifecycle/` — empty placeholder until 
 
 ## How to populate
 
-```
+```bash
 bash compose/scripts/e2e-up.sh
 cd frontend
 PLAYWRIGHT_BASE_URL=http://localhost:3001 \

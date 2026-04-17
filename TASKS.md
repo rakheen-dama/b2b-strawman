@@ -543,6 +543,13 @@
 | 477 | PackCatalogController + REST API | Backend | 475 | S | 477A | **Done** (PR #1044) |
 | 478 | Frontend: Settings > Packs Page | Frontend | 477 | M | 478A, 478B | **Done** (PR #1045) |
 | 479 | Integration Tests + E2E | E2E | 477, 478 | S | 479A | **Done** (PR #1046) |
+| **Phase 66 — `consulting-za` Vertical Profile (Pack-Only Agency Content)** | | | | | | See [tasks/phase66-consulting-vertical-profile.md](tasks/phase66-consulting-vertical-profile.md) |
+| 480 | Profile Manifest + Field Packs | Backend | -- | S | 480A | |
+| 481 | Rate Pack + Project Template Pack | Backend | 480 | M | 481A, 481B | |
+| 482 | Automation Pack + Document Template Pack | Backend | 481 | L | 482A, 482B | |
+| 483 | Clause Pack + Request Pack | Backend | 482 | M | 483A, 483B | |
+| 484 | Terminology Key + Team Utilization Widget | Frontend | 480 | M | 484A, 484B | |
+| 485 | QA Lifecycle Retarget + Screenshot Baselines | E2E/Process | 480–484 | M | 485A, 485B | |
 
 ---
 

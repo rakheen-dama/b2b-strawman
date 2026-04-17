@@ -15,7 +15,7 @@
 | 480 | Profile Manifest + Field Packs | Backend | -- | S | 480A | **Done** (PR #1047) |
 | 481 | Rate Pack + Project Template Pack | Backend | 480 | M | 481A, 481B | **Done** (PR #1048) |
 | 482 | Automation Pack + Document Template Pack | Backend | 481 | L | 482A, 482B | **Done** (PR #1049) |
-| 483 | Clause Pack + Request Pack | Backend | 482 | M | 483A, 483B | |
+| 483 | Clause Pack + Request Pack | Backend | 482 | M | 483A, 483B | **Done** (PR #1050) |
 | 484 | Terminology Key + Team Utilization Widget | Frontend | 480 | M | 484A, 484B | |
 | 485 | QA Lifecycle Retarget + Screenshot Baselines | E2E/Process | 480–484 | M | 485A, 485B | |
 
@@ -141,8 +141,8 @@ PHASE 53 (dashboard primitives), generic-onboarding compliance pack
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 4a (parallel) | 483 | 483A | Clause pack (8 clauses + template associations) + association test |
-| 4b (parallel) | 483 | 483B | Request pack (10-question creative brief) + auto-assignment test |
+| 4a (parallel) | 483 | 483A | Clause pack (8 clauses + template associations) + association test — **Done** (PR #1050) |
+| 4b (parallel) | 483 | 483B | Request pack (10-question creative brief) + auto-assignment test — **Done** (PR #1050) |
 
 ### Stage 5: QA Retarget + Screenshots
 
@@ -380,8 +380,8 @@ A realistic day-by-day cadence: Epic 480 sets foundations day 1–2; Epic 481 + 
 
 | Slice | Tasks | Summary |
 |-------|-------|---------|
-| **483A** | 483.1–483.5 | `clause-packs/consulting-za-clauses/pack.json` with 8 clauses (ip-ownership, revision-rounds, kill-fee, nda-mutual, payment-terms, change-requests, third-party-costs, termination). `templateAssociations` binds required clauses to SOW + engagement-letter templates. Integration test for 8 clauses + association resolution. |
-| **483B** | 483.6–483.9 | `request-packs/consulting-za-creative-brief.json` with 10 questions (brand desc, audience, goals, competitive, deliverables, constraints, assets, tone, stakeholders, dates). Integration test for question count + auto-assignment on new customer. |
+| **483A** | 483.1–483.5 | `clause-packs/consulting-za-clauses/pack.json` with 8 clauses (ip-ownership, revision-rounds, kill-fee, nda-mutual, payment-terms, change-requests, third-party-costs, termination). `templateAssociations` binds required clauses to SOW + engagement-letter templates. Integration test for 8 clauses + association resolution. — **Done** (PR #1050) |
+| **483B** | 483.6–483.9 | `request-packs/consulting-za-creative-brief.json` with 10 questions (brand desc, audience, goals, competitive, deliverables, constraints, assets, tone, stakeholders, dates). Integration test for question count + auto-assignment on new customer. — **Done** (PR #1050) |
 
 ### Tasks
 

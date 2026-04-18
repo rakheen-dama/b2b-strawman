@@ -399,11 +399,11 @@ public class DisbursementService {
           "Receipt upload failed", "Unable to read uploaded file: " + e.getMessage());
     }
 
-    var tenantId = RequestScopes.getTenantIdOrNull();
+    var tenantId = RequestScopes.requireTenantId();
     var safeName = file.getOriginalFilename() != null ? file.getOriginalFilename() : "receipt";
     var s3Key =
         "disbursement-receipts/"
-            + (tenantId != null ? tenantId : "default")
+            + tenantId
             + "/"
             + entity.getId()
             + "/"
@@ -477,10 +477,11 @@ public class DisbursementService {
   public List<UnbilledDisbursementDto> listUnbilledForProject(UUID projectId) {
     moduleGuard.requireModule(MODULE_ID);
     return disbursementRepository
-        .findByProjectIdAndApprovalStatusIn(
-            projectId, List.of(DisbursementApprovalStatus.APPROVED.name()))
+        .findByProjectIdAndApprovalStatusAndBillingStatus(
+            projectId,
+            DisbursementApprovalStatus.APPROVED.name(),
+            DisbursementBillingStatus.UNBILLED.name())
         .stream()
-        .filter(d -> DisbursementBillingStatus.UNBILLED.name().equals(d.getBillingStatus()))
         .map(UnbilledDisbursementDto::from)
         .toList();
   }

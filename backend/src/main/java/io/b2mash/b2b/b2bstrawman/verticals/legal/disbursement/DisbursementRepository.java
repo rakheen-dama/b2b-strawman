@@ -25,6 +25,14 @@ public interface DisbursementRepository extends JpaRepository<LegalDisbursement,
       UUID projectId, Collection<String> statuses);
 
   /**
+   * Finds disbursements on the given project filtered by both approval status and billing status.
+   * Used by the unbilled-per-project read-side projection — pushes the filter to the database
+   * rather than filtering in-memory.
+   */
+  List<LegalDisbursement> findByProjectIdAndApprovalStatusAndBillingStatus(
+      UUID projectId, String approvalStatus, String billingStatus);
+
+  /**
    * Counts disbursements on a project that have the given billing status (e.g. {@code "UNBILLED"},
    * {@code "BILLED"}, {@code "WRITTEN_OFF"}).
    */

@@ -52,13 +52,16 @@ import org.springframework.transaction.support.TransactionTemplate;
  * defaults, state transitions, event publication, trust-link validation, and the
  * listForStatement/listUnbilled read-side projections.
  */
+// Keeps @AutoConfigureMockMvc because TestMemberHelper.syncMember requires MockMvc to drive the
+// internal member-sync endpoint during @BeforeAll setup. No HTTP assertions live in this class —
+// it is a service-level test despite the MockMvc dependency.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
 @RecordApplicationEvents
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class DisbursementServiceIntegrationTest {
+class DisbursementServiceTest {
 
   private static final String ORG_ID = "org_disbursement_svc_test";
 

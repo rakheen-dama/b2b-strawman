@@ -289,7 +289,9 @@ class DisbursementControllerIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_disb_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"reason\": \"\"}"))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"));
   }
 
   // ==========================================================================

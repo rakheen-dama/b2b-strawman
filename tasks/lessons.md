@@ -51,3 +51,21 @@
 
 **Migration note**: If CI later adds Codecov/SonarQube integration, enable the `coverage` profile specifically for that job — do NOT re-add JaCoCo to the default build.
 
+## @MockitoBean Audit — 2026-04-18
+
+**Baseline**: 19 `@MockitoBean` declarations across 18 test files. Each creates a distinct Spring-context cache key, so every new mock-bean combination costs ~2–3s for a context rebuild.
+
+**Removed (unused declarations, 2 files)**:
+- `PortalPaymentStatusIntegrationTest` had `@MockitoBean StorageService storageService` with no references in the test body — dead code. Removed.
+- `PlatformAdminControllerTest` had `@MockitoBean JavaMailSender javaMailSender` with no references. Removed.
+
+**Retained with rationale (17 declarations across 16 files)**:
+- **Bespoke stubbing / verification (9 files)**: `DataExportServiceTest`, `AnonymizationControllerTest`, `DataAnonymizationServiceTest`, `DataExportControllerTest`, `InvitationServiceTest`, `OrgCreationControllerTest`, `DemoCleanupServiceTest`, `DemoProvisionServiceTest`, `AccessRequestApprovalServiceTest`. Each test stubs a different method subset with different returns or uses `verify()` + `ArgumentCaptor`. Not safely consolidable without losing mock isolation between test methods.
+- **Future migration candidates (deferred)**:
+  - `PortalBrandingControllerIntegrationTest`, `PortalInvoiceControllerIntegrationTest`, `PortalCommentPostIntegrationTest` — all three only stub `storageService.generateDownloadUrl()`. They could drop `@MockitoBean` entirely by using `InMemoryStorageService` with keys that pass its regex (update test data + change assertions from `https://s3.example.com/...` to `http://test-storage/test-bucket/...`). ~6s potential saving.
+  - `AccessRequestPublicControllerTest`, `AccessRequestVerifyTest` — both stub `JavaMailSender.createMimeMessage()` identically. Now that `GreenMailTestSupport` provides a JVM-singleton SMTP server on port 13025, these could send real mail and assert on `greenMail.getReceivedMessages()` instead. ~4s potential saving.
+- **Single-use (legitimate)**: `SubscriptionItnIntegrationTest` mocks `PlatformPayFastService`; `AssistantControllerTest` + `AssistantServiceTest` mock `LlmChatProviderRegistry` (the service mock comment says "Mock the entire registry to avoid the duplicate provider ID issue").
+
+**Why not force a shared `@TestConfiguration` for Keycloak mocks**: attempted mentally — the 4 Keycloak tests stub different method subsets, so a shared mock instance would need manual `Mockito.reset()` between methods. That trades ~6–9s of context rebuild for the risk of stub-leakage flakiness. Not a net win.
+
+

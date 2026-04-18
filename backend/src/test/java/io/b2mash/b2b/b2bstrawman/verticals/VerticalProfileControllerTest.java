@@ -39,6 +39,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class VerticalProfileControllerTest {
   private static final String ORG_ID = "org_vert_profile_test";
+  private static final int EXPECTED_MODULE_COUNT = 9;
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -93,7 +94,7 @@ class VerticalProfileControllerTest {
         .perform(get("/api/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_vp_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
-        .andExpect(jsonPath("$", hasSize(8)))
+        .andExpect(jsonPath("$", hasSize(EXPECTED_MODULE_COUNT)))
         .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(true))
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(false))
         .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(false))
@@ -133,7 +134,11 @@ class VerticalProfileControllerTest {
             jsonPath(
                 "$.enabledModules",
                 containsInAnyOrder(
-                    "court_calendar", "conflict_check", "lssa_tariff", "trust_accounting")))
+                    "court_calendar",
+                    "conflict_check",
+                    "lssa_tariff",
+                    "trust_accounting",
+                    "disbursements")))
         .andExpect(jsonPath("$.terminologyNamespace").value("en-ZA-legal"));
   }
 
@@ -168,7 +173,7 @@ class VerticalProfileControllerTest {
     mockMvc
         .perform(get("/api/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_vp_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(8)))
+        .andExpect(jsonPath("$", hasSize(EXPECTED_MODULE_COUNT)))
         .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(false))
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(false))
         .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(false));
@@ -187,11 +192,12 @@ class VerticalProfileControllerTest {
     mockMvc
         .perform(get("/api/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_vp_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(8)))
+        .andExpect(jsonPath("$", hasSize(EXPECTED_MODULE_COUNT)))
         .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(true))
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(true))
         .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(true))
-        .andExpect(jsonPath("$[?(@.id == 'lssa_tariff')].enabled").value(true));
+        .andExpect(jsonPath("$[?(@.id == 'lssa_tariff')].enabled").value(true))
+        .andExpect(jsonPath("$[?(@.id == 'disbursements')].enabled").value(true));
   }
 
   @Test

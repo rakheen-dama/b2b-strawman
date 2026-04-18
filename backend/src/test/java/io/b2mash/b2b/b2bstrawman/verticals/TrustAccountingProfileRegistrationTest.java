@@ -25,12 +25,12 @@ class TrustAccountingProfileRegistrationTest {
   }
 
   @Test
-  void legalZaProfile_includesAllFourLegalModules() {
+  void legalZaProfile_includesAllFiveLegalModules() {
     var profile = registry.getProfile("legal-za");
 
     assertThat(profile).isPresent();
     assertThat(profile.get().enabledModules())
         .containsExactlyInAnyOrder(
-            "court_calendar", "conflict_check", "lssa_tariff", "trust_accounting");
+            "court_calendar", "conflict_check", "lssa_tariff", "trust_accounting", "disbursements");
   }
 }

@@ -21,11 +21,26 @@ public enum Capability {
   /** Manage trust accounts and record transactions. */
   MANAGE_TRUST,
   /** Approve or reject trust payments. */
-  APPROVE_TRUST_PAYMENT;
+  APPROVE_TRUST_PAYMENT,
+  /** Create/update legal disbursements and attach receipts. */
+  MANAGE_DISBURSEMENTS,
+  /** Approve or reject pending legal disbursements. */
+  APPROVE_DISBURSEMENTS,
+  /** Write off (or restore) a pending legal disbursement. */
+  WRITE_OFF_DISBURSEMENTS,
+  /** Close a matter once all prerequisites are met. */
+  CLOSE_MATTER,
+  /** Override the matter-closure guard (owner-only). */
+  OVERRIDE_MATTER_CLOSURE,
+  /** Generate a Statement of Account PDF for a matter. */
+  GENERATE_STATEMENT_OF_ACCOUNT;
 
   /** Capabilities restricted to the owner role — admin does NOT inherit these. */
   public static final Set<String> OWNER_ONLY =
-      Set.of(MANAGE_COMPLIANCE_DESTRUCTIVE.name(), APPROVE_TRUST_PAYMENT.name());
+      Set.of(
+          MANAGE_COMPLIANCE_DESTRUCTIVE.name(),
+          APPROVE_TRUST_PAYMENT.name(),
+          OVERRIDE_MATTER_CLOSURE.name());
 
   public static final Set<String> ALL_NAMES =
       Arrays.stream(values()).map(Enum::name).collect(Collectors.toUnmodifiableSet());

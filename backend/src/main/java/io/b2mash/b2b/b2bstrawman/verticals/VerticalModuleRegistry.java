@@ -104,6 +104,18 @@ public class VerticalModuleRegistry {
             List.of("legal-za"),
             List.of(new NavItem("/legal/tariffs", "Tariffs", "finance"))));
 
+    map.put(
+        "disbursements",
+        new ModuleDefinition(
+            "disbursements",
+            "Disbursements",
+            "Third-party pass-through costs incurred on matters (sheriff, deeds office, court"
+                + " fees, counsel, etc.)",
+            "active",
+            ModuleCategory.VERTICAL,
+            List.of("legal-za"),
+            List.of(new NavItem("/legal/disbursements", "Disbursements", "finance"))));
+
     // --- Horizontal modules (profile-independent, manually toggled) ---
 
     map.put(

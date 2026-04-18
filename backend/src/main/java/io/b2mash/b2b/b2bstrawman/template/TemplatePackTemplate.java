@@ -9,4 +9,5 @@ public record TemplatePackTemplate(
     String contentFile,
     String cssFile,
     String description,
-    int sortOrder) {}
+    int sortOrder,
+    Boolean acceptanceEligible) {}

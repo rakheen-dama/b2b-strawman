@@ -115,7 +115,8 @@ class LegalPackSeederIntegrationTest {
                   var templates = documentTemplateRepository.findByActiveTrueOrderBySortOrder();
                   var legalTemplates =
                       templates.stream().filter(t -> "legal-za".equals(t.getPackId())).toList();
-                  assertThat(legalTemplates).hasSize(10);
+                  // Phase 67, Epic 489B added matter-closure-letter (11th template).
+                  assertThat(legalTemplates).hasSize(11);
                 }));
   }
 

@@ -109,6 +109,7 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
       dt.setPackId(pack.packId());
       dt.setPackTemplateKey(templateDef.templateKey());
       dt.setSortOrder(templateDef.sortOrder());
+      dt.setAcceptanceEligible(Boolean.TRUE.equals(templateDef.acceptanceEligible()));
 
       documentTemplateRepository.save(dt);
     }

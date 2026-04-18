@@ -9,5 +9,6 @@ public enum TemplateCategory {
   PROPOSAL,
   REPORT,
   COMPLIANCE,
+  CLOSURE,
   OTHER
 }

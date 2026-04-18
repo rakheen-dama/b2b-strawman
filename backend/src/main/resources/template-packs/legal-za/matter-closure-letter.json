@@ -1,0 +1,107 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [{ "type": "variable", "attrs": { "key": "org.name" } }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "text": "Matter Closure Letter" }]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Date: " },
+        { "type": "variable", "attrs": { "key": "closure.date" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Client: " },
+        { "type": "variable", "attrs": { "key": "customer.name" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Matter: " },
+        { "type": "variable", "attrs": { "key": "project.name" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "We confirm that this matter has been concluded on the following basis:"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Reason for closure: " },
+        { "type": "variable", "attrs": { "key": "closure.reason" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "variable", "attrs": { "key": "closure.notes" } }]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "Summary of Account" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Total fees billed: " },
+        { "type": "variable", "attrs": { "key": "matter.total_fees_billed" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Total disbursements: " },
+        { "type": "variable", "attrs": { "key": "matter.total_disbursements" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Duration (months): " },
+        { "type": "variable", "attrs": { "key": "matter.duration_months" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "The file will be retained in accordance with our retention policy and the Legal Practice Act. Thank you for entrusting us with your matter."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "text", "text": "Yours faithfully," }]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "variable", "attrs": { "key": "org.principal_attorney" } }]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "variable", "attrs": { "key": "org.name" } }]
+    }
+  ]
+}

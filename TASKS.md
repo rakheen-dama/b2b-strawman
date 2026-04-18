@@ -554,7 +554,7 @@
 | 486 | Disbursement Entity + Service + Module Registration | Backend | -- | M | 486A, 486B | **Done** (PRs #1067, #1068) |
 | 487 | Disbursement Invoicing Integration | Backend | 486, 489A | M | 487A, 487B | **Pending** |
 | 488 | Disbursement Frontend | Frontend | 486, 487 | M | 488A, 488B | **Pending** |
-| 489 | Matter Closure Workflow (Backend) | Backend | 486A | L | 489A, 489B | 489A **Done** (PR #1069), 489B **Pending** |
+| 489 | Matter Closure Workflow (Backend) | Backend | 486A | L | 489A, 489B | **Done** (PRs #1069, #1070) |
 | 490 | Matter Closure Frontend | Frontend | 489 | M | 490A, 490B | **Pending** |
 | 491 | Statement of Account | Both | 486B | M | 491A, 491B | **Pending** |
 | 492 | Conveyancing Pack | Backend | 489A | M | 492A, 492B | **Pending** |

@@ -14,7 +14,7 @@
 | 486 | Disbursement Entity + Service + Module Registration | Backend | -- | M | 486A, 486B | **Done** (PRs #1067, #1068) |
 | 487 | Disbursement Invoicing Integration | Backend | 486, 489A | M | 487A, 487B | **Pending** |
 | 488 | Disbursement Frontend | Frontend | 486, 487 | M | 488A, 488B | **Pending** |
-| 489 | Matter Closure Workflow (Backend) | Backend | 486A | L | 489A, 489B | **Pending** |
+| 489 | Matter Closure Workflow (Backend) | Backend | 486A | L | 489A, 489B | **Done** (PRs #1069, #1070) |
 | 490 | Matter Closure Frontend | Frontend | 489 | M | 490A, 490B | **Pending** |
 | 491 | Statement of Account | Both | 486B | M | 491A, 491B | **Pending** |
 | 492 | Conveyancing Pack | Backend (pack content) | 489A (for `acceptance_eligible` column) | M | 492A, 492B | **Pending** |
@@ -138,7 +138,7 @@ PHASE 28 (acceptance), PHASE 6.5 (notification handlers) — all complete
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
 | 2a | 487 | 487B | `InvoiceLine.disbursementId` mapping + `CreateInvoiceRequest.disbursementIds` + `InvoiceCreationService.createDisbursementLines` + `markBilled` side-effect + `DisbursementBilledEvent` + mixed-sources integration test. |
-| 2b (parallel with 2a) | 489 | 489B | `MatterClosureService` (evaluate/close/reopen) + retention-policy insert + `matter-closure-letter` Tiptap + `MatterClosedEvent`/`MatterReopenedEvent` + `MatterClosureNotificationHandler` + `MatterClosureContextBuilder` + `MatterClosureController` + integration tests. |
+| 2b (parallel with 2a) | 489 | 489B | `MatterClosureService` (evaluate/close/reopen) + retention-policy insert + `matter-closure-letter` Tiptap + `MatterClosedEvent`/`MatterReopenedEvent` + `MatterClosureNotificationHandler` + `MatterClosureContextBuilder` + `MatterClosureController` + integration tests. **Done** (PR #1070) |
 | 2c (parallel with 2a) | 491 | 491A | `StatementOfAccountContextBuilder` + `statement-of-account.json` Tiptap + `StatementController` + `GENERATE_STATEMENT_OF_ACCOUNT` capability wiring + `StatementOfAccountGeneratedEvent` + context-builder tests. |
 | 2d (parallel with 2a) | 492 | 492B | 4 conveyancing Tiptap templates + extend legal-za `pack.json` with `acceptanceEligible` flag + `TemplatePackSeeder` wiring of new column + `conveyancing-intake-za.json` request pack + install tests. |
 
@@ -455,7 +455,7 @@ A realistic day-by-day cadence: 486A days 1–3; fan-out days 3–7 (486B, 487A,
 | Slice | Tasks | Summary |
 |-------|-------|---------|
 | **489A** | 489.1–489.10 | V97 migration (projects CLOSED status + `closed_at` + `matter_closure_log` table + `invoice_lines.disbursement_id` + `invoice_lines.line_source` extended + `retention_policy.cancelled_at` + `document_templates.acceptance_eligible`), `Project.java` + `ProjectStatus.java` + `ProjectLifecycleGuard.java` extensions, `MatterClosureLog` entity + repository, `ClosureGate` interface + `GateResult` record + 9 concrete gate implementations, `matter_closure` module registered in `VerticalModuleRegistry`, `OrgSettings.legalMatterRetentionYears` field added, per-gate unit tests. Higher file count (~15) is tolerable because each gate class is ~30–60 lines. **Done** (PR #1069) |
-| **489B** | 489.11–489.20 | `MatterClosureService` (evaluate/close/reopen), retention-policy insert + soft-cancel wiring, 2 domain events (`MatterClosedEvent`, `MatterReopenedEvent`), `MatterClosureNotificationHandler` (Phase 6.5 pattern), `MatterClosureContextBuilder`, `MatterClosureController`, `matter-closure-letter.json` Tiptap template + pack.json manifest entry + `TemplatePackSeeder` wiring of `acceptance_eligible` flag, service + controller integration tests for all-pass path, per-gate failure, override (with + without capability), reopen (both within and beyond retention), notification fan-out. |
+| **489B** | 489.11–489.20 | `MatterClosureService` (evaluate/close/reopen), retention-policy insert + soft-cancel wiring, 2 domain events (`MatterClosedEvent`, `MatterReopenedEvent`), `MatterClosureNotificationHandler` (Phase 6.5 pattern), `MatterClosureContextBuilder`, `MatterClosureController`, `matter-closure-letter.json` Tiptap template + pack.json manifest entry + `TemplatePackSeeder` wiring of `acceptance_eligible` flag, service + controller integration tests for all-pass path, per-gate failure, override (with + without capability), reopen (both within and beyond retention), notification fan-out. **Done** (PR #1070) |
 
 ### Tasks
 

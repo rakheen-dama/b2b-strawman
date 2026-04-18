@@ -75,6 +75,11 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 - Never define private `createProject()`/`createCustomer()`/`createTask()`/`createTag()` helpers in tests — use `TestEntityHelper.*` from `testutil/`. Exception: domain-specific entity creation that includes lifecycle transitions or extra fields beyond what TestEntityHelper covers.
 - Never define private `extractIdFromLocation()` helpers in tests — use `TestEntityHelper.extractIdFromLocation(result)`
 - `TestEntityHelper.createCustomer()` creates a PROSPECT customer via the API — if your test needs an ACTIVE customer, you must still call `transitionCustomerToActive()` afterward
+- Never add `@TestPropertySource` for values that could live in `application-test.yml` — every unique property override creates a distinct Spring context cache key and costs ~2–3s per rebuild. Put defaults in the yml; use the annotation only when a value genuinely varies by test class.
+- Never add `@DynamicPropertySource` where a static value would work. It's acceptable for runtime-generated values (e.g., an ECDSA keypair for webhook signing) but not for SMTP ports, feature flags, or credentials.
+- Never define a `@MockitoBean`/`@SpyBean` for the same bean across 3+ tests — extract a `@TestConfiguration` that declares the mock once and `@Import` it. Each unique mock-bean set is a distinct context cache key.
+- Shared SMTP port for GreenMail is **13025** (set in `application-test.yml`). Don't pick new ports — reuse it. Tests run sequentially, so port reuse is safe.
+- Never re-add the `jacoco-maven-plugin` to the default `<build><plugins>` block. Coverage is opt-in via `./mvnw -Pcoverage test` (see `pom.xml` `<profiles>`).
 
 ## Spring Boot 4 / Hibernate 7 Gotchas
 

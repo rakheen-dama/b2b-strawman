@@ -50,19 +50,19 @@ class PackReconciliationRunnerTest {
   }
 
   @Test
-  void reconciliationRunnerIsIdempotent() {
-    // The tenant was already seeded during provisioning.
-    // Running the reconciliation runner again should not duplicate anything.
-    reconciliationRunner.run(null);
+  void reconciliationRunnerIsIdempotentAndPreservesSeededState() {
+    // Tenant was seeded during provisioning. One reconciliation run verifies completion,
+    // state preservation, and no-throw in a single pass. (Previously 3 separate tests —
+    // each run iterates every tenant in the DB, so merging saves meaningful wall time.)
+    assertThatCode(() -> reconciliationRunner.run(null)).doesNotThrowAnyException();
 
     runInTenant(
         tenantSchema,
         () ->
             transactionTemplate.executeWithoutResult(
                 tx -> {
-                  var allTemplates = templateRepository.findAll();
                   var complianceTemplates =
-                      allTemplates.stream()
+                      templateRepository.findAll().stream()
                           .filter(t -> "PLATFORM".equals(t.getSource()) && t.getPackId() != null)
                           .filter(
                               t ->
@@ -70,32 +70,12 @@ class PackReconciliationRunnerTest {
                                       || t.getPackId().equals("sa-fica-individual")
                                       || t.getPackId().equals("sa-fica-company"))
                           .toList();
-                  // Still exactly 3 compliance templates, not duplicated
                   assertThat(complianceTemplates).hasSize(3);
-                }));
-  }
 
-  @Test
-  void reconciliationRunnerPreservesCompliancePackStatus() {
-    reconciliationRunner.run(null);
-
-    runInTenant(
-        tenantSchema,
-        () ->
-            transactionTemplate.executeWithoutResult(
-                tx -> {
                   var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
                   assertThat(settings.getCompliancePackStatus()).isNotNull();
                   assertThat(settings.getCompliancePackStatus()).hasSize(3);
                 }));
-  }
-
-  @Test
-  void reconciliationRunnerHandlesEmptyTenantListGracefully() {
-    // This test verifies the runner doesn't throw when there are tenants in the DB.
-    // A truly empty list would require a fresh DB, but we can at least verify
-    // the runner completes without error on the current state.
-    assertThatCode(() -> reconciliationRunner.run(null)).doesNotThrowAnyException();
   }
 
   @Test

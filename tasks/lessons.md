@@ -23,3 +23,31 @@
 **Fix**: Updated `/epic_v2` SKILL.md to explicitly require updating FOUR locations: (1) Detail Section row (most critical), (2) Implementation Order row, (3) Epic Overview, (4) TASKS.md.
 
 **Detection**: Run `./scripts/run-phase.sh {N} --dry-run` — if "Done" count doesn't match expected, check detail section rows.
+
+## Backend Test Speed — Context-Cache Evictions (2026-04-18)
+
+**Symptom**: `./mvnw test` wall time regressed from ~13m (post-April optimization) to ~10m 48s over a 3-week period, despite no Testcontainers/LocalStack violations.
+
+**Root cause**: Every unique `@TestPropertySource`, `@DynamicPropertySource`, and `@MockitoBean`/`@SpyBean` combination creates a distinct Spring ApplicationContext cache key. Even with the Zonky embedded Postgres singleton shared across contexts, Spring still rebuilds beans + Hibernate + Flyway on each cache miss (~2–3s per rebuild). 27 unique combinations cost ~60–80s of wasted time per run.
+
+**Fix pattern**:
+- Move static test overrides into `backend/src/test/resources/application-test.yml` instead of per-class `@TestPropertySource`. Example: `spring.mail.*` for GreenMail was moved there, letting 3 email tests share one context.
+- For `@DynamicPropertySource` used to inject runtime-generated values (e.g., ECDSA keypairs), only keep it if the runtime generation is structurally required — prefer a hardcoded static fake when safe.
+- For `@MockitoBean` duplicated across 3+ tests with identical behaviour, extract a `@TestConfiguration` class and `@Import` it so tests share one context.
+
+**Anti-patterns to reject in review**:
+- Adding `@TestPropertySource` for a value that could live in `application-test.yml`.
+- Adding `@DynamicPropertySource` where a static value would work.
+- Copy-pasting GreenMail port definitions — use the test default `spring.mail.port=13025`.
+- Classifying a `*ControllerTest` and `*IntegrationTest` as "duplicates" based on filename — verify they actually cover the same layer before deleting either.
+
+**Detection**: `grep -rn "@TestPropertySource\|@DynamicPropertySource\|@MockitoBean" backend/src/test/java | wc -l` — if this count grows in a PR, scrutinize.
+
+## Backend Test Speed — JaCoCo Gated Behind `-Pcoverage` Profile (2026-04-18)
+
+**Background**: JaCoCo instrumentation adds ~10–15% runtime overhead on every test run. Default CI `./mvnw test` and local dev loops don't need the coverage report — release/nightly can opt in.
+
+**Change**: `backend/pom.xml` moved `jacoco-maven-plugin` from `<build><plugins>` into a `<profile id="coverage">`. Default `./mvnw test` skips instrumentation. Use `./mvnw -Pcoverage test` when a coverage report is required.
+
+**Migration note**: If CI later adds Codecov/SonarQube integration, enable the `coverage` profile specifically for that job — do NOT re-add JaCoCo to the default build.
+

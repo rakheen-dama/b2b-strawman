@@ -31,7 +31,7 @@ Validated at the Node REPL on the local machine (Node v20.11.1, ICU 73.2, small-
 [ 'en-ZA' ]                                   ← Node lies: says supported, still formats as US
 ```
 
-Browser (full ICU) produces `"R 18 750,00"` (narrow no-break space thousands separator, comma
+Browser (full ICU) produces `"R 18 750,00"` (no-break space `\u00A0` thousands separator, comma
 decimal) — hence the hydration mismatch.
 
 Confirmed by reading:
@@ -106,7 +106,7 @@ If the team rejects the polyfill, replace `Intl.NumberFormat` for ZAR specifical
 
 ```typescript
 // In lib/format.ts — replace formatCurrency with:
-const NBSP = "\u00A0"; // narrow no-break space expected by en-ZA
+const NBSP = "\u00A0"; // NBSP (no-break space) expected by en-ZA
 
 export function formatCurrency(amount: number, currency: string): string {
   const code = currency || "USD";

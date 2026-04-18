@@ -38,7 +38,15 @@ def build_content_stream(title: str, body_lines: List[str]) -> bytes:
     stream = "\n".join(lines) + "\n"
     # Font uses WinAnsiEncoding (≈ CP1252), which covers smart quotes,
     # em/en dashes, ellipses, and the ≥/≤ range used in legal copy.
-    return stream.encode("cp1252", errors="replace")
+    # Strict encoding — QA fixtures must never silently corrupt characters,
+    # which would mask real legal-text bugs during upload verification.
+    try:
+        return stream.encode("cp1252", errors="strict")
+    except UnicodeEncodeError as exc:
+        raise ValueError(
+            f"Unsupported character for WinAnsi/cp1252 in PDF content stream: {exc}. "
+            f"Replace with an ASCII-safe equivalent or add glyph mapping."
+        ) from exc
 
 
 def make_pdf(title: str, body_lines: List[str], out_path: Path) -> int:
@@ -251,6 +259,13 @@ DOCS = {
 
 
 def main(out_dir: Path, only: List[str] | None = None) -> None:
+    if only:
+        unknown = sorted(set(only) - set(DOCS.keys()))
+        if unknown:
+            raise ValueError(
+                f"Unknown fixture name(s): {', '.join(unknown)}. "
+                f"Known names: {', '.join(sorted(DOCS.keys()))}"
+            )
     count = 0
     for name, (title, body) in DOCS.items():
         if only and name not in only:

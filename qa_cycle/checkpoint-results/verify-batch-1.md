@@ -41,7 +41,7 @@ Summary: L-02, L-03 fully pass on Keycloak theme side (independent of Next.js bu
 ## GAP-L-12 — REOPENED
 - **Method**: Logged in as Thandi (Owner) via KC password flow → navigated to `/org/mathebula-partners/profitability`. Also tried `/org/mathebula-partners/dashboard`.
 - **Evidence**: Every authenticated Next.js page throws a **Build Error overlay** before rendering any content:
-  ```
+  ```text
   Module not found: Can't resolve '@formatjs/intl-numberformat/locale-data/de.js'
   ./Projects/2026/b2b-strawman/frontend/lib/intl-polyfill.ts (22:1)
   ```
@@ -68,7 +68,7 @@ Result: **VERIFIED** — L-12 is now fully closed.
 
 1. Confirmed frontend HTTP 200 on `http://localhost:3000/` (orchestrator had already run `pnpm install` and restarted the frontend at 00:25 SAST; node_modules now has `@formatjs/intl-numberformat/locale-data/`).
 2. Navigated to `/org/mathebula-partners/profitability` in a fresh Playwright session → redirected to Keycloak login as expected.
-3. Signed in as Thandi (Owner) — `thandi@mathebula-test.local` / `SecureP@ss1` — through the real KC OIDC flow (no mock auth).
+3. Signed in as Thandi (Owner) — `thandi@mathebula-test.local` / `<REDACTED-PASSWORD>` — through the real KC OIDC flow (no mock auth).
 4. Landed on `/org/mathebula-partners/dashboard`, then navigated directly to `/org/mathebula-partners/profitability`.
 5. Waited 2s for hydration, took accessibility snapshot, collected console messages, took full-page screenshot.
 
@@ -76,7 +76,7 @@ Result: **VERIFIED** — L-12 is now fully closed.
 
 - **No Next.js Build Error overlay** — page rendered the Profitability header plus three tables (Team Utilization, Matter Profitability, Customer Profitability) without any module-resolution errors.
 - **Console (all levels, full session)**:
-  ```
+  ```text
   Total messages: 2 (Errors: 0, Warnings: 0)
   [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:8180/favicon.ico:0
   ```

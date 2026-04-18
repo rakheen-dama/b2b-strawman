@@ -9,9 +9,14 @@
 
   See `qa_cycle/fix-specs/GAP-L-01.md`.
 
-  The bounceBase is hard-coded to localhost:3000 for the local dev QA cycle.
-  When this ships to staging/prod, wire it through a realm SMTP attribute or
-  the frontendBaseUrl used by KeycloakProvisioningClient.
+  TODO(GAP-L-01 prod rollout): bounceBase is hard-coded to localhost:3000 for
+  the local dev QA cycle — see qa_cycle/fix-specs/GAP-L-01.md "Production
+  concern" note. Before staging/prod ship, route this through either:
+    (a) a realm-scoped SMTP attribute read via `${realm.attributes['...']}`,
+    (b) the `frontendBaseUrl` used by KeycloakProvisioningClient.java, or
+    (c) a custom KC SPI that injects per-environment config.
+  CodeRabbit review on PR #1065 flagged this — deferred as an explicit non-goal
+  of the legal-za QA cycle (intent was to unblock QA, not ship prod infra).
 -->
 <#assign bounceBase = "http://localhost:3000/accept-invite">
 <#assign bounceUrl = bounceBase + "?kcUrl=" + link?url('UTF-8')>

@@ -1,4 +1,4 @@
-import "./intl-polyfill";
+import "@/lib/intl-polyfill";
 
 export function formatDate(date: string | Date): string {
   return new Date(date).toLocaleDateString("en-US", {

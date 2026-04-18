@@ -14,7 +14,11 @@ import { useEffect } from "react";
  * the bounce page is not kept in the browser history — users pressing "back"
  * from the destination should skip the bounce page entirely.
  */
-export function AcceptInviteRedirect({ redirectUrl }: { redirectUrl: string }) {
+interface AcceptInviteRedirectProps {
+  redirectUrl: string;
+}
+
+export function AcceptInviteRedirect({ redirectUrl }: AcceptInviteRedirectProps) {
   useEffect(() => {
     window.location.replace(redirectUrl);
   }, [redirectUrl]);

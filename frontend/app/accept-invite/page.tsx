@@ -7,12 +7,16 @@ export const metadata: Metadata = {
   description: "Clearing your session before completing your invitation",
 };
 
-// The KC logout endpoint. Hard-coded for local dev; wire through env when the
-// bounce page ships to staging/prod.
-const KC_LOGOUT_ENDPOINT =
-  "http://localhost:8180/realms/docteams/protocol/openid-connect/logout";
-const BOUNCE_CONTINUE_URL = "http://localhost:3000/accept-invite/continue";
-const KC_CLIENT_ID = "gateway-bff";
+// KC + app URLs are env-driven so the bounce page works in any environment.
+// `NEXT_PUBLIC_KEYCLOAK_URL`, `NEXT_PUBLIC_KEYCLOAK_REALM`, and `NEXT_PUBLIC_APP_URL`
+// default to the local dev stack when unset (see `.env.local.example`).
+const KC_URL = (process.env.NEXT_PUBLIC_KEYCLOAK_URL || "http://localhost:8180").replace(/\/$/, "");
+const KC_REALM = process.env.NEXT_PUBLIC_KEYCLOAK_REALM || "docteams";
+const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000").replace(/\/$/, "");
+const KC_CLIENT_ID = process.env.NEXT_PUBLIC_KEYCLOAK_CLIENT_ID || "gateway-bff";
+
+const KC_LOGOUT_ENDPOINT = `${KC_URL}/realms/${KC_REALM}/protocol/openid-connect/logout`;
+const BOUNCE_CONTINUE_URL = `${APP_URL}/accept-invite/continue`;
 
 export default async function AcceptInvitePage({
   searchParams,

@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.project;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
@@ -21,7 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -49,20 +48,26 @@ class RetentionClockIntegrationTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private ProjectRepository projectRepository;
 
+  private static final String OWNER_SUBJECT = "user_rc_owner";
+  private static final JwtRequestPostProcessor OWNER_JWT =
+      TestJwtFactory.ownerJwt(ORG_ID, OWNER_SUBJECT);
+
   private String tenantSchema;
 
   @BeforeAll
   void provisionTenantAndOwner() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Retention Clock Test Org", null);
     TestMemberHelper.syncMember(
-        mockMvc, ORG_ID, "user_rc_owner", "rc_owner@test.com", "RC Owner", "owner");
+        mockMvc, ORG_ID, OWNER_SUBJECT, "rc_owner@test.com", "RC Owner", "owner");
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
   }
 
   @Test
   void retentionClockStartedAt_setsOnFirstCompletion() throws Exception {
-    String projectId = createProject("Retention clock stamp-on-complete");
+    String projectId =
+        TestEntityHelper.createProject(
+            mockMvc, OWNER_JWT, "Retention clock stamp-on-complete", "retention clock test");
 
     // Clock is null while ACTIVE.
     assertThat(loadRetentionClock(projectId)).isNull();
@@ -79,7 +84,9 @@ class RetentionClockIntegrationTest {
 
   @Test
   void retentionClockStartedAt_notOverwrittenOnReComplete() throws Exception {
-    String projectId = createProject("Retention clock preserved on re-complete");
+    String projectId =
+        TestEntityHelper.createProject(
+            mockMvc, OWNER_JWT, "Retention clock preserved on re-complete", "retention clock test");
 
     completeProject(projectId);
     Instant t0 = loadRetentionClock(projectId);
@@ -99,42 +106,23 @@ class RetentionClockIntegrationTest {
 
   @Test
   void retentionClockStartedAt_nullForActiveProjects() throws Exception {
-    String projectId = createProject("Retention clock null while ACTIVE");
+    String projectId =
+        TestEntityHelper.createProject(
+            mockMvc, OWNER_JWT, "Retention clock null while ACTIVE", "retention clock test");
     assertThat(loadRetentionClock(projectId)).isNull();
   }
 
   // --- Helpers ---
 
-  private String createProject(String name) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/projects")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "%s", "description": "retention clock test"}
-                        """
-                            .formatted(name)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return TestEntityHelper.extractIdFromLocation(result);
-  }
-
   private void completeProject(String projectId) throws Exception {
     mockMvc
-        .perform(
-            patch("/api/projects/" + projectId + "/complete")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner")))
+        .perform(patch("/api/projects/" + projectId + "/complete").with(OWNER_JWT))
         .andExpect(status().isOk());
   }
 
   private void reopenProject(String projectId) throws Exception {
     mockMvc
-        .perform(
-            patch("/api/projects/" + projectId + "/reopen")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner")))
+        .perform(patch("/api/projects/" + projectId + "/reopen").with(OWNER_JWT))
         .andExpect(status().isOk());
   }
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatCurrency, formatFileSize } from "./format";
+import { formatCurrency, formatFileSize } from "@/lib/format";
 
 describe("formatFileSize", () => {
   it("returns '0 B' for zero bytes", () => {

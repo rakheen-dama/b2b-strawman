@@ -44,7 +44,7 @@ Tenant provisioning itself succeeded on the backend: dedicated schema `tenant_50
 
 ### 0.7 — Enter OTP → Verify
 - **Result**: PASS
-- **Evidence**: extracted OTP `447884` from email body, typed into verification input, clicked Verify.
+- **Evidence**: extracted OTP `<REDACTED-OTP>` from email body, typed into verification input, clicked Verify.
 
 ### 0.8 — Success card appears
 - **Result**: PASS
@@ -61,7 +61,7 @@ Tenant provisioning itself succeeded on the backend: dedicated schema `tenant_50
 
 ### 0.11 — Login as padmin → platform admin home
 - **Result**: PASS
-- **Evidence**: entered `padmin@docteams.local`, password `password`, clicked Sign In (note: Keycloak uses an email-first 2-step form — email screen first, then password screen). Redirected to `/platform-admin/access-requests`.
+- **Evidence**: entered `padmin@docteams.local`, password `<REDACTED-PASSWORD>`, clicked Sign In (note: Keycloak uses an email-first 2-step form — email screen first, then password screen). Redirected to `/platform-admin/access-requests`.
 
 ### 0.12 — Navigate to `/platform-admin/access-requests`
 - **Result**: PASS (implicit, was the post-login landing page)
@@ -109,7 +109,7 @@ Tenant provisioning itself succeeded on the backend: dedicated schema `tenant_50
 
 ### 0.21 — Fill registration form
 - **Result**: PASS
-- **Evidence**: filled First Name=`Thandi`, Last Name=`Mathebula`, Password=`SecureP@ss1`, Confirm Password=`SecureP@ss1`. Clicked Register.
+- **Evidence**: filled First Name=`Thandi`, Last Name=`Mathebula`, Password=`<REDACTED-PASSWORD>`, Confirm Password=`<REDACTED-PASSWORD>`. Clicked Register.
 
 ### 0.22 — Submit → redirect to org dashboard
 - **Result**: **FAIL / BLOCKER**
@@ -219,8 +219,8 @@ Hand back to Dev Agent for GAP-L-01 REOPEN fix. Do NOT advance Day 0 or Day 1 un
 1. **18:54 SAST** — Launched fresh Chrome MCP session; logged in as padmin (email-2-step) at `/platform-admin/access-requests`. Pending tab empty (Mathebula was approved in the original run).
 2. **18:55 SAST** — Clicked Thandi's most recent invite link from Mailpit (`XaPTzqYfESLrWFq2MEwNxu`, 18:34:40, `/registrations?...` URL shape). Bounce page accepted the URL (no "Invalid invitation link") → auto-redirected to KC `end_session_endpoint?post_logout_redirect_uri=/accept-invite/continue?...`. Logout confirmation shown (GAP-L-04 carry-forward) → clicked Logout → bounced to `/accept-invite/continue` → auto-redirected to the original KC `/registrations` URL.
 3. **18:55 SAST** — KC rendered "Create your account" form cleanly — no "already authenticated as different user" error, no "Invalid invitation link", no `expiredActionMessage`. Email field pre-bound to `thandi@mathebula-test.local`. GAP-L-03 still reproduces (no org name shown).
-4. **18:56 SAST** — Filled registration (First=Thandi, Last=Mathebula, pw=`SecureP@ss1`) → submitted → KC redirected to `http://localhost:3000/dashboard?code=...&session_state=...`. Note: since the registration was on KC's `account` client and the app uses `gateway-bff`, the code/state redirect doesn't complete an app-layer session — browser ended up re-authenticated as the previously-logged-in padmin (stale gateway cookie). This is a UX quirk of the invite-via-account-client pattern: after registration, the user must explicitly sign in at the app's OIDC endpoint to get an app session. Not a new bug; it's a known limitation of KC's org-invite flow that uses the `account` client.
-5. **18:58 SAST** — Killed the Playwright MCP chrome process to clear the stale padmin cookie (runtime hygiene, not a product workaround — same as "open in incognito"). Re-launched browser, navigated to `/dashboard` → redirected to KC login → logged in as Thandi with `SecureP@ss1` → landed cleanly on `/org/mathebula-partners/dashboard`.
+4. **18:56 SAST** — Filled registration (First=Thandi, Last=Mathebula, pw=`<REDACTED-PASSWORD>`) → submitted → KC redirected to `http://localhost:3000/dashboard?code=...&session_state=...`. Note: since the registration was on KC's `account` client and the app uses `gateway-bff`, the code/state redirect doesn't complete an app-layer session — browser ended up re-authenticated as the previously-logged-in padmin (stale gateway cookie). This is a UX quirk of the invite-via-account-client pattern: after registration, the user must explicitly sign in at the app's OIDC endpoint to get an app session. Not a new bug; it's a known limitation of KC's org-invite flow that uses the `account` client.
+5. **18:58 SAST** — Killed the Playwright MCP chrome process to clear the stale padmin cookie (runtime hygiene, not a product workaround — same as "open in incognito"). Re-launched browser, navigated to `/dashboard` → redirected to KC login → logged in as Thandi with `<REDACTED-PASSWORD>` → landed cleanly on `/org/mathebula-partners/dashboard`.
 6. **18:59 SAST** — **0.22 PASS**: dashboard rendered with Thandi as Owner; sidebar shows "Mathebula & Partners", user "Thandi Mathebula", nav has Matters (not "Projects"), Court Calendar visible. Screenshot saved as `day-00-resume2-thandi-dashboard.png`. 0.23, 0.24, 0.25 PASS inline.
 
 ### Evidence

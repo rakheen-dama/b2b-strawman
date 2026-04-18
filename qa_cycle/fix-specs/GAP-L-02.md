@@ -71,7 +71,7 @@ docker restart b2b-keycloak
 - **Realm JSON changes**: NO.
 
 Files to modify:
-- `compose/keycloak/theme/src/login/pages/Info.tsx` (one line change).
+- `compose/keycloak/theme/src/login/pages/Info.tsx` (one-line change).
 
 Files to create: none.
 Migration needed: NO.

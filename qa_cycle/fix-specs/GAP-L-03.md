@@ -108,9 +108,11 @@ KC restart required: YES (once, batched with GAP-L-01/02 restart).
 ## Verification
 
 **Runtime verification step before writing code**: add a temporary
-`<pre>{JSON.stringify({ messageHeader, profile: profile?.attributes }, null, 2)}</pre>` at the
-top of `Register.tsx` and reload the invite URL in QA. The rendered `kcContext` will reveal
-whether `messageHeader` contains org info. Remove the debug block once confirmed.
+`<pre>{JSON.stringify({ messageHeader }, null, 2)}</pre>` at the top of `Register.tsx`
+and reload the invite URL in QA. The rendered `kcContext` snippet will reveal whether
+`messageHeader` contains org info. Do NOT log `profile.attributes` — it contains user
+PII that could end up in screenshots / session recordings. Remove the debug block once
+confirmed.
 
 **After-fix QA checkpoint**: re-run Day 0 §0.20. Expected: the registration page heading (or
 subtitle) mentions "Mathebula & Partners" — not just "Create your account".

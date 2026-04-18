@@ -237,7 +237,9 @@ Authorization uses `@RequiresCapability` annotations on controllers. Capabilitie
 - **S3/Storage**: `InMemoryStorageService` (test utility) replaces LocalStack for all tests. Uses `ConcurrentHashMap` with the same key validation regex as `S3StorageAdapter`.
 - **REST tests**: MockMvc + Spring REST Docs (generates API documentation from tests)
 - **Test config**: `TestcontainersConfiguration.java` provides embedded Postgres + `InMemoryStorageService` beans
-- **Email tests**: GreenMail on unique fixed ports per test class (13025/13026/13027) to avoid SMTP conflicts
+- **Email tests**: Use `GreenMailTestSupport.getInstance()` (JVM singleton on port 13025). Never start your own `new GreenMail(...)` — a second instance will conflict with the singleton. SMTP properties are pre-wired in `application-test.yml` (`spring.mail.host=localhost`, `port=13025`). Call `greenMail.purgeEmailFromAllMailboxes()` in `@BeforeEach` for isolation. Do NOT stop the singleton in `@AfterAll` — other test classes share it. Mid-test `stop()`/`start()` to simulate SMTP failure is fine if wrapped in try/finally.
+- **Coverage**: JaCoCo is gated behind the `coverage` profile. Run `./mvnw -Pcoverage test` when a coverage report is needed. Do NOT re-add `jacoco-maven-plugin` to the default `<build><plugins>` block.
+- **Test conventions enforced by ArchUnit**: `TestConventionsTest` fails the build on any import of `PostgreSQLContainer`, `LocalStackContainer`, or `org.testcontainers.containers..`. Add new rules there, not scattered grep-based lints.
 - Run `TestBackendApplication.main()` for local dev with embedded Postgres (no Docker needed)
 
 ### Testcontainers Policy
@@ -258,6 +260,7 @@ All integration tests should use the shared utilities in `testutil/` instead of 
 | `TestCustomerFactory` | Create `Customer` entities with explicit lifecycle status |
 | `TestChecklistHelper` | Complete checklist items for lifecycle transitions |
 | `TestIds` | Inject IDs into JPA entities via reflection |
+| `GreenMailTestSupport` | JVM-singleton GreenMail SMTP server on port 13025 (shared across all email tests — never start your own instance) |
 
 #### Member Sync
 ```java

@@ -44,9 +44,12 @@ public class NoOpenCourtDatesGate implements ClosureGate {
         courtDateRepository.countByProjectIdAndStatusInAndScheduledDateGreaterThanEqual(
             project.getId(), OPEN_STATUSES, LocalDate.now(clock));
     if (count == 0) {
-      return new GateResult(true, CODE, "No future court dates scheduled.", Map.of());
+      return new GateResult(true, CODE, "No court dates scheduled for today or later.", Map.of());
     }
     return new GateResult(
-        false, CODE, "%d future court dates scheduled.".formatted(count), Map.of("count", count));
+        false,
+        CODE,
+        "%d court dates scheduled for today or later.".formatted(count),
+        Map.of("count", count));
   }
 }

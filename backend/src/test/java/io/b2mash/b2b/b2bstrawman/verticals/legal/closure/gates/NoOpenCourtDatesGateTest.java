@@ -55,7 +55,7 @@ class NoOpenCourtDatesGateTest {
     var result = gate.evaluate(project);
 
     assertThat(result.passed()).isFalse();
-    assertThat(result.message()).contains("2 future court dates scheduled");
+    assertThat(result.message()).contains("2 court dates scheduled for today or later");
     assertThat(result.detail()).containsEntry("count", 2L);
   }
 

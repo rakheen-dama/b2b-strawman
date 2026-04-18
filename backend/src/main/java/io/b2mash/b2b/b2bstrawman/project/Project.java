@@ -274,6 +274,7 @@ public class Project {
    * <p>489A-minimal signature: takes only the acting member id. The full {@code closeMatter(UUID,
    * ClosureRequest)} service hook lands in 489B.
    */
+  @SuppressWarnings("unused") // memberId captured by MatterClosureService in 489B
   public void closeMatter(UUID memberId) {
     requireTransition(ProjectStatus.CLOSED, "close");
     this.status = ProjectStatus.CLOSED;

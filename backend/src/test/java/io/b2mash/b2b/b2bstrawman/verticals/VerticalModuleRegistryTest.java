@@ -16,10 +16,10 @@ class VerticalModuleRegistryTest {
   }
 
   @Test
-  void getAllModules_returnsNineModulesWithCorrectIds() {
+  void getAllModules_returnsTenModulesWithCorrectIds() {
     var modules = registry.getAllModules();
 
-    assertThat(modules).hasSize(9);
+    assertThat(modules).hasSize(10);
     assertThat(modules)
         .extracting(VerticalModuleRegistry.ModuleDefinition::id)
         .containsExactlyInAnyOrder(
@@ -31,7 +31,8 @@ class VerticalModuleRegistryTest {
             "resource_planning",
             "bulk_billing",
             "automation_builder",
-            "disbursements");
+            "disbursements",
+            "matter_closure");
   }
 
   @Test
@@ -154,7 +155,8 @@ class VerticalModuleRegistryTest {
             "conflict_check",
             "regulatory_deadlines",
             "lssa_tariff",
-            "disbursements");
+            "disbursements",
+            "matter_closure");
     for (String id : verticalIds) {
       var module = registry.getModule(id);
       assertThat(module).as("module %s should be present", id).isPresent();
@@ -165,10 +167,10 @@ class VerticalModuleRegistryTest {
   }
 
   @Test
-  void getModulesByCategory_returnsSixVerticalModules() {
+  void getModulesByCategory_returnsSevenVerticalModules() {
     var vertical = registry.getModulesByCategory(ModuleCategory.VERTICAL);
 
-    assertThat(vertical).hasSize(6);
+    assertThat(vertical).hasSize(7);
     assertThat(vertical)
         .extracting(VerticalModuleRegistry.ModuleDefinition::id)
         .containsExactlyInAnyOrder(
@@ -177,7 +179,8 @@ class VerticalModuleRegistryTest {
             "conflict_check",
             "regulatory_deadlines",
             "lssa_tariff",
-            "disbursements");
+            "disbursements",
+            "matter_closure");
   }
 
   @Test

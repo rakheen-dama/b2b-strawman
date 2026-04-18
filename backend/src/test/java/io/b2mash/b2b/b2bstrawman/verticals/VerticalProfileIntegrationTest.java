@@ -106,7 +106,8 @@ class VerticalProfileIntegrationTest {
                     "conflict_check",
                     "lssa_tariff",
                     "trust_accounting",
-                    "disbursements")))
+                    "disbursements",
+                    "matter_closure")))
         .andExpect(jsonPath("$.terminologyNamespace").value("en-ZA-legal"));
 
     // Verify audit event was logged

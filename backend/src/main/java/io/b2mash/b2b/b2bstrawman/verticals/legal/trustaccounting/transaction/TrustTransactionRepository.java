@@ -103,6 +103,27 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("asOfDate") LocalDate asOfDate);
 
   /**
+   * Sums the per-matter trust balance by projectId, applying the same credit/debit sign rules as
+   * {@link #calculateClientBalanceAsOfDate}. Used by the matter closure gate {@code
+   * TRUST_BALANCE_ZERO} (Phase 67 §67.3.4 gate 1) — a matter cannot close while it holds client
+   * funds.
+   */
+  @Query(
+      """
+      SELECT COALESCE(SUM(
+        CASE
+          WHEN t.transactionType IN ('DEPOSIT', 'TRANSFER_IN', 'INTEREST_CREDIT') THEN t.amount
+          WHEN t.transactionType IN ('PAYMENT', 'TRANSFER_OUT', 'FEE_TRANSFER', 'REFUND', 'INTEREST_LPFF') THEN -t.amount
+          ELSE 0
+        END
+      ), 0)
+      FROM TrustTransaction t
+      WHERE t.projectId = :projectId
+        AND t.status IN ('RECORDED', 'APPROVED')
+      """)
+  BigDecimal calculateBalanceByProjectId(@Param("projectId") UUID projectId);
+
+  /**
    * Finds unmatched candidate transactions for bank reconciliation auto-matching. Candidates are
    * RECORDED or APPROVED transactions that have not yet been matched to a bank statement line,
    * within the specified date range.

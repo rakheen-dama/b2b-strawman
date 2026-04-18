@@ -64,6 +64,13 @@ public class Project {
   private UUID archivedBy;
 
   /**
+   * Timestamp of the matter's CLOSED transition (Phase 67, ADR-248). Nullable — only set while the
+   * project is in status CLOSED. Cleared by {@link #reopenMatter()}.
+   */
+  @Column(name = "closed_at")
+  private Instant closedAt;
+
+  /**
    * Retention clock anchor (ADR-249 minimal slice). Stamped exactly once on the first transition to
    * COMPLETED and never overwritten — re-completing a reopened matter preserves the earliest anchor
    * so the retention sweep evaluates against the original trigger. When Phase 67 (GAP-L-07)
@@ -162,6 +169,10 @@ public class Project {
     return archivedBy;
   }
 
+  public Instant getClosedAt() {
+    return closedAt;
+  }
+
   public Instant getRetentionClockStartedAt() {
     return retentionClockStartedAt;
   }
@@ -241,12 +252,49 @@ public class Project {
 
   /** Reopens a COMPLETED or ARCHIVED project back to ACTIVE. Clears lifecycle timestamps. */
   public void reopen() {
+    if (this.status == ProjectStatus.CLOSED) {
+      reopenMatter();
+      return;
+    }
     requireTransition(ProjectStatus.ACTIVE, "reopen");
     this.status = ProjectStatus.ACTIVE;
     this.completedAt = null;
     this.completedBy = null;
     this.archivedAt = null;
     this.archivedBy = null;
+    this.updatedAt = Instant.now();
+  }
+
+  /**
+   * Marks the project CLOSED (Phase 67, ADR-248). Valid from ACTIVE or COMPLETED. Records {@code
+   * closedAt} and, on the first transition only, stamps {@code retentionClockStartedAt} (ADR-249 —
+   * the canonical anchor now lives here rather than in {@link #complete(UUID)}, per the field's
+   * javadoc).
+   *
+   * <p>489A-minimal signature: takes only the acting member id. The full {@code closeMatter(UUID,
+   * ClosureRequest)} service hook lands in 489B.
+   */
+  @SuppressWarnings("unused") // memberId captured by MatterClosureService in 489B
+  public void closeMatter(UUID memberId) {
+    requireTransition(ProjectStatus.CLOSED, "close");
+    this.status = ProjectStatus.CLOSED;
+    this.closedAt = Instant.now();
+    if (this.retentionClockStartedAt == null) {
+      this.retentionClockStartedAt = this.closedAt;
+    }
+    this.updatedAt = Instant.now();
+  }
+
+  /**
+   * Reopens a CLOSED matter back to ACTIVE (Phase 67, ADR-248). Clears {@code closedAt} but
+   * deliberately preserves {@code retentionClockStartedAt} — the canonical anchor is the earliest
+   * closure event, and the soft-cancel of retention lives on the RetentionPolicy row (ADR-249;
+   * wired in 489B).
+   */
+  public void reopenMatter() {
+    requireTransition(ProjectStatus.ACTIVE, "reopen");
+    this.status = ProjectStatus.ACTIVE;
+    this.closedAt = null;
     this.updatedAt = Instant.now();
   }
 

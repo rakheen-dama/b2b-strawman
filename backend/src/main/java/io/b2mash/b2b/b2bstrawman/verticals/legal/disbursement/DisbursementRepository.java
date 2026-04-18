@@ -45,6 +45,14 @@ public interface DisbursementRepository extends JpaRepository<LegalDisbursement,
   long countByProjectIdAndApprovalStatusIn(UUID projectId, Collection<String> statuses);
 
   /**
+   * Counts disbursements on a project matching both approval and billing status (e.g. APPROVED +
+   * UNBILLED → the "approved-but-unbilled" backlog blocking closure). Used by matter closure gate
+   * {@code ALL_DISBURSEMENTS_SETTLED}.
+   */
+  long countByProjectIdAndApprovalStatusAndBillingStatus(
+      UUID projectId, String approvalStatus, String billingStatus);
+
+  /**
    * Returns all disbursements on a project with {@code incurredDate} within the given inclusive
    * range, ordered by category then incurred date. Used for Statement of Account generation.
    */

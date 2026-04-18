@@ -156,6 +156,18 @@ public class VerticalModuleRegistry {
             List.of("legal-za"),
             List.of(new NavItem("/legal/disbursements", "Disbursements", "legal"))));
 
+    map.put(
+        "matter_closure",
+        new ModuleDefinition(
+            "matter_closure",
+            "Matter Closure",
+            "Compliance-gated closure workflow for legal matters (trust zero, disbursements"
+                + " settled, final bill, retention clock)",
+            "active",
+            ModuleCategory.VERTICAL,
+            List.of("legal-za"),
+            List.of()));
+
     this.modules = Map.copyOf(map);
   }
 

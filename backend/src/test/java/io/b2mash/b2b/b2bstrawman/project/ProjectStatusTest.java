@@ -9,13 +9,15 @@ class ProjectStatusTest {
   @Test
   void allowedTransitions_active() {
     assertThat(ProjectStatus.ACTIVE.allowedTransitions())
-        .containsExactlyInAnyOrder(ProjectStatus.COMPLETED, ProjectStatus.ARCHIVED);
+        .containsExactlyInAnyOrder(
+            ProjectStatus.COMPLETED, ProjectStatus.ARCHIVED, ProjectStatus.CLOSED);
   }
 
   @Test
   void allowedTransitions_completed() {
     assertThat(ProjectStatus.COMPLETED.allowedTransitions())
-        .containsExactlyInAnyOrder(ProjectStatus.ARCHIVED, ProjectStatus.ACTIVE);
+        .containsExactlyInAnyOrder(
+            ProjectStatus.ARCHIVED, ProjectStatus.ACTIVE, ProjectStatus.CLOSED);
   }
 
   @Test

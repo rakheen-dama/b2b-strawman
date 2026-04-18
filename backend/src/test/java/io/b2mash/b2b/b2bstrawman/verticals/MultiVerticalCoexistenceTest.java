@@ -130,7 +130,11 @@ class MultiVerticalCoexistenceTest {
                       var settings = orgSettingsService.getOrCreateForCurrentTenant();
                       settings.setEnabledModules(
                           List.of(
-                              "court_calendar", "conflict_check", "lssa_tariff", "disbursements"));
+                              "court_calendar",
+                              "conflict_check",
+                              "lssa_tariff",
+                              "disbursements",
+                              "matter_closure"));
                       orgSettingsRepository.save(settings);
                     }));
 
@@ -558,6 +562,23 @@ class MultiVerticalCoexistenceTest {
         () ->
             assertThat(moduleGuard.isModuleEnabled("disbursements"))
                 .as("accounting-za tenant should NOT have disbursements enabled")
+                .isFalse());
+  }
+
+  // ===== 489A: Matter Closure Module Coexistence =====
+
+  @Test
+  void matterClosureModuleEnabledOnlyForLegalTenant() {
+    runInLegalTenant(
+        () ->
+            assertThat(moduleGuard.isModuleEnabled("matter_closure"))
+                .as("legal-za tenant should have matter_closure enabled")
+                .isTrue());
+
+    runInAccountingTenant(
+        () ->
+            assertThat(moduleGuard.isModuleEnabled("matter_closure"))
+                .as("accounting-za tenant should NOT have matter_closure enabled")
                 .isFalse());
   }
 

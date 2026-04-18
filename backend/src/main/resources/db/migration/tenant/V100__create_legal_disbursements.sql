@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS legal_disbursements (
     approved_at           TIMESTAMPTZ,
     approval_notes        TEXT,
     billing_status        VARCHAR(20) NOT NULL DEFAULT 'UNBILLED',
-    invoice_line_id       UUID,
+    invoice_line_id       UUID REFERENCES invoice_lines(id) ON DELETE SET NULL,
     write_off_reason      TEXT,
     created_by            UUID NOT NULL,
     created_at            TIMESTAMPTZ NOT NULL DEFAULT now(),

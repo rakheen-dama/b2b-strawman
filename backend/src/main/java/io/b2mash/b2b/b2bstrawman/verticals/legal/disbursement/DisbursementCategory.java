@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement;
 
+import java.util.Locale;
+
 /**
  * Category of a legal disbursement — out-of-pocket costs incurred on behalf of clients.
  *
@@ -29,7 +31,7 @@ public enum DisbursementCategory {
       throw new IllegalArgumentException("Disbursement category must not be null");
     }
     try {
-      return valueOf(value.toUpperCase());
+      return valueOf(value.toUpperCase(Locale.ROOT));
     } catch (IllegalArgumentException e) {
       throw new IllegalArgumentException("Unknown disbursement category: " + value);
     }

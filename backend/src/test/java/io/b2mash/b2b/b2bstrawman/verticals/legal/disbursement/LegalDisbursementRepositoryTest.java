@@ -232,6 +232,10 @@ class LegalDisbursementRepositoryTest {
                               // through direct DB update.
                               jdbcUpdateExpectConstraintFailure(saved.getId());
                             }))
+                // Hibernate/Spring may surface the CHECK constraint as any of
+                // DataIntegrityViolationException (most common), UncategorizedSQLException, or
+                // DataAccessException depending on driver/translator chain. Accept any: all three
+                // prove the CHECK fired at DB level.
                 .satisfiesAnyOf(
                     t ->
                         assertThat(t)

@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementPaymen
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.VatTreatment;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
@@ -24,7 +25,8 @@ public record CreateDisbursementRequest(
         String description,
     @NotNull(message = "amount is required") @Positive(message = "amount must be positive")
         BigDecimal amount,
-    String currency,
+    @Pattern(regexp = "^[A-Z]{3}$", message = "currency must be a 3-letter ISO code")
+        String currency,
     @NotNull(message = "category is required") DisbursementCategory category,
     VatTreatment vatTreatment,
     @NotNull(message = "paymentSource is required") DisbursementPaymentSource paymentSource,

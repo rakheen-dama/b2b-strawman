@@ -176,14 +176,17 @@ class DisbursementControllerIntegrationTest {
   void create_onNonLegalTenant_isBlockedByModuleGuard() throws Exception {
     // consulting-za profile does not enable the "disbursements" module, so the module guard
     // in DisbursementService.create() must reject the call.
-    // ModuleNotEnabledException is mapped to HTTP 403.
+    // ModuleNotEnabledException is mapped to HTTP 403 with an RFC 9457 ProblemDetail body.
     mockMvc
         .perform(
             post("/api/legal/disbursements")
                 .with(TestJwtFactory.ownerJwt(NON_LEGAL_ORG_ID, "user_disb_ctrl_consulting_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(createRequestJson(nonLegalProjectId, nonLegalCustomerId, "Blocked body")))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Module not enabled"))
+        .andExpect(jsonPath("$.detail").exists());
   }
 
   // --- 486.16: Capability guard ---

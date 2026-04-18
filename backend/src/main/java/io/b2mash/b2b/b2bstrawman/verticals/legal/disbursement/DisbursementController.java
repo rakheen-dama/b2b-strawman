@@ -1,10 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement;
 
-import io.b2mash.b2b.b2bstrawman.document.Document;
-import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.ApprovalDecisionRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.CreateDisbursementRequest;
@@ -42,16 +38,9 @@ import org.springframework.web.multipart.MultipartFile;
 public class DisbursementController {
 
   private final DisbursementService disbursementService;
-  private final DocumentRepository documentRepository;
-  private final StorageService storageService;
 
-  public DisbursementController(
-      DisbursementService disbursementService,
-      DocumentRepository documentRepository,
-      StorageService storageService) {
+  public DisbursementController(DisbursementService disbursementService) {
     this.disbursementService = disbursementService;
-    this.documentRepository = documentRepository;
-    this.storageService = storageService;
   }
 
   @PostMapping
@@ -109,41 +98,18 @@ public class DisbursementController {
     if (file == null || file.isEmpty()) {
       throw new InvalidStateException("Invalid file", "Receipt file must not be empty");
     }
-    var existing = disbursementService.get(id); // also runs module guard + not-found
-    var memberId = RequestScopes.requireMemberId();
-
-    var document =
-        new Document(
-            existing.projectId(),
-            file.getOriginalFilename() != null ? file.getOriginalFilename() : "receipt",
-            file.getContentType() != null ? file.getContentType() : "application/octet-stream",
-            file.getSize(),
-            memberId);
-    var savedDoc = documentRepository.save(document);
-
-    var tenantId = RequestScopes.getTenantIdOrNull();
-    var s3Key =
-        "tenants/"
-            + (tenantId != null ? tenantId : "default")
-            + "/disbursements/"
-            + id
-            + "/receipt-"
-            + savedDoc.getId();
     try {
-      storageService.upload(
-          s3Key,
-          file.getInputStream(),
-          file.getSize(),
-          file.getContentType() != null ? file.getContentType() : "application/octet-stream");
+      return ResponseEntity.ok(
+          disbursementService.uploadReceipt(
+              id,
+              file.getInputStream(),
+              file.getOriginalFilename(),
+              file.getContentType(),
+              file.getSize()));
     } catch (IOException e) {
       throw new InvalidStateException(
-          "Upload failed", "Could not upload receipt: " + e.getMessage());
+          "Upload failed", "Could not read receipt bytes: " + e.getMessage());
     }
-    savedDoc.assignS3Key(s3Key);
-    savedDoc.confirmUpload();
-    documentRepository.save(savedDoc);
-
-    return ResponseEntity.ok(disbursementService.attachReceipt(id, savedDoc.getId()));
   }
 
   @GetMapping("/{id}")

@@ -1,7 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement;
 
+import io.b2mash.b2b.b2bstrawman.document.Document;
+import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.ApprovalDecisionRequest;
@@ -15,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.event.Disbursement
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.event.DisbursementRejectedEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -51,16 +55,22 @@ public class DisbursementService {
 
   private final DisbursementRepository disbursementRepository;
   private final TrustTransactionRepository trustTransactionRepository;
+  private final DocumentRepository documentRepository;
+  private final StorageService storageService;
   private final VerticalModuleGuard moduleGuard;
   private final ApplicationEventPublisher eventPublisher;
 
   public DisbursementService(
       DisbursementRepository disbursementRepository,
       TrustTransactionRepository trustTransactionRepository,
+      DocumentRepository documentRepository,
+      StorageService storageService,
       VerticalModuleGuard moduleGuard,
       ApplicationEventPublisher eventPublisher) {
     this.disbursementRepository = disbursementRepository;
     this.trustTransactionRepository = trustTransactionRepository;
+    this.documentRepository = documentRepository;
+    this.storageService = storageService;
     this.moduleGuard = moduleGuard;
     this.eventPublisher = eventPublisher;
   }
@@ -242,7 +252,10 @@ public class DisbursementService {
           "Invalid billing", "invoiceLineId is required to mark a disbursement billed");
     }
     var actorId = RequestScopes.requireMemberId();
-    var entity = requireDisbursement(id);
+    var entity =
+        disbursementRepository
+            .findByIdForUpdate(id)
+            .orElseThrow(() -> new ResourceNotFoundException("LegalDisbursement", id));
     try {
       entity.markBilled(invoiceLineId);
     } catch (IllegalStateException e) {
@@ -267,10 +280,7 @@ public class DisbursementService {
   public List<DisbursementResponse> list(
       UUID projectId, String billingStatus, String approvalStatus) {
     moduleGuard.requireModule(MODULE_ID);
-    return disbursementRepository.findAll().stream()
-        .filter(d -> projectId == null || projectId.equals(d.getProjectId()))
-        .filter(d -> billingStatus == null || billingStatus.equals(d.getBillingStatus()))
-        .filter(d -> approvalStatus == null || approvalStatus.equals(d.getApprovalStatus()))
+    return disbursementRepository.findFiltered(projectId, billingStatus, approvalStatus).stream()
         .map(DisbursementResponse::from)
         .toList();
   }
@@ -290,16 +300,48 @@ public class DisbursementService {
         .toList();
   }
 
-  // ---------- Internal helpers ----------
+  // ---------- Receipt upload ----------
 
-  /** Sets the receipt document id on a disbursement (called from the multipart receipt upload). */
+  /**
+   * Orchestrates a receipt upload against a disbursement: creates the {@link Document} row, streams
+   * the bytes to S3 under a tenant-scoped key, marks the document {@code UPLOADED}, then sets the
+   * receipt pointer on the disbursement. All side-effects run inside a single transaction so a
+   * storage failure rolls back the document row.
+   */
   @Transactional
-  public DisbursementResponse attachReceipt(UUID id, UUID documentId) {
+  public DisbursementResponse uploadReceipt(
+      UUID id, InputStream content, String filename, String contentType, long size) {
     moduleGuard.requireModule(MODULE_ID);
     var entity = requireDisbursement(id);
-    entity.setReceiptDocumentId(documentId);
+    var memberId = RequestScopes.requireMemberId();
+
+    var resolvedFilename = filename != null ? filename : "receipt";
+    var resolvedContentType = contentType != null ? contentType : "application/octet-stream";
+
+    var document =
+        new Document(entity.getProjectId(), resolvedFilename, resolvedContentType, size, memberId);
+    var savedDoc = documentRepository.save(document);
+
+    var tenantId = RequestScopes.getTenantIdOrNull();
+    var s3Key =
+        "tenants/"
+            + (tenantId != null ? tenantId : "default")
+            + "/disbursements/"
+            + id
+            + "/receipt-"
+            + savedDoc.getId();
+
+    storageService.upload(s3Key, content, size, resolvedContentType);
+
+    savedDoc.assignS3Key(s3Key);
+    savedDoc.confirmUpload();
+    documentRepository.save(savedDoc);
+
+    entity.setReceiptDocumentId(savedDoc.getId());
     return DisbursementResponse.from(disbursementRepository.save(entity));
   }
+
+  // ---------- Internal helpers ----------
 
   private LegalDisbursement requireDisbursement(UUID id) {
     return disbursementRepository

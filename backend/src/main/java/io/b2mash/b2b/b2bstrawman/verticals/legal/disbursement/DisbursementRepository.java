@@ -1,10 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement;
 
+import jakarta.persistence.LockModeType;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -21,6 +24,23 @@ public interface DisbursementRepository extends JpaRepository<LegalDisbursement,
   long countByProjectIdAndApprovalStatusIn(UUID projectId, Collection<String> statuses);
 
   /**
+   * Null-tolerant compound filter for the list endpoint. Any of the three parameters may be null;
+   * null means "don't filter on this column". Filters run at the database so the JVM never loads
+   * rows outside the projection.
+   */
+  @Query(
+      """
+      SELECT d FROM LegalDisbursement d
+      WHERE (:projectId IS NULL OR d.projectId = :projectId)
+        AND (:billingStatus IS NULL OR d.billingStatus = :billingStatus)
+        AND (:approvalStatus IS NULL OR d.approvalStatus = :approvalStatus)
+      """)
+  List<LegalDisbursement> findFiltered(
+      @Param("projectId") UUID projectId,
+      @Param("billingStatus") String billingStatus,
+      @Param("approvalStatus") String approvalStatus);
+
+  /**
    * Returns all APPROVED disbursements on a project within the given incurred-date range, ordered
    * by category then date. Used to build the Statement of Account (§67.4 / Epic 491).
    */
@@ -35,4 +55,13 @@ public interface DisbursementRepository extends JpaRepository<LegalDisbursement,
       """)
   List<LegalDisbursement> findForStatement(
       @Param("projectId") UUID projectId, @Param("from") LocalDate from, @Param("to") LocalDate to);
+
+  /**
+   * Pessimistic-write load used by state-mutating flows (e.g. {@code markBilled}) to prevent
+   * concurrent transitions through the same row. Matches the pattern in {@code
+   * TrustTransactionRepository#findByIdForUpdate}.
+   */
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT d FROM LegalDisbursement d WHERE d.id = :id")
+  Optional<LegalDisbursement> findByIdForUpdate(@Param("id") UUID id);
 }

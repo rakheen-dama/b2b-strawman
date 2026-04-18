@@ -129,7 +129,8 @@ class MultiVerticalCoexistenceTest {
                     tx -> {
                       var settings = orgSettingsService.getOrCreateForCurrentTenant();
                       settings.setEnabledModules(
-                          List.of("court_calendar", "conflict_check", "lssa_tariff"));
+                          List.of(
+                              "court_calendar", "conflict_check", "lssa_tariff", "disbursements"));
                       orgSettingsRepository.save(settings);
                     }));
 
@@ -541,6 +542,23 @@ class MultiVerticalCoexistenceTest {
                       .isEqualTo("NO_CONFLICT");
                   assertThat(response.conflictsFound()).isEmpty();
                 }));
+  }
+
+  // ===== 486A: Disbursements Module Coexistence =====
+
+  @Test
+  void disbursementsModuleEnabledOnlyForLegalTenant() {
+    runInLegalTenant(
+        () ->
+            assertThat(moduleGuard.isModuleEnabled("disbursements"))
+                .as("legal-za tenant should have disbursements enabled")
+                .isTrue());
+
+    runInAccountingTenant(
+        () ->
+            assertThat(moduleGuard.isModuleEnabled("disbursements"))
+                .as("accounting-za tenant should NOT have disbursements enabled")
+                .isFalse());
   }
 
   // ===== Helpers =====

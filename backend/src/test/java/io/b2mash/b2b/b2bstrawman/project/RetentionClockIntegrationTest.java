@@ -104,13 +104,9 @@ class RetentionClockIntegrationTest {
         .isEqualTo(t0);
   }
 
-  @Test
-  void retentionClockStartedAt_nullForActiveProjects() throws Exception {
-    String projectId =
-        TestEntityHelper.createProject(
-            mockMvc, OWNER_JWT, "Retention clock null while ACTIVE", "retention clock test");
-    assertThat(loadRetentionClock(projectId)).isNull();
-  }
+  // The "null while ACTIVE" case is covered by the first assertion in
+  // retentionClockStartedAt_setsOnFirstCompletion above — a standalone test duplicates that
+  // assertion at the cost of another tenant-scoped API round-trip.
 
   // --- Helpers ---
 

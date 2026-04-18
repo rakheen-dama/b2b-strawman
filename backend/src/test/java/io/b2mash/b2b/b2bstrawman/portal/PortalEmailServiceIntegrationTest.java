@@ -14,7 +14,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import jakarta.mail.internet.MimeMessage;
 import java.util.UUID;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,8 +22,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.DynamicPropertyRegistry;
-import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest
@@ -33,23 +30,10 @@ import org.springframework.transaction.support.TransactionTemplate;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class PortalEmailServiceIntegrationTest {
 
-  private static final GreenMail greenMail;
-
-  static {
-    greenMail = new GreenMail(new com.icegreen.greenmail.util.ServerSetup(13027, null, "smtp"));
-    greenMail.start();
-  }
-
-  @DynamicPropertySource
-  static void configureGreenMail(DynamicPropertyRegistry registry) {
-    registry.add("spring.mail.host", () -> greenMail.getSmtp().getBindTo());
-    registry.add("spring.mail.port", () -> String.valueOf(greenMail.getSmtp().getPort()));
-    registry.add("spring.mail.username", () -> "");
-    registry.add("spring.mail.password", () -> "");
-    registry.add("spring.mail.properties.mail.smtp.auth", () -> "false");
-    registry.add("spring.mail.properties.mail.smtp.starttls.enable", () -> "false");
-    registry.add("docteams.email.sender-address", () -> "test@docteams.app");
-  }
+  // JVM-singleton GreenMail on port 13025 (see GreenMailTestSupport + application-test.yml).
+  // Test resets the inbox in @BeforeEach for isolation.
+  private static final GreenMail greenMail =
+      io.b2mash.b2b.b2bstrawman.testutil.GreenMailTestSupport.getInstance();
 
   private static final String ORG_ID = "org_portal_email_test";
   private static final String CONTACT_EMAIL = "portal-contact@test.com";
@@ -102,10 +86,8 @@ class PortalEmailServiceIntegrationTest {
                     }));
   }
 
-  @AfterAll
-  static void stopGreenMail() {
-    greenMail.stop();
-  }
+  // No @AfterAll stop() — greenMail is a JVM singleton (shutdown hook in GreenMailTestSupport
+  // handles process-exit cleanup). Stopping it here would break later test classes.
 
   @BeforeEach
   void resetGreenMail() throws Exception {

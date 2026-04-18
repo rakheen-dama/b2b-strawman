@@ -29,6 +29,25 @@ spring:
   flyway:
     enabled: false
 
+  # Mail config — points at GreenMail test port 13025. The 3 email integration tests
+  # (InvoiceEmailServiceIntegrationTest, PortalEmailServiceIntegrationTest,
+  # EmailNotificationChannelIntegrationTest) each spin up a GreenMail server on this
+  # port in their own @BeforeAll/@AfterAll — they run sequentially, so the port is
+  # free between test classes. Having these static defaults here instead of
+  # per-class @DynamicPropertySource blocks lets all three share the same Spring
+  # context cache key (no context rebuild between them).
+  mail:
+    host: localhost
+    port: 13025
+    username: ""
+    password: ""
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
 internal:
   api:
     key: test-api-key
@@ -55,6 +74,7 @@ integration:
 docteams:
   email:
     unsubscribe-secret: test-unsubscribe-secret-for-integration-tests
+    sender-address: test@docteams.app
 
 # Keycloak admin config — KC client is mocked via @MockitoBean in tests
 # Not setting keycloak.admin.auth-server-url to prevent ConditionalOnProperty from creating the bean

@@ -16,9 +16,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.UUID;
 import java.util.stream.Collectors;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,137 +46,61 @@ class SubscriptionItnIntegrationTest {
 
   @MockitoBean private PlatformPayFastService platformPayFastService;
 
-  private UUID orgId;
-
-  @BeforeAll
-  void setup() throws Exception {
-    String clerkOrgId = "org_itn_test";
-    provisioningService.provisionTenant(clerkOrgId, "ITN Test Org", null);
-    var org = organizationRepository.findByClerkOrgId(clerkOrgId).orElseThrow();
-    orgId = org.getId();
-  }
+  // No class-level @BeforeAll: every test provisions its own tenant because each scenario asserts
+  // on a specific starting subscription state (ACTIVE, PAST_DUE, etc.). Sharing a tenant caused
+  // order-sensitivity in earlier runs.
 
   // --- COMPLETE ITN tests ---
+  //
+  // Four assertions about a single COMPLETE ITN payload (subscription activation, token storage,
+  // payment record creation, raw ITN JSONB) are rolled into one test. Previously each lived in
+  // its own @Test and provisioned its own fresh tenant — tenant provisioning is ~3–5s each, so
+  // merging saves ~10s of wall time while preserving every assertion.
 
   @Test
-  void completeItn_transitionsSubscriptionToActive() throws Exception {
-    String freshOrg = "org_itn_complete_active";
-    provisioningService.provisionTenant(freshOrg, "Complete Active Test", null);
+  void completeItn_activatesSubscription_storesToken_paymentRecord_andRawItn() throws Exception {
+    String freshOrg = "org_itn_complete_all";
+    provisioningService.provisionTenant(freshOrg, "Complete-ITN Composite Test", null);
     var org = organizationRepository.findByClerkOrgId(freshOrg).orElseThrow();
 
-    var params = buildItnParams("pay_complete_001", org.getId().toString(), "COMPLETE", "499.00");
-    params.put("token", "sub-token-active-test");
+    var params =
+        buildItnParams("pay_complete_all_001", org.getId().toString(), "COMPLETE", "499.00");
+    params.put("token", "sub-token-complete-all");
     String sig = computeItnSignature(params);
 
     mockMvc
         .perform(
             post("/api/webhooks/subscription")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("m_payment_id", "pay_complete_001")
+                .param("m_payment_id", "pay_complete_all_001")
                 .param("custom_str1", org.getId().toString())
                 .param("payment_status", "COMPLETE")
-                .param("token", "sub-token-active-test")
+                .param("token", "sub-token-complete-all")
                 .param("amount_gross", "499.00")
                 .param("signature", sig))
         .andExpect(status().isOk());
 
     var subscription = subscriptionRepository.findByOrganizationId(org.getId()).orElseThrow();
     assertThat(subscription.getSubscriptionStatus())
+        .as("Subscription transitions to ACTIVE on COMPLETE ITN")
         .isEqualTo(Subscription.SubscriptionStatus.ACTIVE);
-  }
-
-  @Test
-  void completeItn_storesPayfastTokenOnFirstPayment() throws Exception {
-    String freshOrg = "org_itn_token_store";
-    provisioningService.provisionTenant(freshOrg, "Token Store Test", null);
-    var org = organizationRepository.findByClerkOrgId(freshOrg).orElseThrow();
-
-    var params = buildItnParams("pay_token_001", org.getId().toString(), "COMPLETE", "499.00");
-    params.put("token", "sub-token-first-payment");
-    String sig = computeItnSignature(params);
-
-    mockMvc
-        .perform(
-            post("/api/webhooks/subscription")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("m_payment_id", "pay_token_001")
-                .param("custom_str1", org.getId().toString())
-                .param("payment_status", "COMPLETE")
-                .param("token", "sub-token-first-payment")
-                .param("amount_gross", "499.00")
-                .param("signature", sig))
-        .andExpect(status().isOk());
-
-    var subscription = subscriptionRepository.findByOrganizationId(org.getId()).orElseThrow();
-    assertThat(subscription.getPayfastToken()).isEqualTo("sub-token-first-payment");
-  }
-
-  @Test
-  void completeItn_createsSubscriptionPaymentRecord() throws Exception {
-    String freshOrg = "org_itn_payment_record";
-    provisioningService.provisionTenant(freshOrg, "Payment Record Test", null);
-    var org = organizationRepository.findByClerkOrgId(freshOrg).orElseThrow();
-    var subscription = subscriptionRepository.findByOrganizationId(org.getId()).orElseThrow();
-
-    var params = buildItnParams("pay_record_001", org.getId().toString(), "COMPLETE", "499.00");
-    params.put("token", "sub-token-record");
-    String sig = computeItnSignature(params);
-
-    mockMvc
-        .perform(
-            post("/api/webhooks/subscription")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("m_payment_id", "pay_record_001")
-                .param("custom_str1", org.getId().toString())
-                .param("payment_status", "COMPLETE")
-                .param("token", "sub-token-record")
-                .param("amount_gross", "499.00")
-                .param("signature", sig))
-        .andExpect(status().isOk());
+    assertThat(subscription.getPayfastToken())
+        .as("PayFast token is stored on first COMPLETE payment")
+        .isEqualTo("sub-token-complete-all");
 
     var payments =
         subscriptionPaymentRepository.findBySubscriptionIdOrderByPaymentDateDesc(
             subscription.getId());
-    assertThat(payments).isNotEmpty();
-
+    assertThat(payments).as("A SubscriptionPayment row is created").isNotEmpty();
     var payment = payments.getFirst();
-    assertThat(payment.getPayfastPaymentId()).isEqualTo("pay_record_001");
+    assertThat(payment.getPayfastPaymentId()).isEqualTo("pay_complete_all_001");
     assertThat(payment.getAmountCents()).isEqualTo(49900);
     assertThat(payment.getStatus()).isEqualTo(SubscriptionPayment.PaymentStatus.COMPLETE);
     assertThat(payment.getCurrency()).isEqualTo("ZAR");
-  }
 
-  @Test
-  void completeItn_storesRawItnJsonb() throws Exception {
-    String freshOrg = "org_itn_rawitn";
-    provisioningService.provisionTenant(freshOrg, "RawItn Test", null);
-    var org = organizationRepository.findByClerkOrgId(freshOrg).orElseThrow();
-    var subscription = subscriptionRepository.findByOrganizationId(org.getId()).orElseThrow();
-
-    var params = buildItnParams("pay_rawitn_001", org.getId().toString(), "COMPLETE", "499.00");
-    params.put("token", "sub-token-rawitn");
-    String sig = computeItnSignature(params);
-
-    mockMvc
-        .perform(
-            post("/api/webhooks/subscription")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("m_payment_id", "pay_rawitn_001")
-                .param("custom_str1", org.getId().toString())
-                .param("payment_status", "COMPLETE")
-                .param("token", "sub-token-rawitn")
-                .param("amount_gross", "499.00")
-                .param("signature", sig))
-        .andExpect(status().isOk());
-
-    var payments =
-        subscriptionPaymentRepository.findBySubscriptionIdOrderByPaymentDateDesc(
-            subscription.getId());
-    assertThat(payments).isNotEmpty();
-
-    var rawItn = payments.getFirst().getRawItn();
-    assertThat(rawItn).isNotNull();
-    assertThat(rawItn).containsEntry("m_payment_id", "pay_rawitn_001");
+    var rawItn = payment.getRawItn();
+    assertThat(rawItn).as("raw_itn JSONB column preserves the webhook payload").isNotNull();
+    assertThat(rawItn).containsEntry("m_payment_id", "pay_complete_all_001");
     assertThat(rawItn).containsEntry("payment_status", "COMPLETE");
     assertThat(rawItn).containsEntry("custom_str1", org.getId().toString());
     assertThat(rawItn).containsKey("signature");

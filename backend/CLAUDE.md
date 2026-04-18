@@ -75,6 +75,11 @@ Organize by **feature**, not by layer. Each feature package contains its entity,
 - Never define private `createProject()`/`createCustomer()`/`createTask()`/`createTag()` helpers in tests — use `TestEntityHelper.*` from `testutil/`. Exception: domain-specific entity creation that includes lifecycle transitions or extra fields beyond what TestEntityHelper covers.
 - Never define private `extractIdFromLocation()` helpers in tests — use `TestEntityHelper.extractIdFromLocation(result)`
 - `TestEntityHelper.createCustomer()` creates a PROSPECT customer via the API — if your test needs an ACTIVE customer, you must still call `transitionCustomerToActive()` afterward
+- Never add `@TestPropertySource` for values that could live in `application-test.yml` — every unique property override creates a distinct Spring context cache key and costs ~2–3s per rebuild. Put defaults in the yml; use the annotation only when a value genuinely varies by test class.
+- Never add `@DynamicPropertySource` where a static value would work. It's acceptable for runtime-generated values (e.g., an ECDSA keypair for webhook signing) but not for SMTP ports, feature flags, or credentials.
+- Never define a `@MockitoBean`/`@SpyBean` for the same bean across 3+ tests — extract a `@TestConfiguration` that declares the mock once and `@Import` it. Each unique mock-bean set is a distinct context cache key.
+- Shared SMTP port for GreenMail is **13025** (set in `application-test.yml`). Don't pick new ports — reuse it. Tests run sequentially, so port reuse is safe.
+- Never re-add the `jacoco-maven-plugin` to the default `<build><plugins>` block. Coverage is opt-in via `./mvnw -Pcoverage test` (see `pom.xml` `<profiles>`).
 
 ## Spring Boot 4 / Hibernate 7 Gotchas
 
@@ -232,7 +237,9 @@ Authorization uses `@RequiresCapability` annotations on controllers. Capabilitie
 - **S3/Storage**: `InMemoryStorageService` (test utility) replaces LocalStack for all tests. Uses `ConcurrentHashMap` with the same key validation regex as `S3StorageAdapter`.
 - **REST tests**: MockMvc + Spring REST Docs (generates API documentation from tests)
 - **Test config**: `TestcontainersConfiguration.java` provides embedded Postgres + `InMemoryStorageService` beans
-- **Email tests**: GreenMail on unique fixed ports per test class (13025/13026/13027) to avoid SMTP conflicts
+- **Email tests**: Use `GreenMailTestSupport.getInstance()` (JVM singleton on port 13025). Never start your own `new GreenMail(...)` — a second instance will conflict with the singleton. SMTP properties are pre-wired in `application-test.yml` (`spring.mail.host=localhost`, `port=13025`). Call `greenMail.purgeEmailFromAllMailboxes()` in `@BeforeEach` for isolation. Do NOT stop the singleton in `@AfterAll` — other test classes share it. Mid-test `stop()`/`start()` to simulate SMTP failure is fine if wrapped in try/finally.
+- **Coverage**: JaCoCo is gated behind the `coverage` profile. Run `./mvnw -Pcoverage test` when a coverage report is needed. Do NOT re-add `jacoco-maven-plugin` to the default `<build><plugins>` block.
+- **Test conventions enforced by ArchUnit**: `TestConventionsTest` fails the build on any import of `PostgreSQLContainer`, `LocalStackContainer`, or `org.testcontainers.containers..`. Add new rules there, not scattered grep-based lints.
 - Run `TestBackendApplication.main()` for local dev with embedded Postgres (no Docker needed)
 
 ### Testcontainers Policy
@@ -253,6 +260,7 @@ All integration tests should use the shared utilities in `testutil/` instead of 
 | `TestCustomerFactory` | Create `Customer` entities with explicit lifecycle status |
 | `TestChecklistHelper` | Complete checklist items for lifecycle transitions |
 | `TestIds` | Inject IDs into JPA entities via reflection |
+| `GreenMailTestSupport` | JVM-singleton GreenMail SMTP server on port 13025 (shared across all email tests — never start your own instance) |
 
 #### Member Sync
 ```java

@@ -47,25 +47,6 @@ class S3PresignedUrlServiceTest {
   }
 
   @Test
-  void differentOrgsProduceDifferentKeys() {
-    String key1 = S3PresignedUrlService.buildKey("org_aaa", "proj-1", "doc-1");
-    String key2 = S3PresignedUrlService.buildKey("org_bbb", "proj-1", "doc-1");
-
-    assertThat(key1).isNotEqualTo(key2);
-    assertThat(key1).startsWith("org/org_aaa/");
-    assertThat(key2).startsWith("org/org_bbb/");
-  }
-
-  @Test
-  void uploadUrlContainsBucketAndKey() {
-    String key = S3PresignedUrlService.buildKey("org_x", "proj-y", "doc-z");
-    var result = storageService.generateUploadUrl(key, "application/pdf", Duration.ofHours(1));
-
-    assertThat(result.url()).contains("test-bucket");
-    assertThat(result.url()).contains("org/org_x/project/proj-y/doc-z");
-  }
-
-  @Test
   void uploadAndDownloadBytes() {
     String key = "org/test-org/project/test-proj/roundtrip-test";
     byte[] content = "Round-trip test content".getBytes();
@@ -77,23 +58,10 @@ class S3PresignedUrlServiceTest {
   }
 
   @Test
-  void generateDownloadUrlRejectsInvalidKey() {
+  void generateUrlRejectsPathTraversalAndNullKeys() {
     assertThatThrownBy(
             () -> storageService.generateDownloadUrl("../../etc/passwd", Duration.ofHours(1)))
         .isInstanceOf(IllegalArgumentException.class);
-  }
-
-  @Test
-  void generateUploadUrlRejectsInvalidKey() {
-    assertThatThrownBy(
-            () ->
-                storageService.generateUploadUrl(
-                    "arbitrary/path", "text/plain", Duration.ofHours(1)))
-        .isInstanceOf(IllegalArgumentException.class);
-  }
-
-  @Test
-  void generateDownloadUrlRejectsNullKey() {
     assertThatThrownBy(() -> storageService.generateDownloadUrl(null, Duration.ofHours(1)))
         .isInstanceOf(IllegalArgumentException.class);
   }

@@ -144,6 +144,18 @@ public class VerticalModuleRegistry {
             List.of(),
             List.of(new NavItem("/settings/automations", "Automations", "work"))));
 
+    map.put(
+        "disbursements",
+        new ModuleDefinition(
+            "disbursements",
+            "Disbursements",
+            "Out-of-pocket costs incurred on behalf of clients (sheriff fees, deeds office,"
+                + " counsel)",
+            "active",
+            ModuleCategory.VERTICAL,
+            List.of("legal-za"),
+            List.of(new NavItem("/legal/disbursements", "Disbursements", "legal"))));
+
     this.modules = Map.copyOf(map);
   }
 

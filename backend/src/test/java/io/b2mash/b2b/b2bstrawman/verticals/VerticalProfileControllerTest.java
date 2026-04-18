@@ -93,7 +93,7 @@ class VerticalProfileControllerTest {
         .perform(get("/api/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_vp_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
-        .andExpect(jsonPath("$", hasSize(8)))
+        .andExpect(jsonPath("$", hasSize(9)))
         .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(true))
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(false))
         .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(false))
@@ -133,7 +133,11 @@ class VerticalProfileControllerTest {
             jsonPath(
                 "$.enabledModules",
                 containsInAnyOrder(
-                    "court_calendar", "conflict_check", "lssa_tariff", "trust_accounting")))
+                    "court_calendar",
+                    "conflict_check",
+                    "lssa_tariff",
+                    "trust_accounting",
+                    "disbursements")))
         .andExpect(jsonPath("$.terminologyNamespace").value("en-ZA-legal"));
   }
 
@@ -168,10 +172,11 @@ class VerticalProfileControllerTest {
     mockMvc
         .perform(get("/api/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_vp_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(8)))
+        .andExpect(jsonPath("$", hasSize(9)))
         .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(false))
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(false))
-        .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(false));
+        .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(false))
+        .andExpect(jsonPath("$[?(@.id == 'disbursements')].enabled").value(false));
 
     // Switch to legal-za — all legal modules should be enabled
     mockMvc
@@ -187,11 +192,12 @@ class VerticalProfileControllerTest {
     mockMvc
         .perform(get("/api/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_vp_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(8)))
+        .andExpect(jsonPath("$", hasSize(9)))
         .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(true))
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(true))
         .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(true))
-        .andExpect(jsonPath("$[?(@.id == 'lssa_tariff')].enabled").value(true));
+        .andExpect(jsonPath("$[?(@.id == 'lssa_tariff')].enabled").value(true))
+        .andExpect(jsonPath("$[?(@.id == 'disbursements')].enabled").value(true));
   }
 
   @Test

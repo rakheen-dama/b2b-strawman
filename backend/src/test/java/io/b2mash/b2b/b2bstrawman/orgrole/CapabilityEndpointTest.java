@@ -167,9 +167,15 @@ class CapabilityEndpointTest {
         .andExpect(jsonPath("$.isAdmin").value(false))
         .andExpect(jsonPath("$.isOwner").value(false))
         .andExpect(jsonPath("$.capabilities").isArray())
-        .andExpect(jsonPath("$.capabilities.length()").value(2))
+        .andExpect(jsonPath("$.capabilities.length()").value(4))
         .andExpect(
-            jsonPath("$.capabilities", Matchers.containsInAnyOrder("VIEW_LEGAL", "VIEW_TRUST")))
+            jsonPath(
+                "$.capabilities",
+                Matchers.containsInAnyOrder(
+                    "VIEW_LEGAL",
+                    "VIEW_TRUST",
+                    "MANAGE_DISBURSEMENTS",
+                    "GENERATE_STATEMENT_OF_ACCOUNT")))
         .andExpect(jsonPath("$.role").value("Member"));
   }
 

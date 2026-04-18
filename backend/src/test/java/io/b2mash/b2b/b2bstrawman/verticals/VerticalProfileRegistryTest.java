@@ -62,7 +62,7 @@ class VerticalProfileRegistryTest {
     var p = profile.get();
     assertThat(p.enabledModules())
         .containsExactlyInAnyOrder(
-            "court_calendar", "conflict_check", "lssa_tariff", "trust_accounting");
+            "court_calendar", "conflict_check", "lssa_tariff", "trust_accounting", "disbursements");
   }
 
   @Test

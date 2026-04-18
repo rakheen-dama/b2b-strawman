@@ -7,7 +7,6 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentService;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
@@ -33,7 +32,9 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -46,9 +47,12 @@ import org.springframework.transaction.annotation.Transactional;
  *       {@link MatterClosureReport}.
  *   <li>{@link #close(UUID, ClosureRequest, UUID)} — re-evaluates gates, applies the {@code
  *       override} branch when requested, transitions the project to {@code CLOSED}, persists the
- *       closure log, renders the closure letter (best-effort), publishes {@link MatterClosedEvent},
- *       and emits an audit event. Everything runs in a single {@code @Transactional} scope except
- *       for the closure-letter rendering, which is swallowed on failure so the close commits.
+ *       closure log, publishes {@link MatterClosedEvent}, emits an audit event, and (separately)
+ *       renders the closure letter best-effort. The close + log + audit + event publication run in
+ *       ONE transaction ({@link #performClose}); letter rendering runs in its own {@code
+ *       REQUIRES_NEW} transaction ({@link #generateClosureLetterSafely}) so its failures cannot
+ *       roll back the close. Notification fanout is wired to the event's {@code AFTER_COMMIT}
+ *       phase, so listeners never see closes that rolled back.
  *   <li>{@link #reopen(UUID, ReopenRequest, UUID)} — enforces the retention window, transitions
  *       {@code CLOSED → ACTIVE}, stamps reopen details onto the most recent closure-log row, and
  *       publishes {@link MatterReopenedEvent}.
@@ -80,6 +84,13 @@ public class MatterClosureService {
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
 
+  /**
+   * Self-reference used to invoke {@link #performClose} and {@link #generateClosureLetterSafely}
+   * through Spring's transactional proxy. A direct {@code this.performClose(...)} call bypasses the
+   * proxy and would run without the declared transaction boundary — breaking the fix for C2/C3.
+   */
+  private final MatterClosureService self;
+
   public MatterClosureService(
       List<ClosureGate> gates,
       ProjectRepository projectRepository,
@@ -89,7 +100,8 @@ public class MatterClosureService {
       OrgSettingsService orgSettingsService,
       GeneratedDocumentService generatedDocumentService,
       AuditService auditService,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      @Lazy MatterClosureService self) {
     this.orderedGates = gates.stream().sorted(Comparator.comparingInt(ClosureGate::order)).toList();
     this.projectRepository = projectRepository;
     this.matterClosureLogRepository = matterClosureLogRepository;
@@ -99,6 +111,7 @@ public class MatterClosureService {
     this.generatedDocumentService = generatedDocumentService;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
+    this.self = self;
   }
 
   // ---------- evaluate ----------
@@ -121,34 +134,75 @@ public class MatterClosureService {
 
   // ---------- close ----------
 
-  @Transactional
+  /**
+   * Closes a matter. Deliberately NOT {@code @Transactional}: the orchestration runs in two
+   * separate transactional units so a failure in closure-letter rendering can never roll back the
+   * close itself (Phase 67, Epic 489B, C3).
+   *
+   * <ol>
+   *   <li>Fail-fast override-capability check (H1) — before any work.
+   *   <li>{@link #performClose} runs the close + log + audit + event in ONE transaction. On commit
+   *       the {@link MatterClosedEvent} fires its {@code AFTER_COMMIT} handlers (notifications).
+   *   <li>Closure-letter generation runs in its own {@code REQUIRES_NEW} transaction (best-effort);
+   *       any failure is swallowed so the close stays committed and the letter can be regenerated
+   *       from the UI later.
+   * </ol>
+   */
   public CloseMatterResponse close(UUID projectId, ClosureRequest req, UUID actingMemberId) {
     moduleGuard.requireModule(MODULE_ID);
 
+    // H1: fail fast on override without capability, BEFORE running gates or touching the project.
+    if (req.override()) {
+      capabilityAuthorizationService.requireCapability(OVERRIDE_CAPABILITY);
+      validateOverrideJustification(req.overrideJustification());
+    }
+
+    // Main close transaction (project state, log row, audit, event publication).
+    CloseInternalResult internal = self.performClose(projectId, req, actingMemberId);
+
+    // Letter generation in a SEPARATE transaction. Failure MUST NOT affect the close.
+    UUID closureLetterDocId = null;
+    if (req.generateClosureLetter()) {
+      closureLetterDocId =
+          self.generateClosureLetterSafely(projectId, internal.closureLogId(), actingMemberId);
+    }
+
+    // TODO(489C): persist a retention_policies row inside performClose() and soft-cancel it in
+    // reopen(). For now the API returns only the computed retentionEndsAt — the retentionPolicyId
+    // field was removed from CloseMatterResponse because nothing was persisted behind it (C4).
+    return new CloseMatterResponse(
+        projectId,
+        internal.status(),
+        internal.closedAt(),
+        internal.closureLogId(),
+        closureLetterDocId,
+        internal.retentionEndsAt());
+  }
+
+  /**
+   * Internal: the transactional core of {@link #close}. Runs gates, transitions the project,
+   * persists the closure log, emits audit + event. Letter generation is NOT done here (C3).
+   *
+   * <p>Must be invoked via the Spring proxy (through {@code self}) so the {@code @Transactional}
+   * boundary and the {@code AFTER_COMMIT} event dispatch work correctly.
+   */
+  @Transactional
+  public CloseInternalResult performClose(UUID projectId, ClosureRequest req, UUID actingMemberId) {
     var project = requireProject(projectId);
 
     // 1. Re-evaluate gates inside the transaction.
     List<GateReportItem> gateItems = runGates(project);
     boolean allPassed = gateItems.stream().allMatch(GateReportItem::passed);
 
-    // 2. Gate enforcement + override branch.
+    // 2. Gate enforcement. (Override capability was checked in close() before we entered the TX.)
     if (!allPassed && !req.override()) {
       throw new ClosureGateFailedException(
           new MatterClosureReport(projectId, Instant.now(), false, gateItems));
     }
 
-    if (req.override()) {
-      capabilityAuthorizationService.requireCapability(OVERRIDE_CAPABILITY);
-      validateOverrideJustification(req.overrideJustification());
-    }
-
     // 3. Transition the project. The entity enforces ACTIVE/COMPLETED → CLOSED via
     //    requireTransition(); it throws InvalidStateException if the source status is wrong.
-    try {
-      project.closeMatter(actingMemberId);
-    } catch (io.b2mash.b2b.b2bstrawman.exception.InvalidStateException e) {
-      throw e;
-    }
+    project.closeMatter(actingMemberId);
     var savedProject = projectRepository.save(project);
 
     // 4. Persist the closure log with the serialised gate report + override details.
@@ -163,31 +217,9 @@ public class MatterClosureService {
             gateReportJson,
             req.override(),
             req.override() ? req.overrideJustification() : null);
-
-    // 5. Generate the closure letter — best-effort. A generation failure must NOT roll back the
-    //    closure. We catch every exception, log a warning, and leave the log's
-    //    closureLetterDocumentId null so the UI can retry.
-    UUID closureLetterDocId = null;
-    if (req.generateClosureLetter()) {
-      try {
-        var result =
-            generatedDocumentService.generateForProject(
-                projectId, CLOSURE_LETTER_SLUG, actingMemberId);
-        if (result != null && result.generatedDocument() != null) {
-          closureLetterDocId = result.generatedDocument().getId();
-        }
-      } catch (RuntimeException e) {
-        log.warn(
-            "Closure letter generation failed for project={}; closure proceeds without letter",
-            projectId,
-            e);
-      }
-    }
-    closureLog.setClosureLetterDocumentId(closureLetterDocId);
-
     var savedLog = matterClosureLogRepository.save(closureLog);
 
-    // 6. Audit.
+    // 5. Audit.
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("matter_closure.closed")
@@ -197,32 +229,65 @@ public class MatterClosureService {
                 Map.of(
                     "reason", req.reason().name(),
                     "override_used", req.override(),
-                    "closure_log_id", savedLog.getId().toString(),
-                    "closure_letter_document_id",
-                        closureLetterDocId != null ? closureLetterDocId.toString() : ""))
+                    "closure_log_id", savedLog.getId().toString()))
             .build());
 
-    // 7. Publish domain event (fires synchronously before commit in the publisher thread, which
-    //    still holds the TENANT_ID ScopedValue binding the notification handler needs).
+    // 6. Publish domain event. Listeners run AFTER_COMMIT (see
+    //    MatterClosureNotificationHandler) so subscribers never see closes that rolled back.
     eventPublisher.publishEvent(
         MatterClosedEvent.of(
             projectId, savedLog.getId(), req.reason().name(), req.override(), actingMemberId));
 
-    // 8. Build response.
+    // 7. Build intermediate result (letter id is filled in by the outer orchestrator).
     int retentionYears =
         orgSettingsService.getOrCreateForCurrentTenant().getEffectiveLegalMatterRetentionYears();
     LocalDate retentionEndsAt =
         savedProject.getClosedAt().atZone(ZoneOffset.UTC).toLocalDate().plusYears(retentionYears);
 
-    return new CloseMatterResponse(
-        projectId,
+    return new CloseInternalResult(
         savedProject.getStatus().name(),
         savedProject.getClosedAt(),
         savedLog.getId(),
-        closureLetterDocId,
-        null, // retentionPolicyId — reserved for future per-matter retention row (§H of the brief)
         retentionEndsAt);
   }
+
+  /**
+   * Generates the closure letter in its own transaction and stamps the resulting document id onto
+   * the closure-log row. Any failure is swallowed — the close itself has already committed (C3).
+   *
+   * <p>{@code REQUIRES_NEW} guarantees a fresh transaction even if a caller's test harness still
+   * has one open, so a rollback here cannot poison the outer close transaction.
+   */
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public UUID generateClosureLetterSafely(UUID projectId, UUID closureLogId, UUID actingMemberId) {
+    try {
+      var result =
+          generatedDocumentService.generateForProject(
+              projectId, CLOSURE_LETTER_SLUG, actingMemberId);
+      if (result == null || result.generatedDocument() == null) {
+        return null;
+      }
+      UUID letterDocId = result.generatedDocument().getId();
+      matterClosureLogRepository
+          .findById(closureLogId)
+          .ifPresent(
+              logRow -> {
+                logRow.setClosureLetterDocumentId(letterDocId);
+                matterClosureLogRepository.save(logRow);
+              });
+      return letterDocId;
+    } catch (RuntimeException e) {
+      log.warn(
+          "Closure letter generation failed for project={}; closure proceeds without letter",
+          projectId,
+          e);
+      return null;
+    }
+  }
+
+  /** Intermediate result from {@link #performClose} feeding {@link #close}'s final response. */
+  public record CloseInternalResult(
+      String status, Instant closedAt, UUID closureLogId, LocalDate retentionEndsAt) {}
 
   // ---------- reopen ----------
 
@@ -359,10 +424,5 @@ public class MatterClosureService {
               + MIN_REOPEN_NOTES_LENGTH
               + " non-whitespace characters to reopen a matter.");
     }
-  }
-
-  @SuppressWarnings("unused")
-  private int effectiveRetentionYears(OrgSettings settings) {
-    return settings.getEffectiveLegalMatterRetentionYears();
   }
 }

@@ -29,7 +29,8 @@ public record ClosureLogResponse(
         log.getClosedAt(),
         log.getReason(),
         log.getNotes(),
-        log.getGateReport(),
+        // Defensive copy so response consumers cannot mutate the Hibernate-managed map.
+        log.getGateReport() == null ? Map.of() : Map.copyOf(log.getGateReport()),
         log.isOverrideUsed(),
         log.getOverrideJustification(),
         log.getClosureLetterDocumentId(),

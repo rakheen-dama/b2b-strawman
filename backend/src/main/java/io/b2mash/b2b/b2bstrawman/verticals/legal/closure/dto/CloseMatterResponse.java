@@ -5,10 +5,13 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 /**
- * Response returned by {@code POST /api/matters/{projectId}/closure/close}. {@code
- * retentionPolicyId} is intentionally optional — Phase 67 §67.3.5 reserves the field for a future
- * per-matter RetentionPolicy row. {@code retentionEndsAt} is computed as {@code closedAt +
- * orgSettings.effectiveLegalMatterRetentionYears}.
+ * Response returned by {@code POST /api/matters/{projectId}/closure/close}.
+ *
+ * <p>{@code retentionEndsAt} is computed as {@code closedAt +
+ * orgSettings.effectiveLegalMatterRetentionYears}. A persisted per-matter retention row (with its
+ * own {@code retentionPolicyId}) is NOT written in 489B — see TODO(489C) in {@code
+ * MatterClosureService}; do not re-add the field here until that row actually exists and the UI
+ * consumes it.
  */
 public record CloseMatterResponse(
     UUID projectId,
@@ -16,5 +19,4 @@ public record CloseMatterResponse(
     Instant closedAt,
     UUID closureLogId,
     UUID closureLetterDocumentId,
-    UUID retentionPolicyId,
     LocalDate retentionEndsAt) {}

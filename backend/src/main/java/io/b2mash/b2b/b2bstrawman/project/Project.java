@@ -9,6 +9,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -25,6 +26,21 @@ public class Project {
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
+
+  /**
+   * Optimistic-lock version (Phase 67, Epic 489B). Prevents concurrent matter closures (and any
+   * other concurrent project-state transition) from both succeeding and duplicating downstream
+   * effects (closure log rows, notifications, audit events). Hibernate increments this on every
+   * flush; concurrent writers get {@code OptimisticLockException} which maps to HTTP 409.
+   *
+   * <p>Deliberately left {@code null} on new instances so Spring Data JPA's {@code isNew()} check
+   * (which treats a null {@code @Version} as "new entity → persist") still fires a fresh INSERT. A
+   * non-null default would flip every {@code save()} into a MERGE, breaking id generation for
+   * brand-new projects. The DB column has {@code NOT NULL DEFAULT 0} so the first flush stamps 0.
+   */
+  @Version
+  @Column(name = "version", nullable = false)
+  private Long version;
 
   @Column(name = "name", nullable = false, length = 255)
   private String name;
@@ -111,6 +127,11 @@ public class Project {
 
   public UUID getId() {
     return id;
+  }
+
+  /** Hibernate-managed optimistic-lock version. Null before first flush; monotonic after. */
+  public Long getVersion() {
+    return version;
   }
 
   public String getName() {

@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateContextHelper;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureReason;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementApprovalStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementBillingStatus;
@@ -24,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Assembles the rendering context for the {@code matter-closure-letter} Tiptap template (Phase 67,
@@ -64,7 +66,12 @@ public class MatterClosureContextBuilder {
   /**
    * Returns a map with {@code project.*}, {@code customer.*}, {@code closure.*}, {@code matter.*},
    * and {@code org.*} keys suitable for Tiptap variable substitution.
+   *
+   * <p>{@code @Transactional(readOnly = true)} so Hibernate lazy associations resolve within a
+   * session — Spring Boot 4 disables OSIV by default, so the context assembly must run inside a
+   * transaction to avoid {@code LazyInitializationException} (H5).
    */
+  @Transactional(readOnly = true)
   public Map<String, Object> build(UUID projectId, ClosureRequest req) {
     var project =
         projectRepository
@@ -95,8 +102,12 @@ public class MatterClosureContextBuilder {
     }
 
     // closure.*
+    // Note: `reason` stays as the raw enum token (kept for integrations/analytics that filter by
+    // enum); `reason_label` is the user-facing display string rendered in the closure letter.
+    // CR-Minor-2: the legal-za closure-letter template binds to closure.reason_label.
     var closureMap = new LinkedHashMap<String, Object>();
     closureMap.put("reason", req.reason().name());
+    closureMap.put("reason_label", reasonLabel(req.reason()));
     closureMap.put("date", LocalDate.now(ZoneOffset.UTC).toString());
     closureMap.put("notes", req.notes() != null ? req.notes() : "");
     context.put("closure", closureMap);
@@ -150,7 +161,25 @@ public class MatterClosureContextBuilder {
     }
     LocalDate start = createdAt.atZone(ZoneOffset.UTC).toLocalDate();
     LocalDate end = LocalDate.now(ZoneOffset.UTC);
+    // Defensive: if createdAt is somehow in the future (clock skew / data corruption), clamp to 0
+    // rather than render a negative duration in the closure letter (CR nitpick).
+    if (start.isAfter(end)) {
+      return 0;
+    }
     Period between = Period.between(start, end);
     return (long) between.getYears() * 12L + between.getMonths();
+  }
+
+  /**
+   * Maps a {@link ClosureReason} enum to a user-facing label for the closure letter. Intentionally
+   * lightweight — a richer i18n story can replace this when we introduce per-locale rendering.
+   */
+  private String reasonLabel(ClosureReason reason) {
+    return switch (reason) {
+      case CONCLUDED -> "Matter concluded";
+      case CLIENT_TERMINATED -> "Client terminated engagement";
+      case REFERRED_OUT -> "Referred out";
+      case OTHER -> "Other";
+    };
   }
 }

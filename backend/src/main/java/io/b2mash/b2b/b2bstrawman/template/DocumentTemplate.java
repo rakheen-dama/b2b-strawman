@@ -362,5 +362,6 @@ public class DocumentTemplate {
 
   public void setAcceptanceEligible(boolean acceptanceEligible) {
     this.acceptanceEligible = acceptanceEligible;
+    this.updatedAt = Instant.now();
   }
 }

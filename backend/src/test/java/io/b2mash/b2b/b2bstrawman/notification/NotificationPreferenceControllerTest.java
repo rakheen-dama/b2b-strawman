@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.notification;
 
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -49,7 +50,11 @@ class NotificationPreferenceControllerTest extends AbstractIntegrationTest {
             get("/api/notifications/preferences")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_npc_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.preferences", hasSize(58)))
+        .andExpect(
+            jsonPath("$.preferences", hasSize(NotificationService.NOTIFICATION_TYPES.size())))
+        .andExpect(
+            jsonPath(
+                "$.preferences[*].notificationType", hasItems("MATTER_CLOSED", "MATTER_REOPENED")))
         .andExpect(jsonPath("$.preferences[0].notificationType").value("TASK_ASSIGNED"))
         .andExpect(jsonPath("$.preferences[0].inAppEnabled").value(true))
         .andExpect(jsonPath("$.preferences[0].emailEnabled").value(false))
@@ -80,7 +85,8 @@ class NotificationPreferenceControllerTest extends AbstractIntegrationTest {
                     }
                     """))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.preferences", hasSize(58)))
+        .andExpect(
+            jsonPath("$.preferences", hasSize(NotificationService.NOTIFICATION_TYPES.size())))
         .andExpect(jsonPath("$.preferences[0].notificationType").value("TASK_ASSIGNED"))
         .andExpect(jsonPath("$.preferences[0].inAppEnabled").value(false))
         .andExpect(jsonPath("$.preferences[0].emailEnabled").value(false));
@@ -251,7 +257,8 @@ class NotificationPreferenceControllerTest extends AbstractIntegrationTest {
             get("/api/notifications/preferences")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_npc_member")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.preferences", hasSize(58)))
+        .andExpect(
+            jsonPath("$.preferences", hasSize(NotificationService.NOTIFICATION_TYPES.size())))
         .andExpect(jsonPath("$.preferences[0].notificationType").value("TASK_ASSIGNED"))
         .andExpect(jsonPath("$.preferences[0].inAppEnabled").value(true))
         .andExpect(jsonPath("$.preferences[0].emailEnabled").value(false))

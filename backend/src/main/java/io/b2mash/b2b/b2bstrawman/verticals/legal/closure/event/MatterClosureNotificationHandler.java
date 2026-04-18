@@ -3,18 +3,21 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.closure.event;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
  * Fans out in-app notifications to org owners and admins when a matter is closed or reopened (Phase
  * 67, Epic 489B, task 489.14).
  *
- * <p>Uses plain {@link EventListener} (synchronous, publisher's transaction/thread) — the event is
- * published inside {@code MatterClosureService}'s transaction, which still holds the {@code
- * TENANT_ID} {@code ScopedValue} binding needed by {@code NotificationService} to route to the
- * correct schema. Failures inside the handler are swallowed and logged; notification failure must
- * never roll back the closure transaction.
+ * <p>Uses {@link TransactionalEventListener} with {@link TransactionPhase#AFTER_COMMIT} — the event
+ * is published inside {@code MatterClosureService}'s transaction, but the listener must only fire
+ * after that transaction successfully commits so we never deliver "Matter closed" to recipients
+ * when the close itself rolled back. {@code NotificationService.notifyAdminsAndOwners} runs in
+ * {@code REQUIRES_NEW}, so notification failures cannot affect the (already committed) close. The
+ * listener executes on the publisher thread, which retains the {@code TENANT_ID} {@code
+ * ScopedValue} binding required by {@code NotificationService} for schema routing.
  */
 @Component
 public class MatterClosureNotificationHandler {
@@ -27,7 +30,7 @@ public class MatterClosureNotificationHandler {
     this.notificationService = notificationService;
   }
 
-  @EventListener
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onMatterClosed(MatterClosedEvent event) {
     try {
       String title = "Matter closed" + (event.override() ? " (override used)" : "");
@@ -40,13 +43,17 @@ public class MatterClosureNotificationHandler {
     }
   }
 
-  @EventListener
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onMatterReopened(MatterReopenedEvent event) {
     try {
+      // NOTE: retention soft-cancel is not yet persisted (TODO 489C). The reopen clears the
+      // project's closed_at, but the canonical retention anchor (retentionClockStartedAt) and
+      // the derived retention window are preserved — see MatterClosureService.reopen and
+      // RetentionElapsedException. Messaging intentionally omits any "soft-cancel" claim.
       notificationService.notifyAdminsAndOwners(
           "MATTER_REOPENED",
           "Matter reopened",
-          "Matter reopened. Retention window soft-cancelled.",
+          "Matter reopened. Retention window unchanged.",
           "project",
           event.projectId());
     } catch (Exception e) {

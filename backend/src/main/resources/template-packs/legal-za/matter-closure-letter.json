@@ -47,7 +47,7 @@
       "type": "paragraph",
       "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Reason for closure: " },
-        { "type": "variable", "attrs": { "key": "closure.reason" } }
+        { "type": "variable", "attrs": { "key": "closure.reason_label" } }
       ]
     },
     {

@@ -259,7 +259,110 @@ class MatterClosureControllerIntegrationTest {
                 .with(TestJwtFactory.adminJwt(LEGAL_ORG_ID, "user_closure_ctrl_admin"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        // CR-Minor-3: assert the ProblemDetail body, not just the status.
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").exists());
+  }
+
+  // ==========================================================================
+  // H4 — module guard coverage for the remaining endpoints (POST /close,
+  //       POST /reopen, GET /log) on a non-legal tenant.
+  // ==========================================================================
+
+  @Test
+  void nonLegalTenant_POST_close_returns403_fromModuleGuard() throws Exception {
+    String body =
+        """
+        {
+          "reason": "CONCLUDED",
+          "notes": "attempted close on non-legal tenant",
+          "generateClosureLetter": false,
+          "override": false,
+          "overrideJustification": null
+        }
+        """;
+    mockMvc
+        .perform(
+            post("/api/matters/" + UUID.randomUUID() + "/closure/close")
+                .with(TestJwtFactory.ownerJwt(NON_LEGAL_ORG_ID, "user_closure_nonlegal_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.title").value("Module not enabled"))
+        .andExpect(jsonPath("$.moduleId").value("matter_closure"));
+  }
+
+  @Test
+  void nonLegalTenant_POST_reopen_returns403_fromModuleGuard() throws Exception {
+    String body =
+        """
+        {
+          "notes": "attempted reopen on non-legal tenant"
+        }
+        """;
+    mockMvc
+        .perform(
+            post("/api/matters/" + UUID.randomUUID() + "/closure/reopen")
+                .with(TestJwtFactory.ownerJwt(NON_LEGAL_ORG_ID, "user_closure_nonlegal_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.title").value("Module not enabled"))
+        .andExpect(jsonPath("$.moduleId").value("matter_closure"));
+  }
+
+  @Test
+  void nonLegalTenant_GET_log_returns403_fromModuleGuard() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/matters/" + UUID.randomUUID() + "/closure/log")
+                .with(TestJwtFactory.ownerJwt(NON_LEGAL_ORG_ID, "user_closure_nonlegal_owner")))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.title").value("Module not enabled"))
+        .andExpect(jsonPath("$.moduleId").value("matter_closure"));
+  }
+
+  // ==========================================================================
+  // H6 — GET /log happy path after a successful close.
+  // ==========================================================================
+
+  @Test
+  void legalTenant_GET_log_returns200_withClosureEntry_afterClose() throws Exception {
+    UUID projectId = createProject("Log Happy Matter");
+
+    String closeBody =
+        """
+        {
+          "reason": "CONCLUDED",
+          "notes": "Close for log happy-path test.",
+          "generateClosureLetter": false,
+          "override": true,
+          "overrideJustification": "%s"
+        }
+        """
+            .formatted(VALID_JUSTIFICATION);
+
+    mockMvc
+        .perform(
+            post("/api/matters/" + projectId + "/closure/close")
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(closeBody))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            get("/api/matters/" + projectId + "/closure/log")
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", org.hamcrest.Matchers.hasSize(1)))
+        .andExpect(jsonPath("$[0].projectId").value(projectId.toString()))
+        .andExpect(jsonPath("$[0].reason").value("CONCLUDED"))
+        .andExpect(jsonPath("$[0].overrideUsed").value(true))
+        .andExpect(jsonPath("$[0].closedAt").isNotEmpty())
+        .andExpect(jsonPath("$[0].reopenedAt").value(org.hamcrest.Matchers.nullValue()));
   }
 
   // ==========================================================================

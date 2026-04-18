@@ -130,7 +130,7 @@ PHASE 28 (acceptance), PHASE 6.5 (notification handlers) — all complete
 | 1a (parallel) | 486 | 486B | `DisbursementService` (CRUD, approval, writeOff, events) + `DisbursementController` + integration tests. **Done** (PR #1068) |
 | 1b (parallel) | 487 | 487A | `/unbilled?projectId=` endpoint, `DisbursementRepository.findUnbilledBillableByCustomerId`, `UnbilledTimeService`/`UnbilledTimeResponse` module-gated extension. |
 | 1c (parallel) | 488 | 488A | List page + detail page + create dialog + project-detail Disbursements tab + `frontend/lib/api/legal-disbursements.ts`. |
-| 1d (parallel) | 489 | 489A | V97 migration + `Project.CLOSED` + `ProjectLifecycleGuard` transitions + `MatterClosureLog` entity/repo + `ClosureGate` interface + 9 gate classes + gate unit tests. |
+| 1d (parallel) | 489 | 489A | V97 migration + `Project.CLOSED` + `ProjectLifecycleGuard` transitions + `MatterClosureLog` entity/repo + `ClosureGate` interface + 9 gate classes + gate unit tests. **Done** (PR #1069) |
 | 1e (parallel) | 492 | 492A | Field pack `conveyancing-za-project.json` + Property Transfer template appended to `project-template-packs/legal-za.json` + `conveyancing-za-clauses` pack with 10 clauses + profile manifest update. |
 
 ### Stage 2: Integration (unblocked by 489A + 487A)
@@ -454,7 +454,7 @@ A realistic day-by-day cadence: 486A days 1–3; fan-out days 3–7 (486B, 487A,
 
 | Slice | Tasks | Summary |
 |-------|-------|---------|
-| **489A** | 489.1–489.10 | V97 migration (projects CLOSED status + `closed_at` + `matter_closure_log` table + `invoice_lines.disbursement_id` + `invoice_lines.line_source` extended + `retention_policy.cancelled_at` + `document_templates.acceptance_eligible`), `Project.java` + `ProjectStatus.java` + `ProjectLifecycleGuard.java` extensions, `MatterClosureLog` entity + repository, `ClosureGate` interface + `GateResult` record + 9 concrete gate implementations, `matter_closure` module registered in `VerticalModuleRegistry`, `OrgSettings.legalMatterRetentionYears` field added, per-gate unit tests. Higher file count (~15) is tolerable because each gate class is ~30–60 lines. |
+| **489A** | 489.1–489.10 | V97 migration (projects CLOSED status + `closed_at` + `matter_closure_log` table + `invoice_lines.disbursement_id` + `invoice_lines.line_source` extended + `retention_policy.cancelled_at` + `document_templates.acceptance_eligible`), `Project.java` + `ProjectStatus.java` + `ProjectLifecycleGuard.java` extensions, `MatterClosureLog` entity + repository, `ClosureGate` interface + `GateResult` record + 9 concrete gate implementations, `matter_closure` module registered in `VerticalModuleRegistry`, `OrgSettings.legalMatterRetentionYears` field added, per-gate unit tests. Higher file count (~15) is tolerable because each gate class is ~30–60 lines. **Done** (PR #1069) |
 | **489B** | 489.11–489.20 | `MatterClosureService` (evaluate/close/reopen), retention-policy insert + soft-cancel wiring, 2 domain events (`MatterClosedEvent`, `MatterReopenedEvent`), `MatterClosureNotificationHandler` (Phase 6.5 pattern), `MatterClosureContextBuilder`, `MatterClosureController`, `matter-closure-letter.json` Tiptap template + pack.json manifest entry + `TemplatePackSeeder` wiring of `acceptance_eligible` flag, service + controller integration tests for all-pass path, per-gate failure, override (with + without capability), reopen (both within and beyond retention), notification fan-out. |
 
 ### Tasks

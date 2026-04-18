@@ -101,7 +101,7 @@ public class MatterClosureLog {
     this.closedBy = Objects.requireNonNull(closedBy, "closedBy must not be null");
     this.closedAt = Objects.requireNonNull(closedAt, "closedAt must not be null");
     this.reason = Objects.requireNonNull(reason, "reason must not be null");
-    this.gateReport = Objects.requireNonNull(gateReport, "gateReport must not be null");
+    this.gateReport = Map.copyOf(Objects.requireNonNull(gateReport, "gateReport must not be null"));
     this.notes = notes;
     this.overrideUsed = overrideUsed;
     this.overrideJustification = overrideJustification;
@@ -121,6 +121,9 @@ public class MatterClosureLog {
    * CHECK {@code ck_matter_closure_log_reopen_consistent} enforces "all-set or all-null".
    */
   public void recordReopen(Instant reopenedAt, UUID reopenedBy, String reopenNotes) {
+    if (this.reopenedAt != null || this.reopenedBy != null || this.reopenNotes != null) {
+      throw new IllegalStateException("reopen details already recorded");
+    }
     this.reopenedAt = Objects.requireNonNull(reopenedAt, "reopenedAt must not be null");
     this.reopenedBy = Objects.requireNonNull(reopenedBy, "reopenedBy must not be null");
     this.reopenNotes = Objects.requireNonNull(reopenNotes, "reopenNotes must not be null");

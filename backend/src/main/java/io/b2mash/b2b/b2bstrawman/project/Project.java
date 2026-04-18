@@ -252,6 +252,10 @@ public class Project {
 
   /** Reopens a COMPLETED or ARCHIVED project back to ACTIVE. Clears lifecycle timestamps. */
   public void reopen() {
+    if (this.status == ProjectStatus.CLOSED) {
+      reopenMatter();
+      return;
+    }
     requireTransition(ProjectStatus.ACTIVE, "reopen");
     this.status = ProjectStatus.ACTIVE;
     this.completedAt = null;

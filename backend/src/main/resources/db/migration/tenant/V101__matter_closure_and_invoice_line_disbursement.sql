@@ -40,6 +40,8 @@ CREATE TABLE IF NOT EXISTS matter_closure_log (
     reopen_notes                TEXT,
     created_at                  TIMESTAMPTZ NOT NULL DEFAULT now(),
 
+    CONSTRAINT fk_matter_closure_log_project
+        FOREIGN KEY (project_id) REFERENCES projects(id) ON DELETE RESTRICT,
     CONSTRAINT ck_matter_closure_log_reason
         CHECK (reason IN ('CONCLUDED','CLIENT_TERMINATED','REFERRED_OUT','OTHER')),
     CONSTRAINT ck_matter_closure_log_override_justification
@@ -93,3 +95,12 @@ ALTER TABLE document_templates
 -- ============================================================
 ALTER TABLE org_settings
     ADD COLUMN IF NOT EXISTS legal_matter_retention_years INTEGER;
+
+ALTER TABLE org_settings
+    ALTER COLUMN legal_matter_retention_years SET DEFAULT 5;
+
+ALTER TABLE org_settings
+    DROP CONSTRAINT IF EXISTS org_settings_legal_matter_retention_years_check;
+ALTER TABLE org_settings
+    ADD CONSTRAINT org_settings_legal_matter_retention_years_check
+    CHECK (legal_matter_retention_years IS NULL OR legal_matter_retention_years >= 1);

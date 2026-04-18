@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.ClosureGate;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.GateResult;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.CourtDateRepository;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -20,9 +21,11 @@ public class NoOpenCourtDatesGate implements ClosureGate {
   private static final List<String> OPEN_STATUSES = List.of("SCHEDULED", "POSTPONED");
 
   private final CourtDateRepository courtDateRepository;
+  private final Clock clock;
 
-  public NoOpenCourtDatesGate(CourtDateRepository courtDateRepository) {
+  public NoOpenCourtDatesGate(CourtDateRepository courtDateRepository, Clock clock) {
     this.courtDateRepository = courtDateRepository;
+    this.clock = clock;
   }
 
   @Override
@@ -39,7 +42,7 @@ public class NoOpenCourtDatesGate implements ClosureGate {
   public GateResult evaluate(Project project) {
     long count =
         courtDateRepository.countByProjectIdAndStatusInAndScheduledDateGreaterThanEqual(
-            project.getId(), OPEN_STATUSES, LocalDate.now());
+            project.getId(), OPEN_STATUSES, LocalDate.now(clock));
     if (count == 0) {
       return new GateResult(true, CODE, "No future court dates scheduled.", Map.of());
     }

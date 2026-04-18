@@ -6,11 +6,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -42,10 +45,24 @@ class MatterClosureLogRepositoryTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private TransactionTemplate transactionTemplate;
   @Autowired private MatterClosureLogRepository repository;
+  @Autowired private ProjectRepository projectRepository;
   @Autowired private JdbcTemplate jdbcTemplate;
 
   private String tenantSchema;
   private UUID memberId;
+
+  /** Creates a persisted project in the tenant schema and returns its id. */
+  private UUID createProject(String name) {
+    AtomicReference<UUID> id = new AtomicReference<>();
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var project = new Project(name, "test matter", memberId);
+                  id.set(projectRepository.saveAndFlush(project).getId());
+                }));
+    return id.get();
+  }
 
   @BeforeAll
   void setup() throws Exception {
@@ -71,6 +88,7 @@ class MatterClosureLogRepositoryTest {
 
   @Test
   void overrideUsedWithShortJustification_failsCheck() {
+    final UUID projectId = createProject("Short Justification Matter");
     runInTenant(
         () ->
             assertThatThrownBy(
@@ -79,7 +97,7 @@ class MatterClosureLogRepositoryTest {
                             tx -> {
                               var log =
                                   new MatterClosureLog(
-                                      UUID.randomUUID(),
+                                      projectId,
                                       memberId,
                                       Instant.now(),
                                       "CONCLUDED",
@@ -95,7 +113,7 @@ class MatterClosureLogRepositoryTest {
 
   @Test
   void overrideUsedWithValidJustification_succeeds() {
-    final UUID projectId = UUID.randomUUID();
+    final UUID projectId = createProject("Valid Justification Matter");
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
@@ -119,6 +137,7 @@ class MatterClosureLogRepositoryTest {
 
   @Test
   void invalidReason_failsReasonCheck() {
+    final UUID projectId = createProject("Invalid Reason Matter");
     runInTenant(
         () ->
             assertThatThrownBy(
@@ -127,7 +146,7 @@ class MatterClosureLogRepositoryTest {
                             tx -> {
                               var log =
                                   new MatterClosureLog(
-                                      UUID.randomUUID(),
+                                      projectId,
                                       memberId,
                                       Instant.now(),
                                       "BAD_REASON",
@@ -148,7 +167,7 @@ class MatterClosureLogRepositoryTest {
     // domain layer (Objects.requireNonNull on all three args). This test asserts the DB
     // guard independently by bypassing the entity with a raw UPDATE that sets reopened_at
     // only.
-    final UUID projectId = UUID.randomUUID();
+    final UUID projectId = createProject("Partial Reopen Matter");
     final UUID[] savedId = new UUID[1];
     runInTenant(
         () ->
@@ -179,7 +198,7 @@ class MatterClosureLogRepositoryTest {
 
   @Test
   void fullReopen_viaRecordReopen_persists() {
-    final UUID projectId = UUID.randomUUID();
+    final UUID projectId = createProject("Full Reopen Matter");
     final UUID[] savedId = new UUID[1];
     runInTenant(
         () ->
@@ -224,7 +243,7 @@ class MatterClosureLogRepositoryTest {
 
   @Test
   void findTopByProjectIdOrderByClosedAtDesc_returnsMostRecent() {
-    final UUID projectId = UUID.randomUUID();
+    final UUID projectId = createProject("Find Top Matter");
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(

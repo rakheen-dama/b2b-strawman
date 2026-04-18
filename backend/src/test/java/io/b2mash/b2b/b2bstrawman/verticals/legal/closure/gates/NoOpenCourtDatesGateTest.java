@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.CourtDateRepository;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -29,7 +30,7 @@ class NoOpenCourtDatesGateTest {
 
   @BeforeEach
   void setUp() {
-    gate = new NoOpenCourtDatesGate(repo);
+    gate = new NoOpenCourtDatesGate(repo, Clock.systemDefaultZone());
     org.mockito.Mockito.lenient().when(project.getId()).thenReturn(PROJECT_ID);
   }
 

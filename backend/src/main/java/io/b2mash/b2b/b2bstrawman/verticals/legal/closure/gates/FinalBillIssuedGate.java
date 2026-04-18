@@ -26,6 +26,8 @@ public class FinalBillIssuedGate implements ClosureGate {
 
   static final String CODE = "FINAL_BILL_ISSUED";
 
+  private static final double EPSILON = 1e-9;
+
   private static final Set<InvoiceStatus> FINAL_BILL_STATUSES =
       Set.of(InvoiceStatus.SENT, InvoiceStatus.PAID);
 
@@ -68,7 +70,7 @@ public class FinalBillIssuedGate implements ClosureGate {
         disbursementRepository.countByProjectIdAndApprovalStatusAndBillingStatus(
             projectId, "APPROVED", "UNBILLED");
 
-    boolean noUnbilledTime = unbilledHours == 0.0;
+    boolean noUnbilledTime = Math.abs(unbilledHours) < EPSILON;
     boolean noUnbilledDisbursements = unbilledDisbursements == 0;
 
     if (finalBillIssued && noUnbilledTime && noUnbilledDisbursements) {
@@ -97,7 +99,7 @@ public class FinalBillIssuedGate implements ClosureGate {
   }
 
   private static String formatHours(double hours) {
-    if (hours == Math.floor(hours)) {
+    if (Math.abs(hours - Math.floor(hours)) < EPSILON) {
       return Integer.toString((int) hours);
     }
     return "%.2f".formatted(hours);

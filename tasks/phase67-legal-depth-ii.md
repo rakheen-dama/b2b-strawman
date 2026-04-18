@@ -11,7 +11,7 @@
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 486 | Disbursement Entity + Service + Module Registration | Backend | -- | M | 486A, 486B | **Pending** |
+| 486 | Disbursement Entity + Service + Module Registration | Backend | -- | M | 486A, 486B | **In Progress** (486A done, PR #1067) |
 | 487 | Disbursement Invoicing Integration | Backend | 486, 489A | M | 487A, 487B | **Pending** |
 | 488 | Disbursement Frontend | Frontend | 486, 487 | M | 488A, 488B | **Pending** |
 | 489 | Matter Closure Workflow (Backend) | Backend | 486A | L | 489A, 489B | **Pending** |
@@ -121,7 +121,7 @@ PHASE 28 (acceptance), PHASE 6.5 (notification handlers) — all complete
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 0a | 486 | 486A | `LegalDisbursement` entity + repo + 6 enums + DTOs + `disbursements` module registration + V96 migration. |
+| 0a | 486 | 486A | `LegalDisbursement` entity + repo + 6 enums + DTOs + `disbursements` module registration + V96 migration. **Done** (PR #1067) |
 
 ### Stage 1: Fan-out (five parallel tracks after 486A)
 
@@ -203,7 +203,7 @@ A realistic day-by-day cadence: 486A days 1–3; fan-out days 3–7 (486B, 487A,
 
 | Slice | Tasks | Summary |
 |-------|-------|---------|
-| **486A** | 486.1–486.8 | V96 migration creating `legal_disbursements` (table + 5 indexes + 7 CHECK constraints), `LegalDisbursement` entity with `@PrePersist` + state-transition methods, 5 Java-side enum classes (`DisbursementCategory`, `VatTreatment`, `DisbursementPaymentSource`, `DisbursementApprovalStatus`, `DisbursementBillingStatus`), `DisbursementRepository` with base JPA methods, 6 new `Capability` enum values + default role bindings, `disbursements` module registered in `VerticalModuleRegistry` auto-enabled under `legal-za`, repository-only integration test confirming CHECK constraints fire. |
+| **486A** | 486.1–486.8 | V96 migration creating `legal_disbursements` (table + 5 indexes + 7 CHECK constraints), `LegalDisbursement` entity with `@PrePersist` + state-transition methods, 5 Java-side enum classes (`DisbursementCategory`, `VatTreatment`, `DisbursementPaymentSource`, `DisbursementApprovalStatus`, `DisbursementBillingStatus`), `DisbursementRepository` with base JPA methods, 6 new `Capability` enum values + default role bindings, `disbursements` module registered in `VerticalModuleRegistry` auto-enabled under `legal-za`, repository-only integration test confirming CHECK constraints fire. **Done** (PR #1067) |
 | **486B** | 486.9–486.16 | Request/response DTO records, `DisbursementService` (create/update/submitForApproval/approve/reject/writeOff/markBilled/listForStatement + default-VAT-per-category helper + trust-transaction validation), 3 domain events (`DisbursementApprovedEvent`, `DisbursementRejectedEvent`, `DisbursementBilledEvent`), `DisbursementController` covering all endpoints except `/unbilled` (owned by 487A) and `/receipt` multipart (covered here), full service + controller integration tests (approval lifecycle, trust-link validation both branches, capability enforcement, module guard blocks non-legal tenants). |
 
 ### Tasks

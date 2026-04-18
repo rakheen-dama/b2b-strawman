@@ -551,7 +551,7 @@
 | 484 | Terminology Key + Team Utilization Widget | Frontend | 480 | M | 484A, 484B | **Done** (PR #1051) |
 | 485 | QA Lifecycle Retarget + Screenshot Baselines | E2E/Process | 480–484 | M | 485A, 485B | **Done** (PR #1052) |
 | **Phase 67 — Legal Depth II: Daily Operational Loop** | | | | | | See [tasks/phase67-legal-depth-ii.md](tasks/phase67-legal-depth-ii.md) |
-| 486 | Disbursement Entity + Service + Module Registration | Backend | -- | M | 486A, 486B | **Pending** |
+| 486 | Disbursement Entity + Service + Module Registration | Backend | -- | M | 486A, 486B | **In Progress** (486A done, PR #1067) |
 | 487 | Disbursement Invoicing Integration | Backend | 486, 489A | M | 487A, 487B | **Pending** |
 | 488 | Disbursement Frontend | Frontend | 486, 487 | M | 488A, 488B | **Pending** |
 | 489 | Matter Closure Workflow (Backend) | Backend | 486A | L | 489A, 489B | **Pending** |

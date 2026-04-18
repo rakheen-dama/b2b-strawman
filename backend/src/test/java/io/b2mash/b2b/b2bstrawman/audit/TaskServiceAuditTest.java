@@ -205,11 +205,13 @@ class TaskServiceAuditTest {
 
               assertThat(page.getTotalElements()).isEqualTo(1);
               var event = page.getContent().getFirst();
-              // Details now always includes project_id even when no fields changed
+              // Details now always includes project_id and current title (GAP-L-05)
+              // so the activity feed can render the task identity on no-op / non-title updates.
               assertThat(event.getDetails()).isNotNull();
               assertThat(event.getDetails()).containsKey("project_id");
               assertThat(event.getDetails()).containsKey("actor_name");
-              assertThat(event.getDetails()).hasSize(2);
+              assertThat(event.getDetails()).containsEntry("title", "Same Title");
+              assertThat(event.getDetails()).hasSize(3);
             });
   }
 
@@ -373,7 +375,10 @@ class TaskServiceAuditTest {
 
               assertThat(page.getTotalElements()).isEqualTo(1);
               var event = page.getContent().getFirst();
-              assertThat(event.getDetails()).doesNotContainKey("title");
+              // GAP-L-05: title is always included as a plain string (current value) so the
+              // activity feed renders the task identity, even when title itself didn't change.
+              // Delta-tracked fields (priority here) keep their {from,to} shape.
+              assertThat(event.getDetails()).containsEntry("title", "Keep Title");
               assertThat(event.getDetails()).containsKey("priority");
             });
   }

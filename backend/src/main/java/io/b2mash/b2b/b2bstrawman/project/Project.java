@@ -63,6 +63,16 @@ public class Project {
   @Column(name = "archived_by")
   private UUID archivedBy;
 
+  /**
+   * Retention clock anchor (ADR-249 minimal slice). Stamped exactly once on the first transition to
+   * COMPLETED and never overwritten — re-completing a reopened matter preserves the earliest anchor
+   * so the retention sweep evaluates against the original trigger. When Phase 67 (GAP-L-07)
+   * introduces a distinct CLOSED state, the stamp moves from {@code complete(...)} to {@code
+   * close(...)}; this column does not change.
+   */
+  @Column(name = "retention_clock_started_at")
+  private Instant retentionClockStartedAt;
+
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "custom_fields", columnDefinition = "jsonb")
   private Map<String, Object> customFields = new HashMap<>();
@@ -152,6 +162,10 @@ public class Project {
     return archivedBy;
   }
 
+  public Instant getRetentionClockStartedAt() {
+    return retentionClockStartedAt;
+  }
+
   public String getReferenceNumber() {
     return referenceNumber;
   }
@@ -197,12 +211,22 @@ public class Project {
     this.updatedAt = Instant.now();
   }
 
-  /** Marks project COMPLETED. Records completedAt and completedBy. Only valid from ACTIVE. */
+  /**
+   * Marks project COMPLETED. Records completedAt, completedBy, and (on first transition only)
+   * retentionClockStartedAt. Only valid from ACTIVE. Re-completing a reopened project preserves the
+   * earliest retention anchor — ADR-249 (minimal slice; final home is close() in Phase 67).
+   */
   public void complete(UUID memberId) {
     requireTransition(ProjectStatus.COMPLETED, "complete");
     this.status = ProjectStatus.COMPLETED;
     this.completedAt = Instant.now();
     this.completedBy = memberId;
+    // Retention clock starts on the FIRST transition to COMPLETED and is never re-stamped
+    // by subsequent re-completions. When Phase 67 introduces CLOSED, move this assignment to
+    // close(...) — see ADR-249.
+    if (this.retentionClockStartedAt == null) {
+      this.retentionClockStartedAt = this.completedAt;
+    }
     this.updatedAt = Instant.now();
   }
 

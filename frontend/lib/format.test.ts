@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { formatFileSize } from "./format";
+import { formatCurrency, formatFileSize } from "@/lib/format";
 
 describe("formatFileSize", () => {
   it("returns '0 B' for zero bytes", () => {
@@ -24,5 +24,26 @@ describe("formatFileSize", () => {
 
   it("formats gigabytes", () => {
     expect(formatFileSize(1024 * 1024 * 1024)).toBe("1.0 GB");
+  });
+});
+
+describe("formatCurrency", () => {
+  // Regression test for GAP-L-12: Node small-icu silently formats en-ZA as en-US
+  // (e.g. "R 18,750.00") while browsers with full ICU render "R 18 750,00".
+  // The intl-polyfill imported from format.ts must normalise both paths to the
+  // browser output. Happy-dom (vitest env) uses host Node Intl, so this test
+  // reproduces the SSR bug without the polyfill and passes with it.
+  it("formats ZAR with narrow-no-break-space thousands and comma decimal (en-ZA)", () => {
+    const out = formatCurrency(18750, "ZAR");
+    expect(out).toMatch(/^R\u00A018\u00A0750,00$/);
+  });
+
+  it("formats USD with US-style separators", () => {
+    const out = formatCurrency(18750, "USD");
+    expect(out).toMatch(/^\$18,750\.00$/);
+  });
+
+  it("formats zero ZAR with correct en-ZA separators", () => {
+    expect(formatCurrency(0, "ZAR")).toMatch(/^R\u00A00,00$/);
   });
 });

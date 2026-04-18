@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@formatjs/intl-numberformat':
+        specifier: ^9.3.2
+        version: 9.3.2
       '@hookform/resolvers':
         specifier: ^5.2.2
         version: 5.2.2(react-hook-form@7.71.2(react@19.2.3))
@@ -495,6 +498,18 @@ packages:
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
+
+  '@formatjs/bigdecimal@0.2.1':
+    resolution: {integrity: sha512-WbdsKlM5RH2boxpIQH5Rd1Ph7cqTP6oG7S+1heE1+voUHBQpzq1NfxBuQ7kTitHGPiK+6OtwKJo0IwhQ2qtPPQ==}
+
+  '@formatjs/fast-memoize@3.1.2':
+    resolution: {integrity: sha512-vPnriihkfK0lzoQGaXq+qXH23VsYyansRTkTgo2aTG0k1NjLFyZimFVdfj4C9JkSE5dm7CEngcQ5TTc1yAyBfQ==}
+
+  '@formatjs/intl-localematcher@0.8.3':
+    resolution: {integrity: sha512-pHUjWb9NuhnMs8+PxQdzBtZRFJHlGhrURGAbm6Ltwl82BFajeuiIR3jblSa7ia3r62rXe/0YtVpUG3xWr5bFCA==}
+
+  '@formatjs/intl-numberformat@9.3.2':
+    resolution: {integrity: sha512-jtYKxJ8zR31y9f0T/UQpRF7030Qu/FFws/b66sGe4WXloxyAm1pHXSROWgiBkjBSxo4K4L8q7uwTra5tGTbQSw==}
 
   '@hookform/resolvers@5.2.2':
     resolution: {integrity: sha512-A/IxlMLShx3KjV/HeTcTfaMxdwy690+L/ZADoeaTltLx+CVuzkeVIPuybK3jrRfw7YZnmdKsVVHAlEPIAEUNlA==}
@@ -4708,6 +4723,19 @@ snapshots:
       react-dom: 19.2.3(react@19.2.3)
 
   '@floating-ui/utils@0.2.10': {}
+
+  '@formatjs/bigdecimal@0.2.1': {}
+
+  '@formatjs/fast-memoize@3.1.2': {}
+
+  '@formatjs/intl-localematcher@0.8.3':
+    dependencies:
+      '@formatjs/fast-memoize': 3.1.2
+
+  '@formatjs/intl-numberformat@9.3.2':
+    dependencies:
+      '@formatjs/bigdecimal': 0.2.1
+      '@formatjs/intl-localematcher': 0.8.3
 
   '@hookform/resolvers@5.2.2(react-hook-form@7.71.2(react@19.2.3))':
     dependencies:

@@ -8,14 +8,21 @@ export default function Register(
   props: PageProps<Extract<KcContext, { pageId: "register.ftl" }>, I18n>
 ) {
   const { kcContext, i18n } = props;
-  const { url, message, profile } = kcContext;
-  const { msg, msgStr } = i18n;
+  const { url, message, profile, messageHeader } = kcContext;
+  const { msg, msgStr, advancedMsgStr } = i18n;
 
   // Preserve form values on validation error via UserProfile attributes
   const attr = profile.attributesByName;
 
+  // Surface messageHeader (e.g. KC 26 org-invite flow emits a templated string
+  // that includes the target org name) via advancedMsgStr so the user has
+  // on-screen confirmation of the org they're joining. Fall back to the
+  // static "Create your account" heading when no messageHeader is present.
+  // See GAP-L-03 fix spec.
+  const title = messageHeader ? advancedMsgStr(messageHeader) : "Create your account";
+
   return (
-    <Layout title="Create your account">
+    <Layout title={title}>
       {message && message.type === "error" && (
         <div className="mb-4 rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {/* kcSanitize is Keycloak's built-in HTML sanitizer — safe for rendering server messages */}

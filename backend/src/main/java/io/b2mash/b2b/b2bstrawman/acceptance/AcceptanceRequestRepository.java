@@ -21,4 +21,12 @@ public interface AcceptanceRequestRepository extends JpaRepository<AcceptanceReq
 
   Optional<AcceptanceRequest> findByGeneratedDocumentIdAndPortalContactIdAndStatusIn(
       UUID documentId, UUID contactId, List<AcceptanceStatus> activeStatuses);
+
+  /**
+   * Counts acceptance requests for a customer whose status is in the given set. Used by matter
+   * closure gate {@code ALL_ACCEPTANCE_REQUESTS_FINAL} — acceptance requests are scoped to a
+   * customer (not a project), so the gate counts open acceptances across the matter's customer.
+   */
+  long countByCustomerIdAndStatusIn(
+      UUID customerId, java.util.Collection<AcceptanceStatus> statuses);
 }

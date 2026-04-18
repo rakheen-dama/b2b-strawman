@@ -29,4 +29,11 @@ public interface InformationRequestRepository extends JpaRepository<InformationR
   long countByStatusAndCompletedAtAfter(RequestStatus status, Instant since);
 
   long countBySentAtAfter(Instant since);
+
+  /**
+   * Counts information requests on a project whose status is in the given set. Used by matter
+   * closure gate {@code ALL_INFO_REQUESTS_CLOSED} (active statuses: SENT, IN_PROGRESS — DRAFT is
+   * not yet "sent to client" and COMPLETED/CANCELLED are terminal).
+   */
+  long countByProjectIdAndStatusIn(UUID projectId, java.util.Collection<RequestStatus> statuses);
 }

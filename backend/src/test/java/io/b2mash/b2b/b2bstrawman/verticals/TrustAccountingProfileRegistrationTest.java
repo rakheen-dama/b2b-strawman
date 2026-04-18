@@ -31,6 +31,11 @@ class TrustAccountingProfileRegistrationTest {
     assertThat(profile).isPresent();
     assertThat(profile.get().enabledModules())
         .containsExactlyInAnyOrder(
-            "court_calendar", "conflict_check", "lssa_tariff", "trust_accounting", "disbursements");
+            "court_calendar",
+            "conflict_check",
+            "lssa_tariff",
+            "trust_accounting",
+            "disbursements",
+            "matter_closure");
   }
 }

@@ -37,4 +37,12 @@ public interface CourtDateRepository extends JpaRepository<CourtDate, UUID> {
 
   List<CourtDate> findByStatusInAndScheduledDateBetween(
       List<String> statuses, LocalDate from, LocalDate to);
+
+  /**
+   * Counts court dates on a project whose status is in the given set AND whose scheduled date is on
+   * or after the given cutoff. Used by matter closure gate {@code NO_OPEN_COURT_DATES} — a matter
+   * cannot close while future court dates are scheduled (statuses {@code SCHEDULED, POSTPONED}).
+   */
+  long countByProjectIdAndStatusInAndScheduledDateGreaterThanEqual(
+      UUID projectId, java.util.Collection<String> statuses, LocalDate cutoff);
 }

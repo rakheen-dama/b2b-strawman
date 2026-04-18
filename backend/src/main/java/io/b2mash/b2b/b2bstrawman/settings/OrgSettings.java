@@ -28,6 +28,9 @@ import org.hibernate.type.SqlTypes;
 @Table(name = "org_settings")
 public class OrgSettings {
 
+  /** Default retention window (in years) for CLOSED legal matters (Phase 67, ADR-249). */
+  public static final int DEFAULT_LEGAL_MATTER_RETENTION_YEARS = 5;
+
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
@@ -185,6 +188,14 @@ public class OrgSettings {
 
   @Column(name = "information_officer_email", length = 255)
   private String informationOfficerEmail;
+
+  /**
+   * Retention period (in years) for CLOSED legal matters (Phase 67, ADR-249). When null, defaults
+   * to {@link #DEFAULT_LEGAL_MATTER_RETENTION_YEARS} — expose via {@link
+   * #getEffectiveLegalMatterRetentionYears()}.
+   */
+  @Column(name = "legal_matter_retention_years")
+  private Integer legalMatterRetentionYears;
 
   protected OrgSettings() {}
 
@@ -869,6 +880,26 @@ public class OrgSettings {
 
   public void setInformationOfficerEmail(String informationOfficerEmail) {
     this.informationOfficerEmail = informationOfficerEmail;
+    this.updatedAt = Instant.now();
+  }
+
+  public Integer getLegalMatterRetentionYears() {
+    return legalMatterRetentionYears;
+  }
+
+  /**
+   * Returns the effective legal-matter retention years, falling back to {@link
+   * #DEFAULT_LEGAL_MATTER_RETENTION_YEARS} when unset. Used by the retention-clock machinery
+   * (ADR-249) when anchoring a retention policy on matter closure.
+   */
+  public int getEffectiveLegalMatterRetentionYears() {
+    return legalMatterRetentionYears != null
+        ? legalMatterRetentionYears
+        : DEFAULT_LEGAL_MATTER_RETENTION_YEARS;
+  }
+
+  public void setLegalMatterRetentionYears(Integer legalMatterRetentionYears) {
+    this.legalMatterRetentionYears = legalMatterRetentionYears;
     this.updatedAt = Instant.now();
   }
 

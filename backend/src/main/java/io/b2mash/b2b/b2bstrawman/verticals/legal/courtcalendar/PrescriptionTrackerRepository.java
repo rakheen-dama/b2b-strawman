@@ -19,6 +19,12 @@ public interface PrescriptionTrackerRepository extends JpaRepository<Prescriptio
   List<PrescriptionTracker> findByStatusInAndPrescriptionDateLessThanEqual(
       List<String> statuses, LocalDate to);
 
+  /**
+   * Counts prescription trackers on a project whose status is in the given set. Used by matter
+   * closure gate {@code NO_OPEN_PRESCRIPTIONS} (statuses {@code RUNNING, WARNED}).
+   */
+  long countByProjectIdAndStatusIn(UUID projectId, java.util.Collection<String> statuses);
+
   @Query(
       """
       SELECT p FROM PrescriptionTracker p

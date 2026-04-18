@@ -93,7 +93,7 @@ class VerticalProfileControllerTest {
         .perform(get("/api/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_vp_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
-        .andExpect(jsonPath("$", hasSize(9)))
+        .andExpect(jsonPath("$", hasSize(10)))
         .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(true))
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(false))
         .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(false))
@@ -137,7 +137,8 @@ class VerticalProfileControllerTest {
                     "conflict_check",
                     "lssa_tariff",
                     "trust_accounting",
-                    "disbursements")))
+                    "disbursements",
+                    "matter_closure")))
         .andExpect(jsonPath("$.terminologyNamespace").value("en-ZA-legal"));
   }
 
@@ -172,7 +173,7 @@ class VerticalProfileControllerTest {
     mockMvc
         .perform(get("/api/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_vp_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(9)))
+        .andExpect(jsonPath("$", hasSize(10)))
         .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(false))
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(false))
         .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(false))
@@ -192,7 +193,7 @@ class VerticalProfileControllerTest {
     mockMvc
         .perform(get("/api/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_vp_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(9)))
+        .andExpect(jsonPath("$", hasSize(10)))
         .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(true))
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(true))
         .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(true))

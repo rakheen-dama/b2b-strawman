@@ -106,6 +106,14 @@ public class DocumentTemplate {
   @Column(name = "content_hash", length = 64)
   private String contentHash;
 
+  /**
+   * Whether this template (as generated PDF) can be attached to an AcceptanceRequest for client
+   * sign-off. Column added by V101 (Phase 67, ADR-251). Defaults to false; the closure-letter
+   * template is one example of a non-acceptance-eligible document.
+   */
+  @Column(name = "acceptance_eligible", nullable = false)
+  private boolean acceptanceEligible = false;
+
   protected DocumentTemplate() {}
 
   public DocumentTemplate(
@@ -345,6 +353,15 @@ public class DocumentTemplate {
 
   /** Explicitly bumps updatedAt — use when mutating DOCX metadata outside updateContent(). */
   void touchUpdatedAt() {
+    this.updatedAt = Instant.now();
+  }
+
+  public boolean isAcceptanceEligible() {
+    return acceptanceEligible;
+  }
+
+  public void setAcceptanceEligible(boolean acceptanceEligible) {
+    this.acceptanceEligible = acceptanceEligible;
     this.updatedAt = Instant.now();
   }
 }

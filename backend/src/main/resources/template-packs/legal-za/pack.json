@@ -1,6 +1,6 @@
 {
   "packId": "legal-za",
-  "version": 2,
+  "version": 3,
   "verticalProfile": "legal-za",
   "name": "SA Legal Templates",
   "description": "Document templates for South African law firms: engagement letters, court filings, and correspondence",
@@ -104,6 +104,17 @@
       "cssFile": null,
       "description": "Cover letter for Section 35 trust account audit submission to the Legal Practice Council.",
       "sortOrder": 10
+    },
+    {
+      "templateKey": "matter-closure-letter",
+      "name": "Matter Closure Letter",
+      "category": "CLOSURE",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "matter-closure-letter.json",
+      "cssFile": null,
+      "description": "Closure letter issued to the client at matter conclusion summarising fees, disbursements, and retention terms.",
+      "sortOrder": 11,
+      "acceptanceEligible": false
     }
   ]
 }

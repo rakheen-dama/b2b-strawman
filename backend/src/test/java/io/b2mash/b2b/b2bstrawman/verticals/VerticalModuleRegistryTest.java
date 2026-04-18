@@ -16,10 +16,10 @@ class VerticalModuleRegistryTest {
   }
 
   @Test
-  void getAllModules_returnsEightModulesWithCorrectIds() {
+  void getAllModules_returnsNineModulesWithCorrectIds() {
     var modules = registry.getAllModules();
 
-    assertThat(modules).hasSize(8);
+    assertThat(modules).hasSize(9);
     assertThat(modules)
         .extracting(VerticalModuleRegistry.ModuleDefinition::id)
         .containsExactlyInAnyOrder(
@@ -30,7 +30,8 @@ class VerticalModuleRegistryTest {
             "lssa_tariff",
             "resource_planning",
             "bulk_billing",
-            "automation_builder");
+            "automation_builder",
+            "disbursements");
   }
 
   @Test
@@ -152,7 +153,8 @@ class VerticalModuleRegistryTest {
             "court_calendar",
             "conflict_check",
             "regulatory_deadlines",
-            "lssa_tariff");
+            "lssa_tariff",
+            "disbursements");
     for (String id : verticalIds) {
       var module = registry.getModule(id);
       assertThat(module).as("module %s should be present", id).isPresent();
@@ -163,10 +165,10 @@ class VerticalModuleRegistryTest {
   }
 
   @Test
-  void getModulesByCategory_returnsFiveVerticalModules() {
+  void getModulesByCategory_returnsSixVerticalModules() {
     var vertical = registry.getModulesByCategory(ModuleCategory.VERTICAL);
 
-    assertThat(vertical).hasSize(5);
+    assertThat(vertical).hasSize(6);
     assertThat(vertical)
         .extracting(VerticalModuleRegistry.ModuleDefinition::id)
         .containsExactlyInAnyOrder(
@@ -174,6 +176,22 @@ class VerticalModuleRegistryTest {
             "court_calendar",
             "conflict_check",
             "regulatory_deadlines",
-            "lssa_tariff");
+            "lssa_tariff",
+            "disbursements");
+  }
+
+  @Test
+  void getModule_disbursementsIsActiveWithCorrectNavItems() {
+    var module = registry.getModule("disbursements");
+
+    assertThat(module).isPresent();
+    assertThat(module.get().name()).isEqualTo("Disbursements");
+    assertThat(module.get().status()).isEqualTo("active");
+    assertThat(module.get().category()).isEqualTo(ModuleCategory.VERTICAL);
+    assertThat(module.get().defaultEnabledFor()).containsExactly("legal-za");
+    assertThat(module.get().navItems()).hasSize(1);
+    assertThat(module.get().navItems().getFirst().path()).isEqualTo("/legal/disbursements");
+    assertThat(module.get().navItems().getFirst().label()).isEqualTo("Disbursements");
+    assertThat(module.get().navItems().getFirst().zone()).isEqualTo("legal");
   }
 }

@@ -177,8 +177,7 @@ class ConveyancingPackInstallTest {
                       .allSatisfy(
                           task -> {
                             assertThat(task.isBillable()).isTrue();
-                            assertThat(task.getAssigneeRole())
-                                .isIn("PROJECT_LEAD", "ANY_MEMBER", "UNASSIGNED");
+                            assertThat(task.getAssigneeRole()).isIn("PROJECT_LEAD", "ANY_MEMBER");
                           });
                 }));
   }
@@ -215,7 +214,8 @@ class ConveyancingPackInstallTest {
                           .orElseThrow();
                   assertThat(registrationDate.getVisibilityCondition())
                       .isNotNull()
-                      .containsEntry("dependsOnSlug", "lodgement_date");
+                      .containsEntry("dependsOnSlug", "lodgement_date")
+                      .containsEntry("operator", "isSet");
 
                   var deedNumber =
                       fieldDefinitionRepository
@@ -223,7 +223,8 @@ class ConveyancingPackInstallTest {
                           .orElseThrow();
                   assertThat(deedNumber.getVisibilityCondition())
                       .isNotNull()
-                      .containsEntry("dependsOnSlug", "registration_date");
+                      .containsEntry("dependsOnSlug", "registration_date")
+                      .containsEntry("operator", "isSet");
                 }));
   }
 

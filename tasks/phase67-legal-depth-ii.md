@@ -18,7 +18,7 @@
 | 490 | Matter Closure Frontend | Frontend | 489 | M | 490A, 490B | **Done** (PRs #1075, #1076) |
 | 491 | Statement of Account | Both | 486B | M | 491A, 491B | **Done** (PRs #1077, #1078) |
 | 492 | Conveyancing Pack | Backend (pack content) | 489A (for `acceptance_eligible` column) | M | 492A, 492B | **Done** (PRs #1079, #1080) |
-| 493 | QA Capstone — Lifecycle + Screenshots + Gap Report | E2E/Process | 486–492 | L | 493A | **Pending** |
+| 493 | QA Capstone — Lifecycle + Screenshots + Gap Report | E2E/Process | 486–492 | L | 493A | **Done** (PR #1081) |
 
 Slice count: **15 slices across 8 epics**. Every code slice pairs its implementation with the integration or component tests that exercise it; pack slices pair JSON content with seeder-level assertions.
 
@@ -160,7 +160,7 @@ PHASE 28 (acceptance), PHASE 6.5 (notification handlers) — all complete
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 5a | 493 | 493A | Retarget legal 90-day Keycloak lifecycle with phase 67 checkpoints + Playwright baselines under `e2e/screenshots/legal-depth-ii/` + curated documentation screenshots + `phase67-gap-report.md`. |
+| 5a | 493 | 493A | Retarget legal 90-day Keycloak lifecycle with phase 67 checkpoints + Playwright baselines under `e2e/screenshots/legal-depth-ii/` + curated documentation screenshots + `phase67-gap-report.md`. **Done** (PR #1081) |
 
 ### Timeline
 
@@ -792,7 +792,7 @@ A realistic day-by-day cadence: 486A days 1–3; fan-out days 3–7 (486B, 487A,
 
 | Slice | Tasks | Summary |
 |-------|-------|---------|
-| **493A** | 493.1–493.7 | Extend `qa/testplan/demos/legal-small-firm-90day-keycloak.md` with 6 new Phase 67 checkpoints (Day 5 disbursements, Day 14 conveyancing, Day 30 SoA, Day 45 write-off, Day 75 closure, Day 85 override). Author Playwright specs under `frontend/e2e/tests/legal-depth-ii/` capturing baselines to `frontend/e2e/screenshots/legal-depth-ii/`. Curated marketing/demo screenshots under `documentation/screenshots/legal-vertical/`. Execute end-to-end. Produce `tasks/phase67-gap-report.md` classifying any UX rough edges, missing variables, or follow-ups by severity. |
+| **493A** | 493.1–493.7 | Extend `qa/testplan/demos/legal-small-firm-90day-keycloak.md` with 6 new Phase 67 checkpoints (Day 5 disbursements, Day 14 conveyancing, Day 30 SoA, Day 45 write-off, Day 75 closure, Day 85 override). Author Playwright specs under `frontend/e2e/tests/legal-depth-ii/` capturing baselines to `frontend/e2e/screenshots/legal-depth-ii/`. Curated marketing/demo screenshots under `documentation/screenshots/legal-vertical/`. Execute end-to-end. Produce `tasks/phase67-gap-report.md` classifying any UX rough edges, missing variables, or follow-ups by severity. **Done** (PR #1081) |
 
 ### Tasks
 

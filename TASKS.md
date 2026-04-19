@@ -558,7 +558,7 @@
 | 490 | Matter Closure Frontend | Frontend | 489 | M | 490A, 490B | **Done** (PRs #1075, #1076) |
 | 491 | Statement of Account | Both | 486B | M | 491A, 491B | **Done** (PRs #1077, #1078) |
 | 492 | Conveyancing Pack | Backend | 489A | M | 492A, 492B | **Done** (PRs #1079, #1080) |
-| 493 | QA Capstone — Lifecycle + Screenshots + Gap Report | E2E/Process | 486–492 | L | 493A | **Pending** |
+| 493 | QA Capstone — Lifecycle + Screenshots + Gap Report | E2E/Process | 486–492 | L | 493A | **Done** (PR #1081) |
 
 ---
 

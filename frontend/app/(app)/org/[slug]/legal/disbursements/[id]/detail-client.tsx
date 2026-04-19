@@ -163,29 +163,23 @@ export function DisbursementDetailClient({
               value={PAYMENT_SOURCE_LABEL[disbursement.paymentSource]}
             />
             {disbursement.trustTransactionId && (
+              // TODO: wire trust transaction detail route when available. No detail page exists
+              // for trust transactions yet, so we display the id as read-only text.
               <Row
                 label="Trust Transaction"
                 value={
-                  <Link
-                    href={`/org/${slug}/trust-accounting/transactions/${disbursement.trustTransactionId}`}
-                    className="text-teal-600 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
-                  >
-                    View transaction
-                  </Link>
+                  <code className="font-mono text-xs text-slate-600 dark:text-slate-400">
+                    {disbursement.trustTransactionId}
+                  </code>
                 }
               />
             )}
             {disbursement.invoiceLineId && (
+              // TODO: wire invoice id when 488B updates the backend DTO to expose invoiceId
+              // (current DTO only has invoiceLineId which is NOT a valid /invoices/:id path).
               <Row
-                label="Invoiced on"
-                value={
-                  <Link
-                    href={`/org/${slug}/invoices/${disbursement.invoiceLineId}`}
-                    className="text-teal-600 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
-                  >
-                    View invoice
-                  </Link>
-                }
+                label="Invoiced"
+                value={<span className="text-slate-600 dark:text-slate-400">Yes</span>}
               />
             )}
             {disbursement.writeOffReason && (

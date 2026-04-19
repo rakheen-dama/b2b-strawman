@@ -205,7 +205,10 @@ export const createDisbursementSchema = z
     customerId: z.string().uuid("Please select a customer"),
     category: disbursementCategoryEnum,
     description: z.string().min(1, "Description is required").max(5000),
-    amount: z.number().gt(0, "Amount must be greater than zero"),
+    amount: z
+      .number()
+      .gt(0, "Amount must be greater than zero")
+      .lte(10_000_000, "Amount must not exceed 10,000,000"),
     vatTreatment: vatTreatmentEnum,
     paymentSource: paymentSourceEnum,
     trustTransactionId: z
@@ -233,7 +236,10 @@ export type CreateDisbursementFormData = z.infer<typeof createDisbursementSchema
 export const editDisbursementSchema = z.object({
   category: disbursementCategoryEnum,
   description: z.string().min(1, "Description is required").max(5000),
-  amount: z.number().gt(0, "Amount must be greater than zero"),
+  amount: z
+    .number()
+    .gt(0, "Amount must be greater than zero")
+    .lte(10_000_000, "Amount must not exceed 10,000,000"),
   vatTreatment: vatTreatmentEnum,
   incurredDate: z.string().min(1, "Incurred date is required"),
   supplierName: z.string().min(1, "Supplier name is required").max(200),

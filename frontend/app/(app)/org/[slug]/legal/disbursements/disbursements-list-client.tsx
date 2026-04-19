@@ -50,7 +50,11 @@ export function DisbursementsListClient({
   const selectClass =
     "flex h-9 rounded-md border border-slate-200 bg-transparent px-3 py-1 text-sm shadow-sm dark:border-slate-800";
 
+  // Tracks the most recent refetch request so out-of-order responses are discarded.
+  const requestIdRef = useRef(0);
+
   const refetch = () => {
+    const currentRequestId = ++requestIdRef.current;
     startTransition(async () => {
       try {
         const result = await fetchDisbursements({
@@ -61,9 +65,12 @@ export function DisbursementsListClient({
             | undefined,
           billingStatus: (billingFilter || undefined) as DisbursementBillingStatus | undefined,
         });
+        // Drop stale response when a newer refetch has already been issued.
+        if (requestIdRef.current !== currentRequestId) return;
         setDisbursements(result.content);
         setTotal(result.page.totalElements);
       } catch (err) {
+        if (requestIdRef.current !== currentRequestId) return;
         console.error("Failed to refetch disbursements:", err);
       }
     });
@@ -177,6 +184,11 @@ export function DisbursementsListClient({
 
         <div className="text-sm text-slate-500 dark:text-slate-400">
           {total} disbursement{total !== 1 ? "s" : ""}
+          {(dateFrom || dateTo) && visibleDisbursements.length !== total && (
+            <span className="ml-2">
+              ({visibleDisbursements.length} match current filters)
+            </span>
+          )}
           {isPending && <span className="ml-2 italic">updating...</span>}
         </div>
 

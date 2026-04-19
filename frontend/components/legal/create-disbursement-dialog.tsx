@@ -123,6 +123,10 @@ export function CreateDisbursementDialog({
       .finally(() => setProjectsLoading(false));
   }, [open]);
 
+  // Staged upload pattern: upload bytes to S3 but DO NOT confirm until the
+  // disbursement record is successfully created. If the user cancels the dialog
+  // or submission fails, we call cancelUpload() to release the staged document,
+  // preventing orphaned receipts.
   const handleFileUpload = useCallback(
     async (file: File) => {
       if (!selectedProjectId) {
@@ -146,35 +150,31 @@ export function CreateDisbursementDialog({
           return;
         }
 
-        await new Promise<void>((resolve, reject) => {
-          const xhr = new XMLHttpRequest();
-          xhr.open("PUT", initResult.presignedUrl!);
-          xhr.setRequestHeader("Content-Type", file.type);
-          xhr.upload.onprogress = (e) => {
-            if (e.lengthComputable) {
-              setUploadProgress(Math.round((e.loaded / e.total) * 100));
-            }
-          };
-          xhr.onload = () => {
-            if (xhr.status >= 200 && xhr.status < 300) resolve();
-            else reject(new Error("Upload failed"));
-          };
-          xhr.onerror = () => reject(new Error("Upload failed"));
-          xhr.send(file);
-        });
-
-        const confirmResult = await confirmUpload(
-          slug,
-          selectedProjectId,
-          initResult.documentId
-        );
-        if (!confirmResult.success) {
-          await cancelUpload(initResult.documentId);
-          setUploadError(confirmResult.error ?? "Failed to confirm upload.");
-          setIsUploading(false);
-          return;
+        try {
+          await new Promise<void>((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open("PUT", initResult.presignedUrl!);
+            xhr.setRequestHeader("Content-Type", file.type);
+            xhr.upload.onprogress = (e) => {
+              if (e.lengthComputable) {
+                setUploadProgress(Math.round((e.loaded / e.total) * 100));
+              }
+            };
+            xhr.onload = () => {
+              if (xhr.status >= 200 && xhr.status < 300) resolve();
+              else reject(new Error("Upload failed"));
+            };
+            xhr.onerror = () => reject(new Error("Upload failed"));
+            xhr.send(file);
+          });
+        } catch (uploadErr) {
+          // S3 PUT failed — cancel the initiated upload so it's not orphaned.
+          await cancelUpload(initResult.documentId).catch(() => {});
+          throw uploadErr;
         }
 
+        // Bytes are in S3 but we defer confirmUpload until after the
+        // disbursement is created. Track pending documentId for onSubmit.
         setReceiptDocumentId(initResult.documentId);
         setReceiptFileName(file.name);
         form.setValue("receiptDocumentId", initResult.documentId);
@@ -212,6 +212,18 @@ export function CreateDisbursementDialog({
         receiptDocumentId: receiptDocumentId ?? null,
       });
       if (result.success) {
+        // Disbursement created — now confirm the staged receipt upload (if any).
+        if (receiptDocumentId) {
+          const confirmResult = await confirmUpload(
+            slug,
+            values.projectId,
+            receiptDocumentId
+          ).catch(() => ({ success: false, error: "Failed to confirm receipt upload." }));
+          if (!confirmResult.success) {
+            // Non-fatal for the disbursement itself, but surface to the user.
+            console.error("Receipt confirm failed after disbursement create:", confirmResult);
+          }
+        }
         form.reset();
         vatTreatmentUserTouched.current = false;
         setReceiptDocumentId(null);
@@ -219,9 +231,23 @@ export function CreateDisbursementDialog({
         setOpen(false);
         onSuccess?.();
       } else {
+        // Disbursement create failed — release the staged receipt to avoid an orphan.
+        if (receiptDocumentId) {
+          await cancelUpload(receiptDocumentId).catch(() => {});
+          setReceiptDocumentId(null);
+          setReceiptFileName(null);
+          form.setValue("receiptDocumentId", "");
+        }
         setError(result.error ?? "Failed to create disbursement");
       }
     } catch {
+      // Unexpected error — also release the staged receipt.
+      if (receiptDocumentId) {
+        await cancelUpload(receiptDocumentId).catch(() => {});
+        setReceiptDocumentId(null);
+        setReceiptFileName(null);
+        form.setValue("receiptDocumentId", "");
+      }
       setError("An unexpected error occurred");
     } finally {
       setIsSubmitting(false);
@@ -249,6 +275,14 @@ export function CreateDisbursementDialog({
       });
       setReceiptDocumentId(null);
       setReceiptFileName(null);
+    } else {
+      // Dialog is closing. If we uploaded a receipt but never confirmed it
+      // (because the user cancelled), release the staged upload.
+      if (receiptDocumentId) {
+        cancelUpload(receiptDocumentId).catch(() => {});
+        setReceiptDocumentId(null);
+        setReceiptFileName(null);
+      }
     }
     setOpen(newOpen);
   }
@@ -442,9 +476,12 @@ export function CreateDisbursementDialog({
                         <RadioGroupItem value="OFFICE_ACCOUNT" id="ps-office" />
                         <span>Office Account</span>
                       </label>
-                      <label className="flex items-center gap-2 text-sm">
-                        <RadioGroupItem value="TRUST_ACCOUNT" id="ps-trust" />
-                        <span>Trust Account</span>
+                      {/* Trust Account path is 488B territory — the backend flow
+                          for trust-linked disbursements arrives in the next slice.
+                          Disabled here to prevent users submitting invalid state. */}
+                      <label className="flex items-center gap-2 text-sm text-slate-400 dark:text-slate-500">
+                        <RadioGroupItem value="TRUST_ACCOUNT" id="ps-trust" disabled />
+                        <span>Trust Account (coming soon)</span>
                       </label>
                     </RadioGroup>
                   </FormControl>

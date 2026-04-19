@@ -94,19 +94,15 @@ describe("CreateDisbursementDialog", () => {
     await waitFor(() => expect(vatSelect.value).toBe("EXEMPT"));
   });
 
-  it("reveals trust-link slot when payment source is trust account", async () => {
-    const user = await openDialog();
+  it("disables the Trust Account payment source until 488B", async () => {
+    await openDialog();
 
+    // Trust Account option is disabled (488B territory) — users should not
+    // be able to pick it until the backend flow for trust-linked disbursements lands.
+    const trustRadio = screen.getByRole("radio", { name: /Trust Account/i });
+    expect(trustRadio).toBeDisabled();
+    // Trust-link slot is not shown because OFFICE_ACCOUNT remains selected.
     expect(screen.queryByTestId("trust-link-slot")).not.toBeInTheDocument();
-
-    // Click the TRUST_ACCOUNT radio item
-    await user.click(screen.getByRole("radio", { name: /Trust Account/i }));
-
-    await waitFor(() =>
-      expect(screen.getByTestId("trust-link-slot")).toBeInTheDocument()
-    );
-    // 488B stub button is disabled
-    expect(screen.getByTestId("trust-link-button-stub")).toBeDisabled();
   });
 
   it("blocks submission when required fields are empty", async () => {

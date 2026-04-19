@@ -176,7 +176,7 @@ export interface UnbilledTimeResponse {
   unbilledExpenses: UnbilledExpenseEntry[];
   unbilledExpenseTotals: Record<string, number>;
   /**
-   * Legal disbursements (phase 67, slice 487A). Populated only when the
+   * Legal disbursements (slice 488A). Populated only when the
    * `disbursements` vertical module is enabled; omitted or empty otherwise,
    * keeping the response byte-compatible with non-legal tenants.
    * Currency is implied ZAR for the MVP (matches backend).

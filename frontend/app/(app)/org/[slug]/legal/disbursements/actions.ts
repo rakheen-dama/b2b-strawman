@@ -74,6 +74,10 @@ export async function updateDisbursementAction(
     const result = await updateDisbursementApi(id, data);
     revalidatePath(`/org/${slug}/legal/disbursements`);
     revalidatePath(`/org/${slug}/legal/disbursements/${id}`);
+    // Also revalidate the project page so the Disbursements tab reflects the update.
+    if (result?.projectId) {
+      revalidatePath(`/org/${slug}/projects/${result.projectId}`);
+    }
     return { success: true, data: result };
   } catch (error) {
     const message =

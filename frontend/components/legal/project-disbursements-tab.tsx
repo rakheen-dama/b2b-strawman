@@ -13,19 +13,28 @@ import type { DisbursementResponse } from "@/lib/api/legal-disbursements";
 interface ProjectDisbursementsTabProps {
   projectId: string;
   slug: string;
+  canManage?: boolean;
 }
 
-export function ProjectDisbursementsTab({ projectId, slug }: ProjectDisbursementsTabProps) {
+const PAGE_SIZE = 100;
+
+export function ProjectDisbursementsTab({
+  projectId,
+  slug,
+  canManage: _canManage,
+}: ProjectDisbursementsTabProps) {
   const router = useRouter();
   const [editTarget, setEditTarget] = useState<DisbursementResponse | null>(null);
 
   const { data, isLoading, mutate } = useSWR(
     `project-disbursements-${projectId}`,
-    () => fetchDisbursements({ projectId, size: 100 }),
+    () => fetchDisbursements({ projectId, size: PAGE_SIZE }),
     { dedupingInterval: 2000 }
   );
 
   const disbursements = data?.content ?? [];
+  const totalElements = data?.page.totalElements ?? disbursements.length;
+  const hasMore = totalElements > disbursements.length;
 
   return (
     <ModuleGate module="disbursements">
@@ -40,6 +49,22 @@ export function ProjectDisbursementsTab({ projectId, slug }: ProjectDisbursement
             onSuccess={() => mutate()}
           />
         </div>
+
+        {hasMore && (
+          <div
+            data-testid="project-disbursements-pagination-banner"
+            className="rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200"
+          >
+            Showing first {PAGE_SIZE} of {totalElements} disbursements.{" "}
+            <a
+              href={`/org/${slug}/legal/disbursements?projectId=${projectId}`}
+              className="font-medium underline"
+            >
+              Open the full disbursements page
+            </a>{" "}
+            to see all.
+          </div>
+        )}
 
         {isLoading ? (
           <p className="text-xs text-slate-500 italic">Loading disbursements&hellip;</p>

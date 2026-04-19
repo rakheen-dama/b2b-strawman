@@ -12,7 +12,7 @@
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 486 | Disbursement Entity + Service + Module Registration | Backend | -- | M | 486A, 486B | **Done** (PRs #1067, #1068) |
-| 487 | Disbursement Invoicing Integration | Backend | 486, 489A | M | 487A, 487B | **In Progress** (487A Done PR #1071; 487B Pending) |
+| 487 | Disbursement Invoicing Integration | Backend | 486, 489A | M | 487A, 487B | **Done** (PRs #1071, #1072) |
 | 488 | Disbursement Frontend | Frontend | 486, 487 | M | 488A, 488B | **Pending** |
 | 489 | Matter Closure Workflow (Backend) | Backend | 486A | L | 489A, 489B | **Done** (PRs #1069, #1070) |
 | 490 | Matter Closure Frontend | Frontend | 489 | M | 490A, 490B | **Pending** |
@@ -137,7 +137,7 @@ PHASE 28 (acceptance), PHASE 6.5 (notification handlers) — all complete
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 2a | 487 | 487B | `InvoiceLine.disbursementId` mapping + `CreateInvoiceRequest.disbursementIds` + `InvoiceCreationService.createDisbursementLines` + `markBilled` side-effect + `DisbursementBilledEvent` + mixed-sources integration test. |
+| 2a | 487 | 487B | `InvoiceLine.disbursementId` mapping + `CreateInvoiceRequest.disbursementIds` + `InvoiceCreationService.createDisbursementLines` + `markBilled` side-effect + `DisbursementBilledEvent` + mixed-sources integration test. **Done** (PR #1072) |
 | 2b (parallel with 2a) | 489 | 489B | `MatterClosureService` (evaluate/close/reopen) + retention-policy insert + `matter-closure-letter` Tiptap + `MatterClosedEvent`/`MatterReopenedEvent` + `MatterClosureNotificationHandler` + `MatterClosureContextBuilder` + `MatterClosureController` + integration tests. **Done** (PR #1070) |
 | 2c (parallel with 2a) | 491 | 491A | `StatementOfAccountContextBuilder` + `statement-of-account.json` Tiptap + `StatementController` + `GENERATE_STATEMENT_OF_ACCOUNT` capability wiring + `StatementOfAccountGeneratedEvent` + context-builder tests. |
 | 2d (parallel with 2a) | 492 | 492B | 4 conveyancing Tiptap templates + extend legal-za `pack.json` with `acceptanceEligible` flag + `TemplatePackSeeder` wiring of new column + `conveyancing-intake-za.json` request pack + install tests. |
@@ -300,7 +300,7 @@ A realistic day-by-day cadence: 486A days 1–3; fan-out days 3–7 (486B, 487A,
 | Slice | Tasks | Summary |
 |-------|-------|---------|
 | **487A** | 487.1–487.4 | `DisbursementRepository.findUnbilledBillableByCustomerId`, `/api/legal/disbursements/unbilled?projectId=` endpoint, `UnbilledTimeService` module-gated extension, `UnbilledTimeResponse` new `disbursements` field, integration tests for picker feed + response shape with and without module. **Done** (PR #1071) |
-| **487B** | 487.5–487.10 | `InvoiceLine.disbursementId` entity mapping (V97 column present from 489A), `CreateInvoiceRequest.disbursementIds` optional field, `InvoiceCreationService.createDisbursementLines(...)` private helper with tax-rate resolution by VAT treatment, `markBilled` side-effect in same transaction, `DisbursementBilledEvent` publication, mixed time + expense + disbursement draft integration test, rollback-unbinds test. |
+| **487B** | 487.5–487.10 | `InvoiceLine.disbursementId` entity mapping (V97 column present from 489A), `CreateInvoiceRequest.disbursementIds` optional field, `InvoiceCreationService.createDisbursementLines(...)` private helper with tax-rate resolution by VAT treatment, `markBilled` side-effect in same transaction, `DisbursementBilledEvent` publication, mixed time + expense + disbursement draft integration test, rollback-unbinds test. **Done** (PR #1072) |
 
 ### Tasks
 

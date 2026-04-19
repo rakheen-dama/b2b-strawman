@@ -139,7 +139,7 @@ PHASE 28 (acceptance), PHASE 6.5 (notification handlers) — all complete
 |-------|------|-------|---------|
 | 2a | 487 | 487B | `InvoiceLine.disbursementId` mapping + `CreateInvoiceRequest.disbursementIds` + `InvoiceCreationService.createDisbursementLines` + `markBilled` side-effect + `DisbursementBilledEvent` + mixed-sources integration test. **Done** (PR #1072) |
 | 2b (parallel with 2a) | 489 | 489B | `MatterClosureService` (evaluate/close/reopen) + retention-policy insert + `matter-closure-letter` Tiptap + `MatterClosedEvent`/`MatterReopenedEvent` + `MatterClosureNotificationHandler` + `MatterClosureContextBuilder` + `MatterClosureController` + integration tests. **Done** (PR #1070) |
-| 2c (parallel with 2a) | 491 | 491A | `StatementOfAccountContextBuilder` + `statement-of-account.json` Tiptap + `StatementController` + `GENERATE_STATEMENT_OF_ACCOUNT` capability wiring + `StatementOfAccountGeneratedEvent` + context-builder tests. |
+| 2c (parallel with 2a) | 491 | 491A | `StatementOfAccountContextBuilder` + `statement-of-account.json` Tiptap + `StatementController` + `GENERATE_STATEMENT_OF_ACCOUNT` capability wiring + `StatementOfAccountGeneratedEvent` + context-builder tests. **Done** (PR #1077) |
 | 2d (parallel with 2a) | 492 | 492B | 4 conveyancing Tiptap templates + extend legal-za `pack.json` with `acceptanceEligible` flag + `TemplatePackSeeder` wiring of new column + `conveyancing-intake-za.json` request pack + install tests. |
 
 ### Stage 3: Frontend consumers
@@ -630,7 +630,7 @@ A realistic day-by-day cadence: 486A days 1–3; fan-out days 3–7 (486B, 487A,
 
 | Slice | Tasks | Summary |
 |-------|-------|---------|
-| **491A** | 491.1–491.6 | `StatementOfAccountContextBuilder` (4 sub-queries: fees, disbursements, trust activity, prior balance), `statement-of-account.json` system Tiptap template seeded under `template-packs/legal-za/`, pack.json manifest entry, `StatementController` under `/api/matters/{projectId}/statements` guarded by `@VerticalModuleGuard("disbursements")`, `StatementOfAccountGeneratedEvent`, context-builder integration tests (period filter, empty-period, trust activity inclusion, summary math), controller integration tests. |
+| **491A** | 491.1–491.6 | `StatementOfAccountContextBuilder` (4 sub-queries: fees, disbursements, trust activity, prior balance), `statement-of-account.json` system Tiptap template seeded under `template-packs/legal-za/`, pack.json manifest entry, `StatementController` under `/api/matters/{projectId}/statements` guarded by `@VerticalModuleGuard("disbursements")`, `StatementOfAccountGeneratedEvent`, context-builder integration tests (period filter, empty-period, trust activity inclusion, summary math), controller integration tests. **Done** (PR #1077) |
 | **491B** | 491.7–491.10 | `statement-of-account-dialog.tsx` (period picker with defaults + preview + generate/save), matter-detail "Generate Statement of Account" action, `statements.tsx` matter-detail tab listing previously generated statements, `frontend/lib/api/statement-of-account.ts` API client, component tests. |
 
 ### Tasks

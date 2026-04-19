@@ -66,9 +66,16 @@ function AddDisbursementsPickerContent({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const swrKey = open && projectId ? `unbilled-disbursements-${projectId}` : null;
-  const { data, error, isLoading } = useSWR<UnbilledDisbursementsResponse | null>(
+  const { data, error, isLoading } = useSWR<UnbilledDisbursementsResponse>(
     swrKey,
-    () => (projectId ? fetchUnbilledDisbursementsAction(projectId) : Promise.resolve(null)),
+    async () => {
+      if (!projectId) throw new Error("No project selected");
+      // The server action swallows errors and returns null — surface that as
+      // an SWR error so the component's error UI is reachable.
+      const result = await fetchUnbilledDisbursementsAction(projectId);
+      if (!result) throw new Error("Failed to fetch unbilled disbursements");
+      return result;
+    },
     { revalidateOnFocus: false }
   );
 

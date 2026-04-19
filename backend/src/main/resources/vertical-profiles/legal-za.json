@@ -6,9 +6,11 @@
   "locale": "en-ZA",
   "currency": "ZAR",
   "packs": {
-    "field": ["legal-za-customer", "legal-za-project"],
+    "field": ["legal-za-customer", "legal-za-project", "conveyancing-za-project"],
     "compliance": ["fica-kyc-za"],
-    "template": ["legal-za"]
+    "template": ["legal-za"],
+    "clause": ["conveyancing-za-clauses"],
+    "request": ["conveyancing-intake-za"]
   },
   "taxDefaults": [
     { "name": "VAT", "rate": 15.00, "default": true }

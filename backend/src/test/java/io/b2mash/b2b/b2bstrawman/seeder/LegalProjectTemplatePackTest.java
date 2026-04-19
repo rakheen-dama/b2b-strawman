@@ -44,7 +44,7 @@ class LegalProjectTemplatePackTest {
   }
 
   @Test
-  void createsFourLegalTemplates() {
+  void createsFiveLegalTemplates() {
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
@@ -52,7 +52,7 @@ class LegalProjectTemplatePackTest {
                   var templates = projectTemplateRepository.findAllByOrderByNameAsc();
                   var seederTemplates =
                       templates.stream().filter(t -> "SEEDER".equals(t.getSource())).toList();
-                  assertThat(seederTemplates).hasSize(4);
+                  assertThat(seederTemplates).hasSize(5);
 
                   var names = seederTemplates.stream().map(ProjectTemplate::getName).toList();
                   assertThat(names)
@@ -60,12 +60,22 @@ class LegalProjectTemplatePackTest {
                           "Litigation (Personal Injury / General)",
                           "Deceased Estate Administration",
                           "Collections (Debt Recovery)",
-                          "Commercial (Corporate & Contract)");
+                          "Commercial (Corporate & Contract)",
+                          "Property Transfer (Conveyancing)");
                 }));
   }
 
   @Test
-  void eachTemplateHasNineTasks() {
+  void eachTemplateHasExpectedTaskCount() {
+    // Epic 492A: legal-za pack now has 5 templates; the original 4 (Litigation, Estates,
+    // Collections, Commercial) have 9 tasks each, and Property Transfer (Conveyancing) has 12.
+    java.util.Map<String, Integer> expectedCounts =
+        java.util.Map.of(
+            "Litigation (Personal Injury / General)", 9,
+            "Deceased Estate Administration", 9,
+            "Collections (Debt Recovery)", 9,
+            "Commercial (Corporate & Contract)", 9,
+            "Property Transfer (Conveyancing)", 12);
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
@@ -74,17 +84,21 @@ class LegalProjectTemplatePackTest {
                   var seederTemplates =
                       templates.stream().filter(t -> "SEEDER".equals(t.getSource())).toList();
                   for (var template : seederTemplates) {
+                    Integer expected = expectedCounts.get(template.getName());
+                    assertThat(expected)
+                        .as("Template '%s' is not in the expected-counts map", template.getName())
+                        .isNotNull();
                     var tasks =
                         templateTaskRepository.findByTemplateIdOrderBySortOrder(template.getId());
                     assertThat(tasks)
-                        .as("Template '%s' should have 9 tasks", template.getName())
-                        .hasSize(9);
+                        .as("Template '%s' should have %d tasks", template.getName(), expected)
+                        .hasSize(expected);
                   }
                 }));
   }
 
   @Test
-  void sortOrdersAreOneToNine() {
+  void sortOrdersStartAtOneAndAreContiguous() {
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
@@ -96,9 +110,11 @@ class LegalProjectTemplatePackTest {
                     var tasks =
                         templateTaskRepository.findByTemplateIdOrderBySortOrder(template.getId());
                     var sortOrders = tasks.stream().map(TemplateTask::getSortOrder).toList();
+                    var expected =
+                        java.util.stream.IntStream.rangeClosed(1, tasks.size()).boxed().toList();
                     assertThat(sortOrders)
                         .as("Sort orders for '%s'", template.getName())
-                        .containsExactly(1, 2, 3, 4, 5, 6, 7, 8, 9);
+                        .containsExactlyElementsOf(expected);
                   }
                 }));
   }

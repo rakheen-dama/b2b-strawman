@@ -1,0 +1,131 @@
+{
+  "packId": "conveyancing-za-project",
+  "version": 1,
+  "verticalProfile": "legal-za",
+  "entityType": "PROJECT",
+  "group": {
+    "slug": "conveyancing_za_matter",
+    "name": "SA Conveyancing — Matter Details",
+    "description": "South African conveyancing-specific fields for property transfer matters (projects with matter_type = CONVEYANCING)",
+    "autoApply": true
+  },
+  "fields": [
+    {
+      "slug": "conveyancing_type",
+      "name": "Conveyancing Type",
+      "description": "Type of conveyancing transaction",
+      "fieldType": "DROPDOWN",
+      "required": false,
+      "sortOrder": 1,
+      "options": [
+        { "value": "TRANSFER", "label": "Transfer" },
+        { "value": "BOND_REGISTRATION", "label": "Bond Registration" },
+        { "value": "BOND_CANCELLATION", "label": "Bond Cancellation" },
+        { "value": "SECTIONAL_TITLE", "label": "Sectional Title" },
+        { "value": "ESTATE_TRANSFER", "label": "Estate Transfer" }
+      ]
+    },
+    {
+      "slug": "property_address",
+      "name": "Property Address",
+      "description": "Full physical address of the property being transferred",
+      "fieldType": "TEXT",
+      "required": false,
+      "sortOrder": 2
+    },
+    {
+      "slug": "erf_number",
+      "name": "Erf Number",
+      "description": "Erf/stand number identifying the property",
+      "fieldType": "TEXT",
+      "required": false,
+      "sortOrder": 3
+    },
+    {
+      "slug": "deeds_office",
+      "name": "Deeds Office",
+      "description": "Deeds Registry where the transfer will be lodged",
+      "fieldType": "DROPDOWN",
+      "required": false,
+      "sortOrder": 4,
+      "options": [
+        { "value": "JOHANNESBURG", "label": "Johannesburg" },
+        { "value": "PRETORIA", "label": "Pretoria" },
+        { "value": "CAPE_TOWN", "label": "Cape Town" },
+        { "value": "BLOEMFONTEIN", "label": "Bloemfontein" },
+        { "value": "PIETERMARITZBURG", "label": "Pietermaritzburg" },
+        { "value": "KING_WILLIAMS_TOWN", "label": "King William's Town" },
+        { "value": "KIMBERLEY", "label": "Kimberley" },
+        { "value": "MAHIKENG", "label": "Mahikeng" },
+        { "value": "MTHATHA", "label": "Mthatha" },
+        { "value": "VRYBURG", "label": "Vryburg" }
+      ]
+    },
+    {
+      "slug": "lodgement_date",
+      "name": "Lodgement Date",
+      "description": "Date documents were lodged at the Deeds Office",
+      "fieldType": "DATE",
+      "required": false,
+      "sortOrder": 5
+    },
+    {
+      "slug": "registration_date",
+      "name": "Registration Date",
+      "description": "Date the transfer was registered at the Deeds Office",
+      "fieldType": "DATE",
+      "required": false,
+      "sortOrder": 6,
+      "visibilityCondition": {
+        "dependsOnSlug": "lodgement_date",
+        "operator": "isSet"
+      }
+    },
+    {
+      "slug": "deed_number",
+      "name": "Deed Number",
+      "description": "Title deed number issued at registration",
+      "fieldType": "TEXT",
+      "required": false,
+      "sortOrder": 7,
+      "visibilityCondition": {
+        "dependsOnSlug": "registration_date",
+        "operator": "isSet"
+      }
+    },
+    {
+      "slug": "purchase_price",
+      "name": "Purchase Price",
+      "description": "Purchase price of the property (ZAR)",
+      "fieldType": "CURRENCY",
+      "required": false,
+      "sortOrder": 8
+    },
+    {
+      "slug": "transfer_duty",
+      "name": "Transfer Duty",
+      "description": "Transfer duty payable to SARS per Transfer Duty Act 40 of 1949",
+      "fieldType": "CURRENCY",
+      "required": false,
+      "sortOrder": 9
+    },
+    {
+      "slug": "bond_institution",
+      "name": "Bond Institution",
+      "description": "Financial institution providing the mortgage bond (or NONE for cash purchase)",
+      "fieldType": "DROPDOWN",
+      "required": false,
+      "sortOrder": 10,
+      "options": [
+        { "value": "ABSA", "label": "ABSA" },
+        { "value": "FNB", "label": "FNB" },
+        { "value": "STANDARD_BANK", "label": "Standard Bank" },
+        { "value": "NEDBANK", "label": "Nedbank" },
+        { "value": "INVESTEC", "label": "Investec" },
+        { "value": "SA_HOME_LOANS", "label": "SA Home Loans" },
+        { "value": "OTHER", "label": "Other" },
+        { "value": "NONE", "label": "None (Cash Purchase)" }
+      ]
+    }
+  ]
+}

@@ -59,6 +59,8 @@ class ProjectTemplatePackSeederTest {
   @Test
   @Order(1)
   void createsTemplatesAndTasksFromLegalPack() {
+    // Epic 492A: legal-za pack expanded from 4 to 5 templates; the original 4 each have 9 tasks,
+    // and the new Property Transfer (Conveyancing) template has 12 tasks.
     runInTenant(
         tenantSchema,
         ORG_ID,
@@ -68,16 +70,18 @@ class ProjectTemplatePackSeederTest {
                   var templates = projectTemplateRepository.findAllByOrderByNameAsc();
                   var seederTemplates =
                       templates.stream().filter(t -> "SEEDER".equals(t.getSource())).toList();
-                  // The legal-za pack defines 4 templates
-                  assertThat(seederTemplates).hasSize(4);
-                  // Each template should have tasks
+                  // The legal-za pack defines 5 templates (post Epic 492A)
+                  assertThat(seederTemplates).hasSize(5);
+                  // Each template should have tasks with contiguous sort orders starting at 1
                   for (var template : seederTemplates) {
                     var tasks =
                         templateTaskRepository.findByTemplateIdOrderBySortOrder(template.getId());
+                    int expectedCount =
+                        "Property Transfer (Conveyancing)".equals(template.getName()) ? 12 : 9;
                     assertThat(tasks)
-                        .as("Template '%s' should have 9 tasks", template.getName())
-                        .hasSize(9);
-                    // Verify sort orders are 1-9
+                        .as("Template '%s' should have %d tasks", template.getName(), expectedCount)
+                        .hasSize(expectedCount);
+                    // Verify sort orders are 1..N
                     for (int i = 0; i < tasks.size(); i++) {
                       assertThat(tasks.get(i).getSortOrder()).isEqualTo(i + 1);
                     }
@@ -107,8 +111,8 @@ class ProjectTemplatePackSeederTest {
                   var templates = projectTemplateRepository.findAllByOrderByNameAsc();
                   var seederTemplates =
                       templates.stream().filter(t -> "SEEDER".equals(t.getSource())).toList();
-                  // Still 4 templates — not 8
-                  assertThat(seederTemplates).hasSize(4);
+                  // Still 5 templates (post Epic 492A) — not 10
+                  assertThat(seederTemplates).hasSize(5);
                   // OrgSettings should have the pack recorded
                   var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
                   assertThat(settings.getProjectTemplatePackStatus()).isNotNull();

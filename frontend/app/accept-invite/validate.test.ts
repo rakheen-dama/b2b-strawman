@@ -18,8 +18,7 @@ describe("isAllowedKcUrl", () => {
 
   describe("rejected URLs", () => {
     it("rejects an unlisted KC path under the correct origin", () => {
-      const url =
-        "http://localhost:8180/realms/docteams/other/something?key=abc";
+      const url = "http://localhost:8180/realms/docteams/other/something?key=abc";
       expect(isAllowedKcUrl(url)).toBe(false);
     });
 
@@ -54,8 +53,7 @@ describe("isAllowedKcUrl", () => {
     it("rejects a protocol path without the query-string marker", () => {
       // The registrations allow-list entry ends in `?` on purpose — a URL that
       // stops at `/registrations` (no query) is not a real KC invite URL.
-      const url =
-        "http://localhost:8180/realms/docteams/protocol/openid-connect/registrations";
+      const url = "http://localhost:8180/realms/docteams/protocol/openid-connect/registrations";
       expect(isAllowedKcUrl(url)).toBe(false);
     });
   });

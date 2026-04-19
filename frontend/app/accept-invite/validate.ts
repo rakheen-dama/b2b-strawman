@@ -34,10 +34,7 @@ function getKeycloakRealmBase(): string {
  */
 export function getAllowedKcUrlPrefixes(): readonly string[] {
   const base = getKeycloakRealmBase();
-  return [
-    `${base}/login-actions/`,
-    `${base}/protocol/openid-connect/registrations?`,
-  ];
+  return [`${base}/login-actions/`, `${base}/protocol/openid-connect/registrations?`];
 }
 
 export function isAllowedKcUrl(candidate: string | null | undefined): candidate is string {

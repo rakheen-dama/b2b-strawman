@@ -63,8 +63,7 @@ export function UnbilledSummary({
   // Disbursement subtotals — amount (excl VAT) + VAT, currency assumed ZAR.
   const disbursementSubtotals: Record<string, number> = {};
   for (const d of disbursements) {
-    disbursementSubtotals.ZAR =
-      (disbursementSubtotals.ZAR ?? 0) + d.amount + d.vatAmount;
+    disbursementSubtotals.ZAR = (disbursementSubtotals.ZAR ?? 0) + d.amount + d.vatAmount;
   }
 
   // Calculate combined grand totals (time + expenses + disbursements)

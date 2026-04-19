@@ -31,9 +31,8 @@ export default async function AcceptInviteContinuePage({
             Invalid invitation link
           </h1>
           <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">
-            This invitation link is missing or malformed. Please re-open the link
-            from the original email, or contact your organisation administrator
-            for a fresh invitation.
+            This invitation link is missing or malformed. Please re-open the link from the original
+            email, or contact your organisation administrator for a fresh invitation.
           </p>
         </div>
       </div>

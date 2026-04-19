@@ -22,10 +22,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  editDisbursementSchema,
-  type EditDisbursementFormData,
-} from "@/lib/schemas/legal";
+import { editDisbursementSchema, type EditDisbursementFormData } from "@/lib/schemas/legal";
 import {
   DISBURSEMENT_CATEGORY_OPTIONS,
   VAT_TREATMENT_OPTIONS,

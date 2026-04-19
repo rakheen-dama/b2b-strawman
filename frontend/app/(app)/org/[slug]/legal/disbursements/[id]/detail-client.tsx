@@ -19,17 +19,17 @@ import {
   billingStatusBadge,
   categoryLabel,
 } from "@/components/legal/disbursement-list-view";
+import { DisbursementApprovalPanel } from "@/components/legal/disbursement-approval-panel";
 import { EditDisbursementDialog } from "@/components/legal/edit-disbursement-dialog";
 import { formatCurrency } from "@/lib/format";
-import {
-  uploadReceiptAction,
-} from "@/app/(app)/org/[slug]/legal/disbursements/actions";
+import { uploadReceiptAction } from "@/app/(app)/org/[slug]/legal/disbursements/actions";
 import { getDownloadUrl } from "@/app/(app)/org/[slug]/projects/[id]/actions";
 import type { DisbursementResponse } from "@/lib/api/legal-disbursements";
 
 interface DisbursementDetailClientProps {
   slug: string;
   disbursement: DisbursementResponse;
+  canApprove: boolean;
 }
 
 const VAT_TREATMENT_LABEL: Record<DisbursementResponse["vatTreatment"], string> = {
@@ -46,6 +46,7 @@ const PAYMENT_SOURCE_LABEL: Record<DisbursementResponse["paymentSource"], string
 export function DisbursementDetailClient({
   slug,
   disbursement: initial,
+  canApprove,
 }: DisbursementDetailClientProps) {
   const [disbursement, setDisbursement] = useState(initial);
   const [editOpen, setEditOpen] = useState(false);
@@ -54,8 +55,7 @@ export function DisbursementDetailClient({
   const [isUploading, setIsUploading] = useState(false);
 
   const editable =
-    disbursement.approvalStatus === "DRAFT" ||
-    disbursement.approvalStatus === "PENDING_APPROVAL";
+    disbursement.approvalStatus === "DRAFT" || disbursement.approvalStatus === "PENDING_APPROVAL";
 
   const handleReceiptUpload = useCallback(
     async (file: File) => {
@@ -153,24 +153,22 @@ export function DisbursementDetailClient({
               label="VAT"
               value={`${formatCurrency(disbursement.vatAmount, "ZAR")} — ${VAT_TREATMENT_LABEL[disbursement.vatTreatment]}`}
             />
-            <Row
-              label="Total (incl VAT)"
-              value={formatCurrency(inclVat, "ZAR")}
-              emphasize
-            />
-            <Row
-              label="Payment Source"
-              value={PAYMENT_SOURCE_LABEL[disbursement.paymentSource]}
-            />
+            <Row label="Total (incl VAT)" value={formatCurrency(inclVat, "ZAR")} emphasize />
+            <Row label="Payment Source" value={PAYMENT_SOURCE_LABEL[disbursement.paymentSource]} />
             {disbursement.trustTransactionId && (
-              // TODO: wire trust transaction detail route when available. No detail page exists
-              // for trust transactions yet, so we display the id as read-only text.
+              // NOTE: No dedicated trust-transaction detail route exists yet, so we link
+              // to the transactions list page with the id as a query fragment. Once a
+              // detail route is added, update this href.
               <Row
                 label="Trust Transaction"
                 value={
-                  <code className="font-mono text-xs text-slate-600 dark:text-slate-400">
+                  <Link
+                    href={`/org/${slug}/trust-accounting/transactions?highlight=${encodeURIComponent(disbursement.trustTransactionId)}`}
+                    className="font-mono text-xs text-teal-600 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
+                    data-testid="trust-tx-link"
+                  >
                     {disbursement.trustTransactionId}
-                  </code>
+                  </Link>
                 }
               />
             )}
@@ -220,16 +218,13 @@ export function DisbursementDetailClient({
         </Card>
       </div>
 
-      {disbursement.approvalStatus === "PENDING_APPROVAL" && (
-        <Card
-          data-testid="approval-panel-placeholder"
-          className="border-dashed border-slate-300 dark:border-slate-700"
-        >
-          <CardContent className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
-            Approval panel placeholder (slice 488B)
-          </CardContent>
-        </Card>
-      )}
+      <DisbursementApprovalPanel
+        slug={slug}
+        disbursement={disbursement}
+        canApprove={canApprove}
+        onApproved={(updated) => setDisbursement(updated)}
+        onRejected={(updated) => setDisbursement(updated)}
+      />
 
       {disbursement.approvalNotes && (
         <Card>
@@ -254,9 +249,7 @@ export function DisbursementDetailClient({
         <DialogContent data-testid="upload-receipt-dialog">
           <DialogHeader>
             <DialogTitle>Upload receipt</DialogTitle>
-            <DialogDescription>
-              Attach a PDF or image of the supplier receipt.
-            </DialogDescription>
+            <DialogDescription>Attach a PDF or image of the supplier receipt.</DialogDescription>
           </DialogHeader>
           <Input
             type="file"
@@ -267,9 +260,7 @@ export function DisbursementDetailClient({
               if (file) handleReceiptUpload(file);
             }}
           />
-          {isUploading && (
-            <p className="text-xs text-slate-500">Uploading receipt...</p>
-          )}
+          {isUploading && <p className="text-xs text-slate-500">Uploading receipt...</p>}
           {uploadError && <p className="text-sm text-red-600">{uploadError}</p>}
           <DialogFooter>
             <Button
@@ -302,8 +293,8 @@ function Row({
       <span
         className={
           emphasize
-            ? "font-mono tabular-nums text-slate-950 dark:text-slate-50 font-semibold"
-            : "text-right text-slate-700 dark:text-slate-300 font-mono tabular-nums"
+            ? "font-mono font-semibold text-slate-950 tabular-nums dark:text-slate-50"
+            : "text-right font-mono text-slate-700 tabular-nums dark:text-slate-300"
         }
       >
         {value}

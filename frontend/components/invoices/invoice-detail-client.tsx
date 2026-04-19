@@ -18,8 +18,9 @@ import {
 } from "@/components/invoices/invoice-status-sections";
 import { ModuleGate } from "@/components/module-gate";
 import { TariffLineDialog } from "@/components/legal/tariff-line-dialog";
+import { AddDisbursementsPicker } from "@/app/(app)/org/[slug]/invoices/[id]/edit/(components)/add-disbursements-picker";
 import { Button } from "@/components/ui/button";
-import { FileSpreadsheet } from "lucide-react";
+import { FileSpreadsheet, Receipt } from "lucide-react";
 import type { InvoiceResponse, PaymentEvent, TaxRateResponse } from "@/lib/types";
 
 interface InvoiceDetailClientProps {
@@ -39,6 +40,16 @@ export function InvoiceDetailClient({
 }: InvoiceDetailClientProps) {
   const h = useInvoiceDetail({ initialInvoice, slug, taxRates });
   const [showTariffDialog, setShowTariffDialog] = useState(false);
+  const [showDisbursementsDialog, setShowDisbursementsDialog] = useState(false);
+
+  // Invoices are customer-scoped (no top-level projectId). Derive a project id
+  // from the existing invoice lines — if all lines share a single matter, use
+  // that; otherwise leave null and let the picker show its "select a matter"
+  // empty state.
+  const linePids = Array.from(
+    new Set((h.invoice.lines ?? []).map((l) => l.projectId).filter((pid): pid is string => !!pid))
+  );
+  const invoiceProjectId = linePids.length === 1 ? linePids[0] : null;
 
   return (
     <div className="space-y-6">
@@ -161,6 +172,35 @@ export function InvoiceDetailClient({
             customerId={h.invoice.customerId}
             onSuccess={async () => {
               setShowTariffDialog(false);
+              await h.handleRefresh();
+            }}
+          />
+        </ModuleGate>
+      )}
+
+      {/* Add Disbursements (module-gated) */}
+      {h.isDraft && isAdmin && (
+        <ModuleGate module="disbursements">
+          <div className="flex">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowDisbursementsDialog(true)}
+              data-testid="add-disbursements-button"
+            >
+              <Receipt className="mr-1.5 size-4" />
+              Add Disbursements
+            </Button>
+          </div>
+          <AddDisbursementsPicker
+            open={showDisbursementsDialog}
+            onOpenChange={setShowDisbursementsDialog}
+            invoiceId={h.invoice.id}
+            slug={slug}
+            customerId={h.invoice.customerId}
+            projectId={invoiceProjectId}
+            onSuccess={async () => {
+              setShowDisbursementsDialog(false);
               await h.handleRefresh();
             }}
           />

@@ -95,7 +95,7 @@ export function DisbursementListView({
     } else if (sortField === "supplierName") {
       cmp = a.supplierName.localeCompare(b.supplierName);
     } else if (sortField === "amount") {
-      cmp = (a.amount + a.vatAmount) - (b.amount + b.vatAmount);
+      cmp = a.amount + a.vatAmount - (b.amount + b.vatAmount);
     } else if (sortField === "approvalStatus") {
       cmp = a.approvalStatus.localeCompare(b.approvalStatus);
     }
@@ -183,8 +183,7 @@ export function DisbursementListView({
                 key={d.id}
                 className={cn(
                   "group border-b border-slate-100 transition-colors last:border-0 dark:border-slate-800/50",
-                  onSelect &&
-                    "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50"
+                  onSelect && "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50"
                 )}
                 onClick={() => onSelect?.(d)}
                 data-testid={`disbursement-row-${d.id}`}
@@ -204,7 +203,7 @@ export function DisbursementListView({
                 <td className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
                   {d.supplierName}
                 </td>
-                <td className="px-4 py-3 text-right font-mono text-sm tabular-nums text-slate-950 dark:text-slate-50">
+                <td className="px-4 py-3 text-right font-mono text-sm text-slate-950 tabular-nums dark:text-slate-50">
                   {formatCurrency(inclVat, "ZAR")}
                 </td>
                 <td className="px-4 py-3">{approvalStatusBadge(d.approvalStatus)}</td>

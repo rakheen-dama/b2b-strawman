@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceValidationService.ValidationCheck;
+import io.b2mash.b2b.b2bstrawman.invoice.dto.AddDisbursementLinesRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.AddLineItemRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.InvoiceResponse;
@@ -38,9 +39,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class InvoiceController {
 
   private final InvoiceService invoiceService;
+  private final InvoiceCreationService invoiceCreationService;
 
-  public InvoiceController(InvoiceService invoiceService) {
+  public InvoiceController(
+      InvoiceService invoiceService, InvoiceCreationService invoiceCreationService) {
     this.invoiceService = invoiceService;
+    this.invoiceCreationService = invoiceCreationService;
   }
 
   @PostMapping
@@ -121,6 +125,14 @@ public class InvoiceController {
       @PathVariable UUID id, @Valid @RequestBody AddLineItemRequest request) {
     var response = invoiceService.addLineItem(id, request);
     return ResponseEntity.created(URI.create("/api/invoices/" + id)).body(response);
+  }
+
+  @PostMapping("/{id}/disbursement-lines")
+  @RequiresCapability("INVOICING")
+  public ResponseEntity<InvoiceResponse> addDisbursementLines(
+      @PathVariable UUID id, @Valid @RequestBody AddDisbursementLinesRequest request) {
+    return ResponseEntity.ok(
+        invoiceCreationService.appendDisbursementLinesToInvoice(id, request.disbursementIds()));
   }
 
   @PutMapping("/{id}/lines/{lineId}")

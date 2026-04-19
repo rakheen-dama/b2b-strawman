@@ -144,9 +144,7 @@ export async function listDisbursements(
   search.set("size", String(params.size ?? 50));
   if (params.sort) search.set("sort", params.sort);
 
-  return api.get<PaginatedDisbursementsResponse>(
-    `/api/legal/disbursements?${search.toString()}`
-  );
+  return api.get<PaginatedDisbursementsResponse>(`/api/legal/disbursements?${search.toString()}`);
 }
 
 export async function getDisbursement(id: string): Promise<DisbursementResponse> {

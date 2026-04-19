@@ -7,8 +7,7 @@ const mockFetchUnbilled = vi.fn();
 const mockAddDisbursementLines = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/legal/disbursements/actions", () => ({
-  fetchUnbilledDisbursementsAction: (...args: unknown[]) =>
-    mockFetchUnbilled(...args),
+  fetchUnbilledDisbursementsAction: (...args: unknown[]) => mockFetchUnbilled(...args),
 }));
 
 vi.mock("@/app/(app)/org/[slug]/invoices/invoice-crud-actions", () => ({
@@ -111,9 +110,7 @@ describe("AddDisbursementsPicker", () => {
     await user.click(screen.getByTestId("picker-checkbox-d1"));
     await user.click(screen.getByTestId("picker-checkbox-d2"));
 
-    await waitFor(() =>
-      expect(screen.getByTestId("picker-selected-count")).toHaveTextContent("2")
-    );
+    await waitFor(() => expect(screen.getByTestId("picker-selected-count")).toHaveTextContent("2"));
 
     await user.click(screen.getByTestId("picker-submit"));
 
@@ -150,13 +147,9 @@ describe("AddDisbursementsPicker", () => {
       </OrgProfileProvider>
     );
 
-    await waitFor(() =>
-      expect(screen.getByTestId("picker-checkbox-d1")).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByTestId("picker-checkbox-d1")).toBeInTheDocument());
     await user.click(screen.getByTestId("picker-checkbox-d1"));
-    await waitFor(() =>
-      expect(screen.getByTestId("picker-selected-count")).toHaveTextContent("1")
-    );
+    await waitFor(() => expect(screen.getByTestId("picker-selected-count")).toHaveTextContent("1"));
 
     // Close the dialog.
     rerender(
@@ -196,8 +189,6 @@ describe("AddDisbursementsPicker", () => {
       </OrgProfileProvider>
     );
 
-    await waitFor(() =>
-      expect(screen.getByTestId("picker-selected-count")).toHaveTextContent("1")
-    );
+    await waitFor(() => expect(screen.getByTestId("picker-selected-count")).toHaveTextContent("1"));
   });
 });

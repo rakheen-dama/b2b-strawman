@@ -253,6 +253,10 @@ public class InvoiceCreationService {
   @Transactional
   public InvoiceResponse appendDisbursementLinesToInvoice(
       UUID invoiceId, List<UUID> disbursementIds) {
+    // Server-side module gating — API callers (direct or scripted) must not bypass
+    // the frontend ModuleGate by hitting this endpoint when disbursements is disabled.
+    verticalModuleGuard.requireModule("disbursements");
+
     var invoice =
         invoiceRepository
             .findById(invoiceId)
@@ -266,12 +270,7 @@ public class InvoiceCreationService {
               + ")");
     }
 
-    int nextSortOrder =
-        lineRepository.findByInvoiceIdOrderBySortOrder(invoiceId).stream()
-                .mapToInt(InvoiceLine::getSortOrder)
-                .max()
-                .orElse(-1)
-            + 1;
+    int nextSortOrder = lineRepository.findMaxSortOrderByInvoiceId(invoiceId).orElse(-1) + 1;
 
     createDisbursementLines(invoice, disbursementIds, invoice.getCustomerId(), nextSortOrder);
 

@@ -14,9 +14,7 @@ vi.mock("@/app/(app)/org/[slug]/legal/disbursements/actions", () => ({
 import { DisbursementApprovalPanel } from "@/components/legal/disbursement-approval-panel";
 import type { DisbursementResponse } from "@/lib/api/legal-disbursements";
 
-function makeDisbursement(
-  overrides: Partial<DisbursementResponse> = {}
-): DisbursementResponse {
+function makeDisbursement(overrides: Partial<DisbursementResponse> = {}): DisbursementResponse {
   return {
     id: "d1",
     projectId: "p1",
@@ -49,8 +47,14 @@ function makeDisbursement(
 describe("DisbursementApprovalPanel", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockApprove.mockResolvedValue({ success: true, data: makeDisbursement({ approvalStatus: "APPROVED" }) });
-    mockReject.mockResolvedValue({ success: true, data: makeDisbursement({ approvalStatus: "REJECTED" }) });
+    mockApprove.mockResolvedValue({
+      success: true,
+      data: makeDisbursement({ approvalStatus: "APPROVED" }),
+    });
+    mockReject.mockResolvedValue({
+      success: true,
+      data: makeDisbursement({ approvalStatus: "REJECTED" }),
+    });
   });
 
   afterEach(() => {
@@ -60,11 +64,7 @@ describe("DisbursementApprovalPanel", () => {
   it("renders approve/reject buttons when user has capability and status is PENDING_APPROVAL", () => {
     const disbursement = makeDisbursement();
     render(
-      <DisbursementApprovalPanel
-        slug="test-org"
-        disbursement={disbursement}
-        canApprove={true}
-      />
+      <DisbursementApprovalPanel slug="test-org" disbursement={disbursement} canApprove={true} />
     );
 
     expect(screen.getByTestId("disbursement-approval-panel")).toBeInTheDocument();
@@ -75,11 +75,7 @@ describe("DisbursementApprovalPanel", () => {
   it("renders nothing when user lacks the approve capability", () => {
     const disbursement = makeDisbursement();
     const { container } = render(
-      <DisbursementApprovalPanel
-        slug="test-org"
-        disbursement={disbursement}
-        canApprove={false}
-      />
+      <DisbursementApprovalPanel slug="test-org" disbursement={disbursement} canApprove={false} />
     );
     expect(container).toBeEmptyDOMElement();
   });
@@ -87,11 +83,7 @@ describe("DisbursementApprovalPanel", () => {
   it("renders nothing when disbursement is not PENDING_APPROVAL", () => {
     const disbursement = makeDisbursement({ approvalStatus: "APPROVED" });
     const { container } = render(
-      <DisbursementApprovalPanel
-        slug="test-org"
-        disbursement={disbursement}
-        canApprove={true}
-      />
+      <DisbursementApprovalPanel slug="test-org" disbursement={disbursement} canApprove={true} />
     );
     expect(container).toBeEmptyDOMElement();
   });
@@ -149,10 +141,7 @@ describe("DisbursementApprovalPanel", () => {
     });
 
     // Enter a reason and submit.
-    await user.type(
-      screen.getByTestId("disbursement-reject-notes-input"),
-      "Missing receipt"
-    );
+    await user.type(screen.getByTestId("disbursement-reject-notes-input"), "Missing receipt");
     await user.click(screen.getByTestId("disbursement-confirm-reject-button"));
 
     await waitFor(() => {

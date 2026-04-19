@@ -2,10 +2,7 @@ import { notFound } from "next/navigation";
 import { handleApiError } from "@/lib/api";
 import { isModuleEnabledServer } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import {
-  getDisbursement,
-  type DisbursementResponse,
-} from "@/lib/api/legal-disbursements";
+import { getDisbursement, type DisbursementResponse } from "@/lib/api/legal-disbursements";
 import { DisbursementDetailClient } from "./detail-client";
 
 export default async function DisbursementDetailPage({
@@ -39,10 +36,6 @@ export default async function DisbursementDetailPage({
   }
 
   return (
-    <DisbursementDetailClient
-      slug={slug}
-      disbursement={disbursement}
-      canApprove={canApprove}
-    />
+    <DisbursementDetailClient slug={slug} disbursement={disbursement} canApprove={canApprove} />
   );
 }

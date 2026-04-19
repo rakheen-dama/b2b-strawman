@@ -25,10 +25,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import {
-  createDisbursementSchema,
-  type CreateDisbursementFormData,
-} from "@/lib/schemas/legal";
+import { createDisbursementSchema, type CreateDisbursementFormData } from "@/lib/schemas/legal";
 import {
   DISBURSEMENT_CATEGORY_OPTIONS,
   VAT_TREATMENT_OPTIONS,

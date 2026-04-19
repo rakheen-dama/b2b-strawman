@@ -94,8 +94,7 @@ describe("UnbilledSummary — disbursements section", () => {
 
     // Time 1000 + disbursements (500 + 0) + (2000 + 300) = 3800
     const grandTotalSection = screen.getByText("Grand Total").closest("div");
-    const normalized =
-      grandTotalSection?.textContent?.replace(/[,.\s\u00a0]/g, "") ?? "";
+    const normalized = grandTotalSection?.textContent?.replace(/[,.\s\u00a0]/g, "") ?? "";
     expect(normalized).toContain("380000");
   });
 

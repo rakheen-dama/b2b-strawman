@@ -22,9 +22,7 @@ import {
 import { DisbursementApprovalPanel } from "@/components/legal/disbursement-approval-panel";
 import { EditDisbursementDialog } from "@/components/legal/edit-disbursement-dialog";
 import { formatCurrency } from "@/lib/format";
-import {
-  uploadReceiptAction,
-} from "@/app/(app)/org/[slug]/legal/disbursements/actions";
+import { uploadReceiptAction } from "@/app/(app)/org/[slug]/legal/disbursements/actions";
 import { getDownloadUrl } from "@/app/(app)/org/[slug]/projects/[id]/actions";
 import type { DisbursementResponse } from "@/lib/api/legal-disbursements";
 
@@ -57,8 +55,7 @@ export function DisbursementDetailClient({
   const [isUploading, setIsUploading] = useState(false);
 
   const editable =
-    disbursement.approvalStatus === "DRAFT" ||
-    disbursement.approvalStatus === "PENDING_APPROVAL";
+    disbursement.approvalStatus === "DRAFT" || disbursement.approvalStatus === "PENDING_APPROVAL";
 
   const handleReceiptUpload = useCallback(
     async (file: File) => {
@@ -156,15 +153,8 @@ export function DisbursementDetailClient({
               label="VAT"
               value={`${formatCurrency(disbursement.vatAmount, "ZAR")} — ${VAT_TREATMENT_LABEL[disbursement.vatTreatment]}`}
             />
-            <Row
-              label="Total (incl VAT)"
-              value={formatCurrency(inclVat, "ZAR")}
-              emphasize
-            />
-            <Row
-              label="Payment Source"
-              value={PAYMENT_SOURCE_LABEL[disbursement.paymentSource]}
-            />
+            <Row label="Total (incl VAT)" value={formatCurrency(inclVat, "ZAR")} emphasize />
+            <Row label="Payment Source" value={PAYMENT_SOURCE_LABEL[disbursement.paymentSource]} />
             {disbursement.trustTransactionId && (
               // NOTE: No dedicated trust-transaction detail route exists yet, so we link
               // to the transactions list page with the id as a query fragment. Once a
@@ -259,9 +249,7 @@ export function DisbursementDetailClient({
         <DialogContent data-testid="upload-receipt-dialog">
           <DialogHeader>
             <DialogTitle>Upload receipt</DialogTitle>
-            <DialogDescription>
-              Attach a PDF or image of the supplier receipt.
-            </DialogDescription>
+            <DialogDescription>Attach a PDF or image of the supplier receipt.</DialogDescription>
           </DialogHeader>
           <Input
             type="file"
@@ -272,9 +260,7 @@ export function DisbursementDetailClient({
               if (file) handleReceiptUpload(file);
             }}
           />
-          {isUploading && (
-            <p className="text-xs text-slate-500">Uploading receipt...</p>
-          )}
+          {isUploading && <p className="text-xs text-slate-500">Uploading receipt...</p>}
           {uploadError && <p className="text-sm text-red-600">{uploadError}</p>}
           <DialogFooter>
             <Button
@@ -307,8 +293,8 @@ function Row({
       <span
         className={
           emphasize
-            ? "font-mono tabular-nums text-slate-950 dark:text-slate-50 font-semibold"
-            : "text-right text-slate-700 dark:text-slate-300 font-mono tabular-nums"
+            ? "font-mono font-semibold text-slate-950 tabular-nums dark:text-slate-50"
+            : "text-right font-mono text-slate-700 tabular-nums dark:text-slate-300"
         }
       >
         {value}

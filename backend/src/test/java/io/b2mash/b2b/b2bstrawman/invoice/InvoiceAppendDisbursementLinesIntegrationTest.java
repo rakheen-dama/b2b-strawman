@@ -384,7 +384,11 @@ class InvoiceAppendDisbursementLinesIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_append_owner")))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").exists())
+        .andExpect(jsonPath("$.fieldErrors").isArray())
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("disbursementIds"));
   }
 
   // ==========================================================================

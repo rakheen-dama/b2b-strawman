@@ -1,7 +1,4 @@
-import type {
-  DisbursementCategory,
-  VatTreatment,
-} from "@/lib/api/legal-disbursements";
+import type { DisbursementCategory, VatTreatment } from "@/lib/api/legal-disbursements";
 
 /**
  * Default VAT treatment for a given disbursement category.

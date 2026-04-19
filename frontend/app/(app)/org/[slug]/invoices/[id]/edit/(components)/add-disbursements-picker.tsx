@@ -153,10 +153,7 @@ function AddDisbursementsPickerContent({
 
         <div className="min-h-0 flex-1 overflow-y-auto">
           {!projectId && (
-            <p
-              className="py-6 text-center text-sm text-slate-500"
-              data-testid="picker-no-project"
-            >
+            <p className="py-6 text-center text-sm text-slate-500" data-testid="picker-no-project">
               This invoice is not linked to a matter. Select a matter on the invoice to add
               disbursements.
             </p>
@@ -170,26 +167,20 @@ function AddDisbursementsPickerContent({
           )}
 
           {projectId && !isLoading && error && (
-            <p
-              className="py-6 text-sm text-red-600"
-              data-testid="picker-error"
-            >
+            <p className="py-6 text-sm text-red-600" data-testid="picker-error">
               Failed to load unbilled disbursements.
             </p>
           )}
 
           {projectId && !isLoading && !error && items.length === 0 && (
-            <p
-              className="py-6 text-center text-sm text-slate-500"
-              data-testid="picker-empty"
-            >
+            <p className="py-6 text-center text-sm text-slate-500" data-testid="picker-empty">
               No unbilled approved disbursements for this matter.
             </p>
           )}
 
           {projectId && !isLoading && !error && items.length > 0 && (
             <table className="w-full text-sm" data-testid="picker-table">
-              <thead className="border-b border-slate-200 text-left text-xs uppercase text-slate-500 dark:border-slate-800">
+              <thead className="border-b border-slate-200 text-left text-xs text-slate-500 uppercase dark:border-slate-800">
                 <tr>
                   <th className="w-8 py-2"></th>
                   <th className="py-2">Date</th>
@@ -230,7 +221,7 @@ function AddDisbursementsPickerContent({
                           </span>
                         )}
                       </td>
-                      <td className="py-2 text-right font-mono tabular-nums text-slate-900 dark:text-slate-100">
+                      <td className="py-2 text-right font-mono text-slate-900 tabular-nums dark:text-slate-100">
                         {formatZAR(inclVat)}
                       </td>
                     </tr>

@@ -40,9 +40,7 @@ export function ProjectDisbursementsTab({
     <ModuleGate module="disbursements">
       <div data-testid="project-disbursements-tab" className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">
-            Disbursements
-          </h3>
+          <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">Disbursements</h3>
           <CreateDisbursementDialog
             slug={slug}
             defaultProjectId={projectId}

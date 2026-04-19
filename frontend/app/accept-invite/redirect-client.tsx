@@ -29,10 +29,7 @@ export function AcceptInviteRedirect({ redirectUrl }: AcceptInviteRedirectProps)
     <noscript>
       <p className="mt-4 text-sm text-slate-600 dark:text-slate-400">
         JavaScript is required to continue automatically.{" "}
-        <a
-          href={redirectUrl}
-          className="font-medium text-teal-600 underline dark:text-teal-400"
-        >
+        <a href={redirectUrl} className="font-medium text-teal-600 underline dark:text-teal-400">
           Click here to continue
         </a>
         .

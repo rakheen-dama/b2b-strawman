@@ -84,12 +84,7 @@ describe("DisbursementListView", () => {
 
   it("resolves matter name from projectNames map", () => {
     const row = makeDisbursement({ id: "d1", projectId: "p1" });
-    render(
-      <DisbursementListView
-        disbursements={[row]}
-        projectNames={{ p1: "Matter 2026/001" }}
-      />
-    );
+    render(<DisbursementListView disbursements={[row]} projectNames={{ p1: "Matter 2026/001" }} />);
 
     expect(screen.getByText("Matter 2026/001")).toBeInTheDocument();
   });
@@ -101,11 +96,7 @@ describe("DisbursementListView", () => {
     });
 
     render(
-      <DisbursementListView
-        disbursements={[approved]}
-        onEdit={vi.fn()}
-        onUploadReceipt={vi.fn()}
-      />
+      <DisbursementListView disbursements={[approved]} onEdit={vi.fn()} onUploadReceipt={vi.fn()} />
     );
 
     // Actions dropdown trigger should not be rendered for APPROVED status

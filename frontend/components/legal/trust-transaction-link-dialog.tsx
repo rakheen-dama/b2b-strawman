@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { fetchApprovedTrustDisbursementPayments } from "@/app/(app)/org/[slug]/legal/disbursements/actions";
+import { formatCurrency } from "@/lib/format";
 import type { TrustTransaction } from "@/lib/types";
 
 interface TrustTransactionLinkDialogProps {
@@ -20,10 +21,6 @@ interface TrustTransactionLinkDialogProps {
   onOpenChange: (open: boolean) => void;
   projectId: string;
   onSelect: (transaction: TrustTransaction) => void;
-}
-
-function formatZAR(amount: number): string {
-  return `R ${amount.toFixed(2)}`;
 }
 
 export function TrustTransactionLinkDialog({
@@ -60,10 +57,7 @@ export function TrustTransactionLinkDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent
-        className="sm:max-w-2xl"
-        data-testid="trust-transaction-link-dialog"
-      >
+      <DialogContent className="sm:max-w-2xl" data-testid="trust-transaction-link-dialog">
         <DialogHeader>
           <DialogTitle>Link Trust Transaction</DialogTitle>
           <DialogDescription>
@@ -89,17 +83,14 @@ export function TrustTransactionLinkDialog({
           )}
 
           {!isLoading && !error && transactions.length === 0 && (
-            <p
-              className="py-6 text-center text-sm text-slate-500"
-              data-testid="trust-tx-empty"
-            >
+            <p className="py-6 text-center text-sm text-slate-500" data-testid="trust-tx-empty">
               No approved disbursement-payment trust transactions found for this matter.
             </p>
           )}
 
           {!isLoading && !error && transactions.length > 0 && (
             <table className="w-full text-sm" data-testid="trust-tx-table">
-              <thead className="border-b border-slate-200 text-left text-xs uppercase text-slate-500 dark:border-slate-800">
+              <thead className="border-b border-slate-200 text-left text-xs text-slate-500 uppercase dark:border-slate-800">
                 <tr>
                   <th className="w-8 py-2"></th>
                   <th className="py-2">Date</th>
@@ -113,18 +104,7 @@ export function TrustTransactionLinkDialog({
                   return (
                     <tr
                       key={tx.id}
-                      className="cursor-pointer border-b border-slate-100 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:border-slate-800 dark:hover:bg-slate-900 dark:focus:bg-slate-900"
-                      onClick={() => setSelectedId(tx.id)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          setSelectedId(tx.id);
-                        }
-                      }}
-                      role="button"
-                      tabIndex={0}
-                      aria-pressed={isSelected}
-                      aria-label={`Select trust transaction ${tx.reference}`}
+                      className="border-b border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900"
                       data-testid={`trust-tx-row-${tx.id}`}
                     >
                       <td className="py-2">
@@ -134,13 +114,14 @@ export function TrustTransactionLinkDialog({
                           checked={isSelected}
                           onChange={() => setSelectedId(tx.id)}
                           aria-label={`Select trust transaction ${tx.reference}`}
+                          data-testid={`trust-tx-radio-${tx.id}`}
                         />
                       </td>
                       <td className="py-2 text-slate-700 dark:text-slate-300">
                         {tx.transactionDate}
                       </td>
-                      <td className="py-2 font-mono tabular-nums text-slate-900 dark:text-slate-100">
-                        {formatZAR(tx.amount)}
+                      <td className="py-2 font-mono text-slate-900 tabular-nums dark:text-slate-100">
+                        {formatCurrency(tx.amount, "ZAR")}
                       </td>
                       <td className="py-2 text-slate-700 dark:text-slate-300">
                         <span className="font-medium">{tx.reference}</span>
@@ -159,11 +140,7 @@ export function TrustTransactionLinkDialog({
         </div>
 
         <DialogFooter>
-          <Button
-            type="button"
-            variant="plain"
-            onClick={() => handleOpenChange(false)}
-          >
+          <Button type="button" variant="plain" onClick={() => handleOpenChange(false)}>
             Cancel
           </Button>
           <Button

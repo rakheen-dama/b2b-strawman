@@ -47,11 +47,7 @@ export function InvoiceDetailClient({
   // that; otherwise leave null and let the picker show its "select a matter"
   // empty state.
   const linePids = Array.from(
-    new Set(
-      (h.invoice.lines ?? [])
-        .map((l) => l.projectId)
-        .filter((pid): pid is string => !!pid)
-    )
+    new Set((h.invoice.lines ?? []).map((l) => l.projectId).filter((pid): pid is string => !!pid))
   );
   const invoiceProjectId = linePids.length === 1 ? linePids[0] : null;
 
@@ -184,8 +180,8 @@ export function InvoiceDetailClient({
 
       {/* Add Disbursements (module-gated) */}
       {h.isDraft && isAdmin && (
-        <div className="flex">
-          <ModuleGate module="disbursements">
+        <ModuleGate module="disbursements">
+          <div className="flex">
             <Button
               variant="outline"
               size="sm"
@@ -195,22 +191,20 @@ export function InvoiceDetailClient({
               <Receipt className="mr-1.5 size-4" />
               Add Disbursements
             </Button>
-          </ModuleGate>
-        </div>
-      )}
-      {h.isDraft && isAdmin && (
-        <AddDisbursementsPicker
-          open={showDisbursementsDialog}
-          onOpenChange={setShowDisbursementsDialog}
-          invoiceId={h.invoice.id}
-          slug={slug}
-          customerId={h.invoice.customerId}
-          projectId={invoiceProjectId}
-          onSuccess={async () => {
-            setShowDisbursementsDialog(false);
-            await h.handleRefresh();
-          }}
-        />
+          </div>
+          <AddDisbursementsPicker
+            open={showDisbursementsDialog}
+            onOpenChange={setShowDisbursementsDialog}
+            invoiceId={h.invoice.id}
+            slug={slug}
+            customerId={h.invoice.customerId}
+            projectId={invoiceProjectId}
+            onSuccess={async () => {
+              setShowDisbursementsDialog(false);
+              await h.handleRefresh();
+            }}
+          />
+        </ModuleGate>
       )}
 
       {/* Add Line Form */}

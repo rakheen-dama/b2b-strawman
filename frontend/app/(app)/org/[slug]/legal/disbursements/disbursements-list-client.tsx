@@ -3,9 +3,7 @@
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { ModuleGate } from "@/components/module-gate";
-import {
-  DisbursementListView,
-} from "@/components/legal/disbursement-list-view";
+import { DisbursementListView } from "@/components/legal/disbursement-list-view";
 import { CreateDisbursementDialog } from "@/components/legal/create-disbursement-dialog";
 import { Input } from "@/components/ui/input";
 import { fetchDisbursements } from "./actions";
@@ -60,9 +58,7 @@ export function DisbursementsListClient({
         const result = await fetchDisbursements({
           projectId: projectFilter || undefined,
           category: (categoryFilter || undefined) as DisbursementCategory | undefined,
-          approvalStatus: (approvalFilter || undefined) as
-            | DisbursementApprovalStatus
-            | undefined,
+          approvalStatus: (approvalFilter || undefined) as DisbursementApprovalStatus | undefined,
           billingStatus: (billingFilter || undefined) as DisbursementBillingStatus | undefined,
         });
         // Drop stale response when a newer refetch has already been issued.
@@ -135,9 +131,7 @@ export function DisbursementsListClient({
           </select>
           <select
             value={approvalFilter}
-            onChange={(e) =>
-              setApprovalFilter(e.target.value as DisbursementApprovalStatus | "")
-            }
+            onChange={(e) => setApprovalFilter(e.target.value as DisbursementApprovalStatus | "")}
             className={selectClass}
             aria-label="Approval status filter"
           >
@@ -150,9 +144,7 @@ export function DisbursementsListClient({
           </select>
           <select
             value={billingFilter}
-            onChange={(e) =>
-              setBillingFilter(e.target.value as DisbursementBillingStatus | "")
-            }
+            onChange={(e) => setBillingFilter(e.target.value as DisbursementBillingStatus | "")}
             className={selectClass}
             aria-label="Billing status filter"
           >
@@ -185,9 +177,7 @@ export function DisbursementsListClient({
         <div className="text-sm text-slate-500 dark:text-slate-400">
           {total} disbursement{total !== 1 ? "s" : ""}
           {(dateFrom || dateTo) && visibleDisbursements.length !== total && (
-            <span className="ml-2">
-              ({visibleDisbursements.length} match current filters)
-            </span>
+            <span className="ml-2">({visibleDisbursements.length} match current filters)</span>
           )}
           {isPending && <span className="ml-2 italic">updating...</span>}
         </div>

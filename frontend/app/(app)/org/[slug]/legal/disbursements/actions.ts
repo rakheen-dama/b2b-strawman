@@ -25,9 +25,7 @@ function hasApproveDisbursementCapability(caps: {
   isOwner: boolean;
   capabilities: string[];
 }): boolean {
-  return (
-    caps.isAdmin || caps.isOwner || caps.capabilities.includes("APPROVE_DISBURSEMENTS")
-  );
+  return caps.isAdmin || caps.isOwner || caps.capabilities.includes("APPROVE_DISBURSEMENTS");
 }
 
 interface ActionResult<T = DisbursementResponse> {
@@ -73,8 +71,7 @@ export async function createDisbursementAction(
     revalidatePath(`/org/${slug}/projects/${data.projectId}`);
     return { success: true, data: result };
   } catch (error) {
-    const message =
-      error instanceof ApiError ? error.message : "Failed to create disbursement";
+    const message = error instanceof ApiError ? error.message : "Failed to create disbursement";
     return { success: false, error: message };
   }
 }
@@ -94,8 +91,7 @@ export async function updateDisbursementAction(
     }
     return { success: true, data: result };
   } catch (error) {
-    const message =
-      error instanceof ApiError ? error.message : "Failed to update disbursement";
+    const message = error instanceof ApiError ? error.message : "Failed to update disbursement";
     return { success: false, error: message };
   }
 }
@@ -130,10 +126,7 @@ export async function approveDisbursementAction(
 
   const trimmedNotes = notes?.trim();
   try {
-    const result = await approveDisbursementApi(
-      id,
-      trimmedNotes ? { notes: trimmedNotes } : {}
-    );
+    const result = await approveDisbursementApi(id, trimmedNotes ? { notes: trimmedNotes } : {});
     revalidatePath(`/org/${slug}/legal/disbursements`);
     revalidatePath(`/org/${slug}/legal/disbursements/${id}`);
     if (result?.projectId) {
@@ -141,8 +134,7 @@ export async function approveDisbursementAction(
     }
     return { success: true, data: result };
   } catch (error) {
-    const message =
-      error instanceof ApiError ? error.message : "Failed to approve disbursement";
+    const message = error instanceof ApiError ? error.message : "Failed to approve disbursement";
     return { success: false, error: message };
   }
 }
@@ -174,8 +166,7 @@ export async function rejectDisbursementAction(
     }
     return { success: true, data: result };
   } catch (error) {
-    const message =
-      error instanceof ApiError ? error.message : "Failed to reject disbursement";
+    const message = error instanceof ApiError ? error.message : "Failed to reject disbursement";
     return { success: false, error: message };
   }
 }
@@ -242,10 +233,7 @@ export async function fetchApprovedTrustDisbursementPayments(
         }
         return collected;
       } catch (innerError) {
-        console.error(
-          `Failed to fetch trust transactions for account ${account.id}:`,
-          innerError
-        );
+        console.error(`Failed to fetch trust transactions for account ${account.id}:`, innerError);
         return [];
       }
     })
@@ -276,9 +264,8 @@ export async function fetchUnbilledDisbursementsAction(
 }
 
 export async function fetchProjects(): Promise<{ id: string; name: string }[]> {
-  const result = await api.get<PaginatedResponse<{ id: string; name: string }>>(
-    "/api/projects?size=200"
-  );
+  const result =
+    await api.get<PaginatedResponse<{ id: string; name: string }>>("/api/projects?size=200");
   return result.content;
 }
 

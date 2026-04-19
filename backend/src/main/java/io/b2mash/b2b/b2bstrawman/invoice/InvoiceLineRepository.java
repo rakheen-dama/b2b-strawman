@@ -17,6 +17,13 @@ public interface InvoiceLineRepository extends JpaRepository<InvoiceLine, UUID> 
   @Query("SELECT il FROM InvoiceLine il WHERE il.invoiceId = :invoiceId ORDER BY il.sortOrder")
   List<InvoiceLine> findByInvoiceIdOrderBySortOrder(@Param("invoiceId") UUID invoiceId);
 
+  /**
+   * Returns the max sortOrder across all lines of the invoice, or empty when the invoice has no
+   * lines yet. Used when appending new lines to avoid loading the full line collection.
+   */
+  @Query("SELECT MAX(il.sortOrder) FROM InvoiceLine il WHERE il.invoiceId = :invoiceId")
+  Optional<Integer> findMaxSortOrderByInvoiceId(@Param("invoiceId") UUID invoiceId);
+
   /** Finds a line item by time entry ID for double-billing prevention checks. */
   @Query("SELECT il FROM InvoiceLine il WHERE il.timeEntryId = :timeEntryId")
   Optional<InvoiceLine> findByTimeEntryId(@Param("timeEntryId") UUID timeEntryId);

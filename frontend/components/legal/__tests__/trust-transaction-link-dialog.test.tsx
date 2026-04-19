@@ -7,8 +7,7 @@ import type { ReactElement } from "react";
 const mockFetchApproved = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/legal/disbursements/actions", () => ({
-  fetchApprovedTrustDisbursementPayments: (...args: unknown[]) =>
-    mockFetchApproved(...args),
+  fetchApprovedTrustDisbursementPayments: (...args: unknown[]) => mockFetchApproved(...args),
 }));
 
 import { TrustTransactionLinkDialog } from "@/components/legal/trust-transaction-link-dialog";
@@ -17,9 +16,7 @@ import type { TrustTransaction } from "@/lib/types";
 // Each render gets a fresh SWR cache so test order / shared keys don't leak data
 // between cases (e.g. "populated list" test bleeding into "empty state" test).
 function renderWithFreshSWR(element: ReactElement) {
-  return render(
-    <SWRConfig value={{ provider: () => new Map() }}>{element}</SWRConfig>
-  );
+  return render(<SWRConfig value={{ provider: () => new Map() }}>{element}</SWRConfig>);
 }
 
 function makeTx(overrides: Partial<TrustTransaction> = {}): TrustTransaction {
@@ -82,8 +79,10 @@ describe("TrustTransactionLinkDialog", () => {
     expect(mockFetchApproved).toHaveBeenCalledWith("p1");
     expect(screen.getByText("REF-001")).toBeInTheDocument();
     expect(screen.getByText("REF-002")).toBeInTheDocument();
-    expect(screen.getByText("R 1500.00")).toBeInTheDocument();
-    expect(screen.getByText("R 2500.00")).toBeInTheDocument();
+    // formatCurrency uses en-ZA locale; the exact separators vary by ICU version
+    // (e.g. "R 1,500.00" on newer ICU, "R 1 500,00" on older). Match both.
+    expect(screen.getByText(/R[\s\u00A0]*1[\s,\u00A0]?500[.,]00/)).toBeInTheDocument();
+    expect(screen.getByText(/R[\s\u00A0]*2[\s,\u00A0]?500[.,]00/)).toBeInTheDocument();
   });
 
   it("renders empty-state message when no trust transactions are returned", async () => {
@@ -126,7 +125,7 @@ describe("TrustTransactionLinkDialog", () => {
     const confirmBtn = screen.getByTestId("trust-tx-link-confirm");
     expect(confirmBtn).toBeDisabled();
 
-    await user.click(screen.getByTestId("trust-tx-row-tx1"));
+    await user.click(screen.getByTestId("trust-tx-radio-tx1"));
     expect(confirmBtn).not.toBeDisabled();
 
     await user.click(confirmBtn);

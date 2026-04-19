@@ -177,8 +177,7 @@ function ApproveDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Notes{" "}
-                    <span className="font-normal text-slate-500">(optional)</span>
+                    Notes <span className="font-normal text-slate-500">(optional)</span>
                   </FormLabel>
                   <FormControl>
                     <Textarea
@@ -234,13 +233,7 @@ interface RejectDialogProps {
   onRejected?: (updated: DisbursementResponse) => void;
 }
 
-function RejectDialog({
-  slug,
-  disbursementId,
-  open,
-  onOpenChange,
-  onRejected,
-}: RejectDialogProps) {
+function RejectDialog({ slug, disbursementId, open, onOpenChange, onRejected }: RejectDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

@@ -117,10 +117,19 @@ class LegalPackSeederIntegrationTest {
                       templates.stream().filter(t -> "legal-za".equals(t.getPackId())).toList();
                   // Phase 67, Epic 489B added matter-closure-letter (11th template).
                   // Phase 67, Epic 491A added statement-of-account (12th template).
-                  assertThat(legalTemplates).hasSize(12);
+                  // Phase 67, Epic 492B added 4 conveyancing templates (13th-16th):
+                  // offer-to-purchase, deed-of-transfer, power-of-attorney-transfer,
+                  // bond-cancellation-instruction.
+                  assertThat(legalTemplates).hasSize(16);
                   assertThat(legalTemplates)
                       .extracting(t -> t.getSlug())
-                      .contains("matter-closure-letter", "statement-of-account");
+                      .contains(
+                          "matter-closure-letter",
+                          "statement-of-account",
+                          "offer-to-purchase",
+                          "deed-of-transfer",
+                          "power-of-attorney-to-pass-transfer",
+                          "bond-cancellation-instruction");
                 }));
   }
 

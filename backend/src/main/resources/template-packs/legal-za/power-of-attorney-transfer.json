@@ -1,0 +1,170 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [{ "type": "text", "text": "Power of Attorney to Pass Transfer" }]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "variable", "attrs": { "key": "org.name" } }]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Matter: " },
+        { "type": "variable", "attrs": { "key": "project.name" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "text", "text": "I/We, the undersigned," }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Transferor: " },
+        { "type": "variable", "attrs": { "key": "customer.name" } }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "customer.customFields.id_passport_number",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "ID / Passport Number: " },
+            { "type": "variable", "attrs": { "key": "customer.customFields.id_passport_number" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": {
+        "fieldKey": "customer.customFields.physical_address",
+        "operator": "isNotEmpty"
+      },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [
+            { "type": "text", "marks": [{ "type": "bold" }], "text": "Address: " },
+            { "type": "variable", "attrs": { "key": "customer.customFields.physical_address" } }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "do hereby nominate, constitute and appoint the conveyancers of"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "variable", "attrs": { "key": "org.name" } }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "with power of substitution, to be my/our lawful attorneys and agents, in my/our name, place and stead, to appear before the Registrar of Deeds and there, as my/our act and deed, to declare that I/we have truly and legally transferred, and by these presents do transfer and make over in full and free property:"
+        }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "Property Description" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Property Address: " },
+        { "type": "variable", "attrs": { "key": "project.customFields.property_address" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Erf Number: " },
+        { "type": "variable", "attrs": { "key": "project.customFields.erf_number" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Deeds Office: " },
+        { "type": "variable", "attrs": { "key": "project.customFields.deeds_office" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "to and in favour of the transferee named in the Deed of Transfer to which this Power of Attorney pertains, and generally to do all such things as may be necessary and requisite for effecting registration of transfer in the Deeds Office."
+        }
+      ]
+    },
+    { "type": "clauseBlock", "attrs": { "slug": "fica-compliance" } },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "Signed at _________________ on this _____ day of ______________ 20___."
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "text", "text": "____________________________" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Transferor: " },
+        { "type": "variable", "attrs": { "key": "customer.name" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {
+          "type": "text",
+          "text": "As witnesses:"
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "text", "text": "1. ____________________________" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "text", "text": "2. ____________________________" }]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "variable", "attrs": { "key": "org.documentFooterText" } }]
+    }
+  ]
+}

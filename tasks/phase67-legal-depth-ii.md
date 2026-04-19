@@ -16,7 +16,7 @@
 | 488 | Disbursement Frontend | Frontend | 486, 487 | M | 488A, 488B | **Done** (PRs #1073, #1074) |
 | 489 | Matter Closure Workflow (Backend) | Backend | 486A | L | 489A, 489B | **Done** (PRs #1069, #1070) |
 | 490 | Matter Closure Frontend | Frontend | 489 | M | 490A, 490B | **Done** (PRs #1075, #1076) |
-| 491 | Statement of Account | Both | 486B | M | 491A, 491B | **Pending** |
+| 491 | Statement of Account | Both | 486B | M | 491A, 491B | **Done** (PRs #1077, #1078) |
 | 492 | Conveyancing Pack | Backend (pack content) | 489A (for `acceptance_eligible` column) | M | 492A, 492B | **Pending** |
 | 493 | QA Capstone — Lifecycle + Screenshots + Gap Report | E2E/Process | 486–492 | L | 493A | **Pending** |
 
@@ -148,7 +148,7 @@ PHASE 28 (acceptance), PHASE 6.5 (notification handlers) — all complete
 |-------|------|-------|---------|
 | 3a | 488 | 488B | Approval panel + trust-link dialog + invoice-editor "Add Disbursements" picker. **Done** (PR #1074) |
 | 3b | 490 | 490A | Matter closure dialog (3-step) + matter closure report component + `frontend/lib/api/matter-closure.ts` + component tests. **Done** (PR #1075) |
-| 3c | 491 | 491B | Statement of Account dialog + statements tab on matter detail + `frontend/lib/api/statement-of-account.ts` + component tests. |
+| 3c | 491 | 491B | Statement of Account dialog + statements tab on matter detail + `frontend/lib/api/statement-of-account.ts` + component tests. **Done** (PR #1078) |
 
 ### Stage 4: Closure polish
 
@@ -631,7 +631,7 @@ A realistic day-by-day cadence: 486A days 1–3; fan-out days 3–7 (486B, 487A,
 | Slice | Tasks | Summary |
 |-------|-------|---------|
 | **491A** | 491.1–491.6 | `StatementOfAccountContextBuilder` (4 sub-queries: fees, disbursements, trust activity, prior balance), `statement-of-account.json` system Tiptap template seeded under `template-packs/legal-za/`, pack.json manifest entry, `StatementController` under `/api/matters/{projectId}/statements` guarded by `@VerticalModuleGuard("disbursements")`, `StatementOfAccountGeneratedEvent`, context-builder integration tests (period filter, empty-period, trust activity inclusion, summary math), controller integration tests. **Done** (PR #1077) |
-| **491B** | 491.7–491.10 | `statement-of-account-dialog.tsx` (period picker with defaults + preview + generate/save), matter-detail "Generate Statement of Account" action, `statements.tsx` matter-detail tab listing previously generated statements, `frontend/lib/api/statement-of-account.ts` API client, component tests. |
+| **491B** | 491.7–491.10 | `statement-of-account-dialog.tsx` (period picker with defaults + preview + generate/save), matter-detail "Generate Statement of Account" action, `statements.tsx` matter-detail tab listing previously generated statements, `frontend/lib/api/statement-of-account.ts` API client, component tests. **Done** (PR #1078) |
 
 ### Tasks
 

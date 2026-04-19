@@ -20,4 +20,4 @@ public record UnbilledTimeResponse(
     Map<String, CurrencyTotal> grandTotals,
     List<UnbilledExpenseEntry> unbilledExpenses,
     Map<String, BigDecimal> unbilledExpenseTotals,
-    @JsonInclude(JsonInclude.Include.ALWAYS) List<UnbilledDisbursementDto> disbursements) {}
+    @JsonInclude(JsonInclude.Include.NON_EMPTY) List<UnbilledDisbursementDto> disbursements) {}

@@ -25,10 +25,10 @@ public interface DisbursementRepository extends JpaRepository<LegalDisbursement,
 
   /**
    * Returns APPROVED + UNBILLED disbursements for the given customer, optionally narrowed to a
-   * single project. Ordered by {@code incurredDate} ASC then {@code createdAt} ASC for
-   * deterministic invoice-picker display. Used by the {@code /api/legal/disbursements/unbilled}
-   * endpoint and by {@code UnbilledTimeService} when the {@code disbursements} module is enabled
-   * for the current tenant.
+   * single project. Ordered by {@code incurredDate} ASC, {@code createdAt} ASC, then {@code id} ASC
+   * as a final tie-breaker for deterministic invoice-picker display under concurrent inserts. Used
+   * by the {@code /api/legal/disbursements/unbilled} endpoint and by {@code UnbilledTimeService}
+   * when the {@code disbursements} module is enabled for the current tenant.
    *
    * <p>Filters on the denormalised {@code customer_id} column on {@link LegalDisbursement} — no
    * join against {@code customer_projects} needed (cf. {@code
@@ -42,7 +42,7 @@ public interface DisbursementRepository extends JpaRepository<LegalDisbursement,
         AND d.approvalStatus = 'APPROVED'
         AND d.billingStatus = 'UNBILLED'
         AND (:projectId IS NULL OR d.projectId = :projectId)
-      ORDER BY d.incurredDate ASC, d.createdAt ASC
+      ORDER BY d.incurredDate ASC, d.createdAt ASC, d.id ASC
       """)
   List<LegalDisbursement> findUnbilledBillableByCustomerId(
       @Param("customerId") UUID customerId, @Param("projectId") UUID projectId);

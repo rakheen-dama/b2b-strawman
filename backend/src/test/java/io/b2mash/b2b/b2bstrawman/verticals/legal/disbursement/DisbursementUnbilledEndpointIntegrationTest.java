@@ -57,7 +57,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class DisbursementUnbilledEndpointTest {
+class DisbursementUnbilledEndpointIntegrationTest {
 
   private static final String LEGAL_ORG_ID = "org_disb_unbilled_legal";
   private static final String NONLEGAL_ORG_ID = "org_disb_unbilled_nonlegal";
@@ -310,11 +310,13 @@ class DisbursementUnbilledEndpointTest {
   }
 
   // ==========================================================================
-  // 5. Module disabled — UnbilledTimeService returns an empty `disbursements` list.
+  // 5. Module disabled — `disbursements` field is omitted from the JSON response
+  // (byte-compatible with pre-487A shape; the record defaults to an empty list server-side,
+  // and {@code @JsonInclude(NON_EMPTY)} drops it from the wire).
   // ==========================================================================
 
   @Test
-  void nonLegalTenant_GET_customerUnbilledTime_returnsEmptyDisbursementsList() throws Exception {
+  void nonLegalTenant_GET_customerUnbilledTime_omitsDisbursementsField() throws Exception {
     mockMvc
         .perform(
             get("/api/customers/" + nonLegalCustomerId + "/unbilled-time")
@@ -322,8 +324,7 @@ class DisbursementUnbilledEndpointTest {
                     TestJwtFactory.ownerJwt(NONLEGAL_ORG_ID, "user_disb_unbilled_nonlegal_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.customerId").value(nonLegalCustomerId.toString()))
-        .andExpect(jsonPath("$.disbursements").isArray())
-        .andExpect(jsonPath("$.disbursements.length()").value(0));
+        .andExpect(jsonPath("$.disbursements").doesNotExist());
   }
 
   // ==========================================================================

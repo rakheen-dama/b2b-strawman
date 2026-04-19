@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, ShieldAlert } from "lucide-react";
@@ -70,7 +69,6 @@ function MatterClosureDialogInner({
   open,
   onOpenChange,
 }: MatterClosureDialogProps) {
-  const router = useRouter();
   const { hasCapability } = useCapabilities();
   const canOverride = hasCapability("OVERRIDE_MATTER_CLOSURE");
 
@@ -113,7 +111,9 @@ function MatterClosureDialogInner({
 
   useEffect(() => {
     if (!open) return;
-    // Reset to step 1 + refresh report on every open
+    // Reset to step 1 + refresh report on every open.
+    // `loadReport` is memoized on [projectId], and `form` is a stable
+    // reference from `useForm`, so depending on them is safe.
     setStep(1);
     setSubmitError(null);
     form.reset({
@@ -124,8 +124,7 @@ function MatterClosureDialogInner({
       overrideJustification: "",
     });
     loadReport();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, projectId]);
+  }, [open, projectId, loadReport, form]);
 
   function handleOpenChange(nextOpen: boolean) {
     onOpenChange(nextOpen);
@@ -157,14 +156,22 @@ function MatterClosureDialogInner({
       });
       if (result.success) {
         toast.success("Matter closed");
+        // The server action calls `revalidatePath` on both the project detail
+        // and list routes, so RSC re-renders automatically — no router.refresh().
         handleOpenChange(false);
-        router.refresh();
         return;
       }
       if (result.kind === "gates_failed") {
         // 409 — re-render step 1 with the fresh report, no toast
         setReport(result.report);
         setStep(1);
+        return;
+      }
+      if (result.kind === "forbidden") {
+        const message =
+          result.error ?? "You do not have permission to close this matter.";
+        toast.error(message);
+        setSubmitError(message);
         return;
       }
       setSubmitError(result.error);

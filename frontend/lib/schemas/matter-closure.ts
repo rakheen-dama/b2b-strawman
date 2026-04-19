@@ -8,10 +8,10 @@ export const closureReasonEnum = z.enum(
 export const closeMatterSchema = z
   .object({
     reason: closureReasonEnum,
-    notes: z.string().trim().max(5000).optional().or(z.literal("")),
+    notes: z.string().trim().max(5000).optional(),
     generateClosureLetter: z.boolean(),
     override: z.boolean(),
-    overrideJustification: z.string().trim().max(5000).optional().or(z.literal("")),
+    overrideJustification: z.string().trim().max(5000).optional(),
   })
   .refine(
     (data) => !data.override || (data.overrideJustification?.trim().length ?? 0) >= 20,

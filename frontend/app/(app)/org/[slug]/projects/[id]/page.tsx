@@ -563,6 +563,16 @@ export default async function ProjectDetailPage({
           </p>
         </div>
 
+        {/* Matter closure button self-gates on module + CLOSE_MATTER capability; render
+            independently so users with CLOSE_MATTER but without edit/manage/owner can see it. */}
+        {project.status !== "ARCHIVED" && (
+          <MatterClosureAction
+            slug={slug}
+            projectId={id}
+            projectName={project.name}
+            projectStatus={project.status}
+          />
+        )}
         {/* Action buttons: lifecycle + existing (hidden for ARCHIVED except lifecycle) */}
         {project.status !== "ARCHIVED" && (canEdit || isOwner || canManage) && (
           <div className="flex shrink-0 gap-2">
@@ -574,12 +584,6 @@ export default async function ProjectDetailPage({
                 projectStatus={project.status}
               />
             )}
-            <MatterClosureAction
-              slug={slug}
-              projectId={id}
-              projectName={project.name}
-              projectStatus={project.status}
-            />
             {canManage && projectTemplates.length > 0 && (
               <GenerateDocumentDropdown
                 templates={projectTemplates}

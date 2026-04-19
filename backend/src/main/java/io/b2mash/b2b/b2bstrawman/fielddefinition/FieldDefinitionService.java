@@ -298,7 +298,7 @@ public class FieldDefinitionService {
             .build());
   }
 
-  private static final Set<String> VALID_OPERATORS = Set.of("eq", "neq", "in");
+  private static final Set<String> VALID_OPERATORS = Set.of("eq", "neq", "in", "isSet");
 
   private void validateVisibilityCondition(
       Map<String, Object> condition, EntityType entityType, String ownSlug) {
@@ -315,16 +315,19 @@ public class FieldDefinitionService {
     var operator = condition.get("operator");
     if (!(operator instanceof String op) || !VALID_OPERATORS.contains(op)) {
       throw new InvalidStateException(
-          "Invalid visibility condition", "operator must be one of: eq, neq, in");
+          "Invalid visibility condition", "operator must be one of: eq, neq, in, isSet");
     }
 
     var value = condition.get("value");
-    if (value == null) {
-      throw new InvalidStateException("Invalid visibility condition", "value must not be null");
-    }
-    if ("in".equals(op) && !(value instanceof List<?>)) {
-      throw new InvalidStateException(
-          "Invalid visibility condition", "value must be a list for the 'in' operator");
+    // isSet is a unary operator — only requires dependsOnSlug; value is not applicable.
+    if (!"isSet".equals(op)) {
+      if (value == null) {
+        throw new InvalidStateException("Invalid visibility condition", "value must not be null");
+      }
+      if ("in".equals(op) && !(value instanceof List<?>)) {
+        throw new InvalidStateException(
+            "Invalid visibility condition", "value must be a list for the 'in' operator");
+      }
     }
 
     if (slug.equals(ownSlug)) {

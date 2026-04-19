@@ -343,7 +343,7 @@ public class CustomFieldValidator {
    *   <li>Controlling field not found in active definitions = visible (safe default)
    *   <li>Controlling field value is null = hidden
    *   <li>Unknown operator = visible (safe default)
-   *   <li>Operators: eq, neq, in
+   *   <li>Operators: eq, neq, in, isSet
    * </ul>
    */
   @SuppressWarnings("unchecked")
@@ -387,6 +387,9 @@ public class CustomFieldValidator {
         }
         yield true;
       }
+      // isSet: controlling field has a non-null value. Earlier null-check short-circuits to
+      // hidden when actualValue == null; reaching this switch means the value IS set.
+      case "isSet" -> true;
       default -> true;
     };
   }

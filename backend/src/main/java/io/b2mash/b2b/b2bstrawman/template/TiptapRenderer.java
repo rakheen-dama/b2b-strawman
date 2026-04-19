@@ -396,6 +396,8 @@ public class TiptapRenderer {
       case "neq" -> !Objects.equals(asString(fieldValue), asString(condValue));
       case "isEmpty" -> fieldValue == null || String.valueOf(fieldValue).isBlank();
       case "isNotEmpty" -> fieldValue != null && !String.valueOf(fieldValue).isBlank();
+      // isSet: alias for isNotEmpty — kept consistent with CustomFieldValidator visibility rules.
+      case "isSet" -> fieldValue != null && !String.valueOf(fieldValue).isBlank();
       case "contains" -> asString(fieldValue).contains(asString(condValue));
       case "in" -> {
         String csv = asString(condValue);

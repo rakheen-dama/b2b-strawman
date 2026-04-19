@@ -201,6 +201,55 @@ class CustomFieldValidatorTest {
         .isInstanceOf(InvalidStateException.class);
   }
 
+  @Test
+  void isSetVisibilityHidesDependentWhenControllingFieldIsNull() {
+    // lodgement_date controls registration_date via isSet: if lodgement_date is null,
+    // registration_date should be hidden (and therefore not flagged as missing required).
+    var lodgementDate = createFieldDef("lodgement_date", FieldType.DATE, false);
+    var registrationDate = createFieldDef("registration_date", FieldType.DATE, true);
+    registrationDate.setVisibilityCondition(
+        Map.of("dependsOnSlug", "lodgement_date", "operator", "isSet"));
+
+    UUID groupId = UUID.randomUUID();
+    var lodgementMember = new FieldGroupMember(groupId, lodgementDate.getId(), 0);
+    var registrationMember = new FieldGroupMember(groupId, registrationDate.getId(), 1);
+
+    when(fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
+            EntityType.PROJECT))
+        .thenReturn(List.of(lodgementDate, registrationDate));
+    when(fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(groupId))
+        .thenReturn(List.of(lodgementMember, registrationMember));
+
+    // lodgement_date absent -> registration_date hidden -> required check skipped -> passes.
+    var result = validator.validate(EntityType.PROJECT, Map.of(), List.of(groupId));
+    assertThat(result).isEmpty();
+  }
+
+  @Test
+  void isSetVisibilityShowsDependentWhenControllingFieldIsSet() {
+    var lodgementDate = createFieldDef("lodgement_date", FieldType.DATE, false);
+    var registrationDate = createFieldDef("registration_date", FieldType.DATE, true);
+    registrationDate.setVisibilityCondition(
+        Map.of("dependsOnSlug", "lodgement_date", "operator", "isSet"));
+
+    UUID groupId = UUID.randomUUID();
+    var lodgementMember = new FieldGroupMember(groupId, lodgementDate.getId(), 0);
+    var registrationMember = new FieldGroupMember(groupId, registrationDate.getId(), 1);
+
+    when(fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
+            EntityType.PROJECT))
+        .thenReturn(List.of(lodgementDate, registrationDate));
+    when(fieldGroupMemberRepository.findByFieldGroupIdOrderBySortOrder(groupId))
+        .thenReturn(List.of(lodgementMember, registrationMember));
+
+    // lodgement_date set -> registration_date visible -> required enforced -> throws.
+    assertThatThrownBy(
+            () ->
+                validator.validate(
+                    EntityType.PROJECT, Map.of("lodgement_date", "2026-01-15"), List.of(groupId)))
+        .isInstanceOf(InvalidStateException.class);
+  }
+
   // --- Helper ---
 
   private FieldDefinition createFieldDef(String slug, FieldType fieldType, boolean required) {

@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.packs;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.clause.Clause;
 import io.b2mash.b2b.b2bstrawman.clause.ClauseRepository;
 import io.b2mash.b2b.b2bstrawman.clause.ClauseSource;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
@@ -195,7 +196,7 @@ class ConveyancingPackInstallTest {
                           CLAUSE_PACK_ID, ClauseSource.SYSTEM);
                   assertThat(clauses).hasSize(10);
 
-                  var slugs = clauses.stream().map(c -> c.getSlug()).toList();
+                  var slugs = clauses.stream().map(Clause::getSlug).toList();
                   assertThat(slugs).containsExactlyInAnyOrderElementsOf(EXPECTED_CLAUSE_SLUGS);
                 }));
   }

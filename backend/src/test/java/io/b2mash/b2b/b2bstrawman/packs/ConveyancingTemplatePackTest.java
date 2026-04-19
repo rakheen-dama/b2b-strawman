@@ -174,9 +174,8 @@ class ConveyancingTemplatePackTest {
                           .map(DocumentTemplate::getPackTemplateKey)
                           .toList();
 
-                  assertThat(keys).contains("offer-to-purchase", "power-of-attorney-transfer");
-                  assertThat(keys).doesNotContain("deed-of-transfer");
-                  assertThat(keys).doesNotContain("bond-cancellation-instruction");
+                  assertThat(keys)
+                      .containsExactlyInAnyOrder("offer-to-purchase", "power-of-attorney-transfer");
                 }));
   }
 

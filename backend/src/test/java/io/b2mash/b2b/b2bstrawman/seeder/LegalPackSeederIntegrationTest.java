@@ -118,7 +118,7 @@ class LegalPackSeederIntegrationTest {
                   // Phase 67, Epic 489B added matter-closure-letter (11th template).
                   // Phase 67, Epic 491A added statement-of-account (12th template).
                   // Phase 67, Epic 492B added 4 conveyancing templates (13th-16th):
-                  // offer-to-purchase, deed-of-transfer, power-of-attorney-transfer,
+                  // offer-to-purchase, deed-of-transfer, power-of-attorney-to-pass-transfer,
                   // bond-cancellation-instruction.
                   assertThat(legalTemplates).hasSize(16);
                   assertThat(legalTemplates)

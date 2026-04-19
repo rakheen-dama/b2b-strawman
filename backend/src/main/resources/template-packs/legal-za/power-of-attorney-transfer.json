@@ -28,13 +28,13 @@
       "type": "paragraph",
       "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Transferor: " },
-        { "type": "variable", "attrs": { "key": "customer.name" } }
+        { "type": "variable", "attrs": { "key": "project.customFields.seller_name" } }
       ]
     },
     {
       "type": "conditionalBlock",
       "attrs": {
-        "fieldKey": "customer.customFields.id_passport_number",
+        "fieldKey": "project.customFields.seller_id_number",
         "operator": "isNotEmpty"
       },
       "content": [
@@ -42,23 +42,7 @@
           "type": "paragraph",
           "content": [
             { "type": "text", "marks": [{ "type": "bold" }], "text": "ID / Passport Number: " },
-            { "type": "variable", "attrs": { "key": "customer.customFields.id_passport_number" } }
-          ]
-        }
-      ]
-    },
-    {
-      "type": "conditionalBlock",
-      "attrs": {
-        "fieldKey": "customer.customFields.physical_address",
-        "operator": "isNotEmpty"
-      },
-      "content": [
-        {
-          "type": "paragraph",
-          "content": [
-            { "type": "text", "marks": [{ "type": "bold" }], "text": "Address: " },
-            { "type": "variable", "attrs": { "key": "customer.customFields.physical_address" } }
+            { "type": "variable", "attrs": { "key": "project.customFields.seller_id_number" } }
           ]
         }
       ]
@@ -141,7 +125,7 @@
       "type": "paragraph",
       "content": [
         { "type": "text", "marks": [{ "type": "bold" }], "text": "Transferor: " },
-        { "type": "variable", "attrs": { "key": "customer.name" } }
+        { "type": "variable", "attrs": { "key": "project.customFields.seller_name" } }
       ]
     },
     {

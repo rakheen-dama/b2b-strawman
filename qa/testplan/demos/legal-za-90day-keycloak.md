@@ -257,7 +257,20 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **5.3** Verify Tasks tab, Time tab, Documents tab, Comments tab, Activity tab all load without errors
 - [ ] **5.4** 📸 **Screenshot**: Matter detail page with promoted fields + terminology + tabs visible
 
-### Days 6–7 — More activity on Sipho's matter
+#### Phase 67 — Disbursements (Epics 486–488)
+
+**Actor**: Bob (Admin) creates + submits; Thandi (Owner) approves the trust-linked disbursement.
+
+- [ ] **5.5** Navigate to **Legal → Disbursements** (`/org/{slug}/legal/disbursements`) → verify list page loads (module-gated on `enabledModules` including `"disbursements"`)
+- [ ] **5.6** As Bob: click **"New Disbursement"** → dialog opens (`data-testid="create-disbursement-dialog"`)
+- [ ] **5.7** Create a **sheriff fee disbursement** (`OFFICE_ACCOUNT`): amount R750.00, description "Sheriff fee — service of process", category = SHERIFF_FEE, linked to Sipho's litigation matter → submit (no trust link)
+- [ ] **5.8** Verify disbursement appears in list with status `DRAFT` → click row → detail page → click **Submit** → status transitions to `SUBMITTED`
+- [ ] **5.9** As Bob: create a **deeds-office fee disbursement** (`TRUST_ACCOUNT`): amount R1,250.00, description "Deeds office search fee", category = DEEDS_OFFICE_FEE; in the trust-link slot select an approved `DISBURSEMENT_PAYMENT` trust transaction → submit → status `SUBMITTED`
+- [ ] **5.10** As Thandi (Owner): navigate to the trust-linked disbursement detail → click **Approve** → status transitions to `APPROVED` (owner has `APPROVE_TRUST_PAYMENT`)
+- [ ] **5.11** As Bob: approve the sheriff-fee (office-account) disbursement → status transitions to `APPROVED`
+- [ ] **5.12** Navigate to Sipho's matter detail → Disbursements tab (`data-testid="project-disbursements-tab"`) → verify unbilled summary shows **"Unbilled Disbursements: R2,000.00"** (sheriff + deeds office combined)
+- [ ] **5.13** Verify terminology throughout is **Disbursement** (never "Expense")
+- [ ] **5.14** 📸 **Screenshot**: Disbursement list view with mixed statuses + unbilled summary visible on matter detail
 
 - [ ] **6.1** Carol logs 2.0 hours: "Legal research — precedent review"
 - [ ] **6.2** Bob adds a comment on the matter: "Need to confirm court date by Monday" with `@Carol` mention
@@ -299,6 +312,23 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **12.3** Verify trust account balance updates to R50,000
 - [ ] **13.1** Carol logs 1.0 hour: "Drafting Section 29 advertisement notice"
 - [ ] **14.1** Thandi comments on matter: "Master's appointment received" with a PDF attachment
+
+#### Phase 67 — Day 14: Conveyancing matter + OTP acceptance (Epic 492)
+
+**Actor**: Thandi (Owner — senior partner handles property work)
+
+- [ ] **14.2** As Thandi: create a new client **"Khumalo Property Holdings"** (type INDIVIDUAL), complete FICA checklist → ACTIVE
+- [ ] **14.3** Create a new matter using the **Property Transfer** template (`matter_type = CONVEYANCING`) → matter title "Khumalo Property Holdings — Erf 1234 Sandton Transfer"
+- [ ] **14.4** On matter detail, verify the **10 conveyancing custom fields** (from field pack `conveyancing_za_matter`) are all present in the custom-fields section (even if empty): `conveyancing_type`, `property_address`, `erf_number`, `deeds_office`, `lodgement_date`, `registration_date`, `deed_number`, `purchase_price`, `transfer_duty`, `bond_institution`
+- [ ] **14.5** Fill the minimum Day 14 set: `property_address = "12 Rivonia Road, Sandton, 2196"`, `erf_number = "1234"`, `deeds_office = JOHANNESBURG` → save
+- [ ] **14.6** Verify promoted / inline fields re-render with new values
+- [ ] **14.7** Navigate to Document Templates from matter → select **Offer to Purchase** (key `offer-to-purchase`, `acceptanceEligible: true`) → generate document
+- [ ] **14.8** Verify generated OTP document contains the conveyancing clauses inserted from clause pack `conveyancing-za-clauses` (Phase 492 clause injection)
+- [ ] **14.9** On the generated OTP document detail → click **Send for Acceptance** (Phase 28 flow — button only shown because template has `acceptanceEligible: true`)
+- [ ] **14.10** Fill acceptance request: recipient = client contact email, expiry = 7 days → submit
+- [ ] **14.11** Verify Mailpit inbox (http://localhost:8025) receives acceptance request email with magic-link token
+- [ ] **14.12** Open the magic link in a new incognito context (public `/accept/[token]` route) → verify AcceptanceDetailPanel renders OTP preview + Accept/Decline actions
+- [ ] **14.13** 📸 **Screenshot**: Conveyancing matter detail with 10 custom fields + OTP document listed + acceptance status badge
 
 ### Day 15 — Budget check
 
@@ -361,6 +391,18 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ## Days 36–60 — First fee notes (invoicing)
 
+### Day 30 — Statement of Account (Phase 67 / Epic 487)
+
+**Actor**: Thandi (Owner) or Bob (Admin).
+
+- [ ] **30.1** Navigate to the **oldest active matter** (Sipho's litigation) → open **Statements** tab (`data-testid="project-statements-tab"` — rendered by `project-statements-tab.tsx`)
+- [ ] **30.2** Click **"Generate Statement of Account"** → dialog opens (`data-testid="statement-of-account-dialog"`)
+- [ ] **30.3** Fill period: start = matter-opened date (Day 3), end = today (Day 30) → click **Generate**
+- [ ] **30.4** Preview pane (`data-testid="statement-preview-container"`) renders HTML with: fees section (time entries from Days 4–7), disbursements section (sheriff fee + deeds-office fee from Day 5), trust activity section, and summary totals block
+- [ ] **30.5** Click **Save** → statement persisted as a `GeneratedDocument` row → appears in matter's Documents tab
+- [ ] **30.6** Click **Download PDF** → PDF downloads with identical layout
+- [ ] **30.7** 📸 **Screenshot**: Statement of Account dialog with HTML preview visible + summary block visible (curated for documentation)
+
 ### Day 36 — First fee note draft (Sipho litigation)
 
 **Actor**: Thandi
@@ -385,6 +427,18 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **45.2** Create fee note from unbilled time (days 10–21)
 - [ ] **45.3** Verify if LSSA tariff module surfaces tariff-based line items (if not, log as MEDIUM gap)
 - [ ] **45.4** Approve → send → generate PDF
+
+#### Phase 67 — Day 45: Disbursement write-off (Epic 491)
+
+**Actor**: Thandi (Owner — has `WRITE_OFF_DISBURSEMENTS` capability).
+
+- [ ] **45.5** Navigate to **Legal → Disbursements** → select one `APPROVED`/`UNBILLED` disbursement from Sipho's matter (pre-state from Day 5 flow) → open detail page (`data-testid="disbursement-detail"`)
+- [ ] **45.6** Click **Write Off** action → dialog prompts for reason → enter "Client dispute — unable to recover from third party, firm absorbing the cost"
+- [ ] **45.7** Submit → backend `POST /api/disbursements/{id}/write-off` returns 200 → `billing_status` transitions `UNBILLED → WRITTEN_OFF`
+- [ ] **45.8** Verify status badge on detail page shows **WRITTEN_OFF** and `writeOffReason` text renders inline
+- [ ] **45.9** Navigate to **Audit Log** → filter by entity = disbursement, action = WRITE_OFF → verify event recorded with the reason string in the details JSON
+- [ ] **45.10** Navigate to Sipho's matter → open a **new fee note draft** from unbilled items → verify the written-off disbursement is **NOT** present in the selectable items list (excluded from next invoice draft)
+- [ ] **45.11** Verify terminology: write-off reason displayed as "Disbursement written off" (never "Expense written off")
 
 ### Day 47 — 📸 Fee note PDF wow moment
 
@@ -413,6 +467,23 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **72.2** Verify trust balance updates correctly
 - [ ] **75.1** Mark Sipho's litigation matter as COMPLETED (or CLOSED) → verify state transition allowed
 
+#### Phase 67 — Day 75: Matter closure (happy path) (Epic 489)
+
+**Pre-state**: Pick a matter where trust balance is R0, no outstanding prescriptions, no open info-requests, no unsent acceptances, all invoices PAID, all tasks done.
+
+**Actor**: Thandi (Owner — has `CLOSE_MATTER` capability).
+
+- [ ] **75.2** Navigate to the target matter detail → click **"Close Matter"** action (capability-gated — rendered by `matter-closure-action.tsx`)
+- [ ] **75.3** Close Matter dialog opens (`data-testid="matter-closure-dialog"`) → **Step 1 — Gate Report** (`data-testid="matter-closure-step-1"`) shows all 9 gates as **green/pass** (trust, disbursements, invoices, court-calendar, prescriptions, tasks, info-requests, acceptances + 9th per arch)
+- [ ] **75.4** Click **Continue** (`data-testid="matter-closure-next-btn"`) → advances to **Step 2 — Close form** (`data-testid="matter-closure-step-2"`)
+- [ ] **75.5** Reason select (`data-testid="matter-closure-reason-select"`) defaults to **CONCLUDED** → leave
+- [ ] **75.6** Leave **Generate closure letter** checkbox (`data-testid="matter-closure-generate-letter-checkbox"`) ticked (default `generateClosureLetter = true`)
+- [ ] **75.7** Click **Confirm Close** (`data-testid="matter-closure-confirm-close-btn"`) → success toast renders
+- [ ] **75.8** Verify matter status badge flips to **CLOSED**
+- [ ] **75.9** Verify a **closure letter** document is created and attached to matter (visible in Documents tab)
+- [ ] **75.10** Verify a **retention policy** row is inserted with `end_date = today + 5 years` (ADR-249)
+- [ ] **75.11** 📸 **Screenshot**: Matter closure dialog with all-green gate report + closure-letter preview after close
+
 ---
 
 ## Days 76–90 — Reports, close-out & final sweep
@@ -431,6 +502,30 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **85.2** Filter by actor = Thandi → verify all Thandi's actions over 90 days are listed
 - [ ] **85.3** Filter by entity type = Matter → verify matter CRUD events render
 - [ ] **85.4** Verify audit entries include: timestamp, actor, action, entity, details (JSONB expandable)
+
+#### Phase 67 — Day 85: Matter closure override (Epic 490)
+
+**Pre-state**: Pick a matter where trust balance > R0 (intentionally unresolved — e.g., Moroka estate with open trust funds) so gates will fail.
+
+**Pass A — Bob (Admin) attempts close, no override capability**:
+
+- [ ] **85.5** As Bob: navigate to the matter detail → click **Close Matter**
+- [ ] **85.6** Dialog opens → Step 1 gate report shows the **trust balance gate failing** (red/warn)
+- [ ] **85.7** Click **Continue** → since Bob lacks `OVERRIDE_MATTER_CLOSURE`, `canOverride = false` — dialog advances to **Step 3** (`data-testid="matter-closure-step-3"`, "Cannot close — resolve gates")
+- [ ] **85.8** Verify the **override toggle** (`data-testid="matter-closure-override-toggle"`) is **NOT** present in the DOM
+- [ ] **85.9** Close the dialog → any attempted POST via API returns **409 Conflict** with payload `{ kind: "gates_failed", gates: [...] }`
+
+**Pass B — Thandi (Owner) overrides**:
+
+- [ ] **85.10** As Thandi (has `OVERRIDE_MATTER_CLOSURE`): navigate to the same matter → click **Close Matter**
+- [ ] **85.11** Step 1 gate report shows the same failing trust-balance gate
+- [ ] **85.12** Click **Continue** → since `canOverride = true && anyFailing`, dialog advances to Step 2 with the **override section visible**
+- [ ] **85.13** Toggle the **override switch on** (`data-testid="matter-closure-override-toggle"`) → justification input appears (`data-testid="matter-closure-override-justification-input"`)
+- [ ] **85.14** Enter override justification ≥ 20 chars: "Trust remainder of R12,000 earmarked for final Section 35 payout pending master approval — closing under owner override" (≥ 20 chars)
+- [ ] **85.15** Click **Confirm Close** → success toast
+- [ ] **85.16** Verify matter status transitions to **CLOSED**
+- [ ] **85.17** Navigate to **Audit Log** → filter by entity = matter, action = CLOSE → verify event includes `override_used = true` and the justification text verbatim in the details JSON
+- [ ] **85.18** 📸 **Screenshot**: Matter closure dialog with gate report failing + override toggle + justification input visible
 
 ### Day 88 — 📸 Activity feed wow moment
 

@@ -146,6 +146,36 @@ export async function addLineItem(
   }
 }
 
+export async function addDisbursementLines(
+  slug: string,
+  invoiceId: string,
+  customerId: string,
+  disbursementIds: string[]
+): Promise<InvoiceActionResult> {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
+    return { success: false, error: "Only admins and owners can add line items." };
+  }
+  if (!disbursementIds || disbursementIds.length === 0) {
+    return { success: false, error: "No disbursements selected." };
+  }
+
+  try {
+    const invoice = await api.post<InvoiceResponse>(
+      `/api/invoices/${invoiceId}/disbursement-lines`,
+      { disbursementIds }
+    );
+    revalidateInvoicePaths(slug, invoiceId, customerId);
+    return { success: true, invoice };
+  } catch (error) {
+    const message =
+      error instanceof ApiError
+        ? error.message
+        : createMessages("errors").t(classifyError(error).messageCode);
+    return { success: false, error: message };
+  }
+}
+
 export async function updateLineItem(
   slug: string,
   invoiceId: string,

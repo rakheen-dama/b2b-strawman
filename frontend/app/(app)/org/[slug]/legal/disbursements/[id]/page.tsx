@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { handleApiError } from "@/lib/api";
 import { isModuleEnabledServer } from "@/lib/api/settings";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import {
   getDisbursement,
   type DisbursementResponse,
@@ -25,5 +26,15 @@ export default async function DisbursementDetailPage({
     handleApiError(error);
   }
 
-  return <DisbursementDetailClient slug={slug} disbursement={disbursement} />;
+  const caps = await fetchMyCapabilities();
+  const canApprove =
+    caps.isAdmin || caps.isOwner || caps.capabilities.includes("APPROVE_DISBURSEMENTS");
+
+  return (
+    <DisbursementDetailClient
+      slug={slug}
+      disbursement={disbursement}
+      canApprove={canApprove}
+    />
+  );
 }

@@ -45,7 +45,8 @@ export type TrustTransactionType =
   | "REFUND"
   | "INTEREST_CREDIT"
   | "INTEREST_LPFF"
-  | "REVERSAL";
+  | "REVERSAL"
+  | "DISBURSEMENT_PAYMENT";
 
 export type TrustTransactionStatus =
   | "RECORDED"

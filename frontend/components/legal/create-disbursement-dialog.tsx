@@ -44,6 +44,8 @@ import {
   confirmUpload,
   initiateUpload,
 } from "@/app/(app)/org/[slug]/projects/[id]/actions";
+import { TrustTransactionLinkDialog } from "@/components/legal/trust-transaction-link-dialog";
+import type { TrustTransaction } from "@/lib/types";
 
 interface CreateDisbursementDialogProps {
   slug: string;
@@ -76,6 +78,10 @@ export function CreateDisbursementDialog({
   const [uploadProgress, setUploadProgress] = useState<number>(0);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+
+  // Trust transaction link state (when paymentSource === "TRUST_ACCOUNT")
+  const [trustDialogOpen, setTrustDialogOpen] = useState(false);
+  const [linkedTx, setLinkedTx] = useState<TrustTransaction | null>(null);
 
   const form = useForm<CreateDisbursementFormData>({
     resolver: zodResolver(createDisbursementSchema),
@@ -228,6 +234,7 @@ export function CreateDisbursementDialog({
         vatTreatmentUserTouched.current = false;
         setReceiptDocumentId(null);
         setReceiptFileName(null);
+        setLinkedTx(null);
         setOpen(false);
         onSuccess?.();
       } else {
@@ -275,6 +282,7 @@ export function CreateDisbursementDialog({
       });
       setReceiptDocumentId(null);
       setReceiptFileName(null);
+      setLinkedTx(null);
     } else {
       // Dialog is closing. If we uploaded a receipt but never confirmed it
       // (because the user cancelled), release the staged upload.
@@ -283,6 +291,7 @@ export function CreateDisbursementDialog({
         setReceiptDocumentId(null);
         setReceiptFileName(null);
       }
+      setLinkedTx(null);
     }
     setOpen(newOpen);
   }
@@ -423,11 +432,18 @@ export function CreateDisbursementDialog({
                         min={0.01}
                         step={0.01}
                         value={Number.isFinite(field.value) ? field.value : 0}
+                        disabled={linkedTx != null}
+                        data-testid="disbursement-amount-input"
                         onChange={(e) =>
                           field.onChange(e.target.value === "" ? 0 : Number(e.target.value))
                         }
                       />
                     </FormControl>
+                    {linkedTx && (
+                      <p className="text-xs text-slate-500">
+                        Amount is locked to the linked trust transaction.
+                      </p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
@@ -469,19 +485,23 @@ export function CreateDisbursementDialog({
                   <FormControl>
                     <RadioGroup
                       value={field.value}
-                      onValueChange={field.onChange}
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        // Switching away from trust account clears any linked tx.
+                        if (value !== "TRUST_ACCOUNT") {
+                          setLinkedTx(null);
+                          form.setValue("trustTransactionId", "");
+                        }
+                      }}
                       className="flex gap-6"
                     >
                       <label className="flex items-center gap-2 text-sm">
                         <RadioGroupItem value="OFFICE_ACCOUNT" id="ps-office" />
                         <span>Office Account</span>
                       </label>
-                      {/* Trust Account path is 488B territory — the backend flow
-                          for trust-linked disbursements arrives in the next slice.
-                          Disabled here to prevent users submitting invalid state. */}
-                      <label className="flex items-center gap-2 text-sm text-slate-400 dark:text-slate-500">
-                        <RadioGroupItem value="TRUST_ACCOUNT" id="ps-trust" disabled />
-                        <span>Trust Account (coming soon)</span>
+                      <label className="flex items-center gap-2 text-sm">
+                        <RadioGroupItem value="TRUST_ACCOUNT" id="ps-trust" />
+                        <span>Trust Account</span>
                       </label>
                     </RadioGroup>
                   </FormControl>
@@ -493,25 +513,62 @@ export function CreateDisbursementDialog({
             {selectedPaymentSource === "TRUST_ACCOUNT" && (
               <div
                 data-testid="trust-link-slot"
-                className="rounded-md border border-dashed border-amber-300 bg-amber-50 p-3 text-sm dark:border-amber-800 dark:bg-amber-950"
+                className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm dark:border-slate-800 dark:bg-slate-900"
               >
-                <p className="font-medium text-amber-800 dark:text-amber-200">
+                <p className="font-medium text-slate-900 dark:text-slate-100">
                   Link a trust transaction (required)
                 </p>
-                <p className="mt-1 text-xs text-amber-700 dark:text-amber-300">
-                  The trust transaction picker arrives in slice 488B. Submission will fail with a
-                  validation error from the server until a transaction is linked.
-                </p>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  disabled
-                  className="mt-2"
-                  data-testid="trust-link-button-stub"
-                >
-                  Link trust transaction (488B)
-                </Button>
+                {linkedTx ? (
+                  <div className="mt-2 flex items-center justify-between gap-2">
+                    <span
+                      className="text-xs text-slate-600 dark:text-slate-400"
+                      data-testid="linked-trust-tx"
+                    >
+                      {linkedTx.transactionDate} &middot; R {linkedTx.amount.toFixed(2)}
+                      {linkedTx.reference ? ` · ${linkedTx.reference}` : ""}
+                    </span>
+                    <Button
+                      type="button"
+                      variant="plain"
+                      size="sm"
+                      onClick={() => {
+                        setLinkedTx(null);
+                        form.setValue("trustTransactionId", "");
+                      }}
+                      data-testid="trust-link-unlink"
+                    >
+                      Unlink
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="mt-2"
+                    data-testid="trust-link-button"
+                    disabled={!selectedProjectId}
+                    onClick={() => setTrustDialogOpen(true)}
+                  >
+                    Link trust transaction
+                  </Button>
+                )}
+                {!selectedProjectId && !linkedTx && (
+                  <p className="mt-1 text-xs text-slate-500">
+                    Select a matter first to pick a trust transaction.
+                  </p>
+                )}
+                <TrustTransactionLinkDialog
+                  open={trustDialogOpen}
+                  onOpenChange={setTrustDialogOpen}
+                  projectId={selectedProjectId}
+                  onSelect={(tx) => {
+                    setLinkedTx(tx);
+                    form.setValue("trustTransactionId", tx.id);
+                    form.setValue("amount", tx.amount);
+                    setTrustDialogOpen(false);
+                  }}
+                />
               </div>
             )}
 

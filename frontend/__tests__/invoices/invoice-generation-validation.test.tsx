@@ -77,6 +77,12 @@ vi.mock("@/app/(app)/org/[slug]/invoices/invoice-payment-actions", () => ({
   refreshPaymentLink: vi.fn().mockResolvedValue({ success: true }),
 }));
 
+// Stub the add-disbursements picker — it transitively imports a "use server" module
+// (legal/disbursements/actions) that cannot be loaded into the client test context.
+vi.mock("@/app/(app)/org/[slug]/invoices/[id]/edit/(components)/add-disbursements-picker", () => ({
+  AddDisbursementsPicker: () => null,
+}));
+
 import { InvoiceGenerationDialog } from "@/components/invoices/invoice-generation-dialog";
 import { InvoiceDetailClient } from "@/components/invoices/invoice-detail-client";
 

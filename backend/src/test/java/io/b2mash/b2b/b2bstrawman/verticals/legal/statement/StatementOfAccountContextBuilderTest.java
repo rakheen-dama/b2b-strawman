@@ -439,6 +439,98 @@ class StatementOfAccountContextBuilderTest {
   }
 
   @Test
+  void previousBalance_includesInvoicesIssuedBeforePeriodEvenIfLaterMarkedPaid() {
+    // An invoice issued in March (R800) for which payment arrives in April. At the start of
+    // the April statement period the customer DID owe R800 — the opening balance must reflect
+    // that, with the April payment then showing in payments_received. Filtering by SENT-only
+    // would silently drop the PAID-now invoice, understating the previous balance to R0 and
+    // turning the statement into a misleading "closing-only" view.
+    var project = projectWithCustomer("Carryover Matter", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of());
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
+        .thenReturn(Optional.empty());
+
+    var carryover =
+        invoiceWithStatusTotalAndIssueDate(
+            InvoiceStatus.PAID, new BigDecimal("800.00"), periodStart.minusDays(20));
+    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of(carryover));
+    // No payments BEFORE periodStart — the payment lands inside the period and is captured by
+    // paymentsReceivedInPeriod, not paymentsBefore.
+    when(paymentEventRepository.findByInvoiceIdInOrderByCreatedAtDesc(anyCollection()))
+        .thenReturn(List.of());
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> summary = (Map<String, Object>) context.get("summary");
+    assertThat((BigDecimal) summary.get("previous_balance_owing"))
+        .isEqualByComparingTo(new BigDecimal("800.00"));
+  }
+
+  @Test
+  void previousBalance_excludesVoidedInvoices() {
+    var project = projectWithCustomer("Voided Matter", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of());
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
+        .thenReturn(Optional.empty());
+
+    var voided =
+        invoiceWithStatusTotalAndIssueDate(
+            InvoiceStatus.VOID, new BigDecimal("999.00"), periodStart.minusDays(5));
+    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of(voided));
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> summary = (Map<String, Object>) context.get("summary");
+    assertThat((BigDecimal) summary.get("previous_balance_owing"))
+        .isEqualByComparingTo(BigDecimal.ZERO);
+  }
+
+  @Test
+  void feeAmount_computedFromRawMinutesPreservesPrecision() {
+    // 7-minute entry at R1000/h. Display hours are rounded to 2dp (0.12h), but the amount
+    // must come from the raw minutes: 7/60 * 1000 = 116.6667 → R116.67. Computing amount
+    // from the rounded display hours (0.12 * 1000 = 120.00) overcharges by ~3%.
+    var project = projectWithCustomer("Precise Matter", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+
+    var te = timeEntry(LocalDate.of(2026, 4, 10), 7, true, new BigDecimal("1000.00"), "Quick call");
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of(te));
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
+        .thenReturn(Optional.empty());
+    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> fees = (Map<String, Object>) context.get("fees");
+    @SuppressWarnings("unchecked")
+    List<FeeLineDto> entries = (List<FeeLineDto>) fees.get("entries");
+    assertThat(entries).hasSize(1);
+    // Display hours: 7/60 = 0.1166... → 0.12 at 2dp HALF_UP.
+    assertThat(entries.get(0).hours()).isEqualByComparingTo(new BigDecimal("0.12"));
+    // Amount from raw minutes: 7/60 * 1000 = 116.666... → 116.67. NOT 0.12 * 1000 = 120.00.
+    assertThat(entries.get(0).amount()).isEqualByComparingTo(new BigDecimal("116.67"));
+    assertThat((BigDecimal) fees.get("total_amount_excl_vat"))
+        .isEqualByComparingTo(new BigDecimal("116.67"));
+  }
+
+  @Test
   void trustAccountingDisabled_trustBlockEmpty_ledgerNeverQueried() {
     // Override default: simulate a tenant with disbursements enabled but trust_accounting DISABLED.
     when(moduleGuard.isModuleEnabled("trust_accounting")).thenReturn(false);

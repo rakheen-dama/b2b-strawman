@@ -327,12 +327,19 @@ public class StatementOfAccountContextBuilder {
             .toList();
     var lines = new ArrayList<FeeLineDto>(billable.size());
     for (TimeEntry te : billable) {
-      BigDecimal hours =
-          BigDecimal.valueOf(te.getDurationMinutes())
-              .divide(MINUTES_PER_HOUR, 2, RoundingMode.HALF_UP);
+      BigDecimal minutes = BigDecimal.valueOf(te.getDurationMinutes());
+      // Compute amount from raw minutes at higher precision, then round once. Using the
+      // 2-decimal display hours for both display AND amount calculation drops fractional
+      // minute precision (e.g., a 7-minute entry rounds to 0.12h, so 0.12h × R1000 bills
+      // R120.00 instead of the correct R116.67).
+      BigDecimal hours = minutes.divide(MINUTES_PER_HOUR, 2, RoundingMode.HALF_UP);
       BigDecimal rate =
           te.getBillingRateSnapshot() != null ? te.getBillingRateSnapshot() : BigDecimal.ZERO;
-      BigDecimal amount = hours.multiply(rate).setScale(2, RoundingMode.HALF_UP);
+      BigDecimal amount =
+          minutes
+              .divide(MINUTES_PER_HOUR, 10, RoundingMode.HALF_UP)
+              .multiply(rate)
+              .setScale(2, RoundingMode.HALF_UP);
       String memberName = memberNameResolver.resolveName(te.getMemberId());
       lines.add(
           new FeeLineDto(
@@ -427,11 +434,20 @@ public class StatementOfAccountContextBuilder {
     if (customerId == null) {
       return BigDecimal.ZERO;
     }
+    // Any invoice issued before periodStart contributes to the opening balance regardless of
+    // its CURRENT status (an invoice issued in March and paid in May still owed money on
+    // April 1). Filtering by SENT-only would silently drop invoices later marked PAID, while
+    // their post-periodStart payments would also be excluded — netting to a zero opening
+    // contribution and understating the previous balance owing. VOID is excluded because a
+    // cancelled invoice never owed anything; DRAFT/APPROVED are excluded because they have
+    // no issueDate set (issueDate is populated on send).
     List<Invoice> issued =
         invoiceRepository.findByCustomerId(customerId).stream()
             .filter(
                 inv ->
-                    inv.getStatus() == InvoiceStatus.SENT
+                    inv.getStatus() != InvoiceStatus.VOID
+                        && inv.getStatus() != InvoiceStatus.DRAFT
+                        && inv.getStatus() != InvoiceStatus.APPROVED
                         && inv.getIssueDate() != null
                         && inv.getIssueDate().isBefore(periodStart))
             .toList();

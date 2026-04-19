@@ -3,7 +3,7 @@
 import type { TagResponse } from "./common";
 import type { ProjectRole } from "./member";
 
-export type ProjectStatus = "ACTIVE" | "COMPLETED" | "ARCHIVED";
+export type ProjectStatus = "ACTIVE" | "COMPLETED" | "ARCHIVED" | "CLOSED";
 
 export type ProjectPriority = "LOW" | "MEDIUM" | "HIGH";
 
@@ -25,6 +25,7 @@ export interface Project {
   completedBy: string | null;
   completedByName: string | null;
   archivedAt: string | null;
+  closedAt: string | null;
   projectRole: ProjectRole | null;
   customFields?: Record<string, unknown>;
   appliedFieldGroups?: string[];

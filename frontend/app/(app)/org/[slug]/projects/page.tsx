@@ -40,6 +40,7 @@ const PROJECT_STATUS_BADGE: Record<
   ACTIVE: { label: "Active", variant: "success" },
   COMPLETED: { label: "Completed", variant: "neutral" },
   ARCHIVED: { label: "Archived", variant: "neutral" },
+  CLOSED: { label: "Closed", variant: "neutral" },
 };
 
 const ROLE_BADGE: Record<ProjectRole, { label: string; variant: "lead" | "member" }> = {
@@ -80,10 +81,16 @@ export default async function ProjectsPage({
   }
 
   // Build query string with view and status filters
-  const VALID_STATUSES = new Set(["ACTIVE", "COMPLETED", "ARCHIVED"]);
+  const VALID_STATUSES = new Set<ProjectStatus>([
+    "ACTIVE",
+    "COMPLETED",
+    "ARCHIVED",
+    "CLOSED",
+  ]);
   const rawStatus =
     typeof resolvedSearchParams.status === "string" ? resolvedSearchParams.status : null;
-  const statusParam = rawStatus && VALID_STATUSES.has(rawStatus) ? rawStatus : null;
+  const statusParam =
+    rawStatus && VALID_STATUSES.has(rawStatus as ProjectStatus) ? rawStatus : null;
   const queryParts: string[] = [];
   if (currentViewId) queryParts.push(`view=${currentViewId}`);
   if (statusParam) queryParts.push(`status=${statusParam}`);

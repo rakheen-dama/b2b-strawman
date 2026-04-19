@@ -405,6 +405,7 @@ public class StatementOfAccountContextBuilder {
     var startInstant = periodStart.atStartOfDay(java.time.ZoneOffset.UTC).toInstant();
     BigDecimal paymentsBefore =
         paymentEventRepository.findByInvoiceIdInOrderByCreatedAtDesc(issuedIds).stream()
+            .filter(p -> p.getStatus() == PaymentEventStatus.COMPLETED)
             .filter(p -> p.getCreatedAt() != null)
             .filter(p -> p.getCreatedAt().isBefore(startInstant))
             .map(PaymentEvent::getAmount)

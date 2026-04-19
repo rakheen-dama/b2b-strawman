@@ -17,6 +17,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ModuleGate } from "@/components/module-gate";
 import { fetchUnbilledDisbursementsAction } from "@/app/(app)/org/[slug]/legal/disbursements/actions";
 import { addDisbursementLines } from "@/app/(app)/org/[slug]/invoices/invoice-crud-actions";
+import { formatCurrency } from "@/lib/format";
 import type { UnbilledDisbursementsResponse } from "@/lib/api/legal-disbursements";
 
 interface AddDisbursementsPickerProps {
@@ -27,10 +28,6 @@ interface AddDisbursementsPickerProps {
   customerId: string;
   projectId: string | null;
   onSuccess: () => void;
-}
-
-function formatZAR(amount: number): string {
-  return `R ${amount.toFixed(2)}`;
 }
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -222,7 +219,7 @@ function AddDisbursementsPickerContent({
                         )}
                       </td>
                       <td className="py-2 text-right font-mono text-slate-900 tabular-nums dark:text-slate-100">
-                        {formatZAR(inclVat)}
+                        {formatCurrency(inclVat, "ZAR")}
                       </td>
                     </tr>
                   );
@@ -244,7 +241,7 @@ function AddDisbursementsPickerContent({
                 </span>{" "}
                 selected &middot;{" "}
                 <span className="font-medium text-slate-900 dark:text-slate-100">
-                  {formatZAR(selectedTotal)}
+                  {formatCurrency(selectedTotal, "ZAR")}
                 </span>
               </>
             ) : (

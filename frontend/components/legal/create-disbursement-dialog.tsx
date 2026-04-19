@@ -42,6 +42,7 @@ import {
   initiateUpload,
 } from "@/app/(app)/org/[slug]/projects/[id]/actions";
 import { TrustTransactionLinkDialog } from "@/components/legal/trust-transaction-link-dialog";
+import { formatCurrency } from "@/lib/format";
 import { useOrgProfile } from "@/lib/org-profile";
 import type { TrustTransaction } from "@/lib/types";
 
@@ -538,7 +539,7 @@ export function CreateDisbursementDialog({
                       className="text-xs text-slate-600 dark:text-slate-400"
                       data-testid="linked-trust-tx"
                     >
-                      {linkedTx.transactionDate} &middot; R {linkedTx.amount.toFixed(2)}
+                      {linkedTx.transactionDate} &middot; {formatCurrency(linkedTx.amount, "ZAR")}
                       {linkedTx.reference ? ` · ${linkedTx.reference}` : ""}
                     </span>
                     <Button

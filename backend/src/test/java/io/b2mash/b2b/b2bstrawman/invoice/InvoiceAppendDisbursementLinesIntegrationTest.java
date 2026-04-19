@@ -316,6 +316,7 @@ class InvoiceAppendDisbursementLinesIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_append_owner")))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.title").value("Invoice not editable"))
+        .andExpect(jsonPath("$.detail").exists())
         .andExpect(jsonPath("$.status").value(400));
   }
 
@@ -363,6 +364,7 @@ class InvoiceAppendDisbursementLinesIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_append_owner")))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.title").value("Disbursement already billed"))
+        .andExpect(jsonPath("$.detail").exists())
         .andExpect(jsonPath("$.status").value(409));
   }
 
@@ -387,6 +389,7 @@ class InvoiceAppendDisbursementLinesIntegrationTest {
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.title").value("Validation failed"))
         .andExpect(jsonPath("$.detail").exists())
+        .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.fieldErrors").isArray())
         .andExpect(jsonPath("$.fieldErrors[0].field").value("disbursementIds"));
   }

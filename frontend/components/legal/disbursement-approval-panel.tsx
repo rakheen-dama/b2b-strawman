@@ -192,7 +192,11 @@ function ApproveDialog({
               )}
             />
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && (
+              <p role="alert" className="text-sm text-red-600">
+                {error}
+              </p>
+            )}
 
             <DialogFooter>
               <Button
@@ -299,7 +303,11 @@ function RejectDialog({ slug, disbursementId, open, onOpenChange, onRejected }: 
               )}
             />
 
-            {error && <p className="text-sm text-red-600">{error}</p>}
+            {error && (
+              <p role="alert" className="text-sm text-red-600">
+                {error}
+              </p>
+            )}
 
             <DialogFooter>
               <Button

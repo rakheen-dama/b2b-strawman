@@ -1,7 +1,7 @@
 {
   "packId": "legal-za-project-templates",
   "verticalProfile": "legal-za",
-  "version": 1,
+  "version": 2,
   "templates": [
     {
       "name": "Litigation (Personal Injury / General)",
@@ -324,6 +324,111 @@
           "assigneeRole": "ANY_MEMBER",
           "billable": true,
           "estimatedHours": 2.0
+        }
+      ]
+    },
+    {
+      "name": "Property Transfer (Conveyancing)",
+      "namePattern": "{customer} - Property Transfer",
+      "description": "Standard conveyancing workflow for property transfer from instruction through registration and file closure. Matter type: CONVEYANCING",
+      "billableDefault": true,
+      "matterType": "CONVEYANCING",
+      "tasks": [
+        {
+          "name": "Receive instruction & conflict check",
+          "description": "Taking instructions, running conflict check",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 1.5
+        },
+        {
+          "name": "Draft offer to purchase / review OTP",
+          "description": "OTP drafting or review",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 3.0
+        },
+        {
+          "name": "Obtain FICA documentation from parties",
+          "description": "KYC docs from buyer/seller per FICA",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "Obtain rates clearance figures",
+          "description": "Request figures from municipality",
+          "priority": "MEDIUM",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "Obtain transfer duty receipt",
+          "description": "SARS transfer duty declaration & payment",
+          "priority": "MEDIUM",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "Draft deed of transfer",
+          "description": "Primary conveyancing deliverable",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 6.0
+        },
+        {
+          "name": "Draft power of attorney to pass transfer",
+          "description": "POA from transferor",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "Lodge documents at Deeds Office",
+          "description": "Physical lodgement -- sets lodgement_date",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 3.0
+        },
+        {
+          "name": "Respond to Deeds Office notes",
+          "description": "If examiner raises notes",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 3.0
+        },
+        {
+          "name": "Registration & collection of title deed",
+          "description": "Sets registration_date + deed_number",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 4.0
+        },
+        {
+          "name": "Finalise financial statement & disburse",
+          "description": "Client funds, agent commission, bond cancel",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 4.5
+        },
+        {
+          "name": "Close matter",
+          "description": "Archive file, statement to client",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 7.0
         }
       ]
     }

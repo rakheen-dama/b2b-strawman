@@ -27,6 +27,7 @@ interface ProjectTabsProps {
   courtDatesPanel?: ReactNode;
   adversePartiesPanel?: ReactNode;
   trustPanel?: ReactNode;
+  disbursementsPanel?: ReactNode;
 }
 
 type TabId =
@@ -47,7 +48,8 @@ type TabId =
   | "customer-comments"
   | "court-dates"
   | "adverse-parties"
-  | "trust";
+  | "trust"
+  | "disbursements";
 
 interface TabDef {
   id: TabId;
@@ -73,6 +75,7 @@ function buildBaseTabs(t: (term: string) => string): TabDef[] {
     { id: "court-dates", label: "Court Dates" },
     { id: "adverse-parties", label: "Adverse Parties" },
     { id: "trust", label: "Trust" },
+    { id: "disbursements", label: "Disbursements" },
     { id: "activity", label: "Activity" },
   ];
 }
@@ -96,6 +99,7 @@ const validTabIds = new Set<string>([
   "court-dates",
   "adverse-parties",
   "trust",
+  "disbursements",
 ]);
 
 export function ProjectTabs({
@@ -117,6 +121,7 @@ export function ProjectTabs({
   courtDatesPanel,
   adversePartiesPanel,
   trustPanel,
+  disbursementsPanel,
 }: ProjectTabsProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
@@ -132,6 +137,7 @@ export function ProjectTabs({
   const showCourtDates = !!courtDatesPanel && isModuleEnabled("court_calendar");
   const showAdverseParties = !!adversePartiesPanel && isModuleEnabled("conflict_check");
   const showTrust = !!trustPanel && isModuleEnabled("trust_accounting");
+  const showDisbursements = !!disbursementsPanel && isModuleEnabled("disbursements");
 
   const tabs = useMemo(() => {
     let filtered = baseTabs;
@@ -145,6 +151,7 @@ export function ProjectTabs({
     if (!showCourtDates) filtered = filtered.filter((t) => t.id !== "court-dates");
     if (!showAdverseParties) filtered = filtered.filter((t) => t.id !== "adverse-parties");
     if (!showTrust) filtered = filtered.filter((t) => t.id !== "trust");
+    if (!showDisbursements) filtered = filtered.filter((t) => t.id !== "disbursements");
     return filtered;
   }, [
     baseTabs,
@@ -158,6 +165,7 @@ export function ProjectTabs({
     showCourtDates,
     showAdverseParties,
     showTrust,
+    showDisbursements,
   ]);
 
   // Validate activeTab is in the rendered tabs; fall back to "overview" if not
@@ -262,6 +270,11 @@ export function ProjectTabs({
       {showTrust && (
         <TabsPrimitive.Content value="trust" className="pt-6 outline-none">
           {trustPanel}
+        </TabsPrimitive.Content>
+      )}
+      {showDisbursements && (
+        <TabsPrimitive.Content value="disbursements" className="pt-6 outline-none">
+          {disbursementsPanel}
         </TabsPrimitive.Content>
       )}
       <TabsPrimitive.Content value="activity" className="pt-6 outline-none">

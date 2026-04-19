@@ -175,6 +175,28 @@ export interface UnbilledTimeResponse {
   grandTotals: Record<string, CurrencyTotal>;
   unbilledExpenses: UnbilledExpenseEntry[];
   unbilledExpenseTotals: Record<string, number>;
+  /**
+   * Legal disbursements (phase 67, slice 487A). Populated only when the
+   * `disbursements` vertical module is enabled; omitted or empty otherwise,
+   * keeping the response byte-compatible with non-legal tenants.
+   * Currency is implied ZAR for the MVP (matches backend).
+   */
+  disbursements?: UnbilledDisbursementEntry[];
+}
+
+/**
+ * Compact, read-only view of an approved disbursement eligible for billing.
+ * Mirrors `UnbilledDisbursementDto` on the backend (487A read model).
+ */
+export interface UnbilledDisbursementEntry {
+  id: string;
+  incurredDate: string;
+  category: string;
+  description: string;
+  amount: number;
+  vatTreatment: string;
+  vatAmount: number;
+  supplierName: string;
 }
 
 export interface UnbilledExpenseEntry {

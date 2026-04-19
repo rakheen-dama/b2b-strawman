@@ -77,6 +77,7 @@ import { ArchivedProjectBanner } from "@/components/projects/archived-project-ba
 import { ProjectStaffingTab } from "@/components/capacity/project-staffing-tab";
 import { ProjectCourtDatesTab } from "@/components/legal/project-court-dates-tab";
 import { ProjectAdversePartiesTab } from "@/components/legal/project-adverse-parties-tab";
+import { ProjectDisbursementsTab } from "@/components/legal/project-disbursements-tab";
 import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { TerminologyText } from "@/components/terminology-text";
 import { getProjectStaffing, type ProjectStaffingResponse } from "@/lib/api/capacity";

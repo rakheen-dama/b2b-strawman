@@ -50,6 +50,12 @@ export type {
 export { kycVerifySchema } from "./kyc";
 export type { KycVerifyFormData } from "./kyc";
 
+export { closeMatterSchema, closureReasonEnum } from "./matter-closure";
+export type { CloseMatterFormData } from "./matter-closure";
+
+export { reopenMatterSchema } from "./matter-reopen";
+export type { ReopenMatterFormData } from "./matter-reopen";
+
 export {
   createTrustAccountSchema,
   recordDepositSchema,

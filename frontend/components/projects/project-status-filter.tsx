@@ -8,6 +8,7 @@ const FILTER_CHIPS = [
   { key: "ACTIVE", label: "Active" },
   { key: "COMPLETED", label: "Completed" },
   { key: "ARCHIVED", label: "Archived" },
+  { key: "CLOSED", label: "Closed" },
   { key: "ALL", label: "All" },
 ] as const;
 

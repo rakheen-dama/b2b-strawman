@@ -86,6 +86,9 @@ export interface ReopenMatterRequest {
 export const CLOSURE_GATES_FAILED_PROBLEM_TYPE =
   "https://kazi.app/problems/closure-gates-failed";
 
+export const RETENTION_ELAPSED_PROBLEM_TYPE =
+  "https://kazi.app/problems/retention-elapsed";
+
 /**
  * Thrown by `closeMatter()` when the backend returns 409 with
  * `type = "https://kazi.app/problems/closure-gates-failed"`. The full
@@ -98,6 +101,23 @@ export class ClosureGatesFailedError extends Error {
   ) {
     super(`Closure gates failed: ${report.gates.filter((g) => !g.passed).length} failing`);
     this.name = "ClosureGatesFailedError";
+  }
+}
+
+/**
+ * Thrown by `reopenMatter()` when the backend returns 409 with
+ * `type = "https://kazi.app/problems/retention-elapsed"`. Indicates the
+ * matter retention window has expired and the matter can no longer be
+ * reopened.
+ */
+export class RetentionElapsedError extends Error {
+  constructor(
+    public readonly retentionEndedOn: string,
+    public readonly projectId: string,
+    public readonly status: number = 409
+  ) {
+    super(`Matter retention window expired on ${retentionEndedOn}.`);
+    this.name = "RetentionElapsedError";
   }
 }
 
@@ -133,9 +153,24 @@ export async function reopenMatter(
   projectId: string,
   notes: string
 ): Promise<ReopenMatterResponse> {
-  return api.post<ReopenMatterResponse>(`/api/matters/${projectId}/closure/reopen`, {
-    notes,
-  });
+  try {
+    return await api.post<ReopenMatterResponse>(
+      `/api/matters/${projectId}/closure/reopen`,
+      { notes }
+    );
+  } catch (err) {
+    if (
+      err instanceof ApiError &&
+      err.status === 409 &&
+      err.detail?.type === RETENTION_ELAPSED_PROBLEM_TYPE
+    ) {
+      const retentionEndedOn =
+        (err.detail.retentionEndedOn as string | undefined) ?? "";
+      const pid = (err.detail.projectId as string | undefined) ?? projectId;
+      throw new RetentionElapsedError(retentionEndedOn, pid);
+    }
+    throw err;
+  }
 }
 
 export async function listClosureLog(projectId: string): Promise<ClosureLogEntry[]> {

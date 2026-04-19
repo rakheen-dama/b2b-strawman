@@ -40,6 +40,9 @@ public class InvoiceLine {
   @Column(name = "tariff_item_id")
   private UUID tariffItemId;
 
+  @Column(name = "disbursement_id")
+  private UUID disbursementId;
+
   @Column(name = "line_source", length = 20)
   private String lineSource;
 
@@ -202,6 +205,14 @@ public class InvoiceLine {
 
   public void setTariffItemId(UUID tariffItemId) {
     this.tariffItemId = tariffItemId;
+  }
+
+  public UUID getDisbursementId() {
+    return disbursementId;
+  }
+
+  public void setDisbursementId(UUID disbursementId) {
+    this.disbursementId = disbursementId;
   }
 
   public String getLineSource() {

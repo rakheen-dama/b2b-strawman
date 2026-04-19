@@ -29,8 +29,16 @@ import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.tax.TaxRate;
+import io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementApprovalStatus;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementBillingStatus;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.LegalDisbursement;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.VatTreatment;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.TariffItemRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -74,6 +82,9 @@ public class InvoiceCreationService {
   private final InvoiceTaxService invoiceTaxService;
   private final InvoiceRenderingService invoiceRenderingService;
   private final BillingRateService billingRateService;
+  private final DisbursementRepository disbursementRepository;
+  private final DisbursementService disbursementService;
+  private final TaxRateRepository taxRateRepository;
 
   public InvoiceCreationService(
       InvoiceRepository invoiceRepository,
@@ -96,7 +107,10 @@ public class InvoiceCreationService {
       VerticalModuleGuard verticalModuleGuard,
       InvoiceTaxService invoiceTaxService,
       InvoiceRenderingService invoiceRenderingService,
-      BillingRateService billingRateService) {
+      BillingRateService billingRateService,
+      DisbursementRepository disbursementRepository,
+      DisbursementService disbursementService,
+      TaxRateRepository taxRateRepository) {
     this.invoiceRepository = invoiceRepository;
     this.lineRepository = lineRepository;
     this.customerRepository = customerRepository;
@@ -118,6 +132,9 @@ public class InvoiceCreationService {
     this.invoiceTaxService = invoiceTaxService;
     this.invoiceRenderingService = invoiceRenderingService;
     this.billingRateService = billingRateService;
+    this.disbursementRepository = disbursementRepository;
+    this.disbursementService = disbursementService;
+    this.taxRateRepository = taxRateRepository;
   }
 
   @Transactional
@@ -169,12 +186,22 @@ public class InvoiceCreationService {
     int expSortOffset = timeEntryIds != null && !timeEntryIds.isEmpty() ? timeEntryIds.size() : 0;
     createExpenseLines(invoice, expenseIds, request.customerId(), expSortOffset);
 
-    boolean hasLines =
+    // Apply org-default tax rate to time + expense lines BEFORE creating disbursement lines —
+    // disbursements have VAT-treatment-specific rates resolved per-line that must not be
+    // clobbered by the default-tax pass.
+    boolean hasDefaultTaxableLines =
         (timeEntryIds != null && !timeEntryIds.isEmpty())
             || (expenseIds != null && !expenseIds.isEmpty());
-    if (hasLines) {
+    if (hasDefaultTaxableLines) {
       invoiceTaxService.applyDefaultTaxToLines(invoice.getId());
     }
+
+    // Disbursement lines come AFTER default-tax so their VAT-treatment-specific rates are
+    // preserved (STANDARD_15 / ZERO_RATED_PASS_THROUGH / EXEMPT). markBilled is invoked from
+    // the same @Transactional scope; a rollback here unbinds the disbursement.
+    var disbursementIds = request.disbursementIds();
+    int disbSortOffset = expSortOffset + (expenseIds != null ? expenseIds.size() : 0);
+    createDisbursementLines(invoice, disbursementIds, request.customerId(), disbSortOffset);
 
     applyFieldGroups(invoice);
 
@@ -182,6 +209,11 @@ public class InvoiceCreationService {
     invoice = invoiceRepository.save(invoice);
 
     log.info("Created draft invoice {} for customer {}", invoice.getId(), request.customerId());
+
+    int totalLineCount =
+        (timeEntryIds != null ? timeEntryIds.size() : 0)
+            + (expenseIds != null ? expenseIds.size() : 0)
+            + (disbursementIds != null ? disbursementIds.size() : 0);
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -197,7 +229,7 @@ public class InvoiceCreationService {
                     "currency",
                     request.currency(),
                     "line_count",
-                    String.valueOf(timeEntryIds != null ? timeEntryIds.size() : 0),
+                    String.valueOf(totalLineCount),
                     "subtotal",
                     invoice.getSubtotal().toString()))
             .build());
@@ -278,6 +310,42 @@ public class InvoiceCreationService {
                 te -> {
                   te.setInvoiceId(null);
                 });
+      }
+    }
+
+    // Unlink expense-backed lines — expense returns to UNBILLED so it can be invoiced again.
+    for (var line : lines) {
+      if (line.getExpenseId() != null) {
+        expenseRepository
+            .findById(line.getExpenseId())
+            .ifPresent(
+                expense -> {
+                  try {
+                    expense.unbill();
+                  } catch (IllegalStateException e) {
+                    log.warn(
+                        "Could not unbill expense {} on draft delete {}: {}",
+                        line.getExpenseId(),
+                        invoiceId,
+                        e.getMessage());
+                  }
+                });
+      }
+    }
+
+    // Unlink disbursement-backed lines — reverts disbursement BILLED → UNBILLED so it can be
+    // invoiced again. Runs in the same @Transactional as the draft delete.
+    for (var line : lines) {
+      if (line.getDisbursementId() != null) {
+        try {
+          disbursementService.unmarkBilled(line.getDisbursementId());
+        } catch (ResourceConflictException e) {
+          log.warn(
+              "Could not unmark-billed disbursement {} on draft delete {}: {}",
+              line.getDisbursementId(),
+              invoiceId,
+              e.getMessage());
+        }
       }
     }
 
@@ -481,6 +549,38 @@ public class InvoiceCreationService {
               te -> {
                 te.setInvoiceId(null);
               });
+    }
+
+    // Unlink expense-backed line — expense returns to UNBILLED.
+    if (line.getExpenseId() != null) {
+      expenseRepository
+          .findById(line.getExpenseId())
+          .ifPresent(
+              expense -> {
+                try {
+                  expense.unbill();
+                } catch (IllegalStateException e) {
+                  log.warn(
+                      "Could not unbill expense {} on line delete {}: {}",
+                      line.getExpenseId(),
+                      lineId,
+                      e.getMessage());
+                }
+              });
+    }
+
+    // Unlink disbursement-backed line — reverts BILLED → UNBILLED so the disbursement can be
+    // invoiced again. Runs in the same @Transactional.
+    if (line.getDisbursementId() != null) {
+      try {
+        disbursementService.unmarkBilled(line.getDisbursementId());
+      } catch (ResourceConflictException e) {
+        log.warn(
+            "Could not unmark-billed disbursement {} on line delete {}: {}",
+            line.getDisbursementId(),
+            lineId,
+            e.getMessage());
+      }
     }
 
     lineRepository.delete(line);
@@ -775,6 +875,186 @@ public class InvoiceCreationService {
       expense.markBilled(invoice.getId());
       expenseRepository.save(expense);
     }
+  }
+
+  /**
+   * Creates DISBURSEMENT-source invoice lines from a list of APPROVED + UNBILLED legal
+   * disbursements. Each disbursement:
+   *
+   * <ul>
+   *   <li>Must be in {@code APPROVED} approval status and {@code UNBILLED} billing status.
+   *   <li>Must belong to the invoice's customer.
+   *   <li>Gets a VAT-treatment-specific tax rate applied via {@link
+   *       #resolveTaxRateForVatTreatment(VatTreatment)}.
+   *   <li>Is marked {@code BILLED} via {@link DisbursementService#markBilled(UUID, UUID)} inside
+   *       the caller's {@code @Transactional} scope — a rollback unbinds the disbursement.
+   * </ul>
+   *
+   * <p>See ADR-247 — parallel-path integration (no shared {@code Billable} interface).
+   */
+  private void createDisbursementLines(
+      Invoice invoice, List<UUID> disbursementIds, UUID customerId, int sortOrderOffset) {
+    if (disbursementIds == null || disbursementIds.isEmpty()) {
+      return;
+    }
+
+    int sortOrder = sortOrderOffset;
+    for (UUID disbursementId : disbursementIds) {
+      var disbursement =
+          disbursementRepository
+              .findById(disbursementId)
+              .orElseThrow(
+                  () -> new ResourceNotFoundException("LegalDisbursement", disbursementId));
+
+      if (!DisbursementApprovalStatus.APPROVED.name().equals(disbursement.getApprovalStatus())) {
+        throw new InvalidStateException(
+            "Disbursement not approved",
+            "Disbursement "
+                + disbursementId
+                + " is not APPROVED (current="
+                + disbursement.getApprovalStatus()
+                + ")");
+      }
+      if (!DisbursementBillingStatus.UNBILLED.name().equals(disbursement.getBillingStatus())) {
+        throw new ResourceConflictException(
+            "Disbursement already billed",
+            "Disbursement "
+                + disbursementId
+                + " is not UNBILLED (current="
+                + disbursement.getBillingStatus()
+                + ")");
+      }
+      if (!disbursement.getCustomerId().equals(customerId)) {
+        throw new InvalidStateException(
+            "Disbursement not linked to customer",
+            "Disbursement "
+                + disbursementId
+                + " belongs to customer "
+                + disbursement.getCustomerId()
+                + " but invoice customer is "
+                + customerId);
+      }
+
+      VatTreatment vatTreatment = VatTreatment.valueOf(disbursement.getVatTreatment());
+      TaxRate taxRate = resolveTaxRateForVatTreatment(vatTreatment);
+
+      String description = formatDisbursementLineDescription(disbursement);
+
+      var line =
+          new InvoiceLine(
+              invoice.getId(),
+              disbursement.getProjectId(),
+              null,
+              description,
+              BigDecimal.ONE,
+              disbursement.getAmount(),
+              sortOrder++);
+      line.setDisbursementId(disbursement.getId());
+      line.setLineSource("DISBURSEMENT");
+      line.setLineType(InvoiceLineType.DISBURSEMENT);
+      line = lineRepository.save(line);
+
+      // Apply VAT-treatment-specific tax snapshot (sets taxRateId + taxAmount + tax_exempt etc.).
+      invoiceTaxService.applyTaxToLine(line, taxRate.getId());
+      lineRepository.save(line);
+
+      // Mark billed — fires DisbursementBilledEvent and audit event. Joins outer @Transactional.
+      disbursementService.markBilled(disbursement.getId(), line.getId());
+    }
+  }
+
+  /**
+   * Resolves the {@link TaxRate} to apply based on a disbursement's {@link VatTreatment}. See
+   * phase67 architecture §67.3.3 — tax resolution lives in the invoice layer, not on the
+   * disbursement entity.
+   *
+   * <ul>
+   *   <li>{@code STANDARD_15} → the org's default active tax rate (expected to be VAT 15%).
+   *   <li>{@code ZERO_RATED_PASS_THROUGH} → the single active, non-exempt tax rate with {@code
+   *       rate=0.00}.
+   *   <li>{@code EXEMPT} → the single active, exempt tax rate.
+   * </ul>
+   *
+   * <p>For the catalogue-scan branches (ZERO_RATED and EXEMPT) we require <em>exactly one</em>
+   * matching row; if the seed catalogue is ever extended with a second zero-rated or exempt row
+   * (e.g. zero-rated exports) the resolution must fail loudly rather than silently pick one.
+   */
+  private TaxRate resolveTaxRateForVatTreatment(VatTreatment treatment) {
+    return switch (treatment) {
+      case STANDARD_15 ->
+          taxRateRepository
+              .findByIsDefaultTrue()
+              .filter(TaxRate::isActive)
+              .orElseThrow(
+                  () ->
+                      new InvalidStateException(
+                          "No default tax rate",
+                          "Cannot resolve STANDARD_15 tax rate — no active default TaxRate in this"
+                              + " tenant"));
+      case ZERO_RATED_PASS_THROUGH ->
+          resolveExactlyOneTaxRate(
+              r -> r.isActive() && r.getRate().compareTo(BigDecimal.ZERO) == 0 && !r.isExempt(),
+              "No zero-rated tax rate",
+              "No active zero-rated TaxRate configured for this tenant",
+              "Ambiguous zero-rated tax rate",
+              "Multiple active zero-rated TaxRates configured for this tenant — "
+                  + "disbursement pass-through VAT resolution requires exactly one");
+      case EXEMPT ->
+          resolveExactlyOneTaxRate(
+              r -> r.isActive() && r.isExempt(),
+              "No exempt tax rate",
+              "No active exempt TaxRate configured for this tenant",
+              "Ambiguous exempt tax rate",
+              "Multiple active exempt TaxRates configured for this tenant — "
+                  + "disbursement EXEMPT VAT resolution requires exactly one");
+    };
+  }
+
+  /**
+   * Finds the single TaxRate matching {@code predicate}. Throws {@link InvalidStateException} when
+   * zero or multiple rows match — catalogue misconfiguration must fail loudly rather than pick one
+   * silently via ordering.
+   */
+  private TaxRate resolveExactlyOneTaxRate(
+      java.util.function.Predicate<TaxRate> predicate,
+      String noneTitle,
+      String noneDetail,
+      String ambiguousTitle,
+      String ambiguousDetail) {
+    var matches = taxRateRepository.findAllByOrderBySortOrder().stream().filter(predicate).toList();
+    if (matches.isEmpty()) {
+      throw new InvalidStateException(noneTitle, noneDetail);
+    }
+    if (matches.size() > 1) {
+      throw new InvalidStateException(ambiguousTitle, ambiguousDetail);
+    }
+    return matches.get(0);
+  }
+
+  /**
+   * Builds an LSSA-convention line description for a legal disbursement: {@code "{category-label}:
+   * {description} ({supplier}, {incurred_date})"}. Example: {@code "Sheriff fees: Service on
+   * defendant (Sheriff Edenvale, 2026-04-10)"}.
+   */
+  private String formatDisbursementLineDescription(LegalDisbursement d) {
+    String categoryLabel = humanizeCategoryLabel(d.getCategory());
+    return String.format(
+        "%s: %s (%s, %s)",
+        categoryLabel, d.getDescription(), d.getSupplierName(), d.getIncurredDate());
+  }
+
+  /** Turns an enum-style name like {@code "SHERIFF_FEES"} into {@code "Sheriff fees"}. */
+  private String humanizeCategoryLabel(String enumName) {
+    if (enumName == null || enumName.isEmpty()) {
+      return "";
+    }
+    String[] parts = enumName.toLowerCase().split("_");
+    StringBuilder out = new StringBuilder();
+    out.append(Character.toUpperCase(parts[0].charAt(0))).append(parts[0].substring(1));
+    for (int i = 1; i < parts.length; i++) {
+      out.append(' ').append(parts[i]);
+    }
+    return out.toString();
   }
 
   private void applyFieldGroups(Invoice invoice) {

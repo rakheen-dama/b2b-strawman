@@ -438,6 +438,7 @@ class InvoiceTaxIntegrationTest {
                           null,
                           null,
                           null,
+                          null,
                           null);
 
                   var response = invoiceService.createDraft(request, memberIdOwner);
@@ -476,6 +477,7 @@ class InvoiceTaxIntegrationTest {
                           customerId,
                           "USD",
                           List.of(timeEntry.getId()),
+                          null,
                           null,
                           null,
                           null,

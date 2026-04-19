@@ -38,6 +38,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.web.multipart.MultipartFile;
 
 /**
@@ -376,9 +378,52 @@ public class DisbursementService {
             .build());
 
     UUID actorId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
-    eventPublisher.publishEvent(
+    // Publish AFTER_COMMIT so the event never escapes if the outer @Transactional rolls back
+    // (e.g. a later disbursement in InvoiceCreationService.createDisbursementLines fails). Falls
+    // back to immediate publish if no transaction is active (defensive — all callers are
+    // transactional today).
+    DisbursementBilledEvent event =
         DisbursementBilledEvent.of(
-            saved.getId(), saved.getProjectId(), saved.getCustomerId(), invoiceLineId, actorId));
+            saved.getId(), saved.getProjectId(), saved.getCustomerId(), invoiceLineId, actorId);
+    if (TransactionSynchronizationManager.isSynchronizationActive()) {
+      TransactionSynchronizationManager.registerSynchronization(
+          new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+              eventPublisher.publishEvent(event);
+            }
+          });
+    } else {
+      eventPublisher.publishEvent(event);
+    }
+
+    return DisbursementResponse.from(saved);
+  }
+
+  /**
+   * Reverts a {@code BILLED} disbursement back to {@code UNBILLED} and clears the invoice-line
+   * link. Internal — no controller endpoint; called by 487B's {@code InvoiceCreationService} when a
+   * draft invoice is deleted or a disbursement-backed line is removed so that the disbursement
+   * becomes available for re-invoicing. Mirrors {@link #markBilled(UUID, UUID)} in reverse.
+   */
+  @Transactional
+  public DisbursementResponse unmarkBilled(UUID id) {
+    moduleGuard.requireModule(MODULE_ID);
+    var entity = requireDisbursement(id);
+    try {
+      entity.unmarkBilled();
+    } catch (IllegalStateException e) {
+      throw new ResourceConflictException("Cannot unmark billed disbursement", e.getMessage());
+    }
+    var saved = disbursementRepository.save(entity);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("disbursement.unmarked_billed")
+            .entityType("legal_disbursement")
+            .entityId(saved.getId())
+            .details(Map.of("project_id", saved.getProjectId().toString()))
+            .build());
 
     return DisbursementResponse.from(saved);
   }

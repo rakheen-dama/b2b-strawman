@@ -268,6 +268,23 @@ public class LegalDisbursement {
   }
 
   /**
+   * Reverts a {@code BILLED} disbursement back to {@code UNBILLED} and clears the invoice-line
+   * link. Called when an invoice draft is deleted or a disbursement-backed line is removed — the
+   * disbursement must become available for re-invoicing.
+   *
+   * @throws IllegalStateException if not currently {@code BILLED}
+   */
+  public void unmarkBilled() {
+    if (!DisbursementBillingStatus.BILLED.name().equals(billingStatus)) {
+      throw new IllegalStateException(
+          "Cannot unmark billed: disbursement is not BILLED (current=%s)".formatted(billingStatus));
+    }
+    this.billingStatus = DisbursementBillingStatus.UNBILLED.name();
+    this.invoiceLineId = null;
+    this.updatedAt = Instant.now();
+  }
+
+  /**
    * Writes off this disbursement as uncollectable.
    *
    * @param reason human-readable reason (required, non-blank)

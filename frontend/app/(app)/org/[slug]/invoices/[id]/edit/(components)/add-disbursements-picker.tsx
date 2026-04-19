@@ -73,9 +73,13 @@ function AddDisbursementsPickerContent({
   );
 
   const items = data?.items ?? [];
+  // Stable key over item ids — used as a useEffect dep so a same-size refresh
+  // with different ids still triggers selection pruning (a length-only dep
+  // would silently leave orphaned ids in `selectedIds`).
+  const itemsKey = items.map((i) => i.id).join("|");
 
-  // When the dialog re-opens, re-intersect selection with currently-available ids
-  // (so stale ids from previously-selected items no longer present are pruned).
+  // Prune selection against currently-available ids whenever the dialog opens
+  // or the item set changes. Prevents orphaned ids from being posted.
   useEffect(() => {
     if (!open) return;
     setSelectedIds((prev) => {
@@ -88,7 +92,7 @@ function AddDisbursementsPickerContent({
       return next;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open, items.length]);
+  }, [open, itemsKey]);
 
   function toggleId(id: string) {
     setSelectedIds((prev) => {
@@ -106,17 +110,22 @@ function AddDisbursementsPickerContent({
 
   async function handleSubmit() {
     if (selectedIds.size === 0) return;
+    // Final prune against the currently-available items before posting — guards
+    // against selections that were hidden by a race between the effect-based
+    // prune and a concurrent data refresh.
+    const availableIds = new Set(items.map((i) => i.id));
+    const idsToSubmit = Array.from(selectedIds).filter((id) => availableIds.has(id));
+    if (idsToSubmit.length === 0) {
+      toast.error("Selected disbursements are no longer available. Please pick again.");
+      setSelectedIds(new Set(idsToSubmit));
+      return;
+    }
     setIsSubmitting(true);
     try {
-      const result = await addDisbursementLines(
-        slug,
-        invoiceId,
-        customerId,
-        Array.from(selectedIds)
-      );
+      const result = await addDisbursementLines(slug, invoiceId, customerId, idsToSubmit);
       if (result.success) {
         toast.success(
-          `Added ${selectedIds.size} disbursement line${selectedIds.size !== 1 ? "s" : ""} to invoice`
+          `Added ${idsToSubmit.length} disbursement line${idsToSubmit.length !== 1 ? "s" : ""} to invoice`
         );
         setSelectedIds(new Set());
         onSuccess();
@@ -164,7 +173,7 @@ function AddDisbursementsPickerContent({
           )}
 
           {projectId && !isLoading && error && (
-            <p className="py-6 text-sm text-red-600" data-testid="picker-error">
+            <p role="alert" className="py-6 text-sm text-red-600" data-testid="picker-error">
               Failed to load unbilled disbursements.
             </p>
           )}

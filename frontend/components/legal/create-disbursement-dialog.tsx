@@ -579,8 +579,8 @@ export function CreateDisbursementDialog({
                   projectId={selectedProjectId}
                   onSelect={(tx) => {
                     setLinkedTx(tx);
-                    form.setValue("trustTransactionId", tx.id);
-                    form.setValue("amount", tx.amount);
+                    form.setValue("trustTransactionId", tx.id, { shouldValidate: true });
+                    form.setValue("amount", tx.amount, { shouldValidate: true });
                     setTrustDialogOpen(false);
                   }}
                 />
@@ -676,7 +676,7 @@ export function CreateDisbursementDialog({
               <Button
                 type="button"
                 variant="plain"
-                onClick={() => setOpen(false)}
+                onClick={() => handleOpenChange(false)}
                 disabled={isSubmitting}
               >
                 Cancel

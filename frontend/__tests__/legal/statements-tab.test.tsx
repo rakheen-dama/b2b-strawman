@@ -180,10 +180,11 @@ describe("ProjectStatementsTab", () => {
         page: { totalElements: 1, totalPages: 1, size: 20, number: 0 },
       },
     });
-    // Empty base64 is fine; we just care the action is invoked.
+    // Non-empty base64 so the component's `result.success && result.pdfBase64`
+    // gate lets us actually exercise the blob/createObjectURL/click branch.
     mockDownload.mockResolvedValue({
       success: true,
-      pdfBase64: "",
+      pdfBase64: "JVBERi0xLjQK",
       fileName: "statement-s-1.pdf",
     });
 

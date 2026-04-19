@@ -140,11 +140,15 @@ function StatementOfAccountDialogInner({
       return;
     }
     // When the dialog (re-)opens, recompute defaults from prior statements.
-    form.reset({
-      periodStart: defaultPeriodStart,
-      periodEnd: todayIso(),
-      templateId: "",
-    });
+    // Guard with !isDirty so a late-arriving SWR resolve doesn't clobber
+    // edits the user has already made to either date input.
+    if (!form.formState.isDirty) {
+      form.reset({
+        periodStart: defaultPeriodStart,
+        periodEnd: todayIso(),
+        templateId: "",
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, defaultPeriodStart]);
 

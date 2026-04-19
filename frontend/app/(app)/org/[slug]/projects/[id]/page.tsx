@@ -75,11 +75,13 @@ import { SaveAsTemplateDialog } from "@/components/templates/SaveAsTemplateDialo
 import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle-actions";
 import { MatterClosureAction } from "@/components/projects/matter-closure-action";
 import { MatterReopenAction } from "@/components/projects/matter-reopen-action";
+import { GenerateStatementOfAccountAction } from "@/components/projects/generate-statement-action";
 import { ArchivedProjectBanner } from "@/components/projects/archived-project-banner";
 import { ProjectStaffingTab } from "@/components/capacity/project-staffing-tab";
 import { ProjectCourtDatesTab } from "@/components/legal/project-court-dates-tab";
 import { ProjectAdversePartiesTab } from "@/components/legal/project-adverse-parties-tab";
 import { ProjectDisbursementsTab } from "@/components/legal/project-disbursements-tab";
+import { ProjectStatementsTab } from "@/components/legal/project-statements-tab";
 import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { TerminologyText } from "@/components/terminology-text";
 import { getProjectStaffing, type ProjectStaffingResponse } from "@/lib/api/capacity";
@@ -597,6 +599,15 @@ export default async function ProjectDetailPage({
             projectName={project.name}
             projectStatus={project.status}
           />
+          {/* Generate Statement of Account — self-gates on module + capability + non-ARCHIVED status. */}
+          {project.status !== "ARCHIVED" && (
+            <GenerateStatementOfAccountAction
+              slug={slug}
+              projectId={id}
+              projectName={project.name}
+              projectStatus={project.status}
+            />
+          )}
           {/* Action buttons: lifecycle + existing (hidden for ARCHIVED except lifecycle) */}
           {project.status !== "ARCHIVED" && (canEdit || isOwner || canManage) && (
             <>
@@ -857,6 +868,7 @@ export default async function ProjectDetailPage({
         disbursementsPanel={
           <ProjectDisbursementsTab projectId={id} slug={slug} canManage={canManage} />
         }
+        statementsPanel={<ProjectStatementsTab projectId={id} slug={slug} />}
         trustPanel={
           customers.length > 0 ? (
             <TrustBalanceCard

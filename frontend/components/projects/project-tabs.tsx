@@ -28,6 +28,7 @@ interface ProjectTabsProps {
   adversePartiesPanel?: ReactNode;
   trustPanel?: ReactNode;
   disbursementsPanel?: ReactNode;
+  statementsPanel?: ReactNode;
 }
 
 type TabId =
@@ -49,7 +50,8 @@ type TabId =
   | "court-dates"
   | "adverse-parties"
   | "trust"
-  | "disbursements";
+  | "disbursements"
+  | "statements";
 
 interface TabDef {
   id: TabId;
@@ -76,6 +78,7 @@ function buildBaseTabs(t: (term: string) => string): TabDef[] {
     { id: "adverse-parties", label: "Adverse Parties" },
     { id: "trust", label: "Trust" },
     { id: "disbursements", label: "Disbursements" },
+    { id: "statements", label: "Statements" },
     { id: "activity", label: "Activity" },
   ];
 }
@@ -100,6 +103,7 @@ const validTabIds = new Set<string>([
   "adverse-parties",
   "trust",
   "disbursements",
+  "statements",
 ]);
 
 export function ProjectTabs({
@@ -122,6 +126,7 @@ export function ProjectTabs({
   adversePartiesPanel,
   trustPanel,
   disbursementsPanel,
+  statementsPanel,
 }: ProjectTabsProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
@@ -138,6 +143,9 @@ export function ProjectTabs({
   const showAdverseParties = !!adversePartiesPanel && isModuleEnabled("conflict_check");
   const showTrust = !!trustPanel && isModuleEnabled("trust_accounting");
   const showDisbursements = !!disbursementsPanel && isModuleEnabled("disbursements");
+  // Statements of Account are co-gated with the disbursements module per ADR-250
+  // (there is no separate statement_of_account module).
+  const showStatements = !!statementsPanel && isModuleEnabled("disbursements");
 
   const tabs = useMemo(() => {
     let filtered = baseTabs;
@@ -152,6 +160,7 @@ export function ProjectTabs({
     if (!showAdverseParties) filtered = filtered.filter((t) => t.id !== "adverse-parties");
     if (!showTrust) filtered = filtered.filter((t) => t.id !== "trust");
     if (!showDisbursements) filtered = filtered.filter((t) => t.id !== "disbursements");
+    if (!showStatements) filtered = filtered.filter((t) => t.id !== "statements");
     return filtered;
   }, [
     baseTabs,
@@ -166,6 +175,7 @@ export function ProjectTabs({
     showAdverseParties,
     showTrust,
     showDisbursements,
+    showStatements,
   ]);
 
   // Validate activeTab is in the rendered tabs; fall back to "overview" if not
@@ -275,6 +285,11 @@ export function ProjectTabs({
       {showDisbursements && (
         <TabsPrimitive.Content value="disbursements" className="pt-6 outline-none">
           {disbursementsPanel}
+        </TabsPrimitive.Content>
+      )}
+      {showStatements && (
+        <TabsPrimitive.Content value="statements" className="pt-6 outline-none">
+          {statementsPanel}
         </TabsPrimitive.Content>
       )}
       <TabsPrimitive.Content value="activity" className="pt-6 outline-none">

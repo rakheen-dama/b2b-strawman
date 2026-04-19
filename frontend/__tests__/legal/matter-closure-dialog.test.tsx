@@ -2,6 +2,7 @@ import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { SWRConfig } from "swr";
 
 // --- Mocks (before component imports) ---
 
@@ -92,21 +93,26 @@ function withProviders(
     isOwner = false,
     role = "member",
   } = opts;
+  // Each test gets a fresh SWR cache so keys don't leak between cases
+  // (e.g. a prior test's passing report bleeding into a later test that
+  // expects a failing report for the same projectId).
   return (
-    <OrgProfileProvider
-      verticalProfile="legal-za"
-      enabledModules={modules}
-      terminologyNamespace={null}
-    >
-      <CapabilityProvider
-        capabilities={capabilities}
-        role={role}
-        isAdmin={isAdmin}
-        isOwner={isOwner}
+    <SWRConfig value={{ provider: () => new Map() }}>
+      <OrgProfileProvider
+        verticalProfile="legal-za"
+        enabledModules={modules}
+        terminologyNamespace={null}
       >
-        {ui}
-      </CapabilityProvider>
-    </OrgProfileProvider>
+        <CapabilityProvider
+          capabilities={capabilities}
+          role={role}
+          isAdmin={isAdmin}
+          isOwner={isOwner}
+        >
+          {ui}
+        </CapabilityProvider>
+      </OrgProfileProvider>
+    </SWRConfig>
   );
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import useSWR from "swr";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, ShieldAlert } from "lucide-react";
@@ -73,9 +74,6 @@ function MatterClosureDialogInner({
   const canOverride = hasCapability("OVERRIDE_MATTER_CLOSURE");
 
   const [step, setStep] = useState<Step>(1);
-  const [report, setReport] = useState<ClosureReport | null>(null);
-  const [isLoadingReport, setIsLoadingReport] = useState(false);
-  const [reportError, setReportError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -92,28 +90,33 @@ function MatterClosureDialogInner({
 
   const overrideValue = form.watch("override");
 
-  const loadReport = useCallback(async () => {
-    setIsLoadingReport(true);
-    setReportError(null);
-    try {
+  // SWR handles: conditional fetching (null key when closed), automatic
+  // data clearing on error/refetch, deduplication, and cache freshness.
+  // When the server action's gates_failed 409 path returns a fresh report,
+  // we update it via `mutate(freshReport, { revalidate: false })` rather
+  // than re-evaluating through the gate endpoint.
+  const {
+    data: report,
+    error: reportErrorObj,
+    isLoading: isLoadingReport,
+    mutate: mutateReport,
+  } = useSWR<ClosureReport>(
+    open ? ["matter-closure-report", projectId] : null,
+    async () => {
       const result = await evaluateClosureAction(projectId);
-      if (result.success) {
-        setReport(result.report);
-      } else {
-        setReportError(result.error);
+      if (!result.success) {
+        throw new Error(result.error);
       }
-    } catch {
-      setReportError("Failed to evaluate closure");
-    } finally {
-      setIsLoadingReport(false);
+      return result.report;
     }
-  }, [projectId]);
+  );
+  const reportError =
+    reportErrorObj instanceof Error ? reportErrorObj.message : null;
 
+  // Reset step/form/submit state whenever the dialog opens.
+  // SWR auto-fetches when the key transitions from null → [projectId].
   useEffect(() => {
     if (!open) return;
-    // Reset to step 1 + refresh report on every open.
-    // `loadReport` is memoized on [projectId], and `form` is a stable
-    // reference from `useForm`, so depending on them is safe.
     setStep(1);
     setSubmitError(null);
     form.reset({
@@ -123,15 +126,12 @@ function MatterClosureDialogInner({
       override: false,
       overrideJustification: "",
     });
-    loadReport();
-  }, [open, projectId, loadReport, form]);
+  }, [open, projectId, form]);
 
   function handleOpenChange(nextOpen: boolean) {
     onOpenChange(nextOpen);
     if (!nextOpen) {
       setStep(1);
-      setReport(null);
-      setReportError(null);
       setSubmitError(null);
       setIsSubmitting(false);
     }
@@ -162,8 +162,9 @@ function MatterClosureDialogInner({
         return;
       }
       if (result.kind === "gates_failed") {
-        // 409 — re-render step 1 with the fresh report, no toast
-        setReport(result.report);
+        // 409 — replace the SWR-cached report with the server-returned
+        // fresh report and re-render step 1. No toast.
+        await mutateReport(result.report, { revalidate: false });
         setStep(1);
         return;
       }
@@ -208,7 +209,7 @@ function MatterClosureDialogInner({
               </p>
             )}
             {reportError && (
-              <p role="alert" className="text-sm text-red-600">
+              <p role="alert" className="text-destructive text-sm">
                 {reportError}
               </p>
             )}
@@ -334,7 +335,7 @@ function MatterClosureDialogInner({
                     control={form.control}
                     name="override"
                     render={({ field }) => (
-                      <FormItem className="flex flex-row items-start gap-3 space-y-0 rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950/30">
+                      <FormItem className="flex flex-row items-start gap-3 space-y-0 rounded-md border border-slate-300 bg-slate-100 p-3 dark:border-slate-700 dark:bg-slate-900/30">
                         <FormControl>
                           <Checkbox
                             checked={field.value}
@@ -344,7 +345,7 @@ function MatterClosureDialogInner({
                         </FormControl>
                         <div className="space-y-0.5">
                           <FormLabel className="flex items-center gap-1 text-sm font-medium">
-                            <ShieldAlert className="size-3.5 text-amber-600 dark:text-amber-400" />
+                            <ShieldAlert className="size-3.5 text-teal-600 dark:text-teal-400" />
                             Override failing gates
                           </FormLabel>
                           <p className="text-xs text-slate-600 dark:text-slate-400">
@@ -384,7 +385,7 @@ function MatterClosureDialogInner({
               )}
 
               {submitError && (
-                <p role="alert" className="text-sm text-red-600">
+                <p role="alert" className="text-destructive text-sm">
                   {submitError}
                 </p>
               )}
@@ -419,10 +420,10 @@ function MatterClosureDialogInner({
 
         {step === 3 && (
           <div className="space-y-4" data-testid="matter-closure-step-3">
-            <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm dark:border-amber-900 dark:bg-amber-950/30">
+            <div className="rounded-md border border-slate-300 bg-slate-100 p-4 text-sm dark:border-slate-700 dark:bg-slate-900/30">
               <div className="flex items-start gap-2">
                 <ShieldAlert
-                  className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-400"
+                  className="mt-0.5 size-4 shrink-0 text-teal-600 dark:text-teal-400"
                   aria-hidden="true"
                 />
                 <div>

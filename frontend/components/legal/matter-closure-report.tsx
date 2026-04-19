@@ -79,7 +79,7 @@ export function MatterClosureReport({
                 />
               ) : (
                 <XCircle
-                  className="size-4 text-red-600 dark:text-red-400"
+                  className="text-destructive size-4"
                   data-testid={`matter-closure-gate-fail-${gate.code}`}
                 />
               )}

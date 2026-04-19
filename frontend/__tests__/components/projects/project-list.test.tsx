@@ -77,6 +77,7 @@ describe("ProjectStatusFilter", () => {
     expect(screen.getByText("Active")).toBeInTheDocument();
     expect(screen.getByText("Completed")).toBeInTheDocument();
     expect(screen.getByText("Archived")).toBeInTheDocument();
+    expect(screen.getByText("Closed")).toBeInTheDocument();
     expect(screen.getByText("All")).toBeInTheDocument();
   });
 
@@ -87,12 +88,22 @@ describe("ProjectStatusFilter", () => {
     expect(activeLink.className).toContain("bg-slate-900");
   });
 
+  it("does not select CLOSED chip by default (CLOSED matters excluded by default)", () => {
+    render(<ProjectStatusFilter slug="acme" />);
+    const closedChip = screen.getByText("Closed");
+    // Closed chip should have the inactive styling (light background) when no status param
+    expect(closedChip.className).toContain("bg-slate-100");
+    expect(closedChip.className).not.toContain("bg-slate-900");
+  });
+
   it("generates correct links for filter chips", () => {
     render(<ProjectStatusFilter slug="acme" />);
     const completedLink = screen.getByText("Completed").closest("a");
     expect(completedLink).toHaveAttribute("href", "/org/acme/projects?status=COMPLETED");
     const archivedLink = screen.getByText("Archived").closest("a");
     expect(archivedLink).toHaveAttribute("href", "/org/acme/projects?status=ARCHIVED");
+    const closedLink = screen.getByText("Closed").closest("a");
+    expect(closedLink).toHaveAttribute("href", "/org/acme/projects?status=CLOSED");
     const allLink = screen.getByText("All").closest("a");
     expect(allLink).toHaveAttribute("href", "/org/acme/projects?status=ALL");
     // Active should link to base URL (no status param)

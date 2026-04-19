@@ -74,6 +74,7 @@ import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
 import { SaveAsTemplateDialog } from "@/components/templates/SaveAsTemplateDialog";
 import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle-actions";
 import { MatterClosureAction } from "@/components/projects/matter-closure-action";
+import { MatterReopenAction } from "@/components/projects/matter-reopen-action";
 import { ArchivedProjectBanner } from "@/components/projects/archived-project-banner";
 import { ProjectStaffingTab } from "@/components/capacity/project-staffing-tab";
 import { ProjectCourtDatesTab } from "@/components/legal/project-court-dates-tab";
@@ -466,6 +467,14 @@ export default async function ProjectDetailPage({
               {PROJECT_STATUS_BADGE[project.status].label}
             </Badge>
           </div>
+          {project.status === "CLOSED" && project.closedAt && (
+            <p
+              className="mt-2 text-sm text-slate-500 dark:text-slate-400"
+              data-testid="project-closed-at"
+            >
+              Closed on {formatDate(project.closedAt)}
+            </p>
+          )}
           {project.description ? (
             <p className="mt-2 text-slate-600 dark:text-slate-400">{project.description}</p>
           ) : (
@@ -573,6 +582,15 @@ export default async function ProjectDetailPage({
             projectStatus={project.status}
           />
         )}
+        {/* Matter reopen button self-gates on module + status=CLOSED + CLOSE_MATTER capability.
+            Rendered independently of the (canEdit || isOwner || canManage) action cluster so a
+            CLOSED matter still surfaces the reopen entry point. */}
+        <MatterReopenAction
+          slug={slug}
+          projectId={id}
+          projectName={project.name}
+          projectStatus={project.status}
+        />
         {/* Action buttons: lifecycle + existing (hidden for ARCHIVED except lifecycle) */}
         {project.status !== "ARCHIVED" && (canEdit || isOwner || canManage) && (
           <div className="flex shrink-0 gap-2">

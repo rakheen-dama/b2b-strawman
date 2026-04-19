@@ -116,10 +116,11 @@ class LegalPackSeederIntegrationTest {
                   var legalTemplates =
                       templates.stream().filter(t -> "legal-za".equals(t.getPackId())).toList();
                   // Phase 67, Epic 489B added matter-closure-letter (11th template).
-                  assertThat(legalTemplates).hasSize(11);
+                  // Phase 67, Epic 491A added statement-of-account (12th template).
+                  assertThat(legalTemplates).hasSize(12);
                   assertThat(legalTemplates)
                       .extracting(t -> t.getSlug())
-                      .contains("matter-closure-letter");
+                      .contains("matter-closure-letter", "statement-of-account");
                 }));
   }
 

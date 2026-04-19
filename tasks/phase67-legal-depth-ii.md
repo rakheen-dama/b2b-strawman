@@ -15,7 +15,7 @@
 | 487 | Disbursement Invoicing Integration | Backend | 486, 489A | M | 487A, 487B | **Done** (PRs #1071, #1072) |
 | 488 | Disbursement Frontend | Frontend | 486, 487 | M | 488A, 488B | **Done** (PRs #1073, #1074) |
 | 489 | Matter Closure Workflow (Backend) | Backend | 486A | L | 489A, 489B | **Done** (PRs #1069, #1070) |
-| 490 | Matter Closure Frontend | Frontend | 489 | M | 490A, 490B | **Pending** |
+| 490 | Matter Closure Frontend | Frontend | 489 | M | 490A, 490B | **Done** (PRs #1075, #1076) |
 | 491 | Statement of Account | Both | 486B | M | 491A, 491B | **Pending** |
 | 492 | Conveyancing Pack | Backend (pack content) | 489A (for `acceptance_eligible` column) | M | 492A, 492B | **Pending** |
 | 493 | QA Capstone — Lifecycle + Screenshots + Gap Report | E2E/Process | 486–492 | L | 493A | **Pending** |
@@ -154,7 +154,7 @@ PHASE 28 (acceptance), PHASE 6.5 (notification handlers) — all complete
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 4a | 490 | 490B | Reopen action + matter-list CLOSED filter chip + default-filter update + status badge CLOSED variant. |
+| 4a | 490 | 490B | Reopen action + matter-list CLOSED filter chip + default-filter update + status badge CLOSED variant. **Done** (PR #1076) |
 
 ### Stage 5: QA capstone
 
@@ -561,7 +561,7 @@ A realistic day-by-day cadence: 486A days 1–3; fan-out days 3–7 (486B, 487A,
 | Slice | Tasks | Summary |
 |-------|-------|---------|
 | **490A** | 490.1–490.6 | `frontend/lib/api/matter-closure.ts` API client, 3-step matter-closure dialog (gate-report preview → closure form → override branch), `matter-closure-report.tsx` sub-component with per-gate pass/fail rows and "fix this" deep links, wire "Close Matter" action into matter-detail action menu (module-gated + status-gated to ACTIVE/COMPLETED), component tests for gate-report rendering, override-visibility by role, success-flow, 409 ProblemDetail handling. **Done** (PR #1075) |
-| **490B** | 490.7–490.10 | "Reopen Matter" action on CLOSED matters (owner only via `useCapability("CLOSE_MATTER")`), matter-list `CLOSED` filter chip, default-filter excludes CLOSED matters, status badge CLOSED variant, reopen-flow component tests. |
+| **490B** | 490.7–490.10 | "Reopen Matter" action on CLOSED matters (owner only via `useCapability("CLOSE_MATTER")`), matter-list `CLOSED` filter chip, default-filter excludes CLOSED matters, status badge CLOSED variant, reopen-flow component tests. **Done** (PR #1076) |
 
 ### Tasks
 

@@ -131,7 +131,7 @@ PHASE 28 (acceptance), PHASE 6.5 (notification handlers) — all complete
 | 1b (parallel) | 487 | 487A | `/unbilled?projectId=` endpoint, `DisbursementRepository.findUnbilledBillableByCustomerId`, `UnbilledTimeService`/`UnbilledTimeResponse` module-gated extension. **Done** (PR #1071) |
 | 1c (parallel) | 488 | 488A | List page + detail page + create dialog + project-detail Disbursements tab + `frontend/lib/api/legal-disbursements.ts`. **Done** (PR #1073) |
 | 1d (parallel) | 489 | 489A | V97 migration + `Project.CLOSED` + `ProjectLifecycleGuard` transitions + `MatterClosureLog` entity/repo + `ClosureGate` interface + 9 gate classes + gate unit tests. **Done** (PR #1069) |
-| 1e (parallel) | 492 | 492A | Field pack `conveyancing-za-project.json` + Property Transfer template appended to `project-template-packs/legal-za.json` + `conveyancing-za-clauses` pack with 10 clauses + profile manifest update. |
+| 1e (parallel) | 492 | 492A | Field pack `conveyancing-za-project.json` + Property Transfer template appended to `project-template-packs/legal-za.json` + `conveyancing-za-clauses` pack with 10 clauses + profile manifest update. **Done** (PR #1079) |
 
 ### Stage 2: Integration (unblocked by 489A + 487A)
 
@@ -704,7 +704,7 @@ A realistic day-by-day cadence: 486A days 1–3; fan-out days 3–7 (486B, 487A,
 
 | Slice | Tasks | Summary |
 |-------|-------|---------|
-| **492A** | 492.1–492.6 | `field-packs/conveyancing-za-project.json` (10 fields per arch requirements §4.1), Property Transfer template appended to `project-template-packs/legal-za.json` (12 tasks), `clause-packs/conveyancing-za-clauses/pack.json` + 10 Tiptap clause files, profile-manifest update to `vertical-profiles/legal-za.json`, seeder-level integration tests. Pack-content slice — 14 files, exceeds the normal 10-file ceiling because each clause Tiptap is a ~20-line JSON; called out explicitly per sizing rules. |
+| **492A** | 492.1–492.6 | `field-packs/conveyancing-za-project.json` (10 fields per arch requirements §4.1), Property Transfer template appended to `project-template-packs/legal-za.json` (12 tasks), `clause-packs/conveyancing-za-clauses/pack.json` + 10 Tiptap clause files, profile-manifest update to `vertical-profiles/legal-za.json`, seeder-level integration tests. Pack-content slice — 14 files, exceeds the normal 10-file ceiling because each clause Tiptap is a ~20-line JSON; called out explicitly per sizing rules. **Done** (PR #1079) |
 | **492B** | 492.7–492.11 | 4 new Tiptap templates under `template-packs/legal-za/` (offer-to-purchase, deed-of-transfer, power-of-attorney-transfer, bond-cancellation-instruction), extend `legal-za/pack.json` with 4 entries including `acceptanceEligible: true` on OTP + POA, template-manifest schema extension (optional boolean field with default false), `conveyancing-intake-za.json` request pack, install-level tests including a Phase 28 acceptance-UI surfacing assertion. |
 
 ### Tasks

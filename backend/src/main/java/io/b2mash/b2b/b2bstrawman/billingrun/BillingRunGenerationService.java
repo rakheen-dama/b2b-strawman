@@ -132,6 +132,7 @@ public class BillingRunGenerationService {
                           null,
                           null,
                           null,
+                          null,
                           null);
 
                   var invoiceResponse = invoiceService.createDraft(invoiceRequest, actorMemberId);

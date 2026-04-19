@@ -13,6 +13,7 @@ public record CreateInvoiceRequest(
     @NotBlank @Size(min = 3, max = 3) String currency,
     List<UUID> timeEntryIds,
     List<UUID> expenseIds,
+    List<UUID> disbursementIds,
     LocalDate dueDate,
     String notes,
     @Size(max = 100) String paymentTerms,

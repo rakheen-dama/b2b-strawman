@@ -129,7 +129,7 @@ PHASE 28 (acceptance), PHASE 6.5 (notification handlers) — all complete
 |-------|------|-------|---------|
 | 1a (parallel) | 486 | 486B | `DisbursementService` (CRUD, approval, writeOff, events) + `DisbursementController` + integration tests. **Done** (PR #1068) |
 | 1b (parallel) | 487 | 487A | `/unbilled?projectId=` endpoint, `DisbursementRepository.findUnbilledBillableByCustomerId`, `UnbilledTimeService`/`UnbilledTimeResponse` module-gated extension. **Done** (PR #1071) |
-| 1c (parallel) | 488 | 488A | List page + detail page + create dialog + project-detail Disbursements tab + `frontend/lib/api/legal-disbursements.ts`. |
+| 1c (parallel) | 488 | 488A | List page + detail page + create dialog + project-detail Disbursements tab + `frontend/lib/api/legal-disbursements.ts`. **Done** (PR #1073) |
 | 1d (parallel) | 489 | 489A | V97 migration + `Project.CLOSED` + `ProjectLifecycleGuard` transitions + `MatterClosureLog` entity/repo + `ClosureGate` interface + 9 gate classes + gate unit tests. **Done** (PR #1069) |
 | 1e (parallel) | 492 | 492A | Field pack `conveyancing-za-project.json` + Property Transfer template appended to `project-template-packs/legal-za.json` + `conveyancing-za-clauses` pack with 10 clauses + profile manifest update. |
 
@@ -371,7 +371,7 @@ A realistic day-by-day cadence: 486A days 1–3; fan-out days 3–7 (486B, 487A,
 
 | Slice | Tasks | Summary |
 |-------|-------|---------|
-| **488A** | 488.1–488.7 | `frontend/lib/api/legal-disbursements.ts` API client, disbursements list page, disbursement detail page, create-disbursement dialog (category picker + VAT override + payment-source toggle + supplier fields + receipt upload), matter-scoped disbursements tab, unbilled-summary widget extension, list-view component tests. |
+| **488A** | 488.1–488.7 | `frontend/lib/api/legal-disbursements.ts` API client, disbursements list page, disbursement detail page, create-disbursement dialog (category picker + VAT override + payment-source toggle + supplier fields + receipt upload), matter-scoped disbursements tab, unbilled-summary widget extension, list-view component tests. **Done** (PR #1073) |
 | **488B** | 488.8–488.12 | Disbursement approval panel (capability-gated visibility), trust-transaction-link dialog (picker of APPROVED DISBURSEMENT_PAYMENT trust txs for the matter), invoice-editor "Add Disbursements" picker (module-gated), component tests for approval action + trust-link correctness + invoice-editor integration. |
 
 ### Tasks

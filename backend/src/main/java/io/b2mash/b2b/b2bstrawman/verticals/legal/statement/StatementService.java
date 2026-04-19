@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.statement;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -114,6 +115,8 @@ public class StatementService {
     String s3Key = "org/" + tenantId + "/generated/" + fileName;
     storageService.upload(s3Key, pdfBytes, "application/pdf");
 
+    StatementSummary summary = extractSummary(context);
+
     var generatedDoc =
         new GeneratedDocument(
             template.getId(),
@@ -129,10 +132,11 @@ public class StatementService {
     snapshot.put("entity_id", projectId.toString());
     snapshot.put("period_start", request.periodStart().toString());
     snapshot.put("period_end", request.periodEnd().toString());
+    // Persist the summary as-of generation time so GET by id returns the same numbers as the saved
+    // PDF even if underlying fees/disbursements/trust data changes afterwards.
+    snapshot.put("summary", summarySnapshotMap(summary));
     generatedDoc.setContextSnapshot(snapshot);
     generatedDoc = generatedDocumentRepository.save(generatedDoc);
-
-    StatementSummary summary = extractSummary(context);
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -219,28 +223,17 @@ public class StatementService {
       throw new ResourceNotFoundException("GeneratedDocument", id);
     }
 
-    LocalDate periodStart = readDate(generatedDoc.getContextSnapshot(), "period_start");
-    LocalDate periodEnd = readDate(generatedDoc.getContextSnapshot(), "period_end");
-
-    String htmlPreview = null;
-    StatementSummary summary;
-    if (periodStart != null && periodEnd != null) {
-      Map<String, Object> context = contextBuilder.build(projectId, periodStart, periodEnd);
-      var template = documentTemplateRepository.findById(generatedDoc.getTemplateId()).orElse(null);
-      if (template != null) {
-        htmlPreview = renderHtml(template, context);
-      }
-      summary = contextBuilder.computeSummary(projectId, periodStart, periodEnd);
-    } else {
-      summary = zeroSummary();
-    }
+    // Return snapshot-backed summary only. We deliberately do NOT re-render htmlPreview from
+    // current DB state: doing so would diverge from the saved PDF if fees/disbursements/trust data
+    // changed after generation. The client fetches the PDF via pdfUrl for the authoritative view.
+    StatementSummary summary = extractSnapshotSummary(generatedDoc.getContextSnapshot());
 
     String pdfUrl = "/api/documents/" + generatedDoc.getId() + "/pdf";
     return new StatementResponse(
         generatedDoc.getId(),
         generatedDoc.getTemplateId(),
         generatedDoc.getGeneratedAt(),
-        htmlPreview,
+        null,
         pdfUrl,
         new StatementResponse.MatterRef(projectId, project.getName()),
         summary);
@@ -250,9 +243,21 @@ public class StatementService {
 
   private DocumentTemplate resolveTemplate(UUID templateId) {
     if (templateId != null) {
-      return documentTemplateRepository
-          .findById(templateId)
-          .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
+      var tpl =
+          documentTemplateRepository
+              .findById(templateId)
+              .orElseThrow(() -> new ResourceNotFoundException("DocumentTemplate", templateId));
+      // Guard against callers passing the id of an unrelated template (e.g. engagement-letter).
+      // Both base templates (slug = SYSTEM_TEMPLATE_SLUG) and any clones (slug starts with the
+      // system slug + "-") are accepted.
+      String slug = tpl.getSlug();
+      if (slug == null
+          || !(slug.equals(SYSTEM_TEMPLATE_SLUG) || slug.startsWith(SYSTEM_TEMPLATE_SLUG + "-"))) {
+        throw new InvalidStateException(
+            "Template is not a statement-of-account template",
+            "templateId " + templateId + " resolves to a template with slug '" + slug + "'.");
+      }
+      return tpl;
     }
     return documentTemplateRepository
         .findBySlug(SYSTEM_TEMPLATE_SLUG)
@@ -303,6 +308,13 @@ public class StatementService {
   private static java.math.BigDecimal toBigDecimal(Object o) {
     if (o instanceof java.math.BigDecimal bd) return bd;
     if (o instanceof Number n) return new java.math.BigDecimal(n.toString());
+    if (o instanceof String s && !s.isBlank()) {
+      try {
+        return new java.math.BigDecimal(s);
+      } catch (NumberFormatException e) {
+        return java.math.BigDecimal.ZERO;
+      }
+    }
     return java.math.BigDecimal.ZERO;
   }
 
@@ -311,33 +323,10 @@ public class StatementService {
     return new StatementSummary(z, z, z, z, z, z);
   }
 
-  private LocalDate readDate(Map<String, Object> snapshot, String key) {
-    if (snapshot == null) return null;
-    Object v = snapshot.get(key);
-    if (v instanceof String s) {
-      try {
-        return LocalDate.parse(s);
-      } catch (Exception e) {
-        return null;
-      }
-    }
-    return null;
-  }
-
   private StatementResponse toResponseSummary(GeneratedDocument gd, Project project) {
-    var snap = gd.getContextSnapshot();
-    LocalDate periodStart = readDate(snap, "period_start");
-    LocalDate periodEnd = readDate(snap, "period_end");
-    StatementSummary summary;
-    if (periodStart != null && periodEnd != null) {
-      try {
-        summary = contextBuilder.computeSummary(project.getId(), periodStart, periodEnd);
-      } catch (RuntimeException e) {
-        summary = zeroSummary();
-      }
-    } else {
-      summary = zeroSummary();
-    }
+    // Snapshot-backed: list + getById must surface the at-generation-time numbers, not live DB
+    // state.
+    StatementSummary summary = extractSnapshotSummary(gd.getContextSnapshot());
     String pdfUrl = "/api/documents/" + gd.getId() + "/pdf";
     return new StatementResponse(
         gd.getId(),
@@ -349,9 +338,43 @@ public class StatementService {
         summary);
   }
 
-  // Suppress unused import warnings — keeps fields used for future extension paths.
-  @SuppressWarnings("unused")
-  private LinkedHashMap<String, Object> placeholderForCompiler() {
-    return new LinkedHashMap<>();
+  private Map<String, Object> summarySnapshotMap(StatementSummary s) {
+    var m = new LinkedHashMap<String, Object>();
+    m.put("total_fees", s.totalFees() != null ? s.totalFees().toPlainString() : "0");
+    m.put(
+        "total_disbursements",
+        s.totalDisbursements() != null ? s.totalDisbursements().toPlainString() : "0");
+    m.put(
+        "previous_balance_owing",
+        s.previousBalanceOwing() != null ? s.previousBalanceOwing().toPlainString() : "0");
+    m.put(
+        "payments_received",
+        s.paymentsReceived() != null ? s.paymentsReceived().toPlainString() : "0");
+    m.put(
+        "closing_balance_owing",
+        s.closingBalanceOwing() != null ? s.closingBalanceOwing().toPlainString() : "0");
+    m.put(
+        "trust_balance_held",
+        s.trustBalanceHeld() != null ? s.trustBalanceHeld().toPlainString() : "0");
+    return m;
+  }
+
+  @SuppressWarnings("unchecked")
+  private StatementSummary extractSnapshotSummary(Map<String, Object> snapshot) {
+    if (snapshot == null) {
+      return zeroSummary();
+    }
+    Object raw = snapshot.get("summary");
+    if (!(raw instanceof Map<?, ?> map)) {
+      return zeroSummary();
+    }
+    Map<String, Object> summary = (Map<String, Object>) map;
+    return new StatementSummary(
+        toBigDecimal(summary.get("total_fees")),
+        toBigDecimal(summary.get("total_disbursements")),
+        toBigDecimal(summary.get("previous_balance_owing")),
+        toBigDecimal(summary.get("payments_received")),
+        toBigDecimal(summary.get("closing_balance_owing")),
+        toBigDecimal(summary.get("trust_balance_held")));
   }
 }

@@ -188,7 +188,7 @@
           "attrs": {
             "dataSource": "trust.deposits",
             "columns": [
-              { "header": "Date", "key": "date", "format": "date" },
+              { "header": "Date", "key": "transactionDate", "format": "date" },
               { "header": "Reference", "key": "reference" },
               { "header": "Description", "key": "description" },
               { "header": "Amount", "key": "amount", "format": "currency" }
@@ -210,8 +210,8 @@
           "attrs": {
             "dataSource": "trust.payments",
             "columns": [
-              { "header": "Date", "key": "date", "format": "date" },
-              { "header": "Type", "key": "type" },
+              { "header": "Date", "key": "transactionDate", "format": "date" },
+              { "header": "Type", "key": "transactionType" },
               { "header": "Reference", "key": "reference" },
               { "header": "Description", "key": "description" },
               { "header": "Amount", "key": "amount", "format": "currency" }

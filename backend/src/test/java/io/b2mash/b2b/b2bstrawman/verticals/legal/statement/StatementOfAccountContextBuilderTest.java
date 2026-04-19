@@ -2,8 +2,12 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.statement;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.lenient;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
@@ -19,6 +23,7 @@ import io.b2mash.b2b.b2bstrawman.template.TemplateContextHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementCategory;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.DisbursementStatementDto;
@@ -61,6 +66,7 @@ class StatementOfAccountContextBuilderTest {
   @Mock private PaymentEventRepository paymentEventRepository;
   @Mock private MemberNameResolver memberNameResolver;
   @Mock private TemplateContextHelper templateContextHelper;
+  @Mock private VerticalModuleGuard moduleGuard;
 
   @InjectMocks private StatementOfAccountContextBuilder builder;
 
@@ -77,6 +83,9 @@ class StatementOfAccountContextBuilderTest {
   void setUp() {
     lenient().when(templateContextHelper.buildOrgContext()).thenReturn(Map.of("name", "Acme Law"));
     lenient().when(memberNameResolver.resolveName(any())).thenReturn("Jane Attorney");
+    // Default: trust_accounting module is enabled (matches a fully legal tenant). Individual
+    // tests override this when they need to assert the disabled-module behaviour.
+    lenient().when(moduleGuard.isModuleEnabled("trust_accounting")).thenReturn(true);
   }
 
   @Test
@@ -352,7 +361,7 @@ class StatementOfAccountContextBuilderTest {
         invoiceWithStatusTotalAndIssueDate(
             InvoiceStatus.SENT, new BigDecimal("500.00"), periodStart.minusDays(10));
     when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of(oldInvoice));
-    when(paymentEventRepository.findByInvoiceIdOrderByCreatedAtDesc(oldInvoice.getId()))
+    when(paymentEventRepository.findByInvoiceIdInOrderByCreatedAtDesc(anyCollection()))
         .thenReturn(List.of());
 
     var context = builder.build(projectId, periodStart, periodEnd);
@@ -370,6 +379,36 @@ class StatementOfAccountContextBuilderTest {
     assertThat((BigDecimal) summary.get("payments_received")).isEqualByComparingTo(BigDecimal.ZERO);
     assertThat((BigDecimal) summary.get("closing_balance_owing"))
         .isEqualByComparingTo(new BigDecimal("1730.00"));
+  }
+
+  @Test
+  void trustAccountingDisabled_trustBlockEmpty_ledgerNeverQueried() {
+    // Override default: simulate a tenant with disbursements enabled but trust_accounting DISABLED.
+    when(moduleGuard.isModuleEnabled("trust_accounting")).thenReturn(false);
+
+    var project = projectWithCustomer("No Trust Matter", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of());
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> trust = (Map<String, Object>) context.get("trust");
+    assertThat(((List<?>) trust.get("deposits"))).isEmpty();
+    assertThat(((List<?>) trust.get("payments"))).isEmpty();
+    assertThat((BigDecimal) trust.get("opening_balance")).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat((BigDecimal) trust.get("closing_balance")).isEqualByComparingTo(BigDecimal.ZERO);
+
+    // Crucially, the ClientLedgerService is never hit — avoids ModuleNotEnabledException (403).
+    verifyNoInteractions(clientLedgerService);
+    // TrustAccount lookup is also skipped (short-circuit is before that).
+    verify(trustAccountRepository, never()).findByAccountTypeAndPrimaryTrue(any());
   }
 
   // ---------- helpers ----------

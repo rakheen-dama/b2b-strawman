@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateContextHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.DisbursementStatementDto;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.FeeLineDto;
@@ -53,6 +54,7 @@ public class StatementOfAccountContextBuilder {
 
   private static final BigDecimal MINUTES_PER_HOUR = new BigDecimal("60");
   private static final DateTimeFormatter REFERENCE_DATE = DateTimeFormatter.ofPattern("yyyyMMdd");
+  private static final String TRUST_ACCOUNTING_MODULE = "trust_accounting";
 
   private final ProjectRepository projectRepository;
   private final CustomerRepository customerRepository;
@@ -64,6 +66,7 @@ public class StatementOfAccountContextBuilder {
   private final PaymentEventRepository paymentEventRepository;
   private final MemberNameResolver memberNameResolver;
   private final TemplateContextHelper templateContextHelper;
+  private final VerticalModuleGuard moduleGuard;
 
   public StatementOfAccountContextBuilder(
       ProjectRepository projectRepository,
@@ -75,7 +78,8 @@ public class StatementOfAccountContextBuilder {
       InvoiceRepository invoiceRepository,
       PaymentEventRepository paymentEventRepository,
       MemberNameResolver memberNameResolver,
-      TemplateContextHelper templateContextHelper) {
+      TemplateContextHelper templateContextHelper,
+      VerticalModuleGuard moduleGuard) {
     this.projectRepository = projectRepository;
     this.customerRepository = customerRepository;
     this.timeEntryRepository = timeEntryRepository;
@@ -86,6 +90,7 @@ public class StatementOfAccountContextBuilder {
     this.paymentEventRepository = paymentEventRepository;
     this.memberNameResolver = memberNameResolver;
     this.templateContextHelper = templateContextHelper;
+    this.moduleGuard = moduleGuard;
   }
 
   /**
@@ -325,6 +330,13 @@ public class StatementOfAccountContextBuilder {
     if (customer == null) {
       return TrustBlock.empty();
     }
+    // Statement endpoint is gated on the `disbursements` module only. If the tenant has not also
+    // enabled `trust_accounting`, ClientLedgerService throws ModuleNotEnabledException (403).
+    // Short-
+    // circuit to an empty trust block so the statement still renders without the trust section.
+    if (!moduleGuard.isModuleEnabled(TRUST_ACCOUNTING_MODULE)) {
+      return TrustBlock.empty();
+    }
     UUID trustAccountId =
         trustAccountRepository
             .findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL)
@@ -379,26 +391,25 @@ public class StatementOfAccountContextBuilder {
                         && inv.getIssueDate() != null
                         && inv.getIssueDate().isBefore(periodStart))
             .toList();
+    if (issued.isEmpty()) {
+      return BigDecimal.ZERO;
+    }
     BigDecimal grossOutstanding =
         issued.stream()
             .map(Invoice::getTotal)
             .filter(t -> t != null)
             .reduce(BigDecimal.ZERO, BigDecimal::add);
-    BigDecimal paymentsBefore = BigDecimal.ZERO;
-    for (Invoice inv : issued) {
-      paymentsBefore =
-          paymentsBefore.add(
-              paymentsForInvoice(inv.getId()).stream()
-                  .filter(p -> p.getCreatedAt() != null)
-                  .filter(
-                      p ->
-                          p.getCreatedAt()
-                              .isBefore(
-                                  periodStart.atStartOfDay(java.time.ZoneOffset.UTC).toInstant()))
-                  .map(PaymentEvent::getAmount)
-                  .filter(a -> a != null)
-                  .reduce(BigDecimal.ZERO, BigDecimal::add));
-    }
+
+    // One query for all invoices, then group in memory (avoids N+1).
+    List<UUID> issuedIds = issued.stream().map(Invoice::getId).toList();
+    var startInstant = periodStart.atStartOfDay(java.time.ZoneOffset.UTC).toInstant();
+    BigDecimal paymentsBefore =
+        paymentEventRepository.findByInvoiceIdInOrderByCreatedAtDesc(issuedIds).stream()
+            .filter(p -> p.getCreatedAt() != null)
+            .filter(p -> p.getCreatedAt().isBefore(startInstant))
+            .map(PaymentEvent::getAmount)
+            .filter(a -> a != null)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
     return grossOutstanding.subtract(paymentsBefore).max(BigDecimal.ZERO);
   }
 
@@ -408,25 +419,23 @@ public class StatementOfAccountContextBuilder {
     if (customerId == null) {
       return BigDecimal.ZERO;
     }
+    List<Invoice> invoices = invoiceRepository.findByCustomerId(customerId);
+    if (invoices.isEmpty()) {
+      return BigDecimal.ZERO;
+    }
+    List<UUID> invoiceIds = invoices.stream().map(Invoice::getId).toList();
     var startInstant = periodStart.atStartOfDay(java.time.ZoneOffset.UTC).toInstant();
     var endInstant = periodEnd.plusDays(1).atStartOfDay(java.time.ZoneOffset.UTC).toInstant();
-    BigDecimal sum = BigDecimal.ZERO;
-    for (Invoice inv : invoiceRepository.findByCustomerId(customerId)) {
-      for (PaymentEvent p : paymentsForInvoice(inv.getId())) {
-        if (p.getStatus() != PaymentEventStatus.COMPLETED) continue;
-        if (p.getCreatedAt() == null) continue;
-        if (p.getCreatedAt().isBefore(startInstant)) continue;
-        if (!p.getCreatedAt().isBefore(endInstant)) continue;
-        if (p.getAmount() != null) {
-          sum = sum.add(p.getAmount());
-        }
-      }
-    }
-    return sum;
-  }
 
-  private List<PaymentEvent> paymentsForInvoice(UUID invoiceId) {
-    return paymentEventRepository.findByInvoiceIdOrderByCreatedAtDesc(invoiceId);
+    // Single batched query, filtered in memory (avoids N+1 from per-invoice calls).
+    return paymentEventRepository.findByInvoiceIdInOrderByCreatedAtDesc(invoiceIds).stream()
+        .filter(p -> p.getStatus() == PaymentEventStatus.COMPLETED)
+        .filter(p -> p.getCreatedAt() != null)
+        .filter(p -> !p.getCreatedAt().isBefore(startInstant))
+        .filter(p -> p.getCreatedAt().isBefore(endInstant))
+        .map(PaymentEvent::getAmount)
+        .filter(a -> a != null)
+        .reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 
   private Map<String, Object> toSummaryMap(StatementSummary s) {

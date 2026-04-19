@@ -1,6 +1,6 @@
 {
   "packId": "legal-za",
-  "version": 3,
+  "version": 4,
   "verticalProfile": "legal-za",
   "name": "SA Legal Templates",
   "description": "Document templates for South African law firms: engagement letters, court filings, and correspondence",
@@ -114,6 +114,17 @@
       "cssFile": null,
       "description": "Closure letter issued to the client at matter conclusion summarising fees, disbursements, and retention terms.",
       "sortOrder": 11,
+      "acceptanceEligible": false
+    },
+    {
+      "templateKey": "statement-of-account",
+      "name": "Statement of Account",
+      "category": "REPORT",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "statement-of-account.json",
+      "cssFile": null,
+      "description": "Statement of account summarising fees, disbursements, trust activity, and balance for a matter period.",
+      "sortOrder": 12,
       "acceptanceEligible": false
     }
   ]

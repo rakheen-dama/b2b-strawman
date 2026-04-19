@@ -1,0 +1,293 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": { "level": 1 },
+      "content": [{ "type": "variable", "attrs": { "key": "org.name" } }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "VAT Reg: " },
+        { "type": "variable", "attrs": { "key": "org.taxRegistrationNumber" } }
+      ]
+    },
+    {
+      "type": "heading",
+      "attrs": { "level": 2 },
+      "content": [{ "type": "text", "text": "Statement of Account" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Reference: " },
+        { "type": "variable", "attrs": { "key": "statement.reference" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Period: " },
+        { "type": "variable", "attrs": { "key": "statement.period_start" } },
+        { "type": "text", "text": " — " },
+        { "type": "variable", "attrs": { "key": "statement.period_end" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Generated: " },
+        { "type": "variable", "attrs": { "key": "statement.generation_date" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "To" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "variable", "attrs": { "key": "customer.name" } }]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "variable", "attrs": { "key": "customer.address" } }]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "Matter" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Matter: " },
+        { "type": "variable", "attrs": { "key": "matter.name" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "File reference: " },
+        { "type": "variable", "attrs": { "key": "matter.file_reference" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Opened: " },
+        { "type": "variable", "attrs": { "key": "matter.opened_date" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "Professional Fees" }]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "fees.entries", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "loopTable",
+          "attrs": {
+            "dataSource": "fees.entries",
+            "columns": [
+              { "header": "Date", "key": "date", "format": "date" },
+              { "header": "Fee Earner", "key": "memberName" },
+              { "header": "Description", "key": "description" },
+              { "header": "Hours", "key": "hours", "format": "number" },
+              { "header": "Rate", "key": "rate", "format": "currency" },
+              { "header": "Amount", "key": "amount", "format": "currency" }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Total fees (excl. VAT): " },
+        { "type": "variable", "attrs": { "key": "fees.total_amount_excl_vat" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "VAT: " },
+        { "type": "variable", "attrs": { "key": "fees.vat_amount" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Total fees (incl. VAT): " },
+        { "type": "variable", "attrs": { "key": "fees.total_amount_incl_vat" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "Disbursements" }]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "disbursements.entries", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "loopTable",
+          "attrs": {
+            "dataSource": "disbursements.entries",
+            "columns": [
+              { "header": "Date", "key": "incurredDate", "format": "date" },
+              { "header": "Category", "key": "category" },
+              { "header": "Description", "key": "description" },
+              { "header": "Supplier", "key": "supplierName" },
+              { "header": "Amount", "key": "amount", "format": "currency" },
+              { "header": "VAT", "key": "vatAmount", "format": "currency" }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Total disbursements: " },
+        { "type": "variable", "attrs": { "key": "disbursements.total" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "Trust Activity" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Opening balance: " },
+        { "type": "variable", "attrs": { "key": "trust.opening_balance" } }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "trust.deposits", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [{ "type": "text", "marks": [{ "type": "bold" }], "text": "Deposits" }]
+        },
+        {
+          "type": "loopTable",
+          "attrs": {
+            "dataSource": "trust.deposits",
+            "columns": [
+              { "header": "Date", "key": "transactionDate", "format": "date" },
+              { "header": "Reference", "key": "reference" },
+              { "header": "Description", "key": "description" },
+              { "header": "Amount", "key": "amount", "format": "currency" }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "conditionalBlock",
+      "attrs": { "fieldKey": "trust.payments", "operator": "isNotEmpty" },
+      "content": [
+        {
+          "type": "paragraph",
+          "content": [{ "type": "text", "marks": [{ "type": "bold" }], "text": "Payments" }]
+        },
+        {
+          "type": "loopTable",
+          "attrs": {
+            "dataSource": "trust.payments",
+            "columns": [
+              { "header": "Date", "key": "transactionDate", "format": "date" },
+              { "header": "Type", "key": "transactionType" },
+              { "header": "Reference", "key": "reference" },
+              { "header": "Description", "key": "description" },
+              { "header": "Amount", "key": "amount", "format": "currency" }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Closing balance: " },
+        { "type": "variable", "attrs": { "key": "trust.closing_balance" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "Summary" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Total fees: " },
+        { "type": "variable", "attrs": { "key": "summary.total_fees" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Total disbursements: " },
+        { "type": "variable", "attrs": { "key": "summary.total_disbursements" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Previous balance owing: " },
+        { "type": "variable", "attrs": { "key": "summary.previous_balance_owing" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Payments received: " },
+        { "type": "variable", "attrs": { "key": "summary.payments_received" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Closing balance owing: " },
+        { "type": "variable", "attrs": { "key": "summary.closing_balance_owing" } }
+      ]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        { "type": "text", "marks": [{ "type": "bold" }], "text": "Trust balance held: " },
+        { "type": "variable", "attrs": { "key": "summary.trust_balance_held" } }
+      ]
+    },
+    { "type": "horizontalRule" },
+    {
+      "type": "heading",
+      "attrs": { "level": 3 },
+      "content": [{ "type": "text", "text": "Payment Instructions" }]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "variable", "attrs": { "key": "org.bankingDetails" } }]
+    },
+    {
+      "type": "paragraph",
+      "content": [{ "type": "variable", "attrs": { "key": "org.documentFooterText" } }]
+    }
+  ]
+}

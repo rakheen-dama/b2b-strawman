@@ -77,6 +77,7 @@ import { ArchivedProjectBanner } from "@/components/projects/archived-project-ba
 import { ProjectStaffingTab } from "@/components/capacity/project-staffing-tab";
 import { ProjectCourtDatesTab } from "@/components/legal/project-court-dates-tab";
 import { ProjectAdversePartiesTab } from "@/components/legal/project-adverse-parties-tab";
+import { ProjectDisbursementsTab } from "@/components/legal/project-disbursements-tab";
 import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { TerminologyText } from "@/components/terminology-text";
 import { getProjectStaffing, type ProjectStaffingResponse } from "@/lib/api/capacity";
@@ -818,6 +819,9 @@ export default async function ProjectDetailPage({
         staffingPanel={<ProjectStaffingTab staffing={projectStaffing} />}
         courtDatesPanel={<ProjectCourtDatesTab projectId={id} slug={slug} />}
         adversePartiesPanel={<ProjectAdversePartiesTab projectId={id} slug={slug} />}
+        disbursementsPanel={
+          <ProjectDisbursementsTab projectId={id} slug={slug} canManage={canManage} />
+        }
         trustPanel={
           customers.length > 0 ? (
             <TrustBalanceCard

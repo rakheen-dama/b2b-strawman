@@ -1,6 +1,10 @@
 import { formatCurrency, formatDate } from "@/lib/format";
 import { ExpenseCategoryBadge } from "@/components/expenses/expense-category-badge";
-import type { UnbilledTimeResponse, UnbilledExpenseEntry } from "@/lib/types";
+import type {
+  UnbilledTimeResponse,
+  UnbilledExpenseEntry,
+  UnbilledDisbursementEntry,
+} from "@/lib/types";
 
 /** Wraps formatCurrency in a try-catch to handle invalid currency codes gracefully. */
 function safeFormatCurrency(amount: number, curr: string): string {
@@ -13,9 +17,29 @@ function safeFormatCurrency(amount: number, curr: string): string {
 
 interface UnbilledSummaryProps {
   data: UnbilledTimeResponse;
+  /**
+   * When true, a third "Disbursements" section is rendered and disbursement
+   * totals roll into the grand total. Callers resolve this from the
+   * vertical-module flag (e.g. `useOrgProfile().isModuleEnabled("disbursements")`
+   * in client components, or equivalent on the server). Defaults to false so
+   * non-legal tenants render byte-identical output to the pre-disbursements
+   * widget.
+   */
+  isDisbursementsModuleEnabled?: boolean;
 }
 
-export function UnbilledSummary({ data }: UnbilledSummaryProps) {
+/** Humanize a SCREAMING_SNAKE disbursement category enum for display. */
+function disbursementCategoryLabel(category: string): string {
+  return category
+    .split("_")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(" ");
+}
+
+export function UnbilledSummary({
+  data,
+  isDisbursementsModuleEnabled = false,
+}: UnbilledSummaryProps) {
   // Group expenses by project
   const expensesByProject = data.unbilledExpenses.reduce<
     Record<string, { projectName: string; expenses: UnbilledExpenseEntry[] }>
@@ -30,7 +54,20 @@ export function UnbilledSummary({ data }: UnbilledSummaryProps) {
     return acc;
   }, {});
 
-  // Calculate combined grand totals (time + expenses)
+  // Resolve disbursements only when the module flag is enabled. If the
+  // field is absent (older backend / non-legal tenant), treat as empty.
+  const disbursements: UnbilledDisbursementEntry[] = isDisbursementsModuleEnabled
+    ? (data.disbursements ?? [])
+    : [];
+
+  // Disbursement subtotals — amount (excl VAT) + VAT, currency assumed ZAR.
+  const disbursementSubtotals: Record<string, number> = {};
+  for (const d of disbursements) {
+    disbursementSubtotals.ZAR =
+      (disbursementSubtotals.ZAR ?? 0) + d.amount + d.vatAmount;
+  }
+
+  // Calculate combined grand totals (time + expenses + disbursements)
   const combinedTotals: Record<string, number> = {};
   for (const [curr, total] of Object.entries(data.grandTotals)) {
     combinedTotals[curr] = (combinedTotals[curr] ?? 0) + total.amount;
@@ -38,11 +75,15 @@ export function UnbilledSummary({ data }: UnbilledSummaryProps) {
   for (const [curr, amount] of Object.entries(data.unbilledExpenseTotals)) {
     combinedTotals[curr] = (combinedTotals[curr] ?? 0) + amount;
   }
+  for (const [curr, amount] of Object.entries(disbursementSubtotals)) {
+    combinedTotals[curr] = (combinedTotals[curr] ?? 0) + amount;
+  }
 
   const hasTimeEntries = data.projects.some((p) => p.entries.length > 0);
   const hasExpenses = data.unbilledExpenses.length > 0;
+  const hasDisbursements = disbursements.length > 0;
 
-  if (!hasTimeEntries && !hasExpenses) {
+  if (!hasTimeEntries && !hasExpenses && !hasDisbursements) {
     return (
       <p className="py-8 text-center text-sm text-slate-500 dark:text-slate-400">
         No unbilled items found.
@@ -218,8 +259,80 @@ export function UnbilledSummary({ data }: UnbilledSummaryProps) {
         </div>
       )}
 
+      {/* Disbursements Section (legal vertical — module-gated) */}
+      {hasDisbursements && (
+        <div data-testid="unbilled-disbursements-section">
+          <h3 className="mb-3 text-sm font-semibold tracking-wide text-slate-600 uppercase dark:text-slate-400">
+            Disbursements
+          </h3>
+          <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900/50">
+                  <th className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
+                    Date
+                  </th>
+                  <th className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
+                    Supplier
+                  </th>
+                  <th className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
+                    Category
+                  </th>
+                  <th className="px-4 py-2.5 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
+                    Description
+                  </th>
+                  <th className="px-4 py-2.5 text-right text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
+                    Amount (incl VAT)
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {disbursements.map((d) => (
+                  <tr
+                    key={d.id}
+                    className="border-b border-slate-100 last:border-0 dark:border-slate-800/50"
+                  >
+                    <td className="px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100">
+                      {formatDate(d.incurredDate)}
+                    </td>
+                    <td className="px-4 py-2.5 text-sm text-slate-700 dark:text-slate-300">
+                      {d.supplierName}
+                    </td>
+                    <td className="px-4 py-2.5 text-sm text-slate-600 dark:text-slate-400">
+                      {disbursementCategoryLabel(d.category)}
+                    </td>
+                    <td className="px-4 py-2.5 text-sm text-slate-900 dark:text-slate-100">
+                      {d.description}
+                    </td>
+                    <td className="px-4 py-2.5 text-right text-sm font-medium text-slate-900 dark:text-slate-100">
+                      {safeFormatCurrency(d.amount + d.vatAmount, "ZAR")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {/* Disbursement totals */}
+          <div className="mt-3 flex items-center justify-between">
+            <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+              Disbursement Subtotal
+            </span>
+            <div className="flex gap-3">
+              {Object.entries(disbursementSubtotals).map(([curr, amount]) => (
+                <span
+                  key={curr}
+                  className="text-sm font-semibold text-slate-900 dark:text-slate-100"
+                >
+                  {safeFormatCurrency(amount, curr)}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Grand Total */}
-      {(hasTimeEntries || hasExpenses) && (
+      {(hasTimeEntries || hasExpenses || hasDisbursements) && (
         <div className="flex items-center justify-between border-t border-slate-300 pt-3 dark:border-slate-700">
           <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             Grand Total

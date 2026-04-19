@@ -12,7 +12,7 @@
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 486 | Disbursement Entity + Service + Module Registration | Backend | -- | M | 486A, 486B | **Done** (PRs #1067, #1068) |
-| 487 | Disbursement Invoicing Integration | Backend | 486, 489A | M | 487A, 487B | **Pending** |
+| 487 | Disbursement Invoicing Integration | Backend | 486, 489A | M | 487A, 487B | **In Progress** (487A Done PR #1071; 487B Pending) |
 | 488 | Disbursement Frontend | Frontend | 486, 487 | M | 488A, 488B | **Pending** |
 | 489 | Matter Closure Workflow (Backend) | Backend | 486A | L | 489A, 489B | **Done** (PRs #1069, #1070) |
 | 490 | Matter Closure Frontend | Frontend | 489 | M | 490A, 490B | **Pending** |
@@ -128,7 +128,7 @@ PHASE 28 (acceptance), PHASE 6.5 (notification handlers) — all complete
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
 | 1a (parallel) | 486 | 486B | `DisbursementService` (CRUD, approval, writeOff, events) + `DisbursementController` + integration tests. **Done** (PR #1068) |
-| 1b (parallel) | 487 | 487A | `/unbilled?projectId=` endpoint, `DisbursementRepository.findUnbilledBillableByCustomerId`, `UnbilledTimeService`/`UnbilledTimeResponse` module-gated extension. |
+| 1b (parallel) | 487 | 487A | `/unbilled?projectId=` endpoint, `DisbursementRepository.findUnbilledBillableByCustomerId`, `UnbilledTimeService`/`UnbilledTimeResponse` module-gated extension. **Done** (PR #1071) |
 | 1c (parallel) | 488 | 488A | List page + detail page + create dialog + project-detail Disbursements tab + `frontend/lib/api/legal-disbursements.ts`. |
 | 1d (parallel) | 489 | 489A | V97 migration + `Project.CLOSED` + `ProjectLifecycleGuard` transitions + `MatterClosureLog` entity/repo + `ClosureGate` interface + 9 gate classes + gate unit tests. **Done** (PR #1069) |
 | 1e (parallel) | 492 | 492A | Field pack `conveyancing-za-project.json` + Property Transfer template appended to `project-template-packs/legal-za.json` + `conveyancing-za-clauses` pack with 10 clauses + profile manifest update. |
@@ -299,7 +299,7 @@ A realistic day-by-day cadence: 486A days 1–3; fan-out days 3–7 (486B, 487A,
 
 | Slice | Tasks | Summary |
 |-------|-------|---------|
-| **487A** | 487.1–487.4 | `DisbursementRepository.findUnbilledBillableByCustomerId`, `/api/legal/disbursements/unbilled?projectId=` endpoint, `UnbilledTimeService` module-gated extension, `UnbilledTimeResponse` new `disbursements` field, integration tests for picker feed + response shape with and without module. |
+| **487A** | 487.1–487.4 | `DisbursementRepository.findUnbilledBillableByCustomerId`, `/api/legal/disbursements/unbilled?projectId=` endpoint, `UnbilledTimeService` module-gated extension, `UnbilledTimeResponse` new `disbursements` field, integration tests for picker feed + response shape with and without module. **Done** (PR #1071) |
 | **487B** | 487.5–487.10 | `InvoiceLine.disbursementId` entity mapping (V97 column present from 489A), `CreateInvoiceRequest.disbursementIds` optional field, `InvoiceCreationService.createDisbursementLines(...)` private helper with tax-rate resolution by VAT treatment, `markBilled` side-effect in same transaction, `DisbursementBilledEvent` publication, mixed time + expense + disbursement draft integration test, rollback-unbinds test. |
 
 ### Tasks

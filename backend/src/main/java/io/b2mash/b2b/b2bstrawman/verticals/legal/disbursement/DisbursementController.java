@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.ApprovalDecisionRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.CreateDisbursementRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.DisbursementResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.UnbilledDisbursementsResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.UpdateDisbursementRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.WriteOffRequest;
 import jakarta.validation.Valid;
@@ -70,6 +71,12 @@ public class DisbursementController {
       Pageable pageable) {
     return ResponseEntity.ok(
         disbursementService.list(projectId, approvalStatus, billingStatus, category, pageable));
+  }
+
+  @GetMapping("/unbilled")
+  @RequiresCapability("VIEW_LEGAL")
+  public ResponseEntity<UnbilledDisbursementsResponse> listUnbilled(@RequestParam UUID projectId) {
+    return ResponseEntity.ok(disbursementService.listUnbilledResponseForProject(projectId));
   }
 
   @PostMapping("/{id}/submit")

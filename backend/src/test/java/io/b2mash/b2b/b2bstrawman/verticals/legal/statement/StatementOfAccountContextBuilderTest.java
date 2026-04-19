@@ -142,7 +142,7 @@ class StatementOfAccountContextBuilderTest {
             new LedgerStatementResponse(
                 new BigDecimal("100.00"), new BigDecimal("400.00"), List.of(dep1, dep2, pay1)));
 
-    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
 
     var context = builder.build(projectId, periodStart, periodEnd);
 
@@ -190,7 +190,7 @@ class StatementOfAccountContextBuilderTest {
         .thenReturn(List.of());
     when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
         .thenReturn(Optional.empty());
-    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
 
     var context = builder.build(projectId, periodStart, periodEnd);
 
@@ -265,7 +265,7 @@ class StatementOfAccountContextBuilderTest {
             customerId, trustAccountId, periodStart, periodEnd))
         .thenReturn(new LedgerStatementResponse(BigDecimal.ZERO, BigDecimal.ZERO, lines));
 
-    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
 
     var context = builder.build(projectId, periodStart, periodEnd);
 
@@ -298,7 +298,7 @@ class StatementOfAccountContextBuilderTest {
         .thenReturn(List.of());
     when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
         .thenReturn(Optional.empty());
-    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
 
     var context = builder.build(projectId, periodStart, periodEnd);
 
@@ -335,7 +335,7 @@ class StatementOfAccountContextBuilderTest {
         .thenReturn(List.of(inRange));
     when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
         .thenReturn(Optional.empty());
-    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
 
     var context = builder.build(projectId, periodStart, periodEnd);
 
@@ -372,7 +372,7 @@ class StatementOfAccountContextBuilderTest {
         .thenReturn(
             new LedgerStatementResponse(
                 new BigDecimal("750.00"), new BigDecimal("1250.00"), List.of()));
-    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
 
     var context = builder.build(projectId, periodStart, periodEnd);
 
@@ -417,7 +417,7 @@ class StatementOfAccountContextBuilderTest {
     var oldInvoice =
         invoiceWithStatusTotalAndIssueDate(
             InvoiceStatus.SENT, new BigDecimal("500.00"), periodStart.minusDays(10));
-    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of(oldInvoice));
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of(oldInvoice));
     when(paymentEventRepository.findByInvoiceIdInOrderByCreatedAtDesc(anyCollection()))
         .thenReturn(List.of());
 
@@ -458,7 +458,7 @@ class StatementOfAccountContextBuilderTest {
     var carryover =
         invoiceWithStatusTotalAndIssueDate(
             InvoiceStatus.PAID, new BigDecimal("800.00"), periodStart.minusDays(20));
-    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of(carryover));
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of(carryover));
     // No payments BEFORE periodStart — the payment lands inside the period and is captured by
     // paymentsReceivedInPeriod, not paymentsBefore.
     when(paymentEventRepository.findByInvoiceIdInOrderByCreatedAtDesc(anyCollection()))
@@ -487,7 +487,7 @@ class StatementOfAccountContextBuilderTest {
     var voided =
         invoiceWithStatusTotalAndIssueDate(
             InvoiceStatus.VOID, new BigDecimal("999.00"), periodStart.minusDays(5));
-    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of(voided));
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of(voided));
 
     var context = builder.build(projectId, periodStart, periodEnd);
 
@@ -513,7 +513,7 @@ class StatementOfAccountContextBuilderTest {
         .thenReturn(List.of());
     when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
         .thenReturn(Optional.empty());
-    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
 
     var context = builder.build(projectId, periodStart, periodEnd);
 
@@ -543,7 +543,7 @@ class StatementOfAccountContextBuilderTest {
         .thenReturn(List.of());
     when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
         .thenReturn(List.of());
-    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
 
     var context = builder.build(projectId, periodStart, periodEnd);
 
@@ -565,6 +565,7 @@ class StatementOfAccountContextBuilderTest {
   private Project projectWithCustomer(String name, UUID customerId) {
     var p = new Project(name, "test matter", memberId);
     p.setCustomerId(customerId);
+    TestIds.withId(p, projectId);
     return p;
   }
 

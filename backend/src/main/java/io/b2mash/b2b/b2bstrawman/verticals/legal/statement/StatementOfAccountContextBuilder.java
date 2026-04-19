@@ -430,10 +430,14 @@ public class StatementOfAccountContextBuilder {
   }
 
   private BigDecimal previousBalanceOwing(Project project, LocalDate periodStart) {
-    UUID customerId = project.getCustomerId();
-    if (customerId == null) {
+    if (project.getId() == null) {
       return BigDecimal.ZERO;
     }
+    // Statement of Account is a per-MATTER document, so the opening balance must reflect
+    // invoices linked to THIS project only. Customer-scoping would conflate balances across
+    // every matter the customer has — a client with three active matters would see Matter A's
+    // statement showing the combined arrears of all three.
+    //
     // Any invoice issued before periodStart contributes to the opening balance regardless of
     // its CURRENT status (an invoice issued in March and paid in May still owed money on
     // April 1). Filtering by SENT-only would silently drop invoices later marked PAID, while
@@ -442,7 +446,7 @@ public class StatementOfAccountContextBuilder {
     // cancelled invoice never owed anything; DRAFT/APPROVED are excluded because they have
     // no issueDate set (issueDate is populated on send).
     List<Invoice> issued =
-        invoiceRepository.findByCustomerId(customerId).stream()
+        invoiceRepository.findByProjectId(project.getId()).stream()
             .filter(
                 inv ->
                     inv.getStatus() != InvoiceStatus.VOID
@@ -476,11 +480,11 @@ public class StatementOfAccountContextBuilder {
 
   private BigDecimal paymentsReceivedInPeriod(
       Project project, LocalDate periodStart, LocalDate periodEnd) {
-    UUID customerId = project.getCustomerId();
-    if (customerId == null) {
+    if (project.getId() == null) {
       return BigDecimal.ZERO;
     }
-    List<Invoice> invoices = invoiceRepository.findByCustomerId(customerId);
+    // Per-matter scope — see previousBalanceOwing for the rationale.
+    List<Invoice> invoices = invoiceRepository.findByProjectId(project.getId());
     if (invoices.isEmpty()) {
       return BigDecimal.ZERO;
     }

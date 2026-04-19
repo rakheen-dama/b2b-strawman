@@ -1,0 +1,65 @@
+{
+  "packId": "conveyancing-intake-za",
+  "version": 1,
+  "verticalProfile": "legal-za",
+  "name": "Conveyancing Intake (SA)",
+  "description": "Intake questionnaire for South African conveyancing matters — captures party identity and contact details, property description, purchase price and bond terms, occupation dates, FICA uploads, marital status, and rates/levy account contacts.",
+  "items": [
+    {
+      "name": "Party Identity & Contact Details",
+      "description": "Full names, ID or passport numbers, residential addresses, email, and telephone numbers for each purchaser, seller, and (if applicable) spouse or juristic representative.",
+      "responseType": "TEXT_RESPONSE",
+      "required": true,
+      "fileTypeHints": null,
+      "sortOrder": 1
+    },
+    {
+      "name": "Property Address, Erf & Deeds Office",
+      "description": "Full property address, erf number (and township / sectional scheme details where applicable), and the Deeds Office with jurisdiction over the property.",
+      "responseType": "TEXT_RESPONSE",
+      "required": true,
+      "fileTypeHints": null,
+      "sortOrder": 2
+    },
+    {
+      "name": "Purchase Price, Bond Amount & Bond Institution",
+      "description": "Agreed purchase price (ZAR), bond amount applied for (if any), and the name of the bond granting institution. Include the bond reference or application number if already assigned.",
+      "responseType": "TEXT_RESPONSE",
+      "required": true,
+      "fileTypeHints": null,
+      "sortOrder": 3
+    },
+    {
+      "name": "Occupation & Possession Dates",
+      "description": "Intended date of occupation, date of possession, and any occupational rental arrangement prior to registration of transfer.",
+      "responseType": "TEXT_RESPONSE",
+      "required": true,
+      "fileTypeHints": null,
+      "sortOrder": 4
+    },
+    {
+      "name": "FICA Documentation",
+      "description": "FICA-compliant supporting documents for each party: certified copy of ID or passport, proof of residential address not older than 3 months, and (for juristic persons) registration documents and resolution authorising the transaction.",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF, JPG",
+      "sortOrder": 5
+    },
+    {
+      "name": "Marital Status (ANC / In Community of Property)",
+      "description": "Current marital status of each party and, if married, whether married in community of property, out of community with or without accrual, or under foreign law. Attach a copy of the antenuptial contract if applicable.",
+      "responseType": "TEXT_RESPONSE",
+      "required": true,
+      "fileTypeHints": null,
+      "sortOrder": 6
+    },
+    {
+      "name": "Rates & Levy Account Contacts",
+      "description": "Municipal account number for rates, and (if applicable) the managing agent / body corporate contact details for the levy clearance figures.",
+      "responseType": "TEXT_RESPONSE",
+      "required": false,
+      "fileTypeHints": null,
+      "sortOrder": 7
+    }
+  ]
+}

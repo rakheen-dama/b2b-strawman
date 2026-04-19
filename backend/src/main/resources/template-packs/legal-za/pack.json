@@ -1,6 +1,6 @@
 {
   "packId": "legal-za",
-  "version": 4,
+  "version": 5,
   "verticalProfile": "legal-za",
   "name": "SA Legal Templates",
   "description": "Document templates for South African law firms: engagement letters, court filings, and correspondence",
@@ -125,6 +125,50 @@
       "cssFile": null,
       "description": "Statement of account summarising fees, disbursements, trust activity, and balance for a matter period.",
       "sortOrder": 12,
+      "acceptanceEligible": false
+    },
+    {
+      "templateKey": "offer-to-purchase",
+      "name": "Offer to Purchase",
+      "category": "OTHER",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "offer-to-purchase.json",
+      "cssFile": null,
+      "description": "Offer to purchase for a conveyancing property transfer, covering parties, property, purchase price, occupation, and standard SA sale conditions (voetstoots, suspensive bond, transfer duty, FICA, rates clearance).",
+      "sortOrder": 13,
+      "acceptanceEligible": true
+    },
+    {
+      "templateKey": "deed-of-transfer",
+      "name": "Deed of Transfer",
+      "category": "OTHER",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "deed-of-transfer.json",
+      "cssFile": null,
+      "description": "Deed of transfer instrument lodged at the Deeds Office recording transfer of immovable property from transferor to transferee.",
+      "sortOrder": 14,
+      "acceptanceEligible": false
+    },
+    {
+      "templateKey": "power-of-attorney-transfer",
+      "name": "Power of Attorney to Pass Transfer",
+      "category": "OTHER",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "power-of-attorney-transfer.json",
+      "cssFile": null,
+      "description": "Power of attorney authorising the conveyancer to appear before the Registrar of Deeds and pass transfer on behalf of the transferor.",
+      "sortOrder": 15,
+      "acceptanceEligible": true
+    },
+    {
+      "templateKey": "bond-cancellation-instruction",
+      "name": "Bond Cancellation Instruction",
+      "category": "OTHER",
+      "primaryEntityType": "PROJECT",
+      "contentFile": "bond-cancellation-instruction.json",
+      "cssFile": null,
+      "description": "Instruction letter to the bond institution to cancel the mortgage bond and furnish the title deed and Form J consent.",
+      "sortOrder": 16,
       "acceptanceEligible": false
     }
   ]

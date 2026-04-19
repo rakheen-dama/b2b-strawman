@@ -19,6 +19,7 @@ const STATUS_BADGE: Record<
   ACTIVE: { label: "Active", variant: "success" },
   COMPLETED: { label: "Completed", variant: "neutral" },
   ARCHIVED: { label: "Archived", variant: "neutral" },
+  CLOSED: { label: "Closed", variant: "neutral" },
 };
 
 interface CustomerProjectsPanelProps {

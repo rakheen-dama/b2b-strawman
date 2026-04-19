@@ -40,6 +40,7 @@ const PROJECT_STATUS_BADGE: Record<
   ACTIVE: { label: "Active", variant: "success" },
   COMPLETED: { label: "Completed", variant: "neutral" },
   ARCHIVED: { label: "Archived", variant: "neutral" },
+  CLOSED: { label: "Closed", variant: "neutral" },
 };
 
 const ROLE_BADGE: Record<ProjectRole, { label: string; variant: "lead" | "member" }> = {

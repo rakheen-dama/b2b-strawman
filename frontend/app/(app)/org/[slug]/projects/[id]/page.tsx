@@ -73,6 +73,7 @@ import type { SetupStep } from "@/components/setup/types";
 import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
 import { SaveAsTemplateDialog } from "@/components/templates/SaveAsTemplateDialog";
 import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle-actions";
+import { MatterClosureAction } from "@/components/projects/matter-closure-action";
 import { ArchivedProjectBanner } from "@/components/projects/archived-project-banner";
 import { ProjectStaffingTab } from "@/components/capacity/project-staffing-tab";
 import { ProjectCourtDatesTab } from "@/components/legal/project-court-dates-tab";
@@ -108,6 +109,7 @@ const PROJECT_STATUS_BADGE: Record<
   ACTIVE: { label: "Active", variant: "success" },
   COMPLETED: { label: "Completed", variant: "neutral" },
   ARCHIVED: { label: "Archived", variant: "neutral" },
+  CLOSED: { label: "Closed", variant: "neutral" },
 };
 
 export default async function ProjectDetailPage({
@@ -572,6 +574,12 @@ export default async function ProjectDetailPage({
                 projectStatus={project.status}
               />
             )}
+            <MatterClosureAction
+              slug={slug}
+              projectId={id}
+              projectName={project.name}
+              projectStatus={project.status}
+            />
             {canManage && projectTemplates.length > 0 && (
               <GenerateDocumentDropdown
                 templates={projectTemplates}

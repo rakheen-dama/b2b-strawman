@@ -147,7 +147,7 @@ PHASE 28 (acceptance), PHASE 6.5 (notification handlers) — all complete
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
 | 3a | 488 | 488B | Approval panel + trust-link dialog + invoice-editor "Add Disbursements" picker. **Done** (PR #1074) |
-| 3b | 490 | 490A | Matter closure dialog (3-step) + matter closure report component + `frontend/lib/api/matter-closure.ts` + component tests. |
+| 3b | 490 | 490A | Matter closure dialog (3-step) + matter closure report component + `frontend/lib/api/matter-closure.ts` + component tests. **Done** (PR #1075) |
 | 3c | 491 | 491B | Statement of Account dialog + statements tab on matter detail + `frontend/lib/api/statement-of-account.ts` + component tests. |
 
 ### Stage 4: Closure polish
@@ -560,7 +560,7 @@ A realistic day-by-day cadence: 486A days 1–3; fan-out days 3–7 (486B, 487A,
 
 | Slice | Tasks | Summary |
 |-------|-------|---------|
-| **490A** | 490.1–490.6 | `frontend/lib/api/matter-closure.ts` API client, 3-step matter-closure dialog (gate-report preview → closure form → override branch), `matter-closure-report.tsx` sub-component with per-gate pass/fail rows and "fix this" deep links, wire "Close Matter" action into matter-detail action menu (module-gated + status-gated to ACTIVE/COMPLETED), component tests for gate-report rendering, override-visibility by role, success-flow, 409 ProblemDetail handling. |
+| **490A** | 490.1–490.6 | `frontend/lib/api/matter-closure.ts` API client, 3-step matter-closure dialog (gate-report preview → closure form → override branch), `matter-closure-report.tsx` sub-component with per-gate pass/fail rows and "fix this" deep links, wire "Close Matter" action into matter-detail action menu (module-gated + status-gated to ACTIVE/COMPLETED), component tests for gate-report rendering, override-visibility by role, success-flow, 409 ProblemDetail handling. **Done** (PR #1075) |
 | **490B** | 490.7–490.10 | "Reopen Matter" action on CLOSED matters (owner only via `useCapability("CLOSE_MATTER")`), matter-list `CLOSED` filter chip, default-filter excludes CLOSED matters, status badge CLOSED variant, reopen-flow component tests. |
 
 ### Tasks

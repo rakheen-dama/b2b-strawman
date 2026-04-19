@@ -1,6 +1,6 @@
 import "server-only";
 
-import { api } from "./client";
+import { api } from "@/lib/api/client";
 
 // ---- Request types ----
 

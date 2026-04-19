@@ -5,7 +5,6 @@ import { ApiError } from "@/lib/api/client";
 import {
   generateStatement,
   listStatements,
-  getStatement,
   type GenerateStatementRequest,
   type StatementResponse,
   type PaginatedStatementsResponse,
@@ -21,10 +20,6 @@ export type GenerateStatementResult =
 
 export type ListStatementsResult =
   | { success: true; data: PaginatedStatementsResponse }
-  | { success: false; error: string };
-
-export type GetStatementResult =
-  | { success: true; data: StatementResponse }
   | { success: false; error: string };
 
 function detectModuleDisabled(err: ApiError): boolean {
@@ -59,6 +54,7 @@ export async function generateStatementAction(
   }
 }
 
+// TODO: expose pagination params (page, size) once UI needs them.
 export async function listStatementsAction(
   projectId: string
 ): Promise<ListStatementsResult> {
@@ -70,22 +66,6 @@ export async function listStatementsAction(
       success: false,
       error:
         err instanceof ApiError ? err.message : "Failed to list statements",
-    };
-  }
-}
-
-export async function getStatementAction(
-  projectId: string,
-  id: string
-): Promise<GetStatementResult> {
-  try {
-    const data = await getStatement(projectId, id);
-    return { success: true, data };
-  } catch (err) {
-    return {
-      success: false,
-      error:
-        err instanceof ApiError ? err.message : "Failed to fetch statement",
     };
   }
 }

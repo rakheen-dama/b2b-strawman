@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -109,18 +109,17 @@ function StatementOfAccountDialogInner({
     }
   );
 
-  const defaultPeriodStart = (() => {
-    const latest = priorStatements?.content?.[0];
-    if (latest && latest.summary && latest.generatedAt) {
-      // Use previous statement's periodEnd + 1 day. Backend doesn't return
-      // periodEnd on list — but does pin generatedAt. For now, roll forward
-      // from the previous statement's generatedAt date, else fall back to
-      // first of current month.
-      const genDate = latest.generatedAt.slice(0, 10);
-      return addDaysIso(genDate, 1);
-    }
+  // Derive the latest `generatedAt` explicitly — order-independent — and
+  // stabilise with useMemo so the open/defaultPeriodStart effect doesn't loop
+  // when `priorStatements` arrives late and changes identity.
+  const defaultPeriodStart = useMemo(() => {
+    const latestGeneratedAt = priorStatements?.content
+      ?.map((s) => s.generatedAt)
+      .filter((v): v is string => Boolean(v))
+      .sort((a, b) => new Date(b).getTime() - new Date(a).getTime())[0];
+    if (latestGeneratedAt) return addDaysIso(latestGeneratedAt.slice(0, 10), 1);
     return firstOfCurrentMonth();
-  })();
+  }, [priorStatements]);
 
   const form = useForm<GenerateStatementFormData>({
     resolver: zodResolver(generateStatementSchema),

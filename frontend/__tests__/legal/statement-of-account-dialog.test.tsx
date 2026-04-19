@@ -38,7 +38,6 @@ const mockList = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/projects/[id]/statement-actions", () => ({
   generateStatementAction: (...args: unknown[]) => mockGenerate(...args),
   listStatementsAction: (...args: unknown[]) => mockList(...args),
-  getStatementAction: vi.fn(),
 }));
 
 const mockDownload = vi.fn();
@@ -62,9 +61,16 @@ import { CapabilityProvider } from "@/lib/capabilities";
 import { toast } from "sonner";
 import type { StatementResponse } from "@/lib/api/statement-of-account";
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 beforeEach(() => {
   vi.clearAllMocks();
+  // Freeze the clock so date-default assertions are deterministic. Individual
+  // tests can override with vi.setSystemTime if they need a different date.
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+  vi.setSystemTime(new Date("2026-04-19T12:00:00Z"));
   // Default: no prior statements
   mockList.mockResolvedValue({
     success: true,
@@ -153,13 +159,58 @@ describe("StatementOfAccountDialog", () => {
     const endInput = screen.getByTestId(
       "statement-period-end-input"
     ) as HTMLInputElement;
-    // Default periodStart = first of current month; periodEnd = today
-    const now = new Date();
-    const yyyy = now.getFullYear();
-    const mm = String(now.getMonth() + 1).padStart(2, "0");
-    const dd = String(now.getDate()).padStart(2, "0");
-    expect(startInput.value).toBe(`${yyyy}-${mm}-01`);
-    expect(endInput.value).toBe(`${yyyy}-${mm}-${dd}`);
+    // Clock frozen to 2026-04-19 — first-of-month is 2026-04-01, today is 2026-04-19.
+    expect(startInput.value).toBe("2026-04-01");
+    expect(endInput.value).toBe("2026-04-19");
+  });
+
+  it("uses latest prior statement generatedAt + 1 day as periodStart default", async () => {
+    mockList.mockResolvedValue({
+      success: true,
+      data: {
+        content: [
+          makeStatement({
+            id: "older",
+            generatedAt: "2026-02-10T08:00:00Z",
+          }),
+          // Not necessarily newest-first — exercise the sort.
+          makeStatement({
+            id: "newest",
+            generatedAt: "2026-03-15T10:00:00Z",
+          }),
+          makeStatement({
+            id: "middle",
+            generatedAt: "2026-02-28T14:00:00Z",
+          }),
+        ],
+        page: { totalElements: 3, totalPages: 1, size: 20, number: 0 },
+      },
+    });
+
+    render(
+      withProviders(
+        <StatementOfAccountDialog
+          slug="acme"
+          projectId="p1"
+          projectName="Smith v Jones"
+          open={true}
+          onOpenChange={vi.fn()}
+        />
+      )
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("statement-of-account-dialog")).toBeInTheDocument();
+    });
+
+    const startInput = screen.getByTestId(
+      "statement-period-start-input"
+    ) as HTMLInputElement;
+
+    // Latest generatedAt is 2026-03-15 → default periodStart = 2026-03-16.
+    await waitFor(() => {
+      expect(startInput.value).toBe("2026-03-16");
+    });
   });
 
   it("renders htmlPreview in an iframe after successful generation and fires toast.success", async () => {

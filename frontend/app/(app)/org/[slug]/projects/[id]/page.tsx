@@ -868,7 +868,9 @@ export default async function ProjectDetailPage({
         disbursementsPanel={
           <ProjectDisbursementsTab projectId={id} slug={slug} canManage={canManage} />
         }
-        statementsPanel={<ProjectStatementsTab projectId={id} slug={slug} />}
+        statementsPanel={
+          <ProjectStatementsTab projectId={id} slug={slug} projectName={project.name} />
+        }
         trustPanel={
           customers.length > 0 ? (
             <TrustBalanceCard

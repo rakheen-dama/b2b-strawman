@@ -1,9 +1,20 @@
 import { z } from "zod";
 
+const isoDateString = (label: string) =>
+  z
+    .string()
+    .min(1, `${label} is required`)
+    .refine(
+      (value) =>
+        /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+        !Number.isNaN(Date.parse(`${value}T00:00:00Z`)),
+      "Invalid date"
+    );
+
 export const generateStatementSchema = z
   .object({
-    periodStart: z.string().min(1, "Period start is required"),
-    periodEnd: z.string().min(1, "Period end is required"),
+    periodStart: isoDateString("Period start"),
+    periodEnd: isoDateString("Period end"),
     templateId: z.string().uuid().optional().or(z.literal("")),
   })
   .refine(

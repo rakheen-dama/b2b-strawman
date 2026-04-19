@@ -38,7 +38,6 @@ const mockGenerate = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/projects/[id]/statement-actions", () => ({
   listStatementsAction: (...args: unknown[]) => mockList(...args),
   generateStatementAction: (...args: unknown[]) => mockGenerate(...args),
-  getStatementAction: vi.fn(),
 }));
 
 const mockDownload = vi.fn();
@@ -172,7 +171,7 @@ describe("ProjectStatementsTab", () => {
     });
   });
 
-  it("triggers downloadGeneratedDocumentAction when a row is clicked", async () => {
+  it("triggers downloadGeneratedDocumentAction when the download button is clicked", async () => {
     const user = userEvent.setup();
     mockList.mockResolvedValue({
       success: true,
@@ -201,8 +200,8 @@ describe("ProjectStatementsTab", () => {
         )
       );
 
-      const row = await screen.findByTestId("statement-row-s-1");
-      await user.click(row);
+      const downloadBtn = await screen.findByTestId("statement-download-s-1");
+      await user.click(downloadBtn);
 
       await waitFor(() => {
         expect(mockDownload).toHaveBeenCalledWith("s-1");
@@ -211,5 +210,24 @@ describe("ProjectStatementsTab", () => {
       URL.createObjectURL = originalCreateObjectURL;
       URL.revokeObjectURL = originalRevokeObjectURL;
     }
+  });
+
+  it("shows an error alert when the list request fails", async () => {
+    mockList.mockResolvedValue({
+      success: false,
+      error: "Something went wrong",
+    });
+
+    render(
+      withProviders(
+        <ProjectStatementsTab projectId="p1" slug="acme" />
+      )
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("statements-error")).toBeInTheDocument();
+    });
+    // Empty-state must NOT be shown when the fetch errored.
+    expect(screen.queryByTestId("statements-empty")).not.toBeInTheDocument();
   });
 });

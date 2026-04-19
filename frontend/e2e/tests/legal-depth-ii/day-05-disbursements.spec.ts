@@ -179,6 +179,7 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
       )
       .toBeTruthy();
 
+    await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-05-disbursement-deeds-office-trust-linked");
   });
 
@@ -206,14 +207,14 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
       return;
     }
 
-    // Capture the approval dialog state (curated)
-    await page.waitForLoadState("networkidle");
-    await captureScreenshot(page, "disbursement-approval-dialog", { curated: true });
-
     const approveBtn = page.getByRole("button", { name: /approve/i }).first();
     if (await approveBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
       await approveBtn.click();
       await page.waitForTimeout(500);
+
+      // Capture the approval dialog (curated) now that the dialog is actually open
+      await page.waitForLoadState("networkidle");
+      await captureScreenshot(page, "disbursement-approval-dialog", { curated: true });
 
       const confirmBtn = page.getByRole("button", { name: /confirm|yes/i }).first();
       if (await confirmBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -232,6 +233,7 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
       )
       .toBeTruthy();
 
+    await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-05-disbursement-approved-detail");
   });
 
@@ -276,6 +278,11 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
     expect.soft(pageText || "").not.toMatch(/Unbilled\s+Expenses/i);
 
     await captureScreenshot(page, "day-05-matter-unbilled-disbursements-summary");
+
+    // The curated `disbursement-list-view` screenshot should show the org-level
+    // disbursements list page (not Sipho's matter detail tab).
+    await page.goto(`${BASE}/legal/disbursements`);
+    await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "disbursement-list-view", { curated: true });
   });
 });

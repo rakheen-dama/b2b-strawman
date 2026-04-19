@@ -170,7 +170,21 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
 
     await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-75-matter-closed-success");
-    await captureScreenshot(page, "closure-letter-preview", { curated: true });
+
+    // Navigate to Documents tab and open the closure letter if it was generated,
+    // so the curated `closure-letter-preview` capture shows the actual letter
+    // rather than the matter detail page with the CLOSED badge.
+    const documentsTab = page.locator('[data-testid="project-documents-tab"]').first();
+    if (await documentsTab.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await documentsTab.click();
+      await page.waitForTimeout(800);
+      const closureLetter = page.getByText(/closure\s+letter/i).first();
+      if (await closureLetter.isVisible({ timeout: 3000 }).catch(() => false)) {
+        await closureLetter.click();
+        await page.waitForLoadState("networkidle");
+        await captureScreenshot(page, "closure-letter-preview", { curated: true });
+      }
+    }
   });
 
   // ── 85.5-85.9: Admin (Bob) — override not available, step 3 ───────
@@ -181,15 +195,25 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
     await page.goto(`${BASE}/projects`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
-    // Pick a matter; ideally one with unresolved trust balance (Moroka estate)
+    // Pick a matter with unresolved trust balance (ideally Moroka estate).
+    // Day 75 may have closed Sipho's matter, so explicitly prefer matters whose
+    // names are NOT Sipho's — this avoids a silent skip when the Day 85 run
+    // accidentally re-selects the now-CLOSED Sipho matter.
     const morokaMatter = page.getByRole("link", { name: /Moroka|Estate/i }).first();
-    const fallbackMatter = page.getByRole("link", { name: /Matter|Litigation/i }).first();
+    const nonSiphoFallback = page
+      .getByRole("link", { name: /Mnguni|Khumalo|Mthembu|Estate|Conveyancing/i })
+      .first();
     const pickMatter = (await morokaMatter.isVisible({ timeout: 3000 }).catch(() => false))
       ? morokaMatter
-      : fallbackMatter;
+      : nonSiphoFallback;
 
     if (!(await pickMatter.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(true, "No matter link");
+      // Day 75 may have closed the only candidate matter — soft-skip with a
+      // specific reason rather than silently binding to a closed matter.
+      test.skip(
+        true,
+        "No matter with failing gates available — Day 75 may have closed the only candidate"
+      );
       return;
     }
 
@@ -223,6 +247,7 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
         .soft(await overrideToggle.isVisible({ timeout: 1500 }).catch(() => false))
         .toBeFalsy();
 
+      await page.waitForLoadState("networkidle");
       await captureScreenshot(page, "day-85-admin-cannot-close-step-3");
       await captureScreenshot(page, "matter-closure-dialog-gate-report-failing", {
         curated: true,
@@ -238,14 +263,22 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
     await page.goto(`${BASE}/projects`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
+    // Prefer a matter that is NOT Sipho's (which Day 75 likely closed). Fall
+    // back to other non-Sipho matters rather than the generic Matter|Litigation
+    // regex which could re-select a closed matter.
     const morokaMatter = page.getByRole("link", { name: /Moroka|Estate/i }).first();
-    const fallbackMatter = page.getByRole("link", { name: /Matter|Litigation/i }).first();
+    const nonSiphoFallback = page
+      .getByRole("link", { name: /Mnguni|Khumalo|Mthembu|Estate|Conveyancing/i })
+      .first();
     const pickMatter = (await morokaMatter.isVisible({ timeout: 3000 }).catch(() => false))
       ? morokaMatter
-      : fallbackMatter;
+      : nonSiphoFallback;
 
     if (!(await pickMatter.isVisible({ timeout: 5000 }).catch(() => false))) {
-      test.skip(true, "No matter link for owner override path");
+      test.skip(
+        true,
+        "No matter with failing gates available — Day 75 may have closed the only candidate"
+      );
       return;
     }
 

@@ -32,6 +32,11 @@ import { captureScreenshot } from "../../helpers/screenshot";
 const ORG = "e2e-test-org";
 const BASE = `/org/${ORG}`;
 
+// Unique matter name per run — prevents non-deterministic row binding when the
+// e2e stack is reused across runs and a previous matter with the same name exists.
+const runId = Date.now();
+const matterName = `Khumalo Property Holdings — Erf 1234 Sandton Transfer ${runId}`;
+
 const CONVEYANCING_FIELDS = [
   "conveyancing_type",
   "property_address",
@@ -76,14 +81,15 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
 
     const nameInput = page.getByRole("textbox", { name: /name|title/i }).first();
     if (await nameInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await nameInput.fill("Khumalo Property Holdings — Erf 1234 Sandton Transfer");
+      await nameInput.fill(matterName);
     }
 
+    // Creation is a critical flow action — assert visibility and fail fast rather
+    // than silently skipping (the matter MUST be created for downstream tests).
     const createBtn = page.getByRole("button", { name: /create|save/i }).first();
-    if (await createBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await createBtn.click();
-      await page.waitForTimeout(1500);
-    }
+    await expect(createBtn, "Create/Save button should be visible").toBeVisible({ timeout: 2000 });
+    await createBtn.click();
+    await page.waitForTimeout(1500);
 
     await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-14-conveyancing-matter-created");
@@ -97,7 +103,7 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     await page.goto(`${BASE}/projects`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
-    const matterLink = page.getByRole("link", { name: /Khumalo|Erf\s*1234/i }).first();
+    const matterLink = page.getByRole("link", { name: matterName }).first();
     if (!(await matterLink.isVisible({ timeout: 5000 }).catch(() => false))) {
       test.skip(true, "Conveyancing matter not found");
       return;
@@ -114,10 +120,11 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
       return regex.test(mainContent || "");
     }).length;
 
-    // Soft assertion — at least 6 of 10 rendered (graceful degradation if some
-    // are conditionally hidden by visibleWhen rules)
-    expect.soft(fieldMatchCount).toBeGreaterThanOrEqual(6);
+    // Soft assertion — test intent is to verify all 10 conveyancing custom fields.
+    // Soft-kept because some fields may be conditionally hidden by visibleWhen rules.
+    expect.soft(fieldMatchCount).toBeGreaterThanOrEqual(10);
 
+    await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-14-conveyancing-matter-custom-fields");
     await captureScreenshot(page, "conveyancing-matter-detail-custom-fields", { curated: true });
   });
@@ -128,7 +135,7 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     await page.goto(`${BASE}/projects`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
-    const matterLink = page.getByRole("link", { name: /Khumalo|Erf\s*1234/i }).first();
+    const matterLink = page.getByRole("link", { name: matterName }).first();
     if (!(await matterLink.isVisible({ timeout: 5000 }).catch(() => false))) {
       test.skip(true, "Conveyancing matter not found");
       return;
@@ -187,7 +194,7 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     await page.goto(`${BASE}/projects`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
-    const matterLink = page.getByRole("link", { name: /Khumalo|Erf\s*1234/i }).first();
+    const matterLink = page.getByRole("link", { name: matterName }).first();
     if (!(await matterLink.isVisible({ timeout: 5000 }).catch(() => false))) {
       test.skip(true, "Conveyancing matter not found");
       return;
@@ -242,6 +249,7 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
       .soft((mainText || "").match(/purchase\s+price|transfer|deeds|warrant/i))
       .toBeTruthy();
 
+    await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-14-otp-document-generated");
     await captureScreenshot(page, "otp-document-with-clauses", { curated: true });
   });
@@ -252,7 +260,7 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     await page.goto(`${BASE}/projects`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
-    const matterLink = page.getByRole("link", { name: /Khumalo|Erf\s*1234/i }).first();
+    const matterLink = page.getByRole("link", { name: matterName }).first();
     if (!(await matterLink.isVisible({ timeout: 5000 }).catch(() => false))) {
       test.skip(true, "Conveyancing matter not found");
       return;
@@ -295,11 +303,14 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
       await emailInput.fill("khumalo@example.com");
     }
 
+    // Acceptance submit is a critical flow action — assert visibility and fail
+    // fast rather than silently skipping.
     const submitBtn = page.getByRole("button", { name: /send|submit|create/i }).first();
-    if (await submitBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await submitBtn.click();
-      await page.waitForTimeout(1500);
-    }
+    await expect(submitBtn, "Acceptance submit button should be visible").toBeVisible({
+      timeout: 2000,
+    });
+    await submitBtn.click();
+    await page.waitForTimeout(1500);
 
     expect
       .soft(

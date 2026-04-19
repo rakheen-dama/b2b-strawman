@@ -272,6 +272,8 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **5.13** Verify terminology throughout is **Disbursement** (never "Expense")
 - [ ] **5.14** 📸 **Screenshot**: Disbursement list view with mixed statuses + unbilled summary visible on matter detail
 
+### Days 6–7 — More activity on Sipho's matter
+
 - [ ] **6.1** Carol logs 2.0 hours: "Legal research — precedent review"
 - [ ] **6.2** Bob adds a comment on the matter: "Need to confirm court date by Monday" with `@Carol` mention
 - [ ] **6.3** Carol logs in → sees notification bell with 1 unread → clicks → notification routes to the matter comment
@@ -434,7 +436,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **45.5** Navigate to **Legal → Disbursements** → select one `APPROVED`/`UNBILLED` disbursement from Sipho's matter (pre-state from Day 5 flow) → open detail page (`data-testid="disbursement-detail"`)
 - [ ] **45.6** Click **Write Off** action → dialog prompts for reason → enter "Client dispute — unable to recover from third party, firm absorbing the cost"
-- [ ] **45.7** Submit → backend `POST /api/disbursements/{id}/write-off` returns 200 → `billing_status` transitions `UNBILLED → WRITTEN_OFF`
+- [ ] **45.7** Submit → backend `POST /api/legal/disbursements/{id}/write-off` returns 200 → `billing_status` transitions `UNBILLED → WRITTEN_OFF`
 - [ ] **45.8** Verify status badge on detail page shows **WRITTEN_OFF** and `writeOffReason` text renders inline
 - [ ] **45.9** Navigate to **Audit Log** → filter by entity = disbursement, action = WRITE_OFF → verify event recorded with the reason string in the details JSON
 - [ ] **45.10** Navigate to Sipho's matter → open a **new fee note draft** from unbilled items → verify the written-off disbursement is **NOT** present in the selectable items list (excluded from next invoice draft)

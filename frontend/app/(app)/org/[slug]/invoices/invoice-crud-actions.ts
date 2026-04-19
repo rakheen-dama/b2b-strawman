@@ -154,7 +154,10 @@ export async function addDisbursementLines(
 ): Promise<InvoiceActionResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can add line items." };
+    return {
+      success: false,
+      error: "Only admins and owners can add disbursement lines.",
+    };
   }
   if (!disbursementIds || disbursementIds.length === 0) {
     return { success: false, error: "No disbursements selected." };

@@ -249,13 +249,13 @@ export const editDisbursementSchema = z.object({
 export type EditDisbursementFormData = z.infer<typeof editDisbursementSchema>;
 
 export const approvalNotesSchema = z.object({
-  notes: z.string().max(2000).optional().or(z.literal("")),
+  notes: z.string().trim().max(2000).optional().or(z.literal("")),
 });
 
 export type ApprovalNotesFormData = z.infer<typeof approvalNotesSchema>;
 
 export const rejectionNotesSchema = z.object({
-  notes: z.string().min(1, "Reason is required").max(2000),
+  notes: z.string().trim().min(1, "Reason is required").max(2000),
 });
 
 export type RejectionNotesFormData = z.infer<typeof rejectionNotesSchema>;

@@ -237,6 +237,72 @@ public class InvoiceCreationService {
     return invoiceRenderingService.buildResponse(invoice);
   }
 
+  /**
+   * Appends DISBURSEMENT-source lines to an existing DRAFT invoice. Reuses the same validation and
+   * tax-resolution logic as {@link #createDraft} so all guarantees (APPROVED + UNBILLED, customer
+   * scope, VAT-treatment-specific tax snapshot, {@code markBilled} in the same transaction) hold.
+   *
+   * <p>Sort order continues from the current max sort order on the invoice — existing lines are
+   * preserved.
+   *
+   * @throws ResourceNotFoundException when the invoice does not exist
+   * @throws InvalidStateException when the invoice is not in DRAFT status or a disbursement fails
+   *     validation (not APPROVED, wrong customer)
+   * @throws ResourceConflictException when a disbursement is already BILLED
+   */
+  @Transactional
+  public InvoiceResponse appendDisbursementLinesToInvoice(
+      UUID invoiceId, List<UUID> disbursementIds) {
+    var invoice =
+        invoiceRepository
+            .findById(invoiceId)
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+
+    if (invoice.getStatus() != InvoiceStatus.DRAFT) {
+      throw new InvalidStateException(
+          "Invoice not editable",
+          "Disbursement lines can only be added to draft invoices (current status="
+              + invoice.getStatus()
+              + ")");
+    }
+
+    int nextSortOrder =
+        lineRepository.findByInvoiceIdOrderBySortOrder(invoiceId).stream()
+                .mapToInt(InvoiceLine::getSortOrder)
+                .max()
+                .orElse(-1)
+            + 1;
+
+    createDisbursementLines(invoice, disbursementIds, invoice.getCustomerId(), nextSortOrder);
+
+    invoiceTaxService.recalculateInvoiceTotals(invoice);
+    invoice = invoiceRepository.save(invoice);
+
+    log.info(
+        "Appended {} disbursement lines to invoice {}",
+        disbursementIds != null ? disbursementIds.size() : 0,
+        invoiceId);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("invoice.updated")
+            .entityType("invoice")
+            .entityId(invoice.getId())
+            .details(
+                Map.of(
+                    "action",
+                    "disbursement_lines_added",
+                    "line_count",
+                    String.valueOf(disbursementIds != null ? disbursementIds.size() : 0),
+                    "new_subtotal",
+                    invoice.getSubtotal().toString(),
+                    "new_total",
+                    invoice.getTotal().toString()))
+            .build());
+
+    return invoiceRenderingService.buildResponse(invoice);
+  }
+
   @Transactional
   public InvoiceResponse updateDraft(UUID invoiceId, UpdateInvoiceRequest request) {
     var invoice =

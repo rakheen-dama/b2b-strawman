@@ -173,7 +173,7 @@ export function DisbursementDetailClient({
                 label="Trust Transaction"
                 value={
                   <Link
-                    href={`/org/${slug}/trust-accounting/transactions?highlight=${disbursement.trustTransactionId}`}
+                    href={`/org/${slug}/trust-accounting/transactions?highlight=${encodeURIComponent(disbursement.trustTransactionId)}`}
                     className="font-mono text-xs text-teal-600 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
                     data-testid="trust-tx-link"
                   >

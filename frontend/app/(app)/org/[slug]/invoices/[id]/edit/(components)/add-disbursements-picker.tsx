@@ -62,7 +62,9 @@ function AddDisbursementsPickerContent({
   projectId,
   onSuccess,
 }: AddDisbursementsPickerProps) {
-  // Persist selection keyed by sessionStorage so it survives close+reopen.
+  // In-memory selection state — survives close+reopen of the dialog while the
+  // component instance stays mounted, then is pruned against the latest items
+  // on re-open (see effect below). Not persisted across page navigations.
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -124,7 +126,8 @@ function AddDisbursementsPickerContent({
       } else {
         toast.error(result.error ?? "Failed to add disbursement lines");
       }
-    } catch {
+    } catch (err) {
+      console.error("Failed to add disbursement lines to invoice:", err);
       toast.error("An unexpected error occurred while adding disbursement lines");
     } finally {
       setIsSubmitting(false);

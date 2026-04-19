@@ -113,8 +113,18 @@ export function TrustTransactionLinkDialog({
                   return (
                     <tr
                       key={tx.id}
-                      className="cursor-pointer border-b border-slate-100 hover:bg-slate-50 dark:border-slate-800 dark:hover:bg-slate-900"
+                      className="cursor-pointer border-b border-slate-100 hover:bg-slate-50 focus:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 dark:border-slate-800 dark:hover:bg-slate-900 dark:focus:bg-slate-900"
                       onClick={() => setSelectedId(tx.id)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          setSelectedId(tx.id);
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
+                      aria-pressed={isSelected}
+                      aria-label={`Select trust transaction ${tx.reference}`}
                       data-testid={`trust-tx-row-${tx.id}`}
                     >
                       <td className="py-2">

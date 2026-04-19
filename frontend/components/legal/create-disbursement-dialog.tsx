@@ -45,6 +45,7 @@ import {
   initiateUpload,
 } from "@/app/(app)/org/[slug]/projects/[id]/actions";
 import { TrustTransactionLinkDialog } from "@/components/legal/trust-transaction-link-dialog";
+import { useOrgProfile } from "@/lib/org-profile";
 import type { TrustTransaction } from "@/lib/types";
 
 interface CreateDisbursementDialogProps {
@@ -79,7 +80,11 @@ export function CreateDisbursementDialog({
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
 
-  // Trust transaction link state (when paymentSource === "TRUST_ACCOUNT")
+  // Trust transaction link state (when paymentSource === "TRUST_ACCOUNT").
+  // The trust-account flow only makes sense when the trust_accounting module is
+  // enabled — gate the radio option + link dialog on that.
+  const { isModuleEnabled } = useOrgProfile();
+  const trustAccountingEnabled = isModuleEnabled("trust_accounting");
   const [trustDialogOpen, setTrustDialogOpen] = useState(false);
   const [linkedTx, setLinkedTx] = useState<TrustTransaction | null>(null);
 
@@ -111,6 +116,16 @@ export function CreateDisbursementDialog({
       form.setValue("vatTreatment", defaultVatTreatmentForCategory(selectedCategory));
     }
   }, [selectedCategory, form]);
+
+  // Clear any linked trust transaction when the selected matter changes to a
+  // different project — a trust transaction is always scoped to a single
+  // matter, and keeping a stale linkage would silently cross-link matters.
+  useEffect(() => {
+    if (linkedTx && linkedTx.projectId !== selectedProjectId) {
+      setLinkedTx(null);
+      form.setValue("trustTransactionId", "");
+    }
+  }, [linkedTx, selectedProjectId, form]);
 
   // Load projects + customers when dialog opens
   useEffect(() => {
@@ -499,10 +514,12 @@ export function CreateDisbursementDialog({
                         <RadioGroupItem value="OFFICE_ACCOUNT" id="ps-office" />
                         <span>Office Account</span>
                       </label>
-                      <label className="flex items-center gap-2 text-sm">
-                        <RadioGroupItem value="TRUST_ACCOUNT" id="ps-trust" />
-                        <span>Trust Account</span>
-                      </label>
+                      {trustAccountingEnabled && (
+                        <label className="flex items-center gap-2 text-sm">
+                          <RadioGroupItem value="TRUST_ACCOUNT" id="ps-trust" />
+                          <span>Trust Account</span>
+                        </label>
+                      )}
                     </RadioGroup>
                   </FormControl>
                   <FormMessage />
@@ -510,7 +527,7 @@ export function CreateDisbursementDialog({
               )}
             />
 
-            {selectedPaymentSource === "TRUST_ACCOUNT" && (
+            {selectedPaymentSource === "TRUST_ACCOUNT" && trustAccountingEnabled && (
               <div
                 data-testid="trust-link-slot"
                 className="rounded-md border border-slate-200 bg-slate-50 p-3 text-sm dark:border-slate-800 dark:bg-slate-900"

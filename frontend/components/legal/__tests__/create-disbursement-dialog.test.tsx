@@ -21,6 +21,7 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/actions", () => ({
 }));
 
 import { CreateDisbursementDialog } from "@/components/legal/create-disbursement-dialog";
+import { OrgProfileProvider } from "@/lib/org-profile";
 
 const PROJECTS = [
   { id: "11111111-1111-1111-1111-111111111111", name: "Matter 2026/001" },
@@ -28,6 +29,24 @@ const PROJECTS = [
 const CUSTOMERS = [
   { id: "22222222-2222-2222-2222-222222222222", name: "Acme Attorneys" },
 ];
+
+// Wrap the dialog in an OrgProfileProvider. 488B gates the Trust Account
+// payment source on the trust_accounting module — enable it by default so the
+// existing tests continue to exercise the trust-link flow.
+function renderDialog({
+  trustAccountingEnabled = true,
+}: { trustAccountingEnabled?: boolean } = {}) {
+  const modules = trustAccountingEnabled ? ["disbursements", "trust_accounting"] : ["disbursements"];
+  return render(
+    <OrgProfileProvider
+      verticalProfile="legal"
+      enabledModules={modules}
+      terminologyNamespace={null}
+    >
+      <CreateDisbursementDialog slug="test-org" />
+    </OrgProfileProvider>
+  );
+}
 
 describe("CreateDisbursementDialog", () => {
   beforeEach(() => {
@@ -41,9 +60,11 @@ describe("CreateDisbursementDialog", () => {
     cleanup();
   });
 
-  async function openDialog() {
+  async function openDialog(
+    options: { trustAccountingEnabled?: boolean } = {}
+  ) {
     const user = userEvent.setup();
-    render(<CreateDisbursementDialog slug="test-org" />);
+    renderDialog(options);
     await user.click(screen.getByTestId("create-disbursement-trigger"));
     await waitFor(() =>
       expect(screen.getByTestId("create-disbursement-dialog")).toBeInTheDocument()

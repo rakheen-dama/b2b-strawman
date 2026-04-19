@@ -75,7 +75,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @ActiveProfiles("test")
 @RecordApplicationEvents
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class InvoiceCreationDisbursementTest {
+class InvoiceCreationDisbursementIntegrationTest {
 
   private static final String ORG_ID = "org_invoice_disb_test";
 
@@ -362,7 +362,9 @@ class InvoiceCreationDisbursementTest {
                 .content(body)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_disb_owner")))
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.title").value("Disbursement not approved"));
+        .andExpect(jsonPath("$.title").value("Disbursement not approved"))
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.detail").exists());
   }
 
   // ==========================================================================
@@ -402,7 +404,9 @@ class InvoiceCreationDisbursementTest {
                 .content(body1)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_disb_owner")))
         .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.title").value("Disbursement already billed"));
+        .andExpect(jsonPath("$.title").value("Disbursement already billed"))
+        .andExpect(jsonPath("$.status").value(409))
+        .andExpect(jsonPath("$.detail").exists());
   }
 
   // ==========================================================================
@@ -497,7 +501,10 @@ class InvoiceCreationDisbursementTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body)
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_disb_owner")))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").exists())
+        .andExpect(jsonPath("$.detail").exists());
 
     // The good disbursement must still be UNBILLED — the markBilled mutation rolled back with
     // the outer transaction.
@@ -512,6 +519,15 @@ class InvoiceCreationDisbursementTest {
                   // And no invoice was persisted.
                   assertThat(invoiceRepository.findAll()).isEmpty();
                 }));
+
+    // DisbursementBilledEvent must NOT have fired for the good disbursement — the event is
+    // registered AFTER_COMMIT, and the outer @Transactional rolled back, so no listeners should
+    // see a phantom billing event for a disbursement that never actually got billed.
+    long billedEventsForGood =
+        events.stream(DisbursementBilledEvent.class)
+            .filter(e -> goodId.equals(e.disbursementId()))
+            .count();
+    assertThat(billedEventsForGood).isZero();
   }
 
   // ==========================================================================

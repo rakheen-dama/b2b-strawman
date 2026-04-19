@@ -313,6 +313,42 @@ public class InvoiceCreationService {
       }
     }
 
+    // Unlink expense-backed lines — expense returns to UNBILLED so it can be invoiced again.
+    for (var line : lines) {
+      if (line.getExpenseId() != null) {
+        expenseRepository
+            .findById(line.getExpenseId())
+            .ifPresent(
+                expense -> {
+                  try {
+                    expense.unbill();
+                  } catch (IllegalStateException e) {
+                    log.warn(
+                        "Could not unbill expense {} on draft delete {}: {}",
+                        line.getExpenseId(),
+                        invoiceId,
+                        e.getMessage());
+                  }
+                });
+      }
+    }
+
+    // Unlink disbursement-backed lines — reverts disbursement BILLED → UNBILLED so it can be
+    // invoiced again. Runs in the same @Transactional as the draft delete.
+    for (var line : lines) {
+      if (line.getDisbursementId() != null) {
+        try {
+          disbursementService.unmarkBilled(line.getDisbursementId());
+        } catch (ResourceConflictException e) {
+          log.warn(
+              "Could not unmark-billed disbursement {} on draft delete {}: {}",
+              line.getDisbursementId(),
+              invoiceId,
+              e.getMessage());
+        }
+      }
+    }
+
     lineRepository.deleteAll(lines);
     invoiceRepository.delete(invoice);
     log.info("Deleted draft invoice {}", invoiceId);
@@ -513,6 +549,38 @@ public class InvoiceCreationService {
               te -> {
                 te.setInvoiceId(null);
               });
+    }
+
+    // Unlink expense-backed line — expense returns to UNBILLED.
+    if (line.getExpenseId() != null) {
+      expenseRepository
+          .findById(line.getExpenseId())
+          .ifPresent(
+              expense -> {
+                try {
+                  expense.unbill();
+                } catch (IllegalStateException e) {
+                  log.warn(
+                      "Could not unbill expense {} on line delete {}: {}",
+                      line.getExpenseId(),
+                      lineId,
+                      e.getMessage());
+                }
+              });
+    }
+
+    // Unlink disbursement-backed line — reverts BILLED → UNBILLED so the disbursement can be
+    // invoiced again. Runs in the same @Transactional.
+    if (line.getDisbursementId() != null) {
+      try {
+        disbursementService.unmarkBilled(line.getDisbursementId());
+      } catch (ResourceConflictException e) {
+        log.warn(
+            "Could not unmark-billed disbursement {} on line delete {}: {}",
+            line.getDisbursementId(),
+            lineId,
+            e.getMessage());
+      }
     }
 
     lineRepository.delete(line);
@@ -902,10 +970,14 @@ public class InvoiceCreationService {
    *
    * <ul>
    *   <li>{@code STANDARD_15} → the org's default active tax rate (expected to be VAT 15%).
-   *   <li>{@code ZERO_RATED_PASS_THROUGH} → the first active, non-exempt tax rate with {@code
+   *   <li>{@code ZERO_RATED_PASS_THROUGH} → the single active, non-exempt tax rate with {@code
    *       rate=0.00}.
-   *   <li>{@code EXEMPT} → the first active, exempt tax rate.
+   *   <li>{@code EXEMPT} → the single active, exempt tax rate.
    * </ul>
+   *
+   * <p>For the catalogue-scan branches (ZERO_RATED and EXEMPT) we require <em>exactly one</em>
+   * matching row; if the seed catalogue is ever extended with a second zero-rated or exempt row
+   * (e.g. zero-rated exports) the resolution must fail loudly rather than silently pick one.
    */
   private TaxRate resolveTaxRateForVatTreatment(VatTreatment treatment) {
     return switch (treatment) {
@@ -920,26 +992,43 @@ public class InvoiceCreationService {
                           "Cannot resolve STANDARD_15 tax rate — no active default TaxRate in this"
                               + " tenant"));
       case ZERO_RATED_PASS_THROUGH ->
-          taxRateRepository.findAllByOrderBySortOrder().stream()
-              .filter(TaxRate::isActive)
-              .filter(r -> r.getRate().compareTo(BigDecimal.ZERO) == 0 && !r.isExempt())
-              .findFirst()
-              .orElseThrow(
-                  () ->
-                      new InvalidStateException(
-                          "No zero-rated tax rate",
-                          "No active zero-rated TaxRate configured for this tenant"));
+          resolveExactlyOneTaxRate(
+              r -> r.isActive() && r.getRate().compareTo(BigDecimal.ZERO) == 0 && !r.isExempt(),
+              "No zero-rated tax rate",
+              "No active zero-rated TaxRate configured for this tenant",
+              "Ambiguous zero-rated tax rate",
+              "Multiple active zero-rated TaxRates configured for this tenant — "
+                  + "disbursement pass-through VAT resolution requires exactly one");
       case EXEMPT ->
-          taxRateRepository.findAllByOrderBySortOrder().stream()
-              .filter(TaxRate::isActive)
-              .filter(TaxRate::isExempt)
-              .findFirst()
-              .orElseThrow(
-                  () ->
-                      new InvalidStateException(
-                          "No exempt tax rate",
-                          "No active exempt TaxRate configured for this tenant"));
+          resolveExactlyOneTaxRate(
+              r -> r.isActive() && r.isExempt(),
+              "No exempt tax rate",
+              "No active exempt TaxRate configured for this tenant",
+              "Ambiguous exempt tax rate",
+              "Multiple active exempt TaxRates configured for this tenant — "
+                  + "disbursement EXEMPT VAT resolution requires exactly one");
     };
+  }
+
+  /**
+   * Finds the single TaxRate matching {@code predicate}. Throws {@link InvalidStateException} when
+   * zero or multiple rows match — catalogue misconfiguration must fail loudly rather than pick one
+   * silently via ordering.
+   */
+  private TaxRate resolveExactlyOneTaxRate(
+      java.util.function.Predicate<TaxRate> predicate,
+      String noneTitle,
+      String noneDetail,
+      String ambiguousTitle,
+      String ambiguousDetail) {
+    var matches = taxRateRepository.findAllByOrderBySortOrder().stream().filter(predicate).toList();
+    if (matches.isEmpty()) {
+      throw new InvalidStateException(noneTitle, noneDetail);
+    }
+    if (matches.size() > 1) {
+      throw new InvalidStateException(ambiguousTitle, ambiguousDetail);
+    }
+    return matches.get(0);
   }
 
   /**

@@ -17,7 +17,7 @@
 | 489 | Matter Closure Workflow (Backend) | Backend | 486A | L | 489A, 489B | **Done** (PRs #1069, #1070) |
 | 490 | Matter Closure Frontend | Frontend | 489 | M | 490A, 490B | **Done** (PRs #1075, #1076) |
 | 491 | Statement of Account | Both | 486B | M | 491A, 491B | **Done** (PRs #1077, #1078) |
-| 492 | Conveyancing Pack | Backend (pack content) | 489A (for `acceptance_eligible` column) | M | 492A, 492B | **Pending** |
+| 492 | Conveyancing Pack | Backend (pack content) | 489A (for `acceptance_eligible` column) | M | 492A, 492B | **Done** (PRs #1079, #1080) |
 | 493 | QA Capstone — Lifecycle + Screenshots + Gap Report | E2E/Process | 486–492 | L | 493A | **Pending** |
 
 Slice count: **15 slices across 8 epics**. Every code slice pairs its implementation with the integration or component tests that exercise it; pack slices pair JSON content with seeder-level assertions.
@@ -140,7 +140,7 @@ PHASE 28 (acceptance), PHASE 6.5 (notification handlers) — all complete
 | 2a | 487 | 487B | `InvoiceLine.disbursementId` mapping + `CreateInvoiceRequest.disbursementIds` + `InvoiceCreationService.createDisbursementLines` + `markBilled` side-effect + `DisbursementBilledEvent` + mixed-sources integration test. **Done** (PR #1072) |
 | 2b (parallel with 2a) | 489 | 489B | `MatterClosureService` (evaluate/close/reopen) + retention-policy insert + `matter-closure-letter` Tiptap + `MatterClosedEvent`/`MatterReopenedEvent` + `MatterClosureNotificationHandler` + `MatterClosureContextBuilder` + `MatterClosureController` + integration tests. **Done** (PR #1070) |
 | 2c (parallel with 2a) | 491 | 491A | `StatementOfAccountContextBuilder` + `statement-of-account.json` Tiptap + `StatementController` + `GENERATE_STATEMENT_OF_ACCOUNT` capability wiring + `StatementOfAccountGeneratedEvent` + context-builder tests. **Done** (PR #1077) |
-| 2d (parallel with 2a) | 492 | 492B | 4 conveyancing Tiptap templates + extend legal-za `pack.json` with `acceptanceEligible` flag + `TemplatePackSeeder` wiring of new column + `conveyancing-intake-za.json` request pack + install tests. |
+| 2d (parallel with 2a) | 492 | 492B | 4 conveyancing Tiptap templates + extend legal-za `pack.json` with `acceptanceEligible` flag + `TemplatePackSeeder` wiring of new column + `conveyancing-intake-za.json` request pack + install tests. **Done** (PR #1080) |
 
 ### Stage 3: Frontend consumers
 
@@ -705,7 +705,7 @@ A realistic day-by-day cadence: 486A days 1–3; fan-out days 3–7 (486B, 487A,
 | Slice | Tasks | Summary |
 |-------|-------|---------|
 | **492A** | 492.1–492.6 | `field-packs/conveyancing-za-project.json` (10 fields per arch requirements §4.1), Property Transfer template appended to `project-template-packs/legal-za.json` (12 tasks), `clause-packs/conveyancing-za-clauses/pack.json` + 10 Tiptap clause files, profile-manifest update to `vertical-profiles/legal-za.json`, seeder-level integration tests. Pack-content slice — 14 files, exceeds the normal 10-file ceiling because each clause Tiptap is a ~20-line JSON; called out explicitly per sizing rules. **Done** (PR #1079) |
-| **492B** | 492.7–492.11 | 4 new Tiptap templates under `template-packs/legal-za/` (offer-to-purchase, deed-of-transfer, power-of-attorney-transfer, bond-cancellation-instruction), extend `legal-za/pack.json` with 4 entries including `acceptanceEligible: true` on OTP + POA, template-manifest schema extension (optional boolean field with default false), `conveyancing-intake-za.json` request pack, install-level tests including a Phase 28 acceptance-UI surfacing assertion. |
+| **492B** | 492.7–492.11 | 4 new Tiptap templates under `template-packs/legal-za/` (offer-to-purchase, deed-of-transfer, power-of-attorney-transfer, bond-cancellation-instruction), extend `legal-za/pack.json` with 4 entries including `acceptanceEligible: true` on OTP + POA, template-manifest schema extension (optional boolean field with default false), `conveyancing-intake-za.json` request pack, install-level tests including a Phase 28 acceptance-UI surfacing assertion. **Done** (PR #1080) |
 
 ### Tasks
 

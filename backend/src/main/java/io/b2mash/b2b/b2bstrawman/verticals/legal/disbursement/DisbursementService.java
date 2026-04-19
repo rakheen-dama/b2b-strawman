@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.CreateDisburse
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.DisbursementResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.DisbursementStatementDto;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.UnbilledDisbursementDto;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.UnbilledDisbursementsResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.UpdateDisbursementRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.event.DisbursementApprovedEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.event.DisbursementBilledEvent;
@@ -469,21 +470,66 @@ public class DisbursementService {
   }
 
   /**
-   * Returns unbilled-billable disbursements for a project. The customer-scoped variant required by
-   * the {@code /unbilled} endpoint is intentionally not implemented here — that is owned by slice
-   * 487A.
+   * Returns unbilled-billable disbursements for a project, resolving the customer from the matter
+   * and delegating to {@link DisbursementRepository#findUnbilledBillableByCustomerId}. This is the
+   * architecturally-canonical shape per Phase 67 §67.9.4: the invoice-picker treats disbursements
+   * as a customer-scoped read with an optional project narrowing filter (not a project-scoped
+   * read). The output set is identical to the previous project-scoped query but uses the shared
+   * customer-level code path.
+   *
+   * <p>Returns an empty list when the project has no {@code customerId} (a matter without a
+   * customer cannot produce billable disbursements).
    */
   @Transactional(readOnly = true)
   public List<UnbilledDisbursementDto> listUnbilledForProject(UUID projectId) {
     moduleGuard.requireModule(MODULE_ID);
-    return disbursementRepository
-        .findByProjectIdAndApprovalStatusAndBillingStatus(
-            projectId,
-            DisbursementApprovalStatus.APPROVED.name(),
-            DisbursementBillingStatus.UNBILLED.name())
-        .stream()
+    var project =
+        projectRepository
+            .findById(projectId)
+            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+    UUID customerId = project.getCustomerId();
+    if (customerId == null) {
+      return List.of();
+    }
+    return disbursementRepository.findUnbilledBillableByCustomerId(customerId, projectId).stream()
         .map(UnbilledDisbursementDto::from)
         .toList();
+  }
+
+  /**
+   * Same filter as {@link #listUnbilledForProject(UUID)} but returns the full response-shape record
+   * (items + pre-computed totals) used by {@code GET /api/legal/disbursements/unbilled?projectId=}.
+   * Currency is hardcoded {@code "ZAR"} per the legal-ZA profile (arch §67.4.1). Totals are
+   * computed via {@link BigDecimal#add} and normalised to scale 2 with {@link
+   * RoundingMode#HALF_UP}.
+   */
+  @Transactional(readOnly = true)
+  public UnbilledDisbursementsResponse listUnbilledResponseForProject(UUID projectId) {
+    moduleGuard.requireModule(MODULE_ID);
+    var project =
+        projectRepository
+            .findById(projectId)
+            .orElseThrow(() -> new ResourceNotFoundException("Project", projectId));
+    UUID customerId = project.getCustomerId();
+    List<UnbilledDisbursementDto> items =
+        customerId == null
+            ? List.of()
+            : disbursementRepository
+                .findUnbilledBillableByCustomerId(customerId, projectId)
+                .stream()
+                .map(UnbilledDisbursementDto::from)
+                .toList();
+    BigDecimal totalAmount =
+        items.stream()
+            .map(UnbilledDisbursementDto::amount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add)
+            .setScale(2, RoundingMode.HALF_UP);
+    BigDecimal totalVat =
+        items.stream()
+            .map(UnbilledDisbursementDto::vatAmount)
+            .reduce(BigDecimal.ZERO, BigDecimal::add)
+            .setScale(2, RoundingMode.HALF_UP);
+    return new UnbilledDisbursementsResponse(projectId, "ZAR", items, totalAmount, totalVat);
   }
 
   // ---------------------------------------------------------------------------

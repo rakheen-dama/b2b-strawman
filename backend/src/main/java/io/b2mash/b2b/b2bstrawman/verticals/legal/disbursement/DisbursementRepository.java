@@ -11,9 +11,8 @@ import org.springframework.data.repository.query.Param;
 /**
  * Repository for {@link LegalDisbursement}.
  *
- * <p>Scope-reminder: this slice (486A) exposes only project-scoped queries plus the statement
- * query. The customer-scoped {@code findUnbilledBillableByCustomerId} method is owned by slice 487A
- * and intentionally not declared here.
+ * <p>Exposes project-scoped queries (486A) plus the customer-scoped {@code
+ * findUnbilledBillableByCustomerId} query used by the invoice-picker read model (487A).
  */
 public interface DisbursementRepository extends JpaRepository<LegalDisbursement, UUID> {
 
@@ -23,6 +22,30 @@ public interface DisbursementRepository extends JpaRepository<LegalDisbursement,
    */
   List<LegalDisbursement> findByProjectIdAndApprovalStatusIn(
       UUID projectId, Collection<String> statuses);
+
+  /**
+   * Returns APPROVED + UNBILLED disbursements for the given customer, optionally narrowed to a
+   * single project. Ordered by {@code incurredDate} ASC then {@code createdAt} ASC for
+   * deterministic invoice-picker display. Used by the {@code /api/legal/disbursements/unbilled}
+   * endpoint and by {@code UnbilledTimeService} when the {@code disbursements} module is enabled
+   * for the current tenant.
+   *
+   * <p>Filters on the denormalised {@code customer_id} column on {@link LegalDisbursement} — no
+   * join against {@code customer_projects} needed (cf. {@code
+   * ExpenseRepository.findUnbilledBillableByCustomerId}, which must join because {@code Expense}
+   * has no direct customer FK).
+   */
+  @Query(
+      """
+      SELECT d FROM LegalDisbursement d
+      WHERE d.customerId = :customerId
+        AND d.approvalStatus = 'APPROVED'
+        AND d.billingStatus = 'UNBILLED'
+        AND (:projectId IS NULL OR d.projectId = :projectId)
+      ORDER BY d.incurredDate ASC, d.createdAt ASC
+      """)
+  List<LegalDisbursement> findUnbilledBillableByCustomerId(
+      @Param("customerId") UUID customerId, @Param("projectId") UUID projectId);
 
   /**
    * Finds disbursements on the given project filtered by both approval status and billing status.

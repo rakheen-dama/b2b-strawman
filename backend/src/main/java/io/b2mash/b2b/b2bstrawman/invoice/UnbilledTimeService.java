@@ -15,6 +15,9 @@ import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.UnbilledDisbursementDto;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 import java.math.BigDecimal;
@@ -36,6 +39,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class UnbilledTimeService {
 
+  private static final String DISBURSEMENTS_MODULE_ID = "disbursements";
+
   private final CustomerRepository customerRepository;
   private final ProjectRepository projectRepository;
   private final EntityManager entityManager;
@@ -43,6 +48,8 @@ public class UnbilledTimeService {
   private final ExpenseRepository expenseRepository;
   private final PrerequisiteService prerequisiteService;
   private final BillingRateService billingRateService;
+  private final DisbursementRepository disbursementRepository;
+  private final VerticalModuleGuard moduleGuard;
 
   public UnbilledTimeService(
       CustomerRepository customerRepository,
@@ -51,7 +58,9 @@ public class UnbilledTimeService {
       OrgSettingsRepository orgSettingsRepository,
       ExpenseRepository expenseRepository,
       PrerequisiteService prerequisiteService,
-      BillingRateService billingRateService) {
+      BillingRateService billingRateService,
+      DisbursementRepository disbursementRepository,
+      VerticalModuleGuard moduleGuard) {
     this.customerRepository = customerRepository;
     this.projectRepository = projectRepository;
     this.entityManager = entityManager;
@@ -59,6 +68,8 @@ public class UnbilledTimeService {
     this.expenseRepository = expenseRepository;
     this.prerequisiteService = prerequisiteService;
     this.billingRateService = billingRateService;
+    this.disbursementRepository = disbursementRepository;
+    this.moduleGuard = moduleGuard;
   }
 
   @Transactional(readOnly = true)
@@ -347,7 +358,24 @@ public class UnbilledTimeService {
       expenseTotals.merge(entry.currency(), entry.billableAmount(), BigDecimal::add);
     }
 
+    // Module-gated: only tenants with the `disbursements` module enabled (legal vertical) see a
+    // populated disbursements list. Non-legal tenants get an empty list — byte-compatible with the
+    // pre-487A response shape.
+    List<UnbilledDisbursementDto> unbilledDisbursements = List.of();
+    if (moduleGuard.isModuleEnabled(DISBURSEMENTS_MODULE_ID)) {
+      unbilledDisbursements =
+          disbursementRepository.findUnbilledBillableByCustomerId(customerId, null).stream()
+              .map(UnbilledDisbursementDto::from)
+              .toList();
+    }
+
     return new UnbilledTimeResponse(
-        customerId, customer.getName(), projectGroups, grandTotals, expenseEntries, expenseTotals);
+        customerId,
+        customer.getName(),
+        projectGroups,
+        grandTotals,
+        expenseEntries,
+        expenseTotals,
+        unbilledDisbursements);
   }
 }

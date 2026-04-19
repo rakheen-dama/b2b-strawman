@@ -349,4 +349,61 @@ describe("MatterReopenDialog", () => {
     expect(toastError).toHaveBeenCalled();
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });
+
+  it("blocks dialog dismissal while a reopen request is in flight", async () => {
+    const user = userEvent.setup();
+    const onOpenChange = vi.fn();
+
+    // Hold the server action open so submission stays in-flight.
+    let resolveAction: (value: unknown) => void = () => {};
+    mockReopen.mockReturnValue(
+      new Promise((resolve) => {
+        resolveAction = resolve;
+      })
+    );
+
+    render(
+      withProviders(
+        <MatterReopenDialog
+          slug="acme"
+          projectId="p1"
+          projectName="Smith v Jones"
+          open
+          onOpenChange={onOpenChange}
+        />
+      )
+    );
+
+    const notes = await screen.findByTestId("matter-reopen-notes-input");
+    await user.type(notes, "Reopening to add late discovery materials");
+
+    // Start submission — handler is now pending.
+    await user.click(screen.getByTestId("matter-reopen-confirm-btn"));
+
+    // Cancel button must be disabled mid-flight.
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /cancel/i })).toBeDisabled();
+    });
+
+    // Programmatic close attempts (Escape, backdrop) call handleOpenChange(false).
+    // The internal guard must drop them while isSubmitting is true.
+    onOpenChange.mockClear();
+    await user.keyboard("{Escape}");
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
+
+    // Resolve the pending action so the test cleans up.
+    resolveAction({
+      success: true,
+      data: {
+        projectId: "p1",
+        status: "ACTIVE",
+        reopenedAt: "2026-04-19T10:00:00Z",
+        closureLogId: "log-1",
+      },
+    });
+
+    await waitFor(() => {
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
+  });
 });

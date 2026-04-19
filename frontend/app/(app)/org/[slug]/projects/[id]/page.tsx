@@ -572,92 +572,97 @@ export default async function ProjectDetailPage({
           </p>
         </div>
 
-        {/* Matter closure button self-gates on module + CLOSE_MATTER capability; render
-            independently so users with CLOSE_MATTER but without edit/manage/owner can see it. */}
-        {project.status !== "ARCHIVED" && (
-          <MatterClosureAction
+        {/* Right-side action cluster: keeps all header actions in a single
+            container so the parent flex (justify-between) keeps a clean
+            two-column layout. Each child self-gates on its own
+            module/status/capability rules, so unrendered actions collapse to
+            nothing and don't leave the cluster stranded. */}
+        <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {/* Matter closure button self-gates on module + CLOSE_MATTER capability; render
+              independently so users with CLOSE_MATTER but without edit/manage/owner can see it. */}
+          {project.status !== "ARCHIVED" && (
+            <MatterClosureAction
+              slug={slug}
+              projectId={id}
+              projectName={project.name}
+              projectStatus={project.status}
+            />
+          )}
+          {/* Matter reopen button self-gates on module + status=CLOSED + CLOSE_MATTER capability.
+              Rendered independently of the (canEdit || isOwner || canManage) action cluster so a
+              CLOSED matter still surfaces the reopen entry point. */}
+          <MatterReopenAction
             slug={slug}
             projectId={id}
             projectName={project.name}
             projectStatus={project.status}
           />
-        )}
-        {/* Matter reopen button self-gates on module + status=CLOSED + CLOSE_MATTER capability.
-            Rendered independently of the (canEdit || isOwner || canManage) action cluster so a
-            CLOSED matter still surfaces the reopen entry point. */}
-        <MatterReopenAction
-          slug={slug}
-          projectId={id}
-          projectName={project.name}
-          projectStatus={project.status}
-        />
-        {/* Action buttons: lifecycle + existing (hidden for ARCHIVED except lifecycle) */}
-        {project.status !== "ARCHIVED" && (canEdit || isOwner || canManage) && (
-          <div className="flex shrink-0 gap-2">
-            {isAdmin && (
-              <ProjectLifecycleActions
-                slug={slug}
-                projectId={id}
-                projectName={project.name}
-                projectStatus={project.status}
-              />
-            )}
-            {canManage && projectTemplates.length > 0 && (
-              <GenerateDocumentDropdown
-                templates={projectTemplates}
-                entityId={id}
-                entityType="PROJECT"
-                slug={slug}
-                customerId={customers.length > 0 ? customers[0].id : undefined}
-                isAdmin={isAdmin}
-              />
-            )}
-            {canManage && (
-              <SaveAsTemplateDialog
-                slug={slug}
-                projectId={id}
-                projectTasks={tasks}
-                projectTags={projectTags}
-              >
-                <Button variant="outline" size="sm">
-                  <LayoutTemplate className="mr-1.5 size-4" />
-                  Save as Template
-                </Button>
-              </SaveAsTemplateDialog>
-            )}
-            {canEdit && (
-              <EditProjectDialog project={project} slug={slug}>
-                <Button variant="outline" size="sm">
-                  <Pencil className="mr-1.5 size-4" />
-                  Edit
-                </Button>
-              </EditProjectDialog>
-            )}
-            {isOwner && (
-              <DeleteProjectDialog slug={slug} projectId={project.id} projectName={project.name}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
+          {/* Action buttons: lifecycle + existing (hidden for ARCHIVED except lifecycle) */}
+          {project.status !== "ARCHIVED" && (canEdit || isOwner || canManage) && (
+            <>
+              {isAdmin && (
+                <ProjectLifecycleActions
+                  slug={slug}
+                  projectId={id}
+                  projectName={project.name}
+                  projectStatus={project.status}
+                />
+              )}
+              {canManage && projectTemplates.length > 0 && (
+                <GenerateDocumentDropdown
+                  templates={projectTemplates}
+                  entityId={id}
+                  entityType="PROJECT"
+                  slug={slug}
+                  customerId={customers.length > 0 ? customers[0].id : undefined}
+                  isAdmin={isAdmin}
+                />
+              )}
+              {canManage && (
+                <SaveAsTemplateDialog
+                  slug={slug}
+                  projectId={id}
+                  projectTasks={tasks}
+                  projectTags={projectTags}
                 >
-                  <Trash2 className="mr-1.5 size-4" />
-                  Delete
-                </Button>
-              </DeleteProjectDialog>
-            )}
-          </div>
-        )}
-        {/* For ARCHIVED, only show lifecycle actions (Restore) */}
-        {project.status === "ARCHIVED" && isAdmin && (
-          <div className="flex shrink-0 gap-2">
+                  <Button variant="outline" size="sm">
+                    <LayoutTemplate className="mr-1.5 size-4" />
+                    Save as Template
+                  </Button>
+                </SaveAsTemplateDialog>
+              )}
+              {canEdit && (
+                <EditProjectDialog project={project} slug={slug}>
+                  <Button variant="outline" size="sm">
+                    <Pencil className="mr-1.5 size-4" />
+                    Edit
+                  </Button>
+                </EditProjectDialog>
+              )}
+              {isOwner && (
+                <DeleteProjectDialog slug={slug} projectId={project.id} projectName={project.name}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
+                  >
+                    <Trash2 className="mr-1.5 size-4" />
+                    Delete
+                  </Button>
+                </DeleteProjectDialog>
+              )}
+            </>
+          )}
+          {/* For ARCHIVED, only show lifecycle actions (Restore) */}
+          {project.status === "ARCHIVED" && isAdmin && (
             <ProjectLifecycleActions
               slug={slug}
               projectId={id}
               projectName={project.name}
               projectStatus={project.status}
             />
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Custom Fields */}

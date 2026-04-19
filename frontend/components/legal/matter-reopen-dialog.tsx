@@ -23,6 +23,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
+import { ModuleGate } from "@/components/module-gate";
 import {
   reopenMatterSchema,
   type ReopenMatterFormData,
@@ -37,7 +38,15 @@ interface MatterReopenDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function MatterReopenDialog({
+export function MatterReopenDialog(props: MatterReopenDialogProps) {
+  return (
+    <ModuleGate module="matter_closure">
+      <MatterReopenDialogInner {...props} />
+    </ModuleGate>
+  );
+}
+
+function MatterReopenDialogInner({
   slug,
   projectId,
   projectName,
@@ -59,6 +68,11 @@ export function MatterReopenDialog({
   }, [open, projectId, form]);
 
   function handleOpenChange(nextOpen: boolean) {
+    // Prevent dismissal (Escape, backdrop click, programmatic close) while a
+    // non-idempotent reopen request is in flight. Without this, closing the
+    // dialog mid-flight clears `isSubmitting` and lets the user reopen and
+    // resubmit before the server responds.
+    if (isSubmitting && !nextOpen) return;
     onOpenChange(nextOpen);
     if (!nextOpen) {
       setSubmitError(null);
@@ -107,6 +121,12 @@ export function MatterReopenDialog({
       <DialogContent
         className="sm:max-w-md"
         data-testid="matter-reopen-dialog"
+        onEscapeKeyDown={(event) => {
+          if (isSubmitting) event.preventDefault();
+        }}
+        onInteractOutside={(event) => {
+          if (isSubmitting) event.preventDefault();
+        }}
       >
         <DialogHeader>
           <DialogTitle>Reopen matter</DialogTitle>

@@ -228,6 +228,63 @@ class StatementOfAccountContextBuilderTest {
   }
 
   @Test
+  void trustBlock_classifiesEveryCanonicalLedgerType() {
+    // Every ledger type produced by the trust subsystem must land in either deposits or
+    // payments. If a type is dropped here the rendered statement stops reconciling with the
+    // opening/closing balances. The credit/debit sets mirror ClientLedgerService and
+    // TrustReconciliationService.
+    var project = projectWithCustomer("Coverage Matter", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of());
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+
+    var trustAccount = trustAccountWithId(trustAccountId);
+    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
+        .thenReturn(Optional.of(trustAccount));
+    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
+        .thenReturn(BigDecimal.ZERO);
+    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
+        .thenReturn(BigDecimal.ZERO);
+
+    var lines =
+        List.of(
+            ledgerLine("DEPOSIT", new BigDecimal("100.00")),
+            ledgerLine("TRANSFER_IN", new BigDecimal("200.00")),
+            ledgerLine("INTEREST_CREDIT", new BigDecimal("5.00")),
+            ledgerLine("PAYMENT", new BigDecimal("50.00")),
+            ledgerLine("DISBURSEMENT_PAYMENT", new BigDecimal("60.00")),
+            ledgerLine("TRANSFER_OUT", new BigDecimal("70.00")),
+            ledgerLine("FEE_TRANSFER", new BigDecimal("80.00")),
+            ledgerLine("REFUND", new BigDecimal("90.00")),
+            ledgerLine("INTEREST_LPFF", new BigDecimal("3.00")),
+            ledgerLine("UNKNOWN_TYPE_X", new BigDecimal("1.00")));
+    when(clientLedgerService.getClientLedgerStatement(
+            customerId, trustAccountId, periodStart, periodEnd))
+        .thenReturn(new LedgerStatementResponse(BigDecimal.ZERO, BigDecimal.ZERO, lines));
+
+    when(invoiceRepository.findByCustomerId(customerId)).thenReturn(List.of());
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> trust = (Map<String, Object>) context.get("trust");
+    @SuppressWarnings("unchecked")
+    List<?> deposits = (List<?>) trust.get("deposits");
+    @SuppressWarnings("unchecked")
+    List<?> payments = (List<?>) trust.get("payments");
+
+    // Credits: DEPOSIT, TRANSFER_IN, INTEREST_CREDIT (3 lines).
+    assertThat(deposits).hasSize(3);
+    // Debits: PAYMENT, DISBURSEMENT_PAYMENT, TRANSFER_OUT, FEE_TRANSFER, REFUND, INTEREST_LPFF
+    // (6 lines). UNKNOWN_TYPE_X is intentionally dropped — the assertion guards against the
+    // classifier silently absorbing types it doesn't recognise.
+    assertThat(payments).hasSize(6);
+  }
+
+  @Test
   void periodFilter_excludesOutOfRangeFees() {
     var project = projectWithCustomer("Filtered Matter", customerId);
     when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));

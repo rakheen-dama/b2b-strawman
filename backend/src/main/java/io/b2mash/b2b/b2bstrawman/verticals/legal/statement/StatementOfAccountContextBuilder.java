@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,6 +56,22 @@ public class StatementOfAccountContextBuilder {
   private static final BigDecimal MINUTES_PER_HOUR = new BigDecimal("60");
   private static final DateTimeFormatter REFERENCE_DATE = DateTimeFormatter.ofPattern("yyyyMMdd");
   private static final String TRUST_ACCOUNTING_MODULE = "trust_accounting";
+
+  // Mirror the canonical credit/debit classifications used by ClientLedgerService and
+  // TrustReconciliationService so every ledger type produced by the trust subsystem renders
+  // in either the deposits or payments section (otherwise the activity list stops reconciling
+  // with the opening/closing balances). DISBURSEMENT_PAYMENT is included on the debit side
+  // because the disbursement subsystem emits it via FEE_TRANSFER + payment recording.
+  private static final Set<String> TRUST_CREDIT_TYPES =
+      Set.of("DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT");
+  private static final Set<String> TRUST_DEBIT_TYPES =
+      Set.of(
+          "PAYMENT",
+          "DISBURSEMENT_PAYMENT",
+          "TRANSFER_OUT",
+          "FEE_TRANSFER",
+          "REFUND",
+          "INTEREST_LPFF");
 
   private final ProjectRepository projectRepository;
   private final CustomerRepository customerRepository;
@@ -122,50 +139,33 @@ public class StatementOfAccountContextBuilder {
     // customer.*
     context.put("customer", buildCustomerMap(customer));
 
-    // fees.*
-    var feeLines = loadFeeLines(projectId, periodStart, periodEnd);
-    BigDecimal totalHours = sumHours(feeLines);
-    BigDecimal totalFeesExcl = sumAmounts(feeLines);
-    BigDecimal vatAmount = BigDecimal.ZERO; // line-level VAT not modelled on TimeEntry yet
-    BigDecimal totalFeesIncl = totalFeesExcl.add(vatAmount);
+    // fees, disbursements, trust, summary — all share the same queries + math, so compute
+    // them once and reuse for both the rendered context (build) and the persisted snapshot
+    // (computeSummary). Keeps the rendered totals from drifting from the snapshot on changes.
+    Aggregates agg = aggregate(project, customer, projectId, periodStart, periodEnd);
+
     context.put(
         "fees",
         Map.of(
-            "entries", feeLines,
-            "total_hours", totalHours,
-            "total_amount_excl_vat", totalFeesExcl,
-            "vat_amount", vatAmount,
-            "total_amount_incl_vat", totalFeesIncl));
+            "entries", agg.feeLines(),
+            "total_hours", agg.totalHours(),
+            "total_amount_excl_vat", agg.totalFeesExcl(),
+            "vat_amount", agg.vatAmount(),
+            "total_amount_incl_vat", agg.totalFeesIncl()));
 
-    // disbursements.*
-    var disbursementLines = disbursementService.listForStatement(projectId, periodStart, periodEnd);
-    BigDecimal disbursementsTotal = sumDisbursements(disbursementLines);
-    context.put("disbursements", Map.of("entries", disbursementLines, "total", disbursementsTotal));
+    context.put(
+        "disbursements",
+        Map.of("entries", agg.disbursementLines(), "total", agg.disbursementsTotal()));
 
-    // trust.*
-    TrustBlock trust = buildTrustBlock(customer, periodStart, periodEnd);
     context.put(
         "trust",
         Map.of(
-            "opening_balance", trust.openingBalance,
-            "deposits", trust.deposits,
-            "payments", trust.payments,
-            "closing_balance", trust.closingBalance));
+            "opening_balance", agg.trust().openingBalance,
+            "deposits", agg.trust().deposits,
+            "payments", agg.trust().payments,
+            "closing_balance", agg.trust().closingBalance));
 
-    // summary.*
-    BigDecimal previousBalance = previousBalanceOwing(project, periodStart);
-    BigDecimal paymentsReceived = paymentsReceivedInPeriod(project, periodStart, periodEnd);
-    BigDecimal newCharges = totalFeesIncl.add(disbursementsTotal);
-    BigDecimal closingBalance = previousBalance.add(newCharges).subtract(paymentsReceived);
-    StatementSummary summary =
-        new StatementSummary(
-            totalFeesIncl,
-            disbursementsTotal,
-            previousBalance,
-            paymentsReceived,
-            closingBalance,
-            trust.closingBalance);
-    context.put("summary", toSummaryMap(summary));
+    context.put("summary", toSummaryMap(agg.summary()));
 
     // org.* — reuse the shared org helper, add bankingDetails placeholder for the SoA template.
     var orgMap = new LinkedHashMap<String, Object>(templateContextHelper.buildOrgContext());
@@ -188,27 +188,69 @@ public class StatementOfAccountContextBuilder {
             ? customerRepository.findById(project.getCustomerId()).orElse(null)
             : null;
 
+    return aggregate(project, customer, projectId, periodStart, periodEnd).summary();
+  }
+
+  // ---------- helpers ----------
+
+  /**
+   * Pre-computed bundle returned by {@link #aggregate}. Holds every artifact needed by {@link
+   * #build} (full context map) and {@link #computeSummary} (snapshot only) so the rendered template
+   * context and the persisted summary can never drift.
+   */
+  private record Aggregates(
+      List<FeeLineDto> feeLines,
+      BigDecimal totalHours,
+      BigDecimal totalFeesExcl,
+      BigDecimal vatAmount,
+      BigDecimal totalFeesIncl,
+      List<DisbursementStatementDto> disbursementLines,
+      BigDecimal disbursementsTotal,
+      TrustBlock trust,
+      StatementSummary summary) {}
+
+  private Aggregates aggregate(
+      Project project,
+      Customer customer,
+      UUID projectId,
+      LocalDate periodStart,
+      LocalDate periodEnd) {
     var feeLines = loadFeeLines(projectId, periodStart, periodEnd);
+    BigDecimal totalHours = sumHours(feeLines);
     BigDecimal totalFeesExcl = sumAmounts(feeLines);
-    BigDecimal totalFeesIncl = totalFeesExcl;
+    BigDecimal vatAmount = BigDecimal.ZERO; // line-level VAT not modelled on TimeEntry yet
+    BigDecimal totalFeesIncl = totalFeesExcl.add(vatAmount);
+
     var disbursementLines = disbursementService.listForStatement(projectId, periodStart, periodEnd);
     BigDecimal disbursementsTotal = sumDisbursements(disbursementLines);
+
     TrustBlock trust = buildTrustBlock(customer, periodStart, periodEnd);
+
     BigDecimal previousBalance = previousBalanceOwing(project, periodStart);
     BigDecimal paymentsReceived = paymentsReceivedInPeriod(project, periodStart, periodEnd);
     BigDecimal closingBalance =
         previousBalance.add(totalFeesIncl).add(disbursementsTotal).subtract(paymentsReceived);
 
-    return new StatementSummary(
-        totalFeesIncl,
-        disbursementsTotal,
-        previousBalance,
-        paymentsReceived,
-        closingBalance,
-        trust.closingBalance);
-  }
+    StatementSummary summary =
+        new StatementSummary(
+            totalFeesIncl,
+            disbursementsTotal,
+            previousBalance,
+            paymentsReceived,
+            closingBalance,
+            trust.closingBalance);
 
-  // ---------- helpers ----------
+    return new Aggregates(
+        feeLines,
+        totalHours,
+        totalFeesExcl,
+        vatAmount,
+        totalFeesIncl,
+        disbursementLines,
+        disbursementsTotal,
+        trust,
+        summary);
+  }
 
   private Map<String, Object> buildStatementMap(
       UUID projectId, LocalDate periodStart, LocalDate periodEnd) {
@@ -363,13 +405,15 @@ public class StatementOfAccountContextBuilder {
               line.amount(),
               line.reference(),
               line.description());
-      if ("DEPOSIT".equals(line.transactionType())) {
+      String type = line.transactionType();
+      if (TRUST_CREDIT_TYPES.contains(type)) {
         deposits.add(dto);
-      } else if ("PAYMENT".equals(line.transactionType())
-          || "DISBURSEMENT_PAYMENT".equals(line.transactionType())
-          || "FEE_TRANSFER".equals(line.transactionType())) {
+      } else if (TRUST_DEBIT_TYPES.contains(type)) {
         payments.add(dto);
       }
+      // Unknown ledger types are ignored — TRUST_CREDIT_TYPES/TRUST_DEBIT_TYPES mirror the
+      // canonical sets in ClientLedgerService, so an unknown type here means a new type was
+      // added without updating both classifiers.
     }
     return new TrustBlock(
         opening != null ? opening : BigDecimal.ZERO,

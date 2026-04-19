@@ -13,7 +13,7 @@
 |------|------|-------|------|--------|--------|--------|
 | 486 | Disbursement Entity + Service + Module Registration | Backend | -- | M | 486A, 486B | **Done** (PRs #1067, #1068) |
 | 487 | Disbursement Invoicing Integration | Backend | 486, 489A | M | 487A, 487B | **Done** (PRs #1071, #1072) |
-| 488 | Disbursement Frontend | Frontend | 486, 487 | M | 488A, 488B | **Pending** |
+| 488 | Disbursement Frontend | Frontend | 486, 487 | M | 488A, 488B | **Done** (PRs #1073, #1074) |
 | 489 | Matter Closure Workflow (Backend) | Backend | 486A | L | 489A, 489B | **Done** (PRs #1069, #1070) |
 | 490 | Matter Closure Frontend | Frontend | 489 | M | 490A, 490B | **Pending** |
 | 491 | Statement of Account | Both | 486B | M | 491A, 491B | **Pending** |
@@ -146,7 +146,7 @@ PHASE 28 (acceptance), PHASE 6.5 (notification handlers) — all complete
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 3a | 488 | 488B | Approval panel + trust-link dialog + invoice-editor "Add Disbursements" picker. |
+| 3a | 488 | 488B | Approval panel + trust-link dialog + invoice-editor "Add Disbursements" picker. **Done** (PR #1074) |
 | 3b | 490 | 490A | Matter closure dialog (3-step) + matter closure report component + `frontend/lib/api/matter-closure.ts` + component tests. |
 | 3c | 491 | 491B | Statement of Account dialog + statements tab on matter detail + `frontend/lib/api/statement-of-account.ts` + component tests. |
 
@@ -372,7 +372,7 @@ A realistic day-by-day cadence: 486A days 1–3; fan-out days 3–7 (486B, 487A,
 | Slice | Tasks | Summary |
 |-------|-------|---------|
 | **488A** | 488.1–488.7 | `frontend/lib/api/legal-disbursements.ts` API client, disbursements list page, disbursement detail page, create-disbursement dialog (category picker + VAT override + payment-source toggle + supplier fields + receipt upload), matter-scoped disbursements tab, unbilled-summary widget extension, list-view component tests. **Done** (PR #1073) |
-| **488B** | 488.8–488.12 | Disbursement approval panel (capability-gated visibility), trust-transaction-link dialog (picker of APPROVED DISBURSEMENT_PAYMENT trust txs for the matter), invoice-editor "Add Disbursements" picker (module-gated), component tests for approval action + trust-link correctness + invoice-editor integration. |
+| **488B** | 488.8–488.12 | Disbursement approval panel (capability-gated visibility), trust-transaction-link dialog (picker of APPROVED DISBURSEMENT_PAYMENT trust txs for the matter), invoice-editor "Add Disbursements" picker (module-gated), component tests for approval action + trust-link correctness + invoice-editor integration. **Done** (PR #1074) |
 
 ### Tasks
 

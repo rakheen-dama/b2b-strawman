@@ -993,6 +993,48 @@ public class OrgSettingsService {
   }
 
   /**
+   * Returns the effective portal digest cadence for the current tenant (ADR-258, Epic 498A). Falls
+   * back to {@link PortalDigestCadence#WEEKLY} when no settings row exists or the column is null.
+   */
+  @Transactional(readOnly = true)
+  public PortalDigestCadence getPortalDigestCadence() {
+    return orgSettingsRepository
+        .findForCurrentTenant()
+        .map(OrgSettings::getEffectivePortalDigestCadence)
+        .orElse(PortalDigestCadence.WEEKLY);
+  }
+
+  /**
+   * Updates the firm-wide portal digest cadence (ADR-258, Epic 498A). Admin-or-owner only. Emits an
+   * audit event.
+   */
+  @Transactional
+  public PortalDigestCadence updatePortalDigestCadence(
+      PortalDigestCadence cadence, ActorContext actor) {
+    requireAdminOrOwner(actor.orgRole());
+
+    if (cadence == null) {
+      throw new InvalidStateException("Missing field", "portalDigestCadence must not be null");
+    }
+
+    var settings = getOrCreateForCurrentTenant();
+    settings.setPortalDigestCadence(cadence);
+    settings = orgSettingsRepository.save(settings);
+
+    log.info("Updated portal digest cadence to {}", cadence);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("org_settings.portal_digest_cadence_updated")
+            .entityType("org_settings")
+            .entityId(settings.getId())
+            .details(Map.of("portal_digest_cadence", cadence.name()))
+            .build());
+
+    return settings.getEffectivePortalDigestCadence();
+  }
+
+  /**
    * Returns effective DSAR deadline days. If tenant override is set, caps it at the jurisdiction
    * maximum. Otherwise uses the jurisdiction default. See ADR-195.
    */

@@ -28,7 +28,7 @@ class VerticalProfileRegistryTest {
     assertThat(p.name()).isEqualTo("South African Accounting Firm");
     assertThat(p.description()).startsWith("Complete configuration for");
     assertThat(p.currency()).isEqualTo("ZAR");
-    assertThat(p.enabledModules()).isEmpty();
+    assertThat(p.enabledModules()).containsExactly("deadlines");
     assertThat(p.terminologyNamespace()).isEqualTo("en-ZA-accounting");
     assertThat(p.packs()).containsKey("field");
   }
@@ -67,7 +67,8 @@ class VerticalProfileRegistryTest {
             "lssa_tariff",
             "trust_accounting",
             "disbursements",
-            "matter_closure");
+            "matter_closure",
+            "deadlines");
   }
 
   @Test
@@ -81,10 +82,12 @@ class VerticalProfileRegistryTest {
   }
 
   @Test
-  void accountingZaProfileKeepsEnabledModulesEmpty() {
-    // Regression guard for GAP-C-04/C-07: the fix must NOT leak modules into accounting-za.
+  void accountingZaProfileOnlyEnablesDeadlinesModule() {
+    // Epic 497A added the portal deadline feature; it is enabled for accounting-za. The
+    // regression guard still holds for every OTHER module — none of the GAP-C-04/C-07 modules
+    // may leak into accounting-za.
     var profile = registry.getProfile("accounting-za").orElseThrow();
-    assertThat(profile.enabledModules()).isEmpty();
+    assertThat(profile.enabledModules()).containsExactly("deadlines");
   }
 
   @Test

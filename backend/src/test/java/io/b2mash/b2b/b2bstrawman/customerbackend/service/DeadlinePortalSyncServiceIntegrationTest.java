@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalDeadlineView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalDeadlineViewRepository;
 import io.b2mash.b2b.b2bstrawman.event.FieldDateApproachingEvent;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
@@ -264,31 +265,118 @@ class DeadlinePortalSyncServiceIntegrationTest {
 
     LocalDate dueDate = LocalDate.now().plusDays(14);
 
+    // The sync service derives the row id from (entityType, entityId, fieldSlug) so two
+    // portal-visible date fields on the same entity don't collide on the (source_entity, id) PK.
+    UUID visibleRowId = deriveCustomFieldRowId("CUSTOMER", customerId, visibleField.getSlug());
+    UUID hiddenRowId = deriveCustomFieldRowId("CUSTOMER", customerId, hiddenField.getSlug());
+
     // Publish event for the opted-in field — expect a row.
     publishFieldDateApproaching(
         customerId, visibleField.getSlug(), visibleField.getName(), dueDate, "Deadline Customer");
 
     var visibleRow =
         deadlineRepo.findByCustomerIdAndSourceEntityAndId(
-            customerId, "CUSTOM_FIELD_DATE", customerId);
+            customerId, "CUSTOM_FIELD_DATE", visibleRowId);
     assertThat(visibleRow).isPresent();
     assertThat(visibleRow.get().deadlineType()).isEqualTo("CUSTOM_DATE");
     assertThat(visibleRow.get().dueDate()).isEqualTo(dueDate);
     // 14 days out → UPCOMING (boundary is 7 days, exclusive of 14).
     assertThat(visibleRow.get().status()).isEqualTo("UPCOMING");
 
-    // Use a DIFFERENT customer so the hidden-field case can't collide with the previous row.
-    // We do this by removing the visible-field row first, then asserting the hidden-field event
-    // produced no row at all.
-    runInTenant(() -> deadlineRepo.deleteBySourceEntityAndId("CUSTOM_FIELD_DATE", customerId));
-
+    // The hidden-field event publishes, but the listener short-circuits on
+    // portalVisibleDeadline=false so no row should exist under the hidden field's derived id.
     publishFieldDateApproaching(
         customerId, hiddenField.getSlug(), hiddenField.getName(), dueDate, "Deadline Customer");
 
     var hiddenRow =
         deadlineRepo.findByCustomerIdAndSourceEntityAndId(
-            customerId, "CUSTOM_FIELD_DATE", customerId);
+            customerId, "CUSTOM_FIELD_DATE", hiddenRowId);
     assertThat(hiddenRow).isEmpty();
+  }
+
+  /** Mirrors the sync-service's derivation so tests can predict the stable per-field row id. */
+  private static UUID deriveCustomFieldRowId(String entityType, UUID entityId, String fieldSlug) {
+    return UUID.nameUUIDFromBytes(
+        ("CUSTOM_FIELD_DATE:" + entityType + ":" + entityId + ":" + fieldSlug)
+            .getBytes(java.nio.charset.StandardCharsets.UTF_8));
+  }
+
+  // ==========================================================================
+  // Scenario 3b — two portal-visible date fields on the SAME entity do not collide.
+  //               Regression for the Finding-1 fix: using event.entityId() alone as the row
+  //               id would let the later sync overwrite the earlier field's row because the
+  //               PK is (source_entity, id). The sync service now derives a stable UUID from
+  //               (entityType, entityId, fieldSlug) so each field gets its own row.
+  // ==========================================================================
+
+  @Test
+  void fieldDateApproaching_twoFieldsOnSameEntityProduceTwoDistinctRows() {
+    // Two portal-visible date fields, same CUSTOMER entity — different slugs.
+    FieldDefinition fieldA =
+        runInTenantReturning(
+            () ->
+                tenantTxTemplate.execute(
+                    tx -> {
+                      var fd =
+                          new FieldDefinition(
+                              EntityType.CUSTOMER,
+                              "Contract signing",
+                              "contract_signing_" + UUID.randomUUID().toString().substring(0, 6),
+                              FieldType.DATE);
+                      fd.setPortalVisibleDeadline(true);
+                      return fieldDefinitionRepository.saveAndFlush(fd);
+                    }));
+    FieldDefinition fieldB =
+        runInTenantReturning(
+            () ->
+                tenantTxTemplate.execute(
+                    tx -> {
+                      var fd =
+                          new FieldDefinition(
+                              EntityType.CUSTOMER,
+                              "License expiry",
+                              "license_expiry_" + UUID.randomUUID().toString().substring(0, 6),
+                              FieldType.DATE);
+                      fd.setPortalVisibleDeadline(true);
+                      return fieldDefinitionRepository.saveAndFlush(fd);
+                    }));
+
+    LocalDate dueA = LocalDate.now().plusDays(10);
+    LocalDate dueB = LocalDate.now().plusDays(20);
+
+    publishFieldDateApproaching(
+        customerId, fieldA.getSlug(), fieldA.getName(), dueA, "Deadline Customer");
+    publishFieldDateApproaching(
+        customerId, fieldB.getSlug(), fieldB.getName(), dueB, "Deadline Customer");
+
+    // Expect BOTH rows to live in the portal read-model under distinct ids. Before the fix the
+    // second upsert would have overwritten the first because both used customerId as the PK id.
+    var rowsForCustomer =
+        deadlineRepo.findByCustomer(
+            customerId, LocalDate.now().minusDays(1), LocalDate.now().plusDays(30), null);
+    long customFieldRows =
+        rowsForCustomer.stream().filter(r -> "CUSTOM_FIELD_DATE".equals(r.sourceEntity())).count();
+    assertThat(customFieldRows).isGreaterThanOrEqualTo(2);
+
+    long distinctIds =
+        rowsForCustomer.stream()
+            .filter(r -> "CUSTOM_FIELD_DATE".equals(r.sourceEntity()))
+            .map(PortalDeadlineView::id)
+            .distinct()
+            .count();
+    assertThat(distinctIds).isEqualTo(customFieldRows);
+
+    // Each field should have its own row with its own due date.
+    boolean hasFieldADue =
+        rowsForCustomer.stream()
+            .filter(r -> "CUSTOM_FIELD_DATE".equals(r.sourceEntity()))
+            .anyMatch(r -> dueA.equals(r.dueDate()));
+    boolean hasFieldBDue =
+        rowsForCustomer.stream()
+            .filter(r -> "CUSTOM_FIELD_DATE".equals(r.sourceEntity()))
+            .anyMatch(r -> dueB.equals(r.dueDate()));
+    assertThat(hasFieldADue).isTrue();
+    assertThat(hasFieldBDue).isTrue();
   }
 
   // ==========================================================================

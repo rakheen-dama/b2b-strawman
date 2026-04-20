@@ -4,13 +4,12 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalDeadlineView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalDeadlineViewRepository;
 import io.b2mash.b2b.b2bstrawman.event.FieldDateApproachingEvent;
-import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
-import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.UUID;
@@ -59,13 +58,6 @@ public class DeadlinePortalSyncService {
 
   private static final Logger log = LoggerFactory.getLogger(DeadlinePortalSyncService.class);
 
-  /**
-   * Sentinel actor id used when a system operation (tenant-wide backfill) rebinds {@code MEMBER_ID}
-   * — downstream listeners see a non-null UUID that never matches a real member row.
-   */
-  private static final UUID SYSTEM_ACTOR_ID =
-      UUID.fromString("00000000-0000-0000-0000-000000000000");
-
   /** Fallback description label when {@link FieldDateApproachingEvent} details are blank. */
   private static final String CUSTOM_DATE_FALLBACK_LABEL = "CUSTOM_DATE";
 
@@ -76,7 +68,6 @@ public class DeadlinePortalSyncService {
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final CustomerProjectRepository customerProjectRepository;
   private final PortalTrustDescriptionSanitiser sanitiser;
-  private final OrgSchemaMappingRepository orgSchemaMappingRepository;
   private final TransactionTemplate portalTxTemplate;
 
   public DeadlinePortalSyncService(
@@ -84,13 +75,11 @@ public class DeadlinePortalSyncService {
       FieldDefinitionRepository fieldDefinitionRepository,
       CustomerProjectRepository customerProjectRepository,
       PortalTrustDescriptionSanitiser sanitiser,
-      OrgSchemaMappingRepository orgSchemaMappingRepository,
       @Qualifier("portalTransactionManager") PlatformTransactionManager portalTxManager) {
     this.deadlineRepo = deadlineRepo;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.customerProjectRepository = customerProjectRepository;
     this.sanitiser = sanitiser;
-    this.orgSchemaMappingRepository = orgSchemaMappingRepository;
     this.portalTxTemplate = new TransactionTemplate(portalTxManager);
   }
 
@@ -201,9 +190,18 @@ public class DeadlinePortalSyncService {
 
     String sanitisedDescription = sanitiser.sanitise(entityName, CUSTOM_DATE_FALLBACK_LABEL, label);
 
+    // Derive a stable per-field-instance id from (entityType, entityId, fieldSlug) so two
+    // portal-visible date fields on the same entity don't collide on the (source_entity, id)
+    // primary key. Using the event.entityId() alone would let the later sync overwrite the
+    // earlier field's row for multi-date entities.
+    UUID deadlineId =
+        UUID.nameUUIDFromBytes(
+            ("CUSTOM_FIELD_DATE:" + fieldEntityType + ":" + event.entityId() + ":" + fieldSlug)
+                .getBytes(StandardCharsets.UTF_8));
+
     PortalDeadlineView view =
         new PortalDeadlineView(
-            event.entityId(),
+            deadlineId,
             "CUSTOM_FIELD_DATE",
             customerId,
             event.projectId(),
@@ -263,61 +261,6 @@ public class DeadlinePortalSyncService {
       String descriptionRaw,
       String sourceReference) {}
 
-  // ── Backfill ───────────────────────────────────────────────────────────
-
-  /**
-   * Rebuilds the portal deadline read-model for the given tenant. Intended for module activation or
-   * drift repair. Currently only covers the {@code CUSTOM_FIELD_DATE} source; filing / court /
-   * prescription backfills plug in as those sources become event-wired.
-   *
-   * <p><strong>Reserved for admin-authenticated internal callers only.</strong> Mirrors the
-   * tenant-isolation guard from {@code RetainerPortalSyncService.backfillForTenant}: the
-   * authenticated caller's scoped {@code ORG_ID} must match the argument, preventing a caller for
-   * org A from triggering a backfill of org B. No firm-side scan happens until the custom-field
-   * backfill is meaningful (Phase 48 scanner already projects events on each tick, so the natural
-   * drift-repair is a rescan — this method is reserved for future wiring).
-   */
-  public BackfillResult backfillForTenant(String orgId) {
-    if (!RequestScopes.ORG_ID.isBound()) {
-      throw new IllegalStateException(
-          "backfillForTenant must run inside an authenticated request scope");
-    }
-    String scopedOrgId = RequestScopes.ORG_ID.get();
-    if (!orgId.equals(scopedOrgId)) {
-      throw new ForbiddenException(
-          "Cross-tenant backfill denied",
-          "Authenticated orgId does not match backfill target orgId");
-    }
-    var mapping =
-        orgSchemaMappingRepository
-            .findByClerkOrgId(orgId)
-            .orElseThrow(
-                () ->
-                    ResourceNotFoundException.withDetail(
-                        "Organization not found", "No organization found with orgId " + orgId));
-    String schema = mapping.getSchemaName();
-    log.info("Starting portal deadline backfill for org={} schema={}", orgId, schema);
-
-    int[] counts = new int[] {0};
-
-    ScopedValue.where(RequestScopes.TENANT_ID, schema)
-        .where(RequestScopes.ORG_ID, orgId)
-        .where(RequestScopes.MEMBER_ID, SYSTEM_ACTOR_ID)
-        .run(
-            () -> {
-              // No-op for now: custom-field dates are projected on each Phase 48 scan, and filing
-              // /court/prescription event wiring is dormant. When those sources become event-
-              // backed, iterate over their firm-side tables here and call upsertFromDeadline(...).
-              log.info(
-                  "Portal deadline backfill complete for org={} — no source wiring active yet",
-                  orgId);
-            });
-
-    return new BackfillResult(counts[0]);
-  }
-
-  public record BackfillResult(int deadlinesProjected) {}
-
   // ── Pure helpers ────────────────────────────────────────────────────────
 
   /**
@@ -345,12 +288,11 @@ public class DeadlinePortalSyncService {
         yield customerProjectRepository.findFirstCustomerByProjectId(entityId).orElse(null);
       }
       case TASK, INVOICE -> {
-        // Not currently surfaced — Phase 48 scanner only scans CUSTOMER/PROJECT, so this branch is
-        // defensive. A task-scoped date field could be added later; its customer resolution would
-        // go through task → project → customer.
-        if (projectId != null) {
-          yield customerProjectRepository.findFirstCustomerByProjectId(projectId).orElse(null);
-        }
+        // Phase 48 scanner only scans CUSTOMER/PROJECT, so these branches are not reachable from
+        // the current event path. Log at debug so drift is visible if the scanner scope widens
+        // later without updating this resolver.
+        log.debug(
+            "Custom-field deadline resolution skipped for unsupported entityType={}", entityType);
         yield null;
       }
     };
@@ -389,7 +331,7 @@ public class DeadlinePortalSyncService {
     }
     try {
       return LocalDate.parse(o.toString());
-    } catch (Exception ex) {
+    } catch (DateTimeParseException ex) {
       return null;
     }
   }

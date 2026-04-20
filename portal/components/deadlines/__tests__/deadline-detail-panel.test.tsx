@@ -62,6 +62,21 @@ describe("DeadlineDetailPanel", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it("calls onClose when the Escape key is pressed", async () => {
+    const onClose = vi.fn();
+    render(
+      <DeadlineDetailPanel
+        open
+        deadline={makeDeadline()}
+        onClose={onClose}
+      />,
+    );
+
+    const user = userEvent.setup();
+    await user.keyboard("{Escape}");
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   it("animates off-screen when closed (panel stays mounted for exit animation)", () => {
     render(
       <DeadlineDetailPanel

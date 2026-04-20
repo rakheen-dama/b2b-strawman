@@ -34,15 +34,15 @@ export interface PortalDeadline {
   /** UUID of the source row — unique per `sourceEntity`, NOT globally unique. */
   id: string;
   /** One of `FILING_SCHEDULE | COURT_DATE | PRESCRIPTION_TRACKER | CUSTOM_FIELD_DATE`. */
-  sourceEntity: string;
+  sourceEntity: PortalDeadlineSourceEntity;
   /** One of `FILING | COURT_DATE | PRESCRIPTION | CUSTOM_DATE`. */
-  deadlineType: string;
+  deadlineType: PortalDeadlineType;
   /** Server-sanitised display label (max 160 chars). */
   label: string;
   /** ISO 8601 local date "YYYY-MM-DD". */
   dueDate: string;
   /** One of `UPCOMING | DUE_SOON | OVERDUE | COMPLETED | CANCELLED`. */
-  status: string;
+  status: PortalDeadlineStatus;
   /** Server-sanitised description (max 140 chars); may be empty string. */
   descriptionSanitised: string;
   /** Optional — only set for COURT_DATE / PRESCRIPTION deadlines. */

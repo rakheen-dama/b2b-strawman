@@ -2,9 +2,13 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { usePortalContext } from "@/hooks/use-portal-context";
+import {
+  usePortalContext,
+  usePortalContextIsSettled,
+} from "@/hooks/use-portal-context";
 import { DeadlineList } from "@/components/deadlines/deadline-list";
 import { DeadlineDetailPanel } from "@/components/deadlines/deadline-detail-panel";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   listDeadlines,
   type PortalDeadline,
@@ -37,6 +41,7 @@ function defaultWindow(): { from: string; to: string } {
 
 export default function DeadlinesPage() {
   const ctx = usePortalContext();
+  const isSettled = usePortalContextIsSettled();
   const router = useRouter();
 
   const [statusFilter, setStatusFilter] = useState<
@@ -53,7 +58,7 @@ export default function DeadlinesPage() {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [panelOpen, setPanelOpen] = useState(false);
 
-  const window = useMemo(() => defaultWindow(), []);
+  const dateWindow = useMemo(() => defaultWindow(), []);
 
   // Module gate: redirect once the portal context has loaded and the
   // `deadlines` module is not enabled. Backend also 404s (source of truth).
@@ -72,8 +77,8 @@ export default function DeadlinesPage() {
     (async () => {
       try {
         const data = await listDeadlines({
-          from: window.from,
-          to: window.to,
+          from: dateWindow.from,
+          to: dateWindow.to,
           // Never send "ALL" — omit the param so the backend returns all statuses.
           status: statusFilter === "ALL" ? undefined : statusFilter,
         });
@@ -92,7 +97,7 @@ export default function DeadlinesPage() {
     return () => {
       cancelled = true;
     };
-  }, [ctx, statusFilter, window]);
+  }, [ctx, statusFilter, dateWindow]);
 
   const selectedDeadline = useMemo(() => {
     if (!selectedKey || !deadlines) return null;
@@ -109,6 +114,24 @@ export default function DeadlinesPage() {
 
   function handleClosePanel() {
     setPanelOpen(false);
+  }
+
+  // Avoid flash-of-gated-content: don't render the list until the portal
+  // session context has resolved. If the module is disabled, the redirect
+  // effect above will fire as soon as the context arrives.
+  if (!isSettled || !ctx?.enabledModules.includes(DEADLINES_MODULE)) {
+    return (
+      <div>
+        <h1 className="font-display mb-6 text-2xl font-semibold text-slate-900">
+          Deadlines
+        </h1>
+        <div className="space-y-3" data-testid="deadlines-context-loading">
+          <Skeleton className="h-14 w-full" />
+          <Skeleton className="h-14 w-full" />
+          <Skeleton className="h-14 w-full" />
+        </div>
+      </div>
+    );
   }
 
   return (

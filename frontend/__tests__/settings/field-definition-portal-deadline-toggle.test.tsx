@@ -110,4 +110,78 @@ describe("FieldDefinition portalVisibleDeadline toggle", () => {
       );
     });
   });
+
+  it("submits portalVisibleDeadline: false (not undefined) when the toggle is left unchecked on a DATE field", async () => {
+    mockUpdateFieldDefinition.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+    const field = makeDateField();
+    render(
+      <FieldDefinitionDialog
+        slug="acme"
+        entityType="PROJECT"
+        field={field}
+      >
+        <button>Edit portal deadline field (unchecked)</button>
+      </FieldDefinitionDialog>,
+    );
+    await user.click(
+      screen.getByText("Edit portal deadline field (unchecked)"),
+    );
+
+    const checkbox = screen.getByLabelText(
+      /Surface this date on portal as a deadline/i,
+    );
+    expect(checkbox).not.toBeChecked();
+
+    // Do NOT click the checkbox — submit as-is.
+    await user.click(screen.getByRole("button", { name: /Save Changes/i }));
+
+    await waitFor(() => {
+      expect(mockUpdateFieldDefinition).toHaveBeenCalledTimes(1);
+    });
+    const payload = mockUpdateFieldDefinition.mock.calls[0][2];
+    expect(payload.portalVisibleDeadline).toBe(false);
+  });
+
+  it("submits portalVisibleDeadline: false when fieldType is not DATE, even if the state was previously toggled on", async () => {
+    mockUpdateFieldDefinition.mockResolvedValue({ success: true });
+    const user = userEvent.setup();
+    const field = makeDateField();
+    render(
+      <FieldDefinitionDialog
+        slug="acme"
+        entityType="PROJECT"
+        field={field}
+      >
+        <button>Edit portal deadline field (type-switch)</button>
+      </FieldDefinitionDialog>,
+    );
+    await user.click(
+      screen.getByText("Edit portal deadline field (type-switch)"),
+    );
+
+    // Toggle on while DATE.
+    const checkbox = screen.getByLabelText(
+      /Surface this date on portal as a deadline/i,
+    );
+    await user.click(checkbox);
+    expect(checkbox).toBeChecked();
+
+    // Switch field type to TEXT — toggle hidden, but state may still be true.
+    const fieldTypeSelect = screen.getByLabelText(
+      "Field Type",
+    ) as HTMLSelectElement;
+    await user.selectOptions(fieldTypeSelect, "TEXT");
+    expect(
+      screen.queryByLabelText(/Surface this date on portal as a deadline/i),
+    ).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: /Save Changes/i }));
+
+    await waitFor(() => {
+      expect(mockUpdateFieldDefinition).toHaveBeenCalledTimes(1);
+    });
+    const payload = mockUpdateFieldDefinition.mock.calls[0][2];
+    expect(payload.portalVisibleDeadline).toBe(false);
+  });
 });

@@ -87,6 +87,12 @@ describe("DeadlineList", () => {
         label: "Far future",
       }),
       deadline({
+        id: "medium",
+        sourceEntity: "FILING_SCHEDULE",
+        dueDate: "2026-05-02", // 12 days away → amber (8–14)
+        label: "Approaching",
+      }),
+      deadline({
         id: "soon",
         sourceEntity: "COURT_DATE",
         dueDate: "2026-04-25", // ≤ 7 days → red
@@ -98,6 +104,13 @@ describe("DeadlineList", () => {
         dueDate: "2026-04-10", // negative → red-solid (overdue)
         label: "Overdue item",
       }),
+      deadline({
+        id: "done",
+        sourceEntity: "FILING_SCHEDULE",
+        dueDate: "2026-04-25", // would be red by days, but status overrides
+        status: "COMPLETED",
+        label: "Already completed",
+      }),
     ];
 
     render(<Harness deadlines={items} now={now} />);
@@ -106,11 +119,17 @@ describe("DeadlineList", () => {
       screen.getByTestId("deadline-row-FILING_SCHEDULE-far"),
     ).toHaveAttribute("data-tone", "grey");
     expect(
+      screen.getByTestId("deadline-row-FILING_SCHEDULE-medium"),
+    ).toHaveAttribute("data-tone", "amber");
+    expect(
       screen.getByTestId("deadline-row-COURT_DATE-soon"),
     ).toHaveAttribute("data-tone", "red");
     expect(
       screen.getByTestId("deadline-row-PRESCRIPTION_TRACKER-late"),
     ).toHaveAttribute("data-tone", "red-solid");
+    expect(
+      screen.getByTestId("deadline-row-FILING_SCHEDULE-done"),
+    ).toHaveAttribute("data-tone", "green");
   });
 
   it("invokes onSelect with the clicked deadline", async () => {

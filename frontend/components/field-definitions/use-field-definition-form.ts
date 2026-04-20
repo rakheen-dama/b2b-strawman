@@ -248,7 +248,7 @@ export function useFieldDefinitionForm({
           sortOrder,
           visibilityCondition: buildVisibilityCondition() ?? null,
           requiredForContexts,
-          portalVisibleDeadline,
+          portalVisibleDeadline: fieldType === "DATE" ? portalVisibleDeadline : false,
         });
 
         if (result.success) {
@@ -269,7 +269,7 @@ export function useFieldDefinitionForm({
           sortOrder,
           visibilityCondition: buildVisibilityCondition() ?? null,
           requiredForContexts,
-          portalVisibleDeadline,
+          portalVisibleDeadline: fieldType === "DATE" ? portalVisibleDeadline : false,
         });
 
         if (result.success) {

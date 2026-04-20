@@ -1,18 +1,19 @@
 "use client";
 
-import { useEffect, useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
-import { BrandingProvider } from "@/components/branding-provider";
-import { PortalHeader } from "@/components/portal-header";
+import { PortalContextProvider } from "@/hooks/use-portal-context";
+import { PortalTopbar } from "@/components/portal-topbar";
+import {
+  PortalSidebar,
+  PortalSidebarMobile,
+} from "@/components/portal-sidebar";
 import { PortalFooter } from "@/components/portal-footer";
-import { useBranding } from "@/hooks/use-branding";
 
 // Track client-side mount without setState-in-effect.
-let mounted = false;
 const subscribe = () => () => {};
 function getHasMounted() {
-  mounted = true;
   return true;
 }
 function getServerMounted() {
@@ -20,17 +21,21 @@ function getServerMounted() {
 }
 
 function AuthenticatedShell({ children }: { children: React.ReactNode }) {
-  const { brandColor } = useBranding();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div
-      className="flex min-h-screen flex-col bg-slate-50"
-      style={{ "--portal-brand-color": brandColor } as React.CSSProperties}
-    >
-      <PortalHeader />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
-        {children}
-      </main>
+    <div className="flex min-h-screen flex-col bg-slate-50">
+      <PortalTopbar onHamburgerClick={() => setSidebarOpen(true)} />
+      <div className="flex flex-1">
+        <PortalSidebar />
+        <PortalSidebarMobile
+          open={sidebarOpen}
+          onOpenChange={setSidebarOpen}
+        />
+        <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+          {children}
+        </main>
+      </div>
       <PortalFooter />
     </div>
   );
@@ -43,11 +48,15 @@ export default function AuthenticatedLayout({
 }) {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
-  const hasMounted = useSyncExternalStore(subscribe, getHasMounted, getServerMounted);
+  const hasMounted = useSyncExternalStore(
+    subscribe,
+    getHasMounted,
+    getServerMounted,
+  );
 
   useEffect(() => {
     if (hasMounted && !isAuthenticated) {
-      router.push("/login");
+      router.replace("/login");
     }
   }, [hasMounted, isAuthenticated, router]);
 
@@ -60,8 +69,8 @@ export default function AuthenticatedLayout({
   }
 
   return (
-    <BrandingProvider>
+    <PortalContextProvider>
       <AuthenticatedShell>{children}</AuthenticatedShell>
-    </BrandingProvider>
+    </PortalContextProvider>
   );
 }

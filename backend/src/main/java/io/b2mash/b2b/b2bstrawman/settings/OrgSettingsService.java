@@ -145,7 +145,8 @@ public class OrgSettingsService {
                 null, // defaultRetentionMonths
                 null, // financialRetentionMonths
                 null, // informationOfficerName
-                null)); // informationOfficerEmail
+                null, // informationOfficerEmail
+                PortalRetainerMemberDisplay.FIRST_NAME_ROLE.name())); // portalRetainerMemberDisplay
   }
 
   /** Updates settings including branding fields. */
@@ -353,7 +354,8 @@ public class OrgSettingsService {
         settings.getDefaultRetentionMonths(),
         settings.getFinancialRetentionMonths(),
         settings.getInformationOfficerName(),
-        settings.getInformationOfficerEmail());
+        settings.getInformationOfficerEmail(),
+        settings.getEffectivePortalRetainerMemberDisplay().name());
   }
 
   /**

@@ -45,4 +45,6 @@ public record SettingsResponse(
     Integer defaultRetentionMonths,
     Integer financialRetentionMonths,
     String informationOfficerName,
-    String informationOfficerEmail) {}
+    String informationOfficerEmail,
+    // Epic 496A: Portal retainer member display privacy toggle
+    String portalRetainerMemberDisplay) {}

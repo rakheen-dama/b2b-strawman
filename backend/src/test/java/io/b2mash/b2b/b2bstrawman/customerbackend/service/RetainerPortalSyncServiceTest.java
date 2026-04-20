@@ -62,7 +62,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class RetainerPortalSyncServiceIntegrationTest {
+class RetainerPortalSyncServiceTest {
 
   private static final String ORG_ID = "org_portal_retainer_sync_test";
   private static final String ORG_NAME = "Portal Retainer Sync Test Org";
@@ -213,6 +213,8 @@ class RetainerPortalSyncServiceIntegrationTest {
     // Opening balance = new allotment + rollover
     assertThat(summary.hoursRemaining()).isEqualByComparingTo("35.00");
     assertThat(summary.hoursAllotted()).isEqualByComparingTo("30.00");
+    // updatePeriodRollover stamps next_renewal_date = newEnd
+    assertThat(summary.nextRenewalDate()).isEqualTo(newEnd);
   }
 
   // ==========================================================================

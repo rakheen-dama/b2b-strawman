@@ -71,8 +71,10 @@ public class PortalRetainerSummaryRepository {
   }
 
   /**
-   * Returns every retainer summary visible to the given customer, ordered most-recently-synced
-   * first. Used by the portal list endpoint.
+   * Returns every retainer summary visible to the given customer. Ordered by {@code period_end DESC
+   * NULLS LAST} (current/upcoming periods first; terminal snapshots with null period_end last),
+   * tiebreaking on {@code name ASC} so the order is stable across syncs (UX would otherwise
+   * re-shuffle any time a single row is re-synced).
    */
   public List<PortalRetainerSummaryView> findByCustomerId(UUID customerId) {
     return jdbc.sql(
@@ -82,7 +84,7 @@ public class PortalRetainerSummaryRepository {
                    next_renewal_date, status, last_synced_at
             FROM portal.portal_retainer_summary
             WHERE customer_id = ?
-            ORDER BY last_synced_at DESC
+            ORDER BY period_end DESC NULLS LAST, name ASC
             """)
         .params(customerId)
         .query(PortalRetainerSummaryView.class)
@@ -106,25 +108,6 @@ public class PortalRetainerSummaryRepository {
         .params(customerId, retainerId)
         .query(PortalRetainerSummaryView.class)
         .optional();
-  }
-
-  /**
-   * Atomically adjusts the summary's consumption counters by {@code deltaHours}. Positive values
-   * model new consumption (increment consumed, decrement remaining); negative values model a
-   * reversal (e.g. a deleted time entry). Remaining is clamped to zero so a reversal of more hours
-   * than consumed never drives the counter negative.
-   */
-  public void decrementHoursConsumed(UUID customerId, UUID retainerId, BigDecimal deltaHours) {
-    jdbc.sql(
-            """
-            UPDATE portal.portal_retainer_summary
-            SET hours_consumed  = hours_consumed + ?,
-                hours_remaining = GREATEST(COALESCE(hours_remaining, 0) - ?, 0),
-                last_synced_at  = now()
-            WHERE customer_id = ? AND id = ?
-            """)
-        .params(deltaHours, deltaHours, customerId, retainerId)
-        .update();
   }
 
   /**
@@ -159,7 +142,7 @@ public class PortalRetainerSummaryRepository {
         .params(
             newStart,
             newEnd,
-            newAllotted,
+            safeAllotted,
             openingRemaining,
             safeRollover,
             newEnd,

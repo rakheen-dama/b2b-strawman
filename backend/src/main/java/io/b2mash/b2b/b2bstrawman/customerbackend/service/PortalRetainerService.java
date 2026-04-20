@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.dto.PortalRetainerConsumptionEn
 import io.b2mash.b2b.b2bstrawman.customerbackend.dto.PortalRetainerSummaryResponse;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalRetainerConsumptionEntryRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalRetainerSummaryRepository;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
@@ -73,6 +74,9 @@ public class PortalRetainerService {
   public List<PortalRetainerConsumptionEntryResponse> consumption(
       UUID retainerId, LocalDate from, LocalDate to) {
     requireRetainerAgreementsEnabled();
+    if (from != null && to != null && from.isAfter(to)) {
+      throw new InvalidStateException("Invalid date range", "from must be on or before to");
+    }
     UUID customerId = RequestScopes.requireCustomerId();
     requireRetainerVisibleToCustomer(customerId, retainerId);
 

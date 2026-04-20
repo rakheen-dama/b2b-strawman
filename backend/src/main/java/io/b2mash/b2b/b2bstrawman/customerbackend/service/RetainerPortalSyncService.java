@@ -222,10 +222,17 @@ public class RetainerPortalSyncService {
     Optional<RetainerPeriod> periodOpt =
         periodRepository.findByAgreementIdAndStatus(agreementId, PeriodStatus.OPEN);
     if (periodOpt.isEmpty()) {
-      // No open period (e.g. agreement terminated). Skip — the last written snapshot stays.
+      // No OPEN period — typically the agreement has been terminated. Project a terminal snapshot
+      // so the portal row reflects the new status (otherwise the previous ACTIVE/PAUSED snapshot
+      // sticks). We zero out remaining hours and stamp a fresh last_synced_at via the existing
+      // upsert path.
+      PortalRetainerSummaryView terminalView = toTerminalSummaryView(agreement);
+      portalTxTemplate.executeWithoutResult(status -> summaryRepo.upsert(terminalView));
       log.debug(
-          "No OPEN retainer period found for agreement={} — skipping portal summary sync",
-          agreementId);
+          "No OPEN retainer period found for agreement={} — wrote terminal portal snapshot"
+              + " (status={})",
+          agreementId,
+          terminalView.status());
       return;
     }
     PortalRetainerSummaryView view = toSummaryView(agreement, periodOpt.get());
@@ -248,21 +255,25 @@ public class RetainerPortalSyncService {
       return;
     }
     UUID customerId = customerIdOpt.get();
+
+    String action = event.action();
+    if ("DELETED".equals(action)) {
+      // Run the deletion BEFORE the active-or-paused agreement lookup — a historical time entry
+      // tied to an already-terminated retainer must still cause the portal consumption row to be
+      // removed. Re-snapshot the summary only when an active/paused agreement still exists; if the
+      // retainer has been terminated, the terminal snapshot is already up-to-date.
+      portalTxTemplate.executeWithoutResult(
+          status -> entryRepo.deleteByTimeEntryId(customerId, event.entityId()));
+      var agreementForResnapshot = agreementRepository.findActiveOrPausedByCustomerId(customerId);
+      agreementForResnapshot.ifPresent(a -> syncSummary(a.getId()));
+      return;
+    }
+
     var agreementOpt = agreementRepository.findActiveOrPausedByCustomerId(customerId);
     if (agreementOpt.isEmpty()) {
       return;
     }
     RetainerAgreement agreement = agreementOpt.get();
-
-    String action = event.action();
-    if ("DELETED".equals(action)) {
-      // Row for the time entry must be removed on both sides; then re-snapshot counters from the
-      // firm-side period that the tenant listener has already updated.
-      portalTxTemplate.executeWithoutResult(
-          status -> entryRepo.deleteByTimeEntryId(customerId, event.entityId()));
-      syncSummary(agreement.getId());
-      return;
-    }
 
     // CREATED / UPDATED — fetch the time entry, project + sanitise, upsert.
     var timeEntryOpt = timeEntryRepository.findById(event.entityId());
@@ -272,11 +283,12 @@ public class RetainerPortalSyncService {
     }
     TimeEntry entry = timeEntryOpt.get();
 
-    // Resolve member display string via the firm-wide privacy toggle.
+    // Resolve member display string via the firm-wide privacy toggle. Use the time entry's owner
+    // (who actually logged the time), NOT the event's actor (who may be an admin editing someone
+    // else's entry) — otherwise an edit silently rewrites attribution to the editor.
+    UUID timeEntryOwnerId = entry.getMemberId();
     var member =
-        event.actorMemberId() != null
-            ? memberRepository.findById(event.actorMemberId()).orElse(null)
-            : null;
+        timeEntryOwnerId != null ? memberRepository.findById(timeEntryOwnerId).orElse(null) : null;
     String roleName =
         (member != null && member.getOrgRoleEntity() != null)
             ? member.getOrgRoleEntity().getName()
@@ -313,8 +325,18 @@ public class RetainerPortalSyncService {
    * Intended for module activation or drift repair. Does not rebuild the per-entry consumption
    * history — consumption entries are event-driven (any repair happens naturally on the next
    * time-entry change).
+   *
+   * <p><strong>Reserved for admin-authenticated internal callers only.</strong> The method binds
+   * the {@link #SYSTEM_ACTOR_ID} sentinel as {@code MEMBER_ID} and writes across the supplied
+   * {@code orgId}'s tenant — exposing it on a public endpoint without a platform-admin guard would
+   * be a privilege-escalation vector. Callers MUST already be inside an authenticated request scope
+   * (verified by the {@code RequestScopes.ORG_ID.isBound()} precondition below).
    */
   public BackfillResult backfillForTenant(String orgId) {
+    if (!RequestScopes.ORG_ID.isBound()) {
+      throw new IllegalStateException(
+          "backfillForTenant must run inside an authenticated request scope");
+    }
     var mapping =
         orgSchemaMappingRepository
             .findByClerkOrgId(orgId)
@@ -353,6 +375,31 @@ public class RetainerPortalSyncService {
   public record BackfillResult(int agreementsProjected) {}
 
   // ── Pure helpers ────────────────────────────────────────────────────────
+
+  /**
+   * Builds a terminal portal snapshot for an agreement that no longer has an OPEN period (typically
+   * TERMINATED). Status is mapped from the agreement, hours_remaining is forced to zero, and
+   * period/renewal dates are blanked so the portal correctly conveys "no active period". The {@code
+   * upsert} stamps a fresh {@code last_synced_at}.
+   */
+  private PortalRetainerSummaryView toTerminalSummaryView(RetainerAgreement agreement) {
+    BigDecimal allotted =
+        agreement.getAllocatedHours() != null ? agreement.getAllocatedHours() : BigDecimal.ZERO;
+    return new PortalRetainerSummaryView(
+        agreement.getId(),
+        agreement.getCustomerId(),
+        agreement.getName(),
+        agreement.getFrequency().name(),
+        allotted,
+        BigDecimal.ZERO,
+        BigDecimal.ZERO,
+        null,
+        null,
+        BigDecimal.ZERO,
+        null,
+        mapStatus(agreement.getStatus()),
+        null);
+  }
 
   private PortalRetainerSummaryView toSummaryView(
       RetainerAgreement agreement, RetainerPeriod period) {

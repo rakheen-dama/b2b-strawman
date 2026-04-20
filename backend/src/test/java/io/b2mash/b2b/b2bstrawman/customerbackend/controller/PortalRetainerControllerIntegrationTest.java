@@ -37,14 +37,14 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /**
- * Integration tests for {@link PortalRetainerController} (Epic 496A). Covers the 4 scenarios from
- * the test plan:
+ * Integration tests for {@link PortalRetainerController} (Epic 496A). Covers 5 scenarios:
  *
  * <ol>
  *   <li>consulting-za portal contact lists their retainers.
  *   <li>Module disabled → 404 with retainer-specific ProblemDetail.
  *   <li>legal-za tenant with retainer-backed matter returns the retainer identically.
  *   <li>{@code from}/{@code to} date range filters consumption entries.
+ *   <li>Cross-tenant isolation: consulting-za token cannot read legal-za retainer (ADR-253).
  * </ol>
  *
  * <p>The module gate is asserted via a {@link VerticalModuleGuard} spy (same pattern as {@link
@@ -265,6 +265,37 @@ class PortalRetainerControllerIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1))
         .andExpect(jsonPath("$[0].description").value("Mid-March consumption"));
+  }
+
+  // ==========================================================================
+  // Scenario 5 — cross-tenant isolation (ADR-253): a portal contact for
+  // tenant A cannot read tenant B's retainer or its consumption history,
+  // and the list endpoint never leaks tenant B's rows. Most security-critical
+  // assertion for this epic — the portal schema is shared across tenants and
+  // is keyed on customer_id; a missing scope check would let any contact pull
+  // any other tenant's retainer by guessing a UUID.
+  // ==========================================================================
+
+  @Test
+  void consulting_cannotReadLegalRetainerOrItsConsumption() throws Exception {
+    when(moduleGuard.isModuleEnabled(RETAINER_MODULE)).thenReturn(true);
+
+    // Direct hit on the legal retainer's id with the consulting token must 404, NOT 200.
+    mockMvc
+        .perform(
+            get("/portal/retainers/{id}/consumption", legalRetainerId)
+                .header("Authorization", "Bearer " + consultingPortalToken))
+        .andExpect(status().isNotFound());
+
+    // The list endpoint must return only the consulting retainer — never the legal one — even
+    // though both rows live in the same shared portal schema.
+    mockMvc
+        .perform(
+            get("/portal/retainers").header("Authorization", "Bearer " + consultingPortalToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].id").value(consultingRetainerId.toString()))
+        .andExpect(jsonPath("$[?(@.id == '" + legalRetainerId + "')]").isEmpty());
   }
 
   // ==========================================================================

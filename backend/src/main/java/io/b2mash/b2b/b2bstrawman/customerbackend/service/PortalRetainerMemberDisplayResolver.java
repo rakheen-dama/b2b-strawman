@@ -16,8 +16,18 @@ public class PortalRetainerMemberDisplayResolver {
   private static final String FALLBACK = "Team member";
 
   /**
+   * Hard cap on the resolved display string — must match {@code
+   * portal.portal_retainer_consumption_entry.member_display_name}'s {@code VARCHAR(80)} column. A
+   * longer value would fail the upsert and (because the listener swallows errors) silently halt
+   * consumption row updates.
+   */
+  private static final int MAX_DISPLAY_LENGTH = 80;
+
+  /**
    * Produces the display string according to the given {@code mode}. Null-safe: a null {@code mode}
-   * is treated as {@link PortalRetainerMemberDisplay#FIRST_NAME_ROLE} (the system default).
+   * is treated as {@link PortalRetainerMemberDisplay#FIRST_NAME_ROLE} (the system default). All
+   * branches are passed through {@link #truncate(String)} so the resulting value always fits the
+   * portal column.
    *
    * @param member the firm member whose name/role to project (may be null)
    * @param roleName human-readable role label (e.g. "Attorney"); may be null
@@ -28,24 +38,41 @@ public class PortalRetainerMemberDisplayResolver {
         mode != null ? mode : PortalRetainerMemberDisplay.FIRST_NAME_ROLE;
 
     return switch (effective) {
-      case ANONYMISED -> FALLBACK;
-      case ROLE_ONLY -> hasText(roleName) ? roleName : FALLBACK;
+      case ANONYMISED -> truncate(FALLBACK);
+      case ROLE_ONLY -> truncate(hasText(roleName) ? roleName : FALLBACK);
       case FULL_NAME -> {
         String name = member != null ? member.getName() : null;
-        yield hasText(name) ? name.trim() : FALLBACK;
+        yield truncate(hasText(name) ? name : FALLBACK);
       }
       case FIRST_NAME_ROLE -> {
         String first = firstNameOf(member);
         if (!hasText(first)) {
           // No usable name — degrade gracefully. Prefer role-only over the generic fallback.
-          yield hasText(roleName) ? roleName : FALLBACK;
+          yield truncate(hasText(roleName) ? roleName : FALLBACK);
         }
         if (!hasText(roleName)) {
-          yield first;
+          yield truncate(first);
         }
-        yield first + " (" + roleName + ")";
+        yield truncate(first + " (" + roleName + ")");
       }
     };
+  }
+
+  /**
+   * Trims whitespace, caps the result at {@link #MAX_DISPLAY_LENGTH}, and falls back to {@link
+   * #FALLBACK} if the input is null or blank after trimming.
+   */
+  private static String truncate(String value) {
+    if (value == null) {
+      return FALLBACK;
+    }
+    String trimmed = value.trim();
+    if (trimmed.isEmpty()) {
+      return FALLBACK;
+    }
+    return trimmed.length() <= MAX_DISPLAY_LENGTH
+        ? trimmed
+        : trimmed.substring(0, MAX_DISPLAY_LENGTH);
   }
 
   private static String firstNameOf(Member member) {

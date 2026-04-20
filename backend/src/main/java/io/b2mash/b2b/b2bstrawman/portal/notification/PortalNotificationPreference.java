@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 /**
@@ -53,7 +54,7 @@ public class PortalNotificationPreference {
     pref.retainerUpdatesEnabled = true;
     pref.deadlineRemindersEnabled = true;
     pref.actionRequiredEnabled = true;
-    pref.lastUpdatedAt = Instant.now();
+    pref.lastUpdatedAt = Instant.now().truncatedTo(ChronoUnit.MICROS);
     return pref;
   }
 
@@ -69,7 +70,7 @@ public class PortalNotificationPreference {
     this.retainerUpdatesEnabled = retainerUpdatesEnabled;
     this.deadlineRemindersEnabled = deadlineRemindersEnabled;
     this.actionRequiredEnabled = actionRequiredEnabled;
-    this.lastUpdatedAt = Instant.now();
+    this.lastUpdatedAt = Instant.now().truncatedTo(ChronoUnit.MICROS);
   }
 
   public UUID getPortalContactId() {

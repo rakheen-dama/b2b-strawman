@@ -561,7 +561,7 @@
 | 493 | QA Capstone — Lifecycle + Screenshots + Gap Report | E2E/Process | 486–492 | L | 493A | **Done** (PR #1081) |
 | **Phase 68 — Portal Redesign & Vertical Parity** | | | | | | See [tasks/phase68-portal-redesign-vertical-parity.md](tasks/phase68-portal-redesign-vertical-parity.md) |
 | 494 | Portal Session Context + Nav Shell | Both | -- | M | 494A, 494B | **Done** |
-| 495 | Portal Trust Ledger View (legal-za) | Both | 494A | M | 495A, 495B | |
+| 495 | Portal Trust Ledger View (legal-za) | Both | 494A | M | 495A, 495B | **Done** |
 | 496 | Portal Retainer Usage View (legal-za + consulting-za) | Both | 494A | M | 496A, 496B | |
 | 497 | Portal Deadline Visibility (accounting-za + legal-za) | Both | 494A | M | 497A, 497B | |
 | 498 | Portal Notifications (digest + per-event + preferences) | Both | 495A or 496A or 497A | L | 498A, 498B, 498C | |

@@ -18,7 +18,7 @@ Three small firm-side additions are in scope — `FieldDefinition.portalVisibleD
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 494 | Portal Session Context + Nav Shell | Both | -- | M | 494A, 494B | **Done** |
-| 495 | Portal Trust Ledger View (`legal-za`) | Both | 494A | M | 495A, 495B | |
+| 495 | Portal Trust Ledger View (`legal-za`) | Both | 494A | M | 495A, 495B | **Done** |
 | 496 | Portal Retainer Usage View (`legal-za` + `consulting-za`) | Both | 494A | M | 496A, 496B | |
 | 497 | Portal Deadline Visibility (`accounting-za` + `legal-za`) | Both | 494A | M | 497A, 497B | |
 | 498 | Portal Notifications (digest + per-event + preferences) | Both | 495A or 496A or 497A (events) | L | 498A, 498B, 498C | |
@@ -147,7 +147,7 @@ PHASES already complete:
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 3a | 495 | 495B | `/trust` + `/trust/[matterId]` pages, trust API client, `balance-card`, `transaction-list`, `matter-selector` components, component tests. |
+| 3a | 495 | 495B | `/trust` + `/trust/[matterId]` pages, trust API client, `balance-card`, `transaction-list`, `matter-selector` components, component tests. **Done** (PR #1085) |
 | 3b (parallel) | 496 | 496B | `/retainer` + `/retainer/[id]` pages, retainer API client, `hour-bank-card`, `consumption-list` components, component tests. |
 | 3c (parallel) | 497 | 497B | `/deadlines` page, deadline API client, `deadline-list`, `deadline-detail-panel` components, firm-side `FieldDefinition.portalVisibleDeadline` settings toggle in existing field-definition editor, component tests. |
 | 3d (after ≥1 of 2a/2b/2c) | 498 | 498B | `PortalDigestScheduler` (weekly cron), `PortalEmailNotificationChannel`, 7 Thymeleaf templates (`portal-weekly-digest`, `portal-trust-activity`, `portal-deadline-approaching`, `portal-retainer-period-closed`, + 3 audits of existing templates to confirm no double-send), event subscriptions, integration tests. |
@@ -298,7 +298,7 @@ A realistic day-by-day cadence: 494A day 1–2; 494B + 498A days 2–5 (parallel
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **495A** | 495.1–495.7 | 9 backend files (2 migrations, 2 entities, 2 repos, 1 service, 1 controller, 1 helper, 1 test class) | V19 portal migration creates `portal_trust_balance` + `portal_trust_transaction`, `TrustLedgerPortalSyncService` with 3 `@EventListener` methods + backfill, `PortalTrustDescriptionSanitiser` helper, `PortalTrustController` at `/api/portal/trust/*` module-gated, integration tests. **Done** (PR #1084) |
-| **495B** | 495.8–495.13 | 9 frontend files (2 pages, 3 components, 1 API client, 2 test files, 1 portal-nav wiring) | `/trust/page.tsx` (matter-picker + summary), `/trust/[matterId]/page.tsx` (detail + pagination), `portal/lib/api/trust.ts`, `balance-card.tsx`, `transaction-list.tsx`, `matter-selector.tsx`, component tests. |
+| **495B** | 495.8–495.13 | 9 frontend files (2 pages, 3 components, 1 API client, 2 test files, 1 portal-nav wiring) | `/trust/page.tsx` (matter-picker + summary), `/trust/[matterId]/page.tsx` (detail + pagination), `portal/lib/api/trust.ts`, `balance-card.tsx`, `transaction-list.tsx`, `matter-selector.tsx`, component tests. **Done** (PR #1085) |
 
 ### Tasks
 

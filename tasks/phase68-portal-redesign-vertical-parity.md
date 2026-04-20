@@ -140,7 +140,7 @@ PHASES already complete:
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
 | 2a | 495 | 495A | V20 portal migration (`portal_trust_balance` + `portal_trust_transaction`), `TrustLedgerPortalSyncService` (3 event listeners + backfill), `PortalTrustController`, description-sanitisation helper, integration tests. **Done** (PR #1084) |
-| 2b (parallel) | 496 | 496A | V21 portal migration (`portal_retainer_summary` + `portal_retainer_consumption_entry`), V106 tenant migration (`org_settings.portal_retainer_member_display` enum), `RetainerPortalSyncService` (3 event listeners + member-display resolver + backfill), `PortalRetainerController`, integration tests. |
+| 2b (parallel) | 496 | 496A | V21 portal migration (`portal_retainer_summary` + `portal_retainer_consumption_entry`), V106 tenant migration (`org_settings.portal_retainer_member_display` enum), `RetainerPortalSyncService` (3 event listeners + member-display resolver + backfill), `PortalRetainerController`, integration tests. **Done** (PR #1086) |
 | 2c (parallel) | 497 | 497A | V22 portal migration (`portal_deadline_view` polymorphic), `DeadlinePortalSyncService` (4 source event listeners — filing, court date, prescription, custom-field-date with `portalVisibleDeadline` gate), `PortalDeadlineController`, integration tests. |
 
 ### Stage 3: Vertical frontend fan-out + notification wiring
@@ -379,7 +379,7 @@ A realistic day-by-day cadence: 494A day 1–2; 494B + 498A days 2–5 (parallel
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **496A** | 496.1–496.8 | 10 backend files | V20 portal migration (`portal_retainer_summary` + `portal_retainer_consumption_entry`), V105 tenant migration (`org_settings.portal_retainer_member_display` enum), `OrgSettings` field + enum, `PortalRetainerMemberDisplayResolver` helper, `RetainerPortalSyncService` (3 listeners + backfill), `PortalRetainerController`, integration tests. **Note**: V105 is the phase's first tenant migration — any other slice needing a tenant migration (497A, 498A) lands after. Builder confirms V-number. |
+| **496A** | 496.1–496.8 | 10 backend files | V20 portal migration (`portal_retainer_summary` + `portal_retainer_consumption_entry`), V105 tenant migration (`org_settings.portal_retainer_member_display` enum), `OrgSettings` field + enum, `PortalRetainerMemberDisplayResolver` helper, `RetainerPortalSyncService` (3 listeners + backfill), `PortalRetainerController`, integration tests. **Note**: V105 is the phase's first tenant migration — any other slice needing a tenant migration (497A, 498A) lands after. Builder confirms V-number. **Done** (PR #1086) |
 | **496B** | 496.9–496.14 | 8 frontend files | `/retainer/page.tsx` + `/retainer/[id]/page.tsx`, `portal/lib/api/retainer.ts`, `hour-bank-card.tsx`, `consumption-list.tsx`, component tests. |
 
 ### Tasks

@@ -168,6 +168,18 @@ public class VerticalModuleRegistry {
             List.of("legal-za"),
             List.of()));
 
+    map.put(
+        "retainer_agreements",
+        new ModuleDefinition(
+            "retainer_agreements",
+            "Retainer Agreements",
+            "Recurring retainer billing with hour-bank tracking and portal usage visibility for"
+                + " consulting and legal firms",
+            "active",
+            ModuleCategory.VERTICAL,
+            List.of("legal-za", "consulting-za"),
+            List.of(new NavItem("/retainers", "Retainers", "finance"))));
+
     this.modules = Map.copyOf(map);
   }
 

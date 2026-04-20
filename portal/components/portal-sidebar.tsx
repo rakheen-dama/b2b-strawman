@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Settings, LogOut } from "lucide-react";
+import { User, LogOut } from "lucide-react";
 import { Dialog } from "radix-ui";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/hooks/use-auth";
@@ -46,6 +46,7 @@ function NavList({ onItemClick }: { onItemClick?: () => void }) {
             href={item.href}
             onClick={onItemClick}
             data-active={isActive ? "true" : undefined}
+            aria-current={isActive ? "page" : undefined}
             className={cn(
               "relative flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
               "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400",
@@ -59,7 +60,7 @@ function NavList({ onItemClick }: { onItemClick?: () => void }) {
                 aria-hidden="true"
                 data-testid="nav-active-indicator"
                 className="absolute inset-y-1 left-0 w-0.5 rounded-full"
-                style={{ backgroundColor: brandColor }}
+                style={{ backgroundColor: brandColor ?? "#0f172a" }}
               />
             )}
             <Icon className="size-4 shrink-0" />
@@ -82,8 +83,8 @@ function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
         onClick={onNavigate}
         className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
       >
-        <Settings className="size-4" />
-        Settings
+        <User className="size-4" />
+        Profile
       </Link>
       <button
         type="button"

@@ -58,9 +58,17 @@ export default function HomePage() {
 function InfoRequestsCard() {
   const [count, setCount] = useState<number | null>(null);
   useEffect(() => {
+    let cancelled = false;
     portalGet<InfoRequestSummary[]>("/portal/information-requests?status=PENDING")
-      .then((data) => setCount(Array.isArray(data) ? data.length : 0))
-      .catch(() => setCount(0));
+      .then((data) => {
+        if (!cancelled) setCount(Array.isArray(data) ? data.length : 0);
+      })
+      .catch(() => {
+        if (!cancelled) setCount(0);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
   return (
     <Link href="/requests" className="block">
@@ -83,11 +91,19 @@ function InfoRequestsCard() {
 function AcceptancesCard() {
   const [count, setCount] = useState<number | null>(null);
   useEffect(() => {
+    let cancelled = false;
     portalGet<PortalPendingAcceptance[]>(
       "/portal/acceptance-requests/pending",
     )
-      .then((data) => setCount(Array.isArray(data) ? data.length : 0))
-      .catch(() => setCount(0));
+      .then((data) => {
+        if (!cancelled) setCount(Array.isArray(data) ? data.length : 0);
+      })
+      .catch(() => {
+        if (!cancelled) setCount(0);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
   return (
     <Link href="/acceptance" className="block">
@@ -110,9 +126,17 @@ function AcceptancesCard() {
 function DeadlinesCard() {
   const [count, setCount] = useState<number | null>(null);
   useEffect(() => {
+    let cancelled = false;
     portalGet<DeadlineSummary[]>("/portal/deadlines?within=14d")
-      .then((data) => setCount(Array.isArray(data) ? data.length : 0))
-      .catch(() => setCount(0));
+      .then((data) => {
+        if (!cancelled) setCount(Array.isArray(data) ? data.length : 0);
+      })
+      .catch(() => {
+        if (!cancelled) setCount(0);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
   return (
     <Link href="/deadlines" className="block">
@@ -136,8 +160,10 @@ function DeadlinesCard() {
 function RecentInvoicesCard() {
   const [invoices, setInvoices] = useState<PortalInvoice[] | null>(null);
   useEffect(() => {
+    let cancelled = false;
     portalGet<PortalInvoice[]>("/portal/invoices")
       .then((data) => {
+        if (cancelled) return;
         if (!Array.isArray(data)) {
           setInvoices([]);
           return;
@@ -147,7 +173,12 @@ function RecentInvoicesCard() {
         );
         setInvoices(sorted.slice(0, 3));
       })
-      .catch(() => setInvoices([]));
+      .catch(() => {
+        if (!cancelled) setInvoices([]);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
   return (
     <Card>
@@ -191,15 +222,22 @@ function TrustCard() {
     undefined,
   );
   useEffect(() => {
+    let cancelled = false;
     portalGet<TrustMovement[]>("/portal/trust/movements?limit=1")
       .then((data) => {
+        if (cancelled) return;
         if (Array.isArray(data) && data.length > 0) {
           setMovement(data[0]);
         } else {
           setMovement(null);
         }
       })
-      .catch(() => setMovement(null));
+      .catch(() => {
+        if (!cancelled) setMovement(null);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
   return (
     <Link href="/trust" className="block">

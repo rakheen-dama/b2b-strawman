@@ -27,13 +27,19 @@ export interface PortalSessionContext {
 
 const DEFAULT_BRAND_COLOR = "#3B82F6";
 
-const PortalSessionContextCtx = createContext<PortalSessionContext | null>(
-  null,
-);
+interface PortalContextState {
+  data: PortalSessionContext | null;
+  isSettled: boolean;
+}
+
+const DEFAULT_STATE: PortalContextState = { data: null, isSettled: false };
+
+const PortalSessionContextCtx =
+  createContext<PortalContextState>(DEFAULT_STATE);
 
 export function PortalContextProvider({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
-  const [data, setData] = useState<PortalSessionContext | null>(null);
+  const [state, setState] = useState<PortalContextState>(DEFAULT_STATE);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -43,9 +49,10 @@ export function PortalContextProvider({ children }: { children: ReactNode }) {
         const res = await portalGet<PortalSessionContext>(
           "/portal/session/context",
         );
-        if (!cancelled) setData(res);
+        if (!cancelled) setState({ data: res, isSettled: true });
       } catch {
         // Non-fatal — nav falls back to defaults when context is null.
+        if (!cancelled) setState({ data: null, isSettled: true });
       }
     })();
     return () => {
@@ -55,25 +62,25 @@ export function PortalContextProvider({ children }: { children: ReactNode }) {
 
   return createElement(
     PortalSessionContextCtx.Provider,
-    { value: data },
+    { value: state },
     children,
   );
 }
 
 export function usePortalContext(): PortalSessionContext | null {
-  return useContext(PortalSessionContextCtx);
+  return useContext(PortalSessionContextCtx).data;
 }
 
 export function useProfile(): string | null {
-  return useContext(PortalSessionContextCtx)?.tenantProfile ?? null;
+  return useContext(PortalSessionContextCtx).data?.tenantProfile ?? null;
 }
 
 export function useModules(): string[] {
-  return useContext(PortalSessionContextCtx)?.enabledModules ?? [];
+  return useContext(PortalSessionContextCtx).data?.enabledModules ?? [];
 }
 
 export function useTerminologyKey(): string {
-  return useContext(PortalSessionContextCtx)?.terminologyKey ?? "";
+  return useContext(PortalSessionContextCtx).data?.terminologyKey ?? "";
 }
 
 /**
@@ -90,7 +97,8 @@ export interface PortalBranding {
 }
 
 export function useBranding(): PortalBranding {
-  const ctx = useContext(PortalSessionContextCtx);
+  const state = useContext(PortalSessionContextCtx);
+  const ctx = state.data;
   const rawLogo = ctx?.logoUrl ?? null;
   const rawColor = ctx?.brandColor ?? null;
   return {
@@ -99,6 +107,6 @@ export function useBranding(): PortalBranding {
     brandColor:
       rawColor && isValidHexColor(rawColor) ? rawColor : DEFAULT_BRAND_COLOR,
     footerText: null,
-    isLoading: ctx === null,
+    isLoading: !state.isSettled,
   };
 }

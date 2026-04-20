@@ -100,9 +100,9 @@ describe("PortalSidebar (desktop)", () => {
     expect(indicators).toHaveLength(1);
   });
 
-  it("exposes the Settings link and Logout button in the footer", () => {
+  it("exposes the Profile link and Logout button in the footer", () => {
     render(<PortalSidebar />);
-    expect(screen.getByText("Settings")).toBeInTheDocument();
+    expect(screen.getByText("Profile")).toBeInTheDocument();
     expect(
       screen.getByRole("button", { name: /logout/i }),
     ).toBeInTheDocument();

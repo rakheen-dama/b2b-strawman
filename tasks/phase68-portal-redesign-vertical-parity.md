@@ -133,7 +133,7 @@ PHASES already complete:
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
 | 1a | 494 | 494B | `portal-sidebar.tsx` (desktop + mobile drawer), `portal-topbar.tsx`, `nav-items.ts` registry, `use-portal-context.ts`, `layout.tsx` rewrite, `home/page.tsx`, middleware redirect `/` → `/home`, component tests + nav-filter unit test. **Done** (PR #1083) |
-| 1b (parallel) | 498 | 498A | V105 tenant migration (`org_settings.portal_digest_cadence` enum + `field_definitions.portal_visible_deadline` column), V19 portal (global) migration (`portal_notification_preference` table), `OrgSettings` field + service method, `PortalNotificationPreference` entity + repo + service stub, unit tests. |
+| 1b (parallel) | 498 | 498A | V105 tenant migration (`org_settings.portal_digest_cadence` enum + `field_definitions.portal_visible_deadline` column), V19 portal (global) migration (`portal_notification_preference` table), `OrgSettings` field + service method, `PortalNotificationPreference` entity + repo + service stub, unit tests. **Done** (PR #1090) |
 
 ### Stage 2: Vertical backend fan-out (three parallel tracks after 494A)
 
@@ -544,7 +544,7 @@ A realistic day-by-day cadence: 494A day 1–2; 494B + 498A days 2–5 (parallel
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **498A** | 498.1–498.5 | 7 backend files | V107 tenant migration (`org_settings.portal_digest_cadence`), V22 portal migration (`portal_notification_preference`), `OrgSettings` field + enum, `PortalNotificationPreference` entity + repo + service stub, migration tests. Backend scaffolding only — no scheduler, no templates, no event channel yet. |
+| **498A** | 498.1–498.5 | 7 backend files | V107 tenant migration (`org_settings.portal_digest_cadence`), V22 portal migration (`portal_notification_preference`), `OrgSettings` field + enum, `PortalNotificationPreference` entity + repo + service stub, migration tests. Backend scaffolding only — no scheduler, no templates, no event channel yet. **Done** (PR #1090) |
 | **498B** | 498.6–498.14 | 10 backend files (scheduler, channel, 4 new templates, audit of 4 existing templates, integration tests) | `PortalDigestScheduler` (cron), `PortalEmailNotificationChannel` (per-event sibling to Phase 24 channel), 4 new Thymeleaf templates (`portal-weekly-digest`, `portal-trust-activity`, `portal-deadline-approaching`, `portal-retainer-period-closed`), audit of existing templates for no-double-send, integration tests. |
 | **498C** | 498.15–498.20 | 8 files (portal frontend + firm-side cadence UI) | `/settings/notifications/page.tsx` + preferences API client + unsubscribe landing wiring, firm-side `OrgSettings.portalDigestCadence` + `portalRetainerMemberDisplay` settings UI (both on existing portal-settings section), component tests. |
 

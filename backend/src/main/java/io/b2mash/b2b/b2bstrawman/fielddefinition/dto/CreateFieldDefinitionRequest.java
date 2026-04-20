@@ -19,4 +19,5 @@ public record CreateFieldDefinitionRequest(
     List<Map<String, String>> options,
     Map<String, Object> validation,
     int sortOrder,
-    Map<String, Object> visibilityCondition) {}
+    Map<String, Object> visibilityCondition,
+    Boolean portalVisibleDeadline) {}

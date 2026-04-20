@@ -134,6 +134,7 @@ public class FieldDefinitionService {
     fd.setSortOrder(request.sortOrder());
     validateVisibilityCondition(request.visibilityCondition(), request.entityType(), finalSlug);
     fd.setVisibilityCondition(request.visibilityCondition());
+    fd.setPortalVisibleDeadline(Boolean.TRUE.equals(request.portalVisibleDeadline()));
 
     try {
       fd = fieldDefinitionRepository.save(fd);
@@ -184,6 +185,9 @@ public class FieldDefinitionService {
     fd.setSortOrder(request.sortOrder());
     validateVisibilityCondition(request.visibilityCondition(), fd.getEntityType(), fd.getSlug());
     fd.setVisibilityCondition(request.visibilityCondition());
+    if (request.portalVisibleDeadline() != null) {
+      fd.setPortalVisibleDeadline(request.portalVisibleDeadline());
+    }
 
     fd = fieldDefinitionRepository.save(fd);
 

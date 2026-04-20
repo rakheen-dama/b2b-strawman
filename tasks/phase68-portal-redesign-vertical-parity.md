@@ -150,7 +150,7 @@ PHASES already complete:
 | 3a | 495 | 495B | `/trust` + `/trust/[matterId]` pages, trust API client, `balance-card`, `transaction-list`, `matter-selector` components, component tests. **Done** (PR #1085) |
 | 3b (parallel) | 496 | 496B | `/retainer` + `/retainer/[id]` pages, retainer API client, `hour-bank-card`, `consumption-list` components, component tests. **Done** (PR #1087) |
 | 3c (parallel) | 497 | 497B | `/deadlines` page, deadline API client, `deadline-list`, `deadline-detail-panel` components, firm-side `FieldDefinition.portalVisibleDeadline` settings toggle in existing field-definition editor, component tests. **Done** (PR #1089) |
-| 3d (after ≥1 of 2a/2b/2c) | 498 | 498B | `PortalDigestScheduler` (weekly cron), `PortalEmailNotificationChannel`, 7 Thymeleaf templates (`portal-weekly-digest`, `portal-trust-activity`, `portal-deadline-approaching`, `portal-retainer-period-closed`, + 3 audits of existing templates to confirm no double-send), event subscriptions, integration tests. |
+| 3d (after ≥1 of 2a/2b/2c) | 498 | 498B | `PortalDigestScheduler` (weekly cron), `PortalEmailNotificationChannel`, 7 Thymeleaf templates (`portal-weekly-digest`, `portal-trust-activity`, `portal-deadline-approaching`, `portal-retainer-period-closed`, + 3 audits of existing templates to confirm no double-send), event subscriptions, integration tests. **Done** (PR #1091) |
 
 ### Stage 4: Notification preferences frontend + firm-side cadence UI
 
@@ -545,7 +545,7 @@ A realistic day-by-day cadence: 494A day 1–2; 494B + 498A days 2–5 (parallel
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **498A** | 498.1–498.5 | 7 backend files | V107 tenant migration (`org_settings.portal_digest_cadence`), V22 portal migration (`portal_notification_preference`), `OrgSettings` field + enum, `PortalNotificationPreference` entity + repo + service stub, migration tests. Backend scaffolding only — no scheduler, no templates, no event channel yet. **Done** (PR #1090) |
-| **498B** | 498.6–498.14 | 10 backend files (scheduler, channel, 4 new templates, audit of 4 existing templates, integration tests) | `PortalDigestScheduler` (cron), `PortalEmailNotificationChannel` (per-event sibling to Phase 24 channel), 4 new Thymeleaf templates (`portal-weekly-digest`, `portal-trust-activity`, `portal-deadline-approaching`, `portal-retainer-period-closed`), audit of existing templates for no-double-send, integration tests. |
+| **498B** | 498.6–498.14 | 10 backend files (scheduler, channel, 4 new templates, audit of 4 existing templates, integration tests) | `PortalDigestScheduler` (cron), `PortalEmailNotificationChannel` (per-event sibling to Phase 24 channel), 4 new Thymeleaf templates (`portal-weekly-digest`, `portal-trust-activity`, `portal-deadline-approaching`, `portal-retainer-period-closed`), audit of existing templates for no-double-send, integration tests. **Done** (PR #1091) |
 | **498C** | 498.15–498.20 | 8 files (portal frontend + firm-side cadence UI) | `/settings/notifications/page.tsx` + preferences API client + unsubscribe landing wiring, firm-side `OrgSettings.portalDigestCadence` + `portalRetainerMemberDisplay` settings UI (both on existing portal-settings section), component tests. |
 
 ### Tasks

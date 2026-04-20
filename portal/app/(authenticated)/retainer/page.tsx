@@ -98,14 +98,16 @@ export default function RetainerIndexPage() {
       {!error && retainers !== null && retainers.length > 0 && (
         <div
           className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3"
+          role="list"
           aria-label="Active retainers"
         >
           {retainers.map((retainer) => (
-            <HourBankCard
-              key={retainer.id}
-              summary={retainer}
-              href={`/retainer/${retainer.id}`}
-            />
+            <div key={retainer.id} role="listitem">
+              <HourBankCard
+                summary={retainer}
+                href={`/retainer/${retainer.id}`}
+              />
+            </div>
           ))}
         </div>
       )}

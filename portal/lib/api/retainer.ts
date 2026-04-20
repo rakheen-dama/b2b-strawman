@@ -96,27 +96,62 @@ export function formatHours(n: number): string {
  * Computes the previous period bounds for a retainer, given the current
  * period start and period type. Returns ISO dates. Used when the user picks
  * "Previous period" in the consumption selector.
+ *
+ * Uses `subtractMonthsUTC` to safely handle month-end dates (e.g. subtracting
+ * one month from `2026-03-31` yields `2026-02-28`, not `2026-03-03` as a naive
+ * `Date.setUTCMonth()` would produce via day overflow).
  */
 export function previousPeriodBounds(
   currentPeriodStart: string,
   periodType: PortalRetainerPeriodType,
 ): { from: string; to: string } {
   const start = new Date(`${currentPeriodStart}T00:00:00Z`);
-  const prevStart = new Date(start);
   const prevEnd = new Date(start);
   prevEnd.setUTCDate(prevEnd.getUTCDate() - 1);
+  let prevStart: Date;
   switch (periodType) {
     case "MONTHLY":
-      prevStart.setUTCMonth(prevStart.getUTCMonth() - 1);
+      prevStart = subtractMonthsUTC(start, 1);
       break;
     case "QUARTERLY":
-      prevStart.setUTCMonth(prevStart.getUTCMonth() - 3);
+      prevStart = subtractMonthsUTC(start, 3);
       break;
     case "ANNUAL":
-      prevStart.setUTCFullYear(prevStart.getUTCFullYear() - 1);
+      prevStart = subtractMonthsUTC(start, 12);
       break;
   }
   return { from: toIsoDate(prevStart), to: toIsoDate(prevEnd) };
+}
+
+/**
+ * Subtracts `months` months from `date` (UTC) without day-overflow.
+ *
+ * `Date.setUTCMonth(m)` silently rolls over when the day-of-month does not
+ * exist in the target month (e.g. Mar 31 minus 1 month → Mar 3, because Feb 28
+ * + 3 overflow days). This helper builds the target via `Date.UTC(y, m, 1)`
+ * and clamps the day to the last valid day of the target month, so
+ * `Mar 31 − 1 month = Feb 28` (or Feb 29 in a leap year) as expected.
+ */
+function subtractMonthsUTC(date: Date, months: number): Date {
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth();
+  const day = date.getUTCDate();
+  // Date.UTC handles year rollover for negative/out-of-range months.
+  const firstOfTarget = new Date(Date.UTC(year, month - months, 1));
+  const lastDayOfTarget = new Date(
+    Date.UTC(
+      firstOfTarget.getUTCFullYear(),
+      firstOfTarget.getUTCMonth() + 1,
+      0,
+    ),
+  ).getUTCDate();
+  return new Date(
+    Date.UTC(
+      firstOfTarget.getUTCFullYear(),
+      firstOfTarget.getUTCMonth(),
+      Math.min(day, lastDayOfTarget),
+    ),
+  );
 }
 
 function toIsoDate(d: Date): string {

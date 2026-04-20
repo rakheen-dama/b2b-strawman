@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.retainer.event.RetainerPeriodRolloverEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -156,8 +157,9 @@ public class PortalEmailNotificationChannel {
           try {
             UUID customerId = resolveCustomerIdFromEvent(event);
             if (customerId == null) {
-              log.debug(
-                  "Skipping deadline email — no customer linkage for entityType={} entityId={}",
+              log.warn(
+                  "Skipping portal deadline email -- no customer linkage for entityType={} "
+                      + "entityId={} (TODO: project/task/invoice resolution is a follow-up)",
                   event.entityType(),
                   event.entityId());
               return;
@@ -307,7 +309,7 @@ public class PortalEmailNotificationChannel {
     if (details.get("days_until") instanceof Number n) {
       daysUntil = n.longValue();
     } else if (dueDate != null) {
-      daysUntil = ChronoUnit.DAYS.between(LocalDate.now(), dueDate);
+      daysUntil = ChronoUnit.DAYS.between(LocalDate.now(ZoneOffset.UTC), dueDate);
     }
 
     String orgName = context.getOrDefault("orgName", productName).toString();
@@ -332,8 +334,12 @@ public class PortalEmailNotificationChannel {
   /**
    * Resolves the customer id for a {@link FieldDateApproachingEvent}. For {@code CUSTOMER} entity
    * types the entity id IS the customer id; for other entity types we return null (no portal
-   * audience). A future enhancement can resolve via {@code CustomerProjectRepository} for {@code
-   * PROJECT} entities, mirroring {@code DeadlinePortalSyncService}.
+   * audience).
+   *
+   * <p>TODO(portal-notifications): resolve PROJECT / TASK / INVOICE entity types via {@code
+   * CustomerProjectRepository}, mirroring {@code DeadlinePortalSyncService}. Until that lands,
+   * non-CUSTOMER deadline events silently drop their portal audience — a follow-up ticket is
+   * required before broadening the FieldDateApproachingEvent publisher to non-CUSTOMER entities.
    */
   private UUID resolveCustomerIdFromEvent(FieldDateApproachingEvent event) {
     String rawEntityType = event.entityType();

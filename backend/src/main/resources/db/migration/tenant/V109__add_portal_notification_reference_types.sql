@@ -6,7 +6,7 @@
 --   * PORTAL_DEADLINE        — per-event field-date approaching
 --   * PORTAL_RETAINER        — per-event retainer period rollover
 ALTER TABLE email_delivery_log
-    DROP CONSTRAINT chk_email_delivery_reference_type;
+    DROP CONSTRAINT IF EXISTS chk_email_delivery_reference_type;
 
 ALTER TABLE email_delivery_log
     ADD CONSTRAINT chk_email_delivery_reference_type

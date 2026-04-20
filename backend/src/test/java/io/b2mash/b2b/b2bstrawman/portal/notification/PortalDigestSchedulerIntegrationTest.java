@@ -25,7 +25,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.UUID;
-import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -127,7 +126,7 @@ class PortalDigestSchedulerIntegrationTest {
                       .findForCurrentTenant()
                       .ifPresent(
                           s -> {
-                            s.markDigestSent(null);
+                            s.clearDigestLastSent();
                             orgSettingsRepository.save(s);
                           });
                 }));
@@ -322,11 +321,11 @@ class PortalDigestSchedulerIntegrationTest {
         .run(action);
   }
 
-  private <T> T runInTenantReturning(Supplier<T> supplier) {
-    final Object[] holder = new Object[1];
-    runInTenant(() -> holder[0] = supplier.get());
-    @SuppressWarnings("unchecked")
-    T result = (T) holder[0];
-    return result;
+  private <T> T runInTenantReturning(java.util.concurrent.Callable<T> callable) throws Exception {
+    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .call(callable::call);
   }
 }

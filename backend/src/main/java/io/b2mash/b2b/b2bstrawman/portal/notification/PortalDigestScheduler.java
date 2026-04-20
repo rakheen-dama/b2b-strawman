@@ -174,13 +174,16 @@ public class PortalDigestScheduler {
       }
     }
 
-    if (sent > 0 && settings != null) {
-      final OrgSettings settingsToStamp = settings;
+    if (sent > 0) {
       transactionTemplate.executeWithoutResult(
-          tx -> {
-            settingsToStamp.markDigestSent(Instant.now());
-            orgSettingsRepository.save(settingsToStamp);
-          });
+          tx ->
+              orgSettingsRepository
+                  .findForCurrentTenant()
+                  .ifPresent(
+                      s -> {
+                        s.markDigestSent(Instant.now());
+                        orgSettingsRepository.save(s);
+                      }));
     }
 
     return sent;

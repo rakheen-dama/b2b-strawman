@@ -293,9 +293,46 @@ class PortalEmailNotificationChannelIntegrationTest {
         .isEqualTo(before);
   }
 
+  /**
+   * Reflection-based scope assertion (ADR-258). Verifies the channel subscribes ONLY to the three
+   * allowed event types. This guards against future regressions where a listener is added for
+   * {@code InvoiceSentEvent}, {@code AcceptanceRequestSentEvent}, {@code ProposalSentEvent}, or
+   * {@code InformationRequestSentEvent} — all of which already have upstream email senders and
+   * would cause double-sends if the channel also fired on them.
+   */
+  @Test
+  void channelSubscribesOnlyToAllowedEventTypes() {
+    java.util.Set<Class<?>> allowed =
+        java.util.Set.of(
+            TrustTransactionApprovalEvent.class,
+            RetainerPeriodRolloverEvent.class,
+            FieldDateApproachingEvent.class);
+
+    java.util.List<Class<?>> listenerParams = new java.util.ArrayList<>();
+    for (java.lang.reflect.Method m : PortalEmailNotificationChannel.class.getDeclaredMethods()) {
+      if (m.isAnnotationPresent(
+              org.springframework.transaction.event.TransactionalEventListener.class)
+          || m.isAnnotationPresent(org.springframework.context.event.EventListener.class)) {
+        assertThat(m.getParameterCount())
+            .as(
+                "@TransactionalEventListener method %s must take exactly one parameter",
+                m.getName())
+            .isEqualTo(1);
+        listenerParams.add(m.getParameterTypes()[0]);
+      }
+    }
+
+    assertThat(listenerParams)
+        .as(
+            "PortalEmailNotificationChannel listener parameter types must be a subset of the three "
+                + "allowed events (ADR-258); any other event type would cause double-sends")
+        .isNotEmpty()
+        .allSatisfy(p -> assertThat(allowed).contains(p));
+  }
+
   // ── helpers ────────────────────────────────────────────────────────────
 
-  private int countNewChannelLogs() {
+  private int countNewChannelLogs() throws Exception {
     return runInTenantReturning(
         () ->
             transactionTemplate.execute(
@@ -314,7 +351,7 @@ class PortalEmailNotificationChannelIntegrationTest {
                 }));
   }
 
-  private List<EmailDeliveryLog> findLogsByReferenceType(String referenceType) {
+  private List<EmailDeliveryLog> findLogsByReferenceType(String referenceType) throws Exception {
     return runInTenantReturning(
         () ->
             transactionTemplate.execute(
@@ -336,15 +373,11 @@ class PortalEmailNotificationChannelIntegrationTest {
         .run(() -> transactionTemplate.executeWithoutResult(tx -> publish.run()));
   }
 
-  private <T> T runInTenantReturning(java.util.function.Supplier<T> supplier) {
-    final Object[] holder = new Object[1];
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+  private <T> T runInTenantReturning(java.util.concurrent.Callable<T> callable) throws Exception {
+    return ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .where(RequestScopes.MEMBER_ID, memberId)
         .where(RequestScopes.ORG_ROLE, "owner")
-        .run(() -> holder[0] = supplier.get());
-    @SuppressWarnings("unchecked")
-    T result = (T) holder[0];
-    return result;
+        .call(callable::call);
   }
 }

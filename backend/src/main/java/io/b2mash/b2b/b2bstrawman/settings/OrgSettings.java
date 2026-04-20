@@ -21,6 +21,7 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -981,7 +982,16 @@ public class OrgSettings {
 
   /** Stamps the last successful digest send timestamp (Epic 498B). Bumps {@code updatedAt}. */
   public void markDigestSent(Instant sentAt) {
-    this.digestLastSentAt = sentAt;
+    this.digestLastSentAt = Objects.requireNonNull(sentAt, "sentAt must not be null");
+    this.updatedAt = Instant.now();
+  }
+
+  /**
+   * Clears the last successful digest send timestamp (Epic 498B). Intended for test-reset paths and
+   * administrative cadence resets. Bumps {@code updatedAt}.
+   */
+  public void clearDigestLastSent() {
+    this.digestLastSentAt = null;
     this.updatedAt = Instant.now();
   }
 

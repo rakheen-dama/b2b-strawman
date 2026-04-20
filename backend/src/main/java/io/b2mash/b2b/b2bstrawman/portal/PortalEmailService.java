@@ -222,6 +222,13 @@ public class PortalEmailService {
           contact.getId());
       return false;
     }
+    if (context == null) {
+      log.warn(
+          "Skipping portal notification ({}) for contact {} -- context is null",
+          templateName,
+          contact.getId());
+      return false;
+    }
 
     try {
       EmailProvider provider =

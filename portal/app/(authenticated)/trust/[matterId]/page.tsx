@@ -133,6 +133,26 @@ export default function TrustMatterDetailPage() {
     };
   }, [matterId, ctx]);
 
+  // Empty matterId would cause both fetch effects to no-op and leave the page
+  // stuck in a skeleton forever. Short-circuit with a clear error state before
+  // the loading check so the user sees actionable feedback.
+  if (!matterId) {
+    return (
+      <div className="space-y-4">
+        <Link
+          href="/trust"
+          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
+        >
+          <ArrowLeft className="size-4" />
+          Back to trust
+        </Link>
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+          Invalid matter id.
+        </div>
+      </div>
+    );
+  }
+
   if (summaryLoading) {
     return <DetailSkeleton />;
   }

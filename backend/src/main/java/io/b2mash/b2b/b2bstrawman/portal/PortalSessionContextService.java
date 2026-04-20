@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.portal;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.portal.dto.PortalSessionContextDto;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -67,7 +68,10 @@ public class PortalSessionContextService {
     OrgSettings settings = orgSettingsRepository.findForCurrentTenant().orElse(null);
 
     String tenantProfile = settings != null ? settings.getVerticalProfile() : null;
-    List<String> enabledModules = settings != null ? settings.getEnabledModules() : List.of();
+    List<String> enabledModules =
+        settings == null || settings.getEnabledModules() == null
+            ? List.of()
+            : List.copyOf(settings.getEnabledModules());
     String terminologyKey = resolveTerminologyKey(settings, tenantProfile);
     String brandColor = settings != null ? settings.getBrandColor() : null;
     String logoUrl = settings != null ? generateLogoUrl(settings.getLogoS3Key()) : null;
@@ -105,7 +109,7 @@ public class PortalSessionContextService {
   }
 
   private String generateLogoUrl(String logoS3Key) {
-    if (logoS3Key == null) {
+    if (logoS3Key == null || logoS3Key.isBlank()) {
       return null;
     }
     try {

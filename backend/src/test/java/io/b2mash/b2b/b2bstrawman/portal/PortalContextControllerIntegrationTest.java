@@ -6,11 +6,9 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.integration.storage.PresignedUrl;
@@ -19,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -46,7 +44,6 @@ class PortalContextControllerIntegrationTest {
   private static final String LEGAL_ORG_NAME = "Test Law Firm";
   private static final String ACCT_ORG_ID = "org_portal_ctx_accounting";
   private static final String ACCT_ORG_NAME = "Test Accounting Firm";
-  private static final String API_KEY = "test-api-key";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private PortalJwtService portalJwtService;
@@ -69,8 +66,14 @@ class PortalContextControllerIntegrationTest {
     // --- legal-za tenant ---
     provisioningService.provisionTenant(LEGAL_ORG_ID, LEGAL_ORG_NAME, "legal-za");
     UUID legalMemberId =
-        syncOwnerMember(
-            LEGAL_ORG_ID, "user_ctx_legal_owner", "legal_owner@test.com", "Legal Owner");
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                LEGAL_ORG_ID,
+                "user_ctx_legal_owner",
+                "legal_owner@test.com",
+                "Legal Owner",
+                "owner"));
     String legalSchema =
         orgSchemaMappingRepository.findByClerkOrgId(LEGAL_ORG_ID).get().getSchemaName();
 
@@ -93,9 +96,7 @@ class PortalContextControllerIntegrationTest {
               // explicitly on OrgSettings.
               var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
               List<String> modules = new ArrayList<>(settings.getEnabledModules());
-              if (!modules.contains("trust_accounting")) {
-                modules.add("trust_accounting");
-              }
+              // trust_accounting is already seeded by legal-za.json; no guard needed.
               if (!modules.contains("retainer_agreements")) {
                 modules.add("retainer_agreements");
               }
@@ -109,7 +110,14 @@ class PortalContextControllerIntegrationTest {
     // --- accounting-za tenant ---
     provisioningService.provisionTenant(ACCT_ORG_ID, ACCT_ORG_NAME, "accounting-za");
     UUID acctMemberId =
-        syncOwnerMember(ACCT_ORG_ID, "user_ctx_acct_owner", "acct_owner@test.com", "Acct Owner");
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ACCT_ORG_ID,
+                "user_ctx_acct_owner",
+                "acct_owner@test.com",
+                "Acct Owner",
+                "owner"));
     String acctSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ACCT_ORG_ID).get().getSchemaName();
 
@@ -133,24 +141,6 @@ class PortalContextControllerIntegrationTest {
               settings.setEnabledModules(List.of("regulatory_deadlines"));
               orgSettingsRepository.save(settings);
             });
-  }
-
-  private UUID syncOwnerMember(String orgId, String userId, String email, String name)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/internal/members/sync")
-                    .header("X-API-KEY", API_KEY)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"clerkOrgId":"%s","clerkUserId":"%s","email":"%s","name":"%s","avatarUrl":null,"orgRole":"owner"}
-                        """
-                            .formatted(orgId, userId, email, name)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return UUID.fromString(JsonPath.read(result.getResponse().getContentAsString(), "$.memberId"));
   }
 
   @Test

@@ -1,4 +1,4 @@
-package io.b2mash.b2b.b2bstrawman.portal;
+package io.b2mash.b2b.b2bstrawman.portal.dto;
 
 import java.util.List;
 

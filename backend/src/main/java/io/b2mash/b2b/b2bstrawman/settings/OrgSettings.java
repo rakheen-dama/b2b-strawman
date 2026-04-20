@@ -211,6 +211,15 @@ public class OrgSettings {
   @Column(name = "portal_retainer_member_display", length = 20)
   private PortalRetainerMemberDisplay portalRetainerMemberDisplay;
 
+  /**
+   * Firm-wide cadence (Epic 498A, ADR-258) controlling how often the portal digest scheduler emails
+   * active portal contacts. Null-safe default = {@link PortalDigestCadence#WEEKLY}; use {@link
+   * #getEffectivePortalDigestCadence()} to read.
+   */
+  @Enumerated(EnumType.STRING)
+  @Column(name = "portal_digest_cadence", length = 12)
+  private PortalDigestCadence portalDigestCadence;
+
   protected OrgSettings() {}
 
   public OrgSettings(String defaultCurrency) {
@@ -937,6 +946,23 @@ public class OrgSettings {
 
   public void setPortalRetainerMemberDisplay(PortalRetainerMemberDisplay mode) {
     this.portalRetainerMemberDisplay = mode;
+    this.updatedAt = Instant.now();
+  }
+
+  public PortalDigestCadence getPortalDigestCadence() {
+    return portalDigestCadence;
+  }
+
+  /**
+   * Returns the effective portal digest cadence, falling back to {@link PortalDigestCadence#WEEKLY}
+   * when unset.
+   */
+  public PortalDigestCadence getEffectivePortalDigestCadence() {
+    return portalDigestCadence != null ? portalDigestCadence : PortalDigestCadence.WEEKLY;
+  }
+
+  public void setPortalDigestCadence(PortalDigestCadence cadence) {
+    this.portalDigestCadence = cadence;
     this.updatedAt = Instant.now();
   }
 

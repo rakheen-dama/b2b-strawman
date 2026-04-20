@@ -1,0 +1,45 @@
+<div xmlns:th="http://www.thymeleaf.org">
+  <h2 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #111827;">Upcoming deadline</h2>
+  <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    Hi <span th:text="${contactName != null ? contactName : 'there'}">there</span>,
+  </p>
+  <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    A deadline is approaching:
+    <strong th:text="${label != null ? label : 'Upcoming deadline'}">Upcoming deadline</strong>.
+  </p>
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 16px 0;">
+    <tr>
+      <td style="padding: 16px; background-color: #f9fafb; border-radius: 6px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+          <tr>
+            <td style="padding: 4px 0;">
+              <span style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Deadline</span><br/>
+              <span style="font-size: 14px; color: #111827; font-weight: 500;" th:text="${label != null ? label : 'N/A'}">N/A</span>
+            </td>
+            <td style="padding: 4px 0;">
+              <span style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Due date</span><br/>
+              <span style="font-size: 14px; color: #111827; font-weight: 500;" th:text="${dueDate != null ? dueDate : 'N/A'}">N/A</span>
+            </td>
+            <td style="padding: 4px 0;">
+              <span style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Days away</span><br/>
+              <span style="font-size: 14px; color: #111827; font-weight: 500;" th:text="${daysUntil != null ? daysUntil : 'N/A'}">N/A</span>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+  <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 24px 0;">
+    <tr>
+      <td align="center" style="border-radius: 6px;" th:style="'border-radius: 6px; background-color: ' + (${brandColor != null ? brandColor : '#2563EB'}) + ';'">
+        <a th:href="${deadlineUrl}" style="display: inline-block; padding: 12px 24px; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 6px;" th:style="'display: inline-block; padding: 12px 24px; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 6px; background-color: ' + (${brandColor != null ? brandColor : '#2563EB'}) + ';'">
+          View deadlines
+        </a>
+      </td>
+    </tr>
+  </table>
+  <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    Best,<br/>
+    <span th:text="${orgName != null ? orgName : 'Kazi'}">Kazi</span>
+  </p>
+</div>

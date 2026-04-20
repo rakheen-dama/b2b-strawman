@@ -220,6 +220,15 @@ public class OrgSettings {
   @Column(name = "portal_digest_cadence", length = 12)
   private PortalDigestCadence portalDigestCadence;
 
+  /**
+   * Timestamp of the most recent successful portal digest send for this tenant (Epic 498B, Phase
+   * 68). Consumed by {@code PortalDigestScheduler} for the {@link PortalDigestCadence#BIWEEKLY}
+   * skip-window (12 days). WEEKLY ignores this column; OFF never runs. Null until the first
+   * successful send.
+   */
+  @Column(name = "digest_last_sent_at")
+  private Instant digestLastSentAt;
+
   protected OrgSettings() {}
 
   public OrgSettings(String defaultCurrency) {
@@ -963,6 +972,16 @@ public class OrgSettings {
 
   public void setPortalDigestCadence(PortalDigestCadence cadence) {
     this.portalDigestCadence = cadence;
+    this.updatedAt = Instant.now();
+  }
+
+  public Instant getDigestLastSentAt() {
+    return digestLastSentAt;
+  }
+
+  /** Stamps the last successful digest send timestamp (Epic 498B). Bumps {@code updatedAt}. */
+  public void markDigestSent(Instant sentAt) {
+    this.digestLastSentAt = sentAt;
     this.updatedAt = Instant.now();
   }
 

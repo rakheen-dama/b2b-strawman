@@ -13,6 +13,8 @@ import {
   type PortalRetainerSummary,
 } from "@/lib/api/retainer";
 
+const RETAINER_MODULE = "retainer_agreements";
+
 function DetailSkeleton() {
   return (
     <div className="space-y-8">
@@ -37,13 +39,13 @@ export default function RetainerDetailPage() {
 
   // Module gate — redirect once context has loaded if module disabled.
   useEffect(() => {
-    if (ctx && !ctx.enabledModules.includes("retainer_agreements")) {
+    if (ctx && !ctx.enabledModules.includes(RETAINER_MODULE)) {
       router.replace("/home");
     }
   }, [ctx, router]);
 
   useEffect(() => {
-    if (!retainerId || !ctx?.enabledModules.includes("retainer_agreements")) {
+    if (!retainerId || !ctx?.enabledModules.includes(RETAINER_MODULE)) {
       return;
     }
     let cancelled = false;
@@ -56,13 +58,11 @@ export default function RetainerDetailPage() {
         if (cancelled) return;
         const match = retainers.find((r) => r.id === retainerId) ?? null;
         setSummary(match);
+        setError(null);
       } catch (err) {
         if (!cancelled) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Failed to load retainer details",
-          );
+          console.error("Failed to load retainer details", err);
+          setError("Failed to load retainer details");
         }
       } finally {
         if (!cancelled) setIsLoading(false);

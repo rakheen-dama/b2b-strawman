@@ -11,6 +11,8 @@ import {
   type PortalRetainerSummary,
 } from "@/lib/api/retainer";
 
+const RETAINER_MODULE = "retainer_agreements";
+
 function IndexSkeleton() {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -34,26 +36,26 @@ export default function RetainerIndexPage() {
   // (source of truth), but this avoids the round-trip when the entitlement
   // is already known.
   useEffect(() => {
-    if (ctx && !ctx.enabledModules.includes("retainer_agreements")) {
+    if (ctx && !ctx.enabledModules.includes(RETAINER_MODULE)) {
       router.replace("/home");
     }
   }, [ctx, router]);
 
   // Gate the fetch on the entitlement so we never race the redirect.
   useEffect(() => {
-    if (!ctx?.enabledModules.includes("retainer_agreements")) return;
+    if (!ctx?.enabledModules.includes(RETAINER_MODULE)) return;
     let cancelled = false;
     (async () => {
       try {
         const data = await listRetainers();
-        if (!cancelled) setRetainers(data);
+        if (!cancelled) {
+          setRetainers(data);
+          setError(null);
+        }
       } catch (err) {
         if (!cancelled) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Failed to load retainer summary",
-          );
+          console.error("Failed to load retainer summary", err);
+          setError("Failed to load retainer summary");
         }
       }
     })();

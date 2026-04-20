@@ -89,13 +89,11 @@ export function ConsumptionList({
         const data = await getConsumption(retainerId, range);
         if (cancelled) return;
         setEntries(data);
+        setError(null);
       } catch (err) {
         if (!cancelled) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Failed to load retainer consumption",
-          );
+          console.error("Failed to load retainer consumption", err);
+          setError("Failed to load retainer consumption");
         }
       } finally {
         if (!cancelled) setIsLoading(false);

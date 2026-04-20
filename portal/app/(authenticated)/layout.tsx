@@ -56,7 +56,7 @@ export default function AuthenticatedLayout({
 
   useEffect(() => {
     if (hasMounted && !isAuthenticated) {
-      router.push("/login");
+      router.replace("/login");
     }
   }, [hasMounted, isAuthenticated, router]);
 

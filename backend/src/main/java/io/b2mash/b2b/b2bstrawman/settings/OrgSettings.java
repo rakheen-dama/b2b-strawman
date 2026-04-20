@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.settings;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -198,6 +200,16 @@ public class OrgSettings {
   @Column(name = "legal_matter_retention_years")
   @Min(value = 1, message = "legalMatterRetentionYears must be at least 1")
   private Integer legalMatterRetentionYears;
+
+  /**
+   * Privacy toggle (ADR-255, Epic 496A) controlling how firm-member names appear on the customer
+   * portal's retainer consumption list. Null-safe default = {@link
+   * PortalRetainerMemberDisplay#FIRST_NAME_ROLE}; use {@link
+   * #getEffectivePortalRetainerMemberDisplay()} to read.
+   */
+  @Enumerated(EnumType.STRING)
+  @Column(name = "portal_retainer_member_display", length = 20)
+  private PortalRetainerMemberDisplay portalRetainerMemberDisplay;
 
   protected OrgSettings() {}
 
@@ -906,6 +918,25 @@ public class OrgSettings {
           "legalMatterRetentionYears must be at least 1 (got " + legalMatterRetentionYears + ")");
     }
     this.legalMatterRetentionYears = legalMatterRetentionYears;
+    this.updatedAt = Instant.now();
+  }
+
+  public PortalRetainerMemberDisplay getPortalRetainerMemberDisplay() {
+    return portalRetainerMemberDisplay;
+  }
+
+  /**
+   * Returns the effective portal-retainer member-display mode, falling back to {@link
+   * PortalRetainerMemberDisplay#FIRST_NAME_ROLE} when unset.
+   */
+  public PortalRetainerMemberDisplay getEffectivePortalRetainerMemberDisplay() {
+    return portalRetainerMemberDisplay != null
+        ? portalRetainerMemberDisplay
+        : PortalRetainerMemberDisplay.FIRST_NAME_ROLE;
+  }
+
+  public void setPortalRetainerMemberDisplay(PortalRetainerMemberDisplay mode) {
+    this.portalRetainerMemberDisplay = mode;
     this.updatedAt = Instant.now();
   }
 

@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.PeriodReadyToCloseView;
+import io.b2mash.b2b.b2bstrawman.retainer.event.RetainerPeriodRolloverEvent;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tax.TaxCalculationService;
@@ -33,6 +34,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -57,6 +59,7 @@ public class RetainerPeriodService {
   private final NotificationRepository notificationRepository;
   private final TaxCalculationService taxCalculationService;
   private final TaxRateRepository taxRateRepository;
+  private final ApplicationEventPublisher eventPublisher;
 
   public RetainerPeriodService(
       RetainerAgreementRepository agreementRepository,
@@ -72,7 +75,8 @@ public class RetainerPeriodService {
       NotificationService notificationService,
       NotificationRepository notificationRepository,
       TaxCalculationService taxCalculationService,
-      TaxRateRepository taxRateRepository) {
+      TaxRateRepository taxRateRepository,
+      ApplicationEventPublisher eventPublisher) {
     this.agreementRepository = agreementRepository;
     this.periodRepository = periodRepository;
     this.invoiceRepository = invoiceRepository;
@@ -87,6 +91,7 @@ public class RetainerPeriodService {
     this.notificationRepository = notificationRepository;
     this.taxCalculationService = taxCalculationService;
     this.taxRateRepository = taxRateRepository;
+    this.eventPublisher = eventPublisher;
   }
 
   public record PeriodCloseResult(
@@ -341,6 +346,16 @@ public class RetainerPeriodService {
                       "periodEnd", nextPeriod.getPeriodEnd().toString(),
                       "rolloverHoursIn", rolloverHoursOut.toString()))
               .build());
+
+      // Publish domain event for portal read-model sync (Epic 496A).
+      eventPublisher.publishEvent(
+          RetainerPeriodRolloverEvent.of(
+              agreement,
+              period,
+              nextPeriod,
+              rolloverHoursOut,
+              RequestScopes.getTenantIdOrNull(),
+              RequestScopes.getOrgIdOrNull()));
     }
 
     // 12. Notify: period closed

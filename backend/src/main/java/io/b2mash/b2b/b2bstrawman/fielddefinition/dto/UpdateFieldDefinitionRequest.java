@@ -15,4 +15,5 @@ public record UpdateFieldDefinitionRequest(
     Map<String, Object> validation,
     int sortOrder,
     Map<String, Object> visibilityCondition,
-    FieldType fieldType) {}
+    FieldType fieldType,
+    Boolean portalVisibleDeadline) {}

@@ -77,6 +77,15 @@ public class FieldDefinition {
   @Column(name = "active", nullable = false)
   private boolean active;
 
+  /**
+   * Opt-in toggle (Epic 497A, ADR-257): when true and this FieldDefinition is of a date field type,
+   * {@code FieldDateApproachingEvent}s for this field are projected into the portal deadline view
+   * ({@code portal.portal_deadline_view}) as {@code CUSTOM_DATE} rows. Default false so the portal
+   * never fills with internal-only reminders.
+   */
+  @Column(name = "portal_visible_deadline", nullable = false)
+  private boolean portalVisibleDeadline;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -93,6 +102,7 @@ public class FieldDefinition {
     this.required = false;
     this.sortOrder = 0;
     this.active = true;
+    this.portalVisibleDeadline = false;
     this.createdAt = Instant.now();
     this.updatedAt = Instant.now();
   }
@@ -255,6 +265,15 @@ public class FieldDefinition {
 
   public void setFieldType(FieldType fieldType) {
     this.fieldType = fieldType;
+    this.updatedAt = Instant.now();
+  }
+
+  public boolean isPortalVisibleDeadline() {
+    return portalVisibleDeadline;
+  }
+
+  public void setPortalVisibleDeadline(boolean portalVisibleDeadline) {
+    this.portalVisibleDeadline = portalVisibleDeadline;
     this.updatedAt = Instant.now();
   }
 }

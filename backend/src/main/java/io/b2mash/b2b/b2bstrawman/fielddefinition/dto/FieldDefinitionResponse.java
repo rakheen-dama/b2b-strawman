@@ -26,7 +26,8 @@ public record FieldDefinitionResponse(
     Map<String, Object> visibilityCondition,
     List<String> requiredForContexts,
     Instant createdAt,
-    Instant updatedAt) {
+    Instant updatedAt,
+    boolean portalVisibleDeadline) {
 
   public static FieldDefinitionResponse from(FieldDefinition fd) {
     return new FieldDefinitionResponse(
@@ -47,6 +48,7 @@ public record FieldDefinitionResponse(
         fd.getVisibilityCondition(),
         fd.getRequiredForContexts(),
         fd.getCreatedAt(),
-        fd.getUpdatedAt());
+        fd.getUpdatedAt(),
+        fd.isPortalVisibleDeadline());
   }
 }

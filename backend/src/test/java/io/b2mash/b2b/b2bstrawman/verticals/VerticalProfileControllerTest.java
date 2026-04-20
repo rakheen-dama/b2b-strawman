@@ -138,7 +138,8 @@ class VerticalProfileControllerTest {
                     "lssa_tariff",
                     "trust_accounting",
                     "disbursements",
-                    "matter_closure")))
+                    "matter_closure",
+                    "deadlines")))
         .andExpect(jsonPath("$.terminologyNamespace").value("en-ZA-legal"));
   }
 

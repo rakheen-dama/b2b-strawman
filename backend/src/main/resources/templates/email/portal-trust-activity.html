@@ -1,0 +1,47 @@
+<div xmlns:th="http://www.thymeleaf.org">
+  <h2 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #111827;">Trust account activity</h2>
+  <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    Hi <span th:text="${contactName != null ? contactName : 'there'}">there</span>,
+  </p>
+  <p style="margin: 0 0 16px 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    A new transaction has been recorded in your trust account.
+  </p>
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin: 0 0 16px 0;">
+    <tr>
+      <td style="padding: 16px; background-color: #f9fafb; border-radius: 6px;">
+        <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
+          <tr>
+            <td style="padding: 4px 0;">
+              <span style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Date</span><br/>
+              <span style="font-size: 14px; color: #111827; font-weight: 500;" th:text="${occurredAt != null ? occurredAt : 'N/A'}">N/A</span>
+            </td>
+            <td style="padding: 4px 0;">
+              <span style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Type</span><br/>
+              <span style="font-size: 14px; color: #111827; font-weight: 500;" th:text="${transactionType != null ? transactionType : 'N/A'}">N/A</span>
+            </td>
+            <td style="padding: 4px 0;">
+              <span style="font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em;">Amount</span><br/>
+              <span style="font-size: 14px; color: #111827; font-weight: 500;">
+                <span th:text="${currency != null ? currency : ''}"></span>
+                <span th:text="${amount != null ? amount : 'N/A'}">N/A</span>
+              </span>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+  <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 24px 0;">
+    <tr>
+      <td align="center" style="border-radius: 6px;" th:style="'border-radius: 6px; background-color: ' + (${brandColor != null ? brandColor : '#2563EB'}) + ';'">
+        <a th:href="${trustUrl}" style="display: inline-block; padding: 12px 24px; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 6px;" th:style="'display: inline-block; padding: 12px 24px; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 6px; background-color: ' + (${brandColor != null ? brandColor : '#2563EB'}) + ';'">
+          View trust ledger
+        </a>
+      </td>
+    </tr>
+  </table>
+  <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #374151;">
+    Best,<br/>
+    <span th:text="${orgName != null ? orgName : 'Kazi'}">Kazi</span>
+  </p>
+</div>

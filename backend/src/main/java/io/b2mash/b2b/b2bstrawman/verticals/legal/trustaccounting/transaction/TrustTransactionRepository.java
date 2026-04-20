@@ -26,6 +26,20 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
 
   List<TrustTransaction> findByStatusAndTrustAccountId(String status, UUID trustAccountId);
 
+  /**
+   * Fetches every trust transaction for a matter (project) in ascending transaction date / created
+   * order. Used by the portal trust sync service to walk a matter's history forward and assign a
+   * progressive running balance per row (Epic 495A).
+   */
+  @Query(
+      """
+      SELECT t FROM TrustTransaction t
+      WHERE t.projectId = :projectId
+      ORDER BY t.transactionDate ASC, t.createdAt ASC, t.id ASC
+      """)
+  List<TrustTransaction> findByProjectIdOrderByTransactionDateAsc(
+      @Param("projectId") UUID projectId);
+
   /** Acquires a pessimistic write lock on the transaction row to prevent concurrent reversals. */
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("SELECT t FROM TrustTransaction t WHERE t.id = :id")

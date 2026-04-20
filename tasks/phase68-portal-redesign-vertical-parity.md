@@ -141,7 +141,7 @@ PHASES already complete:
 |-------|------|-------|---------|
 | 2a | 495 | 495A | V20 portal migration (`portal_trust_balance` + `portal_trust_transaction`), `TrustLedgerPortalSyncService` (3 event listeners + backfill), `PortalTrustController`, description-sanitisation helper, integration tests. **Done** (PR #1084) |
 | 2b (parallel) | 496 | 496A | V21 portal migration (`portal_retainer_summary` + `portal_retainer_consumption_entry`), V106 tenant migration (`org_settings.portal_retainer_member_display` enum), `RetainerPortalSyncService` (3 event listeners + member-display resolver + backfill), `PortalRetainerController`, integration tests. **Done** (PR #1086) |
-| 2c (parallel) | 497 | 497A | V22 portal migration (`portal_deadline_view` polymorphic), `DeadlinePortalSyncService` (4 source event listeners — filing, court date, prescription, custom-field-date with `portalVisibleDeadline` gate), `PortalDeadlineController`, integration tests. |
+| 2c (parallel) | 497 | 497A | V22 portal migration (`portal_deadline_view` polymorphic), `DeadlinePortalSyncService` (4 source event listeners — filing, court date, prescription, custom-field-date with `portalVisibleDeadline` gate), `PortalDeadlineController`, integration tests. **Done** (PR #1088) |
 
 ### Stage 3: Vertical frontend fan-out + notification wiring
 
@@ -462,7 +462,7 @@ A realistic day-by-day cadence: 494A day 1–2; 494B + 498A days 2–5 (parallel
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **497A** | 497.1–497.7 | 9 backend files | V106 tenant migration (`field_definitions.portal_visible_deadline` BOOLEAN), V21 portal migration (`portal_deadline_view`), `FieldDefinition` entity field, `DeadlinePortalSyncService` (4 listeners, gated by flag for custom dates), `PortalDeadlineController`, integration tests. Builder re-verifies V-numbers at build time. |
+| **497A** | 497.1–497.7 | 9 backend files | V106 tenant migration (`field_definitions.portal_visible_deadline` BOOLEAN), V21 portal migration (`portal_deadline_view`), `FieldDefinition` entity field, `DeadlinePortalSyncService` (4 listeners, gated by flag for custom dates), `PortalDeadlineController`, integration tests. Builder re-verifies V-numbers at build time. **Done** (PR #1088) |
 | **497B** | 497.8–497.13 | 8 files (portal frontend + firm-side `FieldDefinition` settings toggle) | `/deadlines/page.tsx`, `portal/lib/api/deadlines.ts`, `deadline-list.tsx`, `deadline-detail-panel.tsx`, firm-side toggle in `FieldDefinition` settings UI (small extension to existing field-definition editor), component tests. Bundled into frontend slice per sizing rules — firm-side change is a single toggle on an existing form. |
 
 ### Tasks

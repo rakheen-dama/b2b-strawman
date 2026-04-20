@@ -40,6 +40,9 @@ export function useFieldDefinitionForm({
     (field?.requiredForContexts as PrerequisiteContext[]) ?? []
   );
   const [sortOrder, setSortOrder] = useState(field?.sortOrder ?? 0);
+  const [portalVisibleDeadline, setPortalVisibleDeadline] = useState(
+    field?.portalVisibleDeadline ?? false
+  );
 
   // Conditional validation fields
   const [minLength, setMinLength] = useState(field?.validation?.minLength?.toString() ?? "");
@@ -113,6 +116,7 @@ export function useFieldDefinitionForm({
     setConditionFieldSlug("");
     setConditionOperator("eq");
     setConditionValue("");
+    setPortalVisibleDeadline(false);
     setError(null);
   }
 
@@ -140,6 +144,7 @@ export function useFieldDefinitionForm({
     setConditionOperator((f.visibilityCondition?.operator as ConditionOperator) ?? "eq");
     const v = f.visibilityCondition?.value;
     setConditionValue(Array.isArray(v) ? v.join(", ") : typeof v === "string" ? v : "");
+    setPortalVisibleDeadline(f.portalVisibleDeadline ?? false);
     setError(null);
   }
 
@@ -243,6 +248,7 @@ export function useFieldDefinitionForm({
           sortOrder,
           visibilityCondition: buildVisibilityCondition() ?? null,
           requiredForContexts,
+          portalVisibleDeadline,
         });
 
         if (result.success) {
@@ -263,6 +269,7 @@ export function useFieldDefinitionForm({
           sortOrder,
           visibilityCondition: buildVisibilityCondition() ?? null,
           requiredForContexts,
+          portalVisibleDeadline,
         });
 
         if (result.success) {
@@ -330,6 +337,9 @@ export function useFieldDefinitionForm({
     conditionValue,
     setConditionValue,
     clearCondition,
+    // Portal deadline visibility (only used when fieldType === "DATE")
+    portalVisibleDeadline,
+    setPortalVisibleDeadline,
     // Field usage
     fieldUsage,
     usageOpen,

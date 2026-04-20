@@ -19,7 +19,7 @@ Three small firm-side additions are in scope — `FieldDefinition.portalVisibleD
 |------|------|-------|------|--------|--------|--------|
 | 494 | Portal Session Context + Nav Shell | Both | -- | M | 494A, 494B | **Done** |
 | 495 | Portal Trust Ledger View (`legal-za`) | Both | 494A | M | 495A, 495B | **Done** |
-| 496 | Portal Retainer Usage View (`legal-za` + `consulting-za`) | Both | 494A | M | 496A, 496B | |
+| 496 | Portal Retainer Usage View (`legal-za` + `consulting-za`) | Both | 494A | M | 496A, 496B | **Done** |
 | 497 | Portal Deadline Visibility (`accounting-za` + `legal-za`) | Both | 494A | M | 497A, 497B | |
 | 498 | Portal Notifications (digest + per-event + preferences) | Both | 495A or 496A or 497A (events) | L | 498A, 498B, 498C | |
 | 499 | Mobile Polish & Responsive Pass | Frontend | 494B, 495B, 496B, 497B, 498B | M | 499A, 499B | |
@@ -148,7 +148,7 @@ PHASES already complete:
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
 | 3a | 495 | 495B | `/trust` + `/trust/[matterId]` pages, trust API client, `balance-card`, `transaction-list`, `matter-selector` components, component tests. **Done** (PR #1085) |
-| 3b (parallel) | 496 | 496B | `/retainer` + `/retainer/[id]` pages, retainer API client, `hour-bank-card`, `consumption-list` components, component tests. |
+| 3b (parallel) | 496 | 496B | `/retainer` + `/retainer/[id]` pages, retainer API client, `hour-bank-card`, `consumption-list` components, component tests. **Done** (PR #1087) |
 | 3c (parallel) | 497 | 497B | `/deadlines` page, deadline API client, `deadline-list`, `deadline-detail-panel` components, firm-side `FieldDefinition.portalVisibleDeadline` settings toggle in existing field-definition editor, component tests. |
 | 3d (after ≥1 of 2a/2b/2c) | 498 | 498B | `PortalDigestScheduler` (weekly cron), `PortalEmailNotificationChannel`, 7 Thymeleaf templates (`portal-weekly-digest`, `portal-trust-activity`, `portal-deadline-approaching`, `portal-retainer-period-closed`, + 3 audits of existing templates to confirm no double-send), event subscriptions, integration tests. |
 
@@ -380,7 +380,7 @@ A realistic day-by-day cadence: 494A day 1–2; 494B + 498A days 2–5 (parallel
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **496A** | 496.1–496.8 | 10 backend files | V20 portal migration (`portal_retainer_summary` + `portal_retainer_consumption_entry`), V105 tenant migration (`org_settings.portal_retainer_member_display` enum), `OrgSettings` field + enum, `PortalRetainerMemberDisplayResolver` helper, `RetainerPortalSyncService` (3 listeners + backfill), `PortalRetainerController`, integration tests. **Note**: V105 is the phase's first tenant migration — any other slice needing a tenant migration (497A, 498A) lands after. Builder confirms V-number. **Done** (PR #1086) |
-| **496B** | 496.9–496.14 | 8 frontend files | `/retainer/page.tsx` + `/retainer/[id]/page.tsx`, `portal/lib/api/retainer.ts`, `hour-bank-card.tsx`, `consumption-list.tsx`, component tests. |
+| **496B** | 496.9–496.14 | 8 frontend files | `/retainer/page.tsx` + `/retainer/[id]/page.tsx`, `portal/lib/api/retainer.ts`, `hour-bank-card.tsx`, `consumption-list.tsx`, component tests. **Done** (PR #1087) |
 
 ### Tasks
 

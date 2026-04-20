@@ -145,7 +145,8 @@ public class OrgSettingsService {
                 null, // defaultRetentionMonths
                 null, // financialRetentionMonths
                 null, // informationOfficerName
-                null)); // informationOfficerEmail
+                null, // informationOfficerEmail
+                PortalRetainerMemberDisplay.FIRST_NAME_ROLE.name())); // portalRetainerMemberDisplay
   }
 
   /** Updates settings including branding fields. */
@@ -353,7 +354,8 @@ public class OrgSettingsService {
         settings.getDefaultRetentionMonths(),
         settings.getFinancialRetentionMonths(),
         settings.getInformationOfficerName(),
-        settings.getInformationOfficerEmail());
+        settings.getInformationOfficerEmail(),
+        settings.getEffectivePortalRetainerMemberDisplay().name());
   }
 
   /**
@@ -941,6 +943,50 @@ public class OrgSettingsService {
                     actor.memberId().toString(),
                     "org_role",
                     actor.orgRole()))
+            .build());
+
+    return toSettingsResponse(settings);
+  }
+
+  /**
+   * Returns the effective portal-retainer member-display mode for the current tenant (ADR-255, Epic
+   * 496A). Falls back to {@link PortalRetainerMemberDisplay#FIRST_NAME_ROLE} when no settings row
+   * exists or the column is null.
+   */
+  @Transactional(readOnly = true)
+  public PortalRetainerMemberDisplay getPortalRetainerMemberDisplay() {
+    return orgSettingsRepository
+        .findForCurrentTenant()
+        .map(OrgSettings::getEffectivePortalRetainerMemberDisplay)
+        .orElse(PortalRetainerMemberDisplay.FIRST_NAME_ROLE);
+  }
+
+  /**
+   * Updates the portal-retainer member-display privacy toggle (ADR-255, Epic 496A). Admin-or-owner
+   * only. Emits an audit event.
+   */
+  @Transactional
+  public SettingsResponse updatePortalRetainerMemberDisplay(
+      PortalRetainerMemberDisplay mode, ActorContext actor) {
+    requireAdminOrOwner(actor.orgRole());
+
+    if (mode == null) {
+      throw new InvalidStateException(
+          "Missing field", "portalRetainerMemberDisplay must not be null");
+    }
+
+    var settings = getOrCreateForCurrentTenant();
+    settings.setPortalRetainerMemberDisplay(mode);
+    settings = orgSettingsRepository.save(settings);
+
+    log.info("Updated portal retainer member display mode to {}", mode);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("org_settings.portal_retainer_member_display_updated")
+            .entityType("org_settings")
+            .entityId(settings.getId())
+            .details(Map.of("portal_retainer_member_display", mode.name()))
             .build());
 
     return toSettingsResponse(settings);

@@ -10,12 +10,15 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.CreateRetainerRequest;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.PeriodSummary;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.RetainerResponse;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.RetainerSummaryResponse;
 import io.b2mash.b2b.b2bstrawman.retainer.dto.UpdateRetainerRequest;
+import io.b2mash.b2b.b2bstrawman.retainer.event.RetainerAgreementCreatedEvent;
+import io.b2mash.b2b.b2bstrawman.retainer.event.RetainerAgreementUpdatedEvent;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -26,6 +29,7 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +43,7 @@ public class RetainerAgreementService {
   private final AuditService auditService;
   private final NotificationService notificationService;
   private final MemberRepository memberRepository;
+  private final ApplicationEventPublisher eventPublisher;
 
   public RetainerAgreementService(
       RetainerAgreementRepository agreementRepository,
@@ -46,13 +51,15 @@ public class RetainerAgreementService {
       CustomerRepository customerRepository,
       AuditService auditService,
       NotificationService notificationService,
-      MemberRepository memberRepository) {
+      MemberRepository memberRepository,
+      ApplicationEventPublisher eventPublisher) {
     this.agreementRepository = agreementRepository;
     this.periodRepository = periodRepository;
     this.customerRepository = customerRepository;
     this.auditService = auditService;
     this.notificationService = notificationService;
     this.memberRepository = memberRepository;
+    this.eventPublisher = eventPublisher;
   }
 
   @Transactional
@@ -145,6 +152,11 @@ public class RetainerAgreementService {
                     "periodEnd", period.getPeriodEnd().toString()))
             .build());
 
+    // Publish domain event for portal read-model sync (Epic 496A).
+    eventPublisher.publishEvent(
+        RetainerAgreementCreatedEvent.of(
+            agreement, period, RequestScopes.getTenantIdOrNull(), RequestScopes.getOrgIdOrNull()));
+
     // 9. Build and return response
     var memberNames = resolveRetainerMemberNames(agreement);
     return RetainerResponse.from(
@@ -222,6 +234,11 @@ public class RetainerAgreementService {
             .map(PeriodSummary::from)
             .orElse(null);
 
+    // Publish domain event for portal read-model sync (Epic 496A).
+    eventPublisher.publishEvent(
+        RetainerAgreementUpdatedEvent.of(
+            agreement, RequestScopes.getTenantIdOrNull(), RequestScopes.getOrgIdOrNull()));
+
     // 12. Return response
     var memberNames = resolveRetainerMemberNames(agreement);
     return RetainerResponse.from(agreement, customer.getName(), currentPeriod, null, memberNames);
@@ -260,6 +277,11 @@ public class RetainerAgreementService {
                     "customerName", customer.getName(),
                     "actorMemberId", actorMemberId.toString()))
             .build());
+
+    // Publish domain event for portal read-model sync (Epic 496A) — status transition.
+    eventPublisher.publishEvent(
+        RetainerAgreementUpdatedEvent.of(
+            agreement, RequestScopes.getTenantIdOrNull(), RequestScopes.getOrgIdOrNull()));
 
     var currentPeriod =
         periodRepository
@@ -304,6 +326,11 @@ public class RetainerAgreementService {
                     "customerName", customer.getName(),
                     "actorMemberId", actorMemberId.toString()))
             .build());
+
+    // Publish domain event for portal read-model sync (Epic 496A) — status transition.
+    eventPublisher.publishEvent(
+        RetainerAgreementUpdatedEvent.of(
+            agreement, RequestScopes.getTenantIdOrNull(), RequestScopes.getOrgIdOrNull()));
 
     var currentPeriod =
         periodRepository
@@ -355,6 +382,11 @@ public class RetainerAgreementService {
         "Agreement: %s, Customer: %s".formatted(agreement.getName(), customer.getName()),
         "RETAINER_AGREEMENT",
         agreement.getId());
+
+    // Publish domain event for portal read-model sync (Epic 496A) — status transition.
+    eventPublisher.publishEvent(
+        RetainerAgreementUpdatedEvent.of(
+            agreement, RequestScopes.getTenantIdOrNull(), RequestScopes.getOrgIdOrNull()));
 
     var currentPeriod =
         periodRepository

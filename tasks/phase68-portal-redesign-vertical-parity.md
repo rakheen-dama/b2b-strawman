@@ -139,7 +139,7 @@ PHASES already complete:
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 2a | 495 | 495A | V20 portal migration (`portal_trust_balance` + `portal_trust_transaction`), `TrustLedgerPortalSyncService` (3 event listeners + backfill), `PortalTrustController`, description-sanitisation helper, integration tests. |
+| 2a | 495 | 495A | V20 portal migration (`portal_trust_balance` + `portal_trust_transaction`), `TrustLedgerPortalSyncService` (3 event listeners + backfill), `PortalTrustController`, description-sanitisation helper, integration tests. **Done** (PR #1084) |
 | 2b (parallel) | 496 | 496A | V21 portal migration (`portal_retainer_summary` + `portal_retainer_consumption_entry`), V106 tenant migration (`org_settings.portal_retainer_member_display` enum), `RetainerPortalSyncService` (3 event listeners + member-display resolver + backfill), `PortalRetainerController`, integration tests. |
 | 2c (parallel) | 497 | 497A | V22 portal migration (`portal_deadline_view` polymorphic), `DeadlinePortalSyncService` (4 source event listeners — filing, court date, prescription, custom-field-date with `portalVisibleDeadline` gate), `PortalDeadlineController`, integration tests. |
 
@@ -297,7 +297,7 @@ A realistic day-by-day cadence: 494A day 1–2; 494B + 498A days 2–5 (parallel
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **495A** | 495.1–495.7 | 9 backend files (2 migrations, 2 entities, 2 repos, 1 service, 1 controller, 1 helper, 1 test class) | V19 portal migration creates `portal_trust_balance` + `portal_trust_transaction`, `TrustLedgerPortalSyncService` with 3 `@EventListener` methods + backfill, `PortalTrustDescriptionSanitiser` helper, `PortalTrustController` at `/api/portal/trust/*` module-gated, integration tests. |
+| **495A** | 495.1–495.7 | 9 backend files (2 migrations, 2 entities, 2 repos, 1 service, 1 controller, 1 helper, 1 test class) | V19 portal migration creates `portal_trust_balance` + `portal_trust_transaction`, `TrustLedgerPortalSyncService` with 3 `@EventListener` methods + backfill, `PortalTrustDescriptionSanitiser` helper, `PortalTrustController` at `/api/portal/trust/*` module-gated, integration tests. **Done** (PR #1084) |
 | **495B** | 495.8–495.13 | 9 frontend files (2 pages, 3 components, 1 API client, 2 test files, 1 portal-nav wiring) | `/trust/page.tsx` (matter-picker + summary), `/trust/[matterId]/page.tsx` (detail + pagination), `portal/lib/api/trust.ts`, `balance-card.tsx`, `transaction-list.tsx`, `matter-selector.tsx`, component tests. |
 
 ### Tasks

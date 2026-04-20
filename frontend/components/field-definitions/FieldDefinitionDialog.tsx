@@ -307,6 +307,31 @@ export function FieldDefinitionDialog({
             />
           )}
 
+          {/* Conditional: Portal deadline visibility (DATE fields only) */}
+          {form.fieldType === "DATE" && (
+            <div className="flex items-start gap-2 rounded-md border border-slate-200 p-3 dark:border-slate-700">
+              <Checkbox
+                id="fd-portal-visible-deadline"
+                checked={form.portalVisibleDeadline}
+                onCheckedChange={(checked) =>
+                  form.setPortalVisibleDeadline(checked === true)
+                }
+              />
+              <div>
+                <Label
+                  htmlFor="fd-portal-visible-deadline"
+                  className="text-sm font-normal"
+                >
+                  Surface this date on portal as a deadline
+                </Label>
+                <p className="text-xs text-slate-500 dark:text-slate-400">
+                  When enabled, portal contacts see upcoming values of this
+                  date on the Deadlines page.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Used In section (only for editing) */}
           {form.isEditing && form.fieldUsage && (
             <FieldUsageSection

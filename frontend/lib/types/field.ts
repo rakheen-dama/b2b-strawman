@@ -38,6 +38,8 @@ export interface FieldDefinitionResponse {
   active: boolean;
   createdAt: string;
   updatedAt: string;
+  /** When true, DATE values of this field surface on the portal Deadlines page. */
+  portalVisibleDeadline: boolean;
 }
 
 export interface CreateFieldDefinitionRequest {
@@ -53,6 +55,8 @@ export interface CreateFieldDefinitionRequest {
   sortOrder: number;
   visibilityCondition?: VisibilityCondition | null;
   requiredForContexts?: string[];
+  /** Only meaningful for DATE fields; ignored otherwise. */
+  portalVisibleDeadline?: boolean;
 }
 
 export interface UpdateFieldDefinitionRequest {
@@ -67,6 +71,8 @@ export interface UpdateFieldDefinitionRequest {
   sortOrder: number;
   visibilityCondition?: VisibilityCondition | null;
   requiredForContexts?: string[];
+  /** Only meaningful for DATE fields; ignored otherwise. */
+  portalVisibleDeadline?: boolean;
 }
 
 export interface FieldGroupResponse {

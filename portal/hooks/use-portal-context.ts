@@ -71,6 +71,15 @@ export function usePortalContext(): PortalSessionContext | null {
   return useContext(PortalSessionContextCtx).data;
 }
 
+/**
+ * Returns `true` once the portal session context fetch has resolved
+ * (either success or error). Use this to gate content rendering and
+ * avoid a flash of gated UI before the entitlement check completes.
+ */
+export function usePortalContextIsSettled(): boolean {
+  return useContext(PortalSessionContextCtx).isSettled;
+}
+
 export function useProfile(): string | null {
   return useContext(PortalSessionContextCtx).data?.tenantProfile ?? null;
 }

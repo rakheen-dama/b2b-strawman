@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalRetainerSummaryView
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalRetainerConsumptionEntryRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalRetainerSummaryRepository;
 import io.b2mash.b2b.b2bstrawman.event.TimeEntryChangedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -189,6 +190,7 @@ public class RetainerPortalSyncService {
                 event.agreementId(),
                 event.newPeriodStart(),
                 event.newPeriodEnd(),
+                event.nextRenewalDate(),
                 event.rolloverHoursOut(),
                 event.allocatedHours());
           } catch (Exception e) {
@@ -330,12 +332,22 @@ public class RetainerPortalSyncService {
    * the {@link #SYSTEM_ACTOR_ID} sentinel as {@code MEMBER_ID} and writes across the supplied
    * {@code orgId}'s tenant — exposing it on a public endpoint without a platform-admin guard would
    * be a privilege-escalation vector. Callers MUST already be inside an authenticated request scope
-   * (verified by the {@code RequestScopes.ORG_ID.isBound()} precondition below).
+   * whose scoped {@code ORG_ID} matches the supplied {@code orgId} (verified by the preconditions
+   * below); this prevents an authenticated caller for org A from triggering a backfill of org B.
    */
   public BackfillResult backfillForTenant(String orgId) {
     if (!RequestScopes.ORG_ID.isBound()) {
       throw new IllegalStateException(
           "backfillForTenant must run inside an authenticated request scope");
+    }
+    // Tenant-isolation guard: the authenticated caller's scoped orgId MUST match the argument.
+    // Otherwise an authenticated request for org A could call backfillForTenant("orgB") and the
+    // ScopedValue.where(...) below would silently rebind to org B — a cross-tenant escape.
+    String scopedOrgId = RequestScopes.ORG_ID.get();
+    if (!orgId.equals(scopedOrgId)) {
+      throw new ForbiddenException(
+          "Cross-tenant backfill denied",
+          "Authenticated orgId does not match backfill target orgId");
     }
     var mapping =
         orgSchemaMappingRepository
@@ -354,15 +366,13 @@ public class RetainerPortalSyncService {
         .where(RequestScopes.MEMBER_ID, SYSTEM_ACTOR_ID)
         .run(
             () -> {
+              // Delegate to syncSummary so backfill behaves identically to the event-driven path:
+              // agreements without an OPEN period get a terminal snapshot (via
+              // toTerminalSummaryView)
+              // rather than being silently skipped. syncSummary manages its own portal transaction
+              // per row via portalTxTemplate, so no outer tx wrapper is needed here.
               for (var agreement : agreementRepository.findAll()) {
-                var periodOpt =
-                    periodRepository.findByAgreementIdAndStatus(
-                        agreement.getId(), PeriodStatus.OPEN);
-                if (periodOpt.isEmpty()) {
-                  continue;
-                }
-                PortalRetainerSummaryView view = toSummaryView(agreement, periodOpt.get());
-                portalTxTemplate.executeWithoutResult(status -> summaryRepo.upsert(view));
+                syncSummary(agreement.getId());
                 counts[0]++;
               }
             });

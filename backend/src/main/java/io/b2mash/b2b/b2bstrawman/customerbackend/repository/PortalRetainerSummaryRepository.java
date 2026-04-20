@@ -113,13 +113,17 @@ public class PortalRetainerSummaryRepository {
   /**
    * Applies a period rollover to an existing summary row: rolls the period bounds forward, stamps
    * the new allotment and carry-over, and zeroes consumption counters so the new period starts
-   * fresh.
+   * fresh. The {@code nextRenewalDate} is stored independently of {@code newEnd} because the two
+   * can diverge (e.g., a retainer with a separate renewal cadence from its billing period), and the
+   * portal surfaces the renewal date to customers — using {@code newEnd} as a proxy would silently
+   * show the wrong date.
    */
   public void updatePeriodRollover(
       UUID customerId,
       UUID retainerId,
       LocalDate newStart,
       LocalDate newEnd,
+      LocalDate nextRenewalDate,
       BigDecimal rolloverHours,
       BigDecimal newAllotted) {
     BigDecimal safeRollover = rolloverHours != null ? rolloverHours : BigDecimal.ZERO;
@@ -145,7 +149,7 @@ public class PortalRetainerSummaryRepository {
             safeAllotted,
             openingRemaining,
             safeRollover,
-            newEnd,
+            nextRenewalDate,
             customerId,
             retainerId)
         .update();

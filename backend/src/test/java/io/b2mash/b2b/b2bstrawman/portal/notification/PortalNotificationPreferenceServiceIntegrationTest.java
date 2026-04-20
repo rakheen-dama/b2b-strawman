@@ -76,12 +76,13 @@ class PortalNotificationPreferenceServiceIntegrationTest {
     assertThat(created.getLastUpdatedAt()).isNotNull();
 
     // Second call must not create a duplicate row — same PK is re-read.
+    long countAfterFirstRead = runInTenantReturning(() -> preferenceRepository.count());
     var reloaded = runInTenantReturning(() -> preferenceService.getOrCreate(contactId));
     assertThat(reloaded.getPortalContactId()).isEqualTo(contactId);
     assertThat(reloaded.getLastUpdatedAt()).isEqualTo(created.getLastUpdatedAt());
 
-    long count = runInTenantReturning(() -> preferenceRepository.count());
-    assertThat(count).isGreaterThanOrEqualTo(1L);
+    long countAfterSecondRead = runInTenantReturning(() -> preferenceRepository.count());
+    assertThat(countAfterSecondRead).isEqualTo(countAfterFirstRead);
   }
 
   @Test

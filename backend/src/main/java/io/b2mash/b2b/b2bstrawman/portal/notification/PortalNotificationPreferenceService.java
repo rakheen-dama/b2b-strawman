@@ -1,6 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.portal.notification;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import java.util.UUID;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,13 +24,24 @@ public class PortalNotificationPreferenceService {
   /**
    * Returns the preference row for the given portal contact, creating a new one with all five
    * toggles defaulted to {@code true} when absent. Idempotent after the first call — subsequent
-   * calls read the persisted row without resetting it.
+   * calls read the persisted row without resetting it. Safe against the race where two concurrent
+   * callers both miss {@link PortalNotificationPreferenceRepository#findById(Object)}: the losing
+   * insert raises {@link DataIntegrityViolationException} and falls back to a re-read.
    */
   @Transactional
   public PortalNotificationPreference getOrCreate(UUID portalContactId) {
-    return repository
-        .findById(portalContactId)
-        .orElseGet(() -> repository.save(PortalNotificationPreference.allEnabled(portalContactId)));
+    if (portalContactId == null) {
+      throw new InvalidStateException("Missing field", "portalContactId must not be null");
+    }
+    var existing = repository.findById(portalContactId);
+    if (existing.isPresent()) {
+      return existing.get();
+    }
+    try {
+      return repository.saveAndFlush(PortalNotificationPreference.allEnabled(portalContactId));
+    } catch (DataIntegrityViolationException ex) {
+      return repository.findById(portalContactId).orElseThrow(() -> ex);
+    }
   }
 
   /**
@@ -38,6 +51,12 @@ public class PortalNotificationPreferenceService {
   @Transactional
   public PortalNotificationPreference update(
       UUID portalContactId, PortalNotificationPreferenceUpdate dto) {
+    if (portalContactId == null) {
+      throw new InvalidStateException("Missing field", "portalContactId must not be null");
+    }
+    if (dto == null) {
+      throw new InvalidStateException("Missing field", "dto must not be null");
+    }
     var pref = getOrCreate(portalContactId);
     pref.update(
         dto.digestEnabled(),

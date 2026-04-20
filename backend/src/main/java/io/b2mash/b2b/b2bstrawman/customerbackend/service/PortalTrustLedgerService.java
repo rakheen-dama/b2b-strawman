@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
@@ -58,10 +59,9 @@ public class PortalTrustLedgerService {
     requireMatterVisibleToCustomer(customerId, matterId);
 
     int size = Math.min(pageable.getPageSize(), MAX_PAGE_SIZE);
-    long offsetLong = pageable.getOffset();
+    Pageable effectivePageable = PageRequest.of(pageable.getPageNumber(), size, pageable.getSort());
+    long offsetLong = effectivePageable.getOffset();
     if (offsetLong > Integer.MAX_VALUE) {
-      // Unbounded page numbers can produce offsets beyond the JDBC int limit; surface a 400
-      // instead of letting Math.toIntExact throw and turn into a 500.
       throw new IllegalArgumentException("Page offset exceeds supported range");
     }
     int offset = (int) offsetLong;
@@ -80,7 +80,7 @@ public class PortalTrustLedgerService {
                         v.description(),
                         v.reference()))
             .toList();
-    return new PageImpl<>(content, pageable, total);
+    return new PageImpl<>(content, effectivePageable, total);
   }
 
   public List<PortalTrustStatementDocumentResponse> listStatementDocuments(

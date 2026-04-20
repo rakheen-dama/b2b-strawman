@@ -49,6 +49,12 @@ export function TransactionList({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Reset pagination when switching matters so we don't request page N+1
+  // of a matter that may only have one page.
+  useEffect(() => {
+    setPage(0);
+  }, [matterId]);
+
   useEffect(() => {
     let cancelled = false;
     setIsLoading(true);

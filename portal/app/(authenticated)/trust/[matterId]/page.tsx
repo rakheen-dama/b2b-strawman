@@ -16,6 +16,18 @@ import {
   type PortalTrustStatementDocumentResponse,
 } from "@/lib/api/trust";
 
+/**
+ * Only render statement download links when the URL is absolute https.
+ * Prevents smuggling `javascript:` or `data:` URIs via a compromised backend.
+ */
+function isSafeDownloadUrl(url: string): boolean {
+  try {
+    return new URL(url).protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
 function DetailSkeleton() {
   return (
     <div className="space-y-8">
@@ -42,8 +54,11 @@ export default function TrustMatterDetailPage() {
     PortalTrustStatementDocumentResponse[]
   >([]);
   const [statementsLoading, setStatementsLoading] = useState(true);
+  const [statementsError, setStatementsError] = useState<string | null>(null);
 
   // Module gate: redirect once context has loaded if the module is disabled.
+  // Backend remains source of truth (endpoints 404 when the module is off);
+  // this only avoids the pre-redirect flash.
   useEffect(() => {
     if (ctx && !ctx.enabledModules.includes("trust_accounting")) {
       router.replace("/home");
@@ -51,9 +66,15 @@ export default function TrustMatterDetailPage() {
   }, [ctx, router]);
 
   // Fetch per-matter balance snapshot from the summary endpoint.
+  // Gated on the module entitlement so we don't race the redirect above.
   useEffect(() => {
-    if (!matterId) return;
+    if (!matterId || !ctx?.enabledModules.includes("trust_accounting")) return;
     let cancelled = false;
+    // Reset per-matter state so switching matters doesn't briefly show
+    // stale data from the previous matter.
+    setSummaryLoading(true);
+    setSummaryError(null);
+    setSummary(null);
     (async () => {
       try {
         const res = await getTrustSummary();
@@ -75,19 +96,34 @@ export default function TrustMatterDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [matterId]);
+  }, [matterId, ctx]);
 
   // Fetch statement documents (endpoint currently returns [] until the
-  // STATEMENT category lands — empty state is expected).
+  // STATEMENT category lands — empty state is expected). Gated on the
+  // module entitlement; backend 404 remains the source of truth.
   useEffect(() => {
-    if (!matterId) return;
+    if (!matterId || !ctx?.enabledModules.includes("trust_accounting")) return;
     let cancelled = false;
+    // Reset per-matter state before the fetch so switching matters doesn't
+    // render the previous matter's documents.
+    setStatementsLoading(true);
+    setStatementsError(null);
+    setStatements([]);
     (async () => {
       try {
         const docs = await getMatterStatementDocuments(matterId);
-        if (!cancelled) setStatements(docs);
-      } catch {
-        if (!cancelled) setStatements([]);
+        if (!cancelled) {
+          setStatements(docs);
+          setStatementsError(null);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setStatementsError(
+            err instanceof Error
+              ? err.message
+              : "Failed to load statement documents",
+          );
+        }
       } finally {
         if (!cancelled) setStatementsLoading(false);
       }
@@ -95,7 +131,7 @@ export default function TrustMatterDetailPage() {
     return () => {
       cancelled = true;
     };
-  }, [matterId]);
+  }, [matterId, ctx]);
 
   if (summaryLoading) {
     return <DetailSkeleton />;
@@ -153,6 +189,10 @@ export default function TrustMatterDetailPage() {
         </h2>
         {statementsLoading ? (
           <Skeleton className="h-16 w-full" />
+        ) : statementsError ? (
+          <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            {statementsError}
+          </div>
         ) : statements.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-lg border border-slate-200 bg-white py-10 text-center">
             <FileText
@@ -165,31 +205,43 @@ export default function TrustMatterDetailPage() {
           </div>
         ) : (
           <ul className="divide-y divide-slate-100 rounded-lg border border-slate-200">
-            {statements.map((doc) => (
-              <li
-                key={doc.id}
-                className="flex items-center justify-between gap-4 px-4 py-3"
-              >
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-medium text-slate-900">
-                    {doc.fileName}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {formatDate(doc.generatedAt)}
-                  </p>
-                </div>
-                <a
-                  href={doc.downloadUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex min-h-[40px] items-center gap-1.5 rounded-md text-sm font-medium text-teal-600 hover:text-teal-700"
-                  aria-label={`Download ${doc.fileName}`}
+            {statements.map((doc) => {
+              const safe = isSafeDownloadUrl(doc.downloadUrl);
+              return (
+                <li
+                  key={doc.id}
+                  className="flex items-center justify-between gap-4 px-4 py-3"
                 >
-                  <Download className="size-4" />
-                  Download
-                </a>
-              </li>
-            ))}
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-medium text-slate-900">
+                      {doc.fileName}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {formatDate(doc.generatedAt)}
+                    </p>
+                  </div>
+                  {safe ? (
+                    <a
+                      href={doc.downloadUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-[40px] items-center gap-1.5 rounded-md text-sm font-medium text-teal-600 hover:text-teal-700"
+                      aria-label={`Download ${doc.fileName}`}
+                    >
+                      <Download className="size-4" />
+                      Download
+                    </a>
+                  ) : (
+                    <span
+                      className="inline-flex items-center gap-1.5 text-sm text-slate-400"
+                      aria-label={`Download unavailable for ${doc.fileName}`}
+                    >
+                      Download unavailable
+                    </span>
+                  )}
+                </li>
+              );
+            })}
           </ul>
         )}
       </section>

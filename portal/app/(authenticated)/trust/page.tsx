@@ -30,15 +30,18 @@ export default function TrustIndexPage() {
 
   // Module gate: redirect once the portal context has loaded and the
   // trust_accounting module is not enabled. This guards against the
-  // empty-page flash — the backend also 404s, but this avoids the round-trip.
+  // empty-page flash — the backend also 404s (source of truth), but this
+  // avoids the round-trip when the entitlement is already known.
   useEffect(() => {
     if (ctx && !ctx.enabledModules.includes("trust_accounting")) {
       router.replace("/home");
     }
   }, [ctx, router]);
 
-  // Fetch summary.
+  // Fetch summary. Gated on the module entitlement so tenants without
+  // trust_accounting don't see a 404 flash before the redirect fires.
   useEffect(() => {
+    if (!ctx?.enabledModules.includes("trust_accounting")) return;
     let cancelled = false;
     (async () => {
       try {
@@ -55,7 +58,7 @@ export default function TrustIndexPage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [ctx]);
 
   // Auto-redirect when there's exactly one matter with activity.
   useEffect(() => {

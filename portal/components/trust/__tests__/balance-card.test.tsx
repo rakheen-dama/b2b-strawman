@@ -33,9 +33,11 @@ describe("BalanceCard", () => {
       />,
     );
 
-    // Currency — Intl en-ZA renders "R 1,250.00" (non-breaking space between R and digits)
+    // Currency — Intl en-ZA varies by ICU version: "R 1,250.00" on some
+    // runtimes, "R 1 250,00" on others (comma decimal, thin/non-breaking
+    // space as thousands separator). Accept both.
     const balance = screen.getByLabelText("Current balance");
-    expect(balance.textContent).toMatch(/1[ ,\u00A0]?250\.00/);
+    expect(balance.textContent).toMatch(/1[ ,\u00A0\u202F]?250[.,]00/);
     expect(balance.textContent).toMatch(/R/);
 
     // As-of date formatted as "15 Apr 2026"

@@ -11,15 +11,14 @@ CREATE TABLE IF NOT EXISTS portal.portal_trust_balance (
     PRIMARY KEY (customer_id, matter_id)
 );
 
+-- transaction_type intentionally has no CHECK constraint — the firm-side TrustTransaction enum
+-- is the single source of truth for allowed values. Adding a new type firm-side (e.g., BANK_FEE)
+-- would otherwise fail portal inserts with an opaque constraint violation.
 CREATE TABLE IF NOT EXISTS portal.portal_trust_transaction (
     id                    UUID        PRIMARY KEY,
     customer_id           UUID        NOT NULL,
     matter_id             UUID        NOT NULL,
-    transaction_type      VARCHAR(20) NOT NULL
-        CHECK (transaction_type IN (
-            'DEPOSIT', 'PAYMENT', 'TRANSFER_IN', 'TRANSFER_OUT',
-            'FEE_TRANSFER', 'REFUND', 'INTEREST_CREDIT', 'INTEREST_LPFF'
-        )),
+    transaction_type      VARCHAR(20) NOT NULL,
     amount                DECIMAL(15,2) NOT NULL,
     running_balance       DECIMAL(15,2) NOT NULL,
     occurred_at           TIMESTAMPTZ NOT NULL,

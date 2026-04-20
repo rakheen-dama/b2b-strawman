@@ -56,6 +56,21 @@ public class TrustLedgerPortalSyncService {
   /** Backfill cap per matter — keeps the portal list view bounded for large histories. */
   private static final int BACKFILL_LIMIT_PER_MATTER = 50;
 
+  /**
+   * Sentinel actor id used when a system operation (the tenant-wide backfill) binds {@link
+   * RequestScopes#MEMBER_ID} — downstream listeners that consume the scoped value to tag audits or
+   * logs still get a non-null UUID, but it never matches a real member row.
+   */
+  private static final UUID SYSTEM_ACTOR_ID =
+      UUID.fromString("00000000-0000-0000-0000-000000000000");
+
+  /**
+   * Firm-side transaction statuses that produce portal-visible rows. {@code RECORDED} covers
+   * auto-approved DEPOSIT/INTEREST_CREDIT and pre-approval PAYMENT/FEE_TRANSFER/REFUND rows; {@code
+   * APPROVED} covers the post-approval rows.
+   */
+  private static final List<String> PORTAL_STATUSES = List.of("RECORDED", "APPROVED");
+
   private final PortalTrustReadModelRepository portalTrustRepo;
   private final TrustTransactionRepository trustTransactionRepository;
   private final PortalTrustDescriptionSanitiser sanitiser;
@@ -89,9 +104,12 @@ public class TrustLedgerPortalSyncService {
           try {
             syncSingleTransaction(event.transactionId());
           } catch (Exception e) {
-            log.warn(
-                "Failed to sync approved trust transaction to portal txn={}",
+            log.error(
+                "Portal trust sync failed for event=trust_transaction.approved tenant={} txn={}"
+                    + " account={}",
+                event.tenantId(),
                 event.transactionId(),
+                event.trustAccountId(),
                 e);
           }
         });
@@ -106,8 +124,10 @@ public class TrustLedgerPortalSyncService {
           try {
             syncForTrustAccount(event.trustAccountId());
           } catch (Exception e) {
-            log.warn(
-                "Failed to sync interest run to portal interestRun={} account={}",
+            log.error(
+                "Portal trust sync failed for event=interest_posted tenant={} interestRun={}"
+                    + " account={}",
+                event.tenantId(),
                 event.interestRunId(),
                 event.trustAccountId(),
                 e);
@@ -124,8 +144,10 @@ public class TrustLedgerPortalSyncService {
           try {
             syncForTrustAccount(event.trustAccountId());
           } catch (Exception e) {
-            log.warn(
-                "Failed to sync reconciliation to portal reconciliation={} account={}",
+            log.error(
+                "Portal trust sync failed for event=reconciliation_completed tenant={}"
+                    + " reconciliation={} account={}",
+                event.tenantId(),
                 event.reconciliationId(),
                 event.trustAccountId(),
                 e);
@@ -145,7 +167,9 @@ public class TrustLedgerPortalSyncService {
     if (!hasPortalScope(txn)) {
       return;
     }
-    upsertTransactionAndBalance(txn);
+    // Upsert this row plus replay the matter so the new transaction's running_balance and every
+    // earlier row's running_balance stay consistent with the progressive sum.
+    recomputeMatter(txn.getCustomerId(), txn.getProjectId());
   }
 
   /**
@@ -154,9 +178,8 @@ public class TrustLedgerPortalSyncService {
    * reconciliation-completed fan-out handlers.
    */
   private void syncForTrustAccount(UUID trustAccountId) {
-    var statuses = List.of("RECORDED", "APPROVED");
     Set<UUID> seenMatters = new HashSet<>();
-    for (var status : statuses) {
+    for (var status : PORTAL_STATUSES) {
       for (var txn :
           trustTransactionRepository.findByStatusAndTrustAccountId(status, trustAccountId)) {
         if (!hasPortalScope(txn)) {
@@ -165,44 +188,37 @@ public class TrustLedgerPortalSyncService {
         if (!seenMatters.add(txn.getProjectId())) {
           continue; // Only recompute each matter once per fan-out.
         }
-        recomputeMatter(txn.getCustomerId(), txn.getProjectId(), trustAccountId);
+        recomputeMatter(txn.getCustomerId(), txn.getProjectId());
       }
     }
   }
 
-  private void upsertTransactionAndBalance(TrustTransaction txn) {
-    BigDecimal balance = trustTransactionRepository.calculateBalanceByProjectId(txn.getProjectId());
-    Instant occurredAt = deriveOccurredAt(txn);
-    portalTrustRepo.upsertTransaction(
-        txn.getId(),
-        txn.getCustomerId(),
-        txn.getProjectId(),
-        txn.getTransactionType(),
-        txn.getAmount(),
-        balance,
-        occurredAt,
-        sanitiser.sanitise(txn.getDescription(), txn.getTransactionType(), txn.getReference()),
-        txn.getReference());
-    portalTrustRepo.upsertBalance(txn.getCustomerId(), txn.getProjectId(), balance, occurredAt);
-  }
-
   /**
-   * Replays every non-reversal {@code (RECORDED|APPROVED)} trust transaction on {@code (customerId,
-   * matterId)} from the account and upserts the matching portal rows. Used by the fan-out event
-   * handlers and by the backfill.
+   * Replays every portal-eligible trust transaction on {@code (customerId, matterId)} in
+   * chronological order, assigning each row a progressive {@code running_balance} using the same
+   * sign convention as {@code TrustTransactionRepository.calculateClientBalanceAsOfDate}:
+   *
+   * <ul>
+   *   <li>Credit (+amount): DEPOSIT, TRANSFER_IN, INTEREST_CREDIT
+   *   <li>Debit (-amount): PAYMENT, TRANSFER_OUT, FEE_TRANSFER, REFUND, INTEREST_LPFF
+   *   <li>REVERSAL and any other types: excluded from portal rows
+   * </ul>
+   *
+   * <p>Used by the event-driven fan-out (approval, interest, reconciliation) and by the backfill.
+   * Fetches the matter's transactions exactly once per call.
    */
-  private void recomputeMatter(UUID customerId, UUID matterId, UUID trustAccountId) {
-    var transactions =
-        trustTransactionRepository.findByCustomerIdAndTrustAccountIdOrderByTransactionDateDesc(
-            customerId, trustAccountId);
+  private void recomputeMatter(UUID customerId, UUID matterId) {
+    var history = trustTransactionRepository.findByProjectIdOrderByTransactionDateAsc(matterId);
+    BigDecimal running = BigDecimal.ZERO;
     Instant latest = null;
-    for (var txn : transactions) {
-      if (!matterId.equals(txn.getProjectId())) {
+    for (var txn : history) {
+      if (!PORTAL_STATUSES.contains(txn.getStatus())) {
         continue;
       }
       if (!isPortalEligible(txn)) {
         continue;
       }
+      running = running.add(signedAmount(txn));
       Instant occurredAt = deriveOccurredAt(txn);
       if (latest == null || occurredAt.isAfter(latest)) {
         latest = occurredAt;
@@ -213,21 +229,27 @@ public class TrustLedgerPortalSyncService {
           matterId,
           txn.getTransactionType(),
           txn.getAmount(),
-          trustTransactionRepository.calculateBalanceByProjectId(matterId),
+          running,
           occurredAt,
           sanitiser.sanitise(txn.getDescription(), txn.getTransactionType(), txn.getReference()),
           txn.getReference());
     }
-    BigDecimal balance = trustTransactionRepository.calculateBalanceByProjectId(matterId);
-    portalTrustRepo.upsertBalance(customerId, matterId, balance, latest);
+    portalTrustRepo.upsertBalance(customerId, matterId, running, latest);
   }
 
   // ── Backfill ───────────────────────────────────────────────────────────
 
   /**
-   * Rebuilds the portal trust read-model for a tenant. Intended to be called on module activation
-   * (via {@code POST /internal/portal-resync/*}) or when repairing drift. Wipes and rewrites the
-   * portal rows for every customer that has ledger activity.
+   * Rebuilds the portal trust read-model for a tenant by upserting a row per non-reversal trust
+   * transaction (capped at {@link #BACKFILL_LIMIT_PER_MATTER} per matter) and the corresponding
+   * per-matter balance snapshot. Intended to be called on module activation (via {@code POST
+   * /internal/portal-resync/*}) or when repairing drift.
+   *
+   * <p>Upsert-only semantics: rows are merged by {@code (id)} / {@code (customer_id, matter_id)}
+   * via {@code ON CONFLICT DO UPDATE} — the operation does not delete stale rows for customers that
+   * have had trust transactions reversed or removed firm-side since the last sync. Run a targeted
+   * delete (via the portal repository's delete-by-customer helpers) first if stale-row cleanup is
+   * required.
    */
   public BackfillResult backfillForTenant(String orgId) {
     var mapping =
@@ -245,43 +267,45 @@ public class TrustLedgerPortalSyncService {
 
     ScopedValue.where(RequestScopes.TENANT_ID, schema)
         .where(RequestScopes.ORG_ID, orgId)
+        .where(RequestScopes.MEMBER_ID, SYSTEM_ACTOR_ID)
         .run(
             () -> {
-              // Build a complete per-matter view from every non-reversal trust txn in the tenant.
-              // We fetch by status because there is no single "findAllPortalEligible" method.
-              for (var status : List.of("RECORDED", "APPROVED")) {
-                for (var txn : trustTransactionRepository.findAll()) {
-                  if (!status.equals(txn.getStatus())) {
-                    continue;
-                  }
-                  if (!hasPortalScope(txn) || !isPortalEligible(txn)) {
-                    continue;
-                  }
-                  UUID matterId = txn.getProjectId();
-                  rollups
-                      .computeIfAbsent(matterId, id -> new MatterRollup(id, txn.getCustomerId()))
-                      .add(txn);
+              // Load every trust transaction once, filter portal-eligible + portal-status inline
+              // and bucket by matter. (Previously this looped over [RECORDED, APPROVED] with
+              // a findAll() call inside — O(2N) heap load + silent duplicates.)
+              for (var txn : trustTransactionRepository.findAll()) {
+                if (!PORTAL_STATUSES.contains(txn.getStatus())) {
+                  continue;
                 }
-              }
-
-              // Recompute balances inside tenant scope (calculateBalanceByProjectId needs it).
-              for (var rollup : rollups.values()) {
-                rollup.balance =
-                    trustTransactionRepository.calculateBalanceByProjectId(rollup.matterId);
+                if (!hasPortalScope(txn) || !isPortalEligible(txn)) {
+                  continue;
+                }
+                UUID matterId = txn.getProjectId();
+                rollups
+                    .computeIfAbsent(matterId, id -> new MatterRollup(id, txn.getCustomerId()))
+                    .add(txn);
               }
             });
 
-    // Write portal rows inside a portal-side transaction.
+    // Write portal rows inside a portal-side transaction. Each matter's transactions are walked
+    // in ascending occurrence order so every row gets its own progressive running balance.
     Integer txnCount =
         portalTxTemplate.execute(
             status -> {
               int written = 0;
               for (var rollup : rollups.values()) {
-                // Truncate each matter's history to the latest N and write in chronological order
-                // so the client-side list reflects the full retained window.
-                List<TrustTransaction> tailHistory = rollup.tailHistory(BACKFILL_LIMIT_PER_MATTER);
+                List<TrustTransaction> ordered = rollup.ascHistory();
+                BigDecimal running = BigDecimal.ZERO;
+                int take = Math.min(ordered.size(), BACKFILL_LIMIT_PER_MATTER);
+                // Skip the portion older than the retained window so the first-retained row's
+                // running balance reflects every older credit/debit.
+                for (int i = 0; i < ordered.size() - take; i++) {
+                  running = running.add(signedAmount(ordered.get(i)));
+                }
                 Instant latestOccurredAt = null;
-                for (var txn : tailHistory) {
+                for (int i = ordered.size() - take; i < ordered.size(); i++) {
+                  var txn = ordered.get(i);
+                  running = running.add(signedAmount(txn));
                   Instant occurredAt = deriveOccurredAt(txn);
                   if (latestOccurredAt == null || occurredAt.isAfter(latestOccurredAt)) {
                     latestOccurredAt = occurredAt;
@@ -292,15 +316,18 @@ public class TrustLedgerPortalSyncService {
                       rollup.matterId,
                       txn.getTransactionType(),
                       txn.getAmount(),
-                      rollup.balance,
+                      running,
                       occurredAt,
                       sanitiser.sanitise(
                           txn.getDescription(), txn.getTransactionType(), txn.getReference()),
                       txn.getReference());
                   written++;
                 }
+                // The final `running` value after walking every transaction is the matter's
+                // current balance — equivalent to calculateBalanceByProjectId but computed
+                // without an extra round-trip per matter.
                 portalTrustRepo.upsertBalance(
-                    rollup.customerId, rollup.matterId, rollup.balance, latestOccurredAt);
+                    rollup.customerId, rollup.matterId, running, latestOccurredAt);
               }
               return written;
             });
@@ -322,7 +349,6 @@ public class TrustLedgerPortalSyncService {
     final UUID matterId;
     final UUID customerId;
     final java.util.ArrayList<TrustTransaction> transactions = new java.util.ArrayList<>();
-    BigDecimal balance = BigDecimal.ZERO;
 
     MatterRollup(UUID matterId, UUID customerId) {
       this.matterId = matterId;
@@ -333,21 +359,19 @@ public class TrustLedgerPortalSyncService {
       transactions.add(txn);
     }
 
-    List<TrustTransaction> tailHistory(int limit) {
+    /** Returns the matter's transactions in ascending date / createdAt order. */
+    List<TrustTransaction> ascHistory() {
       transactions.sort(
           (a, b) -> {
-            int byDate = b.getTransactionDate().compareTo(a.getTransactionDate());
+            int byDate = a.getTransactionDate().compareTo(b.getTransactionDate());
             if (byDate != 0) {
               return byDate;
             }
             Instant aCreated = a.getCreatedAt() == null ? Instant.EPOCH : a.getCreatedAt();
             Instant bCreated = b.getCreatedAt() == null ? Instant.EPOCH : b.getCreatedAt();
-            return bCreated.compareTo(aCreated);
+            return aCreated.compareTo(bCreated);
           });
-      if (transactions.size() <= limit) {
-        return List.copyOf(transactions);
-      }
-      return List.copyOf(transactions.subList(0, limit));
+      return List.copyOf(transactions);
     }
   }
 
@@ -370,6 +394,26 @@ public class TrustLedgerPortalSyncService {
       return false;
     }
     return !"REVERSAL".equals(txn.getTransactionType());
+  }
+
+  /**
+   * Returns {@code +amount} for credit-type transactions (DEPOSIT, TRANSFER_IN, INTEREST_CREDIT),
+   * {@code -amount} for debit-type transactions (PAYMENT, TRANSFER_OUT, FEE_TRANSFER, REFUND,
+   * INTEREST_LPFF), and zero for any other type — matching the sign convention used by {@link
+   * TrustTransactionRepository#calculateClientBalanceAsOfDate} and {@link
+   * TrustTransactionRepository#calculateBalanceByProjectId}.
+   */
+  private static BigDecimal signedAmount(TrustTransaction txn) {
+    String type = txn.getTransactionType();
+    if (type == null) {
+      return BigDecimal.ZERO;
+    }
+    return switch (type) {
+      case "DEPOSIT", "TRANSFER_IN", "INTEREST_CREDIT" -> txn.getAmount();
+      case "PAYMENT", "TRANSFER_OUT", "FEE_TRANSFER", "REFUND", "INTEREST_LPFF" ->
+          txn.getAmount().negate();
+      default -> BigDecimal.ZERO;
+    };
   }
 
   private static Instant deriveOccurredAt(TrustTransaction txn) {

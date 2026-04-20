@@ -1,8 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.controller;
 
+import io.b2mash.b2b.b2bstrawman.customerbackend.dto.PortalTrustStatementDocumentResponse;
+import io.b2mash.b2b.b2bstrawman.customerbackend.dto.PortalTrustSummaryResponse;
+import io.b2mash.b2b.b2bstrawman.customerbackend.dto.PortalTrustTransactionResponse;
 import io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalTrustLedgerService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -62,23 +64,4 @@ public class PortalTrustController {
     UUID customerId = RequestScopes.requireCustomerId();
     return ResponseEntity.ok(portalTrustLedgerService.listStatementDocuments(customerId, matterId));
   }
-
-  // --- DTOs ---
-
-  public record PortalTrustSummaryResponse(List<PortalTrustMatterSummary> matters) {}
-
-  public record PortalTrustMatterSummary(
-      UUID matterId, BigDecimal currentBalance, Instant lastTransactionAt, Instant lastSyncedAt) {}
-
-  public record PortalTrustTransactionResponse(
-      UUID id,
-      String transactionType,
-      BigDecimal amount,
-      BigDecimal runningBalance,
-      Instant occurredAt,
-      String description,
-      String reference) {}
-
-  public record PortalTrustStatementDocumentResponse(
-      UUID id, String fileName, Instant generatedAt, String downloadUrl) {}
 }

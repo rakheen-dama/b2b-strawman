@@ -1,16 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.service;
 
-import io.b2mash.b2b.b2bstrawman.customerbackend.controller.PortalTrustController.PortalTrustMatterSummary;
-import io.b2mash.b2b.b2bstrawman.customerbackend.controller.PortalTrustController.PortalTrustStatementDocumentResponse;
-import io.b2mash.b2b.b2bstrawman.customerbackend.controller.PortalTrustController.PortalTrustSummaryResponse;
-import io.b2mash.b2b.b2bstrawman.customerbackend.controller.PortalTrustController.PortalTrustTransactionResponse;
+import io.b2mash.b2b.b2bstrawman.customerbackend.dto.PortalTrustMatterSummary;
+import io.b2mash.b2b.b2bstrawman.customerbackend.dto.PortalTrustStatementDocumentResponse;
+import io.b2mash.b2b.b2bstrawman.customerbackend.dto.PortalTrustSummaryResponse;
+import io.b2mash.b2b.b2bstrawman.customerbackend.dto.PortalTrustTransactionResponse;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
-import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
-import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
-import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -27,22 +23,20 @@ import org.springframework.stereotype.Service;
 public class PortalTrustLedgerService {
 
   private static final String MODULE_ID = "trust_accounting";
-  private static final Duration DOWNLOAD_TTL = Duration.ofHours(1);
+
+  /**
+   * Upper bound on requested page size. Prevents a client sending {@code size=Integer.MAX_VALUE}
+   * from forcing a full table scan.
+   */
+  private static final int MAX_PAGE_SIZE = 200;
 
   private final PortalTrustReadModelRepository portalTrustRepo;
   private final VerticalModuleGuard moduleGuard;
-  private final GeneratedDocumentRepository generatedDocumentRepository;
-  private final StorageService storageService;
 
   public PortalTrustLedgerService(
-      PortalTrustReadModelRepository portalTrustRepo,
-      VerticalModuleGuard moduleGuard,
-      GeneratedDocumentRepository generatedDocumentRepository,
-      StorageService storageService) {
+      PortalTrustReadModelRepository portalTrustRepo, VerticalModuleGuard moduleGuard) {
     this.portalTrustRepo = portalTrustRepo;
     this.moduleGuard = moduleGuard;
-    this.generatedDocumentRepository = generatedDocumentRepository;
-    this.storageService = storageService;
   }
 
   public PortalTrustSummaryResponse getSummary(UUID customerId) {
@@ -63,7 +57,7 @@ public class PortalTrustLedgerService {
     requireTrustAccountingEnabled();
     requireMatterVisibleToCustomer(customerId, matterId);
 
-    int size = pageable.getPageSize();
+    int size = Math.min(pageable.getPageSize(), MAX_PAGE_SIZE);
     int offset = Math.toIntExact(pageable.getOffset());
 
     long total = portalTrustRepo.countTransactions(customerId, matterId, from, to);
@@ -87,21 +81,13 @@ public class PortalTrustLedgerService {
       UUID customerId, UUID matterId) {
     requireTrustAccountingEnabled();
     requireMatterVisibleToCustomer(customerId, matterId);
-    // TODO(phase 68): once a STATEMENT template category exists, filter by that category —
-    // see template.TemplateCategory. For now any generated doc scoped to the matter (PROJECT) is
-    // surfaced and the portal caller decides display.
-    var generated =
-        generatedDocumentRepository.findByPrimaryEntityTypeAndPrimaryEntityIdOrderByGeneratedAtDesc(
-            TemplateEntityType.PROJECT, matterId);
-    return generated.stream()
-        .map(
-            gd ->
-                new PortalTrustStatementDocumentResponse(
-                    gd.getId(),
-                    gd.getFileName(),
-                    gd.getGeneratedAt(),
-                    storageService.generateDownloadUrl(gd.getS3Key(), DOWNLOAD_TTL).url()))
-        .toList();
+    // TODO(phase 67 — Statement-of-Account): once a STATEMENT template category (or an
+    // equivalent publish flag on GeneratedDocument) exists, filter by it and surface the
+    // signed download URLs here. Returning every generated document scoped to the matter
+    // would leak firm-internal templates (engagement letters, internal memos) through the
+    // portal — see code review on PR #1084. The endpoint remains so the portal contract
+    // (200 + JSON array) is stable; it just returns an empty list until the category lands.
+    return List.of();
   }
 
   // ── Gates ─────────────────────────────────────────────────────────────

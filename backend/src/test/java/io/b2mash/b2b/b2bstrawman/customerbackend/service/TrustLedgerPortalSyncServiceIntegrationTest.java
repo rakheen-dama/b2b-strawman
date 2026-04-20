@@ -20,7 +20,6 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -159,6 +158,56 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
   }
 
   // ==========================================================================
+  // Running balance: each historical row gets its own progressive sum, not the
+  // latest aggregate (regression guard for PR #1084 review comment C1).
+  // ==========================================================================
+
+  @Test
+  void runningBalanceIsProgressiveAcrossHistoricalRows() {
+    // Seed three approved deposits on distinct transaction dates so the ASC walk produces
+    // 100, 300, 600 — NOT 600/600/600 (the pre-fix bug).
+    UUID txn1 =
+        recordApprovedTransactionOnDate(
+            "DEPOSIT",
+            new BigDecimal("100.00"),
+            "PROG-1",
+            "First deposit",
+            LocalDate.of(2026, 2, 1));
+    UUID txn2 =
+        recordApprovedTransactionOnDate(
+            "DEPOSIT",
+            new BigDecimal("200.00"),
+            "PROG-2",
+            "Second deposit",
+            LocalDate.of(2026, 2, 2));
+    UUID txn3 =
+        recordApprovedTransactionOnDate(
+            "DEPOSIT",
+            new BigDecimal("300.00"),
+            "PROG-3",
+            "Third deposit",
+            LocalDate.of(2026, 2, 3));
+
+    // Publishing any one approval recomputes the entire matter history, so a single event
+    // is enough to populate all three rows with their progressive balances.
+    publishApprovedEvent(txn3, "DEPOSIT", new BigDecimal("300.00"));
+
+    var byId =
+        portalTrustRepo.findTransactions(customerId, matterId, null, null, 50, 0).stream()
+            .collect(
+                java.util.stream.Collectors.toMap(
+                    io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalTrustTransactionView::id,
+                    t -> t));
+
+    assertThat(byId.get(txn1).runningBalance()).isEqualByComparingTo("100.00");
+    assertThat(byId.get(txn2).runningBalance()).isEqualByComparingTo("300.00");
+    assertThat(byId.get(txn3).runningBalance()).isEqualByComparingTo("600.00");
+
+    var balance = portalTrustRepo.findBalance(customerId, matterId).orElseThrow();
+    assertThat(balance.currentBalance()).isEqualByComparingTo("600.00");
+  }
+
+  // ==========================================================================
   // Event listener: interest posted (fan-out)
   // ==========================================================================
 
@@ -224,6 +273,36 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
   }
 
   // ==========================================================================
+  // Event listener: reconciliation completed (fan-out)
+  // ==========================================================================
+
+  @Test
+  void reconciliationCompletedEventRecomputesMatterBalance() {
+    // Seed a pair of deposits — a pre-fan-out approval recompute would otherwise leave portal
+    // rows empty, so we force-sync via the event handler under test.
+    recordApprovedTransactionOnDate(
+        "DEPOSIT",
+        new BigDecimal("500.00"),
+        "REC-1",
+        "Pre-reconciliation deposit 1",
+        LocalDate.of(2026, 3, 10));
+    recordApprovedTransactionOnDate(
+        "DEPOSIT",
+        new BigDecimal("250.00"),
+        "REC-2",
+        "Pre-reconciliation deposit 2",
+        LocalDate.of(2026, 3, 11));
+
+    publishReconciliationCompletedEvent();
+
+    var transactions = portalTrustRepo.findTransactions(customerId, matterId, null, null, 50, 0);
+    assertThat(transactions).hasSize(2);
+
+    var balance = portalTrustRepo.findBalance(customerId, matterId).orElseThrow();
+    assertThat(balance.currentBalance()).isEqualByComparingTo("750.00");
+  }
+
+  // ==========================================================================
   // Backfill: seeds balance + transactions up to per-matter cap
   // ==========================================================================
 
@@ -276,6 +355,12 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
 
   private UUID recordApprovedTransaction(
       String type, BigDecimal amount, String reference, String description) {
+    return recordApprovedTransactionOnDate(
+        type, amount, reference, description, LocalDate.of(2026, 2, 1));
+  }
+
+  private UUID recordApprovedTransactionOnDate(
+      String type, BigDecimal amount, String reference, String description, LocalDate txnDate) {
     UUID[] holder = new UUID[1];
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
@@ -294,7 +379,7 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
                               null,
                               reference,
                               description,
-                              LocalDate.of(2026, 2, 1),
+                              txnDate,
                               "APPROVED",
                               memberId);
                       holder[0] = trustTransactionRepository.saveAndFlush(txn).getId();
@@ -348,8 +433,21 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
                                 ORG_ID))));
   }
 
-  @SuppressWarnings("unused")
-  private static List<UUID> mapIds(List<TrustTransaction> txns) {
-    return txns.stream().map(TrustTransaction::getId).toList();
+  private void publishReconciliationCompletedEvent() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .run(
+            () ->
+                tenantTxTemplate.executeWithoutResult(
+                    status ->
+                        eventPublisher.publishEvent(
+                            TrustDomainEvent.ReconciliationCompleted.of(
+                                UUID.randomUUID(),
+                                trustAccountId,
+                                LocalDate.of(2026, 3, 31),
+                                memberId,
+                                tenantSchema,
+                                ORG_ID))));
   }
 }

@@ -7,6 +7,7 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -67,7 +68,9 @@ public class PortalTrustReadModelRepository {
                  occurred_at, description, reference, last_synced_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, now())
             ON CONFLICT (id)
-            DO UPDATE SET transaction_type = EXCLUDED.transaction_type,
+            DO UPDATE SET customer_id = EXCLUDED.customer_id,
+                          matter_id = EXCLUDED.matter_id,
+                          transaction_type = EXCLUDED.transaction_type,
                           amount = EXCLUDED.amount,
                           running_balance = EXCLUDED.running_balance,
                           occurred_at = EXCLUDED.occurred_at,
@@ -184,6 +187,94 @@ public class PortalTrustReadModelRepository {
   public void deleteTransactionsByCustomer(UUID customerId) {
     jdbc.sql("DELETE FROM portal.portal_trust_transaction WHERE customer_id = ?")
         .params(customerId)
+        .update();
+  }
+
+  /** Returns every customer id that currently has at least one portal trust row. */
+  public Set<UUID> findCustomerIdsWithPortalTrustRows() {
+    var balanceCustomers =
+        jdbc.sql("SELECT DISTINCT customer_id FROM portal.portal_trust_balance")
+            .query(UUID.class)
+            .list();
+    var txnCustomers =
+        jdbc.sql("SELECT DISTINCT customer_id FROM portal.portal_trust_transaction")
+            .query(UUID.class)
+            .list();
+    java.util.HashSet<UUID> all = new java.util.HashSet<>(balanceCustomers);
+    all.addAll(txnCustomers);
+    return all;
+  }
+
+  // ── Backfill drift repair ─────────────────────────────────────────────
+  //
+  // The backfill rewrites a current-window projection per customer. After writing the fresh
+  // rollups, any balance/transaction rows that aren't in the retained window must be dropped
+  // so dropped matters and trimmed history don't linger on the portal side (cross-tenant
+  // leak risk + stale totals).
+
+  /**
+   * Deletes {@code portal_trust_balance} rows for {@code customerId} whose {@code matter_id} is NOT
+   * in {@code retainedMatterIds}. Empty-set input deletes all balances for the customer.
+   */
+  public void deleteBalancesForCustomerNotInMatters(UUID customerId, Set<UUID> retainedMatterIds) {
+    if (retainedMatterIds == null || retainedMatterIds.isEmpty()) {
+      deleteBalancesByCustomer(customerId);
+      return;
+    }
+    UUID[] retained = retainedMatterIds.toArray(new UUID[0]);
+    jdbc.sql(
+            """
+            DELETE FROM portal.portal_trust_balance
+            WHERE customer_id = ? AND NOT (matter_id = ANY (?))
+            """)
+        .params(customerId, retained)
+        .update();
+  }
+
+  /**
+   * Deletes {@code portal_trust_transaction} rows for {@code customerId} whose {@code matter_id} is
+   * NOT in {@code retainedMatterIds}. Empty-set input deletes all transactions for the customer.
+   */
+  public void deleteTransactionsForCustomerNotInMatters(
+      UUID customerId, Set<UUID> retainedMatterIds) {
+    if (retainedMatterIds == null || retainedMatterIds.isEmpty()) {
+      deleteTransactionsByCustomer(customerId);
+      return;
+    }
+    UUID[] retained = retainedMatterIds.toArray(new UUID[0]);
+    jdbc.sql(
+            """
+            DELETE FROM portal.portal_trust_transaction
+            WHERE customer_id = ? AND NOT (matter_id = ANY (?))
+            """)
+        .params(customerId, retained)
+        .update();
+  }
+
+  /**
+   * Deletes {@code portal_trust_transaction} rows for {@code (customerId, matterId)} whose {@code
+   * id} is NOT in {@code retainedTxnIds}. Used to trim matters to the backfill's retained-window
+   * view. Empty-set input deletes every transaction on that matter.
+   */
+  public void deleteTransactionsForMatterNotInIds(
+      UUID customerId, UUID matterId, Set<UUID> retainedTxnIds) {
+    if (retainedTxnIds == null || retainedTxnIds.isEmpty()) {
+      jdbc.sql(
+              """
+              DELETE FROM portal.portal_trust_transaction
+              WHERE customer_id = ? AND matter_id = ?
+              """)
+          .params(customerId, matterId)
+          .update();
+      return;
+    }
+    UUID[] retained = retainedTxnIds.toArray(new UUID[0]);
+    jdbc.sql(
+            """
+            DELETE FROM portal.portal_trust_transaction
+            WHERE customer_id = ? AND matter_id = ? AND NOT (id = ANY (?))
+            """)
+        .params(customerId, matterId, retained)
         .update();
   }
 }

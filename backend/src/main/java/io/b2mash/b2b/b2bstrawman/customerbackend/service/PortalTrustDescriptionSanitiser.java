@@ -44,7 +44,9 @@ public class PortalTrustDescriptionSanitiser {
     String stripped = stripInternalTag(raw);
     String truncated = truncate(stripped);
     if (truncated == null || truncated.isBlank()) {
-      return synthesiseFallback(fallbackTypeLabel, matterRef);
+      // Fallback also passes through truncate so a pathological fallbackTypeLabel/matterRef
+      // combination can never exceed the column's 140-char cap.
+      return truncate(synthesiseFallback(fallbackTypeLabel, matterRef));
     }
     return truncated;
   }

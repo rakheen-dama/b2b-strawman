@@ -306,6 +306,73 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
   // Backfill: seeds balance + transactions up to per-matter cap
   // ==========================================================================
 
+  // ==========================================================================
+  // Backfill: drops stale portal rows (matters that no longer have firm-side
+  // transactions) — drift repair semantics per PR #1084 review.
+  // ==========================================================================
+
+  @Test
+  void backfillForTenantWipesStaleMatterRows() {
+    // Pre-seed the portal read-model with a balance row for a matter that has NO firm-side
+    // trust transactions. The tenant-scoped findAll() during backfill will not surface it, so
+    // the wipe-and-rewrite pass must drop it.
+    portalTrustRepo.deleteTransactionsByCustomer(customerId);
+    portalTrustRepo.deleteBalancesByCustomer(customerId);
+
+    UUID staleMatterId = UUID.randomUUID();
+    portalTrustRepo.upsertBalance(
+        customerId,
+        staleMatterId,
+        new BigDecimal("777.00"),
+        java.time.Instant.parse("2026-01-01T00:00:00Z"));
+    portalTrustRepo.upsertTransaction(
+        UUID.randomUUID(),
+        customerId,
+        staleMatterId,
+        "DEPOSIT",
+        new BigDecimal("777.00"),
+        new BigDecimal("777.00"),
+        java.time.Instant.parse("2026-01-01T00:00:00Z"),
+        "stale",
+        "STALE-REF");
+
+    // Seed one firm-side approved transaction so the backfill has at least one retained matter
+    // for this customer and exercises the matter-set delete branch (rather than the
+    // no-retained-matters fall-through).
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .run(
+            () ->
+                tenantTxTemplate.executeWithoutResult(
+                    status -> {
+                      var txn =
+                          new TrustTransaction(
+                              trustAccountId,
+                              "DEPOSIT",
+                              new BigDecimal("50.00"),
+                              customerId,
+                              matterId,
+                              null,
+                              "RETAIN-1",
+                              "Retained deposit",
+                              LocalDate.of(2026, 2, 1),
+                              "APPROVED",
+                              memberId);
+                      trustTransactionRepository.save(txn);
+                    }));
+
+    syncService.backfillForTenant(ORG_ID);
+
+    // The stale matter's balance row must be gone.
+    assertThat(portalTrustRepo.findBalance(customerId, staleMatterId)).isEmpty();
+    // And no stale transactions for that matter either.
+    assertThat(portalTrustRepo.findTransactions(customerId, staleMatterId, null, null, 50, 0))
+        .isEmpty();
+    // Sanity: the retained matter's balance is present.
+    assertThat(portalTrustRepo.findBalance(customerId, matterId)).isPresent();
+  }
+
   @Test
   void backfillForTenantSeedsBalanceAndTransactions() {
     // Isolate from earlier test fixtures by clearing portal-side state for this customer.

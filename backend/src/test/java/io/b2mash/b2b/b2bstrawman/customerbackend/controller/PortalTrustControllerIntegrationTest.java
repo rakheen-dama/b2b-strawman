@@ -205,9 +205,18 @@ class PortalTrustControllerIntegrationTest {
   void summary_returns_404_when_trust_module_is_disabled() throws Exception {
     when(moduleGuard.isModuleEnabled(anyString())).thenReturn(false);
 
+    // The service throws ResourceNotFoundException.withDetail("Trust ledger not available",
+    // "The trust ledger is not available for this organization") — those strings land in the
+    // ProblemDetail title/detail via ProblemDetailFactory. Lock the body shape down so a
+    // future tweak to the message goes through a test update rather than silently changing
+    // the contract the portal UI parses.
     mockMvc
         .perform(get("/portal/trust/summary").header("Authorization", "Bearer " + portalToken))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.title").value("Trust ledger not available"))
+        .andExpect(
+            jsonPath("$.detail").value("The trust ledger is not available for this organization"));
 
     // Restore default for any tests that depend on the enabled state.
     when(moduleGuard.isModuleEnabled(TRUST_MODULE)).thenReturn(true);

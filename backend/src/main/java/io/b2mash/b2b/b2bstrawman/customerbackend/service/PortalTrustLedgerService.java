@@ -58,7 +58,13 @@ public class PortalTrustLedgerService {
     requireMatterVisibleToCustomer(customerId, matterId);
 
     int size = Math.min(pageable.getPageSize(), MAX_PAGE_SIZE);
-    int offset = Math.toIntExact(pageable.getOffset());
+    long offsetLong = pageable.getOffset();
+    if (offsetLong > Integer.MAX_VALUE) {
+      // Unbounded page numbers can produce offsets beyond the JDBC int limit; surface a 400
+      // instead of letting Math.toIntExact throw and turn into a 500.
+      throw new IllegalArgumentException("Page offset exceeds supported range");
+    }
+    int offset = (int) offsetLong;
 
     long total = portalTrustRepo.countTransactions(customerId, matterId, from, to);
     List<PortalTrustTransactionResponse> content =

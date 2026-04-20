@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.service;
 
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -11,6 +12,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.Tru
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -73,6 +75,7 @@ public class TrustLedgerPortalSyncService {
 
   private final PortalTrustReadModelRepository portalTrustRepo;
   private final TrustTransactionRepository trustTransactionRepository;
+  private final CustomerRepository customerRepository;
   private final PortalTrustDescriptionSanitiser sanitiser;
   private final OrgSchemaMappingRepository orgSchemaMappingRepository;
   private final TransactionTemplate portalTxTemplate;
@@ -80,11 +83,13 @@ public class TrustLedgerPortalSyncService {
   public TrustLedgerPortalSyncService(
       PortalTrustReadModelRepository portalTrustRepo,
       TrustTransactionRepository trustTransactionRepository,
+      CustomerRepository customerRepository,
       PortalTrustDescriptionSanitiser sanitiser,
       OrgSchemaMappingRepository orgSchemaMappingRepository,
       @Qualifier("portalTransactionManager") PlatformTransactionManager portalTxManager) {
     this.portalTrustRepo = portalTrustRepo;
     this.trustTransactionRepository = trustTransactionRepository;
+    this.customerRepository = customerRepository;
     this.sanitiser = sanitiser;
     this.orgSchemaMappingRepository = orgSchemaMappingRepository;
     this.portalTxTemplate = new TransactionTemplate(portalTxManager);
@@ -240,16 +245,25 @@ public class TrustLedgerPortalSyncService {
   // ── Backfill ───────────────────────────────────────────────────────────
 
   /**
-   * Rebuilds the portal trust read-model for a tenant by upserting a row per non-reversal trust
+   * Rebuilds the portal trust read-model for a tenant by writing a row per non-reversal trust
    * transaction (capped at {@link #BACKFILL_LIMIT_PER_MATTER} per matter) and the corresponding
    * per-matter balance snapshot. Intended to be called on module activation (via {@code POST
    * /internal/portal-resync/*}) or when repairing drift.
    *
-   * <p>Upsert-only semantics: rows are merged by {@code (id)} / {@code (customer_id, matter_id)}
-   * via {@code ON CONFLICT DO UPDATE} — the operation does not delete stale rows for customers that
-   * have had trust transactions reversed or removed firm-side since the last sync. Run a targeted
-   * delete (via the portal repository's delete-by-customer helpers) first if stale-row cleanup is
-   * required.
+   * <p>Wipe-and-rewrite semantics: after upserting the fresh current-window projection for each
+   * touched customer, the method deletes portal balance/transaction rows that fall outside the new
+   * projection. Concretely, per customer:
+   *
+   * <ul>
+   *   <li>Balance rows whose {@code matter_id} is no longer in the retained matter set are dropped
+   *       (e.g., matters that have had every trust transaction reversed firm-side).
+   *   <li>Transaction rows whose {@code matter_id} is no longer in the retained matter set are
+   *       dropped for the same reason.
+   *   <li>For matters still in the set, transaction rows whose {@code id} is outside the retained
+   *       window (per {@link #BACKFILL_LIMIT_PER_MATTER}) are trimmed.
+   * </ul>
+   *
+   * Customers with no portal-eligible matters have their entire read-model wiped.
    */
   public BackfillResult backfillForTenant(String orgId) {
     var mapping =
@@ -264,6 +278,9 @@ public class TrustLedgerPortalSyncService {
     log.info("Starting portal trust backfill for org={} schema={}", orgId, schema);
 
     Map<UUID, MatterRollup> rollups = new LinkedHashMap<>();
+    // All customer ids that live in this tenant's schema — used later to bound the cross-tenant
+    // portal wipe so we only ever touch this tenant's customers (the portal schema is shared).
+    Set<UUID> tenantCustomerIds = new HashSet<>();
 
     ScopedValue.where(RequestScopes.TENANT_ID, schema)
         .where(RequestScopes.ORG_ID, orgId)
@@ -285,10 +302,20 @@ public class TrustLedgerPortalSyncService {
                     .computeIfAbsent(matterId, id -> new MatterRollup(id, txn.getCustomerId()))
                     .add(txn);
               }
+              // Snapshot the tenant's customer id set inside the same scope binding — needed for
+              // the wipe-and-rewrite drift repair below.
+              for (var customer : customerRepository.findAll()) {
+                tenantCustomerIds.add(customer.getId());
+              }
             });
 
     // Write portal rows inside a portal-side transaction. Each matter's transactions are walked
     // in ascending occurrence order so every row gets its own progressive running balance.
+    // Track (customerId → matter ids) and (customerId,matterId) → retained txn ids so we can
+    // drop portal rows that no longer belong to the current projection.
+    Map<UUID, Set<UUID>> retainedMattersByCustomer = new HashMap<>();
+    Map<UUID, Map<UUID, Set<UUID>>> retainedTxnsByCustomerMatter = new HashMap<>();
+
     Integer txnCount =
         portalTxTemplate.execute(
             status -> {
@@ -302,6 +329,7 @@ public class TrustLedgerPortalSyncService {
                 for (int i = 0; i < ordered.size() - take; i++) {
                   running = running.add(signedAmount(ordered.get(i)));
                 }
+                Set<UUID> retainedTxnIds = new HashSet<>();
                 Instant latestOccurredAt = null;
                 for (int i = ordered.size() - take; i < ordered.size(); i++) {
                   var txn = ordered.get(i);
@@ -321,6 +349,7 @@ public class TrustLedgerPortalSyncService {
                       sanitiser.sanitise(
                           txn.getDescription(), txn.getTransactionType(), txn.getReference()),
                       txn.getReference());
+                  retainedTxnIds.add(txn.getId());
                   written++;
                 }
                 // The final `running` value after walking every transaction is the matter's
@@ -328,6 +357,45 @@ public class TrustLedgerPortalSyncService {
                 // without an extra round-trip per matter.
                 portalTrustRepo.upsertBalance(
                     rollup.customerId, rollup.matterId, running, latestOccurredAt);
+
+                retainedMattersByCustomer
+                    .computeIfAbsent(rollup.customerId, id -> new HashSet<>())
+                    .add(rollup.matterId);
+                retainedTxnsByCustomerMatter
+                    .computeIfAbsent(rollup.customerId, id -> new HashMap<>())
+                    .put(rollup.matterId, retainedTxnIds);
+              }
+
+              // Drift repair: drop portal rows that fall outside the fresh projection.
+              // Per touched customer: balances + transactions for matters not in the retained
+              // set go away; for retained matters, trim transaction rows outside the retained
+              // window.
+              for (var entry : retainedMattersByCustomer.entrySet()) {
+                UUID customerId = entry.getKey();
+                Set<UUID> retainedMatters = entry.getValue();
+                portalTrustRepo.deleteBalancesForCustomerNotInMatters(customerId, retainedMatters);
+                portalTrustRepo.deleteTransactionsForCustomerNotInMatters(
+                    customerId, retainedMatters);
+                for (var matterEntry : retainedTxnsByCustomerMatter.get(customerId).entrySet()) {
+                  portalTrustRepo.deleteTransactionsForMatterNotInIds(
+                      customerId, matterEntry.getKey(), matterEntry.getValue());
+                }
+              }
+
+              // Customers belonging to this tenant that previously had portal rows but no longer
+              // have any portal-eligible matters in the current firm-side projection: wipe
+              // them entirely. Constrained to tenantCustomerIds so other tenants' rows in the
+              // shared portal schema are never touched.
+              Set<UUID> touchedCustomers = retainedMattersByCustomer.keySet();
+              for (UUID staleCustomerId : portalTrustRepo.findCustomerIdsWithPortalTrustRows()) {
+                if (!tenantCustomerIds.contains(staleCustomerId)) {
+                  continue;
+                }
+                if (touchedCustomers.contains(staleCustomerId)) {
+                  continue;
+                }
+                portalTrustRepo.deleteBalancesByCustomer(staleCustomerId);
+                portalTrustRepo.deleteTransactionsByCustomer(staleCustomerId);
               }
               return written;
             });

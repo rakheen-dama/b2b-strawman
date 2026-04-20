@@ -115,7 +115,7 @@ public class PortalSessionContextService {
     try {
       return storageService.generateDownloadUrl(logoS3Key, LOGO_URL_EXPIRY).url();
     } catch (RuntimeException e) {
-      log.warn("Failed to generate logo download URL for key: {}", logoS3Key, e);
+      log.warn("Failed to generate logo download URL", e);
       return null;
     }
   }

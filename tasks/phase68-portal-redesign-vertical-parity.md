@@ -17,7 +17,7 @@ Three small firm-side additions are in scope — `FieldDefinition.portalVisibleD
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 494 | Portal Session Context + Nav Shell | Both | -- | M | 494A, 494B | |
+| 494 | Portal Session Context + Nav Shell | Both | -- | M | 494A, 494B | **Done** |
 | 495 | Portal Trust Ledger View (`legal-za`) | Both | 494A | M | 495A, 495B | |
 | 496 | Portal Retainer Usage View (`legal-za` + `consulting-za`) | Both | 494A | M | 496A, 496B | |
 | 497 | Portal Deadline Visibility (`accounting-za` + `legal-za`) | Both | 494A | M | 497A, 497B | |
@@ -132,7 +132,7 @@ PHASES already complete:
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 1a | 494 | 494B | `portal-sidebar.tsx` (desktop + mobile drawer), `portal-topbar.tsx`, `nav-items.ts` registry, `use-portal-context.ts`, `layout.tsx` rewrite, `home/page.tsx`, middleware redirect `/` → `/home`, component tests + nav-filter unit test. |
+| 1a | 494 | 494B | `portal-sidebar.tsx` (desktop + mobile drawer), `portal-topbar.tsx`, `nav-items.ts` registry, `use-portal-context.ts`, `layout.tsx` rewrite, `home/page.tsx`, middleware redirect `/` → `/home`, component tests + nav-filter unit test. **Done** (PR #1083) |
 | 1b (parallel) | 498 | 498A | V105 tenant migration (`org_settings.portal_digest_cadence` enum + `field_definitions.portal_visible_deadline` column), V19 portal (global) migration (`portal_notification_preference` table), `OrgSettings` field + service method, `PortalNotificationPreference` entity + repo + service stub, unit tests. |
 
 ### Stage 2: Vertical backend fan-out (three parallel tracks after 494A)
@@ -215,7 +215,7 @@ A realistic day-by-day cadence: 494A day 1–2; 494B + 498A days 2–5 (parallel
 | Slice | Tasks | Summary |
 |-------|-------|---------|
 | **494A** | 494.1–494.5 | `PortalContextController` at `/api/portal/session/context`, `PortalSessionContextDto` record, `PortalSessionContextService` resolving `tenantProfile` (via `VerticalProfileService`) + `enabledModules` (via `VerticalModuleRegistry`) + `terminologyKey` + branding (reusing `PortalBrandingController` internals), 2 integration tests (authed returns profile/module set; unauthed 401). Backend-only, 5 files. **Done** (PR #1082) |
-| **494B** | 494.6–494.14 | `portal/lib/nav-items.ts` central registry (10 entries), `portal/hooks/use-portal-context.ts`, `portal/components/portal-sidebar.tsx` (desktop rail + mobile drawer variant), `portal/components/portal-topbar.tsx` (slim 48px top bar), `portal/app/(authenticated)/layout.tsx` rewrite, `portal/app/(authenticated)/home/page.tsx` (quick-actions summary), root `middleware.ts` redirect `/` → `/home`, nav-filter unit test + sidebar component test. Frontend-only, 9 files (budget verified: 7 new + 2 modified). |
+| **494B** | 494.6–494.14 | `portal/lib/nav-items.ts` central registry (10 entries), `portal/hooks/use-portal-context.ts`, `portal/components/portal-sidebar.tsx` (desktop rail + mobile drawer variant), `portal/components/portal-topbar.tsx` (slim 48px top bar), `portal/app/(authenticated)/layout.tsx` rewrite, `portal/app/(authenticated)/home/page.tsx` (quick-actions summary), root `middleware.ts` redirect `/` → `/home`, nav-filter unit test + sidebar component test. Frontend-only, 9 files (budget verified: 7 new + 2 modified). **Done** (PR #1083) |
 
 ### Tasks
 

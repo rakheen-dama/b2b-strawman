@@ -116,7 +116,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 > This checkpoint is **skipped for `consulting-za`** (no deadline feed surfaced in consulting profile). If the narrator persona is `thembi.portal@example.com` (consulting), switch actor to `sipho.portal@example.com` (legal) or `zola.portal@example.com` (accounting) for this day.
 
-**Actor**: Sipho Dlamini OR Zola Mbeki (portal contact on a legal-za or accounting-za tenant)
+**Actor**: Sipho Dlamini OR Zola's Bakery (`zola.portal@example.com`) — portal contact on a legal-za or accounting-za tenant
 
 - [ ] **7.1** Open Mailpit → verify weekly digest email arrived with subject containing "Your weekly update" (or similar). Body includes a link labelled "View deadlines" or similar
 - [ ] **7.2** Click the "Deadlines" link in the digest → lands on portal `/deadlines` `[accounting-za / legal-za]`

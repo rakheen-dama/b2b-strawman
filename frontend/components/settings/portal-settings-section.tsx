@@ -80,6 +80,7 @@ export function PortalSettingsSection({
 
   async function handleCadenceChange(value: string) {
     const next = value as PortalDigestCadence;
+    const previous = cadence;
     setCadence(next);
     setIsSavingCadence(true);
     setError(null);
@@ -91,8 +92,11 @@ export function PortalSettingsSection({
         router.refresh();
       } else {
         setError(result.error ?? "Failed to update portal digest cadence.");
-        setCadence(currentCadence);
+        setCadence(previous);
       }
+    } catch {
+      setError("Failed to update portal digest cadence.");
+      setCadence(previous);
     } finally {
       setIsSavingCadence(false);
     }
@@ -100,6 +104,7 @@ export function PortalSettingsSection({
 
   async function handleMemberDisplayChange(value: string) {
     const next = value as PortalRetainerMemberDisplay;
+    const previous = memberDisplay;
     setMemberDisplay(next);
     setIsSavingMemberDisplay(true);
     setError(null);
@@ -113,8 +118,11 @@ export function PortalSettingsSection({
         setError(
           result.error ?? "Failed to update portal retainer member display.",
         );
-        setMemberDisplay(currentMemberDisplay);
+        setMemberDisplay(previous);
       }
+    } catch {
+      setError("Failed to update portal retainer member display.");
+      setMemberDisplay(previous);
     } finally {
       setIsSavingMemberDisplay(false);
     }
@@ -184,7 +192,7 @@ export function PortalSettingsSection({
       </div>
 
       {statusMessage && (
-        <p className="mt-4 text-xs text-emerald-700 dark:text-emerald-400">
+        <p className="mt-4 text-xs text-teal-600 dark:text-teal-400">
           {statusMessage}
         </p>
       )}

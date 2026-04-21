@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.exception;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.MemberContextNotBoundException;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactContextNotBoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import java.util.List;
@@ -96,6 +97,18 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             "Member context not available",
             "Unable to resolve member identity for request");
     return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(problem);
+  }
+
+  @ExceptionHandler(PortalContactContextNotBoundException.class)
+  public ResponseEntity<ProblemDetail> handlePortalContactContextNotBound(
+      PortalContactContextNotBoundException ex) {
+    log.warn("Portal contact context not bound: {}", ex.getMessage());
+    var problem =
+        ProblemDetailFactory.create(
+            HttpStatus.UNAUTHORIZED,
+            "Portal contact context not available",
+            "Unable to resolve portal contact identity for request");
+    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(problem);
   }
 
   @ExceptionHandler(PrerequisiteNotMetException.class)

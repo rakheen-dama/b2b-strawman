@@ -105,8 +105,17 @@ function NotificationsPageInner() {
   const [error, setError] = useState<string | null>(null);
   const [autoUnsubscribed, setAutoUnsubscribed] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  // Gate the auth-redirect branch on post-hydration mount. `useAuth` reads JWT
+  // from localStorage, which is null on the very first client render — without
+  // this guard we would bounce authenticated users to /login during hydration.
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
     if (!jwt) {
       router.push("/login");
       return;
@@ -139,7 +148,7 @@ function NotificationsPageInner() {
     return () => {
       cancelled = true;
     };
-  }, [jwt, router]);
+  }, [jwt, router, mounted]);
 
   const save = useCallback(
     async (next: NotificationPreferencesUpdate): Promise<void> => {

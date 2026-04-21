@@ -1,8 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.portal.notification;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactContextNotBoundException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -33,8 +35,7 @@ public class PortalNotificationPreferenceController {
 
   @GetMapping
   public ResponseEntity<PortalNotificationPreferencesResponse> get() {
-    return ResponseEntity.ok(
-        preferenceService.getPreferencesResponse(RequestScopes.requirePortalContactId()));
+    return ResponseEntity.ok(preferenceService.getPreferencesResponse(requirePortalContact()));
   }
 
   @PutMapping
@@ -42,13 +43,29 @@ public class PortalNotificationPreferenceController {
       @Valid @RequestBody UpdateRequest request) {
     return ResponseEntity.ok(
         preferenceService.updateAndGetResponse(
-            RequestScopes.requirePortalContactId(),
+            requirePortalContact(),
             new PortalNotificationPreferenceService.PortalNotificationPreferenceUpdate(
                 request.digestEnabled(),
                 request.trustActivityEnabled(),
                 request.retainerUpdatesEnabled(),
                 request.deadlineRemindersEnabled(),
                 request.actionRequiredEnabled())));
+  }
+
+  /**
+   * Resolves PORTAL_CONTACT_ID via {@link RequestScopes#requirePortalContactId()}, translating the
+   * unbound-scope {@link IllegalStateException} into a typed {@link
+   * PortalContactContextNotBoundException} so the global handler returns HTTP 401 instead of 500.
+   * {@link io.b2mash.b2b.b2bstrawman.portal.CustomerAuthFilter} tolerates a missing PortalContact
+   * for the customer (backward-compatible path) — this defensive conversion keeps auth-style
+   * semantics even if that path is hit.
+   */
+  private UUID requirePortalContact() {
+    try {
+      return RequestScopes.requirePortalContactId();
+    } catch (IllegalStateException e) {
+      throw new PortalContactContextNotBoundException();
+    }
   }
 
   public record UpdateRequest(

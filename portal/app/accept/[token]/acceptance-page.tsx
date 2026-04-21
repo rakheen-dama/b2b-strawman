@@ -194,7 +194,7 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
         {/* PDF Viewer */}
         <iframe
           src={pdfUrl}
-          className="h-[600px] w-full rounded-lg border border-slate-200"
+          className="h-[70vh] w-full rounded-lg border border-slate-200 md:h-[600px]"
           title="Document PDF"
         />
 
@@ -258,6 +258,7 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
                     autoComplete="name"
                     autoFocus
                     disabled={pageState === "SUBMITTING"}
+                    className="h-11 md:h-9"
                   />
                 </div>
 
@@ -271,7 +272,7 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
                   type="submit"
                   variant="accent"
                   disabled={name.trim().length < 2 || pageState === "SUBMITTING"}
-                  className="w-full"
+                  className="min-h-11 w-full"
                 >
                   {pageState === "SUBMITTING" ? (
                     <>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle, XCircle, Clock } from "lucide-react";
@@ -9,6 +9,7 @@ import { formatCurrency, formatDate } from "@/lib/format";
 import { ProposalStatusBadge } from "@/components/proposal-status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { StickyActionBar } from "@/components/ui/sticky-action-bar";
 import type {
   PortalProposalDetail,
   PortalAcceptResponse,
@@ -60,36 +61,24 @@ export default function ProposalDetailPage() {
     text: string;
   } | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchProposal() {
-      try {
-        const data = await portalGet<PortalProposalDetail>(
-          `/portal/api/proposals/${proposalId}`,
-        );
-        if (!cancelled) {
-          setProposal(data);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "Failed to load proposal",
-          );
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
+  const fetchProposal = useCallback(async () => {
+    setError(null);
+    setIsLoading(true);
+    try {
+      const data = await portalGet<PortalProposalDetail>(
+        `/portal/api/proposals/${proposalId}`,
+      );
+      setProposal(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load proposal");
+    } finally {
+      setIsLoading(false);
     }
-
-    fetchProposal();
-
-    return () => {
-      cancelled = true;
-    };
   }, [proposalId]);
+
+  useEffect(() => {
+    fetchProposal();
+  }, [fetchProposal]);
 
   async function handleAccept() {
     setIsAccepting(true);
@@ -144,7 +133,14 @@ export default function ProposalDetailPage() {
   if (error) {
     return (
       <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-        {error}
+        <p className="mb-2">{error}</p>
+        <button
+          type="button"
+          onClick={() => fetchProposal()}
+          className="inline-flex min-h-11 items-center rounded-md bg-white px-3 py-1.5 text-sm font-medium text-red-700 ring-1 ring-red-200 hover:bg-red-100"
+        >
+          Try again
+        </button>
       </div>
     );
   }
@@ -152,28 +148,30 @@ export default function ProposalDetailPage() {
   if (!proposal) return null;
 
   const isSent = proposal.status === "SENT";
+  const showStickyBar = isSent && !showDeclineForm;
 
   return (
-    <div className="space-y-8">
+    <>
+      <div className={showStickyBar ? "space-y-8 pb-24 md:pb-0" : "space-y-8"}>
       {/* Back link */}
       <Link
         href="/proposals"
-        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
+        className="inline-flex min-h-11 items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
       >
         <ArrowLeft className="size-4" />
         Back to proposals
       </Link>
 
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <h1 className="font-display text-2xl font-semibold text-slate-900">
               {proposal.title}
             </h1>
             <ProposalStatusBadge status={proposal.status} />
           </div>
-          <div className="mt-2 flex flex-wrap gap-6 text-sm text-slate-600">
+          <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-600">
             <span>{proposal.proposalNumber}</span>
             {proposal.sentAt && (
               <span>Sent: {formatDate(proposal.sentAt)}</span>
@@ -243,7 +241,7 @@ export default function ProposalDetailPage() {
           Fee Details
         </h2>
         <div className="rounded-lg border border-slate-200 bg-white p-4">
-          <div className="flex flex-wrap gap-8 text-sm">
+          <div className="flex flex-col gap-4 text-sm sm:flex-row sm:flex-wrap sm:gap-8">
             <div>
               <span className="font-medium text-slate-500">Fee Model</span>
               <p className="mt-1 text-slate-900">
@@ -286,11 +284,11 @@ export default function ProposalDetailPage() {
           </p>
 
           {!showDeclineForm ? (
-            <div className="flex flex-wrap gap-3">
+            <div className="hidden flex-wrap gap-3 md:flex">
               <Button
                 onClick={handleAccept}
                 disabled={isAccepting}
-                className="bg-teal-600 text-white hover:bg-teal-700"
+                className="min-h-11 bg-teal-600 text-white hover:bg-teal-700 md:min-h-9"
               >
                 {isAccepting ? "Accepting..." : "Accept Proposal"}
               </Button>
@@ -298,6 +296,7 @@ export default function ProposalDetailPage() {
                 variant="outline"
                 onClick={() => setShowDeclineForm(true)}
                 disabled={isAccepting}
+                className="min-h-11 md:min-h-9"
               >
                 Decline
               </Button>
@@ -315,14 +314,15 @@ export default function ProposalDetailPage() {
                 value={declineReason}
                 onChange={(e) => setDeclineReason(e.target.value)}
                 rows={3}
-                className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+                className="w-full min-h-24 rounded-md border border-slate-300 px-3 py-2 text-base text-slate-900 placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 md:text-sm"
                 placeholder="Let them know why you are declining..."
               />
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                 <Button
                   variant="destructive"
                   onClick={handleDecline}
                   disabled={isDeclining}
+                  className="min-h-11 md:min-h-9"
                 >
                   {isDeclining ? "Declining..." : "Confirm Decline"}
                 </Button>
@@ -333,6 +333,7 @@ export default function ProposalDetailPage() {
                     setDeclineReason("");
                   }}
                   disabled={isDeclining}
+                  className="min-h-11 md:min-h-9"
                 >
                   Cancel
                 </Button>
@@ -341,6 +342,28 @@ export default function ProposalDetailPage() {
           )}
         </section>
       )}
-    </div>
+      </div>
+
+      {/* Mobile sticky action bar for Accept / Decline */}
+      {showStickyBar && (
+        <StickyActionBar>
+          <Button
+            onClick={handleAccept}
+            disabled={isAccepting}
+            className="min-h-11 flex-1 bg-teal-600 text-white hover:bg-teal-700"
+          >
+            {isAccepting ? "Accepting..." : "Accept"}
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => setShowDeclineForm(true)}
+            disabled={isAccepting}
+            className="min-h-11 flex-1"
+          >
+            Decline
+          </Button>
+        </StickyActionBar>
+      )}
+    </>
   );
 }

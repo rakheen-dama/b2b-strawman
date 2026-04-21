@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Clock, Receipt } from "lucide-react";
+import { ArrowLeft, Clock } from "lucide-react";
 import Link from "next/link";
 import { portalGet } from "@/lib/api-client";
 import { StatusBadge } from "@/components/status-badge";
@@ -50,48 +50,36 @@ export default function ProjectDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
+  const fetchData = useCallback(async () => {
+    setError(null);
+    setIsLoading(true);
+    try {
+      const [project, tasks, documents, comments, summary] =
+        await Promise.all([
+          portalGet<PortalProjectDetail>(`/portal/projects/${projectId}`),
+          portalGet<PortalTask[]>(`/portal/projects/${projectId}/tasks`),
+          portalGet<PortalDocument[]>(
+            `/portal/projects/${projectId}/documents`,
+          ),
+          portalGet<PortalComment[]>(
+            `/portal/projects/${projectId}/comments`,
+          ),
+          portalGet<PortalProjectSummary>(
+            `/portal/projects/${projectId}/summary`,
+          ),
+        ]);
 
-    async function fetchData() {
-      try {
-        const [project, tasks, documents, comments, summary] =
-          await Promise.all([
-            portalGet<PortalProjectDetail>(`/portal/projects/${projectId}`),
-            portalGet<PortalTask[]>(`/portal/projects/${projectId}/tasks`),
-            portalGet<PortalDocument[]>(
-              `/portal/projects/${projectId}/documents`,
-            ),
-            portalGet<PortalComment[]>(
-              `/portal/projects/${projectId}/comments`,
-            ),
-            portalGet<PortalProjectSummary>(
-              `/portal/projects/${projectId}/summary`,
-            ),
-          ]);
-
-        if (!cancelled) {
-          setData({ project, tasks, documents, comments, summary });
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "Failed to load project",
-          );
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
+      setData({ project, tasks, documents, comments, summary });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load project");
+    } finally {
+      setIsLoading(false);
     }
-
-    fetchData();
-
-    return () => {
-      cancelled = true;
-    };
   }, [projectId]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   function handleCommentPosted() {
     // Refetch comments
@@ -113,12 +101,21 @@ export default function ProjectDetailPage() {
         <p className="mt-1 text-sm text-slate-500">
           This project may have been removed or you may not have access.
         </p>
-        <Link
-          href="/projects"
-          className="mt-4 text-sm text-teal-600 hover:underline"
-        >
-          Back to projects
-        </Link>
+        <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row">
+          <button
+            type="button"
+            onClick={() => fetchData()}
+            className="inline-flex min-h-11 items-center rounded-md bg-white px-3 py-1.5 text-sm font-medium text-teal-700 ring-1 ring-teal-200 hover:bg-teal-50"
+          >
+            Try again
+          </button>
+          <Link
+            href="/projects"
+            className="inline-flex min-h-11 items-center text-sm text-teal-600 hover:underline"
+          >
+            Back to projects
+          </Link>
+        </div>
       </div>
     );
   }
@@ -132,7 +129,7 @@ export default function ProjectDetailPage() {
       {/* Back link */}
       <Link
         href="/projects"
-        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
+        className="inline-flex min-h-11 items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
       >
         <ArrowLeft className="size-4" />
         Back to projects
@@ -140,7 +137,7 @@ export default function ProjectDetailPage() {
 
       {/* Header */}
       <div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <h1 className="font-display text-2xl font-semibold text-slate-900">
             {project.name}
           </h1>
@@ -158,7 +155,7 @@ export default function ProjectDetailPage() {
             <CardTitle className="text-base">Project Summary</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-8">
+            <div className="flex flex-col gap-4 md:flex-row md:gap-8">
               <div className="flex items-center gap-2">
                 <Clock className="size-4 text-slate-400" />
                 <div>

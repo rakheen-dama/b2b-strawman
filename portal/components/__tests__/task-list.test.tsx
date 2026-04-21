@@ -30,13 +30,14 @@ describe("TaskList", () => {
       />,
     );
 
-    expect(screen.getByText("Design homepage")).toBeInTheDocument();
-    expect(screen.getByText("IN PROGRESS")).toBeInTheDocument();
-    expect(screen.getByText("Alice")).toBeInTheDocument();
+    // Both mobile and desktop layouts render; use getAllByText
+    expect(screen.getAllByText("Design homepage").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("IN PROGRESS").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Alice").length).toBeGreaterThanOrEqual(1);
 
-    expect(screen.getByText("Write tests")).toBeInTheDocument();
-    expect(screen.getByText("OPEN")).toBeInTheDocument();
-    expect(screen.getByText("Unassigned")).toBeInTheDocument();
+    expect(screen.getAllByText("Write tests").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("OPEN").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Unassigned").length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows empty state when no tasks", () => {
@@ -60,6 +61,6 @@ describe("TaskList", () => {
       />,
     );
 
-    expect(screen.getByText("DONE")).toBeInTheDocument();
+    expect(screen.getAllByText("DONE").length).toBeGreaterThanOrEqual(1);
   });
 });

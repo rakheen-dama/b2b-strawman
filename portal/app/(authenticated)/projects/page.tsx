@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FolderOpen } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
 import { useBranding } from "@/hooks/use-branding";
@@ -29,34 +29,24 @@ export default function ProjectsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchProjects() {
-      try {
-        const data = await portalGet<PortalProject[]>("/portal/projects");
-        if (!cancelled) {
-          setProjects(data);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          setError(
-            err instanceof Error ? err.message : "Failed to load projects",
-          );
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
-      }
+  const fetchProjects = useCallback(async () => {
+    setError(null);
+    setIsLoading(true);
+    try {
+      const data = await portalGet<PortalProject[]>("/portal/projects");
+      setProjects(data);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to load projects",
+      );
+    } finally {
+      setIsLoading(false);
     }
-
-    fetchProjects();
-
-    return () => {
-      cancelled = true;
-    };
   }, []);
+
+  useEffect(() => {
+    fetchProjects();
+  }, [fetchProjects]);
 
   return (
     <div>
@@ -76,7 +66,14 @@ export default function ProjectsPage() {
 
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {error}
+          <p className="mb-2">{error}</p>
+          <button
+            type="button"
+            onClick={() => fetchProjects()}
+            className="inline-flex min-h-11 items-center rounded-md bg-white px-3 py-1.5 text-sm font-medium text-red-700 ring-1 ring-red-200 hover:bg-red-100"
+          >
+            Try again
+          </button>
         </div>
       )}
 

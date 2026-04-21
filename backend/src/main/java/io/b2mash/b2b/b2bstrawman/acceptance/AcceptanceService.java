@@ -90,7 +90,7 @@ public class AcceptanceService {
       OrganizationRepository organizationRepository,
       PortalReadModelRepository portalReadModelRepository,
       TransactionTemplate transactionTemplate,
-      @Value("${docteams.portal.base-url:http://localhost:3001}") String portalBaseUrl) {
+      @Value("${docteams.app.portal-base-url:http://localhost:3002}") String portalBaseUrl) {
     this.acceptanceRequestRepository = acceptanceRequestRepository;
     this.generatedDocumentRepository = generatedDocumentRepository;
     this.portalContactRepository = portalContactRepository;

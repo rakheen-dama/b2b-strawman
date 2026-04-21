@@ -156,7 +156,7 @@ PHASES already complete:
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 4a | 498 | 498C | `/settings/notifications/page.tsx`, preferences API client, unsubscribe landing wiring, firm-side `OrgSettings.portalDigestCadence` + `portalRetainerMemberDisplay` settings UI (small addition to existing portal-settings section), component tests. |
+| 4a | 498 | 498C | `/settings/notifications/page.tsx`, preferences API client, unsubscribe landing wiring, firm-side `OrgSettings.portalDigestCadence` + `portalRetainerMemberDisplay` settings UI (small addition to existing portal-settings section), component tests. **Done** (PR #1092) |
 
 ### Stage 5: Mobile polish
 
@@ -546,7 +546,7 @@ A realistic day-by-day cadence: 494A day 1–2; 494B + 498A days 2–5 (parallel
 |-------|-------|---------------|---------|
 | **498A** | 498.1–498.5 | 7 backend files | V107 tenant migration (`org_settings.portal_digest_cadence`), V22 portal migration (`portal_notification_preference`), `OrgSettings` field + enum, `PortalNotificationPreference` entity + repo + service stub, migration tests. Backend scaffolding only — no scheduler, no templates, no event channel yet. **Done** (PR #1090) |
 | **498B** | 498.6–498.14 | 10 backend files (scheduler, channel, 4 new templates, audit of 4 existing templates, integration tests) | `PortalDigestScheduler` (cron), `PortalEmailNotificationChannel` (per-event sibling to Phase 24 channel), 4 new Thymeleaf templates (`portal-weekly-digest`, `portal-trust-activity`, `portal-deadline-approaching`, `portal-retainer-period-closed`), audit of existing templates for no-double-send, integration tests. **Done** (PR #1091) |
-| **498C** | 498.15–498.20 | 8 files (portal frontend + firm-side cadence UI) | `/settings/notifications/page.tsx` + preferences API client + unsubscribe landing wiring, firm-side `OrgSettings.portalDigestCadence` + `portalRetainerMemberDisplay` settings UI (both on existing portal-settings section), component tests. |
+| **498C** | 498.15–498.20 | 8 files (portal frontend + firm-side cadence UI) | `/settings/notifications/page.tsx` + preferences API client + unsubscribe landing wiring, firm-side `OrgSettings.portalDigestCadence` + `portalRetainerMemberDisplay` settings UI (both on existing portal-settings section), component tests. **Done** (PR #1092) |
 
 ### Tasks
 

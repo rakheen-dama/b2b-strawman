@@ -8,6 +8,7 @@
     "start": "next start --port 3002",
     "lint": "eslint",
     "test": "vitest run",
+    "test:e2e:portal-client-90day": "playwright test --config=playwright.portal.config.ts --project=portal-client-90day",
     "test:watch": "vitest"
   },
   "dependencies": {

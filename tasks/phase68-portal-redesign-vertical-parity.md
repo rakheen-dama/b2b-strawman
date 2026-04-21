@@ -163,7 +163,7 @@ PHASES already complete:
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
 | 5a | 499 | 499A | Audit + fix mobile layouts on existing pages: login, projects (list + detail), invoices (list + detail + payment result), proposals (list + detail), requests, acceptance, profile. Empty/loading/error state audit. **Done** (PR #1093) |
-| 5b | 499 | 499B | Mobile audit on new pages (trust, retainer, deadlines, home, notifications), `e2e/screenshots/portal-v2/` baseline capture at sm/md/lg. |
+| 5b | 499 | 499B | Mobile audit on new pages (trust, retainer, deadlines, home, notifications), `e2e/screenshots/portal-v2/` baseline capture at sm/md/lg. **Done** (PR #1094) |
 
 ### Stage 6: QA capstone
 
@@ -640,7 +640,7 @@ A realistic day-by-day cadence: 494A day 1–2; 494B + 498A days 2–5 (parallel
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **499A** | 499.1–499.7 | 10–12 existing pages + shared primitives | Audit + reflow pre-existing portal pages: login, projects (list + detail), invoices (list + detail + payment results), proposals (list + detail), requests, acceptance, profile. Empty/loading/error state audit. Sticky bottom-action bars where pages have one primary action. Tap targets ≥44px. **Done** (PR #1093) |
-| **499B** | 499.8–499.12 | 5–6 new pages + baseline capture | Audit new pages (home, trust, retainer, deadlines, settings/notifications). Design-token audit across all pages. Playwright visual baselines at sm/md/lg stored under `portal/e2e/screenshots/portal-v2/` (create if needed — verify portal has an e2e dir; otherwise reuse `frontend/e2e/` under a portal-specific spec directory). |
+| **499B** | 499.8–499.12 | 5–6 new pages + baseline capture | Audit new pages (home, trust, retainer, deadlines, settings/notifications). Design-token audit across all pages. Playwright visual baselines at sm/md/lg stored under `portal/e2e/screenshots/portal-v2/` (create if needed — verify portal has an e2e dir; otherwise reuse `frontend/e2e/` under a portal-specific spec directory). **Done** (PR #1094) |
 
 ### Tasks
 

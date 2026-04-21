@@ -189,4 +189,35 @@ describe("NotificationsPage", () => {
       ),
     ).toBeInTheDocument();
   });
+
+  it("?unsubscribe=1 strips the query param via router.replace after auto-unsubscribe", async () => {
+    mockSearchParams = new URLSearchParams("unsubscribe=1");
+
+    mockGetPreferences.mockResolvedValue(defaultPrefs());
+    mockUpdatePreferences.mockResolvedValue(
+      defaultPrefs({ digestEnabled: false }),
+    );
+
+    render(<NotificationsPage />);
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith("/settings/notifications");
+    });
+    // Confirms the effect doesn't re-fire on re-render — digest was flipped exactly once.
+    expect(mockUpdatePreferences).toHaveBeenCalledTimes(1);
+  });
+
+  it("?unsubscribe=1 with digest already off still strips the query param", async () => {
+    mockSearchParams = new URLSearchParams("unsubscribe=1");
+
+    mockGetPreferences.mockResolvedValue(defaultPrefs({ digestEnabled: false }));
+
+    render(<NotificationsPage />);
+
+    await waitFor(() => {
+      expect(mockReplace).toHaveBeenCalledWith("/settings/notifications");
+    });
+    // No PUT — digest was already off so nothing to persist.
+    expect(mockUpdatePreferences).not.toHaveBeenCalled();
+  });
 });

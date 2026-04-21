@@ -161,11 +161,15 @@ function NotificationsPageInner() {
   );
 
   // 498.18 — auto-unsubscribe landing: ?unsubscribe=1 flips digest off once, shows banner.
+  // After the handler runs we strip the query param via router.replace so that a page
+  // refresh (or the user re-enabling digest then reloading) doesn't re-fire the effect
+  // and silently flip digest back off.
   useEffect(() => {
     if (!shouldAutoUnsubscribe || autoUnsubscribed || !prefs) return;
     if (!prefs.digestEnabled) {
       // already off — still surface the banner so the link feels honoured
       setAutoUnsubscribed(true);
+      router.replace("/settings/notifications");
       return;
     }
     const next: NotificationPreferencesUpdate = {
@@ -176,11 +180,14 @@ function NotificationsPageInner() {
       actionRequiredEnabled: prefs.actionRequiredEnabled,
     };
     save(next)
-      .then(() => setAutoUnsubscribed(true))
+      .then(() => {
+        setAutoUnsubscribed(true);
+        router.replace("/settings/notifications");
+      })
       .catch(() => {
-        /* error state is set by save() — banner stays hidden */
+        /* error state is set by save() — banner stays hidden, query param preserved */
       });
-  }, [shouldAutoUnsubscribe, autoUnsubscribed, prefs, save]);
+  }, [shouldAutoUnsubscribe, autoUnsubscribed, prefs, save, router]);
 
   async function handleToggle(
     field: keyof NotificationPreferencesUpdate,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Select,
@@ -69,6 +69,14 @@ export function PortalSettingsSection({
   const [isSavingMemberDisplay, setIsSavingMemberDisplay] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+
+  // Auto-dismiss the success banner 3s after it renders so repeated edits
+  // don't stack stale "updated" messages against unrelated interactions.
+  useEffect(() => {
+    if (!statusMessage) return;
+    const timer = setTimeout(() => setStatusMessage(null), 3000);
+    return () => clearTimeout(timer);
+  }, [statusMessage]);
 
   async function handleCadenceChange(value: string) {
     const next = value as PortalDigestCadence;

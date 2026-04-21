@@ -2,13 +2,12 @@
 
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
+import type {
+  PortalDigestCadence,
+  PortalRetainerMemberDisplay,
+} from "@/lib/types/settings";
 
-export type PortalDigestCadence = "WEEKLY" | "BIWEEKLY" | "OFF";
-export type PortalRetainerMemberDisplay =
-  | "FULL_NAME"
-  | "FIRST_NAME_ROLE"
-  | "ROLE_ONLY"
-  | "ANONYMISED";
+export type { PortalDigestCadence, PortalRetainerMemberDisplay };
 
 export interface PortalActionResult {
   success: boolean;

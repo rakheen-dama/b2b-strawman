@@ -1,10 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.portal.notification;
 
-import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import jakarta.validation.Valid;
-import java.util.UUID;
+import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -27,65 +25,36 @@ import org.springframework.web.bind.annotation.RestController;
 public class PortalNotificationPreferenceController {
 
   private final PortalNotificationPreferenceService preferenceService;
-  private final OrgSettingsService orgSettingsService;
 
   public PortalNotificationPreferenceController(
-      PortalNotificationPreferenceService preferenceService,
-      OrgSettingsService orgSettingsService) {
+      PortalNotificationPreferenceService preferenceService) {
     this.preferenceService = preferenceService;
-    this.orgSettingsService = orgSettingsService;
   }
 
   @GetMapping
-  public ResponseEntity<PreferencesResponse> get() {
-    return ResponseEntity.ok(buildResponse(requireContactId()));
+  public ResponseEntity<PortalNotificationPreferencesResponse> get() {
+    return ResponseEntity.ok(
+        preferenceService.getPreferencesResponse(RequestScopes.requirePortalContactId()));
   }
 
   @PutMapping
-  public ResponseEntity<PreferencesResponse> update(@Valid @RequestBody UpdateRequest request) {
-    UUID contactId = requireContactId();
-    preferenceService.update(
-        contactId,
-        new PortalNotificationPreferenceService.PortalNotificationPreferenceUpdate(
-            request.digestEnabled(),
-            request.trustActivityEnabled(),
-            request.retainerUpdatesEnabled(),
-            request.deadlineRemindersEnabled(),
-            request.actionRequiredEnabled()));
-    return ResponseEntity.ok(buildResponse(contactId));
+  public ResponseEntity<PortalNotificationPreferencesResponse> update(
+      @Valid @RequestBody UpdateRequest request) {
+    return ResponseEntity.ok(
+        preferenceService.updateAndGetResponse(
+            RequestScopes.requirePortalContactId(),
+            new PortalNotificationPreferenceService.PortalNotificationPreferenceUpdate(
+                request.digestEnabled(),
+                request.trustActivityEnabled(),
+                request.retainerUpdatesEnabled(),
+                request.deadlineRemindersEnabled(),
+                request.actionRequiredEnabled())));
   }
-
-  private UUID requireContactId() {
-    if (!RequestScopes.PORTAL_CONTACT_ID.isBound()) {
-      throw new ResourceNotFoundException("PortalContact", "(unbound)");
-    }
-    return RequestScopes.PORTAL_CONTACT_ID.get();
-  }
-
-  private PreferencesResponse buildResponse(UUID contactId) {
-    var pref = preferenceService.getOrCreate(contactId);
-    var firmCadence = orgSettingsService.getPortalDigestCadence();
-    return new PreferencesResponse(
-        pref.isDigestEnabled(),
-        pref.isTrustActivityEnabled(),
-        pref.isRetainerUpdatesEnabled(),
-        pref.isDeadlineRemindersEnabled(),
-        pref.isActionRequiredEnabled(),
-        firmCadence.name());
-  }
-
-  public record PreferencesResponse(
-      boolean digestEnabled,
-      boolean trustActivityEnabled,
-      boolean retainerUpdatesEnabled,
-      boolean deadlineRemindersEnabled,
-      boolean actionRequiredEnabled,
-      String firmDigestCadence) {}
 
   public record UpdateRequest(
-      boolean digestEnabled,
-      boolean trustActivityEnabled,
-      boolean retainerUpdatesEnabled,
-      boolean deadlineRemindersEnabled,
-      boolean actionRequiredEnabled) {}
+      @NotNull Boolean digestEnabled,
+      @NotNull Boolean trustActivityEnabled,
+      @NotNull Boolean retainerUpdatesEnabled,
+      @NotNull Boolean deadlineRemindersEnabled,
+      @NotNull Boolean actionRequiredEnabled) {}
 }

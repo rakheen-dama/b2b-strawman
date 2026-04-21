@@ -19,7 +19,7 @@ function DetailSkeleton() {
   return (
     <div className="space-y-8">
       <Skeleton className="h-4 w-32" />
-      <Skeleton className="h-56 w-full md:w-96" />
+      <Skeleton className="h-56 w-full md:max-w-md" />
       <Skeleton className="h-48 w-full" />
     </div>
   );
@@ -78,7 +78,7 @@ export default function RetainerDetailPage() {
       <div className="space-y-4">
         <Link
           href="/retainer"
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
+          className="inline-flex min-h-11 items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
         >
           <ArrowLeft className="size-4" />
           Back to retainers
@@ -97,7 +97,7 @@ export default function RetainerDetailPage() {
       <div className="space-y-4">
         <Link
           href="/retainer"
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
+          className="inline-flex min-h-11 items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
         >
           <ArrowLeft className="size-4" />
           Back to retainers
@@ -113,7 +113,7 @@ export default function RetainerDetailPage() {
     <div className="space-y-8">
       <Link
         href="/retainer"
-        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
+        className="inline-flex min-h-11 items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
       >
         <ArrowLeft className="size-4" />
         Back to retainers

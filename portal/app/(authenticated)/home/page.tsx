@@ -71,7 +71,10 @@ function InfoRequestsCard() {
     };
   }, []);
   return (
-    <Link href="/requests" className="block">
+    <Link
+      href="/requests"
+      className="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+    >
       <Card className="transition hover:shadow-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm text-slate-600">
@@ -106,7 +109,10 @@ function AcceptancesCard() {
     };
   }, []);
   return (
-    <Link href="/acceptance" className="block">
+    <Link
+      href="/acceptance"
+      className="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+    >
       <Card className="transition hover:shadow-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm text-slate-600">
@@ -139,7 +145,10 @@ function DeadlinesCard() {
     };
   }, []);
   return (
-    <Link href="/deadlines" className="block">
+    <Link
+      href="/deadlines"
+      className="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+    >
       <Card className="transition hover:shadow-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm text-slate-600">
@@ -240,7 +249,10 @@ function TrustCard() {
     };
   }, []);
   return (
-    <Link href="/trust" className="block">
+    <Link
+      href="/trust"
+      className="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+    >
       <Card className="transition hover:shadow-md">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-sm text-slate-600">

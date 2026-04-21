@@ -48,7 +48,7 @@ export function MatterSelector({
         <Link
           key={matter.matterId}
           href={`/trust/${matter.matterId}`}
-          className="block"
+          className="block rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
         >
           <Card className="transition-shadow hover:shadow-md">
             <CardHeader>

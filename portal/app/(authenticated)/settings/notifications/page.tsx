@@ -39,7 +39,8 @@ function ToggleRow({
   return (
     <label
       htmlFor={id}
-      className="flex cursor-pointer items-start justify-between gap-4 py-3"
+      data-testid={`toggle-row-${id}`}
+      className="flex min-h-11 w-full cursor-pointer items-start justify-between gap-4 py-3"
     >
       <span className="flex-1">
         <span className="block text-sm font-medium text-slate-900">

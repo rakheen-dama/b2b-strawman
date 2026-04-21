@@ -188,7 +188,7 @@ export function DeadlineList({
                 e.target.value as "ALL" | PortalDeadlineStatus,
               )
             }
-            className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+            className="min-h-11 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
           >
             {STATUS_FILTER_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -210,7 +210,7 @@ export function DeadlineList({
             onChange={(e) =>
               onTypeFilterChange(e.target.value as "ALL" | PortalDeadlineType)
             }
-            className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
+            className="min-h-11 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500"
           >
             {TYPE_FILTER_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
@@ -279,7 +279,7 @@ export function DeadlineList({
                         data-tone={tone}
                         aria-pressed={isSelected}
                         className={cn(
-                          "flex w-full items-start justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50 focus:outline-none focus:ring-1 focus:ring-teal-500",
+                          "flex min-h-11 w-full items-start justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50 focus:outline-none focus:ring-1 focus:ring-teal-500",
                           isSelected && "bg-teal-50",
                         )}
                       >

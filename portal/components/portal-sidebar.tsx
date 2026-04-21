@@ -48,7 +48,7 @@ function NavList({ onItemClick }: { onItemClick?: () => void }) {
             data-active={isActive ? "true" : undefined}
             aria-current={isActive ? "page" : undefined}
             className={cn(
-              "relative flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+              "relative flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
               "focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400",
               isActive
                 ? "bg-slate-100 text-slate-900"
@@ -81,7 +81,7 @@ function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
       <Link
         href="/profile"
         onClick={onNavigate}
-        className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
+        className="flex min-h-11 items-center gap-3 rounded-md px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
       >
         <User className="size-4" />
         Profile
@@ -92,7 +92,7 @@ function SidebarFooter({ onNavigate }: { onNavigate?: () => void }) {
           onNavigate?.();
           logout();
         }}
-        className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
+        className="flex min-h-11 w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 hover:text-slate-900 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
       >
         <LogOut className="size-4" />
         Logout

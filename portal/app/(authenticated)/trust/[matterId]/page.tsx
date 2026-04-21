@@ -32,7 +32,7 @@ function DetailSkeleton() {
   return (
     <div className="space-y-8">
       <Skeleton className="h-4 w-32" />
-      <Skeleton className="h-40 w-full md:w-96" />
+      <Skeleton className="h-40 w-full md:max-w-md" />
       <Skeleton className="h-48 w-full" />
     </div>
   );
@@ -141,7 +141,7 @@ export default function TrustMatterDetailPage() {
       <div className="space-y-4">
         <Link
           href="/trust"
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
+          className="inline-flex min-h-11 items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
         >
           <ArrowLeft className="size-4" />
           Back to trust
@@ -162,7 +162,7 @@ export default function TrustMatterDetailPage() {
       <div className="space-y-4">
         <Link
           href="/trust"
-          className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
+          className="inline-flex min-h-11 items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
         >
           <ArrowLeft className="size-4" />
           Back to trust
@@ -178,7 +178,7 @@ export default function TrustMatterDetailPage() {
     <div className="space-y-8">
       <Link
         href="/trust"
-        className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
+        className="inline-flex min-h-11 items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
       >
         <ArrowLeft className="size-4" />
         Back to trust
@@ -245,7 +245,7 @@ export default function TrustMatterDetailPage() {
                       href={doc.downloadUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex min-h-[40px] items-center gap-1.5 rounded-md text-sm font-medium text-teal-600 hover:text-teal-700"
+                      className="inline-flex min-h-11 items-center gap-1.5 rounded-md text-sm font-medium text-teal-600 hover:text-teal-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
                       aria-label={`Download ${doc.fileName}`}
                     >
                       <Download className="size-4" />

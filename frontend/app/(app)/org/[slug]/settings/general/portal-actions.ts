@@ -7,8 +7,6 @@ import type {
   PortalRetainerMemberDisplay,
 } from "@/lib/types/settings";
 
-export type { PortalDigestCadence, PortalRetainerMemberDisplay };
-
 export interface PortalActionResult {
   success: boolean;
   error?: string;

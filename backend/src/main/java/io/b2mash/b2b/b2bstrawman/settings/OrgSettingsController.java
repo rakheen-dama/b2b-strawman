@@ -150,6 +150,23 @@ public class OrgSettingsController {
         orgSettingsService.updateVerticalProfile(request.verticalProfile(), actor));
   }
 
+  @PatchMapping("/portal-digest-cadence")
+  @RequiresCapability("TEAM_OVERSIGHT")
+  public ResponseEntity<SettingsResponse> updatePortalDigestCadence(
+      @Valid @RequestBody UpdatePortalDigestCadenceRequest request, ActorContext actor) {
+    return ResponseEntity.ok(
+        orgSettingsService.updatePortalDigestCadence(request.portalDigestCadence(), actor));
+  }
+
+  @PatchMapping("/portal-retainer-member-display")
+  @RequiresCapability("TEAM_OVERSIGHT")
+  public ResponseEntity<SettingsResponse> updatePortalRetainerMemberDisplay(
+      @Valid @RequestBody UpdatePortalRetainerMemberDisplayRequest request, ActorContext actor) {
+    return ResponseEntity.ok(
+        orgSettingsService.updatePortalRetainerMemberDisplay(
+            request.portalRetainerMemberDisplay(), actor));
+  }
+
   // --- DTOs ---
 
   public record UpdateSettingsRequest(
@@ -216,6 +233,14 @@ public class OrgSettingsController {
   public record UpdateVerticalProfileRequest(
       @Size(max = 50, message = "verticalProfile must be at most 50 characters")
           String verticalProfile) {}
+
+  public record UpdatePortalDigestCadenceRequest(
+      @NotNull(message = "portalDigestCadence is required")
+          PortalDigestCadence portalDigestCadence) {}
+
+  public record UpdatePortalRetainerMemberDisplayRequest(
+      @NotNull(message = "portalRetainerMemberDisplay is required")
+          PortalRetainerMemberDisplay portalRetainerMemberDisplay) {}
 
   public record DataProtectionSettingsRequest(
       @Size(max = 10, message = "dataProtectionJurisdiction must be at most 10 characters")

@@ -52,6 +52,13 @@ export interface OrgSettings {
   financialRetentionMonths?: number;
   informationOfficerName?: string | null;
   informationOfficerEmail?: string | null;
+  // portal settings (Epic 496A / 498A / 498C — surfaced by firm settings UI)
+  portalDigestCadence?: "WEEKLY" | "BIWEEKLY" | "OFF";
+  portalRetainerMemberDisplay?:
+    | "FULL_NAME"
+    | "FIRST_NAME_ROLE"
+    | "ROLE_ONLY"
+    | "ANONYMISED";
 }
 
 export interface UpdateBatchBillingSettingsRequest {

@@ -1,0 +1,151 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: Kazi
+      - generic [ref=e9]: Mathebula & Partners
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e34]
+              - text: Calendar
+            - link "Court Calendar" [ref=e36] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e37]
+              - text: Court Calendar
+        - generic [ref=e44]:
+          - button "Matters" [expanded] [ref=e45]:
+            - generic [ref=e46]: Matters
+            - img [ref=e47]
+          - generic [ref=e49]:
+            - link "Matters" [ref=e50] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e51]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e53] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e54]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e60]:
+          - generic [ref=e61]: Clients
+          - img [ref=e62]
+        - button "Finance" [ref=e66]:
+          - generic [ref=e67]: Finance
+          - img [ref=e68]
+        - generic [ref=e71]:
+          - button "Team" [expanded] [ref=e72]:
+            - generic [ref=e73]: Team
+            - img [ref=e74]
+          - link "Team" [ref=e77] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e78]
+            - text: Team
+      - generic [ref=e84]:
+        - link "Notifications" [ref=e85] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e86]
+          - text: Notifications
+        - link "Settings" [ref=e89] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e90]
+          - text: Settings
+        - link "Help" [ref=e93] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e94]
+          - text: Help
+      - generic [ref=e97]:
+        - generic [ref=e98]: TM
+        - generic [ref=e99]:
+          - paragraph [ref=e100]: Thandi Mathebula
+          - paragraph [ref=e101]: thandi@mathebula-test.local
+    - generic [ref=e102]:
+      - banner [ref=e103]:
+        - navigation "Breadcrumb" [ref=e104]:
+          - link "Mathebula & Partners" [ref=e105] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e106]:
+            - img [ref=e107]
+            - generic [ref=e109]: Trust Accounting
+        - generic [ref=e110]:
+          - button "User menu" [ref=e112]: TM
+          - button "Notifications" [ref=e114]:
+            - img
+      - main [ref=e116]:
+        - generic [ref=e119]:
+          - generic [ref=e120]:
+            - generic [ref=e121]:
+              - heading "Trust Accounting" [level=1] [ref=e122]
+              - paragraph [ref=e123]: LSSA-compliant trust account management for client funds
+            - generic [ref=e196]:
+              - link "Client Ledgers" [ref=e197] [cursor=pointer]:
+                - /url: /org/mathebula-partners/trust-accounting/client-ledgers
+                - img
+                - text: Client Ledgers
+              - link "Record Transaction" [ref=e198] [cursor=pointer]:
+                - /url: /org/mathebula-partners/trust-accounting/transactions
+                - img
+                - text: Record Transaction
+          - generic [ref=e199]:
+            - generic [ref=e200]:
+              - generic [ref=e201]:
+                - generic [ref=e202]: Trust Balance
+                - img [ref=e203]
+              - generic [ref=e206]:
+                - generic [ref=e207]: R 0,00
+                - paragraph [ref=e208]: Mathebula Trust — Main cashbook balance
+            - generic [ref=e209]:
+              - generic [ref=e210]:
+                - generic [ref=e211]: Active Clients
+                - img [ref=e212]
+              - generic [ref=e217]:
+                - generic [ref=e218]: "0"
+                - paragraph [ref=e219]: Clients with trust balances
+            - generic [ref=e220]:
+              - generic [ref=e221]:
+                - generic [ref=e222]: Pending Approvals
+                - img [ref=e223]
+              - generic [ref=e226]:
+                - generic [ref=e228]: "0"
+                - paragraph [ref=e229]: Transactions awaiting approval
+            - generic [ref=e230]:
+              - generic [ref=e231]:
+                - generic [ref=e232]: Reconciliation
+                - img [ref=e233]
+              - generic [ref=e237]:
+                - generic [ref=e238]: Not yet reconciled
+                - paragraph [ref=e239]: No reconciliation records found
+          - generic [ref=e240]:
+            - generic [ref=e241]:
+              - generic [ref=e242]:
+                - generic [ref=e243]: Recent Transactions
+                - generic [ref=e244]: Last 10 transactions across all client ledgers
+              - link "View all" [ref=e245] [cursor=pointer]:
+                - /url: /org/mathebula-partners/trust-accounting/transactions
+                - text: View all
+                - img
+            - paragraph [ref=e248]: No transactions recorded yet
+  - generic [ref=e143]:
+    - heading "Command Palette" [level=2] [ref=e144]
+    - paragraph [ref=e145]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e139] [cursor=pointer]:
+    - img [ref=e140]
+  - alert [ref=e146]

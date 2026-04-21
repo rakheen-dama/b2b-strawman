@@ -2,6 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 /**
  * Epic 499B — Portal visual baselines (sm / md / lg).
+ * Epic 500A — Portal client-POV 90-day lifecycle capstone (new project).
  *
  * testDir:              ./e2e/tests
  * snapshotPathTemplate: writes PNGs under
@@ -11,22 +12,41 @@ import { defineConfig, devices } from "@playwright/test";
  *   Including `{projectName}` prevents cross-project clobber when additional
  *   browser projects (webkit, firefox) are added later.
  *
+ * Projects:
+ *   - `chromium`              — responsive visual baselines (Epic 499B).
+ *                               Scoped to ./e2e/tests/responsive so it does
+ *                               not double-run the lifecycle capstone specs.
+ *   - `portal-client-90day`   — sequential client-POV 90-day lifecycle
+ *                               (Epic 500A scaffold / 500B execution).
+ *                               Scoped to ./e2e/tests/portal-client-90day.
+ *                               Relies on the top-level `workers: 1` so later
+ *                               days observe state created by earlier days.
+ *
  * First-run usage (baselines):
  *   pnpm exec playwright test \
  *     --config=playwright.portal.config.ts --update-snapshots
  *
- * By default the responsive spec runs (and `webServer` boots the portal).
+ *   # Just the lifecycle project:
+ *   pnpm exec playwright test \
+ *     --config=playwright.portal.config.ts \
+ *     --project=portal-client-90day --update-snapshots
+ *
+ * By default both projects run (and `webServer` boots the portal).
  * Set SKIP_PORTAL_BASELINES=true to skip (the webServer is also skipped in
  * that case — no point booting a dev server when every test is skipped).
- * See e2e/tests/responsive/portal-pages.spec.ts for details.
+ * See e2e/tests/responsive/portal-pages.spec.ts and
+ *     e2e/tests/portal-client-90day/*.spec.ts for details.
  */
 export default defineConfig({
-  testDir: "./e2e/tests",
   snapshotPathTemplate:
-    "{testDir}/../screenshots/portal-v2/{projectName}/{arg}{ext}",
+    "{testDir}/../../screenshots/portal-v2/{projectName}/{arg}{ext}",
   globalTimeout: 600_000,
   timeout: 30_000,
   retries: process.env.CI ? 1 : 0,
+  // `workers: 1` is mandatory for the `portal-client-90day` project because
+  // later days read state created by earlier days. Keeping it at the top
+  // level also preserves the existing single-worker behaviour for the
+  // responsive project (Epic 499B) and prevents cross-project interference.
   workers: 1,
   expect: {
     toHaveScreenshot: {
@@ -51,10 +71,21 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
+      testDir: "./e2e/tests/responsive",
       use: {
         ...devices["Desktop Chrome"],
         deviceScaleFactor: 2,
       },
+    },
+    {
+      name: "portal-client-90day",
+      testDir: "./e2e/tests/portal-client-90day",
+      use: {
+        ...devices["Desktop Chrome"],
+        deviceScaleFactor: 2,
+      },
+      // Sequential by virtue of the top-level `workers: 1` — later days
+      // depend on state created by earlier days in the lifecycle.
     },
   ],
 });

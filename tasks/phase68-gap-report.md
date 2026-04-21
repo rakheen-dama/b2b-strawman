@@ -17,7 +17,7 @@ The actual lifecycle execution is deferred because it requires:
 2. **Three vertical Keycloak tenants** pre-provisioned via firm-side `/qa-cycle-kc` runs (`mathebula-partners`, `ledger-collective`, `keystone-consulting`) — each lifecycle script takes 20+ minutes wall-clock, so seeding all three is a 60+ min prerequisite before the portal capstone can even begin.
 3. **Portal contacts** added per tenant via firm-side UI (without these the magic-link helper returns `null` and every spec skips with "Could not obtain portal JWT").
 
-These are documented at the top of the slice-500B brief (`.epic-brief.md` §Live-Stack Fallback Strategy) as the explicit fallback path. The Phase 67 capstone (Epic 493A, PR #1095 precedent) followed the same pattern — baseline capture is **always** a separate human-operator step.
+These are documented at the top of the slice-500B brief (`.epic-brief.md` §Live-Stack Fallback Strategy) as the explicit fallback path. The Phase 67 capstone (Epic 493A, PR #1081 precedent) followed the same pattern — baseline capture is **always** a separate human-operator step.
 
 **Capstone invariant (Risk #10 from Phase 67)**: Screenshot baselines under `portal/e2e/screenshots/portal-v2/portal-client-90day/` are the single source of truth for Phase 68 — no intermediate Phase 68 slice captured visual baselines. The directory ships with `.gitkeep` + `README.md` documenting the capture procedure.
 
@@ -110,7 +110,7 @@ PORTAL_CONTACT_EMAIL=sipho.portal@example.com PORTAL_ORG_SLUG=mathebula-partners
 
 ## Critical Path Blockers
 
-*No pre-logged blockers for Phase 68 — all critical lifecycle gates (session-context, nav shell, trust ledger, retainer view, deadlines, digest scheduler, mobile polish) shipped in Epics 494–499 prior to the capstone. Empirical blockers discovered during execution will be appended here.*
+*No pre-logged blockers for Phase 68 — all critical lifecycle gates (session-context, nav shell, trust ledger, retainer view, deadlines, digest scheduler, mobile polish) shipped in Epics 494–499 before the capstone. Empirical blockers discovered during execution will be appended here.*
 
 ---
 
@@ -123,7 +123,7 @@ PORTAL_CONTACT_EMAIL=sipho.portal@example.com PORTAL_ORG_SLUG=mathebula-partners
 **Category**: missing-feature
 **Severity**: major
 **Description**: The Day 90 lifecycle checkpoint references an "activity trail" — a per-contact audit log of every portal interaction (logins, info-request submits, proposal accepts, invoice payments, document downloads). No dedicated `/profile/activity` or `/audit` route exists on the portal today. The `day-90-activity-trail.png` baseline currently falls back to capturing the `/home` view as a graceful degradation (see `day-85-90.spec.ts`). Phase 68 architecture explicitly parks this to Phase 69 to keep Phase 68 scoped to the read-model-extension pattern.
-**Evidence**: No `app/portal/audit/` or `app/portal/profile/activity/` route in the portal Next.js app router. `day-85-90.spec.ts` Day 90 test asserts on `/home` rather than a dedicated audit surface.
+**Evidence**: No `portal/app/(authenticated)/audit/` or `portal/app/(authenticated)/profile/activity/` route in the portal Next.js app router. `day-85-90.spec.ts` Day 90 test asserts on `/home` rather than a dedicated audit surface.
 **Suggested fix**: Phase 69 dedicated epic — promote the firm-side `AuditLog` aggregate to a portal-visible read-model with appropriate filters (only show contact's own actions, redact firm-internal entries) (M — 1 slice with backend read-model + 1 slice with frontend page).
 
 ### GAP-002: Multi-contact portal roles not implemented
@@ -132,13 +132,13 @@ PORTAL_CONTACT_EMAIL=sipho.portal@example.com PORTAL_ORG_SLUG=mathebula-partners
 **Step**: All checkpoints assume one client = one portal contact
 **Category**: missing-feature
 **Severity**: major
-**Description**: The portal data model permits exactly one portal contact per client today (`PortalContact` is 1:1 with `Client` via `clientId`). Real-world clients (e.g. `Moroka Family Trust`) often have multiple stakeholders — a primary signatory, a co-trustee, an external accountant — who each want their own login and notification preferences. There is also no admin/viewer split (the single contact has full read+act capability on every surface gated by their tenant's profile).
-**Evidence**: `PortalContactEntity.java` has `@OneToOne` with `Client`. No `PortalContactRole` enum or RBAC scoping in `PortalCapabilityResolver`.
-**Suggested fix**: Multi-slice epic — add `PortalContactRole` enum (PRIMARY / COSIGNATORY / VIEWER), refactor `PortalContactEntity` to `@ManyToOne` with `Client`, add invite + role-management UI on firm side, scope `PortalCapabilityResolver` to honour role (L — 3 slices: backend model, firm-side UI, portal-side capability gating).
+**Description**: The portal lacks UI for inviting additional contacts per customer with distinct roles (e.g. a BILLING contact who sees invoices but not deadlines, or a GENERAL contact who sees nothing sensitive). The persistence layer already supports multiple contacts per customer — `PortalContact` carries a `ContactRole` enum (PRIMARY / BILLING / GENERAL) and `customer_id` is non-unique — but `PortalCapabilityResolver` does not branch on `ContactRole`, no invite UI exists on the firm side, and digest preferences are not per-role. Real-world clients (e.g. `Moroka Family Trust`) often have multiple stakeholders — a primary signatory, a co-trustee, an external accountant — who each want their own login and scoped capability set.
+**Evidence**: `PortalContact.java` uses a plain `UUID customerId` column (no `@OneToOne`, no JPA relationship to `Client`); `PortalContactRepository.findByCustomerId(UUID)` returns `List<PortalContact>` (and `countByCustomerId` exists for anonymization preview); no `*InviteContactPage` route under `portal/app/(authenticated)/settings/`; `PortalCapabilityResolver` does not consume `ContactRole` when computing per-surface capabilities.
+**Suggested fix**: Multi-slice epic — add firm-side invite + role-management UI, extend `PortalCapabilityResolver` to scope capabilities by `ContactRole` (BILLING → invoices only; GENERAL → no sensitive surfaces), and make digest preferences per-role (M — 2 slices: firm-side invite/management UI, portal-side capability gating + per-role digest preferences).
 
 ### GAP-003: Two-way messaging not implemented
 
-**Day**: Cross-cutting (any day where a client wants to clarify a request)
+**Day**: Cross-cutting (any day when a client wants to clarify a request)
 **Step**: All checkpoints — clients can act (accept proposal, pay invoice, submit info) but cannot author free-text messages back to the firm
 **Category**: missing-feature
 **Severity**: major
@@ -384,7 +384,7 @@ Phase 68 introduces the portal client-POV story across three vertical profiles. 
 
 ## QA Execution Status
 
-**Authored, type-checks, and lifecycle-listable.** Full Playwright execution against a live three-tenant Keycloak stack is deferred to a human-operator run for the reasons outlined in the Execution Status section above. The slice-500B brief (`.epic-brief.md` §Live-Stack Fallback Strategy) explicitly authorises this fallback path and matches the Phase 67 Epic 493A precedent (PR #1095 also shipped without populating Playwright baselines — baseline capture is **always** a separate human-operator step in this codebase).
+**Authored, type-checks, and lifecycle-listable.** Full Playwright execution against a live three-tenant Keycloak stack is deferred to a human-operator run for the reasons outlined in the Execution Status section above. The slice-500B brief (`.epic-brief.md` §Live-Stack Fallback Strategy) explicitly authorises this fallback path and matches the Phase 67 Epic 493A precedent (PR #1081 also shipped without populating Playwright baselines — baseline capture is **always** a separate human-operator step in this codebase).
 
 **Verification evidence shipped in this slice (500B):**
 

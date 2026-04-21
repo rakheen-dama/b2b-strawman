@@ -15,8 +15,8 @@ Unlike `frontend/e2e/helpers/screenshot.ts` (which exposes `captureScreenshot(pa
 Curated PNGs in this directory must therefore be captured **by hand** via one of:
 
 1. **Playwright MCP** (`mcp__playwright__browser_navigate` + `mcp__playwright__browser_take_screenshot` with `filename: "<name>.png"`).
-2. **Manual browser capture** against the live portal at `http://localhost:3002` (Cmd+Shift+4 / dev-tools "capture full size screenshot").
-3. A bespoke `pnpm exec playwright test` invocation that calls `await page.screenshot({ path: "documentation/screenshots/portal/<name>.png" })` from a one-off curated spec (not shipped — left as a follow-up tooling improvement; see `GAP-014` in the gap report).
+2. **Manual browser capture** against the live portal at `http://localhost:3002` (Cmd+Shift+4 / dev-tools "capture full-size screenshot").
+3. A bespoke `pnpm exec playwright test` invocation that calls `await page.screenshot({ path: "documentation/screenshots/portal/<name>.png" })` from a one-off curated spec (not shipped — left as a follow-up tooling improvement; see GAP-014 — adding a portal-side `captureScreenshot` helper would obviate this manual path).
 
 Adding a portal-side `captureScreenshot` helper that mirrors the frontend pattern is tracked as a follow-up tooling gap in `tasks/phase68-gap-report.md`.
 

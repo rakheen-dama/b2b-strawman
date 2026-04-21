@@ -35,7 +35,7 @@ The current `snapshotPathTemplate` does **not** include `{platform}` or `{browse
 
 - Baselines are platform-implicit (captured on whatever OS first ran `--update-snapshots`).
 - Re-running on a different OS will produce visual diff (font rendering, sub-pixel anti-aliasing).
-- **Acceptable** for single-platform local capture during Phase 68; flagged as a follow-up if cross-OS CI is later wired up (see `GAP-014` in the gap report).
+- **Acceptable** for single-platform local capture during Phase 68; flagged as a follow-up if cross-OS CI is later wired up (see `GAP-011` in the gap report).
 
 ## Capture procedure
 
@@ -134,7 +134,7 @@ The 500A specs use `waitForLoadState('domcontentloaded') + waitForTimeout(500)` 
 
 Both are documented as follow-up tooling improvements in `tasks/phase68-gap-report.md` (`GAP-015`). They are **not** applied in slice 500B (no spec-file edits in this PR — that scope belonged to 500A).
 
-## Expected baselines (~13 files per profile run, profile-gated subset)
+## Expected baselines (15 files, profile-gated subset)
 
 | File | Source spec | Profile gating |
 |---|---|---|
@@ -154,7 +154,7 @@ Both are documented as follow-up tooling improvements in `tasks/phase68-gap-repo
 | `day-85-notifications-biweekly.png` | `day-85-90.spec.ts` | all profiles |
 | `day-90-activity-trail.png` | `day-85-90.spec.ts` | all profiles |
 
-Total: 15 distinct PNGs after a full three-tenant run (or ~13 if only running the legal-za-narrator pass).
+Total: 15 distinct PNGs after a full three-tenant run.
 
 ## Convention
 

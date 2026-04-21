@@ -6,7 +6,7 @@ This directory holds the Playwright `toHaveScreenshot()` baseline PNGs for the *
 
 **Empty placeholder.** Baselines are populated on the **first** Playwright run with `--update-snapshots`. Slice 500B (this PR) ships the directory + this README; baseline PNGs are deferred to a human-operator live-stack run because the lifecycle requires three vertical Keycloak tenants to be pre-provisioned (estimated 60+ minutes of firm-side `/qa-cycle-kc` runs before the portal lifecycle can begin).
 
-The deferral is documented in `tasks/phase68-gap-report.md` (`GAP-013` — curated PNGs deferred; `GAP-011` — no three-vertical seed script).
+The deferral is documented in `tasks/phase68-gap-report.md` (`GAP-013` — curated PNGs deferred; `GAP-009` — no three-vertical seed script).
 
 ## Snapshot path drift caveat (important)
 
@@ -18,7 +18,7 @@ snapshotPathTemplate: "{testDir}/../../screenshots/portal-v2/{projectName}/{arg}
 
 Resolving with `testDir = ./e2e/tests`, `projectName = portal-client-90day`, and `arg = "day-00-home-landing.png"` (which already includes its own `.png`), the resolved path is:
 
-```
+```text
 portal/e2e/screenshots/portal-v2/portal-client-90day/day-00-home-landing.png
 ```
 
@@ -57,7 +57,7 @@ The current `snapshotPathTemplate` does **not** include `{platform}` or `{browse
    /qa-cycle-kc qa/testplan/demos/consulting-agency-90day-keycloak.md  # → keystone-consulting (Days 0–30)
    ```
 
-   **There is no single-command three-vertical seeder today** — see `GAP-011` in the gap report. A future `bash compose/scripts/seed-three-verticals-kc.sh` script would shorten this from ~60 min to ~10 min.
+   **There is no single-command three-vertical seeder today** — see `GAP-009` in the gap report. A future `bash compose/scripts/seed-three-verticals-kc.sh` script would shorten this from ~60 min to ~10 min.
 
 ### First run (baseline generation)
 
@@ -66,32 +66,32 @@ Run **per tenant**, swapping `PORTAL_CONTACT_EMAIL` + `PORTAL_ORG_SLUG`:
 ```bash
 cd portal
 
-# Tenant 1: legal-za (mathebula-partners)
-PORTAL_CONTACT_EMAIL=sipho.portal@example.com \
-  PORTAL_ORG_SLUG=mathebula-partners \
-  BACKEND_URL=http://localhost:8080 \
-  PLAYWRIGHT_BASE_URL=http://localhost:3002 \
-  NODE_OPTIONS="" /opt/homebrew/bin/pnpm exec playwright test \
-  --config=playwright.portal.config.ts \
-  --project=portal-client-90day \
-  --update-snapshots
-
-# Tenant 2: accounting-za (ledger-collective)
+# Tenant 1: accounting-za (ledger-collective)
 PORTAL_CONTACT_EMAIL=zola.portal@example.com \
   PORTAL_ORG_SLUG=ledger-collective \
   BACKEND_URL=http://localhost:8080 \
   PLAYWRIGHT_BASE_URL=http://localhost:3002 \
-  NODE_OPTIONS="" /opt/homebrew/bin/pnpm exec playwright test \
+  NODE_OPTIONS="" pnpm exec playwright test \
   --config=playwright.portal.config.ts \
   --project=portal-client-90day \
   --update-snapshots
 
-# Tenant 3: consulting-za (keystone-consulting)
+# Tenant 2: consulting-za (keystone-consulting)
 PORTAL_CONTACT_EMAIL=thembi.portal@example.com \
   PORTAL_ORG_SLUG=keystone-consulting \
   BACKEND_URL=http://localhost:8080 \
   PLAYWRIGHT_BASE_URL=http://localhost:3002 \
-  NODE_OPTIONS="" /opt/homebrew/bin/pnpm exec playwright test \
+  NODE_OPTIONS="" pnpm exec playwright test \
+  --config=playwright.portal.config.ts \
+  --project=portal-client-90day \
+  --update-snapshots
+
+# Tenant 3: legal-za (mathebula-partners) — run LAST so it wins as canonical narrator
+PORTAL_CONTACT_EMAIL=sipho.portal@example.com \
+  PORTAL_ORG_SLUG=mathebula-partners \
+  BACKEND_URL=http://localhost:8080 \
+  PLAYWRIGHT_BASE_URL=http://localhost:3002 \
+  NODE_OPTIONS="" pnpm exec playwright test \
   --config=playwright.portal.config.ts \
   --project=portal-client-90day \
   --update-snapshots
@@ -110,13 +110,13 @@ Run **once** (any tenant) to confirm baselines hold:
 
 ```bash
 cd portal
-NODE_OPTIONS="" /opt/homebrew/bin/pnpm test:e2e:portal-client-90day
+NODE_OPTIONS="" pnpm test:e2e:portal-client-90day
 ```
 
 Or equivalently:
 
 ```bash
-NODE_OPTIONS="" /opt/homebrew/bin/pnpm exec playwright test \
+NODE_OPTIONS="" pnpm exec playwright test \
   --config=playwright.portal.config.ts \
   --project=portal-client-90day
 ```

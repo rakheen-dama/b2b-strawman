@@ -37,16 +37,17 @@ bash compose/scripts/svc.sh status   # all services healthy
 /qa-cycle-kc qa/testplan/demos/consulting-agency-90day-keycloak.md  # → keystone-consulting
 
 # 3. Run the portal capstone with --update-snapshots, once per tenant
+#    (legal-za LAST so the canonical narrator wins for [all profiles] checkpoints)
 cd portal
-PORTAL_CONTACT_EMAIL=sipho.portal@example.com PORTAL_ORG_SLUG=mathebula-partners \
-  BACKEND_URL=http://localhost:8080 PLAYWRIGHT_BASE_URL=http://localhost:3002 \
-  NODE_OPTIONS="" pnpm test:e2e:portal-client-90day -- --update-snapshots
-
 PORTAL_CONTACT_EMAIL=zola.portal@example.com PORTAL_ORG_SLUG=ledger-collective \
   BACKEND_URL=http://localhost:8080 PLAYWRIGHT_BASE_URL=http://localhost:3002 \
   NODE_OPTIONS="" pnpm test:e2e:portal-client-90day -- --update-snapshots
 
 PORTAL_CONTACT_EMAIL=thembi.portal@example.com PORTAL_ORG_SLUG=keystone-consulting \
+  BACKEND_URL=http://localhost:8080 PLAYWRIGHT_BASE_URL=http://localhost:3002 \
+  NODE_OPTIONS="" pnpm test:e2e:portal-client-90day -- --update-snapshots
+
+PORTAL_CONTACT_EMAIL=sipho.portal@example.com PORTAL_ORG_SLUG=mathebula-partners \
   BACKEND_URL=http://localhost:8080 PLAYWRIGHT_BASE_URL=http://localhost:3002 \
   NODE_OPTIONS="" pnpm test:e2e:portal-client-90day -- --update-snapshots
 

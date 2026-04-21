@@ -31,6 +31,7 @@ import io.b2mash.b2b.b2bstrawman.event.InformationRequestCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InformationRequestSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.RequestItemAcceptedEvent;
 import io.b2mash.b2b.b2bstrawman.event.RequestItemRejectedEvent;
+import io.b2mash.b2b.b2bstrawman.event.RequestItemSubmittedEvent;
 import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestRepository;
 import io.b2mash.b2b.b2bstrawman.informationrequest.ItemStatus;
 import io.b2mash.b2b.b2bstrawman.informationrequest.RequestItemRepository;
@@ -833,6 +834,23 @@ public class PortalEventHandler {
                 "Failed to project InformationRequestCompletedEvent: requestId={}",
                 event.requestId(),
                 e);
+          }
+        });
+  }
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onRequestItemSubmitted(RequestItemSubmittedEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            var item = requestItemRepository.findById(event.itemId()).orElseThrow();
+            readModelRepo.updatePortalRequestItemStatus(
+                event.itemId(), "SUBMITTED", null, item.getDocumentId(), item.getTextResponse());
+            readModelRepo.recalculatePortalRequestCounts(event.requestId());
+          } catch (Exception e) {
+            log.warn("Failed to project RequestItemSubmittedEvent: itemId={}", event.itemId(), e);
           }
         });
   }

@@ -6,6 +6,7 @@ import { GeneralSettingsForm } from "@/components/settings/general-settings-form
 import { HelpTip } from "@/components/help-tip";
 import { VerticalProfileSection } from "@/components/settings/vertical-profile-section";
 import { OrgDocumentsSection } from "@/components/settings/org-documents-section";
+import { PortalSettingsSection } from "@/components/settings/portal-settings-section";
 import type { Document, OrgSettings } from "@/lib/types";
 
 export default async function GeneralSettingsPage({
@@ -86,6 +87,14 @@ export default async function GeneralSettingsPage({
         taxRegistrationNumber={settings.taxRegistrationNumber ?? ""}
         taxLabel={settings.taxLabel ?? ""}
         taxInclusive={settings.taxInclusive ?? false}
+      />
+
+      <PortalSettingsSection
+        slug={slug}
+        currentCadence={settings.portalDigestCadence ?? "WEEKLY"}
+        currentMemberDisplay={
+          settings.portalRetainerMemberDisplay ?? "FIRST_NAME_ROLE"
+        }
       />
 
       <OrgDocumentsSection slug={slug} documents={documents} isAdmin={true} />

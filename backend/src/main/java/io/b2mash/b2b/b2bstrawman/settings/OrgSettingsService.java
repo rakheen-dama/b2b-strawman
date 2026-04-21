@@ -146,7 +146,8 @@ public class OrgSettingsService {
                 null, // financialRetentionMonths
                 null, // informationOfficerName
                 null, // informationOfficerEmail
-                PortalRetainerMemberDisplay.FIRST_NAME_ROLE.name())); // portalRetainerMemberDisplay
+                PortalRetainerMemberDisplay.FIRST_NAME_ROLE.name(), // portalRetainerMemberDisplay
+                PortalDigestCadence.WEEKLY.name())); // portalDigestCadence
   }
 
   /** Updates settings including branding fields. */
@@ -355,7 +356,8 @@ public class OrgSettingsService {
         settings.getFinancialRetentionMonths(),
         settings.getInformationOfficerName(),
         settings.getInformationOfficerEmail(),
-        settings.getEffectivePortalRetainerMemberDisplay().name());
+        settings.getEffectivePortalRetainerMemberDisplay().name(),
+        settings.getEffectivePortalDigestCadence().name());
   }
 
   /**
@@ -1006,10 +1008,12 @@ public class OrgSettingsService {
 
   /**
    * Updates the firm-wide portal digest cadence (ADR-258, Epic 498A). Admin-or-owner only. Emits an
-   * audit event.
+   * audit event. Returns the full {@link SettingsResponse} so callers can re-hydrate the settings
+   * view in a single round-trip — mirrors the shape of {@link
+   * #updatePortalRetainerMemberDisplay(PortalRetainerMemberDisplay, ActorContext)}.
    */
   @Transactional
-  public PortalDigestCadence updatePortalDigestCadence(
+  public SettingsResponse updatePortalDigestCadence(
       PortalDigestCadence cadence, ActorContext actor) {
     requireAdminOrOwner(actor.orgRole());
 
@@ -1031,7 +1035,7 @@ public class OrgSettingsService {
             .details(Map.of("portal_digest_cadence", cadence.name()))
             .build());
 
-    return settings.getEffectivePortalDigestCadence();
+    return toSettingsResponse(settings);
   }
 
   /**

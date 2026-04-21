@@ -95,4 +95,11 @@
     Best,<br/>
     <span th:text="${orgName != null ? orgName : 'Kazi'}">Kazi</span>
   </p>
+
+  <!-- Preferences / unsubscribe link (Epic 498C, ADR-258) -->
+  <p style="margin: 16px 0 0 0; font-size: 12px; color: #6b7280; text-align: center;">
+    <a th:href="${portalBaseUrl} + '/settings/notifications?unsubscribe=1'" style="color: #6b7280; text-decoration: underline;">
+      Unsubscribe from weekly digests
+    </a>
+  </p>
 </div>

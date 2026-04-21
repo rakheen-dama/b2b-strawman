@@ -15,33 +15,43 @@ import type { Page } from "@playwright/test";
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://localhost:8081";
 const ORG_SLUG = process.env.PORTAL_ORG_SLUG || "e2e-test-org";
+const PORTAL_BASE_URL =
+  process.env.PLAYWRIGHT_BASE_URL || "http://localhost:3002";
+const PORTAL_ORIGIN = new URL(PORTAL_BASE_URL).origin;
 
 /**
  * Request a magic-link token for `email` and exchange it for a portal JWT.
- * Returns `null` when either endpoint fails or the response shape is unexpected.
+ * Returns `null` when either endpoint fails, the response shape is unexpected,
+ * or a network/DNS/timeout error is thrown (fetch rejects on network failures).
  */
 export async function getPortalJwt(email: string): Promise<string | null> {
-  const linkRes = await fetch(`${BACKEND_URL}/portal/auth/request-link`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, orgId: ORG_SLUG }),
-  });
-  if (!linkRes.ok) return null;
-  const linkData = await linkRes.json();
-  const token =
-    linkData.token ||
-    linkData.magicLink?.split("token=").pop()?.split("&")[0] ||
-    null;
-  if (!token) return null;
+  try {
+    const linkRes = await fetch(`${BACKEND_URL}/portal/auth/request-link`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, orgId: ORG_SLUG }),
+    });
+    if (!linkRes.ok) return null;
+    const linkData = await linkRes.json();
+    const token =
+      linkData.token ||
+      linkData.magicLink?.split("token=").pop()?.split("&")[0] ||
+      null;
+    if (!token) return null;
 
-  const exchangeRes = await fetch(`${BACKEND_URL}/portal/auth/exchange`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ token, orgId: ORG_SLUG }),
-  });
-  if (!exchangeRes.ok) return null;
-  const data = await exchangeRes.json();
-  return data.token || data.accessToken || data.access_token || null;
+    const exchangeRes = await fetch(`${BACKEND_URL}/portal/auth/exchange`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, orgId: ORG_SLUG }),
+    });
+    if (!exchangeRes.ok) return null;
+    const data = await exchangeRes.json();
+    return data.token || data.accessToken || data.access_token || null;
+  } catch {
+    // Network failures (DNS, timeout, connection refused) should not escape —
+    // the contract is Promise<string | null> and callers gate on `if (!jwt)`.
+    return null;
+  }
 }
 
 /**
@@ -58,14 +68,13 @@ export async function loginAsPortalContact(
     {
       name: "portal-auth-token",
       value: jwt,
-      domain: "localhost",
-      path: "/",
+      url: PORTAL_ORIGIN,
       httpOnly: false,
       sameSite: "Lax" as const,
     },
   ]);
   // Touch the portal origin so localStorage writes land correctly.
-  await page.goto("/");
+  await page.goto(PORTAL_ORIGIN);
   await page.evaluate((token) => {
     localStorage.setItem("portal-token", token);
     localStorage.setItem("portal-auth-token", token);

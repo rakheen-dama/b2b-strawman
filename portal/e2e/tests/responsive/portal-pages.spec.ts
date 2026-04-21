@@ -6,18 +6,20 @@ import { getPortalJwt, loginAsPortalContact } from "../../helpers/auth";
  *
  * Iterates over 10 representative portal routes and captures `toHaveScreenshot`
  * snapshots at three viewport sizes — producing 30 baselines under
- *   portal/e2e/screenshots/portal-v2/{sm,md,lg}/<name>.png
+ *   portal/e2e/screenshots/portal-v2/{projectName}/{sm,md,lg}/<name>.png
  * (the snapshotPathTemplate in playwright.portal.config.ts maps the first
  * `toHaveScreenshot` arg to that path).
  *
  * These tests require a running, seeded portal stack (portal on :3002 with a
- * valid portal-contact JWT). Because the sandbox that runs this epic's builder
- * does not have a seeded portal, the spec is skipped by default via
- * `SKIP_PORTAL_BASELINES` — set it to "false" in an environment that has the
- * stack reachable (local dev, CI) to generate / verify baselines.
+ * valid portal-contact JWT). The default is "run" — in an environment where
+ * the portal stack is not provisioned (e.g. sandboxed builders), explicitly
+ * export `SKIP_PORTAL_BASELINES=true` to skip. Without that opt-out the
+ * `webServer` block in `playwright.portal.config.ts` will boot the portal.
  *
- * TODO: wire CI to unset SKIP_PORTAL_BASELINES once the portal-docker stack is
- * provisioned in the visual-regression workflow.
+ * Future work: mask dynamic timestamps/counts via selectors once the pages
+ * expose `data-testid` markers for them. For now we use a conservative
+ * `domcontentloaded` + short settle delay (networkidle is racy for SPAs that
+ * poll in the background).
  */
 
 type Breakpoint = {
@@ -52,14 +54,23 @@ const PAGES: Array<{ path: string; name: string }> = [
 
 test.describe.configure({ mode: "serial" });
 
-const SKIP = process.env.SKIP_PORTAL_BASELINES !== "false";
+// Default: run. CI without a seeded portal stack must opt out by exporting
+// SKIP_PORTAL_BASELINES=true (the unset/empty case should fail loudly so
+// the baselines aren't silently green).
+const SKIP = process.env.SKIP_PORTAL_BASELINES === "true";
 const PORTAL_EMAIL =
   process.env.PORTAL_CONTACT_EMAIL || "alice.portal@example.com";
 
 test.beforeAll(async () => {
+  if (SKIP) {
+    test.info().annotations.push({
+      type: "skipped-reason",
+      description: "SKIP_PORTAL_BASELINES=true",
+    });
+  }
   test.skip(
     SKIP,
-    "Portal baseline capture disabled. Set SKIP_PORTAL_BASELINES=false with a seeded portal stack to generate baselines.",
+    "Portal baseline capture disabled via SKIP_PORTAL_BASELINES=true. Unset (or set to anything other than 'true') with a seeded portal stack to generate baselines.",
   );
 });
 
@@ -83,11 +94,17 @@ for (const bp of BREAKPOINTS) {
     for (const p of PAGES) {
       test(`${p.name}`, async ({ page }) => {
         await page.goto(p.path);
-        await page.waitForLoadState("networkidle");
+        // `networkidle` is racy for SPAs that poll in the background (e.g.
+        // the portal's auth refresh timer). Prefer `domcontentloaded` + a
+        // short settle delay for visual baselines.
+        await page.waitForLoadState("domcontentloaded");
+        await page.waitForTimeout(500);
         await expect(page).toHaveScreenshot(`${bp.name}/${p.name}.png`, {
           fullPage: true,
           maxDiffPixelRatio: 0.01,
           animations: "disabled",
+          // Future work: add `mask: [page.locator('[data-dynamic="timestamp"]'), ...]`
+          // once portal pages tag volatile regions with data-dynamic selectors.
         });
       });
     }

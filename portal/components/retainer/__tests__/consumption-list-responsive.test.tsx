@@ -32,7 +32,7 @@ function entry(
     description: "Drafted memo",
     memberDisplayName: "A. Lawyer",
     ...overrides,
-  } as PortalRetainerConsumptionEntry;
+  };
 }
 
 /**
@@ -81,8 +81,8 @@ describe("ConsumptionList responsive layout", () => {
     const row1 = screen.getByTestId("consumption-entry-e1");
     const row2 = screen.getByTestId("consumption-entry-e2");
     for (const row of [row1, row2]) {
-      expect(row.className).toContain("min-h-11");
-      expect(row.className).toContain("w-full");
+      expect(row.className).toMatch(/\bmin-h-11\b/);
+      expect(row.className).toMatch(/\bw-full\b/);
     }
   });
 });

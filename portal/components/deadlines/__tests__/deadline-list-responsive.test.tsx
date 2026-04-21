@@ -56,8 +56,8 @@ describe("DeadlineList responsive layout", () => {
     });
     expect(rows.length).toBeGreaterThan(0);
     for (const row of rows) {
-      expect(row.className).toContain("min-h-11");
-      expect(row.className).toContain("w-full");
+      expect(row.className).toMatch(/\bmin-h-11\b/);
+      expect(row.className).toMatch(/\bw-full\b/);
     }
   });
 
@@ -76,7 +76,7 @@ describe("DeadlineList responsive layout", () => {
     );
     const statusSelect = screen.getByLabelText(/status/i);
     const typeSelect = screen.getByLabelText(/type/i);
-    expect(statusSelect.className).toContain("min-h-11");
-    expect(typeSelect.className).toContain("min-h-11");
+    expect(statusSelect.className).toMatch(/\bmin-h-11\b/);
+    expect(typeSelect.className).toMatch(/\bmin-h-11\b/);
   });
 });

@@ -83,7 +83,8 @@ export function DeadlineDetailPanel({
       {/* Panel — bottom sheet below md, right-side drawer at md+. */}
       <aside
         role="dialog"
-        aria-modal="true"
+        aria-modal={open ? "true" : undefined}
+        aria-hidden={!open}
         aria-label={deadline?.label ?? "Deadline details"}
         data-state={open ? "open" : "closed"}
         data-testid="deadline-detail-panel"
@@ -96,8 +97,8 @@ export function DeadlineDetailPanel({
           "md:left-auto md:right-0 md:top-0 md:bottom-0 md:max-h-none md:w-full md:max-w-md md:rounded-none md:border-t-0 md:border-l",
           // Transitions: translate-y on mobile, translate-x on md+.
           open
-            ? "translate-y-0 md:translate-x-0"
-            : "translate-y-full md:translate-y-0 md:translate-x-full",
+            ? "translate-y-0 pointer-events-auto md:translate-x-0"
+            : "translate-y-full pointer-events-none md:translate-y-0 md:translate-x-full",
         )}
       >
         {/* Mobile grab-handle (hidden on md+) */}
@@ -114,6 +115,7 @@ export function DeadlineDetailPanel({
             type="button"
             onClick={onClose}
             aria-label="Close panel"
+            tabIndex={open ? 0 : -1}
             className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
           >
             <X className="size-4" />

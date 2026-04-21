@@ -73,7 +73,7 @@ function InfoRequestsCard() {
   return (
     <Link
       href="/requests"
-      className="block rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+      className="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
     >
       <Card className="transition hover:shadow-md">
         <CardHeader>
@@ -111,7 +111,7 @@ function AcceptancesCard() {
   return (
     <Link
       href="/acceptance"
-      className="block rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+      className="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
     >
       <Card className="transition hover:shadow-md">
         <CardHeader>
@@ -147,7 +147,7 @@ function DeadlinesCard() {
   return (
     <Link
       href="/deadlines"
-      className="block rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+      className="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
     >
       <Card className="transition hover:shadow-md">
         <CardHeader>
@@ -251,7 +251,7 @@ function TrustCard() {
   return (
     <Link
       href="/trust"
-      className="block rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
+      className="block rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
     >
       <Card className="transition hover:shadow-md">
         <CardHeader>

@@ -13,9 +13,11 @@ import { Label } from "@/components/ui/label";
 import {
   updatePortalDigestCadence,
   updatePortalRetainerMemberDisplay,
-  type PortalDigestCadence,
-  type PortalRetainerMemberDisplay,
 } from "@/app/(app)/org/[slug]/settings/general/portal-actions";
+import type {
+  PortalDigestCadence,
+  PortalRetainerMemberDisplay,
+} from "@/lib/types/settings";
 
 const CADENCE_OPTIONS: { value: PortalDigestCadence; label: string }[] = [
   { value: "WEEKLY", label: "Weekly" },

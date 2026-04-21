@@ -125,7 +125,7 @@ function LoginForm() {
                 <p className="text-xs font-medium text-amber-800">Dev mode — click to sign in:</p>
                 <a
                   href={magicLink}
-                  className="mt-1 block text-sm font-medium text-amber-700 underline break-all"
+                  className="mt-1 block min-h-11 text-sm font-medium text-amber-700 underline break-all"
                 >
                   {magicLink}
                 </a>
@@ -172,6 +172,7 @@ function LoginForm() {
                 required
                 autoComplete="email"
                 autoFocus
+                className="h-11 md:h-9"
               />
             </div>
 
@@ -181,7 +182,12 @@ function LoginForm() {
               </p>
             )}
 
-            <Button type="submit" variant="accent" disabled={submitting}>
+            <Button
+              type="submit"
+              variant="accent"
+              disabled={submitting}
+              className="min-h-11 md:min-h-9"
+            >
               {submitting ? "Sending..." : "Send Magic Link"}
             </Button>
           </form>

@@ -121,7 +121,7 @@ export function PendingAcceptancesList() {
             </div>
             <Link
               href={`/accept/${acceptance.requestToken}`}
-              className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-700 sm:w-auto"
+              className="inline-flex min-h-11 w-full items-center justify-center gap-1.5 whitespace-nowrap rounded-md bg-teal-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-700 sm:w-auto sm:justify-start"
             >
               Review & Accept
               <ArrowRight className="size-4" />

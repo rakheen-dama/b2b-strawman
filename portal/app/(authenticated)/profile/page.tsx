@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { User } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -44,44 +44,48 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const isMountedRef = useRef(true);
+  const requestIdRef = useRef(0);
+
   useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
+  const fetchProfile = useCallback(async () => {
     if (!jwt) {
       router.push("/login");
       return;
     }
 
-    let cancelled = false;
-
-    async function fetchProfile() {
-      try {
-        const data = await portalGet<PortalProfile>("/portal/me");
-        if (!cancelled) {
-          setProfile(data);
-        }
-      } catch (err) {
-        if (!cancelled) {
-          // portalFetch already redirects on 401, but handle edge cases
-          const message =
-            err instanceof Error ? err.message : "Failed to load profile";
-          if (message === "Unauthorized") {
-            router.push("/login");
-          } else {
-            setError(message);
-          }
-        }
-      } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
+    const requestId = ++requestIdRef.current;
+    setError(null);
+    setIsLoading(true);
+    try {
+      const data = await portalGet<PortalProfile>("/portal/me");
+      if (!isMountedRef.current || requestId !== requestIdRef.current) return;
+      setProfile(data);
+    } catch (err) {
+      if (!isMountedRef.current || requestId !== requestIdRef.current) return;
+      const message =
+        err instanceof Error ? err.message : "Failed to load profile";
+      if (message === "Unauthorized") {
+        router.push("/login");
+      } else {
+        setError(message);
+      }
+    } finally {
+      if (isMountedRef.current && requestId === requestIdRef.current) {
+        setIsLoading(false);
       }
     }
-
-    fetchProfile();
-
-    return () => {
-      cancelled = true;
-    };
   }, [jwt, router]);
+
+  useEffect(() => {
+    fetchProfile();
+  }, [fetchProfile]);
 
   return (
     <div>
@@ -93,12 +97,19 @@ export default function ProfilePage() {
 
       {error && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-          {error}
+          <p className="mb-2">{error}</p>
+          <button
+            type="button"
+            onClick={() => fetchProfile()}
+            className="inline-flex min-h-11 items-center rounded-md bg-white px-3 py-1.5 text-sm font-medium text-red-700 ring-1 ring-red-200 hover:bg-red-100"
+          >
+            Try again
+          </button>
         </div>
       )}
 
       {!isLoading && !error && profile && (
-        <Card className="max-w-lg">
+        <Card className="w-full max-w-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <User className="size-5 text-slate-500" />
@@ -115,7 +126,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <dt className="text-xs font-medium text-slate-500">Email</dt>
-                <dd className="mt-1 text-sm text-slate-900">
+                <dd className="mt-1 text-sm break-all text-slate-900">
                   {profile.email}
                 </dd>
               </div>

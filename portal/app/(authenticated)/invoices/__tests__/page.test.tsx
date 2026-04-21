@@ -104,14 +104,15 @@ describe("InvoicesPage", () => {
 
     expect(screen.getByText("Invoices")).toBeInTheDocument();
 
+    // Mobile cards and desktop table both render (CSS toggles visibility).
     await waitFor(() => {
-      expect(screen.getByText("INV-001")).toBeInTheDocument();
-      expect(screen.getByText("INV-002")).toBeInTheDocument();
+      expect(screen.getAllByText("INV-001").length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("INV-002").length).toBeGreaterThanOrEqual(1);
     });
 
-    // Status badges
-    expect(screen.getByText("SENT")).toBeInTheDocument();
-    expect(screen.getByText("PAID")).toBeInTheDocument();
+    // Status badges render in both layouts
+    expect(screen.getAllByText("SENT").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("PAID").length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows empty state when no invoices exist", async () => {
@@ -144,11 +145,12 @@ describe("InvoicesPage", () => {
     render(<InvoicesPage />);
 
     await waitFor(() => {
-      expect(screen.getByText("INV-001")).toBeInTheDocument();
+      expect(screen.getAllByText("INV-001").length).toBeGreaterThanOrEqual(1);
     });
 
     const user = userEvent.setup();
-    const downloadBtn = screen.getByLabelText("Download INV-001");
+    // Download button renders in both mobile + desktop layouts.
+    const downloadBtn = screen.getAllByLabelText("Download INV-001")[0];
     await user.click(downloadBtn);
 
     expect(mockPortalGet).toHaveBeenCalledWith(

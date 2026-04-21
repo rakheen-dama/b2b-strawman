@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import type { ReactNode } from "react";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -15,7 +16,7 @@ vi.mock("next/link", () => ({
     href,
     ...props
   }: {
-    children: React.ReactNode;
+    children: ReactNode;
     href: string;
     [key: string]: unknown;
   }) => (
@@ -109,17 +110,21 @@ describe("InvoiceDetailPage — Payment Section", () => {
 
     render(<InvoiceDetailPage />);
 
+    // Pay Now renders in both the desktop inline banner AND the mobile sticky
+    // bottom-action bar. CSS toggles visibility per breakpoint.
     await waitFor(() => {
-      expect(screen.getByText("Pay Now")).toBeInTheDocument();
+      expect(screen.getAllByText("Pay Now").length).toBeGreaterThanOrEqual(1);
     });
 
-    const payLink = screen.getByText("Pay Now").closest("a");
-    expect(payLink).toHaveAttribute(
-      "href",
-      "https://pay.example.com/session/abc123",
-    );
-    expect(payLink).toHaveAttribute("target", "_blank");
-    expect(payLink).toHaveAttribute("rel", "noopener noreferrer");
+    const payLinks = screen.getAllByText("Pay Now").map((el) => el.closest("a"));
+    for (const payLink of payLinks) {
+      expect(payLink).toHaveAttribute(
+        "href",
+        "https://pay.example.com/session/abc123",
+      );
+      expect(payLink).toHaveAttribute("target", "_blank");
+      expect(payLink).toHaveAttribute("rel", "noopener noreferrer");
+    }
   });
 
   it("hides Pay Now when status is PAID and shows paid confirmation", async () => {
@@ -259,6 +264,7 @@ describe("PaymentCancelledPage", () => {
       expect(screen.getByText("Payment was cancelled")).toBeInTheDocument();
     });
 
+    // PaymentCancelledPage renders one "Pay Now" link (not dual mobile/desktop).
     const payLink = screen.getByText("Pay Now").closest("a");
     expect(payLink).toHaveAttribute(
       "href",

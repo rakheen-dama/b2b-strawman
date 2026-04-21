@@ -180,14 +180,17 @@ describe("InvoiceDetailPage", () => {
 
     render(<InvoiceDetailPage />);
 
+    // Line items render in both mobile cards and desktop table.
     await waitFor(() => {
-      expect(screen.getByText("Design consultation")).toBeInTheDocument();
+      expect(
+        screen.getAllByText("Design consultation").length,
+      ).toBeGreaterThanOrEqual(1);
     });
 
     expect(screen.getByText("Line Items")).toBeInTheDocument();
-    expect(screen.getByText("Subtotal")).toBeInTheDocument();
-    expect(screen.getByText("Tax")).toBeInTheDocument();
-    expect(screen.getByText("Total")).toBeInTheDocument();
+    expect(screen.getAllByText("Subtotal").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Tax").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText("Total").length).toBeGreaterThanOrEqual(1);
   });
 
   it("downloads PDF when button is clicked", async () => {
@@ -251,15 +254,15 @@ describe("InvoiceDetailPage", () => {
       expect(screen.getByText("INV-TAX-001")).toBeInTheDocument();
     });
 
-    // Tax column header should be visible
-    expect(screen.getByText("VAT")).toBeInTheDocument();
-    // Tax breakdown row in footer
-    expect(screen.getByText("VAT (15%)")).toBeInTheDocument();
+    // Tax column header (desktop) + mobile per-line label — >= 1 match
+    expect(screen.getAllByText("VAT").length).toBeGreaterThanOrEqual(1);
+    // Tax breakdown row in footer (mobile + desktop)
+    expect(screen.getAllByText("VAT (15%)").length).toBeGreaterThanOrEqual(1);
     // Tax registration number
     expect(screen.getByText("4200000000")).toBeInTheDocument();
     expect(screen.getByText(/VAT Number/)).toBeInTheDocument();
-    // Per-line tax display
-    expect(screen.getByText("VAT 15%")).toBeInTheDocument();
+    // Per-line tax display (mobile + desktop)
+    expect(screen.getAllByText("VAT 15%").length).toBeGreaterThanOrEqual(1);
   });
 
   it("shows legacy flat Tax row for invoices without per-line tax", async () => {
@@ -271,8 +274,8 @@ describe("InvoiceDetailPage", () => {
       expect(screen.getByText("INV-001")).toBeInTheDocument();
     });
 
-    // Should show flat "Tax" row, not breakdown
-    expect(screen.getByText("Tax")).toBeInTheDocument();
+    // Should show flat "Tax" row, not breakdown (renders in both mobile + desktop)
+    expect(screen.getAllByText("Tax").length).toBeGreaterThanOrEqual(1);
     // Tax column header should NOT be present (no extra column)
     const headers = screen.getAllByRole("columnheader");
     expect(headers).toHaveLength(4); // Description, Quantity, Rate, Amount
@@ -287,9 +290,10 @@ describe("InvoiceDetailPage", () => {
       expect(screen.getByText("INV-TAX-INC")).toBeInTheDocument();
     });
 
+    // Renders in both mobile + desktop footers.
     expect(
-      screen.getByText(/All amounts include VAT/),
-    ).toBeInTheDocument();
+      screen.getAllByText(/All amounts include VAT/).length,
+    ).toBeGreaterThanOrEqual(1);
   });
 
   it("shows 5 column headers when hasPerLineTax is true", async () => {

@@ -3,9 +3,9 @@
 ## Current State
 
 - **ALL_DAYS_COMPLETE**: false
-- **QA Position**: Day 0 — 0.1 (open fresh browser context on `http://localhost:3000` and begin access-request flow as Thandi Mathebula). Session 0 prep steps (0.A–0.H) to be confirmed by Infra Agent before QA dispatch.
+- **QA Position**: Day 0 — 0.1 (open fresh browser context on `http://localhost:3000` and begin access-request flow as Thandi Mathebula). BLOCKED pending resolution of pre-existing `mathebula-partners` org (see GAP-INFRA-01).
 - **Cycle**: 1
-- **Dev Stack**: Unknown — needs verification
+- **Dev Stack**: PARTIAL — all 4 services UP + KC realm + Mailpit purged, but pre-existing `mathebula-partners` org + tenant schema `tenant_5039f2d497cf` from prior archived run blocks fresh Day 0 onboarding (Session 0.C gate).
 - **NEEDS_REBUILD**: false
 - **Branch**: `bugfix_cycle_legal_full_2026-04-21`
 - **Scenario**: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md`
@@ -16,14 +16,14 @@
 
 | Service | URL | Status |
 |---------|-----|--------|
-| Frontend (kc mode) | http://localhost:3000 | Unknown — verify |
-| Backend (local+keycloak profile) | http://localhost:8080 | Unknown — verify |
-| Gateway (BFF) | http://localhost:8443 | Unknown — verify |
-| Portal | http://localhost:3002 | Unknown — verify |
-| Keycloak | http://localhost:8180 | Unknown — verify |
-| Mailpit UI | http://localhost:8025 | Unknown — verify |
-| Postgres (docteams) | localhost:5432 | Unknown — verify |
-| LocalStack (S3) | http://localhost:4566 | Unknown — verify |
+| Frontend (kc mode) | http://localhost:3000 | UP — HTTP 200 (already running, PID 62385) |
+| Backend (local+keycloak profile) | http://localhost:8080 | UP — `{"status":"UP"}` (started fresh this cycle, PID managed by svc.sh) |
+| Gateway (BFF) | http://localhost:8443 | UP — `{"status":"UP"}` (already running external, PID 71426) |
+| Portal | http://localhost:3002 | UP — HTTP 307 root redirect expected (started fresh this cycle) |
+| Keycloak | http://localhost:8180 | UP — `/realms/docteams` 200; bootstrap re-run idempotent, padmin user confirmed |
+| Mailpit UI | http://localhost:8025 | UP — inbox purged (was 18 stale msgs) for Day 0 clean state |
+| Postgres (docteams) | localhost:5432 | UP — `b2b-postgres` container healthy, DB `docteams` reachable |
+| LocalStack (S3) | http://localhost:4566 | UP — container `b2b-localstack` healthy (4 days uptime) |
 
 ## Carry-Forward Watch List (from prior legal-za archives)
 
@@ -60,6 +60,7 @@ These are gaps/observations logged during `_archive_2026-04-21_legal-full-lifecy
 
 | GAP_ID | Day / Checkpoint | Severity | Status | Summary | Owner | Retries |
 |--------|------------------|----------|--------|---------|-------|---------|
+| GAP-INFRA-01 | Session 0 / 0.C | HIGH | OPEN | Pre-existing `mathebula-partners` org (id `3730e32a-5310-43e3-b001-495def2b524d`, `provisioning_status=COMPLETED`) + tenant schema `tenant_5039f2d497cf` remain from prior archived lifecycle run (archive dir `_archive_2026-04-21_legal-full-lifecycle`). Session 0.C requires absence. Needs orchestrator approval to DROP the tenant schema + DELETE the organization row + related `org_schema_mapping` entry before Day 0 Phase A can run the access-request flow for a NEW org. Alternative: rewrite scenario to reuse existing org (not recommended — Day 0 Phase A–D flows validate net-new onboarding). | Infra | 0 |
 
 ## Legend
 
@@ -70,3 +71,4 @@ These are gaps/observations logged during `_archive_2026-04-21_legal-full-lifecy
 ## Log
 
 - 2026-04-21 18:59 SAST — Cycle 1 started. Archived prior legal-90day state. Fresh status seeded from legal-za-full-lifecycle-keycloak.md.
+- 2026-04-21 19:04 SAST — Infra verification complete. Stack: Docker infra already up (KC, Postgres, LocalStack, Mailpit all healthy 3-4d uptime); gateway (PID 71426) + frontend (PID 62385) already running; backend + portal were stale and started fresh via `svc.sh start backend portal` (ready 30s + 3s). All four services pass health checks (8080/8443/3000/3002). Keycloak bootstrap re-run (idempotent) — padmin and gateway-bff mappers OK. Session 0 prep: 0.A ✓ (all svc UP), 0.B ✓ (portal 307 on `/`), 0.C BLOCKER (pre-existing `mathebula-partners` org + schema `tenant_5039f2d497cf` — see GAP-INFRA-01), 0.D ✓ (0 KC users matching `mathebula-test`), 0.E n/a (`public.portal_contacts` table does not exist — portal contacts live per-tenant, so dropping the mathebula schema in 0.C would cover this), 0.F ✓ (Mailpit purged, was 18 stale), 0.G pending QA/Product (PayFast sandbox vs stub — not infra), 0.H ✓ (backend logs confirm legal-za packs installed + reconciled for tenant_5039f2d497cf; 4 tenants reconciled 4 succeeded 0 failed). QA NOT cleared to start Day 0 until GAP-INFRA-01 resolved.

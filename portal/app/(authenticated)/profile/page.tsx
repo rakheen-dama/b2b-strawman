@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { User } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
@@ -44,18 +44,31 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const isMountedRef = useRef(true);
+  const requestIdRef = useRef(0);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const fetchProfile = useCallback(async () => {
     if (!jwt) {
       router.push("/login");
       return;
     }
 
+    const requestId = ++requestIdRef.current;
     setError(null);
     setIsLoading(true);
     try {
       const data = await portalGet<PortalProfile>("/portal/me");
+      if (!isMountedRef.current || requestId !== requestIdRef.current) return;
       setProfile(data);
     } catch (err) {
+      if (!isMountedRef.current || requestId !== requestIdRef.current) return;
       const message =
         err instanceof Error ? err.message : "Failed to load profile";
       if (message === "Unauthorized") {
@@ -64,19 +77,14 @@ export default function ProfilePage() {
         setError(message);
       }
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current && requestId === requestIdRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [jwt, router]);
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      if (cancelled) return;
-      await fetchProfile();
-    })();
-    return () => {
-      cancelled = true;
-    };
+    fetchProfile();
   }, [fetchProfile]);
 
   return (

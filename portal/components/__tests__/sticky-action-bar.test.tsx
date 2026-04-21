@@ -52,7 +52,12 @@ describe("StickyActionBar", () => {
     );
 
     const bar = screen.getByTestId("sticky-action-bar");
-    expect(bar.className).toContain("safe-area-inset-bottom");
+    // Safe-area is handled via a Tailwind arbitrary-value utility that encodes
+    // the env(safe-area-inset-bottom) CSS fallback directly in the class name.
+    // Assert the full literal class so we don't match a substring by accident.
+    expect(bar.className).toContain(
+      "pb-[calc(1rem+env(safe-area-inset-bottom))]",
+    );
   });
 
   it("merges additional className prop", () => {

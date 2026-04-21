@@ -160,15 +160,17 @@ describe("ProjectDetailPage", () => {
 
     render(<ProjectDetailPage />);
 
+    // Surfaces the real error message rather than a hardcoded "Project not found"
     await waitFor(() => {
-      expect(screen.getByText("Project not found")).toBeInTheDocument();
+      expect(screen.getByText("Network error")).toBeInTheDocument();
     });
     expect(
       screen.getByText(
-        "This project may have been removed or you may not have access.",
+        "This project may have been removed, you may not have access, or the request failed. Please try again.",
       ),
     ).toBeInTheDocument();
     expect(screen.getByText("Back to projects")).toBeInTheDocument();
+    expect(screen.getByText("Try again")).toBeInTheDocument();
   });
 
   it("hides summary card when totalHours is 0", async () => {

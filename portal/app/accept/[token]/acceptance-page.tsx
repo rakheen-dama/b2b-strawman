@@ -18,6 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StickyActionBar } from "@/components/ui/sticky-action-bar";
 import { formatDate } from "@/lib/format";
 import { isSafeImageUrl, isValidHexColor } from "@/lib/utils";
 import {
@@ -156,9 +157,16 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
     );
   }
 
+  const showStickyAcceptBar =
+    pageState === "PENDING" || pageState === "SUBMITTING";
+
   return (
     <main className="min-h-screen bg-slate-50 px-4 py-8">
-      <div className="mx-auto max-w-3xl space-y-6">
+      <div
+        className={`mx-auto max-w-3xl space-y-6 ${
+          showStickyAcceptBar ? "pb-24 md:pb-0" : ""
+        }`}
+      >
         {/* Org Branding Header */}
         <div className="text-center">
           {showLogo && (
@@ -236,10 +244,14 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
           </Card>
         )}
 
-        {(pageState === "PENDING" || pageState === "SUBMITTING") && (
+        {showStickyAcceptBar && (
           <Card>
             <CardContent className="py-6">
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form
+                id="accept-form"
+                onSubmit={handleSubmit}
+                className="space-y-4"
+              >
                 <p className="text-sm text-slate-600">
                   By typing your name below, you confirm that you have reviewed
                   and accept this document.
@@ -268,11 +280,12 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
                   </p>
                 )}
 
+                {/* Desktop inline submit — hidden on mobile (mobile uses StickyActionBar) */}
                 <Button
                   type="submit"
                   variant="accent"
                   disabled={name.trim().length < 2 || pageState === "SUBMITTING"}
-                  className="min-h-11 w-full"
+                  className="hidden min-h-11 w-full md:inline-flex"
                 >
                   {pageState === "SUBMITTING" ? (
                     <>
@@ -293,6 +306,29 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
           </Card>
         )}
       </div>
+
+      {/* Mobile sticky accept bar — associates with form via `form` attribute */}
+      {showStickyAcceptBar && (
+        <StickyActionBar>
+          <Button
+            type="submit"
+            form="accept-form"
+            variant="accent"
+            disabled={name.trim().length < 2 || pageState === "SUBMITTING"}
+            aria-label="Accept document"
+            className="min-h-11 w-full flex-1"
+          >
+            {pageState === "SUBMITTING" ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Submitting...
+              </>
+            ) : (
+              "I Accept"
+            )}
+          </Button>
+        </StickyActionBar>
+      )}
     </main>
   );
 }

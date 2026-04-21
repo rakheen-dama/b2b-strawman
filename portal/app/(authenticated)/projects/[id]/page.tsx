@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams } from "next/navigation";
 import { ArrowLeft, Clock } from "lucide-react";
 import Link from "next/link";
@@ -50,7 +50,18 @@ export default function ProjectDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const isMountedRef = useRef(true);
+  const requestIdRef = useRef(0);
+
+  useEffect(() => {
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
+
   const fetchData = useCallback(async () => {
+    const requestId = ++requestIdRef.current;
     setError(null);
     setIsLoading(true);
     try {
@@ -69,11 +80,15 @@ export default function ProjectDetailPage() {
           ),
         ]);
 
+      if (!isMountedRef.current || requestId !== requestIdRef.current) return;
       setData({ project, tasks, documents, comments, summary });
     } catch (err) {
+      if (!isMountedRef.current || requestId !== requestIdRef.current) return;
       setError(err instanceof Error ? err.message : "Failed to load project");
     } finally {
-      setIsLoading(false);
+      if (isMountedRef.current && requestId === requestIdRef.current) {
+        setIsLoading(false);
+      }
     }
   }, [projectId]);
 
@@ -97,9 +112,12 @@ export default function ProjectDetailPage() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <p className="text-lg font-medium text-slate-600">Project not found</p>
+        <p className="text-lg font-medium text-slate-600">
+          {error ?? "Project not found"}
+        </p>
         <p className="mt-1 text-sm text-slate-500">
-          This project may have been removed or you may not have access.
+          This project may have been removed, you may not have access, or the
+          request failed. Please try again.
         </p>
         <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row">
           <button

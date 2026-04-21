@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import type { ReactNode } from "react";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -15,7 +16,7 @@ vi.mock("next/link", () => ({
     href,
     ...props
   }: {
-    children: React.ReactNode;
+    children: ReactNode;
     href: string;
     [key: string]: unknown;
   }) => (

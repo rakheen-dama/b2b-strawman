@@ -236,12 +236,14 @@ class MagicLinkTokenIntegrationTest {
                       "MLT Customer B", "mlt-customer-b@test.com", null, null, null, memberIdB);
               customerIdB = customerB.getId();
 
+              // GAP-L-34 auto-created a GENERAL contact using the customer's email already;
+              // create the PRIMARY contact under a distinct email to avoid uniqueness conflict.
               contactIdRoundTrip =
                   portalContactService
                       .createContact(
                           ORG_ID_B,
                           customerIdB,
-                          "mlt-customer-b@test.com",
+                          "mlt-primary-b@test.com",
                           "MLT Customer B",
                           PortalContact.ContactRole.PRIMARY)
                       .getId();

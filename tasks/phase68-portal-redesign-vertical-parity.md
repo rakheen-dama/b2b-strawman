@@ -23,7 +23,7 @@ Three small firm-side additions are in scope — `FieldDefinition.portalVisibleD
 | 497 | Portal Deadline Visibility (`accounting-za` + `legal-za`) | Both | 494A | M | 497A, 497B | **Done** |
 | 498 | Portal Notifications (digest + per-event + preferences) | Both | 495A or 496A or 497A (events) | L | 498A, 498B, 498C | |
 | 499 | Mobile Polish & Responsive Pass | Frontend | 494B, 495B, 496B, 497B, 498B | M | 499A, 499B | |
-| 500 | Client-POV 90-Day QA Capstone + Screenshots + Gap Report | E2E / Process | 494–499 | L | 500A, 500B | |
+| 500 | Client-POV 90-Day QA Capstone + Screenshots + Gap Report | E2E / Process | 494–499 | L | 500A, 500B | **Done** |
 
 Slice count: **15 slices across 7 epics**. Backend and frontend are always split into separate slices. Migrations land first within each backend slice. Integration tests live in the same slice as the code they test.
 
@@ -170,7 +170,7 @@ PHASES already complete:
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
 | 6a | 500 | 500A | `qa/testplan/demos/portal-client-90day-keycloak.md` drafted (11 checkpoints), Playwright test infra scaffolded under `frontend/e2e/tests/portal-client-90day/`, `/qa-cycle-kc` compatibility verified. **Done** (PR #1095) |
-| 6b | 500 | 500B | Full lifecycle run against a fresh legal-za / accounting-za / consulting-za tenant trio; curated screenshots to `documentation/screenshots/portal/`; `tasks/phase68-gap-report.md` authored. |
+| 6b | 500 | 500B | Full lifecycle run against a fresh legal-za / accounting-za / consulting-za tenant trio; curated screenshots to `documentation/screenshots/portal/`; `tasks/phase68-gap-report.md` authored. **Done** (PR #1096) |
 
 ### Timeline
 
@@ -706,7 +706,7 @@ A realistic day-by-day cadence: 494A day 1–2; 494B + 498A days 2–5 (parallel
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **500A** | 500.1–500.5 | Script file + 3–4 Playwright spec files + config | Author `qa/testplan/demos/portal-client-90day-keycloak.md` (11 checkpoints from Day 0 → Day 90, mixed across the three vertical profiles). Scaffold Playwright specs under `portal/e2e/tests/portal-client-90day/`. Verify `/qa-cycle-kc` compatibility. **Done** (PR #1095) |
-| **500B** | 500.6–500.10 | Baseline artifacts + curated PNGs + gap-report markdown | Execute end-to-end against three fresh tenants (legal-za, accounting-za, consulting-za). Capture Playwright baselines to `portal/e2e/screenshots/portal-client-90day/`. Curated marketing/demo shots to `documentation/screenshots/portal/`. Produce `tasks/phase68-gap-report.md`. |
+| **500B** | 500.6–500.10 | Baseline artifacts + curated PNGs + gap-report markdown | Execute end-to-end against three fresh tenants (legal-za, accounting-za, consulting-za). Capture Playwright baselines to `portal/e2e/screenshots/portal-client-90day/`. Curated marketing/demo shots to `documentation/screenshots/portal/`. Produce `tasks/phase68-gap-report.md`. **Done** (PR #1096) |
 
 ### Tasks
 

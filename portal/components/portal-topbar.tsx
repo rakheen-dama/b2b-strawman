@@ -18,11 +18,19 @@ export function PortalTopbar({ onHamburgerClick }: PortalTopbarProps) {
 
   return (
     <header className="sticky top-0 z-30 flex h-12 items-center justify-between border-b border-slate-200 bg-white px-4">
+      {/* Skip-to-content link — visually hidden until focused (keyboard users) */}
+      <a
+        href="#main-content"
+        data-testid="skip-to-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-2 focus:z-50 focus:rounded-md focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:text-slate-900 focus:shadow focus:outline focus:outline-2 focus:outline-teal-500"
+      >
+        Skip to content
+      </a>
       <div className="flex items-center gap-3">
         <Button
           variant="ghost"
           size="icon"
-          className="md:hidden"
+          className="min-h-11 min-w-11 md:hidden"
           onClick={onHamburgerClick}
           aria-label="Open navigation menu"
         >

@@ -80,7 +80,7 @@ export function DeadlineDetailPanel({
           open ? "opacity-100" : "pointer-events-none opacity-0",
         )}
       />
-      {/* Panel */}
+      {/* Panel — bottom sheet below md, right-side drawer at md+. */}
       <aside
         role="dialog"
         aria-modal="true"
@@ -88,10 +88,24 @@ export function DeadlineDetailPanel({
         data-state={open ? "open" : "closed"}
         data-testid="deadline-detail-panel"
         className={cn(
-          "fixed inset-y-0 right-0 z-50 flex w-full max-w-md flex-col border-l border-slate-200 bg-white shadow-xl transition-transform",
-          open ? "translate-x-0" : "translate-x-full",
+          "fixed z-50 flex flex-col border-slate-200 bg-white shadow-xl transition-transform",
+          // Mobile: bottom sheet (full-width, anchored to bottom, 75vh max).
+          "inset-x-0 bottom-0 max-h-[75vh] rounded-t-xl border-t",
+          // md+: right-side drawer. Use md:left-auto to release the left anchor
+          // from the mobile `inset-x-0` so the sheet can shrink to max-w-md.
+          "md:left-auto md:right-0 md:top-0 md:bottom-0 md:max-h-none md:w-full md:max-w-md md:rounded-none md:border-t-0 md:border-l",
+          // Transitions: translate-y on mobile, translate-x on md+.
+          open
+            ? "translate-y-0 md:translate-x-0"
+            : "translate-y-full md:translate-y-0 md:translate-x-full",
         )}
       >
+        {/* Mobile grab-handle (hidden on md+) */}
+        <div
+          aria-hidden="true"
+          data-testid="deadline-detail-handle"
+          className="mx-auto mt-2 h-1 w-10 rounded-full bg-slate-200 md:hidden"
+        />
         <header className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
           <h2 className="text-base font-semibold text-slate-900">
             Deadline details
@@ -100,7 +114,7 @@ export function DeadlineDetailPanel({
             type="button"
             onClick={onClose}
             aria-label="Close panel"
-            className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
           >
             <X className="size-4" />
           </button>

@@ -193,7 +193,8 @@ export function ConsumptionList({
                 {group.entries.map((entry) => (
                   <li
                     key={entry.id}
-                    className="flex items-start justify-between gap-3 px-4 py-3"
+                    data-testid={`consumption-entry-${entry.id}`}
+                    className="flex min-h-11 w-full items-start justify-between gap-3 px-4 py-3"
                   >
                     <div className="min-w-0 flex-1">
                       <p className="text-sm font-medium text-slate-900">

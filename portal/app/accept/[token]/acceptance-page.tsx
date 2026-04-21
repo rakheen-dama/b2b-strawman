@@ -78,7 +78,15 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
           setPageState("EXPIRED");
         } else if (data.status === "REVOKED") {
           setPageState("REVOKED");
-        } else if (data.status === "PENDING") {
+        } else if (
+          data.status === "PENDING" ||
+          data.status === "SENT" ||
+          data.status === "VIEWED"
+        ) {
+          // "PENDING" here is the UI state = "awaiting user action".
+          // Backend auto-flips PENDING→SENT on dispatch and SENT→VIEWED on
+          // first portal fetch, so SENT/VIEWED are the states portal actually
+          // observes. Render the same accept form for all three.
           setPageState("PENDING");
         } else {
           // Unknown status from backend — treat as error rather than showing the form

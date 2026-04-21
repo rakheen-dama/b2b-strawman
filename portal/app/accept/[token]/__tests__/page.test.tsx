@@ -46,6 +46,16 @@ const mockRevokedPageData = {
   status: "REVOKED",
 };
 
+const mockSentPageData = {
+  ...mockPendingPageData,
+  status: "SENT",
+};
+
+const mockViewedPageData = {
+  ...mockPendingPageData,
+  status: "VIEWED",
+};
+
 describe("AcceptancePage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -174,6 +184,42 @@ describe("AcceptancePage", () => {
 
     // Form should not be shown
     expect(screen.queryByLabelText("Full name")).not.toBeInTheDocument();
+  });
+
+  it("renders accept form when status is SENT", async () => {
+    mockGetAcceptancePageData.mockResolvedValue(mockSentPageData);
+
+    render(<AcceptancePage token="test-token" />);
+
+    await waitFor(() => {
+      expect(screen.getByTitle("Document PDF")).toBeInTheDocument();
+    });
+
+    expect(screen.getByLabelText("Full name")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "I Accept" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/Unable to process this acceptance request/),
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders accept form when status is VIEWED", async () => {
+    mockGetAcceptancePageData.mockResolvedValue(mockViewedPageData);
+
+    render(<AcceptancePage token="test-token" />);
+
+    await waitFor(() => {
+      expect(screen.getByTitle("Document PDF")).toBeInTheDocument();
+    });
+
+    expect(screen.getByLabelText("Full name")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "I Accept" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByText(/Unable to process this acceptance request/),
+    ).not.toBeInTheDocument();
   });
 
   it("shows error when page data fails to load", async () => {

@@ -566,7 +566,7 @@
 | 497 | Portal Deadline Visibility (accounting-za + legal-za) | Both | 494A | M | 497A, 497B | **Done** |
 | 498 | Portal Notifications (digest + per-event + preferences) | Both | 495A or 496A or 497A | L | 498A, 498B, 498C | |
 | 499 | Mobile Polish & Responsive Pass | Frontend | 494B, 495B, 496B, 497B, 498B | M | 499A, 499B | 499A **Done** (PR #1093) |
-| 500 | Client-POV 90-Day QA Capstone + Screenshots + Gap Report | E2E/Process | 494–499 | L | 500A, 500B | |
+| 500 | Client-POV 90-Day QA Capstone + Screenshots + Gap Report | E2E/Process | 494–499 | L | 500A, 500B | 500A **Done** (PR #1095) |
 
 ---
 

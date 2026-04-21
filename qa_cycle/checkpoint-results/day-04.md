@@ -174,3 +174,33 @@ Portal `/projects` still shows "No projects yet" even though Sipho is linked to 
 | **GAP-P-02** | **VERIFIED (stub scope)** | Portal `/requests` list renders REQ-0002 + REQ-0001 as cards; `/requests/{id}` detail renders 3 FICA items with functional per-item Upload+Submit flow; tenant DB confirms all 3 items transitioned PENDING → SUBMITTED with document_ids. Polish deferred to GAP-P-05. |
 | **GAP-P-01** | **PARTIALLY VERIFIED / SCOPE NARROWED** | Path fix works: `/portal/requests` returns data. But the home card is still blocked by module-gating (enabled_modules doesn't include `information_requests`). Scoped-out as **GAP-L-44**; the P-01 path code change itself is correct. |
 
+---
+
+## Day 4 RE-VERIFICATION (Cycle 1, turn 3 — GAP-L-43 fix) — 2026-04-22 00:38 SAST
+
+Backend restart per PID 12789 (post-PR #1103). New `@TransactionalEventListener onRequestItemSubmitted` method should now be registered on the Spring context. Option A executed: sent a fresh **REQ-0003** info request Bob → Sipho, uploaded all 3 items portal-side, asserted portal read-model state flips.
+
+### Re-execute 4.12–4.14 against REQ-0003
+
+- **Firm-side send** (Bob, RAF-2026-001 → Requests tab → New Request → template=FICA Onboarding Pack → Sipho → Send Now): REQ-0003 row inserted at 2026-04-22 00:35:13, status=SENT. Sent to Sipho via `PortalContactService` (carry-forward GAP-L-34 auto-contact path held).
+- **Mailpit**: `dCFdahuNmaYUU5zsoPDq8x` subject "Information request REQ-0003 from Mathebula & Partners", HTML href = `http://localhost:3002/auth/exchange?token=VG6MLAWlbXcI7c_b73HJexhvHa-dIZb97EdrQENwqss&orgId=mathebula-partners` — **GAP-L-42 fix holds on third pass**.
+- **Portal exchange** (/auth/exchange?token=...): Sipho's portal_jwt populated, redirected to /projects. Portal `/requests` list shows new card **"REQ-0003 / SENT / 0/3 submitted"**.
+- **Checkpoint 4.12 (GAP-L-43 verify)** — Upload 3 PDFs sequentially (test-fica-id.pdf, test-fica-address.pdf, test-fica-funds.pdf):
+  - Item 1 upload → submit → portal detail page re-renders `"1/3 submitted • status SENT"` within ~2s. **L-43 listener fired ✅**.
+  - Item 2 upload → submit → `"2/3 submitted"`.
+  - Item 3 upload → submit → `"3/3 submitted"` — all items render "Submitted — status: SUBMITTED".
+  - Portal list page `/requests` now shows REQ-0003 at "3/3 submitted" (was 0/3 before listener fix for REQ-0002). **L-43 fully VERIFIED**.
+  - Screenshot: `day-04-4.12-L43-verified-3of3-submitted.png`.
+- **Checkpoint 4.13** — (firm) Bob navigated to RAF-2026-001 → Requests tab: REQ-0003 row shows "Sipho Dlamini / In Progress / 0/3 accepted / Apr 22, 2026". Matter header upgrades from "3 documents" to "6 documents". Tenant state consistent with portal read model.
+- **Checkpoint 4.14** — Screenshot captured.
+
+### REQ-0002 read-model residual (expected, not a gap)
+REQ-0002 on portal list still reads "COMPLETED / 0/3 submitted" — the read model for pre-fix submits was never projected. Firm-side query on `tenant_5039f2d497cf.request_items` for REQ-0002 still shows ACCEPTED. Acceptable: listener fires for new events only; old data would require a backfill job (not in L-43 scope).
+
+### Cosmetic observation — parent request status projection
+Portal UI for REQ-0003 parent header reads `"status SENT"` even after all 3 items submitted (tenant-side parent is IN_PROGRESS). The new listener projects item counts (submitted_items) but does not re-project parent request status. Low-severity polish — scenario 4.12 asserts item state ("Submitted"), not parent status. Logged as **GAP-L-47 (LOW, backend)**. Out of scope for L-43 re-verification.
+
+### GAP-L-43 — final status
+
+**VERIFIED** — PR #1103 fix lands; portal read model now reflects item SUBMITTED transitions end-to-end on new requests.
+

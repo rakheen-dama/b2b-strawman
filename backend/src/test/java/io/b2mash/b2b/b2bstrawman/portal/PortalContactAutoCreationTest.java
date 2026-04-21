@@ -45,7 +45,8 @@ class PortalContactAutoCreationTest {
 
   @Test
   void shouldReturnPortalContactsForCustomer() throws Exception {
-    // Create customer and transition to ONBOARDING (auto-creates portal contact)
+    // GAP-L-34: portal contact is auto-created at customer-create time; the subsequent
+    // PROSPECT -> ONBOARDING transition keeps the same contact (idempotent no-op).
     String customerId =
         TestEntityHelper.createCustomer(
             mockMvc,
@@ -78,21 +79,24 @@ class PortalContactAutoCreationTest {
   }
 
   @Test
-  void shouldAutoCreatePortalContactOnProspectToOnboarding() throws Exception {
+  void shouldAutoCreatePortalContactOnCustomerCreate() throws Exception {
+    // GAP-L-34: contact is created synchronously by PortalContactAutoProvisioner listening
+    // on CustomerCreatedEvent — no ONBOARDING transition required.
     String email = nextEmail();
     String customerId =
         TestEntityHelper.createCustomer(
             mockMvc, TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner"), "Auto Contact Corp", email);
 
-    // Verify no portal contacts before transition
     mockMvc
         .perform(
             get("/api/customers/" + customerId + "/portal-contacts")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.length()").value(0));
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].email").value(email))
+        .andExpect(jsonPath("$[0].displayName").value("Auto Contact Corp"));
 
-    // Transition PROSPECT -> ONBOARDING
+    // Transitioning PROSPECT -> ONBOARDING must be idempotent — still exactly one contact.
     mockMvc
         .perform(
             post("/api/customers/" + customerId + "/transition")
@@ -104,15 +108,13 @@ class PortalContactAutoCreationTest {
                     """))
         .andExpect(status().isOk());
 
-    // Verify portal contact was auto-created
     mockMvc
         .perform(
             get("/api/customers/" + customerId + "/portal-contacts")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.length()").value(1))
-        .andExpect(jsonPath("$[0].email").value(email))
-        .andExpect(jsonPath("$[0].displayName").value("Auto Contact Corp"));
+        .andExpect(jsonPath("$[0].email").value(email));
   }
 
   @Test
@@ -122,19 +124,7 @@ class PortalContactAutoCreationTest {
         TestEntityHelper.createCustomer(
             mockMvc, TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner"), "No Dup Corp", email);
 
-    // Transition to ONBOARDING — creates the portal contact
-    mockMvc
-        .perform(
-            post("/api/customers/" + customerId + "/transition")
-                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner"))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    """
-                    {"targetStatus": "ONBOARDING"}
-                    """))
-        .andExpect(status().isOk());
-
-    // Confirm one portal contact exists
+    // Confirm one portal contact auto-created on customer create (GAP-L-34).
     var result =
         mockMvc
             .perform(
@@ -147,9 +137,18 @@ class PortalContactAutoCreationTest {
     String firstContactId = JsonPath.read(result.getResponse().getContentAsString(), "$[0].id");
     assertThat(firstContactId).isNotNull();
 
-    // The auto-creation check uses existsByEmailAndCustomerId, so even if
-    // the transition logic were called again, no duplicate would be created.
-    // We verify by checking that still only 1 contact exists.
+    // Transition to ONBOARDING must remain idempotent — no duplicate contact.
+    mockMvc
+        .perform(
+            post("/api/customers/" + customerId + "/transition")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"targetStatus": "ONBOARDING"}
+                    """))
+        .andExpect(status().isOk());
+
     mockMvc
         .perform(
             get("/api/customers/" + customerId + "/portal-contacts")
@@ -169,7 +168,9 @@ class PortalContactAutoCreationTest {
   }
 
   @Test
-  void shouldReturnEmptyListForCustomerWithNoContacts() throws Exception {
+  void shouldReturnContactListForNewCustomer() throws Exception {
+    // GAP-L-34: customers created via POST /api/customers (with email) now have a portal
+    // contact auto-provisioned immediately. Previously this test asserted empty list.
     String customerId =
         TestEntityHelper.createCustomer(
             mockMvc,
@@ -183,7 +184,7 @@ class PortalContactAutoCreationTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
-        .andExpect(jsonPath("$.length()").value(0));
+        .andExpect(jsonPath("$.length()").value(1));
   }
 
   // --- Helpers ---

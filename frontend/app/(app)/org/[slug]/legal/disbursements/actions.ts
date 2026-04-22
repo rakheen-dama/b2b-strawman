@@ -264,9 +264,10 @@ export async function fetchUnbilledDisbursementsAction(
 }
 
 export async function fetchProjects(): Promise<{ id: string; name: string }[]> {
-  const result =
-    await api.get<PaginatedResponse<{ id: string; name: string }>>("/api/projects?size=200");
-  return result.content;
+  const result = await api.get<
+    { id: string; name: string }[] | PaginatedResponse<{ id: string; name: string }>
+  >("/api/projects?size=200");
+  return Array.isArray(result) ? result : (result.content ?? []);
 }
 
 export async function fetchCustomers(): Promise<{ id: string; name: string }[]> {

@@ -26,9 +26,17 @@ export default function RequestsPage() {
 
   useEffect(() => {
     let cancelled = false;
-    portalGet<PortalRequest[]>("/portal/requests")
+    portalGet<PortalRequest[] | { content?: PortalRequest[] }>(
+      "/portal/requests",
+    )
       .then((data) => {
-        if (!cancelled) setRequests(Array.isArray(data) ? data : []);
+        if (cancelled) return;
+        const items = Array.isArray(data)
+          ? data
+          : Array.isArray((data as { content?: PortalRequest[] })?.content)
+            ? (data as { content: PortalRequest[] }).content
+            : [];
+        setRequests(items);
       })
       .catch((err) => {
         if (!cancelled)

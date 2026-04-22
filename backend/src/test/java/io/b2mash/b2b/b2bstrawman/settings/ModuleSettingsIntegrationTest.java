@@ -76,19 +76,25 @@ class ModuleSettingsIntegrationTest {
   // --- Task 470.13 case 1 ---
   @Test
   @Order(1)
-  void getModules_returnsThreeHorizontalModulesAllDisabledByDefault() throws Exception {
+  void getModules_returnsFourHorizontalModulesAllDisabledByDefault() throws Exception {
     mockMvc
         .perform(
             get("/api/settings/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_msi_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.modules.length()").value(3))
+        .andExpect(jsonPath("$.modules.length()").value(4))
         .andExpect(
             jsonPath(
                 "$.modules[*].id",
-                containsInAnyOrder("resource_planning", "bulk_billing", "automation_builder")))
+                containsInAnyOrder(
+                    "resource_planning",
+                    "bulk_billing",
+                    "automation_builder",
+                    "information_requests")))
         .andExpect(jsonPath("$.modules[?(@.id == 'resource_planning')].enabled", hasItem(false)))
         .andExpect(jsonPath("$.modules[?(@.id == 'bulk_billing')].enabled", hasItem(false)))
-        .andExpect(jsonPath("$.modules[?(@.id == 'automation_builder')].enabled", hasItem(false)));
+        .andExpect(jsonPath("$.modules[?(@.id == 'automation_builder')].enabled", hasItem(false)))
+        .andExpect(
+            jsonPath("$.modules[?(@.id == 'information_requests')].enabled", hasItem(false)));
   }
 
   // --- Task 470.13 case 2 ---

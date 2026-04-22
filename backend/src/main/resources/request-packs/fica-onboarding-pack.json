@@ -1,0 +1,33 @@
+{
+  "packId": "fica-onboarding-pack",
+  "version": 1,
+  "verticalProfile": "legal-za",
+  "name": "FICA Onboarding Pack",
+  "description": "FICA (Financial Intelligence Centre Act) onboarding pack for a new individual client of a South African law firm. Captures the three core FICA documents required to open a matter: certified ID copy, recent proof of residential address, and recent bank statement evidencing source of funds.",
+  "items": [
+    {
+      "name": "ID copy",
+      "description": "Certified copy of the client's South African ID document or passport bio page. Must be certified by a Commissioner of Oaths, SAPS, or other accepted certifier within the last 3 months.",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF, JPG, PNG",
+      "sortOrder": 1
+    },
+    {
+      "name": "Proof of residence (≤ 3 months)",
+      "description": "Recent utility bill, municipal rates account, bank statement, or similar document confirming the client's residential address. Document date must be within the last 3 months.",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF, JPG, PNG",
+      "sortOrder": 2
+    },
+    {
+      "name": "Bank statement (≤ 3 months)",
+      "description": "Most recent bank statement evidencing the client's source of funds. Statement must be dated within the last 3 months and show the client's name, account number, and at least one transaction.",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF",
+      "sortOrder": 3
+    }
+  ]
+}

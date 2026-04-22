@@ -96,9 +96,7 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
   });
 
   // ── 14.4: Verify 10 conveyancing custom fields present ────────────
-  test("Alice: Verify 10 conveyancing custom fields present on matter detail", async ({
-    page,
-  }) => {
+  test("Alice: Verify 10 conveyancing custom fields present on matter detail", async ({ page }) => {
     await loginAs(page, "alice");
     await page.goto(`${BASE}/projects`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
@@ -113,7 +111,10 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     await page.waitForTimeout(1500);
     await page.waitForLoadState("networkidle");
 
-    const mainContent = await page.locator("main").textContent().catch(() => "");
+    const mainContent = await page
+      .locator("main")
+      .textContent()
+      .catch(() => "");
     const fieldMatchCount = CONVEYANCING_FIELDS.filter((slug) => {
       const humanized = slug.replace(/_/g, "[\\s_-]");
       const regex = new RegExp(humanized, "i");
@@ -152,9 +153,7 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     }
 
     // Fill property address
-    const propAddr = page
-      .getByRole("textbox", { name: /property[_\s]*address/i })
-      .first();
+    const propAddr = page.getByRole("textbox", { name: /property[_\s]*address/i }).first();
     if (await propAddr.isVisible({ timeout: 2000 }).catch(() => false)) {
       await propAddr.fill("12 Rivonia Road, Sandton, 2196");
     }
@@ -187,9 +186,7 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
   });
 
   // ── 14.7-14.8: Generate Offer to Purchase document ────────────────
-  test("Alice: Generate Offer to Purchase document with conveyancing clauses", async ({
-    page,
-  }) => {
+  test("Alice: Generate Offer to Purchase document with conveyancing clauses", async ({ page }) => {
     await loginAs(page, "alice");
     await page.goto(`${BASE}/projects`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
@@ -216,12 +213,8 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     await page.waitForTimeout(500);
 
     // Select Offer to Purchase
-    const otpOption = page
-      .getByRole("option", { name: /offer\s*to\s*purchase/i })
-      .first();
-    const otpMenuItem = page
-      .getByRole("menuitem", { name: /offer\s*to\s*purchase/i })
-      .first();
+    const otpOption = page.getByRole("option", { name: /offer\s*to\s*purchase/i }).first();
+    const otpMenuItem = page.getByRole("menuitem", { name: /offer\s*to\s*purchase/i }).first();
     if (await otpOption.isVisible({ timeout: 2000 }).catch(() => false)) {
       await otpOption.click();
     } else if (await otpMenuItem.isVisible({ timeout: 2000 }).catch(() => false)) {
@@ -244,10 +237,11 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
 
     // Verify preview renders with clause content (soft check for common
     // conveyancing clause keywords)
-    const mainText = await page.locator("main").textContent().catch(() => "");
-    expect
-      .soft((mainText || "").match(/purchase\s+price|transfer|deeds|warrant/i))
-      .toBeTruthy();
+    const mainText = await page
+      .locator("main")
+      .textContent()
+      .catch(() => "");
+    expect.soft((mainText || "").match(/purchase\s+price|transfer|deeds|warrant/i)).toBeTruthy();
 
     await page.waitForLoadState("networkidle");
     await captureScreenshot(page, "day-14-otp-document-generated");

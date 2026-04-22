@@ -6,13 +6,16 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.icegreen.greenmail.util.GreenMail;
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.GreenMailTestSupport;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import jakarta.mail.internet.MimeMessage;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -39,6 +42,9 @@ import org.springframework.test.web.servlet.MockMvc;
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class InformationRequestNotificationAuditIntegrationTest {
   private static final String ORG_ID = "org_inforeq_notif_test";
+
+  // JVM-singleton GreenMail on port 13025 (see GreenMailTestSupport + application-test.yml).
+  private static final GreenMail greenMail = GreenMailTestSupport.getInstance();
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -131,6 +137,11 @@ class InformationRequestNotificationAuditIntegrationTest {
   @Test
   @Order(3)
   void auditEventCreatedOnSend() throws Exception {
+    // GAP-L-42: clear inbox first so we can verify the magic-link deep-link email
+    // was delivered with the correct portal URL shape.
+    greenMail.purgeEmailFromAllMailboxes();
+    long tokensBefore = countMagicLinkTokens();
+
     mockMvc
         .perform(
             post("/api/information-requests/%s/send".formatted(requestId))
@@ -142,6 +153,56 @@ class InformationRequestNotificationAuditIntegrationTest {
     var event = auditEvents.getLast();
     assertThat(event.entityId()).isEqualTo(UUID.fromString(requestId));
     assertThat(event.details()).containsKey("project_id");
+
+    // GAP-L-42: a magic-link token must be minted during the send path so the
+    // portal deep-link in the email authenticates the client on click.
+    long tokensAfter = countMagicLinkTokens();
+    assertThat(tokensAfter - tokensBefore).isGreaterThanOrEqualTo(1);
+
+    // Email body must point at the portal host with a token query param
+    // (was previously http://localhost:3000/portal with no token — useless to clients).
+    boolean found = false;
+    greenMail.waitForIncomingEmail(5_000, 1);
+    for (MimeMessage msg : greenMail.getReceivedMessages()) {
+      String body = getTextBody(msg);
+      if (body != null
+          && body.contains("/auth/exchange?token=")
+          && body.contains("orgId=" + ORG_ID)) {
+        found = true;
+        break;
+      }
+    }
+    assertThat(found)
+        .as("info-request email body should contain portal /auth/exchange URL with token + orgId")
+        .isTrue();
+  }
+
+  private long countMagicLinkTokens() {
+    Long count =
+        jdbcTemplate.queryForObject(
+            "SELECT count(*) FROM \"%s\".magic_link_tokens".formatted(schema), Long.class);
+    return count == null ? 0L : count;
+  }
+
+  private String getTextBody(MimeMessage msg) {
+    try {
+      var sb = new StringBuilder();
+      appendContent(msg.getContent(), sb);
+      return sb.toString();
+    } catch (Exception ignored) {
+      // best-effort
+    }
+    return null;
+  }
+
+  private void appendContent(Object content, StringBuilder sb) throws Exception {
+    if (content instanceof String s) {
+      sb.append(s);
+    } else if (content instanceof jakarta.mail.Multipart multipart) {
+      for (int i = 0; i < multipart.getCount(); i++) {
+        appendContent(multipart.getBodyPart(i).getContent(), sb);
+      }
+    }
   }
 
   @Test

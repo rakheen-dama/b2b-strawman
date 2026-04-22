@@ -24,10 +24,7 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { ModuleGate } from "@/components/module-gate";
-import {
-  reopenMatterSchema,
-  type ReopenMatterFormData,
-} from "@/lib/schemas/matter-reopen";
+import { reopenMatterSchema, type ReopenMatterFormData } from "@/lib/schemas/matter-reopen";
 import { reopenMatterAction } from "@/app/(app)/org/[slug]/projects/[id]/matter-reopen-actions";
 
 interface MatterReopenDialogProps {
@@ -84,11 +81,7 @@ function MatterReopenDialogInner({
     setSubmitError(null);
     setIsSubmitting(true);
     try {
-      const result = await reopenMatterAction(
-        slug,
-        projectId,
-        values.notes.trim()
-      );
+      const result = await reopenMatterAction(slug, projectId, values.notes.trim());
       if (result.success) {
         toast.success("Matter reopened");
         // Server action revalidates the project detail + list routes;
@@ -102,8 +95,7 @@ function MatterReopenDialogInner({
         return;
       }
       if (result.kind === "forbidden") {
-        const message =
-          result.error ?? "You do not have permission to reopen this matter.";
+        const message = result.error ?? "You do not have permission to reopen this matter.";
         toast.error(message);
         setSubmitError(message);
         return;
@@ -132,18 +124,13 @@ function MatterReopenDialogInner({
           <DialogTitle>Reopen matter</DialogTitle>
           <DialogDescription>
             Reopen{" "}
-            <span className="font-medium text-slate-900 dark:text-slate-100">
-              {projectName}
-            </span>
-            . Provide a brief note explaining why this matter is being reopened.
+            <span className="font-medium text-slate-900 dark:text-slate-100">{projectName}</span>.
+            Provide a brief note explaining why this matter is being reopened.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="notes"
@@ -151,9 +138,7 @@ function MatterReopenDialogInner({
                 <FormItem>
                   <FormLabel>
                     Reopen notes{" "}
-                    <span className="text-xs font-normal text-slate-500">
-                      (≥ 10 characters)
-                    </span>
+                    <span className="text-xs font-normal text-slate-500">(≥ 10 characters)</span>
                   </FormLabel>
                   <FormControl>
                     <Textarea
@@ -188,11 +173,7 @@ function MatterReopenDialogInner({
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                data-testid="matter-reopen-confirm-btn"
-              >
+              <Button type="submit" disabled={isSubmitting} data-testid="matter-reopen-confirm-btn">
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-1.5 size-4 animate-spin" />

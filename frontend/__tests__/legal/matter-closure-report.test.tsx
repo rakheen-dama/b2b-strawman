@@ -43,12 +43,8 @@ describe("MatterClosureReport", () => {
         projectId="p1"
       />
     );
-    expect(
-      screen.getByTestId("matter-closure-gate-row-TRUST_BALANCE_ZERO")
-    ).toBeInTheDocument();
-    expect(
-      screen.getByTestId("matter-closure-gate-pass-TRUST_BALANCE_ZERO")
-    ).toBeInTheDocument();
+    expect(screen.getByTestId("matter-closure-gate-row-TRUST_BALANCE_ZERO")).toBeInTheDocument();
+    expect(screen.getByTestId("matter-closure-gate-pass-TRUST_BALANCE_ZERO")).toBeInTheDocument();
     expect(
       screen.queryByTestId("matter-closure-gate-fix-TRUST_BALANCE_ZERO")
     ).not.toBeInTheDocument();
@@ -68,21 +64,14 @@ describe("MatterClosureReport", () => {
         projectId="p1"
       />
     );
-    const row = screen.getByTestId(
-      "matter-closure-gate-row-ALL_DISBURSEMENTS_APPROVED"
-    );
+    const row = screen.getByTestId("matter-closure-gate-row-ALL_DISBURSEMENTS_APPROVED");
     expect(row).toBeInTheDocument();
     expect(row).toHaveAttribute("data-passed", "false");
     expect(
       screen.getByTestId("matter-closure-gate-fail-ALL_DISBURSEMENTS_APPROVED")
     ).toBeInTheDocument();
-    const fixLink = screen.getByTestId(
-      "matter-closure-gate-fix-ALL_DISBURSEMENTS_APPROVED"
-    );
-    expect(fixLink).toHaveAttribute(
-      "href",
-      "/org/acme/projects/p1?tab=disbursements"
-    );
+    const fixLink = screen.getByTestId("matter-closure-gate-fix-ALL_DISBURSEMENTS_APPROVED");
+    expect(fixLink).toHaveAttribute("href", "/org/acme/projects/p1?tab=disbursements");
   });
 
   it("routes known gate codes to the correct deep link", () => {
@@ -113,18 +102,22 @@ describe("MatterClosureReport", () => {
         projectId="p1"
       />
     );
-    expect(
-      screen.getByTestId("matter-closure-gate-fix-TRUST_BALANCE_ZERO")
-    ).toHaveAttribute("href", "/org/acme/projects/p1?tab=trust");
-    expect(
-      screen.getByTestId("matter-closure-gate-fix-FINAL_BILL_ISSUED")
-    ).toHaveAttribute("href", "/org/acme/invoices?projectId=p1");
-    expect(
-      screen.getByTestId("matter-closure-gate-fix-NO_OPEN_COURT_DATES")
-    ).toHaveAttribute("href", "/org/acme/court-calendar?projectId=p1");
-    expect(
-      screen.getByTestId("matter-closure-gate-fix-ALL_TASKS_RESOLVED")
-    ).toHaveAttribute("href", "/org/acme/projects/p1?tab=tasks");
+    expect(screen.getByTestId("matter-closure-gate-fix-TRUST_BALANCE_ZERO")).toHaveAttribute(
+      "href",
+      "/org/acme/projects/p1?tab=trust"
+    );
+    expect(screen.getByTestId("matter-closure-gate-fix-FINAL_BILL_ISSUED")).toHaveAttribute(
+      "href",
+      "/org/acme/invoices?projectId=p1"
+    );
+    expect(screen.getByTestId("matter-closure-gate-fix-NO_OPEN_COURT_DATES")).toHaveAttribute(
+      "href",
+      "/org/acme/court-calendar?projectId=p1"
+    );
+    expect(screen.getByTestId("matter-closure-gate-fix-ALL_TASKS_RESOLVED")).toHaveAttribute(
+      "href",
+      "/org/acme/projects/p1?tab=tasks"
+    );
   });
 
   it("renders message text verbatim from the backend", () => {
@@ -141,9 +134,7 @@ describe("MatterClosureReport", () => {
         projectId="p1"
       />
     );
-    expect(
-      screen.getByText("Matter trust balance is R4,200.00.")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Matter trust balance is R4,200.00.")).toBeInTheDocument();
   });
 
   it("renders an empty-state message when no gates are provided", () => {

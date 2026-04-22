@@ -26,8 +26,7 @@ export async function reopenMatterAction(
   notes: string
 ): Promise<ReopenMatterActionResult> {
   const caps = await fetchMyCapabilities();
-  const canReopen =
-    caps.isOwner || caps.isAdmin || caps.capabilities.includes("CLOSE_MATTER");
+  const canReopen = caps.isOwner || caps.isAdmin || caps.capabilities.includes("CLOSE_MATTER");
   if (!canReopen) {
     return {
       success: false,

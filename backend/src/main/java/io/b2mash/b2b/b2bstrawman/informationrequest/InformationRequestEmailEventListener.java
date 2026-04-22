@@ -5,12 +5,16 @@ import io.b2mash.b2b.b2bstrawman.event.InformationRequestSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.RequestItemAcceptedEvent;
 import io.b2mash.b2b.b2bstrawman.event.RequestItemRejectedEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.portal.MagicLinkService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Component
 public class InformationRequestEmailEventListener {
@@ -22,16 +26,28 @@ public class InformationRequestEmailEventListener {
   private final InformationRequestRepository requestRepository;
   private final RequestItemRepository itemRepository;
   private final PortalContactRepository portalContactRepository;
+  private final MagicLinkService magicLinkService;
+  private final TransactionTemplate requiresNewTxTemplate;
 
   public InformationRequestEmailEventListener(
       InformationRequestEmailService emailService,
       InformationRequestRepository requestRepository,
       RequestItemRepository itemRepository,
-      PortalContactRepository portalContactRepository) {
+      PortalContactRepository portalContactRepository,
+      MagicLinkService magicLinkService,
+      PlatformTransactionManager transactionManager) {
     this.emailService = emailService;
     this.requestRepository = requestRepository;
     this.itemRepository = itemRepository;
     this.portalContactRepository = portalContactRepository;
+    this.magicLinkService = magicLinkService;
+    // AFTER_COMMIT listeners fire while the prior transaction's synchronization is still
+    // active. A nested TransactionTemplate with default REQUIRED propagation would attempt
+    // to join that sync instead of committing independently, silently losing writes. Force
+    // a fresh tx so magic-link persistence commits to the tenant schema.
+    this.requiresNewTxTemplate = new TransactionTemplate(transactionManager);
+    this.requiresNewTxTemplate.setPropagationBehavior(
+        TransactionDefinition.PROPAGATION_REQUIRES_NEW);
   }
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
@@ -52,12 +68,32 @@ public class InformationRequestEmailEventListener {
               return;
             }
             var items = itemRepository.findByRequestId(request.getId());
+
+            // Mint a magic-link token so the email CTA deep-links into the portal
+            // authenticated flow. Use generateTokenOnly so we do NOT trigger a second,
+            // standalone portal-magic-link email alongside the request-sent email.
+            String rawToken;
+            try {
+              rawToken =
+                  requiresNewTxTemplate.execute(
+                      status -> magicLinkService.generateTokenOnly(event.portalContactId(), null));
+            } catch (Exception e) {
+              log.warn(
+                  "Failed to mint magic-link token for request {}; "
+                      + "sending request-sent email without deep link",
+                  event.requestId(),
+                  e);
+              rawToken = null;
+            }
+
             emailService.sendRequestSentEmail(
                 contact.getEmail(),
                 contact.getDisplayName(),
                 request.getRequestNumber(),
                 items.size(),
-                request.getId());
+                request.getId(),
+                rawToken,
+                contact.getOrgId());
           } catch (Exception e) {
             log.error("Failed to send request-sent email for request={}", event.requestId(), e);
           }
@@ -174,6 +210,7 @@ public class InformationRequestEmailEventListener {
       }
       carrier.run(action);
     } else {
+      log.warn("Information-request event missing tenantId; running without tenant scope");
       action.run();
     }
   }

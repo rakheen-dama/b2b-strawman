@@ -1,0 +1,206 @@
+# Day 4 — Sipho first portal login, upload FICA documents  `[PORTAL]`
+Cycle: 1 | Date: 2026-04-21 | Auth: Magic-link (portal JWT) | Portal: :3002 | Actor: Sipho Dlamini
+
+Scenario: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md` → Day 4 (checkpoints 4.1–4.14).
+
+**Result summary (Day 4): 8/14 checkpoints executed — 2 PASS (4.3/4.6 via workaround), 3 FAIL (4.2/4.4/4.5 link-target + pending-card missing), 1 BLOCKER at 4.8 (GAP-P-02 — portal has no UI route to view/respond to information requests), 6 BLOCKED (4.8–4.14).** First BLOCKER reached at **4.2** (email link does not point to portal); forced workaround via DevPortalController token → `/auth/exchange` succeeded, but portal has **no UI at all** for viewing / uploading info-request items, blocking 4.8 onwards.
+
+New gaps: **GAP-L-42** (HIGH/BLOCKER, backend — info-request email link target, reported in Day 3 resume), **GAP-P-01** (HIGH, frontend — portal home `InfoRequestsCard` calls `/portal/information-requests` (404) instead of backend's actual `/portal/requests` (200); dead UI), **GAP-P-02** (HIGH/BLOCKER, portal — no UI route for information-request pickup / upload; `/requests` → 404, project detail page shows "The requested resource was not found"), **GAP-P-03** (MED, portal — Matters list shows "No projects yet" even though the Sipho-linked matter `40881f2f-…` exists firm-side in ACTIVE status; portal project scope / filter issue).
+
+## Session prep
+
+Fresh browser context. No firm login carryover. Portal health pre-check: `curl http://localhost:3002/ → 307` (redirects to /home then /login when unauthenticated — expected). Started from Mailpit inbox at `http://localhost:8025`.
+
+Carry-forward watch list items checked this turn:
+- **PORTAL_ORG_SLUG override**: portal uses `mathebula-partners` via `orgId` query param on `/auth/exchange` — no env override needed (confirmed by successful token exchange), unlike the prior `e2e-test-org` default. **Not a gap.**
+- **Portal magic-link email subject stability**: subject = `"Information request REQ-0001 from Mathebula & Partners"` — word "request" present but NONE of scenario's asserted keywords ("sign in", "action required", "your portal"). Copy drift — low severity, logged as GAP-L-42 sub-note.
+- **Portal currency rendering**: not exercised this turn (no invoice / trust pages reached before BLOCKER).
+
+## Phase A: Magic-link landing
+
+### Checkpoint 4.1 — Locate FICA info-request email in Mailpit
+- Result: **PASS**
+- Evidence:
+  - Mailpit API: `GET /api/v1/messages?limit=20` → 7 messages total. Newest matching message id `kunWvRjbgFwpWHzveAQqrA`, Created `2026-04-21T20:15:43`, From `noreply@docteams.app`, To `sipho.portal@example.com`, Subject `"Information request REQ-0001 from Mathebula & Partners"`.
+  - Subject references REQ-0001 (scenario-addressable) but does not match the scenario's asserted keyword set ("sign in" / "action required" / "your portal"). Noted under GAP-L-42.
+
+### Checkpoint 4.2 — Click the magic-link → browser navigates to portal `/accept/[token]`
+- Result: **FAIL (BLOCKER-class per GAP-L-42, carry-through workaround applied)**
+- Evidence:
+  - Email HTML body contains exactly ONE href: `http://localhost:3000/portal` (firm port 3000, no token, literal path fragment). Plain-text body shows `View Request (http://localhost:3000/portal)`. No token, no portal host.
+  - DB probe: `SELECT id, portal_contact_id, created_at FROM tenant_5039f2d497cf.magic_link_tokens ORDER BY created_at DESC;` → 2 rows, both created by DevPortalController at 20:12 during portal-contact backfill; zero tokens created by the 20:15 info-request send. Confirms the send path does not mint a magic-link token.
+  - Clicking the email's `http://localhost:3000/portal` link lands on the **firm** frontend (not the portal on :3002), which is a KC-protected route → redirects to login — not a useful destination for a client.
+  - **Workaround applied for QA continuity**: used the token minted by DevPortalController (`<redacted-token>`, expires 20:27 UTC) → navigated to `http://localhost:3002/auth/exchange?token=<redacted>&orgId=mathebula-partners`.
+  - Logged **GAP-L-42** (HIGH/BLOCKER) in Day 3 resume block.
+
+### Checkpoint 4.3 — Portal exchanges token → redirects to `/home`
+- Result: **PASS (via workaround)**
+- Evidence:
+  - `GET /auth/exchange?token=…&orgId=mathebula-partners` → client-side POST `/portal/auth/exchange` → portal stored `portal_jwt` + `portal_customer` in `localStorage` → redirected to `/projects` (not `/home` — minor scenario drift, but both are valid authenticated routes).
+  - `localStorage.getItem('portal_jwt')` returns a JWT (confirmed via `page.evaluate`). `localStorage.getItem('portal_customer')` returns `{id,name,email,orgId}`.
+  - `GET http://localhost:8080/portal/requests` with `Authorization: Bearer {portal_jwt}` → **200** returning the FICA REQ-0001 payload. Backend auth OK.
+
+### Checkpoint 4.4 — `/home` renders pending info request section with "FICA Onboarding Pack"
+- Result: **FAIL (GAP-P-01)**
+- Evidence:
+  - Navigated to `/home` → sidebar renders (Home/Matters/Trust/Deadlines/Invoices/Proposals/Documents), main area shows three cards: "Upcoming deadlines 0 Next 14 days", "Recent invoices (No invoices yet)", "Last trust movement (No recent activity)". **No "Pending info requests" card** — even though REQ-0001 was dispatched minutes earlier.
+  - Browser console fetch probe: `fetch('http://localhost:8080/portal/information-requests?status=PENDING', ...)` → **404** `"No static resource portal/information-requests"`. Backend endpoint does not exist under that path.
+  - Control probe: `fetch('http://localhost:8080/portal/requests', ...)` → **200** returning REQ-0001.
+  - **Root cause**: `portal/app/(authenticated)/home/page.tsx` line 62 calls `portalGet<InfoRequestSummary[]>("/portal/information-requests?status=PENDING")` but backend exposes the feature under `/portal/requests`. Path mismatch — frontend card queries a dead endpoint, silently catches the 404, and renders nothing. The module-gate `modules.includes("information_requests")` also likely evaluates false because `/api/portal-context` returns 404 in dev (no portal_context backend resource registered).
+  - Logged **GAP-P-01** (HIGH, portal frontend — `InfoRequestsCard` queries wrong path; add to the request list once path is fixed).
+
+### Checkpoint 4.5 — Header / sidebar shows Mathebula firm branding
+- Result: **PARTIAL**
+- Evidence:
+  - Portal header renders `<img alt="Mathebula & Partners logo">` (src is S3-presigned URL). Branding logo **present** — consumed correctly on portal (firm-side GAP-L-26 still open for the firm UI but portal does).
+  - Navy brand-color accent not clearly visible in sidebar / nav — sidebar is the default slate-50 / dark text scheme. Partial consumption of `brand_color`.
+  - User chip top-right: "Sipho Dlamini" (correct).
+  - Not re-logged as a new gap — folds into watch-list observation that brand-color consumption is incomplete across UI chrome.
+
+### Checkpoint 4.6 — User identity displayed as "Sipho Dlamini"
+- Result: **PASS**
+- Evidence: Portal header button "User menu" → "Sipho Dlamini", matches `customers.name` on firm-side.
+
+## Phase B: Upload FICA documents
+
+### Checkpoint 4.8 — Click into "FICA Onboarding Pack" → info-request detail renders
+- Result: **BLOCKED (GAP-P-02)**
+- Evidence:
+  - No visible entry point on portal `/home` or portal sidebar for information requests. Sidebar items: Home, Matters, Trust, Deadlines, Invoices, Proposals, Documents — **no Requests / Information Requests**.
+  - Direct URL probes:
+    - `http://localhost:3002/requests` → **404** "Page not found"
+    - `http://localhost:3002/information-requests` → **404**
+    - `http://localhost:3002/projects/40881f2f-7cfc-45d9-8619-de18fd2d75bb` → renders "The requested resource was not found. This project may have been removed, you may not have access, or the request failed. Please try again." (despite REQ-0001 being active on that project and the matter being ACTIVE firm-side). Screenshot: `qa_cycle/checkpoint-results/day-04-4.4-portal-no-requests-ui.png`.
+    - `http://localhost:3002/projects` → renders "Your Projects / No projects yet / Your Mathebula & Partners team will share projects with you here."
+  - Backend has the feature: `GET /portal/requests` → 200 with REQ-0001; `GET /portal/requests/06dc1a7e-…` → 200 with full 3-item FICA payload including `name`, `description`, `responseType=FILE_UPLOAD`, `fileTypeHints=PDF, JPG, PNG`, `status=PENDING`. **The backend is ready; the portal UI simply doesn't have the pages.**
+  - Logged **GAP-P-02** (HIGH/BLOCKER, portal — no UI route for info-request pickup / upload) + **GAP-P-03** (MED, portal — Matters scope filter doesn't surface a matter that has an active request addressed to Sipho).
+  - **Halting Day 4 per BLOCKER rule.** Checkpoints 4.8–4.14 cannot proceed without the portal UI.
+
+### Checkpoints 4.8–4.14 — BLOCKED
+- 4.8 Click into FICA pack → detail renders — **BLOCKED** (GAP-P-02: no portal UI)
+- 4.9 Verify three upload slots — **BLOCKED** (cascade of 4.8)
+- 4.10 Upload three test PDFs — **BLOCKED** (cascade)
+- 4.11 Optional note — **BLOCKED** (cascade)
+- 4.12 Submit → state Submitted — **BLOCKED** (cascade)
+- 4.13 `/home` pending card updates — **BLOCKED** (GAP-P-01: dead home card + GAP-P-02 cascade)
+- 4.14 Optional screenshot — **BLOCKED** (cascade)
+
+## Day 4 checkpoints (final rollup)
+
+- Magic-link login succeeded — no Keycloak form appeared at any step: **PASS with workaround** (via DevPortal token, not via the actual info-request email; GAP-L-42 blocks the intended path).
+- Uploads stored (firm side will verify on Day 5): **FAIL** — cannot upload (GAP-P-02).
+- Info-request state machine progressed: Sent → Submitted: **FAIL** — no state change possible (GAP-P-02).
+- No firm-side terminology leaks on portal: **N/A** — didn't reach the detail screens.
+
+## New gaps
+
+| GAP-ID | Severity | Summary |
+|---|---|---|
+| GAP-L-42 | **HIGH / BLOCKER** | (also logged in Day 3 resume) Information-request email "View Request" link points to `http://localhost:3000/portal` (firm host, no token, literal path) — no `magic_link_tokens` row minted by the send path. Owner: backend. |
+| GAP-P-01 | HIGH | Portal home `InfoRequestsCard` queries `/portal/information-requests?status=PENDING` which returns 404 — backend exposes the feature under `/portal/requests` (returns 200). Frontend/backend path mismatch. Fix: update `portal/app/(authenticated)/home/page.tsx` line 62 to use the correct path, and register `/api/portal-context` for module-gating to work. Effect: home card silently renders nothing, client has no affordance to discover the FICA request. Owner: portal (frontend). |
+| GAP-P-02 | **HIGH / BLOCKER** | Portal has **no UI route** for information-request pickup / upload. `/requests`, `/information-requests` both 404. Backend `/portal/requests/{id}` returns full FICA payload (3 items, FILE_UPLOAD type, PDF/JPG/PNG hints, all PENDING) but there is no client-facing page to render it, let alone trigger uploads. Day 4 Phase B is fundamentally un-executable. Scenario Days 4/8/11/30/46/61/75 all implicitly assume this UI exists. Owner: portal — needs `/requests` list page + `/requests/[id]` detail page with per-item presigned-upload flow (`POST /portal/requests/{id}/items/{itemId}/upload-init` or similar) calling backend's existing upload endpoints. Blocks entire portal POV across the 90-day script. |
+| GAP-P-03 | MED | Portal Matters tab renders "No projects yet" and direct-URL access to `/projects/40881f2f-…` says "The requested resource was not found", despite the customer being linked to that matter firm-side (customer.id on project row, matter ACTIVE, member count 1). Either the portal project scope filter is over-restrictive (e.g., only ACTIVE customer lifecycle) or an authorization check is rejecting the portal contact as a non-member. Owner: backend portal service + portal frontend fallback copy. Severity MED — a visible matter list would be nice but isn't strictly required to respond to the FICA request (if the portal had a Requests UI, it could link direct). |
+
+## Halt reason
+
+Day 4 halted at **Checkpoint 4.8** on BLOCKER rule — **GAP-P-02** (no portal UI for information requests). GAP-L-42 would normally halt us at 4.2 (email link wrong), but a workaround was available via DevPortalController; no equivalent workaround exists for the missing portal UI. Day 5 depends on Day 4 Phase B uploads landing; cannot start Day 5 without a portal-side submission path.
+
+## QA Position on exit
+
+`Day 4 — 4.8 (blocked pending GAP-P-02, cascades from GAP-P-01 + GAP-L-42)`.
+
+Next-turn recommendation: **Dev fix** the portal UI gap. Minimum viable fix for the 90-day lifecycle to proceed:
+1. **GAP-P-02** (portal UI) — author `portal/app/(authenticated)/requests/page.tsx` listing pending requests from `GET /portal/requests` + `portal/app/(authenticated)/requests/[id]/page.tsx` showing request items with per-item FILE_UPLOAD slots calling the existing `upload-init` → S3 PUT → `confirm` pattern. Add `Requests` entry to `portal/lib/nav-items.ts`.
+2. **GAP-P-01** (home card) — fix the path in `portal/app/(authenticated)/home/page.tsx` line 62 from `/portal/information-requests?status=PENDING` to `/portal/requests?status=SENT` (backend's actual path + terminology). Also register or stub `/api/portal-context` so the `modules.includes("information_requests")` gate evaluates correctly (or remove the gate if modules are a future concept).
+3. **GAP-L-42** (email link) — update info-request send path to `MagicLinkService.generateToken(portalContactId, ...)` and render link as `{portal.base-url}/auth/exchange?token={raw}&orgId={externalOrgId}`.
+
+Lowest priority: GAP-P-03 (Matters list empty) is an ancillary fix — not on the Day 4–5 critical path once GAP-P-02 lands.
+
+Deferred: all Day 3 deferred gaps (L-35/L-36/L-37/L-38/L-39/L-41) remain deferred.
+
+---
+
+## Day 4 RESUME (Cycle 1, turn 2) — 2026-04-22 00:00 SAST
+
+After P-01 / P-02 / L-42 merged and backend + portal restarted, re-ran Day 4 from 4.1 onwards with a fresh REQ-0002 to Sipho.
+
+**Resume summary: 11/14 checkpoints executed — 8 PASS, 2 PARTIAL, 1 NEW BLOCKER at 4.13 → halted.** GAP-L-42 VERIFIED end-to-end. GAP-P-02 VERIFIED (stub scope). GAP-P-01 PARTIALLY VERIFIED (/home still doesn't render the card — see below).
+
+### Re-verification flow executed
+Bob logged into firm side, opened RAF-2026-001 matter → Requests tab → **New Request** → Template=FICA Onboarding Pack → Sipho auto-populated → **Send Now**.
+
+- DB: `tenant_5039f2d497cf.information_requests` row `2a59d337-838f-4160-9d51-ba7ffc857c29` (REQ-0002), status=SENT, sent_at 21:59:00.
+- DB: `magic_link_tokens` new row `7df57cdf-986c-467b-92b0-70734b89087e`, portal_contact_id=Sipho, created_at 21:59:00.161 (47ms after send). **L-42 listener fired!**
+- Mailpit: message `JX8VFPvXNpoeNbfhRbxGAz`, to=sipho.portal@example.com, subject="Information request REQ-0002 from Mathebula & Partners", HTML href = **`http://localhost:3002/auth/exchange?token=<redacted-token>&orgId=mathebula-partners`** (correct portal host, correct token, correct orgId).
+- Second email also received (expected side-effect per L-42 spec Option A): subject="Your portal access link from Mathebula & Partners".
+
+### Checkpoint 4.1 — Mailpit locate email: **PASS** (see above)
+### Checkpoint 4.2 — Magic-link URL correct: **PASS** — **GAP-L-42 VERIFIED**
+### Checkpoint 4.3 — Token exchange → portal: **PASS** — navigated to exchange URL, portal_jwt + portal_customer populated in localStorage (Sipho, mathebula-partners), redirected to `/projects`.
+### Checkpoint 4.4 — `/home` shows pending FICA request card: **PARTIAL / FAIL** — `/home` still shows only "Upcoming deadlines / Recent invoices / Last trust movement". No pending info requests card. Root cause: `tenant_5039f2d497cf.org_settings.enabled_modules` does NOT contain `information_requests`. P-01 JSON change merged but `PackReconciliationRunner` does not reconcile `enabled_modules` from `vertical-profiles/*.json` on re-start. **Escalating GAP-P-01 to PARTIAL/REOPENED with scope narrowed**: the path fix (line 62) works; the module-reconciliation piece doesn't. New gap GAP-L-43 tracks module-reconciliation separately below.
+### Checkpoint 4.5 — Firm branding on portal header: **PASS** — Mathebula & Partners logo renders top-left on portal (S3 presigned URL).
+### Checkpoint 4.6 — Identity "Sipho Dlamini": **PASS** — User menu shows "Sipho Dlamini".
+### Checkpoint 4.8 — Click into FICA pack (detail renders): **PASS** — Navigated direct to `/requests` (sidebar nav DOES include "Matters" but NOT "Requests" — navigation gap due to same module flag). `/requests` renders list with both REQ-0002 and REQ-0001 as cards showing "SENT / 0/3 submitted". Clicked REQ-0002 → `/requests/2a59d337…` → detail page shows 3 items (ID copy / Proof of residence / Bank statement) with FILE_UPLOAD inputs + "Upload and submit" buttons. **GAP-P-02 VERIFIED (stub scope)**.
+### Checkpoint 4.9 — Three upload slots labelled: **PASS** — All three FICA items rendered with descriptions + Accepts hints.
+### Checkpoint 4.10 — Upload three PDFs: **PASS** — Per-item flow: ChooseFile → enables "Upload and submit" → click → initiates presigned URL (`POST /portal/requests/{id}/items/{itemId}/upload`) → PUT to S3 → `POST /portal/requests/{id}/items/{itemId}/submit`. All 3 items in tenant DB reached status=SUBMITTED with document_id populated. Submitted_at timestamps: 22:01:27, 22:05:06, 22:06:17.
+### Checkpoint 4.11 — Optional note: **SKIPPED** — stub UI doesn't expose note textbox (known P-05 follow-up polish).
+### Checkpoint 4.12 — Submit transitions state: **PASS** (request IN_PROGRESS) — scenario worded "transitions to Submitted"; backend's canonical transition is parent-request SENT → IN_PROGRESS once any item is SUBMITTED, then → COMPLETED when all items are ACCEPTED by firm. Tenant DB `information_requests.status=IN_PROGRESS` after the three uploads. Firm-side UI shows "REQ-0002 In Progress" with 3 Submitted items + Accept/Reject buttons.
+### Checkpoint 4.13 — /home pending card updates: **FAIL — NEW BLOCKER** — `/home` still shows no pending-requests card (see 4.4). Also, the portal read model (`portal.portal_requests` + `portal.portal_request_items`) does NOT reflect the item SUBMITTED transitions — all 3 items still `status=PENDING` in the read-model even after tenant DB shows SUBMITTED. Portal list page still reads "0/3 submitted" and detail page still reads "0/3 submitted • status SENT". **Root cause found via code read**: `PortalEventHandler.java` has listeners for `RequestItemAcceptedEvent` and `RequestItemRejectedEvent` but NO listener for `RequestItemSubmittedEvent` (event IS published by `PortalInformationRequestService:281`, just never projected to read model). Logged as **GAP-L-43** (HIGH/BLOCKER, backend — read-model sync missing for SubmittedEvent). Day 4 Phase B still effectively works end-to-end at tenant layer because firm-side reads directly from tenant schema, but portal UX is misleading.
+### Checkpoint 4.14 — Optional screenshot: PASS (see day-04-4.12-portal-3-items-uploaded.png + day-04-4.12-firm-req-0002-in-progress-3-submitted.png)
+
+### GAP-P-03 revisit
+Portal `/projects` still shows "No projects yet" even though Sipho is linked to RAF-2026-001 firm-side. P-03 remains **OPEN**.
+
+### Day 4 final rollup (after resume)
+- Magic-link login succeeded — no Keycloak form at any step: **PASS** (full end-to-end, no DevPortalController workaround used)
+- Uploads stored (firm side will verify on Day 5): **PASS** — firm-side matter Overview shows "3 documents", info-request shows all 3 Submitted with Accept/Reject
+- Info-request state machine progressed: Sent → Submitted: **PASS** at data layer; portal UI is stale (GAP-L-43)
+- No firm-side terminology leaks on portal: **PARTIAL** — minor "for unknown" leak on firm activity feed ("Bob Ndlovu accepted 'ID copy' for unknown") — carry-forward, not portal-specific
+
+### New gaps (cycle 1 resume)
+
+| GAP-ID | Severity | Summary |
+|---|---|---|
+| GAP-L-43 | **HIGH / BLOCKER** | `PortalEventHandler.java` has `@EventListener` methods for `RequestItemAcceptedEvent` (line 841) and `RequestItemRejectedEvent` (line 857) but NO listener for `RequestItemSubmittedEvent` (the event IS published by `PortalInformationRequestService:281`). Effect: tenant DB transitions `request_items.status PENDING → SUBMITTED` on customer upload, but the portal read model (`portal.portal_request_items`) is never updated, so the portal itself (list + detail + home) keeps showing "0/3 submitted" / "PENDING" even after all three items are submitted. Day 4 scenario 4.12/4.13 "state transitions to Submitted" + "home pending card updates" both fail on portal UI despite backend data being correct. Firm-side is unaffected (firm queries tenant schema directly and correctly shows "In Progress / 3 Submitted"). Fix: add `@EventListener(ApplicationEvents.class) @TransactionalEventListener onRequestItemSubmitted(RequestItemSubmittedEvent event)` mirroring the Accepted/Rejected pattern in `PortalEventHandler.java:841-867`, calling `readModelRepo.updatePortalRequestItemStatus(itemId, "SUBMITTED", null, documentId, null)` + `readModelRepo.recalculatePortalRequestCounts(requestId)`. Est S <20 min. Owner: backend. |
+| GAP-L-44 | LOW | `PackReconciliationRunner` does not reconcile `enabled_modules` from `vertical-profiles/*.json` after vertical-profile JSON changes. P-01's JSON edit (appending `"information_requests"` to legal-za.json) merged + backend restarted, but `tenant_5039f2d497cf.org_settings.enabled_modules` still reads `["court_calendar", "conflict_check", "lssa_tariff", "trust_accounting", "disbursements", "matter_closure", "deadlines"]` — missing `information_requests`. Effect: home InfoRequestsCard module-gate (`modules.includes("information_requests")`) evaluates false → card doesn't render. Sidebar "Requests" nav item is also gated and missing. Portal users have no UI-level discovery affordance for new requests; they'd need the email deep-link (which now works thanks to L-42) or to know the `/requests` URL. Workaround for QA: navigate directly to `/requests`. Proper fix: `PackReconciliationRunner` should merge `enabledModules` from the vertical profile into `org_settings.enabled_modules` on startup for each tenant, OR the gate should be removed from the home card / nav item since `/portal/requests` returns data regardless. Owner: backend (or portal-fe if removing gate). |
+| GAP-L-45 | LOW | Day 5.3 asks "download each document" from the firm-side info-request detail page — that page only exposes Accept/Reject buttons per item; no "View" / "Download" affordance. Firm user would have to go to matter Documents tab separately. Scenario wording implies inline download. Owner: frontend — add Download link next to each Submitted item in the info-request detail page when `document_id` is populated. |
+| GAP-L-46 | LOW | Day 5.5 asks "matter Overview shows FICA status = Complete (or equivalent lifecycle indicator)". Overview tab shows Healthy badge, tasks 0/9, budget/hours/revenue stats, activity feed, deadlines — no FICA / KYC / compliance indicator block. Scenario expected a status tile surfacing FICA completion. Carry-forward of GAP-L-30 (KYC adapter unconfigured) — without the KYC pack wired, the Overview won't surface FICA lifecycle. Owner: product/frontend. |
+
+### Verification outcomes for prior blockers
+
+| Blocker | Status | Evidence |
+|---|---|---|
+| **GAP-L-42** | **VERIFIED** | Email HTML `<a href="http://localhost:3002/auth/exchange?token=…&orgId=mathebula-partners">`; `magic_link_tokens` row minted 47ms after send; client token exchange succeeds without DevPortalController. |
+| **GAP-P-02** | **VERIFIED (stub scope)** | Portal `/requests` list renders REQ-0002 + REQ-0001 as cards; `/requests/{id}` detail renders 3 FICA items with functional per-item Upload+Submit flow; tenant DB confirms all 3 items transitioned PENDING → SUBMITTED with document_ids. Polish deferred to GAP-P-05. |
+| **GAP-P-01** | **PARTIALLY VERIFIED / SCOPE NARROWED** | Path fix works: `/portal/requests` returns data. But the home card is still blocked by module-gating (enabled_modules doesn't include `information_requests`). Scoped-out as **GAP-L-44**; the P-01 path code change itself is correct. |
+
+---
+
+## Day 4 RE-VERIFICATION (Cycle 1, turn 3 — GAP-L-43 fix) — 2026-04-22 00:38 SAST
+
+Backend restart per PID 12789 (post-PR #1103). New `@TransactionalEventListener onRequestItemSubmitted` method should now be registered on the Spring context. Option A executed: sent a fresh **REQ-0003** info request Bob → Sipho, uploaded all 3 items portal-side, asserted portal read-model state flips.
+
+### Re-execute 4.12–4.14 against REQ-0003
+
+- **Firm-side send** (Bob, RAF-2026-001 → Requests tab → New Request → template=FICA Onboarding Pack → Sipho → Send Now): REQ-0003 row inserted at 2026-04-22 00:35:13, status=SENT. Sent to Sipho via `PortalContactService` (carry-forward GAP-L-34 auto-contact path held).
+- **Mailpit**: `dCFdahuNmaYUU5zsoPDq8x` subject "Information request REQ-0003 from Mathebula & Partners", HTML href = `http://localhost:3002/auth/exchange?token=<redacted-token>&orgId=mathebula-partners` — **GAP-L-42 fix holds on third pass**.
+- **Portal exchange** (/auth/exchange?token=...): Sipho's portal_jwt populated, redirected to /projects. Portal `/requests` list shows new card **"REQ-0003 / SENT / 0/3 submitted"**.
+- **Checkpoint 4.12 (GAP-L-43 verify)** — Upload 3 PDFs sequentially (test-fica-id.pdf, test-fica-address.pdf, test-fica-funds.pdf):
+  - Item 1 upload → submit → portal detail page re-renders `"1/3 submitted • status SENT"` within ~2s. **L-43 listener fired ✅**.
+  - Item 2 upload → submit → `"2/3 submitted"`.
+  - Item 3 upload → submit → `"3/3 submitted"` — all items render "Submitted — status: SUBMITTED".
+  - Portal list page `/requests` now shows REQ-0003 at "3/3 submitted" (was 0/3 before listener fix for REQ-0002). **L-43 fully VERIFIED**.
+  - Screenshot: `day-04-4.12-L43-verified-3of3-submitted.png`.
+- **Checkpoint 4.13** — (firm) Bob navigated to RAF-2026-001 → Requests tab: REQ-0003 row shows "Sipho Dlamini / In Progress / 0/3 accepted / Apr 22, 2026". Matter header upgrades from "3 documents" to "6 documents". Tenant state consistent with portal read model.
+- **Checkpoint 4.14** — Screenshot captured.
+
+### REQ-0002 read-model residual (expected, not a gap)
+REQ-0002 on portal list still reads "COMPLETED / 0/3 submitted" — the read model for pre-fix submits was never projected. Firm-side query on `tenant_5039f2d497cf.request_items` for REQ-0002 still shows ACCEPTED. Acceptable: listener fires for new events only; old data would require a backfill job (not in L-43 scope).
+
+### Cosmetic observation — parent request status projection
+Portal UI for REQ-0003 parent header reads `"status SENT"` even after all 3 items submitted (tenant-side parent is IN_PROGRESS). The new listener projects item counts (submitted_items) but does not re-project parent request status. Low-severity polish — scenario 4.12 asserts item state ("Submitted"), not parent status. Logged as **GAP-L-47 (LOW, backend)**. Out of scope for L-43 re-verification.
+
+### GAP-L-43 — final status
+
+**VERIFIED** — PR #1103 fix lands; portal read model now reflects item SUBMITTED transitions end-to-end on new requests.
+

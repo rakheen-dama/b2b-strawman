@@ -23,8 +23,7 @@ export type ListStatementsResult =
   | { success: false; error: string };
 
 function detectModuleDisabled(err: ApiError): boolean {
-  const type =
-    typeof err.detail?.type === "string" ? err.detail.type : undefined;
+  const type = typeof err.detail?.type === "string" ? err.detail.type : undefined;
   return !!type && type.includes("module-not-enabled");
 }
 
@@ -48,24 +47,20 @@ export async function generateStatementAction(
     return {
       success: false,
       kind: "error",
-      error:
-        err instanceof ApiError ? err.message : "Failed to generate statement",
+      error: err instanceof ApiError ? err.message : "Failed to generate statement",
     };
   }
 }
 
 // TODO: expose pagination params (page, size) once UI needs them.
-export async function listStatementsAction(
-  projectId: string
-): Promise<ListStatementsResult> {
+export async function listStatementsAction(projectId: string): Promise<ListStatementsResult> {
   try {
     const data = await listStatements(projectId);
     return { success: true, data };
   } catch (err) {
     return {
       success: false,
-      error:
-        err instanceof ApiError ? err.message : "Failed to list statements",
+      error: err instanceof ApiError ? err.message : "Failed to list statements",
     };
   }
 }

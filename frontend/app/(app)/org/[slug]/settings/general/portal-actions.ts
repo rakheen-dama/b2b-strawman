@@ -2,12 +2,7 @@
 
 import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
-import type {
-  PortalDigestCadence,
-  PortalRetainerMemberDisplay,
-} from "@/lib/types/settings";
-
-export type { PortalDigestCadence, PortalRetainerMemberDisplay };
+import type { PortalDigestCadence, PortalRetainerMemberDisplay } from "@/lib/types/settings";
 
 export interface PortalActionResult {
   success: boolean;
@@ -19,7 +14,7 @@ export interface PortalActionResult {
  */
 export async function updatePortalDigestCadence(
   slug: string,
-  portalDigestCadence: PortalDigestCadence,
+  portalDigestCadence: PortalDigestCadence
 ): Promise<PortalActionResult> {
   try {
     await api.patch("/api/settings/portal-digest-cadence", {
@@ -47,7 +42,7 @@ export async function updatePortalDigestCadence(
  */
 export async function updatePortalRetainerMemberDisplay(
   slug: string,
-  portalRetainerMemberDisplay: PortalRetainerMemberDisplay,
+  portalRetainerMemberDisplay: PortalRetainerMemberDisplay
 ): Promise<PortalActionResult> {
   try {
     await api.patch("/api/settings/portal-retainer-member-display", {
@@ -58,8 +53,7 @@ export async function updatePortalRetainerMemberDisplay(
       if (error.status === 403) {
         return {
           success: false,
-          error:
-            "Only admins and owners can update portal retainer member display.",
+          error: "Only admins and owners can update portal retainer member display.",
         };
       }
       return { success: false, error: error.message };

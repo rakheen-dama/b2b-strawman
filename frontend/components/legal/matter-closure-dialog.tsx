@@ -35,10 +35,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ModuleGate } from "@/components/module-gate";
 import { MatterClosureReport } from "@/components/legal/matter-closure-report";
 import { useCapabilities } from "@/lib/capabilities";
-import {
-  closeMatterSchema,
-  type CloseMatterFormData,
-} from "@/lib/schemas/matter-closure";
+import { closeMatterSchema, type CloseMatterFormData } from "@/lib/schemas/matter-closure";
 import {
   closeMatterAction,
   evaluateClosureAction,
@@ -100,18 +97,14 @@ function MatterClosureDialogInner({
     error: reportErrorObj,
     isLoading: isLoadingReport,
     mutate: mutateReport,
-  } = useSWR<ClosureReport>(
-    open ? ["matter-closure-report", projectId] : null,
-    async () => {
-      const result = await evaluateClosureAction(projectId);
-      if (!result.success) {
-        throw new Error(result.error);
-      }
-      return result.report;
+  } = useSWR<ClosureReport>(open ? ["matter-closure-report", projectId] : null, async () => {
+    const result = await evaluateClosureAction(projectId);
+    if (!result.success) {
+      throw new Error(result.error);
     }
-  );
-  const reportError =
-    reportErrorObj instanceof Error ? reportErrorObj.message : null;
+    return result.report;
+  });
+  const reportError = reportErrorObj instanceof Error ? reportErrorObj.message : null;
 
   // Reset step/form/submit state whenever the dialog opens.
   // SWR auto-fetches when the key transitions from null → [projectId].
@@ -150,9 +143,7 @@ function MatterClosureDialogInner({
         notes: trimmedNotes || undefined,
         generateClosureLetter: values.generateClosureLetter,
         override: values.override,
-        overrideJustification: values.override
-          ? trimmedJustification || undefined
-          : undefined,
+        overrideJustification: values.override ? trimmedJustification || undefined : undefined,
       });
       if (result.success) {
         toast.success("Matter closed");
@@ -169,8 +160,7 @@ function MatterClosureDialogInner({
         return;
       }
       if (result.kind === "forbidden") {
-        const message =
-          result.error ?? "You do not have permission to close this matter.";
+        const message = result.error ?? "You do not have permission to close this matter.";
         toast.error(message);
         setSubmitError(message);
         return;
@@ -185,18 +175,12 @@ function MatterClosureDialogInner({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent
-        className="sm:max-w-xl"
-        data-testid="matter-closure-dialog"
-      >
+      <DialogContent className="sm:max-w-xl" data-testid="matter-closure-dialog">
         <DialogHeader>
           <DialogTitle>Close matter</DialogTitle>
           <DialogDescription>
             Review closure gates and confirm closure of{" "}
-            <span className="font-medium text-slate-900 dark:text-slate-100">
-              {projectName}
-            </span>
-            .
+            <span className="font-medium text-slate-900 dark:text-slate-100">{projectName}</span>.
           </DialogDescription>
         </DialogHeader>
 
@@ -214,18 +198,10 @@ function MatterClosureDialogInner({
               </p>
             )}
             {report && (
-              <MatterClosureReport
-                gates={report.gates}
-                slug={slug}
-                projectId={projectId}
-              />
+              <MatterClosureReport gates={report.gates} slug={slug} projectId={projectId} />
             )}
             <DialogFooter>
-              <Button
-                type="button"
-                variant="plain"
-                onClick={() => handleOpenChange(false)}
-              >
+              <Button type="button" variant="plain" onClick={() => handleOpenChange(false)}>
                 Cancel
               </Button>
               <Button
@@ -260,10 +236,7 @@ function MatterClosureDialogInner({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Reason</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value}
-                    >
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="matter-closure-reason-select">
                           <SelectValue placeholder="Select a reason" />
@@ -271,9 +244,7 @@ function MatterClosureDialogInner({
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="CONCLUDED">Concluded</SelectItem>
-                        <SelectItem value="CLIENT_TERMINATED">
-                          Client terminated
-                        </SelectItem>
+                        <SelectItem value="CLIENT_TERMINATED">Client terminated</SelectItem>
                         <SelectItem value="REFERRED_OUT">Referred out</SelectItem>
                         <SelectItem value="OTHER">Other</SelectItem>
                       </SelectContent>
@@ -289,8 +260,7 @@ function MatterClosureDialogInner({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>
-                      Notes{" "}
-                      <span className="font-normal text-slate-500">(optional)</span>
+                      Notes <span className="font-normal text-slate-500">(optional)</span>
                     </FormLabel>
                     <FormControl>
                       <Textarea
@@ -318,9 +288,7 @@ function MatterClosureDialogInner({
                       />
                     </FormControl>
                     <div className="space-y-0.5">
-                      <FormLabel className="text-sm font-medium">
-                        Generate closure letter
-                      </FormLabel>
+                      <FormLabel className="text-sm font-medium">Generate closure letter</FormLabel>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         A PDF closure letter will be attached to this matter.
                       </p>
@@ -349,8 +317,8 @@ function MatterClosureDialogInner({
                             Override failing gates
                           </FormLabel>
                           <p className="text-xs text-slate-600 dark:text-slate-400">
-                            This matter has failing gates. Override requires
-                            justification and will be logged.
+                            This matter has failing gates. Override requires justification and will
+                            be logged.
                           </p>
                         </div>
                       </FormItem>
@@ -431,19 +399,14 @@ function MatterClosureDialogInner({
                     Cannot close — resolve gates
                   </p>
                   <p className="mt-1 text-slate-700 dark:text-slate-300">
-                    This matter has failing closure gates and you do not have
-                    permission to override them. Resolve the failing items and
-                    try again.
+                    This matter has failing closure gates and you do not have permission to override
+                    them. Resolve the failing items and try again.
                   </p>
                 </div>
               </div>
             </div>
             <DialogFooter>
-              <Button
-                type="button"
-                variant="plain"
-                onClick={() => handleOpenChange(false)}
-              >
+              <Button type="button" variant="plain" onClick={() => handleOpenChange(false)}>
                 Close
               </Button>
               <Button

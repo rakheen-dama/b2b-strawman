@@ -1,0 +1,269 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: Kazi
+      - generic [ref=e9]: Mathebula & Partners
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e34]
+              - text: Calendar
+            - link "Court Calendar" [ref=e36] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e37]
+              - text: Court Calendar
+        - generic [ref=e44]:
+          - button "Matters" [expanded] [ref=e45]:
+            - generic [ref=e46]: Matters
+            - img [ref=e47]
+          - generic [ref=e49]:
+            - link "Matters" [ref=e50] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e51]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e53] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e54]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e60]:
+          - generic [ref=e61]: Clients
+          - img [ref=e62]
+        - button "Finance" [ref=e66]:
+          - generic [ref=e67]: Finance
+          - img [ref=e68]
+        - generic [ref=e71]:
+          - button "Team" [expanded] [ref=e72]:
+            - generic [ref=e73]: Team
+            - img [ref=e74]
+          - link "Team" [ref=e77] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e78]
+            - text: Team
+      - generic [ref=e84]:
+        - link "Notifications" [ref=e85] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e86]
+          - text: Notifications
+        - link "Settings" [ref=e89] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e91]
+          - text: Settings
+        - link "Help" [ref=e94] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e95]
+          - text: Help
+      - generic [ref=e98]:
+        - generic [ref=e99]: TM
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Thandi Mathebula
+          - paragraph [ref=e102]: thandi@mathebula-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "Mathebula & Partners" [ref=e106] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - link "Settings" [ref=e110] [cursor=pointer]:
+              - /url: /org/mathebula-partners/settings
+          - generic [ref=e111]:
+            - img [ref=e112]
+            - generic [ref=e114]: general
+        - generic [ref=e115]:
+          - button "User menu" [ref=e117]: TM
+          - button "Notifications" [ref=e119]:
+            - img
+      - main [ref=e121]:
+        - generic [ref=e124]:
+          - complementary [ref=e125]:
+            - navigation "Settings navigation" [ref=e126]:
+              - generic [ref=e127]:
+                - generic [ref=e128]: General
+                - link "General" [ref=e129] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/general
+                - link "Billing" [ref=e130] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/billing
+                - link "Notifications" [ref=e131] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/notifications
+                - link "Email" [ref=e132] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/email
+                - generic [ref=e133]:
+                  - text: Security
+                  - generic [ref=e134]: Coming soon
+              - generic [ref=e135]:
+                - generic [ref=e137]: Work
+                - link "Time Tracking" [ref=e138] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/time-tracking
+                - link "Matter Templates" [ref=e139] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/project-templates
+                - link "Matter Naming" [ref=e140] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/project-naming
+              - generic [ref=e141]:
+                - generic [ref=e143]: Documents
+                - link "Templates" [ref=e144] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/templates
+                - link "Clauses" [ref=e145] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/clauses
+                - link "Checklists" [ref=e146] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/checklists
+                - link "Document Acceptance" [ref=e147] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/acceptance
+              - generic [ref=e148]:
+                - generic [ref=e150]: Finance
+                - link "Rates & Currency" [ref=e151] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/rates
+                - link "Tax" [ref=e152] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/tax
+                - link "Capacity" [ref=e153] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/capacity
+              - generic [ref=e154]:
+                - generic [ref=e156]: Clients
+                - link "Custom Fields" [ref=e157] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/custom-fields
+                - link "Tags" [ref=e158] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/tags
+                - link "Request Templates" [ref=e159] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/request-templates
+                - link "Request Settings" [ref=e160] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/request-settings
+                - link "Compliance" [ref=e161] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/compliance
+                - link "Data Protection" [ref=e162] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/data-protection
+              - generic [ref=e163]:
+                - generic [ref=e165]: Features
+                - link "Features" [ref=e166] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/features
+                - link "Packs" [ref=e167] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/packs
+              - generic [ref=e168]:
+                - generic [ref=e170]: Access & Integrations
+                - link "Roles & Permissions" [ref=e171] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/roles
+                - link "Integrations" [ref=e172] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/integrations
+          - generic [ref=e174]:
+            - link "Settings" [ref=e175] [cursor=pointer]:
+              - /url: /org/mathebula-partners/settings
+              - img [ref=e176]
+              - text: Settings
+            - generic [ref=e178]:
+              - 'heading "General Help: Organization settings" [level=1] [ref=e179]':
+                - text: General
+                - 'button "Help: Organization settings" [ref=e180] [cursor=pointer]':
+                  - img [ref=e181]
+              - paragraph [ref=e184]: Manage your organization's currency, tax configuration, and branding.
+            - generic [ref=e185]:
+              - heading "Vertical Profile" [level=2] [ref=e186]
+              - paragraph [ref=e187]: Select an industry profile to enable specialized modules and templates.
+              - generic [ref=e188]:
+                - combobox [ref=e274]:
+                  - generic: Legal (South Africa)
+                  - img
+                - button "Apply Profile" [disabled]
+            - generic [ref=e190]:
+              - generic [ref=e191]:
+                - heading "Currency" [level=2] [ref=e192]
+                - paragraph [ref=e193]: Set the default currency for invoices, rates, and financial reports.
+                - generic [ref=e194]:
+                  - generic [ref=e195]: Default Currency
+                  - combobox "Default Currency" [ref=e196]:
+                    - generic: ZAR — South African Rand
+                    - img
+              - generic [ref=e198]:
+                - heading "Tax Configuration" [level=2] [ref=e199]
+                - paragraph [ref=e200]: Configure your organization's tax registration and display settings.
+                - generic [ref=e201]:
+                  - generic [ref=e202]:
+                    - generic [ref=e203]: Tax Registration Number
+                    - textbox "Tax Registration Number" [ref=e204]:
+                      - /placeholder: e.g. VAT-123456789
+                  - generic [ref=e205]:
+                    - generic [ref=e206]: Tax Label
+                    - textbox "Tax Label" [ref=e207]:
+                      - /placeholder: e.g. VAT, GST, Tax
+                    - paragraph [ref=e208]: Label shown on invoices and documents (e.g. "VAT", "GST").
+                  - generic [ref=e209]:
+                    - switch "Tax-inclusive pricing" [ref=e210]
+                    - generic [ref=e211]: Tax-inclusive pricing
+              - generic [ref=e212]:
+                - heading "Branding" [level=2] [ref=e213]
+                - paragraph [ref=e214]: Customize your organization's branding for generated documents.
+                - generic [ref=e215]:
+                  - generic [ref=e216]: Logo
+                  - generic [ref=e217]:
+                    - generic [ref=e218]:
+                      - img "Organization logo" [ref=e219]
+                      - button "Remove logo" [ref=e220]:
+                        - img [ref=e221]
+                    - generic [ref=e224]:
+                      - button "Upload Logo" [ref=e225]
+                      - paragraph [ref=e226]: PNG, JPG, or SVG. Max 2 MB.
+                - generic [ref=e227]:
+                  - generic [ref=e228]: Brand Color
+                  - generic [ref=e229]:
+                    - textbox [ref=e230] [cursor=pointer]: "#1b3358"
+                    - textbox "Brand Color" [ref=e231]:
+                      - /placeholder: "#000000"
+                      - text: "#1B3358"
+                - generic [ref=e232]:
+                  - generic [ref=e233]: Document Footer Text
+                  - textbox "Document Footer Text" [ref=e234]:
+                    - /placeholder: Text that appears at the bottom of generated documents...
+                  - paragraph [ref=e235]: 0/500 characters
+              - button "Save Settings" [ref=e237]
+            - generic [ref=e238]:
+              - heading "Client Portal" [level=2] [ref=e239]
+              - paragraph [ref=e240]: Control how often your clients receive portal digest emails and how team members are displayed on client retainer pages.
+              - generic [ref=e241]:
+                - generic [ref=e242]:
+                  - generic [ref=e243]: Portal digest cadence
+                  - combobox "Portal digest cadence" [ref=e244]:
+                    - generic: Weekly
+                    - img
+                  - paragraph [ref=e246]: How often clients receive the weekly activity digest email.
+                - generic [ref=e247]:
+                  - generic [ref=e248]: Portal retainer member display
+                  - combobox "Portal retainer member display" [ref=e249]:
+                    - generic: First name + role
+                    - img
+                  - paragraph [ref=e251]: How team-member names appear on client retainer usage pages.
+            - generic [ref=e252]:
+              - generic [ref=e253]:
+                - generic [ref=e254]:
+                  - heading "Org Documents" [level=2] [ref=e255]
+                  - generic [ref=e256]: "0"
+                - button "Upload Document" [ref=e257]:
+                  - img
+                  - text: Upload Document
+              - paragraph [ref=e258]: Organization-level documents shared across all projects.
+              - generic [ref=e259]:
+                - img [ref=e260]
+                - heading "No organization documents yet" [level=3] [ref=e263]
+                - paragraph [ref=e264]: Upload your first organization-level document to get started.
+  - generic [ref=e275]:
+    - heading "Command Palette" [level=2] [ref=e276]
+    - paragraph [ref=e277]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e270] [cursor=pointer]:
+    - img [ref=e271]
+  - alert [ref=e278]

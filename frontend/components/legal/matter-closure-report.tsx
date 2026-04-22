@@ -12,11 +12,7 @@ interface MatterClosureReportProps {
  * Maps a gate code to the deep-link path that lets the user resolve
  * the failing gate. Returns null when no navigational fix exists.
  */
-function fixHrefFor(
-  code: string,
-  slug: string,
-  projectId: string
-): string | null {
+function fixHrefFor(code: string, slug: string, projectId: string): string | null {
   switch (code) {
     case "TRUST_BALANCE_ZERO":
       return `/org/${slug}/projects/${projectId}?tab=trust`;
@@ -40,11 +36,7 @@ function fixHrefFor(
   }
 }
 
-export function MatterClosureReport({
-  gates,
-  slug,
-  projectId,
-}: MatterClosureReportProps) {
+export function MatterClosureReport({ gates, slug, projectId }: MatterClosureReportProps) {
   if (gates.length === 0) {
     return (
       <div

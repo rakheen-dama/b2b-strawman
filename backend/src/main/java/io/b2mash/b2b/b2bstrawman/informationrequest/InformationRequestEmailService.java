@@ -29,6 +29,7 @@ public class InformationRequestEmailService {
   private final EmailDeliveryLogService deliveryLogService;
   private final EmailRateLimiter emailRateLimiter;
   private final String appBaseUrl;
+  private final String portalBaseUrl;
 
   public InformationRequestEmailService(
       IntegrationRegistry integrationRegistry,
@@ -36,13 +37,15 @@ public class InformationRequestEmailService {
       EmailContextBuilder emailContextBuilder,
       EmailDeliveryLogService deliveryLogService,
       EmailRateLimiter emailRateLimiter,
-      @Value("${docteams.app.base-url:http://localhost:3000}") String appBaseUrl) {
+      @Value("${docteams.app.base-url:http://localhost:3000}") String appBaseUrl,
+      @Value("${docteams.app.portal-base-url:http://localhost:3002}") String portalBaseUrl) {
     this.integrationRegistry = integrationRegistry;
     this.emailTemplateRenderer = emailTemplateRenderer;
     this.emailContextBuilder = emailContextBuilder;
     this.deliveryLogService = deliveryLogService;
     this.emailRateLimiter = emailRateLimiter;
     this.appBaseUrl = appBaseUrl;
+    this.portalBaseUrl = portalBaseUrl;
   }
 
   public void sendRequestSentEmail(
@@ -50,12 +53,22 @@ public class InformationRequestEmailService {
       String contactName,
       String requestNumber,
       int itemCount,
-      UUID requestId) {
+      UUID requestId,
+      String rawToken,
+      String orgId) {
     var context = emailContextBuilder.buildBaseContext(contactName, null);
     context.put("contactName", contactName);
     context.put("requestNumber", requestNumber);
     context.put("itemCount", String.valueOf(itemCount));
-    context.put("portalUrl", appBaseUrl + "/portal");
+
+    String portalUrl;
+    if (rawToken != null && orgId != null) {
+      portalUrl = portalBaseUrl + "/auth/exchange?token=" + rawToken + "&orgId=" + orgId;
+    } else {
+      // Fallback — still point at the portal, not the firm. Portal will require interactive login.
+      portalUrl = portalBaseUrl + "/requests";
+    }
+    context.put("portalUrl", portalUrl);
     String orgName = (String) context.get("orgName");
     context.put("subject", "Information request %s from %s".formatted(requestNumber, orgName));
     sendEmail("request-sent", recipientEmail, context, requestId);

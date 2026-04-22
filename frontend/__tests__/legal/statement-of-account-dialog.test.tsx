@@ -42,16 +42,12 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/statement-actions", () => ({
 
 const mockDownload = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/templates/template-generation-actions",
-  () => ({
-    downloadGeneratedDocumentAction: (...args: unknown[]) =>
-      mockDownload(...args),
-    downloadDocxGeneratedDocumentAction: vi.fn(),
-    fetchGeneratedDocumentsAction: vi.fn(),
-    deleteGeneratedDocumentAction: vi.fn(),
-  })
-);
+vi.mock("@/app/(app)/org/[slug]/settings/templates/template-generation-actions", () => ({
+  downloadGeneratedDocumentAction: (...args: unknown[]) => mockDownload(...args),
+  downloadDocxGeneratedDocumentAction: vi.fn(),
+  fetchGeneratedDocumentsAction: vi.fn(),
+  deleteGeneratedDocumentAction: vi.fn(),
+}));
 
 // --- Imports after mocks ---
 
@@ -153,12 +149,8 @@ describe("StatementOfAccountDialog", () => {
       expect(screen.getByTestId("statement-of-account-dialog")).toBeInTheDocument();
     });
 
-    const startInput = screen.getByTestId(
-      "statement-period-start-input"
-    ) as HTMLInputElement;
-    const endInput = screen.getByTestId(
-      "statement-period-end-input"
-    ) as HTMLInputElement;
+    const startInput = screen.getByTestId("statement-period-start-input") as HTMLInputElement;
+    const endInput = screen.getByTestId("statement-period-end-input") as HTMLInputElement;
     // Clock frozen to 2026-04-19 — first-of-month is 2026-04-01, today is 2026-04-19.
     expect(startInput.value).toBe("2026-04-01");
     expect(endInput.value).toBe("2026-04-19");
@@ -203,9 +195,7 @@ describe("StatementOfAccountDialog", () => {
       expect(screen.getByTestId("statement-of-account-dialog")).toBeInTheDocument();
     });
 
-    const startInput = screen.getByTestId(
-      "statement-period-start-input"
-    ) as HTMLInputElement;
+    const startInput = screen.getByTestId("statement-period-start-input") as HTMLInputElement;
 
     // Latest generatedAt is 2026-03-15 → default periodStart = 2026-03-16.
     await waitFor(() => {
@@ -285,9 +275,7 @@ describe("StatementOfAccountDialog", () => {
     await waitFor(() => {
       expect(mockGenerate).not.toHaveBeenCalled();
     });
-    expect(
-      screen.getByText("Period end must be on or after period start")
-    ).toBeInTheDocument();
+    expect(screen.getByText("Period end must be on or after period start")).toBeInTheDocument();
   });
 
   it("surfaces backend error via inline alert and toast.error", async () => {
@@ -319,9 +307,7 @@ describe("StatementOfAccountDialog", () => {
     await waitFor(() => {
       expect(mockGenerate).toHaveBeenCalled();
     });
-    await waitFor(() =>
-      expect(screen.getByRole("alert")).toHaveTextContent("Template not found")
-    );
+    await waitFor(() => expect(screen.getByRole("alert")).toHaveTextContent("Template not found"));
     expect(vi.mocked(toast.error)).toHaveBeenCalledWith("Template not found");
   });
 

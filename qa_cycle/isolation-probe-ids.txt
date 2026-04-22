@@ -1,0 +1,50 @@
+# Isolation Probe IDs — Day 15 target data (Moroka Family Trust)
+# Generated: 2026-04-22 04:05 SAST (Day 14 seed)
+# Tenant: tenant_5039f2d497cf (mathebula-partners)
+
+## Moroka Family Trust entities (Day 15 MUST-BE-INVISIBLE to Sipho)
+
+customer_id           = 29ef543a-d0ad-4851-97e0-77344e0b1b1d   # name "Moroka Family Trust", entity_type=TRUST, lifecycle=PROSPECT
+portal_contact_id     = 0f980d16-2463-401f-a097-92595bf7da0b   # email moroka.portal@example.com, role=GENERAL, status=ACTIVE
+matter_id (project)   = 4e87b24f-cf40-4b5b-9d1e-59a63fdda55a   # "Estate Late Peter Moroka" EST-2026-002, ACTIVE
+info_request_id       = 4a698dc9-b24a-45b4-a44b-bf7c0d6aceac   # REQ-0004, FICA Onboarding Pack (template workaround), SENT
+document_id           = 1e96f979-f8bf-4e59-8bfd-67d34c6b6e6a   # certified-id-copy.pdf, attached to matter 4e87b24f
+trust_transaction_id  = f2cea65b-5103-48f1-857f-618ae224ecde   # DEP-2026-002, R 25 000.00, RECORDED, account=Mathebula Trust — Main
+
+## Reference — existing Sipho entities (Day 15 SHOULD be visible to Sipho)
+
+customer_id           = 8fe5eea2-75fc-4df2-b4d0-267486df68bd   # "Sipho Dlamini", INDIVIDUAL, PROSPECT
+portal_contact_id     = d9ecf332-e9cc-4296-9652-d29171a4adb6   # sipho.portal@example.com
+matter_id             = 40881f2f-7cfc-45d9-8619-de18fd2d75bb   # "Dlamini v Road Accident Fund" RAF-2026-001
+trust_transaction_id  = 9f288643-d74a-4e90-bbd3-19b6bf6ee70c   # DEP-2026-001, R 50 000.00, RECORDED
+
+## Shared (same trust account used by both clients)
+
+trust_account_id      = 61fe42af-5d94-4848-bf09-145099c2396b   # "Mathebula Trust — Main", GENERAL, is_primary=t
+
+## Day 15 probe plan
+
+### Frontend (portal :3002, Sipho logged in)
+- `/` or `/home` — must NOT show Moroka in any list/card.
+- `/projects` — must NOT list EST-2026-002.
+- `/projects/4e87b24f-cf40-4b5b-9d1e-59a63fdda55a` — must 403/404 (not render Moroka matter).
+- `/documents` — must NOT list certified-id-copy.pdf (Moroka-attached variant).
+- `/requests` — must NOT list REQ-0004.
+- `/requests/4a698dc9-b24a-45b4-a44b-bf7c0d6aceac` — must 403/404.
+- `/trust` — balance shown must reflect ONLY Sipho's R 50 000 (once GAP-L-52 fixes projection; currently shows empty).
+
+### Backend (bearer = Sipho's portal_jwt, orgId=mathebula-partners)
+- `GET /portal/projects/4e87b24f-cf40-4b5b-9d1e-59a63fdda55a` → expect 403 or 404.
+- `GET /portal/requests/4a698dc9-b24a-45b4-a44b-bf7c0d6aceac` → expect 403 or 404.
+- `GET /portal/requests` → response must NOT contain REQ-0004.
+- `GET /portal/documents/1e96f979-f8bf-4e59-8bfd-67d34c6b6e6a` → expect 403 or 404.
+- `GET /portal/trust/summary` → matters array must only contain `40881f2f-…` (if sync works post GAP-L-52), never `4e87b24f-…`.
+- `GET /portal/trust/matters/4e87b24f-.../transactions` → expect 403 or 404.
+
+### Digest / email (Day 15 Phase D)
+- If weekly digest fires for Sipho, the email body must not mention "Moroka", "EST-2026-002", "Peter Moroka", "R 25 000" or REQ-0004.
+
+## Notes on workarounds used during seed
+- Scenario 14.8 template "Liquidation and Distribution Account docs" does NOT exist in any vertical pack. Used **FICA Onboarding Pack** (3 items) as the closest shipped template that will render portal UI on Day 15. Functional parity for the isolation probe (REQ-0004 exists, has items, is SENT). Logged as GAP-L-53.
+- Scenario 14.4 Conflict Check — **skipped** (scenario explicitly says "no screenshot required — this is setup, not a demo moment"). Did not exercise conflict engine for Moroka. No gap logged — permitted by scenario.
+- Scenario 14.2 "Beneficial owners: add 2" — **skipped** — no affordance found on TRUST client-create wizard to add beneficial owners as structured fields; SA Legal — Client Details intake was also skipped. Day 15 isolation probe does not depend on beneficial-owner structure. Logged as GAP-L-54 (LOW).

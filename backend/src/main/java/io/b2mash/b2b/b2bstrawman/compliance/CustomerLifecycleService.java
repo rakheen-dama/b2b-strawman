@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
-import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactService;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
@@ -152,21 +151,11 @@ public class CustomerLifecycleService {
       var created = checklistInstantiationService.instantiateForCustomer(customer);
       checklistsInstantiated = created.size();
 
-      // GAP-020: Auto-create portal contact from customer email
-      if (customer.getEmail() != null && !customer.getEmail().isBlank()) {
-        String orgId = RequestScopes.requireOrgId();
-        try {
-          portalContactService.createContact(
-              orgId,
-              customer.getId(),
-              customer.getEmail(),
-              customer.getName(),
-              PortalContact.ContactRole.PRIMARY);
-          log.info("Auto-created portal contact for customer {}", customer.getId());
-        } catch (io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException e) {
-          log.debug("Portal contact already exists for customer {}", customer.getId());
-        }
-      }
+      // GAP-020 (superseded by GAP-L-34): Auto-create portal contact from customer email.
+      // The portal-contact auto-provisioning now happens at customer-create time via
+      // PortalContactAutoProvisioner listening on CustomerCreatedEvent, so downstream
+      // portal flows (information requests, fee notes) work before any ONBOARDING
+      // transition. No additional creation needed here.
     }
 
     auditService.log(

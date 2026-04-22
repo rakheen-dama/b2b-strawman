@@ -59,9 +59,13 @@ function InfoRequestsCard() {
   const [count, setCount] = useState<number | null>(null);
   useEffect(() => {
     let cancelled = false;
-    portalGet<InfoRequestSummary[]>("/portal/information-requests?status=PENDING")
+    portalGet<InfoRequestSummary[]>("/portal/requests")
       .then((data) => {
-        if (!cancelled) setCount(Array.isArray(data) ? data.length : 0);
+        if (cancelled) return;
+        const pending = Array.isArray(data)
+          ? data.filter((r) => r.status !== "COMPLETED").length
+          : 0;
+        setCount(pending);
       })
       .catch(() => {
         if (!cancelled) setCount(0);

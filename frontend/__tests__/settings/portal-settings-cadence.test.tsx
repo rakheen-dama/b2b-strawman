@@ -10,10 +10,8 @@ vi.mock("next/navigation", () => ({
 const mockUpdateCadence = vi.fn();
 const mockUpdateMemberDisplay = vi.fn();
 vi.mock("@/app/(app)/org/[slug]/settings/general/portal-actions", () => ({
-  updatePortalDigestCadence: (...args: unknown[]) =>
-    mockUpdateCadence(...args),
-  updatePortalRetainerMemberDisplay: (...args: unknown[]) =>
-    mockUpdateMemberDisplay(...args),
+  updatePortalDigestCadence: (...args: unknown[]) => mockUpdateCadence(...args),
+  updatePortalRetainerMemberDisplay: (...args: unknown[]) => mockUpdateMemberDisplay(...args),
 }));
 
 import { PortalSettingsSection } from "@/components/settings/portal-settings-section";
@@ -30,7 +28,7 @@ describe("PortalSettingsSection — cadence select", () => {
         slug="acme"
         currentCadence="WEEKLY"
         currentMemberDisplay="FIRST_NAME_ROLE"
-      />,
+      />
     );
 
     // Both selects render as comboboxes (Radix).
@@ -51,7 +49,7 @@ describe("PortalSettingsSection — cadence select", () => {
         slug="acme"
         currentCadence="WEEKLY"
         currentMemberDisplay="FIRST_NAME_ROLE"
-      />,
+      />
     );
 
     const [cadenceTrigger] = screen.getAllByRole("combobox");
@@ -73,7 +71,7 @@ describe("PortalSettingsSection — cadence select", () => {
         slug="acme"
         currentCadence="WEEKLY"
         currentMemberDisplay="FIRST_NAME_ROLE"
-      />,
+      />
     );
 
     const comboboxes = screen.getAllByRole("combobox");
@@ -100,7 +98,7 @@ describe("PortalSettingsSection — cadence select", () => {
         slug="acme"
         currentCadence="WEEKLY"
         currentMemberDisplay="FIRST_NAME_ROLE"
-      />,
+      />
     );
 
     const [cadenceTrigger] = screen.getAllByRole("combobox");

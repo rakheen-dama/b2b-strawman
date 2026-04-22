@@ -49,9 +49,7 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
     await page.waitForTimeout(1500);
     await page.waitForLoadState("networkidle");
 
-    const closeAction = page
-      .getByRole("button", { name: /close\s+matter/i })
-      .first();
+    const closeAction = page.getByRole("button", { name: /close\s+matter/i }).first();
     if (!(await closeAction.isVisible({ timeout: 5000 }).catch(() => false))) {
       test.skip(true, "Close Matter action not rendered (capability-gated or feature flag off)");
       return;
@@ -94,9 +92,7 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
     await page.waitForTimeout(800);
 
     const step1 = page.locator('[data-testid="matter-closure-step-1"]').first();
-    expect
-      .soft(await step1.isVisible({ timeout: 5000 }).catch(() => false))
-      .toBeTruthy();
+    expect.soft(await step1.isVisible({ timeout: 5000 }).catch(() => false)).toBeTruthy();
 
     // Count gate pass markers (soft — exact label depends on component)
     const gateReportText = await step1.textContent().catch(() => "");
@@ -146,9 +142,7 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
 
     // Reason select — should default to CONCLUDED; leave as-is
     // Confirm close
-    const confirmBtn = page
-      .locator('[data-testid="matter-closure-confirm-close-btn"]')
-      .first();
+    const confirmBtn = page.locator('[data-testid="matter-closure-confirm-close-btn"]').first();
     if (!(await confirmBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
       test.skip(true, "Confirm close button not present");
       return;
@@ -240,12 +234,8 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
 
     if (seenStep3) {
       // Override toggle should NOT be present for Bob (no OVERRIDE_MATTER_CLOSURE)
-      const overrideToggle = page
-        .locator('[data-testid="matter-closure-override-toggle"]')
-        .first();
-      expect
-        .soft(await overrideToggle.isVisible({ timeout: 1500 }).catch(() => false))
-        .toBeFalsy();
+      const overrideToggle = page.locator('[data-testid="matter-closure-override-toggle"]').first();
+      expect.soft(await overrideToggle.isVisible({ timeout: 1500 }).catch(() => false)).toBeFalsy();
 
       await page.waitForLoadState("networkidle");
       await captureScreenshot(page, "day-85-admin-cannot-close-step-3");
@@ -302,9 +292,7 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
     await page.waitForTimeout(500);
 
     // Owner + anyFailing → moves to step 2 with override section
-    const overrideToggle = page
-      .locator('[data-testid="matter-closure-override-toggle"]')
-      .first();
+    const overrideToggle = page.locator('[data-testid="matter-closure-override-toggle"]').first();
     if (!(await overrideToggle.isVisible({ timeout: 3000 }).catch(() => false))) {
       test.skip(true, "Override toggle not present (gates may all be passing)");
       return;
@@ -325,9 +313,7 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
       "Trust remainder of R12,000 earmarked for final Section 35 payout pending master approval — closing under owner override"
     );
 
-    const confirmBtn = page
-      .locator('[data-testid="matter-closure-confirm-close-btn"]')
-      .first();
+    const confirmBtn = page.locator('[data-testid="matter-closure-confirm-close-btn"]').first();
     if (await confirmBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
       await confirmBtn.click();
       await page.waitForTimeout(2000);
@@ -353,7 +339,12 @@ test.describe.serial("Day 75-85 — Matter Closure (Phase 67)", () => {
     await loginAs(page, "alice");
     await page.goto(`${BASE}/audit`);
 
-    if (!(await page.locator("main").isVisible({ timeout: 5000 }).catch(() => false))) {
+    if (
+      !(await page
+        .locator("main")
+        .isVisible({ timeout: 5000 })
+        .catch(() => false))
+    ) {
       test.skip(true, "Audit log page not reachable");
       return;
     }

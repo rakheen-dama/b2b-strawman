@@ -49,7 +49,6 @@ class PortalContextControllerIntegrationTest {
   @Autowired private PortalJwtService portalJwtService;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private CustomerService customerService;
-  @Autowired private PortalContactService portalContactService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private OrgSettingsRepository orgSettingsRepository;
   @MockitoBean private StorageService storageService;
@@ -85,12 +84,11 @@ class PortalContextControllerIntegrationTest {
                   customerService.createCustomer(
                       "Legal Client", "legal-client@test.com", null, null, null, legalMemberId);
               legalCustomerId = customer.getId();
-              portalContactService.createContact(
-                  LEGAL_ORG_ID,
-                  legalCustomerId,
-                  "legal-client@test.com",
-                  "Legal Client",
-                  PortalContact.ContactRole.PRIMARY);
+              // GAP-L-34: the PortalContactAutoProvisioner listener already created a GENERAL
+              // portal contact for this customer's email when CustomerCreatedEvent fired. A
+              // manual PRIMARY create with the same email would 409, and this test only asserts
+              // session-context resolution (role-agnostic), so we rely on the auto-provisioned
+              // contact.
               // legal-za.json seeds a subset of modules; tests assert Phase 68 module IDs that
               // live outside the seed (retainer_agreements, document_acceptance). Set them
               // explicitly on OrgSettings.
@@ -129,12 +127,7 @@ class PortalContextControllerIntegrationTest {
                   customerService.createCustomer(
                       "Acct Client", "acct-client@test.com", null, null, null, acctMemberId);
               acctCustomerId = customer.getId();
-              portalContactService.createContact(
-                  ACCT_ORG_ID,
-                  acctCustomerId,
-                  "acct-client@test.com",
-                  "Acct Client",
-                  PortalContact.ContactRole.PRIMARY);
+              // GAP-L-34: auto-provisioner already created the portal contact for this email.
               // accounting-za.json seeds enabledModules: []. Set regulatory_deadlines explicitly
               // and ensure trust_accounting is absent so assertions (2) hold.
               var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();

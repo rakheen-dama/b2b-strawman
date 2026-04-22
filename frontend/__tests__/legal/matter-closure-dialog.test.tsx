@@ -178,19 +178,12 @@ describe("MatterClosureDialog", () => {
     );
 
     // Step 1 loads; advance to step 2
-    await waitFor(() =>
-      expect(screen.getByTestId("matter-closure-step-1")).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByTestId("matter-closure-step-1")).toBeInTheDocument());
     await user.click(screen.getByTestId("matter-closure-next-btn"));
-    await waitFor(() =>
-      expect(screen.getByTestId("matter-closure-step-2")).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByTestId("matter-closure-step-2")).toBeInTheDocument());
 
     // Notes input
-    await user.type(
-      screen.getByTestId("matter-closure-notes-input"),
-      "All done."
-    );
+    await user.type(screen.getByTestId("matter-closure-notes-input"), "All done.");
 
     await user.click(screen.getByTestId("matter-closure-confirm-close-btn"));
 
@@ -213,9 +206,7 @@ describe("MatterClosureDialog", () => {
     const user = userEvent.setup();
     const failingReport = makeReport({
       allPassed: false,
-      gates: [
-        makeGate({ code: "TRUST_BALANCE_ZERO", passed: false, message: "trust" }),
-      ],
+      gates: [makeGate({ code: "TRUST_BALANCE_ZERO", passed: false, message: "trust" })],
     });
     mockEvaluate.mockResolvedValue({ success: true, report: failingReport });
 
@@ -232,9 +223,7 @@ describe("MatterClosureDialog", () => {
       )
     );
 
-    await waitFor(() =>
-      expect(screen.getByTestId("matter-closure-step-1")).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByTestId("matter-closure-step-1")).toBeInTheDocument());
     await user.click(screen.getByTestId("matter-closure-next-btn"));
 
     // Should land on step 3 (blocked) not step 2
@@ -242,18 +231,14 @@ describe("MatterClosureDialog", () => {
       expect(screen.getByTestId("matter-closure-step-3")).toBeInTheDocument();
       expect(screen.queryByTestId("matter-closure-step-2")).not.toBeInTheDocument();
     });
-    expect(
-      screen.queryByTestId("matter-closure-override-toggle")
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("matter-closure-override-toggle")).not.toBeInTheDocument();
   });
 
   it("override toggle visible when user has OVERRIDE_MATTER_CLOSURE — blocks submit if justification < 20 chars", async () => {
     const user = userEvent.setup();
     const failingReport = makeReport({
       allPassed: false,
-      gates: [
-        makeGate({ code: "TRUST_BALANCE_ZERO", passed: false, message: "trust" }),
-      ],
+      gates: [makeGate({ code: "TRUST_BALANCE_ZERO", passed: false, message: "trust" })],
     });
     mockEvaluate.mockResolvedValue({ success: true, report: failingReport });
 
@@ -270,13 +255,9 @@ describe("MatterClosureDialog", () => {
       )
     );
 
-    await waitFor(() =>
-      expect(screen.getByTestId("matter-closure-step-1")).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByTestId("matter-closure-step-1")).toBeInTheDocument());
     await user.click(screen.getByTestId("matter-closure-next-btn"));
-    await waitFor(() =>
-      expect(screen.getByTestId("matter-closure-step-2")).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByTestId("matter-closure-step-2")).toBeInTheDocument());
 
     // Override toggle IS visible
     const overrideToggle = screen.getByTestId("matter-closure-override-toggle");
@@ -285,14 +266,9 @@ describe("MatterClosureDialog", () => {
     // Turn override on and enter an insufficient justification
     await user.click(overrideToggle);
     await waitFor(() =>
-      expect(
-        screen.getByTestId("matter-closure-override-justification-input")
-      ).toBeInTheDocument()
+      expect(screen.getByTestId("matter-closure-override-justification-input")).toBeInTheDocument()
     );
-    await user.type(
-      screen.getByTestId("matter-closure-override-justification-input"),
-      "short"
-    );
+    await user.type(screen.getByTestId("matter-closure-override-justification-input"), "short");
     await user.click(screen.getByTestId("matter-closure-confirm-close-btn"));
 
     // Validation must block the submit
@@ -333,21 +309,15 @@ describe("MatterClosureDialog", () => {
       )
     );
 
-    await waitFor(() =>
-      expect(screen.getByTestId("matter-closure-step-1")).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByTestId("matter-closure-step-1")).toBeInTheDocument());
     await user.click(screen.getByTestId("matter-closure-next-btn"));
-    await waitFor(() =>
-      expect(screen.getByTestId("matter-closure-step-2")).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByTestId("matter-closure-step-2")).toBeInTheDocument());
     await user.click(screen.getByTestId("matter-closure-confirm-close-btn"));
 
     // Should return to step 1 with fresh failing gate visible
     await waitFor(() => {
       expect(screen.getByTestId("matter-closure-step-1")).toBeInTheDocument();
-      expect(
-        screen.getByTestId("matter-closure-gate-fail-TRUST_BALANCE_ZERO")
-      ).toBeInTheDocument();
+      expect(screen.getByTestId("matter-closure-gate-fail-TRUST_BALANCE_ZERO")).toBeInTheDocument();
       expect(screen.getByText("Fresh failure")).toBeInTheDocument();
     });
   });
@@ -391,9 +361,7 @@ describe("MatterClosureDialog", () => {
         />
       )
     );
-    await waitFor(() =>
-      expect(screen.getByTestId("matter-closure-step-1")).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByTestId("matter-closure-step-1")).toBeInTheDocument());
     await user.click(screen.getByTestId("matter-closure-next-btn"));
     await waitFor(() =>
       expect(screen.getByTestId("matter-closure-reason-select")).toBeInTheDocument()

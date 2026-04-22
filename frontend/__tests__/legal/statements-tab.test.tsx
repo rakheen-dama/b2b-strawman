@@ -42,16 +42,12 @@ vi.mock("@/app/(app)/org/[slug]/projects/[id]/statement-actions", () => ({
 
 const mockDownload = vi.fn();
 
-vi.mock(
-  "@/app/(app)/org/[slug]/settings/templates/template-generation-actions",
-  () => ({
-    downloadGeneratedDocumentAction: (...args: unknown[]) =>
-      mockDownload(...args),
-    downloadDocxGeneratedDocumentAction: vi.fn(),
-    fetchGeneratedDocumentsAction: vi.fn(),
-    deleteGeneratedDocumentAction: vi.fn(),
-  })
-);
+vi.mock("@/app/(app)/org/[slug]/settings/templates/template-generation-actions", () => ({
+  downloadGeneratedDocumentAction: (...args: unknown[]) => mockDownload(...args),
+  downloadDocxGeneratedDocumentAction: vi.fn(),
+  fetchGeneratedDocumentsAction: vi.fn(),
+  deleteGeneratedDocumentAction: vi.fn(),
+}));
 
 // --- Imports after mocks ---
 
@@ -136,11 +132,7 @@ describe("ProjectStatementsTab", () => {
       },
     });
 
-    render(
-      withProviders(
-        <ProjectStatementsTab projectId="p1" slug="acme" />
-      )
-    );
+    render(withProviders(<ProjectStatementsTab projectId="p1" slug="acme" />));
 
     await waitFor(() => {
       expect(screen.getByTestId("project-statements-tab")).toBeInTheDocument();
@@ -160,11 +152,7 @@ describe("ProjectStatementsTab", () => {
       },
     });
 
-    render(
-      withProviders(
-        <ProjectStatementsTab projectId="p1" slug="acme" />
-      )
-    );
+    render(withProviders(<ProjectStatementsTab projectId="p1" slug="acme" />));
 
     await waitFor(() => {
       expect(screen.getByTestId("statements-empty")).toBeInTheDocument();
@@ -195,11 +183,7 @@ describe("ProjectStatementsTab", () => {
     URL.revokeObjectURL = vi.fn();
 
     try {
-      render(
-        withProviders(
-          <ProjectStatementsTab projectId="p1" slug="acme" />
-        )
-      );
+      render(withProviders(<ProjectStatementsTab projectId="p1" slug="acme" />));
 
       const downloadBtn = await screen.findByTestId("statement-download-s-1");
       await user.click(downloadBtn);
@@ -219,11 +203,7 @@ describe("ProjectStatementsTab", () => {
       error: "Something went wrong",
     });
 
-    render(
-      withProviders(
-        <ProjectStatementsTab projectId="p1" slug="acme" />
-      )
-    );
+    render(withProviders(<ProjectStatementsTab projectId="p1" slug="acme" />));
 
     await waitFor(() => {
       expect(screen.getByTestId("statements-error")).toBeInTheDocument();

@@ -243,9 +243,7 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
     await page.goto(`${BASE}/projects`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
-    const siphoMatterLink = page
-      .getByRole("link", { name: /Sipho|Dlamini|Litigation/i })
-      .first();
+    const siphoMatterLink = page.getByRole("link", { name: /Sipho|Dlamini|Litigation/i }).first();
     const hasMatter = await siphoMatterLink.isVisible({ timeout: 5000 }).catch(() => false);
     if (!hasMatter) {
       test.skip(true, "Sipho's matter not found in project list");
@@ -274,7 +272,10 @@ test.describe.serial("Day 5 — Disbursements (Phase 67)", () => {
       .toBeTruthy();
 
     // Terminology sweep: should NOT contain "Expense" heading
-    const pageText = await page.locator("main").textContent().catch(() => "");
+    const pageText = await page
+      .locator("main")
+      .textContent()
+      .catch(() => "");
     expect.soft(pageText || "").not.toMatch(/Unbilled\s+Expenses/i);
 
     await captureScreenshot(page, "day-05-matter-unbilled-disbursements-summary");

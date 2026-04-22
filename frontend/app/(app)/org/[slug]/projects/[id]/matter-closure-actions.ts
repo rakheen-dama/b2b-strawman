@@ -22,9 +22,7 @@ export type CloseMatterActionResult =
   | { success: false; kind: "forbidden"; error: string }
   | { success: false; kind: "error"; error: string };
 
-export async function evaluateClosureAction(
-  projectId: string
-): Promise<EvaluateClosureResult> {
+export async function evaluateClosureAction(projectId: string): Promise<EvaluateClosureResult> {
   try {
     const report = await evaluateClosure(projectId);
     return { success: true, report };
@@ -42,16 +40,17 @@ export async function closeMatterAction(
   req: CloseMatterRequest
 ): Promise<CloseMatterActionResult> {
   const caps = await fetchMyCapabilities();
-  const canClose =
-    caps.isOwner || caps.isAdmin || caps.capabilities.includes("CLOSE_MATTER");
+  const canClose = caps.isOwner || caps.isAdmin || caps.capabilities.includes("CLOSE_MATTER");
   if (!canClose) {
-    return { success: false, kind: "forbidden", error: "You do not have permission to close matters." };
+    return {
+      success: false,
+      kind: "forbidden",
+      error: "You do not have permission to close matters.",
+    };
   }
   if (req.override) {
     const canOverride =
-      caps.isOwner ||
-      caps.isAdmin ||
-      caps.capabilities.includes("OVERRIDE_MATTER_CLOSURE");
+      caps.isOwner || caps.isAdmin || caps.capabilities.includes("OVERRIDE_MATTER_CLOSURE");
     if (!canOverride) {
       return {
         success: false,

@@ -83,11 +83,9 @@ export interface ReopenMatterRequest {
 
 // ---- Typed error surface ----
 
-export const CLOSURE_GATES_FAILED_PROBLEM_TYPE =
-  "https://kazi.app/problems/closure-gates-failed";
+export const CLOSURE_GATES_FAILED_PROBLEM_TYPE = "https://kazi.app/problems/closure-gates-failed";
 
-export const RETENTION_ELAPSED_PROBLEM_TYPE =
-  "https://kazi.app/problems/retention-elapsed";
+export const RETENTION_ELAPSED_PROBLEM_TYPE = "https://kazi.app/problems/retention-elapsed";
 
 /**
  * Thrown by `closeMatter()` when the backend returns 409 with
@@ -132,10 +130,7 @@ export async function closeMatter(
   req: CloseMatterRequest
 ): Promise<CloseMatterResponse> {
   try {
-    return await api.post<CloseMatterResponse>(
-      `/api/matters/${projectId}/closure/close`,
-      req
-    );
+    return await api.post<CloseMatterResponse>(`/api/matters/${projectId}/closure/close`, req);
   } catch (err) {
     if (
       err instanceof ApiError &&
@@ -154,18 +149,16 @@ export async function reopenMatter(
   notes: string
 ): Promise<ReopenMatterResponse> {
   try {
-    return await api.post<ReopenMatterResponse>(
-      `/api/matters/${projectId}/closure/reopen`,
-      { notes }
-    );
+    return await api.post<ReopenMatterResponse>(`/api/matters/${projectId}/closure/reopen`, {
+      notes,
+    });
   } catch (err) {
     if (
       err instanceof ApiError &&
       err.status === 409 &&
       err.detail?.type === RETENTION_ELAPSED_PROBLEM_TYPE
     ) {
-      const retentionEndedOn =
-        (err.detail.retentionEndedOn as string | undefined) ?? "";
+      const retentionEndedOn = (err.detail.retentionEndedOn as string | undefined) ?? "";
       const pid = (err.detail.projectId as string | undefined) ?? projectId;
       throw new RetentionElapsedError(retentionEndedOn, pid);
     }

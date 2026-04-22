@@ -13,9 +13,8 @@ import { Label } from "@/components/ui/label";
 import {
   updatePortalDigestCadence,
   updatePortalRetainerMemberDisplay,
-  type PortalDigestCadence,
-  type PortalRetainerMemberDisplay,
 } from "@/app/(app)/org/[slug]/settings/general/portal-actions";
+import type { PortalDigestCadence, PortalRetainerMemberDisplay } from "@/lib/types/settings";
 
 const CADENCE_OPTIONS: { value: PortalDigestCadence; label: string }[] = [
   { value: "WEEKLY", label: "Weekly" },
@@ -115,9 +114,7 @@ export function PortalSettingsSection({
         setStatusMessage("Portal retainer member display updated.");
         router.refresh();
       } else {
-        setError(
-          result.error ?? "Failed to update portal retainer member display.",
-        );
+        setError(result.error ?? "Failed to update portal retainer member display.");
         setMemberDisplay(previous);
       }
     } catch {
@@ -130,22 +127,16 @@ export function PortalSettingsSection({
 
   return (
     <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
-      <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
-        Client Portal
-      </h2>
+      <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">Client Portal</h2>
       <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-        Control how often your clients receive portal digest emails and how
-        team members are displayed on client retainer pages.
+        Control how often your clients receive portal digest emails and how team members are
+        displayed on client retainer pages.
       </p>
 
       <div className="mt-6 grid gap-6 sm:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="portal-digest-cadence">Portal digest cadence</Label>
-          <Select
-            value={cadence}
-            disabled={isSavingCadence}
-            onValueChange={handleCadenceChange}
-          >
+          <Select value={cadence} disabled={isSavingCadence} onValueChange={handleCadenceChange}>
             <SelectTrigger id="portal-digest-cadence" className="w-full">
               <SelectValue placeholder="Select cadence" />
             </SelectTrigger>
@@ -163,18 +154,13 @@ export function PortalSettingsSection({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="portal-retainer-member-display">
-            Portal retainer member display
-          </Label>
+          <Label htmlFor="portal-retainer-member-display">Portal retainer member display</Label>
           <Select
             value={memberDisplay}
             disabled={isSavingMemberDisplay}
             onValueChange={handleMemberDisplayChange}
           >
-            <SelectTrigger
-              id="portal-retainer-member-display"
-              className="w-full"
-            >
+            <SelectTrigger id="portal-retainer-member-display" className="w-full">
               <SelectValue placeholder="Select display mode" />
             </SelectTrigger>
             <SelectContent>
@@ -192,9 +178,7 @@ export function PortalSettingsSection({
       </div>
 
       {statusMessage && (
-        <p className="mt-4 text-xs text-teal-600 dark:text-teal-400">
-          {statusMessage}
-        </p>
+        <p className="mt-4 text-xs text-teal-600 dark:text-teal-400">{statusMessage}</p>
       )}
       {error && (
         <p className="text-destructive mt-4 text-xs" role="alert">

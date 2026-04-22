@@ -90,9 +90,7 @@ function StatementOfAccountDialogInner({
   onGenerated,
 }: StatementOfAccountDialogProps) {
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
-  const [lastGenerated, setLastGenerated] = useState<StatementResponse | null>(
-    null
-  );
+  const [lastGenerated, setLastGenerated] = useState<StatementResponse | null>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -165,10 +163,7 @@ function StatementOfAccountDialogInner({
     const req = {
       periodStart: values.periodStart,
       periodEnd: values.periodEnd,
-      templateId:
-        values.templateId && values.templateId.length > 0
-          ? values.templateId
-          : undefined,
+      templateId: values.templateId && values.templateId.length > 0 ? values.templateId : undefined,
     };
     return await generateStatementAction(slug, projectId, req);
   }
@@ -213,8 +208,7 @@ function StatementOfAccountDialogInner({
         const a = document.createElement("a");
         a.href = url;
         a.download =
-          result.fileName ??
-          `statement-of-account-${projectName.replace(/\s+/g, "-")}.pdf`;
+          result.fileName ?? `statement-of-account-${projectName.replace(/\s+/g, "-")}.pdf`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -233,26 +227,18 @@ function StatementOfAccountDialogInner({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent
-        className="max-w-3xl"
-        data-testid="statement-of-account-dialog"
-      >
+      <DialogContent className="max-w-3xl" data-testid="statement-of-account-dialog">
         <DialogHeader>
           <DialogTitle>Generate Statement of Account</DialogTitle>
           <DialogDescription>
             Generate a statement of account for{" "}
-            <span className="font-medium text-slate-900 dark:text-slate-100">
-              {projectName}
-            </span>
-            . The PDF will be saved to this matter&apos;s documents.
+            <span className="font-medium text-slate-900 dark:text-slate-100">{projectName}</span>.
+            The PDF will be saved to this matter&apos;s documents.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onPreview)}
-            className="space-y-4"
-          >
+          <form onSubmit={form.handleSubmit(onPreview)} className="space-y-4">
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
@@ -261,11 +247,7 @@ function StatementOfAccountDialogInner({
                   <FormItem>
                     <FormLabel>Period start</FormLabel>
                     <FormControl>
-                      <Input
-                        type="date"
-                        data-testid="statement-period-start-input"
-                        {...field}
-                      />
+                      <Input type="date" data-testid="statement-period-start-input" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -278,11 +260,7 @@ function StatementOfAccountDialogInner({
                   <FormItem>
                     <FormLabel>Period end</FormLabel>
                     <FormControl>
-                      <Input
-                        type="date"
-                        data-testid="statement-period-end-input"
-                        {...field}
-                      />
+                      <Input type="date" data-testid="statement-period-end-input" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -290,10 +268,7 @@ function StatementOfAccountDialogInner({
               />
             </div>
 
-            <div
-              className="max-h-[50vh] overflow-y-auto"
-              data-testid="statement-preview-container"
-            >
+            <div className="max-h-[50vh] overflow-y-auto" data-testid="statement-preview-container">
               {isGenerating && (
                 <div className="flex h-[240px] items-center justify-center rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
                   <p className="text-sm text-slate-500">
@@ -302,13 +277,11 @@ function StatementOfAccountDialogInner({
                   </p>
                 </div>
               )}
-              {!isGenerating && previewHtml && (
-                <A4PreviewWrapper html={previewHtml} />
-              )}
+              {!isGenerating && previewHtml && <A4PreviewWrapper html={previewHtml} />}
               {!isGenerating && !previewHtml && !error && (
                 <p className="text-xs text-slate-500 italic">
-                  Choose a period and click Preview &amp; Save to generate the
-                  statement. It will be saved to this matter&apos;s documents.
+                  Choose a period and click Preview &amp; Save to generate the statement. It will be
+                  saved to this matter&apos;s documents.
                 </p>
               )}
               {error && (

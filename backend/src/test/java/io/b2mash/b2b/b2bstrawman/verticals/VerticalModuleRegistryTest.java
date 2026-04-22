@@ -16,10 +16,10 @@ class VerticalModuleRegistryTest {
   }
 
   @Test
-  void getAllModules_returnsElevenModulesWithCorrectIds() {
+  void getAllModules_returnsTwelveModulesWithCorrectIds() {
     var modules = registry.getAllModules();
 
-    assertThat(modules).hasSize(11);
+    assertThat(modules).hasSize(12);
     assertThat(modules)
         .extracting(VerticalModuleRegistry.ModuleDefinition::id)
         .containsExactlyInAnyOrder(
@@ -31,6 +31,7 @@ class VerticalModuleRegistryTest {
             "resource_planning",
             "bulk_billing",
             "automation_builder",
+            "information_requests",
             "disbursements",
             "matter_closure",
             "retainer_agreements");
@@ -91,13 +92,14 @@ class VerticalModuleRegistryTest {
   }
 
   @Test
-  void getHorizontalModules_returnsThreeHorizontalModules() {
+  void getHorizontalModules_returnsFourHorizontalModules() {
     var horizontal = registry.getHorizontalModules();
 
-    assertThat(horizontal).hasSize(3);
+    assertThat(horizontal).hasSize(4);
     assertThat(horizontal)
         .extracting(VerticalModuleRegistry.ModuleDefinition::id)
-        .containsExactlyInAnyOrder("resource_planning", "bulk_billing", "automation_builder");
+        .containsExactlyInAnyOrder(
+            "resource_planning", "bulk_billing", "automation_builder", "information_requests");
     assertThat(horizontal)
         .allSatisfy(m -> assertThat(m.category()).isEqualTo(ModuleCategory.HORIZONTAL));
   }
@@ -131,6 +133,21 @@ class VerticalModuleRegistryTest {
     assertThat(module.get().navItems().getFirst().path()).isEqualTo("/invoices/billing-runs");
     assertThat(module.get().navItems().getFirst().label()).isEqualTo("Billing Runs");
     assertThat(module.get().navItems().getFirst().zone()).isEqualTo("finance");
+  }
+
+  @Test
+  void getModule_informationRequestsIsHorizontalEnabledForAllThreeVerticals() {
+    var module = registry.getModule("information_requests");
+
+    assertThat(module).isPresent();
+    assertThat(module.get().name()).isEqualTo("Information Requests");
+    assertThat(module.get().category()).isEqualTo(ModuleCategory.HORIZONTAL);
+    assertThat(module.get().defaultEnabledFor())
+        .containsExactlyInAnyOrder("legal-za", "accounting-za", "consulting-za");
+    assertThat(module.get().navItems()).hasSize(1);
+    assertThat(module.get().navItems().getFirst().path()).isEqualTo("/information-requests");
+    assertThat(module.get().navItems().getFirst().label()).isEqualTo("Information Requests");
+    assertThat(module.get().navItems().getFirst().zone()).isEqualTo("clients");
   }
 
   @Test

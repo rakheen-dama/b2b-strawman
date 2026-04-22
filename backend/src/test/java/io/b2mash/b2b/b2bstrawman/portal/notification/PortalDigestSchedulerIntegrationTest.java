@@ -186,17 +186,11 @@ class PortalDigestSchedulerIntegrationTest {
     // Wait a short window to be sure nothing arrives (scheduler is synchronous; email send is
     // fire-and-forget). 2s is enough when zero sends occur.
     boolean anything = greenMail.waitForIncomingEmail(2000, 1);
-    // If something arrived it must not be the digest subject.
-    MimeMessage[] received = greenMail.getReceivedMessages();
-    boolean digestSent = false;
-    for (MimeMessage msg : received) {
-      if (msg.getSubject() != null && msg.getSubject().toLowerCase().contains("weekly update")) {
-        digestSent = true;
-        break;
-      }
-    }
-    assertThat(digestSent)
-        .as("no digest email should be sent when every section is empty")
+    // If something arrived it must not be a digest for this test's contact. The scheduler sweeps
+    // every tenant schema, so digest emails addressed to OTHER contacts from prior tests may
+    // legitimately land in the shared GreenMail inbox — we only care about CONTACT_EMAIL.
+    assertThat(digestSentToContact(greenMail.getReceivedMessages()))
+        .as("no digest email should be sent to this contact when every section is empty")
         .isFalse();
   }
 
@@ -213,16 +207,8 @@ class PortalDigestSchedulerIntegrationTest {
     runInTenant(() -> scheduler.runWeeklyDigest());
 
     greenMail.waitForIncomingEmail(2000, 1);
-    MimeMessage[] received = greenMail.getReceivedMessages();
-    boolean digestSent = false;
-    for (MimeMessage msg : received) {
-      if (msg.getSubject() != null && msg.getSubject().toLowerCase().contains("weekly update")) {
-        digestSent = true;
-        break;
-      }
-    }
-    assertThat(digestSent)
-        .as("no digest email when contact opted out via digestEnabled=false")
+    assertThat(digestSentToContact(greenMail.getReceivedMessages()))
+        .as("no digest email to this contact when opted out via digestEnabled=false")
         .isFalse();
   }
 
@@ -249,16 +235,8 @@ class PortalDigestSchedulerIntegrationTest {
     runInTenant(() -> scheduler.runWeeklyDigest());
 
     greenMail.waitForIncomingEmail(2000, 1);
-    MimeMessage[] received = greenMail.getReceivedMessages();
-    boolean digestSent = false;
-    for (MimeMessage msg : received) {
-      if (msg.getSubject() != null && msg.getSubject().toLowerCase().contains("weekly update")) {
-        digestSent = true;
-        break;
-      }
-    }
-    assertThat(digestSent)
-        .as("BIWEEKLY cadence within 12-day skip window should not send")
+    assertThat(digestSentToContact(greenMail.getReceivedMessages()))
+        .as("BIWEEKLY cadence within 12-day skip window should not send to this contact")
         .isFalse();
   }
 
@@ -275,18 +253,33 @@ class PortalDigestSchedulerIntegrationTest {
     runInTenant(() -> scheduler.runWeeklyDigest());
 
     greenMail.waitForIncomingEmail(2000, 1);
-    MimeMessage[] received = greenMail.getReceivedMessages();
-    boolean digestSent = false;
-    for (MimeMessage msg : received) {
-      if (msg.getSubject() != null && msg.getSubject().toLowerCase().contains("weekly update")) {
-        digestSent = true;
-        break;
-      }
-    }
-    assertThat(digestSent).as("cadence=OFF should never produce a digest send").isFalse();
+    assertThat(digestSentToContact(greenMail.getReceivedMessages()))
+        .as("cadence=OFF should never produce a digest send to this contact")
+        .isFalse();
   }
 
   // ── Helpers ─────────────────────────────────────────────────────────────
+
+  /**
+   * Returns true iff any message in {@code received} is a digest email addressed to this test's
+   * {@link #CONTACT_EMAIL}. The scheduler sweeps every tenant schema in the JVM, so digests for
+   * unrelated contacts (seeded by other test classes sharing the GreenMail singleton) may coexist
+   * in the inbox — filtering by recipient isolates this test from that cross-test traffic.
+   */
+  private boolean digestSentToContact(MimeMessage[] received) throws Exception {
+    for (MimeMessage msg : received) {
+      if (msg.getSubject() == null
+          || !msg.getSubject().toLowerCase().contains("weekly update")
+          || msg.getAllRecipients() == null
+          || msg.getAllRecipients().length == 0) {
+        continue;
+      }
+      if (CONTACT_EMAIL.equals(msg.getAllRecipients()[0].toString())) {
+        return true;
+      }
+    }
+    return false;
+  }
 
   private void seedPortalInvoice(UUID portalInvoiceId, String invoiceNumber) {
     // Directly upsert the portal read-model row — avoids needing a firm-side invoice lifecycle.

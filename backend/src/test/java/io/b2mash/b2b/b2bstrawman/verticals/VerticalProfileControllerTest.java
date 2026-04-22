@@ -93,7 +93,7 @@ class VerticalProfileControllerTest {
         .perform(get("/api/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_vp_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
-        .andExpect(jsonPath("$", hasSize(11)))
+        .andExpect(jsonPath("$", hasSize(12)))
         .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(true))
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(false))
         .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(false))
@@ -175,7 +175,7 @@ class VerticalProfileControllerTest {
     mockMvc
         .perform(get("/api/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_vp_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(11)))
+        .andExpect(jsonPath("$", hasSize(12)))
         .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(false))
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(false))
         .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(false))
@@ -195,7 +195,7 @@ class VerticalProfileControllerTest {
     mockMvc
         .perform(get("/api/modules").with(TestJwtFactory.ownerJwt(ORG_ID, "user_vp_owner")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(11)))
+        .andExpect(jsonPath("$", hasSize(12)))
         .andExpect(jsonPath("$[?(@.id == 'trust_accounting')].enabled").value(true))
         .andExpect(jsonPath("$[?(@.id == 'court_calendar')].enabled").value(true))
         .andExpect(jsonPath("$[?(@.id == 'conflict_check')].enabled").value(true))

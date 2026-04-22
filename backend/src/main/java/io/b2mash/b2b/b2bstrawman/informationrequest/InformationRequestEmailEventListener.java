@@ -210,6 +210,7 @@ public class InformationRequestEmailEventListener {
       }
       carrier.run(action);
     } else {
+      log.warn("Information-request event missing tenantId; running without tenant scope");
       action.run();
     }
   }

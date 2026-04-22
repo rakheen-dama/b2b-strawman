@@ -1,10 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.portal;
 
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerCreatedEvent;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.EventListener;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -59,8 +61,7 @@ public class PortalContactAutoProvisioner {
     }
 
     // Idempotent pre-check: if a contact already exists for this customer+email, skip silently.
-    // Raising ResourceConflictException from createContact would mark the outer customer-create
-    // transaction rollback-only, which we must avoid for replay scenarios.
+    // The try/catch below is the belt — this pre-check is the suspender for the common replay path.
     if (portalContactRepository.existsByEmailAndCustomerId(email, event.getCustomerId())) {
       log.debug(
           "Portal contact for customer {} already exists with email {} — skipping auto-provision",
@@ -69,17 +70,29 @@ public class PortalContactAutoProvisioner {
       return;
     }
 
-    var contact =
-        portalContactService.createContact(
-            orgId,
-            event.getCustomerId(),
-            email,
-            event.getName(),
-            PortalContact.ContactRole.GENERAL);
-    log.info(
-        "Auto-provisioned portal contact {} for customer {} (email={})",
-        contact.getId(),
-        event.getCustomerId(),
-        email);
+    // Belt against a race: two concurrent events passing the pre-check would both call
+    // createContact
+    // and one would hit the uq_portal_contacts_email_customer unique constraint. Swallowing the
+    // resulting exception here prevents the outer customer-create transaction from being marked
+    // rollback-only.
+    try {
+      var contact =
+          portalContactService.createContact(
+              orgId,
+              event.getCustomerId(),
+              email,
+              event.getName(),
+              PortalContact.ContactRole.GENERAL);
+      log.info(
+          "Auto-provisioned portal contact {} for customer {} (email={})",
+          contact.getId(),
+          event.getCustomerId(),
+          email);
+    } catch (ResourceConflictException | DataIntegrityViolationException e) {
+      log.debug(
+          "Portal contact for customer {} already exists with email {} (race) — skipping",
+          event.getCustomerId(),
+          email);
+    }
   }
 }

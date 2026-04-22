@@ -13,12 +13,9 @@ export const closeMatterSchema = z
     override: z.boolean(),
     overrideJustification: z.string().trim().max(5000).optional(),
   })
-  .refine(
-    (data) => !data.override || (data.overrideJustification?.trim().length ?? 0) >= 20,
-    {
-      message: "Override justification must be at least 20 characters",
-      path: ["overrideJustification"],
-    }
-  );
+  .refine((data) => !data.override || (data.overrideJustification?.trim().length ?? 0) >= 20, {
+    message: "Override justification must be at least 20 characters",
+    path: ["overrideJustification"],
+  });
 
 export type CloseMatterFormData = z.infer<typeof closeMatterSchema>;

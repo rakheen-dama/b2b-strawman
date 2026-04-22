@@ -37,12 +37,9 @@ vi.mock("sonner", () => ({
   toast: { success: toastSuccess, error: toastError },
 }));
 
-vi.mock(
-  "@/app/(app)/org/[slug]/projects/[id]/matter-reopen-actions",
-  () => ({
-    reopenMatterAction: (...args: unknown[]) => mockReopen(...args),
-  })
-);
+vi.mock("@/app/(app)/org/[slug]/projects/[id]/matter-reopen-actions", () => ({
+  reopenMatterAction: (...args: unknown[]) => mockReopen(...args),
+}));
 
 // --- Imports after mocks ---
 
@@ -123,9 +120,7 @@ describe("MatterReopenAction", () => {
         { capabilities: ["CLOSE_MATTER"] }
       )
     );
-    expect(
-      container.querySelector('[data-testid="reopen-matter-btn"]')
-    ).toBeNull();
+    expect(container.querySelector('[data-testid="reopen-matter-btn"]')).toBeNull();
   });
 
   it("hides the button when status=ARCHIVED", () => {
@@ -140,9 +135,7 @@ describe("MatterReopenAction", () => {
         { capabilities: ["CLOSE_MATTER"] }
       )
     );
-    expect(
-      container.querySelector('[data-testid="reopen-matter-btn"]')
-    ).toBeNull();
+    expect(container.querySelector('[data-testid="reopen-matter-btn"]')).toBeNull();
   });
 
   it("hides the button when matter_closure module is disabled", () => {
@@ -157,9 +150,7 @@ describe("MatterReopenAction", () => {
         { modules: [], capabilities: ["CLOSE_MATTER"] }
       )
     );
-    expect(
-      container.querySelector('[data-testid="reopen-matter-btn"]')
-    ).toBeNull();
+    expect(container.querySelector('[data-testid="reopen-matter-btn"]')).toBeNull();
   });
 
   it("hides the button when user lacks CLOSE_MATTER capability", () => {
@@ -174,9 +165,7 @@ describe("MatterReopenAction", () => {
         { capabilities: [], isAdmin: false, isOwner: false }
       )
     );
-    expect(
-      container.querySelector('[data-testid="reopen-matter-btn"]')
-    ).toBeNull();
+    expect(container.querySelector('[data-testid="reopen-matter-btn"]')).toBeNull();
   });
 });
 
@@ -208,9 +197,7 @@ describe("MatterReopenDialog", () => {
     await user.click(submit);
 
     await waitFor(() => {
-      expect(
-        screen.getByText(/at least 10 characters/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/at least 10 characters/i)).toBeInTheDocument();
     });
 
     // Server action should never have been called
@@ -303,9 +290,7 @@ describe("MatterReopenDialog", () => {
     });
 
     // Toast error fired with the friendly message
-    expect(toastError).toHaveBeenCalledWith(
-      expect.stringMatching(/retention window expired/i)
-    );
+    expect(toastError).toHaveBeenCalledWith(expect.stringMatching(/retention window expired/i));
 
     // Dialog stays open so user can read the message
     expect(onOpenChange).not.toHaveBeenCalledWith(false);

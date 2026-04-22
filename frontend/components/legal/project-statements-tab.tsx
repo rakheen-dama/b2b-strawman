@@ -35,11 +35,7 @@ export function ProjectStatementsTab(props: ProjectStatementsTabProps) {
   );
 }
 
-function ProjectStatementsTabInner({
-  projectId,
-  slug,
-  projectName,
-}: ProjectStatementsTabProps) {
+function ProjectStatementsTabInner({ projectId, slug, projectName }: ProjectStatementsTabProps) {
   const { hasCapability } = useCapabilities();
   const canGenerate = hasCapability("GENERATE_STATEMENT_OF_ACCOUNT");
 
@@ -119,8 +115,7 @@ function ProjectStatementsTabInner({
           data-testid="statements-error"
           className="rounded-md border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300"
         >
-          Failed to load statements.{" "}
-          {error instanceof Error && error.message ? error.message : ""}
+          Failed to load statements. {error instanceof Error && error.message ? error.message : ""}
         </div>
       ) : isEmpty ? (
         <div

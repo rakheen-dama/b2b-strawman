@@ -313,20 +313,15 @@ export function FieldDefinitionDialog({
               <Checkbox
                 id="fd-portal-visible-deadline"
                 checked={form.portalVisibleDeadline}
-                onCheckedChange={(checked) =>
-                  form.setPortalVisibleDeadline(checked === true)
-                }
+                onCheckedChange={(checked) => form.setPortalVisibleDeadline(checked === true)}
               />
               <div>
-                <Label
-                  htmlFor="fd-portal-visible-deadline"
-                  className="text-sm font-normal"
-                >
+                <Label htmlFor="fd-portal-visible-deadline" className="text-sm font-normal">
                   Surface this date on portal as a deadline
                 </Label>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
-                  When enabled, portal contacts see upcoming values of this
-                  date on the Deadlines page.
+                  When enabled, portal contacts see upcoming values of this date on the Deadlines
+                  page.
                 </p>
               </div>
             </div>

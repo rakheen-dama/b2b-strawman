@@ -81,12 +81,7 @@ export default async function ProjectsPage({
   }
 
   // Build query string with view and status filters
-  const VALID_STATUSES = new Set<ProjectStatus>([
-    "ACTIVE",
-    "COMPLETED",
-    "ARCHIVED",
-    "CLOSED",
-  ]);
+  const VALID_STATUSES = new Set<ProjectStatus>(["ACTIVE", "COMPLETED", "ARCHIVED", "CLOSED"]);
   const rawStatus =
     typeof resolvedSearchParams.status === "string" ? resolvedSearchParams.status : null;
   const statusParam =

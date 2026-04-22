@@ -52,10 +52,7 @@ export async function generateStatement(
   projectId: string,
   req: GenerateStatementRequest
 ): Promise<StatementResponse> {
-  return api.post<StatementResponse>(
-    `/api/matters/${projectId}/statements`,
-    req
-  );
+  return api.post<StatementResponse>(`/api/matters/${projectId}/statements`, req);
 }
 
 export async function listStatements(
@@ -71,11 +68,6 @@ export async function listStatements(
   );
 }
 
-export async function getStatement(
-  projectId: string,
-  id: string
-): Promise<StatementResponse> {
-  return api.get<StatementResponse>(
-    `/api/matters/${projectId}/statements/${id}`
-  );
+export async function getStatement(projectId: string, id: string): Promise<StatementResponse> {
+  return api.get<StatementResponse>(`/api/matters/${projectId}/statements/${id}`);
 }

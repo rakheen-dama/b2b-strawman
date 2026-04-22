@@ -8,16 +8,12 @@ const mockCreateFieldDefinition = vi.fn();
 const mockUpdateFieldDefinition = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/settings/custom-fields/actions", () => ({
-  createFieldDefinitionAction: (...args: unknown[]) =>
-    mockCreateFieldDefinition(...args),
-  updateFieldDefinitionAction: (...args: unknown[]) =>
-    mockUpdateFieldDefinition(...args),
+  createFieldDefinitionAction: (...args: unknown[]) => mockCreateFieldDefinition(...args),
+  updateFieldDefinitionAction: (...args: unknown[]) => mockUpdateFieldDefinition(...args),
   fetchFieldUsageAction: () => Promise.resolve({ templates: [], clauses: [] }),
 }));
 
-function makeDateField(
-  overrides: Partial<FieldDefinitionResponse> = {},
-): FieldDefinitionResponse {
+function makeDateField(overrides: Partial<FieldDefinitionResponse> = {}): FieldDefinitionResponse {
   return {
     id: "fd-pd-1",
     entityType: "PROJECT",
@@ -56,25 +52,19 @@ describe("FieldDefinition portalVisibleDeadline toggle", () => {
     render(
       <FieldDefinitionDialog slug="acme" entityType="PROJECT">
         <button>Open portal deadline toggle dialog</button>
-      </FieldDefinitionDialog>,
+      </FieldDefinitionDialog>
     );
-    await user.click(
-      screen.getByText("Open portal deadline toggle dialog"),
-    );
+    await user.click(screen.getByText("Open portal deadline toggle dialog"));
 
     // Default fieldType is TEXT — toggle hidden.
     expect(
-      screen.queryByLabelText(/Surface this date on portal as a deadline/i),
+      screen.queryByLabelText(/Surface this date on portal as a deadline/i)
     ).not.toBeInTheDocument();
 
     // Switch to DATE — toggle appears.
-    const fieldTypeSelect = screen.getByLabelText(
-      "Field Type",
-    ) as HTMLSelectElement;
+    const fieldTypeSelect = screen.getByLabelText("Field Type") as HTMLSelectElement;
     await user.selectOptions(fieldTypeSelect, "DATE");
-    expect(
-      screen.getByLabelText(/Surface this date on portal as a deadline/i),
-    ).toBeInTheDocument();
+    expect(screen.getByLabelText(/Surface this date on portal as a deadline/i)).toBeInTheDocument();
   });
 
   it("persists portalVisibleDeadline: true via updateFieldDefinitionAction", async () => {
@@ -82,31 +72,23 @@ describe("FieldDefinition portalVisibleDeadline toggle", () => {
     const user = userEvent.setup();
     const field = makeDateField();
     render(
-      <FieldDefinitionDialog
-        slug="acme"
-        entityType="PROJECT"
-        field={field}
-      >
+      <FieldDefinitionDialog slug="acme" entityType="PROJECT" field={field}>
         <button>Edit portal deadline field</button>
-      </FieldDefinitionDialog>,
+      </FieldDefinitionDialog>
     );
     await user.click(screen.getByText("Edit portal deadline field"));
 
-    const checkbox = screen.getByLabelText(
-      /Surface this date on portal as a deadline/i,
-    );
+    const checkbox = screen.getByLabelText(/Surface this date on portal as a deadline/i);
     expect(checkbox).not.toBeChecked();
 
     await user.click(checkbox);
-    await user.click(
-      screen.getByRole("button", { name: /Save Changes/i }),
-    );
+    await user.click(screen.getByRole("button", { name: /Save Changes/i }));
 
     await waitFor(() => {
       expect(mockUpdateFieldDefinition).toHaveBeenCalledWith(
         "acme",
         "fd-pd-1",
-        expect.objectContaining({ portalVisibleDeadline: true }),
+        expect.objectContaining({ portalVisibleDeadline: true })
       );
     });
   });
@@ -116,21 +98,13 @@ describe("FieldDefinition portalVisibleDeadline toggle", () => {
     const user = userEvent.setup();
     const field = makeDateField();
     render(
-      <FieldDefinitionDialog
-        slug="acme"
-        entityType="PROJECT"
-        field={field}
-      >
+      <FieldDefinitionDialog slug="acme" entityType="PROJECT" field={field}>
         <button>Edit portal deadline field (unchecked)</button>
-      </FieldDefinitionDialog>,
+      </FieldDefinitionDialog>
     );
-    await user.click(
-      screen.getByText("Edit portal deadline field (unchecked)"),
-    );
+    await user.click(screen.getByText("Edit portal deadline field (unchecked)"));
 
-    const checkbox = screen.getByLabelText(
-      /Surface this date on portal as a deadline/i,
-    );
+    const checkbox = screen.getByLabelText(/Surface this date on portal as a deadline/i);
     expect(checkbox).not.toBeChecked();
 
     // Do NOT click the checkbox — submit as-is.
@@ -148,32 +122,22 @@ describe("FieldDefinition portalVisibleDeadline toggle", () => {
     const user = userEvent.setup();
     const field = makeDateField();
     render(
-      <FieldDefinitionDialog
-        slug="acme"
-        entityType="PROJECT"
-        field={field}
-      >
+      <FieldDefinitionDialog slug="acme" entityType="PROJECT" field={field}>
         <button>Edit portal deadline field (type-switch)</button>
-      </FieldDefinitionDialog>,
+      </FieldDefinitionDialog>
     );
-    await user.click(
-      screen.getByText("Edit portal deadline field (type-switch)"),
-    );
+    await user.click(screen.getByText("Edit portal deadline field (type-switch)"));
 
     // Toggle on while DATE.
-    const checkbox = screen.getByLabelText(
-      /Surface this date on portal as a deadline/i,
-    );
+    const checkbox = screen.getByLabelText(/Surface this date on portal as a deadline/i);
     await user.click(checkbox);
     expect(checkbox).toBeChecked();
 
     // Switch field type to TEXT — toggle hidden, but state may still be true.
-    const fieldTypeSelect = screen.getByLabelText(
-      "Field Type",
-    ) as HTMLSelectElement;
+    const fieldTypeSelect = screen.getByLabelText("Field Type") as HTMLSelectElement;
     await user.selectOptions(fieldTypeSelect, "TEXT");
     expect(
-      screen.queryByLabelText(/Surface this date on portal as a deadline/i),
+      screen.queryByLabelText(/Surface this date on portal as a deadline/i)
     ).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: /Save Changes/i }));

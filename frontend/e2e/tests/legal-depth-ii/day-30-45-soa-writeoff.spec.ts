@@ -41,9 +41,7 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     await matterLink.click();
     await page.waitForTimeout(1500);
 
-    const statementsTab = page
-      .locator('[data-testid="project-statements-tab"]')
-      .first();
+    const statementsTab = page.locator('[data-testid="project-statements-tab"]').first();
     const statementsTabRole = page.getByRole("tab", { name: /statement/i }).first();
 
     if (await statementsTab.isVisible({ timeout: 3000 }).catch(() => false)) {
@@ -73,9 +71,7 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     await matterLink.click();
     await page.waitForTimeout(1500);
 
-    const statementsTab = page
-      .locator('[data-testid="project-statements-tab"]')
-      .first();
+    const statementsTab = page.locator('[data-testid="project-statements-tab"]').first();
     const statementsTabRole = page.getByRole("tab", { name: /statement/i }).first();
     if (await statementsTab.isVisible({ timeout: 3000 }).catch(() => false)) {
       await statementsTab.click();
@@ -84,9 +80,7 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     }
     await page.waitForTimeout(800);
 
-    const generateBtn = page
-      .getByRole("button", { name: /generate\s+statement/i })
-      .first();
+    const generateBtn = page.getByRole("button", { name: /generate\s+statement/i }).first();
     if (!(await generateBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
       test.skip(true, "Generate Statement button not found");
       return;
@@ -123,9 +117,7 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     }
 
     const preview = page.locator('[data-testid="statement-preview-container"]').first();
-    expect
-      .soft(await preview.isVisible({ timeout: 5000 }).catch(() => false))
-      .toBeTruthy();
+    expect.soft(await preview.isVisible({ timeout: 5000 }).catch(() => false)).toBeTruthy();
 
     // Soft assertions on content — fees / disbursements / trust / summary
     const previewText = await preview.textContent().catch(() => "");
@@ -149,9 +141,7 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     await matterLink.click();
     await page.waitForTimeout(1500);
 
-    const statementsTab = page
-      .locator('[data-testid="project-statements-tab"]')
-      .first();
+    const statementsTab = page.locator('[data-testid="project-statements-tab"]').first();
     if (await statementsTab.isVisible({ timeout: 3000 }).catch(() => false)) {
       await statementsTab.click();
       await page.waitForTimeout(500);
@@ -274,9 +264,7 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     if (await actionFilter.isVisible({ timeout: 2000 }).catch(() => false)) {
       await actionFilter.click();
       await page.waitForTimeout(300);
-      const writeOffOption = page
-        .getByRole("option", { name: /write[_\s]*off/i })
-        .first();
+      const writeOffOption = page.getByRole("option", { name: /write[_\s]*off/i }).first();
       if (await writeOffOption.isVisible({ timeout: 2000 }).catch(() => false)) {
         await writeOffOption.click();
         await page.waitForTimeout(500);
@@ -304,9 +292,7 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     await page.goto(`${BASE}/invoices`);
     await expect(page.locator("main")).toBeVisible({ timeout: 10_000 });
 
-    const newFeeNoteBtn = page
-      .getByRole("button", { name: /New (Invoice|Fee Note)/i })
-      .first();
+    const newFeeNoteBtn = page.getByRole("button", { name: /New (Invoice|Fee Note)/i }).first();
     if (!(await newFeeNoteBtn.isVisible({ timeout: 3000 }).catch(() => false))) {
       test.skip(true, "New Fee Note button not found");
       return;
@@ -328,7 +314,10 @@ test.describe.serial("Day 30-45 — Statement of Account + Write-off (Phase 67)"
     }
 
     // The drafting view should not list the written-off disbursement reason text
-    const draftText = await page.locator("main").textContent().catch(() => "");
+    const draftText = await page
+      .locator("main")
+      .textContent()
+      .catch(() => "");
     expect.soft(draftText || "").not.toMatch(/Client\s+dispute.*unable\s+to\s+recover/i);
 
     await page.waitForLoadState("networkidle");

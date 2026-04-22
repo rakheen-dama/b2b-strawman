@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -138,7 +139,7 @@ class VerticalProfileIntegrationTest {
 
   @Test
   @Order(2)
-  void switchFromLegalZaToConsultingGeneric_clearsModulesAndTerminology() throws Exception {
+  void switchFromLegalZaToConsultingGeneric_clearsVerticalModulesAndTerminology() throws Exception {
     // First ensure we are on legal-za
     mockMvc
         .perform(
@@ -150,7 +151,9 @@ class VerticalProfileIntegrationTest {
                     {"verticalProfile": "legal-za"}"""))
         .andExpect(status().isOk());
 
-    // Switch to consulting-generic
+    // Switch to consulting-generic. Per ADR-239, vertical modules from legal-za are dropped and
+    // terminology is cleared, but HORIZONTAL modules (information_requests) survive the profile
+    // change — they are profile-independent and manually toggled.
     mockMvc
         .perform(
             patch("/api/settings/vertical-profile")
@@ -161,7 +164,7 @@ class VerticalProfileIntegrationTest {
                     {"verticalProfile": "consulting-generic"}"""))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.verticalProfile").value("consulting-generic"))
-        .andExpect(jsonPath("$.enabledModules").isEmpty())
+        .andExpect(jsonPath("$.enabledModules", contains("information_requests")))
         .andExpect(jsonPath("$.terminologyNamespace").value(nullValue()));
   }
 

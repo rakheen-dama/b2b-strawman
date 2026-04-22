@@ -28,7 +28,7 @@ class VerticalProfileRegistryTest {
     assertThat(p.name()).isEqualTo("South African Accounting Firm");
     assertThat(p.description()).startsWith("Complete configuration for");
     assertThat(p.currency()).isEqualTo("ZAR");
-    assertThat(p.enabledModules()).containsExactly("deadlines");
+    assertThat(p.enabledModules()).containsExactlyInAnyOrder("deadlines", "information_requests");
     assertThat(p.terminologyNamespace()).isEqualTo("en-ZA-accounting");
     assertThat(p.packs()).containsKey("field");
   }
@@ -68,7 +68,8 @@ class VerticalProfileRegistryTest {
             "trust_accounting",
             "disbursements",
             "matter_closure",
-            "deadlines");
+            "deadlines",
+            "information_requests");
   }
 
   @Test
@@ -76,18 +77,21 @@ class VerticalProfileRegistryTest {
     // GAP-C-04 + GAP-C-07: TeamUtilizationWidget depends on resource_planning and the
     // Automations UI depends on automation_builder. Both modules ship enabled for consulting-za
     // so fresh tenants can see utilization and manage automation rules out of the box.
+    // GAP-P-01 also enables information_requests for portal request flows.
     var profile = registry.getProfile("consulting-za").orElseThrow();
     assertThat(profile.enabledModules())
-        .containsExactlyInAnyOrder("resource_planning", "automation_builder");
+        .containsExactlyInAnyOrder(
+            "resource_planning", "automation_builder", "information_requests");
   }
 
   @Test
   void accountingZaProfileOnlyEnablesDeadlinesModule() {
-    // Epic 497A added the portal deadline feature; it is enabled for accounting-za. The
-    // regression guard still holds for every OTHER module — none of the GAP-C-04/C-07 modules
-    // may leak into accounting-za.
+    // Epic 497A added the portal deadline feature; it is enabled for accounting-za. GAP-P-01
+    // also enables information_requests. The regression guard still holds for every OTHER
+    // module — none of the GAP-C-04/C-07 modules may leak into accounting-za.
     var profile = registry.getProfile("accounting-za").orElseThrow();
-    assertThat(profile.enabledModules()).containsExactly("deadlines");
+    assertThat(profile.enabledModules())
+        .containsExactlyInAnyOrder("deadlines", "information_requests");
   }
 
   @Test

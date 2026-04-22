@@ -37,6 +37,7 @@ class TrustAccountingProfileRegistrationTest {
             "trust_accounting",
             "disbursements",
             "matter_closure",
-            "deadlines");
+            "deadlines",
+            "information_requests");
   }
 }

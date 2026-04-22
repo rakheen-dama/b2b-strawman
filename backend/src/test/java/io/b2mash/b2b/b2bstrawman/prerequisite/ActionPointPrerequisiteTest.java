@@ -86,7 +86,10 @@ class ActionPointPrerequisiteTest {
         TestMemberHelper.syncMember(
             mockMvc, ORG_ID, "user_ap_owner", "ap_owner@test.com", "AP Owner", "owner");
 
-    // Customer missing portal contact AND with blank email — structural prereqs will fail
+    // Customer missing portal contact AND with blank email — structural prereqs will fail.
+    // GAP-L-34: the PortalContactAutoProvisioner auto-creates a portal contact on customer
+    // creation (via CustomerCreatedEvent); we delete it explicitly here so the "missing portal
+    // contact" structural violation is reachable.
     incompleteCustomerId =
         TestEntityHelper.createCustomer(
             mockMvc,
@@ -100,6 +103,7 @@ class ActionPointPrerequisiteTest {
                 + " WHERE id = ?::uuid")
             .formatted(schemaName),
         incompleteCustomerId);
+    deleteAutoProvisionedPortalContacts(incompleteCustomerId);
 
     // Customer with portal contact and email — passes prerequisites
     completeCustomerId =
@@ -133,6 +137,7 @@ class ActionPointPrerequisiteTest {
                 + " lifecycle_status = 'ACTIVE' WHERE id = ?::uuid")
             .formatted(schemaName),
         combinedViolationsCustomerId);
+    deleteAutoProvisionedPortalContacts(combinedViolationsCustomerId);
 
     // Customer for combined flow test — starts without prerequisites
     flowCustomerId =
@@ -147,6 +152,18 @@ class ActionPointPrerequisiteTest {
                 + " lifecycle_status = 'ACTIVE' WHERE id = ?::uuid")
             .formatted(schemaName),
         flowCustomerId);
+    deleteAutoProvisionedPortalContacts(flowCustomerId);
+  }
+
+  /**
+   * Removes any portal contacts auto-created by {@code PortalContactAutoProvisioner} so the test
+   * can assert the "customer has no portal contact" structural violation. GAP-L-34 introduced an
+   * event-driven auto-create which otherwise silently satisfies this prerequisite.
+   */
+  private void deleteAutoProvisionedPortalContacts(String customerIdStr) {
+    jdbcTemplate.update(
+        "DELETE FROM \"%s\".portal_contacts WHERE customer_id = ?::uuid".formatted(schemaName),
+        customerIdStr);
   }
 
   // --- Invoice creation prerequisite tests ---

@@ -108,7 +108,8 @@ class VerticalProfileIntegrationTest {
                     "trust_accounting",
                     "disbursements",
                     "matter_closure",
-                    "deadlines")))
+                    "deadlines",
+                    "information_requests")))
         .andExpect(jsonPath("$.terminologyNamespace").value("en-ZA-legal"));
 
     // Verify audit event was logged

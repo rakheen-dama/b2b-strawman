@@ -11,8 +11,20 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.task.Task;
+import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.util.Map;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -25,6 +37,7 @@ import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequ
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -39,6 +52,12 @@ class TimeEntryIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private CustomerRepository customerRepository;
+  @Autowired private CustomerProjectRepository customerProjectRepository;
+  @Autowired private ProjectRepository projectRepository;
+  @Autowired private TaskRepository taskRepository;
+  @Autowired private TransactionTemplate transactionTemplate;
 
   private String projectId;
   private String taskId;
@@ -757,6 +776,112 @@ class TimeEntryIntegrationTest {
             .andExpect(jsonPath("$.taskId").value(taskId))
             .andExpect(jsonPath("$.memberId").value(memberIdMember))
             .andReturn();
+  }
+
+  // --- Customer lifecycle guard (GAP-L-56) ---
+
+  @Test
+  void createTimeEntryAllowedForProspectCustomer() throws Exception {
+    // GAP-L-56: PROSPECT customers must allow time-entry creation — time entries are
+    // record-keeping on work already performed (e.g. consultation hours logged before
+    // client activation). Previously the PROSPECT lifecycle blocked submits with
+    // "Cannot create time entry for customer in PROSPECT lifecycle status".
+    var prospectTaskId = seedMatterWithCustomerInStatus(LifecycleStatus.PROSPECT);
+
+    mockMvc
+        .perform(
+            post("/api/tasks/" + prospectTaskId + "/time-entries")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "date": "2026-02-10",
+                      "durationMinutes": 150,
+                      "billable": true,
+                      "description": "Consultation on RAF matter"
+                    }
+                    """))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.durationMinutes").value(150))
+        .andExpect(jsonPath("$.billable").value(true));
+  }
+
+  @Test
+  void createTimeEntryBlockedForOffboardedCustomer() throws Exception {
+    // Regression guard: OFFBOARDED remains a terminal state — time tracking is closed
+    // once off-boarding completes.
+    var offboardedTaskId = seedMatterWithCustomerInStatus(LifecycleStatus.OFFBOARDED);
+
+    mockMvc
+        .perform(
+            post("/api/tasks/" + offboardedTaskId + "/time-entries")
+                .with(ownerJwt())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "date": "2026-02-10",
+                      "durationMinutes": 60,
+                      "billable": true
+                    }
+                    """))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Lifecycle action blocked"))
+        .andExpect(jsonPath("$.detail").value(org.hamcrest.Matchers.containsString("OFFBOARDED")));
+  }
+
+  /**
+   * Provisions a new project + task under tenant A linked to a customer with the given lifecycle
+   * status. Returns the new task id. Runs directly against repositories inside a tenant-scoped
+   * transaction to bypass the customer-create lifecycle gates.
+   */
+  private String seedMatterWithCustomerInStatus(LifecycleStatus status) {
+    var tenantSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+    var memberUuid = UUID.fromString(memberIdOwner);
+    var taskIdHolder = new UUID[1];
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberUuid)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var customer =
+                          TestCustomerFactory.createCustomerWithStatus(
+                              "GAP-L-56 " + status + " Client",
+                              "gap-l-56-" + status.name().toLowerCase() + "@test.com",
+                              memberUuid,
+                              status);
+                      customer = customerRepository.save(customer);
+
+                      var project =
+                          new Project(
+                              "GAP-L-56 " + status + " Matter",
+                              "Project for lifecycle guard test",
+                              memberUuid);
+                      project = projectRepository.save(project);
+
+                      customerProjectRepository.save(
+                          new CustomerProject(customer.getId(), project.getId(), memberUuid));
+
+                      var task =
+                          new Task(
+                              project.getId(),
+                              "Lifecycle test task",
+                              "Task for time-entry lifecycle test",
+                              "MEDIUM",
+                              "TASK",
+                              null,
+                              memberUuid);
+                      task = taskRepository.save(task);
+                      taskIdHolder[0] = task.getId();
+                    }));
+
+    return taskIdHolder[0].toString();
   }
 
   // --- Helpers ---

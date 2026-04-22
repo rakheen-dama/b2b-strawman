@@ -130,4 +130,33 @@ describe("CreateDisbursementDialog", () => {
       expect(mockCreate).not.toHaveBeenCalled();
     });
   });
+
+  it("renders Matter options when fetchProjects returns a flat array", async () => {
+    // GAP-L-57 regression guard: backend GET /api/projects returns a flat
+    // List<ProjectResponse>, not a Page<T>. The server action must handle
+    // both shapes; if it dereferences .content on a flat array, the Matter
+    // combobox ends up empty and Day 21.6-21.9 is blocked.
+    const FLAT_PROJECTS = [
+      { id: "p-1", name: "Dlamini v Road Accident Fund" },
+      { id: "p-2", name: "Estate Late Peter Moroka" },
+    ];
+    mockFetchProjects.mockResolvedValueOnce(FLAT_PROJECTS);
+    mockFetchCustomers.mockResolvedValueOnce(CUSTOMERS);
+
+    await openDialog();
+
+    // Wait for projects-loading to clear (placeholder text changes from
+    // "Loading matters..." to "-- Select matter --").
+    await waitFor(() =>
+      expect(screen.getByText("-- Select matter --")).toBeInTheDocument()
+    );
+
+    // Both flat-array entries should render as <option>s.
+    expect(
+      screen.getByRole("option", { name: "Dlamini v Road Accident Fund" })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("option", { name: "Estate Late Peter Moroka" })
+    ).toBeInTheDocument();
+  });
 });

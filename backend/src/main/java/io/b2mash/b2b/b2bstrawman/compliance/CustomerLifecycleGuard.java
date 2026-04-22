@@ -16,10 +16,20 @@ public class CustomerLifecycleGuard {
     var status = customer.getLifecycleStatus();
 
     switch (action) {
-      case CREATE_PROJECT, CREATE_TASK, CREATE_TIME_ENTRY -> {
+      case CREATE_PROJECT, CREATE_TASK -> {
         if (status == LifecycleStatus.PROSPECT
             || status == LifecycleStatus.OFFBOARDING
             || status == LifecycleStatus.OFFBOARDED) {
+          throwBlocked(action, status);
+        }
+      }
+      case CREATE_TIME_ENTRY -> {
+        // Time entries are record-keeping on work already performed. They are
+        // permitted against PROSPECT and OFFBOARDING customers (e.g. consultation
+        // hours logged before client-activation, or final billing hours after
+        // lifecycle close initiated). Only OFFBOARDED (terminal) is blocked —
+        // after a customer is fully off-boarded, time tracking is closed.
+        if (status == LifecycleStatus.OFFBOARDED) {
           throwBlocked(action, status);
         }
       }

@@ -84,3 +84,52 @@ Per instructions: "On BLOCKER (HIGH severity that prevents downstream): Stop. Lo
 ## QA Position next
 
 **Day 21 — 21.1 (blocked pending GAP-L-56 + GAP-L-57).** Day 28 fee-note generation depends on billable time entries + unbilled disbursements; both are empty. Orchestrator should triage L-56 + L-57 → Dev → restart → QA re-runs Day 21 Phase A + B, then Day 28.
+
+---
+
+## Re-verify post-L56/L57 fixes
+
+Cycle: 1 turn 6 | Date: 2026-04-23 00:55 SAST | Auth: Keycloak (Bob / Admin) | Frontend: :3000 | Backend: :8080 (PID 25040 post L-56 rebuild) | Actor: Bob Ndlovu
+
+**Verdict**: **Both HIGH/BLOCKER fixes VERIFIED.** All re-exposed 21.x checkpoints now work. Day 21 final tally (post-fix): **12/12 executed — 6 PASS, 1 PASS (partial copy-drift on 21.11), 4 FAIL (pre-existing non-fix LSSA tariff + no-rate-card), 1 PARTIAL (21.12 Overview deadlines feed, pre-existing GAP-L-58).**
+
+### GAP-L-56 re-verify — Time entry PROSPECT gate
+
+| Checkpoint | Result | Evidence |
+|---|---|---|
+| 21.1 | **FAIL (unchanged)** | Matter Time tab still shows "No time tracked yet" with no "+ Log Time" CTA on the Time tab itself. Per-task Log Time lives on Action Items tab. Scenario wording drift; not caused by L-56. |
+| 21.2 | **FAIL (unchanged)** | Per-task Log Time dialog still has no LSSA tariff activity dropdown. Warning "No rate card found for this combination." still surfaced. Pre-existing LSSA integration gap — tracked as follow-up; not in scope for L-56 fix. |
+| 21.3 | **FAIL (unchanged)** | No tariff dropdown → rate cannot auto-populate from LSSA. Workaround = project-level rate override (see Day 28 preamble below). |
+| **21.4** | **PASS** | Filled Duration=1h 30m, Description="QA L-56 re-verify: 1h30m consultation on case assessment", Billable=on → Submit. Dialog closed cleanly (no inline error). DB probe: row `8070053c-0224-4193-b41f-e1e34cc04158` inserted at `22:26:35.281938+00`, `task_id=16a292d1-…`, `duration_minutes=90`, `billable=t`. **Previous error "Cannot create time entry for customer in PROSPECT lifecycle status" no longer appears.** Screenshot: `day-21-L56-reverify-time-entry-success.png`. |
+| **21.5** | **PASS** | Second entry against different task ("Post-judgment -- taxation of costs / appeal"): Duration=1h 30m, Description="QA L-56 re-verify #2: 1h30m drafting particulars of claim" → Submit → row `f3990567-3356-4bf9-855f-4789557453f8` inserted at `22:27:30`. Both entries persist for the same PROSPECT customer (Sipho `8fe5eea2-…` confirmed still PROSPECT in DB at time of posts). |
+| Timesheet-grid path | **PASS** | Navigated to `/my-work/timesheet` (Apr 20–26, 2026 week). Grid reflected L-56 row posted earlier (Wed 22 Apr = 1.5h on Post-judgment task). Added new entries via weekly grid cells: Trial/hearing row Mon=2, Tue=1; Pre-trial conf row Thu=0.75. Save button flipped from disabled → enabled on input → clicked Save → 3 new rows persisted (`034065b3-…` 60min, `c2a3f81a-…` 120min, `5b7b9804-…` 90min). **Previous silent-200-no-persistence path now persists rows.** Total 5 time entries visible in DB. Screenshot: `day-21-L56-reverify-timesheet-saved.png`. |
+
+**Final time-entry state in tenant**: 5 rows (1h / 2h / 1.5h / 1.5h / 1.5h) = **7.5h billable across 3 tasks** on RAF-2026-001. Matter Time tab aggregates now read: Total Time 7h 30m, Billable 7h 30m, Non-billable 0m, Contributors 1, Entries 5 (confirmed via Time tab navigation post-fix).
+
+**GAP-L-56 → VERIFIED.** `CustomerLifecycleGuard.java` CREATE_TIME_ENTRY switch arm now only blocks OFFBOARDED; PROSPECT/ONBOARDING/ACTIVE/DORMANT/OFFBOARDING all write successfully.
+
+### GAP-L-57 re-verify — Disbursement Matter combobox
+
+| Checkpoint | Result | Evidence |
+|---|---|---|
+| **21.6** | **PASS** | Navigated to matter Disbursements tab (and org-level `/legal/disbursements`) → "+ New Disbursement" CTA present on both. Note: org-level path is `/legal/disbursements` (not `/disbursements` — `/disbursements` 404s, and scenario wording drift). |
+| **21.7** | **PASS** | Dialog opens; Matter combobox **now populated with both matters** (`Estate Late Peter Moroka` + `Dlamini v Road Accident Fund` with real IDs). Customer combobox still populates 3 options as before. Selected Matter=`RAF-2026-001` / Customer=`Sipho Dlamini` / Category=`Sheriff Fees` / Amount=`1250` / Description=`QA L-57 re-verify: Sheriff service of summons on RAF` / Supplier=`Sheriff Pretoria` / Incurred Date=`2026-04-22`. Zero 404s in console. Screenshot: `day-21-L57-reverify-dialog-filled.png`. |
+| 21.8 | **FAIL (by design — deferred to GAP-L-59)** | Dialog still has no "recoverable" / "client-rebillable" checkbox. Per Product triage 2026-04-22 22:45 SAST, recoverable flag carved out as new **GAP-L-59** (Flyway migration + entity column + DTO + schema + form field; >2hr scope; does NOT block Day 28). Not re-opening L-57 on this. |
+| **21.9** | **PASS** | Submit → `POST /api/legal/disbursements` 201 → dialog closed → disbursement list renders the row: `2026-04-22 / Dlamini v Road Accident Fund / Sheriff Fees / QA L-57 re-verify… / Sheriff Pretoria / R 1 250,00 / Draft / Unbilled`. DB probe: `legal_disbursements` row `c9986a8f-e332-4dc4-8da5-f8a99b673bca` inserted `22:30:58.451735+00`, `project_id=40881f2f-…`, `customer_id=8fe5eea2-…`, `amount=1250.00`, `approval_status=DRAFT`, `billing_status=UNBILLED`. Screenshot: `day-21-L57-reverify-disbursement-created.png`. |
+
+**GAP-L-57 → VERIFIED.** `fetchProjects` defensive array handling in `legal/disbursements/actions.ts` now populates Matter combobox with flat-array backend response. No Next.js proxy routes were needed (original QA framing was wrong; Product fix-spec identified the real root cause).
+
+### Carry-forward / re-observed this turn
+
+- **GAP-L-58** re-observed: matter Overview "Upcoming Deadlines" still reads "No upcoming deadlines" despite 2026-05-06 Pre-Trial date existing on org Court Calendar + on matter's own Court Dates tab. No regression, no progress. Still LOW/OPEN.
+- **GAP-L-22** session handoff clean (Bob session held across full turn, no cross-user leak).
+- **GAP-L-26** sidebar branding still absent.
+- LSSA tariff dropdown on Log Time dialog still missing (21.2/21.3 pre-existing FAIL; tracked as follow-up slice — no new gap needed).
+
+### Final checkpoint tally (post-fix)
+
+- **PASS**: 21.4, 21.5, 21.6, 21.7, 21.9, 21.10, 21.11 — **7/12**
+- **PARTIAL**: 21.12 (court date visible on org Calendar but still not on matter Overview — GAP-L-58)
+- **FAIL (pre-existing, not L-56/L-57 regression)**: 21.1 (no "+ Log Time" CTA on Time tab), 21.2 (no LSSA tariff dropdown), 21.3 (no auto-rate from tariff), 21.8 (no recoverable flag — tracked as GAP-L-59)
+- Net delta from pre-fix: 0 PASS → 7 PASS; 8 FAIL → 4 FAIL; 3 BLOCKED → 0 BLOCKED; 1 PARTIAL → 1 PARTIAL. **Two HIGH blockers cleared.**
+

@@ -80,14 +80,18 @@ public class CustomerAuthFilter extends OncePerRequestFilter {
             .where(RequestScopes.TENANT_ID, schema)
             .where(RequestScopes.ORG_ID, claims.clerkOrgId());
 
-    // Attempt to resolve PortalContact and bind PORTAL_CONTACT_ID (backward compatible)
+    // Attempt to resolve PortalContact and bind PORTAL_CONTACT_ID (backward compatible).
+    // After GAP-L-34 introduced auto-provisioning, a customer can have multiple portal contacts
+    // (e.g. one auto-created GENERAL + one manually created PRIMARY). Use the preferred-resolver
+    // query so the result is deterministic (PRIMARY > BILLING > GENERAL, oldest first).
     try {
       var contact =
           ScopedValue.where(RequestScopes.TENANT_ID, schema)
               .call(
                   () ->
                       portalContactRepository
-                          .findByCustomerIdAndOrgId(claims.customerId(), claims.clerkOrgId())
+                          .findPreferredByCustomerIdAndOrgId(
+                              claims.customerId(), claims.clerkOrgId())
                           .orElse(null));
       if (contact != null) {
         carrier = carrier.where(RequestScopes.PORTAL_CONTACT_ID, contact.getId());

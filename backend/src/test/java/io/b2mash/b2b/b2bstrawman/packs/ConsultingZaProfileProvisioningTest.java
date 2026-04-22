@@ -62,9 +62,10 @@ class ConsultingZaProfileProvisioningTest {
     assertThat(p.currency()).isEqualTo("ZAR");
     // GAP-C-04 + GAP-C-07: consulting-za ships with resource_planning (TeamUtilizationWidget)
     // and automation_builder (Automations UI) enabled so the dashboard and Day-45 automations
-    // checkpoint work without manual module toggling.
+    // checkpoint work without manual module toggling. GAP-P-01 also enables information_requests.
     assertThat(p.enabledModules())
-        .containsExactlyInAnyOrder("resource_planning", "automation_builder");
+        .containsExactlyInAnyOrder(
+            "resource_planning", "automation_builder", "information_requests");
     assertThat(p.terminologyNamespace()).isEqualTo("en-ZA-consulting");
     assertThat(p.packs()).containsKey("field");
   }
@@ -80,7 +81,8 @@ class ConsultingZaProfileProvisioningTest {
                 tx -> {
                   var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
                   assertThat(settings.getEnabledModules())
-                      .containsExactlyInAnyOrder("resource_planning", "automation_builder");
+                      .containsExactlyInAnyOrder(
+                          "resource_planning", "automation_builder", "information_requests");
                 }));
   }
 

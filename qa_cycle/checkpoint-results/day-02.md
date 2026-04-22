@@ -10,7 +10,7 @@ Scenario: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md` → Day 2 (che
 Per GAP-L-22 watchlist: executed explicit KC logout first, then fresh OIDC login as Bob.
 
 - Navigated to `http://localhost:8180/realms/docteams/protocol/openid-connect/logout` → "Logging out / Do you want to log out?" → clicked **Logout** → confirmation page.
-- Fresh OIDC via `http://localhost:8443/oauth2/authorization/keycloak` → email: `bob@mathebula-test.local` → password: `SecureP@ss2` (first attempt with `SecureP@ss1` correctly rejected with "Invalid password." — KC creds are user-specific per Day 0 registration; Bob = ss2, Carol = ss3, Thandi = ss1).
+- Fresh OIDC via `http://localhost:8443/oauth2/authorization/keycloak` → email: `bob@mathebula-test.local` → password: `<redacted>` (first attempt with a different user's password correctly rejected with "Invalid password." — KC creds are user-specific per Day 0 registration; each registrant has a distinct password).
 - Redirected clean to `http://localhost:3000/org/mathebula-partners/dashboard`. Sidebar user card shows "BN / Bob Ndlovu / bob@mathebula-test.local". No Thandi / Carol / padmin session leak. **GAP-L-22 workaround held** for this turn.
 
 ## Checkpoint 2.1 — Navigate to Clients → click "+ New Client"

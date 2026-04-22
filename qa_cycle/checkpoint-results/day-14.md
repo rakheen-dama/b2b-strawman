@@ -7,7 +7,7 @@ Scenario: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md` → Day 14 (ch
 
 ## Pre-flight
 
-- Context swap from portal → firm. `/dashboard` on :3000 redirected to Keycloak login (no firm session held). Authenticated as `thandi@mathebula-test.local` / `SecureP@ss1` → landed on `http://localhost:3000/org/mathebula-partners/dashboard`. Sidebar shows "TM" avatar + "Thandi Mathebula" user card. GAP-L-22 session-handoff held clean.
+- Context swap from portal → firm. `/dashboard` on :3000 redirected to Keycloak login (no firm session held). Authenticated as `thandi@mathebula-test.local` / `<redacted>` → landed on `http://localhost:3000/org/mathebula-partners/dashboard`. Sidebar shows "TM" avatar + "Thandi Mathebula" user card. GAP-L-22 session-handoff held clean.
 
 ## Phase A — Create Moroka Family Trust client
 

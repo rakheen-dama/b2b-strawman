@@ -91,7 +91,7 @@ Result summary: **32/32 checkpoints executed. 30 PASS, 1 PARTIAL, 1 OBSERVATION.
 
 ### Checkpoint 0.20 — Fill registration form
 - Result: PASS
-- Evidence: Filled First=Thandi, Last=Mathebula, Password=SecureP@ss1 (+confirm). Click Register.
+- Evidence: Filled First=Thandi, Last=Mathebula, Password=<redacted> (+confirm). Click Register.
 
 ### Checkpoint 0.21 — Redirect to org dashboard
 - Result: PARTIAL (re-verified)
@@ -138,11 +138,11 @@ Result summary: **32/32 checkpoints executed. 30 PASS, 1 PARTIAL, 1 OBSERVATION.
 
 ### Checkpoint 0.31 — Bob registers, reaches dashboard, logout
 - Result: PASS
-- Evidence: Opened Bob's `/accept-invite?kcUrl=...` URL (after KC logout). KC registration page loads with email prebound. Filled First=Bob, Last=Ndlovu, Password=SecureP@ss2. Register → landed on `http://localhost:3000/org/mathebula-partners/dashboard`. Logged out via KC logout confirmation page (GAP-L-04 nuisance still present — carry-forward).
+- Evidence: Opened Bob's `/accept-invite?kcUrl=...` URL (after KC logout). KC registration page loads with email prebound. Filled First=Bob, Last=Ndlovu, Password=<redacted>. Register → landed on `http://localhost:3000/org/mathebula-partners/dashboard`. Logged out via KC logout confirmation page (GAP-L-04 nuisance still present — carry-forward).
 
 ### Checkpoint 0.32 — Carol registers, reaches dashboard, logout
 - Result: PASS
-- Evidence: Opened Carol's invite URL. Filled First=Carol, Last=Mokoena, Password=SecureP@ss3. Register → landed on `/org/mathebula-partners/dashboard`. Note: immediately after Carol's registration the server-rendered sidebar still showed Thandi's user card (BFF session from an earlier Thandi OIDC code exchange was retained) — same GAP-L-22 session-handoff flavour.
+- Evidence: Opened Carol's invite URL. Filled First=Carol, Last=Mokoena, Password=<redacted>. Register → landed on `/org/mathebula-partners/dashboard`. Note: immediately after Carol's registration the server-rendered sidebar still showed Thandi's user card (BFF session from an earlier Thandi OIDC code exchange was retained) — same GAP-L-22 session-handoff flavour.
 
 ## Day 0 summary checks
 

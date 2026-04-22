@@ -30,7 +30,7 @@ Carry-forward watch list items checked this turn:
   - Email HTML body contains exactly ONE href: `http://localhost:3000/portal` (firm port 3000, no token, literal path fragment). Plain-text body shows `View Request (http://localhost:3000/portal)`. No token, no portal host.
   - DB probe: `SELECT id, portal_contact_id, created_at FROM tenant_5039f2d497cf.magic_link_tokens ORDER BY created_at DESC;` → 2 rows, both created by DevPortalController at 20:12 during portal-contact backfill; zero tokens created by the 20:15 info-request send. Confirms the send path does not mint a magic-link token.
   - Clicking the email's `http://localhost:3000/portal` link lands on the **firm** frontend (not the portal on :3002), which is a KC-protected route → redirects to login — not a useful destination for a client.
-  - **Workaround applied for QA continuity**: used the token minted by DevPortalController (`fEmBJ0Kwy8Qy_sFd6-z_eaWptbdFHsKME3brpcc-oAs`, expires 20:27 UTC) → navigated to `http://localhost:3002/auth/exchange?token=…&orgId=mathebula-partners`.
+  - **Workaround applied for QA continuity**: used the token minted by DevPortalController (`<redacted-token>`, expires 20:27 UTC) → navigated to `http://localhost:3002/auth/exchange?token=<redacted>&orgId=mathebula-partners`.
   - Logged **GAP-L-42** (HIGH/BLOCKER) in Day 3 resume block.
 
 ### Checkpoint 4.3 — Portal exchanges token → redirects to `/home`
@@ -131,7 +131,7 @@ Bob logged into firm side, opened RAF-2026-001 matter → Requests tab → **New
 
 - DB: `tenant_5039f2d497cf.information_requests` row `2a59d337-838f-4160-9d51-ba7ffc857c29` (REQ-0002), status=SENT, sent_at 21:59:00.
 - DB: `magic_link_tokens` new row `7df57cdf-986c-467b-92b0-70734b89087e`, portal_contact_id=Sipho, created_at 21:59:00.161 (47ms after send). **L-42 listener fired!**
-- Mailpit: message `JX8VFPvXNpoeNbfhRbxGAz`, to=sipho.portal@example.com, subject="Information request REQ-0002 from Mathebula & Partners", HTML href = **`http://localhost:3002/auth/exchange?token=qADJYUQ2k8V8YpReM6zqGlXtqM4LvhkvqOrv0Vxp7X8&orgId=mathebula-partners`** (correct portal host, correct token, correct orgId).
+- Mailpit: message `JX8VFPvXNpoeNbfhRbxGAz`, to=sipho.portal@example.com, subject="Information request REQ-0002 from Mathebula & Partners", HTML href = **`http://localhost:3002/auth/exchange?token=<redacted-token>&orgId=mathebula-partners`** (correct portal host, correct token, correct orgId).
 - Second email also received (expected side-effect per L-42 spec Option A): subject="Your portal access link from Mathebula & Partners".
 
 ### Checkpoint 4.1 — Mailpit locate email: **PASS** (see above)
@@ -183,7 +183,7 @@ Backend restart per PID 12789 (post-PR #1103). New `@TransactionalEventListener 
 ### Re-execute 4.12–4.14 against REQ-0003
 
 - **Firm-side send** (Bob, RAF-2026-001 → Requests tab → New Request → template=FICA Onboarding Pack → Sipho → Send Now): REQ-0003 row inserted at 2026-04-22 00:35:13, status=SENT. Sent to Sipho via `PortalContactService` (carry-forward GAP-L-34 auto-contact path held).
-- **Mailpit**: `dCFdahuNmaYUU5zsoPDq8x` subject "Information request REQ-0003 from Mathebula & Partners", HTML href = `http://localhost:3002/auth/exchange?token=VG6MLAWlbXcI7c_b73HJexhvHa-dIZb97EdrQENwqss&orgId=mathebula-partners` — **GAP-L-42 fix holds on third pass**.
+- **Mailpit**: `dCFdahuNmaYUU5zsoPDq8x` subject "Information request REQ-0003 from Mathebula & Partners", HTML href = `http://localhost:3002/auth/exchange?token=<redacted-token>&orgId=mathebula-partners` — **GAP-L-42 fix holds on third pass**.
 - **Portal exchange** (/auth/exchange?token=...): Sipho's portal_jwt populated, redirected to /projects. Portal `/requests` list shows new card **"REQ-0003 / SENT / 0/3 submitted"**.
 - **Checkpoint 4.12 (GAP-L-43 verify)** — Upload 3 PDFs sequentially (test-fica-id.pdf, test-fica-address.pdf, test-fica-funds.pdf):
   - Item 1 upload → submit → portal detail page re-renders `"1/3 submitted • status SENT"` within ~2s. **L-43 listener fired ✅**.

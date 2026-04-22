@@ -9,7 +9,7 @@ Result summary (Day 1 final): **7/7 checkpoints executed. 4 PASS (1.1, 1.3, 1.6,
 
 ## Session prep — Thandi sign-in (post-Day-0 workaround for GAP-L-22)
 
-Per prior `day-01.md` notes and `status.md` GAP-L-22, opened fresh KC logout (`http://localhost:8180/realms/docteams/protocol/openid-connect/logout` -> Logout button -> Logging out confirmation). Fresh OIDC via `http://localhost:8443/oauth2/authorization/keycloak` -> filled `thandi@mathebula-test.local` / `SecureP@ss1` -> landed cleanly on `http://localhost:3000/org/mathebula-partners/dashboard`. Sidebar correctly shows "TM / Thandi Mathebula / thandi@mathebula-test.local". No session-handoff leak this turn — GAP-L-22 workaround held.
+Per prior `day-01.md` notes and `status.md` GAP-L-22, opened fresh KC logout (`http://localhost:8180/realms/docteams/protocol/openid-connect/logout` -> Logout button -> Logging out confirmation). Fresh OIDC via `http://localhost:8443/oauth2/authorization/keycloak` -> filled `thandi@mathebula-test.local` / `<redacted>` -> landed cleanly on `http://localhost:3000/org/mathebula-partners/dashboard`. Sidebar correctly shows "TM / Thandi Mathebula / thandi@mathebula-test.local". No session-handoff leak this turn — GAP-L-22 workaround held.
 
 ## Checkpoint 1.1 — Upload firm logo + set brand colour `#1B3358`, Save
 - Result: **PASS** (re-verified after GAP-L-23 fix)

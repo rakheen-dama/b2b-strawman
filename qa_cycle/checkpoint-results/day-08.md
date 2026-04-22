@@ -5,7 +5,7 @@ Scenario: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md` → Day 8 (che
 
 **Result summary (Day 8 — initial turn, 2026-04-22 00:50 SAST): 3/10 checkpoints executed — 1 PASS, 0 PARTIAL, 2 FAIL, 7 BLOCKED. First BLOCKER hit at 8.1 (GAP-L-50 acceptance email points to dead :3001 host) and cascades into 8.2–8.10 because the portal `/accept/[token]` page (on correct :3002) also fails to render ("Unable to process this acceptance request.").**
 
-**Result summary (Day 8 — RESUMED 2026-04-22 01:20 SAST, after L-50 + P-06 fixes merged & restarted): 10/10 executed — 7 PASS, 2 SKIPPED-BY-DESIGN (8.2/8.3 per L-49), 1 N/A (8.10 portal has no /proposals route). L-50 VERIFIED (fresh email URL `http://localhost:3002/accept/QEKyEItHJwtLlf0vHVTFY2jLwZ7vmLjqUerXu5w2lZE`). P-06 VERIFIED (accept form renders for SENT/VIEWED status). Acceptance end-to-end: Sipho's acceptance submitted → firm-side Generated Docs row flipped to Accepted badge → confirmation email "Confirmed: You have accepted …" delivered.**
+**Result summary (Day 8 — RESUMED 2026-04-22 01:20 SAST, after L-50 + P-06 fixes merged & restarted): 10/10 executed — 7 PASS, 2 SKIPPED-BY-DESIGN (8.2/8.3 per L-49), 1 N/A (8.10 portal has no /proposals route). L-50 VERIFIED (fresh email URL `http://localhost:3002/accept/<redacted-token>`). P-06 VERIFIED (accept form renders for SENT/VIEWED status). Acceptance end-to-end: Sipho's acceptance submitted → firm-side Generated Docs row flipped to Accepted badge → confirmation email "Confirmed: You have accepted …" delivered.**
 
 New gaps: **GAP-P-06** (HIGH/BLOCKER, portal-fe — `/accept/[token]` page renders error screen even when backend returns valid 200 acceptance payload; UI renderer rejects the minimal doc-share payload shape; couples to GAP-L-49 + GAP-L-50).
 
@@ -18,10 +18,10 @@ Portal tab already authenticated from Day 4 resume (Sipho's portal_jwt + portal_
 ### Checkpoint 8.1 — Mailpit → open the proposal email → click the proposal link → lands on `/proposals/[id]`
 - Result: **FAIL — BLOCKER (GAP-L-50)**
 - Evidence:
-  - Mailpit `jtrVksK2HnwPVj9KCDDuP6` email has href = `http://localhost:3001/accept/08OMMtVvodcXZEQ3oBeB5HSl144JCXnNomFR_HZbsng`.
+  - Mailpit `jtrVksK2HnwPVj9KCDDuP6` email has href = `http://localhost:3001/accept/<redacted-token>`.
   - Direct-nav to this URL is **blocked by Playwright hook** (port 3001 not in allowed-list). `curl http://localhost:3001/` returns exit 7 (connection refused). No service bound on 3001 in current stack.
-  - Attempted fallback on correct portal port: `http://localhost:3002/accept/08OMMtVvodcXZEQ3oBeB5HSl144JCXnNomFR_HZbsng` — portal route resolves (200 OK at HTTP level) but page renders `"Unable to process this acceptance request. Please contact the sender."` with a red warning triangle. No proposal content visible. Screenshot: `day-08-accept-failure.png`.
-  - Backend API probe on same token: `GET /api/portal/acceptance/08OMMtVvodcXZEQ3oBeB5HSl144JCXnNomFR_HZbsng` → **200** with valid payload `{requestId, status:"VIEWED", documentTitle, documentFileName, expiresAt:"2026-04-28T22:44:58Z", orgName:"Mathebula & Partners", orgLogo, brandColor:"#1B3358", acceptedAt:null, acceptorName:null}`. Backend works; portal UI page logic is rejecting this shape.
+  - Attempted fallback on correct portal port: `http://localhost:3002/accept/<redacted-token>` — portal route resolves (200 OK at HTTP level) but page renders `"Unable to process this acceptance request. Please contact the sender."` with a red warning triangle. No proposal content visible. Screenshot: `day-08-accept-failure.png`.
+  - Backend API probe on same token: `GET /api/portal/acceptance/<redacted-token>` → **200** with valid payload `{requestId, status:"VIEWED", documentTitle, documentFileName, expiresAt:"2026-04-28T22:44:58Z", orgName:"Mathebula & Partners", orgLogo, brandColor:"#1B3358", acceptedAt:null, acceptorName:null}`. Backend works; portal UI page logic is rejecting this shape.
   - Console shows 2 infos only — no error trace captured during SSR/CSR render. No 4xx/5xx in network waterfall (the backend 200 is the only acceptance-related call).
   - Logged **GAP-P-06** (HIGH/BLOCKER, portal-fe — /accept/[token] render failure).
 
@@ -76,7 +76,7 @@ After GAP-L-50 (PR #1104) + GAP-P-06 (PR #1105) merged + backend/portal restart 
 - Thandi logged in at firm :3000 (session held clean from Day 7 turn). Navigated to RAF matter → Generated Docs tab → existing engagement-letter row "Viewed" status.
 - Clicked Send for Acceptance (e502) → Dialog opened → selected recipient "Sipho Dlamini (sipho.portal@example.com)" → Send.
 - Mailpit message `kmxzpCRtd42hvkvQG8ycqB` arrived at 23:17:08 Z (within 1s). Subject: `Mathebula & Partners -- Document for your acceptance: engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-22.pdf`
-- **L-50 VERIFIED**: email href = `http://localhost:3002/accept/QEKyEItHJwtLlf0vHVTFY2jLwZ7vmLjqUerXu5w2lZE` (canonical portal host + fresh token, no :3001). Previous email at 22:44 had :3001.
+- **L-50 VERIFIED**: email href = `http://localhost:3002/accept/<redacted-token>` (canonical portal host + fresh token, no :3001). Previous email at 22:44 had :3001.
 - **P-06 VERIFIED**: Portal tab → navigated to fresh URL → page rendered: org header "Mathebula & Partners", document-info card with filename, PDF iframe region, "By typing your name below, you confirm..." paragraph, "Full name" textbox, disabled "I Accept" button. Zero "Unable to process" error. Status observed = VIEWED (backend auto-flip SENT→VIEWED on portal fetch). Screenshot: `day-08-8.1-accept-form-rendered.png`.
 
 ### Checkpoints re-run

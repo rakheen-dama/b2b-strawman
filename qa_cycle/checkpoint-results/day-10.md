@@ -101,7 +101,7 @@ Day 10 complete, zero blocker. Per execution rule (max 2 days per turn), stoppin
 
 ## Evidence summary
 
-- Fresh acceptance email: `kmxzpCRtd42hvkvQG8ycqB` at 2026-04-21T23:17:08 Z with URL `http://localhost:3002/accept/QEKyEItHJwtLlf0vHVTFY2jLwZ7vmLjqUerXu5w2lZE` (L-50 verified).
+- Fresh acceptance email: `kmxzpCRtd42hvkvQG8ycqB` at 2026-04-21T23:17:08 Z with URL `http://localhost:3002/accept/<redacted-token>` (L-50 verified).
 - Confirmation email: `TAsQcNY52ibhohG3Y6EPgw` at 23:18:06 Z, subject "Confirmed: You have accepted engagement-letter-…".
 - Trust deposit transaction: DEP-2026-001, Deposit type, R 50 000,00, RECORDED status, 22 Apr 2026.
 - Client ledger: Sipho Dlamini, opening 0 → +50 000 → 50 000, 22 Apr 2026.

@@ -11,7 +11,7 @@ Scenario: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md` → Day 15 (ch
 ## Pre-flight
 
 - Services verified UP: backend `{"status":"UP"}`, portal 307, frontend 200, gateway UP, Mailpit 200.
-- Sipho session: **Fresh magic-link minted via `POST /portal/auth/request-link`** (email `sipho.portal@example.com`, orgId `mathebula-partners`) → token `eQufCvm9JmvyXOM09aR5GXXG1ecOVLigcOvg6JkH5TE` → exchanged via `POST /portal/auth/exchange` → portal JWT issued. Decoded claims: `sub=8fe5eea2-75fc-4df2-b4d0-267486df68bd` (Sipho's customerId) / `type=customer` / `org_id=mathebula-partners` / exp 1h. `/portal/me` positive-control returns Sipho's portal contact `d9ecf332-e9cc-4296-9652-d29171a4adb6`. No stale-session workaround needed.
+- Sipho session: **Fresh magic-link minted via `POST /portal/auth/request-link`** (email `sipho.portal@example.com`, orgId `mathebula-partners`) → token `<redacted-token>` → exchanged via `POST /portal/auth/exchange` → portal JWT issued. Decoded claims: `sub=8fe5eea2-75fc-4df2-b4d0-267486df68bd` (Sipho's customerId) / `type=customer` / `org_id=mathebula-partners` / exp 1h. `/portal/me` positive-control returns Sipho's portal contact `d9ecf332-e9cc-4296-9652-d29171a4adb6`. No stale-session workaround needed.
 
 ## Phase A — Direct API probes on Moroka entities (Sipho JWT targeting Moroka IDs)
 

@@ -9,7 +9,7 @@ New gaps: **GAP-L-47** (LOW, backend — portal read-model parent request status
 
 ## Session prep
 
-Bob signed out via User menu → Sign out → Keycloak re-login as `thandi@mathebula-test.local` / `SecureP@ss1`. Landed on `/org/mathebula-partners/dashboard` as "Thandi Mathebula" (TM chip, owner role). No stale session handoff issues surfaced (GAP-L-22 workaround held).
+Bob signed out via User menu → Sign out → Keycloak re-login as `thandi@mathebula-test.local` / `<redacted>`. Landed on `/org/mathebula-partners/dashboard` as "Thandi Mathebula" (TM chip, owner role). No stale session handoff issues surfaced (GAP-L-22 workaround held).
 
 ## Phase A: Locate proposal builder
 
@@ -58,7 +58,7 @@ Bob signed out via User menu → Sign out → Keycloak re-login as `thandi@mathe
 
 ### Checkpoint 7.9 — Proposal status transitions to **Sent**, acceptance URL generated
 - Result: **PARTIAL (acceptance URL generated but points to wrong host — see 7.11)**
-- Evidence: Backend returns valid acceptance resource for the minted token. `curl http://localhost:8080/api/portal/acceptance/08OMMtVvodcXZEQ3oBeB5HSl144JCXnNomFR_HZbsng` → 200 with `{"requestId":"a23d81a3-…","status":"VIEWED","documentTitle":"engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-22.pdf","expiresAt":"2026-04-28T22:44:58Z","orgName":"Mathebula & Partners","brandColor":"#1B3358"}`. However there is no status=SENT/ACCEPTED visible in firm UI — there is no Proposals tab to inspect (cascade of 7.1).
+- Evidence: Backend returns valid acceptance resource for the minted token. `curl http://localhost:8080/api/portal/acceptance/<redacted-token>` → 200 with `{"requestId":"a23d81a3-…","status":"VIEWED","documentTitle":"engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-22.pdf","expiresAt":"2026-04-28T22:44:58Z","orgName":"Mathebula & Partners","brandColor":"#1B3358"}`. However there is no status=SENT/ACCEPTED visible in firm UI — there is no Proposals tab to inspect (cascade of 7.1).
 
 ### Checkpoint 7.10 — Mailpit → proposal email to Sipho with subject containing "proposal" / "engagement letter" / "please review"
 - Result: **PARTIAL (email sent; subject copy miss)**
@@ -66,7 +66,7 @@ Bob signed out via User menu → Sign out → Keycloak re-login as `thandi@mathe
 
 ### Checkpoint 7.11 — Email body includes click-through link to portal proposal URL
 - Result: **FAIL (GAP-L-50 — wrong host)**
-- Evidence: Email HTML single href = `http://localhost:3001/accept/08OMMtVvodcXZEQ3oBeB5HSl144JCXnNomFR_HZbsng` — port **:3001** is the legacy E2E-mock port (not in use in current Keycloak stack). Portal runs on **:3002**. Curl to `:3001` fails (exit 7 connection refused). Real portal user clicking this link would hit a dead host. Mirrors the shape of now-fixed **GAP-L-42** but for proposal/acceptance link generation.
+- Evidence: Email HTML single href = `http://localhost:3001/accept/<redacted-token>` — port **:3001** is the legacy E2E-mock port (not in use in current Keycloak stack). Portal runs on **:3002**. Curl to `:3001` fails (exit 7 connection refused). Real portal user clicking this link would hit a dead host. Mirrors the shape of now-fixed **GAP-L-42** but for proposal/acceptance link generation.
   - Attempted portal `/accept/{token}` on the correct host (:3002) as a fallback: page renders "Unable to process this acceptance request. Please contact the sender." Backend API `GET /api/portal/acceptance/{token}` returns 200 with valid payload — portal page's own render logic rejects the response (likely different schema expected: proposal with line items + VAT; backend returns minimal acceptance shape with documentTitle only).
   - Logged **GAP-L-50** (HIGH, backend — proposal send uses `:3001` instead of portal `{portal.base-url}`; blocks Day 8 portal POV).
 

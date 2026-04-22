@@ -7,7 +7,7 @@ Scenario: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md` → Day 11 (ch
 
 ## Pre-flight
 
-- Portal session from Day 8 acceptance flow expired (portal_jwt storage cleared or TTL elapsed). Re-auth via `/login?orgId=mathebula-partners` → email `sipho.portal@example.com` → "Send Magic Link" → dev-mode link `/auth/exchange?token=21tlPoTufvytrSHG0Wveu6ImhMijpBZ9WbuOY3AvyFs&orgId=mathebula-partners` clicked → landed on `/projects`, portal_jwt (len 296) populated. Navigation across `/home`, `/matters`, `/trust`, `/invoices`, `/deadlines`, `/proposals`, `/documents` all reachable with "Sipho Dlamini" in header.
+- Portal session from Day 8 acceptance flow expired (portal_jwt storage cleared or TTL elapsed). Re-auth via `/login?orgId=mathebula-partners` → email `sipho.portal@example.com` → "Send Magic Link" → dev-mode link `/auth/exchange?token=<redacted-token>&orgId=mathebula-partners` clicked → landed on `/projects`, portal_jwt (len 296) populated. Navigation across `/home`, `/matters`, `/trust`, `/invoices`, `/deadlines`, `/proposals`, `/documents` all reachable with "Sipho Dlamini" in header.
 
 ## Checkpoints
 

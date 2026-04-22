@@ -70,13 +70,13 @@ public class InformationRequestEmailEventListener {
             var items = itemRepository.findByRequestId(request.getId());
 
             // Mint a magic-link token so the email CTA deep-links into the portal
-            // authenticated flow. generateToken also dispatches a redundant
-            // portal-magic-link email (Option A in GAP-L-42 spec) — acceptable for now.
+            // authenticated flow. Use generateTokenOnly so we do NOT trigger a second,
+            // standalone portal-magic-link email alongside the request-sent email.
             String rawToken;
             try {
               rawToken =
                   requiresNewTxTemplate.execute(
-                      status -> magicLinkService.generateToken(event.portalContactId(), null));
+                      status -> magicLinkService.generateTokenOnly(event.portalContactId(), null));
             } catch (Exception e) {
               log.warn(
                   "Failed to mint magic-link token for request {}; "

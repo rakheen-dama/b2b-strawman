@@ -84,6 +84,25 @@ public class MagicLinkService {
   }
 
   /**
+   * Generates a cryptographically random magic link token for the given portal contact WITHOUT
+   * dispatching the standalone magic-link email. This is intended for callers that embed the token
+   * inside their own email (e.g. information-request notifications) and want a deep-link CTA
+   * without the customer receiving a second, redundant magic-link email.
+   *
+   * <p>Transactional semantics match {@link #generateToken(UUID, String)}: the token is persisted
+   * in its own transaction via {@link TransactionTemplate} so it commits before any caller-side
+   * email dispatch begins.
+   *
+   * @param portalContactId the portal contact UUID
+   * @param createdIp the IP address of the requester (nullable)
+   * @return the raw token string (URL-safe Base64) to embed in the caller's email
+   * @throws PortalAuthException if rate limit is exceeded (3 tokens per 5 minutes)
+   */
+  public String generateTokenOnly(UUID portalContactId, String createdIp) {
+    return persistToken(portalContactId, createdIp).rawToken();
+  }
+
+  /**
    * Persists the token within an explicit transaction boundary. Uses TransactionTemplate to
    * guarantee the transaction commits before email sending begins.
    */

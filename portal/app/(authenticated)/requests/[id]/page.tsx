@@ -61,7 +61,12 @@ export default function RequestDetailPage({
     let cancelled = false;
     portalGet<RequestDetail>(`/portal/requests/${id}`)
       .then((data) => {
-        if (!cancelled) setDetail(data);
+        if (!cancelled) {
+          // Clear any stale error from a previous failed fetch so a successful
+          // refresh does not leave the page stuck on the error panel.
+          setError(null);
+          setDetail(data);
+        }
       })
       .catch((err) => {
         if (!cancelled)

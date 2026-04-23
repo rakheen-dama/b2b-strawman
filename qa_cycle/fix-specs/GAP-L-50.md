@@ -6,7 +6,7 @@ Day 7 Checkpoint 7.11 (PARTIAL→FAIL) and Day 8 Checkpoint 8.1 (BLOCKER) both h
 because the email sent by `Send for Acceptance` (firm-side Generate Document →
 Engagement Letter → Send flow) embeds a single `href`:
 
-```
+```text
 http://localhost:3001/accept/<token>
 ```
 
@@ -112,7 +112,7 @@ already render `${acceptanceUrl}` as-is.
    Generate Document → Engagement Letter — Litigation → Save to Documents → Send
    for Acceptance → Sipho).
 3. Open Mailpit. The new email's single `<a href>` must match:
-   ```
+   ```text
    ^http://localhost:3002/accept/[A-Za-z0-9_-]+$
    ```
    (no `:3001`.)

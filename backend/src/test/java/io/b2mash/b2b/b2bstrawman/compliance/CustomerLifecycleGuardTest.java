@@ -15,24 +15,41 @@ class CustomerLifecycleGuardTest {
   private final CustomerLifecycleGuard guard = new CustomerLifecycleGuard();
 
   @Test
-  void createInvoiceBlockedForProspect() {
+  void createInvoiceAllowedForProspect() {
+    // GAP-L-60: invoices must be permitted on PROSPECT customers so
+    // consultation hours and up-front disbursements can be billed before
+    // formal activation.
     var customer = createCustomerWithStatus(LifecycleStatus.PROSPECT);
-    assertThatThrownBy(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE))
-        .isInstanceOf(InvalidStateException.class);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE))
+        .doesNotThrowAnyException();
   }
 
   @Test
-  void createInvoiceBlockedForOnboarding() {
+  void createInvoiceAllowedForOnboarding() {
+    // GAP-L-60: engagement is in progress — billing must be permitted.
     var customer = createCustomerWithStatus(LifecycleStatus.ONBOARDING);
-    assertThatThrownBy(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE))
-        .isInstanceOf(InvalidStateException.class);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void createInvoiceAllowedForOffboarding() {
+    // GAP-L-60: final bill must be issuable while close-out is in progress.
+    var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDING);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE))
+        .doesNotThrowAnyException();
   }
 
   @Test
   void createInvoiceBlockedForOffboarded() {
+    // GAP-L-60: terminal state — billing is closed once off-boarding completes.
     var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDED);
     assertThatThrownBy(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE))
-        .isInstanceOf(InvalidStateException.class);
+        .isInstanceOf(InvalidStateException.class)
+        // GAP-L-60 copy fix: error uses vertical-neutral "bill" (not "invoice")
+        // so legal-za tenants see a label that matches their fee-note UI.
+        .hasMessageContaining("bill")
+        .hasMessageNotContaining("invoice");
   }
 
   @Test
@@ -72,8 +89,47 @@ class CustomerLifecycleGuardTest {
   }
 
   @Test
-  void createTimeEntryBlockedForOffboarding() {
+  void createTimeEntryAllowedForProspect() {
+    // GAP-L-56: time entries are record-keeping and must be permitted on PROSPECT
+    // customers (e.g. consultation hours logged before client activation).
+    var customer = createCustomerWithStatus(LifecycleStatus.PROSPECT);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_TIME_ENTRY))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void createTimeEntryAllowedForActive() {
+    var customer = createCustomerWithStatus(LifecycleStatus.ACTIVE);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_TIME_ENTRY))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void createTimeEntryAllowedForOnboarding() {
+    var customer = createCustomerWithStatus(LifecycleStatus.ONBOARDING);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_TIME_ENTRY))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void createTimeEntryAllowedForDormant() {
+    var customer = createCustomerWithStatus(LifecycleStatus.DORMANT);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_TIME_ENTRY))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void createTimeEntryAllowedForOffboarding() {
+    // GAP-L-56: final billing hours can still be logged while close-out is in progress.
     var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDING);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_TIME_ENTRY))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void createTimeEntryBlockedForOffboarded() {
+    // GAP-L-56: terminal state — time tracking is closed once off-boarding completes.
+    var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDED);
     assertThatThrownBy(
             () -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_TIME_ENTRY))
         .isInstanceOf(InvalidStateException.class);

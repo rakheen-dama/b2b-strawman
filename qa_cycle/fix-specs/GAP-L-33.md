@@ -82,12 +82,12 @@ No Java code changes. No migration. No frontend changes.
 
 1. Backend restart completes cleanly (no parse error on the new JSON). Tail `.svc/logs/backend.log` for line `Applied request pack fica-onboarding-pack v1 for tenant tenant_5039f2d497cf`.
 2. DB read-only:
-   ```
+   ```bash
    docker exec b2b-postgres psql -U postgres -d docteams -c \
      "SELECT name, pack_id FROM tenant_5039f2d497cf.request_templates WHERE pack_id='fica-onboarding-pack';"
    ```
    Expect 1 row. Items:
-   ```
+   ```bash
    docker exec b2b-postgres psql -U postgres -d docteams -c \
      "SELECT name, response_type, sort_order FROM tenant_5039f2d497cf.request_template_items WHERE template_id=(SELECT id FROM tenant_5039f2d497cf.request_templates WHERE pack_id='fica-onboarding-pack') ORDER BY sort_order;"
    ```

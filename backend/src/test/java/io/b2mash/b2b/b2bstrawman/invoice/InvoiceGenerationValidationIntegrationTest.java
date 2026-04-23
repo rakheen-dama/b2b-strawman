@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -233,9 +234,83 @@ class InvoiceGenerationValidationIntegrationTest {
         .andExpect(jsonPath("$.status").value("SENT"));
   }
 
+  @Test
+  void createInvoice_prospectCustomer_succeeds() throws Exception {
+    // GAP-L-60: invoice/fee-note creation must succeed against a PROSPECT
+    // customer. Prerequisite fields (address, tax number) are pre-filled so
+    // the prerequisite-check (runs after the lifecycle guard) passes; the
+    // assertion proves the guard no longer rejects PROSPECT.
+    var prospectCustomerId = new UUID[1];
+    var prospectTaskId = new UUID[1];
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberIdOwner)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var customer =
+                          TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
+                              "Prospect Fee Client", "prospect_fee@test.com", memberIdOwner);
+                      // Flip lifecycle to PROSPECT while keeping the status
+                      // column = ACTIVE and all prerequisite fields intact.
+                      customer.setLifecycleStatus(LifecycleStatus.PROSPECT, memberIdOwner);
+                      customer = customerRepository.save(customer);
+                      prospectCustomerId[0] = customer.getId();
+
+                      var project =
+                          new Project(
+                              "Prospect Fee Project",
+                              "Project for prospect fee-note test",
+                              memberIdOwner);
+                      project = projectRepository.save(project);
+                      var pid = project.getId();
+
+                      customerProjectRepository.save(
+                          new CustomerProject(prospectCustomerId[0], pid, memberIdOwner));
+
+                      var task =
+                          new Task(
+                              pid,
+                              "Prospect Consultation",
+                              "Consultation hours on a prospect",
+                              "MEDIUM",
+                              "TASK",
+                              null,
+                              memberIdOwner);
+                      task = taskRepository.save(task);
+                      prospectTaskId[0] = task.getId();
+                    }));
+
+    UUID teId =
+        createBillableTimeEntryForTask(
+            prospectTaskId[0], LocalDate.now(), 90, "Prospect consultation work");
+
+    mockMvc
+        .perform(
+            post("/api/invoices")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    { "customerId": "%s", "currency": "ZAR",
+                      "timeEntryIds": ["%s"] }
+                    """
+                        .formatted(prospectCustomerId[0], teId)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.status").value("DRAFT"));
+  }
+
   // --- Helpers ---
 
   private UUID createBillableTimeEntry(LocalDate date, int durationMinutes, String description) {
+    return createBillableTimeEntryForTask(taskId, date, durationMinutes, description);
+  }
+
+  private UUID createBillableTimeEntryForTask(
+      UUID targetTaskId, LocalDate date, int durationMinutes, String description) {
     var holder = new UUID[1];
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
@@ -247,7 +322,7 @@ class InvoiceGenerationValidationIntegrationTest {
                     tx -> {
                       var te =
                           new TimeEntry(
-                              taskId,
+                              targetTaskId,
                               memberIdOwner,
                               date,
                               durationMinutes,

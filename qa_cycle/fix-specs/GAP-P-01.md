@@ -101,7 +101,7 @@ After the JSON change, `PackReconciliationRunner` will update `org_settings.enab
 
 1. Portal hot-reloads the home page (Next.js HMR picks up the TSX edit without a restart).
 2. Backend restart after the JSON edits so `PackReconciliationRunner` updates `tenant_5039f2d497cf.org_settings.enabled_modules`. Verify:
-   ```
+   ```bash
    docker exec b2b-postgres psql -U postgres -d docteams -c \
      "SELECT enabled_modules FROM tenant_5039f2d497cf.org_settings;"
    ```

@@ -16,15 +16,33 @@ public class CustomerLifecycleGuard {
     var status = customer.getLifecycleStatus();
 
     switch (action) {
-      case CREATE_PROJECT, CREATE_TASK, CREATE_TIME_ENTRY -> {
+      case CREATE_PROJECT, CREATE_TASK -> {
         if (status == LifecycleStatus.PROSPECT
             || status == LifecycleStatus.OFFBOARDING
             || status == LifecycleStatus.OFFBOARDED) {
           throwBlocked(action, status);
         }
       }
+      case CREATE_TIME_ENTRY -> {
+        // Time entries are record-keeping on work already performed. They are
+        // permitted against PROSPECT and OFFBOARDING customers (e.g. consultation
+        // hours logged before client-activation, or final billing hours after
+        // lifecycle close initiated). Only OFFBOARDED (terminal) is blocked —
+        // after a customer is fully off-boarded, time tracking is closed.
+        if (status == LifecycleStatus.OFFBOARDED) {
+          throwBlocked(action, status);
+        }
+      }
       case CREATE_INVOICE -> {
-        if (status != LifecycleStatus.ACTIVE && status != LifecycleStatus.DORMANT) {
+        // GAP-L-60: invoice / fee note generation is a billing record-keeping
+        // operation that fires across the entire engagement. Billable time and
+        // disbursements accumulate on PROSPECT customers (initial consultation,
+        // sheriff-fee deposits paid before formal activation) and must be
+        // bill-able immediately. ONBOARDING and OFFBOARDING must also permit
+        // billing (engagement in progress / close-out in progress). Only
+        // OFFBOARDED (terminal) blocks — after a customer is fully off-boarded,
+        // billing is closed and final invoices have already been issued.
+        if (status == LifecycleStatus.OFFBOARDED) {
           throwBlocked(action, status);
         }
       }

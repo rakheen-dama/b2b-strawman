@@ -40,6 +40,7 @@ export function useInvoiceGeneration({
   const [unbilledData, setUnbilledData] = useState<UnbilledTimeResponse | null>(null);
   const [selectedEntryIds, setSelectedEntryIds] = useState<Set<string>>(new Set());
   const [selectedExpenseIds, setSelectedExpenseIds] = useState<Set<string>>(new Set());
+  const [selectedDisbursementIds, setSelectedDisbursementIds] = useState<Set<string>>(new Set());
 
   // Validation state
   const [validationChecks, setValidationChecks] = useState<ValidationCheck[] | null>(null);
@@ -54,6 +55,7 @@ export function useInvoiceGeneration({
     setUnbilledData(null);
     setSelectedEntryIds(new Set());
     setSelectedExpenseIds(new Set());
+    setSelectedDisbursementIds(new Set());
     setValidationChecks(null);
     setIsValidating(false);
   }
@@ -103,6 +105,14 @@ export function useInvoiceGeneration({
             if (expense.currency === currency) matchingExpenseIds.add(expense.id);
           }
           setSelectedExpenseIds(matchingExpenseIds);
+          // Legal disbursements are ZAR-only in the MVP — only pre-select when the
+          // invoice currency is ZAR. The backend returns `disbursements` only when
+          // the `disbursements` module is enabled (legal vertical), so this is a
+          // no-op for non-legal tenants.
+          const matchingDisbursementIds = new Set<string>(
+            currency === "ZAR" ? (result.data.disbursements ?? []).map((d) => d.id) : []
+          );
+          setSelectedDisbursementIds(matchingDisbursementIds);
           setStep(2);
         } else {
           setError(result.error ?? "Failed to fetch unbilled time.");
@@ -164,8 +174,43 @@ export function useInvoiceGeneration({
     });
   }
 
+  function handleToggleDisbursement(disbursementId: string) {
+    setSelectedDisbursementIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(disbursementId)) next.delete(disbursementId);
+      else next.add(disbursementId);
+      return next;
+    });
+  }
+
+  function handleToggleAllDisbursements() {
+    if (!unbilledData) return;
+    const disbursements = unbilledData.disbursements ?? [];
+    // Legal disbursements are ZAR-only in the MVP; if the invoice currency is
+    // anything else, there are no selectable rows.
+    const selectableDisbursements = currency === "ZAR" ? disbursements : [];
+    const allSelected =
+      selectableDisbursements.length > 0 &&
+      selectableDisbursements.every((d) => selectedDisbursementIds.has(d.id));
+
+    setSelectedDisbursementIds((prev) => {
+      const next = new Set(prev);
+      if (allSelected) {
+        for (const d of selectableDisbursements) next.delete(d.id);
+      } else {
+        for (const d of selectableDisbursements) next.add(d.id);
+      }
+      return next;
+    });
+  }
+
   function handleRunValidation() {
-    if (selectedEntryIds.size === 0 && selectedExpenseIds.size === 0) return;
+    if (
+      selectedEntryIds.size === 0 &&
+      selectedExpenseIds.size === 0 &&
+      selectedDisbursementIds.size === 0
+    )
+      return;
     setError(null);
     setIsValidating(true);
 
@@ -186,7 +231,12 @@ export function useInvoiceGeneration({
   }
 
   function handleCreateDraft() {
-    if (selectedEntryIds.size === 0 && selectedExpenseIds.size === 0) return;
+    if (
+      selectedEntryIds.size === 0 &&
+      selectedExpenseIds.size === 0 &&
+      selectedDisbursementIds.size === 0
+    )
+      return;
     setError(null);
 
     startTransition(async () => {
@@ -196,6 +246,8 @@ export function useInvoiceGeneration({
           currency,
           timeEntryIds: Array.from(selectedEntryIds),
           expenseIds: selectedExpenseIds.size > 0 ? Array.from(selectedExpenseIds) : undefined,
+          disbursementIds:
+            selectedDisbursementIds.size > 0 ? Array.from(selectedDisbursementIds) : undefined,
         });
         if (result.success) {
           setOpen(false);
@@ -226,8 +278,15 @@ export function useInvoiceGeneration({
         .reduce((s, e) => s + e.billableAmount, 0)
     : 0;
 
-  const runningTotal = timeTotal + expenseTotal;
-  const totalItemCount = selectedEntryIds.size + selectedExpenseIds.size;
+  const disbursementTotal = unbilledData
+    ? (unbilledData.disbursements ?? [])
+        .filter((d) => selectedDisbursementIds.has(d.id))
+        .reduce((s, d) => s + d.amount + d.vatAmount, 0)
+    : 0;
+
+  const runningTotal = timeTotal + expenseTotal + disbursementTotal;
+  const totalItemCount =
+    selectedEntryIds.size + selectedExpenseIds.size + selectedDisbursementIds.size;
 
   const nullRateEntries = unbilledData
     ? unbilledData.projects.flatMap((p) =>
@@ -259,6 +318,7 @@ export function useInvoiceGeneration({
     unbilledData,
     selectedEntryIds,
     selectedExpenseIds,
+    selectedDisbursementIds,
     validationChecks,
     isValidating,
     // Computed
@@ -273,6 +333,8 @@ export function useInvoiceGeneration({
     handleToggleProject,
     handleToggleExpense,
     handleToggleAllExpenses,
+    handleToggleDisbursement,
+    handleToggleAllDisbursements,
     handleRunValidation,
     handleCreateDraft,
   };

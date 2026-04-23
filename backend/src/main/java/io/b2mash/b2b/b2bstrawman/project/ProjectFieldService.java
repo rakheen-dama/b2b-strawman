@@ -121,12 +121,17 @@ class ProjectFieldService {
     return customer.getName();
   }
 
-  /** Validates that a customer link is permitted (for project updates). */
+  /**
+   * Validates that a customer link is permitted (for project updates). GAP-L-35: uses the
+   * UPDATE_PROJECT action — routine edits (custom-field saves, due-date tweaks) must not be gated
+   * by the stricter CREATE_PROJECT rule that blocks PROSPECT / OFFBOARDING. Only OFFBOARDED
+   * (terminal) blocks updates.
+   */
   void validateCustomerLink(UUID customerId) {
     var customer =
         customerRepository
             .findById(customerId)
             .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
-    customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT);
+    customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.UPDATE_PROJECT);
   }
 }

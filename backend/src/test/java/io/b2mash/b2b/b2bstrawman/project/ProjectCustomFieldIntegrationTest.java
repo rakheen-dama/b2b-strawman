@@ -8,9 +8,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
+import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -21,6 +27,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -32,14 +39,25 @@ class ProjectCustomFieldIntegrationTest {
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
+  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private CustomerRepository customerRepository;
+  @Autowired private TransactionTemplate transactionTemplate;
+
+  private String tenantSchema;
+  private UUID memberIdOwner;
 
   @BeforeAll
   void setup() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Project CF Test Org", null);
-    TestMemberHelper.syncMember(
-        mockMvc, ORG_ID, "user_pcf_owner", "pcf_owner@test.com", "Owner", "owner");
+    memberIdOwner =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc, ORG_ID, "user_pcf_owner", "pcf_owner@test.com", "Owner", "owner"));
     TestMemberHelper.syncMember(
         mockMvc, ORG_ID, "user_pcf_admin", "pcf_admin@test.com", "Admin", "admin");
+
+    tenantSchema =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     // Create field definitions for PROJECT entity type
     createFieldDefinition("Court", "court", "TEXT", "PROJECT");
@@ -218,6 +236,82 @@ class ProjectCustomFieldIntegrationTest {
                     """
                         .formatted(groupId)))
         .andExpect(status().isOk());
+  }
+
+  @Test
+  void shouldUpdateProjectCustomFieldsWhenLinkedCustomerIsProspect() throws Exception {
+    // GAP-L-35: Save Custom Fields on a matter linked to a PROSPECT customer
+    // must succeed. The matter was already created; the update path must not
+    // re-run the CREATE_PROJECT lifecycle gate that blocks PROSPECT.
+    //
+    // Seed a PROSPECT customer directly (bypassing the create-API which
+    // defaults to PROSPECT anyway but then hits the CREATE_PROJECT guard on
+    // first link). Create a project and link it to that customer.
+    var prospectCustomerIdHolder = new UUID[1];
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberIdOwner)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var customer =
+                          TestCustomerFactory.createCustomerWithStatus(
+                              "L-35 Prospect Client",
+                              "l35_prospect@test.com",
+                              memberIdOwner,
+                              LifecycleStatus.PROSPECT);
+                      customer = customerRepository.save(customer);
+                      prospectCustomerIdHolder[0] = customer.getId();
+                    }));
+
+    UUID prospectCustomerId = prospectCustomerIdHolder[0];
+
+    // Create a project without a customer link (avoids create-time guard),
+    // then update it with the PROSPECT customerId plus custom fields to
+    // mimic the "Save Custom Fields on matter detail" flow.
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/projects")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcf_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"name": "L-35 Matter", "description": "Matter for prospect client"}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    String projectId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
+
+    // Save Custom Fields — the bug surfaced when the update path ran the
+    // CREATE_PROJECT guard and blocked PROSPECT. With the fix, UPDATE_PROJECT
+    // is used and PROSPECT is permitted.
+    mockMvc
+        .perform(
+            put("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcf_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "name": "L-35 Matter",
+                      "description": "Matter for prospect client",
+                      "customerId": "%s",
+                      "customFields": {
+                        "court": "High Court",
+                        "is_urgent": true
+                      }
+                    }
+                    """
+                        .formatted(prospectCustomerId)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.customFields.court").value("High Court"))
+        .andExpect(jsonPath("$.customFields.is_urgent").value(true))
+        .andExpect(jsonPath("$.customerId").value(prospectCustomerId.toString()));
   }
 
   // --- Helpers ---

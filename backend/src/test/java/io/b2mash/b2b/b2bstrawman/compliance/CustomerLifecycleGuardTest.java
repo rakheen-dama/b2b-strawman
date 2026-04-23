@@ -136,6 +136,55 @@ class CustomerLifecycleGuardTest {
   }
 
   @Test
+  void updateProjectAllowedForProspect() {
+    // GAP-L-35: project updates (e.g. Save Custom Fields on a matter) must
+    // succeed against a PROSPECT customer — the matter was already created
+    // and routine edits must not be re-gated by the CREATE_PROJECT rule.
+    var customer = createCustomerWithStatus(LifecycleStatus.PROSPECT);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_PROJECT))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void updateProjectAllowedForOnboarding() {
+    var customer = createCustomerWithStatus(LifecycleStatus.ONBOARDING);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_PROJECT))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void updateProjectAllowedForActive() {
+    var customer = createCustomerWithStatus(LifecycleStatus.ACTIVE);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_PROJECT))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void updateProjectAllowedForDormant() {
+    var customer = createCustomerWithStatus(LifecycleStatus.DORMANT);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_PROJECT))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void updateProjectAllowedForOffboarding() {
+    // GAP-L-35: close-out is in progress — routine edits (final-bill notes,
+    // due-date tweaks) must still be permitted.
+    var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDING);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_PROJECT))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void updateProjectBlockedForOffboarded() {
+    // GAP-L-35: terminal state — once a customer is fully off-boarded their
+    // matters are read-only.
+    var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDED);
+    assertThatThrownBy(() -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_PROJECT))
+        .isInstanceOf(InvalidStateException.class);
+  }
+
+  @Test
   void createProjectAllowedForActive() {
     var customer = createCustomerWithStatus(LifecycleStatus.ACTIVE);
     assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT))

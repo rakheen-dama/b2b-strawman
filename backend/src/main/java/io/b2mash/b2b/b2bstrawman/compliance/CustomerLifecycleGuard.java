@@ -23,6 +23,18 @@ public class CustomerLifecycleGuard {
           throwBlocked(action, status);
         }
       }
+      case UPDATE_PROJECT -> {
+        // GAP-L-35: project updates (e.g. saving custom fields on an
+        // already-created matter) fire across the entire engagement. The
+        // project was already validated at creation time; re-running the
+        // CREATE_PROJECT gate on every update blocks routine edits for
+        // PROSPECT customers (consultation phase). Mirrors L-56 / L-60:
+        // only OFFBOARDED (terminal) blocks — after a customer is fully
+        // off-boarded, their matters are read-only.
+        if (status == LifecycleStatus.OFFBOARDED) {
+          throwBlocked(action, status);
+        }
+      }
       case CREATE_TIME_ENTRY -> {
         // Time entries are record-keeping on work already performed. They are
         // permitted against PROSPECT and OFFBOARDING customers (e.g. consultation

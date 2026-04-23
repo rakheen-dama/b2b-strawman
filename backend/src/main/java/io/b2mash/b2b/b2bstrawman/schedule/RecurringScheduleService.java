@@ -513,14 +513,25 @@ public class RecurringScheduleService {
         nameTokenResolver.resolveNameTokens(
             namePattern, customer, period.start(), period.start(), period.end());
 
-    // 5. Create project from template
+    // 5. Create project from template. Pass explicit tenant/org so the downstream
+    // CustomerProjectLinkedEvent carries stable metadata even when the scheduler
+    // invokes this service outside of a standard request (CodeRabbit follow-up
+    // to GAP-P-03).
     UUID actingMemberId =
         schedule.getProjectLeadMemberId() != null
             ? schedule.getProjectLeadMemberId()
             : schedule.getCreatedBy();
+    String schedulerTenantId = RequestScopes.getTenantIdOrNull();
+    String schedulerOrgId = RequestScopes.getOrgIdOrNull();
     Project project =
         projectTemplateService.instantiateFromTemplate(
-            template, projectName, customer, schedule.getProjectLeadMemberId(), actingMemberId);
+            template,
+            projectName,
+            customer,
+            schedule.getProjectLeadMemberId(),
+            actingMemberId,
+            schedulerTenantId,
+            schedulerOrgId);
 
     // 5a. Check engagement prerequisites and notify if not met
     var prereqCheck =

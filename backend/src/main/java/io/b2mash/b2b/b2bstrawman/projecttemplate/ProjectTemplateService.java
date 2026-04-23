@@ -558,12 +558,9 @@ public class ProjectTemplateService {
       // GAP-P-03: publish CustomerProjectLinkedEvent so the portal read-model
       // (portal.portal_projects) is populated for matters created from templates.
       // Without this, portal contacts linked to the customer see "No projects yet"
-      // and direct-URL access returns 404.
-      String tenantIdForLink = RequestScopes.getTenantIdOrNull();
-      String orgIdForLink = RequestScopes.getOrgIdOrNull();
-      eventPublisher.publishEvent(
-          new CustomerProjectLinkedEvent(
-              customer.getId(), project.getId(), orgIdForLink, tenantIdForLink));
+      // and direct-URL access returns 404. instantiateTemplate() runs in request
+      // scope, so RequestScopes is the source of tenant/org metadata here.
+      publishCustomerProjectLinked(customer.getId(), project.getId(), null, null);
     }
 
     // 7. Set project lead
@@ -656,11 +653,19 @@ public class ProjectTemplateService {
    * Creates a project from a template without requiring member context. Designed for scheduler use.
    * The caller is responsible for audit logging and event publishing.
    *
+   * <p>Callers that run OUTSIDE request scope (e.g., the recurring-schedule executor) must pass
+   * explicit {@code tenantId} and {@code orgId} so downstream portal-read-model listeners can
+   * resolve the correct schema. When invoked inside request scope, pass {@code null} to fall back
+   * to {@link RequestScopes}. See {@link #publishCustomerProjectLinked} for the resolution order.
+   *
    * @param template the project template to instantiate from
    * @param resolvedName the already-resolved project name
    * @param customer the customer to link (may be null)
    * @param projectLeadMemberId the project lead member ID (may be null)
    * @param actingMemberId the member ID to use as createdBy (may be null for system-created)
+   * @param tenantIdOverride explicit tenant schema id for the linked event; null = use
+   *     RequestScopes
+   * @param orgIdOverride explicit Clerk org id for the linked event; null = use RequestScopes
    * @return the created project
    */
   @Transactional
@@ -669,7 +674,9 @@ public class ProjectTemplateService {
       String resolvedName,
       Customer customer,
       UUID projectLeadMemberId,
-      UUID actingMemberId) {
+      UUID actingMemberId,
+      String tenantIdOverride,
+      String orgIdOverride) {
     // 1. Create project
     var project = new Project(resolvedName, template.getDescription(), actingMemberId);
     // GAP-S5-03: set FK before save so project.customer_id is never NULL when a
@@ -694,12 +701,12 @@ public class ProjectTemplateService {
 
       // GAP-P-03: publish CustomerProjectLinkedEvent so the portal read-model
       // (portal.portal_projects) is populated for matters created by the recurring
-      // scheduler. Mirrors the fix in instantiateTemplate().
-      String tenantIdForLink = RequestScopes.getTenantIdOrNull();
-      String orgIdForLink = RequestScopes.getOrgIdOrNull();
-      eventPublisher.publishEvent(
-          new CustomerProjectLinkedEvent(
-              customer.getId(), project.getId(), orgIdForLink, tenantIdForLink));
+      // scheduler. Tenant/org come from explicit overrides when present
+      // (scheduler path — RequestScopes may not carry the active tenant in every
+      // caller), otherwise fall back to RequestScopes. Mirrors the fix in
+      // instantiateTemplate().
+      publishCustomerProjectLinked(
+          customer.getId(), project.getId(), tenantIdOverride, orgIdOverride);
     }
 
     // 3. Set project lead
@@ -873,6 +880,33 @@ public class ProjectTemplateService {
             tenantId,
             orgId,
             Instant.now()));
+  }
+
+  /**
+   * Publishes a {@link CustomerProjectLinkedEvent} using explicit tenant/org overrides when
+   * provided, otherwise falling back to {@link RequestScopes}. Required because {@link
+   * #instantiateFromTemplate} can be invoked from the recurring-schedule path where RequestScopes
+   * may not carry stable tenant/org values — downstream {@code
+   * PortalEventHandler.onCustomerProjectLinked} needs them to project a queryable portal row for
+   * the correct tenant (CodeRabbit follow-up to GAP-P-03).
+   */
+  private void publishCustomerProjectLinked(
+      UUID customerId, UUID projectId, String tenantIdOverride, String orgIdOverride) {
+    String tenantId =
+        tenantIdOverride != null ? tenantIdOverride : RequestScopes.getTenantIdOrNull();
+    String orgId = orgIdOverride != null ? orgIdOverride : RequestScopes.getOrgIdOrNull();
+    if (tenantId == null || orgId == null) {
+      log.warn(
+          "Publishing CustomerProjectLinkedEvent without stable tenant/org metadata — "
+              + "portal read-model projection may skip this matter "
+              + "(customerId={}, projectId={}, tenantId={}, orgId={})",
+          customerId,
+          projectId,
+          tenantId,
+          orgId);
+    }
+    eventPublisher.publishEvent(
+        new CustomerProjectLinkedEvent(customerId, projectId, orgId, tenantId));
   }
 
   private static Map<String, Object> buildDraftEventDetails(

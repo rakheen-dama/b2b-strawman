@@ -253,4 +253,117 @@ class PortalProjectSyncFromTemplateIntegrationTest {
     var forB = readModelRepo.findProjectsByCustomer(ORG_ID, customerBId[0]);
     assertThat(forB).extracting("id").doesNotContain(matterAId[0]);
   }
+
+  /**
+   * Scheduler-path regression guard (CodeRabbit follow-up to GAP-P-03). The recurring-schedule
+   * executor calls {@link ProjectTemplateService#instantiateFromTemplate} after binding TENANT_ID +
+   * ORG_ID as ScopedValues. This test verifies that when the scheduler passes explicit {@code
+   * tenantIdOverride} and {@code orgIdOverride} values, the downstream {@code
+   * CustomerProjectLinkedEvent} carries those stable ids so the portal read-model projects the
+   * matter correctly — even when the caller's RequestScopes are not the source of truth for the
+   * event payload.
+   *
+   * <p>To exercise the "outside standard request scope" path, the creation of template + customer
+   * happens in a normal request-scoped transaction (required for JPA multitenancy), but {@link
+   * ProjectTemplateService#instantiateFromTemplate} is then invoked directly with the tenant/org
+   * override parameters the scheduler uses. The resulting portal row must match.
+   */
+  @Test
+  void schedulerPath_instantiateFromTemplate_populates_portal_read_model_via_explicit_overrides()
+      throws Exception {
+    UUID[] customerIdHolder = new UUID[1];
+    UUID[] templateIdHolder = new UUID[1];
+
+    // 1. Create customer + template + portal contact in a normal tenant-scoped transaction.
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .run(
+            () ->
+                tenantTxTemplate.executeWithoutResult(
+                    status -> {
+                      var customer =
+                          customerService.createCustomer(
+                              "Scheduler Customer P03",
+                              "scheduler.customer+p03@test.com",
+                              null,
+                              null,
+                              null,
+                              memberId);
+                      customerIdHolder[0] = customer.getId();
+
+                      portalContactService.createContact(
+                          ORG_ID,
+                          customer.getId(),
+                          "scheduler.portal+p03@test.com",
+                          "Scheduler Portal",
+                          PortalContact.ContactRole.PRIMARY);
+
+                      var template =
+                          templateRepository.saveAndFlush(
+                              new ProjectTemplate(
+                                  "Scheduler Template P03",
+                                  "{customer} - scheduled matter",
+                                  null,
+                                  true,
+                                  "RECURRING_SCHEDULE",
+                                  null,
+                                  memberId));
+                      templateIdHolder[0] = template.getId();
+                    }));
+
+    // 2. Invoke the scheduler-style instantiateFromTemplate directly. TENANT_ID is bound
+    //    (required for JPA search_path), but ORG_ID is intentionally NOT bound — the
+    //    event payload MUST be populated from the explicit override so the portal
+    //    read-model row lands under the correct org. This is the scenario where the
+    //    previous code (reading from RequestScopes.getOrgIdOrNull()) would project the
+    //    row with a null org_id and miss the visibility query below.
+    UUID[] projectIdHolder = new UUID[1];
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .run(
+            () ->
+                tenantTxTemplate.executeWithoutResult(
+                    status -> {
+                      var customer = customerService.getCustomer(customerIdHolder[0]);
+                      var template =
+                          templateRepository
+                              .findById(templateIdHolder[0])
+                              .orElseThrow(
+                                  () -> new IllegalStateException("Template not found in setup"));
+
+                      var project =
+                          templateService.instantiateFromTemplate(
+                              template,
+                              "Scheduler Matter P03",
+                              customer,
+                              /* projectLeadMemberId */ null,
+                              /* actingMemberId */ memberId,
+                              /* tenantIdOverride */ tenantSchema,
+                              /* orgIdOverride */ ORG_ID);
+                      projectIdHolder[0] = project.getId();
+                    }));
+
+    // 3. AFTER_COMMIT listener fires here — portal.portal_projects row must exist and be
+    //    attributed to the org id we passed as the override.
+    var customerId = customerIdHolder[0];
+    var projectId = projectIdHolder[0];
+
+    var projects = readModelRepo.findProjectsByCustomer(ORG_ID, customerId);
+    assertThat(projects)
+        .as(
+            "Portal read-model must contain the matter created via the scheduler-style"
+                + " instantiateFromTemplate (CodeRabbit follow-up to GAP-P-03)")
+        .extracting("id")
+        .contains(projectId);
+
+    // 4. End-to-end: the portal HTTP endpoint returns the same matter.
+    String portalToken = portalJwtService.issueToken(customerId, ORG_ID);
+    mockMvc
+        .perform(get("/portal/projects").header("Authorization", "Bearer " + portalToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.id == '" + projectId + "')]").exists())
+        .andExpect(
+            jsonPath("$[?(@.id == '" + projectId + "')].name").value("Scheduler Matter P03"));
+  }
 }

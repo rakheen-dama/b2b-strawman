@@ -201,14 +201,15 @@ public class TrustLedgerPortalSyncService {
       return;
     }
     // Upsert this row plus replay the matter so the new transaction's running_balance and every
-    // earlier row's running_balance stay consistent with the progressive sum.
-    recomputeMatter(txn.getCustomerId(), txn.getProjectId());
+    // earlier row's running_balance stay consistent with the progressive sum. Each row is
+    // stamped with its own customer_id (see recomputeMatter).
+    recomputeMatter(txn.getProjectId());
   }
 
   /**
-   * Recomputes the portal read-model for every {@code (customerId, projectId)} pair that has at
-   * least one non-reversal trust transaction in the given account. Used by the interest-posted and
-   * reconciliation-completed fan-out handlers.
+   * Recomputes the portal read-model for every matter that has at least one non-reversal trust
+   * transaction in the given account. Used by the interest-posted and reconciliation-completed
+   * fan-out handlers.
    */
   private void syncForTrustAccount(UUID trustAccountId) {
     Set<UUID> seenMatters = new HashSet<>();
@@ -221,15 +222,16 @@ public class TrustLedgerPortalSyncService {
         if (!seenMatters.add(txn.getProjectId())) {
           continue; // Only recompute each matter once per fan-out.
         }
-        recomputeMatter(txn.getCustomerId(), txn.getProjectId());
+        recomputeMatter(txn.getProjectId());
       }
     }
   }
 
   /**
-   * Replays every portal-eligible trust transaction on {@code (customerId, matterId)} in
-   * chronological order, assigning each row a progressive {@code running_balance} using the same
-   * sign convention as {@code TrustTransactionRepository.calculateClientBalanceAsOfDate}:
+   * Replays every portal-eligible trust transaction on {@code matterId} in chronological order,
+   * stamping each row with that transaction's own {@code customer_id} and a per-customer
+   * progressive {@code running_balance}. The sign convention matches {@code
+   * TrustTransactionRepository.calculateClientBalanceAsOfDate}:
    *
    * <ul>
    *   <li>Credit (+amount): DEPOSIT, TRANSFER_IN, INTEREST_CREDIT
@@ -237,13 +239,20 @@ public class TrustLedgerPortalSyncService {
    *   <li>REVERSAL and any other types: excluded from portal rows
    * </ul>
    *
-   * <p>Used by the event-driven fan-out (approval, interest, reconciliation) and by the backfill.
-   * Fetches the matter's transactions exactly once per call.
+   * <p>Used by the event-driven fan-out (approval, recorded, interest, reconciliation) and
+   * internally by the backfill. Fetches the matter's transactions exactly once per call.
+   *
+   * <p><b>Why per-row customer attribution:</b> A trust transfer within the same matter writes two
+   * rows (TRANSFER_OUT/source_customer, TRANSFER_IN/target_customer) sharing a single {@code
+   * matter_id}. Publishing one event per leg triggers two recompute calls on the same matter —
+   * keying each row by its own {@code customer_id} (rather than the event's customerId) prevents
+   * the second leg's replay from re-attributing the first leg's portal rows to the wrong customer
+   * (CodeRabbit follow-up to GAP-L-52).
    */
-  private void recomputeMatter(UUID customerId, UUID matterId) {
+  private void recomputeMatter(UUID matterId) {
     var history = trustTransactionRepository.findByProjectIdOrderByTransactionDateAsc(matterId);
-    BigDecimal running = BigDecimal.ZERO;
-    Instant latest = null;
+    Map<UUID, BigDecimal> runningByCustomer = new HashMap<>();
+    Map<UUID, Instant> latestByCustomer = new HashMap<>();
     for (var txn : history) {
       if (!PORTAL_STATUSES.contains(txn.getStatus())) {
         continue;
@@ -251,14 +260,21 @@ public class TrustLedgerPortalSyncService {
       if (!isPortalEligible(txn)) {
         continue;
       }
-      running = running.add(signedAmount(txn));
+      UUID rowCustomerId = txn.getCustomerId();
+      if (rowCustomerId == null) {
+        continue; // hasPortalScope guard — shouldn't happen given the earlier filters
+      }
+      BigDecimal running =
+          runningByCustomer.getOrDefault(rowCustomerId, BigDecimal.ZERO).add(signedAmount(txn));
+      runningByCustomer.put(rowCustomerId, running);
       Instant occurredAt = deriveOccurredAt(txn);
-      if (latest == null || occurredAt.isAfter(latest)) {
-        latest = occurredAt;
+      Instant priorLatest = latestByCustomer.get(rowCustomerId);
+      if (priorLatest == null || occurredAt.isAfter(priorLatest)) {
+        latestByCustomer.put(rowCustomerId, occurredAt);
       }
       portalTrustRepo.upsertTransaction(
           txn.getId(),
-          customerId,
+          rowCustomerId,
           matterId,
           txn.getTransactionType(),
           txn.getAmount(),
@@ -267,7 +283,10 @@ public class TrustLedgerPortalSyncService {
           sanitiser.sanitise(txn.getDescription(), txn.getTransactionType(), txn.getReference()),
           txn.getReference());
     }
-    portalTrustRepo.upsertBalance(customerId, matterId, running, latest);
+    for (var entry : runningByCustomer.entrySet()) {
+      portalTrustRepo.upsertBalance(
+          entry.getKey(), matterId, entry.getValue(), latestByCustomer.get(entry.getKey()));
+    }
   }
 
   // ── Backfill ───────────────────────────────────────────────────────────

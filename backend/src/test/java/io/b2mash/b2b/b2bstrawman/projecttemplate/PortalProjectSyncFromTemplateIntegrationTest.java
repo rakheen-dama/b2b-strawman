@@ -312,12 +312,14 @@ class PortalProjectSyncFromTemplateIntegrationTest {
                       templateIdHolder[0] = template.getId();
                     }));
 
-    // 2. Invoke the scheduler-style instantiateFromTemplate directly. TENANT_ID is still
-    //    bound (for JPA search_path), but the event payload MUST be populated from the
-    //    explicit overrides, mirroring RecurringScheduleService's call.
+    // 2. Invoke the scheduler-style instantiateFromTemplate directly. TENANT_ID is bound
+    //    (required for JPA search_path), but ORG_ID is intentionally NOT bound — the
+    //    event payload MUST be populated from the explicit override so the portal
+    //    read-model row lands under the correct org. This is the scenario where the
+    //    previous code (reading from RequestScopes.getOrgIdOrNull()) would project the
+    //    row with a null org_id and miss the visibility query below.
     UUID[] projectIdHolder = new UUID[1];
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .where(RequestScopes.ORG_ID, ORG_ID)
         .where(RequestScopes.MEMBER_ID, memberId)
         .run(
             () ->

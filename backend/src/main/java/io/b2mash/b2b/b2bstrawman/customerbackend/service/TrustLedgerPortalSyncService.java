@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustDomainEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
@@ -111,6 +112,33 @@ public class TrustLedgerPortalSyncService {
           } catch (Exception e) {
             log.error(
                 "Portal trust sync failed for event=trust_transaction.approved tenant={} txn={}"
+                    + " account={}",
+                event.tenantId(),
+                event.transactionId(),
+                event.trustAccountId(),
+                e);
+          }
+        });
+  }
+
+  /**
+   * Syncs the portal read-model for trust transactions created directly in {@code RECORDED} status
+   * — i.e., the no-approval-threshold DEPOSIT path and the paired TRANSFER_OUT/TRANSFER_IN rows
+   * produced by {@code TrustTransactionService.recordTransfer}. These paths bypass the
+   * awaiting-approval / approved lifecycle, so {@link
+   * #onTrustTransactionApproval(TrustTransactionApprovalEvent)} never fires for them (GAP-L-52).
+   */
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onTrustTransactionRecorded(TrustTransactionRecordedEvent event) {
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            syncSingleTransaction(event.transactionId());
+          } catch (Exception e) {
+            log.error(
+                "Portal trust sync failed for event=trust_transaction.recorded tenant={} txn={}"
                     + " account={}",
                 event.tenantId(),
                 event.transactionId(),

@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountService.CreateTrustAccountRequest;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
@@ -46,6 +47,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -53,6 +56,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
+@RecordApplicationEvents
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class TrustTransactionServiceTest {
   private static final String ORG_ID = "org_trust_txn_svc_test";
@@ -75,6 +79,7 @@ class TrustTransactionServiceTest {
   @Autowired private InvoiceService invoiceService;
   @Autowired private InvoiceRepository invoiceRepository;
   @Autowired private NotificationRepository notificationRepository;
+  @Autowired private ApplicationEvents applicationEvents;
 
   private String tenantSchema;
   private UUID memberId;
@@ -223,6 +228,48 @@ class TrustTransactionServiceTest {
                   assertThat(response.reference()).isEqualTo("DEP-001");
                   assertThat(response.recordedBy()).isEqualTo(memberId);
                   assertThat(response.createdAt()).isNotNull();
+                }));
+  }
+
+  // GAP-L-52: recordDeposit must publish a TrustTransactionRecordedEvent so the portal
+  // trust-ledger read-model projects the deposit. The awaiting-approval lifecycle doesn't
+  // fire on this direct-RECORDED path, so TrustTransactionApprovalEvent alone is insufficient.
+  @Test
+  void deposit_publishesTrustTransactionRecordedEvent() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "Event Publish Test Client", "deposit-event@test.com", memberId));
+
+                  var response =
+                      transactionService.recordDeposit(
+                          trustAccountId,
+                          new RecordDepositRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("750.00"),
+                              "DEP-EVT-1",
+                              "Deposit for event publication",
+                              LocalDate.of(2026, 3, 1)));
+
+                  var published =
+                      applicationEvents.stream(TrustTransactionRecordedEvent.class).toList();
+                  assertThat(published)
+                      .as("recordDeposit must publish exactly one TrustTransactionRecordedEvent")
+                      .anySatisfy(
+                          event -> {
+                            assertThat(event.eventType()).isEqualTo("trust_transaction.recorded");
+                            assertThat(event.transactionId()).isEqualTo(response.id());
+                            assertThat(event.trustAccountId()).isEqualTo(trustAccountId);
+                            assertThat(event.transactionType()).isEqualTo("DEPOSIT");
+                            assertThat(event.amount()).isEqualByComparingTo("750.00");
+                            assertThat(event.customerId()).isEqualTo(customer.getId());
+                            assertThat(event.recordedBy()).isEqualTo(memberId);
+                          });
                 }));
   }
 

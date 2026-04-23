@@ -16,8 +16,11 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRep
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustDomainEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionService.RecordDepositRequest;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -60,6 +63,7 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
   @Autowired private PortalTrustReadModelRepository portalTrustRepo;
   @Autowired private TrustLedgerPortalSyncService syncService;
   @Autowired private PlatformTransactionManager transactionManager;
+  @Autowired private TrustTransactionService trustTransactionService;
 
   private String tenantSchema;
   private UUID customerId;
@@ -155,6 +159,70 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
     var balance = portalTrustRepo.findBalance(customerId, matterId).orElseThrow();
     assertThat(balance.currentBalance()).isEqualByComparingTo("1500.00");
     assertThat(balance.lastTransactionAt()).isNotNull();
+  }
+
+  // ==========================================================================
+  // Event listener: trust_transaction.recorded (GAP-L-52 regression guard)
+  // — direct-RECORDED deposits bypass the awaiting_approval/approved lifecycle,
+  // so the portal sync must fire off a separate RECORDED event. Before the fix
+  // the portal /trust view stayed empty because the listener only filtered on
+  // "trust_transaction.approved".
+  // ==========================================================================
+
+  @Test
+  void recordedTransactionEventUpsertsPortalTransactionAndBalance() {
+    UUID txnId =
+        recordRecordedTransaction(
+            "DEPOSIT", new BigDecimal("2500.00"), "DEP-REC-1", "Direct-recorded deposit");
+
+    publishRecordedEvent(txnId, "DEPOSIT", new BigDecimal("2500.00"));
+
+    var transactions = portalTrustRepo.findTransactions(customerId, matterId, null, null, 50, 0);
+    assertThat(transactions).hasSize(1);
+    assertThat(transactions.getFirst().transactionType()).isEqualTo("DEPOSIT");
+    assertThat(transactions.getFirst().amount()).isEqualByComparingTo("2500.00");
+    assertThat(transactions.getFirst().runningBalance()).isEqualByComparingTo("2500.00");
+
+    var balance = portalTrustRepo.findBalance(customerId, matterId).orElseThrow();
+    assertThat(balance.currentBalance()).isEqualByComparingTo("2500.00");
+    assertThat(balance.lastTransactionAt()).isNotNull();
+  }
+
+  // ==========================================================================
+  // End-to-end: calling TrustTransactionService.recordDeposit triggers the
+  // full publish → AFTER_COMMIT listener → portal upsert chain. Before the
+  // fix recordDeposit never published, so the portal rows stayed empty.
+  // ==========================================================================
+
+  @Test
+  void recordDepositEndToEndPopulatesPortalReadModel() {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .run(
+            () ->
+                tenantTxTemplate.executeWithoutResult(
+                    status ->
+                        trustTransactionService.recordDeposit(
+                            trustAccountId,
+                            new RecordDepositRequest(
+                                customerId,
+                                matterId,
+                                new BigDecimal("4200.00"),
+                                "DEP-E2E-1",
+                                "End-to-end deposit",
+                                LocalDate.of(2026, 4, 5)))));
+
+    var transactions = portalTrustRepo.findTransactions(customerId, matterId, null, null, 50, 0);
+    assertThat(transactions)
+        .as("Portal trust transaction must be populated for direct-RECORDED deposits")
+        .hasSize(1);
+    assertThat(transactions.getFirst().transactionType()).isEqualTo("DEPOSIT");
+    assertThat(transactions.getFirst().amount()).isEqualByComparingTo("4200.00");
+    assertThat(transactions.getFirst().runningBalance()).isEqualByComparingTo("4200.00");
+
+    var balance = portalTrustRepo.findBalance(customerId, matterId).orElseThrow();
+    assertThat(balance.currentBalance()).isEqualByComparingTo("4200.00");
   }
 
   // ==========================================================================
@@ -474,6 +542,59 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
                                 amount,
                                 customerId,
                                 memberId,
+                                memberId,
+                                tenantSchema,
+                                ORG_ID))));
+  }
+
+  /**
+   * Seeds a {@code RECORDED}-status trust transaction directly via the repository (no event). Used
+   * by the GAP-L-52 listener test to exercise the {@link TrustTransactionRecordedEvent} branch in
+   * isolation.
+   */
+  private UUID recordRecordedTransaction(
+      String type, BigDecimal amount, String reference, String description) {
+    UUID[] holder = new UUID[1];
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .run(
+            () ->
+                tenantTxTemplate.executeWithoutResult(
+                    status -> {
+                      var txn =
+                          new TrustTransaction(
+                              trustAccountId,
+                              type,
+                              amount,
+                              customerId,
+                              matterId,
+                              null,
+                              reference,
+                              description,
+                              LocalDate.of(2026, 4, 1),
+                              "RECORDED",
+                              memberId);
+                      holder[0] = trustTransactionRepository.saveAndFlush(txn).getId();
+                    }));
+    return holder[0];
+  }
+
+  private void publishRecordedEvent(UUID txnId, String type, BigDecimal amount) {
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberId)
+        .run(
+            () ->
+                tenantTxTemplate.executeWithoutResult(
+                    status ->
+                        eventPublisher.publishEvent(
+                            TrustTransactionRecordedEvent.recorded(
+                                txnId,
+                                trustAccountId,
+                                type,
+                                amount,
+                                customerId,
                                 memberId,
                                 tenantSchema,
                                 ORG_ID))));

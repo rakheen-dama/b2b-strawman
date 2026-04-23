@@ -194,7 +194,11 @@ function ItemCard({
           </p>
         ) : item.responseType === "FILE_UPLOAD" ? (
           <div className="flex flex-col gap-2">
+            <label htmlFor={`file-upload-${item.id}`} className="sr-only">
+              Upload file for {item.name}
+            </label>
             <input
+              id={`file-upload-${item.id}`}
               type="file"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               className="text-sm"

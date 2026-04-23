@@ -118,7 +118,7 @@ public class PortalContactAutoProvisioner {
 
 **Step 2.** Seed one-time backfill for the already-stuck Day-2 customer. Because Sipho Dlamini already exists in `tenant_5039f2d497cf.customers` with zero contacts, the new listener will not fire for him (it only hooks future create events). QA will re-create Sipho via the scenario Day-2 flow on the next cycle — OR dev can run a one-off SQL probe as part of the verification step to confirm the listener fires (see Verification §3 below). If QA does NOT want to re-run Day 2, dev should surface a manual probe in the infra shell:
 
-```
+```bash
 docker exec b2b-postgres psql -U postgres -d docteams -c "
 SET search_path TO tenant_5039f2d497cf, public;
 INSERT INTO portal_contacts (id, org_id, customer_id, email, display_name, role, status, created_at, updated_at)
@@ -157,7 +157,7 @@ This is a QA-only stopgap (aligned with the user's "No SQL shortcuts in QA" rule
 
 1. Backend restart completes cleanly. No startup errors.
 2. Re-run Day 2 scenario from 2.1 (or reseed stack) — create a new customer `Sipho Dlamini / sipho.portal@example.com` via `POST /api/customers`. Expected:
-   ```
+   ```bash
    docker exec b2b-postgres psql -U postgres -d docteams -c \
      "SELECT email, display_name, role, status FROM tenant_5039f2d497cf.portal_contacts ORDER BY created_at DESC LIMIT 1;"
    ```

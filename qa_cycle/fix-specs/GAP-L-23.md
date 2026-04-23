@@ -66,7 +66,7 @@ This is the canonical pattern — values come from the server-actions file, type
 
 **Step 3.** Verify no other file depends on the re-export from `portal-actions.ts`:
 
-```
+```text
 Grep for:
   from "@/app/(app)/org/[slug]/settings/general/portal-actions"
 ```

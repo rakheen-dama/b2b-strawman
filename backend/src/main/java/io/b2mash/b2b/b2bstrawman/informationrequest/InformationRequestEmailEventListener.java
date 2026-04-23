@@ -93,7 +93,7 @@ public class InformationRequestEmailEventListener {
                 items.size(),
                 request.getId(),
                 rawToken,
-                contact.getOrgId());
+                contact.getOrgId() != null ? contact.getOrgId() : event.orgId());
           } catch (Exception e) {
             log.error("Failed to send request-sent email for request={}", event.requestId(), e);
           }
@@ -203,15 +203,17 @@ public class InformationRequestEmailEventListener {
   }
 
   private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
-    if (tenantId != null) {
-      var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
-      if (orgId != null) {
-        carrier = carrier.where(RequestScopes.ORG_ID, orgId);
-      }
-      carrier.run(action);
-    } else {
-      log.warn("Information-request event missing tenantId; running without tenant scope");
-      action.run();
+    // Fail closed: schema-per-tenant means an unbound tenant scope would run
+    // tenant-scoped repository operations against the default `public` search_path,
+    // silently reading/writing the wrong schema. Drop the event with a WARN instead.
+    if (tenantId == null || tenantId.isBlank()) {
+      log.warn("Information-request event missing tenantId; skipping to avoid cross-schema write");
+      return;
     }
+    var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
+    if (orgId != null) {
+      carrier = carrier.where(RequestScopes.ORG_ID, orgId);
+    }
+    carrier.run(action);
   }
 }

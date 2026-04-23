@@ -452,7 +452,7 @@ cover `UnbilledSummary` not the dialog — don't touch them.
    do NOT open a new GAP; the existing disbursement-flow covers it.
 
 3. Run frontend tests:
-   ```
+   ```bash
    pnpm test -- --run invoice-generation-dialog
    ```
    Expect 3 new cases pass, all existing cases remain green.

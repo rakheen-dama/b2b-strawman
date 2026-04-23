@@ -66,7 +66,7 @@ public class PortalContactAutoProvisioner {
       log.debug(
           "Portal contact for customer {} already exists with email {} — skipping auto-provision",
           event.getCustomerId(),
-          email);
+          maskEmail(email));
       return;
     }
 
@@ -87,12 +87,28 @@ public class PortalContactAutoProvisioner {
           "Auto-provisioned portal contact {} for customer {} (email={})",
           contact.getId(),
           event.getCustomerId(),
-          email);
+          maskEmail(email));
     } catch (ResourceConflictException | DataIntegrityViolationException e) {
       log.debug(
           "Portal contact for customer {} already exists with email {} (race) — skipping",
           event.getCustomerId(),
-          email);
+          maskEmail(email));
     }
+  }
+
+  /**
+   * Masks the local-part of an email for safe logging. Keeps the first character and the domain
+   * visible for operational debugging, hides the rest. Example: {@code alice@example.com} → {@code
+   * a****@example.com}. Returns the input unchanged if null/blank or missing an {@code @}.
+   */
+  private static String maskEmail(String email) {
+    if (email == null || email.isBlank()) {
+      return email;
+    }
+    int at = email.indexOf('@');
+    if (at <= 0) {
+      return email;
+    }
+    return email.charAt(0) + "****" + email.substring(at);
   }
 }

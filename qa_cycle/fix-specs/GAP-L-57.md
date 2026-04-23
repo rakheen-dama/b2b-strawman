@@ -215,7 +215,7 @@ imports the component; extend the mock setup to intercept the server actions
    up the edit automatically; if Turbopack gets stuck, restart frontend via
    `bash compose/scripts/svc.sh restart frontend`.
 2. Run the frontend unit test suite on the affected file:
-   ```
+   ```bash
    cd frontend && pnpm vitest run components/legal/__tests__/create-disbursement-dialog.test.tsx
    ```
    Expect all tests (including the new flat-array case) to pass.

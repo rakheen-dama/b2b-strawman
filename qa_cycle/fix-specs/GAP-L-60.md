@@ -240,7 +240,7 @@ so the fixtures are borrowable.
    `bash compose/scripts/svc.sh restart backend`. NEEDS_REBUILD = true.
 
 2. Run targeted unit+integration suite first:
-   ```
+   ```bash
    ./mvnw test -Dtest='CustomerLifecycleGuard*,Invoice*' -q
    ```
    Expect EXIT=0 including the new PROSPECT test. Three previously-passing

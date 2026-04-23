@@ -192,7 +192,7 @@ integration test is sufficient.
 1. **Backend restart required** (Java source change, no hot-reload):
    `bash compose/scripts/svc.sh restart backend`. NEEDS_REBUILD = true.
 2. Run targeted unit+integration suite first:
-   ```
+   ```bash
    ./mvnw test -Dtest='CustomerLifecycleGuard*,TimeEntry*,TimeEntryBatch*' -q
    ```
    Expect EXIT=0 including the new PROSPECT test.

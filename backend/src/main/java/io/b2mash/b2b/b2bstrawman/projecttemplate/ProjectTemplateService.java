@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.CustomerProjectLinkedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.ProjectCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InformationRequestDraftCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
@@ -553,6 +554,16 @@ public class ProjectTemplateService {
     if (customer != null) {
       customerProjectRepository.save(
           new CustomerProject(customer.getId(), project.getId(), memberId));
+
+      // GAP-P-03: publish CustomerProjectLinkedEvent so the portal read-model
+      // (portal.portal_projects) is populated for matters created from templates.
+      // Without this, portal contacts linked to the customer see "No projects yet"
+      // and direct-URL access returns 404.
+      String tenantIdForLink = RequestScopes.getTenantIdOrNull();
+      String orgIdForLink = RequestScopes.getOrgIdOrNull();
+      eventPublisher.publishEvent(
+          new CustomerProjectLinkedEvent(
+              customer.getId(), project.getId(), orgIdForLink, tenantIdForLink));
     }
 
     // 7. Set project lead
@@ -680,6 +691,15 @@ public class ProjectTemplateService {
     if (customer != null) {
       customerProjectRepository.save(
           new CustomerProject(customer.getId(), project.getId(), actingMemberId));
+
+      // GAP-P-03: publish CustomerProjectLinkedEvent so the portal read-model
+      // (portal.portal_projects) is populated for matters created by the recurring
+      // scheduler. Mirrors the fix in instantiateTemplate().
+      String tenantIdForLink = RequestScopes.getTenantIdOrNull();
+      String orgIdForLink = RequestScopes.getOrgIdOrNull();
+      eventPublisher.publishEvent(
+          new CustomerProjectLinkedEvent(
+              customer.getId(), project.getId(), orgIdForLink, tenantIdForLink));
     }
 
     // 3. Set project lead

@@ -117,6 +117,12 @@ public class ConflictCheckService {
     double highestScore = 0.0;
     boolean hasAliasMatch = false;
 
+    // GAP-L-28: When the request targets a specific customer (via the form's Customer dropdown or
+    // the matter-create flow), exclude that customer's own rows from the customer match candidate
+    // set so the subject does not self-match on its own ID / registration / name. Adverse-party
+    // matching is unaffected. Free-text probes (subjectCustomerId == null) remain untouched.
+    UUID subjectCustomerId = request.customerId();
+
     // Step 1: Exact ID matching
     if (request.checkedIdNumber() != null && !request.checkedIdNumber().isBlank()) {
       // Search adverse parties by ID number
@@ -138,9 +144,9 @@ public class ConflictCheckService {
         hasExactIdMatch = true;
       }
 
-      // Search customers by ID number
+      // Search customers by ID number (excluding the subject customer — see GAP-L-28 note above).
       var custMatch = customerRepository.findByIdNumberExact(request.checkedIdNumber());
-      if (custMatch.isPresent()) {
+      if (custMatch.isPresent() && !isSubjectCustomer(custMatch.get().getId(), subjectCustomerId)) {
         conflicts.add(
             buildCustomerConflict(
                 custMatch.get(), "ID_NUMBER_EXACT", 1.0, request.checkedIdNumber()));
@@ -178,9 +184,13 @@ public class ConflictCheckService {
       // import / migration data can legitimately produce duplicate registration numbers — we must
       // iterate every match rather than let Spring Data throw
       // IncorrectResultSizeDataAccessException.
+      // Subject customer is excluded so self-match doesn't poison the result (GAP-L-28).
       var custRegMatches =
           customerRepository.findByRegistrationNumber(request.checkedRegistrationNumber());
       for (var custRegMatch : custRegMatches) {
+        if (isSubjectCustomer(custRegMatch.getId(), subjectCustomerId)) {
+          continue;
+        }
         conflicts.add(
             buildCustomerConflict(
                 custRegMatch,
@@ -247,11 +257,14 @@ public class ConflictCheckService {
       }
     }
 
-    // Search customers by name
+    // Search customers by name (excluding the subject customer — see GAP-L-28 note above).
     var customerNameMatches =
         customerRepository.findBySimilarName(
             request.checkedName(), FUZZY_THRESHOLD, MAX_SEARCH_RESULTS);
     for (var customer : customerNameMatches) {
+      if (isSubjectCustomer(customer.getId(), subjectCustomerId)) {
+        continue;
+      }
       double score = estimateSimilarity(customer.getName(), request.checkedName());
       if (score > highestScore) {
         highestScore = score;
@@ -418,6 +431,18 @@ public class ConflictCheckService {
   private boolean isAdversePartyAlreadyFound(List<ConflictDetail> conflicts, UUID adversePartyId) {
     return conflicts.stream()
         .anyMatch(c -> c.adversePartyId() != null && c.adversePartyId().equals(adversePartyId));
+  }
+
+  /**
+   * Returns true when the candidate customer is the subject of the conflict check (i.e. the row
+   * should be filtered out of the match set). Guards against self-matches such as a just-created
+   * client's own identityNumber / name rows (GAP-L-28). Returns false whenever the request did not
+   * carry an explicit {@code customerId} (free-text probe path).
+   */
+  private boolean isSubjectCustomer(UUID candidateId, UUID subjectCustomerId) {
+    return subjectCustomerId != null
+        && candidateId != null
+        && candidateId.equals(subjectCustomerId);
   }
 
   private ConflictDetail buildAdversePartyConflict(

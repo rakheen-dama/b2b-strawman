@@ -493,6 +493,153 @@ class ConflictCheckServiceTest {
                 }));
   }
 
+  // --- GAP-L-28: Subject customer exclusion tests ---
+
+  @Test
+  void performCheck_withSubjectCustomerId_excludesSelfMatchesFromResult() {
+    // When a conflict-check is invoked against an existing customer (request.customerId set),
+    // the subject's own ID number / name rows must NOT appear in the match set. Otherwise a
+    // freshly-created client would "conflict with itself" (100% self-match flagged as
+    // EXISTING CLIENT).
+    var subjectIdRef = new UUID[1];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var subject =
+                      createActiveCustomer("Sipho Dlamini", "sipho_self_match@test.com", memberId);
+                  subject.update(
+                      "Sipho Dlamini", "sipho_self_match@test.com", null, "9001015800084", null);
+                  var saved = customerRepository.saveAndFlush(subject);
+                  subjectIdRef[0] = saved.getId();
+                }));
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var request =
+                      new PerformConflictCheckRequest(
+                          "Sipho Dlamini",
+                          "9001015800084",
+                          null,
+                          "NEW_CLIENT",
+                          subjectIdRef[0],
+                          null);
+
+                  var response = conflictCheckService.performCheck(request, memberId);
+
+                  // The subject's own row must not appear as a match.
+                  assertThat(response.conflictsFound())
+                      .noneMatch(
+                          c ->
+                              "EXISTING_CLIENT".equals(c.relationship())
+                                  && subjectIdRef[0].equals(c.customerId()));
+                  // With only the self-match suppressed, the result should collapse to
+                  // NO_CONFLICT (nothing else in this scenario hits either the ID nor the
+                  // trigram-similarity threshold for this unique name).
+                  assertThat(response.result()).isEqualTo("NO_CONFLICT");
+                }));
+  }
+
+  @Test
+  void performCheck_withSubjectCustomerId_stillFlagsDifferentClientWithSameIdentity() {
+    // Sanity: the exclusion must be scoped to the subject only. A DIFFERENT customer sharing
+    // an identifier (registration number — which legitimately supports duplicates in the
+    // customer table) must still surface as CONFLICT_FOUND.
+    var subjectIdRef = new UUID[1];
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var subject =
+                      createActiveCustomer(
+                          "Ndlovu Holdings Subject", "ndlovu_subject@test.com", memberId);
+                  subject.setRegistrationNumber("2022/555555/07");
+                  var savedSubject = customerRepository.saveAndFlush(subject);
+                  subjectIdRef[0] = savedSubject.getId();
+
+                  var other =
+                      createActiveCustomer(
+                          "Ndlovu Holdings Duplicate", "ndlovu_other@test.com", memberId);
+                  other.setRegistrationNumber("2022/555555/07");
+                  customerRepository.saveAndFlush(other);
+                }));
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var request =
+                      new PerformConflictCheckRequest(
+                          "Some Unrelated Name",
+                          null,
+                          "2022/555555/07",
+                          "NEW_CLIENT",
+                          subjectIdRef[0],
+                          null);
+
+                  var response = conflictCheckService.performCheck(request, memberId);
+
+                  // A different customer sharing the registration number must still raise.
+                  assertThat(response.result()).isEqualTo("CONFLICT_FOUND");
+                  assertThat(response.conflictsFound())
+                      .anyMatch(
+                          c ->
+                              "EXISTING_CLIENT".equals(c.relationship())
+                                  && "REGISTRATION_NUMBER_EXACT".equals(c.matchType())
+                                  && !subjectIdRef[0].equals(c.customerId()));
+                  // And the subject's own row is still filtered.
+                  assertThat(response.conflictsFound())
+                      .noneMatch(c -> subjectIdRef[0].equals(c.customerId()));
+                }));
+  }
+
+  @Test
+  void performCheck_withoutCustomerId_freeTextProbeStillReturnsConflictFound() {
+    // Regression guard: when the request carries NO customerId (free-text probe path, e.g.
+    // Bob typing into the conflict-check form without linking to a client record), the
+    // subject-exclusion filter must NOT kick in — every matching customer row is fair game.
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var existing =
+                      createActiveCustomer(
+                          "Free Text Probe Corp", "free_text_probe@test.com", memberId);
+                  existing.update(
+                      "Free Text Probe Corp",
+                      "free_text_probe@test.com",
+                      null,
+                      "8804048800087",
+                      null);
+                  customerRepository.saveAndFlush(existing);
+                }));
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var request =
+                      new PerformConflictCheckRequest(
+                          "Unrelated Free-Text Name",
+                          "8804048800087",
+                          null,
+                          "NEW_CLIENT",
+                          null, // no subject customer — free-text probe
+                          null);
+
+                  var response = conflictCheckService.performCheck(request, memberId);
+
+                  assertThat(response.result()).isEqualTo("CONFLICT_FOUND");
+                  assertThat(response.conflictsFound())
+                      .anyMatch(
+                          c ->
+                              "EXISTING_CLIENT".equals(c.relationship())
+                                  && "ID_NUMBER_EXACT".equals(c.matchType()));
+                }));
+  }
+
   // --- Helpers ---
 
   private void runInTenant(Runnable action) {

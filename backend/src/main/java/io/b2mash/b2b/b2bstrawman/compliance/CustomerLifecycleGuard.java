@@ -34,7 +34,15 @@ public class CustomerLifecycleGuard {
         }
       }
       case CREATE_INVOICE -> {
-        if (status != LifecycleStatus.ACTIVE && status != LifecycleStatus.DORMANT) {
+        // GAP-L-60: invoice / fee note generation is a billing record-keeping
+        // operation that fires across the entire engagement. Billable time and
+        // disbursements accumulate on PROSPECT customers (initial consultation,
+        // sheriff-fee deposits paid before formal activation) and must be
+        // bill-able immediately. ONBOARDING and OFFBOARDING must also permit
+        // billing (engagement in progress / close-out in progress). Only
+        // OFFBOARDED (terminal) blocks — after a customer is fully off-boarded,
+        // billing is closed and final invoices have already been issued.
+        if (status == LifecycleStatus.OFFBOARDED) {
           throwBlocked(action, status);
         }
       }

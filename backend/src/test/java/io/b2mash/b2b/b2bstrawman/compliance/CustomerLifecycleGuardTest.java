@@ -15,24 +15,41 @@ class CustomerLifecycleGuardTest {
   private final CustomerLifecycleGuard guard = new CustomerLifecycleGuard();
 
   @Test
-  void createInvoiceBlockedForProspect() {
+  void createInvoiceAllowedForProspect() {
+    // GAP-L-60: invoices must be permitted on PROSPECT customers so
+    // consultation hours and up-front disbursements can be billed before
+    // formal activation.
     var customer = createCustomerWithStatus(LifecycleStatus.PROSPECT);
-    assertThatThrownBy(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE))
-        .isInstanceOf(InvalidStateException.class);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE))
+        .doesNotThrowAnyException();
   }
 
   @Test
-  void createInvoiceBlockedForOnboarding() {
+  void createInvoiceAllowedForOnboarding() {
+    // GAP-L-60: engagement is in progress — billing must be permitted.
     var customer = createCustomerWithStatus(LifecycleStatus.ONBOARDING);
-    assertThatThrownBy(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE))
-        .isInstanceOf(InvalidStateException.class);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void createInvoiceAllowedForOffboarding() {
+    // GAP-L-60: final bill must be issuable while close-out is in progress.
+    var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDING);
+    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE))
+        .doesNotThrowAnyException();
   }
 
   @Test
   void createInvoiceBlockedForOffboarded() {
+    // GAP-L-60: terminal state — billing is closed once off-boarding completes.
     var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDED);
     assertThatThrownBy(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_INVOICE))
-        .isInstanceOf(InvalidStateException.class);
+        .isInstanceOf(InvalidStateException.class)
+        // GAP-L-60 copy fix: error uses vertical-neutral "bill" (not "invoice")
+        // so legal-za tenants see a label that matches their fee-note UI.
+        .hasMessageContaining("bill")
+        .hasMessageNotContaining("invoice");
   }
 
   @Test

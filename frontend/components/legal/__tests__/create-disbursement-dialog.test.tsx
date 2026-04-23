@@ -147,16 +147,12 @@ describe("CreateDisbursementDialog", () => {
 
     // Wait for projects-loading to clear (placeholder text changes from
     // "Loading matters..." to "-- Select matter --").
-    await waitFor(() =>
-      expect(screen.getByText("-- Select matter --")).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByText("-- Select matter --")).toBeInTheDocument());
 
     // Both flat-array entries should render as <option>s.
     expect(
       screen.getByRole("option", { name: "Dlamini v Road Accident Fund" })
     ).toBeInTheDocument();
-    expect(
-      screen.getByRole("option", { name: "Estate Late Peter Moroka" })
-    ).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Estate Late Peter Moroka" })).toBeInTheDocument();
   });
 });

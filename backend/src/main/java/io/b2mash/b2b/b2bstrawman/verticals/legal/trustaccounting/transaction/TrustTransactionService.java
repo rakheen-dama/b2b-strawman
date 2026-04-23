@@ -14,6 +14,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountStatus;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerCardRepository;
 import jakarta.persistence.EntityManager;
@@ -251,6 +252,22 @@ public class TrustTransactionService {
                     "reference", request.reference()))
             .build());
 
+    // Publish a RECORDED-path event so downstream projections (notably the portal trust-ledger
+    // read-model) sync the deposit. TrustTransactionApprovalEvent is NOT emitted here because the
+    // deposit bypasses the awaiting-approval flow — the portal sync listener only fires on
+    // "trust_transaction.approved", so without this event the portal /trust view stays empty
+    // even though firm-side tenant_*.trust_transactions has the row (GAP-L-52).
+    eventPublisher.publishEvent(
+        TrustTransactionRecordedEvent.recorded(
+            saved.getId(),
+            trustAccountId,
+            "DEPOSIT",
+            request.amount(),
+            request.customerId(),
+            memberId,
+            RequestScopes.getTenantIdOrNull(),
+            RequestScopes.getOrgIdOrNull()));
+
     return toResponse(saved);
   }
 
@@ -394,6 +411,32 @@ public class TrustTransactionService {
                     "target_customer_id", request.targetCustomerId().toString(),
                     "reference", request.reference()))
             .build());
+
+    // Publish one RECORDED-path event per leg so the portal read-model recomputes BOTH the
+    // source (TRANSFER_OUT / source customer) and target (TRANSFER_IN / target customer) matter
+    // views. Without both events only one side's portal balance would refresh (GAP-L-52).
+    String tenantId = RequestScopes.getTenantIdOrNull();
+    String orgId = RequestScopes.getOrgIdOrNull();
+    eventPublisher.publishEvent(
+        TrustTransactionRecordedEvent.recorded(
+            savedOut.getId(),
+            trustAccountId,
+            "TRANSFER_OUT",
+            request.amount(),
+            request.sourceCustomerId(),
+            memberId,
+            tenantId,
+            orgId));
+    eventPublisher.publishEvent(
+        TrustTransactionRecordedEvent.recorded(
+            savedIn.getId(),
+            trustAccountId,
+            "TRANSFER_IN",
+            request.amount(),
+            request.targetCustomerId(),
+            memberId,
+            tenantId,
+            orgId));
 
     return List.of(toResponse(savedOut), toResponse(savedIn));
   }

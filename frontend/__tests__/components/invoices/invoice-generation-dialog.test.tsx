@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { InvoiceGenerationDialog } from "@/components/invoices/invoice-generation-dialog";
-import type { UnbilledTimeResponse } from "@/lib/types";
+import type { UnbilledTimeResponse, UnbilledDisbursementEntry } from "@/lib/types";
 
 const mockFetchUnbilledTime = vi.fn();
 const mockCreateInvoiceDraft = vi.fn();
@@ -262,6 +262,182 @@ describe("InvoiceGenerationDialog", () => {
         currency: "USD",
         timeEntryIds: expect.arrayContaining(["e1", "e2"]),
       });
+    });
+  });
+
+  describe("disbursements (legal vertical)", () => {
+    const sheriffFeesDisbursement: UnbilledDisbursementEntry = {
+      id: "d1",
+      incurredDate: "2026-04-22",
+      category: "SHERIFF_FEES",
+      description: "Sheriff Fees",
+      amount: 1250,
+      vatTreatment: "STANDARD",
+      vatAmount: 187.5,
+      supplierName: "Sheriff Pretoria",
+    };
+
+    const zarUnbilledData: UnbilledTimeResponse = {
+      customerId: "c1",
+      customerName: "Mathebula Partners",
+      projects: [
+        {
+          projectId: "p1",
+          projectName: "Matter Alpha",
+          entries: [
+            {
+              id: "t1",
+              taskTitle: "Drafting",
+              memberName: "Bob",
+              date: "2026-04-15",
+              durationMinutes: 60,
+              billingRateSnapshot: 2250,
+              billingRateCurrency: "ZAR",
+              billableValue: 2250,
+              description: null,
+              rateSource: "SNAPSHOT",
+            },
+          ],
+          totals: { ZAR: { hours: 1, amount: 2250 } },
+        },
+      ],
+      grandTotals: { ZAR: { hours: 1, amount: 2250 } },
+      unbilledExpenses: [],
+      unbilledExpenseTotals: {},
+      disbursements: [sheriffFeesDisbursement],
+    };
+
+    it("renders disbursements section when API returns disbursements", async () => {
+      mockFetchUnbilledTime.mockResolvedValue({ success: true, data: zarUnbilledData });
+      const user = userEvent.setup();
+
+      render(
+        <InvoiceGenerationDialog
+          customerId="c1"
+          customerName="Mathebula Partners"
+          slug="mathebula"
+          defaultCurrency="ZAR"
+        />
+      );
+
+      await user.click(screen.getByText("New Invoice"));
+      await user.click(screen.getByRole("button", { name: "Fetch Unbilled Time" }));
+
+      await waitFor(() => {
+        expect(screen.getByText("Select Unbilled Items")).toBeInTheDocument();
+      });
+
+      // Section renders with testid hook used by QA / regression harnesses.
+      const section = screen.getByTestId("disbursement-selection-section");
+      expect(section).toBeInTheDocument();
+      expect(screen.getByText("Disbursements")).toBeInTheDocument();
+      // Row metadata: description + humanised category label + supplier line.
+      // "Sheriff Fees" appears twice (description + humanised category label
+      // of SHERIFF_FEES), so use getAllByText.
+      expect(screen.getAllByText("Sheriff Fees").length).toBeGreaterThanOrEqual(2);
+      expect(screen.getByText(/Sheriff Pretoria/)).toBeInTheDocument();
+      // Row amount shows amount + VAT = R 1 437,50. Currency formatting can
+      // vary by locale; assert on the numeric content robustly.
+      const amountCell = screen.getByText(/1[\s,.]?437[.,]50/);
+      expect(amountCell).toBeInTheDocument();
+    });
+
+    it("pre-selects disbursements when currency is ZAR", async () => {
+      mockFetchUnbilledTime.mockResolvedValue({ success: true, data: zarUnbilledData });
+      const user = userEvent.setup();
+
+      render(
+        <InvoiceGenerationDialog
+          customerId="c1"
+          customerName="Mathebula Partners"
+          slug="mathebula"
+          defaultCurrency="ZAR"
+        />
+      );
+
+      await user.click(screen.getByText("New Invoice"));
+      await user.click(screen.getByRole("button", { name: "Fetch Unbilled Time" }));
+
+      await waitFor(() => {
+        expect(screen.getByText("Select Unbilled Items")).toBeInTheDocument();
+      });
+
+      // 1 time entry + 1 disbursement = 2 items total.
+      expect(screen.getByText("2 items selected for Mathebula Partners")).toBeInTheDocument();
+    });
+
+    it("createInvoiceDraft receives disbursementIds for selected rows", async () => {
+      mockFetchUnbilledTime.mockResolvedValue({ success: true, data: zarUnbilledData });
+      mockCreateInvoiceDraft.mockResolvedValue({ success: true, invoice: {} });
+      const user = userEvent.setup();
+
+      render(
+        <InvoiceGenerationDialog
+          customerId="c1"
+          customerName="Mathebula Partners"
+          slug="mathebula"
+          defaultCurrency="ZAR"
+        />
+      );
+
+      await user.click(screen.getByText("New Invoice"));
+      await user.click(screen.getByRole("button", { name: "Fetch Unbilled Time" }));
+
+      await waitFor(() => {
+        expect(screen.getByText("Select Unbilled Items")).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByRole("button", { name: "Validate & Create Draft" }));
+      await waitFor(() => {
+        expect(screen.getByRole("button", { name: "Create Draft" })).toBeInTheDocument();
+      });
+      await user.click(screen.getByRole("button", { name: "Create Draft" }));
+
+      await waitFor(() => {
+        expect(mockCreateInvoiceDraft).toHaveBeenCalledWith(
+          "mathebula",
+          "c1",
+          expect.objectContaining({
+            customerId: "c1",
+            currency: "ZAR",
+            timeEntryIds: expect.arrayContaining(["t1"]),
+            disbursementIds: ["d1"],
+          })
+        );
+      });
+    });
+
+    it("does not pre-select disbursements when currency is not ZAR", async () => {
+      mockFetchUnbilledTime.mockResolvedValue({ success: true, data: zarUnbilledData });
+      const user = userEvent.setup();
+
+      render(
+        <InvoiceGenerationDialog
+          customerId="c1"
+          customerName="Mathebula Partners"
+          slug="mathebula"
+          defaultCurrency="USD"
+        />
+      );
+
+      await user.click(screen.getByText("New Invoice"));
+      await user.click(screen.getByRole("button", { name: "Fetch Unbilled Time" }));
+
+      await waitFor(() => {
+        expect(screen.getByText("Select Unbilled Items")).toBeInTheDocument();
+      });
+
+      // Section still renders (data is present), but the row is disabled and
+      // nothing should be pre-selected. The ZAR time entry is also mismatched
+      // against USD, so `0 items selected` is expected.
+      expect(screen.getByTestId("disbursement-selection-section")).toBeInTheDocument();
+      expect(screen.getByText("0 items selected for Mathebula Partners")).toBeInTheDocument();
+
+      // The disbursement checkbox should be rendered but disabled.
+      const checkboxes = screen
+        .getAllByRole("checkbox")
+        .filter((cb) => (cb as HTMLInputElement).disabled);
+      expect(checkboxes.length).toBeGreaterThanOrEqual(1);
     });
   });
 });

@@ -13,7 +13,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatCurrency, formatDuration, formatDate } from "@/lib/format";
 import { ExpenseCategoryBadge } from "@/components/expenses/expense-category-badge";
-import type { UnbilledProjectGroup, UnbilledTimeEntry, UnbilledExpenseEntry } from "@/lib/types";
+import type {
+  UnbilledProjectGroup,
+  UnbilledTimeEntry,
+  UnbilledExpenseEntry,
+  UnbilledDisbursementEntry,
+} from "@/lib/types";
 import { Plus, ArrowLeft, CheckCircle2, AlertTriangle, Loader2 } from "lucide-react";
 import { HelpTip } from "@/components/help-tip";
 import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal";
@@ -196,6 +201,18 @@ export function InvoiceGenerationDialog({
                   selectedExpenseIds={h.selectedExpenseIds}
                   onToggleExpense={h.handleToggleExpense}
                   onToggleAll={h.handleToggleAllExpenses}
+                />
+              )}
+
+              {/* Disbursements section (legal vertical — module-gated; backend
+                  returns [] for non-legal tenants, so the section is hidden). */}
+              {(h.unbilledData.disbursements ?? []).length > 0 && (
+                <DisbursementSelectionSection
+                  disbursements={h.unbilledData.disbursements ?? []}
+                  currency={h.currency}
+                  selectedDisbursementIds={h.selectedDisbursementIds}
+                  onToggleDisbursement={h.handleToggleDisbursement}
+                  onToggleAll={h.handleToggleAllDisbursements}
                 />
               )}
 
@@ -450,6 +467,92 @@ function ExpenseSelectionSection({
             </div>
           )
         )}
+      </div>
+    </div>
+  );
+}
+
+function DisbursementSelectionSection({
+  disbursements,
+  currency,
+  selectedDisbursementIds,
+  onToggleDisbursement,
+  onToggleAll,
+}: {
+  disbursements: UnbilledDisbursementEntry[];
+  currency: string;
+  selectedDisbursementIds: Set<string>;
+  onToggleDisbursement: (id: string) => void;
+  onToggleAll: () => void;
+}) {
+  // Legal disbursements are ZAR-only in the MVP — mismatched invoice currency
+  // disables all rows (mirrors `ExpenseSelectionSection` mismatch styling).
+  const currencyMismatch = currency !== "ZAR";
+  const selectableDisbursements = currencyMismatch ? [] : disbursements;
+  const allSelected =
+    selectableDisbursements.length > 0 &&
+    selectableDisbursements.every((d) => selectedDisbursementIds.has(d.id));
+
+  function categoryLabel(category: string): string {
+    return category
+      .split("_")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+      .join(" ");
+  }
+
+  return (
+    <div data-testid="disbursement-selection-section">
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300">Disbursements</h3>
+        <button
+          type="button"
+          onClick={onToggleAll}
+          className="text-xs text-teal-600 hover:text-teal-700 dark:text-teal-400"
+          disabled={selectableDisbursements.length === 0}
+        >
+          {allSelected ? "Deselect All" : "Select All Disbursements"}
+        </button>
+      </div>
+      <div className="max-h-60 space-y-1 overflow-y-auto rounded-lg border border-slate-200 dark:border-slate-800">
+        {disbursements.map((d) => {
+          const disabled = currencyMismatch;
+          return (
+            <label
+              key={d.id}
+              className={cn(
+                "flex items-center gap-3 px-4 py-2 text-sm",
+                disabled
+                  ? "cursor-not-allowed opacity-50"
+                  : "cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900/50"
+              )}
+            >
+              <input
+                type="checkbox"
+                checked={selectedDisbursementIds.has(d.id)}
+                onChange={() => onToggleDisbursement(d.id)}
+                disabled={disabled}
+                className="size-4 rounded accent-teal-600"
+              />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-slate-900 dark:text-slate-100">
+                    {d.description}
+                  </span>
+                  <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-700 dark:bg-slate-800 dark:text-slate-300">
+                    {categoryLabel(d.category)}
+                  </span>
+                  {currencyMismatch && <span className="text-xs text-slate-400">(ZAR)</span>}
+                </div>
+                <div className="text-xs text-slate-500">
+                  {d.supplierName} &middot; {formatDate(d.incurredDate)}
+                </div>
+              </div>
+              <span className="shrink-0 text-right font-medium text-slate-700 dark:text-slate-300">
+                {safeFormatCurrency(d.amount + d.vatAmount, "ZAR")}
+              </span>
+            </label>
+          );
+        })}
       </div>
     </div>
   );

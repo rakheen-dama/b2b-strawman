@@ -105,6 +105,7 @@ export interface CreateInvoiceDraftRequest {
   currency: string;
   timeEntryIds: string[];
   expenseIds?: string[];
+  disbursementIds?: string[];
   dueDate?: string;
   notes?: string;
   paymentTerms?: string;

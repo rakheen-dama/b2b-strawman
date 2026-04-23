@@ -23,6 +23,19 @@ public class CustomerLifecycleGuard {
           throwBlocked(action, status);
         }
       }
+      case UPDATE_CUSTOM_FIELDS -> {
+        // GAP-L-35: saving custom fields on an already-linked matter is a
+        // pure metadata write and must not be re-gated by the CREATE_PROJECT
+        // rule that blocks PROSPECT / OFFBOARDING. The customer-project link
+        // existed prior to this request; re-validating it as if it were a
+        // fresh engagement blocks routine UI flows (the "Save Custom Fields"
+        // button on matter detail re-PUTs the existing customerId). Mirrors
+        // L-56 / L-60: only OFFBOARDED (terminal) blocks — once a customer is
+        // fully off-boarded their matters are read-only.
+        if (status == LifecycleStatus.OFFBOARDED) {
+          throwBlocked(action, status);
+        }
+      }
       case CREATE_TIME_ENTRY -> {
         // Time entries are record-keeping on work already performed. They are
         // permitted against PROSPECT and OFFBOARDING customers (e.g. consultation

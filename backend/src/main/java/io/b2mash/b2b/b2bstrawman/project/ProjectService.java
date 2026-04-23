@@ -297,9 +297,12 @@ public class ProjectService {
         repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Project", id));
     var access = projectAccessService.requireEditAccess(id, actor);
 
-    // Validate customer link if provided
+    // Validate customer link if provided. GAP-L-35: pass the existing customerId so the
+    // guard can distinguish "new/changed link" (full CREATE_PROJECT gate) from "unchanged
+    // link" (lighter UPDATE_CUSTOM_FIELDS gate) — Save Custom Fields re-sends the existing
+    // customerId in the full PUT body and must not be re-gated for PROSPECT engagements.
     if (customerId != null) {
-      projectFieldService.validateCustomerLink(customerId);
+      projectFieldService.validateCustomerLink(customerId, project.getCustomerId());
     }
 
     // Capture old values before mutation

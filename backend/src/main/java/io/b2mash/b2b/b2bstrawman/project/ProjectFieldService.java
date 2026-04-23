@@ -121,12 +121,31 @@ class ProjectFieldService {
     return customer.getName();
   }
 
-  /** Validates that a customer link is permitted (for project updates). */
-  void validateCustomerLink(UUID customerId) {
+  /**
+   * Validates that a customer link is permitted on a project update. GAP-L-35: distinguishes two
+   * cases:
+   *
+   * <ul>
+   *   <li><b>New or changed link</b> (existing customerId is null or differs from the incoming
+   *       value): applies the full {@link LifecycleAction#CREATE_PROJECT} gate — blocks PROSPECT /
+   *       OFFBOARDING / OFFBOARDED so a new engagement cannot be started on a not-yet-active or
+   *       closing customer.
+   *   <li><b>Unchanged link</b> (incoming customerId matches the project's current customerId):
+   *       applies {@link LifecycleAction#UPDATE_CUSTOM_FIELDS} — a routine metadata write on an
+   *       existing link, allowed for every lifecycle except OFFBOARDED. This covers the "Save
+   *       Custom Fields" flow where the frontend re-sends the full entity body including the
+   *       existing customerId.
+   * </ul>
+   */
+  void validateCustomerLink(UUID incomingCustomerId, UUID existingCustomerId) {
     var customer =
         customerRepository
-            .findById(customerId)
-            .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
-    customerLifecycleGuard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT);
+            .findById(incomingCustomerId)
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", incomingCustomerId));
+    boolean linkUnchanged =
+        existingCustomerId != null && existingCustomerId.equals(incomingCustomerId);
+    LifecycleAction action =
+        linkUnchanged ? LifecycleAction.UPDATE_CUSTOM_FIELDS : LifecycleAction.CREATE_PROJECT;
+    customerLifecycleGuard.requireActionPermitted(customer, action);
   }
 }

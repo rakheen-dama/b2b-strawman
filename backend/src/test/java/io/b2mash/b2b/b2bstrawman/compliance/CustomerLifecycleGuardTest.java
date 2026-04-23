@@ -136,6 +136,62 @@ class CustomerLifecycleGuardTest {
   }
 
   @Test
+  void updateCustomFieldsAllowedForProspect() {
+    // GAP-L-35: saving custom fields on a matter already linked to a PROSPECT
+    // customer must succeed — the matter was created earlier and routine
+    // metadata edits must not be re-gated by the stricter CREATE_PROJECT
+    // rule. Only OFFBOARDED (terminal) blocks.
+    var customer = createCustomerWithStatus(LifecycleStatus.PROSPECT);
+    assertThatCode(
+            () -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_CUSTOM_FIELDS))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void updateCustomFieldsAllowedForOnboarding() {
+    var customer = createCustomerWithStatus(LifecycleStatus.ONBOARDING);
+    assertThatCode(
+            () -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_CUSTOM_FIELDS))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void updateCustomFieldsAllowedForActive() {
+    var customer = createCustomerWithStatus(LifecycleStatus.ACTIVE);
+    assertThatCode(
+            () -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_CUSTOM_FIELDS))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void updateCustomFieldsAllowedForDormant() {
+    var customer = createCustomerWithStatus(LifecycleStatus.DORMANT);
+    assertThatCode(
+            () -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_CUSTOM_FIELDS))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void updateCustomFieldsAllowedForOffboarding() {
+    // GAP-L-35: close-out is in progress — routine edits (final-bill notes,
+    // court refs, due-date tweaks) must still be permitted.
+    var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDING);
+    assertThatCode(
+            () -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_CUSTOM_FIELDS))
+        .doesNotThrowAnyException();
+  }
+
+  @Test
+  void updateCustomFieldsBlockedForOffboarded() {
+    // GAP-L-35: terminal state — once a customer is fully off-boarded their
+    // matters are read-only.
+    var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDED);
+    assertThatThrownBy(
+            () -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_CUSTOM_FIELDS))
+        .isInstanceOf(InvalidStateException.class);
+  }
+
+  @Test
   void createProjectAllowedForActive() {
     var customer = createCustomerWithStatus(LifecycleStatus.ACTIVE);
     assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.CREATE_PROJECT))

@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.compliance;
 
 public enum LifecycleAction {
   CREATE_PROJECT("project"),
+  UPDATE_CUSTOM_FIELDS("custom fields"),
   CREATE_TASK("task"),
   CREATE_INVOICE("bill"),
   CREATE_TIME_ENTRY("time entry"),

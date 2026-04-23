@@ -136,51 +136,58 @@ class CustomerLifecycleGuardTest {
   }
 
   @Test
-  void updateProjectAllowedForProspect() {
-    // GAP-L-35: project updates (e.g. Save Custom Fields on a matter) must
-    // succeed against a PROSPECT customer — the matter was already created
-    // and routine edits must not be re-gated by the CREATE_PROJECT rule.
+  void updateCustomFieldsAllowedForProspect() {
+    // GAP-L-35: saving custom fields on a matter already linked to a PROSPECT
+    // customer must succeed — the matter was created earlier and routine
+    // metadata edits must not be re-gated by the stricter CREATE_PROJECT
+    // rule. Only OFFBOARDED (terminal) blocks.
     var customer = createCustomerWithStatus(LifecycleStatus.PROSPECT);
-    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_PROJECT))
+    assertThatCode(
+            () -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_CUSTOM_FIELDS))
         .doesNotThrowAnyException();
   }
 
   @Test
-  void updateProjectAllowedForOnboarding() {
+  void updateCustomFieldsAllowedForOnboarding() {
     var customer = createCustomerWithStatus(LifecycleStatus.ONBOARDING);
-    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_PROJECT))
+    assertThatCode(
+            () -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_CUSTOM_FIELDS))
         .doesNotThrowAnyException();
   }
 
   @Test
-  void updateProjectAllowedForActive() {
+  void updateCustomFieldsAllowedForActive() {
     var customer = createCustomerWithStatus(LifecycleStatus.ACTIVE);
-    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_PROJECT))
+    assertThatCode(
+            () -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_CUSTOM_FIELDS))
         .doesNotThrowAnyException();
   }
 
   @Test
-  void updateProjectAllowedForDormant() {
+  void updateCustomFieldsAllowedForDormant() {
     var customer = createCustomerWithStatus(LifecycleStatus.DORMANT);
-    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_PROJECT))
+    assertThatCode(
+            () -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_CUSTOM_FIELDS))
         .doesNotThrowAnyException();
   }
 
   @Test
-  void updateProjectAllowedForOffboarding() {
+  void updateCustomFieldsAllowedForOffboarding() {
     // GAP-L-35: close-out is in progress — routine edits (final-bill notes,
-    // due-date tweaks) must still be permitted.
+    // court refs, due-date tweaks) must still be permitted.
     var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDING);
-    assertThatCode(() -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_PROJECT))
+    assertThatCode(
+            () -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_CUSTOM_FIELDS))
         .doesNotThrowAnyException();
   }
 
   @Test
-  void updateProjectBlockedForOffboarded() {
+  void updateCustomFieldsBlockedForOffboarded() {
     // GAP-L-35: terminal state — once a customer is fully off-boarded their
     // matters are read-only.
     var customer = createCustomerWithStatus(LifecycleStatus.OFFBOARDED);
-    assertThatThrownBy(() -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_PROJECT))
+    assertThatThrownBy(
+            () -> guard.requireActionPermitted(customer, LifecycleAction.UPDATE_CUSTOM_FIELDS))
         .isInstanceOf(InvalidStateException.class);
   }
 

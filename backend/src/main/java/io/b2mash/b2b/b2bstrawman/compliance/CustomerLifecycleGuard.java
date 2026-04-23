@@ -23,14 +23,15 @@ public class CustomerLifecycleGuard {
           throwBlocked(action, status);
         }
       }
-      case UPDATE_PROJECT -> {
-        // GAP-L-35: project updates (e.g. saving custom fields on an
-        // already-created matter) fire across the entire engagement. The
-        // project was already validated at creation time; re-running the
-        // CREATE_PROJECT gate on every update blocks routine edits for
-        // PROSPECT customers (consultation phase). Mirrors L-56 / L-60:
-        // only OFFBOARDED (terminal) blocks — after a customer is fully
-        // off-boarded, their matters are read-only.
+      case UPDATE_CUSTOM_FIELDS -> {
+        // GAP-L-35: saving custom fields on an already-linked matter is a
+        // pure metadata write and must not be re-gated by the CREATE_PROJECT
+        // rule that blocks PROSPECT / OFFBOARDING. The customer-project link
+        // existed prior to this request; re-validating it as if it were a
+        // fresh engagement blocks routine UI flows (the "Save Custom Fields"
+        // button on matter detail re-PUTs the existing customerId). Mirrors
+        // L-56 / L-60: only OFFBOARDED (terminal) blocks — once a customer is
+        // fully off-boarded their matters are read-only.
         if (status == LifecycleStatus.OFFBOARDED) {
           throwBlocked(action, status);
         }

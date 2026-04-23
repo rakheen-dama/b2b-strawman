@@ -10,9 +10,12 @@ import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
+import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
+import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
@@ -41,6 +44,8 @@ class ProjectCustomFieldIntegrationTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private CustomerRepository customerRepository;
+  @Autowired private ProjectRepository projectRepository;
+  @Autowired private ProjectMemberRepository projectMemberRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
@@ -240,14 +245,20 @@ class ProjectCustomFieldIntegrationTest {
 
   @Test
   void shouldUpdateProjectCustomFieldsWhenLinkedCustomerIsProspect() throws Exception {
-    // GAP-L-35: Save Custom Fields on a matter linked to a PROSPECT customer
-    // must succeed. The matter was already created; the update path must not
-    // re-run the CREATE_PROJECT lifecycle gate that blocks PROSPECT.
+    // GAP-L-35: Save Custom Fields on a matter ALREADY LINKED to a PROSPECT
+    // customer must succeed. The frontend's "Save Custom Fields" flow GETs
+    // the current project, then PUTs back the full body with customFields
+    // patched in — re-sending the existing customerId unchanged. Prior
+    // behaviour re-ran the CREATE_PROJECT guard on every PUT and blocked
+    // the re-sent PROSPECT link. Fix: when the incoming customerId matches
+    // the existing link, use UPDATE_CUSTOM_FIELDS (only OFFBOARDED blocks).
     //
-    // Seed a PROSPECT customer directly (bypassing the create-API which
-    // defaults to PROSPECT anyway but then hits the CREATE_PROJECT guard on
-    // first link). Create a project and link it to that customer.
+    // Seed both the PROSPECT customer and a project pre-linked to it
+    // directly via repositories, inside a tenant-scoped transaction, to
+    // mirror the real bug (matter already exists with a PROSPECT link)
+    // rather than inventing a new link at update time.
     var prospectCustomerIdHolder = new UUID[1];
+    var projectIdHolder = new UUID[1];
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
@@ -265,31 +276,29 @@ class ProjectCustomFieldIntegrationTest {
                               LifecycleStatus.PROSPECT);
                       customer = customerRepository.save(customer);
                       prospectCustomerIdHolder[0] = customer.getId();
+
+                      // Pre-seed a project already linked to the PROSPECT
+                      // customer. This models the state where the matter was
+                      // created via a template/internal flow and the customer
+                      // then drifted into (or started in) PROSPECT status.
+                      var project =
+                          new Project("L-35 Matter", "Matter for prospect client", memberIdOwner);
+                      project.setCustomerId(customer.getId());
+                      project = projectRepository.save(project);
+                      projectIdHolder[0] = project.getId();
+
+                      // Grant the API caller edit access on the seeded project.
+                      projectMemberRepository.save(
+                          new ProjectMember(
+                              project.getId(), memberIdOwner, Roles.PROJECT_LEAD, null));
                     }));
 
     UUID prospectCustomerId = prospectCustomerIdHolder[0];
+    UUID projectId = projectIdHolder[0];
 
-    // Create a project without a customer link (avoids create-time guard),
-    // then update it with the PROSPECT customerId plus custom fields to
-    // mimic the "Save Custom Fields on matter detail" flow.
-    var createResult =
-        mockMvc
-            .perform(
-                post("/api/projects")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_pcf_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "L-35 Matter", "description": "Matter for prospect client"}
-                        """))
-            .andExpect(status().isCreated())
-            .andReturn();
-
-    String projectId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
-
-    // Save Custom Fields — the bug surfaced when the update path ran the
-    // CREATE_PROJECT guard and blocked PROSPECT. With the fix, UPDATE_PROJECT
-    // is used and PROSPECT is permitted.
+    // Save Custom Fields — the full PUT body carries the existing (unchanged)
+    // PROSPECT customerId, exactly like updateEntityCustomFieldsAction in the
+    // frontend does (GET the project, spread it, then overwrite customFields).
     mockMvc
         .perform(
             put("/api/projects/" + projectId)

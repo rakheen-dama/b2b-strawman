@@ -5,7 +5,7 @@ export const createTrustAccountSchema = z.object({
   bankName: z.string().min(1, "Bank name is required").max(200),
   branchCode: z.string().min(1, "Branch code is required").max(20),
   accountNumber: z.string().min(1, "Account number is required").max(30),
-  accountType: z.enum(["GENERAL", "INVESTMENT"], {
+  accountType: z.enum(["GENERAL", "INVESTMENT", "SECTION_86"], {
     message: "Account type is required",
   }),
   openedDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be YYYY-MM-DD"),

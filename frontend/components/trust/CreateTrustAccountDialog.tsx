@@ -209,6 +209,7 @@ export function CreateTrustAccountDialog({
                       <SelectContent>
                         <SelectItem value="GENERAL">General</SelectItem>
                         <SelectItem value="INVESTMENT">Investment</SelectItem>
+                        <SelectItem value="SECTION_86">Section 86 Trust Account</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

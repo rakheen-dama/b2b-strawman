@@ -33,7 +33,7 @@ export interface CreateTrustAccountInput {
   bankName: string;
   branchCode: string;
   accountNumber: string;
-  accountType?: "GENERAL" | "INVESTMENT";
+  accountType?: "GENERAL" | "INVESTMENT" | "SECTION_86";
   isPrimary?: boolean;
   requireDualApproval?: boolean;
   paymentApprovalThreshold?: number | null;

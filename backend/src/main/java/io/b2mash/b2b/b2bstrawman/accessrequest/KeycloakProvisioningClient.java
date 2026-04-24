@@ -76,7 +76,8 @@ public class KeycloakProvisioningClient {
     this.adminUsername = adminUsername;
     this.adminPassword = adminPassword;
     this.frontendBaseUrl = frontendBaseUrl;
-    this.organizationRedirectUrl = frontendBaseUrl.replaceAll("/+$", "") + "/dashboard";
+    this.organizationRedirectUrl =
+        frontendBaseUrl.replaceAll("/+$", "") + "/accept-invite/complete";
   }
 
   /**
@@ -87,8 +88,10 @@ public class KeycloakProvisioningClient {
    */
   @SuppressWarnings("unchecked")
   public String createOrganization(String name, String slug) {
-    // redirectUrl targets /dashboard so post-registration flows through the gateway's OAuth2
-    // login (defaultSuccessUrl=/dashboard), rather than landing on the marketing page at /.
+    // redirectUrl targets /accept-invite/complete so post-registration bounces back through
+    // gateway-bff's OAuth2 login flow (the account-client auth code is intentionally discarded).
+    // This lets the gateway's OAuth2 success handler fire and set KC_LAST_LOGIN_SUB for the L-22
+    // middleware handoff check. See qa_cycle/fix-specs/GAP-L-22-regression.md.
     var body =
         Map.of(
             "name", name, "alias", slug, "enabled", true, "redirectUrl", organizationRedirectUrl);

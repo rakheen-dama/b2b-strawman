@@ -4,6 +4,7 @@ import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -206,6 +207,59 @@ class KeycloakProvisioningClientTest {
     String id = client.createOrganization("Acme Inc", "acme-inc");
 
     assertThat(id).isEqualTo("new-org-id-123");
+  }
+
+  // ---------------------------------------------------------------------------
+  // GAP-L-22 regression — KC org redirectUrl must target the bounce page so the
+  // post-registration callback re-enters the gateway-bff OAuth2 flow. See
+  // qa_cycle/fix-specs/GAP-L-22-regression.md.
+  // ---------------------------------------------------------------------------
+
+  @Test
+  void createOrganization_postsRedirectUrlPointingAtAcceptInviteCompleteBouncePage() {
+    wireMock.stubFor(
+        post(urlEqualTo("/admin/realms/docteams/organizations"))
+            .willReturn(
+                aResponse()
+                    .withStatus(201)
+                    .withHeader(
+                        "Location",
+                        "http://localhost/admin/realms/docteams/organizations/new-org-id-456")));
+
+    client.createOrganization("Mathebula & Partners", "mathebula-partners");
+
+    wireMock.verify(
+        postRequestedFor(urlEqualTo("/admin/realms/docteams/organizations"))
+            .withRequestBody(
+                containing("\"redirectUrl\":\"http://localhost:3000/accept-invite/complete\"")));
+  }
+
+  @Test
+  void createOrganization_redirectUrlStripsTrailingSlashOnFrontendBaseUrl() {
+    // Re-create the client with a trailing-slash frontend base URL to ensure normalisation.
+    client =
+        new KeycloakProvisioningClient(
+            "http://localhost:" + wireMock.port(),
+            "docteams",
+            "admin",
+            "admin",
+            "http://localhost:3000//");
+
+    wireMock.stubFor(
+        post(urlEqualTo("/admin/realms/docteams/organizations"))
+            .willReturn(
+                aResponse()
+                    .withStatus(201)
+                    .withHeader(
+                        "Location",
+                        "http://localhost/admin/realms/docteams/organizations/new-org-id-789")));
+
+    client.createOrganization("Acme Inc", "acme-inc");
+
+    wireMock.verify(
+        postRequestedFor(urlEqualTo("/admin/realms/docteams/organizations"))
+            .withRequestBody(
+                containing("\"redirectUrl\":\"http://localhost:3000/accept-invite/complete\"")));
   }
 
   // ---------------------------------------------------------------------------

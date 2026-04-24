@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -237,6 +237,21 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
       ? intakeGroups
       : intakeGroups.filter((g) => !g.slug.includes("trust"));
 
+  // GAP-L-62 (hybrid B + C): for INDIVIDUAL entity types, auto-populate the tax
+  // number from the ID number — SARS treats the SA ID number as the tax number
+  // for natural persons. We prefill only when the tax-number field is still
+  // blank; the user can still override without being clobbered on later edits.
+  const taxNumberValue = form.watch("taxNumber");
+  const idNumberValue = form.watch("idNumber");
+  const entityTypeValue = form.watch("entityType");
+  useEffect(() => {
+    if (entityTypeValue !== "INDIVIDUAL") return;
+    if (!idNumberValue) return;
+    if (taxNumberValue) return; // preserve any user-entered value
+    form.setValue("taxNumber", idNumberValue, { shouldDirty: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [entityTypeValue, idNumberValue, taxNumberValue]);
+
   // Compute whether all visible required fields are filled
   const allRequiredFilled = filteredIntakeGroups.every((group) =>
     group.fields
@@ -380,7 +395,9 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                       <FormLabel>
                         Tax Number{" "}
                         <span className="text-muted-foreground font-normal">
-                          (required for activation)
+                          {entityTypeValue === "INDIVIDUAL"
+                            ? "(auto-filled from ID Number; editable)"
+                            : "(required to send an invoice; collectable later)"}
                         </span>
                       </FormLabel>
                       <FormControl>

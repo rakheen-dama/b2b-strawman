@@ -125,6 +125,15 @@ public class InvoiceRenderingService {
   }
 
   InvoiceResponse buildResponse(Invoice invoice) {
+    return buildResponse(invoice, List.of());
+  }
+
+  /**
+   * Builds a response DTO and attaches the given non-blocking warning codes. Used by {@code
+   * InvoiceCreationService.createDraft} to surface soft prerequisites (e.g. {@code
+   * tax_number_missing}) without failing the request — see GAP-L-62.
+   */
+  InvoiceResponse buildResponse(Invoice invoice, List<String> warnings) {
     var lines = lineRepository.findByInvoiceIdOrderBySortOrder(invoice.getId());
     var projectNames = resolveProjectNames(lines);
     var tariffItemNumbers = resolveTariffItemNumbers(lines);
@@ -148,7 +157,7 @@ public class InvoiceRenderingService {
 
     var memberNames = resolveMemberNames(invoice);
     return InvoiceResponse.from(
-        invoice, lineResponses, memberNames, taxBreakdown, taxInclusive, hasPerLineTax);
+        invoice, lineResponses, memberNames, taxBreakdown, taxInclusive, hasPerLineTax, warnings);
   }
 
   // --- Private helpers ---

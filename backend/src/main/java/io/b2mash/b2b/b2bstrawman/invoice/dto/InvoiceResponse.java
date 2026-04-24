@@ -48,7 +48,14 @@ public record InvoiceResponse(
     String poNumber,
     TaxType taxType,
     LocalDate billingPeriodStart,
-    LocalDate billingPeriodEnd) {
+    LocalDate billingPeriodEnd,
+    /**
+     * Non-blocking warnings emitted by the draft-creation path (soft prerequisites that would hard-
+     * block invoice-send). Populated by {@code InvoiceCreationService.createDraft} and empty on
+     * subsequent reads — the frontend uses this to show an inline banner on the just-created draft
+     * without a separate API call. See GAP-L-62.
+     */
+    List<String> warnings) {
 
   public static InvoiceResponse from(
       Invoice invoice,
@@ -57,6 +64,17 @@ public record InvoiceResponse(
       List<TaxBreakdownEntry> taxBreakdown,
       boolean taxInclusive,
       boolean hasPerLineTax) {
+    return from(invoice, lines, memberNames, taxBreakdown, taxInclusive, hasPerLineTax, List.of());
+  }
+
+  public static InvoiceResponse from(
+      Invoice invoice,
+      List<InvoiceLineResponse> lines,
+      Map<UUID, String> memberNames,
+      List<TaxBreakdownEntry> taxBreakdown,
+      boolean taxInclusive,
+      boolean hasPerLineTax,
+      List<String> warnings) {
     return new InvoiceResponse(
         invoice.getId(),
         invoice.getCustomerId(),
@@ -94,6 +112,7 @@ public record InvoiceResponse(
         invoice.getPoNumber(),
         invoice.getTaxType(),
         invoice.getBillingPeriodStart(),
-        invoice.getBillingPeriodEnd());
+        invoice.getBillingPeriodEnd(),
+        warnings != null ? warnings : List.of());
   }
 }

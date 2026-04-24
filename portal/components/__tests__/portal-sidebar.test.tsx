@@ -75,7 +75,7 @@ describe("PortalSidebar (desktop)", () => {
     cleanup();
   });
 
-  it("renders all 10 nav items for legal-za with all modules enabled", () => {
+  it("renders all 9 nav items for legal-za with all modules enabled", () => {
     render(<PortalSidebar />);
     for (const label of [
       "Home",
@@ -87,10 +87,14 @@ describe("PortalSidebar (desktop)", () => {
       "Proposals",
       "Requests",
       "Acceptance",
-      "Documents",
     ]) {
       expect(screen.getByText(label)).toBeInTheDocument();
     }
+  });
+
+  it("does not render a Documents link (GAP-P-07: route not implemented)", () => {
+    render(<PortalSidebar />);
+    expect(screen.queryByText("Documents")).not.toBeInTheDocument();
   });
 
   it("renders the active-route indicator on the current route only", () => {

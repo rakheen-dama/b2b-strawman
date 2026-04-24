@@ -8,7 +8,6 @@ import {
   ClipboardList,
   MessageSquare,
   FileCheck,
-  FileArchive,
   type LucideIcon,
 } from "lucide-react";
 
@@ -87,12 +86,9 @@ export const PORTAL_NAV_ITEMS: PortalNavItem[] = [
     icon: FileCheck,
     modules: ["document_acceptance"],
   },
-  {
-    id: "documents",
-    href: "/documents",
-    labelKey: "portal.nav.documents",
-    icon: FileArchive,
-  },
+  // GAP-P-07: "Documents" entry removed — the /documents route is not yet
+  // implemented. Re-introduce this nav item only once the corresponding
+  // page is available, ideally behind a feature flag / enabled module.
 ];
 
 /**
@@ -110,7 +106,6 @@ export const PORTAL_NAV_LABELS: Record<string, string> = {
   "portal.nav.proposals": "Proposals",
   "portal.nav.requests": "Requests",
   "portal.nav.acceptance": "Acceptance",
-  "portal.nav.documents": "Documents",
 };
 
 /**

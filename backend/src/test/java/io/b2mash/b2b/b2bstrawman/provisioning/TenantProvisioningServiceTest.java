@@ -69,6 +69,11 @@ class TenantProvisioningServiceTest {
   @Mock private ProjectTemplatePackSeeder projectTemplatePackSeeder;
   @Mock private SchedulePackSeeder schedulePackSeeder;
   @Mock private LegalTariffSeeder legalTariffSeeder;
+
+  @Mock
+  private io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileReconciliationSeeder
+      verticalProfileReconciliationSeeder;
+
   @Mock private TenantTransactionHelper tenantTransactionHelper;
   @Mock private OrgSettingsRepository orgSettingsRepository;
   @Mock private VerticalProfileRegistry verticalProfileRegistry;
@@ -212,7 +217,8 @@ class TenantProvisioningServiceTest {
             "en-ZA-legal",
             "ZAR",
             Map.of(),
-            null);
+            null,
+            List.of());
     when(verticalProfileRegistry.getProfile("legal-za")).thenReturn(Optional.of(legalProfile));
 
     // Mock TenantTransactionHelper to execute the lambda directly
@@ -345,7 +351,8 @@ class TenantProvisioningServiceTest {
             "en-ZA-legal",
             "ZAR",
             Map.of(),
-            null);
+            null,
+            List.of());
     when(verticalProfileRegistry.getProfile("legal-za")).thenReturn(Optional.of(legalProfile));
 
     // Mock TenantTransactionHelper to execute the lambda directly

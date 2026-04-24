@@ -25,8 +25,12 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalDocumentView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.event.RequestItemSubmittedEvent;
+import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequest;
 import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestRepository;
+import io.b2mash.b2b.b2bstrawman.informationrequest.RequestItem;
 import io.b2mash.b2b.b2bstrawman.informationrequest.RequestItemRepository;
+import io.b2mash.b2b.b2bstrawman.informationrequest.RequestStatus;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -570,6 +574,84 @@ class PortalEventHandlerTest {
 
     verify(readModelRepo).deletePortalInvoice(invoiceId, ORG_ID);
     verify(readModelRepo, never()).deletePortalInvoiceLinesByInvoice(any());
+  }
+
+  // ── 15. RequestItemSubmitted → parent status mirrored (GAP-L-47) ─────
+
+  @Test
+  void onRequestItemSubmitted_mirrorsParentRequestStatusToReadModel() {
+    var requestId = UUID.randomUUID();
+    var itemId = UUID.randomUUID();
+    var event =
+        new RequestItemSubmittedEvent(
+            "request_item.submitted",
+            "request_item",
+            itemId,
+            null,
+            null,
+            "portal",
+            TENANT_ID,
+            ORG_ID,
+            Instant.now(),
+            java.util.Map.of(),
+            requestId,
+            itemId,
+            UUID.randomUUID(),
+            UUID.randomUUID());
+
+    var item = org.mockito.Mockito.mock(RequestItem.class);
+    when(item.getDocumentId()).thenReturn(null);
+    when(item.getTextResponse()).thenReturn("answer");
+    when(requestItemRepository.findById(itemId)).thenReturn(Optional.of(item));
+
+    var parent = org.mockito.Mockito.mock(InformationRequest.class);
+    when(parent.getStatus()).thenReturn(RequestStatus.IN_PROGRESS);
+    when(parent.getCompletedAt()).thenReturn(null);
+    when(informationRequestRepository.findById(requestId)).thenReturn(Optional.of(parent));
+
+    handler.onRequestItemSubmitted(event);
+
+    // Item-level projection + counts stay intact…
+    verify(readModelRepo)
+        .updatePortalRequestItemStatus(
+            eq(itemId), eq("SUBMITTED"), eq(null), eq(null), eq("answer"));
+    verify(readModelRepo).recalculatePortalRequestCounts(requestId);
+    // …and the parent status is now mirrored into the read-model so the portal no longer lags.
+    verify(readModelRepo).updatePortalRequestStatus(requestId, "IN_PROGRESS", null);
+  }
+
+  @Test
+  void onRequestItemSubmitted_withMissingParent_doesNotBlowUp() {
+    var requestId = UUID.randomUUID();
+    var itemId = UUID.randomUUID();
+    var event =
+        new RequestItemSubmittedEvent(
+            "request_item.submitted",
+            "request_item",
+            itemId,
+            null,
+            null,
+            "portal",
+            TENANT_ID,
+            ORG_ID,
+            Instant.now(),
+            java.util.Map.of(),
+            requestId,
+            itemId,
+            UUID.randomUUID(),
+            UUID.randomUUID());
+
+    var item = org.mockito.Mockito.mock(RequestItem.class);
+    when(item.getDocumentId()).thenReturn(null);
+    when(item.getTextResponse()).thenReturn(null);
+    when(requestItemRepository.findById(itemId)).thenReturn(Optional.of(item));
+    when(informationRequestRepository.findById(requestId)).thenReturn(Optional.empty());
+
+    handler.onRequestItemSubmitted(event);
+
+    verify(readModelRepo).recalculatePortalRequestCounts(requestId);
+    // No parent → no parent-status mirror call (stays at whatever SENT was set on upsert).
+    verify(readModelRepo, never()).updatePortalRequestStatus(any(), any(), any());
   }
 
   // ── Helper methods ─────────────────────────────────────────────────

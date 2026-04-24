@@ -109,6 +109,9 @@ public class PortalTrustLedgerService {
   private void requireMatterVisibleToCustomer(UUID customerId, UUID matterId) {
     portalTrustRepo
         .findBalance(customerId, matterId)
-        .orElseThrow(() -> new ResourceNotFoundException("Matter", matterId));
+        // GAP-L-55: match the sibling portal endpoints' "Project not found" wording. The
+        // tenant-side entity is a matter in legal-za terminology, but the portal API uses the
+        // canonical "Project" resource name to avoid terminology drift across the portal contract.
+        .orElseThrow(() -> new ResourceNotFoundException("Project", matterId));
   }
 }

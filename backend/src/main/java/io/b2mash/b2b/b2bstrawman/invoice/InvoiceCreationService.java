@@ -26,6 +26,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
+import io.b2mash.b2b.b2bstrawman.prerequisite.StructuralPrerequisiteCheck;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
@@ -137,9 +138,13 @@ public class InvoiceCreationService {
     this.taxRateRepository = taxRateRepository;
   }
 
+  /** Warning code surfaced on draft creation when the customer has no tax number (GAP-L-62). */
+  public static final String WARNING_TAX_NUMBER_MISSING = "tax_number_missing";
+
   @Transactional
   public InvoiceResponse createDraft(CreateInvoiceRequest request, UUID createdBy) {
     var customer = validateInvoicePrerequisites(request.customerId());
+    var warnings = collectDraftWarnings(customer);
 
     String orgId = RequestScopes.requireOrgId();
     var organization =
@@ -234,7 +239,26 @@ public class InvoiceCreationService {
                     invoice.getSubtotal().toString()))
             .build());
 
-    return invoiceRenderingService.buildResponse(invoice);
+    return invoiceRenderingService.buildResponse(invoice, warnings);
+  }
+
+  /**
+   * Collects non-blocking warnings for a newly-created draft. Today this surfaces a missing tax
+   * number (GAP-L-62 hybrid model: soft-warn at draft, hard-enforce at send). The frontend uses the
+   * codes to drive inline banners on the draft detail page; the list is stable so new warning codes
+   * can be added without touching consumers that only care about specific codes.
+   */
+  private List<String> collectDraftWarnings(io.b2mash.b2b.b2bstrawman.customer.Customer customer) {
+    var warnings = new ArrayList<String>();
+    if (StructuralPrerequisiteCheck.isTaxNumberMissing(customer)) {
+      warnings.add(WARNING_TAX_NUMBER_MISSING);
+      log.warn(
+          "Draft invoice for customer {} created without a tax number — send will be blocked until"
+              + " the customer profile is updated (warning code: {}).",
+          customer.getId(),
+          WARNING_TAX_NUMBER_MISSING);
+    }
+    return warnings;
   }
 
   /**

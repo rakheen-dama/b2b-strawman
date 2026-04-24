@@ -1,6 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.prerequisite.StructuralPrerequisiteCheck;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import io.b2mash.b2b.b2bstrawman.setupstatus.CustomerReadinessService;
 import io.b2mash.b2b.b2bstrawman.template.DocumentTemplate;
@@ -16,16 +18,19 @@ import org.springframework.transaction.annotation.Transactional;
 public class InvoiceValidationService {
 
   private final CustomerReadinessService customerReadinessService;
+  private final CustomerRepository customerRepository;
   private final OrganizationRepository organizationRepository;
   private final TimeEntryRepository timeEntryRepository;
   private final DocumentTemplateRepository documentTemplateRepository;
 
   public InvoiceValidationService(
       CustomerReadinessService customerReadinessService,
+      CustomerRepository customerRepository,
       OrganizationRepository organizationRepository,
       TimeEntryRepository timeEntryRepository,
       DocumentTemplateRepository documentTemplateRepository) {
     this.customerReadinessService = customerReadinessService;
+    this.customerRepository = customerRepository;
     this.organizationRepository = organizationRepository;
     this.timeEntryRepository = timeEntryRepository;
     this.documentTemplateRepository = documentTemplateRepository;
@@ -47,7 +52,11 @@ public class InvoiceValidationService {
       checks.add(checkTimeEntryRates(timeEntryIds));
     }
 
-    // 4. Template required fields
+    // 4. Customer tax number — WARNING at draft (soft-warn surfaced inline in the Pre-generation
+    //    checks checklist), escalates to CRITICAL at send. See GAP-L-62.
+    checks.add(checkCustomerTaxNumber(customerId, Severity.WARNING));
+
+    // 5. Template required fields
     if (templateId != null) {
       checks.addAll(checkTemplateRequiredFields(templateId));
     }
@@ -62,6 +71,9 @@ public class InvoiceValidationService {
     // For send, org name and customer fields are CRITICAL
     checks.add(checkOrgBranding(Severity.CRITICAL));
     checks.add(checkCustomerRequiredFields(invoice.getCustomerId(), Severity.CRITICAL));
+    // GAP-L-62: tax number is soft-warned at draft but CRITICAL at send (SARS requires it on
+    // issued invoices for natural persons and registered entities alike).
+    checks.add(checkCustomerTaxNumber(invoice.getCustomerId(), Severity.CRITICAL));
 
     return checks;
   }
@@ -81,6 +93,25 @@ public class InvoiceValidationService {
         passed
             ? "All customer required fields are filled"
             : reqFields.filled() + " of " + reqFields.total() + " required fields filled");
+  }
+
+  /**
+   * Hard-block guard for invoice send: the customer must have a non-blank tax number on either the
+   * promoted entity column or the JSONB custom fields map. Soft-warned at draft, critical at send
+   * (GAP-L-62 hybrid). Returns a PASSED check when the customer cannot be found — the
+   * customer-required-fields check already covers that case with a clearer message.
+   */
+  private ValidationCheck checkCustomerTaxNumber(UUID customerId, Severity severity) {
+    var customerOpt = customerRepository.findById(customerId);
+    if (customerOpt.isEmpty()) {
+      return new ValidationCheck("customer_tax_number", severity, true, "Customer not found");
+    }
+    boolean missing = StructuralPrerequisiteCheck.isTaxNumberMissing(customerOpt.get());
+    return new ValidationCheck(
+        "customer_tax_number",
+        severity,
+        !missing,
+        missing ? "Tax Number is required to send an invoice" : "Customer tax number is set");
   }
 
   private ValidationCheck checkOrgBranding(Severity severity) {

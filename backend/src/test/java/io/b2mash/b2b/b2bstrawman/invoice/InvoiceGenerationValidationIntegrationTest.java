@@ -144,10 +144,12 @@ class InvoiceGenerationValidationIntegrationTest {
                         .formatted(customerId, teId)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
-        .andExpect(jsonPath("$.length()").value(3))
+        // GAP-L-62: customer_tax_number added as a WARNING alongside existing checks
+        .andExpect(jsonPath("$.length()").value(4))
         .andExpect(jsonPath("$[0].name").value("customer_required_fields"))
         .andExpect(jsonPath("$[1].name").value("org_name"))
-        .andExpect(jsonPath("$[2].name").value("time_entry_rates"));
+        .andExpect(jsonPath("$[2].name").value("time_entry_rates"))
+        .andExpect(jsonPath("$[3].name").value("customer_tax_number"));
   }
 
   @Test
@@ -232,6 +234,156 @@ class InvoiceGenerationValidationIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("SENT"));
+  }
+
+  @Test
+  void createDraft_missingTaxNumber_succeedsWithWarning() throws Exception {
+    // GAP-L-62: the draft-creation path must NOT hard-block on a missing tax
+    // number. It must succeed (201) and surface a `tax_number_missing` warning
+    // code in the response body so the frontend can render the soft-warn banner.
+    var customerIdRef = new UUID[1];
+    var taskIdRef = new UUID[1];
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberIdOwner)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var customer =
+                          TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
+                              "No Tax Client", "notax@test.com", memberIdOwner);
+                      // Explicitly wipe the tax number on both entity + JSONB so the
+                      // soft-warning path fires.
+                      customer.setTaxNumber(null);
+                      var fields = new java.util.HashMap<>(customer.getCustomFields());
+                      fields.remove("tax_number");
+                      customer.setCustomFields(fields);
+                      customer = customerRepository.save(customer);
+                      customerIdRef[0] = customer.getId();
+
+                      var project =
+                          new Project(
+                              "No Tax Project", "Project for no-tax-number test", memberIdOwner);
+                      project = projectRepository.save(project);
+                      customerProjectRepository.save(
+                          new CustomerProject(customerIdRef[0], project.getId(), memberIdOwner));
+
+                      var task =
+                          new Task(
+                              project.getId(),
+                              "No Tax Work",
+                              "Work for no-tax customer",
+                              "MEDIUM",
+                              "TASK",
+                              null,
+                              memberIdOwner);
+                      task = taskRepository.save(task);
+                      taskIdRef[0] = task.getId();
+                    }));
+
+    UUID teId = createBillableTimeEntryForTask(taskIdRef[0], LocalDate.now(), 60, "No-tax work");
+
+    mockMvc
+        .perform(
+            post("/api/invoices")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    { "customerId": "%s", "currency": "ZAR",
+                      "timeEntryIds": ["%s"] }
+                    """
+                        .formatted(customerIdRef[0], teId)))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.status").value("DRAFT"))
+        .andExpect(jsonPath("$.warnings").isArray())
+        .andExpect(jsonPath("$.warnings[0]").value("tax_number_missing"));
+  }
+
+  @Test
+  void sendInvoice_missingTaxNumber_isBlocked() throws Exception {
+    // GAP-L-62: send must hard-block when the tax number is still missing on the
+    // customer — mirrors SARS requirement for issued invoices.
+    var customerIdRef = new UUID[1];
+    var taskIdRef = new UUID[1];
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberIdOwner)
+        .where(RequestScopes.ORG_ROLE, "owner")
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      var customer =
+                          TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
+                              "Send Block Client", "sendblock@test.com", memberIdOwner);
+                      customer.setTaxNumber(null);
+                      var fields = new java.util.HashMap<>(customer.getCustomFields());
+                      fields.remove("tax_number");
+                      customer.setCustomFields(fields);
+                      customer = customerRepository.save(customer);
+                      customerIdRef[0] = customer.getId();
+
+                      var project =
+                          new Project(
+                              "Send Block Project", "Send-block test project", memberIdOwner);
+                      project = projectRepository.save(project);
+                      customerProjectRepository.save(
+                          new CustomerProject(customerIdRef[0], project.getId(), memberIdOwner));
+
+                      var task =
+                          new Task(
+                              project.getId(),
+                              "Send Block Work",
+                              "Work",
+                              "MEDIUM",
+                              "TASK",
+                              null,
+                              memberIdOwner);
+                      task = taskRepository.save(task);
+                      taskIdRef[0] = task.getId();
+                    }));
+
+    UUID teId =
+        createBillableTimeEntryForTask(taskIdRef[0], LocalDate.now(), 60, "Send block work");
+
+    // Create the draft first — succeeds even without tax number (soft-warn path).
+    var createResult =
+        mockMvc
+            .perform(
+                post("/api/invoices")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        { "customerId": "%s", "currency": "ZAR",
+                          "timeEntryIds": ["%s"] }
+                        """
+                            .formatted(customerIdRef[0], teId)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    String invoiceId = JsonPath.read(createResult.getResponse().getContentAsString(), "$.id");
+
+    mockMvc
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk());
+
+    // Send must be blocked by the critical customer_tax_number validation check.
+    mockMvc
+        .perform(
+            post("/api/invoices/" + invoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_genval_owner"))
+                .contentType(MediaType.APPLICATION_JSON))
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(
+            jsonPath("$.validationChecks[?(@.name == 'customer_tax_number')].passed").value(false));
   }
 
   @Test

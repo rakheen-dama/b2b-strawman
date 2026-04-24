@@ -30,13 +30,21 @@ public final class StructuralPrerequisiteCheck {
   private record FieldCheck(
       String fieldSlug, String displayName, Function<Customer, Object> getter) {}
 
-  /** Required fields for INVOICE_GENERATION context. */
+  /**
+   * Required fields for INVOICE_GENERATION context.
+   *
+   * <p><strong>GAP-L-62 (hybrid B + C):</strong> {@code tax_number} is NOT a hard-block
+   * prerequisite for draft creation. It is collected as a soft warning during draft creation
+   * (logged + surfaced to the caller as a warning code) and hard-enforced only at invoice-send time
+   * via {@link io.b2mash.b2b.b2bstrawman.invoice.InvoiceValidationService#validateInvoiceSend}.
+   * This matches SARS semantics (the tax number is needed on the issued invoice, not the draft) and
+   * lets firms capture time/billing against prospects without first chasing a tax number.
+   */
   private static final List<FieldCheck> INVOICE_GENERATION_FIELDS =
       List.of(
           new FieldCheck("address_line1", "Address Line 1", Customer::getAddressLine1),
           new FieldCheck("city", "City", Customer::getCity),
-          new FieldCheck("country", "Country", Customer::getCountry),
-          new FieldCheck("tax_number", "Tax Number", Customer::getTaxNumber));
+          new FieldCheck("country", "Country", Customer::getCountry));
 
   /** Required fields for PROPOSAL_SEND context. */
   private static final List<FieldCheck> PROPOSAL_SEND_FIELDS =
@@ -46,10 +54,26 @@ public final class StructuralPrerequisiteCheck {
           new FieldCheck("address_line1", "Address Line 1", Customer::getAddressLine1));
 
   /**
-   * Required fields for LIFECYCLE_ACTIVATION context. Mirrors INVOICE_GENERATION (an active
-   * customer must have billing address + tax info so invoices can be generated downstream).
+   * Required fields for LIFECYCLE_ACTIVATION context. An active customer must have a full billing
+   * address AND a tax number — the tax number is still mandatory for activation because an ACTIVE
+   * customer is invoiceable and the tax-number prerequisite is strictly enforced at send time. Not
+   * aliased to {@link #INVOICE_GENERATION_FIELDS} so that relaxing draft creation (GAP-L-62) does
+   * not leak into activation semantics.
    */
-  private static final List<FieldCheck> LIFECYCLE_ACTIVATION_FIELDS = INVOICE_GENERATION_FIELDS;
+  private static final List<FieldCheck> LIFECYCLE_ACTIVATION_FIELDS =
+      List.of(
+          new FieldCheck("address_line1", "Address Line 1", Customer::getAddressLine1),
+          new FieldCheck("city", "City", Customer::getCity),
+          new FieldCheck("country", "Country", Customer::getCountry),
+          new FieldCheck("tax_number", "Tax Number", Customer::getTaxNumber));
+
+  /**
+   * Fields that are enforced only at <em>invoice send</em> (not at draft creation). Today this is a
+   * single-element list (tax number); kept as a list so future send-only prerequisites can be added
+   * without changing call sites. Soft-warned at draft, hard-blocked at send. See GAP-L-62.
+   */
+  private static final List<FieldCheck> INVOICE_SEND_ONLY_FIELDS =
+      List.of(new FieldCheck("tax_number", "Tax Number", Customer::getTaxNumber));
 
   /** Maps prerequisite contexts to their required field checks. */
   private static final Map<PrerequisiteContext, List<FieldCheck>> CONTEXT_FIELDS =
@@ -109,6 +133,40 @@ public final class StructuralPrerequisiteCheck {
       slugs.add(field.fieldSlug());
     }
     return Set.copyOf(slugs);
+  }
+
+  /**
+   * Evaluates the send-only prerequisite fields (currently just {@code tax_number}) and returns the
+   * list of violations. Used by {@link io.b2mash.b2b.b2bstrawman.invoice.InvoiceValidationService}
+   * to hard-block invoice send when the customer is still missing a tax number — see GAP-L-62.
+   */
+  public static List<PrerequisiteViolation> checkInvoiceSendOnly(Customer customer) {
+    Map<String, Object> customFields = customer.getCustomFields();
+    List<PrerequisiteViolation> violations = new ArrayList<>();
+    for (FieldCheck field : INVOICE_SEND_ONLY_FIELDS) {
+      if (!hasValue(field, customer, customFields)) {
+        violations.add(
+            new PrerequisiteViolation(
+                "STRUCTURAL",
+                field.displayName() + " is required to send an invoice",
+                "CUSTOMER",
+                customer.getId(),
+                field.fieldSlug(),
+                null,
+                "Fill the " + field.displayName() + " field on the customer profile"));
+      }
+    }
+    return violations;
+  }
+
+  /**
+   * Returns {@code true} if the customer is missing the tax number on both the entity column and
+   * JSONB. Used by the draft-creation path to emit a soft warning (GAP-L-62). A dedicated helper —
+   * rather than re-using {@link #checkInvoiceSendOnly} — because callers want the boolean, not the
+   * violation payload.
+   */
+  public static boolean isTaxNumberMissing(Customer customer) {
+    return !hasCustomerFieldValue(customer, "tax_number", customer.getCustomFields());
   }
 
   /**

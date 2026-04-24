@@ -258,6 +258,27 @@ export function InvoiceGenerationDialog({
                 </div>
               )}
 
+              {/* GAP-L-62 soft-warn banner — missing tax number does NOT block
+                  Save Draft, but the invoice cannot be sent until it is set. */}
+              {h.validationChecks?.some((c) => c.name === "customer_tax_number" && !c.passed) && (
+                <div
+                  data-testid="tax-number-warning"
+                  role="status"
+                  className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-900/20"
+                >
+                  <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-600 dark:text-amber-300" />
+                  <div className="space-y-0.5 text-sm">
+                    <p className="font-medium text-amber-800 dark:text-amber-200">
+                      Tax number missing
+                    </p>
+                    <p className="text-amber-700 dark:text-amber-300">
+                      This draft can be saved, but the invoice cannot be sent until a tax number is
+                      added to the customer profile.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {h.error && <p className="text-destructive text-sm">{h.error}</p>}
 
               <DialogFooter>

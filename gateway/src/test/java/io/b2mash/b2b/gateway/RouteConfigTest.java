@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oauth2Login;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.jupiter.api.Test;
@@ -47,11 +46,11 @@ class RouteConfigTest {
   @Autowired private MockMvc mockMvc;
 
   @Test
-  void apiRoute_unauthenticatedRedirectsToLogin() throws Exception {
-    mockMvc
-        .perform(get("/api/projects"))
-        .andExpect(status().is3xxRedirection())
-        .andExpect(redirectedUrl("/oauth2/authorization/keycloak"));
+  void apiRoute_unauthenticatedReturns401() throws Exception {
+    // /api/** paths use a custom HttpStatusEntryPoint returning 401 (not a 302 redirect) so the
+    // Next.js BFF can reliably detect auth failures from fetch responses. See commit d6643210
+    // (OBS-AN-006 / GAP-AN-003).
+    mockMvc.perform(get("/api/projects")).andExpect(status().isUnauthorized());
   }
 
   @Test
@@ -68,11 +67,13 @@ class RouteConfigTest {
   }
 
   @Test
-  void unknownRoute_unauthenticatedRedirectsToLogin() throws Exception {
-    mockMvc
-        .perform(get("/unknown/path"))
-        .andExpect(status().is3xxRedirection())
-        .andExpect(redirectedUrl("/oauth2/authorization/keycloak"));
+  void unknownRoute_unauthenticatedIsDenied() throws Exception {
+    // Unknown (non-/api/**) routes fall through to `anyRequest().authenticated()`. Under this
+    // test slice (OAuth2ClientAutoConfiguration excluded) the default entry point returns 401
+    // rather than redirecting. In production the oauth2Login DSL wires
+    // LoginUrlAuthenticationEntryPoint so the browser is redirected to the KC authorization
+    // endpoint — either way the request is denied without leaking backend data.
+    mockMvc.perform(get("/unknown/path")).andExpect(status().isUnauthorized());
   }
 
   @Test

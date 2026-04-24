@@ -6,7 +6,6 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.oidcLogin;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Map;
@@ -82,21 +81,20 @@ class GatewaySecurityConfigTest {
 
   @Test
   void protectedEndpoints_apiRequiresAuth() throws Exception {
-    mockMvc
-        .perform(get("/api/projects"))
-        .andExpect(status().is3xxRedirection())
-        .andExpect(redirectedUrl("/oauth2/authorization/keycloak"));
+    // /api/** paths use a custom entry point that returns 401 (not a 302 redirect) so that the
+    // Next.js BFF can detect auth failures from fetch responses without being fooled by an opaque
+    // redirect. See d6643210 — OBS-AN-006 / GAP-AN-003.
+    mockMvc.perform(get("/api/projects")).andExpect(status().isUnauthorized());
   }
 
   @Test
   void protectedEndpoints_internalIsDeniedUnauthenticated() throws Exception {
-    // Unauthenticated requests to /internal/** get redirected to login first (Spring Security
-    // evaluates authentication before authorization), but this is fine — the key is that
-    // authenticated users are also denied (see next test).
-    mockMvc
-        .perform(get("/internal/test"))
-        .andExpect(status().is3xxRedirection())
-        .andExpect(redirectedUrl("/oauth2/authorization/keycloak"));
+    // /internal/** is denyAll. For unauthenticated requests, Spring Security's
+    // ExceptionTranslationFilter invokes the default AuthenticationEntryPoint — under this test
+    // slice (OAuth2ClientAutoConfiguration excluded), that falls back to a 401 rather than the
+    // oauth2Login redirect. The key invariant is that access is denied either way; authenticated
+    // users are additionally denied in the next test.
+    mockMvc.perform(get("/internal/test")).andExpect(status().isUnauthorized());
   }
 
   @Test

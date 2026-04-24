@@ -7,6 +7,11 @@ import type { IntakeFieldGroup } from "@/components/prerequisite/types";
 
 const mockCreateCustomer = vi.fn();
 const mockFetchIntakeFields = vi.fn();
+const mockRouterPush = vi.fn();
+
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mockRouterPush, refresh: vi.fn() }),
+}));
 
 vi.mock("@/app/(app)/org/[slug]/customers/actions", () => ({
   createCustomer: (...args: unknown[]) => mockCreateCustomer(...args),

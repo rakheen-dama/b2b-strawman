@@ -3,6 +3,7 @@
 import { Fragment, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Menu, Shield } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -24,6 +25,8 @@ interface MobileSidebarProps {
   groups?: string[];
   userName?: string | null;
   userEmail?: string | null;
+  brandColor?: string | null;
+  logoUrl?: string | null;
 }
 
 export function MobileSidebar({
@@ -32,7 +35,10 @@ export function MobileSidebar({
   groups = [],
   userName,
   userEmail,
+  logoUrl,
 }: MobileSidebarProps) {
+  // brandColor is injected by DesktopSidebar on document.documentElement; no
+  // per-instance CSS variable work needed here (we share the root var).
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
 
@@ -48,8 +54,18 @@ export function MobileSidebar({
         side="left"
         className="w-60 gap-0 border-r-0 bg-slate-950 p-0 [&>button]:text-white/60 [&>button]:hover:text-white"
       >
-        {/* Header */}
-        <div className="flex h-14 items-center px-4">
+        {/* Header — firm logo (if branded) or product wordmark fallback */}
+        <div className="flex h-14 items-center gap-2 px-4">
+          {logoUrl ? (
+            <Image
+              src={logoUrl}
+              alt={orgName ? `${orgName} logo` : "Firm logo"}
+              width={28}
+              height={28}
+              unoptimized
+              className="size-7 rounded object-contain"
+            />
+          ) : null}
           <SheetTitle className="text-base font-semibold text-white">Kazi</SheetTitle>
           <SheetDescription className="sr-only">Main navigation menu</SheetDescription>
         </div>

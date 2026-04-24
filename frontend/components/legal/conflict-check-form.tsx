@@ -31,15 +31,24 @@ const CHECK_TYPES = [
 
 interface ConflictCheckFormProps {
   slug: string;
+  initialCustomers?: { id: string; name: string }[];
+  initialProjects?: { id: string; name: string }[];
   onCheckComplete?: () => void;
 }
 
-export function ConflictCheckForm({ slug, onCheckComplete }: ConflictCheckFormProps) {
+export function ConflictCheckForm({
+  slug,
+  initialCustomers,
+  initialProjects,
+  onCheckComplete,
+}: ConflictCheckFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<ConflictCheck | null>(null);
-  const [projects, setProjects] = useState<{ id: string; name: string }[]>([]);
-  const [customers, setCustomers] = useState<{ id: string; name: string }[]>([]);
+  const [projects, setProjects] = useState<{ id: string; name: string }[]>(initialProjects ?? []);
+  const [customers, setCustomers] = useState<{ id: string; name: string }[]>(
+    initialCustomers ?? []
+  );
 
   const form = useForm<PerformConflictCheckFormData>({
     resolver: zodResolver(performConflictCheckSchema),
@@ -54,6 +63,11 @@ export function ConflictCheckForm({ slug, onCheckComplete }: ConflictCheckFormPr
   });
 
   useEffect(() => {
+    // Only fetch client-side if the server didn't supply initial data (e.g.
+    // legacy callers). Keeps the dropdowns hydrated on first render (GAP-L-29).
+    if ((initialCustomers?.length ?? 0) > 0 || (initialProjects?.length ?? 0) > 0) {
+      return;
+    }
     Promise.all([fetchProjects(), fetchCustomers()])
       .then(([p, c]) => {
         setProjects(p ?? []);
@@ -63,7 +77,7 @@ export function ConflictCheckForm({ slug, onCheckComplete }: ConflictCheckFormPr
         setProjects([]);
         setCustomers([]);
       });
-  }, []);
+  }, [initialCustomers, initialProjects]);
 
   async function onSubmit(values: PerformConflictCheckFormData) {
     setError(null);

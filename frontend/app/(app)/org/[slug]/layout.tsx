@@ -70,11 +70,15 @@ export default async function OrgLayout({
   let enabledModules: string[] = [];
   let terminologyNamespace: string | null = null;
   let orgName: string | null = null;
+  let brandColor: string | null = null;
+  let logoUrl: string | null = null;
   if (settingsResult.status === "fulfilled") {
     verticalProfile = settingsResult.value.verticalProfile ?? null;
     enabledModules = settingsResult.value.enabledModules ?? [];
     terminologyNamespace = settingsResult.value.terminologyNamespace ?? null;
     orgName = settingsResult.value.orgName ?? null;
+    brandColor = settingsResult.value.brandColor ?? null;
+    logoUrl = settingsResult.value.logoUrl ?? null;
   } else {
     // Settings unavailable — fall back to no terminology overrides
     console.error("Failed to fetch org settings for terminology:", settingsResult.reason);
@@ -135,6 +139,8 @@ export default async function OrgLayout({
                     groups={groups}
                     userName={userInfo.name}
                     userEmail={userInfo.email}
+                    brandColor={brandColor}
+                    logoUrl={logoUrl}
                   />
                   <div className="flex flex-1 flex-col">
                     <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-slate-200/60 bg-slate-100/80 px-4 backdrop-blur-md md:px-6 dark:border-slate-800/60 dark:bg-slate-950/90">
@@ -144,6 +150,8 @@ export default async function OrgLayout({
                         groups={groups}
                         userName={userInfo.name}
                         userEmail={userInfo.email}
+                        brandColor={brandColor}
+                        logoUrl={logoUrl}
                       />
                       <Breadcrumbs slug={slug} orgName={orgName} />
                       <div className="ml-auto flex items-center gap-3">

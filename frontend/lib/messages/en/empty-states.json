@@ -10,8 +10,8 @@
   "customers": {
     "list": {
       "heading": "No customers yet",
-      "description": "Customers represent the organisations you work with. Add your first customer to start managing relationships.",
-      "descriptionMember": "No customers have been added yet.",
+      "description": "{Customers} represent the people or organisations you work with. Add your first {customer} to start managing relationships.",
+      "descriptionMember": "No {customers} have been added yet.",
       "cta": "Add customer"
     }
   },

@@ -12,6 +12,11 @@ interface ActionResult {
   error?: string;
 }
 
+interface CreateCustomerResult extends ActionResult {
+  /** ID of the newly-created customer — used to redirect to detail page (GAP-L-32). */
+  customerId?: string;
+}
+
 interface CreateCustomerData {
   name: string;
   email: string;
@@ -61,7 +66,7 @@ export interface UpdateCustomerData {
 export async function createCustomer(
   slug: string,
   data: CreateCustomerData
-): Promise<ActionResult> {
+): Promise<CreateCustomerResult> {
   const caps = await fetchMyCapabilities();
   if (!caps.isAdmin && !caps.isOwner) {
     return { success: false, error: "Only admins and owners can manage customers." };
@@ -120,8 +125,9 @@ export async function createCustomer(
     customFields: customFields ?? {},
   };
 
+  let created: Customer;
   try {
-    await api.post<Customer>("/api/customers", body);
+    created = await api.post<Customer>("/api/customers", body);
   } catch (error) {
     const message =
       error instanceof ApiError
@@ -133,7 +139,7 @@ export async function createCustomer(
   revalidatePath(`/org/${slug}/customers`);
   revalidatePath(`/org/${slug}/dashboard`);
 
-  return { success: true };
+  return { success: true, customerId: created?.id };
 }
 
 export async function updateCustomer(

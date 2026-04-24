@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,7 @@ interface CreateCustomerDialogProps {
 }
 
 export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
+  const router = useRouter();
   const { t } = useTerminology();
   const { isWriteEnabled } = useSubscription();
   const [open, setOpen] = useState(false);
@@ -210,6 +212,11 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
       if (result.success) {
         setOpen(false);
         resetForm();
+        // Redirect to the new customer's detail page (GAP-L-32). Fall back to
+        // staying on the list if the server didn't return an id (older callers).
+        if (result.customerId) {
+          router.push(`/org/${slug}/customers/${result.customerId}`);
+        }
       } else {
         const { t } = createMessages("errors");
         setError(result.error ?? t("api.serverError"));

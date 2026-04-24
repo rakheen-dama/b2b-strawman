@@ -1,8 +1,9 @@
 "use client";
 
-import { Fragment } from "react";
+import { Fragment, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { Shield, Search } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -17,6 +18,10 @@ interface DesktopSidebarProps {
   groups?: string[];
   userName?: string | null;
   userEmail?: string | null;
+  /** Firm brand colour (hex) applied as the `--brand-color` CSS custom property. */
+  brandColor?: string | null;
+  /** Presigned URL for the firm logo, rendered in the sidebar header when present. */
+  logoUrl?: string | null;
 }
 
 export function DesktopSidebar({
@@ -25,14 +30,43 @@ export function DesktopSidebar({
   groups = [],
   userName,
   userEmail,
+  brandColor,
+  logoUrl,
 }: DesktopSidebarProps) {
   const pathname = usePathname();
   const { setOpen } = useCommandPalette();
 
+  // Inject brand colour as a CSS custom property on the root element so any
+  // child component can reference `var(--brand-color)`. Cleans up on unmount
+  // so switching orgs doesn't leak colour into the next render. (GAP-L-26)
+  useEffect(() => {
+    if (!brandColor) return;
+    const root = document.documentElement;
+    const previous = root.style.getPropertyValue("--brand-color");
+    root.style.setProperty("--brand-color", brandColor);
+    return () => {
+      if (previous) {
+        root.style.setProperty("--brand-color", previous);
+      } else {
+        root.style.removeProperty("--brand-color");
+      }
+    };
+  }, [brandColor]);
+
   return (
     <aside className="hidden w-60 flex-col bg-slate-950 md:flex">
-      {/* Header */}
-      <div className="flex h-14 items-center px-4">
+      {/* Header — firm logo (if branded) or product wordmark fallback */}
+      <div className="flex h-14 items-center gap-2 px-4">
+        {logoUrl ? (
+          <Image
+            src={logoUrl}
+            alt={orgName ? `${orgName} logo` : "Firm logo"}
+            width={32}
+            height={32}
+            unoptimized
+            className="size-8 rounded object-contain"
+          />
+        ) : null}
         <span className="text-base font-bold tracking-tight text-white">Kazi</span>
       </div>
       <div className="mx-4 border-t border-white/10" />

@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { getOrgSettings } from "@/lib/api/settings";
-import { fetchConflictChecks } from "./actions";
+import { fetchConflictChecks, fetchCustomers, fetchProjects } from "./actions";
 import { ConflictCheckClient } from "./conflict-check-client";
 import type { ConflictCheck } from "@/lib/types";
 
@@ -39,6 +39,16 @@ export default async function ConflictCheckPage({ params }: { params: Promise<{ 
     console.error("Failed to fetch conflict checks:", error);
   }
 
+  // Pre-fetch customers + projects for the form selectors so the dropdowns
+  // hydrate on first render instead of relying on a client-side useEffect
+  // that silently eats errors (GAP-L-29).
+  const [customersResult, projectsResult] = await Promise.allSettled([
+    fetchCustomers(),
+    fetchProjects(),
+  ]);
+  const initialCustomers = customersResult.status === "fulfilled" ? customersResult.value : [];
+  const initialProjects = projectsResult.status === "fulfilled" ? projectsResult.value : [];
+
   return (
     <div className="space-y-6">
       <div>
@@ -48,7 +58,13 @@ export default async function ConflictCheckPage({ params }: { params: Promise<{ 
         </p>
       </div>
 
-      <ConflictCheckClient initialChecks={initialChecks} initialTotal={initialTotal} slug={slug} />
+      <ConflictCheckClient
+        initialChecks={initialChecks}
+        initialTotal={initialTotal}
+        initialCustomers={initialCustomers}
+        initialProjects={initialProjects}
+        slug={slug}
+      />
     </div>
   );
 }

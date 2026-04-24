@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.A
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.AddItemRequest;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.CreateInformationRequestRequest;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.DashboardSummaryResponse;
+import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.FicaStatusResponse;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.InformationRequestResponse;
 import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.UpdateInformationRequestRequest;
 import io.b2mash.b2b.b2bstrawman.member.Member;
@@ -724,6 +725,66 @@ public class InformationRequestService {
   @Transactional(readOnly = true)
   public List<InformationRequestResponse> listByProject(UUID projectId) {
     return toResponseList(requestRepository.findByProjectId(projectId));
+  }
+
+  // ========== FICA Status Projection (GAP-L-46) ==========
+
+  /** Pack identifier for the FICA onboarding request template (legal-ZA). */
+  public static final String FICA_ONBOARDING_PACK_ID = "fica-onboarding-pack";
+
+  /**
+   * Projects the FICA onboarding status for a customer from the customer's information requests
+   * backed by the {@link #FICA_ONBOARDING_PACK_ID} template. Info-request-only signal —
+   * intentionally does NOT couple to any KYC-adapter output or beneficial-owner coverage. Designed
+   * so those two concerns can be folded into the same DTO later without a schema change (tracked
+   * under a separate phase).
+   */
+  @Transactional(readOnly = true)
+  public FicaStatusResponse getFicaStatus(UUID customerId) {
+    // All active FICA templates (org may have duplicated the pack; we
+    // treat every request tied to any of them as "a FICA request").
+    var ficaTemplateIds =
+        templateRepository.findByPackId(FICA_ONBOARDING_PACK_ID).stream()
+            .map(RequestTemplate::getId)
+            .toList();
+    if (ficaTemplateIds.isEmpty()) {
+      return new FicaStatusResponse(customerId, "NOT_STARTED", null, null);
+    }
+
+    var customerRequests =
+        requestRepository.findByCustomerId(customerId).stream()
+            .filter(r -> r.getRequestTemplateId() != null)
+            .filter(r -> ficaTemplateIds.contains(r.getRequestTemplateId()))
+            // Ignore cancelled requests — they were never a live FICA pack.
+            .filter(r -> r.getStatus() != RequestStatus.CANCELLED)
+            .sorted(Comparator.comparing(InformationRequest::getCreatedAt).reversed())
+            .toList();
+
+    if (customerRequests.isEmpty()) {
+      return new FicaStatusResponse(customerId, "NOT_STARTED", null, null);
+    }
+
+    // Prefer the most-recent completed request; otherwise the most-recent
+    // live one. This lets a firm issue a second FICA pack without losing
+    // the earlier verification record while the new one is still open.
+    var completed =
+        customerRequests.stream().filter(r -> r.getStatus() == RequestStatus.COMPLETED).findFirst();
+    if (completed.isPresent()) {
+      var r = completed.get();
+      var items = itemRepository.findByRequestId(r.getId());
+      boolean allAccepted =
+          !items.isEmpty() && items.stream().allMatch(i -> i.getStatus() == ItemStatus.ACCEPTED);
+      if (allAccepted) {
+        return new FicaStatusResponse(customerId, "DONE", r.getCompletedAt(), r.getId());
+      }
+      // COMPLETED in lifecycle but not every item ACCEPTED — treat as
+      // IN_PROGRESS so the UI prompts review rather than a green check.
+      return new FicaStatusResponse(customerId, "IN_PROGRESS", null, r.getId());
+    }
+
+    // No completed FICA request — pick the most-recent non-terminal one.
+    var live = customerRequests.get(0);
+    return new FicaStatusResponse(customerId, "IN_PROGRESS", null, live.getId());
   }
 
   // ========== Dashboard Summary ==========

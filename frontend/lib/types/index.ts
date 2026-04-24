@@ -18,3 +18,4 @@ export * from "./deadline";
 export * from "./legal";
 export * from "./trust";
 export * from "./kyc";
+export * from "./fica";

@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TerminologyText } from "@/components/terminology-text";
+import { FicaStatusCard } from "@/components/compliance/FicaStatusCard";
 import type { SetupStep } from "@/components/setup/types";
 import { HealthBadge } from "@/components/dashboard/health-badge";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
@@ -34,6 +35,7 @@ import type {
   ProjectSetupStatus,
   UnbilledTimeSummary,
   TemplateReadiness,
+  FicaStatus,
 } from "@/lib/types";
 import type { ActivityItem } from "@/lib/actions/activity";
 
@@ -50,6 +52,14 @@ interface OverviewTabProps {
   setupSteps: SetupStep[];
   unbilledSummary: UnbilledTimeSummary | null;
   templateReadiness: TemplateReadiness[];
+  /**
+   * FICA onboarding projection for the matter's primary customer
+   * (GAP-L-46). Null when no customer is linked or the fetch failed;
+   * the FicaStatusCard renders a soft "unknown" state in that case
+   * rather than hiding — the tile itself is only rendered when a
+   * customer is linked (see the JSX guard).
+   */
+  ficaStatus: FicaStatus | null;
 }
 
 function settled<T>(result: PromiseSettledResult<T>): T | null {
@@ -114,6 +124,7 @@ export async function OverviewTab({
   setupSteps,
   unbilledSummary,
   templateReadiness: _templateReadiness,
+  ficaStatus,
 }: OverviewTabProps) {
   const { from, to } = resolveDateRange({});
 
@@ -543,6 +554,11 @@ export async function OverviewTab({
               )}
             </CardContent>
           </Card>
+
+          {/* FICA onboarding status (GAP-L-46). Only renders when a
+              customer is linked to the matter. Info-request-only signal
+              today; expandable to adapter + BO coverage later. */}
+          {customerId && <FicaStatusCard ficaStatus={ficaStatus} slug={slug} />}
 
           {/* Unbilled Time Callout */}
           {unbilledSummary && unbilledSummary.entryCount > 0 && (

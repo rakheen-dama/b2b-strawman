@@ -54,6 +54,7 @@ import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSel
 import { TagInput } from "@/components/tags/TagInput";
 import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
+import { CreateProposalDialog } from "@/components/proposals/create-proposal-dialog";
 import { ProjectCommentsSection } from "@/components/projects/project-comments-section";
 import { ExpenseList } from "@/components/expenses/expense-list";
 import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";
@@ -93,6 +94,7 @@ import {
   ArrowLeft,
   AlertTriangle,
   Calendar,
+  FileText,
   LayoutTemplate,
   Pencil,
   Receipt,
@@ -629,6 +631,37 @@ export default async function ProjectDetailPage({
                   isAdmin={isAdmin}
                 />
               )}
+              {/* Matter-level "+ New Engagement Letter" CTA (GAP-L-48).
+                  Only shown when the matter has a linked customer in a
+                  non-terminal lifecycle state — the legal-ZA default fee
+                  model is HOURLY per the Proposal entity. */}
+              {canManage &&
+                customers.length > 0 &&
+                customers[0].lifecycleStatus !== "OFFBOARDED" &&
+                customers[0].lifecycleStatus !== "OFFBOARDING" &&
+                customers[0].lifecycleStatus !== "ANONYMIZED" && (
+                  <CreateProposalDialog
+                    slug={slug}
+                    customers={[
+                      {
+                        id: customers[0].id,
+                        name: customers[0].name,
+                        email: customers[0].email,
+                      },
+                    ]}
+                    defaultCustomerId={customers[0].id}
+                    defaultFeeModel="HOURLY"
+                  >
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      data-testid="matter-new-engagement-letter"
+                    >
+                      <FileText className="mr-1.5 size-4" />
+                      New Engagement Letter
+                    </Button>
+                  </CreateProposalDialog>
+                )}
               {canManage && (
                 <SaveAsTemplateDialog
                   slug={slug}

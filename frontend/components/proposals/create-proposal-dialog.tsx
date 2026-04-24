@@ -58,21 +58,42 @@ interface CreateProposalDialogProps {
   slug: string;
   customers: Array<{ id: string; name: string; email: string }>;
   children: React.ReactNode;
+  /**
+   * When provided, pre-selects the customer and hides / disables the
+   * customer combobox. Used by the matter-level "+ New Engagement Letter"
+   * CTA where the customer is already known from the matter context.
+   */
+  defaultCustomerId?: string;
+  /**
+   * Initial fee model. Defaults to RETAINER (org-level CTA). The
+   * matter-level CTA passes "HOURLY" — the legal-ZA default for
+   * engagement letters.
+   */
+  defaultFeeModel?: FeeModel;
 }
 
-export function CreateProposalDialog({ slug, customers, children }: CreateProposalDialogProps) {
+export function CreateProposalDialog({
+  slug,
+  customers,
+  children,
+  defaultCustomerId,
+  defaultFeeModel,
+}: CreateProposalDialogProps) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [customerPopoverOpen, setCustomerPopoverOpen] = useState(false);
 
+  const initialCustomerId = defaultCustomerId ?? "";
+  const initialFeeModel: FeeModel = defaultFeeModel ?? "RETAINER";
+
   const form = useForm<CreateProposalFormData>({
     resolver: zodResolver(createProposalSchema),
     defaultValues: {
       title: "",
-      customerId: "",
-      feeModel: "RETAINER",
+      customerId: initialCustomerId,
+      feeModel: initialFeeModel,
       fixedFeeAmount: undefined,
       fixedFeeCurrency: "ZAR",
       hourlyRateNote: "",
@@ -93,7 +114,21 @@ export function CreateProposalDialog({ slug, customers, children }: CreatePropos
   function handleOpenChange(newOpen: boolean) {
     if (isSubmitting) return;
     if (newOpen) {
-      form.reset();
+      form.reset({
+        title: "",
+        customerId: initialCustomerId,
+        feeModel: initialFeeModel,
+        fixedFeeAmount: undefined,
+        fixedFeeCurrency: "ZAR",
+        hourlyRateNote: "",
+        retainerAmount: undefined,
+        retainerCurrency: "ZAR",
+        retainerHoursIncluded: undefined,
+        contingencyPercent: 25,
+        contingencyCapPercent: 25,
+        contingencyDescription: "",
+        expiresAt: "",
+      });
       setError(null);
     }
     setOpen(newOpen);
@@ -191,7 +226,15 @@ export function CreateProposalDialog({ slug, customers, children }: CreatePropos
                     <FormLabel>Customer</FormLabel>
                     <Popover
                       open={customerPopoverOpen}
-                      onOpenChange={setCustomerPopoverOpen}
+                      onOpenChange={(next) => {
+                        // When a default is locked in (matter-level CTA),
+                        // keep the popover closed — the customer is fixed.
+                        if (defaultCustomerId) {
+                          setCustomerPopoverOpen(false);
+                          return;
+                        }
+                        setCustomerPopoverOpen(next);
+                      }}
                       modal={false}
                     >
                       <PopoverTrigger asChild>
@@ -201,6 +244,8 @@ export function CreateProposalDialog({ slug, customers, children }: CreatePropos
                             variant="outline"
                             role="combobox"
                             aria-expanded={customerPopoverOpen}
+                            disabled={Boolean(defaultCustomerId)}
+                            data-testid="proposal-customer-trigger"
                             className="w-full justify-between font-normal"
                           >
                             {selectedCustomer ? selectedCustomer.name : "Select a customer..."}

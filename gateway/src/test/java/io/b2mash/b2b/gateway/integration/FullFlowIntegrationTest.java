@@ -146,16 +146,19 @@ class FullFlowIntegrationTest extends GatewayIntegrationTestBase {
   class UnauthenticatedAccessTests {
 
     @Test
-    @DisplayName("Unauthenticated request redirects to OAuth2 Keycloak login")
-    void unauthenticated_redirectsToKeycloakLogin() throws Exception {
+    @DisplayName("Unauthenticated /api/** request returns 401 (not a redirect)")
+    void unauthenticated_apiReturnsUnauthorized() throws Exception {
+      // /api/** paths use HttpStatusEntryPoint(401) so the Next.js BFF can detect auth failures
+      // from fetch responses rather than being fooled by an opaque 302. See commit d6643210
+      // (OBS-AN-006 / GAP-AN-003).
       var result = mockMvc.perform(get("/api/projects")).andReturn();
 
       assertThat(result.getResponse().getStatus())
-          .as("Request without valid session should redirect to OAuth2 login")
-          .isEqualTo(302);
+          .as("/api/** auth failure must be 401, not a 302 redirect")
+          .isEqualTo(401);
       assertThat(result.getResponse().getRedirectedUrl())
-          .as("Redirect should point to Keycloak OAuth2 authorization endpoint")
-          .isEqualTo("/oauth2/authorization/keycloak");
+          .as("No redirect should be issued for /api/** auth failures")
+          .isNull();
     }
   }
 }

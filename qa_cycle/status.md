@@ -7,8 +7,8 @@
 - **ALL_DAYS_COMPLETE**: false
 - **QA Position**: Day 0 — 0.1 (fresh run; no shortcuts)
 - **Cycle**: 1 (verify)
-- **Dev Stack**: PARTIAL — backend/gateway/frontend UP from prior session but running stale code (backend PID 42352 from L-60 restart, has NOT picked up ~15 subsequent merges); portal STALE (down). Must restart backend + start portal before QA starts.
-- **NEEDS_REBUILD**: true (backend — all code post-L-60 merge)
+- **Dev Stack**: READY — backend restarted (PID 5458, post-L-60-through-L-48 merges picked up), portal started (PID 5677), frontend restarted (PID 5771) for clean HMR state, gateway still UP (external PID 71426). All 4 services healthy; Mailpit purged; Docker infra green.
+- **NEEDS_REBUILD**: false
 - **Branch**: `bugfix_cycle_2026-04-24`
 - **Scenario**: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md`
 - **Auth Mode**: Keycloak (real OIDC) for firm; magic-link + portal JWT for portal (`:3002`)
@@ -54,18 +54,18 @@ These gaps were **FIXED and merged to main** since 2026-04-21. QA should re-veri
 
 ## Environment
 
-| Service | URL | Status (pre-verify) |
-|---------|-----|---------------------|
-| Frontend (kc mode) | http://localhost:3000 | UP PID 33007 (HMR should pick up current main; may need restart to be safe) |
-| Backend (local+keycloak profile) | http://localhost:8080 | UP PID 42352 but STALE — needs restart for all post-L-60 merges |
-| Gateway (BFF) | http://localhost:8443 | UP external PID 71426 |
-| Portal | http://localhost:3002 | DOWN — stale PID, needs restart |
-| Keycloak | http://localhost:8180 | expected UP |
-| Mailpit UI | http://localhost:8025 | expected UP |
-| Postgres (docteams) | localhost:5432 | expected UP |
-| LocalStack (S3) | http://localhost:4566 | expected UP |
+| Service | URL | Status (post-infra-ready 2026-04-24 21:26 SAST) |
+|---------|-----|--------------------------------------------------|
+| Frontend (kc mode) | http://localhost:3000 | UP PID 5771 — restarted, ready in 3s |
+| Backend (local+keycloak profile) | http://localhost:8080 | UP PID 5458 — restarted, ready in 27s, /actuator/health UP (post-L-60-through-L-48 merges live) |
+| Gateway (BFF) | http://localhost:8443 | UP external PID 71426 — healthy |
+| Portal | http://localhost:3002 | UP PID 5677 — started, ready in 3s, root returns 307 |
+| Keycloak | http://localhost:8180 | UP — realm `docteams` OK |
+| Mailpit UI | http://localhost:8025 | UP — inbox purged |
+| Postgres (docteams) | localhost:5432 | UP (8 days healthy) |
+| LocalStack (S3) | http://localhost:4566 | UP |
 
-Infra agent: restart backend, start portal, verify all 4 services green, confirm Docker infra health. Clear NEEDS_REBUILD.
+Dev Stack READY. QA cleared to start Day 0.
 
 ## Gap Tracker
 
@@ -93,3 +93,4 @@ Infra agent: restart backend, start portal, verify all 4 services green, confirm
 ## Log
 
 - 2026-04-24 SAST — VERIFY CYCLE started. Prior cycle archived to `qa_cycle/_archive_2026-04-24_pre-verify/status.md`. Branch: `bugfix_cycle_2026-04-24` off main. Purpose: re-validate 40+ shipped fixes end-to-end before declaring Day 0–90 scenario green. Next action: Infra agent — restart backend for post-L-60 merges + start portal.
+- 2026-04-24 21:26 SAST — Infra: stack readied for verify cycle. Backend PID 5458 ready in 27s (post-L-60-through-L-48 merges). Portal PID 5677 ready in 3s. Frontend PID 5771 ready in 3s (restarted for clean HMR state). Gateway external PID 71426 healthy. Mailpit inbox purged. Docker infra (Postgres, Keycloak, Mailpit, LocalStack) all green; KC realm `docteams` verified. All 4 svc.sh services RUNNING=yes, HEALTHY=yes. QA cleared to start Day 0.

@@ -287,7 +287,11 @@ export default async function CustomersPage({
             icon={Users}
             title={<TerminologyText template="No {customers} yet" />}
             description={
-              isAdmin ? t("customers.list.description") : t("customers.list.descriptionMember")
+              <TerminologyText
+                template={
+                  isAdmin ? t("customers.list.description") : t("customers.list.descriptionMember")
+                }
+              />
             }
             action={isAdmin ? <CreateCustomerDialog slug={slug} /> : undefined}
             secondaryLink={{ label: "Read the guide", href: docsLink("/features/customers") }}

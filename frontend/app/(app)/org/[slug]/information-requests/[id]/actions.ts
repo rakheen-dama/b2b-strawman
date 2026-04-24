@@ -1,6 +1,6 @@
 "use server";
 
-import { ApiError } from "@/lib/api";
+import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import {
   acceptItem,
@@ -78,5 +78,37 @@ export async function resendNotificationAction(requestId: string): Promise<VoidA
       return { success: false, error: error.message };
     }
     return { success: false, error: "Failed to resend notification." };
+  }
+}
+
+// ---- Download (GAP-L-45) ----
+
+interface PresignDownloadResponse {
+  presignedUrl: string;
+}
+
+interface DownloadUrlResult {
+  success: boolean;
+  presignedUrl?: string;
+  error?: string;
+}
+
+/**
+ * Mint a presigned download URL for the document attached to an
+ * information-request FILE_UPLOAD item. Mirrors `getDownloadUrl` in the
+ * projects actions — shares the same `/api/documents/{id}/presign-download`
+ * endpoint.
+ */
+export async function getItemDocumentDownloadUrl(documentId: string): Promise<DownloadUrlResult> {
+  try {
+    const result = await api.get<PresignDownloadResponse>(
+      `/api/documents/${documentId}/presign-download`
+    );
+    return { success: true, presignedUrl: result.presignedUrl };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to get download URL." };
   }
 }

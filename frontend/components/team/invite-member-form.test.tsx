@@ -66,11 +66,13 @@ describe("InviteMemberForm", () => {
     expect(link).toHaveAttribute("href", "/org/my-org/settings/billing");
   });
 
-  it("shows progress bar with member count", async () => {
+  it("shows member count without plan-tier ceiling", async () => {
     mockListInvitations.mockResolvedValue([]);
     await renderForm({ maxMembers: 10, currentMembers: 3, orgSlug: "acme" });
 
-    expect(screen.getByText("3 of 10 members")).toBeInTheDocument();
+    // Unlimited members — ceiling display removed (GAP-L-20)
+    expect(screen.getByText("3 members")).toBeInTheDocument();
+    expect(screen.queryByText(/of 10 members/)).not.toBeInTheDocument();
   });
 
   it("submits invite and shows success message", async () => {

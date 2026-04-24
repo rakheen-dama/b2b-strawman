@@ -68,10 +68,18 @@ export function NewFromTemplateDialog({
   // Step 1
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
 
-  // Step 2
+  // Step 2 — pre-seed customerId from the `?customerId=` query param when
+  // auto-opening (GAP-L-39). Using the lazy-init form guarantees the value is
+  // set BEFORE the Dialog's onOpenChange fires, otherwise handleOpenChange
+  // would reset it to "" on the auto-open transition.
   const [projectName, setProjectName] = useState("");
   const [description, setDescription] = useState("");
-  const [customerId, setCustomerId] = useState("");
+  const [customerId, setCustomerId] = useState(() => {
+    if (autoOpen && initialCustomerId && customers.some((c) => c.id === initialCustomerId)) {
+      return initialCustomerId;
+    }
+    return "";
+  });
   const [projectLeadMemberId, setProjectLeadMemberId] = useState("");
   const [referenceNumber, setReferenceNumber] = useState("");
   const [priority, setPriority] = useState<ProjectPriority | "">("");
@@ -83,9 +91,6 @@ export function NewFromTemplateDialog({
   useEffect(() => {
     if (autoOpen && templates.length > 0) {
       setOpen(true);
-      if (initialCustomerId && customers.some((c) => c.id === initialCustomerId)) {
-        setCustomerId(initialCustomerId);
-      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -112,7 +117,14 @@ export function NewFromTemplateDialog({
       setSelectedTemplateId(null);
       setProjectName("");
       setDescription("");
-      setCustomerId("");
+      // Preserve the initialCustomerId pre-seed on auto-open so the
+      // Configure step's Client dropdown keeps its URL-derived value
+      // (GAP-L-39). Manual re-opens still reset customerId to "".
+      if (autoOpen && initialCustomerId && customers.some((c) => c.id === initialCustomerId)) {
+        setCustomerId(initialCustomerId);
+      } else {
+        setCustomerId("");
+      }
       setProjectLeadMemberId("");
       setReferenceNumber("");
       setPriority("");

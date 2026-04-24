@@ -127,7 +127,6 @@ function InviteFormUI({
 
   const totalUsed = currentMembers + pendingInvitations;
   const isAtLimit = maxMembers > 0 && totalUsed >= maxMembers;
-  const fillPercent = maxMembers > 0 ? Math.min((totalUsed / maxMembers) * 100, 100) : 0;
 
   function handleRoleSelectChange(value: string) {
     // Reset overrides and close customize section when role changes
@@ -355,20 +354,18 @@ function InviteFormUI({
         </p>
       )}
 
-      {/* Plan limit progress bar */}
-      {maxMembers > 0 && (
-        <div className="space-y-1.5">
-          <p className="text-sm text-slate-600 dark:text-slate-400">
-            {totalUsed} of {maxMembers} members
-          </p>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
-            <div
-              className="h-full rounded-full bg-teal-500 transition-all"
-              style={{ width: `${fillPercent}%` }}
-            />
-          </div>
-        </div>
-      )}
+      {/* Seat usage (no plan-tier ceiling — unlimited members) */}
+      <div className="space-y-1.5">
+        <p className="text-sm text-slate-600 dark:text-slate-400">
+          {totalUsed} member{totalUsed !== 1 ? "s" : ""}
+          {pendingInvitations > 0 && (
+            <>
+              {" "}
+              <span className="text-slate-400">({pendingInvitations} pending)</span>
+            </>
+          )}
+        </p>
+      </div>
 
       {/* Feedback messages */}
       {error && <p className="text-destructive text-sm">{error}</p>}

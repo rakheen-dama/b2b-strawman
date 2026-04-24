@@ -7,22 +7,33 @@ const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:844
 export default async function DashboardRedirectPage() {
   if (AUTH_MODE === "keycloak") {
     let orgSlug: string | undefined;
+    let authenticated = false;
     try {
       const ctx = await getAuthContext();
       orgSlug = ctx.orgSlug;
+      authenticated = true;
     } catch {
-      // no org in token
+      // Either the user is not authenticated at all (expired session) OR they
+      // are authenticated but have no active org claims. getSessionIdentity()
+      // below distinguishes between the two.
     }
     if (orgSlug) {
       redirect(`/org/${orgSlug}/dashboard`);
     }
-    // No org — check if platform admin before showing pending message
+    // getAuthContext failed — determine whether the user is authenticated
+    // at all. If not, redirect to Keycloak login rather than rendering the
+    // "Waiting for Access" pending-state card (GAP-L-20).
     let isPlatformAdmin = false;
     try {
       const identity = await getSessionIdentity();
+      authenticated = true;
       isPlatformAdmin = identity.groups.includes("platform-admins");
     } catch {
-      // not authenticated or no groups
+      // Not authenticated — BFF said authenticated: false.
+      authenticated = false;
+    }
+    if (!authenticated) {
+      redirect(`${GATEWAY_URL}/oauth2/authorization/keycloak`);
     }
     if (isPlatformAdmin) {
       redirect("/platform-admin/access-requests");

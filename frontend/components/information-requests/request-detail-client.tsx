@@ -7,7 +7,9 @@ import {
   Check,
   X,
   Clock,
+  Download,
   FileText,
+  Loader2,
   MessageSquare,
   MoreHorizontal,
   Ban,
@@ -47,6 +49,7 @@ import {
   rejectItemAction,
   cancelRequestAction,
   resendNotificationAction,
+  getItemDocumentDownloadUrl,
 } from "@/app/(app)/org/[slug]/information-requests/[id]/actions";
 
 interface RequestDetailClientProps {
@@ -327,13 +330,20 @@ function RequestItemRow({ item, onAccept, onReject, isAccepting }: RequestItemRo
             </p>
           )}
 
-          {item.status === "ACCEPTED" &&
-            item.responseType === "FILE_UPLOAD" &&
-            item.documentFileName && (
-              <p className="flex items-center gap-1.5 text-sm text-teal-600 dark:text-teal-400">
-                <FileText className="size-3.5" />
-                {item.documentFileName}
-              </p>
+          {item.responseType === "FILE_UPLOAD" &&
+            item.documentId &&
+            item.documentFileName &&
+            (item.status === "ACCEPTED" || item.status === "SUBMITTED") && (
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="flex items-center gap-1.5 text-sm text-teal-600 dark:text-teal-400">
+                  <FileText className="size-3.5" />
+                  {item.documentFileName}
+                </p>
+                <ItemDocumentDownloadButton
+                  documentId={item.documentId}
+                  fileName={item.documentFileName}
+                />
+              </div>
             )}
 
           {item.status === "ACCEPTED" &&
@@ -392,4 +402,55 @@ function getItemBgClass(status: string): string {
     default:
       return "";
   }
+}
+
+// ---- Per-item Download button (GAP-L-45) ----
+// Mirrors `DownloadButton` in customer-documents-panel.tsx — mint a presigned
+// S3 URL via server action, then trigger a synthetic <a download> click.
+
+function ItemDocumentDownloadButton({
+  documentId,
+  fileName,
+}: {
+  documentId: string;
+  fileName: string;
+}) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  async function handleDownload() {
+    setIsLoading(true);
+    const result = await getItemDocumentDownloadUrl(documentId);
+    setIsLoading(false);
+
+    if (!result.success || !result.presignedUrl) {
+      toast.error(result.error ?? "Download failed.");
+      return;
+    }
+
+    const a = document.createElement("a");
+    a.href = result.presignedUrl;
+    a.download = fileName;
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  return (
+    <Button
+      type="button"
+      size="sm"
+      variant="outline"
+      onClick={handleDownload}
+      disabled={isLoading}
+      className="h-7 text-xs"
+    >
+      {isLoading ? (
+        <Loader2 className="mr-1.5 size-3.5 animate-spin" />
+      ) : (
+        <Download className="mr-1.5 size-3.5" />
+      )}
+      Download
+    </Button>
+  );
 }

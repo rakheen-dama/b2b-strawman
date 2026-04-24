@@ -13,12 +13,16 @@ type ViewMode = "check" | "history";
 interface ConflictCheckClientProps {
   initialChecks: ConflictCheck[];
   initialTotal: number;
+  initialCustomers?: { id: string; name: string }[];
+  initialProjects?: { id: string; name: string }[];
   slug: string;
 }
 
 export function ConflictCheckClient({
   initialChecks,
   initialTotal,
+  initialCustomers = [],
+  initialProjects = [],
   slug,
 }: ConflictCheckClientProps) {
   const [view, setView] = useState<ViewMode>("check");
@@ -48,7 +52,14 @@ export function ConflictCheckClient({
       </Tabs>
 
       <div className={cn(isPending && "opacity-50 transition-opacity")}>
-        {view === "check" && <ConflictCheckForm slug={slug} onCheckComplete={refetchHistory} />}
+        {view === "check" && (
+          <ConflictCheckForm
+            slug={slug}
+            initialCustomers={initialCustomers}
+            initialProjects={initialProjects}
+            onCheckComplete={refetchHistory}
+          />
+        )}
         {view === "history" && (
           <ConflictCheckHistory initialChecks={checks} initialTotal={total} slug={slug} />
         )}

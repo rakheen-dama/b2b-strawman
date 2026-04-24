@@ -72,8 +72,10 @@ describe("createMessages", () => {
     const { t } = createMessages("empty-states");
     const adminDesc = t("customers.list.description");
     const memberDesc = t("customers.list.descriptionMember");
-    expect(adminDesc).toContain("Add your first customer");
-    expect(memberDesc).toContain("No customers have been added");
+    // Copy now uses {Customers}/{customer} placeholders that TerminologyText
+    // expands at render time (GAP-L-31 — vertical-aware terminology).
+    expect(adminDesc).toContain("Add your first {customer}");
+    expect(memberDesc).toContain("No {customers} have been added");
     expect(adminDesc).not.toBe(memberDesc);
   });
 });

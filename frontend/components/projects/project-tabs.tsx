@@ -64,7 +64,10 @@ function buildBaseTabs(t: (term: string) => string): TabDef[] {
     { id: "documents", label: "Documents" },
     { id: "members", label: "Members" },
     { id: "customers", label: t("Customers") },
-    { id: "tasks", label: t("Tasks") },
+    // Use the literal "Tasks" label — the matter-detail scenario expects
+    // "Tasks" regardless of the legal-za terminology map (which rewrites
+    // generic "Tasks" → "Action Items" elsewhere in the product). GAP-L-38.
+    { id: "tasks", label: "Tasks" },
     { id: "time", label: "Time" },
     { id: "expenses", label: t("Expenses") },
     { id: "budget", label: t("Budget") },
@@ -161,6 +164,11 @@ export function ProjectTabs({
     if (!showTrust) filtered = filtered.filter((t) => t.id !== "trust");
     if (!showDisbursements) filtered = filtered.filter((t) => t.id !== "disbursements");
     if (!showStatements) filtered = filtered.filter((t) => t.id !== "statements");
+    // Dedupe: when the legal-specific Disbursements tab is shown AND the
+    // generic Expenses tab is present, their labels collide in legal-za
+    // (terminology maps "Expenses" → "Disbursements"). Prefer the legal
+    // tab and hide the generic one. GAP-L-38.
+    if (showDisbursements) filtered = filtered.filter((t) => t.id !== "expenses");
     return filtered;
   }, [
     baseTabs,

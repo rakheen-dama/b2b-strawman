@@ -77,6 +77,11 @@ export interface InvoiceResponse {
   taxRegistrationLabel: string | null;
   taxLabel: string | null;
   hasPerLineTax: boolean;
+  /**
+   * Non-blocking warning codes emitted by the draft-creation path (e.g.
+   * `tax_number_missing`). Empty for reads and subsequent mutations. See GAP-L-62.
+   */
+  warnings?: string[];
 }
 
 export type PaymentEventStatus =

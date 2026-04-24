@@ -102,10 +102,74 @@ class StructuralPrerequisiteCheckTest {
     var violations =
         StructuralPrerequisiteCheck.check(customer, PrerequisiteContext.INVOICE_GENERATION);
 
-    assertThat(violations).hasSize(4);
+    // GAP-L-62: tax_number relaxed from hard-block to soft-warn at draft; only
+    // address/city/country remain as structural prerequisites for draft creation.
+    assertThat(violations).hasSize(3);
     assertThat(violations)
         .extracting(PrerequisiteViolation::fieldSlug)
-        .containsExactly("address_line1", "city", "country", "tax_number");
+        .containsExactly("address_line1", "city", "country");
+  }
+
+  @Test
+  void invoiceGeneration_missingOnlyTaxNumber_passes() {
+    // GAP-L-62: draft creation must succeed when tax_number is the only missing
+    // field — it is soft-warned, not hard-blocked. Enforced at send via
+    // StructuralPrerequisiteCheck.checkInvoiceSendOnly(...).
+    var customer =
+        TestCustomerFactory.createActiveCustomer("Test Corp", "test@test.com", MEMBER_ID);
+    customer.setAddressLine1("123 Main St");
+    customer.setCity("Johannesburg");
+    customer.setCountry("ZA");
+    // taxNumber intentionally left null
+
+    var violations =
+        StructuralPrerequisiteCheck.check(customer, PrerequisiteContext.INVOICE_GENERATION);
+
+    assertThat(violations).isEmpty();
+  }
+
+  @Test
+  void invoiceSendOnly_missingTaxNumber_returnsViolation() {
+    // GAP-L-62: hard-block at send time when tax_number is missing.
+    var customer =
+        TestCustomerFactory.createActiveCustomer("Test Corp", "test@test.com", MEMBER_ID);
+    customer.setAddressLine1("123 Main St");
+    customer.setCity("Johannesburg");
+    customer.setCountry("ZA");
+    // taxNumber intentionally left null on both entity + JSONB
+
+    var violations = StructuralPrerequisiteCheck.checkInvoiceSendOnly(customer);
+
+    assertThat(violations).hasSize(1);
+    assertThat(violations.getFirst().code()).isEqualTo("STRUCTURAL");
+    assertThat(violations.getFirst().fieldSlug()).isEqualTo("tax_number");
+    assertThat(violations.getFirst().message()).contains("Tax Number");
+    assertThat(violations.getFirst().message()).contains("send an invoice");
+  }
+
+  @Test
+  void invoiceSendOnly_taxNumberPresent_passes() {
+    var customer =
+        TestCustomerFactory.createActiveCustomer("Test Corp", "test@test.com", MEMBER_ID);
+    customer.setTaxNumber("VAT123456");
+
+    var violations = StructuralPrerequisiteCheck.checkInvoiceSendOnly(customer);
+
+    assertThat(violations).isEmpty();
+  }
+
+  @Test
+  void isTaxNumberMissing_reflectsEntityAndJsonbSources() {
+    var customer =
+        TestCustomerFactory.createActiveCustomer("Test Corp", "test@test.com", MEMBER_ID);
+    assertThat(StructuralPrerequisiteCheck.isTaxNumberMissing(customer)).isTrue();
+
+    customer.setTaxNumber("VAT123");
+    assertThat(StructuralPrerequisiteCheck.isTaxNumberMissing(customer)).isFalse();
+
+    customer.setTaxNumber(null);
+    customer.setCustomFields(Map.of("tax_number", "VAT-JSONB"));
+    assertThat(StructuralPrerequisiteCheck.isTaxNumberMissing(customer)).isFalse();
   }
 
   @Test
@@ -187,8 +251,9 @@ class StructuralPrerequisiteCheckTest {
 
   @Test
   void coveredSlugs_returnsFieldsForCoveredContextsOnly() {
+    // GAP-L-62: tax_number is NOT covered by INVOICE_GENERATION any more (moved to send-only).
     assertThat(StructuralPrerequisiteCheck.coveredSlugs(PrerequisiteContext.INVOICE_GENERATION))
-        .containsExactlyInAnyOrder("address_line1", "city", "country", "tax_number");
+        .containsExactlyInAnyOrder("address_line1", "city", "country");
     assertThat(StructuralPrerequisiteCheck.coveredSlugs(PrerequisiteContext.PROPOSAL_SEND))
         .containsExactlyInAnyOrder("contact_name", "contact_email", "address_line1");
     assertThat(StructuralPrerequisiteCheck.coveredSlugs(PrerequisiteContext.LIFECYCLE_ACTIVATION))

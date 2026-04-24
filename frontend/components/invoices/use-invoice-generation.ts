@@ -45,6 +45,10 @@ export function useInvoiceGeneration({
   // Validation state
   const [validationChecks, setValidationChecks] = useState<ValidationCheck[] | null>(null);
   const [isValidating, setIsValidating] = useState(false);
+  // GAP-L-62: warnings returned by the backend on draft creation — today a
+  // `tax_number_missing` code surfaces an inline banner on the customer detail
+  // page post-close. Scoped to the hook so it resets on dialog reopen.
+  const [draftWarnings, setDraftWarnings] = useState<string[]>([]);
 
   function resetState() {
     setStep(1);
@@ -58,6 +62,7 @@ export function useInvoiceGeneration({
     setSelectedDisbursementIds(new Set());
     setValidationChecks(null);
     setIsValidating(false);
+    setDraftWarnings([]);
   }
 
   function handleOpenChange(newOpen: boolean) {
@@ -250,6 +255,9 @@ export function useInvoiceGeneration({
             selectedDisbursementIds.size > 0 ? Array.from(selectedDisbursementIds) : undefined,
         });
         if (result.success) {
+          // Expose any backend-emitted warnings (e.g. `tax_number_missing`) so the
+          // caller can render a persistent post-create banner. See GAP-L-62.
+          setDraftWarnings(result.invoice?.warnings ?? []);
           setOpen(false);
         } else {
           setError(result.error ?? "Failed to create invoice draft.");
@@ -325,6 +333,7 @@ export function useInvoiceGeneration({
     runningTotal,
     totalItemCount,
     nullRateEntries,
+    draftWarnings,
     // Handlers
     handleOpenChange,
     handleNewInvoiceClick,

@@ -216,6 +216,15 @@ export function RequestDetailClient({ request, slug }: RequestDetailClientProps)
         </div>
         <div className="space-y-1">
           <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
+            <Calendar className="size-3.5" />
+            Due
+          </div>
+          <p className="text-sm font-medium text-slate-900 dark:text-slate-100">
+            {request.dueDate ? formatDate(request.dueDate) : "No due date"}
+          </p>
+        </div>
+        <div className="space-y-1">
+          <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-slate-400">
             <Check className="size-3.5" />
             Progress
           </div>

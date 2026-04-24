@@ -118,6 +118,7 @@ export interface InformationRequestResponse {
   portalContactEmail: string;
   status: InformationRequestStatus;
   reminderIntervalDays: number;
+  dueDate: string | null;
   sentAt: string | null;
   completedAt: string | null;
   totalItems: number;
@@ -142,6 +143,7 @@ export interface CreateInformationRequestRequest {
   projectId?: string | null;
   portalContactId: string;
   reminderIntervalDays: number;
+  dueDate?: string | null;
   items?: CreateInformationRequestItem[];
 }
 

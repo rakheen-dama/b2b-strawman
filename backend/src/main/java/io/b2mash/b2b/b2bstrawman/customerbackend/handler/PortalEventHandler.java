@@ -849,6 +849,16 @@ public class PortalEventHandler {
             readModelRepo.updatePortalRequestItemStatus(
                 event.itemId(), "SUBMITTED", null, item.getDocumentId(), item.getTextResponse());
             readModelRepo.recalculatePortalRequestCounts(event.requestId());
+            // GAP-L-47: parent request lifecycle (SENT → IN_PROGRESS → COMPLETED) flips on the
+            // tenant side when an item is submitted, but the portal read-model only saw item-level
+            // projections until now. Re-read the parent and mirror its status so the portal's
+            // request-status badge never lags behind the tenant state.
+            informationRequestRepository
+                .findById(event.requestId())
+                .ifPresent(
+                    parent ->
+                        readModelRepo.updatePortalRequestStatus(
+                            event.requestId(), parent.getStatus().name(), parent.getCompletedAt()));
           } catch (Exception e) {
             log.warn("Failed to project RequestItemSubmittedEvent: itemId={}", event.itemId(), e);
           }

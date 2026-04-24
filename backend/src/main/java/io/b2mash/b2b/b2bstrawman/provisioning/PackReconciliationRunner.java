@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileReconciliationSeeder;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.tariff.LegalTariffSeeder;
 import java.util.List;
 import org.slf4j.Logger;
@@ -52,6 +53,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
   private final ProjectTemplatePackSeeder projectTemplatePackSeeder;
   private final SchedulePackSeeder schedulePackSeeder;
   private final LegalTariffSeeder legalTariffSeeder;
+  private final VerticalProfileReconciliationSeeder verticalProfileReconciliationSeeder;
   private final TransactionTemplate transactionTemplate;
 
   public PackReconciliationRunner(
@@ -68,6 +70,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
       ProjectTemplatePackSeeder projectTemplatePackSeeder,
       SchedulePackSeeder schedulePackSeeder,
       LegalTariffSeeder legalTariffSeeder,
+      VerticalProfileReconciliationSeeder verticalProfileReconciliationSeeder,
       TransactionTemplate transactionTemplate) {
     this.mappingRepository = mappingRepository;
     this.fieldPackSeeder = fieldPackSeeder;
@@ -82,6 +85,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
     this.projectTemplatePackSeeder = projectTemplatePackSeeder;
     this.schedulePackSeeder = schedulePackSeeder;
     this.legalTariffSeeder = legalTariffSeeder;
+    this.verticalProfileReconciliationSeeder = verticalProfileReconciliationSeeder;
     this.transactionTemplate = transactionTemplate;
   }
 
@@ -113,6 +117,9 @@ public class PackReconciliationRunner implements ApplicationRunner {
         projectTemplatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
         schedulePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
         legalTariffSeeder.seedForTenant(schemaName, clerkOrgId);
+        // GAP-L-44 + GAP-L-27 — merge enabled_modules and reconcile taxDefaults/tax_label from
+        // the vertical profile JSON into the tenant row. Idempotent; runs for every tenant.
+        verticalProfileReconciliationSeeder.reconcile(schemaName, clerkOrgId);
 
         succeeded++;
       } catch (Exception e) {

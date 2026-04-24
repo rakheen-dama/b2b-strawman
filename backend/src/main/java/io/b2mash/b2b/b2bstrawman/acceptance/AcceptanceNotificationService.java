@@ -96,9 +96,13 @@ class AcceptanceNotificationService {
 
       if (TEMPLATE_REMINDER.equals(templateName) && request.getSentAt() != null) {
         context.put("sentAtFormatted", EMAIL_DATE_FORMAT.format(request.getSentAt()));
-        context.put("subject", "Reminder: " + orgName + " -- Document awaiting your acceptance");
+        context.put(
+            "subject",
+            "Reminder: " + orgName + " -- Please review engagement letter for acceptance");
       } else {
-        context.put("subject", orgName + " -- Document for your acceptance: " + doc.getFileName());
+        context.put(
+            "subject",
+            orgName + " -- Please review engagement letter for acceptance: " + doc.getFileName());
       }
 
       // 3. Render template

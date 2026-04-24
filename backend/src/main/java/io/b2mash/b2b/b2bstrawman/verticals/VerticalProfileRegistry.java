@@ -38,6 +38,13 @@ public class VerticalProfileRegistry {
   public record RateCardDefaults(
       String currency, List<RoleRate> billingRates, List<RoleRate> costRates) {}
 
+  /**
+   * Default tax rate entry parsed from a vertical profile's {@code taxDefaults} array. The {@code
+   * name} is treated as the jurisdiction-appropriate rate label (e.g. {@code "VAT"}); the
+   * reconciliation seeder prefixes it onto the canonical tier name (e.g. {@code "VAT — Standard"}).
+   */
+  public record TaxDefault(String name, BigDecimal rate, boolean isDefault) {}
+
   /** Immutable definition of a vertical profile loaded from a JSON file. */
   public record ProfileDefinition(
       String profileId,
@@ -47,7 +54,8 @@ public class VerticalProfileRegistry {
       String terminologyNamespace,
       String currency,
       Map<String, Object> packs,
-      RateCardDefaults rateCardDefaults) {}
+      RateCardDefaults rateCardDefaults,
+      List<TaxDefault> taxDefaults) {}
 
   private final Map<String, ProfileDefinition> profiles;
 
@@ -93,6 +101,7 @@ public class VerticalProfileRegistry {
             root.has("packs") ? objectMapper.convertValue(root.get("packs"), Map.class) : Map.of();
 
         RateCardDefaults rateCardDefaults = parseRateCardDefaults(root.path("rateCardDefaults"));
+        List<TaxDefault> taxDefaults = parseTaxDefaults(root.path("taxDefaults"));
 
         var profile =
             new ProfileDefinition(
@@ -103,7 +112,8 @@ public class VerticalProfileRegistry {
                 terminologyNamespace,
                 currency,
                 packs,
-                rateCardDefaults);
+                rateCardDefaults,
+                taxDefaults);
         loaded.put(profileId, profile);
 
         log.info("Loaded vertical profile: {}", profileId);
@@ -149,6 +159,34 @@ public class VerticalProfileRegistry {
       return null;
     }
     return new RateCardDefaults(currency, billing, cost);
+  }
+
+  /**
+   * Parses the {@code taxDefaults} array from a profile JSON node. Returns an empty list if the
+   * node is missing, not an array, or contains no parseable entries — reconciliation simply skips
+   * tax-default seeding in that case.
+   */
+  private static List<TaxDefault> parseTaxDefaults(JsonNode node) {
+    if (node == null || !node.isArray()) {
+      return List.of();
+    }
+    List<TaxDefault> out = new ArrayList<>();
+    for (JsonNode entry : node) {
+      String name = entry.path("name").asText(null);
+      JsonNode rateNode = entry.path("rate");
+      if (name == null || name.isBlank() || rateNode.isMissingNode() || rateNode.isNull()) {
+        continue;
+      }
+      BigDecimal rate;
+      try {
+        rate = new BigDecimal(rateNode.asText());
+      } catch (NumberFormatException e) {
+        continue;
+      }
+      boolean isDefault = entry.path("default").asBoolean(false);
+      out.add(new TaxDefault(name, rate, isDefault));
+    }
+    return List.copyOf(out);
   }
 
   private static List<RoleRate> parseRoleRateArray(JsonNode arrayNode) {

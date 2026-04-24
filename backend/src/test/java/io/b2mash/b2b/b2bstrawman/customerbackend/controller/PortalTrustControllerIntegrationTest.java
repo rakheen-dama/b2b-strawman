@@ -270,4 +270,24 @@ class PortalTrustControllerIntegrationTest {
         .andExpect(jsonPath("$.content[?(@.reference =~ /REF-MAR-.*/)]").doesNotExist())
         .andExpect(jsonPath("$.content[?(@.reference =~ /REF-FEB-.*/)]").exists());
   }
+
+  // ==========================================================================
+  // Scenario 5 (GAP-L-55) — unknown matter yields a "Project not found" error so the portal
+  // message matches sibling portal endpoints instead of drifting into legal-firm "Matter" wording.
+  // ==========================================================================
+
+  @Test
+  void transactions_returns_project_not_found_wording_for_unknown_matter() throws Exception {
+    when(moduleGuard.isModuleEnabled(TRUST_MODULE)).thenReturn(true);
+
+    UUID unknownMatter = UUID.randomUUID();
+
+    mockMvc
+        .perform(
+            get("/portal/trust/matters/{matterId}/transactions", unknownMatter)
+                .header("Authorization", "Bearer " + portalToken))
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.title").value("Project not found"));
+  }
 }

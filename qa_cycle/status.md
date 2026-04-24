@@ -5,14 +5,14 @@
 **Purpose**: Re-validate that the 40+ fixes merged to `main` between 2026-04-21 and 2026-04-24 actually work end-to-end on the Keycloak dev stack. Prior cycle state archived to `qa_cycle/_archive_2026-04-24_pre-verify/status.md`.
 
 - **ALL_DAYS_COMPLETE**: false
-- **QA Position**: Day 0 — 0.21 (BLOCKED on GAP-L-22 REOPENED)
+- **QA Position**: Day 0 — 0.21 (BLOCKED on GAP-L-22 SPEC_READY — Dev fix pending)
 - **Cycle**: 1 (verify)
 - **Dev Stack**: READY — backend PID 5458, portal PID 5677, frontend PID 5771, gateway external PID 71426. All 4 services healthy throughout Day 0 run.
-- **NEEDS_REBUILD**: false
+- **NEEDS_REBUILD**: false (Dev fix will need backend restart once shipped)
 - **Branch**: `bugfix_cycle_2026-04-24`
 - **Scenario**: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md`
 - **Auth Mode**: Keycloak (real OIDC) for firm; magic-link + portal JWT for portal (`:3002`)
-- **Next action**: Product/Dev triage on GAP-L-22 REOPENED (BLOCKER) — fix before QA can continue Day 0.
+- **Next action**: Dev — implement GAP-L-22 regression fix per `qa_cycle/fix-specs/GAP-L-22-regression.md` (Option A, est S ≤30 min).
 
 ## Verification Focus — fixes to re-check as QA proceeds
 
@@ -72,7 +72,7 @@ Dev Stack READY. QA cleared to start Day 0.
 
 | GAP_ID | Day / Checkpoint | Severity | Status | Summary | Owner | Retries |
 |--------|------------------|----------|--------|---------|-------|---------|
-| GAP-L-22 | Day 0 — 0.21 / 0.22 | HIGH (BLOCKER) | REOPENED | Accept-invite flow completes KC registration but browser lands on padmin's `/platform-admin/access-requests` (stale BFF session) instead of Thandi's firm dashboard. L-22 middleware logout bounce fires correctly; handoff check never triggers because KC registration callback returns to port 3000 via `account` client (not through gateway-bff OAuth2 success handler → no `KC_LAST_LOGIN_SUB` cookie → middleware sees valid-looking SESSION and passes through). See `qa_cycle/checkpoint-results/day-00.md` for repro + evidence. | Dev | 0 |
+| GAP-L-22 | Day 0 — 0.21 / 0.22 | HIGH (BLOCKER) | SPEC_READY | Accept-invite flow completes KC registration but browser lands on padmin's `/platform-admin/access-requests` (stale BFF session) instead of Thandi's firm dashboard. L-22 middleware logout bounce fires correctly; handoff check never triggers because KC registration callback returns to port 3000 via `account` client (not through gateway-bff OAuth2 success handler → no `KC_LAST_LOGIN_SUB` cookie → middleware sees valid-looking SESSION and passes through). Root cause: `KeycloakProvisioningClient.organizationRedirectUrl` points at `<frontend>/dashboard`, so the post-registration `account`-client code is delivered straight to the frontend which has no OAuth2 handler. Spec at `qa_cycle/fix-specs/GAP-L-22-regression.md` (Option A: route redirect through new `/accept-invite/complete` bounce → gateway-bff OAuth2 kickoff so success handler fires). Est S ≤30 min. See `qa_cycle/checkpoint-results/day-00.md` for repro + evidence. | Dev | 0 |
 
 ## Deferred to future phases (do NOT re-log as new gaps if observed)
 
@@ -95,3 +95,4 @@ Dev Stack READY. QA cleared to start Day 0.
 - 2026-04-24 SAST — VERIFY CYCLE started. Prior cycle archived to `qa_cycle/_archive_2026-04-24_pre-verify/status.md`. Branch: `bugfix_cycle_2026-04-24` off main. Purpose: re-validate 40+ shipped fixes end-to-end before declaring Day 0–90 scenario green. Next action: Infra agent — restart backend for post-L-60 merges + start portal.
 - 2026-04-24 21:26 SAST — Infra: stack readied for verify cycle. Backend PID 5458 ready in 27s (post-L-60-through-L-48 merges). Portal PID 5677 ready in 3s. Frontend PID 5771 ready in 3s (restarted for clean HMR state). Gateway external PID 71426 healthy. Mailpit inbox purged. Docker infra (Postgres, Keycloak, Mailpit, LocalStack) all green; KC realm `docteams` verified. All 4 svc.sh services RUNNING=yes, HEALTHY=yes. QA cleared to start Day 0.
 - 2026-04-24 21:38 SAST — QA: Day 0 run executed. Pre-flight wiped prior-cycle state (tenant schema `tenant_5039f2d497cf`, KC org + users, access_request, subscriptions). 0.1–0.20 PASS (OTP flow, padmin approval, KC invitation, L-22 middleware logout bounce, KC registration submission all work). **0.21 FAIL — BLOCKER**: post-registration browser lands on padmin's `/platform-admin/access-requests` with stale BFF session instead of Thandi's firm dashboard. GAP-L-22 **REOPENED**. L-27 VAT/ZAR labels verified via `org_settings`. 10 downstream checkpoints (0.23–0.32) NOT EXECUTED. Full report: `qa_cycle/checkpoint-results/day-00.md`. Next action: Product/Dev triage on GAP-L-22.
+- 2026-04-24 22:24 SAST — Product triaged GAP-L-22 regression → SPEC_READY. Spec at `qa_cycle/fix-specs/GAP-L-22-regression.md`. Chose Option A (route post-registration through gateway-bff OAuth2 via new `/accept-invite/complete` frontend bounce page + flip `KeycloakProvisioningClient.organizationRedirectUrl` to target it). Root cause confirmed in code: KC org's `redirectUrl` sends the `account`-client auth code straight to the frontend, which has no OAuth2 handler → gateway success handler never fires → no `KC_LAST_LOGIN_SUB` → middleware's L-22 check is never triggered. PR #1125 middleware is correct; only the trigger path is broken. Est S ≤30 min; one backend line-change + ~40-line frontend page clone; no migrations, no realm-export changes. Dev is cleared to implement.

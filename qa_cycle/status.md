@@ -5,14 +5,14 @@
 **Purpose**: Re-validate that the 40+ fixes merged to `main` between 2026-04-21 and 2026-04-24 actually work end-to-end on the Keycloak dev stack. Prior cycle state archived to `qa_cycle/_archive_2026-04-24_pre-verify/status.md`.
 
 - **ALL_DAYS_COMPLETE**: false
-- **QA Position**: Day 0 — 0.21 (BLOCKED on Infra restart; GAP-L-22 regression FIXED in PR #1129 awaiting backend rebuild)
+- **QA Position**: Day 0 — 0.1 (cleared to re-run from scratch; GAP-L-22 regression fix loaded in backend PID 25298)
 - **Cycle**: 1 (verify)
-- **Dev Stack**: READY — backend PID 5458, portal PID 5677, frontend PID 5771, gateway external PID 71426. Backend serves the **pre-fix** redirectUrl (`/dashboard`) until restarted; PR #1129 ships the new `/accept-invite/complete` bounce.
-- **NEEDS_REBUILD**: true (backend `@Value`-injected `organizationRedirectUrl` is set at construction; restart required before QA resumes Day 0)
+- **Dev Stack**: READY — backend PID 25298 (restarted, ready 27s, L-22 fix live), portal PID 5677, frontend PID 5771, gateway external PID 71426. Backend now serves `redirectUrl` ending in `/accept-invite/complete`.
+- **NEEDS_REBUILD**: false
 - **Branch**: `bugfix_cycle_2026-04-24`
 - **Scenario**: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md`
 - **Auth Mode**: Keycloak (real OIDC) for firm; magic-link + portal JWT for portal (`:3002`)
-- **Next action**: Infra — restart backend (and re-run pre-flight wipe of KC org + tenant + access_request) so the freshly provisioned `mathebula-partners` org picks up the new `redirectUrl` ending in `/accept-invite/complete`. Then QA resumes Day 0 from 0.1.
+- **Next action**: QA — re-run Day 0 Phase A–D from 0.1 with the L-22 regression fix active. Expect 0.21 post-registration landing on Thandi's firm dashboard (not padmin's `/platform-admin/access-requests`).
 
 ## Verification Focus — fixes to re-check as QA proceeds
 
@@ -55,12 +55,12 @@ These gaps were **FIXED and merged to main** since 2026-04-21. QA should re-veri
 
 ## Environment
 
-| Service | URL | Status (post-infra-ready 2026-04-24 21:26 SAST) |
+| Service | URL | Status (post-infra-ready 2026-04-24 23:05 SAST) |
 |---------|-----|--------------------------------------------------|
-| Frontend (kc mode) | http://localhost:3000 | UP PID 5771 — restarted, ready in 3s |
-| Backend (local+keycloak profile) | http://localhost:8080 | UP PID 5458 — restarted, ready in 27s, /actuator/health UP (post-L-60-through-L-48 merges live) |
+| Frontend (kc mode) | http://localhost:3000 | UP PID 5771 — healthy |
+| Backend (local+keycloak profile) | http://localhost:8080 | UP PID 25298 — restarted, ready in 27s, /actuator/health UP (L-22 regression fix loaded: accept-invite redirect URL now `/accept-invite/complete`) |
 | Gateway (BFF) | http://localhost:8443 | UP external PID 71426 — healthy |
-| Portal | http://localhost:3002 | UP PID 5677 — started, ready in 3s, root returns 307 |
+| Portal | http://localhost:3002 | UP PID 5677 — healthy, root returns 307 |
 | Keycloak | http://localhost:8180 | UP — realm `docteams` OK |
 | Mailpit UI | http://localhost:8025 | UP — inbox purged |
 | Postgres (docteams) | localhost:5432 | UP (8 days healthy) |
@@ -97,3 +97,4 @@ Dev Stack READY. QA cleared to start Day 0.
 - 2026-04-24 21:38 SAST — QA: Day 0 run executed. Pre-flight wiped prior-cycle state (tenant schema `tenant_5039f2d497cf`, KC org + users, access_request, subscriptions). 0.1–0.20 PASS (OTP flow, padmin approval, KC invitation, L-22 middleware logout bounce, KC registration submission all work). **0.21 FAIL — BLOCKER**: post-registration browser lands on padmin's `/platform-admin/access-requests` with stale BFF session instead of Thandi's firm dashboard. GAP-L-22 **REOPENED**. L-27 VAT/ZAR labels verified via `org_settings`. 10 downstream checkpoints (0.23–0.32) NOT EXECUTED. Full report: `qa_cycle/checkpoint-results/day-00.md`. Next action: Product/Dev triage on GAP-L-22.
 - 2026-04-24 22:24 SAST — Product triaged GAP-L-22 regression → SPEC_READY. Spec at `qa_cycle/fix-specs/GAP-L-22-regression.md`. Chose Option A (route post-registration through gateway-bff OAuth2 via new `/accept-invite/complete` frontend bounce page + flip `KeycloakProvisioningClient.organizationRedirectUrl` to target it). Root cause confirmed in code: KC org's `redirectUrl` sends the `account`-client auth code straight to the frontend, which has no OAuth2 handler → gateway success handler never fires → no `KC_LAST_LOGIN_SUB` → middleware's L-22 check is never triggered. PR #1125 middleware is correct; only the trigger path is broken. Est S ≤30 min; one backend line-change + ~40-line frontend page clone; no migrations, no realm-export changes. Dev is cleared to implement.
 - 2026-04-24 22:38 SAST — Dev: GAP-L-22 regression **FIXED** in PR #1129 (merge SHA `05d05f48`, squash-merged into `bugfix_cycle_2026-04-24`). Implementation matches spec verbatim — `KeycloakProvisioningClient.organizationRedirectUrl` flipped from `<frontend>/dashboard` to `<frontend>/accept-invite/complete`, new `frontend/app/accept-invite/complete/page.tsx` (40-line clone of `/accept-invite/continue` reusing `AcceptInviteRedirect`) forwards to `${NEXT_PUBLIC_GATEWAY_URL || http://localhost:8443}/oauth2/authorization/keycloak`. New backend tests assert the POST body's `redirectUrl` ends with `/accept-invite/complete` (incl. trailing-slash normalisation case); Vitest covers the bounce-page render + `window.location.replace` on mount. CI green (qodana pass; CodeRabbit pass). Build matrix: backend `compile/test-compile=0`, targeted tests `*KeycloakProvisioning*,*Invitation*,*Organization*Provision*` `=0`; frontend `install=0`, `format` clean, `lint=0` (only pre-existing warnings), `build=0` (`/accept-invite/complete` listed as static prerender), `test=0` (2064 pass / 2 skipped, including 2 new tests in `app/accept-invite/complete/page.test.tsx`). **NEEDS_REBUILD: true** — `KeycloakProvisioningClient.organizationRedirectUrl` is set in the constructor from `@Value`, so the running backend (PID 5458) still serves the old `/dashboard` redirectUrl until restarted. Next action: Infra — restart backend + run the standard pre-flight wipe (tenant schema + KC org + access_request + Mailpit) so QA can resume Day 0 from 0.1 with a freshly provisioned `mathebula-partners` org carrying the new redirectUrl.
+- 2026-04-24 23:05 SAST — Infra: pre-flight wipe complete. Deleted 1 KC user (`thandi@mathebula-test.local` id `713ab9d6-654e-4aed-962d-491c7526a5f3`), KC org `61101fc9-cbc7-40e3-8912-dcf44f17ba4b` (`Mathebula & Partners`), 4 registry rows across organizations/access_requests/org_schema_mapping/subscriptions (organizations `2c3a4b3b-ab11-4f10-99f0-76441fffcc2f`, access_requests `d009c550-92ae-479e-97bb-0572007af638`, org_schema_mapping `604bb9ff-26f8-4901-a7e5-7f29a9b64be5`, subscriptions `309af2a6-6fc6-4c12-9fe0-4d00354f58d1` TRIALING with 0 payments), dropped tenant schema `tenant_5039f2d497cf` (103 objects CASCADE). Post-checks all 0 for mathebula; 3 unrelated tenant schemas preserved (`tenant_2a96bc3b208b`, `tenant_8ee5c5a6e45f`, `tenant_f6e34f99f3b9`). Backend restarted PID 25298 ready in 27s (L-22 regression fix loaded — source confirms `/accept-invite/complete` at `KeycloakProvisioningClient.java:80`; accept-invite redirect URL now points at `/accept-invite/complete`). Mailpit inbox purged. All 4 svc.sh services RUNNING=yes, HEALTHY=yes (backend 25298 / gateway ext 71426 / frontend 5771 / portal 5677). QA cleared to re-run Day 0 Phase A–D fresh.

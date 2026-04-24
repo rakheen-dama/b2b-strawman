@@ -980,6 +980,7 @@ public class ProjectTemplateService {
               project.getId(),
               primaryContact.get().getId(),
               null,
+              null,
               null);
       var draftResponse = informationRequestService.create(createRequest);
 

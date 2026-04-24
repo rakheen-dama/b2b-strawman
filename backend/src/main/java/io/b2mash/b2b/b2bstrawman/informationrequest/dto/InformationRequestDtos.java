@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -21,9 +22,11 @@ public final class InformationRequestDtos {
       UUID projectId,
       @NotNull UUID portalContactId,
       Integer reminderIntervalDays,
+      LocalDate dueDate,
       @Valid List<AdHocItemRequest> items) {}
 
-  public record UpdateInformationRequestRequest(Integer reminderIntervalDays, UUID projectId) {}
+  public record UpdateInformationRequestRequest(
+      Integer reminderIntervalDays, UUID projectId, LocalDate dueDate) {}
 
   public record AdHocItemRequest(
       @NotBlank String name,
@@ -56,6 +59,7 @@ public final class InformationRequestDtos {
       String portalContactEmail,
       String status,
       Integer reminderIntervalDays,
+      LocalDate dueDate,
       Instant sentAt,
       Instant completedAt,
       Instant cancelledAt,
@@ -108,6 +112,7 @@ public final class InformationRequestDtos {
           portalContactEmail,
           r.getStatus().name(),
           r.getReminderIntervalDays(),
+          r.getDueDate(),
           r.getSentAt(),
           r.getCompletedAt(),
           r.getCancelledAt(),

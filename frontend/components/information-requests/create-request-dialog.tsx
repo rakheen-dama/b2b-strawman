@@ -60,6 +60,7 @@ export function CreateRequestDialog({
   const [templateId, setTemplateId] = useState<string>("ad-hoc");
   const [portalContactId, setPortalContactId] = useState<string>("");
   const [reminderDays, setReminderDays] = useState<number>(defaultReminderDays);
+  const [dueDate, setDueDate] = useState<string>("");
 
   const loadDialogData = useCallback(async () => {
     setLoadingData(true);
@@ -90,6 +91,7 @@ export function CreateRequestDialog({
     setTemplateId("ad-hoc");
     setPortalContactId("");
     setReminderDays(defaultReminderDays);
+    setDueDate("");
     setTemplates([]);
     setContacts([]);
   }
@@ -118,6 +120,7 @@ export function CreateRequestDialog({
         projectId: projectId ?? null,
         portalContactId,
         reminderIntervalDays: reminderDays,
+        dueDate: dueDate.trim() === "" ? null : dueDate,
       });
 
       if (!result.success) {
@@ -227,6 +230,22 @@ export function CreateRequestDialog({
               />
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 Automated reminders will be sent at this interval after the request is sent.
+              </p>
+            </div>
+
+            {/* Due Date */}
+            <div className="space-y-2">
+              <Label htmlFor="due-date">Due Date (optional)</Label>
+              <Input
+                id="due-date"
+                data-testid="request-due-date-input"
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                className="w-44"
+              />
+              <p className="text-xs text-slate-500 dark:text-slate-400">
+                The date by which the client is expected to return the requested information.
               </p>
             </div>
 

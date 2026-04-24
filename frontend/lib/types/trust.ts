@@ -1,6 +1,6 @@
 // Trust account types
 
-export type TrustAccountType = "GENERAL" | "INVESTMENT";
+export type TrustAccountType = "GENERAL" | "INVESTMENT" | "SECTION_86";
 
 export type TrustAccountStatus = "ACTIVE" | "CLOSED";
 

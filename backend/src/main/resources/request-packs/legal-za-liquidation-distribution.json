@@ -1,0 +1,49 @@
+{
+  "packId": "legal-za-liquidation-distribution",
+  "version": 1,
+  "verticalProfile": "legal-za",
+  "name": "Liquidation and Distribution Account Pack",
+  "description": "Documents required to prepare and lodge a Liquidation and Distribution account for a deceased estate with the Master of the High Court. Collects the executor's appointment letter, evidence of death, identity of the deceased, the L&D account draft, and the IDs of every beneficiary named in the account.",
+  "items": [
+    {
+      "name": "Executor's Letters of Authority",
+      "description": "Letters of Executorship or Letters of Authority issued by the Master of the High Court confirming the executor's appointment over the deceased estate.",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF, JPG, PNG",
+      "sortOrder": 1
+    },
+    {
+      "name": "Death certificate",
+      "description": "Official death certificate issued by the Department of Home Affairs for the deceased.",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF, JPG, PNG",
+      "sortOrder": 2
+    },
+    {
+      "name": "ID of deceased",
+      "description": "Certified copy of the deceased's South African ID document or passport bio page.",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF, JPG, PNG",
+      "sortOrder": 3
+    },
+    {
+      "name": "Liquidation & Distribution account draft",
+      "description": "Draft Liquidation and Distribution account prepared in terms of the Administration of Estates Act, reflecting all assets, liabilities, and distribution to heirs prior to lodgement with the Master.",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF",
+      "sortOrder": 4
+    },
+    {
+      "name": "Beneficiary ID documents",
+      "description": "Certified ID copies for every beneficiary or heir named in the Liquidation and Distribution account. Combine into a single PDF where possible.",
+      "responseType": "FILE_UPLOAD",
+      "required": true,
+      "fileTypeHints": "PDF, JPG, PNG",
+      "sortOrder": 5
+    }
+  ]
+}

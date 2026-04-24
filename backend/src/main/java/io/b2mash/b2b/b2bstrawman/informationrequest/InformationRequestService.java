@@ -133,6 +133,7 @@ public class InformationRequestService {
             projectId,
             portalContact.getId(),
             DEFAULT_SCHEDULER_REMINDER_INTERVAL_DAYS,
+            null,
             null);
     return createFromTemplateWithMemberId(request, memberId);
   }
@@ -145,13 +146,15 @@ public class InformationRequestService {
           request.customerId(),
           request.projectId(),
           request.portalContactId(),
-          request.reminderIntervalDays());
+          request.reminderIntervalDays(),
+          request.dueDate());
     }
     return createAdHoc(
         request.customerId(),
         request.projectId(),
         request.portalContactId(),
         request.reminderIntervalDays(),
+        request.dueDate(),
         request.items());
   }
 
@@ -167,6 +170,7 @@ public class InformationRequestService {
         request.projectId(),
         request.portalContactId(),
         request.reminderIntervalDays(),
+        request.dueDate(),
         memberId,
         true);
   }
@@ -176,13 +180,15 @@ public class InformationRequestService {
       UUID customerId,
       UUID projectId,
       UUID portalContactId,
-      Integer reminderIntervalDays) {
+      Integer reminderIntervalDays,
+      java.time.LocalDate dueDate) {
     return doCreateFromTemplate(
         templateId,
         customerId,
         projectId,
         portalContactId,
         reminderIntervalDays,
+        dueDate,
         RequestScopes.requireMemberId(),
         false);
   }
@@ -197,6 +203,7 @@ public class InformationRequestService {
       UUID projectId,
       UUID portalContactId,
       Integer reminderIntervalDays,
+      java.time.LocalDate dueDate,
       UUID memberId,
       boolean createdByScheduler) {
     customerRepository
@@ -218,6 +225,7 @@ public class InformationRequestService {
     infoRequest.setRequestTemplateId(templateId);
     infoRequest.setProjectId(projectId);
     infoRequest.setReminderIntervalDays(reminderIntervalDays);
+    infoRequest.setDueDate(dueDate);
     var saved = requestRepository.save(infoRequest);
 
     // Copy template items
@@ -269,6 +277,7 @@ public class InformationRequestService {
       UUID projectId,
       UUID portalContactId,
       Integer reminderIntervalDays,
+      java.time.LocalDate dueDate,
       List<AdHocItemRequest> items) {
     customerRepository
         .findById(customerId)
@@ -285,6 +294,7 @@ public class InformationRequestService {
     var request = new InformationRequest(requestNumber, customerId, portalContactId, memberId);
     request.setProjectId(projectId);
     request.setReminderIntervalDays(reminderIntervalDays);
+    request.setDueDate(dueDate);
     var saved = requestRepository.save(request);
 
     if (items != null) {
@@ -592,6 +602,7 @@ public class InformationRequestService {
     }
     request.setProjectId(dto.projectId());
     request.setReminderIntervalDays(dto.reminderIntervalDays());
+    request.setDueDate(dto.dueDate());
     var saved = requestRepository.save(request);
 
     var updatedAuditDetails = new HashMap<String, Object>();

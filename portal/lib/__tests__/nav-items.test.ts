@@ -2,8 +2,10 @@ import { describe, it, expect } from "vitest";
 import { PORTAL_NAV_ITEMS, filterNavItems } from "@/lib/nav-items";
 
 describe("PORTAL_NAV_ITEMS", () => {
-  it("includes all 10 canonical entries", () => {
-    expect(PORTAL_NAV_ITEMS).toHaveLength(10);
+  // GAP-P-07: "documents" entry removed — the /documents route is not
+  // implemented. Restore once the page exists (ideally behind a module).
+  it("includes all 9 canonical entries", () => {
+    expect(PORTAL_NAV_ITEMS).toHaveLength(9);
     expect(PORTAL_NAV_ITEMS.map((i) => i.id)).toEqual([
       "home",
       "projects",
@@ -14,7 +16,6 @@ describe("PORTAL_NAV_ITEMS", () => {
       "proposals",
       "requests",
       "acceptance",
-      "documents",
     ]);
   });
 });
@@ -52,7 +53,7 @@ describe("filterNavItems", () => {
     expect(filtered.some((i) => i.id === "invoices")).toBe(true);
   });
 
-  it("always includes home, projects, invoices, proposals, documents (no gates)", () => {
+  it("always includes home, projects, invoices, proposals (no gates)", () => {
     const filtered = filterNavItems(PORTAL_NAV_ITEMS, {
       enabledModules: [],
     });
@@ -61,7 +62,8 @@ describe("filterNavItems", () => {
     expect(ids).toContain("projects");
     expect(ids).toContain("invoices");
     expect(ids).toContain("proposals");
-    expect(ids).toContain("documents");
+    // GAP-P-07: "documents" is no longer in the nav; no assertion needed.
+    expect(ids).not.toContain("documents");
   });
 
   it("includes retainer for consulting-za when module is enabled", () => {

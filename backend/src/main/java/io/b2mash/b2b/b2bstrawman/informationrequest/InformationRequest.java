@@ -12,6 +12,7 @@ import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -45,6 +46,9 @@ public class InformationRequest {
 
   @Column(name = "reminder_interval_days")
   private Integer reminderIntervalDays;
+
+  @Column(name = "due_date")
+  private LocalDate dueDate;
 
   @Column(name = "last_reminder_sent_at")
   private Instant lastReminderSentAt;
@@ -178,6 +182,10 @@ public class InformationRequest {
     return reminderIntervalDays;
   }
 
+  public LocalDate getDueDate() {
+    return dueDate;
+  }
+
   public Instant getLastReminderSentAt() {
     return lastReminderSentAt;
   }
@@ -218,6 +226,10 @@ public class InformationRequest {
 
   public void setReminderIntervalDays(Integer reminderIntervalDays) {
     this.reminderIntervalDays = reminderIntervalDays;
+  }
+
+  public void setDueDate(LocalDate dueDate) {
+    this.dueDate = dueDate;
   }
 
   public void setLastReminderSentAt(Instant lastReminderSentAt) {

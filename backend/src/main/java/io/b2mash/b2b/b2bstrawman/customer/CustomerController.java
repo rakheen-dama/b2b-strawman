@@ -12,6 +12,8 @@ import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.TransitionResponse;
 import io.b2mash.b2b.b2bstrawman.customer.dto.CustomerDtos.UpdateCustomerRequest;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
+import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestService;
+import io.b2mash.b2b.b2bstrawman.informationrequest.dto.InformationRequestDtos.FicaStatusResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.invoice.dto.UnbilledTimeResponse;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
@@ -62,6 +64,7 @@ public class CustomerController {
   private final UnbilledTimeSummaryService unbilledTimeSummaryService;
   private final CustomerReadinessService customerReadinessService;
   private final PortalContactService portalContactService;
+  private final InformationRequestService informationRequestService;
 
   public CustomerController(
       CustomerService customerService,
@@ -72,7 +75,8 @@ public class CustomerController {
       CustomerLifecycleService customerLifecycleService,
       UnbilledTimeSummaryService unbilledTimeSummaryService,
       CustomerReadinessService customerReadinessService,
-      PortalContactService portalContactService) {
+      PortalContactService portalContactService,
+      InformationRequestService informationRequestService) {
     this.customerService = customerService;
     this.customerProjectService = customerProjectService;
     this.invoiceService = invoiceService;
@@ -82,6 +86,7 @@ public class CustomerController {
     this.unbilledTimeSummaryService = unbilledTimeSummaryService;
     this.customerReadinessService = customerReadinessService;
     this.portalContactService = portalContactService;
+    this.informationRequestService = informationRequestService;
   }
 
   @GetMapping
@@ -301,6 +306,17 @@ public class CustomerController {
   @GetMapping("/{id}/readiness")
   public ResponseEntity<CustomerReadiness> getReadiness(@PathVariable UUID id) {
     return ResponseEntity.ok(customerReadinessService.getReadiness(id));
+  }
+
+  /**
+   * FICA onboarding status projection for a customer (GAP-L-46). Derived from the customer's {@code
+   * fica-onboarding-pack} information requests. Returns {@code {status:
+   * NOT_STARTED|IN_PROGRESS|DONE, lastVerifiedAt, requestId}}. Info-request-only signal — no
+   * KYC-adapter coupling.
+   */
+  @GetMapping("/{id}/fica-status")
+  public ResponseEntity<FicaStatusResponse> getFicaStatus(@PathVariable UUID id) {
+    return ResponseEntity.ok(informationRequestService.getFicaStatus(id));
   }
 
   @GetMapping("/{id}/unbilled-time")

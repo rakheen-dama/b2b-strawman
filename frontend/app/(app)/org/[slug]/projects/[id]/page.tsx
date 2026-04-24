@@ -69,7 +69,12 @@ import {
   fetchProjectUnbilledSummary,
   fetchTemplateReadiness,
 } from "@/lib/api/setup-status";
-import type { ProjectSetupStatus, UnbilledTimeSummary, TemplateReadiness } from "@/lib/types";
+import type {
+  ProjectSetupStatus,
+  UnbilledTimeSummary,
+  TemplateReadiness,
+  FicaStatus,
+} from "@/lib/types";
 import type { SetupStep } from "@/components/setup/types";
 import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
 import { SaveAsTemplateDialog } from "@/components/templates/SaveAsTemplateDialog";
@@ -242,6 +247,20 @@ export default async function ProjectDetailPage({
       taskRetainerSummary = await fetchRetainerSummary(customers[0].id);
     } catch {
       // Non-fatal: indicator just won't show
+    }
+  }
+
+  // FICA onboarding status for the matter's primary customer (GAP-L-46).
+  // Surfaces on the Overview tab as a small status tile. Fetch is
+  // non-fatal — when the endpoint is unreachable or the profile
+  // doesn't carry a FICA template pack, the card renders a soft
+  // "Status unavailable" state rather than breaking the page.
+  let ficaStatus: FicaStatus | null = null;
+  if (customers.length > 0) {
+    try {
+      ficaStatus = await api.get<FicaStatus>(`/api/customers/${customers[0].id}/fica-status`);
+    } catch {
+      ficaStatus = null;
     }
   }
 
@@ -652,11 +671,7 @@ export default async function ProjectDetailPage({
                     defaultCustomerId={customers[0].id}
                     defaultFeeModel="HOURLY"
                   >
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      data-testid="matter-new-engagement-letter"
-                    >
+                    <Button variant="outline" size="sm" data-testid="matter-new-engagement-letter">
                       <FileText className="mr-1.5 size-4" />
                       New Engagement Letter
                     </Button>
@@ -762,6 +777,7 @@ export default async function ProjectDetailPage({
             setupSteps={setupSteps}
             unbilledSummary={unbilledSummary}
             templateReadiness={templateReadiness}
+            ficaStatus={ficaStatus}
           />
         }
         documentsPanel={

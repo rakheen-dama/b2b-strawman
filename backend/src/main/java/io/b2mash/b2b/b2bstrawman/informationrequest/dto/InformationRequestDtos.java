@@ -175,4 +175,23 @@ public final class InformationRequestDtos {
       long itemsPendingReview,
       long overdueRequests,
       double completionRateLast30Days) {}
+
+  /**
+   * Lightweight FICA status projection for a customer. Derives from the customer's information
+   * requests backed by the `fica-onboarding-pack` template. Designed to expand later into a
+   * composite signal (adapter outcome + beneficial-owner coverage) without a schema change — that's
+   * why this is a standalone DTO rather than a column on Customer.
+   *
+   * <p>Status values:
+   *
+   * <ul>
+   *   <li>{@code NOT_STARTED} — no FICA request exists for the customer.
+   *   <li>{@code IN_PROGRESS} — at least one FICA request exists but not every item is ACCEPTED
+   *       yet.
+   *   <li>{@code DONE} — the most-recent FICA request has every item ACCEPTED; {@code
+   *       lastVerifiedAt} is the request's completedAt.
+   * </ul>
+   */
+  public record FicaStatusResponse(
+      UUID customerId, String status, Instant lastVerifiedAt, UUID requestId) {}
 }

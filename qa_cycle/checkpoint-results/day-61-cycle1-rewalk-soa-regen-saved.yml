@@ -1,0 +1,617 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: TM
+        - generic:
+          - paragraph: Thandi Mathebula
+          - paragraph: thandi@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - text: Matters
+          - generic:
+            - img
+            - generic: Matter
+        - generic:
+          - generic:
+            - button: TM
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 18 unread notifications
+              - generic: "18"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/projects
+                  - img
+                  - text: Back to Matters
+              - generic:
+                - heading [level=1]: Dlamini v Road Accident Fund
+                - generic: Closed
+                - link:
+                  - /url: /org/mathebula-partners/customers/c3ad51f5-2bda-4a27-b626-7b5c63f37102
+                  - text: Sipho Dlamini
+                - generic:
+                  - generic: Ref
+                  - code: RAF-2026-001
+                - generic:
+                  - button:
+                    - img
+                    - text: Reopen Matter
+                  - button:
+                    - img
+                    - text: Generate Statement of Account
+                  - button:
+                    - img
+                    - text: Generate Document
+                    - img
+                  - button:
+                    - img
+                    - text: New Engagement Letter
+                  - button:
+                    - img
+                    - text: Save as Template
+                  - button:
+                    - img
+                    - text: Edit
+                  - button:
+                    - img
+                    - text: Delete
+              - generic:
+                - paragraph: Field Groups
+                - generic:
+                  - generic:
+                    - text: SA Conveyancing — Matter Details
+                    - button:
+                      - img
+                  - generic:
+                    - text: SA Legal — Matter Details
+                    - button:
+                      - img
+                  - generic:
+                    - text: Project Info
+                    - button:
+                      - img
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: SA Conveyancing — Matter Details
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Conveyancing Type
+                        - generic:
+                          - combobox
+                      - generic:
+                        - generic: Property Address
+                        - generic:
+                          - textbox:
+                            - /placeholder: Full physical address of the property being transferred
+                      - generic:
+                        - generic: Erf Number
+                        - generic:
+                          - textbox:
+                            - /placeholder: Erf/stand number identifying the property
+                      - generic:
+                        - generic: Deeds Office
+                        - generic:
+                          - combobox
+                      - generic:
+                        - generic: Lodgement Date
+                        - generic:
+                          - textbox
+                      - generic:
+                        - generic: Purchase Price
+                        - generic:
+                          - generic:
+                            - spinbutton
+                            - combobox
+                      - generic:
+                        - generic: Transfer Duty
+                        - generic:
+                          - generic:
+                            - spinbutton
+                            - combobox
+                      - generic:
+                        - generic: Bond Institution
+                        - generic:
+                          - combobox
+                - generic:
+                  - generic:
+                    - generic: SA Legal — Matter Details
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Case Number
+                        - generic:
+                          - textbox:
+                            - /placeholder: Court-assigned case number for the matter
+                            - text: RAF-2026-001-CASE
+                      - generic:
+                        - generic: Court
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the court in which the matter is heard
+                      - generic:
+                        - generic: Opposing Party
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the primary opposing party
+                            - text: Road Accident Fund
+                      - generic:
+                        - generic: Opposing Attorney
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the opposing attorney or firm
+                      - generic:
+                        - generic: Advocate
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the instructed advocate (if briefed)
+                      - generic:
+                        - generic: Date of Instruction
+                        - generic:
+                          - textbox
+                      - generic:
+                        - generic: Estimated Value
+                        - generic:
+                          - spinbutton
+                - generic:
+                  - generic:
+                    - generic: Project Info
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Category
+                        - generic:
+                          - textbox:
+                            - /placeholder: Project category or type
+                - generic:
+                  - button:
+                    - img
+                    - text: Save Custom Fields
+              - generic:
+                - paragraph: Tags
+                - generic:
+                  - generic:
+                    - button:
+                      - img
+                      - text: Add Tag
+              - generic:
+                - tablist:
+                  - tab [selected]: Overview
+                  - tab: Documents
+                  - tab: Members
+                  - tab: Clients
+                  - tab: Tasks
+                  - tab: Time
+                  - tab: Fee Estimate
+                  - tab: Financials
+                  - tab: Staffing
+                  - tab: Rates
+                  - tab: Generated Docs
+                  - tab: Requests
+                  - tab: Client Comments
+                  - tab: Court Dates
+                  - tab: Adverse Parties
+                  - tab: Trust
+                  - tab: Disbursements
+                  - tab: Statements
+                  - tab: Activity
+                - tabpanel:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Healthy
+                        - generic:
+                          - heading [level=2]: Dlamini v Road Accident Fund
+                          - paragraph: "Customer: Sipho Dlamini"
+                      - generic:
+                        - generic:
+                          - paragraph: Budget
+                          - text: "--"
+                        - generic:
+                          - paragraph: Hours
+                          - generic: 0.0h
+                        - generic:
+                          - paragraph: Tasks
+                          - generic: 0/9
+                          - text: complete
+                        - generic:
+                          - paragraph: Revenue
+                          - text: "--"
+                    - group:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: 2/5 setup steps complete
+                          - generic:
+                            - generic:
+                              - generic: 40%
+                        - img
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: Recent Activity
+                              - link:
+                                - /url: /org/mathebula-partners/projects/e788a51b-3a73-456c-b932-8d5bd27264c2?tab=activity
+                                - text: View all
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: TM
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Thandi Mathebula performed statement.generated on generated_document
+                                  - text: 2 seconds ago
+                              - generic:
+                                - generic: TM
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Thandi Mathebula performed statement.generated on generated_document
+                                  - text: 53 minutes ago
+                              - generic:
+                                - generic: TM
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Thandi Mathebula generated document "matter-closure-letter-dlamini-v-road-accident-fund-2026-04-25.pdf" from template "Matter Closure Letter"
+                                  - text: 2 hours ago
+                              - generic:
+                                - generic: BN
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Bob Ndlovu performed trust_refund.recorded on trust_transaction
+                                  - text: 2 hours ago
+                              - generic:
+                                - generic: TM
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Thandi Mathebula performed task.cancelled on task
+                                  - text: 5 hours ago
+                              - generic:
+                                - generic: TM
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Thandi Mathebula performed task.cancelled on task
+                                  - text: 5 hours ago
+                              - generic:
+                                - generic: TM
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Thandi Mathebula performed task.cancelled on task
+                                  - text: 5 hours ago
+                              - generic:
+                                - generic: TM
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Thandi Mathebula performed task.cancelled on task
+                                  - text: 5 hours ago
+                              - generic:
+                                - generic: TM
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Thandi Mathebula performed task.cancelled on task
+                                  - text: 5 hours ago
+                              - generic:
+                                - generic: TM
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Thandi Mathebula performed task.cancelled on task
+                                  - text: 5 hours ago
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: Task Status
+                              - link:
+                                - /url: /org/mathebula-partners/projects/e788a51b-3a73-456c-b932-8d5bd27264c2?tab=tasks
+                                - text: View all tasks
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Done 0
+                                - generic: In Progress 0
+                                - generic: Open 0
+                        - generic:
+                          - generic:
+                            - generic: Upcoming Deadlines
+                          - generic:
+                            - paragraph: No upcoming deadlines
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Budget
+                          - generic:
+                            - paragraph: No budget configured
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: Time Breakdown
+                              - link:
+                                - /url: /org/mathebula-partners/projects/e788a51b-3a73-456c-b932-8d5bd27264c2?tab=time
+                                - text: View all time
+                          - generic:
+                            - paragraph: No hours logged this month
+                        - generic:
+                          - generic:
+                            - generic: Team
+                          - generic:
+                            - paragraph: No team members assigned
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - img
+                                - text: FICA
+                              - generic: Done
+                          - generic:
+                            - paragraph: Verified Apr 25, 2026
+                            - link:
+                              - /url: /org/mathebula-partners/requests/454dea5d-ec2c-43b9-9b42-c06f6cb24153
+                              - text: View request
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e156] [cursor=pointer]:
+    - img [ref=e157]
+  - alert
+  - dialog "Generate Statement of Account" [active] [ref=e483]:
+    - generic [ref=e484]:
+      - generic [ref=e485]:
+        - heading "Generate Statement of Account" [level=2] [ref=e486]
+        - paragraph [ref=e487]: Generate a statement of account for Dlamini v Road Accident Fund. The PDF will be saved to this matter's documents.
+      - generic [ref=e488]:
+        - generic [ref=e489]:
+          - generic [ref=e490]:
+            - generic [ref=e491]: Period start
+            - textbox "Period start" [ref=e492]: 2026-04-01
+          - generic [ref=e493]:
+            - generic [ref=e494]: Period end
+            - textbox "Period end" [ref=e495]: 2026-04-25
+        - iframe [ref=e507]:
+          - generic [active] [ref=f2e1]:
+            - heading "Mathebula & Partners" [level=1] [ref=f2e2]
+            - paragraph [ref=f2e3]:
+              - strong [ref=f2e4]: "VAT Reg:"
+            - heading "Statement of Account" [level=2] [ref=f2e5]
+            - paragraph [ref=f2e6]:
+              - strong [ref=f2e7]: "Reference:"
+              - text: SOA-e788a51b-20260426
+            - paragraph [ref=f2e8]:
+              - strong [ref=f2e9]: "Period:"
+              - text: 2026-04-01 — 2026-04-25
+            - paragraph [ref=f2e10]:
+              - strong [ref=f2e11]: "Generated:"
+              - text: 2026-04-26
+            - separator [ref=f2e12]
+            - heading "To" [level=3] [ref=f2e13]
+            - paragraph [ref=f2e14]: Sipho Dlamini
+            - paragraph [ref=f2e15]: 12 Loveday St Johannesburg 2001 ZA
+            - separator [ref=f2e16]
+            - heading "Matter" [level=3] [ref=f2e17]
+            - paragraph [ref=f2e18]:
+              - strong [ref=f2e19]: "Matter:"
+              - text: Dlamini v Road Accident Fund
+            - paragraph [ref=f2e20]:
+              - strong [ref=f2e21]: "File reference:"
+              - text: RAF-2026-001
+            - paragraph [ref=f2e22]:
+              - strong [ref=f2e23]: "Opened:"
+              - text: 2026-04-25
+            - separator [ref=f2e24]
+            - heading "Professional Fees" [level=3] [ref=f2e25]
+            - table [ref=f2e26]:
+              - rowgroup [ref=f2e27]:
+                - row "Date Fee Earner Description Hours Rate Amount" [ref=f2e28]:
+                  - columnheader "Date" [ref=f2e29]
+                  - columnheader "Fee Earner" [ref=f2e30]
+                  - columnheader "Description" [ref=f2e31]
+                  - columnheader "Hours" [ref=f2e32]
+                  - columnheader "Rate" [ref=f2e33]
+                  - columnheader "Amount" [ref=f2e34]
+              - rowgroup
+            - paragraph [ref=f2e35]:
+              - strong [ref=f2e36]: "Total fees (excl. VAT):"
+              - text: "0"
+            - paragraph [ref=f2e37]:
+              - strong [ref=f2e38]: "VAT:"
+              - text: "0"
+            - paragraph [ref=f2e39]:
+              - strong [ref=f2e40]: "Total fees (incl. VAT):"
+              - text: "0"
+            - separator [ref=f2e41]
+            - heading "Disbursements" [level=3] [ref=f2e42]
+            - table [ref=f2e43]:
+              - rowgroup [ref=f2e44]:
+                - row "Date Category Description Supplier Amount VAT" [ref=f2e45]:
+                  - columnheader "Date" [ref=f2e46]
+                  - columnheader "Category" [ref=f2e47]
+                  - columnheader "Description" [ref=f2e48]
+                  - columnheader "Supplier" [ref=f2e49]
+                  - columnheader "Amount" [ref=f2e50]
+                  - columnheader "VAT" [ref=f2e51]
+              - rowgroup [ref=f2e52]:
+                - row "25 April 2026 COURT_FEES L-64 verify — court filing fee Magistrate Court Pretoria R100,00 R0,00" [ref=f2e53]:
+                  - cell "25 April 2026" [ref=f2e54]
+                  - cell "COURT_FEES" [ref=f2e55]
+                  - cell "L-64 verify — court filing fee" [ref=f2e56]
+                  - cell "Magistrate Court Pretoria" [ref=f2e57]
+                  - cell "R100,00" [ref=f2e58]
+                  - cell "R0,00" [ref=f2e59]
+                - row "25 April 2026 SHERIFF_FEES Sheriff service of summons on RAF — Day 21 cycle-1 verify Sheriff Pretoria R1 250,00 R0,00" [ref=f2e60]:
+                  - cell "25 April 2026" [ref=f2e61]
+                  - cell "SHERIFF_FEES" [ref=f2e62]
+                  - cell "Sheriff service of summons on RAF — Day 21 cycle-1 verify" [ref=f2e63]
+                  - cell "Sheriff Pretoria" [ref=f2e64]
+                  - cell "R1 250,00" [ref=f2e65]
+                  - cell "R0,00" [ref=f2e66]
+            - paragraph [ref=f2e67]:
+              - strong [ref=f2e68]: "Total disbursements:"
+              - text: "1350.00"
+            - separator [ref=f2e69]
+            - heading "Trust Activity" [level=3] [ref=f2e70]
+            - paragraph [ref=f2e71]:
+              - strong [ref=f2e72]: "Opening balance:"
+              - text: "0"
+            - paragraph [ref=f2e73]:
+              - strong [ref=f2e74]: Deposits
+            - table [ref=f2e75]:
+              - rowgroup [ref=f2e76]:
+                - row "Date Reference Description Amount" [ref=f2e77]:
+                  - columnheader "Date" [ref=f2e78]
+                  - columnheader "Reference" [ref=f2e79]
+                  - columnheader "Description" [ref=f2e80]
+                  - columnheader "Amount" [ref=f2e81]
+              - rowgroup
+            - paragraph [ref=f2e82]:
+              - strong [ref=f2e83]: Payments
+            - table [ref=f2e84]:
+              - rowgroup [ref=f2e85]:
+                - row "Date Type Reference Description Amount" [ref=f2e86]:
+                  - columnheader "Date" [ref=f2e87]
+                  - columnheader "Type" [ref=f2e88]
+                  - columnheader "Reference" [ref=f2e89]
+                  - columnheader "Description" [ref=f2e90]
+                  - columnheader "Amount" [ref=f2e91]
+              - rowgroup
+            - paragraph [ref=f2e92]:
+              - strong [ref=f2e93]: "Closing balance:"
+              - text: "0"
+            - separator [ref=f2e94]
+            - heading "Summary" [level=3] [ref=f2e95]
+            - paragraph [ref=f2e96]:
+              - strong [ref=f2e97]: "Total fees:"
+              - text: "0"
+            - paragraph [ref=f2e98]:
+              - strong [ref=f2e99]: "Total disbursements:"
+              - text: "1350.00"
+            - paragraph [ref=f2e100]:
+              - strong [ref=f2e101]: "Previous balance owing:"
+              - text: "0"
+            - paragraph [ref=f2e102]:
+              - strong [ref=f2e103]: "Payments received:"
+              - text: "100.00"
+            - paragraph [ref=f2e104]:
+              - strong [ref=f2e105]: "Closing balance owing:"
+              - text: "1250.00"
+            - paragraph [ref=f2e106]:
+              - strong [ref=f2e107]: "Trust balance held:"
+              - text: "0"
+            - separator [ref=f2e108]
+            - heading "Payment Instructions" [level=3] [ref=f2e109]
+            - paragraph
+            - paragraph
+        - generic [ref=e498]:
+          - button "Close" [ref=e499]
+          - button "Download PDF" [ref=e508]:
+            - img
+            - text: Download PDF
+          - button "Regenerate" [ref=e509]:
+            - img
+            - text: Regenerate
+      - button "Close" [ref=e501]:
+        - img
+        - generic [ref=e502]: Close

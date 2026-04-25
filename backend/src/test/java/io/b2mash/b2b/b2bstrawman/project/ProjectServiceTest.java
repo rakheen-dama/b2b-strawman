@@ -124,7 +124,7 @@ class ProjectServiceTest {
     when(repository.save(any(Project.class))).thenReturn(project);
     when(projectMemberRepository.save(any(ProjectMember.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
-    when(projectFieldService.prepareForCreate(eq("New"), isNull(), isNull(), isNull()))
+    when(projectFieldService.prepareForCreate(eq("New"), isNull(), isNull(), isNull(), isNull()))
         .thenReturn(new ProjectFieldService.CreateFieldResult(Map.of(), "New", List.of()));
 
     var result = service.createProject("New", "Description", MEMBER_ID);
@@ -146,7 +146,7 @@ class ProjectServiceTest {
     when(customerProjectRepository.save(any(CustomerProject.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
     when(projectFieldService.prepareForCreate(
-            eq("Customer Project"), isNull(), isNull(), eq("Test Customer")))
+            eq("Customer Project"), isNull(), isNull(), eq("Test Customer"), isNull()))
         .thenReturn(
             new ProjectFieldService.CreateFieldResult(Map.of(), "Customer Project", List.of()));
     when(projectFieldService.resolveCustomerName(custId)).thenReturn("Test Customer");
@@ -162,7 +162,8 @@ class ProjectServiceTest {
     when(repository.save(any(Project.class))).thenReturn(project);
     when(projectMemberRepository.save(any(ProjectMember.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
-    when(projectFieldService.prepareForCreate(eq("Internal"), isNull(), isNull(), isNull()))
+    when(projectFieldService.prepareForCreate(
+            eq("Internal"), isNull(), isNull(), isNull(), isNull()))
         .thenReturn(new ProjectFieldService.CreateFieldResult(Map.of(), "Internal", List.of()));
 
     service.createProject("Internal", "No customer", MEMBER_ID);

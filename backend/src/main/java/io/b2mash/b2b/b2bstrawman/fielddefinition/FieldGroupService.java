@@ -344,12 +344,49 @@ public class FieldGroupService {
   /**
    * Resolves all group IDs that should be auto-applied to a new entity of the given type. Includes
    * direct auto-apply groups plus one level of dependsOn dependencies.
+   *
+   * <p>Delegates to {@link #resolveAutoApplyGroupIds(EntityType, String)} with {@code workType =
+   * null}. Used by CUSTOMER/TASK/INVOICE create paths (which have no work_type concept) and by
+   * legacy callers. A null work_type causes any group that REQUIRES a work_type to be filtered out
+   * — correct, because such groups (e.g. conveyancing-za-project) only make sense for projects with
+   * a matching work_type.
    */
   public List<UUID> resolveAutoApplyGroupIds(EntityType entityType) {
+    return resolveAutoApplyGroupIds(entityType, null);
+  }
+
+  /**
+   * GAP-L-37-regression-2026-04-25: variant for the PROJECT entity type that filters out groups
+   * whose {@code applicable_work_types} is non-empty and does not contain the supplied {@code
+   * workType}. Used at project-create time so a legal-za tenant that has both legal-za-project and
+   * conveyancing-za-project field groups installed only attaches the conveyancing one to matters
+   * with {@code work_type = CONVEYANCING}.
+   *
+   * <p>Pass {@code null} or empty {@code workType} to omit any group that REQUIRES a work_type
+   * (i.e., groups with non-empty {@code applicable_work_types} can never match a null work_type).
+   * Groups with null/empty {@code applicable_work_types} are unscoped and always match — this is
+   * the default for the 8 packs that don't opt in.
+   */
+  public List<UUID> resolveAutoApplyGroupIds(EntityType entityType, String workType) {
     var autoGroups = fieldGroupRepository.findByEntityTypeAndAutoApplyTrueAndActiveTrue(entityType);
-    var groupIds = new LinkedHashSet<>(autoGroups.stream().map(FieldGroup::getId).toList());
-    // Resolve one-level dependencies — only include existing, active groups
+    var filtered = new ArrayList<FieldGroup>();
     for (var group : autoGroups) {
+      var required = group.getApplicableWorkTypes();
+      if (required == null || required.isEmpty()) {
+        filtered.add(group); // unscoped — always applies
+        continue;
+      }
+      if (workType != null && required.contains(workType)) {
+        filtered.add(group); // matches caller's work_type
+      }
+      // else: scoped to a different work_type → skip
+    }
+    var groupIds = new LinkedHashSet<>(filtered.stream().map(FieldGroup::getId).toList());
+    // Resolve one-level dependencies — only include existing, active groups. Dependencies are
+    // not work-type filtered: if A is unscoped and depends on B, B applies regardless of its
+    // own applicable_work_types because A pulls it in. (Currently no dependsOn cross-references
+    // a work-type-scoped group, so this is a moot point in practice, but keep semantics simple.)
+    for (var group : filtered) {
       if (group.getDependsOn() != null) {
         for (UUID depId : group.getDependsOn()) {
           var depGroup = fieldGroupRepository.findById(depId);

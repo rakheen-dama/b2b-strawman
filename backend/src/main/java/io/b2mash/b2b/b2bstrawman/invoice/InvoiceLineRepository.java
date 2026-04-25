@@ -53,4 +53,17 @@ public interface InvoiceLineRepository extends JpaRepository<InvoiceLine, UUID> 
           + " AND il.invoiceId IN (SELECT i.id FROM Invoice i WHERE i.status = :status)")
   List<InvoiceLine> findByTaxRateIdAndInvoice_Status(
       @Param("taxRateId") UUID taxRateId, @Param("status") InvoiceStatus status);
+
+  /**
+   * Returns the single distinct projectId across all lines of the given invoice when the invoice is
+   * bound to exactly one matter. Returns {@link Optional#empty()} when the invoice spans multiple
+   * matters or when no line carries a projectId. Used by trust fee transfer recording to infer the
+   * matter binding from the invoice (GAP-L-69 — see TrustBalanceZeroGate per-matter calculation).
+   */
+  @Query(
+      """
+      SELECT DISTINCT il.projectId FROM InvoiceLine il
+      WHERE il.invoiceId = :invoiceId AND il.projectId IS NOT NULL
+      """)
+  List<UUID> findDistinctProjectIdsByInvoiceId(@Param("invoiceId") UUID invoiceId);
 }

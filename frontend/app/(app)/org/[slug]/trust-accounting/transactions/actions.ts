@@ -176,6 +176,7 @@ export async function recordRefund(
   try {
     await api.post(`/api/trust-accounts/${accountId}/transactions/refund`, {
       customerId: data.customerId,
+      projectId: data.projectId || null,
       amount: data.amount,
       reference: data.reference,
       description: data.description || null,

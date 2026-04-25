@@ -106,3 +106,60 @@ The stub-adapter path is explicitly authorised. Chosen approach: dev-only `MockP
 **GAP-L-65: DEFERRED (WONT_FIX this verify cycle) → Sprint 2 as L-65-followup.** Reasoning: exit checkpoint E.9 reads "Terminology sweep passed — zero `Project/Customer/Invoice` leaks **firm-side**; **portal terminology consistent within itself**". The portal IS internally consistent (renders "Invoice" everywhere on portal; no firm vocabulary leaks INTO portal). The firm↔portal seam divergence is not gated by E.9. Verify cycle scope is "re-validate 40+ shipped fixes" — propagating `legal-za` `terminology.invoice` override into portal layout + email templates is genuinely new functionality requiring a portal-side terminology resolver + email-template token expansion (M-effort, doesn't fit verify scope).
 
 **Day 45 dispatch unblocked** — does not hard-depend on Day 30 PAID; firm-side flow can proceed in parallel while Dev implements L-64.
+
+## Day 30 Re-walk after L-64 fix — Cycle 1
+
+Date: 2026-04-25 (post-PR #1134 merge SHA `34493c79`) | Backend: :8080 PID 41837 (post-restart, V112 + MockPaymentGateway live) | Branch: `bugfix_cycle_2026-04-24`
+
+### Verdict
+
+**Day 30 cycle-1 re-walk: HALTED — Playwright MCP and Claude-in-Chrome bridge both unavailable this turn.** Pre-state DB confirmation completed (read-only SQL); browser-driven phases 30.1 / 30.5 / 30.6 / 30.7 / 30.8 / 30.10 NOT executed. No payment was faked. GAP-L-64 status remains **FIXED (code merged) / VERIFY-PENDING (browser-driven re-walk)**.
+
+### Pre-state confirmation (read-only SELECT)
+
+```sql
+SELECT id, status, payment_url, payment_session_id
+FROM tenant_5039f2d497cf.invoices
+WHERE id='8f718728-5fb6-40fe-abf1-2cafc86c0f10';
+-- → 8f718728-... | SENT | (NULL) | (NULL)
+
+SELECT id, domain, provider_slug, enabled
+FROM tenant_5039f2d497cf.org_integrations;
+-- → 9775a954-96b8-4db1-89c6-ad5c7dff7fb9 | PAYMENT | mock | t
+```
+
+Confirms PR #1134 seeder ran successfully (mock PAYMENT row present, enabled=true), but the existing INV-0001 was created BEFORE the seeder, so its `payment_url`/`payment_session_id` are still NULL. Per Option A in dispatch instructions, browser-driven regeneration would be needed (firm-side "Resend Invoice" / detail-view trigger / new fee-note generation) — this is exactly the path the re-walk is meant to exercise.
+
+### Halt cause: tooling unavailability
+
+- `mcp__playwright__browser_*` returns `Target page, context or browser has been closed` on every call (navigate, snapshot, tabs, take_screenshot).
+- `mcp__plugin_playwright_playwright__browser_*` returns `Browser is already in use for /Users/rakheendama/Library/Caches/ms-playwright/mcp-chrome-5d273ba` — wedged Chrome user-data dir from a prior session (Chrome PID 5426 still alive holding it; can't release without external intervention since killing user processes is out of QA-agent scope).
+- `mcp__claude-in-chrome__tabs_context_mcp` returns `Browser extension is not connected. Please ensure the Claude browser extension is installed and running (https://claude.ai/chrome)`.
+
+Same dual-bridge wedge that the previous turn (commit `b2bde0c8`, "status: pause-and-resume marker — chrome+playwright MCP both blocked this turn") recorded. Per HARD rule #4 of the Day 30 dispatch, **HALT** — UI checkpoints require real browser; REST/SQL substitutes are FORBIDDEN.
+
+### What is preserved for the next turn
+
+- Backend stack healthy: `/actuator/health` 200 (8080), 200 (8443), 3000 200, 3002 307 — services UP.
+- L-64 fix already deployed (mock org_integrations row seeded; backend restarted post-PR #1134).
+- Pre-existing INV-0001 still has NULL `payment_url`. Next turn's choices remain:
+  - **Option A** (preferred): drive firm-side "Resend Invoice" / refresh-on-view / regenerate-link to populate `payment_url` for INV-0001 via the seeded MockPaymentGateway.
+  - **Option B** (fresh fee note): generate a new disbursement-billing cycle so a fresh invoice is created post-seeder (clean test of the fix path, but loses INV-0001 lineage with Day 28 chain).
+- Tab 0 (Bob firm) and Tab 1 (Sipho portal) state IS LOST — the wedged browser session is unusable. Next turn must re-login both: Bob via Keycloak (port 3000) and Sipho via portal `/login` magic-link (port 3002).
+
+### Phases status post-halt
+
+| Phase | Status |
+|---|---|
+| 30.1 (email href non-empty) | NOT_RE-WALKED — needs browser + Mailpit refresh on regenerated invoice |
+| 30.2 (portal /invoices detail) | already PASS — no re-walk needed unless invoice payload changes |
+| 30.4 (screenshot) | already PASS |
+| 30.5 (Pay button render) | NOT_RE-WALKED — depends on payment_url populating; awaiting browser availability |
+| 30.6 (mock-payment Complete click) | NOT_RE-WALKED |
+| 30.7 (firm flip to PAID + payment_events row) | NOT_RE-WALKED |
+| 30.8 / 30.10 | NOT_RE-WALKED |
+| 30.11 (isolation) | already PASS |
+
+### No state mutations this turn
+
+Confirmed: no SQL writes, no REST writes, no faked payments, no clicks on `/dev/mock-payment`. Browser bridge unavailability has been respected.

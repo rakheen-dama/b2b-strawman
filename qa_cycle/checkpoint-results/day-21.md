@@ -258,3 +258,54 @@ Per dispatch instructions: "If you hit a HIGH/blocker, write Tracker row OPEN an
 - **BLOCKED**: Phase D (approval transition) — no UI affordance to flip DRAFT → PENDING_APPROVAL.
 - **L-57 verify-focus**: **VERIFIED** browser-driven (was VERIFIED REST-only previously; now browser-confirmed).
 - **L-63 verify-focus**: **CANNOT VERIFY** — depends on GAP-L-61.
+
+---
+
+## Day 21 Phase D Re-Verify (after L-61 fix) — Cycle 1 — 2026-04-25 SAST
+
+**Method**: Playwright MCP browser-driven on Tab 0 (Bob KC firm session — preserved from prior turn). Tab 1 (Sipho portal) untouched. Read-only SQL `SELECT` for state confirmation. **Zero REST mutations** — every state change went through the browser UI per HARD rule.
+
+**Context**: PR #1133 (merge SHA `9a7fcad2`) shipped frontend-only "Submit for Approval" CTA. NEEDS_REBUILD=false; frontend HMR picked up the change automatically.
+
+### Checkpoint table
+
+| Checkpoint | Phase | Method | Result | Evidence |
+|------------|-------|--------|--------|----------|
+| 21.D.1 | Disbursement detail snapshot at DRAFT | browser_snapshot | **PASS** — page loaded, status badges = `Draft / Unbilled`, supplier "Sheriff Pretoria · Ref SHF-RAF-2026-001". | `day-21-cycle1-l61-fixed-detail-draft.yml` + `.png` |
+| 21.D.2 | "Submit for Approval" CTA visible in header (gated on `approvalStatus==='DRAFT'`) | DOM enumeration via snapshot | **PASS** — header buttons now `["Submit for Approval", "Upload receipt", "Edit"]`. CTA placed before Upload/Edit per spec. `data-testid="disbursement-submit-for-approval-button"` present. | `day-21-cycle1-l61-fixed-detail-draft.yml` line 119–128 |
+| 21.D.3 | Click Submit for Approval | browser_click on `Submit for Approval` button | **PASS** — server action fired, page revalidated, status badge transitioned `Draft → Pending`, "Submit for Approval" CTA disappeared. | `day-21-cycle1-l61-fixed-submitted.yml` + `.png` |
+| 21.D.4 | DisbursementApprovalPanel renders for PENDING_APPROVAL | browser_snapshot | **PASS** — "Approval Required" panel rendered with copy "This disbursement is pending approval. Review the amount and supplier details before approving, or reject with a reason." + Approve/Reject buttons. | `day-21-cycle1-l61-fixed-submitted.yml` line 151–161 |
+| 21.D.5 | Console clean during submit | browser_console_messages level=error | **PASS** — 122 messages total, **0 errors / 0 warnings**. | `console-2026-04-25T11-35-27-682Z.log` |
+| 21.D.6 | Click Approve → confirmation dialog | browser_click on Approve | **PASS** — modal dialog "Approve Disbursement" opened with optional Notes textarea + Cancel/Approve Disbursement buttons. | (intermediate snapshot) |
+| 21.D.7 | Confirm approval | browser_click on dialog "Approve Disbursement" confirm | **PASS** — dialog closed, status transitioned `Pending → Approved`, Approval Required panel disappeared. | `day-21-cycle1-l61-fixed-approved.yml` + `.png` |
+| 21.D.8 | DB read-only confirmation | docker exec psql `SELECT` on `tenant_5039f2d497cf.legal_disbursements` | **PASS** — `approval_status='APPROVED'`, `billing_status='UNBILLED'`, `approved_at=2026-04-25 11:57:03.055511+00`, `approved_by='5fabd245-0cc3-4f70-8605-3f4e2a369140'` (Bob Ndlovu, `bob@mathebula-test.local` — confirmed via `members` join). | (terminal output) |
+| 21.D.9 | L-63 prerequisite satisfied | DB predicate check | **PASS** — disbursement now matches `findUnbilledBillableByCustomerId(c3ad51f5-…)` predicate (`approval_status='APPROVED' AND billing_status='UNBILLED'`). Day 28 fee-note dialog L-63 verify is now unblocked. | n/a — derived from Phase F |
+
+### State transitions captured
+
+```
+DRAFT  ── browser-click [Submit for Approval]  ──▶  PENDING_APPROVAL
+PENDING_APPROVAL  ── browser-click [Approve] → [Approve Disbursement (confirm)]  ──▶  APPROVED
+```
+
+### Console / network sanity
+
+- **Errors**: 0
+- **Warnings**: 0
+- All pre-existing hydration-mismatch warnings from earlier turn DID NOT recur this turn (page was fully hydrated when actions fired).
+
+### Evidence files added this turn
+
+- `day-21-cycle1-l61-fixed-detail-draft.yml` / `.png` — DRAFT state with new CTA visible
+- `day-21-cycle1-l61-fixed-submitted.yml` / `.png` — PENDING_APPROVAL state with approval panel
+- `day-21-cycle1-l61-fixed-approved.yml` / `.png` — APPROVED state, panel gone
+
+### Final tally (Phase D re-verify)
+
+- **9/9 PASS, 0 BLOCKED, 0 OPEN**.
+- **GAP-L-61** → **VERIFIED** (FIXED → VERIFIED).
+- **L-57** holds (no regression on data shape during transitions).
+- **L-63 setup** complete — disbursement is APPROVED+UNBILLED, ready for Day 28.
+- Method confirmed browser-driven for every state mutation; only DB read was a `SELECT`.
+
+**Next action**: Day 28 fee-note dispatch (L-62 + L-63 verify).

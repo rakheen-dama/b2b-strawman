@@ -1,0 +1,337 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: BN
+        - generic:
+          - paragraph: Bob Ndlovu
+          - paragraph: bob@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/customers
+              - text: Clients
+          - generic:
+            - img
+            - generic: Client
+        - generic:
+          - generic:
+            - button: BN
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 6 unread notifications
+              - generic: "6"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/customers
+                  - img
+                  - text: Back to Clients
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: Sipho Dlamini
+                    - generic: Active
+                    - generic: Prospect
+                  - paragraph: sipho.portal@example.com
+                  - paragraph:
+                    - text: +27 82 555 0101 · 8501015800088 · Created Apr 25, 2026 ·
+                    - generic: 3 matters
+                - generic:
+                  - button:
+                    - text: Change Status
+                    - img
+                  - button:
+                    - img
+                    - text: Generate Document
+                    - img
+                  - button:
+                    - img
+                    - text: Export Data
+                  - button:
+                    - img
+                    - text: Edit
+                  - button:
+                    - img
+                    - text: Archive
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - img
+                      - generic: Address
+                  - generic:
+                    - generic:
+                      - generic: 12 Loveday St
+                      - generic: Johannesburg, 2001
+                      - generic: ZA
+                - generic:
+                  - generic:
+                    - generic:
+                      - img
+                      - generic: Primary Contact
+                  - generic:
+                    - paragraph: No contact on file.
+              - generic:
+                - paragraph: Field Groups
+                - generic:
+                  - generic:
+                    - text: SA Legal — Client Details
+                    - button:
+                      - img
+                  - button:
+                    - img
+                    - text: Add Group
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: SA Legal — Client Details
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: ID / Passport Number
+                        - generic:
+                          - textbox:
+                            - /placeholder: South African ID number or passport number for natural persons
+                      - generic:
+                        - generic: Postal Address
+                        - generic:
+                          - textbox:
+                            - /placeholder: Postal address if different from physical address
+                      - generic:
+                        - generic: Preferred Correspondence
+                        - generic:
+                          - combobox
+                      - generic:
+                        - generic: Referred By
+                        - generic:
+                          - textbox:
+                            - /placeholder: Source of client referral for tracking
+                - generic:
+                  - button:
+                    - img
+                    - text: Save Custom Fields
+              - generic:
+                - paragraph: Tags
+                - generic:
+                  - generic:
+                    - button:
+                      - img
+                      - text: Add Tag
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+                    - generic: Trust Balance
+                    - generic: Funds Held
+                - generic:
+                  - generic:
+                    - generic: R 50 000,00
+                    - generic:
+                      - generic:
+                        - paragraph: Deposits
+                        - paragraph: R 50 000,00
+                      - generic:
+                        - paragraph: Payments
+                        - paragraph: R 0,00
+                      - generic:
+                        - paragraph: Fee Transfers
+                        - paragraph: R 0,00
+                    - paragraph: "Last transaction: 2026/04/25"
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: Client Readiness
+                    - button:
+                      - img
+                  - generic:
+                    - img
+                    - generic: Setup complete
+              - generic:
+                - generic:
+                  - generic: Document Templates
+                - generic:
+                  - list:
+                    - listitem:
+                      - generic:
+                        - img
+                        - generic: Power of Attorney
+                      - link:
+                        - /url: /org/mathebula-partners/customers/c3ad51f5-2bda-4a27-b626-7b5c63f37102?generateTemplate=548daf02-f57c-460f-b0a6-13ccedfb9b16
+                        - text: Generate
+                    - listitem:
+                      - generic:
+                        - img
+                        - generic: Letter of Demand
+                      - link:
+                        - /url: /org/mathebula-partners/customers/c3ad51f5-2bda-4a27-b626-7b5c63f37102?generateTemplate=41581833-7171-4e76-8b36-5d000a5efe47
+                        - text: Generate
+                    - listitem:
+                      - generic:
+                        - img
+                        - generic: Client Trust Statement
+                      - link:
+                        - /url: /org/mathebula-partners/customers/c3ad51f5-2bda-4a27-b626-7b5c63f37102?generateTemplate=4723438d-a978-46b6-8785-8bc50f099132
+                        - text: Generate
+                    - listitem:
+                      - generic:
+                        - img
+                        - generic: Trust Receipt
+                      - link:
+                        - /url: /org/mathebula-partners/customers/c3ad51f5-2bda-4a27-b626-7b5c63f37102?generateTemplate=999f501f-6c34-4669-8e68-074440ade725
+                        - text: Generate
+              - generic:
+                - generic:
+                  - img
+                  - generic:
+                    - heading [level=3]: Ready to start onboarding?
+                    - paragraph: Move this customer to Onboarding to begin compliance checklists.
+                    - generic:
+                      - link:
+                        - /url: "#lifecycle-transition"
+                        - text: Start Onboarding
+              - generic:
+                - tablist:
+                  - tab: Matters
+                  - tab: Documents
+                  - tab [selected]: Fee Notes
+                  - tab: Mandate
+                  - tab: Requests
+                  - tab: Rates
+                  - tab: Generated Docs
+                  - tab: Financials
+                  - tab: Trust
+                - tabpanel:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - heading [level=2]: Fee Notes
+                      - button:
+                        - img
+                        - text: New Fee Note
+                    - generic:
+                      - img
+                      - heading [level=2]: No fee notes yet
+                      - paragraph: Generate fee note from unbilled time entries
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e209] [cursor=pointer]:
+    - img [ref=e210]
+  - alert
+  - 'dialog "Generate Fee Note Help: Unbilled time" [ref=e394]':
+    - generic [ref=e395]:
+      - generic [ref=e396]:
+        - 'heading "Generate Fee Note Help: Unbilled time" [level=2] [ref=e397]':
+          - text: Generate Fee Note
+          - 'button "Help: Unbilled time" [active] [ref=e398] [cursor=pointer]':
+            - img [ref=e399]
+        - paragraph [ref=e402]: Create a new fee note for Sipho Dlamini from unbilled time entries and expenses.
+      - generic [ref=e403]:
+        - generic [ref=e404]:
+          - generic [ref=e405]:
+            - generic [ref=e406]: From Date
+            - textbox "From Date" [ref=e407]
+          - generic [ref=e408]:
+            - generic [ref=e409]: To Date
+            - textbox "To Date" [ref=e410]
+        - generic [ref=e411]:
+          - generic [ref=e412]: Currency
+          - textbox "Currency" [ref=e413]:
+            - /placeholder: USD
+            - text: ZAR
+          - paragraph [ref=e414]: 3-letter ISO currency code (e.g. USD, EUR, ZAR)
+        - generic [ref=e415]:
+          - button "Cancel" [ref=e416]
+          - button "Fetch Unbilled Time" [ref=e417]
+      - button "Close" [ref=e418]:
+        - img
+        - generic [ref=e419]: Close

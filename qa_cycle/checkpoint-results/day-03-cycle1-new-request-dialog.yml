@@ -1,0 +1,362 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: BN
+        - generic:
+          - paragraph: Bob Ndlovu
+          - paragraph: bob@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - text: Matters
+          - generic:
+            - img
+            - generic: Matter
+        - generic:
+          - generic:
+            - button: BN
+          - generic:
+            - button "Notifications":
+              - img
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/projects
+                  - img
+                  - text: Back to Matters
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: Dlamini v Road Accident Fund
+                    - generic: Active
+                  - paragraph: "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION"
+                  - paragraph:
+                    - text: "Client:"
+                    - link:
+                      - /url: /org/mathebula-partners/customers/c3ad51f5-2bda-4a27-b626-7b5c63f37102
+                      - text: Sipho Dlamini
+                  - generic:
+                    - generic:
+                      - generic: Ref
+                      - code: RAF-2026-001
+                  - paragraph: Created Apr 25, 2026 · 0 documents · 1 member · 9 tasks
+                - generic:
+                  - button:
+                    - img
+                    - text: Close Matter
+                  - button:
+                    - img
+                    - text: Generate Statement of Account
+                  - button:
+                    - img
+                    - text: Complete Matter
+                  - button:
+                    - img
+                  - button:
+                    - img
+                    - text: Generate Document
+                    - img
+                  - button:
+                    - img
+                    - text: New Engagement Letter
+                  - button:
+                    - img
+                    - text: Edit
+              - generic:
+                - paragraph: Field Groups
+                - generic:
+                  - generic:
+                    - text: SA Conveyancing — Matter Details
+                    - button:
+                      - img
+                  - generic:
+                    - text: SA Legal — Matter Details
+                    - button:
+                      - img
+                  - generic:
+                    - text: Project Info
+                    - button:
+                      - img
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: SA Conveyancing — Matter Details
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Conveyancing Type
+                        - generic:
+                          - combobox
+                      - generic:
+                        - generic: Property Address
+                        - generic:
+                          - textbox:
+                            - /placeholder: Full physical address of the property being transferred
+                      - generic:
+                        - generic: Erf Number
+                        - generic:
+                          - textbox:
+                            - /placeholder: Erf/stand number identifying the property
+                      - generic:
+                        - generic: Deeds Office
+                        - generic:
+                          - combobox
+                      - generic:
+                        - generic: Lodgement Date
+                        - generic:
+                          - textbox
+                      - generic:
+                        - generic: Purchase Price
+                        - generic:
+                          - generic:
+                            - spinbutton
+                            - combobox
+                      - generic:
+                        - generic: Transfer Duty
+                        - generic:
+                          - generic:
+                            - spinbutton
+                            - combobox
+                      - generic:
+                        - generic: Bond Institution
+                        - generic:
+                          - combobox
+                - generic:
+                  - generic:
+                    - generic: SA Legal — Matter Details
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Case Number
+                        - generic:
+                          - textbox:
+                            - /placeholder: Court-assigned case number for the matter
+                      - generic:
+                        - generic: Court
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the court in which the matter is heard
+                      - generic:
+                        - generic: Opposing Party
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the primary opposing party
+                      - generic:
+                        - generic: Opposing Attorney
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the opposing attorney or firm
+                      - generic:
+                        - generic: Advocate
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the instructed advocate (if briefed)
+                      - generic:
+                        - generic: Date of Instruction
+                        - generic:
+                          - textbox
+                      - generic:
+                        - generic: Estimated Value
+                        - generic:
+                          - spinbutton
+                - generic:
+                  - generic:
+                    - generic: Project Info
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Category
+                        - generic:
+                          - textbox:
+                            - /placeholder: Project category or type
+                - generic:
+                  - button:
+                    - img
+                    - text: Save Custom Fields
+              - generic:
+                - paragraph: Tags
+                - generic:
+                  - generic:
+                    - button:
+                      - img
+                      - text: Add Tag
+              - generic:
+                - tablist:
+                  - tab: Overview
+                  - tab: Documents
+                  - tab: Members
+                  - tab: Clients
+                  - tab: Tasks
+                  - tab: Time
+                  - tab: Fee Estimate
+                  - tab: Financials
+                  - tab: Staffing
+                  - tab: Rates
+                  - tab: Generated Docs
+                  - tab [selected]: Requests
+                  - tab: Client Comments
+                  - tab: Court Dates
+                  - tab: Adverse Parties
+                  - tab: Trust
+                  - tab: Disbursements
+                  - tab: Statements
+                  - tab: Activity
+                - tabpanel:
+                  - generic:
+                    - generic:
+                      - button [expanded]:
+                        - img
+                        - text: New Request
+                    - generic:
+                      - table:
+                        - rowgroup:
+                          - row:
+                            - columnheader: Request
+                            - columnheader: Contact
+                            - columnheader: Status
+                            - columnheader: Progress
+                            - columnheader: Sent
+                        - rowgroup:
+                          - row:
+                            - cell:
+                              - link:
+                                - /url: /org/mathebula-partners/information-requests/ae509cf2-ae26-4e09-adcb-35b028ff6c44
+                                - text: REQ-0001
+                              - paragraph: Dlamini v Road Accident Fund
+                            - cell: Sipho Dlamini
+                            - cell:
+                              - generic: Sent
+                            - cell:
+                              - generic:
+                                - progressbar
+                                - generic: 0/3 accepted
+                            - cell: Apr 25, 2026
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e155] [cursor=pointer]:
+    - img [ref=e156]
+  - alert
+  - dialog "Create Information Request" [ref=e345]:
+    - generic [ref=e346]:
+      - generic [ref=e347]:
+        - heading "Create Information Request" [level=2] [ref=e348]
+        - paragraph [ref=e349]: Request documents or information from Sipho Dlamini for Dlamini v Road Accident Fund.
+      - generic [ref=e350]:
+        - generic [ref=e351]:
+          - generic [ref=e352]: Template
+          - combobox "Template" [ref=e353]:
+            - generic: Ad-hoc (no template)
+            - img
+        - generic [ref=e354]:
+          - generic [ref=e355]: Portal Contact
+          - combobox "Portal Contact" [ref=e356]:
+            - generic: Sipho Dlamini (sipho.portal@example.com)
+            - img
+        - generic [ref=e357]:
+          - generic [ref=e358]: Reminder Interval (days)
+          - spinbutton "Reminder Interval (days)" [ref=e359]: "5"
+          - paragraph [ref=e360]: Automated reminders will be sent at this interval after the request is sent.
+        - generic [ref=e361]:
+          - generic [ref=e362]: Due Date (optional)
+          - textbox "Due Date (optional)" [ref=e363]
+          - paragraph [ref=e364]: The date by which the client is expected to return the requested information.
+        - generic [ref=e365]:
+          - paragraph [ref=e366]: "Customer: Sipho Dlamini"
+          - paragraph [ref=e367]: "Project: Dlamini v Road Accident Fund"
+      - generic [ref=e368]:
+        - button "Cancel" [active] [ref=e369]
+        - button "Save as Draft" [ref=e370]
+        - button "Send Now" [ref=e371]
+      - button "Close" [ref=e372]:
+        - img
+        - generic [ref=e373]: Close

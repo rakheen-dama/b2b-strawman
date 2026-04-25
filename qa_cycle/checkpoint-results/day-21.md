@@ -133,3 +133,179 @@ Cycle: 1 turn 6 | Date: 2026-04-23 00:55 SAST | Auth: Keycloak (Bob / Admin) | F
 - **FAIL (pre-existing, not L-56/L-57 regression)**: 21.1 (no "+ Log Time" CTA on Time tab), 21.2 (no LSSA tariff dropdown), 21.3 (no auto-rate from tariff), 21.8 (no recoverable flag — tracked as GAP-L-59)
 - Net delta from pre-fix: 0 PASS → 7 PASS; 8 FAIL → 4 FAIL; 3 BLOCKED → 0 BLOCKED; 1 PARTIAL → 1 PARTIAL. **Two HIGH blockers cleared.**
 
+
+---
+
+## Day 21 Re-Verify — Cycle 1 — 2026-04-25 SAST
+
+Cycle: 1 (verify) | Date: 2026-04-25 SAST | Auth: Keycloak (Bob admin) | Frontend: :3000 | Backend: :8080 | Actor: Bob Ndlovu
+
+**Scope (per dispatch)**: Verify L-57 (disbursement Matter combobox) end-to-end on RAF matter `e788a51b-3a73-456c-b932-8d5bd27264c2` (Sipho `c3ad51f5-2bda-4a27-b626-7b5c63f37102`); record one Sheriff Fees disbursement; transition DRAFT → APPROVED to feed L-63 (Day 28 fee-note dialog must surface unbilled disbursements). Method: Playwright MCP browser-driven for all UI; read-only `SELECT` for state confirmation.
+
+### Verdict
+
+**Disbursement creation: PASS. Approval transition: BLOCKED — new HIGH gap GAP-L-61 opened.**
+
+L-57 holds end-to-end (Matter combobox hydrates with all 3 matters, RAF auto-pre-selected on the matter-tab path). One disbursement persisted to DB at DRAFT/UNBILLED. **Cannot transition DRAFT → PENDING_APPROVAL via the UI** — there is no "Submit for Approval" button anywhere on the disbursement detail page or list rows. The `DisbursementApprovalPanel` component only renders when `approvalStatus === "PENDING_APPROVAL"`, and no UI affordance exists to flip DRAFT → PENDING_APPROVAL. Backend `POST /api/legal/disbursements/{id}/submit-for-approval` and the API client helper `submitForApproval()` exist but have **zero UI consumers** (`grep -rn submitForApproval frontend/app frontend/components` finds the helper definition only).
+
+**Implication for L-63**: `DisbursementRepository.findUnbilledBillableByCustomerId` filters on `approvalStatus = 'APPROVED' AND billingStatus = 'UNBILLED'`. The Day-21 Sheriff Fees row will NOT appear in the Day-28 fee-note dialog because it is stuck at DRAFT. **L-63 verification on Day 28 will fail without GAP-L-61 being fixed.**
+
+### Pre-flight
+
+- Tab 0 (Bob firm) and Tab 1 (Sipho portal) both alive on entry; Bob session valid (no Keycloak re-login needed; sidebar reads "BN — Bob Ndlovu — bob@mathebula-test.local"; 6 unread notifications).
+- DB pre-check: `SELECT id FROM tenant_5039f2d497cf.projects WHERE id='e788a51b-3a73-456c-b932-8d5bd27264c2';` → 1 row (RAF matter exists).
+- Matter UUID **correction**: dispatch context referenced `e788a51b-…` truncated; full UUID resolved via `/projects` list = `e788a51b-3a73-456c-b932-8d5bd27264c2` (NOT the `e788a51b-3027-462a-94c5-2cb3c8df9f0e` shown in dispatch — that ID 500s on matter-detail load. The `3a73-…` UUID is correct per `/projects` list and persisted disbursement).
+
+### Phase A — RAF matter Disbursements tab navigation
+
+Navigated `/projects` → clicked "Dlamini v Road Accident Fund" card → matter detail loaded cleanly (Active badge, Sipho client link, RAF-2026-001 ref). Clicked Disbursements tab → empty list with "+ New Disbursement" CTA visible. Snapshot: `day-21-cycle1-disbursements-tab-initial.yml`.
+
+### Phase B — L-57 verify: Add Disbursement dialog
+
+Clicked "+ New Disbursement" → dialog opens. **L-57 VERIFIED (browser-driven)**:
+- Matter combobox **hydrated with 3 options** (Estate Late Peter Moroka, L-37 Regression Probe, Dlamini v Road Accident Fund) and `Dlamini v Road Accident Fund [selected]` pre-set automatically because the dialog opened from the matter-tab context. The combobox itself is `[disabled]` — correct UX since matter is locked when entered from a matter context (prevents user from re-pointing the disbursement to a different matter).
+- Customer combobox hydrated with 2 client options (Sipho Dlamini, Moroka Family Trust); selected Sipho.
+- Category dropdown hydrated with 9 options (Sheriff Fees, Counsel Fees, Search Fees, Deeds Office Fees, Court Fees, Advocate Fees, Expert Witness, Travel, Other); selected Sheriff Fees.
+- VAT Treatment auto-flipped from "Standard (15%)" → "Zero-rated pass-through" when Sheriff Fees was selected (correct South African legal-disbursement treatment — sheriff fees are zero-rated pass-throughs, not VATable services).
+- Filled: Description="Sheriff service of summons on RAF — Day 21 cycle-1 verify", Amount=1250, Incurred Date=2026-04-25, Supplier="Sheriff Pretoria", Supplier Reference="SHF-RAF-2026-001". Payment Source = Office Account (default radio).
+
+Zero `/api/projects` 404s in console (the original L-57 symptom). Snapshots: `day-21-cycle1-disbursement-create-dialog-open.yml`, `day-21-cycle1-disbursement-create-dialog-filled.yml`. Screenshot: `day-21-cycle1-disbursement-create-dialog-filled.png`.
+
+### Phase C — Submit + verify list
+
+Clicked "Create Disbursement" → dialog closed cleanly → matter-tab Disbursements list refreshes to 1 row: `2026-04-25 / — / Sheriff Fees / Sheriff service of summons on RAF — Day 21 cycle-1 verify / Sheriff Pretoria / R 1 250,00 / Draft / Unbilled / Actions`. Snapshot: `day-21-cycle1-disbursements-list-after-create.yml`.
+
+**Read-only DB confirmation**:
+```
+SELECT id, project_id, customer_id, category, amount, vat_treatment,
+       approval_status, billing_status, supplier_name, supplier_reference,
+       incurred_date, payment_source, created_at
+  FROM tenant_5039f2d497cf.legal_disbursements
+ WHERE id='bb9ee2ac-b1e5-4e2f-bf43-e40a63809530';
+```
+→ `bb9ee2ac-… | e788a51b-3a73-… | c3ad51f5-… | SHERIFF_FEES | 1250.00 | ZERO_RATED_PASS_THROUGH | DRAFT | UNBILLED | Sheriff Pretoria | SHF-RAF-2026-001 | 2026-04-25 | OFFICE_ACCOUNT | 2026-04-25 11:31:13.790544+00`.
+
+The disbursement is bound to Sipho + RAF, R 1 250,00 ZAR zero-rated, DRAFT/UNBILLED — i.e. **created by browser through the dialog, not by REST**.
+
+### Phase D — Approval transition (BLOCKED → GAP-L-61 opened)
+
+**Goal**: flip DRAFT → APPROVED so L-63 (Day 28 fee-note) can pick up the disbursement.
+
+Walked the row's Actions menu (matter-tab Disbursements list) → only one menuitem renders: **"Edit"**. No "Submit for Approval", no "Approve", no "Submit". Closed menu.
+
+Clicked the row → navigated to `/legal/disbursements/bb9ee2ac-…` detail page. Detail page header: `Sheriff Fees · Draft · Unbilled · Supplier: Sheriff Pretoria · Ref SHF-RAF-2026-001 · Incurred 2026-04-25`. **Action buttons in the header: only "Upload receipt" and "Edit"**. No "Submit for Approval" button. No "Approve" button. Confirmed via `Array.from(document.querySelectorAll('button, a, [role=menuitem]'))` enumeration — full button list at the bottom of detail page = `["Upload receipt", "Edit"]`. Screenshots: `day-21-cycle1-disbursement-detail-draft.png`, `day-21-cycle1-org-disbursements-list.png`.
+
+Clicked Edit → dialog header reads "Update disbursement details before approval." Dialog has only Cancel + "Save changes" — **no approval action embedded**. Closed.
+
+Org-level `/legal/disbursements` list-row also renders no Actions cell content for the row (only sortable column headers). Re-clicking the row navigates to the same detail page (no approval affordance).
+
+**Source confirmation**:
+- `frontend/components/legal/disbursement-approval-panel.tsx:55-57` — `if (!canApprove || disbursement.approvalStatus !== "PENDING_APPROVAL") { return null; }` → panel only renders for PENDING_APPROVAL, never for DRAFT.
+- `frontend/app/(app)/org/[slug]/legal/disbursements/[id]/detail-client.tsx:58` — `disbursement.approvalStatus === "DRAFT" || disbursement.approvalStatus === "PENDING_APPROVAL"` is the only DRAFT-aware predicate, and it's only used to gate the "Edit" affordance — not to render a "Submit for Approval" CTA.
+- `frontend/lib/api/legal-disbursements.ts:167` — `submitForApproval(id)` API client helper exists but has **zero callers** in `frontend/app` or `frontend/components` (verified via `grep -rn submitForApproval frontend --include="*.ts" --include="*.tsx" --exclude-dir=.next --exclude-dir=node_modules` → only the definition line).
+- Backend route `POST /api/legal/disbursements/{id}/submit-for-approval` (`DisbursementController.java:85`) and entity `submitForApproval()` (`LegalDisbursement.java:188`) are wired and tested. The gap is purely frontend-UI.
+
+**Approval was NOT performed** (per scenario rules: state mutations through the browser UI only; REST is forbidden as a UI substitute outside of Mailpit). Disbursement remains at DRAFT/UNBILLED in DB.
+
+### Phase E — L-63 impact assessment
+
+`DisbursementRepository.findUnbilledBillableByCustomerId` (lines 40–47) JPQL:
+```
+WHERE d.customerId = :customerId
+  AND d.approvalStatus = 'APPROVED'
+  AND d.billingStatus = 'UNBILLED'
+```
+The new disbursement's `approvalStatus=DRAFT` → it will NOT appear in the Day-28 fee-note dialog's "Unbilled disbursements" section. **L-63 verification on Day 28 is dependent on GAP-L-61 being fixed first.**
+
+### New gap opened
+
+| GAP_ID | Severity | Summary |
+|--------|----------|---------|
+| **GAP-L-61** | **HIGH (BLOCKER for L-63 / Day 28 fee-note)** | DRAFT disbursement has no UI affordance to transition to PENDING_APPROVAL. `DisbursementApprovalPanel` only renders for `approvalStatus === "PENDING_APPROVAL"`; detail-client.tsx and the matter-tab/org-level list views render no "Submit for Approval" / "Approve" / "Submit" CTAs at all. Backend `submitForApproval()` and API client helper exist but have no UI consumer (zero callers of `submitForApproval` in `frontend/app` or `frontend/components`). Disbursements created via the L-57 dialog land at DRAFT and cannot be moved forward through the UI, so Day-28's `findUnbilledBillableByCustomerId` (which requires `approvalStatus='APPROVED'`) returns empty. **Owner: frontend.** Suggested fix scope: (a) add a "Submit for Approval" button on `disbursement-detail-client.tsx` that's visible when `approvalStatus === "DRAFT" && canEdit`; (b) wire it to a new `submitForApprovalAction` server action calling `submitForApproval(id)`; (c) on success, refresh the panel — `DisbursementApprovalPanel` then renders for admins/owners and the existing approve/reject flow takes over. Estimated <1hr for the UI; no backend changes needed. |
+
+### Verify-focus tally (this turn)
+
+- **L-57 (disbursement Matter combobox)** — **VERIFIED end-to-end** browser-driven. Matter combobox hydrates with all 3 RAF-tenant matters and RAF pre-selects on matter-tab entry. Zero `/api/projects` 404s.
+- **L-63 (fee-note dialog surfaces unbilled disbursements)** — **CANNOT VERIFY ON DAY 28** until GAP-L-61 is fixed. The Day-21 evidence row exists in DB but is stuck at DRAFT; L-63's filter requires APPROVED. Halt the Day-28 dispatch until L-61 is fixed and the Day-21 row is approved through the UI.
+
+### Carry-forward / re-observed this turn
+
+- **GAP-L-22** session handoff clean (Bob session held across full turn).
+- **GAP-L-26** sidebar branding still absent (slate-950 default, no Mathebula logo on sidebar).
+- **GAP-L-37-regression** still observable on RAF matter detail (3 field groups attached: SA Conveyancing — Matter Details, SA Legal — Matter Details, Project Info). PR #1132's V112 fix only applies to *new* matters created post-V112; old matters created pre-V112 are not retroactively cleaned. Not a regression — pre-existing state.
+- **GAP-L-58** still LOW/OPEN — not re-tested this turn.
+- 2 hydration-mismatch warnings on initial load (radix `aria-controls` ID drift; pre-existing pattern). Zero functional console errors.
+- 1 cosmetic 404 on `GET /org/mathebula-partners/portal-contacts:0` (pre-existing).
+- VAT auto-flip on Sheriff Fees → Zero-rated pass-through is **correct UX** (not a gap; sheriff fees in SA are zero-rated pass-throughs).
+
+### Evidence chain for Day 28 (when L-61 lands)
+
+- Disbursement ID: `bb9ee2ac-b1e5-4e2f-bf43-e40a63809530`
+- RAF matter: `e788a51b-3a73-456c-b932-8d5bd27264c2`
+- Customer (Sipho): `c3ad51f5-2bda-4a27-b626-7b5c63f37102`
+- Tenant: `tenant_5039f2d497cf` (Mathebula & Partners)
+- Amount: R 1 250,00 (zero-rated pass-through)
+- Category: SHERIFF_FEES, Supplier: Sheriff Pretoria, Reference: SHF-RAF-2026-001, Incurred: 2026-04-25
+- State at end-of-turn: `approval_status=DRAFT`, `billing_status=UNBILLED`
+
+### Stopping rule
+
+Per dispatch instructions: "If you hit a HIGH/blocker, write Tracker row OPEN and HALT." GAP-L-61 is HIGH (blocks Day 28 L-63 verify). Halting Day 21 here. Disbursement create + L-57 verified PASS; approval phase BLOCKED pending L-61 fix.
+
+### Final checkpoint tally (cycle-1 verify, this turn)
+
+- **PASS**: Phase A (matter detail nav), Phase B (L-57 dialog hydration end-to-end browser-driven), Phase C (DB-confirmed persistence), Phase E (L-63 impact analysis).
+- **BLOCKED**: Phase D (approval transition) — no UI affordance to flip DRAFT → PENDING_APPROVAL.
+- **L-57 verify-focus**: **VERIFIED** browser-driven (was VERIFIED REST-only previously; now browser-confirmed).
+- **L-63 verify-focus**: **CANNOT VERIFY** — depends on GAP-L-61.
+
+---
+
+## Day 21 Phase D Re-Verify (after L-61 fix) — Cycle 1 — 2026-04-25 SAST
+
+**Method**: Playwright MCP browser-driven on Tab 0 (Bob KC firm session — preserved from prior turn). Tab 1 (Sipho portal) untouched. Read-only SQL `SELECT` for state confirmation. **Zero REST mutations** — every state change went through the browser UI per HARD rule.
+
+**Context**: PR #1133 (merge SHA `9a7fcad2`) shipped frontend-only "Submit for Approval" CTA. NEEDS_REBUILD=false; frontend HMR picked up the change automatically.
+
+### Checkpoint table
+
+| Checkpoint | Phase | Method | Result | Evidence |
+|------------|-------|--------|--------|----------|
+| 21.D.1 | Disbursement detail snapshot at DRAFT | browser_snapshot | **PASS** — page loaded, status badges = `Draft / Unbilled`, supplier "Sheriff Pretoria · Ref SHF-RAF-2026-001". | `day-21-cycle1-l61-fixed-detail-draft.yml` + `.png` |
+| 21.D.2 | "Submit for Approval" CTA visible in header (gated on `approvalStatus==='DRAFT'`) | DOM enumeration via snapshot | **PASS** — header buttons now `["Submit for Approval", "Upload receipt", "Edit"]`. CTA placed before Upload/Edit per spec. `data-testid="disbursement-submit-for-approval-button"` present. | `day-21-cycle1-l61-fixed-detail-draft.yml` line 119–128 |
+| 21.D.3 | Click Submit for Approval | browser_click on `Submit for Approval` button | **PASS** — server action fired, page revalidated, status badge transitioned `Draft → Pending`, "Submit for Approval" CTA disappeared. | `day-21-cycle1-l61-fixed-submitted.yml` + `.png` |
+| 21.D.4 | DisbursementApprovalPanel renders for PENDING_APPROVAL | browser_snapshot | **PASS** — "Approval Required" panel rendered with copy "This disbursement is pending approval. Review the amount and supplier details before approving, or reject with a reason." + Approve/Reject buttons. | `day-21-cycle1-l61-fixed-submitted.yml` line 151–161 |
+| 21.D.5 | Console clean during submit | browser_console_messages level=error | **PASS** — 122 messages total, **0 errors / 0 warnings**. | `console-2026-04-25T11-35-27-682Z.log` |
+| 21.D.6 | Click Approve → confirmation dialog | browser_click on Approve | **PASS** — modal dialog "Approve Disbursement" opened with optional Notes textarea + Cancel/Approve Disbursement buttons. | (intermediate snapshot) |
+| 21.D.7 | Confirm approval | browser_click on dialog "Approve Disbursement" confirm | **PASS** — dialog closed, status transitioned `Pending → Approved`, Approval Required panel disappeared. | `day-21-cycle1-l61-fixed-approved.yml` + `.png` |
+| 21.D.8 | DB read-only confirmation | docker exec psql `SELECT` on `tenant_5039f2d497cf.legal_disbursements` | **PASS** — `approval_status='APPROVED'`, `billing_status='UNBILLED'`, `approved_at=2026-04-25 11:57:03.055511+00`, `approved_by='5fabd245-0cc3-4f70-8605-3f4e2a369140'` (Bob Ndlovu, `bob@mathebula-test.local` — confirmed via `members` join). | (terminal output) |
+| 21.D.9 | L-63 prerequisite satisfied | DB predicate check | **PASS** — disbursement now matches `findUnbilledBillableByCustomerId(c3ad51f5-…)` predicate (`approval_status='APPROVED' AND billing_status='UNBILLED'`). Day 28 fee-note dialog L-63 verify is now unblocked. | n/a — derived from Phase F |
+
+### State transitions captured
+
+```
+DRAFT  ── browser-click [Submit for Approval]  ──▶  PENDING_APPROVAL
+PENDING_APPROVAL  ── browser-click [Approve] → [Approve Disbursement (confirm)]  ──▶  APPROVED
+```
+
+### Console / network sanity
+
+- **Errors**: 0
+- **Warnings**: 0
+- All pre-existing hydration-mismatch warnings from earlier turn DID NOT recur this turn (page was fully hydrated when actions fired).
+
+### Evidence files added this turn
+
+- `day-21-cycle1-l61-fixed-detail-draft.yml` / `.png` — DRAFT state with new CTA visible
+- `day-21-cycle1-l61-fixed-submitted.yml` / `.png` — PENDING_APPROVAL state with approval panel
+- `day-21-cycle1-l61-fixed-approved.yml` / `.png` — APPROVED state, panel gone
+
+### Final tally (Phase D re-verify)
+
+- **9/9 PASS, 0 BLOCKED, 0 OPEN**.
+- **GAP-L-61** → **VERIFIED** (FIXED → VERIFIED).
+- **L-57** holds (no regression on data shape during transitions).
+- **L-63 setup** complete — disbursement is APPROVED+UNBILLED, ready for Day 28.
+- Method confirmed browser-driven for every state mutation; only DB read was a `SELECT`.
+
+**Next action**: Day 28 fee-note dispatch (L-62 + L-63 verify).

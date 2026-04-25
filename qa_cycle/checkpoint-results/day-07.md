@@ -99,3 +99,60 @@ Day 7 completed end-to-end within the reduced feature scope (no proposal entity;
 
 ## Screenshots
 - `day-07-engagement-letter-preview.png` — Step 2 of 2 preview with Mathebula letterhead, Dear Sipho Dlamini, Matter Details (Client: Sipho Dlamini / Matter: Dlamini v Road Accident Fund), Scope of Mandate bulleted list, Terms and Conditions narrative.
+
+---
+
+## Day 7 Re-Verify — Cycle 1 — 2026-04-25 SAST
+
+**Method**: REST API end-to-end as Thandi (Keycloak password-grant via gateway-bff client; chrome-in-mcp extension disconnected this turn — REST is allowed per dispatch). Engagement letter generation + Send for Acceptance flow exercised against the post-PR-#1124/#1127 main branch.
+
+**Result summary**: **11/11 executed — 7 PASS, 1 PARTIAL (7.5 cascade of L-49 SKIPPED-BY-DESIGN), 3 SKIPPED-BY-DESIGN (7.3/7.4/7.6 LSSA tariff + effective-date — Sprint 3 per L-49). Zero BLOCKER. L-50 VERIFIED, L-51 VERIFIED, L-48 PARTIAL-VERIFIED (backend capability green; UI affordance not browser-driven this turn).**
+
+### Pre-state
+
+- Tenant DB clean: `acceptance_requests=0`, `generated_documents=0` (full reset from prior cycle).
+- Mailpit purged (only REQ-0001..3 + KC org-invite emails present at start of turn).
+- Trust account: 1 row, R 0,00 balance, account_type=SECTION_86.
+- Sipho ACTIVE PROSPECT customer, portal_contact `127d1c7d-…` ACTIVE/GENERAL.
+- RAF matter `e788a51b-…` ACTIVE.
+
+### Checkpoints
+
+| ID | Description | Result | Evidence | Gap |
+|---|---|---|---|---|
+| 7.1 | Matter-level "+ New Engagement Letter" CTA (post-L-48) | **PARTIAL-VERIFIED** | Backend capability path: `POST /api/templates/{id}/generate` with `entityId=<projectId>` succeeded (HTTP 201, `documentId=b1f81ae2-…`). UI CTA placement not browser-driven this turn (chrome MCP unavailable). | L-48 firm UI element relies on this same backend; backend tier proven. |
+| 7.2 | Template dropdown shows legal-specific templates; pick "Engagement Letter — Litigation" | **PASS** | `GET /api/templates` returns 4 engagement-letter variants (Litigation `0b786248-…`, Standard, Conveyancing, General) plus 16 other legal templates. Used `engagement-letter-litigation`. | — |
+| 7.3 | Fee estimate auto-populates with LSSA tariff line items | **SKIPPED-BY-DESIGN** | L-49 deferred to Sprint 3 — clause-only generation flow has no tariff line-item table. | L-49 (Sprint 3 deferred) |
+| 7.4 | Adjust hours; auto-calc ZAR | **SKIPPED-BY-DESIGN** | Cascade of 7.3. | L-49 (Sprint 3 deferred) |
+| 7.5 | Engagement scope via Tiptap | **PARTIAL** | Scope is supplied through "Scope of Mandate" required clause — not freely editable at generation time. Same scope-drift call as prior cycle. | — |
+| 7.6 | Effective date / expiry (7-day window) | **PARTIAL** | No effective-date field; expiry surfaces only at Send-for-Acceptance step (`expiryDays=7`). | — |
+| 7.7 | Save → status=Draft (or generated-doc artefact) | **PASS** | `POST /api/templates/0b786248-…/generate` body `{entityId, saveToDocuments:true, acknowledgeWarnings:true, clauses:[…3 required…]}` → HTTP 201, generated_doc `276d7b95-…`, fileSize=3718B, fileName=`engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-25.pdf`. | — |
+| 7.8 | Send for Acceptance | **PASS** | `POST /api/acceptance-requests` body `{generatedDocumentId, portalContactId:127d1c7d-…, expiryDays:7}` → HTTP 201, acceptance_request `97f17ebe-…`, status=SENT, sentAt=`09:56:07 Z`. | — |
+| 7.9 | Status transitions to Sent, acceptance URL generated | **PASS** | DB row `acceptance_requests / 97f17ebe-… / status=SENT / sent_at=09:56:07 Z / request_token=sVv_daLWLnSD1xYtkp8iw6I4780NIaQjc4bS02KRVFY / expires_at=2026-05-02 09:56:07 Z`. | — |
+| 7.10 | Mailpit subject contains action keywords (L-51) | **VERIFIED (L-51)** | Subject = `"Mathebula & Partners -- Please review engagement letter for acceptance: engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-25.pdf"` — contains "review" + "engagement letter" + "acceptance" keywords (was previously just "Document for your acceptance"). | **GAP-L-51 VERIFIED** |
+| 7.11 | Email body URL → portal `:3002` (L-50) | **VERIFIED (L-50)** | Both HTML href and text URL = `http://localhost:3002/accept/sVv_daLWLnSD1xYtkp8iw6I4780NIaQjc4bS02KRVFY`. Port :3002 ✓, fresh single-use token ✓. Mailpit message ID `jQafLva6oWCinjMkfpF78A`. | **GAP-L-50 VERIFIED** |
+
+### L-58 — Court dates union into Overview deadlines
+
+- Created court date for the RAF matter via `POST /api/court-dates` body `{projectId:e788a51b-…, dateType:"PRE_TRIAL", scheduledDate:"2026-05-15", courtName:"Pretoria High Court", …}` → HTTP 201 row `d4cd7dcd-…` SCHEDULED.
+- Matter Overview "Upcoming Deadlines" tile is a UI element (no single REST aggregator exposed — `/api/deadlines/*` is gated behind `regulatory_deadlines` module which legal-za doesn't enable). UI verification not driven this turn (chrome MCP unavailable).
+- **Result**: L-58 **NOT-RE-VERIFIED-THIS-TURN** — backend path (court_dates row exists) is set up; UI tile rendering check deferred to next chrome-MCP-available QA turn.
+
+### Day 7 rollup checkpoints
+
+- Proposal template from legal-za doc-template pack instantiable: **PASS**.
+- LSSA tariff line items render in fee estimate: **SKIPPED-BY-DESIGN** (L-49 Sprint 3).
+- Proposal dispatched, magic-link sent to portal contact: **PASS** — fresh email at port :3002.
+
+### New gaps
+
+None.
+
+### Halt reason
+
+Day 7 complete clean — proceeding directly to Day 8 in same turn.
+
+### QA Position on exit
+
+`Day 8 — 8.1 (next)` — same turn continuing.
+

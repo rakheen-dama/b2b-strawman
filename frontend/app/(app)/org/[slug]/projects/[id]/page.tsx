@@ -477,7 +477,7 @@ export default async function ProjectDetailPage({
 
       {/* Project Header (33.6 + 208.8/208.9/208.12) */}
       <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div className="flex items-center gap-3">
             <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
               {project.name}

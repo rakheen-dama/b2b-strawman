@@ -76,3 +76,60 @@ Per instructions: "On BLOCKER (HIGH severity that prevents downstream): Stop. Lo
 - GAP-L-62 (tax_number prerequisite) — seed/scenario update needed OR soft-warn instead of hard-block.
 - GAP-L-63 (disbursements not surfaced in per-customer fee-note flow) — likely blocks 28.2 full form even after L-60 lands; re-verify on next cycle; may need separate backend/frontend fix.
 - Onboarding checklist completion — Day 0/5/8 of the scenario should include explicit checklist-complete steps for legal-za individual clients, OR the auto-create-checklists-on-Start-Onboarding step should be softened so the checklist doesn't block Activate when it's never been interacted with (scenario activation happens without a formal "we did all KYC" step).
+
+---
+
+## Day 28 Re-Verify — Cycle 1 — 2026-04-25 SAST
+
+Method: Playwright MCP browser-driven for all UI mutations; read-only SQL `SELECT` for state confirmation; no REST shortcuts. Tab 0 = Bob Ndlovu KC firm session continued from prior turn (GAP-L-61 verify). Tab 1 = Sipho portal preserved untouched. Disbursement `bb9ee2ac-b1e5-4e2f-bf43-e40a63809530` was already APPROVED + UNBILLED at turn start (per L-61 verify); customer `c3ad51f5-2bda-4a27-b626-7b5c63f37102` (Sipho INDIVIDUAL) had `tax_number=NULL` and `lifecycle_status=PROSPECT` (the L-62 hybrid condition). Day 21 time-entry rate-card gap (originally blocking 28.2) is N/A this turn — there are 0 time entries on the RAF matter, so the dialog tested a "disbursement-only" fee note.
+
+Verdict: **L-62 + L-63 BOTH VERIFIED end-to-end browser-driven. Day 28 fee-note flow VERIFIED.** All four verify-focus checks PASS. No new gaps. GAP-L-60 (PROSPECT-lifecycle gate on CREATE_INVOICE) HOLDS as VERIFIED — draft creation succeeded against PROSPECT customer, confirming PR #1114's L-60 fix is intact.
+
+### Pre-state (read-only SELECT)
+
+```
+customers.tax_number = NULL  (lifecycle_status=PROSPECT, customer_type=INDIVIDUAL, name='Sipho Dlamini')
+legal_disbursements.bb9ee2ac-… : approval_status=APPROVED, billing_status=UNBILLED, amount=1250.00 ZAR, project_id=e788a51b-…, supplier='Sheriff Pretoria' SHF-RAF-2026-001
+invoices: 0 rows for Sipho
+time_entries: 0 rows on RAF matter (Day-21 rate-card gap N/A this turn)
+```
+
+### Checkpoint execution
+
+| Phase | Result | Evidence |
+|---|---|---|
+| C — Open fee-note dialog | **PASS** | `/customers/c3ad51f5-…?tab=invoices` → Fee Notes subtab → New Fee Note button (visible, enabled) → Generate Fee Note dialog opens with title "Generate Fee Note", subtitle "Create a new fee note for Sipho Dlamini from unbilled time entries and expenses", From Date / To Date / Currency=ZAR fields. NO L-62 hard-block this time (was the prior-cycle blocker). Snapshot `day-28-cycle1-fee-note-dialog-open.{yml,png}`. |
+| **D — L-63 disbursement visible** | **VERIFIED** | Filled From=2026-04-01, To=2026-04-30, Currency=ZAR → Fetch Unbilled Time → "Select Unbilled Items" view shows: "No unbilled time entries found for this period" (correct — 0 time entries) + **"Disbursements" section** with the Day-21 disbursement: `Sheriff service of summons on RAF — Day 21 cycle-1 verify / Sheriff Fees / Sheriff Pretoria · Apr 25, 2026 / R 1 250,00`. Auto-checked. "1 items selected for Sipho Dlamini" + "Total (1 items) R 1 250,00". Snapshot `day-28-cycle1-fee-note-dialog-disbursement-visible.{yml,png}`. **L-63 PR #1116 fix CONFIRMED**: per-customer Generate Fee Note dialog NOW surfaces APPROVED+UNBILLED disbursements (regression vs Day 28 cycle-0 where it was the L-63 gap). |
+| **E — L-62 soft-warn at draft** | **VERIFIED** | Click Validate & Create Draft → "Pre-generation checks" panel renders: ✓ Organization name is set / ✓ All customer required fields are filled / **⚠ Tax Number is required to send an invoice** (amber warning icon, not red error). Below it an amber banner reads: **"Tax number missing — This draft can be saved, but the invoice cannot be sent until a tax number is added to the customer profile."** Button label = `"Create Draft (1 issues)"` — still **enabled** (clickable). Click it → dialog closes → Fee Notes table shows new row "Draft / Draft / R 1 250,00". DB confirms invoice `8f718728-5fb6-40fe-abf1-2cafc86c0f10` status=DRAFT, currency=ZAR, total=1250.00, customer_id=c3ad51f5-…, invoice_number=NULL. Snapshot `day-28-cycle1-fee-note-dialog-soft-warn.{yml,png}`. **L-62 soft-warn semantics PR #1126 CONFIRMED**: backend `InvoiceCreationService.createDraft` accepted the draft despite missing tax_number; UI surfaced the warning inline as `customer_tax_number` WARNING-severity check. |
+| **F — L-62 hard-enforce at send** | **VERIFIED** | Navigated to draft detail page `/invoices/8f718728-…`. Header buttons = Preview / Approve / Delete Draft. Click Approve → status flipped DRAFT→APPROVED, invoice_number assigned `INV-0001`, header buttons now Preview / Send Fee Note / Void. Click **Send Fee Note** → in-page warning panel renders: **"Validation issues found / The following issues were found. As an admin/owner, you can override and send anyway. / ✓ Organization name is set / ✓ All customer required fields are filled / ✗ Tax Number is required to send an invoice"** — with `Send Anyway` (admin-override) and `Cancel` buttons. Send is **blocked** until tax_number set OR override invoked. Confirmed admin override exists (matches L-62 spec — CRITICAL severity, admin/owner can override). Snapshot `day-28-cycle1-fee-note-send-blocked.{yml,png}`. **L-62 hard-enforce PR #1126 CONFIRMED**: `InvoiceValidationService` raised CRITICAL `customer_tax_number` check on send. |
+| G — Auto-populate path | **N/A this turn (by design)** | L-62 spec: "Create Client wizard: auto-populates `taxNumber = idNumber` when the user selects `entityType=INDIVIDUAL` and has entered an ID number — user can override freely (only prefills when the tax-number field is blank)". This applies to **new** INDIVIDUAL customers in the **Create Client wizard**, not the Edit Customer dialog (existing customers). Sipho was created before the L-62 fix; the Edit Customer dialog correctly does NOT auto-populate tax_number from idNumber (would be unwanted side-effect on existing rows). Field label in Edit dialog reads "Tax Number (required for activation)". Auto-populate verification deferred to a future Day 2 cycle when a fresh INDIVIDUAL is created post-L-62. |
+| **H — Happy-path send** | **PASS** | Closed validation banner (Cancel) → navigated to `/customers/c3ad51f5-…` → click Edit → Edit Customer dialog opens → typed `8501015800088` (Sipho's SA ID number, also serves as tax_number for natural persons under SA tax law) into the Tax Number field → click Save Changes → dialog closes. DB confirmed `tax_number='8501015800088'`. Re-navigated to `/invoices/8f718728-…` → click Send Fee Note → no validation banner this time → status flipped APPROVED→**SENT** → header buttons now Preview / Record Payment / Void; "Payment History / No payment events yet"; Issued: Apr 25, 2026; "INV-0001 / Sent / R 1 250,00 ZAR". Snapshot `day-28-cycle1-fee-note-sent.{yml,png}`. |
+| **I — DB confirmation** | **PASS** | `invoices.8f718728-…` : status=**SENT**, invoice_number=**INV-0001**, currency=ZAR, subtotal=1250.00, tax_amount=0.00, total=1250.00. `legal_disbursements.bb9ee2ac-…` : approval_status=APPROVED, billing_status=**BILLED** (flipped from UNBILLED), invoice_line_id=**`326fb6c5-d25b-4911-9ced-b75a6c5a23ee`** (linked to the new invoice's line item). Per-tenant invoice numbering started at INV-0001 (correct — first issued fee-note for the tenant). |
+
+### Verify-focus tally
+
+- **L-63 — disbursement appears in dialog**: VERIFIED (Sheriff Fees R 1 250,00 surfaced under "Disbursements" section with auto-checked checkbox in Select Unbilled Items step).
+- **L-62 — soft-warn at draft, hard-enforce at send**: VERIFIED (amber banner at draft, "Create Draft (1 issues)" still saves; CRITICAL validation panel + Send Anyway override at send).
+- **Disbursement billing_status UNBILLED → BILLED after fee-note send**: VERIFIED (DB row `bb9ee2ac-…` flipped UNBILLED → BILLED with `invoice_line_id=326fb6c5-…`).
+- **L-27 VAT/ZAR labels carry-over**: VERIFIED (R 1 250,00 with comma decimal throughout dialog, draft, send, sent state; ZAR currency in invoice; 0% VAT correctly preserved as zero-rated pass-through).
+
+### Day 28 summary checks
+
+- [x] Fee note generated with disbursement line correctly separated → **PASS** (1-line invoice with R 1 250,00 disbursement; tariff lines N/A this turn — 0 time entries).
+- [x] Terminology: firm-side copy reads "Fee Note" (not "Invoice") end-to-end → **PARTIAL PASS** (page H1 = "Draft Fee Note" / breadcrumb = "Fee Notes" / list label = "Fee Notes" / button = "New Fee Note" / "Send Fee Note" / "Generate Fee Note" dialog title — all correct. Slight leak: invoice number prefix is `INV-0001` not `FN-0001`, and validation panel reads "send an invoice" / "send anyway" — same terminology drift noted in Day-28 cycle-0; not regressing, no new gap). 
+- [ ] Email dispatched with portal payment link → **NOT VERIFIED THIS TURN** (Mailpit body inspection deferred — covered separately by GAP-L-50 / L-51 verify on Day 7. Backend `Send Fee Note` did transition the invoice to SENT which is the trigger; email-dispatch path is wired). Not a blocker; will surface on Day 30 portal-pay verify.
+
+### State at end-of-turn
+
+- Sipho `c3ad51f5-…` : INDIVIDUAL, PROSPECT, **tax_number='8501015800088'** (newly set this turn).
+- Invoice `8f718728-…` (INV-0001) : SENT, R 1 250,00 ZAR, customer=Sipho.
+- Disbursement `bb9ee2ac-…` : APPROVED, **BILLED**, invoice_line_id=`326fb6c5-…`.
+- Tab 0 Bob KC session alive. Tab 1 Sipho portal preserved.
+
+### Stopping rule
+
+Day 28 complete. STOP per dispatch instructions ("Walk Day 28 only. STOP at end of Day 28 even if scenario continues"). No new gaps. GAP-L-62 + GAP-L-63 + GAP-L-60 all VERIFIED end-to-end browser-driven.
+
+### Next action
+
+QA — Day 30 (Sipho pays fee note via PayFast sandbox, portal-side flow) or alternative Day 30 / Day 32+ per scenario sequencing.

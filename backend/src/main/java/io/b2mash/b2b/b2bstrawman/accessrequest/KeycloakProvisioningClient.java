@@ -76,7 +76,8 @@ public class KeycloakProvisioningClient {
     this.adminUsername = adminUsername;
     this.adminPassword = adminPassword;
     this.frontendBaseUrl = frontendBaseUrl;
-    this.organizationRedirectUrl = frontendBaseUrl.replaceAll("/+$", "") + "/dashboard";
+    this.organizationRedirectUrl =
+        frontendBaseUrl.replaceAll("/+$", "") + "/accept-invite/complete";
   }
 
   /**
@@ -87,8 +88,10 @@ public class KeycloakProvisioningClient {
    */
   @SuppressWarnings("unchecked")
   public String createOrganization(String name, String slug) {
-    // redirectUrl targets /dashboard so post-registration flows through the gateway's OAuth2
-    // login (defaultSuccessUrl=/dashboard), rather than landing on the marketing page at /.
+    // redirectUrl targets /accept-invite/complete so post-registration bounces back through
+    // gateway-bff's OAuth2 login flow (the account-client auth code is intentionally discarded).
+    // This lets the gateway's OAuth2 success handler fire and set KC_LAST_LOGIN_SUB for the L-22
+    // middleware handoff check. See qa_cycle/fix-specs/GAP-L-22-regression.md.
     var body =
         Map.of(
             "name", name, "alias", slug, "enabled", true, "redirectUrl", organizationRedirectUrl);
@@ -113,10 +116,59 @@ public class KeycloakProvisioningClient {
       if (e.getStatusCode().value() != 409) {
         throw e;
       }
-      // Org already exists — look it up by alias
+      // Org already exists — look it up by alias and update its redirectUrl so legacy orgs
+      // (created before the L-22 fix) get the corrected /accept-invite/complete bounce target.
+      // Without this, any pre-existing org keeps the stale /dashboard redirect and the L-22
+      // regression persists for that org. See qa_cycle/fix-specs/GAP-L-22-regression.md.
       log.info("Keycloak org with alias '{}' already exists, looking up ID", slug);
-      return findOrganizationByAlias(slug);
+      String existingId = findOrganizationByAlias(slug);
+      updateOrganizationRedirectUrl(existingId, slug);
+      return existingId;
     }
+  }
+
+  /**
+   * Updates the {@code redirectUrl} on an existing Keycloak organization. Used by the 409
+   * idempotent retry path in {@link #createOrganization} so orgs provisioned before the L-22 fix
+   * get the current bounce-page target rather than a stale {@code /dashboard} redirect.
+   *
+   * <p>Keycloak's organization update endpoint is {@code PUT
+   * /admin/realms/{realm}/organizations/{orgId}}, which performs a <b>full replacement</b> of the
+   * organization representation, not a partial merge (see Keycloak issue #41885 and the KC 26.0.1
+   * {@code OrganizationResource} API docs). Sending a body with only the fields we care about would
+   * overwrite or null out other persisted state — most critically {@code domains} and {@code
+   * attributes}, which carry tenant-customised data.
+   *
+   * <p>We therefore use a read-modify-write pattern: GET the existing representation, mutate
+   * <b>only</b> {@code redirectUrl}, and PUT the whole thing back. The representation is
+   * round-tripped as a {@code Map<String,Object>} so any fields KC returns (including ones added in
+   * future KC versions we don't know about yet) survive untouched.
+   */
+  @SuppressWarnings("unchecked")
+  private void updateOrganizationRedirectUrl(String orgId, String slug) {
+    Map<String, Object> existing =
+        restClient
+            .get()
+            .uri("/organizations/{orgId}", orgId)
+            .header("Authorization", "Bearer " + getAdminToken())
+            .retrieve()
+            .body(Map.class);
+    if (existing == null) {
+      throw new IllegalStateException(
+          "Keycloak GET /organizations/" + orgId + " returned no body; cannot safely update");
+    }
+    // Mutate ONLY redirectUrl; preserve everything else KC sent (name, alias, enabled, domains,
+    // attributes, and any unknown fields).
+    existing.put("redirectUrl", organizationRedirectUrl);
+    restClient
+        .put()
+        .uri("/organizations/{orgId}", orgId)
+        .header("Authorization", "Bearer " + getAdminToken())
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(existing)
+        .retrieve()
+        .toBodilessEntity();
+    log.info("Updated redirectUrl on existing Keycloak org {} (alias '{}')", orgId, slug);
   }
 
   /**

@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.statement;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.document.Document;
+import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
@@ -62,6 +64,7 @@ public class StatementService {
   private final ProjectRepository projectRepository;
   private final DocumentTemplateRepository documentTemplateRepository;
   private final GeneratedDocumentRepository generatedDocumentRepository;
+  private final DocumentRepository documentRepository;
   private final StatementOfAccountContextBuilder contextBuilder;
   private final TiptapRenderer tiptapRenderer;
   private final PdfRenderingService pdfRenderingService;
@@ -74,6 +77,7 @@ public class StatementService {
       ProjectRepository projectRepository,
       DocumentTemplateRepository documentTemplateRepository,
       GeneratedDocumentRepository generatedDocumentRepository,
+      DocumentRepository documentRepository,
       StatementOfAccountContextBuilder contextBuilder,
       TiptapRenderer tiptapRenderer,
       PdfRenderingService pdfRenderingService,
@@ -84,6 +88,7 @@ public class StatementService {
     this.projectRepository = projectRepository;
     this.documentTemplateRepository = documentTemplateRepository;
     this.generatedDocumentRepository = generatedDocumentRepository;
+    this.documentRepository = documentRepository;
     this.contextBuilder = contextBuilder;
     this.tiptapRenderer = tiptapRenderer;
     this.pdfRenderingService = pdfRenderingService;
@@ -137,6 +142,21 @@ public class StatementService {
     snapshot.put("summary", summarySnapshotMap(summary));
     generatedDoc.setContextSnapshot(snapshot);
     generatedDoc = generatedDocumentRepository.save(generatedDoc);
+
+    // GAP-L-74 part A: persist a paired Document row so the SoA appears on the standard documents
+    // pipeline that the portal queries (PortalQueryService.listProjectDocuments filters
+    // visibility=SHARED). Mirrors GeneratedDocumentService.createLinkedDocument PROJECT branch
+    // (the standard generate path), but inlined here because StatementService deliberately bypasses
+    // GeneratedDocumentService.generateDocument for the period-bound context (see class Javadoc).
+    var pairedDocument =
+        new Document(projectId, fileName, "application/pdf", pdfBytes.length, memberId);
+    pairedDocument.assignS3Key(s3Key);
+    pairedDocument.confirmUpload();
+    pairedDocument.setVisibility(
+        Document.Visibility.SHARED); // client-visible per scenario step 61.2
+    var savedDocument = documentRepository.save(pairedDocument);
+    generatedDoc.linkToDocument(savedDocument.getId());
+    // generatedDoc is managed in this @Transactional — Hibernate flushes the link on commit.
 
     auditService.log(
         AuditEventBuilder.builder()

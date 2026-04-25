@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.closure;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.document.Document;
+import io.b2mash.b2b.b2bstrawman.document.DocumentService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationService;
@@ -81,6 +83,7 @@ public class MatterClosureService {
   private final CapabilityAuthorizationService capabilityAuthorizationService;
   private final OrgSettingsService orgSettingsService;
   private final GeneratedDocumentService generatedDocumentService;
+  private final DocumentService documentService;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
 
@@ -99,6 +102,7 @@ public class MatterClosureService {
       CapabilityAuthorizationService capabilityAuthorizationService,
       OrgSettingsService orgSettingsService,
       GeneratedDocumentService generatedDocumentService,
+      DocumentService documentService,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       @Lazy MatterClosureService self) {
@@ -109,6 +113,7 @@ public class MatterClosureService {
     this.capabilityAuthorizationService = capabilityAuthorizationService;
     this.orgSettingsService = orgSettingsService;
     this.generatedDocumentService = generatedDocumentService;
+    this.documentService = documentService;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.self = self;
@@ -268,6 +273,7 @@ public class MatterClosureService {
         return null;
       }
       UUID letterDocId = result.generatedDocument().getId();
+      UUID linkedDocumentId = result.generatedDocument().getDocumentId();
       matterClosureLogRepository
           .findById(closureLogId)
           .ifPresent(
@@ -275,6 +281,25 @@ public class MatterClosureService {
                 logRow.setClosureLetterDocumentId(letterDocId);
                 matterClosureLogRepository.save(logRow);
               });
+
+      // GAP-L-74 part B: closure letter is by definition client-facing (per scenario step 61.8).
+      // Flip the linked Document from INTERNAL (default) to SHARED so it appears on the portal
+      // Documents tab via PortalQueryService.listProjectDocuments. Best-effort: any failure here
+      // must not roll back the (already committed) close — we are inside REQUIRES_NEW so a
+      // rollback only affects this letter-step transaction, but we still try/catch defensively
+      // so a visibility-flip failure leaves the letter generated rather than throwing.
+      if (linkedDocumentId != null) {
+        try {
+          documentService.toggleVisibility(linkedDocumentId, Document.Visibility.SHARED);
+        } catch (RuntimeException visibilityEx) {
+          log.warn(
+              "Failed to flip closure-letter document visibility to SHARED: project={}, doc={}",
+              projectId,
+              linkedDocumentId,
+              visibilityEx);
+        }
+      }
+
       return letterDocId;
     } catch (RuntimeException e) {
       log.warn(

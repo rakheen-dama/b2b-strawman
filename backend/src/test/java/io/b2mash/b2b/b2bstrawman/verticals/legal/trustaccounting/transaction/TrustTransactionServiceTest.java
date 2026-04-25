@@ -1809,6 +1809,7 @@ class TrustTransactionServiceTest {
                           trustAccountId,
                           new RecordRefundRequest(
                               customer.getId(),
+                              null,
                               new BigDecimal("2000.00"),
                               "REF-001",
                               "Refund to client",
@@ -2521,6 +2522,290 @@ class TrustTransactionServiceTest {
                           .toList();
                   // At least one notification should have been created for approvers
                   assertThat(trustNotifications).isNotEmpty();
+                }));
+  }
+
+  // --- GAP-L-69: matter context inference / pass-through ---
+
+  /**
+   * Inserts a project row directly so the trust_transactions.project_id FK constraint is satisfied
+   * (`trust_transactions_project_id_fkey` -> projects.id, V85 trust accounting tables).
+   */
+  private void insertProject(UUID projectId, String name) {
+    entityManager
+        .createNativeQuery(
+            """
+            INSERT INTO projects (id, name, description, status, created_by, created_at, updated_at)
+            VALUES (:id, :name, 'L69 test', 'ACTIVE', :memberId, now(), now())
+            """)
+        .setParameter("id", projectId)
+        .setParameter("name", name)
+        .setParameter("memberId", memberId)
+        .executeUpdate();
+  }
+
+  @Test
+  void recordFeeTransfer_singleMatterInvoice_inheritsProjectIdFromInvoiceLine() {
+    UUID projectId = UUID.randomUUID();
+    UUID[] txnId = new UUID[1];
+
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  insertProject(projectId, "L69 Single Matter");
+
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "L69 Single Matter Client", "l69_single@test.com", memberId));
+
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          projectId,
+                          new BigDecimal("10000.00"),
+                          "DEP-L69-SINGLE",
+                          "Funding",
+                          LocalDate.of(2026, 4, 25)));
+
+                  var invoiceId = UUID.randomUUID();
+                  entityManager
+                      .createNativeQuery(
+                          """
+                          INSERT INTO invoices (id, customer_id, invoice_number, status, currency,
+                              subtotal, tax_amount, total, due_date,
+                              customer_name, org_name, created_by, created_at, updated_at)
+                          VALUES (:id, :customerId, 'INV-L69-SINGLE', 'SENT', 'ZAR',
+                              1000.00, 150.00, 1150.00, '2026-05-30',
+                              'L69 Single Matter Client', 'Test Org', :memberId,
+                              now(), now())
+                          """)
+                      .setParameter("id", invoiceId)
+                      .setParameter("customerId", customer.getId())
+                      .setParameter("memberId", memberId)
+                      .executeUpdate();
+
+                  // Single invoice line bound to the single matter
+                  entityManager
+                      .createNativeQuery(
+                          """
+                          INSERT INTO invoice_lines (id, invoice_id, project_id, line_type,
+                              description, quantity, unit_price, amount, sort_order, tax_exempt,
+                              created_at, updated_at)
+                          VALUES (gen_random_uuid(), :invoiceId, :projectId, 'TIME',
+                              'Legal services', 1, 1150.00, 1150.00, 0, false,
+                              now(), now())
+                          """)
+                      .setParameter("invoiceId", invoiceId)
+                      .setParameter("projectId", projectId)
+                      .executeUpdate();
+                  entityManager.flush();
+
+                  var response =
+                      transactionService.recordFeeTransfer(
+                          trustAccountId,
+                          new RecordFeeTransferRequest(
+                              customer.getId(),
+                              invoiceId,
+                              new BigDecimal("1150.00"),
+                              "FT-L69-SINGLE"));
+
+                  txnId[0] = response.id();
+                  assertThat(response.projectId())
+                      .as(
+                          "FEE_TRANSFER projectId should be inferred from the invoice's single line")
+                      .isEqualTo(projectId);
+                }));
+
+    // Confirm persisted row carries projectId for the closure-gate query
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var saved = transactionRepository.findById(txnId[0]).orElseThrow();
+                  assertThat(saved.getProjectId()).isEqualTo(projectId);
+                }));
+  }
+
+  @Test
+  void recordFeeTransfer_multiMatterInvoice_leavesProjectIdNull() {
+    UUID projectIdA = UUID.randomUUID();
+    UUID projectIdB = UUID.randomUUID();
+
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  insertProject(projectIdA, "L69 Multi Matter A");
+                  insertProject(projectIdB, "L69 Multi Matter B");
+
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "L69 Multi Matter Client", "l69_multi@test.com", memberId));
+
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          projectIdA,
+                          new BigDecimal("10000.00"),
+                          "DEP-L69-MULTI",
+                          "Funding",
+                          LocalDate.of(2026, 4, 25)));
+
+                  var invoiceId = UUID.randomUUID();
+                  entityManager
+                      .createNativeQuery(
+                          """
+                          INSERT INTO invoices (id, customer_id, invoice_number, status, currency,
+                              subtotal, tax_amount, total, due_date,
+                              customer_name, org_name, created_by, created_at, updated_at)
+                          VALUES (:id, :customerId, 'INV-L69-MULTI', 'SENT', 'ZAR',
+                              2000.00, 300.00, 2300.00, '2026-05-30',
+                              'L69 Multi Matter Client', 'Test Org', :memberId,
+                              now(), now())
+                          """)
+                      .setParameter("id", invoiceId)
+                      .setParameter("customerId", customer.getId())
+                      .setParameter("memberId", memberId)
+                      .executeUpdate();
+
+                  // Two lines bound to different matters — multi-matter case
+                  entityManager
+                      .createNativeQuery(
+                          """
+                          INSERT INTO invoice_lines (id, invoice_id, project_id, line_type,
+                              description, quantity, unit_price, amount, sort_order, tax_exempt,
+                              created_at, updated_at)
+                          VALUES (gen_random_uuid(), :invoiceId, :projectId, 'TIME',
+                              'Matter A work', 1, 1150.00, 1150.00, 0, false,
+                              now(), now())
+                          """)
+                      .setParameter("invoiceId", invoiceId)
+                      .setParameter("projectId", projectIdA)
+                      .executeUpdate();
+                  entityManager
+                      .createNativeQuery(
+                          """
+                          INSERT INTO invoice_lines (id, invoice_id, project_id, line_type,
+                              description, quantity, unit_price, amount, sort_order, tax_exempt,
+                              created_at, updated_at)
+                          VALUES (gen_random_uuid(), :invoiceId, :projectId, 'TIME',
+                              'Matter B work', 1, 1150.00, 1150.00, 1, false,
+                              now(), now())
+                          """)
+                      .setParameter("invoiceId", invoiceId)
+                      .setParameter("projectId", projectIdB)
+                      .executeUpdate();
+                  entityManager.flush();
+
+                  var response =
+                      transactionService.recordFeeTransfer(
+                          trustAccountId,
+                          new RecordFeeTransferRequest(
+                              customer.getId(),
+                              invoiceId,
+                              new BigDecimal("2300.00"),
+                              "FT-L69-MULTI"));
+
+                  assertThat(response.projectId())
+                      .as("FEE_TRANSFER projectId should be null when invoice spans matters")
+                      .isNull();
+                }));
+  }
+
+  @Test
+  void recordRefund_withProjectId_persistsProjectId() {
+    UUID projectId = UUID.randomUUID();
+    UUID[] txnId = new UUID[1];
+
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  insertProject(projectId, "L69 Refund Matter");
+
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "L69 Refund Matter Client", "l69_refund_matter@test.com", memberId));
+
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          projectId,
+                          new BigDecimal("5000.00"),
+                          "DEP-L69-REF-MATTER",
+                          "Funding",
+                          LocalDate.of(2026, 4, 25)));
+
+                  var response =
+                      transactionService.recordRefund(
+                          trustAccountId,
+                          new RecordRefundRequest(
+                              customer.getId(),
+                              projectId,
+                              new BigDecimal("2000.00"),
+                              "REF-L69-MATTER",
+                              "Refund residual on closure",
+                              LocalDate.of(2026, 4, 25)));
+
+                  txnId[0] = response.id();
+                  assertThat(response.projectId())
+                      .as("REFUND projectId should be carried through from the request")
+                      .isEqualTo(projectId);
+                }));
+
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var saved = transactionRepository.findById(txnId[0]).orElseThrow();
+                  assertThat(saved.getProjectId()).isEqualTo(projectId);
+                }));
+  }
+
+  @Test
+  void recordRefund_withoutProjectId_persistsNullProjectId() {
+    runInTenantWithCapabilities(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      customerRepository.save(
+                          TestCustomerFactory.createActiveCustomer(
+                              "L69 Refund No Matter Client",
+                              "l69_refund_nomatter@test.com",
+                              memberId));
+
+                  transactionService.recordDeposit(
+                      trustAccountId,
+                      new RecordDepositRequest(
+                          customer.getId(),
+                          null,
+                          new BigDecimal("5000.00"),
+                          "DEP-L69-REF-NOMATTER",
+                          "Funding",
+                          LocalDate.of(2026, 4, 25)));
+
+                  var response =
+                      transactionService.recordRefund(
+                          trustAccountId,
+                          new RecordRefundRequest(
+                              customer.getId(),
+                              null,
+                              new BigDecimal("1000.00"),
+                              "REF-L69-NOMATTER",
+                              "Customer-level refund",
+                              LocalDate.of(2026, 4, 25)));
+
+                  assertThat(response.projectId())
+                      .as("REFUND projectId should remain null when omitted (back-compat)")
+                      .isNull();
                 }));
   }
 

@@ -37,6 +37,7 @@ function getDefaultValues() {
   const local = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
   return {
     customerId: "",
+    projectId: "",
     amount: 0,
     reference: "",
     description: "",
@@ -97,6 +98,20 @@ export function RecordRefundDialog({ accountId, open, onOpenChange }: RecordRefu
                   <FormLabel>Client ID</FormLabel>
                   <FormControl>
                     <Input placeholder="Client UUID" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="projectId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Matter (Optional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Matter UUID (optional)" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

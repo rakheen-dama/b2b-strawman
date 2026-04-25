@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
@@ -42,6 +43,7 @@ public class TrustTransactionService {
   private final TrustAccountRepository trustAccountRepository;
   private final CustomerRepository customerRepository;
   private final InvoiceRepository invoiceRepository;
+  private final InvoiceLineRepository invoiceLineRepository;
   private final InvoiceService invoiceService;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
@@ -54,6 +56,7 @@ public class TrustTransactionService {
       TrustAccountRepository trustAccountRepository,
       CustomerRepository customerRepository,
       InvoiceRepository invoiceRepository,
+      InvoiceLineRepository invoiceLineRepository,
       InvoiceService invoiceService,
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
@@ -64,6 +67,7 @@ public class TrustTransactionService {
     this.trustAccountRepository = trustAccountRepository;
     this.customerRepository = customerRepository;
     this.invoiceRepository = invoiceRepository;
+    this.invoiceLineRepository = invoiceLineRepository;
     this.invoiceService = invoiceService;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
@@ -103,6 +107,7 @@ public class TrustTransactionService {
 
   public record RecordRefundRequest(
       UUID customerId,
+      UUID projectId,
       BigDecimal amount,
       String reference,
       String description,
@@ -550,13 +555,21 @@ public class TrustTransactionService {
 
     var memberId = RequestScopes.requireMemberId();
 
+    // GAP-L-69: infer projectId from the invoice's lines so the resulting trust transaction
+    // carries the matter binding required by TrustBalanceZeroGate's per-matter calculation.
+    // Falls through to null when the invoice spans multiple matters (rare for fee notes) —
+    // a future story can decide on multi-matter splits.
+    var distinctProjectIds =
+        invoiceLineRepository.findDistinctProjectIdsByInvoiceId(invoice.getId());
+    UUID inferredProjectId = distinctProjectIds.size() == 1 ? distinctProjectIds.get(0) : null;
+
     var transaction =
         new TrustTransaction(
             trustAccountId,
             "FEE_TRANSFER",
             request.amount(),
             request.customerId(),
-            null,
+            inferredProjectId,
             null,
             request.reference(),
             null,
@@ -579,6 +592,7 @@ public class TrustTransactionService {
                     "customer_id", request.customerId().toString(),
                     "customer_name", customer.getName(),
                     "invoice_id", request.invoiceId().toString(),
+                    "project_id", inferredProjectId == null ? "" : inferredProjectId.toString(),
                     "reference", request.reference()))
             .build());
 
@@ -626,7 +640,7 @@ public class TrustTransactionService {
             "REFUND",
             request.amount(),
             request.customerId(),
-            null,
+            request.projectId(),
             null,
             request.reference(),
             request.description(),
@@ -646,6 +660,7 @@ public class TrustTransactionService {
                     "amount", request.amount().toString(),
                     "customer_id", request.customerId().toString(),
                     "customer_name", customer.getName(),
+                    "project_id", request.projectId() == null ? "" : request.projectId().toString(),
                     "reference", request.reference()))
             .build());
 

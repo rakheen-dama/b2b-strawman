@@ -62,6 +62,7 @@ export type RecordFeeTransferFormData = z.infer<typeof recordFeeTransferSchema>;
 
 export const recordRefundSchema = z.object({
   customerId: z.string().uuid("Must be a valid client UUID"),
+  projectId: z.string().uuid().optional().or(z.literal("")),
   amount: z.number().positive("Amount must be greater than zero"),
   reference: z.string().min(1, "Reference is required").max(200),
   description: z.string().max(2000).optional().or(z.literal("")),

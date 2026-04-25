@@ -1,0 +1,462 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e53]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e55] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e56]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e62]:
+          - generic [ref=e63]: Clients
+          - img [ref=e64]
+        - button "Finance" [ref=e68]:
+          - generic [ref=e69]: Finance
+          - img [ref=e70]
+        - generic [ref=e73]:
+          - button "Team" [expanded] [ref=e74]:
+            - generic [ref=e75]: Team
+            - img [ref=e76]
+          - link "Team" [ref=e79] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e80]
+            - text: Team
+      - generic [ref=e86]:
+        - link "Notifications" [ref=e87] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e88]
+          - text: Notifications
+        - link "Settings" [ref=e91] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e92]
+          - text: Settings
+        - link "Help" [ref=e95] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e96]
+          - text: Help
+      - generic [ref=e99]:
+        - generic [ref=e100]: TM
+        - generic [ref=e101]:
+          - paragraph [ref=e102]: Thandi Mathebula
+          - paragraph [ref=e103]: thandi@mathebula-test.local
+    - generic [ref=e104]:
+      - banner [ref=e105]:
+        - navigation "Breadcrumb" [ref=e106]:
+          - link "Mathebula & Partners" [ref=e107] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e108]:
+            - img [ref=e109]
+            - link "Matters" [ref=e111] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+          - generic [ref=e112]:
+            - img [ref=e113]
+            - generic [ref=e115]: Matter
+        - generic [ref=e116]:
+          - button "User menu" [ref=e118]: TM
+          - button "Notifications" [ref=e120]:
+            - img
+            - generic [ref=e121]: 20 unread notifications
+            - generic [ref=e122]: "20"
+      - main [ref=e123]:
+        - generic [ref=e126]:
+          - link "Back to Matters" [ref=e128] [cursor=pointer]:
+            - /url: /org/mathebula-partners/projects
+            - img [ref=e129]
+            - text: Back to Matters
+          - generic [ref=e131]:
+            - generic:
+              - generic:
+                - heading "Dlamini v Road Accident Fund" [level=1] [ref=e132]
+                - generic [ref=e133]: Closed
+              - paragraph: "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION"
+              - paragraph:
+                - text: "Client:"
+                - link "Sipho Dlamini" [ref=e134] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/customers/c3ad51f5-2bda-4a27-b626-7b5c63f37102
+              - generic [ref=e135]:
+                - generic [ref=e136]: Ref
+                - code [ref=e137]: RAF-2026-001
+              - paragraph: Created Apr 25, 2026 · 10 documents · 1 member · 0 tasks
+            - generic [ref=e138]:
+              - button "Reopen Matter" [ref=e139]:
+                - img
+                - text: Reopen Matter
+              - button "Generate Statement of Account" [ref=e140]:
+                - img
+                - text: Generate Statement of Account
+              - button "Generate Document" [ref=e141]:
+                - img
+                - text: Generate Document
+                - img
+              - button "New Engagement Letter" [ref=e142]:
+                - img
+                - text: New Engagement Letter
+              - button "Save as Template" [ref=e143]:
+                - img
+                - text: Save as Template
+              - button "Edit" [ref=e144]:
+                - img
+                - text: Edit
+              - button "Delete" [ref=e145]:
+                - img
+                - text: Delete
+          - generic [ref=e146]:
+            - paragraph [ref=e147]: Field Groups
+            - generic [ref=e148]:
+              - generic [ref=e149]:
+                - text: SA Conveyancing — Matter Details
+                - button "Remove SA Conveyancing — Matter Details" [ref=e150]:
+                  - img [ref=e151]
+              - generic [ref=e154]:
+                - text: SA Legal — Matter Details
+                - button "Remove SA Legal — Matter Details" [ref=e155]:
+                  - img [ref=e156]
+              - generic [ref=e159]:
+                - text: Project Info
+                - button "Remove Project Info" [ref=e160]:
+                  - img [ref=e161]
+          - generic [ref=e164]:
+            - generic [ref=e165]:
+              - generic [ref=e167]: SA Conveyancing — Matter Details
+              - generic [ref=e169]:
+                - generic [ref=e170]:
+                  - generic [ref=e171]: Conveyancing Type
+                  - combobox "Conveyancing Type" [ref=e173]:
+                    - option "Select..." [selected]
+                    - option "Transfer"
+                    - option "Bond Registration"
+                    - option "Bond Cancellation"
+                    - option "Sectional Title"
+                    - option "Estate Transfer"
+                - generic [ref=e174]:
+                  - generic [ref=e175]: Property Address
+                  - textbox "Property Address" [ref=e177]:
+                    - /placeholder: Full physical address of the property being transferred
+                - generic [ref=e178]:
+                  - generic [ref=e179]: Erf Number
+                  - textbox "Erf Number" [ref=e181]:
+                    - /placeholder: Erf/stand number identifying the property
+                - generic [ref=e182]:
+                  - generic [ref=e183]: Deeds Office
+                  - combobox "Deeds Office" [ref=e185]:
+                    - option "Select..." [selected]
+                    - option "Johannesburg"
+                    - option "Pretoria"
+                    - option "Cape Town"
+                    - option "Bloemfontein"
+                    - option "Pietermaritzburg"
+                    - option "King William's Town"
+                    - option "Kimberley"
+                    - option "Mahikeng"
+                    - option "Mthatha"
+                    - option "Vryburg"
+                - generic [ref=e186]:
+                  - generic [ref=e187]: Lodgement Date
+                  - textbox "Lodgement Date" [ref=e189]
+                - generic [ref=e190]:
+                  - generic [ref=e191]: Purchase Price
+                  - generic [ref=e193]:
+                    - spinbutton "Purchase Price" [ref=e194]
+                    - combobox "Currency" [ref=e195]:
+                      - option "Currency" [selected]
+                      - option "USD"
+                      - option "EUR"
+                      - option "GBP"
+                      - option "ZAR"
+                      - option "AUD"
+                      - option "CAD"
+                      - option "CHF"
+                      - option "JPY"
+                      - option "CNY"
+                      - option "INR"
+                - generic [ref=e196]:
+                  - generic [ref=e197]: Transfer Duty
+                  - generic [ref=e199]:
+                    - spinbutton "Transfer Duty" [ref=e200]
+                    - combobox "Currency" [ref=e201]:
+                      - option "Currency" [selected]
+                      - option "USD"
+                      - option "EUR"
+                      - option "GBP"
+                      - option "ZAR"
+                      - option "AUD"
+                      - option "CAD"
+                      - option "CHF"
+                      - option "JPY"
+                      - option "CNY"
+                      - option "INR"
+                - generic [ref=e202]:
+                  - generic [ref=e203]: Bond Institution
+                  - combobox "Bond Institution" [ref=e205]:
+                    - option "Select..." [selected]
+                    - option "ABSA"
+                    - option "FNB"
+                    - option "Standard Bank"
+                    - option "Nedbank"
+                    - option "Investec"
+                    - option "SA Home Loans"
+                    - option "Other"
+                    - option "None (Cash Purchase)"
+            - generic [ref=e206]:
+              - generic [ref=e208]: SA Legal — Matter Details
+              - generic [ref=e210]:
+                - generic [ref=e211]:
+                  - generic [ref=e212]: Case Number
+                  - textbox "Case Number" [ref=e214]:
+                    - /placeholder: Court-assigned case number for the matter
+                    - text: RAF-2026-001-CASE
+                - generic [ref=e215]:
+                  - generic [ref=e216]: Court
+                  - textbox "Court" [ref=e218]:
+                    - /placeholder: Name of the court in which the matter is heard
+                - generic [ref=e219]:
+                  - generic [ref=e220]: Opposing Party
+                  - textbox "Opposing Party" [ref=e222]:
+                    - /placeholder: Name of the primary opposing party
+                    - text: Road Accident Fund
+                - generic [ref=e223]:
+                  - generic [ref=e224]: Opposing Attorney
+                  - textbox "Opposing Attorney" [ref=e226]:
+                    - /placeholder: Name of the opposing attorney or firm
+                - generic [ref=e227]:
+                  - generic [ref=e228]: Advocate
+                  - textbox "Advocate" [ref=e230]:
+                    - /placeholder: Name of the instructed advocate (if briefed)
+                - generic [ref=e231]:
+                  - generic [ref=e232]: Date of Instruction
+                  - textbox "Date of Instruction" [ref=e234]
+                - generic [ref=e235]:
+                  - generic [ref=e236]: Estimated Value
+                  - spinbutton "Estimated Value" [ref=e238]
+            - generic [ref=e239]:
+              - generic [ref=e241]: Project Info
+              - generic [ref=e244]:
+                - generic [ref=e245]: Category
+                - textbox "Category" [ref=e247]:
+                  - /placeholder: Project category or type
+            - button "Save Custom Fields" [ref=e249]:
+              - img
+              - text: Save Custom Fields
+          - generic [ref=e250]:
+            - paragraph [ref=e251]: Tags
+            - button "Add Tag" [ref=e254]:
+              - img
+              - text: Add Tag
+          - generic [ref=e255]:
+            - tablist [ref=e256]:
+              - tab "Overview" [ref=e257]
+              - tab "Documents" [ref=e258]
+              - tab "Members" [ref=e259]
+              - tab "Clients" [ref=e260]
+              - tab "Tasks" [ref=e261]
+              - tab "Time" [ref=e262]
+              - tab "Fee Estimate" [ref=e263]
+              - tab "Financials" [ref=e264]
+              - tab "Staffing" [ref=e265]
+              - tab "Rates" [ref=e266]
+              - tab "Generated Docs" [ref=e267]
+              - tab "Requests" [ref=e268]
+              - tab "Client Comments" [ref=e269]
+              - tab "Court Dates" [ref=e270]
+              - tab "Adverse Parties" [ref=e271]
+              - tab "Trust" [ref=e272]
+              - tab "Disbursements" [ref=e273]
+              - tab "Statements" [ref=e274]
+              - tab "Activity" [selected] [ref=e275]: Activity
+            - tabpanel "Activity" [ref=e277]:
+              - generic [ref=e278]:
+                - generic [ref=e279]:
+                  - button "All" [ref=e280]
+                  - button "Tasks" [ref=e281]
+                  - button "Documents" [ref=e282]
+                  - button "Comments" [ref=e283]
+                  - button "Members" [ref=e284]
+                  - button "Time" [ref=e285]
+                - generic [ref=e286]:
+                  - generic [ref=e287]:
+                    - generic [ref=e288]: TM
+                    - generic [ref=e289]:
+                      - generic [ref=e290]:
+                        - img [ref=e291]
+                        - paragraph [ref=e293]: Thandi Mathebula generated document "matter-closure-letter-dlamini-v-road-accident-fund-2026-04-26.pdf" from template "Matter Closure Letter"
+                      - text: 24 minutes ago
+                  - generic [ref=e294]:
+                    - generic [ref=e295]: TM
+                    - generic [ref=e296]:
+                      - generic [ref=e297]:
+                        - img [ref=e298]
+                        - paragraph [ref=e300]: Thandi Mathebula performed statement.generated on generated_document
+                      - text: 26 minutes ago
+                  - generic [ref=e301]:
+                    - generic [ref=e302]: TM
+                    - generic [ref=e303]:
+                      - generic [ref=e304]:
+                        - img [ref=e305]
+                        - paragraph [ref=e307]: Thandi Mathebula performed statement.generated on generated_document
+                      - text: 1 hour ago
+                  - generic [ref=e308]:
+                    - generic [ref=e309]: TM
+                    - generic [ref=e310]:
+                      - generic [ref=e311]:
+                        - img [ref=e312]
+                        - paragraph [ref=e314]: Thandi Mathebula generated document "matter-closure-letter-dlamini-v-road-accident-fund-2026-04-25.pdf" from template "Matter Closure Letter"
+                      - text: 2 hours ago
+                  - generic [ref=e315]:
+                    - generic [ref=e316]: BN
+                    - generic [ref=e317]:
+                      - generic [ref=e318]:
+                        - img [ref=e319]
+                        - paragraph [ref=e321]: Bob Ndlovu performed trust_refund.recorded on trust_transaction
+                      - text: 2 hours ago
+                  - generic [ref=e322]:
+                    - generic [ref=e323]: TM
+                    - generic [ref=e324]:
+                      - generic [ref=e325]:
+                        - img [ref=e326]
+                        - paragraph [ref=e329]: Thandi Mathebula performed task.cancelled on task
+                      - text: 6 hours ago
+                  - generic [ref=e330]:
+                    - generic [ref=e331]: TM
+                    - generic [ref=e332]:
+                      - generic [ref=e333]:
+                        - img [ref=e334]
+                        - paragraph [ref=e337]: Thandi Mathebula performed task.cancelled on task
+                      - text: 6 hours ago
+                  - generic [ref=e338]:
+                    - generic [ref=e339]: TM
+                    - generic [ref=e340]:
+                      - generic [ref=e341]:
+                        - img [ref=e342]
+                        - paragraph [ref=e345]: Thandi Mathebula performed task.cancelled on task
+                      - text: 6 hours ago
+                  - generic [ref=e346]:
+                    - generic [ref=e347]: TM
+                    - generic [ref=e348]:
+                      - generic [ref=e349]:
+                        - img [ref=e350]
+                        - paragraph [ref=e353]: Thandi Mathebula performed task.cancelled on task
+                      - text: 6 hours ago
+                  - generic [ref=e354]:
+                    - generic [ref=e355]: TM
+                    - generic [ref=e356]:
+                      - generic [ref=e357]:
+                        - img [ref=e358]
+                        - paragraph [ref=e361]: Thandi Mathebula performed task.cancelled on task
+                      - text: 6 hours ago
+                  - generic [ref=e362]:
+                    - generic [ref=e363]: TM
+                    - generic [ref=e364]:
+                      - generic [ref=e365]:
+                        - img [ref=e366]
+                        - paragraph [ref=e369]: Thandi Mathebula performed task.cancelled on task
+                      - text: 6 hours ago
+                  - generic [ref=e370]:
+                    - generic [ref=e371]: TM
+                    - generic [ref=e372]:
+                      - generic [ref=e373]:
+                        - img [ref=e374]
+                        - paragraph [ref=e377]: Thandi Mathebula performed task.cancelled on task
+                      - text: 6 hours ago
+                  - generic [ref=e378]:
+                    - generic [ref=e379]: TM
+                    - generic [ref=e380]:
+                      - generic [ref=e381]:
+                        - img [ref=e382]
+                        - paragraph [ref=e385]: Thandi Mathebula performed task.cancelled on task
+                      - text: 6 hours ago
+                  - generic [ref=e386]:
+                    - generic [ref=e387]: TM
+                    - generic [ref=e388]:
+                      - generic [ref=e389]:
+                        - img [ref=e390]
+                        - paragraph [ref=e393]: Thandi Mathebula performed task.cancelled on task
+                      - text: 6 hours ago
+                  - generic [ref=e394]:
+                    - generic [ref=e395]: TM
+                    - generic [ref=e396]:
+                      - generic [ref=e397]:
+                        - img [ref=e398]
+                        - paragraph [ref=e400]: REQ-0007 completed — all items accepted
+                      - text: 6 hours ago
+                  - generic [ref=e401]:
+                    - generic [ref=e402]: TM
+                    - generic [ref=e403]:
+                      - generic [ref=e404]:
+                        - img [ref=e405]
+                        - paragraph [ref=e407]: Thandi Mathebula accepted "Bank statement (≤ 3 months)" for unknown
+                      - text: 6 hours ago
+                  - generic [ref=e408]:
+                    - generic [ref=e409]: TM
+                    - generic [ref=e410]:
+                      - generic [ref=e411]:
+                        - img [ref=e412]
+                        - paragraph [ref=e414]: Thandi Mathebula accepted "Proof of residence (≤ 3 months)" for unknown
+                      - text: 6 hours ago
+                  - generic [ref=e415]:
+                    - generic [ref=e416]: TM
+                    - generic [ref=e417]:
+                      - generic [ref=e418]:
+                        - img [ref=e419]
+                        - paragraph [ref=e421]: Thandi Mathebula accepted "ID copy" for unknown
+                      - text: 6 hours ago
+                  - generic [ref=e422]:
+                    - generic [ref=e423]: TM
+                    - generic [ref=e424]:
+                      - generic [ref=e425]:
+                        - img [ref=e426]
+                        - paragraph [ref=e428]: Thandi Mathebula cancelled information request REQ-0004
+                      - text: 6 hours ago
+                  - generic [ref=e429]:
+                    - generic [ref=e430]: TM
+                    - generic [ref=e431]:
+                      - generic [ref=e432]:
+                        - img [ref=e433]
+                        - paragraph [ref=e435]: Thandi Mathebula cancelled information request REQ-0002
+                      - text: 6 hours ago
+                - button "Load more" [ref=e437]
+  - generic [ref=e438]:
+    - heading "Command Palette" [level=2] [ref=e439]
+    - paragraph [ref=e440]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e446] [cursor=pointer]:
+    - img [ref=e447]
+  - alert [ref=e450]

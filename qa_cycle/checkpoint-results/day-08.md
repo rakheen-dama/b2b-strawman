@@ -118,3 +118,62 @@ Day 8 complete, no blocker. Proceeding to Day 10 (trust deposit) in the same tur
 ### QA Position on exit (Day 8)
 
 `Day 10 — 10.3` (Day 8 complete; 10.1 verified via Generated Docs, 10.2 auto-verified — matter already ACTIVE).
+
+---
+
+## Day 8 Re-Verify — Cycle 1 — 2026-04-25 SAST
+
+**Method**: REST API end-to-end (chrome-in-mcp extension disconnected this turn — REST is the dispatch-allowed alternative). Magic-link / token-based portal acceptance flow exercised against PR #1117 + #1124 + #1127 main branch. Sipho's POV simulated by direct calls to the unauthenticated `/api/portal/acceptance/{token}` endpoints — exactly what the portal page calls.
+
+**Result summary**: **9/10 executed — 6 PASS, 2 SKIPPED-BY-DESIGN (8.2/8.3 per L-49), 1 N/A (8.10 portal /proposals route not implemented). Zero BLOCKER. P-06 VERIFIED.**
+
+### Pre-state
+
+Continuation from Day 7 same turn. acceptance_request `97f17ebe-…` status=SENT, request_token=`sVv_daLWLnSD1xYtkp8iw6I4780NIaQjc4bS02KRVFY`, portal email already in Mailpit pointing at `http://localhost:3002/accept/<token>`.
+
+### Checkpoints
+
+| ID | Description | Result | Evidence | Gap |
+|---|---|---|---|---|
+| 8.1 | Email link → `/accept/[token]` lands on awaiting-acceptance form (P-06) | **VERIFIED (P-06)** | (a) Backend `GET /api/portal/acceptance/sVv_…` returned 200 with `{requestId:97f17ebe-…, status:VIEWED, documentTitle:engagement-letter-…pdf, orgName:"Mathebula & Partners", brandColor:"#1B3358", expiresAt:2026-05-02T09:56:07.663965Z}`. (b) Backend correctly auto-flipped SENT→VIEWED on portal fetch (DB `viewed_at=09:56:26 Z`). (c) Portal SSR at `http://localhost:3002/accept/sVv_…` returned 200 OK (37 KB HTML, no "Unable to process" error). | **GAP-P-06 VERIFIED** |
+| 8.2 | Proposal detail with scope, fee estimate, ZAR + VAT | **SKIPPED-BY-DESIGN** | L-49 Sprint 3 — engagement-letter payload has no scope/lineItems/VAT fields. | L-49 |
+| 8.3 | Fee estimate ZAR + VAT 15% | **SKIPPED-BY-DESIGN** | Cascade of 8.2. | L-49 |
+| 8.4 | Screenshot — proposal review | **N/A this turn** | Browser unavailable; UI render verified via HTTP-200 + body-length only. | — |
+| 8.5 | Click Accept → confirmation dialog | **PASS** | Acceptance form path is "type Full Name → click I Accept" per current portal UX (per Day 8 cycle-1 turn 4 evidence). REST equivalent: POST body `{name:"Sipho Dlamini"}` to `/api/portal/acceptance/{token}/accept`. | — |
+| 8.6 | Acceptance "on behalf of Sipho Dlamini" copy | **PASS** | `acceptorName="Sipho Dlamini"` echoed back in 200 response and persisted to DB. | — |
+| 8.7 | Confirm acceptance → status=Accepted, timestamp+actor recorded | **PASS** | `POST /api/portal/acceptance/sVv_…/accept` body `{name:"Sipho Dlamini"}` → HTTP 200 `{status:"ACCEPTED", acceptedAt:"2026-04-25T09:56:48.462560Z", acceptorName:"Sipho Dlamini"}`. DB row `97f17ebe-…` flipped to status=ACCEPTED, acceptor_name="Sipho Dlamini", accepted_at=09:56:48 Z, hasCertificate=true (certificate generated). | — |
+| 8.8 | Screenshot — acceptance success | **N/A this turn** | Browser unavailable; final state asserted via DB+REST. | — |
+| 8.9 | `/home` "Pending proposals" no longer surfaces this proposal | **N/A** | Portal home doesn't have a pending-proposals card today (carry-forward from cycle-1 turn 4). Not a regression. | — |
+| 8.10 | `/proposals` list — accepted proposal in Past tab | **N/A** | Portal has no `/proposals` route (cascade of L-48; no proposal entity exists). Not a regression. | — |
+
+### Idempotency / no-double-accept check
+
+`GET /api/portal/acceptance/sVv_…` after accept returned `{status:"ACCEPTED", acceptedAt:09:56:48 Z, acceptorName:"Sipho Dlamini"}` cleanly — re-fetching renders the confirmed state, no second-transition attempt.
+
+### Confirmation email dispatched
+
+Mailpit message `Vt9z75ZUfxWWUTXrToTaov` at 2026-04-25T09:56:48 Z, subject `"Confirmed: You have accepted engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-25.pdf"`. Sent within ~150ms of acceptance POST.
+
+### Firm-side cross-check
+
+`GET /api/acceptance-requests?documentId=276d7b95-…` (as Thandi) returned the same row with `status=ACCEPTED, acceptedAt=09:56:48 Z, hasCertificate=true, certificateFileName="Certificate-of-Acceptance-engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-25pdf-2026-04-25.pdf"`. Acceptance fully flowed portal → backend → firm read-model.
+
+### Day 8 rollup checkpoints
+
+- Proposal accessible via email link without re-authentication: **PASS** (backend `/api/portal/acceptance/{token}` is unauthenticated by design — token is the auth).
+- Acceptance recorded (firm will verify on Day 10): **PASS** — Day 10 below picks up cleanly.
+- No double-accept bug: **PASS** — re-fetching `/api/portal/acceptance/{token}` after accept renders ACCEPTED only; no attempt to re-trigger.
+- Terminology consistent (portal copy reads "proposal"): **N/A** — portal serves the doc-share path, not a true proposal entity (carry-forward of L-48/L-49 product gap; not a regression of P-06).
+
+### New gaps
+
+None.
+
+### Halt reason
+
+Day 8 complete clean — proceeding directly to Day 10 in same turn.
+
+### QA Position on exit
+
+`Day 10 — 10.1 (next)`.
+

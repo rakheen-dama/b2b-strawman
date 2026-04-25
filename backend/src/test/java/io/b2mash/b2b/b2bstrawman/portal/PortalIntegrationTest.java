@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
@@ -56,6 +57,10 @@ class PortalIntegrationTest {
   @Autowired private DocumentRepository documentRepository;
   @Autowired private CustomerProjectRepository customerProjectRepository;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private AuditEventRepository auditEventRepository;
+
+  @Autowired
+  private org.springframework.transaction.support.TransactionTemplate transactionTemplate;
 
   @Autowired
   private io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository
@@ -410,6 +415,33 @@ class PortalIntegrationTest {
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.presignedUrl").isNotEmpty())
           .andExpect(jsonPath("$.expiresInSeconds").isNumber());
+
+      // GAP-L-75c: portal.document.downloaded audit event with PORTAL_CONTACT actor must land
+      ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+          .where(RequestScopes.ORG_ID, ORG_ID)
+          .run(
+              () ->
+                  transactionTemplate.executeWithoutResult(
+                      tx -> {
+                        var events =
+                            auditEventRepository
+                                .findByFilter(
+                                    "document",
+                                    sharedDocId,
+                                    null,
+                                    "portal.document.downloaded",
+                                    null,
+                                    null,
+                                    org.springframework.data.domain.PageRequest.of(0, 10))
+                                .getContent();
+                        assertThat(events)
+                            .as("portal.document.downloaded audit row for document %s", sharedDocId)
+                            .isNotEmpty();
+                        var auditEvent = events.get(0);
+                        assertThat(auditEvent.getActorType()).isEqualTo("PORTAL_CONTACT");
+                        assertThat(auditEvent.getSource()).isEqualTo("PORTAL");
+                        assertThat(auditEvent.getDetails()).containsKey("project_id");
+                      }));
     }
 
     @Test

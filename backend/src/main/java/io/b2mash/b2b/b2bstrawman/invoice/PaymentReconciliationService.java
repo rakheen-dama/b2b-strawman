@@ -19,6 +19,7 @@ public class PaymentReconciliationService {
 
   private final InvoiceService invoiceService;
   private final InvoiceRepository invoiceRepository;
+  private final InvoiceLineRepository invoiceLineRepository;
   private final PaymentEventRepository paymentEventRepository;
   private final AuditService auditService;
   private final NotificationService notificationService;
@@ -26,11 +27,13 @@ public class PaymentReconciliationService {
   public PaymentReconciliationService(
       InvoiceService invoiceService,
       InvoiceRepository invoiceRepository,
+      InvoiceLineRepository invoiceLineRepository,
       PaymentEventRepository paymentEventRepository,
       AuditService auditService,
       NotificationService notificationService) {
     this.invoiceService = invoiceService;
     this.invoiceRepository = invoiceRepository;
+    this.invoiceLineRepository = invoiceLineRepository;
     this.paymentEventRepository = paymentEventRepository;
     this.auditService = auditService;
     this.notificationService = notificationService;
@@ -109,7 +112,7 @@ public class PaymentReconciliationService {
     }
     paymentEventRepository.save(completedEvent);
 
-    // Audit
+    // Audit: payment.completed (SYSTEM actor — webhook-driven reconciliation)
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("payment.completed")
@@ -127,6 +130,38 @@ public class PaymentReconciliationService {
                     paymentRef,
                     "amount",
                     invoice.getTotal().toPlainString()))
+            .build());
+
+    // Audit: portal.invoice.paid (PORTAL_CONTACT actor — payer half of the story).
+    // The invoice has no direct projectId column; we derive it from the lines
+    // (single-matter invoices return one project_id; spanning invoices return empty).
+    // The details.project_id field is load-bearing — AuditEventRepository.findByProjectId
+    // filters on it for the matter Activity feed (GAP-L-75c E.14 audit-trail completeness).
+    var projectIds = invoiceLineRepository.findDistinctProjectIdsByInvoiceId(invoice.getId());
+    String projectId = projectIds.size() == 1 ? projectIds.get(0).toString() : "";
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("portal.invoice.paid")
+            .entityType("invoice")
+            .entityId(invoice.getId())
+            .actorType("PORTAL_CONTACT")
+            .source("PORTAL")
+            .details(
+                Map.of(
+                    "project_id",
+                    projectId,
+                    "invoice_number",
+                    invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : "",
+                    "customer_id",
+                    invoice.getCustomerId() != null ? invoice.getCustomerId().toString() : "",
+                    "amount",
+                    invoice.getTotal().toPlainString(),
+                    "currency",
+                    invoice.getCurrency() != null ? invoice.getCurrency() : "",
+                    "payment_reference",
+                    paymentRef,
+                    "provider",
+                    providerSlug))
             .build());
 
     log.info("Reconciled completed payment for invoice {} via {}", invoice.getId(), providerSlug);

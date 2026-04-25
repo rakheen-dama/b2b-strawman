@@ -1,0 +1,107 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e59]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e22]
+            - generic [ref=e25]: Home
+          - link "Matters" [ref=e26] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e27]
+            - generic [ref=e29]: Matters
+          - link "Trust" [ref=e60] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e61]
+            - generic [ref=e65]: Trust
+          - link "Deadlines" [ref=e66] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e67]
+            - generic [ref=e71]: Deadlines
+          - link "Invoices" [ref=e30] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e31]
+            - generic [ref=e34]: Invoices
+          - link "Proposals" [ref=e35] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e36]
+            - generic [ref=e39]: Proposals
+          - link "Requests" [ref=e72] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e74]
+            - generic [ref=e76]: Requests
+        - generic [ref=e40]:
+          - link "Profile" [ref=e41] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e42]
+            - text: Profile
+          - button "Logout" [ref=e45]:
+            - img [ref=e46]
+            - text: Logout
+      - main [ref=e49]:
+        - generic [ref=e50]:
+          - heading "Information requests" [level=1] [ref=e51]
+          - list [ref=e77]:
+            - listitem [ref=e78]:
+              - link "REQ-0007 Dlamini v Road Accident Fund SENT 0/3 submitted" [ref=e79] [cursor=pointer]:
+                - /url: /requests/454dea5d-ec2c-43b9-9b42-c06f6cb24153
+                - generic [ref=e80]:
+                  - generic [ref=e81]:
+                    - paragraph [ref=e82]: REQ-0007
+                    - paragraph [ref=e83]: Dlamini v Road Accident Fund
+                  - generic [ref=e84]:
+                    - paragraph [ref=e85]: SENT
+                    - paragraph [ref=e86]: 0/3 submitted
+            - listitem [ref=e87]:
+              - link "REQ-0004 Dlamini v Road Accident Fund SENT 0/3 submitted" [ref=e88] [cursor=pointer]:
+                - /url: /requests/e89770a9-0446-4766-8c78-e94f7e3b4102
+                - generic [ref=e89]:
+                  - generic [ref=e90]:
+                    - paragraph [ref=e91]: REQ-0004
+                    - paragraph [ref=e92]: Dlamini v Road Accident Fund
+                  - generic [ref=e93]:
+                    - paragraph [ref=e94]: SENT
+                    - paragraph [ref=e95]: 0/3 submitted
+            - listitem [ref=e96]:
+              - link "REQ-0003 Dlamini v Road Accident Fund COMPLETED 0/3 submitted" [ref=e97] [cursor=pointer]:
+                - /url: /requests/b78cb730-a52c-48c1-87ea-f360fe457047
+                - generic [ref=e98]:
+                  - generic [ref=e99]:
+                    - paragraph [ref=e100]: REQ-0003
+                    - paragraph [ref=e101]: Dlamini v Road Accident Fund
+                  - generic [ref=e102]:
+                    - paragraph [ref=e103]: COMPLETED
+                    - paragraph [ref=e104]: 0/3 submitted
+            - listitem [ref=e105]:
+              - link "REQ-0002 Dlamini v Road Accident Fund SENT 0/3 submitted" [ref=e106] [cursor=pointer]:
+                - /url: /requests/59c14d97-4fa8-4681-ab18-eb7bb25746d9
+                - generic [ref=e107]:
+                  - generic [ref=e108]:
+                    - paragraph [ref=e109]: REQ-0002
+                    - paragraph [ref=e110]: Dlamini v Road Accident Fund
+                  - generic [ref=e111]:
+                    - paragraph [ref=e112]: SENT
+                    - paragraph [ref=e113]: 0/3 submitted
+            - listitem [ref=e114]:
+              - link "REQ-0001 Dlamini v Road Accident Fund SENT 0/3 submitted" [ref=e115] [cursor=pointer]:
+                - /url: /requests/ae509cf2-ae26-4e09-adcb-35b028ff6c44
+                - generic [ref=e116]:
+                  - generic [ref=e117]:
+                    - paragraph [ref=e118]: REQ-0001
+                    - paragraph [ref=e119]: Dlamini v Road Accident Fund
+                  - generic [ref=e120]:
+                    - paragraph [ref=e121]: SENT
+                    - paragraph [ref=e122]: 0/3 submitted
+    - contentinfo [ref=e55]:
+      - paragraph [ref=e57]: Powered by DocTeams

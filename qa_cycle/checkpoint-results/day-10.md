@@ -167,7 +167,7 @@ Day 10 complete, zero blocker. Per dispatch scope ("Stop after Day 10"), halting
 ### Evidence summary
 
 - Generated engagement letter: `276d7b95-…`, fileName `engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-25.pdf`, fileSize 3718 B.
-- Acceptance request: `97f17ebe-…`, request_token `sVv_daLWLnSD1xYtkp8iw6I4780NIaQjc4bS02KRVFY`, status SENT→VIEWED→ACCEPTED, sent at 09:56:07 Z, viewed at 09:56:26 Z, accepted at 09:56:48 Z, hasCertificate=true.
+- Acceptance request: `97f17ebe-…`, request_token `<redacted-token>`, status SENT→VIEWED→ACCEPTED, sent at 09:56:07 Z, viewed at 09:56:26 Z, accepted at 09:56:48 Z, hasCertificate=true.
 - Mailpit: acceptance email `jQafLva6oWCinjMkfpF78A` (subject "Please review engagement letter for acceptance: …", href `:3002/accept/<token>`); confirmation email `Vt9z75ZUfxWWUTXrToTaov` ("Confirmed: You have accepted …").
 - Court date: `d4cd7dcd-…` PRE_TRIAL 2026-05-15 Pretoria High Court (created in support of L-58 setup; UI tile verification deferred).
 - Trust transaction: `0a6d1d60-…` DEPOSIT R 50 000,00 RECORDED on 2026-04-25.

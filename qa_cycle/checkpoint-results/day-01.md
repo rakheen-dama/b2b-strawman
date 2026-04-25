@@ -121,13 +121,13 @@ None — Day 1 completed end-to-end. GAP-L-26 and GAP-L-27 are LOW and do not bl
 
 **Branch**: `bugfix_cycle_2026-04-24`
 **Tenant**: `mathebula-partners` (schema `tenant_5039f2d497cf` — recreated fresh in Day 0 Verify run)
-**Actor**: Thandi Mathebula (Owner) — re-logged in via KC (`thandi@mathebula-test.local` / `SecureP@ss1`)
+**Actor**: Thandi Mathebula (Owner) — re-logged in via KC (`thandi@mathebula-test.local` / `<REDACTED>`)
 **Stack**: Keycloak dev stack — frontend :3000, BFF :8443, backend :8080, KC :8180
 
 ## Pre-flight
 
 - Day 0 Verify re-run ended with Carol Mokoena logged in (last registered user). Signed out via sidebar user menu → landing page.
-- Navigated to `/dashboard` → KC login form → logged in as `thandi@mathebula-test.local` / `SecureP@ss1` → redirect to `/org/mathebula-partners/dashboard`. Sidebar shows "Thandi Mathebula".
+- Navigated to `/dashboard` → KC login form → logged in as `thandi@mathebula-test.local` / `<REDACTED>` → redirect to `/org/mathebula-partners/dashboard`. Sidebar shows "Thandi Mathebula".
 - No console errors on login.
 
 ## Checkpoint Results (Cycle 1)

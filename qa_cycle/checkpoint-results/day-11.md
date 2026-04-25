@@ -106,7 +106,7 @@ Day 11 evaluated a NEW BLOCKER (GAP-L-52). Per the execution rules ("stop at fir
 
 - Old REQ-0003 magic-link expired ("Link expired or invalid" — `.playwright-mcp/page-2026-04-25T11-00-10-064Z.yml`).
 - Re-issued via firm UI (Option B): Tab 0 navigated to `/projects/e788a51b-…?tab=requests` → "New Request" → Template = FICA Onboarding Pack → Send Now → REQ-0004 created.
-- Mailpit message `X3oEh2xXMdLE9qmqLL3DHt` href = `http://localhost:3002/auth/exchange?token=QBhNWG_IE4FW_uqmd0eWH0A9f-re6vfmqKBqtwa_lL4&orgId=mathebula-partners` (port 3002 ✓, orgId ✓ — L-42 still intact).
+- Mailpit message `X3oEh2xXMdLE9qmqLL3DHt` href = `http://localhost:3002/auth/exchange?token=<redacted-token>&orgId=mathebula-partners` (port 3002 ✓, orgId ✓ — L-42 still intact).
 - Tab 1 navigated to magic-link → auto-redirect to `/projects` → Sipho header shown → portal session established without disturbing Thandi.
 
 ### Cycle-1 Checkpoint Results

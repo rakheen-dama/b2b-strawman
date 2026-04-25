@@ -128,9 +128,9 @@ Day 7 completed end-to-end within the reduced feature scope (no proposal entity;
 | 7.6 | Effective date / expiry (7-day window) | **PARTIAL** | No effective-date field; expiry surfaces only at Send-for-Acceptance step (`expiryDays=7`). | — |
 | 7.7 | Save → status=Draft (or generated-doc artefact) | **PASS** | `POST /api/templates/0b786248-…/generate` body `{entityId, saveToDocuments:true, acknowledgeWarnings:true, clauses:[…3 required…]}` → HTTP 201, generated_doc `276d7b95-…`, fileSize=3718B, fileName=`engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-25.pdf`. | — |
 | 7.8 | Send for Acceptance | **PASS** | `POST /api/acceptance-requests` body `{generatedDocumentId, portalContactId:127d1c7d-…, expiryDays:7}` → HTTP 201, acceptance_request `97f17ebe-…`, status=SENT, sentAt=`09:56:07 Z`. | — |
-| 7.9 | Status transitions to Sent, acceptance URL generated | **PASS** | DB row `acceptance_requests / 97f17ebe-… / status=SENT / sent_at=09:56:07 Z / request_token=sVv_daLWLnSD1xYtkp8iw6I4780NIaQjc4bS02KRVFY / expires_at=2026-05-02 09:56:07 Z`. | — |
+| 7.9 | Status transitions to Sent, acceptance URL generated | **PASS** | DB row `acceptance_requests / 97f17ebe-… / status=SENT / sent_at=09:56:07 Z / request_token=<redacted-token> / expires_at=2026-05-02 09:56:07 Z`. | — |
 | 7.10 | Mailpit subject contains action keywords (L-51) | **VERIFIED (L-51)** | Subject = `"Mathebula & Partners -- Please review engagement letter for acceptance: engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-25.pdf"` — contains "review" + "engagement letter" + "acceptance" keywords (was previously just "Document for your acceptance"). | **GAP-L-51 VERIFIED** |
-| 7.11 | Email body URL → portal `:3002` (L-50) | **VERIFIED (L-50)** | Both HTML href and text URL = `http://localhost:3002/accept/sVv_daLWLnSD1xYtkp8iw6I4780NIaQjc4bS02KRVFY`. Port :3002 ✓, fresh single-use token ✓. Mailpit message ID `jQafLva6oWCinjMkfpF78A`. | **GAP-L-50 VERIFIED** |
+| 7.11 | Email body URL → portal `:3002` (L-50) | **VERIFIED (L-50)** | Both HTML href and text URL = `http://localhost:3002/accept/<redacted-token>`. Port :3002 ✓, fresh single-use token ✓. Mailpit message ID `jQafLva6oWCinjMkfpF78A`. | **GAP-L-50 VERIFIED** |
 
 ### L-58 — Court dates union into Overview deadlines
 

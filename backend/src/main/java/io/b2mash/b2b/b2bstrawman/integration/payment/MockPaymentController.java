@@ -4,6 +4,8 @@ import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -109,22 +111,50 @@ public class MockPaymentController {
 
     final String finalTenantSchema = tenantSchema;
     final String finalOrgId = orgId;
+    String normalizedStatus = status == null ? "PAID" : status.toUpperCase();
+    boolean webhookSucceeded = false;
     try {
       var carrier = ScopedValue.where(RequestScopes.TENANT_ID, finalTenantSchema);
       if (finalOrgId != null) {
         carrier = carrier.where(RequestScopes.ORG_ID, finalOrgId);
       }
       carrier.run(() -> paymentWebhookService.processWebhook("mock", payload, Map.of()));
+      webhookSucceeded = true;
       log.info(
           "MockPayment: completed sessionId={} invoiceId={} status={}",
           sessionId,
           invoiceId,
-          status);
+          normalizedStatus);
     } catch (Exception e) {
       log.error("MockPayment: failed to process webhook for invoice {}", invoiceId, e);
     }
 
-    return "redirect:" + safeReturnUrl(returnUrl);
+    // Only redirect to the success URL when the webhook actually succeeded AND the user simulated
+    // a successful payment. Anything else (FAILED status, exception during webhook processing)
+    // must surface as a failure on the returning page so the harness doesn't report a false PASS.
+    boolean isSuccess =
+        webhookSucceeded
+            && ("PAID".equals(normalizedStatus)
+                || "COMPLETED".equals(normalizedStatus)
+                || "SUCCESS".equals(normalizedStatus));
+    String safeReturn = safeReturnUrl(returnUrl);
+    String redirectTarget =
+        isSuccess
+            ? safeReturn
+            : appendQueryParam(safeReturn, "status", webhookSucceeded ? "failed" : "error");
+    return "redirect:" + redirectTarget;
+  }
+
+  private static String appendQueryParam(String url, String key, String value) {
+    if (url == null || url.isBlank()) {
+      return url;
+    }
+    String separator = url.contains("?") ? "&" : "?";
+    return url
+        + separator
+        + URLEncoder.encode(key, StandardCharsets.UTF_8)
+        + "="
+        + URLEncoder.encode(value, StandardCharsets.UTF_8);
   }
 
   /**

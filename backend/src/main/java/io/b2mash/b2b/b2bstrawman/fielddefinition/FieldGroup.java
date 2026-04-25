@@ -145,7 +145,7 @@ public class FieldGroup {
   }
 
   public List<String> getApplicableWorkTypes() {
-    return applicableWorkTypes;
+    return applicableWorkTypes == null ? null : List.copyOf(applicableWorkTypes);
   }
 
   // --- Setters for mutable fields ---
@@ -173,7 +173,14 @@ public class FieldGroup {
   }
 
   public void setApplicableWorkTypes(List<String> applicableWorkTypes) {
-    this.applicableWorkTypes = applicableWorkTypes;
+    if (applicableWorkTypes != null
+        && !applicableWorkTypes.isEmpty()
+        && entityType != EntityType.PROJECT) {
+      throw new IllegalStateException(
+          "applicableWorkTypes is PROJECT-only; cannot set on entityType=" + entityType);
+    }
+    this.applicableWorkTypes =
+        applicableWorkTypes == null ? null : List.copyOf(applicableWorkTypes);
     this.updatedAt = Instant.now();
   }
 }

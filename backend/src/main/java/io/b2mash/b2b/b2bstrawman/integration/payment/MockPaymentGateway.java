@@ -48,13 +48,17 @@ public class MockPaymentGateway implements PaymentGateway {
   private final ConcurrentHashMap<String, PaymentStatus> sessionStatus = new ConcurrentHashMap<>();
 
   private final ObjectMapper objectMapper;
-  private final String appBaseUrl;
+  private final String mockCheckoutBaseUrl;
 
   public MockPaymentGateway(
       ObjectMapper objectMapper,
-      @Value("${docteams.app.base-url:http://localhost:8080}") String appBaseUrl) {
+      @Value("${docteams.payment.mock.checkout-base-url:http://localhost:8080}")
+          String mockCheckoutBaseUrl) {
     this.objectMapper = objectMapper;
-    this.appBaseUrl = appBaseUrl;
+    // The mock checkout page is served by MockPaymentController on the backend, NOT the Next.js
+    // frontend. `docteams.app.base-url` points at Next.js (port 3000) by default, so we read a
+    // dedicated property here that points at the backend/gateway origin.
+    this.mockCheckoutBaseUrl = mockCheckoutBaseUrl;
   }
 
   @Override
@@ -73,7 +77,7 @@ public class MockPaymentGateway implements PaymentGateway {
     String currency = request.currency() != null ? request.currency() : "";
 
     String redirectUrl =
-        appBaseUrl
+        mockCheckoutBaseUrl
             + "/portal/dev/mock-payment?sessionId="
             + URLEncoder.encode(sessionId, StandardCharsets.UTF_8)
             + "&invoiceId="

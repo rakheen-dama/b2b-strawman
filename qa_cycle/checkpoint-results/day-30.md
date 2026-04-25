@@ -168,7 +168,7 @@ Confirmed: no SQL writes, no REST writes, no faked payments, no clicks on `/dev/
 
 ## Day 30 Re-walk after L-64 fix — Cycle 1 — RETRY
 
-Cycle: 1 turn 2 (verify after PR #1134 merge SHA `34493c79`) | Date: 2026-04-25 14:09 SAST | Auth: Keycloak Bob (`bob@mathebula-test.local` / `SecureP@ss2`) on :3000 + Sipho portal magic-link on :3002 | Backend PID 41837 | Browser: `mcp__plugin_playwright_playwright__*` namespace (plugin Playwright; main `mcp__playwright__*` was wedged this session)
+Cycle: 1 turn 2 (verify after PR #1134 merge SHA `34493c79`) | Date: 2026-04-25 14:09 SAST | Auth: Keycloak Bob (`bob@mathebula-test.local` / `<REDACTED>`) on :3000 + Sipho portal magic-link on :3002 | Backend PID 41837 | Browser: `mcp__plugin_playwright_playwright__*` namespace (plugin Playwright; main `mcp__playwright__*` was wedged this session)
 
 ### Path taken — **Option B (clean test from fresh disbursement)**
 

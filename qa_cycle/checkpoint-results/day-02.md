@@ -136,12 +136,12 @@ None — Day 2 completed end-to-end within scope. GAP-L-28 is MED (scenario demo
 
 **Branch**: `bugfix_cycle_2026-04-24`
 **Tenant**: `mathebula-partners` (schema `tenant_5039f2d497cf`)
-**Actor**: Bob Ndlovu (Admin) — re-logged in via KC (`bob@mathebula-test.local` / `SecureP@ss2`)
+**Actor**: Bob Ndlovu (Admin) — re-logged in via KC (`bob@mathebula-test.local` / `<REDACTED>`)
 **Stack**: Keycloak dev stack — frontend :3000, BFF :8443, backend :8080, KC :8180
 
 ## Pre-flight
 
-- Signed out Thandi via sidebar Sign Out → landing page → KC login → entered `bob@mathebula-test.local` / `SecureP@ss2`. Landed clean on `/org/mathebula-partners/dashboard`. No session leak.
+- Signed out Thandi via sidebar Sign Out → landing page → KC login → entered `bob@mathebula-test.local` / `<REDACTED>`. Landed clean on `/org/mathebula-partners/dashboard`. No session leak.
 
 ## Checkpoint Results (Cycle 1)
 
@@ -211,7 +211,7 @@ NOT a full halt. This is a MED cascading gap but the L-28 failure does not block
 
 **Branch**: `bugfix_cycle_2026-04-24` (head after PR #1131 merge SHA `74164d0d`)
 **Tenant**: `mathebula-partners` (schema `tenant_5039f2d497cf` — Sipho still present)
-**Actor**: Bob Ndlovu — re-logged in via KC (`bob@mathebula-test.local` / `SecureP@ss2`)
+**Actor**: Bob Ndlovu — re-logged in via KC (`bob@mathebula-test.local` / `<REDACTED>`)
 **Pre-state**: Sipho Dlamini customer (`c3ad51f5-2bda-4a27-b626-7b5c63f37102`) ACTIVE in tenant. RAF matter (`e788a51b-3a73-456c-b932-8d5bd27264c2`) ALREADY EXISTS from a prior partial Day 3 turn (created 2026-04-25 02:34 UTC by prior agent). 1 prior conflict-check row from previous turn (`Sipho Dlamini / NEW_CLIENT / CONFLICT_FOUND` at 02:29:58 UTC, no customer_id).
 
 ### Checkpoint 2.6 re-execution

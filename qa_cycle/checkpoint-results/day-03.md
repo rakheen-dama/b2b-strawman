@@ -262,7 +262,7 @@ Created a new test client via the firm-side Create Client dialog (Bob logged in 
 | 3.11 | Due Date = Day 10 (today + 7) | PASS | Dialog snapshot shows "Due Date (optional)" textbox present. DB: `information_requests.due_date` column exists; REQ-0001 has `due_date=2026-05-02` = today (2026-04-25) + 7d = Day 10. | L-41 → VERIFIED |
 | 3.12 | Send → status = Sent | PASS | DB: REQ-0001 `status=SENT`, `sent_at=2026-04-25 02:38:37.804+00`. | — |
 | 3.13 | Portal contact created/linked | PASS | DB: REQ-0001 `portal_contact_id=127d1c7d-…` ACTIVE for Sipho. Customer detail visible from matter header. | — |
-| 3.14 | Mailpit magic-link email | PASS | Mailpit message `ize9ah2EATLQGhwNJuYkdi` to `sipho.portal@example.com`, subject `"Information request REQ-0001 from Mathebula & Partners"`. Body URL: `http://localhost:3002/auth/exchange?token=YuMT4sl1mkY_QyPVe4CMW1kz8Ef7p6tnFAJo5DGWgv4&orgId=mathebula-partners`. **Port 3002**, **token**, **orgId** all correct. | L-42 → VERIFIED (re-confirmed) |
+| 3.14 | Mailpit magic-link email | PASS | Mailpit message `ize9ah2EATLQGhwNJuYkdi` to `sipho.portal@example.com`, subject `"Information request REQ-0001 from Mathebula & Partners"`. Body URL: `http://localhost:3002/auth/exchange?token=<redacted-token>&orgId=mathebula-partners`. **Port 3002**, **token**, **orgId** all correct. | L-42 → VERIFIED (re-confirmed) |
 
 ### Verify-Focus tally (this turn)
 - **L-33** (FICA Onboarding Pack template) — VERIFIED (3.8). Template list contains "FICA Onboarding Pack (3 items)".

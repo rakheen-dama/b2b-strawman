@@ -129,7 +129,7 @@ Day 8 complete, no blocker. Proceeding to Day 10 (trust deposit) in the same tur
 
 ### Pre-state
 
-Continuation from Day 7 same turn. acceptance_request `97f17ebe-…` status=SENT, request_token=`sVv_daLWLnSD1xYtkp8iw6I4780NIaQjc4bS02KRVFY`, portal email already in Mailpit pointing at `http://localhost:3002/accept/<token>`.
+Continuation from Day 7 same turn. acceptance_request `97f17ebe-…` status=SENT, request_token=`<redacted-token>`, portal email already in Mailpit pointing at `http://localhost:3002/accept/<token>`.
 
 ### Checkpoints
 

@@ -18,7 +18,7 @@ Carry-forward re-observations: GAP-L-22 session handoff clean (Bob KC logged in 
 ## Pre-flight
 
 - Services verified UP via `curl`: backend `{"status":"UP"}`, frontend 200, gateway 200, portal 307.
-- Bob session: fresh Keycloak two-step login (`bob@mathebula-test.local` / `SecureP@ss2`) → landed on `/org/mathebula-partners/dashboard`. Sidebar identity stable throughout turn ("BN — Bob Ndlovu — bob@mathebula-test.local"). Breadcrumb OK.
+- Bob session: fresh Keycloak two-step login (`bob@mathebula-test.local` / `<REDACTED>`) → landed on `/org/mathebula-partners/dashboard`. Sidebar identity stable throughout turn ("BN — Bob Ndlovu — bob@mathebula-test.local"). Breadcrumb OK.
 - Dashboard visible state: 2 ACTIVE matters ("Estate Late Peter Moroka", "Dlamini v Road Accident Fund"), 0 hours logged this month, 10 unread notifications.
 - DB pre-check (Sipho lifecycle): `SELECT lifecycle_status FROM tenant_5039f2d497cf.customers WHERE id='8fe5eea2-…'` → **`PROSPECT`** (confirms the gate will fire).
 

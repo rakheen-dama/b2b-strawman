@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.document.Document;
+import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -15,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectStatus;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureReason;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureRequest;
@@ -69,6 +72,8 @@ class MatterClosureServiceIntegrationTest {
   @Autowired private ProjectRepository projectRepository;
   @Autowired private JdbcTemplate jdbcTemplate;
   @Autowired private ApplicationEvents events;
+  @Autowired private GeneratedDocumentRepository generatedDocumentRepository;
+  @Autowired private DocumentRepository documentRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -361,6 +366,56 @@ class MatterClosureServiceIntegrationTest {
   }
 
   // ==========================================================================
+  // GAP-L-74 part B — closure letter linked Document is flipped to SHARED so
+  // it appears on the portal Documents tab.
+  // ==========================================================================
+
+  @Test
+  void close_withGenerateClosureLetterTrue_flipsLinkedDocumentVisibility_toShared() {
+    UUID projectId = createProject("L-74b Closure Letter Visibility Matter");
+
+    var response =
+        runInTenantReturning(
+            () ->
+                matterClosureService.close(
+                    projectId,
+                    new ClosureRequest(
+                        ClosureReason.CONCLUDED,
+                        "L-74b regression",
+                        /* generateClosureLetter */ true,
+                        /* override */ true,
+                        VALID_JUSTIFICATION),
+                    memberId));
+
+    assertThat(response.closureLetterDocumentId())
+        .as("closure letter GeneratedDocument id must be set when generateClosureLetter=true")
+        .isNotNull();
+
+    runInTenantAsOwner(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var generated =
+                      generatedDocumentRepository
+                          .findById(response.closureLetterDocumentId())
+                          .orElseThrow();
+                  assertThat(generated.getDocumentId())
+                      .as("closure letter must have a paired Document via createLinkedDocument")
+                      .isNotNull();
+
+                  var linkedDoc =
+                      documentRepository.findById(generated.getDocumentId()).orElseThrow();
+                  assertThat(linkedDoc.getVisibility())
+                      .as(
+                          "GAP-L-74 part B: closure-letter linked Document must be flipped"
+                              + " to SHARED so it appears on the portal Documents tab")
+                      .isEqualTo(Document.Visibility.SHARED);
+                  assertThat(linkedDoc.getProjectId()).isEqualTo(projectId);
+                  assertThat(linkedDoc.getFileName()).startsWith("matter-closure-letter");
+                }));
+  }
+
+  // ==========================================================================
   // Helpers
   // ==========================================================================
 
@@ -390,5 +445,13 @@ class MatterClosureServiceIntegrationTest {
             RequestScopes.CAPABILITIES,
             Set.copyOf(io.b2mash.b2b.b2bstrawman.orgrole.Capability.ALL_NAMES))
         .run(action);
+  }
+
+  private <T> T runInTenantReturning(java.util.function.Supplier<T> action) {
+    Object[] holder = new Object[1];
+    runInTenantAsOwner(() -> holder[0] = action.get());
+    @SuppressWarnings("unchecked")
+    T value = (T) holder[0];
+    return value;
   }
 }

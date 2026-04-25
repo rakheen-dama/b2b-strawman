@@ -530,16 +530,9 @@ public class ProjectTemplateService {
     if (customer != null) {
       project.setCustomerId(customer.getId());
     }
-    // GAP-S3-04: resolve vertical-profile auto-apply field groups (e.g. the
-    // "SA Legal — Matter Details" group for legal-za) so template-created
-    // matters surface the same custom-field surface area as projects created
-    // via ProjectService.createProject. Mirrors ProjectFieldService.prepareForCreate.
-    var autoApplyFieldGroupIds = fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT);
-    if (!autoApplyFieldGroupIds.isEmpty()) {
-      project.setAppliedFieldGroups(autoApplyFieldGroupIds);
-    }
-    project = projectRepository.save(project);
-    // GAP-D3-02: apply promoted fields supplied from the creation dialog
+    // GAP-D3-02: apply promoted fields supplied from the creation dialog. GAP-L-37-regression-
+    // 2026-04-25: workType must be set BEFORE auto-apply resolution so work-type-scoped field
+    // groups (conveyancing-za-project) attach correctly — moved up from after the save.
     if (request.referenceNumber() != null) {
       project.setReferenceNumber(request.referenceNumber());
     }
@@ -549,6 +542,19 @@ public class ProjectTemplateService {
     if (request.workType() != null) {
       project.setWorkType(request.workType());
     }
+    // GAP-S3-04: resolve vertical-profile auto-apply field groups (e.g. the
+    // "SA Legal — Matter Details" group for legal-za) so template-created
+    // matters surface the same custom-field surface area as projects created
+    // via ProjectService.createProject. Mirrors ProjectFieldService.prepareForCreate.
+    // GAP-L-37-regression-2026-04-25: pass request.workType() so work-type-scoped groups
+    // (e.g. conveyancing-za-project) only auto-attach to matters with matching work_type;
+    // legal-za-project remains unscoped and still applies to every legal-za matter.
+    var autoApplyFieldGroupIds =
+        fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT, request.workType());
+    if (!autoApplyFieldGroupIds.isEmpty()) {
+      project.setAppliedFieldGroups(autoApplyFieldGroupIds);
+    }
+    project = projectRepository.save(project);
 
     // 6. Link to customer
     if (customer != null) {
@@ -688,7 +694,14 @@ public class ProjectTemplateService {
     // GAP-S3-04: apply vertical-profile auto-apply field groups so scheduler-
     // instantiated projects pick up custom-field groups the same way
     // instantiateTemplate() does.
-    var autoApplyFieldGroupIds = fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT);
+    // GAP-L-37-regression-2026-04-25: scheduler-instantiated projects don't carry a work_type
+    // (templates produce projects; work_type is set per-project on creation in the dialog flow).
+    // Pass null → only unscoped groups auto-attach. Work-type-scoped groups (conveyancing-za-
+    // project) are correctly skipped here, avoiding the legal-za regression where every recurring
+    // matter inherited conveyancing fields. TODO: when ProjectTemplate gains a workType column,
+    // pass template.getWorkType() through instead.
+    var autoApplyFieldGroupIds =
+        fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT, null);
     if (!autoApplyFieldGroupIds.isEmpty()) {
       project.setAppliedFieldGroups(autoApplyFieldGroupIds);
     }

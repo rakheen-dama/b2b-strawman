@@ -7,7 +7,8 @@
     "slug": "conveyancing_za_matter",
     "name": "SA Conveyancing — Matter Details",
     "description": "South African conveyancing-specific fields for property transfer matters (projects with matter_type = CONVEYANCING)",
-    "autoApply": true
+    "autoApply": true,
+    "applicableWorkTypes": ["CONVEYANCING"]
   },
   "fields": [
     {

@@ -56,12 +56,18 @@ class ProjectFieldService {
   /**
    * Prepares field-related data for project creation: validates custom fields, applies naming
    * pattern, and resolves auto-apply field groups.
+   *
+   * <p>GAP-L-37-regression-2026-04-25: {@code workType} is forwarded to {@link
+   * FieldGroupService#resolveAutoApplyGroupIds(EntityType, String)} so that work-type-scoped groups
+   * (e.g. {@code conveyancing-za-project}) only auto-attach to matching projects. Pass {@code null}
+   * for projects without an explicit work_type — unscoped groups still apply.
    */
   CreateFieldResult prepareForCreate(
       String name,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
-      String customerName) {
+      String customerName,
+      String workType) {
     // Validate custom fields
     Map<String, Object> validatedFields =
         customFieldValidator.validate(
@@ -82,7 +88,7 @@ class ProjectFieldService {
     }
 
     // Resolve auto-apply field groups and merge with explicitly applied groups
-    var autoApplyIds = fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT);
+    var autoApplyIds = fieldGroupService.resolveAutoApplyGroupIds(EntityType.PROJECT, workType);
     List<UUID> mergedFieldGroups =
         appliedFieldGroups != null ? new ArrayList<>(appliedFieldGroups) : new ArrayList<>();
     if (!autoApplyIds.isEmpty()) {

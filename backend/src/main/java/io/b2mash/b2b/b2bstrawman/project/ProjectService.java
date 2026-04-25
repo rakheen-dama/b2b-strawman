@@ -160,9 +160,12 @@ public class ProjectService {
       customerName = projectFieldService.resolveCustomerName(customerId);
     }
 
-    // Validate fields, apply naming pattern, resolve auto-apply groups
+    // Validate fields, apply naming pattern, resolve auto-apply groups. GAP-L-37-regression-
+    // 2026-04-25: pass workType so work-type-scoped groups (e.g. conveyancing-za-project) only
+    // auto-attach to matching projects; unscoped groups continue to apply regardless.
     var fieldResult =
-        projectFieldService.prepareForCreate(name, customFields, appliedFieldGroups, customerName);
+        projectFieldService.prepareForCreate(
+            name, customFields, appliedFieldGroups, customerName, workType);
 
     var project = new Project(fieldResult.resolvedName(), description, createdBy);
     project.setCustomFields(fieldResult.validatedFields());

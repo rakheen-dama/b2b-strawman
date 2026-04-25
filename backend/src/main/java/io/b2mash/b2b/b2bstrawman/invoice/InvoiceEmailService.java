@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.notification.template.EmailTemplateRenderer;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,18 +28,21 @@ public class InvoiceEmailService {
   private final EmailContextBuilder emailContextBuilder;
   private final EmailDeliveryLogService deliveryLogService;
   private final EmailRateLimiter emailRateLimiter;
+  private final String portalBaseUrl;
 
   public InvoiceEmailService(
       IntegrationRegistry integrationRegistry,
       EmailTemplateRenderer emailTemplateRenderer,
       EmailContextBuilder emailContextBuilder,
       EmailDeliveryLogService deliveryLogService,
-      EmailRateLimiter emailRateLimiter) {
+      EmailRateLimiter emailRateLimiter,
+      @Value("${docteams.app.portal-base-url:http://localhost:3002}") String portalBaseUrl) {
     this.integrationRegistry = integrationRegistry;
     this.emailTemplateRenderer = emailTemplateRenderer;
     this.emailContextBuilder = emailContextBuilder;
     this.deliveryLogService = deliveryLogService;
     this.emailRateLimiter = emailRateLimiter;
+    this.portalBaseUrl = portalBaseUrl;
   }
 
   public void sendInvoiceEmail(Invoice invoice, byte[] pdfBytes) {
@@ -68,7 +72,12 @@ public class InvoiceEmailService {
       context.put("dueDate", invoice.getDueDate() != null ? invoice.getDueDate().toString() : null);
       String orgName = (String) context.get("orgName");
       context.put("subject", "Invoice " + invoice.getInvoiceNumber() + " from " + orgName);
-      context.put("portalUrl", null);
+      // GAP-L-64 — always populate portalUrl so the email "View Invoice" CTA renders with a
+      // working href even when no PSP is configured (paymentUrl is null).
+      context.put("portalUrl", portalBaseUrl + "/invoices/" + invoice.getId());
+      context.put("paymentUrl", invoice.getPaymentUrl());
+      // Note: passing invoice.getPaymentUrl() (may be null) preserves existing template
+      // behaviour — the Pay Now block is gated on ${paymentUrl} and remains hidden when null.
 
       // 3. Render template
       var rendered = emailTemplateRenderer.render(TEMPLATE_NAME, context);

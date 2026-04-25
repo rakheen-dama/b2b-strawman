@@ -122,7 +122,7 @@ public class KeycloakProvisioningClient {
       // regression persists for that org. See qa_cycle/fix-specs/GAP-L-22-regression.md.
       log.info("Keycloak org with alias '{}' already exists, looking up ID", slug);
       String existingId = findOrganizationByAlias(slug);
-      updateOrganizationRedirectUrl(existingId, name, slug);
+      updateOrganizationRedirectUrl(existingId, slug);
       return existingId;
     }
   }
@@ -133,21 +133,39 @@ public class KeycloakProvisioningClient {
    * get the current bounce-page target rather than a stale {@code /dashboard} redirect.
    *
    * <p>Keycloak's organization update endpoint is {@code PUT
-   * /admin/realms/{realm}/organizations/{orgId}} with the organization representation in the body.
-   * We include {@code name}, {@code alias}, {@code enabled} alongside {@code redirectUrl} to keep
-   * the representation consistent with what {@link #createOrganization} initially POSTed; KC merges
-   * these fields into the stored org.
+   * /admin/realms/{realm}/organizations/{orgId}}, which performs a <b>full replacement</b> of the
+   * organization representation, not a partial merge (see Keycloak issue #41885 and the KC 26.0.1
+   * {@code OrganizationResource} API docs). Sending a body with only the fields we care about would
+   * overwrite or null out other persisted state — most critically {@code domains} and {@code
+   * attributes}, which carry tenant-customised data.
+   *
+   * <p>We therefore use a read-modify-write pattern: GET the existing representation, mutate
+   * <b>only</b> {@code redirectUrl}, and PUT the whole thing back. The representation is
+   * round-tripped as a {@code Map<String,Object>} so any fields KC returns (including ones added in
+   * future KC versions we don't know about yet) survive untouched.
    */
-  private void updateOrganizationRedirectUrl(String orgId, String name, String slug) {
-    var body =
-        Map.of(
-            "name", name, "alias", slug, "enabled", true, "redirectUrl", organizationRedirectUrl);
+  @SuppressWarnings("unchecked")
+  private void updateOrganizationRedirectUrl(String orgId, String slug) {
+    Map<String, Object> existing =
+        restClient
+            .get()
+            .uri("/organizations/{orgId}", orgId)
+            .header("Authorization", "Bearer " + getAdminToken())
+            .retrieve()
+            .body(Map.class);
+    if (existing == null) {
+      throw new IllegalStateException(
+          "Keycloak GET /organizations/" + orgId + " returned no body; cannot safely update");
+    }
+    // Mutate ONLY redirectUrl; preserve everything else KC sent (name, alias, enabled, domains,
+    // attributes, and any unknown fields).
+    existing.put("redirectUrl", organizationRedirectUrl);
     restClient
         .put()
         .uri("/organizations/{orgId}", orgId)
         .header("Authorization", "Bearer " + getAdminToken())
         .contentType(MediaType.APPLICATION_JSON)
-        .body(body)
+        .body(existing)
         .retrieve()
         .toBodilessEntity();
     log.info("Updated redirectUrl on existing Keycloak org {} (alias '{}')", orgId, slug);

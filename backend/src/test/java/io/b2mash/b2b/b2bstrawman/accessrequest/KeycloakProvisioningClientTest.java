@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.accessrequest;
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
 import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
+import static com.github.tomakehurst.wiremock.client.WireMock.getRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.matchingJsonPath;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.put;
@@ -107,8 +109,24 @@ class KeycloakProvisioningClientTest {
                         ]
                         """)));
 
-    // PUT /organizations/{orgId} stub — 409 retry path now also updates redirectUrl on the
-    // existing org so legacy orgs get the corrected /accept-invite/complete bounce target.
+    // 409 retry path now does GET → mutate redirectUrl → PUT (read-modify-write) so we don't
+    // clobber existing fields KC stores on the org. GET stub returns the existing representation.
+    wireMock.stubFor(
+        get(urlEqualTo("/admin/realms/docteams/organizations/org-correct"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        """
+                        {
+                          "id":"org-correct",
+                          "name":"Mathebula & Partners",
+                          "alias":"mathebula-partners",
+                          "enabled":true,
+                          "redirectUrl":"http://localhost:3000/dashboard"
+                        }
+                        """)));
     wireMock.stubFor(
         put(urlEqualTo("/admin/realms/docteams/organizations/org-correct"))
             .willReturn(aResponse().withStatus(204)));
@@ -158,7 +176,23 @@ class KeycloakProvisioningClientTest {
                         ]
                         """)));
 
-    // PUT /organizations/{orgId} stub — see other 409 tests for context.
+    // GET → PUT round-trip stubs (see other 409 tests for context).
+    wireMock.stubFor(
+        get(urlEqualTo("/admin/realms/docteams/organizations/org-correct"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        """
+                        {
+                          "id":"org-correct",
+                          "name":"Mathebula & Partners",
+                          "alias":"mathebula-partners",
+                          "enabled":true,
+                          "redirectUrl":"http://localhost:3000/dashboard"
+                        }
+                        """)));
     wireMock.stubFor(
         put(urlEqualTo("/admin/realms/docteams/organizations/org-correct"))
             .willReturn(aResponse().withStatus(204)));
@@ -271,6 +305,27 @@ class KeycloakProvisioningClientTest {
                         ]
                         """)));
 
+    // GET stub: returns the existing org representation, including domains/attributes that
+    // MUST survive the PUT round-trip untouched (KC's PUT is full replacement, not merge).
+    wireMock.stubFor(
+        get(urlEqualTo("/admin/realms/docteams/organizations/legacy-org-id"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        """
+                        {
+                          "id":"legacy-org-id",
+                          "name":"Legacy Firm",
+                          "alias":"legacy-firm",
+                          "enabled":true,
+                          "redirectUrl":"http://localhost:3000/dashboard",
+                          "domains":[{"name":"legacy.example.com","verified":true}],
+                          "attributes":{"creatorUserId":["user-abc-123"],"customField":["preserved"]}
+                        }
+                        """)));
+
     wireMock.stubFor(
         put(urlEqualTo("/admin/realms/docteams/organizations/legacy-org-id"))
             .willReturn(aResponse().withStatus(204)));
@@ -278,11 +333,28 @@ class KeycloakProvisioningClientTest {
     String id = client.createOrganization("Legacy Firm", "legacy-firm");
 
     assertThat(id).isEqualTo("legacy-org-id");
-    // Verify the PUT was issued with the corrected redirectUrl pointing at the bounce page.
+    // Verify GET was called before PUT (read-modify-write).
+    wireMock.verify(
+        getRequestedFor(urlEqualTo("/admin/realms/docteams/organizations/legacy-org-id")));
+    // Verify the PUT carries the new redirectUrl AND preserves all other fields from the GET
+    // response untouched. This is the core assertion for the CodeRabbit Major finding: KC's
+    // PUT does full replacement, so any field we omit (or mutate) gets clobbered. We must
+    // round-trip name/alias/enabled/domains/attributes verbatim.
     wireMock.verify(
         putRequestedFor(urlEqualTo("/admin/realms/docteams/organizations/legacy-org-id"))
             .withRequestBody(
-                containing("\"redirectUrl\":\"http://localhost:3000/accept-invite/complete\"")));
+                matchingJsonPath(
+                    "$.redirectUrl", containing("http://localhost:3000/accept-invite/complete")))
+            .withRequestBody(matchingJsonPath("$.name", containing("Legacy Firm")))
+            .withRequestBody(matchingJsonPath("$.alias", containing("legacy-firm")))
+            .withRequestBody(matchingJsonPath("$.enabled"))
+            .withRequestBody(
+                matchingJsonPath("$.domains[0].name", containing("legacy.example.com")))
+            .withRequestBody(matchingJsonPath("$.domains[0].verified"))
+            .withRequestBody(
+                matchingJsonPath("$.attributes.creatorUserId[0]", containing("user-abc-123")))
+            .withRequestBody(
+                matchingJsonPath("$.attributes.customField[0]", containing("preserved"))));
   }
 
   @Test

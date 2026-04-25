@@ -29,10 +29,7 @@ vi.mock("@/lib/api", () => ({
 // "use server" module can load without pulling Next.js runtime internals.
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-import {
-  fetchCustomers,
-  fetchProjects,
-} from "@/app/(app)/org/[slug]/conflict-check/actions";
+import { fetchCustomers, fetchProjects } from "@/app/(app)/org/[slug]/conflict-check/actions";
 
 describe("conflict-check actions — fetchCustomers / fetchProjects defensive parse", () => {
   beforeEach(() => {
@@ -58,9 +55,7 @@ describe("conflict-check actions — fetchCustomers / fetchProjects defensive pa
       content: [{ id: "c2", name: "Nontando Zulu" }],
       page: { totalElements: 1, totalPages: 1, size: 200, number: 0 },
     });
-    await expect(fetchCustomers()).resolves.toEqual([
-      { id: "c2", name: "Nontando Zulu" },
-    ]);
+    await expect(fetchCustomers()).resolves.toEqual([{ id: "c2", name: "Nontando Zulu" }]);
   });
 
   it("fetchCustomers returns [] on null/undefined response", async () => {
@@ -92,9 +87,7 @@ describe("conflict-check actions — fetchCustomers / fetchProjects defensive pa
       content: [{ id: "p1", name: "Mathebula v Mthembu" }],
       page: { totalElements: 1, totalPages: 1, size: 200, number: 0 },
     });
-    await expect(fetchProjects()).resolves.toEqual([
-      { id: "p1", name: "Mathebula v Mthembu" },
-    ]);
+    await expect(fetchProjects()).resolves.toEqual([{ id: "p1", name: "Mathebula v Mthembu" }]);
   });
 
   it("fetchProjects returns [] on null/undefined response", async () => {

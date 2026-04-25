@@ -204,3 +204,40 @@ NOT a full halt. This is a MED cascading gap but the L-28 failure does not block
 ## Next QA Position
 
 **Day 3 — 3.1** (Create RAF matter, send FICA info request). Bob still logged in, no context swap needed.
+
+---
+
+## Day 2 Re-Verify after L-29 fix — Cycle 1 Verify — 2026-04-25 06:04 SAST
+
+**Branch**: `bugfix_cycle_2026-04-24` (head after PR #1131 merge SHA `74164d0d`)
+**Tenant**: `mathebula-partners` (schema `tenant_5039f2d497cf` — Sipho still present)
+**Actor**: Bob Ndlovu — re-logged in via KC (`bob@mathebula-test.local` / `SecureP@ss2`)
+**Pre-state**: Sipho Dlamini customer (`c3ad51f5-2bda-4a27-b626-7b5c63f37102`) ACTIVE in tenant. RAF matter (`e788a51b-3a73-456c-b932-8d5bd27264c2`) ALREADY EXISTS from a prior partial Day 3 turn (created 2026-04-25 02:34 UTC by prior agent). 1 prior conflict-check row from previous turn (`Sipho Dlamini / NEW_CLIENT / CONFLICT_FOUND` at 02:29:58 UTC, no customer_id).
+
+### Checkpoint 2.6 re-execution
+
+| ID | Description | Result | Evidence |
+|----|-------------|--------|----------|
+| 2.6 | Result = CLEAR (no pre-existing records) on Sipho self-check with customerId | **PASS — GAP-L-29-regression VERIFIED + GAP-L-28 VERIFIED** | Re-ran conflict check end-to-end. **Customer dropdown now hydrated** with `Sipho Dlamini` option (was empty before PR #1131). Selected Sipho. Filled Name=`Sipho Dlamini`, ID=`8501015800088`, Check Type=New Client. Clicked **Run Conflict Check** → result rendered **green "No Conflict"** callout, badge "No Conflict", timestamp `25/04/2026, 06:03:59`. DB confirms: `tenant_5039f2d497cf.conflict_checks` new row `Sipho Dlamini / NEW_CLIENT / NO_CONFLICT / customer_id=c3ad51f5-2bda-4a27-b626-7b5c63f37102 / 2026-04-25 04:03:59 UTC`. **Both L-29 dropdown hydration AND L-28 self-exclusion now end-to-end VERIFIED.** |
+| 2.7 | Screenshot day-02-conflict-check-clear.png | PASS | `qa_cycle/checkpoint-results/day-02-2.6-clear-after-l29-fix.png` saved (full page). Shows hydrated Sipho selection, green No Conflict result. |
+
+### Bonus passive observation — Matter dropdown also hydrated
+
+Matter (optional) dropdown also populated with `Dlamini v Road Accident Fund` (the RAF matter created in the prior partial turn). PR #1131 applied the defensive parse to `fetchProjects` as well, pre-empting the latent same-shape-mismatch on the matter combobox. Confirmed end-to-end.
+
+### Tally — Day 2 final close
+
+- PASS: 7/7 substantive checkpoints (2.1–2.7 all PASS)
+- N/A: 3 (2.8–2.10 KYC adapter L-30 deferred to Sprint 2)
+- FAIL: 0
+
+### Gap status updates
+
+| GAP-ID | Status |
+|---|---|
+| GAP-L-29-regression | **VERIFIED** (Customer + Matter dropdowns both hydrate correctly; defensive parse holds against raw-array response) |
+| GAP-L-28 | **VERIFIED end-to-end** (with customerId set via dropdown, backend self-excludes the subject; result = NO_CONFLICT) |
+
+### QA Position on exit
+
+**Day 3 — 3.1+** (Day 3 partially executed in prior turn — matter + REQ-0001 already exist; need to re-verify checkpoints 3.5/3.6/3.8/3.10/3.12 as cycle 1 against the existing data, then proceed to Day 4 portal upload).

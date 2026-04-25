@@ -69,7 +69,7 @@ public class PortalCommentService {
             .entityType("comment")
             .entityId(comment.getId())
             .actorId(authorId)
-            .actorType("PORTAL_USER")
+            .actorType("PORTAL_CONTACT")
             .source("PORTAL")
             .details(
                 Map.of(

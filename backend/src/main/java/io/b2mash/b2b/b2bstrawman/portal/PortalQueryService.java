@@ -1,11 +1,14 @@
 package io.b2mash.b2b.b2bstrawman.portal;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.time.Duration;
@@ -37,18 +40,21 @@ public class PortalQueryService {
   private final ProjectRepository projectRepository;
   private final DocumentRepository documentRepository;
   private final StorageService storageService;
+  private final AuditService auditService;
 
   public PortalQueryService(
       CustomerRepository customerRepository,
       CustomerProjectRepository customerProjectRepository,
       ProjectRepository projectRepository,
       DocumentRepository documentRepository,
-      StorageService storageService) {
+      StorageService storageService,
+      AuditService auditService) {
     this.customerRepository = customerRepository;
     this.customerProjectRepository = customerProjectRepository;
     this.projectRepository = projectRepository;
     this.documentRepository = documentRepository;
     this.storageService = storageService;
+    this.auditService = auditService;
   }
 
   /** Validates that the customer exists in the current tenant. */
@@ -163,14 +169,45 @@ public class PortalQueryService {
     return document;
   }
 
-  /** Generates a presigned download URL for a portal-accessible document. */
-  @Transactional(readOnly = true)
+  /**
+   * Generates a presigned download URL for a portal-accessible document and emits a {@code
+   * portal.document.downloaded} audit event with {@code actorType=PORTAL_CONTACT}. The audit row's
+   * {@code details.project_id} is load-bearing for the matter Activity feed (see {@link
+   * io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository#findByProjectId}).
+   */
+  @Transactional
   public PortalPresignedDownloadResult getPresignedDownloadUrl(UUID documentId, UUID customerId) {
     var document = getDocument(documentId, customerId);
     if (document.getStatus() != Document.Status.UPLOADED) {
       throw new ResourceNotFoundException("Document", documentId);
     }
     var presigned = storageService.generateDownloadUrl(document.getS3Key(), URL_EXPIRY);
+
+    // Audit: portal.document.downloaded (PORTAL_CONTACT actor)
+    UUID actorId =
+        RequestScopes.PORTAL_CONTACT_ID.isBound()
+            ? RequestScopes.PORTAL_CONTACT_ID.get()
+            : customerId;
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("portal.document.downloaded")
+            .entityType("document")
+            .entityId(documentId)
+            .actorId(actorId)
+            .actorType("PORTAL_CONTACT")
+            .source("PORTAL")
+            .details(
+                Map.of(
+                    "project_id",
+                    document.getProjectId() != null ? document.getProjectId().toString() : "",
+                    "file_name",
+                    document.getFileName() != null ? document.getFileName() : "",
+                    "scope",
+                    document.getScope() != null ? document.getScope() : "",
+                    "customer_id",
+                    customerId.toString()))
+            .build());
+
     return new PortalPresignedDownloadResult(presigned.url(), URL_EXPIRY.toSeconds());
   }
 

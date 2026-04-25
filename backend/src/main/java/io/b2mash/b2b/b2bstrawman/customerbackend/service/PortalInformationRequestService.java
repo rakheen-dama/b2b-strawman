@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.service;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalRequestItemView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalRequestView;
 import io.b2mash.b2b.b2bstrawman.document.Document;
@@ -46,6 +48,7 @@ public class PortalInformationRequestService {
   private final StorageService storageService;
   private final ApplicationEventPublisher eventPublisher;
   private final PortalContactRepository portalContactRepository;
+  private final AuditService auditService;
 
   public PortalInformationRequestService(
       PortalReadModelService portalReadModelService,
@@ -54,7 +57,8 @@ public class PortalInformationRequestService {
       DocumentRepository documentRepository,
       StorageService storageService,
       ApplicationEventPublisher eventPublisher,
-      PortalContactRepository portalContactRepository) {
+      PortalContactRepository portalContactRepository,
+      AuditService auditService) {
     this.portalReadModelService = portalReadModelService;
     this.requestRepository = requestRepository;
     this.itemRepository = itemRepository;
@@ -62,6 +66,7 @@ public class PortalInformationRequestService {
     this.storageService = storageService;
     this.eventPublisher = eventPublisher;
     this.portalContactRepository = portalContactRepository;
+    this.auditService = auditService;
   }
 
   /** Lists all information requests for the given portal contact. */
@@ -146,6 +151,31 @@ public class PortalInformationRequestService {
 
     var presigned = storageService.generateUploadUrl(s3Key, contentType, UPLOAD_URL_EXPIRY);
 
+    // Audit: portal.document.upload_initiated (PORTAL_CONTACT actor)
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("portal.document.upload_initiated")
+            .entityType("document")
+            .entityId(document.getId())
+            .actorId(portalContactId)
+            .actorType("PORTAL_CONTACT")
+            .source("PORTAL")
+            .details(
+                Map.of(
+                    "project_id",
+                    projectId != null ? projectId.toString() : "",
+                    "request_id",
+                    requestId.toString(),
+                    "item_id",
+                    itemId.toString(),
+                    "file_name",
+                    fileName,
+                    "content_type",
+                    contentType,
+                    "size_bytes",
+                    String.valueOf(size)))
+            .build());
+
     return new UploadInitResult(document.getId(), presigned.url(), presigned.expiresAt());
   }
 
@@ -194,6 +224,7 @@ public class PortalInformationRequestService {
 
     autoTransitionToInProgress(request);
     publishItemSubmittedEvent(request, item, portalContactId);
+    emitItemSubmittedAudit(request, item, portalContactId, documentId);
   }
 
   /** Submits a text response for a request item. */
@@ -217,6 +248,7 @@ public class PortalInformationRequestService {
 
     autoTransitionToInProgress(request);
     publishItemSubmittedEvent(request, item, portalContactId);
+    emitItemSubmittedAudit(request, item, portalContactId, null);
   }
 
   // ── Private helpers ──────────────────────────────────────────────────
@@ -265,6 +297,42 @@ public class PortalInformationRequestService {
       request.markInProgress();
       requestRepository.save(request);
     }
+  }
+
+  /**
+   * Emits a {@code portal.request_item.submitted} audit event with {@code actorType=PORTAL_CONTACT}
+   * after a request item is submitted (file or text). The {@code details.project_id} field is
+   * load-bearing — {@link io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository#findByProjectId}
+   * filters on it for the matter Activity feed.
+   */
+  private void emitItemSubmittedAudit(
+      io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequest request,
+      io.b2mash.b2b.b2bstrawman.informationrequest.RequestItem item,
+      UUID portalContactId,
+      UUID documentId) {
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("portal.request_item.submitted")
+            .entityType("request_item")
+            .entityId(item.getId())
+            .actorId(portalContactId)
+            .actorType("PORTAL_CONTACT")
+            .source("PORTAL")
+            .details(
+                Map.of(
+                    "project_id",
+                    request.getProjectId() != null ? request.getProjectId().toString() : "",
+                    "request_id",
+                    request.getId().toString(),
+                    "request_number",
+                    request.getRequestNumber() != null ? request.getRequestNumber() : "",
+                    "item_name",
+                    item.getName() != null ? item.getName() : "",
+                    "response_type",
+                    documentId != null ? "FILE" : "TEXT",
+                    "document_id",
+                    documentId != null ? documentId.toString() : ""))
+            .build());
   }
 
   private void publishItemSubmittedEvent(

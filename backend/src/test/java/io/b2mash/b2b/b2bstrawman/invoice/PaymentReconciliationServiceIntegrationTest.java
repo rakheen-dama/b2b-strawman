@@ -127,6 +127,27 @@ class PaymentReconciliationServiceIntegrationTest {
                       var invoice =
                           invoiceRepository.findById(UUID.fromString(invoiceId)).orElseThrow();
                       assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.PAID);
+
+                      // GAP-L-75c: portal.invoice.paid PORTAL_CONTACT audit row must land
+                      var portalPaidEvents =
+                          auditEventRepository
+                              .findByFilter(
+                                  "invoice",
+                                  UUID.fromString(invoiceId),
+                                  null,
+                                  "portal.invoice.paid",
+                                  null,
+                                  null,
+                                  PageRequest.of(0, 10))
+                              .getContent();
+                      assertThat(portalPaidEvents).isNotEmpty();
+                      var portalPaid = portalPaidEvents.get(0);
+                      assertThat(portalPaid.getActorType()).isEqualTo("PORTAL_CONTACT");
+                      assertThat(portalPaid.getSource()).isEqualTo("PORTAL");
+                      // project_id is load-bearing for matter Activity feed (findByProjectId)
+                      assertThat(portalPaid.getDetails()).containsKey("project_id");
+                      assertThat(portalPaid.getDetails().get("provider"))
+                          .isEqualTo("test-provider");
                     }));
   }
 

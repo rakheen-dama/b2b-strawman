@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
@@ -64,6 +65,7 @@ class PortalInformationRequestControllerTest {
   @Autowired private ProjectRepository projectRepository;
   @Autowired private PortalContactRepository portalContactRepository;
   @Autowired private DocumentRepository documentRepository;
+  @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
@@ -284,6 +286,29 @@ class PortalInformationRequestControllerTest {
           assertThat(doc.getFileName()).isEqualTo("tax-cert.pdf");
           assertThat(doc.getProjectId()).isEqualTo(projectId);
         });
+
+    // GAP-L-75c: portal.document.upload_initiated audit row with PORTAL_CONTACT actor
+    runInTenantWithMember(
+        () -> {
+          var events =
+              auditEventRepository
+                  .findByFilter(
+                      "document",
+                      documentId,
+                      null,
+                      "portal.document.upload_initiated",
+                      null,
+                      null,
+                      org.springframework.data.domain.PageRequest.of(0, 10))
+                  .getContent();
+          assertThat(events).isNotEmpty();
+          var auditEvent = events.get(0);
+          assertThat(auditEvent.getActorType()).isEqualTo("PORTAL_CONTACT");
+          assertThat(auditEvent.getActorId()).isEqualTo(portalContactId);
+          assertThat(auditEvent.getSource()).isEqualTo("PORTAL");
+          assertThat(auditEvent.getDetails().get("project_id")).isEqualTo(projectId.toString());
+          assertThat(auditEvent.getDetails().get("file_name")).isEqualTo("tax-cert.pdf");
+        });
   }
 
   // ── 4. Submit file (PENDING -> SUBMITTED) ──────────────────────────
@@ -330,6 +355,29 @@ class PortalInformationRequestControllerTest {
           assertThat(item.getStatus().name()).isEqualTo("SUBMITTED");
           assertThat(item.getDocumentId()).isEqualTo(UUID.fromString(docIdStr));
         });
+
+    // GAP-L-75c: portal.request_item.submitted audit row with PORTAL_CONTACT actor + project_id
+    runInTenantWithMember(
+        () -> {
+          var events =
+              auditEventRepository
+                  .findByFilter(
+                      "request_item",
+                      fileItemId,
+                      null,
+                      "portal.request_item.submitted",
+                      null,
+                      null,
+                      org.springframework.data.domain.PageRequest.of(0, 10))
+                  .getContent();
+          assertThat(events).isNotEmpty();
+          var auditEvent = events.get(0);
+          assertThat(auditEvent.getActorType()).isEqualTo("PORTAL_CONTACT");
+          assertThat(auditEvent.getActorId()).isEqualTo(portalContactId);
+          assertThat(auditEvent.getSource()).isEqualTo("PORTAL");
+          assertThat(auditEvent.getDetails().get("project_id")).isEqualTo(projectId.toString());
+          assertThat(auditEvent.getDetails().get("response_type")).isEqualTo("FILE");
+        });
   }
 
   // ── 5. Submit text response ─────────────────────────────────────────
@@ -357,6 +405,26 @@ class PortalInformationRequestControllerTest {
           assertThat(item.getStatus().name()).isEqualTo("SUBMITTED");
           assertThat(item.getTextResponse())
               .isEqualTo("Here are my additional notes for the request.");
+        });
+
+    // GAP-L-75c: portal.request_item.submitted audit row tagged response_type=TEXT
+    runInTenantWithMember(
+        () -> {
+          var events =
+              auditEventRepository
+                  .findByFilter(
+                      "request_item",
+                      textItemId,
+                      null,
+                      "portal.request_item.submitted",
+                      null,
+                      null,
+                      org.springframework.data.domain.PageRequest.of(0, 10))
+                  .getContent();
+          assertThat(events).isNotEmpty();
+          var auditEvent = events.get(0);
+          assertThat(auditEvent.getActorType()).isEqualTo("PORTAL_CONTACT");
+          assertThat(auditEvent.getDetails().get("response_type")).isEqualTo("TEXT");
         });
   }
 

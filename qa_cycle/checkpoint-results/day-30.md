@@ -79,3 +79,30 @@ Note: Database has table `payment_events` (not `invoice_payments` as referenced 
 ## Browser-driven confirmation
 
 All UI checkpoints driven via Playwright MCP browser tabs. Mailpit GET used only for invoice email content inspection (legitimate per QA cycle rules). Read-only SQL SELECT used for DB confirmation. No state mutations via REST or SQL. PayFast sandbox redirect not faked.
+
+## Decision: Day 30 PSP redirect — fix-in-cycle (Product triage 2026-04-25 SAST)
+
+**GAP-L-64: FIX-IN-CYCLE.** Authority — scenario step 0.G verbatim (`qa/testplan/demos/legal-za-full-lifecycle-keycloak.md:105`):
+
+> **0.G** Confirm PayFast sandbox credentials are configured in `OrgIntegration` seed data **OR set up a firm-side stub adapter for Day 30** — document which path is in use
+
+The stub-adapter path is explicitly authorised. Chosen approach: dev-only `MockPaymentGateway` (slug=`mock`, `@Profile({local,dev,keycloak,test})`) auto-seeded into `org_integrations` on legal-za pack install via `PackReconciliationRunner` (Java-side, profile-gated; no Flyway migration). Bundled email-template fix: `portalUrl` always populated in `InvoiceDeliveryEmailService` regardless of `paymentUrl` state. Real PayFast sandbox deferred to Sprint 2 as **L-64-followup**. Full spec: `qa_cycle/fix-specs/GAP-L-64.md`.
+
+**Why fix, not defer:** blast radius cascades through Day 60.5 closure gate ("no unpaid fee notes" GREEN required), Day 61.4 SoA reconciliation ("Day 30 fee note paid (amount)" line item), Day 88.4 activity trail ("fee-note paid (Day 30)"), and exit checkpoint E.12 — demo-blocking exit gate. Mock adapter exercises the full IntegrationRegistry resolution path, payment_url plumbing, portal Pay-button render, redirect roundtrip, and webhook reconciliation; only PayFast cryptographic signature verification is NOT covered (Sprint 2).
+
+**Day 30 phase status pending L-64 fix:**
+- 30.1 (email href) — re-walk after fix
+- 30.2 (portal detail render) — already PASS
+- 30.3 (terminology drift) — see GAP-L-65 deferral below
+- 30.4 (screenshot) — already PASS
+- 30.5 (Pay button) — re-walk after fix
+- 30.6 (mock-payment success page) — re-walk after fix
+- 30.7 (firm flip to PAID within 60s) — re-walk after fix
+- 30.8 (receipt download) — re-walk after fix
+- 30.9 (success screenshot) — re-walk after fix
+- 30.10 (Sent→Paid filter) — re-walk after fix
+- 30.11 (isolation) — already PASS
+
+**GAP-L-65: DEFERRED (WONT_FIX this verify cycle) → Sprint 2 as L-65-followup.** Reasoning: exit checkpoint E.9 reads "Terminology sweep passed — zero `Project/Customer/Invoice` leaks **firm-side**; **portal terminology consistent within itself**". The portal IS internally consistent (renders "Invoice" everywhere on portal; no firm vocabulary leaks INTO portal). The firm↔portal seam divergence is not gated by E.9. Verify cycle scope is "re-validate 40+ shipped fixes" — propagating `legal-za` `terminology.invoice` override into portal layout + email templates is genuinely new functionality requiring a portal-side terminology resolver + email-template token expansion (M-effort, doesn't fit verify scope).
+
+**Day 45 dispatch unblocked** — does not hard-depend on Day 30 PAID; firm-side flow can proceed in parallel while Dev implements L-64.

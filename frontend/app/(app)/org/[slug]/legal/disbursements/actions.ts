@@ -9,6 +9,7 @@ import {
   listDisbursements as listDisbursementsApi,
   listUnbilled as listUnbilledApi,
   rejectDisbursement as rejectDisbursementApi,
+  submitForApproval as submitForApprovalApi,
   updateDisbursement as updateDisbursementApi,
   uploadReceipt as uploadReceiptApi,
   type CreateDisbursementRequest,
@@ -26,6 +27,14 @@ function hasApproveDisbursementCapability(caps: {
   capabilities: string[];
 }): boolean {
   return caps.isAdmin || caps.isOwner || caps.capabilities.includes("APPROVE_DISBURSEMENTS");
+}
+
+function hasManageDisbursementCapability(caps: {
+  isAdmin: boolean;
+  isOwner: boolean;
+  capabilities: string[];
+}): boolean {
+  return caps.isAdmin || caps.isOwner || caps.capabilities.includes("MANAGE_DISBURSEMENTS");
 }
 
 interface ActionResult<T = DisbursementResponse> {
@@ -107,6 +116,33 @@ export async function uploadReceiptAction(
     return { success: true, data: result };
   } catch (error) {
     const message = error instanceof ApiError ? error.message : "Failed to upload receipt";
+    return { success: false, error: message };
+  }
+}
+
+export async function submitForApprovalAction(
+  slug: string,
+  id: string
+): Promise<ActionResult<DisbursementResponse>> {
+  const caps = await fetchMyCapabilities();
+  if (!hasManageDisbursementCapability(caps)) {
+    return {
+      success: false,
+      error: "You do not have permission to submit disbursements for approval.",
+    };
+  }
+
+  try {
+    const result = await submitForApprovalApi(id);
+    revalidatePath(`/org/${slug}/legal/disbursements`);
+    revalidatePath(`/org/${slug}/legal/disbursements/${id}`);
+    if (result?.projectId) {
+      revalidatePath(`/org/${slug}/projects/${result.projectId}`);
+    }
+    return { success: true, data: result };
+  } catch (error) {
+    const message =
+      error instanceof ApiError ? error.message : "Failed to submit disbursement for approval";
     return { success: false, error: message };
   }
 }

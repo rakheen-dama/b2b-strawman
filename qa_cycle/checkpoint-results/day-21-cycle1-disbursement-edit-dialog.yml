@@ -1,0 +1,221 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: BN
+        - generic:
+          - paragraph: Bob Ndlovu
+          - paragraph: bob@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/legal
+              - text: legal
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/legal/disbursements
+              - text: disbursements
+          - generic:
+            - img
+            - generic: bb9ee2ac-b1e5-4e2f-bf43-e40a63809530
+        - generic:
+          - generic:
+            - button: BN
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 6 unread notifications
+              - generic: "6"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/legal/disbursements
+                  - img
+                  - text: Back to Disbursements
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: Sheriff Fees
+                    - generic: Draft
+                    - generic: Unbilled
+                  - paragraph:
+                    - text: "Supplier: Sheriff Pretoria · Ref"
+                    - code: SHF-RAF-2026-001
+                  - paragraph: Incurred 2026-04-25
+                - generic:
+                  - button:
+                    - img
+                    - text: Upload receipt
+                  - button:
+                    - img
+                    - text: Edit
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: Financial summary
+                  - generic:
+                    - generic:
+                      - generic: Amount (excl VAT)
+                      - generic: R 1 250,00
+                    - generic:
+                      - generic: VAT
+                      - generic: R 0,00 — Zero-rated pass-through
+                    - generic:
+                      - generic: Total (incl VAT)
+                      - generic: R 1 250,00
+                    - generic:
+                      - generic: Payment Source
+                      - generic: Office Account
+                - generic:
+                  - generic:
+                    - generic: Description & receipt
+                  - generic:
+                    - generic:
+                      - paragraph: Description
+                      - paragraph: Sheriff service of summons on RAF — Day 21 cycle-1 verify
+                    - generic:
+                      - paragraph: Receipt
+                      - paragraph: No receipt uploaded
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e217] [cursor=pointer]:
+    - img [ref=e218]
+  - alert
+  - dialog "Edit Disbursement" [ref=e915]:
+    - generic [ref=e916]:
+      - generic [ref=e917]:
+        - heading "Edit Disbursement" [level=2] [ref=e918]
+        - paragraph [ref=e919]: Update disbursement details before approval.
+      - generic [ref=e920]:
+        - generic [ref=e921]:
+          - generic [ref=e922]: Category
+          - combobox "Category" [active] [ref=e923]:
+            - option "Sheriff Fees" [selected]
+            - option "Counsel Fees"
+            - option "Search Fees"
+            - option "Deeds Office Fees"
+            - option "Court Fees"
+            - option "Advocate Fees"
+            - option "Expert Witness"
+            - option "Travel"
+            - option "Other"
+        - generic [ref=e924]:
+          - generic [ref=e925]: Description
+          - textbox "Description" [ref=e926]: Sheriff service of summons on RAF — Day 21 cycle-1 verify
+        - generic [ref=e927]:
+          - generic [ref=e928]:
+            - generic [ref=e929]: Amount (ZAR, excl VAT)
+            - spinbutton "Amount (ZAR, excl VAT)" [ref=e930]: "1250"
+          - generic [ref=e931]:
+            - generic [ref=e932]: VAT Treatment
+            - combobox "VAT Treatment" [ref=e933]:
+              - option "Standard (15%)"
+              - option "Zero-rated pass-through" [selected]
+              - option "Exempt"
+        - generic [ref=e934]:
+          - generic [ref=e935]:
+            - generic [ref=e936]: Incurred Date
+            - textbox "Incurred Date" [ref=e937]: 2026-04-25
+          - generic [ref=e938]:
+            - generic [ref=e939]: Supplier
+            - textbox "Supplier" [ref=e940]: Sheriff Pretoria
+        - generic [ref=e941]:
+          - generic [ref=e942]:
+            - text: Supplier Reference
+            - generic [ref=e943]: (optional)
+          - textbox "Supplier Reference (optional)" [ref=e944]: SHF-RAF-2026-001
+        - generic [ref=e945]:
+          - button "Cancel" [ref=e946]
+          - button "Save changes" [ref=e947]
+      - button "Close" [ref=e948]:
+        - img
+        - generic [ref=e949]: Close

@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
 import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
+import io.b2mash.b2b.b2bstrawman.integration.payment.MockPaymentIntegrationSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.packs.PackCatalogService;
@@ -54,6 +55,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
   private final SchedulePackSeeder schedulePackSeeder;
   private final LegalTariffSeeder legalTariffSeeder;
   private final VerticalProfileReconciliationSeeder verticalProfileReconciliationSeeder;
+  private final MockPaymentIntegrationSeeder mockPaymentIntegrationSeeder;
   private final TransactionTemplate transactionTemplate;
 
   public PackReconciliationRunner(
@@ -71,6 +73,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
       SchedulePackSeeder schedulePackSeeder,
       LegalTariffSeeder legalTariffSeeder,
       VerticalProfileReconciliationSeeder verticalProfileReconciliationSeeder,
+      MockPaymentIntegrationSeeder mockPaymentIntegrationSeeder,
       TransactionTemplate transactionTemplate) {
     this.mappingRepository = mappingRepository;
     this.fieldPackSeeder = fieldPackSeeder;
@@ -86,6 +89,7 @@ public class PackReconciliationRunner implements ApplicationRunner {
     this.schedulePackSeeder = schedulePackSeeder;
     this.legalTariffSeeder = legalTariffSeeder;
     this.verticalProfileReconciliationSeeder = verticalProfileReconciliationSeeder;
+    this.mockPaymentIntegrationSeeder = mockPaymentIntegrationSeeder;
     this.transactionTemplate = transactionTemplate;
   }
 
@@ -120,6 +124,9 @@ public class PackReconciliationRunner implements ApplicationRunner {
         // GAP-L-44 + GAP-L-27 — merge enabled_modules and reconcile taxDefaults/tax_label from
         // the vertical profile JSON into the tenant row. Idempotent; runs for every tenant.
         verticalProfileReconciliationSeeder.reconcile(schemaName, clerkOrgId);
+        // GAP-L-64 — auto-seed dev-only mock PSP adapter for legal-za tenants when no PAYMENT
+        // integration is configured. No-op in prod profile or when a PSP is already wired.
+        mockPaymentIntegrationSeeder.seedForTenant(schemaName, clerkOrgId);
 
         succeeded++;
       } catch (Exception e) {

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Mock Payment Checkout - DEV ONLY</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 560px; margin: 40px auto; padding: 0 20px; color: #1a1a1a; }
+        h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .subtitle { color: #666; font-size: 0.875rem; margin-bottom: 2rem; }
+        .order-summary { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin-bottom: 1.5rem; }
+        .order-summary dl { margin: 0; }
+        .order-summary dt { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 12px; }
+        .order-summary dt:first-child { margin-top: 0; }
+        .order-summary dd { margin: 4px 0 0 0; font-size: 0.95rem; color: #111827; font-weight: 500; word-break: break-all; }
+        .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 1rem; }
+        button { padding: 12px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.95rem; font-weight: 600; }
+        .btn-success { background: #16a34a; color: white; }
+        .btn-success:hover { background: #15803d; }
+        .btn-fail { background: #dc2626; color: white; }
+        .btn-fail:hover { background: #b91c1c; }
+        .badge { display: inline-block; background: #fbbf24; color: #1a1a1a; padding: 2px 8px; border-radius: 4px; font-size: 0.75rem; font-weight: 600; vertical-align: middle; }
+        .note { font-size: 0.8rem; color: #6b7280; margin-top: 1rem; }
+    </style>
+</head>
+<body>
+    <h1>Mock Payment Checkout <span class="badge">DEV ONLY</span></h1>
+    <p class="subtitle">This page simulates a PSP checkout. No real payment is taken.</p>
+
+    <div class="order-summary">
+        <dl>
+            <dt>Invoice</dt>
+            <dd th:text="${invoiceId}">invoice-id</dd>
+            <dt>Amount</dt>
+            <dd>
+                <span th:text="${currency}">ZAR</span>
+                <span th:text="${amount}">0.00</span>
+            </dd>
+            <dt>Session</dt>
+            <dd th:text="${sessionId}">MOCK-SESS-...</dd>
+        </dl>
+    </div>
+
+    <form th:action="@{/portal/dev/mock-payment/complete}" method="post" class="actions">
+        <input type="hidden" name="sessionId" th:value="${sessionId}" />
+        <input type="hidden" name="invoiceId" th:value="${invoiceId}" />
+        <input type="hidden" name="returnUrl" th:value="${returnUrl}" />
+        <input type="hidden" name="tenantSchema" th:value="${tenantSchema}" />
+        <button type="submit" name="status" value="PAID" class="btn-success">Simulate Successful Payment</button>
+        <button type="submit" name="status" value="FAILED" class="btn-fail">Simulate Failed Payment</button>
+    </form>
+
+    <p class="note">Profile-gated to non-prod. Pairs with <code>MockPaymentGateway</code> registered under <code>@IntegrationAdapter(domain=PAYMENT, slug="mock")</code>.</p>
+</body>
+</html>

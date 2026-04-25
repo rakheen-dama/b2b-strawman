@@ -236,6 +236,32 @@ class InvoiceEmailServiceIntegrationTest {
   }
 
   @Test
+  void portal_url_always_populated_even_without_psp() throws Exception {
+    // GAP-L-64 — "View Invoice" CTA href must be non-blank even when no PSP is wired
+    // (paymentUrl == null). Previously the email passed portalUrl=null to the template.
+    byte[] pdfBytes = "fake-pdf-content".getBytes();
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(() -> invoiceEmailService.sendInvoiceEmail(savedInvoice, pdfBytes));
+
+    MimeMessage[] received = greenMail.getReceivedMessages();
+    assertThat(received).hasSize(1);
+
+    String htmlBody = extractHtmlBody(received[0]);
+    // Portal-base-url defaults to http://localhost:3002 in tests; assert the portalUrl path is
+    // present in the rendered View Invoice CTA href (template uses th:href="${portalUrl}").
+    String expectedPortalPath = "/invoices/" + savedInvoice.getId();
+    assertThat(htmlBody)
+        .as("rendered email must include portalUrl path even without PSP")
+        .contains(expectedPortalPath);
+    // The placeholder text "View Invoice" appears next to the CTA — sanity check the button exists
+    assertThat(htmlBody).contains("View Invoice");
+    // Confirm the View Invoice anchor's href is non-empty (no href="" — that was the bug)
+    assertThat(htmlBody).doesNotContain("href=\"\"");
+  }
+
+  @Test
   void attachment_filename_format() throws Exception {
     byte[] pdfBytes = "fake-pdf-content".getBytes();
 
@@ -261,5 +287,27 @@ class InvoiceEmailServiceIntegrationTest {
       }
     }
     assertThat(foundAttachment).as("PDF attachment should be present").isTrue();
+  }
+
+  private static String extractHtmlBody(MimeMessage msg) throws Exception {
+    StringBuilder out = new StringBuilder();
+    collectHtmlParts(msg.getContent(), out);
+    return out.toString();
+  }
+
+  private static void collectHtmlParts(Object content, StringBuilder out) throws Exception {
+    if (content instanceof MimeMultipart multipart) {
+      for (int i = 0; i < multipart.getCount(); i++) {
+        var part = multipart.getBodyPart(i);
+        String ct = part.getContentType() == null ? "" : part.getContentType().toLowerCase();
+        if (ct.contains("text/html")) {
+          out.append(part.getContent().toString());
+        } else if (ct.contains("multipart/")) {
+          collectHtmlParts(part.getContent(), out);
+        }
+      }
+    } else if (content != null) {
+      out.append(content.toString());
+    }
   }
 }

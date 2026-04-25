@@ -154,7 +154,7 @@ None — Day 1 completed end-to-end. GAP-L-26 and GAP-L-27 are LOW and do not bl
 - **GAP-L-24** (Vertical Profile loader): re-VERIFIED — combobox listed "Legal (South Africa)" correctly without a failure card.
 - **GAP-L-25** (SECTION_86 trust account type): **REGRESSION FIX VERIFIED end-to-end**. Dropdown offers it, backend persists it, list renders it. Prior cycle's PARTIAL is now PASS.
 - **GAP-L-26** (brand-color / logo not applied to sidebar chrome): **VERIFIED FIXED**. `--brand-color` CSS var emits `#1B3358`; sidebar `<img>` renders the uploaded logo at 32×32.
-- **L-27** (VAT/ZAR labels): VERIFIED — Default Currency combobox shows "ZAR — South African Rand"; Tax section in place (detailed tax rate label verification deferred to Day 7 fee estimate / Day 28 fee note checkpoints where "VAT 15%" copy is tested).
+- **L-27** (VAT/ZAR labels): PARTIALLY VERIFIED — Default Currency combobox shows "ZAR — South African Rand" (currency label VERIFIED). Tax-rate label verification ("VAT — Standard" / "VAT 15%") deferred to Day 7 fee-estimate / Day 28 fee-note checkpoints where the rendered label is exercised end-to-end.
 
 ## Minor findings (non-blocker, logging informationally)
 

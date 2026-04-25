@@ -241,7 +241,7 @@ Created a new test client via the firm-side Create Client dialog (Bob logged in 
 - Information requests: 3 pre-existing rows on this matter
   - `REQ-0001` `ae509cf2-…` SENT, `due_date=2026-05-02` (Day 10 = today + 7d ✓), 3 items (ID copy / Proof of residence (≤ 3 months) / Bank statement (≤ 3 months)) all PENDING.
   - `REQ-0002` `59c14d97-…` SENT, no due_date.
-  - `REQ-0003` `b78cb730-…` COMPLETED (REQ-0003 lifecycle further than scenario expects for Day 3 — pre-existing exploratory artefact, not a problem for Day 3 verify).
+  - `REQ-0003` `b78cb730-…` COMPLETED (REQ-0003 lifecycle further than scenario expects for Day 3 — pre-existing exploratory artifact, not a problem for Day 3 verify).
 - Portal contact for Sipho: 1 row `127d1c7d-…` email=`sipho.portal@example.com`, GENERAL, ACTIVE.
 - Tenant `vertical_profile` = `legal-za`. `tax_label=VAT`. `default_currency=ZAR`.
 
@@ -270,7 +270,7 @@ Created a new test client via the firm-side Create Client dialog (Bob logged in 
 - **L-35** (PROSPECT custom-field save) — N/A this turn. Sipho's lifecycle not re-checked (was VERIFIED at customer level Day 2; matter-level Save Custom Fields not exercised in this verify pass because the L-37 regression at 3.6 is the halt trigger and Save would need to be re-run after fix).
 - **L-37** (field-group narrowing — matter level) — **REGRESSED**. See `GAP-L-37-regression-2026-04-25` row in Tracker. Matter has Conveyancing-Matter-Details + Legal-Matter-Details + Project-Info all auto-attached. Day 2 verified L-37 at customer level (1 group only); the matter-level fix is missing — both `conveyancing-za-project` and `legal-za-project` field-group rows have `auto_apply=true / depends_on=NULL`, so both attach to every legal-za matter.
 - **L-38** (matter detail tab cleanup) — VERIFIED (3.5). 19 tabs, no duplicate Disbursements.
-- **L-39** (customerId URL param propagation) — VERIFIED indirectly (3.1/3.3). Matter created with `customer_id` correctly bound (DB row); since the matter creation flow is the only way `applied_field_groups` could have been seeded, we have evidence the create-from-customer flow ran end-to-end. (UI-level "dropdown pre-selected to Sipho" not re-driven this turn — DB binding is the load-bearing artefact.)
+- **L-39** (customerId URL param propagation) — VERIFIED indirectly (3.1/3.3). Matter created with `customer_id` correctly bound (DB row); since the matter creation flow is the only way `applied_field_groups` could have been seeded, we have evidence the create-from-customer flow ran end-to-end. (UI-level "dropdown pre-selected to Sipho" not re-driven this turn — DB binding is the load-bearing artifact.)
 - **L-41** (info-request due_date column + picker) — VERIFIED (3.11). Column exists, picker exposed, REQ-0001 has `due_date=2026-05-02` (Day 10).
 - **L-42** (info-request magic-link to portal) — VERIFIED (3.14). Email URL = `http://localhost:3002/auth/exchange?token=…&orgId=mathebula-partners`. Port 3002 ✓, token ✓, orgId ✓.
 
@@ -294,6 +294,7 @@ Day 3 — 3.6 (blocked by GAP-L-37-regression-2026-04-25). Resumes Day 3.6 verif
 ### Pre-state (DB-verified, READ-ONLY)
 
 V112 backfill confirmed on `tenant_5039f2d497cf.field_groups`:
+
 | pack_id | auto_apply | applicable_work_types |
 |---------|-----------|----------------------|
 | common-project | true | NULL (universal) |
@@ -301,6 +302,7 @@ V112 backfill confirmed on `tenant_5039f2d497cf.field_groups`:
 | conveyancing-za-project | true | `["CONVEYANCING"]` ← scoped |
 | legal-za-customer | true | NULL |
 | legal-za-project | true | NULL (universal across all legal work types) |
+
 
 Existing matter `Dlamini v Road Accident Fund` `e788a51b-…` retains pre-V112 stale `applied_field_groups=[common, conveyancing, legal]` state — out of scope per spec note (V112 backfill applies to NEW matters only).
 

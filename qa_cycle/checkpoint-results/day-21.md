@@ -176,7 +176,8 @@ Zero `/api/projects` 404s in console (the original L-57 symptom). Snapshots: `da
 Clicked "Create Disbursement" → dialog closed cleanly → matter-tab Disbursements list refreshes to 1 row: `2026-04-25 / — / Sheriff Fees / Sheriff service of summons on RAF — Day 21 cycle-1 verify / Sheriff Pretoria / R 1 250,00 / Draft / Unbilled / Actions`. Snapshot: `day-21-cycle1-disbursements-list-after-create.yml`.
 
 **Read-only DB confirmation**:
-```
+
+```sql
 SELECT id, project_id, customer_id, category, amount, vat_treatment,
        approval_status, billing_status, supplier_name, supplier_reference,
        incurred_date, payment_source, created_at
@@ -210,7 +211,8 @@ Org-level `/legal/disbursements` list-row also renders no Actions cell content f
 ### Phase E — L-63 impact assessment
 
 `DisbursementRepository.findUnbilledBillableByCustomerId` (lines 40–47) JPQL:
-```
+
+```sql
 WHERE d.customerId = :customerId
   AND d.approvalStatus = 'APPROVED'
   AND d.billingStatus = 'UNBILLED'
@@ -283,7 +285,7 @@ Per dispatch instructions: "If you hit a HIGH/blocker, write Tracker row OPEN an
 
 ### State transitions captured
 
-```
+```text
 DRAFT  ── browser-click [Submit for Approval]  ──▶  PENDING_APPROVAL
 PENDING_APPROVAL  ── browser-click [Approve] → [Approve Disbursement (confirm)]  ──▶  APPROVED
 ```

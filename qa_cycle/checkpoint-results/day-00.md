@@ -30,7 +30,7 @@ All cleanup via admin REST APIs or direct SQL on `public.*` / schema DROP (no te
 | 0.3 | Form shows Email, Full Name, Organization, Country, Industry | PASS | All 5 fields present. |
 | 0.4 | Fill form with Thandi / Mathebula & Partners / ZA / Legal Services + Submit | PASS | Form accepted, submit button enabled after validation, POST succeeded. |
 | 0.5 | Transitions to OTP step | PASS | Card swapped to "Check Your Email / Enter the verification code sent to thandi@mathebula-test.local". |
-| 0.6 | Mailpit OTP email arrives (subject contains "verification") | PASS | Subject "Your Kazi verification code". Code `006327` extracted from body. |
+| 0.6 | Mailpit OTP email arrives (subject contains "verification") | PASS | Subject "Your Kazi verification code". Code `<redacted-otp>` extracted from body. |
 | 0.7 | Enter OTP → Verify | PASS | OTP accepted. |
 | 0.8 | Success card "Request has been submitted for review" | PASS | "Request Submitted / Your access request has been submitted for review." |
 | 0.9 | Incognito → `/dashboard` → KC login page | PASS | Redirected to `http://localhost:8180/realms/docteams/protocol/openid-connect/auth…`. |
@@ -164,7 +164,7 @@ Stack remained healthy throughout the run. No Infra attention required.
 | 0.3 | Form fields Email, Full Name, Organization, Country, Industry | PASS | All 5 fields rendered (Country + Industry as comboboxes). |
 | 0.4 | Fill + Submit request form | PASS | Thandi / Mathebula & Partners / South Africa / Legal Services submitted. |
 | 0.5 | Transitions to OTP step | PASS | Card swapped to "Check Your Email / Enter the verification code sent to thandi@mathebula-test.local". |
-| 0.6 | Mailpit OTP email arrives | PASS | Mailpit msg `ajfTxRr6GJ276U7r8PFgbS` subject "Your Kazi verification code"; body OTP `057208`. |
+| 0.6 | Mailpit OTP email arrives | PASS | Mailpit msg `ajfTxRr6GJ276U7r8PFgbS` subject "Your Kazi verification code"; body OTP `<redacted-otp>`. |
 | 0.7 | Enter OTP → Verify | PASS | OTP accepted. |
 | 0.8 | Success card | PASS | "Request Submitted / Your access request has been submitted for review." |
 | 0.9 | `/dashboard` → KC login | PASS | Redirect to `http://localhost:8180/realms/docteams/protocol/openid-connect/auth…` with `client_id=gateway-bff`. |

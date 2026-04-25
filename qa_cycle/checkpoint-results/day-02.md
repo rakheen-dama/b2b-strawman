@@ -195,7 +195,7 @@ Owner: Dev (straightforward, fix at frontend layer is one line).
 | GAP-ID | Severity | Status | Summary |
 |---|---|---|---|
 | GAP-L-29-regression | MED | OPEN | Conflict-check form Customer dropdown is empty because backend `/api/customers` returns raw array `List<CustomerResponse>` but frontend server action `fetchCustomers` treats it as `PaginatedResponse<>`. Shape mismatch returns `[]` to the form. Blocks L-28 self-exclusion verification + scenario 2.6 CLEAR outcome. |
-| GAP-L-28 (prior) | VERIFIED BACKEND (UI path still broken) | Blocked by L-29-regression from UI verification; backend fix may be working but unreachable. |
+| GAP-L-28 (prior) | MED | VERIFIED BACKEND (UI path still broken) | Blocked by L-29-regression from UI verification; backend fix may be working but unreachable. |
 
 ## Halt decision
 

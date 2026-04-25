@@ -27,7 +27,6 @@ import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementCategory;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.dto.DisbursementStatementDto;
-import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.FeeLineDto;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
@@ -46,6 +45,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Unit tests for {@link StatementOfAccountContextBuilder} (Phase 67, Epic 491A, task 491.5). Mocks
@@ -67,6 +67,15 @@ class StatementOfAccountContextBuilderTest {
   @Mock private MemberNameResolver memberNameResolver;
   @Mock private TemplateContextHelper templateContextHelper;
   @Mock private VerticalModuleGuard moduleGuard;
+
+  // Real ObjectMapper (Jackson 3 — `tools.jackson.databind`, the same artifact Spring Boot 4
+  // autoconfigures and injects in production). Needed because the GAP-L-71 fix uses
+  // ObjectMapper.convertValue(...) to coerce typed DTO lists to List<Map<String,Object>>.
+  // Jackson 3 includes JSR-310 (java.time) handlers natively, so a vanilla `new ObjectMapper()`
+  // serialises LocalDate / UUID correctly without extra module registration. Mocking
+  // ObjectMapper would force per-call stubs; @Spy on the real instance avoids that boilerplate
+  // while still letting Mockito inject it via @InjectMocks.
+  @org.mockito.Spy private ObjectMapper objectMapper = new ObjectMapper();
 
   @InjectMocks private StatementOfAccountContextBuilder builder;
 
@@ -153,8 +162,11 @@ class StatementOfAccountContextBuilderTest {
     @SuppressWarnings("unchecked")
     Map<String, Object> fees = (Map<String, Object>) context.get("fees");
     @SuppressWarnings("unchecked")
-    List<FeeLineDto> entries = (List<FeeLineDto>) fees.get("entries");
+    // GAP-L-71: entries are List<Map<String,Object>> after the DTO→Map adapter,
+    // not List<FeeLineDto>. Each row is a Jackson-serialised view of FeeLineDto.
+    List<Map<String, Object>> entries = (List<Map<String, Object>>) fees.get("entries");
     assertThat(entries).hasSize(2);
+    assertThat(entries.get(0)).isInstanceOf(Map.class);
     // 60min = 1.00h * 1500 = 1500; 90min = 1.50h * 2000 = 3000; total = 4500
     assertThat((BigDecimal) fees.get("total_amount_excl_vat"))
         .isEqualByComparingTo(new BigDecimal("4500.00"));
@@ -305,9 +317,13 @@ class StatementOfAccountContextBuilderTest {
     @SuppressWarnings("unchecked")
     Map<String, Object> fees = (Map<String, Object>) context.get("fees");
     @SuppressWarnings("unchecked")
-    List<FeeLineDto> entries = (List<FeeLineDto>) fees.get("entries");
+    // GAP-L-71: entries are List<Map<String,Object>> after DTO→Map adapter.
+    List<Map<String, Object>> entries = (List<Map<String, Object>>) fees.get("entries");
     assertThat(entries).hasSize(1);
-    assertThat(entries.get(0).date()).isEqualTo(LocalDate.of(2026, 4, 15));
+    // Description and date both round-trip through the DTO→Map adapter; date is serialised as
+    // an ISO string by Jackson 3's built-in JSR-310 support.
+    assertThat(entries.get(0).get("description")).isEqualTo("In");
+    assertThat(entries.get(0).get("date").toString()).isEqualTo("2026-04-15");
     // 120min = 2h * 1000 = 2000
     assertThat((BigDecimal) fees.get("total_amount_excl_vat"))
         .isEqualByComparingTo(new BigDecimal("2000.00"));
@@ -342,9 +358,11 @@ class StatementOfAccountContextBuilderTest {
     @SuppressWarnings("unchecked")
     Map<String, Object> disb = (Map<String, Object>) context.get("disbursements");
     @SuppressWarnings("unchecked")
-    List<DisbursementStatementDto> entries = (List<DisbursementStatementDto>) disb.get("entries");
+    // GAP-L-71: entries are List<Map<String,Object>> after DTO→Map adapter.
+    List<Map<String, Object>> entries = (List<Map<String, Object>>) disb.get("entries");
     assertThat(entries).hasSize(1);
-    assertThat(entries.get(0).incurredDate()).isEqualTo(LocalDate.of(2026, 4, 20));
+    assertThat(entries.get(0).get("description")).isEqualTo("Counsel");
+    assertThat(entries.get(0).get("incurredDate").toString()).isEqualTo("2026-04-20");
     assertThat((BigDecimal) disb.get("total")).isEqualByComparingTo(new BigDecimal("345.00"));
   }
 
@@ -520,12 +538,15 @@ class StatementOfAccountContextBuilderTest {
     @SuppressWarnings("unchecked")
     Map<String, Object> fees = (Map<String, Object>) context.get("fees");
     @SuppressWarnings("unchecked")
-    List<FeeLineDto> entries = (List<FeeLineDto>) fees.get("entries");
+    // GAP-L-71: entries are List<Map<String,Object>> after DTO→Map adapter.
+    List<Map<String, Object>> entries = (List<Map<String, Object>>) fees.get("entries");
     assertThat(entries).hasSize(1);
     // Display hours: 7/60 = 0.1166... → 0.12 at 2dp HALF_UP.
-    assertThat(entries.get(0).hours()).isEqualByComparingTo(new BigDecimal("0.12"));
+    assertThat(new BigDecimal(entries.get(0).get("hours").toString()))
+        .isEqualByComparingTo(new BigDecimal("0.12"));
     // Amount from raw minutes: 7/60 * 1000 = 116.666... → 116.67. NOT 0.12 * 1000 = 120.00.
-    assertThat(entries.get(0).amount()).isEqualByComparingTo(new BigDecimal("116.67"));
+    assertThat(new BigDecimal(entries.get(0).get("amount").toString()))
+        .isEqualByComparingTo(new BigDecimal("116.67"));
     assertThat((BigDecimal) fees.get("total_amount_excl_vat"))
         .isEqualByComparingTo(new BigDecimal("116.67"));
   }
@@ -558,6 +579,195 @@ class StatementOfAccountContextBuilderTest {
     verifyNoInteractions(clientLedgerService);
     // TrustAccount lookup is also skipped (short-circuit is before that).
     verify(trustAccountRepository, never()).findByAccountTypeAndPrimaryTrue(any());
+  }
+
+  // ---------- GAP-L-71 regression: typed DTO lists must be converted to List<Map> ----------
+
+  /**
+   * Direct shape assertion that the DTO→Map adapter on the loop-table data sources is in place. The
+   * renderer's {@code renderLoopTable} blows up with {@code ClassCastException} at line 309 if any
+   * row is not a {@code Map} — the assertion here catches the type drift at the model-build site
+   * before it ever reaches the renderer.
+   */
+  @Test
+  void loopTableSources_areListOfMap_notTypedDtos() {
+    var project = projectWithCustomer("DTO→Map Matter", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+
+    var fee = timeEntry(LocalDate.of(2026, 4, 5), 60, true, new BigDecimal("1500.00"), "Drafting");
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of(fee));
+
+    var disb =
+        new DisbursementStatementDto(
+            UUID.randomUUID(),
+            LocalDate.of(2026, 4, 6),
+            DisbursementCategory.SHERIFF_FEES,
+            "Sheriff Fees",
+            new BigDecimal("1250.00"),
+            new BigDecimal("0.00"),
+            "Sheriff",
+            "REF-1");
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of(disb));
+
+    var trustAccount = trustAccountWithId(trustAccountId);
+    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
+        .thenReturn(Optional.of(trustAccount));
+    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
+        .thenReturn(BigDecimal.ZERO);
+    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
+        .thenReturn(BigDecimal.ZERO);
+    when(clientLedgerService.getClientLedgerStatement(
+            customerId, trustAccountId, periodStart, periodEnd))
+        .thenReturn(
+            new LedgerStatementResponse(
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                List.of(
+                    ledgerLine("DEPOSIT", new BigDecimal("100.00")),
+                    ledgerLine("PAYMENT", new BigDecimal("50.00")))));
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    var fees = (Map<String, Object>) context.get("fees");
+    @SuppressWarnings("unchecked")
+    var feeEntries = (List<Object>) fees.get("entries");
+    assertThat(feeEntries).hasSize(1);
+    assertThat(feeEntries.get(0))
+        .as(
+            "fees.entries rows MUST be Map (GAP-L-71) — TiptapRenderer.renderLoopTable casts each row")
+        .isInstanceOf(Map.class);
+
+    @SuppressWarnings("unchecked")
+    var disbMap = (Map<String, Object>) context.get("disbursements");
+    @SuppressWarnings("unchecked")
+    var disbEntries = (List<Object>) disbMap.get("entries");
+    assertThat(disbEntries).hasSize(1);
+    assertThat(disbEntries.get(0))
+        .as(
+            "disbursements.entries rows MUST be Map (GAP-L-71) — this is the exact path that blew"
+                + " up in QA Day 60 cycle 1 with ClassCastException on DisbursementStatementDto")
+        .isInstanceOf(Map.class);
+
+    @SuppressWarnings("unchecked")
+    var trustMap = (Map<String, Object>) context.get("trust");
+    @SuppressWarnings("unchecked")
+    var deposits = (List<Object>) trustMap.get("deposits");
+    @SuppressWarnings("unchecked")
+    var payments = (List<Object>) trustMap.get("payments");
+    assertThat(deposits).isNotEmpty();
+    assertThat(deposits.get(0))
+        .as("trust.deposits rows MUST be Map (GAP-L-71)")
+        .isInstanceOf(Map.class);
+    assertThat(payments).isNotEmpty();
+    assertThat(payments.get(0))
+        .as("trust.payments rows MUST be Map (GAP-L-71)")
+        .isInstanceOf(Map.class);
+  }
+
+  /**
+   * Render-roundtrip: build context with non-empty typed-DTO lists for all three loop sources, then
+   * render the actual installed SoA template through {@link TiptapRenderer}. Before GAP-L-71's fix
+   * this would throw {@code ClassCastException} at {@code TiptapRenderer:309} on the first
+   * iteration of the disbursements loop. The assertion that the rendered HTML contains the
+   * disbursement description ("Sheriff Fees") + the fee narrative ("Drafting motion") + trust
+   * transaction reference ("DEP-001") catches any future template that adds another loop-table on a
+   * typed-DTO list without re-applying the adapter.
+   */
+  @Test
+  void renderRoundtrip_realSoATemplate_doesNotThrowAndContainsAllLoopRows() throws Exception {
+    var project = projectWithCustomer("Roundtrip Matter", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+
+    var fee =
+        timeEntry(LocalDate.of(2026, 4, 5), 60, true, new BigDecimal("1500.00"), "Drafting motion");
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of(fee));
+
+    var disb =
+        new DisbursementStatementDto(
+            UUID.randomUUID(),
+            LocalDate.of(2026, 4, 6),
+            DisbursementCategory.SHERIFF_FEES,
+            "Sheriff Fees",
+            new BigDecimal("1250.00"),
+            new BigDecimal("0.00"),
+            "Sheriff",
+            "REF-1");
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of(disb));
+
+    var trustAccount = trustAccountWithId(trustAccountId);
+    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
+        .thenReturn(Optional.of(trustAccount));
+    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
+        .thenReturn(BigDecimal.ZERO);
+    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
+        .thenReturn(BigDecimal.ZERO);
+    var dep =
+        new ClientLedgerService.LedgerStatementLine(
+            UUID.randomUUID(),
+            "DEPOSIT",
+            new BigDecimal("500.00"),
+            "DEP-001",
+            "Initial deposit",
+            LocalDate.of(2026, 4, 7),
+            "POSTED",
+            BigDecimal.ZERO);
+    var pay =
+        new ClientLedgerService.LedgerStatementLine(
+            UUID.randomUUID(),
+            "PAYMENT",
+            new BigDecimal("200.00"),
+            "PAY-001",
+            "Outgoing payment",
+            LocalDate.of(2026, 4, 9),
+            "POSTED",
+            BigDecimal.ZERO);
+    when(clientLedgerService.getClientLedgerStatement(
+            customerId, trustAccountId, periodStart, periodEnd))
+        .thenReturn(
+            new LedgerStatementResponse(BigDecimal.ZERO, BigDecimal.ZERO, List.of(dep, pay)));
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    // Load the actual installed SoA template content from the legal-za pack so the test exercises
+    // the same node tree that production renders. Any future template change that introduces
+    // another loop-table on a typed-DTO source will fail this round-trip.
+    var templateBytes =
+        getClass()
+            .getClassLoader()
+            .getResourceAsStream("template-packs/legal-za/statement-of-account.json")
+            .readAllBytes();
+    @SuppressWarnings("unchecked")
+    Map<String, Object> templateNode = objectMapper.readValue(templateBytes, Map.class);
+
+    // Use the production constructor (package-private overload is not visible from this package).
+    // ByteArrayResource lets us inject the CSS string without a real classpath lookup.
+    var renderer =
+        new io.b2mash.b2b.b2bstrawman.template.TiptapRenderer(
+            new org.springframework.core.io.ByteArrayResource(
+                "body { font-size: 11pt; }".getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+
+    // Pre-fix this throws java.lang.ClassCastException: DisbursementStatementDto cannot be cast
+    // to java.util.Map at TiptapRenderer.renderLoopTable line 309.
+    String html = renderer.render(templateNode, context, Map.of(), null, Map.of());
+
+    assertThat(html)
+        .as("Render must include the fee narrative from the fees.entries loop")
+        .contains("Drafting motion")
+        .as("Render must include the disbursement description from the disbursements.entries loop")
+        .contains("Sheriff Fees")
+        .as("Render must include the trust deposit reference from the trust.deposits loop")
+        .contains("DEP-001")
+        .as("Render must include the trust payment reference from the trust.payments loop")
+        .contains("PAY-001");
   }
 
   // ---------- helpers ----------

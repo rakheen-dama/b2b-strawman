@@ -38,6 +38,8 @@ import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Period-bound context builder for the Statement of Account template (Phase 67, Epic 491A,
@@ -84,6 +86,7 @@ public class StatementOfAccountContextBuilder {
   private final MemberNameResolver memberNameResolver;
   private final TemplateContextHelper templateContextHelper;
   private final VerticalModuleGuard moduleGuard;
+  private final ObjectMapper objectMapper;
 
   public StatementOfAccountContextBuilder(
       ProjectRepository projectRepository,
@@ -96,7 +99,8 @@ public class StatementOfAccountContextBuilder {
       PaymentEventRepository paymentEventRepository,
       MemberNameResolver memberNameResolver,
       TemplateContextHelper templateContextHelper,
-      VerticalModuleGuard moduleGuard) {
+      VerticalModuleGuard moduleGuard,
+      ObjectMapper objectMapper) {
     this.projectRepository = projectRepository;
     this.customerRepository = customerRepository;
     this.timeEntryRepository = timeEntryRepository;
@@ -108,6 +112,7 @@ public class StatementOfAccountContextBuilder {
     this.memberNameResolver = memberNameResolver;
     this.templateContextHelper = templateContextHelper;
     this.moduleGuard = moduleGuard;
+    this.objectMapper = objectMapper;
   }
 
   /**
@@ -147,7 +152,7 @@ public class StatementOfAccountContextBuilder {
     context.put(
         "fees",
         Map.of(
-            "entries", agg.feeLines(),
+            "entries", toMapList(agg.feeLines()),
             "total_hours", agg.totalHours(),
             "total_amount_excl_vat", agg.totalFeesExcl(),
             "vat_amount", agg.vatAmount(),
@@ -155,15 +160,19 @@ public class StatementOfAccountContextBuilder {
 
     context.put(
         "disbursements",
-        Map.of("entries", agg.disbursementLines(), "total", agg.disbursementsTotal()));
+        Map.of("entries", toMapList(agg.disbursementLines()), "total", agg.disbursementsTotal()));
 
     context.put(
         "trust",
         Map.of(
-            "opening_balance", agg.trust().openingBalance,
-            "deposits", agg.trust().deposits,
-            "payments", agg.trust().payments,
-            "closing_balance", agg.trust().closingBalance));
+            "opening_balance",
+            agg.trust().openingBalance,
+            "deposits",
+            toMapList(agg.trust().deposits),
+            "payments",
+            toMapList(agg.trust().payments),
+            "closing_balance",
+            agg.trust().closingBalance));
 
     context.put("summary", toSummaryMap(agg.summary()));
 
@@ -192,6 +201,22 @@ public class StatementOfAccountContextBuilder {
   }
 
   // ---------- helpers ----------
+
+  /**
+   * Converts a list of typed DTOs (records) to the {@code List<Map<String,Object>>} shape required
+   * by {@code TiptapRenderer.renderLoopTable}. The renderer assumes JSONB-like map shape per row;
+   * SoA's typed-record DTOs ({@code FeeLineDto}, {@code DisbursementStatementDto}, {@code
+   * TrustTxDto}) would otherwise blow up with {@code ClassCastException} at {@code
+   * TiptapRenderer:309} on the first iteration (see GAP-L-71).
+   *
+   * <p>Uses the autowired Spring {@link ObjectMapper} so any tenant-wide serialization
+   * customisations (date format, BigDecimal encoding, naming) apply consistently with the rest of
+   * the JSON layer.
+   */
+  private List<Map<String, Object>> toMapList(List<?> typedRows) {
+    if (typedRows == null || typedRows.isEmpty()) return List.of();
+    return objectMapper.convertValue(typedRows, new TypeReference<List<Map<String, Object>>>() {});
+  }
 
   /**
    * Pre-computed bundle returned by {@link #aggregate}. Holds every artifact needed by {@link

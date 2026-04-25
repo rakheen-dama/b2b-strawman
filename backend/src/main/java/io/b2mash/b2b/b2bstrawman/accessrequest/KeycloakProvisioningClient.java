@@ -116,10 +116,41 @@ public class KeycloakProvisioningClient {
       if (e.getStatusCode().value() != 409) {
         throw e;
       }
-      // Org already exists — look it up by alias
+      // Org already exists — look it up by alias and update its redirectUrl so legacy orgs
+      // (created before the L-22 fix) get the corrected /accept-invite/complete bounce target.
+      // Without this, any pre-existing org keeps the stale /dashboard redirect and the L-22
+      // regression persists for that org. See qa_cycle/fix-specs/GAP-L-22-regression.md.
       log.info("Keycloak org with alias '{}' already exists, looking up ID", slug);
-      return findOrganizationByAlias(slug);
+      String existingId = findOrganizationByAlias(slug);
+      updateOrganizationRedirectUrl(existingId, name, slug);
+      return existingId;
     }
+  }
+
+  /**
+   * Updates the {@code redirectUrl} on an existing Keycloak organization. Used by the 409
+   * idempotent retry path in {@link #createOrganization} so orgs provisioned before the L-22 fix
+   * get the current bounce-page target rather than a stale {@code /dashboard} redirect.
+   *
+   * <p>Keycloak's organization update endpoint is {@code PUT
+   * /admin/realms/{realm}/organizations/{orgId}} with the organization representation in the body.
+   * We include {@code name}, {@code alias}, {@code enabled} alongside {@code redirectUrl} to keep
+   * the representation consistent with what {@link #createOrganization} initially POSTed; KC merges
+   * these fields into the stored org.
+   */
+  private void updateOrganizationRedirectUrl(String orgId, String name, String slug) {
+    var body =
+        Map.of(
+            "name", name, "alias", slug, "enabled", true, "redirectUrl", organizationRedirectUrl);
+    restClient
+        .put()
+        .uri("/organizations/{orgId}", orgId)
+        .header("Authorization", "Bearer " + getAdminToken())
+        .contentType(MediaType.APPLICATION_JSON)
+        .body(body)
+        .retrieve()
+        .toBodilessEntity();
+    log.info("Updated redirectUrl on existing Keycloak org {} (alias '{}')", orgId, slug);
   }
 
   /**

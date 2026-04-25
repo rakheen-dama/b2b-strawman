@@ -5,6 +5,8 @@ import static com.github.tomakehurst.wiremock.client.WireMock.containing;
 import static com.github.tomakehurst.wiremock.client.WireMock.get;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.postRequestedFor;
+import static com.github.tomakehurst.wiremock.client.WireMock.put;
+import static com.github.tomakehurst.wiremock.client.WireMock.putRequestedFor;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -105,6 +107,12 @@ class KeycloakProvisioningClientTest {
                         ]
                         """)));
 
+    // PUT /organizations/{orgId} stub — 409 retry path now also updates redirectUrl on the
+    // existing org so legacy orgs get the corrected /accept-invite/complete bounce target.
+    wireMock.stubFor(
+        put(urlEqualTo("/admin/realms/docteams/organizations/org-correct"))
+            .willReturn(aResponse().withStatus(204)));
+
     String id = client.createOrganization("Mathebula & Partners", "mathebula-partners");
 
     assertThat(id).isEqualTo("org-correct");
@@ -149,6 +157,11 @@ class KeycloakProvisioningClientTest {
                           {"id":"org-correct","name":"Mathebula & Partners","alias":"mathebula-partners"}
                         ]
                         """)));
+
+    // PUT /organizations/{orgId} stub — see other 409 tests for context.
+    wireMock.stubFor(
+        put(urlEqualTo("/admin/realms/docteams/organizations/org-correct"))
+            .willReturn(aResponse().withStatus(204)));
 
     String id = client.createOrganization("Mathebula & Partners", "mathebula-partners");
 
@@ -230,6 +243,44 @@ class KeycloakProvisioningClientTest {
 
     wireMock.verify(
         postRequestedFor(urlEqualTo("/admin/realms/docteams/organizations"))
+            .withRequestBody(
+                containing("\"redirectUrl\":\"http://localhost:3000/accept-invite/complete\"")));
+  }
+
+  @Test
+  void createOrganization_on409_updatesExistingOrgRedirectUrlToBouncePage() {
+    // Reproduces the CodeRabbit major finding: on the 409 idempotency path, the existing
+    // org's redirectUrl must be refreshed to the current /accept-invite/complete target.
+    // Without the PUT, any org provisioned before the L-22 fix keeps the stale
+    // /dashboard redirect and the L-22 regression persists for that org.
+    wireMock.stubFor(
+        post(urlEqualTo("/admin/realms/docteams/organizations"))
+            .willReturn(aResponse().withStatus(409).withBody("{\"error\":\"conflict\"}")));
+
+    wireMock.stubFor(
+        get(urlPathEqualTo("/admin/realms/docteams/organizations"))
+            .withQueryParam("search", containing("legacy-firm"))
+            .willReturn(
+                aResponse()
+                    .withStatus(200)
+                    .withHeader("Content-Type", "application/json")
+                    .withBody(
+                        """
+                        [
+                          {"id":"legacy-org-id","name":"Legacy Firm","alias":"legacy-firm"}
+                        ]
+                        """)));
+
+    wireMock.stubFor(
+        put(urlEqualTo("/admin/realms/docteams/organizations/legacy-org-id"))
+            .willReturn(aResponse().withStatus(204)));
+
+    String id = client.createOrganization("Legacy Firm", "legacy-firm");
+
+    assertThat(id).isEqualTo("legacy-org-id");
+    // Verify the PUT was issued with the corrected redirectUrl pointing at the bounce page.
+    wireMock.verify(
+        putRequestedFor(urlEqualTo("/admin/realms/docteams/organizations/legacy-org-id"))
             .withRequestBody(
                 containing("\"redirectUrl\":\"http://localhost:3000/accept-invite/complete\"")));
   }

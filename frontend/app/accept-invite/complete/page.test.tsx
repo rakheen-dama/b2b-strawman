@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 
-import AcceptInviteCompletePage from "./page";
+import AcceptInviteCompletePage from "@/app/accept-invite/complete/page";
 
 describe("AcceptInviteCompletePage", () => {
   const replaceMock = vi.fn();

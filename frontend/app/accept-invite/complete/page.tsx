@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { AcceptInviteRedirect } from "../redirect-client";
+import { AcceptInviteRedirect } from "@/app/accept-invite/redirect-client";
 
 export const metadata: Metadata = {
   title: "Finishing sign-in",
@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 };
 
 const GATEWAY_URL = (process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8443").replace(
-  /\/$/,
+  /\/+$/,
   ""
 );
 

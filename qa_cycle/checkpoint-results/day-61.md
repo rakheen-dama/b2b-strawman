@@ -1,0 +1,62 @@
+# Day 61 — Sipho downloads Statement of Account from portal `[PORTAL]`
+
+Scenario: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md` Day 61 (lines 691–718).
+
+---
+
+## Day 61 Re-Verify — Cycle 1 — 2026-04-25 SAST
+
+**Slice scope:** After GAP-L-71 fix landed (PR #1137) and Day 60 SoA re-gen verified end-to-end firm-side, drive Sipho's portal session to download + reconcile the SoA. Per scenario, Sipho should: (61.1) follow Mailpit notification email → land on portal matter detail or doc detail; (61.2) see SoA listed on Documents tab; (61.3) download cleanly; (61.4) verify PDF contents match firm-side; (61.7) title not "Untitled"; (61.8) closure letter also visible; (61.9) firm-side audit log captures the access event.
+
+**Actor:** Sipho Dlamini (portal contact, magic-link issued via portal `/login` self-service).
+
+### Per-step results — Day 61
+
+| Step | Action | Result | Evidence |
+|------|--------|--------|----------|
+| **61.1a** | Mailpit query for "Statement of Account ready" / matter-closure email to `sipho.portal@example.com` | **NEW GAP-L-72 — no notification fired.** Mailpit `GET /api/v1/messages?query=to:sipho` returns 9 emails, latest is `Subject: "Mathebula & Partners: Trust account activity"` at `2026-04-25T20:43:23.29Z` (the Day 60 PRE-FLIGHT-C REFUND notification, which fired BEFORE the closure dialog was confirmed). No email subject containing "Statement", "closure", "matter closed", or anything triggered by `documents.created`/`statement.generated`/`matter.closed` between `20:44:20` (closure timestamp) and now (`21:43`). The `statement.generated` event flowed through `audit_log` per Activity feed but did NOT route to `email_notifications`. | Mailpit JSON dump |
+| **61.1b** | Sipho fresh-magic-link self-service via portal `/login?orgId=mathebula-partners` (since 61.1a email-link path is blocked by L-72) | **PASS** — POST email → "Your portal access link from Mathebula & Partners" email arrives at `2026-04-25T21:42:26.281Z` → token `wbLQXUsXPoHBpuF2bWTXmHsY_-MoKuz6a8b-IvblYek` extracted via Mailpit message API → `GET /auth/exchange?token=…&orgId=mathebula-partners` → portal session established, redirected to `/projects` (Sipho's portal home) | Tab 1 URL |
+| **61.2 — Matters list** | Portal `/projects` view renders Sipho's matter list | **PARTIAL** — three matters visible (`L-37 Conveyancing Probe`, `L-37 Regression Probe`, `Dlamini v Road Accident Fund`). Each shows "0 documents" badge — but Dlamini matter actually has 8 documents firm-side. Counter is firm-vs-portal mismatched OR portal-visibility-filtered to zero. | `qa_cycle/checkpoint-results/day-61-cycle1-portal-projects.yml` |
+| **61.2 — Matter detail status** | Click into Dlamini matter → portal `/projects/e788a51b-…` | **NEW GAP-L-73** — matter header shows status badge **"ACTIVE"** even though firm-side + DB confirm `projects.status='CLOSED' / closed_at='2026-04-25 20:44:20'`. Portal status badge is stale or backed by a different field (perhaps `is_active` boolean not synced). | `day-61-cycle1-portal-matter-detail.yml` line 61 |
+| **61.2 — Documents tab** | Read Documents section on portal matter detail | **NEW GAP-L-74 — BLOCKER for 61.2/61.3/61.4/61.7/61.8** — Documents table on portal matter detail lists ONLY the FICA documents (id/address/bank, twice — 6 rows, 344 B each, `Pending`). The two firm-side closure outputs are MISSING from the portal-visible Documents list: (a) `matter-closure-letter-dlamini-v-road-accident-fund-2026-04-25.pdf` (1.6 KB), and (b) `statement-of-account-dlamini-v-road-accident-fund-2026-04-25.pdf` (4 109 B). Sipho cannot download the SoA from his portal session at all via this surface. | `day-61-cycle1-portal-matter-detail.yml` lines 117-186 |
+| **61.3 — Download SoA** | Click Download next to `statement-of-account-…pdf` | **N/A — BLOCKED by L-74** — no SoA row exists in portal Documents tab to click. | n/a |
+| **61.4 — Open downloaded PDF + verify contents** | Open downloaded SoA PDF + reconcile to firm-side ledger | **N/A — BLOCKED by L-74** — no PDF to open from portal. (Firm-side download already captured in `qa_cycle/checkpoint-results/day-60-cycle1-ce-soa-statement.pdf` for offline reconciliation; portal-side mirror of the same file unavailable.) | n/a |
+| **61.5** | Screenshot `day-61-portal-soa-download.png` | **N/A — BLOCKED by L-74**. Snapshot of the empty-of-SoA Documents tab captured as YAML evidence. | yaml |
+| **61.6 / 61.7 / 61.8** | Byte-size match, title check, closure-letter visibility | **N/A — BLOCKED by L-74** for all three. Closure letter is also missing from portal Documents tab (same root cause). | n/a |
+| **61.9 — Firm audit** | Switch to firm session → audit log shows portal contact accessing the SoA | **N/A — no portal access event possible** while L-74 hides the SoA from portal. | n/a |
+| **Sidebar — Trust ledger** | Portal `/trust/e788a51b-…` (Sipho clicks Trust nav) | **PASS (incidental verification)** — trust card shows balance R 0,00 As of 25 Apr 2026; transactions table shows 3 rows: REFUND R 70 000 → R 0,00 (`L-69 fix verification` reference), DEPOSIT R 20 000 → R 70 000, DEPOSIT R 50 000 → R 50 000. Closing balance reconciles to firm-side ledger and to SoA preview's "Trust balance held: R 0". Portal trust visibility for Sipho is internally consistent. | `day-61-cycle1-portal-trust.yml` |
+| **Sidebar — Invoices** | Portal `/invoices` (Sipho clicks Invoices nav) | **PASS (incidental verification)** — both INV-0001 PAID (R 1 250) and INV-0002 PAID (R 100) visible to Sipho with View + Download per row. Reconciles to firm-side fee notes (matches scenario expectation that final fee notes are settled prior to closure). | `day-61-cycle1-portal-invoices.yml` |
+| **Console** | `browser_console_messages level=error` across portal session (3 navigations) | **PASS** — 0 errors throughout (1 warning unrelated). | n/a |
+
+### NEW GAPs opened in Day 61
+
+- **GAP-L-72 (MED — UX/notification gap; NOT a hard blocker for Day 61 since portal magic-link self-service workaround exists):** Closing a matter and generating a Statement of Account does NOT trigger any notification email to the portal contact. Per scenario step 60 ("Mailpit → notification email to `sipho.portal@example.com`: 'Your Statement of Account is ready'") and step 61.1 ("Mailpit → open 'Statement of Account ready' email → click link → lands on portal `/projects/[matterId]`"), the closure letter generation and SoA generation should both fire customer-notification emails. They do not. Last email to Sipho is `2026-04-25T20:43:23` (Day 60 PRE-FLIGHT-C REFUND notification, fires from `TrustTransactionService` via existing trust-activity hook); no email from `MatterClosureService` or `StatementService` to the portal contact. Repro: any matter closure + SoA generation on a customer with a portal contact. Suggested fix S-M (~2-3 hr): (a) `MatterClosureService.confirmClose` enqueue email-notification with closure-letter doc link, OR (b) `StatementService.generate` enqueue email-notification with SoA doc link, OR (c) generic `documents.created` listener in the email-notification module that surfaces visibility=PORTAL or scope=PROJECT documents to the matter's portal contacts. Option (c) is the most general but biggest blast radius; (a)+(b) are targeted. Severity MED for verify cycle (workaround = portal `/login` self-service magic-link, which Sipho can do anytime); HIGH for production UX.
+
+- **GAP-L-73 (LOW — cosmetic, BUT confusing for end user):** Portal matter detail status badge shows **"ACTIVE"** for the Dlamini matter even though firm-side + DB show CLOSED with retention clock started. The portal does not pick up the `projects.status='CLOSED'` value. Repro: any closed matter, log in as the portal contact, navigate to the matter detail. Suggested fix S (~1 hr): `PortalProjectController.getMatterDetail` (or equivalent) should map `projects.status` directly into the response payload status field; portal frontend `/projects/[id]/page.tsx` should render `CLOSED` (or `Closed`) as a non-default badge variant. Probable root cause: portal API endpoint hardcodes status to 'ACTIVE' or backs it off `is_active`/some other field that wasn't toggled by closure. Severity LOW (matter is read-only-effective on portal anyway since tasks all CANCELLED, no actions available); but causes confusion for the client (says ACTIVE while firm has actually concluded the matter).
+
+- **GAP-L-74 (HIGH — BLOCKER for Day 61 entire flow):** Portal matter Documents tab does NOT include either of the two firm-side closure-pack documents — neither `matter-closure-letter-dlamini-v-road-accident-fund-2026-04-25.pdf` (1.6 KB, `documents.2bad9b06-…`, scope=PROJECT, status=UPLOADED) nor `statement-of-account-dlamini-v-road-accident-fund-2026-04-25.pdf` (4 109 B, `generated_documents.c0931e79-…` only — `document_id=NULL`). Documents tab on portal lists only the 6 FICA upload duplicates. Two distinct sub-issues:
+  - **L-74a — Closure letter visibility**: the closure letter IS in `documents` table with proper `project_id` linkage (both firm-side Documents tab and DB confirm this), so the portal API must be filtering it out — likely a `visibility != 'PORTAL'` or `scope != 'CLIENT_VISIBLE'` filter that defaults closure letters to firm-only. Per scenario step 61.8 ("matter closure letter in Documents tab — verify it renders correctly too"), the client SHOULD see this on portal.
+  - **L-74b — SoA visibility**: the SoA is structurally orphaned — `generated_documents.c0931e79-…` exists but `document_id` is NULL, so the SoA is not in `documents` at all. Even if portal Documents API filtered properly, the SoA wouldn't appear via that path. The Statements tab (which surfaces from `generated_documents`) does not exist on the portal at all. Per scenario step 61.2 ("verify Statement of Account — RAF-2026-001 is listed with today's date + file size [in Documents tab]"), the SoA MUST be discoverable via the portal Documents tab.
+
+  Suggested fix M (~3-4 hr): (a) `StatementService.generate` should also create a paired `documents` row (with `visibility='PORTAL'` or scope=CLIENT) and link it via `generated_documents.document_id`, mirroring how `MatterClosureLetter` works; (b) `MatterClosureService` should set the closure letter `documents` row to `visibility='PORTAL'` (or whatever filter portal Documents API applies); (c) review portal Documents API filter to ensure scope=PROJECT + visibility=PORTAL documents flow through. This unblocks both 61.2/61.3/61.4 (SoA) and 61.8 (closure letter visibility) in one shot.
+
+  Repro: any closed matter + SoA generated, log in as portal contact, navigate to matter detail Documents tab. Closure letter is missing AND SoA is missing.
+
+### Decision
+
+**SLICE BLOCKED on GAP-L-74 (closure-pack documents not exposed to portal).** Day 61 cannot be executed verbatim per scenario — Sipho cannot see, download, or reconcile the SoA from his portal session because (L-74b) the SoA never gets a `documents` row to surface via the portal Documents API and (L-74a) the closure letter is filtered out of the portal Documents view even though it has a proper `documents` row.
+
+L-71 verification (the slice's primary purpose) is **complete and clean** — the renderer crash is gone, SoA generates end-to-end firm-side. The Day 61 portal-side blocker is a separate document-visibility/persistence gap that the L-71 spec did not contemplate.
+
+Per dispatch hard rule "If a Day 61 checkpoint blocks (e.g., SoA not in portal contact's view, download 404, etc.), STOP, log gap, exit", stopping here. Do NOT proceed to Day 88+ until L-74 is triaged.
+
+### Next action
+
+- Product → Dev triage GAP-L-72 (notification on closure/SoA), GAP-L-73 (portal matter status badge), and GAP-L-74 (closure-pack docs not surfaced to portal). L-74 is the blocker for Day 61 re-execution; L-72 + L-73 are quality gaps that don't block but should be addressed in this verify cycle if cheap.
+- After L-74 (and ideally L-73 + L-72) fixed: re-walk Day 61 from 61.1 (Mailpit notification path if L-72 fixed; magic-link self-service path otherwise) → 61.2 portal Documents tab list with SoA + closure letter → 61.3 download cleanly → 61.4 PDF reconciliation → 61.9 firm-side audit log of portal access event.
+- L-71 itself is VERIFIED — no further QA action needed on that gap.
+
+### Time
+
+Day 61 portal walk + gap discovery: ~5 min wall-clock.
+Total Day 60 SoA re-gen + Day 61 attempt: ~8 min wall-clock, well under 75 min budget.

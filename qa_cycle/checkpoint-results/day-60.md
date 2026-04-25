@@ -464,3 +464,73 @@ PRE-FLIGHT-C re-walk: ~10 min (very fast — fix-spec was accurate, dialogs work
 CLOSURE-EXECUTE: ~7 min including the SoA failure investigation.
 Total ~17 min wall-clock, well under 75 min budget.
 
+---
+
+## Day 60 — SoA re-gen (after L-71 fix) — 2026-04-25 SAST
+
+**Slice scope:** After PR #1137 (`23bb43d8`) landed and backend restarted, re-trigger SoA generation against the already-CLOSED Dlamini matter to verify the `ClassCastException` is gone and a usable SoA PDF is produced.
+
+**Actor:** Thandi Mathebula (KC session live from prior turn).
+
+### Per-step results — SoA re-gen
+
+| Step | Action | Result | Evidence |
+|------|--------|--------|----------|
+| **S1a** | Navigate `/org/mathebula-partners/projects/e788a51b-…` (matter detail) | **PASS** — page loads, status badge **Closed**, toolbar shows `Reopen Matter` + `Generate Statement of Account` + Generate Document + New Engagement Letter etc. | `qa_cycle/checkpoint-results/day-60-cycle1-ce-soa-after-close.yml` |
+| **S1b** | Click `Generate Statement of Account` toolbar button | **PASS** — modal opens with default period `2026-04-01` → `2026-04-25` and Preview & Save button | `day-60-cycle1-ce-soa-regen-dialog.yml` |
+| **S1c** | Click `Preview & Save` | **PASS — L-71 FIX VERIFIED** — backend returns 200, modal renders an embedded `<iframe>` with the rendered HTML SoA + buttons reshape to `Close / Download PDF / Regenerate`. Backend log line `2026-04-25T21:39:48.262018Z … StatementService — Generated Statement of Account: project=e788a51b-…, period=2026-04-01..2026-04-25, generatedDoc=c0931e79-f185-42c8-af70-33528d5e0d69` (requestId `986b9f0d-…`). NO ClassCastException, NO error stack trace anywhere in `bash svc.sh logs backend | tail -30` (compared to prior failure at `2026-04-25T20:46:08.033`). | `day-60-cycle1-ce-soa-regen-after-click.yml` (preview iframe full content visible) |
+| **Console** | `browser_console_messages level=error` post Preview & Save | **PASS** — 0 errors, 1 unrelated warning | n/a |
+| **S2 — preview content** | Read iframe content for scenario reconciliation | **MIXED** — see "SoA content reconciliation" below. Headline: SoA renders, all 7 sections present, no rendering errors. | iframe text in `day-60-cycle1-ce-soa-regen-after-click.yml` lines 461-617 |
+| **S2-DB** | `SELECT id, document_id, file_name, file_size, generated_at FROM tenant_5039f2d497cf.generated_documents WHERE id='c0931e79-f185-42c8-af70-33528d5e0d69';` | **PASS** — 1 row: `c0931e79-…` / `document_id=NULL` / `file_name='statement-of-account-dlamini-v-road-accident-fund-2026-04-25.pdf'` / `file_size=4109` / `generated_at='2026-04-25 21:39:48.251717+00'`. **OBS-Day60-SoA-NotInDocumentsTable**: SoA persists to `generated_documents` only — `document_id` is NULL so the SoA doesn't appear in the matter Documents tab (firm-side OR portal-side). It IS visible + downloadable from the **Statements tab** of the matter. Per scenario step 60.10 ("Closure letter + Statement of Account documents both attached to matter Documents tab"), this is a discrepancy with scenario expectation but consistent with the existing app architecture. | (DB) |
+| **S2-Statements-tab** | Click Statements tab on matter | **PASS** — table shows row: `Apr 25, 2026 / R 1 250,00 / R 0,00 / [Download]`. Closing balance owing R 1 250 matches preview iframe summary; trust balance held R 0 matches scenario closure expectation. | `day-60-cycle1-ce-soa-statements-tab.yml` |
+| **S2-Download** | Click Download on Statements tab row | **PASS** — Playwright reports `Downloaded file statement-c0931e79-f185-42c8-af70-33528d5e0d69.pdf to ".playwright-mcp/statement-c0931e79-f185-42c8-af70-33528d5e0d69.pdf"` (4109 bytes). PDF saved to `qa_cycle/checkpoint-results/day-60-cycle1-ce-soa-statement.pdf`. | PDF file |
+| **S2-Documents-tab** | Click Documents tab on matter | **OBS-Day60-SoA-NotInDocumentsTable confirmed** — Documents tab lists 8 docs: engagement letter, matter-closure letter, FICA id/address/bank (×2 versions). NO `statement-of-account-…pdf` row. SoA lives only under Statements tab. | `day-60-cycle1-ce-soa-documents-tab.yml` |
+| **S3 — Activity feed** | Recent Activity card on matter Overview | **PASS** — new entry `Thandi Mathebula performed statement.generated on generated_document` ~minutes ago, alongside the prior `…generated document "matter-closure-letter-…"` entry. | `day-60-cycle1-ce-soa-after-close.yml` lines 339+346 |
+
+### SoA content reconciliation vs scenario
+
+The L-71 fix verified path is **clean** — the renderer no longer crashes. The rendered SoA preview/PDF content however shows a content gap when reconciled to scenario step 61.4 / dispatch's expected contents:
+
+| Section | Scenario expectation | Observed in SoA preview | Verdict |
+|---------|---------------------|-------------------------|---------|
+| Header (firm letterhead, period, ref) | Mathebula & Partners + Reference SOA-… + Period 2026-04-01..2026-04-25 + Generated 2026-04-25 | All present (`Reference: SOA-e788a51b-20260425`) | **PASS** |
+| To (client) | Sipho Dlamini + address | Present | **PASS** |
+| Matter (file ref, opened) | RAF-2026-001, Litigation, opened 2026-04-25 | Present | **PASS** |
+| **Professional Fees table** | INV-0001 PAID + INV-0002 PAID fee lines (per dispatch description: "fee notes paid") | **EMPTY rowgroup** — header row only, no fee lines. Total fees R 0. | **GAP — see OBS-Day60-SoA-Fees-Empty** |
+| **Disbursements table** | "disbursements billed" (sheriff service fee + court fee) | **POPULATED** — 2 rows: `25 April 2026 COURT_FEES L-64 verify — court filing fee Magistrate Court Pretoria R100,00 R0,00` and `25 April 2026 SHERIFF_FEES Sheriff service of summons on RAF — Day 21 cycle-1 verify Sheriff Pretoria R1 250,00 R0,00`. Total R 1 350,00. | **PASS** (this was the loop that crashed pre-fix; renders cleanly post-fix) |
+| **Trust Activity** | Opening balance R 0, deposits R 50k + R 20k, fee transfer out (or refund) R 70k, closing R 0 | Opening R 0 ✅ + Closing R 0 ✅ — but **Deposits table EMPTY rowgroup AND Payments table EMPTY rowgroup**. Backend nets to 0 but the line items are missing. | **GAP — see OBS-Day60-SoA-Trust-Empty** |
+| Summary | Total fees, total disbursements, payments received, balance | Total fees R 0, total disbursements R 1 350,00, previous balance owing R 0, payments received R 100,00, **closing balance owing R 1 250,00**, trust balance held R 0. | **PARTIAL** — disbursement total + payments-received (INV-0002 R 100) + trust balance OK; closing balance owing R 1 250 reflects INV-0001 not appearing in the fees table (and INV-0001's R 1 250 trust-paid status not reflected). |
+| Payment Instructions | Banking details | Section heading present, body empty | **OBS** — likely tenant-config gap, not a regression |
+
+**OBS-Day60-SoA-Fees-Empty / OBS-Day60-SoA-Trust-Empty (NOT a new gap; informational followup):** L-71's data-shape conversion (DTO → Map) is the only thing the fix promised, and that works. The empty trust+fees loops mean either (a) the SoA period 2026-04-01..2026-04-25 is filtering on a `paid_at` / `transaction_date` boundary that excludes the rows even though they're dated 2026-04-25, OR (b) the SoA queries don't union in records with NULL project_id (the original L-69-era trust rows had `project_id=NULL` — they were reversed but their REVERSAL pair rows may also lack project_id), OR (c) `StatementOfAccountContextBuilder.collectFees`/`collectTrust` predicates don't match the data shape on this matter. This is a separate content/correctness investigation orthogonal to L-71's ClassCastException fix and worth opening as **OBS-L-71-followup** or a Sprint-2 SoA-content-reconciliation gap. **Crucially, it does NOT block L-71 verification** — L-71 was the renderer crash; the renderer is no longer crashing.
+
+### Final state at slice close
+
+```sql
+-- generated_documents row for the SoA
+SELECT id, document_id, file_name, file_size, generated_at
+  FROM tenant_5039f2d497cf.generated_documents
+ WHERE id='c0931e79-f185-42c8-af70-33528d5e0d69';
+-- c0931e79-f185-42c8-af70-33528d5e0d69 | NULL | statement-of-account-dlamini-v-road-accident-fund-2026-04-25.pdf | 4109 | 2026-04-25 21:39:48.251717+00
+
+-- documents table on the matter (no SoA row)
+SELECT id, file_name, content_type, created_at FROM tenant_5039f2d497cf.documents
+ WHERE project_id='e788a51b-…' ORDER BY created_at DESC LIMIT 10;
+-- 2bad9b06-… | matter-closure-letter-dlamini-…2026-04-25.pdf | application/pdf | 2026-04-25 20:44:20.613825+00
+-- 8ca47203-… | fica-bank.pdf | application/pdf | 2026-04-25 16:47:36.596719+00
+-- 68d9b68e-… | fica-address.pdf | application/pdf | 2026-04-25 16:47:17.014779+00
+-- 4d8e6125-… | fica-id.pdf | application/pdf | 2026-04-25 16:46:51.656774+00
+-- b1f81ae2-… | engagement-letter-litigation-dlamini-…2026-04-25.pdf | application/pdf | 2026-04-25 09:56:00.484831+00
+-- 254a3806-…/b8bca882-…/525db0c6-… (older fica versions)
+```
+
+### Decision
+
+**L-71 FIX → VERIFIED.** SoA generation via the canonical UI path (closed matter toolbar → dialog → Preview & Save) executes successfully end-to-end: backend returns 200, preview iframe renders, PDF persists to `generated_documents` (4 109 bytes), Statements tab + Activity feed both reflect the new artifact, downloadable, console clean. The exact stack trace `ClassCastException at TiptapRenderer.renderLoopTable:309` that was the L-71 repro is GONE.
+
+Two informational observations carved out (NOT new gaps blocking the verify cycle): **OBS-Day60-SoA-NotInDocumentsTable** (SoA absent from Documents tab on matter; surfaces only via Statements tab — discrepancy with scenario step 60.10) and **OBS-Day60-SoA-Fees/Trust-Empty** (SoA preview body has empty fee + trust loops while disbursements loop populates correctly — content reconciliation followup, not a renderer crash). Both worth Product triage but neither blocks the L-71 verification or Day 61 dispatch.
+
+### Time
+
+SoA re-gen + verification: ~3 min wall-clock.
+

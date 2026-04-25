@@ -18,7 +18,7 @@ Carry-forward re-observations: GAP-L-22 session handoff clean (Bob KC logged in 
 ## Pre-flight
 
 - Services verified UP via `curl`: backend `{"status":"UP"}`, frontend 200, gateway 200, portal 307.
-- Bob session: fresh Keycloak two-step login (`bob@mathebula-test.local` / `<REDACTED>`) → landed on `/org/mathebula-partners/dashboard`. Sidebar identity stable throughout turn ("BN — Bob Ndlovu — bob@mathebula-test.local"). Breadcrumb OK.
+- Bob session: fresh Keycloak two-step login (`bob@<test-fixture>` / `<REDACTED>`) → landed on `/org/mathebula-partners/dashboard`. Sidebar identity stable throughout turn ("BN — Bob Ndlovu — bob@<test-fixture>"). Breadcrumb OK.
 - Dashboard visible state: 2 ACTIVE matters ("Estate Late Peter Moroka", "Dlamini v Road Accident Fund"), 0 hours logged this month, 10 unread notifications.
 - DB pre-check (Sipho lifecycle): `SELECT lifecycle_status FROM tenant_5039f2d497cf.customers WHERE id='8fe5eea2-…'` → **`PROSPECT`** (confirms the gate will fire).
 
@@ -152,7 +152,7 @@ L-57 holds end-to-end (Matter combobox hydrates with all 3 matters, RAF auto-pre
 
 ### Pre-flight
 
-- Tab 0 (Bob firm) and Tab 1 (Sipho portal) both alive on entry; Bob session valid (no Keycloak re-login needed; sidebar reads "BN — Bob Ndlovu — bob@mathebula-test.local"; 6 unread notifications).
+- Tab 0 (Bob firm) and Tab 1 (Sipho portal) both alive on entry; Bob session valid (no Keycloak re-login needed; sidebar reads "BN — Bob Ndlovu — bob@<test-fixture>"; 6 unread notifications).
 - DB pre-check: `SELECT id FROM tenant_5039f2d497cf.projects WHERE id='e788a51b-3a73-456c-b932-8d5bd27264c2';` → 1 row (RAF matter exists).
 - Matter UUID **correction**: dispatch context referenced `e788a51b-…` truncated; full UUID resolved via `/projects` list = `e788a51b-3a73-456c-b932-8d5bd27264c2` (NOT the `e788a51b-3027-462a-94c5-2cb3c8df9f0e` shown in dispatch — that ID 500s on matter-detail load. The `3a73-…` UUID is correct per `/projects` list and persisted disbursement).
 
@@ -242,10 +242,10 @@ The new disbursement's `approvalStatus=DRAFT` → it will NOT appear in the Day-
 
 ### Evidence chain for Day 28 (when L-61 lands)
 
-- Disbursement ID: `bb9ee2ac-b1e5-4e2f-bf43-e40a63809530`
-- RAF matter: `e788a51b-3a73-456c-b932-8d5bd27264c2`
-- Customer (Sipho): `c3ad51f5-2bda-4a27-b626-7b5c63f37102`
-- Tenant: `tenant_5039f2d497cf` (Mathebula & Partners)
+- Disbursement ID: `bb9ee2ac-…`
+- RAF matter: `e788a51b-3a73-…`
+- Customer (Sipho): `c3ad51f5-…`
+- Tenant: `tenant_<hash>` (Mathebula & Partners — dev-only, deterministic from KC org id)
 - Amount: R 1 250,00 (zero-rated pass-through)
 - Category: SHERIFF_FEES, Supplier: Sheriff Pretoria, Reference: SHF-RAF-2026-001, Incurred: 2026-04-25
 - State at end-of-turn: `approval_status=DRAFT`, `billing_status=UNBILLED`
@@ -280,7 +280,7 @@ Per dispatch instructions: "If you hit a HIGH/blocker, write Tracker row OPEN an
 | 21.D.5 | Console clean during submit | browser_console_messages level=error | **PASS** — 122 messages total, **0 errors / 0 warnings**. | `console-2026-04-25T11-35-27-682Z.log` |
 | 21.D.6 | Click Approve → confirmation dialog | browser_click on Approve | **PASS** — modal dialog "Approve Disbursement" opened with optional Notes textarea + Cancel/Approve Disbursement buttons. | (intermediate snapshot) |
 | 21.D.7 | Confirm approval | browser_click on dialog "Approve Disbursement" confirm | **PASS** — dialog closed, status transitioned `Pending → Approved`, Approval Required panel disappeared. | `day-21-cycle1-l61-fixed-approved.yml` + `.png` |
-| 21.D.8 | DB read-only confirmation | docker exec psql `SELECT` on `tenant_5039f2d497cf.legal_disbursements` | **PASS** — `approval_status='APPROVED'`, `billing_status='UNBILLED'`, `approved_at=2026-04-25 11:57:03.055511+00`, `approved_by='5fabd245-0cc3-4f70-8605-3f4e2a369140'` (Bob Ndlovu, `bob@mathebula-test.local` — confirmed via `members` join). | (terminal output) |
+| 21.D.8 | DB read-only confirmation | docker exec psql `SELECT` on `tenant_<hash>.legal_disbursements` | **PASS** — `approval_status='APPROVED'`, `billing_status='UNBILLED'`, `approved_at=2026-04-25 11:57:03.055511+00`, `approved_by='5fabd245-…'` (Bob Ndlovu, `bob@<test-fixture>` — confirmed via `members` join). | (terminal output) |
 | 21.D.9 | L-63 prerequisite satisfied | DB predicate check | **PASS** — disbursement now matches `findUnbilledBillableByCustomerId(c3ad51f5-…)` predicate (`approval_status='APPROVED' AND billing_status='UNBILLED'`). Day 28 fee-note dialog L-63 verify is now unblocked. | n/a — derived from Phase F |
 
 ### State transitions captured

@@ -112,6 +112,8 @@ Day 10 complete, zero blocker. Per execution rule (max 2 days per turn), stoppin
 
 ## Day 10 Re-Verify — Cycle 1 — 2026-04-25 SAST
 
+> **Note (cycle-1 verify):** This re-verify section **supersedes the earlier Day 10 section above** (cycle-0). Outcomes differ because cycle-1 re-walked against the L-22/L-29/L-37/L-61/L-64 fixes shipped between cycle-0 and cycle-1.
+
 **Method**: REST API end-to-end as Thandi (Keycloak password-grant, gateway-bff client, organization scope; chrome-in-mcp extension disconnected this turn — REST allowed per dispatch). Trust deposit recorded against the Day 7 acceptance + Day 8 portal-accepted RAF matter.
 
 **Result summary**: **9/9 executed — 7 PASS, 1 SKIPPED-BY-DESIGN (10.6 dual-approval not configured), 1 N/A this turn (10.9 screenshot — browser unavailable). Zero BLOCKER.**

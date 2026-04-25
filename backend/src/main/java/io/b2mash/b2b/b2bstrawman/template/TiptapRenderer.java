@@ -332,7 +332,11 @@ public class TiptapRenderer {
       if (current == null) return null;
     }
     if (current instanceof List<?> list) {
-      // Safe unchecked cast — JSONB deserialization produces List<Map<String,Object>>
+      // Caller contract: rows must be List<Map<String,Object>>. JSONB-deserialized content lists
+      // meet this naturally; programmatic builders (e.g. StatementOfAccountContextBuilder) MUST
+      // convert typed records via objectMapper.convertValue(...) before putting the list into the
+      // context map, otherwise per-row iteration at line 309 throws ClassCastException
+      // (GAP-L-71).
       return (List<Map<String, Object>>) list;
     }
     return null;

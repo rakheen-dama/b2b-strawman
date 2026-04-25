@@ -150,3 +150,104 @@ Orchestrator can dispatch **Day 21** (firm-side time entry + disbursements + cou
 - `day-15-portal-home-isolated.png` — Sipho's clean home.
 - `day-15-portal-moroka-matter-denied.png` — "Resource not found" on `/projects/[moroka-matter-id]`.
 - `day-15-portal-requests-isolated.png` — `/requests` list showing only Sipho's 3 REQs.
+
+---
+
+## Day 15 Re-Verify — Cycle 1 — 2026-04-25 SAST
+
+Cycle: 1 (verify) | Date: 2026-04-25 SAST | Auth: Sipho's portal JWT (already-live in Tab 1 localStorage) | Portal: :3002 | Backend: :8080 | Actor: Sipho Dlamini
+
+**Method**: Playwright MCP browser-driven for Phase 15.1 + 15.2 (list-view leak probes + direct-URL hard-negative probes); REST `curl` for Phase 15.3 (API hard-negative — API is the SUT per dispatch); read-only SQL SELECT for Phase 15.4. Tab 1 Sipho portal session preserved untouched on entry; JWT extracted from `localStorage.portal_jwt` (decoded: `sub=c3ad51f5-… (Sipho's customerId), type=customer, org_id=mathebula-partners, exp 1777118542 = 2026-04-25 12:02:22 UTC ≈ 50 min remaining`). Tab 0 Bob firm session left intact (untouched).
+
+### Probe IDs (cycle-1, on `tenant_5039f2d497cf`)
+
+```
+Moroka customer_id          : 2b454c42-ac4e-4e96-af64-4f3d2a409d45
+Moroka matter_id (project)  : 89201af5-f6e0-4d9a-952e-a2af6e5b70ee  (EST-2026-002)
+Moroka info-request_id      : 83428106-0e6e-4550-acc7-bdd184fd727f  (REQ-0005 Liquidation pack)
+Moroka document_id          : 8d92037c-b1de-4b3d-9016-034d27cd032b  (death-certificate-moroka.pdf)
+Moroka trust_tx_id          : 446fa97c-8d8d-43f2-b4be-0e7c0ef8af95  (R 25 000,00 DEPOSIT)
+Moroka client_ledger_card   : 182621ca-57d2-423b-a998-434b518b4db6
+```
+
+### Phase 15.1 — List-view leak probe (browser-driven)
+
+| # | URL | Expected | Observed | Leak tokens | Verdict |
+|---|---|---|---|---|---|
+| 15.1a | `/home` | Sipho-only | Empty cards (deadlines/invoices/trust nudges); chrome shows "Sipho Dlamini" | NONE | PASS |
+| 15.1b | `/projects` | Only Sipho's matters | 3 matters: `Dlamini v Road Accident Fund` (`e788a51b-…`), `L-37 Regression Probe` (`af9b14b2-…`), `L-37 Conveyancing Probe` (`db5ff54a-…`). DB confirms ALL 3 bound to Sipho's `customer_id=c3ad51f5-…`. Moroka matter `89201af5-…` ABSENT. | NONE | PASS |
+| 15.1c | `/requests` | Only Sipho's REQs | REQ-0001/REQ-0002/REQ-0003/REQ-0004 — all "Dlamini v Road Accident Fund" projectName. REQ-0005 (Moroka Liquidation pack) ABSENT. | NONE | PASS |
+| 15.1d | `/trust` | Only Sipho's matter | Auto-redirect to `/trust/e788a51b-…` (Sipho's RAF matter). Trust balance card R 50 000,00; transactions table 1 row "25 Apr 2026 / DEPOSIT / Initial trust deposit — RAF-2026-001 / R 50 000,00". Moroka R 25 000,00 ABSENT; aggregate R 75 000,00 not shown. | NONE | PASS |
+
+Snapshots: `day-15-cycle1-list-home.yml`, `day-15-cycle1-list-projects.yml`, `day-15-cycle1-list-requests.yml`, `day-15-cycle1-list-trust.yml`. Token-grep across all 4 yml for `Moroka|REQ-0005|Liquidation|Estate Late|2b454c42|89201af5|83428106|8d92037c|446fa97c|182621ca|25 000|75 000|death-cert` returned 0 hits per file.
+
+**Phase 15.1 result: 4/4 PASS — zero Moroka tokens visible to Sipho on any list view.**
+
+### Phase 15.2 — Direct-URL hard negative (browser-driven, Moroka IDs)
+
+| # | URL | Expected | Observed | Leak tokens | Verdict |
+|---|---|---|---|---|---|
+| 15.2a | `/projects/89201af5-…` (Moroka matter) | 404/403/denial | Renders portal chrome with denial card: **"The requested resource was not found."** + "This project may have been removed, you may not have access, or the request failed." Buttons: "Try again" / "Back to projects" | NONE | PASS |
+| 15.2b | `/requests/83428106-…` (Moroka REQ-0005) | 404/403/denial | Renders portal chrome + **"The requested resource was not found."** | NONE | PASS |
+| 15.2c | `/trust/89201af5-…` (Moroka matter trust) | 404/403/denial | Renders portal chrome + "Back to trust" link + **"No trust balance is recorded for this matter."** + Transactions: "The requested resource was not found." + Statements: "The requested resource was not found." NO R 25 000,00 anywhere. | NONE | PASS |
+| 15.2d | `/documents/8d92037c-…` (Moroka document) | 404/403/denial | Next.js **"404 Page not found"** (route doesn't exist on portal — same outcome as cycle-0 GAP-P-07; functionally a denial) | NONE | PASS |
+
+Snapshots: `day-15-cycle1-direct-project.yml`, `day-15-cycle1-direct-request.yml`, `day-15-cycle1-direct-trust.yml`, `day-15-cycle1-direct-document.yml`. Screenshot evidence: `day-15-cycle1-direct-project-denial.png` (denial card on Moroka matter URL).
+
+**Phase 15.2 result: 4/4 PASS — every direct-URL probe denied; zero Moroka data rendered.**
+
+### Phase 15.3 — API hard negative (REST allowed — API is the SUT)
+
+JWT extracted from Sipho's portal session via `browser_evaluate(() => localStorage.portal_jwt)`. Curl probes against `localhost:8080/portal/...` and `localhost:8080/api/...`:
+
+| # | Endpoint | Expected | HTTP | Body (first 200 chars) | Leak | Verdict |
+|---|---|---|---|---|---|---|
+| Pos-control | `GET /portal/projects/e788a51b-…` (Sipho's own RAF) | 200 | **200** | `{"id":"e788a51b-…","name":"Dlamini v Road Accident Fund","status":"ACTIVE",…}` | N/A | PASS (control proves JWT works) |
+| 15.3a | `GET /portal/projects/89201af5-…` (Moroka matter) | 403/404 | **404** | `{"detail":"No project found with id 89201af5-…","title":"Project not found"}` | NONE | PASS |
+| 15.3b | `GET /portal/requests/83428106-…` (Moroka REQ-0005) | 403/404 | **404** | `{"detail":"No informationrequest found with id 83428106-…","title":"InformationRequest not found"}` | NONE | PASS |
+| 15.3c | `GET /portal/trust/matters/89201af5-…/transactions` | 403/404 | **404** | `{"detail":"No project found with id 89201af5-…","title":"Project not found"}` | NONE | PASS |
+| 15.3d | `GET /portal/documents/8d92037c-…` (Moroka doc) | 403/404 | **404** | `{"detail":"No static resource portal/documents/8d92037c-…","title":"Not Found"}` | NONE | PASS |
+| 15.3e | `GET /portal/projects/89201af5-…/tasks` | 403/404 | **404** | `{"detail":"No project found with id 89201af5-…","title":"Project not found"}` | NONE | PASS |
+| 15.3f | `GET /api/projects/89201af5-…` (firm endpoint w/ portal JWT) | 401/403 | **401** | (empty — backend correctly rejects portal JWT against firm scope) | NONE | PASS |
+| 15.3g | `GET /portal/requests` (Sipho's own list) | 200, no Moroka REQ-0005 | **200** | 4 items: REQ-0004/REQ-0003/REQ-0002/REQ-0001 — ALL `projectName: "Dlamini v Road Accident Fund"` and `projectId: e788a51b-…`. NO REQ-0005, NO `83428106`, NO `Moroka`, NO `Liquidation`. | NONE | PASS |
+| 15.3h | `GET /portal/projects` (Sipho's own list) | 200, no Moroka matter | **200** | 3 items: `db5ff54a-…/L-37 Conveyancing Probe`, `af9b14b2-…/L-37 Regression Probe`, `e788a51b-…/Dlamini v Road Accident Fund`. NO `89201af5`, NO `Moroka`, NO `Estate Late`. (DB confirms all 3 ids belong to `customer_id=c3ad51f5-…` Sipho.) | NONE | PASS |
+| 15.3i | `GET /portal/trust/summary` (Sipho's own) | 200, no Moroka matter | **200** | `{"matters":[{"matterId":"e788a51b-…","currentBalance":50000.00,…}]}` — exactly 1 matter, balance R 50 000,00. NO `89201af5`, NO `25000`, NO `446fa97c`. | NONE | PASS |
+
+**Phase 15.3 result: 9/9 PASS (1 positive-control + 8 hard-negatives). Backend correctly enforces tenant + customer-scope authorization.**
+
+### Phase 15.4 — Activity trail (read-only SELECT)
+
+```sql
+SELECT event_type, entity_type, entity_id, actor_type, source, occurred_at
+FROM tenant_5039f2d497cf.audit_events
+WHERE actor_id = 'c3ad51f5-…' /* Sipho */
+   OR entity_id IN ('89201af5-…','83428106-…','8d92037c-…','446fa97c-…') /* Moroka */
+ORDER BY occurred_at DESC LIMIT 20;
+```
+
+6 rows returned — ALL `actor_type=USER, source=API` (i.e., Bob the firm admin creating Moroka entities on Day 14). Zero rows with Sipho as actor against Moroka entities. Audit layer does not currently log denied/failed access attempts (existing pattern, not a new gap), but importantly there is no record of Sipho ever successfully retrieving Moroka data.
+
+**Phase 15.4 result: PASS — zero Sipho-actor entries against Moroka entities.**
+
+### Day 15 cycle-1 rollup
+
+| Checkpoint | Result |
+|---|---|
+| 15.1 List-view leak (4 list pages, browser) | **4/4 PASS** |
+| 15.2 Direct-URL hard negative (4 URLs, browser) | **4/4 PASS** |
+| 15.3 API hard negative (8 probes + 1 control, curl) | **9/9 PASS** |
+| 15.4 Activity trail (read-only SELECT) | **PASS** |
+| **Total cycle-1** | **18 probes — 18 PASS — 0 FAIL — 0 BLOCKER** |
+
+**ISOLATION HOLDS at all four layers (UI list, UI direct-URL, API, audit). L-52 portal trust ledger does NOT leak Moroka's R 25 000,00 deposit into Sipho's view (Sipho sees only his own R 50 000,00). No new gaps. Cycle-1 verify CLEAN.**
+
+### Tab state on exit
+
+- Tab 0 — Bob firm session at `localhost:3000/org/mathebula-partners/projects/89201af5-…` — **untouched**.
+- Tab 1 — Sipho portal session at `localhost:3002/projects/89201af5-…` (last-visited Moroka URL, denial card rendered) — JWT still live (~50 min remaining); can be reused or logged out at orchestrator's discretion.
+
+### Evidence files
+
+- `day-15-cycle1-list-home.yml`, `day-15-cycle1-list-projects.yml`, `day-15-cycle1-list-requests.yml`, `day-15-cycle1-list-trust.yml`
+- `day-15-cycle1-direct-project.yml`, `day-15-cycle1-direct-request.yml`, `day-15-cycle1-direct-trust.yml`, `day-15-cycle1-direct-document.yml`
+- `day-15-cycle1-direct-project-denial.png`

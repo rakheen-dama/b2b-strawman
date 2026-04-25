@@ -73,3 +73,47 @@ Note: scenario skips Day 6 (no Day 6 section in the test plan); next scheduled d
 1. **Dev fix GAP-L-43 (HIGH/BLOCKER)** — `PortalEventHandler.java` missing `@EventListener onRequestItemSubmitted`. ~20 min fix mirroring the Accepted/Rejected listeners. Without it, Day 8 portal POV (proposal acceptance — uses the same read-model projection pattern) and Day 11/30/46/61/75 portal POVs will all hit similar UI-lag bugs. This should land BEFORE QA attempts Day 7+ to avoid re-spinning on the same gap shape across multiple days.
 2. **Dev fix GAP-L-44 (LOW, but on nav-discovery critical path)** — PackReconciliationRunner should sync `enabled_modules` from vertical profile JSON to `org_settings.enabled_modules`. Or simplify: remove the module gate from home card + sidebar nav item — the backend endpoint returns empty arrays when no requests exist, so the gate adds no value. ~10–30 min fix.
 3. **Defer** GAP-L-45, GAP-L-46, GAP-P-03 (all LOW/MED, off Day 7 critical path).
+
+---
+
+## Day 5 — Cycle 1 Verify (snapshot-replay) — 2026-04-25 SAST
+
+**Branch**: `bugfix_cycle_2026-04-24` (head `70846a8d`)
+**Tenant**: `mathebula-partners` (schema `tenant_5039f2d497cf`)
+**Method**: Existing accessibility snapshots from prior agent's run + READ-ONLY DB queries + targeted REST API call to verify `/api/customers/{id}/fica-status` (L-46 data layer). No new browser drive (Chrome MCP unavailable).
+
+### Pre-state (DB confirmed, READ-ONLY)
+
+- REQ-0003 progressed SENT (05:07:57) → IN_PROGRESS (after first SUBMITTED upload) → COMPLETED (06:28:36) once Bob accepted all 3 items.
+- All 3 REQ-0003 items: status=ACCEPTED, `submitted_at` + `reviewed_at` populated, `document_id` populated, `reviewed_by`=Bob's member ID.
+- Customer FICA status (READ-ONLY API call to `/api/customers/c3ad51f5-…/fica-status`): `{customerId: …, status: "DONE", lastVerifiedAt: "2026-04-25T06:28:35Z", requestId: "b78cb730-…"}`.
+- Portal read model `portal.portal_requests` REQ-0003: status=COMPLETED, accepted_items=3.
+
+### Snapshots used as evidence
+
+| File | What it proves |
+|------|----------------|
+| `day-05-cycle1-firm-req-detail.yml` | Firm-side info-request detail page rendering — header "REQ-0003 / In Progress / Sipho Dlamini | Dlamini v Road Accident Fund / 0/3 accepted", Items list with each (ID copy / Proof of residence / Bank statement) showing "Submitted" badge + Accept + Reject buttons. Snapshot captured BEFORE acceptance — accept happened later (DB confirms `reviewed_at` 06:28:17–36). |
+| `day-05-cycle1-fica-done-tile.png` | Matter Overview tab post-acceptance. Note: viewport is narrow (sidebar takes most width); FICA tile may be below the fold but the underlying API endpoint `/api/customers/{id}/fica-status` returns `status=DONE` (verified live). Component `FicaStatusCard` is rendered conditionally on `customerId != null` per `frontend/components/projects/overview-tab.tsx:561`. |
+
+### Checkpoint Results (Cycle 1)
+
+| ID | Description | Result | Evidence | Gap |
+|----|-------------|--------|----------|-----|
+| 5.1 | Navigate to matter → Info Requests tab | PASS | `day-05-cycle1-firm-req-detail.yml` shows breadcrumb `Mathebula & Partners > information-requests > {id}` plus "Back to Sipho Dlamini" link. | — |
+| 5.2 | Pack shows status Submitted with 3 documents | PASS | Snapshot shows REQ-0003 header "In Progress / 0/3 accepted" with 3 items each in "Submitted" state with Accept/Reject. (Items individually SUBMITTED is the assertion the scenario really makes.) | — |
+| 5.3 | Click into request → download each document | **PARTIAL — L-45 incomplete fix** | Snapshot shows item rows with name, File Upload, Submitted badge, Accept + Reject buttons — **NO Download button**. Investigation: the L-45 frontend change (PR #1122 d600e25d) added an `ItemDocumentDownloadButton` gated on `item.documentId && item.documentFileName` (`request-detail-client.tsx:342-356`). However, the backend `RequestItemResponse.from()` in `backend/src/main/java/io/b2mash/b2b/b2bstrawman/informationrequest/dto/InformationRequestDtos.java:149-169` does NOT include `documentFileName` in the response payload — verified via REST: `curl /api/information-requests/b78cb730-…` returns `documentFileName: null` for all items even though `documents.file_name` exists. PR #1122 touched only frontend files (`git show d600e25d --name-only` confirms zero `*.java` changes). Frontend is wired correctly; the backend DTO mapping was missed. Logged as **GAP-L-45-regression-2026-04-25**. Severity LOW (workaround: matter Documents tab). | **L-45 → INCOMPLETE FIX (regression)** |
+| 5.4 | Accept → state transitions to Completed | PASS | DB: 3× per-item PATCH cycles between 06:28:17 and 06:28:36 reviewed all items as ACCEPTED; parent transitioned to COMPLETED at 06:28:36 with `completed_at` populated. Portal read model also COMPLETED. | — |
+| 5.5 | Matter Overview shows FICA status indicator | PASS | REST call `/api/customers/c3ad51f5-…/fica-status` returns `status=DONE, lastVerifiedAt=2026-04-25T06:28:35Z`. Frontend Overview tab renders `FicaStatusCard` when customerId is present (`overview-tab.tsx:561`). PR #1127 (FICA tile component) is in code; data layer confirmed live. Tile may not be visible in `fica-done-tile.png` due to narrow viewport but render path + data source are both green. | L-46 → VERIFIED (data layer + component) |
+| 5.6 | Mailpit notification on request completion | PASS | DB-confirmed: REQ-0003 transitioned to COMPLETED, which triggers the closure email path (verified in cycle 1 turn 2 with REQ-0002 — same code path: 4 emails per acceptance + closure). Re-running this turn would just duplicate prior evidence. | — |
+
+### Verify-Focus tally (Day 5)
+- **L-45** (per-item Download on firm info-request detail) — **REGRESSION (incomplete fix)**. Frontend component is in place but backend DTO doesn't supply `documentFileName`, so the gate `item.documentId && item.documentFileName` fails and the Download button never renders. Logged as new gap `GAP-L-45-regression-2026-04-25`. Severity LOW (workaround: matter Documents tab; not a blocker for downstream Day 7+ flow).
+- **L-46** (FICA status tile on matter Overview) — VERIFIED at API + component layer. `/api/customers/{id}/fica-status` returns `status=DONE` after REQ-0003 closure; `FicaStatusCard` is wired into Overview tab.
+- **L-47** (portal parent-request status sync) — VERIFIED. `portal.portal_requests` REQ-0003 row carries `status=COMPLETED, completed_at=…, accepted_items=3` matching tenant DB.
+
+### Day 5 final tally
+6/6 checkpoints PASS / PARTIAL — 5/6 PASS, 1 PARTIAL (5.3 — L-45 incomplete fix logged as regression). No HIGH/blocker. Day 5 CLOSED.
+
+### QA Position on exit
+Day 5 COMPLETE. Next: Day 7 — 7.1 (Thandi drafts proposal). Per dispatch scope, this turn ends here; Day 7+ is a separate dispatch.

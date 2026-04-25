@@ -51,6 +51,16 @@ public class FieldGroup {
   @Column(name = "depends_on", columnDefinition = "jsonb")
   private List<UUID> dependsOn;
 
+  /**
+   * GAP-L-37-regression-2026-04-25: optional list of {@code Project.workType} values this group
+   * auto-applies to. Null/empty means "applies to all work_types" (default — preserves legacy
+   * behaviour for groups that don't opt in to work-type scoping). Used only by the PROJECT entity
+   * type at create time; CUSTOMER/TASK/INVOICE groups should never declare a value here.
+   */
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "applicable_work_types", columnDefinition = "jsonb")
+  private List<String> applicableWorkTypes;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -134,6 +144,10 @@ public class FieldGroup {
     return dependsOn;
   }
 
+  public List<String> getApplicableWorkTypes() {
+    return applicableWorkTypes == null ? null : List.copyOf(applicableWorkTypes);
+  }
+
   // --- Setters for mutable fields ---
 
   public void setDescription(String description) {
@@ -155,6 +169,18 @@ public class FieldGroup {
 
   public void setDependsOn(List<UUID> dependsOn) {
     this.dependsOn = dependsOn;
+    this.updatedAt = Instant.now();
+  }
+
+  public void setApplicableWorkTypes(List<String> applicableWorkTypes) {
+    if (applicableWorkTypes != null
+        && !applicableWorkTypes.isEmpty()
+        && entityType != EntityType.PROJECT) {
+      throw new IllegalStateException(
+          "applicableWorkTypes is PROJECT-only; cannot set on entityType=" + entityType);
+    }
+    this.applicableWorkTypes =
+        applicableWorkTypes == null ? null : List.copyOf(applicableWorkTypes);
     this.updatedAt = Instant.now();
   }
 }

@@ -91,6 +91,14 @@ public class FieldPackSeeder extends AbstractPackSeeder<FieldPackDefinition> {
     group.setDescription(pack.group().description());
     group.setPackId(pack.packId());
     group.setAutoApply(pack.group().autoApplyOrDefault());
+    // GAP-L-37-regression-2026-04-25: opt-in work-type scoping. When the pack JSON declares
+    // applicableWorkTypes (e.g. conveyancing-za-project specifies ["CONVEYANCING"]), persist it
+    // so FieldGroupService.resolveAutoApplyGroupIds(EntityType, workType) can filter at the
+    // PROJECT auto-apply step. Packs that don't opt in default to null → unscoped behaviour.
+    var workTypes = pack.group().applicableWorkTypesOrEmpty();
+    if (!workTypes.isEmpty()) {
+      group.setApplicableWorkTypes(new ArrayList<>(workTypes));
+    }
     group = fieldGroupRepository.save(group);
 
     // Create each field definition and link to the group

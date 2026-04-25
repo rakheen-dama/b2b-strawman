@@ -226,3 +226,124 @@ Created a new test client via the firm-side Create Client dialog (Bob logged in 
 |---|---|---|
 | GAP-L-41 | LOW | Create Information Request dialog has no Due Date field; DB `information_requests` table has no `due_date` column (only `reminder_interval_days`). Scenario 3.11 asks for Due date = Day 10 (today + 7). Owner: backend (add `due_date` column via Flyway migration, serialise in DTO) + frontend (add date picker to dialog). |
 | GAP-L-42 | **HIGH / BLOCKER** | Information-request email's "View Request" link points to `http://localhost:3000/portal` (firm host, no token, literal path) instead of the portal's magic-link entry point. DB: the 20:15:43 info-request send did NOT generate a `magic_link_tokens` row — only the DevPortalController backfill did. Effect: client cannot open the request from the email; Day 4 Phase A (magic-link landing) cannot proceed against this email. Cascade: Days 4/8/11/30/46/61/75 all depend on portal magic-link delivery. Owner: backend (NotificationService / info-request email template must (a) call `MagicLinkService.generateToken(portalContactId, ...)`, (b) construct link as `http://localhost:3002/auth/exchange?token={rawToken}&orgId={externalOrgId}` using `portal.base-url` property + `external_org_id`). Workaround for QA: use the DevPortalController `/portal/dev/generate-link` POST to mint a token and open `http://localhost:3002/auth/exchange?token=…&orgId=mathebula-partners`. |
+
+---
+
+## Day 3 Re-Verify — Cycle 1 (post-bugfix_cycle_2026-04-24 merge train) — 2026-04-25 SAST
+
+**Branch**: `bugfix_cycle_2026-04-24` (head `c093afef`)
+**Tenant**: `mathebula-partners` (schema `tenant_5039f2d497cf`)
+**Actor**: Bob Ndlovu (in-session per prior partial turn — no re-login this turn)
+**Method**: DB read-only state verification + reuse of accessibility snapshots captured by the prior agent (`day-03-cycle1-*.yml` / `day-03-cycle1-3.5-matter-overview-with-fica.png`). No browser drive this turn.
+
+### Pre-state (DB-verified, no re-creation)
+- Matter `e788a51b-3a73-456c-b932-8d5bd27264c2` — name `Dlamini v Road Accident Fund`, ref `RAF-2026-001`, status `ACTIVE`, customer_id `c3ad51f5-…` (Sipho).
+- Information requests: 3 pre-existing rows on this matter
+  - `REQ-0001` `ae509cf2-…` SENT, `due_date=2026-05-02` (Day 10 = today + 7d ✓), 3 items (ID copy / Proof of residence (≤ 3 months) / Bank statement (≤ 3 months)) all PENDING.
+  - `REQ-0002` `59c14d97-…` SENT, no due_date.
+  - `REQ-0003` `b78cb730-…` COMPLETED (REQ-0003 lifecycle further than scenario expects for Day 3 — pre-existing exploratory artifact, not a problem for Day 3 verify).
+- Portal contact for Sipho: 1 row `127d1c7d-…` email=`sipho.portal@example.com`, GENERAL, ACTIVE.
+- Tenant `vertical_profile` = `legal-za`. `tax_label=VAT`. `default_currency=ZAR`.
+
+### Checkpoint Results (Cycle 1)
+
+| ID | Description | Result | Evidence | Gap |
+|----|-------------|--------|----------|-----|
+| 3.1 | + New Matter from Sipho's detail | PASS | Matter `e788a51b-…` created in prior partial turn with `customer_id=c3ad51f5-…` (Sipho) — proves L-39 customerId param flowed end-to-end (DB binding correct). | L-39 → VERIFIED (DB-confirmed) |
+| 3.2 | Legal-specific matter template selector | PASS | Description on detail page reads "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION" → template applied. | — |
+| 3.3 | Fill matter intake fields | PASS | name=`Dlamini v Road Accident Fund`, ref=`RAF-2026-001`, status=ACTIVE in DB. Customer link `Sipho Dlamini` rendered on header. | — |
+| 3.4 | Submit → matter detail | PASS | Snapshot `day-03-cycle1-matter-detail.yml` shows breadcrumb `Mathebula & Partners > Matters > Matter` and matter detail rendered. | — |
+| 3.5 | Sidebar tabs | PASS | 19 tabs visible, ONE Disbursements (no duplicate): Overview, Documents, Members, Clients, Tasks, Time, Fee Estimate, Financials, Staffing, Rates, Generated Docs, Requests, Client Comments, Court Dates, Adverse Parties, Trust, Disbursements, Statements, Activity. | L-38 → VERIFIED |
+| 3.6 | Promoted fields inline, NOT in generic Custom Fields | **FAIL — REGRESSION** | Field-Groups panel attaches THREE auto_apply groups to a litigation matter: `SA Conveyancing — Matter Details` (Conveyancing Type, Erf Number, Deeds Office, Lodgement Date, Transfer Duty, Bond Institution — entirely inappropriate for a RAF litigation matter), `SA Legal — Matter Details` (Case Number, Court, Opposing Party, Advocate — correct), and `Project Info`. DB confirms `applied_field_groups=["ac8a9fc6-...", "2b892529-... (conveyancing)", "2ce9428d-... (legal)"]`. **Root cause**: at PROJECT entity_type, both `conveyancing-za-project` and `legal-za-project` packs have `auto_apply=true` and empty `depends_on`, so both attach unconditionally to every legal-za matter regardless of matter type or vertical. (Compare CUSTOMER level which has only `legal-za-customer.auto_apply=true` — explaining why Day 2 customer-level L-37 passed.) | **GAP-L-37-regression-2026-04-25 → REOPENED** |
+| 3.7 | Info Requests tab → + New Info Request | PASS | Snapshot `day-03-cycle1-requests-tab.yml` shows Requests tab with [New Request] button + REQ-0001 row "Sent / 0/3 accepted / Apr 25, 2026". | — |
+| 3.8 | Select template FICA Onboarding Pack | PASS | Snapshot `day-03-cycle1-template-options.yml` lists 7 options including **"FICA Onboarding Pack (3 items)"**. | L-33 → VERIFIED |
+| 3.9 | Addressee = Sipho auto-populated | PASS | Snapshot `day-03-cycle1-new-request-dialog.yml`: Portal Contact combobox shows `Sipho Dlamini (sipho.portal@example.com)` selected. | L-34 → VERIFIED (re-confirmed Day 3) |
+| 3.10 | Request items pre-filled from FICA template | PASS | DB: `request_items` for REQ-0001 = `ID copy / Proof of residence (≤ 3 months) / Bank statement (≤ 3 months)`, all FILE_UPLOAD, required=true, status=PENDING. Matches scenario canonical labels. | — |
+| 3.11 | Due Date = Day 10 (today + 7) | PASS | Dialog snapshot shows "Due Date (optional)" textbox present. DB: `information_requests.due_date` column exists; REQ-0001 has `due_date=2026-05-02` = today (2026-04-25) + 7d = Day 10. | L-41 → VERIFIED |
+| 3.12 | Send → status = Sent | PASS | DB: REQ-0001 `status=SENT`, `sent_at=2026-04-25 02:38:37.804+00`. | — |
+| 3.13 | Portal contact created/linked | PASS | DB: REQ-0001 `portal_contact_id=127d1c7d-…` ACTIVE for Sipho. Customer detail visible from matter header. | — |
+| 3.14 | Mailpit magic-link email | PASS | Mailpit message `ize9ah2EATLQGhwNJuYkdi` to `sipho.portal@example.com`, subject `"Information request REQ-0001 from Mathebula & Partners"`. Body URL: `http://localhost:3002/auth/exchange?token=<redacted-token>&orgId=mathebula-partners`. **Port 3002**, **token**, **orgId** all correct. | L-42 → VERIFIED (re-confirmed) |
+
+### Verify-Focus tally (this turn)
+- **L-33** (FICA Onboarding Pack template) — VERIFIED (3.8). Template list contains "FICA Onboarding Pack (3 items)".
+- **L-34** (portal-contact auto-provision) — VERIFIED (3.9, 3.13). Sipho still has 1 ACTIVE GENERAL portal_contact; REQ-0001 dispatched against it.
+- **L-35** (PROSPECT custom-field save) — N/A this turn. Sipho's lifecycle not re-checked (was VERIFIED at customer level Day 2; matter-level Save Custom Fields not exercised in this verify pass because the L-37 regression at 3.6 is the halt trigger and Save would need to be re-run after fix).
+- **L-37** (field-group narrowing — matter level) — **REGRESSED**. See `GAP-L-37-regression-2026-04-25` row in Tracker. Matter has Conveyancing-Matter-Details + Legal-Matter-Details + Project-Info all auto-attached. Day 2 verified L-37 at customer level (1 group only); the matter-level fix is missing — both `conveyancing-za-project` and `legal-za-project` field-group rows have `auto_apply=true / depends_on=NULL`, so both attach to every legal-za matter.
+- **L-38** (matter detail tab cleanup) — VERIFIED (3.5). 19 tabs, no duplicate Disbursements.
+- **L-39** (customerId URL param propagation) — VERIFIED indirectly (3.1/3.3). Matter created with `customer_id` correctly bound (DB row); since the matter creation flow is the only way `applied_field_groups` could have been seeded, we have evidence the create-from-customer flow ran end-to-end. (UI-level "dropdown pre-selected to Sipho" not re-driven this turn — DB binding is the load-bearing artifact.)
+- **L-41** (info-request due_date column + picker) — VERIFIED (3.11). Column exists, picker exposed, REQ-0001 has `due_date=2026-05-02` (Day 10).
+- **L-42** (info-request magic-link to portal) — VERIFIED (3.14). Email URL = `http://localhost:3002/auth/exchange?token=…&orgId=mathebula-partners`. Port 3002 ✓, token ✓, orgId ✓.
+
+### Halt reason
+**Halted at 3.6 — GAP-L-37-regression-2026-04-25 (HIGH / blocker — regression of supposedly-fixed L-37 at matter scope).** Per the no-workarounds rule (HIGH blocker IS in the verify-focus list → log as `…-regression-2026-04-25` + STOP). Day 4+ not started this turn; orchestrator must route through Product → Dev to narrow the PROJECT-level field-group auto_apply (likely add `depends_on` predicate filtering by tenant `vertical_profile` or by matter `work_type`) before resuming Day 3.6 → Day 4.
+
+13 of 14 Day 3 checkpoints PASS / VERIFIED / N/A; only 3.6 fails. The downstream lifecycle (Day 4+ portal flow, Day 5+ proposal flow, Day 10+ trust) does not directly depend on the field-group display, but the verify-cycle's principle is "any HIGH regression of a verify-focus gap halts the cycle".
+
+### QA Position on exit
+Day 3 — 3.6 (blocked by GAP-L-37-regression-2026-04-25). Resumes Day 3.6 verification + Day 4 onwards after fix is merged.
+
+---
+
+## Day 3 Re-Verify Continuation — Cycle 1 (post-L-37-regression-2026-04-25 fix) — 2026-04-25 SAST
+
+**Branch**: `bugfix_cycle_2026-04-24` (head `70846a8d`)
+**Tenant**: `mathebula-partners` (schema `tenant_5039f2d497cf`)
+**Actor**: Bob (REST API via Keycloak password-grant — Playwright/Chrome MCP unavailable; per dispatch rule "ALL state via REST API or browser UI")
+**Method**: REST API verification of L-37-regression-2026-04-25 fix on a NEW litigation matter, plus L-35 PROSPECT custom-field save retest.
+
+### Pre-state (DB-verified, READ-ONLY)
+
+V112 backfill confirmed on `tenant_5039f2d497cf.field_groups`:
+
+| pack_id | auto_apply | applicable_work_types |
+|---------|-----------|----------------------|
+| common-project | true | NULL (universal) |
+| common-task | true | NULL |
+| conveyancing-za-project | true | `["CONVEYANCING"]` ← scoped |
+| legal-za-customer | true | NULL |
+| legal-za-project | true | NULL (universal across all legal work types) |
+
+
+Existing matter `Dlamini v Road Accident Fund` `e788a51b-…` retains pre-V112 stale `applied_field_groups=[common, conveyancing, legal]` state — out of scope per spec note (V112 backfill applies to NEW matters only).
+
+### L-37-regression-2026-04-25 verification (3.6)
+
+Created TWO probe matters via `POST /api/project-templates/{id}/instantiate` with explicit `workType`:
+
+**Probe A — LITIGATION (the regression case)**:
+- POST `/api/project-templates/998ba76c-…/instantiate` body `{name:"L-37 Regression Probe", customerId: Sipho, workType: "LITIGATION"}` → 201.
+- New matter `af9b14b2-76c3-47d5-8f2c-3e19f07c57ba`, `work_type=LITIGATION`.
+- `applied_field_groups = [ac8a9fc6-… (common-project), 2ce9428d-… (legal-za-project)]` — TWO groups only.
+- Conveyancing pack `2b892529-…` correctly EXCLUDED (it's scoped to `["CONVEYANCING"]`, doesn't match `LITIGATION`).
+- DB confirms (READ-ONLY): `SELECT applied_field_groups FROM tenant_5039f2d497cf.projects WHERE id='af9b14b2-…'` returns `["ac8a9fc6-...", "2ce9428d-..."]`. No conveyancing pack.
+
+**Probe B — CONVEYANCING (control case)**:
+- POST `/api/project-templates/eba1ffd8-…/instantiate` body `{name:"L-37 Conveyancing Probe", workType:"CONVEYANCING"}` → 201.
+- New matter `db5ff54a-…`, `work_type=CONVEYANCING`.
+- `applied_field_groups = [common-project, conveyancing-za-project, legal-za-project]` — all THREE attach (correct: conveyancing pack matches the matter's work type, legal is universal, common is universal).
+- Probe B archived afterward to keep tenant clean (PATCH `/api/projects/db5ff54a-…/archive` → 200, status=ARCHIVED).
+
+**Conclusion**: PR #1132 (V112 + `applicable_work_types` jsonb predicate + `resolveAutoApplyGroupIds(EntityType, String workType)` overload) correctly narrows project-scope auto-apply by matter `work_type`. Litigation matters no longer over-attach the conveyancing pack; conveyancing matters still get it. Customer-scope auto-apply (Day 2 VERIFIED) is unaffected.
+
+### Day 3 close — Checkpoint Results (Cycle 1, continuation)
+
+| ID | Description | Result | Evidence | Gap |
+|----|-------------|--------|----------|-----|
+| 3.6 | Promoted fields inline on a new litigation matter | PASS | New probe matter `af9b14b2-…` (work_type=LITIGATION) has `applied_field_groups=[common-project, legal-za-project]` — conveyancing pack correctly excluded. Control probe (CONVEYANCING) confirms positive case still works. DB reads verify both. | **GAP-L-37-regression-2026-04-25 → VERIFIED** |
+| 3.3 | Save Custom Fields on PROSPECT customer's matter (L-35 retest) | PASS | PUT `/api/projects/e788a51b-…` with `customFields:{case_number:"RAF-2026-001-CASE", opposing_party:"Road Accident Fund"}` → **200 OK**. DB confirms `custom_fields={"case_number":"...","opposing_party":"..."}` persisted. Customer Sipho still PROSPECT — fix correctly relaxes the gate. | L-35 → VERIFIED |
+| 3.7 | Info Requests tab shows requests | PASS | DB: 3 information_requests rows linked to the RAF matter (REQ-0001 SENT, REQ-0002 SENT, REQ-0003 COMPLETED). | Already PASS in prior turn |
+| 3.8 | FICA Onboarding Pack template | PASS | Already VERIFIED prior turn (snapshot `day-03-cycle1-template-options.yml`). | L-33 → VERIFIED (prior) |
+| 3.9 | Addressee = Sipho auto-populated | PASS | DB: REQ-0001/REQ-0002/REQ-0003 all `portal_contact_id=127d1c7d-…` (Sipho's GENERAL/ACTIVE portal_contact). | L-34 → VERIFIED (prior + re-confirmed) |
+| 3.10 | Request items pre-filled from template | PASS | DB: each REQ has 3 items: ID copy / Proof of residence / Bank statement, all FILE_UPLOAD, required=true. | Already PASS prior turn |
+| 3.11 | Due Date Day 10 | PASS | DB: REQ-0001 `due_date=2026-05-02`. | L-41 → VERIFIED (prior) |
+| 3.12 | Send → status=Sent | PASS | DB: REQ-0001 `status=SENT, sent_at=2026-04-25 02:38:38`. | Already PASS prior turn |
+| 3.13 | Portal contact linked | PASS | DB: REQ-0001 `portal_contact_id=127d1c7d-…`. | L-34 → VERIFIED (prior) |
+| 3.14 | Mailpit magic-link email | PASS | Already VERIFIED prior turn (URL = `http://localhost:3002/auth/exchange?token=…&orgId=mathebula-partners`). | L-42 → VERIFIED (prior) |
+
+### Verify-Focus tally (this turn)
+
+- **L-35** (PROSPECT custom-field save) — **VERIFIED**. PUT on RAF matter (Sipho PROSPECT) with valid field-def slugs `case_number` + `opposing_party` → 200, DB persisted. Note: invalid keys (e.g. `court` — no field def with that slug) are silently filtered by the backend's allow-list — expected behaviour.
+- **L-37-regression-2026-04-25** — **VERIFIED**. New LITIGATION matter excludes conveyancing pack; new CONVEYANCING matter includes it. Resolver overload + V112 backfill working.
+
+### Day 3 final tally
+14/14 checkpoints PASS / VERIFIED. Day 3 CLOSED.

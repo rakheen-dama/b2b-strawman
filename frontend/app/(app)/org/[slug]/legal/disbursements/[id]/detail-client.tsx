@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Pencil, Upload } from "lucide-react";
+import { ArrowLeft, Pencil, Send, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -22,7 +22,10 @@ import {
 import { DisbursementApprovalPanel } from "@/components/legal/disbursement-approval-panel";
 import { EditDisbursementDialog } from "@/components/legal/edit-disbursement-dialog";
 import { formatCurrency } from "@/lib/format";
-import { uploadReceiptAction } from "@/app/(app)/org/[slug]/legal/disbursements/actions";
+import {
+  submitForApprovalAction,
+  uploadReceiptAction,
+} from "@/app/(app)/org/[slug]/legal/disbursements/actions";
 import { getDownloadUrl } from "@/app/(app)/org/[slug]/projects/[id]/actions";
 import type { DisbursementResponse } from "@/lib/api/legal-disbursements";
 
@@ -53,6 +56,8 @@ export function DisbursementDetailClient({
   const [uploadOpen, setUploadOpen] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [isSubmittingForApproval, setIsSubmittingForApproval] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const editable =
     disbursement.approvalStatus === "DRAFT" || disbursement.approvalStatus === "PENDING_APPROVAL";
@@ -77,6 +82,23 @@ export function DisbursementDetailClient({
     },
     [slug, disbursement.id]
   );
+
+  const handleSubmitForApproval = useCallback(async () => {
+    setSubmitError(null);
+    setIsSubmittingForApproval(true);
+    try {
+      const result = await submitForApprovalAction(slug, disbursement.id);
+      if (result.success && result.data) {
+        setDisbursement(result.data);
+      } else {
+        setSubmitError(result.error ?? "Failed to submit disbursement for approval.");
+      }
+    } catch {
+      setSubmitError("An unexpected error occurred while submitting for approval.");
+    } finally {
+      setIsSubmittingForApproval(false);
+    }
+  }, [slug, disbursement.id]);
 
   const handleDownloadReceipt = useCallback(async () => {
     if (!disbursement.receiptDocumentId) return;
@@ -127,6 +149,18 @@ export function DisbursementDetailClient({
         </div>
 
         <div className="flex shrink-0 gap-2">
+          {disbursement.approvalStatus === "DRAFT" && (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={handleSubmitForApproval}
+              disabled={isSubmittingForApproval}
+              data-testid="disbursement-submit-for-approval-button"
+            >
+              <Send className="mr-1.5 size-4" />
+              {isSubmittingForApproval ? "Submitting..." : "Submit for Approval"}
+            </Button>
+          )}
           {editable && (
             <>
               <Button variant="outline" size="sm" onClick={() => setUploadOpen(true)}>
@@ -141,6 +175,11 @@ export function DisbursementDetailClient({
           )}
         </div>
       </div>
+      {submitError && (
+        <p role="alert" className="text-sm text-red-600">
+          {submitError}
+        </p>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>

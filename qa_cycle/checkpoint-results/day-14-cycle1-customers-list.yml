@@ -1,0 +1,175 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e52]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e55]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e61]:
+          - generic [ref=e62]: Clients
+          - img [ref=e63]
+        - button "Finance" [ref=e67]:
+          - generic [ref=e68]: Finance
+          - img [ref=e69]
+        - generic [ref=e72]:
+          - button "Team" [expanded] [ref=e73]:
+            - generic [ref=e74]: Team
+            - img [ref=e75]
+          - link "Team" [ref=e78] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e79]
+            - text: Team
+      - generic [ref=e85]:
+        - link "Notifications" [ref=e86] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e87]
+          - text: Notifications
+        - link "Settings" [ref=e90] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e91]
+          - text: Settings
+        - link "Help" [ref=e94] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e95]
+          - text: Help
+      - generic [ref=e98]:
+        - generic [ref=e99]: BN
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Bob Ndlovu
+          - paragraph [ref=e102]: bob@mathebula-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "Mathebula & Partners" [ref=e106] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - generic [ref=e110]: Clients
+        - generic [ref=e111]:
+          - button "User menu" [ref=e113]: BN
+          - button "Notifications" [ref=e115]:
+            - img
+            - generic [ref=e116]: 6 unread notifications
+            - generic [ref=e195]: "6"
+      - main [ref=e117]:
+        - generic [ref=e120]:
+          - generic [ref=e121]:
+            - generic [ref=e122]:
+              - heading "Clients" [level=1] [ref=e123]
+              - generic [ref=e124]: "1"
+            - button "New Client" [ref=e126]:
+              - img
+              - text: New Client
+          - generic [ref=e127]:
+            - generic [ref=e128]:
+              - generic [ref=e129]:
+                - img [ref=e130]
+                - 'button "Help: Saved views" [ref=e133] [cursor=pointer]':
+                  - img [ref=e134]
+              - tablist [ref=e138]:
+                - tab "All" [selected] [ref=e139]
+            - button "Save View" [ref=e140]:
+              - img
+              - text: Save View
+          - generic [ref=e141]:
+            - link "All" [ref=e142] [cursor=pointer]:
+              - /url: /org/mathebula-partners/customers
+            - link "Prospect" [ref=e143] [cursor=pointer]:
+              - /url: /org/mathebula-partners/customers?lifecycleStatus=PROSPECT
+            - link "Onboarding" [ref=e144] [cursor=pointer]:
+              - /url: /org/mathebula-partners/customers?lifecycleStatus=ONBOARDING
+            - link "Active" [ref=e145] [cursor=pointer]:
+              - /url: /org/mathebula-partners/customers?lifecycleStatus=ACTIVE
+            - link "Dormant" [ref=e146] [cursor=pointer]:
+              - /url: /org/mathebula-partners/customers?lifecycleStatus=DORMANT
+            - link "Offboarding" [ref=e147] [cursor=pointer]:
+              - /url: /org/mathebula-partners/customers?lifecycleStatus=OFFBOARDING
+            - link "Offboarded" [ref=e148] [cursor=pointer]:
+              - /url: /org/mathebula-partners/customers?lifecycleStatus=OFFBOARDED
+            - link "Show incomplete" [ref=e150] [cursor=pointer]:
+              - /url: /org/mathebula-partners/customers?showIncomplete=true
+          - table [ref=e152]:
+            - rowgroup [ref=e153]:
+              - row "Name Email Phone Lifecycle Status Completeness Created" [ref=e154]:
+                - columnheader "Name" [ref=e155]
+                - columnheader "Email" [ref=e156]
+                - columnheader "Phone" [ref=e157]
+                - columnheader "Lifecycle" [ref=e158]
+                - columnheader "Status" [ref=e159]
+                - columnheader "Completeness" [ref=e160]:
+                  - link "Completeness" [ref=e161] [cursor=pointer]:
+                    - /url: /org/mathebula-partners/customers?sortBy=completeness&sortDir=asc
+                - columnheader "Created" [ref=e162]
+            - rowgroup [ref=e163]:
+              - row "Sipho Dlamini sipho.portal@example.com +27 82 555 0101 Prospect Active N/A Apr 25, 2026" [ref=e164]:
+                - cell "Sipho Dlamini" [ref=e165]:
+                  - link "Sipho Dlamini" [ref=e166] [cursor=pointer]:
+                    - /url: /org/mathebula-partners/customers/c3ad51f5-2bda-4a27-b626-7b5c63f37102
+                - cell "sipho.portal@example.com" [ref=e167]
+                - cell "+27 82 555 0101" [ref=e168]
+                - cell "Prospect" [ref=e169]:
+                  - generic [ref=e170]: Prospect
+                - cell "Active" [ref=e171]:
+                  - generic [ref=e172]: Active
+                - cell "N/A" [ref=e173]:
+                  - generic [ref=e174]: N/A
+                - cell "Apr 25, 2026" [ref=e175]
+  - generic [ref=e196]:
+    - heading "Command Palette" [level=2] [ref=e197]
+    - paragraph [ref=e198]: Search pages and settings
+  - region "Notifications alt+T"
+  - generic [ref=e180] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e181]:
+      - img [ref=e182]
+    - generic [ref=e185]:
+      - button "Open issues overlay" [ref=e186]:
+        - generic [ref=e199]:
+          - generic [ref=e200]: "1"
+          - generic [ref=e201]: "2"
+        - generic [ref=e190]:
+          - text: Issue
+          - generic [ref=e202]: s
+      - button "Collapse issues badge" [ref=e191]:
+        - img [ref=e192]
+  - alert [ref=e194]

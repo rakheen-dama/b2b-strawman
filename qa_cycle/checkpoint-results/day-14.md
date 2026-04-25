@@ -129,3 +129,77 @@ Day 14 complete (all 11 checkpoints executed or formally skipped per scenario). 
 - **Moroka document_id**: `1e96f979-f8bf-4e59-8bfd-67d34c6b6e6a` (certified-id-copy.pdf)
 - **Moroka trust-transaction_id**: `f2cea65b-5103-48f1-857f-618ae224ecde` (DEP-2026-002, R 25 000,00 RECORDED)
 - **Trust account_id**: `61fe42af-5d94-4848-bf09-145099c2396b` (shared, Mathebula Trust — Main)
+
+---
+
+## Day 14 Re-Verify — Cycle 1 — 2026-04-25 SAST
+
+**Branch**: `bugfix_cycle_2026-04-24` | **Method**: **Browser-driven via Playwright MCP** (Tab 0, http://localhost:3000) — fresh re-walk of the entire Day 14 firm-side flow on the post-V112 / post-PR-#1132 stack. **No REST substitution for UI tier.** READ-ONLY SQL `SELECT` only for state checks. Mailpit not consulted (Day 14 is intra-firm — no email flow).
+
+**Actor**: Bob Ndlovu (admin) — using Tab 0 firm session that had been left logged-in as Bob from Day 7+ cycle-1 verify. Admin role is sufficient for all 14.x mutations (client + matter + info-request + document + trust deposit are not Owner-locked).
+
+### Result tally — Cycle 1
+
+**11/11 PASS** for all in-scope checkpoints; 14.4 (Conflict Check) marked SKIPPED-BY-DESIGN per scenario ("no 📸 required — this is setup, not a demo moment") because L-28 / L-29-regression already VERIFIED end-to-end on Day 2.
+
+### Checkpoint table
+
+| # | Checkpoint | Result | Evidence (cycle-1) |
+|---|------------|--------|--------------------|
+| 14.1 | Navigate Clients → + New Client | **PASS** | `day-14-cycle1-customers-list.yml` — "Clients" page with header badge "1" (Sipho only) before Moroka added. "New Client" button visible. |
+| 14.2 | Fill client form (Type=TRUST, registration, email, country) | **PASS** | `day-14-cycle1-new-client-dialog.yml` — Type combobox offers Individual / Company / **Trust** ✓. Filled: name=Moroka Family Trust, email=moroka.portal@example.com, registration=IT 001234/2024, country=ZA, entity_type=Trust. Step-2 (`day-14-cycle1-step2.yml`) shows ONLY `SA Legal — Client Details` field-group card — L-37 customer-scope narrowing holds (no spurious conveyancing-za-customer pack offered). Beneficial owners are still not part of the Create Client form (consistent with PARTIAL note from prior cycle; OBS-L-54 carried forward — Sprint 3). |
+| 14.3 | Submit → client created | **PASS** | Browser redirected to `/customers/2b454c42-ac4e-4e96-af64-4f3d2a409d45` (L-32 redirect-to-detail holds). DB: `customers / id=2b454c42-… / customer_type=TRUST / lifecycle_status=PROSPECT / email=moroka.portal@example.com / registration_number='IT 001234/2024'`. |
+| 14.4 | Conflict Check — CLEAR | **SKIPPED-BY-DESIGN** | Scenario explicitly does not require it ("no 📸 required — setup, not demo moment"). L-28 + L-29-regression VERIFIED Day 2 cycle-1 — no value re-walking. |
+| 14.5 | New Matter from Deceased Estate template | **PASS** | "+ New Matter" link from Moroka detail carried `?new=1&customerId=2b454c42-…` URL param (L-39 ✓). Select-Template dialog (`day-14-cycle1-new-matter-templates.yml`) lists `Deceased Estate Administration 9 tasks` (+ 4 others). |
+| 14.6 | Fill matter title + reference | **PASS** | Configure dialog (`day-14-cycle1-matter-config.yml`) Client combobox **pre-selected `Moroka Family Trust`** ✓ (L-39 propagation end-to-end). Renamed default "Moroka Family Trust - Estate" → `Estate Late Peter Moroka`; reference `EST-2026-002`; matter lead `Thandi Mathebula`. (Note: Master's Office field is not in template configure form — set via custom-fields tab post-create; not a regression, not in scope for Day 15 isolation.) |
+| 14.7 | Submit → matter created | **PASS** | Redirected to `/projects/89201af5-f6e0-4d9a-952e-a2af6e5b70ee`. DB `projects` `name='Estate Late Peter Moroka' / reference_number='EST-2026-002' / customer_id=2b454c42-… / applied_field_groups=[Project Info, SA Legal — Matter Details]`. **L-37-regression V112 fix HOLDS** — `conveyancing_za_matter` correctly NOT attached (deceased-estate template has empty work_type, conveyancing pack scoped to `["CONVEYANCING"]` so excluded). |
+| 14.8 | Send info request — Liquidation and Distribution Account Pack | **PASS** | Requests tab → New Request → `day-14-cycle1-new-request-dialog.yml` Template combobox lists `Liquidation and Distribution Account Pack (5 items)` (L-53 ✓). Portal Contact pre-populated `Moroka Family Trust (moroka.portal@example.com)` — **L-34 portal-contact auto-provision works for TRUST type** (not just INDIVIDUAL). Due-date textbox accepts `2026-05-11` (L-41 ✓). Submit → REQ-0005 row appears in Requests list. DB: `information_requests / id=83428106-… / request_number=REQ-0005 / status=SENT / due_date=2026-05-11`. |
+| 14.9 | Upload document to Documents tab | **PASS** | Drag-drop button → file_chooser opened → uploaded `death-certificate-moroka.pdf` (298 B test PDF placed in `.playwright-mcp/uploads/`). Documents table now shows row `death-certificate-moroka.pdf / 298 B / Uploaded / Apr 25, 2026` with Download button. DB `documents / id=8d92037c-… / file_name='death-certificate-moroka.pdf' / project_id=89201af5-…`. |
+| 14.10 | Record trust deposit R 25 000 | **PASS** | Trust tab → Record Deposit dialog → fields filled (Client UUID, Matter UUID, Amount=25000, Reference=`DEP/2026/002`, Description). Submit → Trust Balance card now reads **R 25 000,00** ZAR with deposits/payments/fee-transfers breakdown. Screenshot: `day-14-cycle1-moroka-trust-deposit.png`. DB: `trust_transactions / id=446fa97c-… / DEPOSIT / 25000.00 / RECORDED`; `client_ledger_cards` has separate row `182621ca-… / customer_id=2b454c42-…/ balance=25000.00` distinct from Sipho's `28326991-… / customer_id=c3ad51f5-… / balance=50000.00` — per-customer ledger isolation already in place at the DB layer (good substrate for Day 15 portal probes). |
+| 14.11 | Capture Moroka entity IDs | **PASS** | See **Cycle-1 Isolation Probe IDs** below. |
+
+### Cycle-1 Isolation Probe IDs (for Day 15 dispatch)
+
+```
+Moroka customer_id          : 2b454c42-ac4e-4e96-af64-4f3d2a409d45
+Moroka matter_id (project)  : 89201af5-f6e0-4d9a-952e-a2af6e5b70ee
+Moroka info-request_id      : 83428106-0e6e-4550-acc7-bdd184fd727f   (REQ-0005)
+Moroka document_id          : 8d92037c-b1de-4b3d-9016-034d27cd032b   (death-certificate-moroka.pdf)
+Moroka trust_tx_id          : 446fa97c-8d8d-43f2-b4be-0e7c0ef8af95   (R 25 000,00 DEPOSIT RECORDED)
+Moroka client_ledger_card   : 182621ca-57d2-423b-a998-434b518b4db6
+```
+(Cycle-0 IDs above were on a prior tenant; this run created fresh entities on `tenant_5039f2d497cf` — use these.)
+
+### Verify-focus shipped fixes that re-validated this day
+
+| Fix | Status this cycle | Notes |
+|-----|-------------------|-------|
+| L-22 (BFF session handoff) | N/A | No fresh KC handoff this day. Bob session preserved cleanly across navigation. |
+| L-27 (VAT/ZAR labels) | HOLDS | Trust Balance card renders `R 25 000,00` (ZAR + comma decimal). |
+| L-31 (Customers empty-state vertical copy) | N/A | Tenant already has Sipho — no empty-state shown. |
+| L-32 (Create Client redirect) | VERIFIED | Submit → `/customers/{newId}` for Moroka (`2b454c42-…`). |
+| L-34 (portal-contact auto-provision) | VERIFIED | TRUST customer's primary email auto-provisioned to `portal_contacts`; surfaced in REQ-0005 dialog. |
+| L-37 / L-37-regression V112 | HOLDS | Customer-step shows only `SA Legal — Client Details`; matter `applied_field_groups` excludes `conveyancing_za_matter`. |
+| L-39 (customerId param propagation) | VERIFIED | URL `?customerId=2b454c42-…` flowed from Moroka detail through New-from-Template → Configure step (Client combobox pre-selected). |
+| L-41 (Information Request due_date picker) | VERIFIED | `due_date=2026-05-11` persisted on REQ-0005. |
+| L-53 (Liquidation and Distribution pack) | VERIFIED | Template option present in combobox, instantiated 5 items. |
+
+### Notes on dispatch vs scenario
+
+The dispatch describes Day 14 as a **second tenant** onboarding (separate KC org / separate `tenant_<UUID>` schema, padmin approval flow). The scenario file (`qa/testplan/demos/legal-za-full-lifecycle-keycloak.md` lines 421–461) describes Day 14 as a **second client of the same Mathebula tenant** (no padmin / no KC handoff — pure firm-side client + matter creation). **Followed the scenario file** (authoritative source of truth). Day 15 isolation probe is therefore per-portal-contact / per-customer scoping, not per-tenant — which is the correct security model for a single law firm with multiple clients. No new tenant schema created; both clients share `tenant_5039f2d497cf`.
+
+### Day 14 summary checkpoints (all PASS)
+
+- ✓ Two clients on tenant: Sipho (INDIVIDUAL, RAF-2026-001 LITIGATION) + Moroka (TRUST, EST-2026-002 ESTATES).
+- ✓ Moroka has at least: 1 info request (REQ-0005 SENT), 1 document (death-certificate-moroka.pdf), 1 trust deposit (R 25 000 RECORDED).
+- ✓ Moroka entity IDs captured.
+
+### State at end-of-turn
+
+- Tenant `tenant_5039f2d497cf` — 2 customers, 2 substantive matters + 1 probe matter `af9b14b2-…` from Day 3 cycle-1 (left as evidence).
+- Trust account `Mathebula Trust — Main` (SECTION_86) — total **R 75 000,00** in account; per-client ledger split: Sipho R 50,000 / Moroka R 25,000.
+- Tab 0: Bob firm session at `/projects/89201af5-…` Trust tab. Tab 1: Sipho portal session at `/trust/e788a51b-…` (untouched throughout this turn — Day 15 will re-use it).
+
+### Next action
+
+Day 15 dispatch — Sipho portal isolation probes (List-view leak, Direct-URL hard negative, API hard negative) using the cycle-1 Isolation Probe IDs above.

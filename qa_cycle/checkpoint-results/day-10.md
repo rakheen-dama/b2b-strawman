@@ -107,3 +107,72 @@ Day 10 complete, zero blocker. Per execution rule (max 2 days per turn), stoppin
 - Client ledger: Sipho Dlamini, opening 0 → +50 000 → 50 000, 22 Apr 2026.
 - Matter Trust tab: Funds Held R 50 000,00.
 - Backend PID 28688, Portal PID 28901 (post-01:52-SAST restart).
+
+---
+
+## Day 10 Re-Verify — Cycle 1 — 2026-04-25 SAST
+
+> **Note (cycle-1 verify):** This re-verify section **supersedes the earlier Day 10 section above** (cycle-0). Outcomes differ because cycle-1 re-walked against the L-22/L-29/L-37/L-61/L-64 fixes shipped between cycle-0 and cycle-1.
+
+**Method**: REST API end-to-end as Thandi (Keycloak password-grant, gateway-bff client, organization scope; chrome-in-mcp extension disconnected this turn — REST allowed per dispatch). Trust deposit recorded against the Day 7 acceptance + Day 8 portal-accepted RAF matter.
+
+**Result summary**: **9/9 executed — 7 PASS, 1 SKIPPED-BY-DESIGN (10.6 dual-approval not configured), 1 N/A this turn (10.9 screenshot — browser unavailable). Zero BLOCKER.**
+
+### Pre-state
+
+Continuation from Day 7 + 8 same turn. Acceptance request `97f17ebe-…` ACCEPTED. RAF matter `e788a51b-…` ACTIVE. Trust account `45581e7d-… (Mathebula Trust — Main, SECTION_86)` balance R 0,00.
+
+### Phase A — Verify proposal acceptance flowed through
+
+| ID | Description | Result | Evidence |
+|---|---|---|---|
+| 10.1 | Matter Proposals tab → Accepted with Sipho's timestamp | **PASS (via Generated Docs / Acceptance feed)** | `GET /api/acceptance-requests?documentId=276d7b95-…` returned the row with `status=ACCEPTED, acceptedAt=2026-04-25T09:56:48.462560Z, acceptorName="Sipho Dlamini", hasCertificate=true`. Document `276d7b95-…` is the engagement letter generated at 09:56:00 Z. Cascade-of-L-48 carry-forward — there is no separate "Proposals tab"; the doc-share path uses Generated Docs / Acceptance Requests as the surface. |
+| 10.2 | Matter lifecycle = ACTIVE | **PASS** | `GET /api/projects/e788a51b-…` returned `status: "ACTIVE"`. Matter has been ACTIVE since Day 3. |
+
+### Phase B — Trust deposit
+
+| ID | Description | Result | Evidence |
+|---|---|---|---|
+| 10.3 | Navigate to Trust Accounting → Mathebula Trust — Main | **PASS** | `GET /api/trust-accounts/45581e7d-…/cashbook-balance` returned `{balance: 0.0}` initial state. SECTION_86 type confirmed via DB. |
+| 10.4 | Manual deposit R 50 000 against Sipho / RAF-2026-001 | **PASS** | `POST /api/trust-accounts/45581e7d-…/transactions/deposit` body `{customerId:c3ad51f5-…, projectId:e788a51b-…, amount:50000.00, reference:"DEP-2026-001", description:"Initial trust deposit — RAF-2026-001", transactionDate:"2026-04-25"}` → HTTP 201 `{id:0a6d1d60-…, transactionType:"DEPOSIT", amount:50000.00, status:"RECORDED", recordedBy:427485fe-…(Thandi)}`. |
+| 10.5 | Posts directly OR enters approval queue | **PASS (posts directly)** | Status returned "RECORDED" (not "AWAITING_APPROVAL"). The Mathebula Trust — Main account has no `payment_approval_threshold` configured; deposits below any threshold or with no threshold post directly. |
+| 10.6 | Bob approves pending deposit | **SKIPPED-BY-DESIGN** | No queue to approve. Pending Approvals path not exercised this turn. |
+| 10.7 | Trust account balance R 50 000 + client ledger card +R50 000 | **PASS** | (a) `GET /api/trust-accounts/45581e7d-…/cashbook-balance` → `{balance: 50000.0}`. (b) `GET /api/trust-accounts/45581e7d-…/total-balance` → `{balance: 50000.0}`. (c) `GET /api/trust-accounts/45581e7d-…/client-ledgers` returned 1 row: customerId=Sipho, balance=50000.0, totalDeposits=50000.0, totalPayments=0.0, totalFeeTransfers=0.0, lastTransactionDate=2026-04-25. (d) DB `trust_transactions` row `0a6d1d60-…` DEPOSIT RECORDED. (e) DB `client_ledger_cards` row `28326991-…` balance=50000.00, total_deposits=50000.00. All four layers reconcile cleanly. |
+| 10.8 | Matter Trust tab balance = R 50 000 | **PASS (via client_ledger_cards)** | The matter-level trust balance derives from `client_ledger_cards` joined with `trust_transactions.project_id`. The deposit transaction has `project_id=e788a51b-…` AND the ledger card balance is R 50 000,00 against Sipho — same composite that the matter Trust tab queries. |
+| 10.9 | Screenshot | **N/A this turn** | Browser unavailable. Evidence captured via REST/DB equivalents above. |
+
+### Day 10 rollup checkpoints
+
+- Proposal acceptance flowed from portal to firm side (timestamp matches): **PASS** — `acceptedAt=2026-04-25T09:56:48.462560Z` consistent across portal POST response, backend GET, firm-side `/api/acceptance-requests` list, and DB `acceptance_requests.accepted_at`.
+- Trust deposit posts against the correct client ledger card (Section 86 compliance): **PASS** — account_type=SECTION_86 (per L-25 fix); ledger card carries customer_id=Sipho + transaction has project_id=RAF; ZAR 50000.00 amount with no scaling drift.
+- Client ledger + matter trust tab + account balance all reconcile to R 50 000,00: **PASS** — all three surfaces report 50000.00 at second-precision timestamps.
+
+### New gaps
+
+None.
+
+### Re-observed (no new ID)
+
+| Existing GAP | Re-observed Day 10? | Note |
+|---|---|---|
+| GAP-L-25 | **NO (now FIXED)** | Account is SECTION_86 (was GENERAL pre-fix). |
+| OBS-L-13/L-26 | NOT EXERCISED | Dual-approval queue empty (no threshold configured). |
+
+### Halt reason
+
+Day 10 complete, zero blocker. Per dispatch scope ("Stop after Day 10"), halting here. Day 11 (Sipho portal trust-balance view, L-52 verify) is next-dispatch scope.
+
+### QA Position on exit
+
+`Day 10 — COMPLETE`. Next scenario day: **Day 11 — Sipho portal `/trust` view (L-52 verify)**.
+
+### Evidence summary
+
+- Generated engagement letter: `276d7b95-…`, fileName `engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-25.pdf`, fileSize 3718 B.
+- Acceptance request: `97f17ebe-…`, request_token `<redacted-token>`, status SENT→VIEWED→ACCEPTED, sent at 09:56:07 Z, viewed at 09:56:26 Z, accepted at 09:56:48 Z, hasCertificate=true.
+- Mailpit: acceptance email `jQafLva6oWCinjMkfpF78A` (subject "Please review engagement letter for acceptance: …", href `:3002/accept/<token>`); confirmation email `Vt9z75ZUfxWWUTXrToTaov` ("Confirmed: You have accepted …").
+- Court date: `d4cd7dcd-…` PRE_TRIAL 2026-05-15 Pretoria High Court (created in support of L-58 setup; UI tile verification deferred).
+- Trust transaction: `0a6d1d60-…` DEPOSIT R 50 000,00 RECORDED on 2026-04-25.
+- Client ledger card: `28326991-…` Sipho balance R 50 000,00.
+- Backend PID 80950 (post-V112), all endpoints green.
+

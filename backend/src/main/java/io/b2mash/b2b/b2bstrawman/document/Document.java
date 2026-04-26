@@ -187,11 +187,36 @@ public class Document {
     private Scope() {}
   }
 
-  /** Document visibility constants. */
+  /**
+   * Document visibility constants.
+   *
+   * <p>Three values, two semantic groups:
+   *
+   * <ul>
+   *   <li>{@code INTERNAL} — firm-only; not visible on the portal.
+   *   <li>{@code SHARED} — manually shared with the client (firm clicked a "share with portal"
+   *       toggle). Visible on the portal.
+   *   <li>{@code PORTAL} — system-auto-shared on a generated artefact (closure-pack letter,
+   *       statement of account, etc.). Visible on the portal. Distinct from {@code SHARED} so audit
+   *       + analytics can tell manual shares from system shares.
+   * </ul>
+   *
+   * Both {@code SHARED} and {@code PORTAL} render on the portal — see {@link
+   * io.b2mash.b2b.b2bstrawman.portal.PortalQueryService#listProjectDocuments}.
+   */
   public static final class Visibility {
     public static final String INTERNAL = "INTERNAL";
     public static final String SHARED = "SHARED";
+    public static final String PORTAL = "PORTAL";
 
     private Visibility() {}
+
+    /**
+     * Returns true if the visibility makes the document visible to portal contacts. Both manual
+     * shares ({@link #SHARED}) and system-auto-shares ({@link #PORTAL}) are portal-visible.
+     */
+    public static boolean isPortalVisible(String visibility) {
+      return SHARED.equals(visibility) || PORTAL.equals(visibility);
+    }
   }
 }

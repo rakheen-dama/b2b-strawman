@@ -207,7 +207,11 @@ public class DocumentService {
     return new UploadInitResult(document.getId(), presigned.url(), URL_EXPIRY.toSeconds());
   }
 
-  /** Toggle document visibility between INTERNAL and SHARED. */
+  /**
+   * Toggle document visibility between INTERNAL and SHARED — the firm's manual "share with portal"
+   * action. {@link Document.Visibility#PORTAL} is reserved for system-auto-shared artefacts (see
+   * {@link #markSystemAutoShared}) and is rejected here.
+   */
   @Transactional
   public Document toggleVisibility(UUID documentId, String visibility) {
     if (!Document.Visibility.INTERNAL.equals(visibility)
@@ -220,6 +224,21 @@ public class DocumentService {
               + Document.Visibility.SHARED
               + "'");
     }
+    return applyVisibilityChange(documentId, visibility);
+  }
+
+  /**
+   * Marks a document as system-auto-shared (visibility = {@link Document.Visibility#PORTAL}).
+   * Reserved for generated artefacts (closure-pack letters, statements of account) that the firm
+   * implicitly shares as a side-effect of triggering a workflow. Distinct from {@link
+   * #toggleVisibility} so audit + analytics can separate manual shares from system shares.
+   */
+  @Transactional
+  public Document markSystemAutoShared(UUID documentId) {
+    return applyVisibilityChange(documentId, Document.Visibility.PORTAL);
+  }
+
+  private Document applyVisibilityChange(UUID documentId, String visibility) {
     var document =
         documentRepository
             .findById(documentId)

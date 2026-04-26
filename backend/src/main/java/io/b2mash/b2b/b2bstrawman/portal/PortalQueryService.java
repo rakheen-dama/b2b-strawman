@@ -27,7 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Centralized read-only query service for portal endpoints. Enforces customer-scoped access: only
- * projects linked to the customer, and only SHARED-visibility documents.
+ * projects linked to the customer, and only portal-visible documents (visibility = SHARED or PORTAL
+ * — see {@link Document.Visibility}).
  */
 @Service
 public class PortalQueryService {
@@ -77,8 +78,9 @@ public class PortalQueryService {
   }
 
   /**
-   * Lists SHARED documents for a specific project, verifying the customer is linked to it. Returns
-   * project-scoped SHARED documents.
+   * Lists portal-visible documents for a specific project, verifying the customer is linked to it.
+   * Includes both manually-shared (SHARED) and system-auto-shared (PORTAL) project-scoped
+   * documents.
    */
   @Transactional(readOnly = true)
   public List<Document> listProjectDocuments(UUID projectId, UUID customerId) {
@@ -86,13 +88,13 @@ public class PortalQueryService {
     requireCustomerLinkedToProject(customerId, projectId);
 
     return documentRepository.findProjectScopedByProjectId(projectId).stream()
-        .filter(doc -> Document.Visibility.SHARED.equals(doc.getVisibility()))
+        .filter(doc -> Document.Visibility.isPortalVisible(doc.getVisibility()))
         .toList();
   }
 
   /**
-   * Lists all SHARED documents visible to the customer: org-scoped SHARED docs + customer-scoped
-   * SHARED docs for this customer.
+   * Lists all portal-visible documents visible to the customer: org-scoped + customer-scoped
+   * documents whose visibility is SHARED or PORTAL.
    */
   @Transactional(readOnly = true)
   public List<Document> listCustomerDocuments(UUID customerId) {
@@ -102,17 +104,17 @@ public class PortalQueryService {
     Set<UUID> seenIds = new LinkedHashSet<>();
     List<Document> result = new ArrayList<>();
 
-    // ORG-scoped SHARED documents
+    // ORG-scoped portal-visible documents
     for (Document doc : documentRepository.findByScope(Document.Scope.ORG)) {
-      if (Document.Visibility.SHARED.equals(doc.getVisibility()) && seenIds.add(doc.getId())) {
+      if (Document.Visibility.isPortalVisible(doc.getVisibility()) && seenIds.add(doc.getId())) {
         result.add(doc);
       }
     }
 
-    // CUSTOMER-scoped SHARED documents for this customer
+    // CUSTOMER-scoped portal-visible documents for this customer
     for (Document doc :
         documentRepository.findByScopeAndCustomerId(Document.Scope.CUSTOMER, customerId)) {
-      if (Document.Visibility.SHARED.equals(doc.getVisibility()) && seenIds.add(doc.getId())) {
+      if (Document.Visibility.isPortalVisible(doc.getVisibility()) && seenIds.add(doc.getId())) {
         result.add(doc);
       }
     }
@@ -139,8 +141,8 @@ public class PortalQueryService {
   }
 
   /**
-   * Gets a single document if it is SHARED and belongs to a project linked to the customer, or is
-   * org/customer-scoped SHARED.
+   * Gets a single document if it is portal-visible (SHARED or PORTAL) and belongs to a project
+   * linked to the customer, or is org/customer-scoped portal-visible.
    */
   @Transactional(readOnly = true)
   public Document getDocument(UUID documentId, UUID customerId) {
@@ -150,8 +152,8 @@ public class PortalQueryService {
             .findById(documentId)
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
 
-    // Must be SHARED visibility
-    if (!Document.Visibility.SHARED.equals(document.getVisibility())) {
+    // Must be portal-visible (SHARED or PORTAL)
+    if (!Document.Visibility.isPortalVisible(document.getVisibility())) {
       throw new ResourceNotFoundException("Document", documentId);
     }
 
@@ -211,11 +213,14 @@ public class PortalQueryService {
     return new PortalPresignedDownloadResult(presigned.url(), URL_EXPIRY.toSeconds());
   }
 
-  /** Counts SHARED documents in a project that are visible to a portal customer. */
+  /**
+   * Counts portal-visible documents in a project that are visible to a portal customer (SHARED or
+   * PORTAL).
+   */
   @Transactional(readOnly = true)
   long countSharedProjectDocuments(UUID projectId) {
     return documentRepository.findProjectScopedByProjectId(projectId).stream()
-        .filter(doc -> Document.Visibility.SHARED.equals(doc.getVisibility()))
+        .filter(doc -> Document.Visibility.isPortalVisible(doc.getVisibility()))
         .count();
   }
 

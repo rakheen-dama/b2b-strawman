@@ -132,10 +132,12 @@ class StatementServicePortalDocumentTest {
                               + " back via document_id")
                       .isNotNull();
 
-                  // The paired Document is SHARED + UPLOADED + same S3 key as the
-                  // GeneratedDocument (so portal Documents tab can list + presign-download it).
+                  // GAP-L-74-followup: the paired Document is PORTAL (system-auto-shared) +
+                  // UPLOADED + same S3 key as the GeneratedDocument so the portal Documents tab
+                  // can list + presign-download it. PORTAL distinguishes system-auto-share from
+                  // a firm user manually clicking "share" (Visibility.SHARED).
                   var paired = documentRepository.findById(generated.getDocumentId()).orElseThrow();
-                  assertThat(paired.getVisibility()).isEqualTo(Document.Visibility.SHARED);
+                  assertThat(paired.getVisibility()).isEqualTo(Document.Visibility.PORTAL);
                   assertThat(paired.getStatus()).isEqualTo(Document.Status.UPLOADED);
                   assertThat(paired.getS3Key()).isEqualTo(generated.getS3Key());
                   assertThat(paired.getProjectId()).isEqualTo(projectId);

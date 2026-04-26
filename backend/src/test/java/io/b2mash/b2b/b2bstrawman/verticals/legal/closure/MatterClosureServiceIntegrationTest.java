@@ -366,12 +366,14 @@ class MatterClosureServiceIntegrationTest {
   }
 
   // ==========================================================================
-  // GAP-L-74 part B — closure letter linked Document is flipped to SHARED so
-  // it appears on the portal Documents tab.
+  // GAP-L-74 part B / GAP-L-74-followup — closure letter linked Document is
+  // flipped to PORTAL (system-auto-shared) so it appears on the portal Documents
+  // tab. PORTAL is the "system" twin of SHARED — both render to portal contacts,
+  // but audit + analytics can tell manual vs system shares apart.
   // ==========================================================================
 
   @Test
-  void close_withGenerateClosureLetterTrue_flipsLinkedDocumentVisibility_toShared() {
+  void close_withGenerateClosureLetterTrue_flipsLinkedDocumentVisibility_toPortal() {
     UUID projectId = createProject("L-74b Closure Letter Visibility Matter");
 
     var response =
@@ -407,9 +409,10 @@ class MatterClosureServiceIntegrationTest {
                       documentRepository.findById(generated.getDocumentId()).orElseThrow();
                   assertThat(linkedDoc.getVisibility())
                       .as(
-                          "GAP-L-74 part B: closure-letter linked Document must be flipped"
-                              + " to SHARED so it appears on the portal Documents tab")
-                      .isEqualTo(Document.Visibility.SHARED);
+                          "GAP-L-74 part B / GAP-L-74-followup: closure-letter linked Document"
+                              + " must be flipped to PORTAL (system-auto-shared) so it appears on"
+                              + " the portal Documents tab — distinct from manual SHARED")
+                      .isEqualTo(Document.Visibility.PORTAL);
                   assertThat(linkedDoc.getProjectId()).isEqualTo(projectId);
                   assertThat(linkedDoc.getFileName()).startsWith("matter-closure-letter");
                 }));

@@ -88,3 +88,27 @@ Only one across all of Day 0:
 ## Wow-moment screenshots captured
 
 - `day-00-firm-dashboard-legal.png` — required per scenario 0.25. PASS
+
+## Cycle 5 Retest 2026-04-26 SAST — BUG-CYCLE26-01 + BUG-CYCLE26-02
+
+Retest of fix landed in PR #1164 (squash merge `68c71cb8`). Branch is `main`. Frontend HMR auto-loaded the new code; no service restart needed. QA Position deliberately held at Day 2 / 2.1 per user directive — this retest does NOT advance.
+
+Logged in as Thandi (thandi@mathebula-test.local / SecureP@ss1). Navigated to `/org/mathebula-partners/team`.
+
+| Check | Result | Evidence |
+|-------|--------|----------|
+| Retest-0.28a — Type fresh test email `verify-admin-1@mathebula-test.local` via MCP `fill()` | PASS | Field accepted the value through the new RHF FormField/Controller binding. No native-setter fallback needed. |
+| Retest-0.28b — Open Role Select, click Admin, verify trigger label | PASS | `data-testid="role-select"` trigger textContent → `"Admin"` after click. (Listbox opened, "Admin" option selected, listbox closed, trigger now reads Admin.) |
+| Retest-0.28c — Click Send Invite, observe success state | PASS | Form reset (email cleared, role back to Member). Pending count 5→6 (3 pending). Success copy `<p>Invitation sent to verify-admin-1@mathebula-test.local.</p>` rendered and persisted past form.reset (suppress-ref guard works). |
+| Retest-0.28d — Backend log records role=admin (the original BUG-CYCLE26-01 failure) | PASS | `bash compose/scripts/svc.sh logs backend` → `Created invitation for email=verify-admin-1@mathebula-test.local with role=admin` at 2026-04-26T20:06:02Z (requestId 63a10f74…). Compare to the original Day-0 line `Created invitation for email=bob@... with role=member` despite Admin selection. Fix confirmed working. |
+| Retest-0.28e — Mailpit confirms invite went out | PASS | Mailpit `/api/v1/messages?query=verify-admin-1` → message id `4DbfZYmLFKeEMCYMLerSNs`, To=`verify-admin-1@mathebula-test.local`, Subject="Invitation to join the Mathebula & Partners organization". |
+| Retest-0.29a — Optional second invite `verify-member-1@mathebula-test.local` as Member | PASS | Backend log → `Created invitation for email=verify-member-1@mathebula-test.local with role=member` at 2026-04-26T20:06:28Z. Both branches (admin / member) work. Mailpit message id `HWTqgtpZVcfv8cLAoP44X9`. |
+| Retest-0.29b — Email field flows through RHF (the original BUG-CYCLE26-02 failure) | PASS | MCP `fill()` of the email input now reaches the backend without the `Object.getOwnPropertyDescriptor(...).set` workaround. Both invitation POSTs hit the InvitationService log + Mailpit. The fragile register-shorthand pattern was replaced with FormField/Controller binding. |
+| Retest-0.29c — Toast/success copy is NOT clobbered by form.reset | PASS | The success copy "Invitation sent to verify-admin-1@mathebula-test.local." appeared and remained visible after the form reset email/role values. Confirms suppress-ref guard mentioned in the fix spec is working. |
+
+Screenshot: `retest-2026-04-26-team-invite-admin.png` — captured pre-submit with Email=verify-admin-1@... and Role=Admin filled.
+
+**BUG-CYCLE26-01 → VERIFIED** (Admin role propagates correctly to backend POST under MCP-driven flow.)
+**BUG-CYCLE26-02 → VERIFIED** (Email field flows through RHF without native-setter workaround; success copy survives form reset.)
+
+**Stop condition**: All checks PASS. QA Position **HELD at Day 2 / 2.1** per user directive. Do NOT walk forward.

@@ -70,3 +70,23 @@ PARTIALs:
 - 1.4: LSSA schedule is 2024/2025 not 2026 (GAP-L-91, LOW severity).
 
 Both PARTIALs are non-cascading — Day 2+ does not depend on brand-colour visual rendering or 2026 tariffs. Cycle proceeds to Day 2 next turn.
+
+## Cycle 5 Retest 2026-04-26 SAST — GAP-L-90
+
+Retest of fix landed in PR #1164 (squash merge `68c71cb8`). Branch is `main`. Frontend HMR auto-loaded the new code; no service restart needed. QA Position deliberately held at Day 2 / 2.1 per user directive — this retest does NOT advance.
+
+| Check | Result | Evidence |
+|-------|--------|----------|
+| 1.2.a — `:root` `--brand-color` value (computed) | PASS | `getComputedStyle(document.documentElement).getPropertyValue('--brand-color')` → `#1B3358`. Inline style on `<html>` also = `#1B3358`. Brand-color was already saved from Day-1 cycle 2 — Save Settings re-clicked to confirm. |
+| 1.2.b — Desktop sidebar active-item accent indicator (Dashboard) | PASS | Element `div.absolute.top-1.bottom-1.left-0.w-0.5.rounded-full` inside the Dashboard nav link → `getComputedStyle().backgroundColor === 'rgb(27, 51, 88)'` (navy). Width 2px, full height of item. Matches `#1B3358` exactly. Screenshot `retest-2026-04-26-sidebar-navy.png`. |
+| 1.2.c — Desktop sidebar org-name label ("Mathebula & Partners") | PASS | `<span class="truncate text-xs font-medium opacity-80">` inside aside → `getComputedStyle().color === 'rgb(27, 51, 88)'`. Visually navy in screenshot. |
+| 1.2.d — Mobile sidebar (375×812) — utility-footer active indicator (Settings) | PASS | After resizing to 375×812 and opening the mobile sheet via "Toggle menu", navigated to /settings/general. Re-opening the sheet shows Settings as the active utility item; its left-edge indicator (`div.absolute.top-1.bottom-1.left-0.w-0.5`) → `backgroundColor === 'rgb(27, 51, 88)'` (navy). Screenshot `retest-2026-04-26-mobile-sidebar-navy.png`. |
+| 1.2.e — Viewport reset to desktop after mobile probe | PASS | Resized back to 1440×900. |
+
+**GAP-L-90 → VERIFIED**. Brand-colour now drives the desktop sidebar active-item indicator + org-name label, AND the mobile sidebar utility-footer active indicator (the previously-flagged miss). All three computed-style probes return `rgb(27, 51, 88)` matching the saved navy hex.
+
+Note on mobile org-name: in the mobile dialog, the org-name uses `text-white/60` (deliberate over-dark-background treatment) rather than the brand colour. This is a separate and intentional design choice — not a regression. The active utility-footer indicator is the spec-mandated check, and that's navy.
+
+Note on `data-current-page` warning: the dashboard JSX still has a stray "Current page" warning visible as one Next.js dev-tools issue (1 issue). Unrelated to GAP-L-90 and pre-existed PR #1164.
+
+**Stop condition**: All checks PASS. QA Position **HELD at Day 2 / 2.1** per user directive. Do NOT walk forward.

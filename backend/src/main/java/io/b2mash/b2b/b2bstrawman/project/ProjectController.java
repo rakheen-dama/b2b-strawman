@@ -50,18 +50,21 @@ public class ProjectController {
   private final ViewFilterHelper viewFilterHelper;
   private final ProjectSetupStatusService projectSetupStatusService;
   private final UnbilledTimeSummaryService unbilledTimeSummaryService;
+  private final ProjectUpcomingDeadlinesService projectUpcomingDeadlinesService;
 
   public ProjectController(
       ProjectService projectService,
       EntityTagService entityTagService,
       ViewFilterHelper viewFilterHelper,
       ProjectSetupStatusService projectSetupStatusService,
-      UnbilledTimeSummaryService unbilledTimeSummaryService) {
+      UnbilledTimeSummaryService unbilledTimeSummaryService,
+      ProjectUpcomingDeadlinesService projectUpcomingDeadlinesService) {
     this.projectService = projectService;
     this.entityTagService = entityTagService;
     this.viewFilterHelper = viewFilterHelper;
     this.projectSetupStatusService = projectSetupStatusService;
     this.unbilledTimeSummaryService = unbilledTimeSummaryService;
+    this.projectUpcomingDeadlinesService = projectUpcomingDeadlinesService;
   }
 
   @GetMapping
@@ -313,6 +316,12 @@ public class ProjectController {
   @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<UnbilledTimeSummary> getUnbilledSummary(@PathVariable UUID id) {
     return ResponseEntity.ok(unbilledTimeSummaryService.getProjectUnbilledSummary(id));
+  }
+
+  @GetMapping("/{id}/upcoming-deadlines")
+  public ResponseEntity<List<ProjectUpcomingDeadline>> getUpcomingDeadlines(
+      @PathVariable UUID id, ActorContext actor) {
+    return ResponseEntity.ok(projectUpcomingDeadlinesService.getUpcomingDeadlines(id, actor));
   }
 
   private static List<ProjectStatus> parseProjectStatuses(String status) {

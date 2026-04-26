@@ -142,3 +142,26 @@ export async function fetchProjectMemberHours(
     return null;
   }
 }
+
+/**
+ * GAP-L-58 / E9.3 — fetches the union of court dates + regulatory deadlines for a matter.
+ * Returns rows already filtered to future-or-today and sorted by date ASC by the backend.
+ */
+export interface ProjectUpcomingDeadline {
+  type: "COURT" | "REGULATORY";
+  date: string;
+  description: string;
+  status: string | null;
+}
+
+export async function fetchProjectUpcomingDeadlines(
+  projectId: string
+): Promise<ProjectUpcomingDeadline[] | null> {
+  try {
+    return await api.get<ProjectUpcomingDeadline[]>(
+      `/api/projects/${projectId}/upcoming-deadlines`
+    );
+  } catch {
+    return null;
+  }
+}

@@ -5,14 +5,6 @@ import { ActivityItem } from "@/components/activity/activity-item";
 import { ActivityFeedClient } from "@/components/activity/activity-feed-client";
 import type { ActivityItem as ActivityItemType } from "@/lib/actions/activity";
 
-// Radix Select uses pointer-capture APIs that happy-dom doesn't implement.
-// Stub them so userEvent.click on the trigger works in tests.
-if (typeof window !== "undefined") {
-  window.HTMLElement.prototype.hasPointerCapture ??= () => false;
-  window.HTMLElement.prototype.releasePointerCapture ??= () => {};
-  window.HTMLElement.prototype.scrollIntoView ??= () => {};
-}
-
 const mockLoadMoreActivity = vi.fn();
 
 vi.mock("@/app/(app)/org/[slug]/projects/[id]/activity-actions", () => ({

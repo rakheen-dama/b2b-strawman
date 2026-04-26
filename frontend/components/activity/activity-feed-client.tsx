@@ -125,7 +125,9 @@ export function ActivityFeedClient({
       <div className="divide-y divide-slate-100 rounded-lg border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-800 dark:bg-slate-950">
         {visibleItems.length === 0 && (
           <p className="px-4 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
-            No activity yet
+            {actorFilter && items.length > 0
+              ? `No activity from ${actorFilter}`
+              : "No activity yet"}
           </p>
         )}
 

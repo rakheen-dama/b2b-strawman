@@ -77,6 +77,7 @@ class PortalIntegrationTest {
   private UUID internalDocId;
   private UUID orgSharedDocId;
   private UUID customerSharedDocId;
+  private UUID portalDocId;
   private String tenantSchema;
   private UUID memberIdA;
 
@@ -257,6 +258,24 @@ class PortalIntegrationTest {
               custDoc.confirmUpload();
               custDoc = documentRepository.save(custDoc);
               customerSharedDocId = custDoc.getId();
+
+              // GAP-L-74-followup: project-scoped PORTAL document (system-auto-shared, e.g.
+              // closure letter or statement of account). Distinct from SHARED but equally
+              // portal-visible.
+              var portalDoc =
+                  new Document(
+                      Document.Scope.PROJECT,
+                      projectId,
+                      null,
+                      "closure-letter.pdf",
+                      "application/pdf",
+                      4096L,
+                      memberIdA,
+                      Document.Visibility.PORTAL);
+              portalDoc.assignS3Key("org/" + ORG_ID + "/project/" + projectId + "/closure-letter");
+              portalDoc.confirmUpload();
+              portalDoc = documentRepository.save(portalDoc);
+              portalDocId = portalDoc.getId();
             });
 
     // Seed portal read-model so list + detail endpoints use consistent data source
@@ -357,13 +376,19 @@ class PortalIntegrationTest {
     void shouldListSharedProjectDocuments() throws Exception {
       String token = portalTokenForCustomerA();
 
-      mockMvc
-          .perform(
-              get("/portal/projects/{projectId}/documents", projectId)
-                  .header("Authorization", "Bearer " + token))
-          .andExpect(status().isOk())
-          .andExpect(jsonPath("$.length()").value(1))
-          .andExpect(jsonPath("$[0].fileName").value("shared-doc.pdf"));
+      var result =
+          mockMvc
+              .perform(
+                  get("/portal/projects/{projectId}/documents", projectId)
+                      .header("Authorization", "Bearer " + token))
+              // Both manually-shared (SHARED) and system-auto-shared (PORTAL) docs are visible.
+              .andExpect(status().isOk())
+              .andExpect(jsonPath("$.length()").value(2))
+              .andReturn();
+
+      String body = result.getResponse().getContentAsString();
+      assertThat(body).contains("shared-doc.pdf");
+      assertThat(body).contains("closure-letter.pdf");
     }
 
     @Test
@@ -380,6 +405,45 @@ class PortalIntegrationTest {
 
       String body = result.getResponse().getContentAsString();
       assertThat(body).doesNotContain("internal-doc.pdf");
+    }
+
+    /**
+     * GAP-L-74-followup: PORTAL visibility is reserved for system-auto-shared artefacts (closure
+     * letters, statement of account). The portal must surface them just like manually-shared SHARED
+     * documents — but the enum split is what lets audit/analytics tell the two apart.
+     */
+    @Test
+    void shouldListPortalVisibilityProjectDocuments() throws Exception {
+      String token = portalTokenForCustomerA();
+
+      var result =
+          mockMvc
+              .perform(
+                  get("/portal/projects/{projectId}/documents", projectId)
+                      .header("Authorization", "Bearer " + token))
+              .andExpect(status().isOk())
+              .andReturn();
+
+      String body = result.getResponse().getContentAsString();
+      assertThat(body)
+          .as("PORTAL-visibility (system-auto-shared) doc must be portal-visible")
+          .contains("closure-letter.pdf");
+    }
+
+    /**
+     * GAP-L-74-followup: presigned download must work for PORTAL-visibility docs, not just SHARED.
+     * Otherwise portal contacts would see closure letters in the list but couldn't open them.
+     */
+    @Test
+    void shouldPresignDownloadForPortalVisibilityDoc() throws Exception {
+      String token = portalTokenForCustomerA();
+
+      mockMvc
+          .perform(
+              get("/portal/documents/{documentId}/presign-download", portalDocId)
+                  .header("Authorization", "Bearer " + token))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.presignedUrl").isNotEmpty());
     }
 
     @Test

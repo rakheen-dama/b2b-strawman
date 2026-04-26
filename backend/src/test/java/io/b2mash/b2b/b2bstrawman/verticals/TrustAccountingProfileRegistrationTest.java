@@ -38,6 +38,7 @@ class TrustAccountingProfileRegistrationTest {
             "disbursements",
             "matter_closure",
             "deadlines",
-            "information_requests");
+            "information_requests",
+            "bulk_billing");
   }
 }

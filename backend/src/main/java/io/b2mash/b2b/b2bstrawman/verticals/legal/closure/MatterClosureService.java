@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.closure;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
-import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -282,18 +281,20 @@ public class MatterClosureService {
                 matterClosureLogRepository.save(logRow);
               });
 
-      // GAP-L-74 part B: closure letter is by definition client-facing (per scenario step 61.8).
-      // Flip the linked Document from INTERNAL (default) to SHARED so it appears on the portal
-      // Documents tab via PortalQueryService.listProjectDocuments. Best-effort: any failure here
-      // must not roll back the (already committed) close — we are inside REQUIRES_NEW so a
-      // rollback only affects this letter-step transaction, but we still try/catch defensively
-      // so a visibility-flip failure leaves the letter generated rather than throwing.
+      // GAP-L-74 part B / GAP-L-74-followup: closure letter is by definition client-facing (per
+      // scenario step 61.8). Flip the linked Document from INTERNAL (default) to PORTAL so it
+      // appears on the portal Documents tab via PortalQueryService.listProjectDocuments. PORTAL
+      // (vs SHARED) signals "system auto-shared as part of a closure pack" — distinct from a firm
+      // user explicitly clicking "share with client". Best-effort: any failure here must not roll
+      // back the (already committed) close — we are inside REQUIRES_NEW so a rollback only affects
+      // this letter-step transaction, but we still try/catch defensively so a visibility-flip
+      // failure leaves the letter generated rather than throwing.
       if (linkedDocumentId != null) {
         try {
-          documentService.toggleVisibility(linkedDocumentId, Document.Visibility.SHARED);
+          documentService.markSystemAutoShared(linkedDocumentId);
         } catch (RuntimeException visibilityEx) {
           log.warn(
-              "Failed to flip closure-letter document visibility to SHARED: project={}, doc={}",
+              "Failed to flip closure-letter document visibility to PORTAL: project={}, doc={}",
               projectId,
               linkedDocumentId,
               visibilityEx);

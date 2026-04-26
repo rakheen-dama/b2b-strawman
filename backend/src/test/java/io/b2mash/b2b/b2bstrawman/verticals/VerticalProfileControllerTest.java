@@ -140,7 +140,8 @@ class VerticalProfileControllerTest {
                     "disbursements",
                     "matter_closure",
                     "deadlines",
-                    "information_requests")))
+                    "information_requests",
+                    "bulk_billing")))
         .andExpect(jsonPath("$.terminologyNamespace").value("en-ZA-legal"));
   }
 

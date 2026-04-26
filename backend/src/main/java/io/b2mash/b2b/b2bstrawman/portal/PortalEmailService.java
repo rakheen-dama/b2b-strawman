@@ -38,6 +38,9 @@ public class PortalEmailService {
   private static final String DEADLINE_REFERENCE_TYPE = "PORTAL_DEADLINE";
   private static final String RETAINER_CLOSED_TEMPLATE_NAME = "portal-retainer-period-closed";
   private static final String RETAINER_CLOSED_REFERENCE_TYPE = "PORTAL_RETAINER";
+  // GAP-L-72 (slice 23) — closure-pack + Statement-of-Account per-event sends.
+  private static final String DOCUMENT_READY_TEMPLATE_NAME = "portal-document-ready";
+  private static final String DOCUMENT_READY_REFERENCE_TYPE = "PORTAL_DOCUMENT_READY";
 
   private final IntegrationRegistry integrationRegistry;
   private final EmailTemplateRenderer emailTemplateRenderer;
@@ -190,6 +193,16 @@ public class PortalEmailService {
   public boolean sendRetainerClosedEmail(PortalContact contact, Map<String, Object> context) {
     return sendPortalNotification(
         contact, context, RETAINER_CLOSED_TEMPLATE_NAME, RETAINER_CLOSED_REFERENCE_TYPE);
+  }
+
+  /**
+   * Sends the per-event "document is ready" portal email (GAP-L-72, slice 23). Fired by {@code
+   * PortalDocumentNotificationHandler} for closure-pack + Statement-of-Account artefacts (and any
+   * other template added to {@code OrgSettings.portalNotificationDocTypes}). Fire-and-forget.
+   */
+  public boolean sendDocumentReadyEmail(PortalContact contact, Map<String, Object> context) {
+    return sendPortalNotification(
+        contact, context, DOCUMENT_READY_TEMPLATE_NAME, DOCUMENT_READY_REFERENCE_TYPE);
   }
 
   /**

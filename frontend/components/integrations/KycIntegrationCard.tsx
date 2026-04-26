@@ -5,9 +5,11 @@ import { ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { KycConfigurationDialog } from "@/components/settings/KycConfigurationDialog";
 import {
   deleteApiKeyAction,
+  toggleIntegrationAction,
   upsertIntegrationAction,
 } from "@/app/(app)/org/[slug]/settings/integrations/actions";
 import type { OrgIntegration } from "@/lib/types";
@@ -25,6 +27,7 @@ interface KycIntegrationCardProps {
 export function KycIntegrationCard({ integration, slug }: KycIntegrationCardProps) {
   const [configDialogOpen, setConfigDialogOpen] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const hasProvider = !!integration?.providerSlug;
@@ -38,6 +41,23 @@ export function KycIntegrationCard({ integration, slug }: KycIntegrationCardProp
       return <Badge variant="warning">Disabled</Badge>;
     }
     return <Badge variant="success">Configured</Badge>;
+  }
+
+  async function handleToggle(checked: boolean) {
+    setIsToggling(true);
+    setError(null);
+    try {
+      const result = await toggleIntegrationAction(slug, "KYC_VERIFICATION", {
+        enabled: checked,
+      });
+      if (!result.success) {
+        setError(result.error ?? "Failed to toggle integration.");
+      }
+    } catch {
+      setError("An unexpected error occurred.");
+    } finally {
+      setIsToggling(false);
+    }
   }
 
   async function handleRemove() {
@@ -92,6 +112,23 @@ export function KycIntegrationCard({ integration, slug }: KycIntegrationCardProp
               <p className="text-sm text-slate-600 dark:text-slate-400">
                 {PROVIDER_LABELS[integration.providerSlug] ?? integration.providerSlug}
               </p>
+            </div>
+          )}
+
+          {hasProvider && (
+            <div className="flex items-center justify-between">
+              <label
+                htmlFor="enabled-KYC_VERIFICATION"
+                className="text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
+                Enabled
+              </label>
+              <Switch
+                id="enabled-KYC_VERIFICATION"
+                checked={!!integration?.enabled}
+                onCheckedChange={handleToggle}
+                disabled={!hasProvider || isToggling}
+              />
             </div>
           )}
 

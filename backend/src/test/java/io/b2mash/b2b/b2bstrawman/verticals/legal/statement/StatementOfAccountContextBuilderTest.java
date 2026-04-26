@@ -767,7 +767,86 @@ class StatementOfAccountContextBuilderTest {
         .as("Render must include the trust deposit reference from the trust.deposits loop")
         .contains("DEP-001")
         .as("Render must include the trust payment reference from the trust.payments loop")
-        .contains("PAY-001");
+        .contains("PAY-001")
+        // GAP-OBS-Day60-SoA-Fees/Trust-Empty: the deposit / payment loop columns iterate the
+        // template keys `transactionDate` and `transactionType`. The previous TrustTxDto used
+        // `date` / `type`, so each row's date and type cells rendered as empty <td></td> blocks
+        // even when the data was populated. Asserting the rendered date strings (as formatted
+        // by VariableFormatter in the legal-za locale: "d MMMM yyyy") and the literal PAYMENT
+        // type pin the column-key alignment so the regression cannot return silently.
+        .as("Render must include the trust deposit transactionDate (column key alignment)")
+        .contains("7 April 2026")
+        .as("Render must include the trust payment transactionDate (column key alignment)")
+        .contains("9 April 2026")
+        .as("Render must include the trust payment transactionType (column key alignment)")
+        .contains("PAYMENT");
+  }
+
+  /**
+   * Direct shape assertion that the trust loop-table rows expose {@code transactionDate} and {@code
+   * transactionType} keys (matching the SoA template's column attributes). Pins the model→ template
+   * contract at the builder boundary so a future TrustTxDto rename caught here, not in
+   * silently-blank rendered output.
+   */
+  @Test
+  void trustLoopRows_exposeTransactionDateAndTransactionType_matchingTemplateColumnKeys()
+      throws Exception {
+    var project = projectWithCustomer("Key Alignment Matter", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of());
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+
+    var trustAccount = trustAccountWithId(trustAccountId);
+    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
+        .thenReturn(Optional.of(trustAccount));
+    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
+        .thenReturn(BigDecimal.ZERO);
+    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
+        .thenReturn(BigDecimal.ZERO);
+    when(clientLedgerService.getClientLedgerStatement(
+            customerId, trustAccountId, periodStart, periodEnd))
+        .thenReturn(
+            new LedgerStatementResponse(
+                BigDecimal.ZERO,
+                BigDecimal.ZERO,
+                List.of(
+                    ledgerLine("DEPOSIT", new BigDecimal("100.00")),
+                    ledgerLine("PAYMENT", new BigDecimal("50.00")))));
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    var trust = (Map<String, Object>) context.get("trust");
+    @SuppressWarnings("unchecked")
+    var deposits = (List<Map<String, Object>>) trust.get("deposits");
+    @SuppressWarnings("unchecked")
+    var payments = (List<Map<String, Object>>) trust.get("payments");
+
+    assertThat(deposits).hasSize(1);
+    assertThat(deposits.get(0))
+        .as(
+            "Deposit row must expose transactionDate (template column key) — not `date`."
+                + " GAP-OBS-Day60-SoA-Fees/Trust-Empty regression guard.")
+        .containsKey("transactionDate");
+    assertThat(deposits.get(0))
+        .as(
+            "Deposit row must expose transactionType (template column key) — not `type`."
+                + " GAP-OBS-Day60-SoA-Fees/Trust-Empty regression guard.")
+        .containsKey("transactionType");
+    assertThat(deposits.get(0).get("transactionType")).isEqualTo("DEPOSIT");
+
+    assertThat(payments).hasSize(1);
+    assertThat(payments.get(0))
+        .as("Payment row must expose transactionDate (template column key) — not `date`.")
+        .containsKey("transactionDate");
+    assertThat(payments.get(0))
+        .as("Payment row must expose transactionType (template column key) — not `type`.")
+        .containsKey("transactionType");
+    assertThat(payments.get(0).get("transactionType")).isEqualTo("PAYMENT");
   }
 
   // ---------- helpers ----------

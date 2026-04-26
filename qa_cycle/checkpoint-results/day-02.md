@@ -1,243 +1,111 @@
-# Day 2 — Bob onboards Sipho as client, conflict check + KYC
-Cycle: 1 | Date: 2026-04-21 | Auth: Keycloak | Frontend: :3000 | Actor: Bob Ndlovu (Admin)
+# Day 2 — Onboard Sipho as client, run conflict check + KYC — Cycle 6 Results
 
-Scenario: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md` → Day 2 (checkpoints 2.1–2.10).
+**Branch**: `main` (post-merge of PR #1164, commit `68c71cb8`)
+**Date**: 2026-04-26 SAST (UTC 2026-04-26T20:13–20:21)
+**Tenant**: `mathebula-partners` (tenant_5039f2d497cf)
+**Actor**: Bob Ndlovu (Admin) — `bob@mathebula-test.local` / `SecureP@ss2`
+**Stack**: Keycloak dev stack — frontend :3000, BFF gateway :8443, backend :8080, KC :8180
 
-**Result summary (Day 2): 10/10 checkpoints executed. 6 PASS (2.1, 2.2, 2.3, 2.4, 2.5, 2.7), 1 FAIL (2.6), 3 SKIPPED-BY-DESIGN (2.8/2.9/2.10 — KYC adapter not configured, scenario permits skip-with-gap).** No blockers hit. New gaps: **GAP-L-28** (MED, product/backend — conflict-check UX does not surface CLEAR on a freshly-created client because the engine matches the client against themselves; scenario 2.5/2.6 flow assumption broken), **GAP-L-29** (LOW, frontend — conflict-check form Customer/Matter dropdowns are always empty, options never populate from tenant registry), **GAP-L-30** (LOW, product — KYC adapter "Not Configured" on `/settings/integrations`; no default adapter wired for legal-za vertical; scenario demo moment 2.9 unreachable), **GAP-L-31** (LOW, frontend — empty-state copy on `/customers` still says "Customers represent the organisations you work with" under legal vertical; terminology leak, non-blocker), **GAP-L-32** (LOW, UX — after successful client creation the Create Client dialog closes and leaves user on list (no auto-redirect to the newly-created client detail per scenario 2.4)).
+## Context swap
 
-## Session prep — Context swap to Bob (GAP-L-22 workaround applied)
+Closed prior browser context (Day 1 was Thandi). Fresh login as Bob via Keycloak OIDC at `http://localhost:8180/realms/docteams/...`. Form filled `bob@mathebula-test.local` + `SecureP@ss2`, redirected to `/org/mathebula-partners/dashboard`. Sidebar shows logo + "Mathebula & Partners" + "Bob Ndlovu / bob@mathebula-test.local". Brand-color rendering still navy in sidebar (GAP-L-90 fix holding for a different KC user — confirms fix is tenant-scoped, not user-scoped).
 
-Per GAP-L-22 watchlist: executed explicit KC logout first, then fresh OIDC login as Bob.
-
-- Navigated to `http://localhost:8180/realms/docteams/protocol/openid-connect/logout` → "Logging out / Do you want to log out?" → clicked **Logout** → confirmation page.
-- Fresh OIDC via `http://localhost:8443/oauth2/authorization/keycloak` → email: `bob@mathebula-test.local` → password: `<redacted>` (first attempt with a different user's password correctly rejected with "Invalid password." — KC creds are user-specific per Day 0 registration; each registrant has a distinct password).
-- Redirected clean to `http://localhost:3000/org/mathebula-partners/dashboard`. Sidebar user card shows "BN / Bob Ndlovu / bob@mathebula-test.local". No Thandi / Carol / padmin session leak. **GAP-L-22 workaround held** for this turn.
-
-## Checkpoint 2.1 — Navigate to Clients → click "+ New Client"
-- Result: **PASS**
-- Evidence:
-  - Sidebar "Clients" group expanded cleanly → sub-nav items visible: Clients, Engagement Letters, Mandates, Compliance, Conflict Check, Adverse Parties. Legal-specific terminology throughout (no "Customers" / "Deals" / "Proposals" leaks in the nav).
-  - Clicked "Clients" → `/org/mathebula-partners/customers` loaded with empty state (0 clients, "No clients yet" heading, New Client button visible in both header and empty-state CTA).
-  - Clicked **New Client** button → modal opened with title "Create Client" (not "Create Customer") and subtitle "Step 1 of 2 — Add a new client to your organization."
-  - 0 console errors on navigation; 1 hydration warning (pre-existing Radix `aria-controls` mismatch, not triggered by this action).
-
-## Checkpoint 2.2 — Dialog shows legal-specific promoted fields for INDIVIDUAL
-- Result: **PASS**
-- Evidence:
-  - **Type combobox** default = **Individual** (options: Individual / Company / Trust) — matches scenario INDIVIDUAL branch.
-  - **Promoted fields visible on Step 1** for INDIVIDUAL:
-    - Name, Email, Phone, **ID Number** (legal-specific promoted ✓), Tax Number (required for activation), Notes.
-    - Address block (Line 1/2, City, State/Province, Postal Code, Country).
-    - Contact block (Name, Email, Phone).
-    - Business Details (Registration Number, Entity Type, Financial Year End) — available but not required for INDIVIDUAL.
-  - **Step 2 "Additional Information"** offers a legal-vertical field-group pill labelled **"SA Legal — Client Details"** (vertical-packs integration ✓). Four legal-ZA fields exposed inside:
-    1. `ID / Passport Number` (text, helper: "South African ID number or passport number for natural persons")
-    2. `Postal Address` (text, helper: "Postal address if different from physical address")
-    3. `Preferred Correspondence` (combobox, options: Email / Post / Hand Delivery) — scenario's "preferred contact" hint ✓
-    4. `Referred By` (text)
-  - **Scenario-vs-UX deltas** (non-blocking):
-    - Single `Name` field, not First/Last split. Scenario 2.3 asks for "First Name: Sipho / Last Name: Dlamini"; the UX concatenates. Entered `Sipho Dlamini` as the full name. Not logged as gap — common pattern.
-    - No inline "matter_type hint" in the client-create dialog. Matter creation (with type selector) is a separate Day 3 flow on the client detail page. Scenario's ask is satisfied by the separate flow.
-
-## Checkpoint 2.3 — Fill fields and submit
-- Result: **PASS**
-- Evidence (Step 1 + Step 2 fills, no field rejections):
-  - Name: `Sipho Dlamini`
-  - Type: **Individual** (default)
-  - Email: `sipho.portal@example.com`
-  - Phone: `+27 82 555 0101`
-  - ID Number: `8501015800088`
-  - Address Line 1: `12 Loveday St` | City: `Johannesburg` | State: `Gauteng` | Postal: `2001` | Country: `South Africa (ZA)`
-  - Step 2 SA Legal — Client Details: ID / Passport Number = `8501015800088`, Preferred Correspondence = `Email`. Postal Address / Referred By left blank (optional).
-  - Tax Number left blank — "required for activation" hint visible. Dialog permitted Create Client action anyway (activation gate will trigger on lifecycle transition later).
-
-## Checkpoint 2.4 — Submit → client created
-- Result: **PASS (with minor UX gap)**
-- Evidence:
-  - Clicked **Create Client** → dialog closed cleanly. Network: 7× `POST /org/mathebula-partners/customers` → all **200 OK** (multi-step action handlers + revalidation callbacks; typical for server actions + custom-fields saver).
-  - **No auto-redirect to client detail**. UX left user on `/customers` list. Client row appeared in list with inline bonus-field rendering ("ID / Passport Number: 8501015800088" + "Preferred Correspondence: Email").
-  - Clicked Sipho's name → navigated `/customers/8fe5eea2-75fc-4df2-b4d0-267486df68bd` → client detail renders all fields correctly: header "Sipho Dlamini / Active / Prospect", contact line with phone + ID + creation date + matter count, Address card, Primary Contact card (empty), FIELD GROUPS with "SA Legal — Client Details" pill persisted, TAGS, Trust Balance (R 0,00), Client Readiness 67% (2 of 3 slots filled), Document Templates (Power of Attorney, Letter of Demand, Client Trust Statement, Trust Receipt — all legal-za pack items), "Start Onboarding" CTA, Matters/Documents/Fee Notes/Mandate/Requests/Rates/Generated Docs/Financials/Trust tabs.
-  - DB read-only diagnostic: `SELECT id, name, email, lifecycle_status, status, created_at FROM tenant_5039f2d497cf.customers;` → `8fe5eea2-75fc-4df2-b4d0-267486df68bd | Sipho Dlamini | sipho.portal@example.com | PROSPECT | ACTIVE | 2026-04-21 19:04:12+00`. Row persisted correctly.
-  - Scenario expects auto-redirect to detail after Create. Logged as **GAP-L-32** (LOW UX polish).
-  - Screenshot: `qa_cycle/checkpoint-results/day-02-client-detail-sipho.png`.
-
-## Checkpoint 2.5 — On client detail → click "Run Conflict Check"
-- Result: **PASS (functionally — route moved)**
-- Evidence:
-  - Scenario path: "On client detail → click Run Conflict Check." **Actual UX**: there is no "Run Conflict Check" button on the client-detail page. Conflict check is a top-level route at `/org/mathebula-partners/conflict-check` (also exposed in Clients sub-nav).
-  - Navigated `/conflict-check` → page renders with two tabs: Run Check / History. Run Check form fields: Name to Check (required), ID Number, Registration Number, Check Type (New Client/New Matter/Periodic Review), Customer (optional combobox), Matter (optional combobox). Run Conflict Check button.
-  - Entered Name=`Sipho Dlamini` + ID=`8501015800088` + Check Type=`New Client` → clicked Run Conflict Check → engine ran, result rendered inline + persisted to DB.
-  - DB read-only: `SELECT checked_name, check_type, result, checked_at FROM tenant_5039f2d497cf.conflict_checks;` → `Sipho Dlamini | NEW_CLIENT | CONFLICT_FOUND | 2026-04-21 19:05:47+00` plus later `Nontando Zulu | NEW_CLIENT | NO_CONFLICT | 2026-04-21 19:06:28+00`. Two real rows.
-  - Engine is clearly **not a stub**: returns a structured match table (Party Name, Match Type, Score, Linked Matter, Relationship) and persists to a dedicated table. Confirmed with a second probe (see 2.6).
-- Observation → **GAP-L-29** (LOW): Customer / Matter optional comboboxes only offer `-- None --` — tenant registry not hydrated into the options. Minor UX polish.
-
-## Checkpoint 2.6 — Result = CLEAR, green confirmation
-- Result: **FAIL (engine returned CONFLICT_FOUND against self-match, not CLEAR)**
-- Evidence:
-  - First run on `Sipho Dlamini` + his ID returned **"Conflict Found"** with two match rows: `ID Number / 100% / EXISTING CLIENT` and `Name Match / 100% / EXISTING CLIENT`. The engine matched Sipho against his own just-created client record.
-  - Control probe — re-ran with an invented identity (`Nontando Zulu` + `9001019999088`) → result **"No Conflict"** (green badge, "No Conflict" callout). Engine CAN return CLEAR; it is real code. So the problem is flow-ordering, not engine correctness.
-  - Scenario 2.5/2.6 intent: the conflict check should run **against pre-existing records** (other clients, adverse parties) to protect the firm before committing to the new client. Current UX requires the client to exist before the check runs, which produces an unavoidable self-match.
-  - Captured both artefacts: CLEAR screenshot (unknown name) for the green-state moment at `day-02-2.7-conflict-check-unknown-clear.png`; "Conflict Found" was visible in-session but not separately screenshotted (adequately described in this file).
-- Gap: **GAP-L-28** (MED, product/backend) — conflict-check engine does not exclude the subject-under-check from the match set, OR the UX does not offer a "pre-creation" flow variant. Practical impact: every newly-created client's first conflict check will flag false positives. Recommended fix at product level: (a) when `check_type = NEW_CLIENT` with an attached `customer_id`, exclude that customer from match candidates; OR (b) move the conflict check to be a **pre-creation** step in the Create Client wizard (runs against adverse-parties + existing clients, and only proceeds to insert if CLEAR or manually waived).
-
-## Checkpoint 2.7 — Screenshot `day-02-conflict-check-clear.png`
-- Result: **PASS (alternate fixture)**
-- Evidence: Screenshot of the green "No Conflict" callout state (`Nontando Zulu` control probe) saved at `qa_cycle/checkpoint-results/day-02-2.7-conflict-check-unknown-clear.png`. The visual proves the CLEAR path renders correctly; the Sipho-specific CLEAR fixture was unreachable due to GAP-L-28.
-
-## Checkpoint 2.8 — On client detail → click "Run KYC Verification"
-- Result: **SKIPPED (per scenario — "otherwise skip and note in gap report")**
-- Evidence:
-  - No "Run KYC Verification" button on client detail. Confirmed via full-page `innerText` scan for `kyc` / `verify` substrings → no hits. Only a `FICA` occurrence exists elsewhere.
-  - Backend integration probe: `/settings/integrations` renders a "KYC Verification" tile with status **"Not Configured"**, helper "Automated identity verification for FICA compliance", and a "Configure" button (no provider wired).
-  - Code confirmation (read-only grep): `frontend/app/(app)/org/[slug]/customers/[id]/page.tsx` line 244 — `kycStatus = { configured: false, provider: null }` default fallback; line 815 passes `kycConfigured={kycStatus.configured}` to the detail view component, which hides the Verify button unless configured.
-  - Scenario permits this branch — `2.8: ... "if KYC adapter configured; otherwise skip and note in gap report"`.
-- Gap: **GAP-L-30** (LOW, product) — no default KYC adapter wired for legal-za vertical. Options: Lexis Refinitiv, Truth SA, Thomson Reuters, ComplyAdvantage (common SA-legal choices). For the full-lifecycle demo, a mock adapter would suffice.
-- Screenshot: `qa_cycle/checkpoint-results/day-02-2.10-kyc-not-configured.png`.
-
-## Checkpoint 2.9 — KYC adapter returns Verified
-- Result: **SKIPPED (GAP-L-30)**.
-
-## Checkpoint 2.10 — Screenshot `day-02-kyc-verified.png`
-- Result: **SKIPPED (GAP-L-30)** — captured the "Not Configured" state instead as evidence: `qa_cycle/checkpoint-results/day-02-2.10-kyc-not-configured.png`.
-
-## Day 2 summary checks
-- Client created with INDIVIDUAL type and legal-specific fields: **PASS** — Sipho Dlamini with ID number + preferred correspondence persisted; promoted fields render inline on list and detail views.
-- Conflict check CLEAR (no false positive hits): **FAIL on happy-path** — engine false-positively matches the newly-created subject against itself. Engine is real and can return CLEAR, but flow ordering in the scenario does not produce the CLEAR outcome expected. Non-blocker (gap logged).
-- KYC verification badge visible on client detail, or KYC not-configured state logged to gap report: **PASS via second branch** — KYC adapter is "Not Configured"; gap logged as GAP-L-30.
-
-## Carry-Forward watch-list verifications this turn
-
-| Prior gap | Re-observed? | Notes |
-|---|---|---|
-| GAP-L-22 (post-registration session handoff) | Workaround held | Explicit KC logout + fresh OIDC login on Bob's account landed him cleanly on his own dashboard with correct sidebar identity. Still OPEN (needs fix); workaround remains reliable. |
-| GAP-L-26 (sidebar not consuming brand colour / logo) | **Re-observed** | Bob's sidebar/navbar still shows slate-950 default bg, no logo image. Not re-logged (already tracked). Same root cause. |
-| GAP-L-27 (tax rate copy) | n/a — not touched on Day 2 | Will re-observe on Day 7 proposal (VAT line). |
-
-## New gaps
-
-| GAP-ID | Severity | Summary |
-|---|---|---|
-| GAP-L-28 | MED | Conflict-check engine does NOT exclude the just-created subject from its match set, so the first conflict check on a newly-created client (scenario 2.5/2.6 happy-path) returns `CONFLICT_FOUND` with two 100% self-matches (ID + Name) against the client's own record. Control probe with an unrelated identity (`Nontando Zulu`/`9001019999088`) returns `NO_CONFLICT` correctly, so the engine is real and the registry query works — the bug is either (a) backend match logic must filter out `subject.customer_id == candidate.customer_id` when provided, or (b) the UX needs a pre-creation conflict-check step as part of the Create Client wizard so the check runs before the client exists. Owner: backend + frontend (product decision). Severity MED because the scenario demo moment is broken, but all downstream features still work; a Resolve Conflict action is available on the result view as a short-term workaround. |
-| GAP-L-29 | LOW | Conflict-check form `/conflict-check` — the "Customer (optional)" and "Matter (optional)" comboboxes only show `-- None --` even when the tenant has live clients/matters. Server component is not fetching the tenant registry to populate these dropdowns. Minor UX polish; does not block the check (name/ID input path works). Owner: frontend. |
-| GAP-L-30 | LOW | KYC Verification integration is unconfigured out of the box under the legal-za vertical. `/settings/integrations` renders a "KYC Verification / Not Configured" tile with "Configure" button, and `kycStatus = { configured: false }` is the server-side default. No provider stub nor a mock adapter seeded for demo runs, so scenario Day 2 2.8/2.9/2.10 + Day 3 FICA intake assume KYC will be unavailable. Owner: product — decide whether to ship a stub adapter for demo tenants, wire a real provider, or rescope the scenario to skip-by-design. |
-| GAP-L-31 | LOW | `/customers` empty-state copy reads "Customers represent the organisations you work with. Add your first customer to start managing relationships." under legal-za vertical — should read "Clients" / "client" to match the page header ("Clients") and nav terminology. Cosmetic copy leak; easily fixable. Owner: frontend. |
-| GAP-L-32 | LOW | After clicking "Create Client" → the dialog closes but the UX leaves the user on `/customers` (the list). Scenario 2.4 expects "redirected to client detail". Minor UX polish — user has to click into the new row to continue. Owner: frontend. |
-
-## Halt reason
-None — Day 2 completed end-to-end within scope. GAP-L-28 is MED (scenario demo moment broken) but the underlying feature works; downstream days are unaffected. GAP-L-29/30/31/32 are all LOW.
-
-## QA Position on exit
-
-`Day 3 — 3.1` (Create RAF matter, send FICA info request; actor = Bob still logged in). No context-swap needed entering Day 3. Next QA turn continues from Sipho's client detail with **+ New Matter** → Litigation — RAF template → FICA Onboarding Pack info request → Mailpit magic-link check.
-
----
-
-# Day 2 Re-Run — Cycle 1 Verify — 2026-04-25 04:30 SAST
-
-**Branch**: `bugfix_cycle_2026-04-24`
-**Tenant**: `mathebula-partners` (schema `tenant_5039f2d497cf`)
-**Actor**: Bob Ndlovu (Admin) — re-logged in via KC (`bob@mathebula-test.local` / `<REDACTED>`)
-**Stack**: Keycloak dev stack — frontend :3000, BFF :8443, backend :8080, KC :8180
-
-## Pre-flight
-
-- Signed out Thandi via sidebar Sign Out → landing page → KC login → entered `bob@mathebula-test.local` / `<REDACTED>`. Landed clean on `/org/mathebula-partners/dashboard`. No session leak.
-
-## Checkpoint Results (Cycle 1)
+## Checkpoint Results
 
 | ID | Description | Result | Evidence |
 |----|-------------|--------|----------|
-| 2.1 | Navigate to Clients → click + New Client | PASS | `/customers` page loads, H1="Clients", empty state "No clients yet". "New Client" button present in header + CTA. Clicking opens "Create Client" Step 1 of 2 dialog (not "Create Customer"). |
-| 2.2 | Dialog shows legal-specific promoted fields for INDIVIDUAL | PASS | Step 1 Type=Individual (default). Promoted fields: Name, Email, Phone, **ID Number**, **Tax Number** (labelled "required to send an invoice; collectable later" — L-62 soft-warn hybrid visible). Step 2 reveals "SA Legal — Client Details" field-group button + "Additional Information (4)" tab with 4 legal-specific fields (ID/Passport Number, Postal Address, Preferred Correspondence dropdown, Referred By). |
-| 2.3 | Fill form | PASS | Filled: Name="Sipho Dlamini", Type=Individual, Email="sipho.portal@example.com", Phone="+27 82 555 0101", ID Number="8501015800088", Address="12 Loveday St / Johannesburg / 2001 / ZA". Step 2 SA Legal group fields left empty (all optional). |
-| 2.4 | Submit → client created, redirected to client detail | **PASS — GAP-L-32 VERIFIED FIXED** | Clicked Create Client → URL changed to `/customers/c3ad51f5-2bda-4a27-b626-7b5c63f37102` (client detail page for Sipho). Previous cycle was a LOW gap (left on list); now redirects properly. |
-| 2.5 | On client detail → Run Conflict Check | PASS (route change) | Note: no **Run Conflict Check** button exists on client detail. Conflict checks run from `/conflict-check` top-level page. Navigated there; form loaded with "Run Check" tab selected. Check Type dropdown hydrated (New Client / New Matter / Periodic Review). **Customer (optional) dropdown shows only `-- None --`** — new issue below. Typed Name="Sipho Dlamini", ID Number="8501015800088", Check Type=New Client. Clicked Run Conflict Check. Check executed successfully and saved to history. |
-| 2.6 | Result = CLEAR (no pre-existing records) | **FAIL — GAP-L-29-regression new BLOCKER-for-scenario** | Result: **Conflict Found** with 2 matches (ID Number 100%, Name Match 100%) against EXISTING CLIENT Sipho Dlamini. This mirrors the original GAP-L-28 symptom (self-match) despite L-28's PR #1118 fix. **Root cause (confirmed via API probe)**: L-28 is supposed to self-exclude when the `customerId` URL param / form field identifies the just-created customer. The form's **Customer dropdown is empty**, so the user cannot select Sipho and pass a customerId. Without customerId, the backend cannot know which customer to exclude → returns self-match. See GAP-L-29-regression for the dropdown-hydration root cause. |
-| 2.7 | 📸 Screenshot `day-02-conflict-check-clear.png` | PARTIAL | Screenshot saved as `qa_cycle/checkpoint-results/day-01-screenshots/day-02-conflict-check-result.png` showing the CONFLICT result (not CLEAR). Evidence of the FAIL at 2.6. |
-| 2.8 | Run KYC Verification | N/A | Per status.md, L-30 (KYC adapter) is **DEFERRED to Sprint 2**. Scenario explicitly permits "otherwise skip and note in gap report". No KYC button on client detail. Logged as per prior cycle (`GAP-L-30`). |
-| 2.9 | KYC returns Verified | N/A | Blocked by 2.8 (KYC adapter not configured). |
-| 2.10 | 📸 KYC screenshot | N/A | Blocked by 2.8. |
+| 2.1 | Navigate to **Clients** → click **+ New Client** | PASS | Sidebar Clients group expanded → click Clients link → `/customers` page loaded with empty state, **+ New Client** button visible. Click opened "Create Client" modal (Step 1 of 2). |
+| 2.2 | Verify dialog shows legal-specific promoted fields for INDIVIDUAL (ID number, preferred contact, matter_type hint) | PASS | Step 1 of 2 has core fields including ID Number (optional). Step 2 of 2 ("Additional Information") offers a collapsible **SA Legal — Client Details** field-pack panel with 4 fields: ID/Passport Number, Postal Address, Preferred Correspondence (Email/Post/Hand Delivery combobox), Referred By. matter_type hint not surfaced in client-create flow (per scenario it's a "hint" rather than required — likely on matter create instead, see Day 3). |
+| 2.3 | Fill INDIVIDUAL / Sipho / Dlamini / sipho.portal@example.com / 8501015800088 / +27 82 555 0101 / 12 Loveday St JHB 2001 | PASS (with naming note) | Form has single **Name** field (not separate First/Last); filled `Sipho Dlamini`. Email/Phone/ID Number/Address Line 1=`12 Loveday St`/City=`Johannesburg`/Postal=`2001`/Country=`South Africa (ZA)` filled. SA Legal pack: ID/Passport=`8501015800088`, Preferred Correspondence=`Email`. Note: scenario says "First Name + Last Name" but UI uses single Name field — minor naming-only divergence, not a defect. Screenshot `day-02-2.3-legal-pack-form.png`. |
+| 2.4 | Submit → client created, redirected to client detail | PASS | Create Client clicked → redirected to `/customers/c4f70d86-c292-4d02-9f6f-2e900099ba57`. Client header: "Sipho Dlamini / Active / Prospect / sipho.portal@example.com / +27 82 555 0101 · 8501015800088 · Created Apr 26, 2026". DB confirms: `customers` row with `customer_type=INDIVIDUAL, lifecycle_status=PROSPECT, custom_fields={"id_passport_number":"8501015800088","preferred_correspondence":"EMAIL"}`. Screenshot `day-02-2.4-client-detail.png`. |
+| 2.5 | On client detail → click **Run Conflict Check** | **PARTIAL — BUG-CYCLE26-03** | **No "Run Conflict Check" button on client detail page.** Action bar has only: Change Status / Generate Document / Export Data / Edit / Archive. Conflict check is only reachable via the global `/conflict-check` page (sidebar Clients group → Conflict Check). Used the global page; selected Sipho from the Customer dropdown. Functionally available but UX miss vs scenario expectation of in-context launch. |
+| 2.6 | Result = **CLEAR** (no pre-existing records) — green confirmation state renders | PASS | Conflict Check page result: green check icon, heading **"No Conflict"**, body "Checked 'Sipho Dlamini' at 26/04/2026, 22:16:31", green badge **"No Conflict"**. History tab now (1). UI label is "No Conflict" rather than "CLEAR" — semantically equivalent. DB: `conflict_checks` row `result=NO_CONFLICT, check_type=NEW_CLIENT, customer_id=c4f70d86-...` linked. |
+| 2.7 | 📸 Screenshot: `day-02-conflict-check-clear.png` — CLEAR result badge | PASS | `qa_cycle/checkpoint-results/day-02-conflict-check-clear.png` — green No Conflict result card visible. |
+| 2.8 | On client detail → click **Run KYC Verification** (if KYC adapter configured) | **PARTIAL — BUG-CYCLE26-04** | **No "Run KYC Verification" button on client detail.** Adapter is also functionally NOT configurable: Settings > Integrations > KYC Verification → Configure dialog persists `org_integrations` row (`domain=KYC_VERIFICATION, provider_slug=verifynow, enabled=false`) but provides **no UI toggle to enable it** — no "Enable" checkbox/switch in the Configure dialog or on the integrations card. After Save, status shows "Disabled" persistently. Test Connection returns "No KYC provider configured". The backend has KYC adapter classes (`CheckIdKycAdapter`, `VerifyNowKycAdapter`) but the firm UI cannot bring them online. |
+| 2.9 | KYC adapter returns **Verified** — KYC badge renders green with verification timestamp | **SKIPPED** (gated by 2.8) | Cannot exercise — no run button + adapter cannot be enabled. Per scenario instruction "if KYC adapter configured; otherwise skip and note in gap report". Logged as BUG-CYCLE26-04. |
+| 2.10 | 📸 Screenshot: `day-02-kyc-verified.png` — KYC verified status | **SKIPPED** (gated by 2.8) | Not capturable. |
 
-## GAP-L-29-regression — Conflict-check Customer dropdown empty (REOPENED)
+## Day 2 wrap-up checks (per scenario)
 
-**Root cause verified by API probe:**
-- `fetchCustomers()` in `frontend/app/(app)/org/[slug]/conflict-check/actions.ts:108-112` calls `api.get<PaginatedResponse<{id,name}>>("/api/customers?size=200")` and returns `result?.content ?? []`.
-- Backend `CustomerController.listCustomers()` (line 92) returns `ResponseEntity<List<CustomerResponse>>` — a **raw JSON array**, NOT a paginated wrapper.
-- Browser probe confirms: `fetch('/api/customers?size=200')` returned `[{id,name,email,...}, ...]` (raw array) with Sipho present.
-- Therefore `result.content` is `undefined` in the server action, and `fetchCustomers` always returns `[]`. Dropdown never populates, `initialCustomers` prop is always `[]`.
-- This is a shape mismatch regression introduced alongside the L-29 PR #1122 claim ("dropdowns hydrated"). The fix compiled but the wrong response shape was assumed.
+- [x] Client created with INDIVIDUAL type and legal-specific fields (SA Legal pack data persisted in `customers.custom_fields`)
+- [x] Conflict check CLEAR (no false positive hits) — `result=NO_CONFLICT`, history shows the run
+- [ ] KYC verification badge visible on client detail — **NOT MET** (BUG-CYCLE26-04 — no UI affordance + adapter cannot be enabled). Per scenario, allowable to skip with gap-report entry; cycle continues.
 
-**Blast radius**: Blocks scenario 2.5/2.6 CLEAR outcome. Does not block matters, documents, trust, billing. MED severity. Fix candidates:
-1. Change backend `/api/customers` to return `PaginatedResponse<CustomerResponse>` (but many callers may rely on the raw array — breaking change).
-2. Change frontend `fetchCustomers` to treat the response as a raw array: `return Array.isArray(result) ? result : (result?.content ?? [])`.
-3. Add a dedicated `/api/customers/combobox` or similar lightweight endpoint returning `{id,name}[]`.
+## Bugs / observations opened this day
 
-Owner: Dev (straightforward, fix at frontend layer is one line).
+- **BUG-CYCLE26-03** — **Severity: BUG** (UX miss). Client detail page (`/customers/[id]`) has no in-context **Run Conflict Check** button. Conflict check is only reachable from sidebar > Clients > Conflict Check (global page). Demo wow-moment expectation is "on the client record, click Run Conflict Check" — currently the firm-side user has to leave the client and navigate elsewhere, then re-select the client from a dropdown. Recommend: add a "Run Conflict Check" action button (or section) to the client detail header, pre-populating the form with the client's name + ID. Functionally not blocking — Conflict Check page works correctly and links back via `customer_id` FK.
 
-## Verify-Focus observations
+- **BUG-CYCLE26-04** — **Severity: BUG** (demo blocker for Day 2 wow moment #1). Two related defects:
+  1. Client detail page has no **Run KYC Verification** button. KYC is not surfaced on client detail at all (no tab, no action button).
+  2. Settings > Integrations > KYC Verification > Configure dialog persists the integration row but lands `enabled=false` and provides no UI mechanism to toggle it on. Status badge shows "Disabled" after save. Test Connection responds "No KYC provider configured". Backend adapters (`CheckIdKycAdapter`, `VerifyNowKycAdapter`) exist in code but cannot be brought online from the firm UI.
 
-- **L-31** (Customers empty-state vertical copy): PASS — "Clients represent the people or organisations you work with. Add your first client to start managing relationships." uses **Clients** consistently. Prior cycle's GAP-L-31 (used "Customers") appears FIXED.
-- **L-32** (Create Client redirects to new detail): **VERIFIED FIXED**. Prior cycle's gap now resolved.
-- **L-34** (portal-contact auto-provision): **VERIFIED FIXED**. Backend log shows `PortalContactAutoProvisioner: Auto-provisioned portal contact 127d1c7d-... for customer c3ad51f5-... (email=s****@example.com)`. Portal contact auto-linked at customer-create time.
-- **L-37** (field-group over-attach narrowed): **VERIFIED FIXED**. Customer has exactly 1 `applied_field_groups` entry (`SA Legal — Client Details`). No accounting/consulting groups attached. Narrowing correct.
-- **L-62** (tax_number hybrid for INDIVIDUAL): PARTIAL — at create time, tax_number is empty in DB. L-62 may be a send-time fallback rather than a create-time auto-populate. Will verify at Day 28 fee-note checkpoint.
-- **L-28** (conflict-check self-exclusion): **CANNOT VERIFY** through UI due to L-29 dropdown regression. Backend fix may still work but end-to-end verification is blocked by the frontend shape mismatch.
+  Recommend: (a) add Enable toggle to KYC Configure dialog (or auto-enable on successful Test Connection), (b) add "Run KYC Verification" action on client detail (gated on the adapter being enabled), (c) render KYC status badge on client detail when verified. Functionally non-cascading — Day 2 says "skip if not configured" — but Day 2 demo wow moment #1 lists "Conflict CLEAR + KYC Verified" so this directly impacts the demo storyline.
 
-## Tally (Cycle 1)
+## Pre-existing carry-over
 
-- PASS: 5/7 substantive checkpoints (2.1, 2.2, 2.3, 2.4, 2.5)
-- FAIL: 1 (2.6 — blocked by L-29 regression)
-- PARTIAL: 1 (2.7 screenshot taken but shows Conflict not Clear)
-- N/A: 3 (2.8-2.10 KYC deferred per L-30)
+- **GAP-L-90 fix holding** — Sidebar logo and brand-color (navy `#1B3358`) render correctly for Bob (different KC user, same tenant). Confirms the fix is tenant-scoped, not user-scoped.
+- **BUG-CYCLE26-01/02 fix holding** — All form fills on this day worked through Playwright MCP `fill()` without native-setter fallback (Email, Phone, Name, ID, City, Postal, ID/Passport). Form-binding fix applies broadly. Only one Radix Select still required JS click on the Preferred Correspondence option (different control class from the team-invite Radix; not regressing the team-invite fix).
 
-## New/updated gaps
+## Console errors observed
 
-| GAP-ID | Severity | Status | Summary |
-|---|---|---|---|
-| GAP-L-29-regression | MED | OPEN | Conflict-check form Customer dropdown is empty because backend `/api/customers` returns raw array `List<CustomerResponse>` but frontend server action `fetchCustomers` treats it as `PaginatedResponse<>`. Shape mismatch returns `[]` to the form. Blocks L-28 self-exclusion verification + scenario 2.6 CLEAR outcome. |
-| GAP-L-28 (prior) | MED | VERIFIED BACKEND (UI path still broken) | Blocked by L-29-regression from UI verification; backend fix may be working but unreachable. |
+- 0 functional console errors during Day 2 navigation.
+- Pre-existing KC favicon 404 not seen this session (no logout/relogin during Day 2).
 
-## Halt decision
+## DB evidence
 
-NOT a full halt. This is a MED cascading gap but the L-28 failure does not block Days 3+ from starting (matter creation, info requests, trust, billing all proceed independently of the conflict check result). Scenario 2.6 is noted as failing; Day 2 moves forward per the MED (not HIGH) severity classification.
+```
+SELECT id, name, customer_type, email, phone, id_number, lifecycle_status, custom_fields
+FROM tenant_5039f2d497cf.customers WHERE id='c4f70d86-c292-4d02-9f6f-2e900099ba57';
 
-## Next QA Position
+c4f70d86-c292-4d02-9f6f-2e900099ba57 | Sipho Dlamini | INDIVIDUAL | sipho.portal@example.com |
+  +27 82 555 0101 | 8501015800088 | PROSPECT |
+  {"id_passport_number": "8501015800088", "preferred_correspondence": "EMAIL"}
 
-**Day 3 — 3.1** (Create RAF matter, send FICA info request). Bob still logged in, no context swap needed.
+SELECT id, checked_name, checked_id_number, check_type, result, customer_id, checked_at
+FROM tenant_5039f2d497cf.conflict_checks ORDER BY checked_at DESC;
 
----
+f5775f7b-78bf-439c-b1f9-218c57a65c4a | Sipho Dlamini | 8501015800088 | NEW_CLIENT |
+  NO_CONFLICT | c4f70d86-c292-4d02-9f6f-2e900099ba57 | 2026-04-26 20:16:31.870619+00
 
-## Day 2 Re-Verify after L-29 fix — Cycle 1 Verify — 2026-04-25 06:04 SAST
+SELECT domain, provider_slug, enabled, key_suffix
+FROM tenant_5039f2d497cf.org_integrations;
 
-**Branch**: `bugfix_cycle_2026-04-24` (head after PR #1131 merge SHA `74164d0d`)
-**Tenant**: `mathebula-partners` (schema `tenant_5039f2d497cf` — Sipho still present)
-**Actor**: Bob Ndlovu — re-logged in via KC (`bob@mathebula-test.local` / `<REDACTED>`)
-**Pre-state**: Sipho Dlamini customer (`c3ad51f5-2bda-4a27-b626-7b5c63f37102`) ACTIVE in tenant. RAF matter (`e788a51b-3a73-456c-b932-8d5bd27264c2`) ALREADY EXISTS from a prior partial Day 3 turn (created 2026-04-25 02:34 UTC by prior agent). 1 prior conflict-check row from previous turn (`Sipho Dlamini / NEW_CLIENT / CONFLICT_FOUND` at 02:29:58 UTC, no customer_id).
+KYC_VERIFICATION | verifynow | f | ey-123    -- enabled=false; no UI to enable
+```
 
-### Checkpoint 2.6 re-execution
+## Wow-moment screenshots captured
 
-| ID | Description | Result | Evidence |
-|----|-------------|--------|----------|
-| 2.6 | Result = CLEAR (no pre-existing records) on Sipho self-check with customerId | **PASS — GAP-L-29-regression VERIFIED + GAP-L-28 VERIFIED** | Re-ran conflict check end-to-end. **Customer dropdown now hydrated** with `Sipho Dlamini` option (was empty before PR #1131). Selected Sipho. Filled Name=`Sipho Dlamini`, ID=`8501015800088`, Check Type=New Client. Clicked **Run Conflict Check** → result rendered **green "No Conflict"** callout, badge "No Conflict", timestamp `25/04/2026, 06:03:59`. DB confirms: `tenant_5039f2d497cf.conflict_checks` new row `Sipho Dlamini / NEW_CLIENT / NO_CONFLICT / customer_id=c3ad51f5-2bda-4a27-b626-7b5c63f37102 / 2026-04-25 04:03:59 UTC`. **Both L-29 dropdown hydration AND L-28 self-exclusion now end-to-end VERIFIED.** |
-| 2.7 | Screenshot day-02-conflict-check-clear.png | PASS | `qa_cycle/checkpoint-results/day-02-2.6-clear-after-l29-fix.png` saved (full page). Shows hydrated Sipho selection, green No Conflict result. |
+- `day-02-2.3-legal-pack-form.png` — Step 2 dialog with SA Legal — Client Details panel expanded.
+- `day-02-2.4-client-detail.png` — Sipho Dlamini client detail, full page.
+- `day-02-conflict-check-clear.png` — **wow moment** — green No Conflict result on Conflict Check page.
+- `day-02-sipho-client-detail.png` — Final view of Sipho's record, viewport screenshot.
 
-### Bonus passive observation — Matter dropdown also hydrated
+KYC wow moment NOT capturable (BUG-CYCLE26-04).
 
-Matter (optional) dropdown also populated with `Dlamini v Road Accident Fund` (the RAF matter created in the prior partial turn). PR #1131 applied the defensive parse to `fetchProjects` as well, pre-empting the latent same-shape-mismatch on the matter combobox. Confirmed end-to-end.
+## Summary
 
-### Tally — Day 2 final close
+**5 PASS / 2 PARTIAL / 0 FAIL / 0 BLOCKER / 2 SKIPPED** for Day 2 (10 sub-checkpoints + 3 wrap-up checks).
 
-- PASS: 7/7 substantive checkpoints (2.1–2.7 all PASS)
-- N/A: 3 (2.8–2.10 KYC adapter L-30 deferred to Sprint 2)
-- FAIL: 0
+PARTIALs:
+- 2.5 (BUG-CYCLE26-03): No in-context Run Conflict Check button on client detail — workaround via global page works.
+- 2.8 (BUG-CYCLE26-04): No in-context Run KYC button + KYC adapter cannot be enabled in UI — gates 2.9 + 2.10 (skipped).
 
-### Gap status updates
+Both PARTIALs are non-cascading — Day 3+ does not depend on KYC being run; conflict check is logged in DB and traceable via `customer_id`. Day 2 demo wow moment #1 (Conflict CLEAR) is captured; Day 2 wow moment #2 (KYC Verified) is gapped pending dev fix.
 
-| GAP-ID | Status |
-|---|---|
-| GAP-L-29-regression | **VERIFIED** (Customer + Matter dropdowns both hydrate correctly; defensive parse holds against raw-array response) |
-| GAP-L-28 | **VERIFIED end-to-end** (with customerId set via dropdown, backend self-excludes the subject; result = NO_CONFLICT) |
+Cycle proceeds to Day 3 (Bob still logged in — same actor for Day 3).
 
-### QA Position on exit
+## Cycle 6 verification 2026-04-26 SAST (UTC 20:25–20:34) — branch `bugfix_cycle_2026-04-26-day2`
 
-**Day 3 — 3.1+** (Day 3 partially executed in prior turn — matter + REQ-0001 already exist; need to re-verify checkpoints 3.5/3.6/3.8/3.10/3.12 as cycle 1 against the existing data, then proceed to Day 4 portal upload).
+Re-entered the cycle after user-directed release of the Day-2 hold. Confirmed Day 2 results above are still valid against `main` HEAD (commit `25e23125`):
+
+| Check | Result | Evidence |
+|-------|--------|----------|
+| Sipho still in DB with full Day-2 fields | PASS | `tenant_5039f2d497cf.customers` id=`c4f70d86-…`, name=`Sipho Dlamini`, email=`sipho.portal@example.com`, phone=`+27 82 555 0101`, id_number=`8501015800088`, customer_type=`INDIVIDUAL`, lifecycle_status=`PROSPECT`, address=`12 Loveday St / Johannesburg / 2001 / ZA`, custom_fields=`{"id_passport_number":"8501015800088","preferred_correspondence":"EMAIL"}`. |
+| Step-2 SA Legal — Client Details promoted fields still rendered in Create Client wizard | PASS | Probe-only New Client dialog → Step 2 → SA Legal — Client Details → Additional Information (4) expanded → 4 fields visible (ID/Passport Number, Postal Address, Preferred Correspondence, Referred By). Dialog cancelled. |
+| Conflict-check workspace functional, returns NO_CONFLICT for Sipho | PASS | `/conflict-check` Run Check tab → fills Name=`Sipho Dlamini`, ID=`8501015800088`, Customer link → Sipho → Run. Result panel "No Conflict" badge + "Checked 'Sipho Dlamini' at 26/04/2026, 22:28:33". DB: 2nd `conflict_checks` row id=`a6529e36-…` at 20:28:33 UTC, both NO_CONFLICT, 0 false positives. History tab now shows (2). |
+| BUG-CYCLE26-03 still reproducible | OPEN | Client detail action bar still: Change Status / Generate Document / Export Data / Edit / Archive. No Run-Conflict-Check shortcut. Confirmed unchanged. |
+| BUG-CYCLE26-04 still reproducible | OPEN | Re-opened Settings > Integrations > KYC Verification > Configure → entered API key `sk-verifynow-demo-test-key-12345` → Save → DB `org_integrations` row updated `key_suffix='-12345'`, `enabled` STILL `false`. KYC card still "Disabled" badge. No Enable toggle exposed. Same root cause as the original cycle-6 finding. |
+| Screenshot tooling | DEGRADED | `mcp__playwright__browser_take_screenshot` repeatedly times out today (`Timeout 5000ms exceeded after fonts loaded`) — DOM YAML used as substitute (see `day-02-conflict-check-clear.yml`). Note prior cycle-6 run produced `day-02-conflict-check-clear.png` successfully — tooling regression mid-session. Logging as `BUG-CYCLE26-05` (LOW, tooling-only). |
+
+**Verification stop**: Day 2 is complete, all gaps observed in the prior cycle-6 run still reproduce on `main`. Advancing QA Position to Day 3 / 3.1.
+

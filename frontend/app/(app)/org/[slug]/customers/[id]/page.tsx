@@ -61,6 +61,7 @@ import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocument
 import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBadge";
 import { LifecycleTransitionDropdown } from "@/components/compliance/LifecycleTransitionDropdown";
 import { ChecklistInstancePanel } from "@/components/compliance/ChecklistInstancePanel";
+import { KycStatusBadge, type KycSummary } from "@/components/customers/kyc-status-badge";
 import { SetupProgressCard, ActionCard, TemplateReadinessCard } from "@/components/setup";
 import {
   fetchCustomerReadiness,
@@ -92,6 +93,7 @@ import {
   ArrowRight,
   Download,
   ShieldCheck,
+  Scale,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -132,20 +134,25 @@ export default async function CustomerDetailPage({
     // Non-fatal: show empty documents list if fetch fails
   }
 
+  // Org settings drive currency + module gates for both admin and non-admin
+  // surfaces (e.g. the conflict-check button gate). Fetched independently so a
+  // failing admin-only fetch can't suppress module-gated UI.
+  const orgSettings = await api.get<OrgSettings>("/api/settings").catch(() => null);
+  const defaultCurrency = orgSettings?.defaultCurrency ?? "USD";
+  const enabledModules: string[] = orgSettings?.enabledModules ?? [];
+
   // Billing rates + org members for the "Rates" tab (admin/owner only)
   let customerBillingRates: BillingRate[] = [];
   let orgMembers: OrgMember[] = [];
-  let defaultCurrency = "USD";
   let customerProfitability: CustomerProfitabilityResponse | null = null;
   let projectBreakdown: OrgProfitabilityResponse | null = null;
   let customerInvoices: InvoiceResponse[] = [];
   if (isAdmin) {
     try {
-      const [ratesRes, membersRes, settingsRes, profitabilityRes, breakdownRes, invoicesRes] =
-        await Promise.all([
+      const [ratesRes, membersRes, profitabilityRes, breakdownRes, invoicesRes] = await Promise.all(
+        [
           api.get<{ content: BillingRate[] }>(`/api/billing-rates?customerId=${id}`),
           api.get<OrgMember[]>("/api/members"),
-          api.get<OrgSettings>("/api/settings").catch(() => null),
           api
             .get<CustomerProfitabilityResponse>(`/api/customers/${id}/profitability`)
             .catch(() => null),
@@ -155,12 +162,10 @@ export default async function CustomerDetailPage({
           api
             .get<InvoiceResponse[]>(`/api/invoices?customerId=${id}`)
             .catch(() => [] as InvoiceResponse[]),
-        ]);
+        ]
+      );
       customerBillingRates = ratesRes?.content ?? [];
       orgMembers = membersRes;
-      if (settingsRes?.defaultCurrency) {
-        defaultCurrency = settingsRes.defaultCurrency;
-      }
       customerProfitability = profitabilityRes;
       projectBreakdown = breakdownRes;
       customerInvoices = invoicesRes ?? [];
@@ -248,6 +253,48 @@ export default async function CustomerDetailPage({
   } catch {
     // Non-fatal: KYC verification buttons won't show
   }
+
+  // Derive a customer-level KYC summary from existing checklist data so the
+  // header can surface a status badge without an extra round-trip. Walks
+  // checklist items looking for a verification provider; collapses to one of
+  // verified / pending / unverified.
+  const kycSummary: KycSummary | null = (() => {
+    if (!kycStatus.configured) return null;
+    let latestVerified: { verifiedAt: string | null; provider: string } | null = null;
+    let hasPending = false;
+    for (const inst of checklistInstances) {
+      for (const item of inst.items ?? []) {
+        // A VERIFIED item without a verifiedAt timestamp is still verified —
+        // don't demote it to "pending". The badge tolerates a null timestamp.
+        if (item.verificationStatus === "VERIFIED" && item.verificationProvider) {
+          const itemVerifiedAt = item.verifiedAt ?? null;
+          const isNewer =
+            !latestVerified ||
+            (itemVerifiedAt &&
+              (latestVerified.verifiedAt === null || itemVerifiedAt > latestVerified.verifiedAt));
+          if (isNewer) {
+            latestVerified = {
+              verifiedAt: itemVerifiedAt,
+              provider: item.verificationProvider,
+            };
+          }
+        } else if (item.verificationProvider) {
+          hasPending = true;
+        }
+      }
+    }
+    if (latestVerified) {
+      return {
+        state: "verified",
+        provider: latestVerified.provider,
+        verifiedAt: latestVerified.verifiedAt,
+      };
+    }
+    if (hasPending) {
+      return { state: "pending" };
+    }
+    return { state: "unverified" };
+  })();
 
   // Fetch retainer data for the Retainer tab
   let customerRetainers: RetainerResponse[] = [];
@@ -455,6 +502,7 @@ export default async function CustomerDetailPage({
             )}
             <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
             {customer.lifecycleStatus && <LifecycleStatusBadge status={customer.lifecycleStatus} />}
+            {kycSummary && <KycStatusBadge summary={kycSummary} />}
           </div>
           <p className="mt-1 text-slate-600 dark:text-slate-400">{customer.email}</p>
           {customer.lifecycleStatusChangedAt && (
@@ -488,6 +536,29 @@ export default async function CustomerDetailPage({
                   slug={slug}
                 />
               )}
+            {customer.lifecycleStatus !== "ANONYMIZED" &&
+              enabledModules.includes("conflict_check") &&
+              (() => {
+                const conflictCheckParams = new URLSearchParams();
+                conflictCheckParams.set("customerId", customer.id);
+                if (customer.name) {
+                  conflictCheckParams.set("checkedName", customer.name);
+                }
+                if (customer.idNumber) {
+                  conflictCheckParams.set("checkedIdNumber", customer.idNumber);
+                }
+                return (
+                  <Button asChild variant="outline" size="sm">
+                    <Link
+                      href={`/org/${slug}/conflict-check?${conflictCheckParams.toString()}`}
+                      data-testid="run-conflict-check-link"
+                    >
+                      <Scale className="mr-1.5 size-4" />
+                      <TerminologyText template="Run Conflict Check" />
+                    </Link>
+                  </Button>
+                );
+              })()}
             {customerTemplates.length > 0 && customer.lifecycleStatus !== "ANONYMIZED" && (
               <GenerateDocumentDropdown
                 templates={customerTemplates}
@@ -498,6 +569,16 @@ export default async function CustomerDetailPage({
                 isAdmin={isAdmin}
               />
             )}
+            {kycStatus.configured &&
+              kycSummary?.state !== "verified" &&
+              customer.lifecycleStatus !== "ANONYMIZED" && (
+                <Button asChild variant="outline" size="sm">
+                  <Link href={`/org/${slug}/customers/${id}?tab=onboarding`}>
+                    <ShieldCheck className="mr-1.5 size-4" />
+                    Verify KYC
+                  </Link>
+                </Button>
+              )}
             {customer.lifecycleStatus !== "ANONYMIZED" && (
               <DataExportDialog customerId={customer.id}>
                 <Button variant="outline" size="sm">

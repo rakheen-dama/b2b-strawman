@@ -7,6 +7,7 @@ import { ConflictCheckForm } from "@/components/legal/conflict-check-form";
 import { ConflictCheckHistory } from "@/components/legal/conflict-check-history";
 import { fetchConflictChecks } from "./actions";
 import type { ConflictCheck } from "@/lib/types";
+import type { PerformConflictCheckFormData } from "@/lib/schemas/legal";
 
 type ViewMode = "check" | "history";
 
@@ -15,6 +16,7 @@ interface ConflictCheckClientProps {
   initialTotal: number;
   initialCustomers?: { id: string; name: string }[];
   initialProjects?: { id: string; name: string }[];
+  initialFormDefaults?: Partial<PerformConflictCheckFormData>;
   slug: string;
 }
 
@@ -23,6 +25,7 @@ export function ConflictCheckClient({
   initialTotal,
   initialCustomers = [],
   initialProjects = [],
+  initialFormDefaults,
   slug,
 }: ConflictCheckClientProps) {
   const [view, setView] = useState<ViewMode>("check");
@@ -57,6 +60,7 @@ export function ConflictCheckClient({
             slug={slug}
             initialCustomers={initialCustomers}
             initialProjects={initialProjects}
+            initialFormDefaults={initialFormDefaults}
             onCheckComplete={refetchHistory}
           />
         )}

@@ -3,9 +3,32 @@ import { getOrgSettings } from "@/lib/api/settings";
 import { fetchConflictChecks, fetchCustomers, fetchProjects } from "./actions";
 import { ConflictCheckClient } from "./conflict-check-client";
 import type { ConflictCheck } from "@/lib/types";
+import type { PerformConflictCheckFormData } from "@/lib/schemas/legal";
 
-export default async function ConflictCheckPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function ConflictCheckPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams?: Promise<{
+    customerId?: string;
+    checkedName?: string;
+    checkedIdNumber?: string;
+  }>;
+}) {
   const { slug } = await params;
+  const resolvedSearchParams = (await searchParams) ?? {};
+
+  const initialFormDefaults: Partial<PerformConflictCheckFormData> = {};
+  if (resolvedSearchParams.customerId) {
+    initialFormDefaults.customerId = resolvedSearchParams.customerId;
+  }
+  if (resolvedSearchParams.checkedName) {
+    initialFormDefaults.checkedName = resolvedSearchParams.checkedName;
+  }
+  if (resolvedSearchParams.checkedIdNumber) {
+    initialFormDefaults.checkedIdNumber = resolvedSearchParams.checkedIdNumber;
+  }
 
   let settings;
   try {
@@ -63,6 +86,7 @@ export default async function ConflictCheckPage({ params }: { params: Promise<{ 
         initialTotal={initialTotal}
         initialCustomers={initialCustomers}
         initialProjects={initialProjects}
+        initialFormDefaults={initialFormDefaults}
         slug={slug}
       />
     </div>

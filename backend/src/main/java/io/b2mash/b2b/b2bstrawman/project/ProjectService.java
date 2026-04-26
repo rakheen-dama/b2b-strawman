@@ -112,7 +112,7 @@ public class ProjectService {
     }
     Optional<Integer> years = orgSettingsService.getRawLegalMatterRetentionYears();
     if (years.isEmpty()) {
-      log.info(
+      log.debug(
           "Cannot compute retentionEndsOn for project {}: legalMatterRetentionYears is "
               + "null/zero/missing on the org. UI will hide the retention card until the setting "
               + "is configured under data-protection settings.",

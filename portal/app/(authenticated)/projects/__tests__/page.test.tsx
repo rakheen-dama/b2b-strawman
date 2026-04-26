@@ -1,5 +1,11 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from "@testing-library/react";
 
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
@@ -124,6 +130,65 @@ describe("ProjectsPage", () => {
 
     await waitFor(() => {
       expect(screen.getByText("Network error")).toBeInTheDocument();
+    });
+  });
+
+  it("filters projects via the All / Active / Past segmented control", async () => {
+    mockPortalGet.mockImplementation((path: string) => {
+      if (path === "/portal/projects") {
+        return Promise.resolve([
+          {
+            id: "proj-active",
+            name: "Active Matter",
+            description: null,
+            documentCount: 1,
+            createdAt: "2026-04-01T00:00:00Z",
+            status: "ACTIVE",
+          },
+          {
+            id: "proj-closed",
+            name: "Closed Matter",
+            description: null,
+            documentCount: 2,
+            createdAt: "2026-03-01T00:00:00Z",
+            status: "CLOSED",
+          },
+          {
+            id: "proj-completed",
+            name: "Completed Matter",
+            description: null,
+            documentCount: 3,
+            createdAt: "2026-02-01T00:00:00Z",
+            status: "COMPLETED",
+          },
+        ]);
+      }
+      return Promise.resolve([]);
+    });
+
+    render(<ProjectsPage />);
+
+    // All tab (default) — all 3 projects visible
+    await waitFor(() => {
+      expect(screen.getByText("Active Matter")).toBeInTheDocument();
+      expect(screen.getByText("Closed Matter")).toBeInTheDocument();
+      expect(screen.getByText("Completed Matter")).toBeInTheDocument();
+    });
+
+    // Active tab — only ACTIVE
+    fireEvent.click(screen.getByRole("tab", { name: "Active" }));
+    await waitFor(() => {
+      expect(screen.getByText("Active Matter")).toBeInTheDocument();
+      expect(screen.queryByText("Closed Matter")).not.toBeInTheDocument();
+      expect(screen.queryByText("Completed Matter")).not.toBeInTheDocument();
+    });
+
+    // Past tab — CLOSED + COMPLETED
+    fireEvent.click(screen.getByRole("tab", { name: "Past" }));
+    await waitFor(() => {
+      expect(screen.queryByText("Active Matter")).not.toBeInTheDocument();
+      expect(screen.getByText("Closed Matter")).toBeInTheDocument();
+      expect(screen.getByText("Completed Matter")).toBeInTheDocument();
     });
   });
 });

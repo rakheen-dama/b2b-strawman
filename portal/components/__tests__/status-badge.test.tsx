@@ -20,4 +20,12 @@ describe("StatusBadge", () => {
     const badge = container.querySelector("[data-slot='badge']");
     expect(badge?.className).toContain("bg-blue-100");
   });
+
+  it("renders CLOSED project status with the muted slate variant", () => {
+    const { container } = render(<StatusBadge status="CLOSED" />);
+    expect(screen.getByText("CLOSED")).toBeInTheDocument();
+    const badge = container.querySelector("[data-slot='badge']");
+    expect(badge?.className).toContain("bg-slate-200");
+    expect(badge?.className).toContain("text-slate-600");
+  });
 });

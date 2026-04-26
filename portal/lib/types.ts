@@ -29,6 +29,7 @@ export interface PortalProject {
   description: string | null;
   documentCount: number;
   createdAt: string; // ISO 8601 instant
+  status?: string; // ACTIVE | CLOSED | COMPLETED | ON_HOLD | CANCELLED — optional until backend list endpoint surfaces it
 }
 
 export interface PortalProjectDetail {

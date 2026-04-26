@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.portal.PortalEmailService;
 import io.b2mash.b2b.b2bstrawman.retainer.event.RetainerPeriodRolloverEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -34,6 +35,11 @@ import org.springframework.transaction.support.TransactionTemplate;
  *   <li>{@link TrustTransactionApprovalEvent} filtered to the {@code trust_transaction.approved}
  *       variant — renders the {@code portal-trust-activity} template; gated on the portal contact's
  *       {@code trustActivityEnabled} preference.
+ *   <li>{@link TrustTransactionRecordedEvent} filtered to {@code transactionType=DEPOSIT} — renders
+ *       the same {@code portal-trust-activity} template so a client is notified when the firm
+ *       records that funds were received into trust (GAP-Trust-Nudge-Email-Missing). Other
+ *       recorded-event types (TRANSFER_OUT/TRANSFER_IN) are skipped here — internal moves do not
+ *       warrant a client-facing email; their portal surfacing happens via the read-model sync.
  *   <li>{@link RetainerPeriodRolloverEvent} — renders {@code portal-retainer-period-closed}; gated
  *       on {@code retainerUpdatesEnabled}.
  *   <li>{@link FieldDateApproachingEvent} — renders {@code portal-deadline-approaching}; gated on
@@ -110,6 +116,43 @@ public class PortalEmailNotificationChannel {
           } catch (Exception e) {
             log.error(
                 "Portal trust-activity email failed tenant={} customerId={}",
+                event.tenantId(),
+                event.customerId(),
+                e);
+          }
+        });
+  }
+
+  // ──────────────────────────────────────────────────────────────────────────
+  // Trust deposit recorded (GAP-Trust-Nudge-Email-Missing)
+  //
+  // recordDeposit() bypasses the awaiting-approval flow and goes straight to RECORDED, so the
+  // approval-path listener above never fires for deposits. Without this listener, clients only
+  // surface deposits by logging into the portal — never via email. Filter is restricted to
+  // DEPOSIT so we do not double-send when the closure-pack notifications (E5.1) ship a
+  // listener for WITHDRAWAL/FEE_TRANSFER/REFUND. TRANSFER_OUT / TRANSFER_IN are internal moves
+  // that the read-model sync surfaces via the portal trust ledger; no client-facing email.
+  // ──────────────────────────────────────────────────────────────────────────
+
+  @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+  public void onTrustTransactionRecorded(TrustTransactionRecordedEvent event) {
+    if (!"DEPOSIT".equals(event.transactionType())) {
+      return;
+    }
+    handleInTenantScope(
+        event.tenantId(),
+        event.orgId(),
+        () -> {
+          try {
+            dispatchToContacts(
+                event.customerId(),
+                PortalNotificationPreference::isTrustActivityEnabled,
+                contact -> buildTrustActivityContext(contact, event),
+                portalEmailService::sendTrustActivityEmail,
+                "trust-deposit-recorded");
+          } catch (Exception e) {
+            log.error(
+                "Portal trust-deposit email failed tenant={} customerId={}",
                 event.tenantId(),
                 event.customerId(),
                 e);
@@ -251,6 +294,31 @@ public class PortalEmailNotificationChannel {
     context.put("currency", context.getOrDefault("currency", ""));
     context.put("occurredAt", event.occurredAt());
     // Deep link keys the portal trust page by matter id when present.
+    UUID matterKey = event.trustAccountId();
+    context.put(
+        "trustUrl",
+        matterKey != null ? portalBaseUrl + "/trust/" + matterKey : portalBaseUrl + "/trust");
+    context.put("portalBaseUrl", portalBaseUrl);
+    return context;
+  }
+
+  /**
+   * Variant for the RECORDED-path event (currently DEPOSIT only). Mirrors the approval-path subject
+   * line so portal contacts see a single, consistent "Trust account activity" framing whether the
+   * underlying transaction went through the dual-approval flow or straight to RECORDED.
+   */
+  private Map<String, Object> buildTrustActivityContext(
+      PortalContact contact, TrustTransactionRecordedEvent event) {
+    Map<String, Object> context =
+        emailContextBuilder.buildBaseContext(contact.getDisplayName(), null);
+    String orgName = context.getOrDefault("orgName", productName).toString();
+    context.put("subject", orgName + ": Trust account activity");
+    context.put("contactName", contact.getDisplayName());
+    context.put("transactionType", event.transactionType());
+    BigDecimal amount = event.amount();
+    context.put("amount", amount != null ? amount.toPlainString() : null);
+    context.put("currency", context.getOrDefault("currency", ""));
+    context.put("occurredAt", event.occurredAt());
     UUID matterKey = event.trustAccountId();
     context.put(
         "trustUrl",

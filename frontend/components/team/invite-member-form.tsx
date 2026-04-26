@@ -18,6 +18,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { CAPABILITY_META } from "@/lib/capabilities";
 import { inviteMember, listInvitations } from "@/app/(app)/org/[slug]/team/invitation-actions";
@@ -25,6 +33,11 @@ import type { OrgRole } from "@/lib/api/org-roles";
 import { inviteMemberSchema, type InviteMemberFormData } from "@/lib/schemas/invite-member";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
+
+// Well-known select values for system roles (not derived from role IDs)
+const SYSTEM_MEMBER_VALUE = "system:member";
+const SYSTEM_ADMIN_VALUE = "system:admin";
+const systemSelectValues = new Set([SYSTEM_MEMBER_VALUE, SYSTEM_ADMIN_VALUE]);
 
 interface InviteMemberFormProps {
   maxMembers: number;
@@ -107,42 +120,44 @@ function InviteFormUI({
     resolver: zodResolver(inviteMemberSchema),
     defaultValues: {
       emailAddress: "",
+      roleSelectValue: SYSTEM_MEMBER_VALUE,
     },
   });
 
-  const [role, setRole] = useState<"org:member" | "org:admin">("org:member");
-  const [selectedRoleId, setSelectedRoleId] = useState<string | undefined>(undefined);
   const [overrides, setOverrides] = useState<string[]>([]);
   const [customizeOpen, setCustomizeOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  const roleSelectValue = form.watch("roleSelectValue");
+
+  // Reset overrides + status messages when role selection changes
+  useEffect(() => {
+    setOverrides([]);
+    setCustomizeOpen(false);
+    setError(null);
+    setSuccess(null);
+  }, [roleSelectValue]);
+
   if (!ready) return null;
 
   const customRoles = roles.filter((r) => !r.isSystem);
+
+  // Derive (role, selectedRoleId) from the single RHF roleSelectValue field.
+  const isSystemRole = systemSelectValues.has(roleSelectValue);
+  const role: "org:member" | "org:admin" = isSystemRole
+    ? roleSelectValue === SYSTEM_ADMIN_VALUE
+      ? "org:admin"
+      : "org:member"
+    : "org:member";
+  const selectedRoleId = isSystemRole ? undefined : roleSelectValue;
   const selectedRole = selectedRoleId ? roles.find((r) => r.id === selectedRoleId) : undefined;
   const isCustomRole = selectedRole && !selectedRole.isSystem;
   const roleCapabilities = new Set(selectedRole?.capabilities ?? []);
 
   const totalUsed = currentMembers + pendingInvitations;
   const isAtLimit = maxMembers > 0 && totalUsed >= maxMembers;
-
-  function handleRoleSelectChange(value: string) {
-    // Reset overrides and close customize section when role changes
-    setOverrides([]);
-    setCustomizeOpen(false);
-
-    if (systemSelectValues.has(value)) {
-      // System role selected — map to auth role, clear custom role
-      setRole(value === SYSTEM_ADMIN_VALUE ? "org:admin" : "org:member");
-      setSelectedRoleId(undefined);
-    } else {
-      // Custom role — auth role stays member, store orgRoleId
-      setRole("org:member");
-      setSelectedRoleId(value);
-    }
-  }
 
   function isEffectivelyEnabled(cap: string): boolean {
     if (overrides.includes(`-${cap}`)) return false;
@@ -176,18 +191,6 @@ function InviteFormUI({
     }
   }
 
-  // Well-known select values for system roles (not derived from role IDs)
-  const SYSTEM_MEMBER_VALUE = "system:member";
-  const SYSTEM_ADMIN_VALUE = "system:admin";
-  const systemSelectValues = new Set([SYSTEM_MEMBER_VALUE, SYSTEM_ADMIN_VALUE]);
-
-  // Compute the select value from current state
-  function getSelectValue(): string {
-    if (selectedRoleId) return selectedRoleId;
-    if (role === "org:admin") return SYSTEM_ADMIN_VALUE;
-    return SYSTEM_MEMBER_VALUE;
-  }
-
   const handleSubmit = async (values: InviteMemberFormData) => {
     setError(null);
     setSuccess(null);
@@ -205,7 +208,7 @@ function InviteFormUI({
         return;
       }
       onInviteSent();
-      form.reset();
+      form.reset({ emailAddress: "", roleSelectValue: SYSTEM_MEMBER_VALUE });
       setSuccess(`Invitation sent to ${values.emailAddress.trim()}.`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to send invitation.";
@@ -219,68 +222,83 @@ function InviteFormUI({
     <div className="space-y-4">
       {/* Form row */}
       {!isAtLimit && (
-        <form
-          onSubmit={form.handleSubmit(handleSubmit)}
-          className="flex flex-col gap-3 sm:flex-row sm:items-end"
-        >
-          <div className="flex-1 space-y-1.5">
-            <label htmlFor="invite-email" className="text-sm font-medium">
-              Email address
-            </label>
-            <Input
-              id="invite-email"
-              type="email"
-              placeholder="colleague@company.com"
-              data-testid="invite-email-input"
-              {...form.register("emailAddress")}
-              onChange={(e) => {
-                form.setValue("emailAddress", e.target.value);
-                form.clearErrors("emailAddress");
-                setError(null);
-                setSuccess(null);
-              }}
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="flex flex-col gap-3 sm:flex-row sm:items-end"
+          >
+            <FormField
+              control={form.control}
+              name="emailAddress"
+              render={({ field }) => (
+                <FormItem className="flex-1 space-y-1.5">
+                  <FormLabel>Email address</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="colleague@company.com"
+                      data-testid="invite-email-input"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            {form.formState.errors.emailAddress && (
-              <p className="text-destructive text-sm" role="alert">
-                {form.formState.errors.emailAddress.message}
-              </p>
-            )}
-          </div>
-          <div className="space-y-1.5">
-            <label htmlFor="invite-role" className="text-sm font-medium">
-              Role
-            </label>
-            <Select value={getSelectValue()} onValueChange={handleRoleSelectChange}>
-              <SelectTrigger
-                className="h-9 w-full min-w-[140px]"
-                id="invite-role"
-                data-testid="role-select"
-              >
-                <SelectValue placeholder="Select a role..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectGroup>
-                  <SelectLabel>System</SelectLabel>
-                  <SelectItem value={SYSTEM_MEMBER_VALUE}>Member</SelectItem>
-                  <SelectItem value={SYSTEM_ADMIN_VALUE}>Admin</SelectItem>
-                </SelectGroup>
-                {customRoles.length > 0 && (
-                  <SelectGroup>
-                    <SelectLabel>Custom</SelectLabel>
-                    {customRoles.map((r) => (
-                      <SelectItem key={r.id} value={r.id}>
-                        {r.name}
-                      </SelectItem>
-                    ))}
-                  </SelectGroup>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-          <Button type="submit" disabled={isSubmitting} size="sm" data-testid="invite-member-btn">
-            {isSubmitting ? "Sending..." : "Send Invite"}
-          </Button>
-        </form>
+            <FormField
+              control={form.control}
+              name="roleSelectValue"
+              render={({ field }) => (
+                <FormItem className="space-y-1.5">
+                  <FormLabel>Role</FormLabel>
+                  <Select value={field.value} onValueChange={field.onChange}>
+                    <SelectTrigger
+                      className="h-9 w-full min-w-[140px]"
+                      data-testid="role-select"
+                    >
+                      <SelectValue placeholder="Select a role..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>System</SelectLabel>
+                        <SelectItem value={SYSTEM_MEMBER_VALUE}>Member</SelectItem>
+                        <SelectItem value={SYSTEM_ADMIN_VALUE}>Admin</SelectItem>
+                      </SelectGroup>
+                      {customRoles.length > 0 && (
+                        <SelectGroup>
+                          <SelectLabel>Custom</SelectLabel>
+                          {customRoles.map((r) => (
+                            <SelectItem key={r.id} value={r.id}>
+                              {r.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      )}
+                    </SelectContent>
+                  </Select>
+                  {/* Hidden input mirrors the role value into raw FormData,
+                      so any path that bypasses RHF state still sees it. */}
+                  <input
+                    type="hidden"
+                    name="roleSelectValue"
+                    value={field.value}
+                    data-testid="role-hidden"
+                    readOnly
+                  />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              size="sm"
+              data-testid="invite-member-btn"
+            >
+              {isSubmitting ? "Sending..." : "Send Invite"}
+            </Button>
+          </form>
+        </Form>
       )}
 
       {/* Capability summary pills — only for custom roles */}

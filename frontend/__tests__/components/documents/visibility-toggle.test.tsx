@@ -113,4 +113,30 @@ describe("VisibilityToggle", () => {
       expect(mockRefresh).toHaveBeenCalled();
     });
   });
+
+  // PORTAL visibility renders Portal label and is force-disabled
+  it("renders Portal label as system-managed disabled state for PORTAL visibility", () => {
+    render(<VisibilityToggle documentId="doc1" visibility="PORTAL" slug="acme" customerId="c1" />);
+
+    const button = screen.getByRole("button", { name: /Portal/i });
+    expect(button).toBeInTheDocument();
+    expect(button).toBeDisabled();
+    expect(button).toHaveAttribute(
+      "title",
+      "System-managed (auto-shared by closure pack). Toggle from the closure flow."
+    );
+  });
+
+  // Clicking PORTAL toggle does NOT call the action
+  it("does not call toggleDocumentVisibility when clicking PORTAL toggle", async () => {
+    const user = userEvent.setup();
+
+    render(<VisibilityToggle documentId="doc1" visibility="PORTAL" slug="acme" customerId="c1" />);
+
+    // userEvent.click on a disabled button is a no-op; ensure no action invocation
+    await user.click(screen.getByRole("button", { name: /Portal/i }));
+
+    expect(mockToggleVisibility).not.toHaveBeenCalled();
+    expect(mockRefresh).not.toHaveBeenCalled();
+  });
 });

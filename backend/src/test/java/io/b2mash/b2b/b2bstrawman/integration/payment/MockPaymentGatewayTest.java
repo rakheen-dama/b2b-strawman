@@ -4,9 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
 import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.config.YamlPropertiesFactoryBean;
+import org.springframework.core.io.ClassPathResource;
 import tools.jackson.databind.ObjectMapper;
 
 /**
@@ -162,5 +165,68 @@ class MockPaymentGatewayTest {
     assertThat(profile).isNotNull();
     assertThat(profile.value()).containsExactlyInAnyOrder("local", "dev", "keycloak", "test");
     assertThat(profile.value()).doesNotContain("prod");
+  }
+
+  /**
+   * Regression for GAP-L-66: the mock checkout page is served by {@code MockPaymentController} on
+   * the backend (port 8080), but earlier dev/QA cycles relied on {@code docteams.app.base-url}
+   * (frontend, port 3000) and "Pay Now" links 404'd. Each profile that activates the mock gateway
+   * must explicitly point {@code docteams.payment.mock.checkout-base-url} at the backend host.
+   */
+  @Test
+  void localProfile_overrides_checkoutBaseUrl_to_backendHost() {
+    assertThat(loadProperty("application-local.yml", "docteams.payment.mock.checkout-base-url"))
+        .isEqualTo("http://localhost:8080");
+  }
+
+  @Test
+  void devProfile_overrides_checkoutBaseUrl_to_backendHost() {
+    // application-dev.yml uses an env-var override with localhost:8080 as the default.
+    assertThat(loadProperty("application-dev.yml", "docteams.payment.mock.checkout-base-url"))
+        .isEqualTo("http://localhost:8080");
+  }
+
+  @Test
+  void keycloakProfile_overrides_checkoutBaseUrl_to_backendHost() {
+    assertThat(loadProperty("application-keycloak.yml", "docteams.payment.mock.checkout-base-url"))
+        .isEqualTo("http://localhost:8080");
+  }
+
+  /**
+   * Loads a profile yml from the classpath and resolves a single property, including {@code
+   * ${VAR:default}} placeholders. Avoids spinning up a full Spring context — the {@link
+   * MockPaymentGateway} constructor is the only consumer of this property.
+   */
+  private static String loadProperty(String yamlResource, String propertyKey) {
+    var factory = new YamlPropertiesFactoryBean();
+    factory.setResources(new ClassPathResource(yamlResource));
+    Properties props = factory.getObject();
+    assertThat(props).as("yml resource %s loaded", yamlResource).isNotNull();
+    String raw = props.getProperty(propertyKey);
+    assertThat(raw).as("property %s present in %s", propertyKey, yamlResource).isNotNull();
+    return resolvePlaceholders(raw);
+  }
+
+  /**
+   * Minimal {@code ${VAR:default}} resolver — Spring's PropertyPlaceholderHelper requires a
+   * PropertyResolver, and we don't want to bootstrap a Spring context here. Returns the default
+   * portion when the env var is unset, the env var value when it is set.
+   */
+  private static String resolvePlaceholders(String value) {
+    if (value == null || !value.contains("${")) {
+      return value;
+    }
+    int start = value.indexOf("${");
+    int end = value.indexOf('}', start);
+    if (end < 0) {
+      return value;
+    }
+    String spec = value.substring(start + 2, end);
+    int colon = spec.indexOf(':');
+    String name = colon < 0 ? spec : spec.substring(0, colon);
+    String defaultValue = colon < 0 ? "" : spec.substring(colon + 1);
+    String envValue = System.getenv(name);
+    String resolved = envValue != null ? envValue : defaultValue;
+    return value.substring(0, start) + resolved + value.substring(end + 1);
   }
 }

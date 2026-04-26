@@ -10,6 +10,8 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventStatus;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
@@ -27,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +39,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TrustTransactionService {
+
+  private static final Logger log = LoggerFactory.getLogger(TrustTransactionService.class);
 
   private static final String MODULE_ID = "trust_accounting";
 
@@ -45,6 +51,7 @@ public class TrustTransactionService {
   private final InvoiceRepository invoiceRepository;
   private final InvoiceLineRepository invoiceLineRepository;
   private final InvoiceService invoiceService;
+  private final PaymentEventRepository paymentEventRepository;
   private final VerticalModuleGuard moduleGuard;
   private final AuditService auditService;
   private final EntityManager entityManager;
@@ -58,6 +65,7 @@ public class TrustTransactionService {
       InvoiceRepository invoiceRepository,
       InvoiceLineRepository invoiceLineRepository,
       InvoiceService invoiceService,
+      PaymentEventRepository paymentEventRepository,
       VerticalModuleGuard moduleGuard,
       AuditService auditService,
       EntityManager entityManager,
@@ -69,6 +77,7 @@ public class TrustTransactionService {
     this.invoiceRepository = invoiceRepository;
     this.invoiceLineRepository = invoiceLineRepository;
     this.invoiceService = invoiceService;
+    this.paymentEventRepository = paymentEventRepository;
     this.moduleGuard = moduleGuard;
     this.auditService = auditService;
     this.entityManager = entityManager;
@@ -850,6 +859,23 @@ public class TrustTransactionService {
               "Cannot complete fee transfer — invoice is already in PAID status");
         }
         invoiceService.recordPayment(transaction.getInvoiceId(), transaction.getReference(), true);
+
+        // GAP-L-70: also persist a payment_event row so a future reversal can locate and remove
+        // it. The webhook path of recordPayment does not create a payment_event itself; the
+        // trust ledger is the source-of-truth for fee transfers, so we record one here keyed by
+        // the trust transaction's reference. This mirrors the manual-payment path in
+        // InvoiceTransitionService.recordPayment without altering that code.
+        var paymentEvent =
+            new io.b2mash.b2b.b2bstrawman.invoice.PaymentEvent(
+                transaction.getInvoiceId(),
+                "trust_fee_transfer",
+                null,
+                PaymentEventStatus.COMPLETED,
+                transaction.getAmount(),
+                invoice.getCurrency(),
+                "TRUST");
+        paymentEvent.setPaymentReference(transaction.getReference());
+        paymentEventRepository.save(paymentEvent);
       }
     }
 
@@ -1067,6 +1093,58 @@ public class TrustTransactionService {
         if (ledgerCard != null) {
           ledgerCard.creditBalance(original.getAmount(), LocalDate.now());
           ledgerCardRepository.save(ledgerCard);
+        }
+      }
+
+      // GAP-L-70: cascade FEE_TRANSFER reversal back into the invoice domain.
+      // When the trust ledger rolls back, the linked invoice must roll back symmetrically
+      // (PAID -> SENT, payment_event deleted) so the books always tie out. Both writes share
+      // this @Transactional boundary — atomic commit or atomic rollback.
+      if ("FEE_TRANSFER".equals(original.getTransactionType()) && original.getInvoiceId() != null) {
+        var paymentEvents =
+            paymentEventRepository.findByInvoiceIdAndStatus(
+                original.getInvoiceId(), PaymentEventStatus.COMPLETED);
+        // Locate the payment event written by InvoiceTransitionService.recordPayment for this
+        // FEE_TRANSFER. The trust transaction's reference is propagated to
+        // payment_event.payment_reference by the recordPayment path. We filter by both reference
+        // AND amount because trust references are user-supplied at recordFeeTransfer time and
+        // not constrained to be unique — using both fields breaks ties safely on multi-payment
+        // invoices where several COMPLETED payment_events may co-exist.
+        var matches =
+            paymentEvents.stream()
+                .filter(
+                    pe ->
+                        pe.getPaymentReference() != null
+                            && pe.getPaymentReference().equals(original.getReference())
+                            && pe.getAmount() != null
+                            && pe.getAmount().compareTo(original.getAmount()) == 0)
+                .toList();
+        if (matches.size() > 1) {
+          log.warn(
+              "Trust reversal cascade: {} candidate payment_events match reference={} + amount={} "
+                  + "for invoice {}; picking the first deterministically. Consider auditing for "
+                  + "duplicate FEE_TRANSFER references.",
+              matches.size(),
+              original.getReference(),
+              original.getAmount(),
+              original.getInvoiceId());
+        }
+        if (!matches.isEmpty()) {
+          invoiceService.reversePayment(original.getInvoiceId(), matches.get(0).getId());
+        } else {
+          // The trust transaction had an invoice link but no matching payment_event was found.
+          // This can happen if the invoice was voided, paid through another channel, or the
+          // FEE_TRANSFER pre-dates GAP-L-70 (no PaymentEvent was created at approval time).
+          // Log at WARN so any real data-integrity issue is observable; the trust ledger
+          // reversal itself still completes correctly.
+          log.warn(
+              "Trust reversal cascade: FEE_TRANSFER {} (invoice={}) had no matching "
+                  + "COMPLETED payment_event with reference={} + amount={}. Invoice domain is "
+                  + "no-op; trust ledger reversal proceeds.",
+              original.getId(),
+              original.getInvoiceId(),
+              original.getReference(),
+              original.getAmount());
         }
       }
     }

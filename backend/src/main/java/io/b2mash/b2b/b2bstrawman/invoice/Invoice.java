@@ -253,6 +253,23 @@ public class Invoice {
     this.updatedAt = Instant.now();
   }
 
+  /**
+   * Reverses a previously-recorded payment, flipping PAID → SENT and clearing the {@code paidAt}
+   * and {@code paymentReference} fields. Called from {@code
+   * InvoiceTransitionService.reversePayment} when the underlying trust transaction is reversed and
+   * no other COMPLETED payment events remain. The corresponding {@code payment_event} row is
+   * deleted by the service.
+   */
+  public void reversePayment() {
+    if (this.status != InvoiceStatus.PAID) {
+      throw new IllegalStateException("Only paid invoices can have a payment reversed");
+    }
+    this.status = InvoiceStatus.SENT;
+    this.paidAt = null;
+    this.paymentReference = null;
+    this.updatedAt = Instant.now();
+  }
+
   public void voidInvoice() {
     if (this.status != InvoiceStatus.APPROVED && this.status != InvoiceStatus.SENT) {
       throw new IllegalStateException("Only approved or sent invoices can be voided");

@@ -19,4 +19,16 @@ public interface PaymentEventRepository extends JpaRepository<PaymentEvent, UUID
   Optional<PaymentEvent> findBySessionIdAndStatus(String sessionId, PaymentEventStatus status);
 
   boolean existsBySessionIdAndStatus(String sessionId, PaymentEventStatus status);
+
+  /**
+   * Lookup all payment events for an invoice in a given status. Used by the trust-side reversal
+   * cascade ({@code InvoiceTransitionService.reversePayment}) to:
+   *
+   * <ul>
+   *   <li>Locate the single COMPLETED event matching a payment reference for deletion.
+   *   <li>Decide whether the invoice should flip back to SENT (no other COMPLETED events remain) or
+   *       stay PAID (multi-payment partial reversal case).
+   * </ul>
+   */
+  List<PaymentEvent> findByInvoiceIdAndStatus(UUID invoiceId, PaymentEventStatus status);
 }

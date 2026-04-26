@@ -142,12 +142,7 @@ describe("AddItemDialog (GAP-L-67)", () => {
     mockAddItem.mockResolvedValue({ success: true, data: updated });
     const onSuccess = vi.fn();
     render(
-      <AddItemDialog
-        slug="test-org"
-        requestId="req-1"
-        nextSortOrder={3}
-        onSuccess={onSuccess}
-      />
+      <AddItemDialog slug="test-org" requestId="req-1" nextSortOrder={3} onSuccess={onSuccess} />
     );
 
     await user.click(screen.getByRole("button", { name: /add item/i }));

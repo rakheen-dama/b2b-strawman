@@ -103,10 +103,7 @@ export function ActivityFeedClient({
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
         <ActivityFilter onFilterChange={handleFilterChange} currentFilter={filter} />
-        <Select
-          value={actorFilter ?? ALL_ACTORS_VALUE}
-          onValueChange={handleActorChange}
-        >
+        <Select value={actorFilter ?? ALL_ACTORS_VALUE} onValueChange={handleActorChange}>
           <SelectTrigger className="h-8 w-48" aria-label="Filter by actor">
             <SelectValue placeholder="Filter by actor" />
           </SelectTrigger>

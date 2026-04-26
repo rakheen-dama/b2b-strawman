@@ -76,8 +76,8 @@ export default async function AuditLogPage({
       <div>
         <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Audit log</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Read-only feed of audit events. Filters, exports, and faceted search are coming in a
-          later release.
+          Read-only feed of audit events. Filters, exports, and faceted search are coming in a later
+          release.
         </p>
       </div>
 

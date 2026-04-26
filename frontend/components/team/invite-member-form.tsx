@@ -252,10 +252,7 @@ function InviteFormUI({
                 <FormItem className="space-y-1.5">
                   <FormLabel>Role</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
-                    <SelectTrigger
-                      className="h-9 w-full min-w-[140px]"
-                      data-testid="role-select"
-                    >
+                    <SelectTrigger className="h-9 w-full min-w-[140px]" data-testid="role-select">
                       <SelectValue placeholder="Select a role..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -289,12 +286,7 @@ function InviteFormUI({
                 </FormItem>
               )}
             />
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              size="sm"
-              data-testid="invite-member-btn"
-            >
+            <Button type="submit" disabled={isSubmitting} size="sm" data-testid="invite-member-btn">
               {isSubmitting ? "Sending..." : "Send Invite"}
             </Button>
           </form>

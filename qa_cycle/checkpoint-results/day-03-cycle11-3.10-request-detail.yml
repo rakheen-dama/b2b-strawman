@@ -1,0 +1,182 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e52]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e55]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e61]:
+          - generic [ref=e62]: Clients
+          - img [ref=e63]
+        - button "Finance" [ref=e67]:
+          - generic [ref=e68]: Finance
+          - img [ref=e69]
+        - generic [ref=e72]:
+          - button "Team" [expanded] [ref=e73]:
+            - generic [ref=e74]: Team
+            - img [ref=e75]
+          - link "Team" [ref=e78] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e79]
+            - text: Team
+      - generic [ref=e85]:
+        - link "Notifications" [ref=e86] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e87]
+          - text: Notifications
+        - link "Settings" [ref=e90] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e91]
+          - text: Settings
+        - link "Help" [ref=e94] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e95]
+          - text: Help
+      - generic [ref=e98]:
+        - generic [ref=e99]: BN
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Bob Ndlovu
+          - paragraph [ref=e102]: bob@mathebula-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "Mathebula & Partners" [ref=e106] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e673]:
+            - img [ref=e674]
+            - link "information-requests" [ref=e676] [cursor=pointer]:
+              - /url: /org/mathebula-partners/information-requests
+          - generic [ref=e677]:
+            - img [ref=e678]
+            - generic [ref=e680]: a0306375-b108-40e6-b7c3-1b2bb854763d
+        - generic [ref=e115]:
+          - button "User menu" [ref=e117]: BN
+          - button "Notifications" [ref=e119]:
+            - img
+            - generic [ref=e120]: 4 unread notifications
+            - generic [ref=e121]: "4"
+      - main [ref=e122]:
+        - generic [ref=e682]:
+          - link "Back to Sipho Dlamini" [ref=e684] [cursor=pointer]:
+            - /url: /org/mathebula-partners/customers/c4f70d86-c292-4d02-9f6f-2e900099ba57
+            - img [ref=e685]
+            - text: Back to Sipho Dlamini
+          - generic [ref=e687]:
+            - generic [ref=e688]:
+              - generic [ref=e689]:
+                - heading "REQ-0001" [level=1] [ref=e690]
+                - generic [ref=e691]: Sent
+              - generic [ref=e692]:
+                - link "Sipho Dlamini" [ref=e693] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/customers/c4f70d86-c292-4d02-9f6f-2e900099ba57
+                - generic [ref=e694]: "|"
+                - generic [ref=e695]: Dlamini v Road Accident Fund
+            - button [ref=e697]:
+              - img
+          - generic [ref=e698]:
+            - generic [ref=e699]:
+              - generic [ref=e700]:
+                - img [ref=e701]
+                - text: Contact
+              - paragraph [ref=e704]: Sipho Dlamini
+              - paragraph [ref=e705]: sipho.portal@example.com
+            - generic [ref=e706]:
+              - generic [ref=e707]:
+                - img [ref=e708]
+                - text: Reminder Interval
+              - paragraph [ref=e711]: Every 5 days
+            - generic [ref=e712]:
+              - generic [ref=e713]:
+                - img [ref=e714]
+                - text: Sent
+              - paragraph [ref=e716]: Apr 26, 2026
+            - generic [ref=e717]:
+              - generic [ref=e718]:
+                - img [ref=e719]
+                - text: Due
+              - paragraph [ref=e721]: No due date
+            - generic [ref=e722]:
+              - generic [ref=e723]:
+                - img [ref=e724]
+                - text: Progress
+              - generic [ref=e726]:
+                - progressbar [ref=e727]
+                - generic [ref=e729]: 0/3 accepted
+          - generic [ref=e730]:
+            - heading "Items (3)" [level=2] [ref=e732]
+            - generic [ref=e733]:
+              - generic [ref=e736]:
+                - generic [ref=e737]:
+                  - generic [ref=e738]: ID copy
+                  - generic [ref=e739]: File Upload
+                  - generic [ref=e740]: Pending
+                - paragraph [ref=e741]: Certified copy of the client's South African ID document or passport bio page. Must be certified by a Commissioner of Oaths, SAPS, or other accepted certifier within the last 3 months.
+                - paragraph [ref=e742]:
+                  - img [ref=e743]
+                  - text: Waiting for client
+              - generic [ref=e748]:
+                - generic [ref=e749]:
+                  - generic [ref=e750]: Proof of residence (≤ 3 months)
+                  - generic [ref=e751]: File Upload
+                  - generic [ref=e752]: Pending
+                - paragraph [ref=e753]: Recent utility bill, municipal rates account, bank statement, or similar document confirming the client's residential address. Document date must be within the last 3 months.
+                - paragraph [ref=e754]:
+                  - img [ref=e755]
+                  - text: Waiting for client
+              - generic [ref=e760]:
+                - generic [ref=e761]:
+                  - generic [ref=e762]: Bank statement (≤ 3 months)
+                  - generic [ref=e763]: File Upload
+                  - generic [ref=e764]: Pending
+                - paragraph [ref=e765]: Most recent bank statement evidencing the client's source of funds. Statement must be dated within the last 3 months and show the client's name, account number, and at least one transaction.
+                - paragraph [ref=e766]:
+                  - img [ref=e767]
+                  - text: Waiting for client
+  - generic [ref=e201]:
+    - heading "Command Palette" [level=2] [ref=e202]
+    - paragraph [ref=e203]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e209] [cursor=pointer]:
+    - img [ref=e210]
+  - alert [ref=e213]

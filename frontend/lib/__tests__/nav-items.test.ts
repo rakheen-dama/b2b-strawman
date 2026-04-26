@@ -85,8 +85,8 @@ describe("NAV_ITEMS (backward compat)", () => {
 });
 
 describe("SETTINGS_ITEMS", () => {
-  it("has exactly 26 entries", () => {
-    expect(SETTINGS_ITEMS).toHaveLength(26);
+  it("has exactly 27 entries", () => {
+    expect(SETTINGS_ITEMS).toHaveLength(27);
   });
 
   it("all entries have title, description, and href function", () => {
@@ -101,6 +101,7 @@ describe("SETTINGS_ITEMS", () => {
     const adminItems = SETTINGS_ITEMS.filter((i) => i.adminOnly);
     const adminTitles = adminItems.map((i) => i.title).sort();
     expect(adminTitles).toEqual([
+      "Audit log",
       "Automations",
       "Batch Billing",
       "Email",

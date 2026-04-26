@@ -442,6 +442,12 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
     adminOnly: true,
   },
   {
+    title: "Audit log",
+    description: "Inspect a paginated feed of audit events for the organisation.",
+    href: (slug) => `/org/${slug}/settings/audit-log`,
+    adminOnly: true,
+  },
+  {
     title: "Organization",
     description: "Update org name, logo, and details",
     href: (slug) => `/org/${slug}/settings/general`,

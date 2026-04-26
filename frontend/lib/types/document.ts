@@ -4,7 +4,7 @@ export type DocumentStatus = "PENDING" | "UPLOADED" | "FAILED";
 
 export type DocumentScope = "ORG" | "PROJECT" | "CUSTOMER";
 
-export type DocumentVisibility = "INTERNAL" | "SHARED";
+export type DocumentVisibility = "INTERNAL" | "SHARED" | "PORTAL";
 
 export interface Document {
   id: string;

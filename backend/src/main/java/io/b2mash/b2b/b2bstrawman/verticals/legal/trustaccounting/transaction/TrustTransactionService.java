@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,6 +39,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class TrustTransactionService {
+
+  private static final Logger log = LoggerFactory.getLogger(TrustTransactionService.class);
 
   private static final String MODULE_ID = "trust_accounting";
 
@@ -1102,23 +1106,46 @@ public class TrustTransactionService {
                 original.getInvoiceId(), PaymentEventStatus.COMPLETED);
         // Locate the payment event written by InvoiceTransitionService.recordPayment for this
         // FEE_TRANSFER. The trust transaction's reference is propagated to
-        // payment_event.payment_reference
-        // by the recordPayment path, so we filter by reference to handle multi-payment invoices
-        // where several COMPLETED payment_events may co-exist.
-        var match =
+        // payment_event.payment_reference by the recordPayment path. We filter by both reference
+        // AND amount because trust references are user-supplied at recordFeeTransfer time and
+        // not constrained to be unique — using both fields breaks ties safely on multi-payment
+        // invoices where several COMPLETED payment_events may co-exist.
+        var matches =
             paymentEvents.stream()
                 .filter(
                     pe ->
                         pe.getPaymentReference() != null
-                            && pe.getPaymentReference().equals(original.getReference()))
-                .findFirst();
-        if (match.isPresent()) {
-          invoiceService.reversePayment(original.getInvoiceId(), match.get().getId());
+                            && pe.getPaymentReference().equals(original.getReference())
+                            && pe.getAmount() != null
+                            && pe.getAmount().compareTo(original.getAmount()) == 0)
+                .toList();
+        if (matches.size() > 1) {
+          log.warn(
+              "Trust reversal cascade: {} candidate payment_events match reference={} + amount={} "
+                  + "for invoice {}; picking the first deterministically. Consider auditing for "
+                  + "duplicate FEE_TRANSFER references.",
+              matches.size(),
+              original.getReference(),
+              original.getAmount(),
+              original.getInvoiceId());
         }
-        // If no matching payment event is found, we silently no-op on the invoice side — the
-        // invoice may have been voided, paid through another channel, or this FEE_TRANSFER may
-        // have been recorded before the payment_event tracking existed. The trust ledger reversal
-        // still completes correctly.
+        if (!matches.isEmpty()) {
+          invoiceService.reversePayment(original.getInvoiceId(), matches.get(0).getId());
+        } else {
+          // The trust transaction had an invoice link but no matching payment_event was found.
+          // This can happen if the invoice was voided, paid through another channel, or the
+          // FEE_TRANSFER pre-dates GAP-L-70 (no PaymentEvent was created at approval time).
+          // Log at WARN so any real data-integrity issue is observable; the trust ledger
+          // reversal itself still completes correctly.
+          log.warn(
+              "Trust reversal cascade: FEE_TRANSFER {} (invoice={}) had no matching "
+                  + "COMPLETED payment_event with reference={} + amount={}. Invoice domain is "
+                  + "no-op; trust ledger reversal proceeds.",
+              original.getId(),
+              original.getInvoiceId(),
+              original.getReference(),
+              original.getAmount());
+        }
       }
     }
     // For credit reversals (AWAITING_APPROVAL): do NOT mark the original as REVERSED yet.

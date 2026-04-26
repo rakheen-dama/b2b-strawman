@@ -453,6 +453,13 @@ public class PortalEventHandler {
                       line.getTaxAmount(),
                       line.isTaxExempt());
                 }
+
+                // GAP-L-70: SENT invoices should never carry a paid_at timestamp. The upsert
+                // above does not touch paid_at, so a previously-PAID invoice that flipped back
+                // to SENT (e.g., via trust-transfer reversal) would otherwise show a stale
+                // "paid on …" date in the portal. Clear it explicitly.
+                readModelRepo.updatePortalInvoiceStatusAndPaidAt(
+                    event.getInvoiceId(), event.getOrgId(), "SENT", null);
               }
               case "PAID" ->
                   readModelRepo.updatePortalInvoiceStatusAndPaidAt(

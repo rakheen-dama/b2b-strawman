@@ -261,3 +261,23 @@ Portal UI for REQ-0003 parent header reads `"status SENT"` even after all 3 item
 ### Day 4 final tally
 14/14 checkpoints PASS / VERIFIED / SKIPPED-by-design (4.11 — known polish deferral). Day 4 CLOSED.
 
+---
+
+## Cycle 12 (2026-04-27) — Day 4 fresh walk on main 038d7a7a
+
+**Branch**: `bugfix_cycle_2026-04-26-day4` (head `038d7a7a`)
+**Tenant**: `mathebula-partners` (schema `tenant_5039f2d497cf`)
+**Actor**: Sipho Dlamini (unauthenticated, arriving via portal magic-link email)
+
+### Pre-state (DB confirmed READ-ONLY)
+
+- Sipho `8fe5eea2-75fc-4df2-b4d0-267486df68bd` (PROSPECT) — preserved from Day 2.
+- RAF matter `cc390c4f-35e2-42b5-8b54-bac766673ae7` (`Dlamini v Road Accident Fund`, `RAF-2026-001`, ACTIVE) — preserved from Day 3.
+- REQ-0001 `a0306375-…` SENT 2026-04-26 21:44:39, 3 items PENDING (ID copy / Proof of residence / Bank statement, all FILE_UPLOAD).
+- Mailpit message `fUiJaxeqRmkpzukjLmNRKr` — magic-link to `http://localhost:3002/auth/exchange?token=xfvMJMmZNslqYGygWDLD2Yp2k1lMTsXJQhjSMAygNhE&orgId=mathebula-partners`. **Token expired** at 2026-04-26 21:59:39 (~40 min before this cycle started; tokens have ~15min TTL).
+
+### Setup: Send fresh REQ-0002 to get a live magic-link
+
+The Day-3 token has expired (15-min TTL). To execute Day 4 against a fresh, valid token, Bob (admin) drives the firm UI to send REQ-0002 against the same matter (a legitimate replay of the firm action; root cause for token-expiry is just QA timing, not a product gap).
+
+

@@ -28,6 +28,10 @@
 - **Read CLAUDE.md** in the relevant subdirectory before changing service code.
 - **Commit between turns**. Each agent pushes its state changes (status.md, fix-spec, checkpoint result) before returning.
 
+## Known Out-of-Scope Constraints (do NOT open gaps for these)
+
+- **Payment integration is a stub**. There is no real PSP integration (Stripe, Yoco, Peach, etc.). Invoice "Mark Paid" / portal payment flows are stub endpoints that just flip status. Do NOT open gaps for missing payment-gateway redirects, webhook signing, real card processing, or PSP-side reconciliation. If the scenario asks the user to "pay an invoice", treat the stub Mark-Paid action as the equivalent and continue.
+
 ## Log
 
 - 2026-04-26 — Orchestrator: cycle initialized on branch `bugfix_cycle_2026-04-26`. Prior verify-cycle status (ALL_DAYS_COMPLETE 2026-04-25) archived. Dev stack confirmed healthy. About to dispatch QA agent for Day 0.

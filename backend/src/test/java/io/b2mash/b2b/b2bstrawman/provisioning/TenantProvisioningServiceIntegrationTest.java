@@ -65,6 +65,9 @@ class TenantProvisioningServiceIntegrationTest {
     assertThat(enabledModules).contains("conflict_check");
     assertThat(enabledModules).contains("lssa_tariff");
     assertThat(enabledModules).contains("trust_accounting");
+    // GAP-L-61-followup (E9.2): bulk_billing must be ON by default for fresh legal-za
+    // tenants — SA law firms invoice clients in monthly batches.
+    assertThat(enabledModules).contains("bulk_billing");
 
     // Verify terminology_namespace via direct SQL
     String terminologyNamespace = getOrgSettingsColumn(tenantSchema, "terminology_namespace");

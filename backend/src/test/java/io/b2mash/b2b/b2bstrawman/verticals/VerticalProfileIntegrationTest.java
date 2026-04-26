@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.nullValue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -102,6 +101,7 @@ class VerticalProfileIntegrationTest {
         .andExpect(
             jsonPath(
                 "$.enabledModules",
+                // GAP-L-61-followup (E9.2): bulk_billing ships ON by default for legal-za.
                 containsInAnyOrder(
                     "court_calendar",
                     "conflict_check",
@@ -110,7 +110,8 @@ class VerticalProfileIntegrationTest {
                     "disbursements",
                     "matter_closure",
                     "deadlines",
-                    "information_requests")))
+                    "information_requests",
+                    "bulk_billing")))
         .andExpect(jsonPath("$.terminologyNamespace").value("en-ZA-legal"));
 
     // Verify audit event was logged
@@ -152,8 +153,10 @@ class VerticalProfileIntegrationTest {
         .andExpect(status().isOk());
 
     // Switch to consulting-generic. Per ADR-239, vertical modules from legal-za are dropped and
-    // terminology is cleared, but HORIZONTAL modules (information_requests) survive the profile
-    // change — they are profile-independent and manually toggled.
+    // terminology is cleared, but HORIZONTAL modules (information_requests, bulk_billing) survive
+    // the profile change — they are profile-independent and manually toggled.
+    // GAP-L-61-followup (E9.2): bulk_billing is now part of the legal-za default set, so it
+    // also survives the switch like other horizontal modules.
     mockMvc
         .perform(
             patch("/api/settings/vertical-profile")
@@ -164,7 +167,9 @@ class VerticalProfileIntegrationTest {
                     {"verticalProfile": "consulting-generic"}"""))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.verticalProfile").value("consulting-generic"))
-        .andExpect(jsonPath("$.enabledModules", contains("information_requests")))
+        .andExpect(
+            jsonPath(
+                "$.enabledModules", containsInAnyOrder("information_requests", "bulk_billing")))
         .andExpect(jsonPath("$.terminologyNamespace").value(nullValue()));
   }
 

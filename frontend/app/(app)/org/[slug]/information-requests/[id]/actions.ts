@@ -4,9 +4,12 @@ import { api, ApiError } from "@/lib/api";
 import { revalidatePath } from "next/cache";
 import {
   acceptItem,
+  addItem,
   rejectItem,
   cancelRequest,
   resendNotification,
+  sendRequest,
+  type CreateInformationRequestItem,
   type InformationRequestResponse,
 } from "@/lib/api/information-requests";
 
@@ -66,6 +69,36 @@ export async function cancelRequestAction(slug: string, requestId: string): Prom
       return { success: false, error: error.message };
     }
     return { success: false, error: "Failed to cancel request." };
+  }
+}
+
+export async function addItemAction(
+  slug: string,
+  requestId: string,
+  item: CreateInformationRequestItem
+): Promise<ActionResult> {
+  try {
+    const data = await addItem(requestId, item);
+    revalidatePath(`/org/${slug}/information-requests/${requestId}`);
+    return { success: true, data };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to add item." };
+  }
+}
+
+export async function sendDraftAction(slug: string, requestId: string): Promise<ActionResult> {
+  try {
+    const data = await sendRequest(requestId);
+    revalidatePath(`/org/${slug}/information-requests/${requestId}`);
+    return { success: true, data };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to send request." };
   }
 }
 

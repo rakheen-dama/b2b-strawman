@@ -37,6 +37,7 @@
 ## Known Out-of-Scope Constraints (do NOT open gaps for these)
 
 - **Payment integration is a stub**. There is no real PSP integration (Stripe, Yoco, Peach, etc.). Invoice "Mark Paid" / portal payment flows are stub endpoints that just flip status. Do NOT open gaps for missing payment-gateway redirects, webhook signing, real card processing, or PSP-side reconciliation. If the scenario asks the user to "pay an invoice", treat the stub Mark-Paid action as the equivalent and continue.
+- **KYC provider integration is a stub**. There is no real KYC vendor integration (Onfido, Veriff, Smile ID, etc.). The KycVerificationDialog and `Run KYC` flow call a stub backend that just returns a status. The UI surfaces (toggle, badge, verify button, status display) are real and must work; the underlying provider call is mocked. Do NOT open gaps for missing real-provider OAuth, webhook signing, real document analysis, or provider-side reconciliation.
 
 ## Log
 

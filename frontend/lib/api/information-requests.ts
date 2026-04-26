@@ -135,6 +135,7 @@ export interface CreateInformationRequestItem {
   responseType: "FILE_UPLOAD" | "TEXT_RESPONSE";
   required: boolean;
   fileTypeHints?: string;
+  sortOrder?: number;
 }
 
 export interface CreateInformationRequestRequest {

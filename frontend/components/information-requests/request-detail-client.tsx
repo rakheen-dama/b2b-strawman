@@ -39,6 +39,7 @@ import { RequestProgressBar } from "@/components/information-requests/request-pr
 import { ItemStatusBadge } from "@/components/information-requests/item-status-badge";
 import { ResponseTypeBadge } from "@/components/information-requests/response-type-badge";
 import { RejectItemDialog } from "@/components/information-requests/reject-item-dialog";
+import { AddItemDialog } from "@/components/information-requests/add-item-dialog";
 import { formatDate } from "@/lib/format";
 import type {
   InformationRequestResponse,
@@ -49,6 +50,7 @@ import {
   rejectItemAction,
   cancelRequestAction,
   resendNotificationAction,
+  sendDraftAction,
   getItemDocumentDownloadUrl,
 } from "@/app/(app)/org/[slug]/information-requests/[id]/actions";
 
@@ -66,6 +68,7 @@ export function RequestDetailClient({ request, slug }: RequestDetailClientProps)
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [isResending, setIsResending] = useState(false);
+  const [isSendingDraft, setIsSendingDraft] = useState(false);
 
   const sortedItems = [...request.items].sort((a, b) => a.sortOrder - b.sortOrder);
 
@@ -113,6 +116,23 @@ export function RequestDetailClient({ request, slug }: RequestDetailClientProps)
     }
   }
 
+  async function handleSendDraft() {
+    setIsSendingDraft(true);
+    try {
+      const result = await sendDraftAction(slug, request.id);
+      if (result.success) {
+        toast.success("Request sent.");
+        router.refresh();
+      } else {
+        toast.error(result.error ?? "Failed to send request.");
+      }
+    } catch {
+      toast.error("An unexpected error occurred.");
+    } finally {
+      setIsSendingDraft(false);
+    }
+  }
+
   async function handleResend() {
     setIsResending(true);
     try {
@@ -131,6 +151,7 @@ export function RequestDetailClient({ request, slug }: RequestDetailClientProps)
 
   const canCancel = request.status !== "CANCELLED" && request.status !== "COMPLETED";
   const canResend = request.status === "SENT" || request.status === "IN_PROGRESS";
+  const isDraft = request.status === "DRAFT";
 
   return (
     <>
@@ -159,32 +180,44 @@ export function RequestDetailClient({ request, slug }: RequestDetailClientProps)
           </div>
         </div>
 
-        {(canCancel || canResend) && (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="icon">
-                <MoreHorizontal className="size-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              {canResend && (
-                <DropdownMenuItem onClick={handleResend} disabled={isResending}>
-                  <Send className="mr-2 size-4" />
-                  {isResending ? "Resending..." : "Resend Notification"}
-                </DropdownMenuItem>
+        <div className="flex items-center gap-2">
+          {isDraft && (
+            <Button onClick={handleSendDraft} disabled={isSendingDraft}>
+              {isSendingDraft ? (
+                <Loader2 className="mr-1.5 size-4 animate-spin" />
+              ) : (
+                <Send className="mr-1.5 size-4" />
               )}
-              {canCancel && (
-                <DropdownMenuItem
-                  onClick={() => setCancelDialogOpen(true)}
-                  className="text-destructive focus:text-destructive"
-                >
-                  <Ban className="mr-2 size-4" />
-                  Cancel Request
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        )}
+              {isSendingDraft ? "Sending..." : "Send Request"}
+            </Button>
+          )}
+          {(canCancel || canResend) && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <MoreHorizontal className="size-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {canResend && (
+                  <DropdownMenuItem onClick={handleResend} disabled={isResending}>
+                    <Send className="mr-2 size-4" />
+                    {isResending ? "Resending..." : "Resend Notification"}
+                  </DropdownMenuItem>
+                )}
+                {canCancel && (
+                  <DropdownMenuItem
+                    onClick={() => setCancelDialogOpen(true)}
+                    className="text-destructive focus:text-destructive"
+                  >
+                    <Ban className="mr-2 size-4" />
+                    Cancel Request
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
       </div>
 
       {/* Metadata */}
@@ -246,9 +279,23 @@ export function RequestDetailClient({ request, slug }: RequestDetailClientProps)
 
       {/* Items List */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-          Items ({sortedItems.length})
-        </h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+            Items ({sortedItems.length})
+          </h2>
+          {isDraft && (
+            <AddItemDialog
+              slug={slug}
+              requestId={request.id}
+              nextSortOrder={
+                sortedItems.length === 0
+                  ? 0
+                  : Math.max(...sortedItems.map((i) => i.sortOrder)) + 1
+              }
+              onSuccess={() => router.refresh()}
+            />
+          )}
+        </div>
 
         <div className="divide-y divide-slate-200 rounded-lg border border-slate-200 dark:divide-slate-800 dark:border-slate-800">
           {sortedItems.map((item) => (

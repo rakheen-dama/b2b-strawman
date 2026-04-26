@@ -1,0 +1,4 @@
+2026-04-26T23:06:08.133Z | Request REQ-0002 completed (Mathebula & Partners) | dwHVx4rxMXHbQPw6MKJD7n
+2026-04-26T23:06:08.105Z | Item accepted — Bank statement (≤ 3 months) (Mathebula & Partners) | KERJ6mzxpRwFR7oGAo3tdW
+2026-04-26T23:05:46.071Z | Item accepted — Proof of residence (≤ 3 months) (Mathebula & Partners) | 4qY8duhUtgJoRyzemGXL5Q
+2026-04-26T23:05:29.446Z | Item accepted — ID copy (Mathebula & Partners) | fZ8CBcnr8FTyQimYEUWr8e

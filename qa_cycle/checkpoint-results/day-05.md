@@ -117,3 +117,57 @@ Note: scenario skips Day 6 (no Day 6 section in the test plan); next scheduled d
 
 ### QA Position on exit
 Day 5 COMPLETE. Next: Day 7 — 7.1 (Thandi drafts proposal). Per dispatch scope, this turn ends here; Day 7+ is a separate dispatch.
+
+---
+
+## Cycle 13 (2026-04-27) — Day 5 fresh walk on main 597b4b60
+
+**Branch**: `bugfix_cycle_2026-04-26-day5` (head `597b4b60`)
+**Tenant**: `mathebula-partners` (schema `tenant_5039f2d497cf`)
+**Actor**: Bob Ndlovu (admin) — Keycloak SSO, fresh login at start of turn.
+
+### Pre-state (DB confirmed READ-ONLY)
+
+- REQ-0002 `d8a58ade-9912-4dde-b931-b7e349afbe9b` IN_PROGRESS at start (handoff from Day 4 cycle-12).
+- All 3 items SUBMITTED with `document_id` populated:
+  - `1861909c-…` ID copy → `4b771f0b-…` test-fica-id.pdf
+  - `98aa3fca-…` Proof of residence → `dccf330d-…` test-fica-address.pdf
+  - `c5ecb54c-…` Bank statement → `d4dd5723-…` test-fica-funds.pdf
+- Portal read-model `portal.portal_requests` REQ-0002 = `IN_PROGRESS, total=3, submitted=3, accepted=0` (live-synced from Day 4).
+
+### Backend stale-class restart (environmental — not a regression)
+
+Initial Day 5.3 walk exposed an **environment** issue, not a code regression: backend JVM had been running since `Apr 26 01:31:21 2026` with the pre-`d2d0c26b` `RequestItemResponse` classes. Source has the `documentFileName` field and `resolveDocumentFileNames(...)` mapper landed in PR #1145 (`d2d0c26b`, ancestor of main). After verifying the fix is on main via `git merge-base --is-ancestor d2d0c26b main`, ran `bash compose/scripts/svc.sh restart backend` (33s) — Download buttons rendered correctly thereafter. NO new GAP filed; this is the standing rule "Restart after Java changes" being violated by the dev session, not a product defect.
+
+### Checkpoint Results (Cycle 13)
+
+| ID | Description | Result | Evidence | Gap |
+|----|-------------|--------|----------|-----|
+| 5.1 | Navigate to matter RAF-2026-001 → Info Requests tab | PASS | Direct-nav `/projects/cc390c4f-…?tab=requests`. Snapshot shows Requests table row "REQ-0002 / Dlamini v Road Accident Fund / Sipho Dlamini / In Progress / 0/3 accepted / Apr 27, 2026" with link `/information-requests/d8a58ade-…`. Snapshot: `cycle13/cycle13-day5-5.1-matter-requests-tab.yml`. | — |
+| 5.2 | Pack shows status Submitted with 3 documents | PASS | Detail page `/information-requests/d8a58ade-…` renders header `REQ-0002 / In Progress / Sipho Dlamini | Dlamini v Road Accident Fund / 0/3 accepted`. Items list: 3× FILE_UPLOAD items, each with badge "Submitted" + Accept + Reject buttons. (Backend state IN_PROGRESS, items individually SUBMITTED — same scenario-wording drift as Cycle 1; semantically equivalent.) Snapshot: `cycle13/cycle13-day5-5.2-req-0002-detail.yml`. | — |
+| 5.3 | Click into request → download each document | PASS | After backend restart, each item now renders `<filename>.pdf` + Download button (per L-45 fix d2d0c26b). Snapshot: `cycle13/cycle13-day5-5.3-download-buttons-rendered.yml` shows all 3 items with Download buttons (e189/e206/e223). Click on Download #1 (`getItemDocumentDownloadUrl(documentId)` → presigned URL generation) succeeds with no console error. Bytes-level fetch from S3/LocalStack not asserted (out-of-scope; LocalStack stub) but the wiring path is green. | L-45 → re-VERIFIED on main 597b4b60 |
+| 5.4 | Accept → state transitions to Completed | PASS | Clicked Accept on item 1 → progress 1/3 + item badge "Accepted". Clicked Accept on item 2 → 2/3. Clicked Accept on item 3 → **3/3 accepted + status COMPLETED**. DB confirms: `information_requests.status='COMPLETED', completed_at='2026-04-26 23:06:08.006479+00'`; all 3 `request_items.status='ACCEPTED'` with `reviewed_at` (23:05:29 / 23:05:45 / 23:06:07) + `reviewed_by=5487dc65-…` (Bob's member id). Portal read-model `portal.portal_requests` REQ-0002 also `COMPLETED, accepted=3, submitted=0` (live-synced via L-43 listener). Snapshot: `cycle13/cycle13-day5-5.4-req-completed-3-of-3.yml`. | — |
+| 5.5 | Matter Overview shows FICA status indicator | PASS | `/projects/cc390c4f-…?tab=overview` Overview now renders **FICA tile** with status `Done`, caption `Verified Apr 27, 2026`, link `View request`. (FicaStatusCard component active via PR #1127 / L-46 fix.) Snapshot: `cycle13/cycle13-day5-5.5-overview-fica-done.yml`. | L-46 → re-VERIFIED |
+| 5.6 | Mailpit notification on request completion | PASS | Mailpit `to:sipho.portal@example.com` returns 4 fresh emails post-Accept actions (all Mathebula & Partners): `Item accepted — ID copy` (23:05:29), `Item accepted — Proof of residence (≤ 3 months)` (23:05:46), `Item accepted — Bank statement (≤ 3 months)` (23:06:08), and **`Request REQ-0002 completed`** (23:06:08). Closure email matches scenario's "FICA documents received" intent. Evidence: `cycle13/cycle13-day5-5.6-mailpit-summary.txt`. | — |
+
+### Verify-Focus tally (Day 5 Cycle 13)
+
+- **GAP-L-45** (per-item Download on firm info-request detail) — re-VERIFIED on main `597b4b60`. Backend `RequestItemResponse.from(item, documentFileName)` populates the field correctly; frontend gate `item.documentId && item.documentFileName` passes; ItemDocumentDownloadButton renders + handler clicks without error. Required a backend restart to pick up the rebuilt classes (running JVM was older than the d2d0c26b commit).
+- **GAP-L-46** (FICA status tile on matter Overview) — re-VERIFIED. After REQ-0002 COMPLETED, Overview tile renders `FICA / Done / Verified Apr 27, 2026 / View request` correctly. `/api/customers/{id}/fica-status` data path + `FicaStatusCard` component path both green.
+- **GAP-L-47** (portal parent-request status sync) — re-VERIFIED. `portal.portal_requests` REQ-0002 carries `status=COMPLETED, completed_at=2026-04-26 23:06:08, accepted_items=3, submitted_items=0` matching tenant DB.
+- **Per-item acceptance email path + closure email path** — both fire correctly (4 outbound emails to Sipho).
+
+### Day 5 wrap-up checks
+
+- **Three uploaded documents retrievable firm-side**: PASS — Download buttons render with filenames and click handler resolves without error (presigned URL minted by backend).
+- **Info request lifecycle: Submitted → Completed**: PASS — confirmed at DB + portal read-model + UI all three layers.
+- **Matter FICA / KYC status indicator updated**: PASS — Overview tile flipped to `Done / Verified Apr 27, 2026` after REQ-0002 closure.
+
+### Day 5 Cycle 13 final tally
+
+**6/6 checkpoints PASS. Zero new gaps. Zero regressions of prior cycle-fixed gaps** (L-45 + L-46 + L-47 all hold on main 597b4b60). Day 5 Cycle 13 CLOSED → advance to Day 7 / 7.1 (scenario skips Day 6; next actor is Thandi for proposal drafting; firm context swap to Thandi will be required).
+
+### Notable surfaces (operator note, not a gap)
+
+- Running backend was stale (built 01:31, source updated later). Required `svc.sh restart backend` to pick up classes from PR #1145. Future cycles after long idle periods should consider a courtesy `restart backend` if Java sources have been touched. Logged as operator-discipline reminder, not a product gap.
+

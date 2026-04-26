@@ -27,7 +27,7 @@ All cleanup via admin REST APIs or direct SQL on `public.*` / schema DROP (no te
 |----|-------------|--------|----------|
 | 0.1 | Landing page loads, zero console errors | PASS | http://localhost:3000 → "Kazi — Practice management, built for Africa". Console: HMR-connected + react-devtools hint only. |
 | 0.2 | Get Started routes to `/request-access` | PASS | Click `Get Started` nav link → `/request-access`. |
-| 0.3 | Form shows Email, Full Name, Organization, Country, Industry | PASS | All 5 fields rendered with correct testids. |
+| 0.3 | Form shows Email, Full Name, Organization, Country, Industry | PASS | All 5 fields rendered with correct test IDs. |
 | 0.4 | Submit form (Thandi / Mathebula & Partners / South Africa / Legal Services) | PASS | Native input + Radix combobox. Submit button enabled after all 5 fields populated. |
 | 0.5 | Transitions to OTP step | PASS | Card swapped to "Check Your Email — Enter the verification code sent to thandi@mathebula-test.local". |
 | 0.6 | Mailpit OTP email arrives | PASS | Mailpit id=7x9swCw9ZsiHBNMGyzAgML, subject "Your Kazi verification code", To=thandi@mathebula-test.local. OTP `530547` extracted. |

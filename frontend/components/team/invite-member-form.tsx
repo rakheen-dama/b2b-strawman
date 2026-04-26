@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
@@ -131,9 +131,16 @@ function InviteFormUI({
   const [success, setSuccess] = useState<string | null>(null);
 
   const roleSelectValue = form.watch("roleSelectValue");
+  const suppressRoleChangeClearRef = useRef(false);
 
-  // Reset overrides + status messages when role selection changes
+  // Reset overrides + status messages when role selection changes.
+  // Skip when the change comes from form.reset() after a successful submit —
+  // otherwise we'd clobber the success toast we're about to set.
   useEffect(() => {
+    if (suppressRoleChangeClearRef.current) {
+      suppressRoleChangeClearRef.current = false;
+      return;
+    }
     setOverrides([]);
     setCustomizeOpen(false);
     setError(null);
@@ -208,7 +215,10 @@ function InviteFormUI({
         return;
       }
       onInviteSent();
+      suppressRoleChangeClearRef.current = true;
       form.reset({ emailAddress: "", roleSelectValue: SYSTEM_MEMBER_VALUE });
+      setOverrides([]);
+      setCustomizeOpen(false);
       setSuccess(`Invitation sent to ${values.emailAddress.trim()}.`);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Failed to send invitation.";

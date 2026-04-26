@@ -161,7 +161,7 @@ Re-run Day 1 §1.2:
 2. Refresh dashboard.
 3. Active sidebar indicator (vertical bar next to current page) MUST render navy `#1B3358`, not teal.
 4. Sidebar org-name label ("Mathebula & Partners") MUST render navy.
-5. `document.styleSheets` traversal MUST show ≥1 rule referencing `var(--brand-color)` (the new `:root` declaration plus the inline-style usages).
+5. `document.styleSheets` traversal MUST show the new `:root` rule defining `--brand-color: var(--teal-500)` (stylesheet-level fallback). Inline `style={{ backgroundColor: "var(--brand-color)" }}` usages live on the element itself, not in the stylesheet — assert those separately by element inspection (step 6).
 6. Element inspection of `.absolute.w-0.5` (active indicator) MUST show computed `background-color: rgb(27, 51, 88)`.
 7. Re-take screenshot — replace `day-01-1.2-after-refresh.png`.
 8. Logout, login again — colour persists (already covered by existing persistence; no regression).

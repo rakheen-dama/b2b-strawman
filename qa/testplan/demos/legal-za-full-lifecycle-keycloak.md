@@ -181,7 +181,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **1.1** Navigate to **Settings > Organization** → upload firm logo (any ≤ 200 KB PNG) → set brand colour to Mathebula navy `#1B3358` → Save
 - [ ] **1.2** Refresh → verify brand colour applied to sidebar accent + logo renders at top of sidebar
 - [ ] **1.3** Navigate to **Settings > Rate Cards** → verify LSSA tariff rates pre-seeded (from `legal-za` rate pack, Phase 55)
-- [ ] **1.4** Verify at least one tariff entry: **High Court — attending at court, per hour** with the latest published LSSA schedule (2024/2025 — LSSA tariffs are revised every 2–3 years; 2024/2025 is the current real-world schedule) in ZAR
+- [ ] **1.4** Verify at least one tariff entry: **High Court — attending at court, per hour** with the latest published LSSA schedule in ZAR (currently 2024/2025 at the time of this test run; LSSA tariffs are revised every 2–3 years)
 - [ ] **1.5** Navigate to **Settings > Trust Accounts** → create a new trust account:
   - Name: **Mathebula Trust — Main**
   - Bank: **Standard Bank**

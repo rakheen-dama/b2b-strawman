@@ -71,7 +71,7 @@ Refactor `InviteFormUI` in `frontend/components/team/invite-member-form.tsx` to 
 
 ### Step 1 — Move role into RHF
 
-Update the schema in `frontend/lib/schemas/invite-member.ts` to include role + orgRoleId:
+Update the schema in `frontend/lib/schemas/invite-member.ts` to include `roleSelectValue` (a single field that holds either a system-role marker or a custom org-role ID — the submit handler derives the on-the-wire `role` and `orgRoleId` from it):
 
 ```ts
 export const inviteMemberSchema = z.object({

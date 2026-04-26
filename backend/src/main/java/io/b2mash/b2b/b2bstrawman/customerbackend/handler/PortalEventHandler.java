@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.event.TaxContext;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.TimeEntryAggregatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.model.PortalAcceptanceView;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepository;
+import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestAcceptedEvent;
 import io.b2mash.b2b.b2bstrawman.event.AcceptanceRequestExpiredEvent;
@@ -230,7 +231,9 @@ public class PortalEventHandler {
         event.getOrgId(),
         () -> {
           try {
-            if (!"SHARED".equals(event.getVisibility())) {
+            // GAP-L-74-followup: portal contacts see SHARED (manual) and PORTAL (system
+            // auto-shared, e.g. closure letter / SoA) — both must project to the read model.
+            if (!Document.Visibility.isPortalVisible(event.getVisibility())) {
               return;
             }
             var customerIds =
@@ -263,13 +266,16 @@ public class PortalEventHandler {
         event.getOrgId(),
         () -> {
           try {
-            if ("SHARED".equals(event.getVisibility())) {
-              // Changed TO SHARED -- project the document
+            // GAP-L-74-followup: SHARED (manual) and PORTAL (system auto-shared) are both
+            // portal-visible — treat them symmetrically when projecting / removing.
+            if (Document.Visibility.isPortalVisible(event.getVisibility())) {
+              // Changed TO a portal-visible state -- project the document
               var docOpt = documentRepository.findById(event.getDocumentId());
               if (docOpt.isEmpty()) {
                 log.warn(
-                    "Document not found for visibility change to SHARED: documentId={}",
-                    event.getDocumentId());
+                    "Document not found for visibility change to portal-visible state: documentId={}, visibility={}",
+                    event.getDocumentId(),
+                    event.getVisibility());
                 return;
               }
               var doc = docOpt.get();
@@ -289,8 +295,8 @@ public class PortalEventHandler {
                     doc.getUploadedAt());
                 readModelRepo.incrementDocumentCount(doc.getProjectId(), customerId);
               }
-            } else if ("SHARED".equals(event.getPreviousVisibility())) {
-              // Changed FROM SHARED -- remove the document projection
+            } else if (Document.Visibility.isPortalVisible(event.getPreviousVisibility())) {
+              // Changed FROM a portal-visible state -- remove the document projection
               var portalDoc =
                   readModelRepo.findPortalDocumentById(event.getDocumentId(), event.getOrgId());
               if (portalDoc.isPresent()) {

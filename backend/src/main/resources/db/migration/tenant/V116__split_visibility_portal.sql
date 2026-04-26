@@ -14,14 +14,19 @@
 -- Idempotent: running twice is a no-op (rows already at PORTAL won't match the WHERE clause).
 
 -- Backfill: flip SHARED -> PORTAL for documents linked to closure-letter or
--- statement-of-account generated artefacts.
+-- statement-of-account generated artefacts. Includes cloned templates whose slugs
+-- start with the system-pack base (e.g., StatementService.resolveTemplate accepts
+-- both 'statement-of-account' and 'statement-of-account-<custom>' for matter-pack
+-- "Save as new" flows).
 UPDATE documents d
    SET visibility = 'PORTAL'
   FROM generated_documents gd
   JOIN document_templates dt ON dt.id = gd.template_id
  WHERE gd.document_id = d.id
    AND d.visibility = 'SHARED'
-   AND dt.slug IN ('matter-closure-letter', 'statement-of-account');
+   AND (dt.slug IN ('matter-closure-letter', 'statement-of-account')
+        OR dt.slug LIKE 'matter-closure-letter-%'
+        OR dt.slug LIKE 'statement-of-account-%');
 
 -- If the column ever grows a CHECK constraint, this is the place to drop+re-add:
 --   ALTER TABLE documents DROP CONSTRAINT IF EXISTS chk_document_visibility;

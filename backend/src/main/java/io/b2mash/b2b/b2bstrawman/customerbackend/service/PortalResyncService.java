@@ -94,8 +94,10 @@ public class PortalResyncService {
                     projectId,
                     pid -> {
                       var docs = documentRepository.findProjectScopedByProjectId(pid);
+                      // GAP-L-74-followup: include both SHARED (manual) and PORTAL
+                      // (system auto-shared, e.g. closure letter / SoA) — both are portal-visible.
                       return docs.stream()
-                          .filter(d -> Document.Visibility.SHARED.equals(d.getVisibility()))
+                          .filter(d -> Document.Visibility.isPortalVisible(d.getVisibility()))
                           .toList();
                     });
 

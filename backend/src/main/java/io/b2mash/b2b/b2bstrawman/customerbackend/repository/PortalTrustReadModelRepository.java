@@ -155,6 +155,27 @@ public class PortalTrustReadModelRepository {
         .list();
   }
 
+  /**
+   * Returns the most recent transactions across all matters belonging to {@code customerId},
+   * ordered newest-first. Powers {@code GET /portal/trust/movements} — the "Last trust movement"
+   * tile on the portal home page, which is matter-agnostic.
+   */
+  public List<PortalTrustTransactionView> findRecentTransactionsByCustomer(
+      UUID customerId, int limit) {
+    return jdbc.sql(
+            """
+            SELECT id, customer_id, matter_id, transaction_type, amount, running_balance,
+                   occurred_at, description, reference, last_synced_at
+            FROM portal.portal_trust_transaction
+            WHERE customer_id = ?
+            ORDER BY occurred_at DESC, id DESC
+            LIMIT ?
+            """)
+        .params(customerId, limit)
+        .query(PortalTrustTransactionView.class)
+        .list();
+  }
+
   /** Counts transactions matching the same filter used by {@link #findTransactions}. */
   public long countTransactions(UUID customerId, UUID matterId, Instant from, Instant to) {
     return jdbc.sql(

@@ -14,6 +14,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactService;
 import io.b2mash.b2b.b2bstrawman.portal.PortalJwtService;
+import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
@@ -58,6 +60,7 @@ class PortalTrustControllerIntegrationTest {
   @Autowired private PortalJwtService portalJwtService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private PortalTrustReadModelRepository portalTrustRepo;
+  @Autowired private ProjectRepository projectRepository;
 
   /**
    * The gate is toggled per-test via {@link VerticalModuleGuard#isModuleEnabled(String)}. Using a
@@ -105,8 +108,28 @@ class PortalTrustControllerIntegrationTest {
     portalToken = portalJwtService.issueToken(customerId, ORG_ID);
 
     // --- Seed portal read-model directly — controller tests do not replay firm-side events. ---
-    matterA = UUID.randomUUID();
-    matterB = UUID.randomUUID();
+    // Persist firm-side Project rows first so the cross-matter movements feed (GAP-L-68) can
+    // resolve matter names. matterA/matterB take the projects' generated UUIDs; the per-matter
+    // and summary endpoints don't care about Project rows — they were happy with bare matter
+    // UUIDs in the read model — but the union-feed enriches matterName via ProjectRepository.
+    UUID memberIdForProjects = memberId;
+    UUID[] matterIds = new UUID[2];
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .where(RequestScopes.MEMBER_ID, memberIdForProjects)
+        .run(
+            () -> {
+              var projectA = new Project("Matter A", "Matter A desc", memberIdForProjects);
+              projectA.setCustomerId(customerId);
+              projectRepository.save(projectA);
+              matterIds[0] = projectA.getId();
+              var projectB = new Project("Matter B", "Matter B desc", memberIdForProjects);
+              projectB.setCustomerId(customerId);
+              projectRepository.save(projectB);
+              matterIds[1] = projectB.getId();
+            });
+    matterA = matterIds[0];
+    matterB = matterIds[1];
     otherCustomerMatter = UUID.randomUUID();
 
     Instant lastTxnA = Instant.parse("2026-03-15T10:00:00Z");
@@ -289,5 +312,82 @@ class PortalTrustControllerIntegrationTest {
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.status").value(404))
         .andExpect(jsonPath("$.title").value("Project not found"));
+  }
+
+  // ==========================================================================
+  // Scenario 6 (GAP-L-68) — cross-matter movements feed for the home tile.
+  // ==========================================================================
+
+  @Test
+  void movements_default_limit_caps_at_ten_rows() throws Exception {
+    when(moduleGuard.isModuleEnabled(TRUST_MODULE)).thenReturn(true);
+
+    // 16 transactions exist for this customer (15 on matterA, 1 on matterB). Default limit = 10.
+    mockMvc
+        .perform(get("/portal/trust/movements").header("Authorization", "Bearer " + portalToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(10));
+  }
+
+  @Test
+  void movements_returns_at_most_limit_rows_ordered_newest_first() throws Exception {
+    when(moduleGuard.isModuleEnabled(TRUST_MODULE)).thenReturn(true);
+
+    // Most recent transaction overall is matterB's 2026-03-20 deposit. matterA's freshest is
+    // 2026-03-09. Limit=1 must return the matterB row.
+    mockMvc
+        .perform(
+            get("/portal/trust/movements")
+                .param("limit", "1")
+                .header("Authorization", "Bearer " + portalToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].occurredAt").value("2026-03-20T12:00:00Z"))
+        .andExpect(jsonPath("$[0].matterName").value("Matter B"))
+        .andExpect(jsonPath("$[0].type").value("DEPOSIT"))
+        .andExpect(jsonPath("$[0].currency").value("ZAR"))
+        .andExpect(jsonPath("$[0].amount").value(250.00))
+        .andExpect(jsonPath("$[0].description").value("Matter B seed"));
+  }
+
+  @Test
+  void movements_excludes_transactions_from_other_customers() throws Exception {
+    when(moduleGuard.isModuleEnabled(TRUST_MODULE)).thenReturn(true);
+
+    // Seed an extra deposit on the unrelated customer with a future-dated occurredAt so it would
+    // dominate the ordering if cross-customer leakage occurred.
+    portalTrustRepo.upsertTransaction(
+        UUID.randomUUID(),
+        otherCustomerId,
+        otherCustomerMatter,
+        "DEPOSIT",
+        new BigDecimal("9999.00"),
+        new BigDecimal("9999.00"),
+        Instant.parse("2030-01-01T00:00:00Z"),
+        "Other-customer leak probe",
+        "REF-LEAK");
+
+    // limit=50 covers every legitimate row (16) without saturating. Leaked row must be absent.
+    mockMvc
+        .perform(
+            get("/portal/trust/movements")
+                .param("limit", "50")
+                .header("Authorization", "Bearer " + portalToken))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(16))
+        .andExpect(jsonPath("$[?(@.description == 'Other-customer leak probe')]").doesNotExist());
+  }
+
+  @Test
+  void movements_returns_404_when_trust_module_is_disabled() throws Exception {
+    when(moduleGuard.isModuleEnabled(anyString())).thenReturn(false);
+    try {
+      mockMvc
+          .perform(get("/portal/trust/movements").header("Authorization", "Bearer " + portalToken))
+          .andExpect(status().isNotFound())
+          .andExpect(jsonPath("$.title").value("Trust ledger not available"));
+    } finally {
+      when(moduleGuard.isModuleEnabled(TRUST_MODULE)).thenReturn(true);
+    }
   }
 }

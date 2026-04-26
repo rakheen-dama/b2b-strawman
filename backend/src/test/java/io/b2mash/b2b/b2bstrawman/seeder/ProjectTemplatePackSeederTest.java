@@ -59,8 +59,9 @@ class ProjectTemplatePackSeederTest {
   @Test
   @Order(1)
   void createsTemplatesAndTasksFromLegalPack() {
-    // Epic 492A: legal-za pack expanded from 4 to 5 templates; the original 4 each have 9 tasks,
-    // and the new Property Transfer (Conveyancing) template has 12 tasks.
+    // GAP-L-36: legal-za pack now has 6 templates. The original 4 (Litigation, Estates,
+    // Collections, Commercial) and the RAF template have 9 tasks each;
+    // Property Transfer (Conveyancing) has 12 tasks.
     runInTenant(
         tenantSchema,
         ORG_ID,
@@ -70,8 +71,8 @@ class ProjectTemplatePackSeederTest {
                   var templates = projectTemplateRepository.findAllByOrderByNameAsc();
                   var seederTemplates =
                       templates.stream().filter(t -> "SEEDER".equals(t.getSource())).toList();
-                  // The legal-za pack defines 5 templates (post Epic 492A)
-                  assertThat(seederTemplates).hasSize(5);
+                  // The legal-za pack defines 6 templates (post GAP-L-36)
+                  assertThat(seederTemplates).hasSize(6);
                   // Each template should have tasks with contiguous sort orders starting at 1
                   for (var template : seederTemplates) {
                     var tasks =
@@ -111,8 +112,8 @@ class ProjectTemplatePackSeederTest {
                   var templates = projectTemplateRepository.findAllByOrderByNameAsc();
                   var seederTemplates =
                       templates.stream().filter(t -> "SEEDER".equals(t.getSource())).toList();
-                  // Still 5 templates (post Epic 492A) — not 10
-                  assertThat(seederTemplates).hasSize(5);
+                  // Still 6 templates (post GAP-L-36) — not 12
+                  assertThat(seederTemplates).hasSize(6);
                   // OrgSettings should have the pack recorded
                   var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
                   assertThat(settings.getProjectTemplatePackStatus()).isNotNull();

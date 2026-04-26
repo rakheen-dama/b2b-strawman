@@ -44,7 +44,7 @@ class LegalProjectTemplatePackTest {
   }
 
   @Test
-  void createsFiveLegalTemplates() {
+  void createsSixLegalTemplates() {
     runInTenant(
         () ->
             transactionTemplate.executeWithoutResult(
@@ -52,11 +52,12 @@ class LegalProjectTemplatePackTest {
                   var templates = projectTemplateRepository.findAllByOrderByNameAsc();
                   var seederTemplates =
                       templates.stream().filter(t -> "SEEDER".equals(t.getSource())).toList();
-                  assertThat(seederTemplates).hasSize(5);
+                  assertThat(seederTemplates).hasSize(6);
 
                   var names = seederTemplates.stream().map(ProjectTemplate::getName).toList();
                   assertThat(names)
                       .containsExactlyInAnyOrder(
+                          "Litigation (Road Accident Fund -- RAF)",
                           "Litigation (Personal Injury / General)",
                           "Deceased Estate Administration",
                           "Collections (Debt Recovery)",
@@ -67,10 +68,12 @@ class LegalProjectTemplatePackTest {
 
   @Test
   void eachTemplateHasExpectedTaskCount() {
-    // Epic 492A: legal-za pack now has 5 templates; the original 4 (Litigation, Estates,
-    // Collections, Commercial) have 9 tasks each, and Property Transfer (Conveyancing) has 12.
+    // GAP-L-36: legal-za pack now has 6 templates. The original 4 (Litigation, Estates,
+    // Collections, Commercial) and the RAF template have 9 tasks each;
+    // Property Transfer (Conveyancing) has 12.
     java.util.Map<String, Integer> expectedCounts =
         java.util.Map.of(
+            "Litigation (Road Accident Fund -- RAF)", 9,
             "Litigation (Personal Injury / General)", 9,
             "Deceased Estate Administration", 9,
             "Collections (Debt Recovery)", 9,
@@ -165,6 +168,37 @@ class LegalProjectTemplatePackTest {
                   assertThat(tasks.get(4).getAssigneeRole()).isEqualTo("ANY_MEMBER");
                   assertThat(tasks.get(8).getName()).isEqualTo("Execution -- warrant / attachment");
                   assertThat(tasks.get(8).getAssigneeRole()).isEqualTo("ANY_MEMBER");
+                }));
+  }
+
+  @Test
+  void rafTemplateHasExpectedTasks() {
+    runInTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var template =
+                      projectTemplateRepository.findAllByOrderByNameAsc().stream()
+                          .filter(t -> "Litigation (Road Accident Fund -- RAF)".equals(t.getName()))
+                          .findFirst()
+                          .orElseThrow();
+                  var tasks =
+                      templateTaskRepository.findByTemplateIdOrderBySortOrder(template.getId());
+                  assertThat(tasks).hasSize(9);
+                  var names = tasks.stream().map(TemplateTask::getName).toList();
+                  assertThat(names)
+                      .containsExactly(
+                          "Initial RAF claim assessment & instructions",
+                          "File RAF1 claim form + supporting documents (within 3-year"
+                              + " prescription)",
+                          "Statutory medical reports & assessments",
+                          "Insurer correspondence -- RAF tariff schedule",
+                          "Settlement negotiation with RAF",
+                          "Court action if no settlement (Section 24 RAF Act)",
+                          "Trial / hearing attendance",
+                          "Settlement / judgment payout & costs",
+                          "Prescription monitoring (3-year claim, 5-year for damages)");
+                  assertThat(template.getNamePattern()).isEqualTo("{customer} - RAF Claim");
                 }));
   }
 

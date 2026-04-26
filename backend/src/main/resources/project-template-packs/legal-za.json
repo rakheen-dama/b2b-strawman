@@ -1,8 +1,89 @@
 {
   "packId": "legal-za-project-templates",
   "verticalProfile": "legal-za",
-  "version": 2,
+  "version": 3,
   "templates": [
+    {
+      "name": "Litigation (Road Accident Fund -- RAF)",
+      "namePattern": "{customer} - RAF Claim",
+      "description": "Personal-injury workflow for Road Accident Fund (RAF) claims under the Road Accident Fund Act 56 of 1996. Covers RAF1 claim filing, statutory medical assessments, RAF tariff negotiation, Section 24 court action, and 3/5-year prescription monitoring. Matter type: LITIGATION",
+      "billableDefault": true,
+      "matterType": "LITIGATION",
+      "tasks": [
+        {
+          "name": "Initial RAF claim assessment & instructions",
+          "description": "Take instructions, evaluate merits, confirm accident date and prescription window",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "File RAF1 claim form + supporting documents (within 3-year prescription)",
+          "description": "Lodge RAF1 with police report, hospital records, ID and accident report; prescription runs 3 years from date of accident",
+          "priority": "URGENT",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 4.0
+        },
+        {
+          "name": "Statutory medical reports & assessments",
+          "description": "Obtain RAF4 serious-injury assessment, specialist medico-legal reports and RAF tariff-compliant medical accounts",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 6.0
+        },
+        {
+          "name": "Insurer correspondence -- RAF tariff schedule",
+          "description": "Negotiate medical accounts against RAF tariff, follow up on undertakings and interim payments",
+          "priority": "MEDIUM",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 3.0
+        },
+        {
+          "name": "Settlement negotiation with RAF",
+          "description": "Quantum negotiations on past/future medical, loss of earnings, general damages",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 5.0
+        },
+        {
+          "name": "Court action if no settlement (Section 24 RAF Act)",
+          "description": "Issue summons against RAF per Section 24; suspend prescription via writ",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 4.0
+        },
+        {
+          "name": "Trial / hearing attendance",
+          "description": "Court appearance, expert witness coordination, cross-examination of RAF medico-legal experts",
+          "priority": "URGENT",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 8.0
+        },
+        {
+          "name": "Settlement / judgment payout & costs",
+          "description": "Recover capital + party-and-party costs from RAF, finalise contingency-fee statement to client",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 3.0
+        },
+        {
+          "name": "Prescription monitoring (3-year claim, 5-year for damages)",
+          "description": "Track 3-year prescription on RAF1 lodgement and 5-year prescription on damages claim; diarise diary entries",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 1.0
+        }
+      ]
+    },
     {
       "name": "Litigation (Personal Injury / General)",
       "namePattern": "{customer} - Litigation",

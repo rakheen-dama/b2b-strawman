@@ -19,6 +19,7 @@ export * from "./settings";
 export * from "./generated-documents";
 
 // Existing domain modules
+export * from "./audit-events";
 export * from "./capabilities";
 export * from "./billing-runs";
 export * from "./retainers";

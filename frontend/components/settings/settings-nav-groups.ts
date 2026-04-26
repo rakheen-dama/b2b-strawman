@@ -90,6 +90,7 @@ export const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
     label: "Access & Integrations",
     items: [
       { label: "Roles & Permissions", href: "roles", adminOnly: true },
+      { label: "Audit log", href: "audit-log", adminOnly: true },
       { label: "Integrations", href: "integrations" },
     ],
   },

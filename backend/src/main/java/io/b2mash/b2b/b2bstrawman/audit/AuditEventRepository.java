@@ -169,4 +169,92 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
       nativeQuery = true)
   Optional<AuditEvent> findByExportId(
       @Param("eventType") String eventType, @Param("exportId") String exportId);
+
+  // --- Portal activity timeline queries (GAP-OBS-Portal-Activity / E4.3) ---
+  // Tenant isolation is provided by Hibernate search_path. The UUID-shape regex on the JSONB
+  // lookup mirrors findCrossProjectActivity (line 119) and is safety-critical: a malformed
+  // details->>'project_id' value would crash the ::uuid cast.
+
+  /**
+   * Combined portal-contact + firm activity for a portal contact. Returns events the contact
+   * authored AND firm-side events on any project linked to the contact's customer.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT * FROM audit_events ae
+          WHERE (ae.actor_type = 'PORTAL_CONTACT' AND ae.actor_id = :portalContactId)
+             OR (
+               (ae.details->>'project_id') IS NOT NULL
+               AND (ae.details->>'project_id') ~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+               AND (ae.details->>'project_id')::uuid IN (
+                 SELECT project_id FROM customer_projects WHERE customer_id = :customerId
+               )
+             )
+          ORDER BY ae.occurred_at DESC
+          """,
+      countQuery =
+          """
+          SELECT count(*) FROM audit_events ae
+          WHERE (ae.actor_type = 'PORTAL_CONTACT' AND ae.actor_id = :portalContactId)
+             OR (
+               (ae.details->>'project_id') IS NOT NULL
+               AND (ae.details->>'project_id') ~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+               AND (ae.details->>'project_id')::uuid IN (
+                 SELECT project_id FROM customer_projects WHERE customer_id = :customerId
+               )
+             )
+          """)
+  Page<AuditEvent> findActivityForPortalContact(
+      @Param("portalContactId") UUID portalContactId,
+      @Param("customerId") UUID customerId,
+      Pageable pageable);
+
+  /** Portal-contact-authored events only ("Your actions" tab). */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT * FROM audit_events ae
+          WHERE ae.actor_type = 'PORTAL_CONTACT' AND ae.actor_id = :portalContactId
+          ORDER BY ae.occurred_at DESC
+          """,
+      countQuery =
+          """
+          SELECT count(*) FROM audit_events ae
+          WHERE ae.actor_type = 'PORTAL_CONTACT' AND ae.actor_id = :portalContactId
+          """)
+  Page<AuditEvent> findActivityMineForPortalContact(
+      @Param("portalContactId") UUID portalContactId, Pageable pageable);
+
+  /**
+   * Firm-side events on any project linked to the customer ("Firm actions" tab). Excludes
+   * portal-contact-authored events.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT * FROM audit_events ae
+          WHERE ae.actor_type <> 'PORTAL_CONTACT'
+            AND (ae.details->>'project_id') IS NOT NULL
+            AND (ae.details->>'project_id') ~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+            AND (ae.details->>'project_id')::uuid IN (
+              SELECT project_id FROM customer_projects WHERE customer_id = :customerId
+            )
+          ORDER BY ae.occurred_at DESC
+          """,
+      countQuery =
+          """
+          SELECT count(*) FROM audit_events ae
+          WHERE ae.actor_type <> 'PORTAL_CONTACT'
+            AND (ae.details->>'project_id') IS NOT NULL
+            AND (ae.details->>'project_id') ~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
+            AND (ae.details->>'project_id')::uuid IN (
+              SELECT project_id FROM customer_projects WHERE customer_id = :customerId
+            )
+          """)
+  Page<AuditEvent> findActivityFirmForCustomer(
+      @Param("customerId") UUID customerId, Pageable pageable);
 }

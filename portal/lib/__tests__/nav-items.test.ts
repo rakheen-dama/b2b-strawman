@@ -4,8 +4,9 @@ import { PORTAL_NAV_ITEMS, filterNavItems } from "@/lib/nav-items";
 describe("PORTAL_NAV_ITEMS", () => {
   // GAP-P-07: "documents" entry removed — the /documents route is not
   // implemented. Restore once the page exists (ideally behind a module).
-  it("includes all 9 canonical entries", () => {
-    expect(PORTAL_NAV_ITEMS).toHaveLength(9);
+  // GAP-OBS-Portal-Activity (E4.3): "activity" entry added after "acceptance".
+  it("includes all 10 canonical entries", () => {
+    expect(PORTAL_NAV_ITEMS).toHaveLength(10);
     expect(PORTAL_NAV_ITEMS.map((i) => i.id)).toEqual([
       "home",
       "projects",
@@ -16,6 +17,7 @@ describe("PORTAL_NAV_ITEMS", () => {
       "proposals",
       "requests",
       "acceptance",
+      "activity",
     ]);
   });
 });

@@ -34,6 +34,13 @@ type ResponseType = CreateInformationRequestItem["responseType"];
 interface AddItemDialogProps {
   slug: string;
   requestId: string;
+  /**
+   * sortOrder to assign to the new item. Backend's AddItemRequest declares
+   * `int sortOrder` (primitive), so an omitted value would deserialize to 0
+   * and collide with existing items. Compute the next slot in the parent
+   * (e.g. max(existing.sortOrder) + 1) and pass it in.
+   */
+  nextSortOrder: number;
   onSuccess?: (data: InformationRequestResponse) => void;
   children?: React.ReactNode;
 }
@@ -46,7 +53,13 @@ interface AddItemDialogProps {
  * `POST /api/information-requests/{id}/items` (gated by CUSTOMER_MANAGEMENT);
  * this is the firm-side UI surface.
  */
-export function AddItemDialog({ slug, requestId, onSuccess, children }: AddItemDialogProps) {
+export function AddItemDialog({
+  slug,
+  requestId,
+  nextSortOrder,
+  onSuccess,
+  children,
+}: AddItemDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,6 +97,7 @@ export function AddItemDialog({ slug, requestId, onSuccess, children }: AddItemD
         description: description.trim() || undefined,
         responseType,
         required,
+        sortOrder: nextSortOrder,
       };
       const result = await addItemAction(slug, requestId, payload);
       if (result.success && result.data) {

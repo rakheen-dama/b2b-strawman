@@ -75,7 +75,7 @@ describe("AddItemDialog (GAP-L-67)", () => {
 
   it("renders form fields when opened", async () => {
     const user = userEvent.setup();
-    render(<AddItemDialog slug="test-org" requestId="req-1" />);
+    render(<AddItemDialog slug="test-org" requestId="req-1" nextSortOrder={3} />);
 
     await user.click(screen.getByRole("button", { name: /add item/i }));
 
@@ -87,7 +87,7 @@ describe("AddItemDialog (GAP-L-67)", () => {
 
   it("does not call action when name is empty", async () => {
     const user = userEvent.setup();
-    render(<AddItemDialog slug="test-org" requestId="req-1" />);
+    render(<AddItemDialog slug="test-org" requestId="req-1" nextSortOrder={3} />);
 
     await user.click(screen.getByRole("button", { name: /add item/i }));
 
@@ -104,7 +104,7 @@ describe("AddItemDialog (GAP-L-67)", () => {
   it("submits with valid input and calls addItemAction with correct payload", async () => {
     const user = userEvent.setup();
     mockAddItem.mockResolvedValue({ success: true, data: makeUpdatedRequest() });
-    render(<AddItemDialog slug="test-org" requestId="req-1" />);
+    render(<AddItemDialog slug="test-org" requestId="req-1" nextSortOrder={3} />);
 
     await user.click(screen.getByRole("button", { name: /add item/i }));
 
@@ -130,6 +130,7 @@ describe("AddItemDialog (GAP-L-67)", () => {
       description: "Recent utility bill",
       responseType: "FILE_UPLOAD",
       required: true,
+      sortOrder: 3,
     });
     // unused locator silences ts-unused warning
     void submitButton;
@@ -140,7 +141,14 @@ describe("AddItemDialog (GAP-L-67)", () => {
     const updated = makeUpdatedRequest();
     mockAddItem.mockResolvedValue({ success: true, data: updated });
     const onSuccess = vi.fn();
-    render(<AddItemDialog slug="test-org" requestId="req-1" onSuccess={onSuccess} />);
+    render(
+      <AddItemDialog
+        slug="test-org"
+        requestId="req-1"
+        nextSortOrder={3}
+        onSuccess={onSuccess}
+      />
+    );
 
     await user.click(screen.getByRole("button", { name: /add item/i }));
     await user.type(screen.getByTestId("add-item-name-input"), "Proof of address");
@@ -159,7 +167,7 @@ describe("AddItemDialog (GAP-L-67)", () => {
   it("shows error and keeps dialog open when action fails", async () => {
     const user = userEvent.setup();
     mockAddItem.mockResolvedValue({ success: false, error: "Server unavailable" });
-    render(<AddItemDialog slug="test-org" requestId="req-1" />);
+    render(<AddItemDialog slug="test-org" requestId="req-1" nextSortOrder={3} />);
 
     await user.click(screen.getByRole("button", { name: /add item/i }));
     await user.type(screen.getByTestId("add-item-name-input"), "Proof of address");
@@ -180,7 +188,7 @@ describe("AddItemDialog (GAP-L-67)", () => {
   it("toggles responseType between FILE_UPLOAD and TEXT_RESPONSE", async () => {
     const user = userEvent.setup();
     mockAddItem.mockResolvedValue({ success: true, data: makeUpdatedRequest() });
-    render(<AddItemDialog slug="test-org" requestId="req-1" />);
+    render(<AddItemDialog slug="test-org" requestId="req-1" nextSortOrder={3} />);
 
     await user.click(screen.getByRole("button", { name: /add item/i }));
     await user.type(screen.getByTestId("add-item-name-input"), "Notes");

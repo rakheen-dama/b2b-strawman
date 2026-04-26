@@ -37,11 +37,9 @@ function variantFor(visibility: DocumentVisibility): VisibilityVariant {
     case "PORTAL":
       return {
         label: "Portal",
-        tooltipText:
-          "System-managed (auto-shared by closure pack). Toggle from the closure flow.",
+        tooltipText: "System-managed (auto-shared by closure pack). Toggle from the closure flow.",
         nextVisibility: null,
-        className:
-          "text-teal-700/70 dark:text-teal-300/70 cursor-not-allowed",
+        className: "text-teal-700/70 dark:text-teal-300/70 cursor-not-allowed",
         Icon: Send,
       };
     case "INTERNAL":

@@ -288,9 +288,7 @@ export function RequestDetailClient({ request, slug }: RequestDetailClientProps)
               slug={slug}
               requestId={request.id}
               nextSortOrder={
-                sortedItems.length === 0
-                  ? 0
-                  : Math.max(...sortedItems.map((i) => i.sortOrder)) + 1
+                sortedItems.length === 0 ? 0 : Math.max(...sortedItems.map((i) => i.sortOrder)) + 1
               }
               onSuccess={() => router.refresh()}
             />

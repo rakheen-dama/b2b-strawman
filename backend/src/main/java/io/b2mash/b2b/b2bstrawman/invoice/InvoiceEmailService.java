@@ -71,7 +71,10 @@ public class InvoiceEmailService {
       context.put("currency", invoice.getCurrency());
       context.put("dueDate", invoice.getDueDate() != null ? invoice.getDueDate().toString() : null);
       String orgName = (String) context.get("orgName");
-      context.put("subject", "Invoice " + invoice.getInvoiceNumber() + " from " + orgName);
+      // GAP-L-65 -- subject uses the firm's terminology (e.g. "Fee Note INV-... from Acme Law"
+      // for legal-za tenants). invoiceTerm always falls back to "Invoice" via EmailContextBuilder.
+      String invoiceTerm = (String) context.get("invoiceTerm");
+      context.put("subject", invoiceTerm + " " + invoice.getInvoiceNumber() + " from " + orgName);
       // GAP-L-64 — always populate portalUrl so the email "View Invoice" CTA renders with a
       // working href even when no PSP is configured (paymentUrl is null).
       context.put("portalUrl", portalBaseUrl + "/invoices/" + invoice.getId());

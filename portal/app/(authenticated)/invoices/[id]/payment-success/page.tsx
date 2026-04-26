@@ -5,11 +5,13 @@ import Link from "next/link";
 import { ArrowLeft, CheckCircle, Clock, AlertTriangle } from "lucide-react";
 import { usePaymentStatus } from "@/hooks/use-payment-status";
 import { formatDate } from "@/lib/format";
+import { useTerminology } from "@/lib/terminology";
 
 export default function PaymentSuccessPage() {
   const params = useParams();
   const invoiceId = Array.isArray(params.id) ? params.id[0] : (params.id ?? "");
   const { status, paidAt, isPolling, isTimeout } = usePaymentStatus(invoiceId);
+  const { t } = useTerminology();
 
   return (
     <div className="space-y-8">
@@ -19,7 +21,7 @@ export default function PaymentSuccessPage() {
         className="inline-flex min-h-11 items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
       >
         <ArrowLeft className="size-4" />
-        Back to invoice
+        Back to {t("invoice")}
       </Link>
 
       <div className="mx-auto max-w-lg text-center">
@@ -79,7 +81,7 @@ export default function PaymentSuccessPage() {
             href={`/invoices/${invoiceId}`}
             className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-sm font-medium text-white hover:bg-teal-700 sm:w-auto"
           >
-            View Invoice
+            View {t("Invoice")}
           </Link>
         </div>
       </div>

@@ -15,6 +15,7 @@ import {
   PORTAL_NAV_LABELS,
   filterNavItems,
 } from "@/lib/nav-items";
+import { useTerminology } from "@/lib/terminology";
 
 function isItemActive(pathname: string, href: string): boolean {
   if (href === "/home") {
@@ -27,6 +28,7 @@ function NavList({ onItemClick }: { onItemClick?: () => void }) {
   const pathname = usePathname();
   const { brandColor } = useBranding();
   const ctx = usePortalContext();
+  const { t } = useTerminology();
   const items = filterNavItems(PORTAL_NAV_ITEMS, {
     tenantProfile: ctx?.tenantProfile ?? undefined,
     enabledModules: ctx?.enabledModules ?? [],
@@ -65,7 +67,9 @@ function NavList({ onItemClick }: { onItemClick?: () => void }) {
             )}
             <Icon className="size-4 shrink-0" />
             <span className="truncate">
-              {PORTAL_NAV_LABELS[item.labelKey] ?? item.labelKey}
+              {item.labelKey === "portal.nav.invoices"
+                ? t(PORTAL_NAV_LABELS[item.labelKey])
+                : (PORTAL_NAV_LABELS[item.labelKey] ?? item.labelKey)}
             </span>
           </Link>
         );

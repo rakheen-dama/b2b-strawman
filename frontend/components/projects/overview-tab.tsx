@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TerminologyText } from "@/components/terminology-text";
 import { FicaStatusCard } from "@/components/compliance/FicaStatusCard";
+import { RetentionCard } from "@/components/legal/retention-card";
 import type { SetupStep } from "@/components/setup/types";
 import { HealthBadge } from "@/components/dashboard/health-badge";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
@@ -42,6 +43,7 @@ import type { ActivityItem } from "@/lib/actions/activity";
 interface OverviewTabProps {
   projectId: string;
   projectName: string;
+  projectStatus: string;
   customerName: string | null;
   customerId: string | null;
   canManage: boolean;
@@ -60,6 +62,13 @@ interface OverviewTabProps {
    * customer is linked (see the JSX guard).
    */
   ficaStatus: FicaStatus | null;
+  /**
+   * GAP-OBS-Day60-RetentionShape — retention clock anchor + computed end date
+   * for the per-matter RetentionCard. Both null on non-closed matters; the
+   * card self-gates on `status === "CLOSED" && retentionClockStartedAt != null`.
+   */
+  retentionClockStartedAt: string | null;
+  retentionEndsOn: string | null;
 }
 
 function settled<T>(result: PromiseSettledResult<T>): T | null {
@@ -114,6 +123,7 @@ function getReasonBadgeColor(reason: string): string {
 export async function OverviewTab({
   projectId,
   projectName,
+  projectStatus,
   customerName,
   customerId,
   canManage,
@@ -125,6 +135,8 @@ export async function OverviewTab({
   unbilledSummary,
   templateReadiness: _templateReadiness,
   ficaStatus,
+  retentionClockStartedAt,
+  retentionEndsOn,
 }: OverviewTabProps) {
   const { from, to } = resolveDateRange({});
 
@@ -559,6 +571,17 @@ export async function OverviewTab({
               customer is linked to the matter. Info-request-only signal
               today; expandable to adapter + BO coverage later. */}
           {customerId && <FicaStatusCard ficaStatus={ficaStatus} slug={slug} />}
+
+          {/* GAP-OBS-Day60-RetentionShape — per-matter retention end date.
+              Self-gates: only renders when status === "CLOSED" and the
+              retention clock is stamped. Sits below FicaStatusCard so the
+              compliance/lifecycle signals stack together on the right rail. */}
+          <RetentionCard
+            status={projectStatus}
+            retentionClockStartedAt={retentionClockStartedAt}
+            retentionEndsOn={retentionEndsOn}
+            slug={slug}
+          />
 
           {/* Unbilled Time Callout */}
           {unbilledSummary && unbilledSummary.entryCount > 0 && (

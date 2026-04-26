@@ -366,6 +366,125 @@ class MatterClosureControllerIntegrationTest {
   }
 
   // ==========================================================================
+  // GAP-OBS-Day60-RetentionShape — matter detail surfaces retentionEndsOn
+  // ==========================================================================
+
+  @Test
+  void matterDetail_returnsRetentionEndsOn_forClosedMatter_whenRetentionYearsConfigured()
+      throws Exception {
+    // Arrange: explicitly configure retention years (the migration default of 5 isn't applied
+    // by Hibernate when inserting a fresh OrgSettings row — see OrgSettings.java).
+    runInLegalTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var settings = orgSettingsService.getOrCreateForCurrentTenant();
+                  settings.setLegalMatterRetentionYears(7);
+                  orgSettingsRepository.save(settings);
+                }));
+
+    UUID projectId = createProject("Retention Detail Closed Matter");
+
+    // Close the matter via the existing controller path (override=true bypasses gates).
+    String closeBody =
+        """
+        {
+          "reason": "CONCLUDED",
+          "notes": "Close for retention detail test.",
+          "generateClosureLetter": false,
+          "override": true,
+          "overrideJustification": "%s"
+        }
+        """
+            .formatted(VALID_JUSTIFICATION);
+    mockMvc
+        .perform(
+            post("/api/matters/" + projectId + "/closure/close")
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(closeBody))
+        .andExpect(status().isOk());
+
+    // Act + Assert: matter detail returns retentionEndsOn populated.
+    mockMvc
+        .perform(
+            get("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(projectId.toString()))
+        .andExpect(jsonPath("$.status").value("CLOSED"))
+        .andExpect(jsonPath("$.retentionClockStartedAt").isNotEmpty())
+        .andExpect(jsonPath("$.retentionEndsOn").isNotEmpty());
+  }
+
+  @Test
+  void matterDetail_returnsNullRetentionEndsOn_forActiveMatter() throws Exception {
+    // Retention years configured, but the matter is ACTIVE — retentionEndsOn must be null.
+    runInLegalTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var settings = orgSettingsService.getOrCreateForCurrentTenant();
+                  settings.setLegalMatterRetentionYears(5);
+                  orgSettingsRepository.save(settings);
+                }));
+
+    UUID projectId = createProject("Retention Detail Active Matter");
+
+    mockMvc
+        .perform(
+            get("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("ACTIVE"))
+        .andExpect(jsonPath("$.retentionEndsOn").value(org.hamcrest.Matchers.nullValue()));
+  }
+
+  @Test
+  void matterDetail_returnsNullRetentionEndsOn_forClosedMatter_whenRetentionYearsUnset()
+      throws Exception {
+    // Clear retention years on the org so the detail endpoint returns null + logs a warning.
+    runInLegalTenant(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var settings = orgSettingsService.getOrCreateForCurrentTenant();
+                  settings.setLegalMatterRetentionYears(null);
+                  orgSettingsRepository.save(settings);
+                }));
+
+    UUID projectId = createProject("Retention Detail Unconfigured Matter");
+
+    String closeBody =
+        """
+        {
+          "reason": "CONCLUDED",
+          "notes": "Close without configured retention years.",
+          "generateClosureLetter": false,
+          "override": true,
+          "overrideJustification": "%s"
+        }
+        """
+            .formatted(VALID_JUSTIFICATION);
+    mockMvc
+        .perform(
+            post("/api/matters/" + projectId + "/closure/close")
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(closeBody))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            get("/api/projects/" + projectId)
+                .with(TestJwtFactory.ownerJwt(LEGAL_ORG_ID, "user_closure_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("CLOSED"))
+        .andExpect(jsonPath("$.retentionClockStartedAt").isNotEmpty())
+        .andExpect(jsonPath("$.retentionEndsOn").value(org.hamcrest.Matchers.nullValue()));
+  }
+
+  // ==========================================================================
   // Helpers
   // ==========================================================================
 

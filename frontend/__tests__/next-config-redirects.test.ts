@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import nextConfig from "../next.config";
+import nextConfig from "@/next.config";
 
 /**
  * GAP-Doc-Drift-26: legacy /org/:slug/settings/team must redirect to the

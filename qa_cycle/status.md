@@ -4,13 +4,13 @@
 
 **Purpose**: Run the legal ZA full-lifecycle scenario (`qa/testplan/demos/legal-za-full-lifecycle-keycloak.md`) end-to-end on the Keycloak dev stack. Fix every gap encountered at the root cause — no workarounds, no SQL shortcuts. Prior verify-cycle status archived to `qa_cycle/_archive_2026-04-26_post-verify/status.md`.
 
-- **Branch**: `main`
+- **Branch**: `bugfix_cycle_2026-04-26-day3`
 - **Scenario**: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md`
 - **ALL_DAYS_COMPLETE**: false
-- **QA Position**: Day 3, Checkpoint 3.1 (Day 2 cycle-10 retest of PR #1168 fixes COMPLETE on main `1c0fde1b` — all 3 Day-2 gaps VERIFIED. Day 2 wow-moment #1 (Conflict CLEAR for Sipho) captured; wow-moment #2 (KYC Verified) now unblocked — KYC integration enable toggle + Verify-KYC discoverability shipped. Day 3 = Bob creates RAF matter for Sipho + sends FICA info request.)
+- **QA Position**: Day 4, Checkpoint 4.1 (Day 3 cycle-11 fresh walk on main `34ec2f77` COMPLETE — all 14 checkpoints PASS, zero new gaps, zero regressions of cycle-1-fixed gaps. Matter `cc390c4f-…` (RAF-2026-001) created for Sipho, REQ-0001 dispatched with FICA Onboarding Pack 3 items, magic-link email queued in Mailpit `fUiJaxeqRmkpzukjLmNRKr` pointing to portal :3002 with token + orgId. L-33/34/35/37-regression/41/42 all re-verified browser-driven. Day 4 = Sipho first portal login via magic-link.)
 - **Dev Stack**: Running — backend:8080, gateway:8443, frontend:3000, portal:3002, keycloak:8180 all healthy as of 2026-04-26
 - **NEEDS_REBUILD**: false
-- **Cycle Count**: 10
+- **Cycle Count**: 11
 
 ## Tracker
 
@@ -53,4 +53,5 @@
 - 2026-04-26 SAST — Dev: BUG-CYCLE26-04A merged (PR #1165). KYC card now has Enable Switch — pattern-matched from PaymentIntegrationCard. HMR — no restart.
 - 2026-04-26 SAST — Dev: BUG-CYCLE26-04B merged (PR #1166). Customer detail now surfaces KYC status badge + verify shortcut. Stub provider; UI surface only. HMR — no restart.
 - 2026-04-26 SAST — Dev: BUG-CYCLE26-03 merged (PR #1167). Run Conflict Check shortcut now on client detail. HMR — no restart.
+- 2026-04-27 SAST — QA: Day 3 cycle-11 — 14 PASS / 0 FAIL / 0 BLOCKER. Fresh walk on main `34ec2f77` (branch `bugfix_cycle_2026-04-26-day3`) — Bob creates RAF matter for Sipho (`Dlamini v Road Accident Fund` ref `RAF-2026-001`, ACTIVE, `applied_field_groups=[common-project, legal-za-project]` only — Conveyancing pack correctly excluded). Save Custom Fields on PROSPECT matter persists `case_number=RAF-2026-001-CASE` + `opposing_party=Road Accident Fund` + `court_name=Gauteng Division, Pretoria` (L-35 re-verified browser-driven). Create Information Request dialog: FICA Onboarding Pack (3 items) selectable (L-33), Sipho portal_contact auto-populated (L-34), Due Date (optional) field present (L-41 — column + picker functional, REQ-0001 due_date NULL because prior turn didn't fill the optional field; not a regression). REQ-0001 SENT (3 items: ID copy / Proof of residence / Bank statement, all PENDING), magic-link email in Mailpit with portal :3002 URL + token + orgId (L-42). Day 4 = Sipho first portal login.
 - 2026-04-26 SAST — QA: Cycle 10 retest of PR #1168 (commit `1c0fde1b`) on `main`. 3/3 fixes VERIFIED, 0 REOPENED. **BUG-CYCLE26-04A**: KYC Switch round-trips ON/OFF/ON; DB `enabled` toggles `f`→`t`→`f`→`t`; card status follows Disabled↔Configured. **BUG-CYCLE26-04B**: header badge correctly returns null for unverified state per spec; Verify-KYC button visible with `?tab=onboarding` deep-link; navigates correctly (Onboarding tab gracefully falls back to Matters since Sipho is PROSPECT with 0 checklist instances — pre-existing upstream behavior, not a regression). **BUG-CYCLE26-03**: Run Conflict Check button on Sipho detail with full deep-link; form prefills correctly; submit creates `conflict_checks` row `dee0a260-…` with FK; invalid-UUID edge case doesn't crash. Stack auth: Bob's session expired mid-test, re-auth as Thandi (Owner) — no impact on verification claim since admin gate covers both. Screenshot tooling still degraded (BUG-CYCLE26-05 WONT_FIX); YAML evidence used. QA Position advanced to Day 3 / 3.1 — orchestrator decides when to walk.

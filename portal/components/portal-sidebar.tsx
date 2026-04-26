@@ -67,7 +67,9 @@ function NavList({ onItemClick }: { onItemClick?: () => void }) {
             )}
             <Icon className="size-4 shrink-0" />
             <span className="truncate">
-              {t(PORTAL_NAV_LABELS[item.labelKey] ?? item.labelKey)}
+              {item.labelKey === "portal.nav.invoices"
+                ? t(PORTAL_NAV_LABELS[item.labelKey])
+                : (PORTAL_NAV_LABELS[item.labelKey] ?? item.labelKey)}
             </span>
           </Link>
         );

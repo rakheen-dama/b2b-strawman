@@ -1,176 +1,72 @@
-# Day 1 — Firm onboarding polish
-Cycle: 1 | Date: 2026-04-21 | Auth: Keycloak | Frontend: :3000 | Portal: n/a (firm-only day)
+# Day 1 — Firm Onboarding Polish — Cycle 2 Results
 
-Scenario: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md` → Day 1 (checkpoints 1.1–1.7).
+**Branch**: `bugfix_cycle_2026-04-26`
+**Date**: 2026-04-26 SAST (UTC 2026-04-26T19:00–19:06)
+**Tenant**: `mathebula-partners` (tenant_5039f2d497cf)
+**Actor**: Thandi Mathebula (owner) — logged in via Keycloak
+**Stack**: Keycloak dev stack — frontend :3000, BFF gateway :8443, backend :8080, KC :8180, LocalStack S3 :4566
 
-**Resume turn** (20:47 SAST): re-ran 1.1 after PR #1097 (`2a94de5f`) merged fix for GAP-L-23 + cascade GAP-L-24. Both gaps **VERIFIED FIXED** — Save Settings / Logo Upload / Vertical Profile / Portal Digest Cadence all returned 200, values persist in DB and survive page refresh, `fetchProfiles` loads 4 industry profiles instead of the "Failed to load profiles" card. Continued Day 1 through 1.7.
+## Login
 
-Result summary (Day 1 final): **7/7 checkpoints executed. 4 PASS (1.1, 1.3, 1.6, 1.7), 1 FAIL (1.2 — values persist server-side but sidebar UI chrome does not consume `brand_color` / `logo_s3_key`), 1 PARTIAL (1.4 — tariff schedule row closest to scenario ask is "Attendance at court (per day)" at R 7,800 / "Waiting time at court (per hour)" at R 780; effective date is 2024/2025 not 2026), 1 PARTIAL (1.5 — trust account created as GENERAL under L-25 workaround since SECTION_86 absent).** New gaps: **GAP-L-26** (LOW, frontend — brand color + logo saved but not applied to sidebar chrome), **GAP-L-27** (LOW, backend — tax rate seeded as bare "Standard" not "VAT — Standard" for legal-za; carry-forward of OBS-L-05).
+KC OIDC login at `http://localhost:8180/realms/docteams/protocol/openid-connect/auth?client_id=gateway-bff` using `thandi@mathebula-test.local` / `SecureP@ss1`. Redirected back to `/org/mathebula-partners/dashboard`. Console: 0 functional errors (KC favicon 404 only). Day-0 fix L-22 still holding.
 
-## Session prep — Thandi sign-in (post-Day-0 workaround for GAP-L-22)
-
-Per prior `day-01.md` notes and `status.md` GAP-L-22, opened fresh KC logout (`http://localhost:8180/realms/docteams/protocol/openid-connect/logout` -> Logout button -> Logging out confirmation). Fresh OIDC via `http://localhost:8443/oauth2/authorization/keycloak` -> filled `thandi@mathebula-test.local` / `<redacted>` -> landed cleanly on `http://localhost:3000/org/mathebula-partners/dashboard`. Sidebar correctly shows "TM / Thandi Mathebula / thandi@mathebula-test.local". No session-handoff leak this turn — GAP-L-22 workaround held.
-
-## Checkpoint 1.1 — Upload firm logo + set brand colour `#1B3358`, Save
-- Result: **PASS** (re-verified after GAP-L-23 fix)
-- Evidence:
-  - `/settings/general` loaded clean — Vertical Profile card now renders "Legal (South Africa)" with Apply Profile button (disabled because that's already the active profile). No "Failed to load profiles" state. **GAP-L-24 VERIFIED FIXED** in-place.
-  - Typed `#1B3358` into Brand Color text input → swatch preview updated to navy.
-  - Clicked **Save Settings** → `POST /org/mathebula-partners/settings/general` → **200 OK** (was 500 last turn).
-  - Clicked **Upload Logo** → file chooser → uploaded `qa_cycle/test-fixtures/mathebula-logo.png` (PNG 10×10, 4 KB) → `POST` **200 OK** (actually 5+ chained POSTs covering S3 pre-sign + confirm; all 200).
-  - Opened Vertical Profile combobox — 4 options listed: "South African Accounting Firm", "Consulting & Professional Services", "South African Agency & Consulting Firm", "Legal (South Africa)" [selected]. Closed without change. Apply Profile stays disabled because it's already active. **GAP-L-24 VERIFIED** — fetchProfiles works.
-  - Portal digest cadence: opened combobox (options: Weekly / Bi-weekly / Off), selected Bi-weekly → `POST` **200 OK** → DB confirms `portal_digest_cadence = BIWEEKLY`. Reset to Weekly → `POST` **200 OK** → DB confirms `WEEKLY`.
-  - DB read-only diagnostic: `SELECT brand_color, logo_s3_key, document_footer_text, portal_digest_cadence FROM tenant_5039f2d497cf.org_settings;` → `#1B3358 | org/tenant_5039f2d497cf/branding/logo.png | | WEEKLY`. All values persisted.
-  - Browser devtools: **0 × 500 errors** this turn (vs 17 × 500 last turn).
-  - Frontend server log (`.svc/logs/frontend.log`): zero `ReferenceError` / `SyntaxError` / `500` entries during the turn.
-  - Browser console: 0 errors, 0 warnings.
-  - Screenshot: `qa_cycle/checkpoint-results/day-01-1.1-save-settings-OK.png`.
-
-## Checkpoint 1.2 — Refresh → brand colour applied to sidebar, logo renders
-- Result: **FAIL** (new non-blocking gap)
-- Evidence:
-  - Navigated back to `/settings/general` → form rehydrated with `#1B3358` / logo thumbnail rendered next to Upload Logo button with Remove-logo affordance. Portal digest shows Weekly. Server-side persistence confirmed.
-  - Navigated to `/dashboard` → screenshotted.
-  - `window.getComputedStyle(aside).backgroundColor` = `lab(2.214 ...)` (slate-950 default black) — **not** `#1B3358`.
-  - `getComputedStyle(document.documentElement).getPropertyValue('--brand-color')` = empty string (CSS var is never set).
-  - No logo `<img>` element anywhere in the sidebar / header. Header still shows text "Kazi" logotype, not the uploaded Mathebula PNG.
-  - Sidebar treatment for org name "Mathebula & Partners" uses a teal-accent (default tenant accent), not the saved brand color.
-  - Screenshot: `qa_cycle/checkpoint-results/day-01-1.2-dashboard-branding.png`.
-- Gap: **GAP-L-26** (LOW — branding values are persisted (1.1 PASS) but the frontend does not consume them in the app sidebar / header. No `--brand-color` CSS custom property is emitted from the org-settings loader, and there is no logo image wired into the `AppSidebar` / `Navbar` components. Day-1 scenario summary check "Firm branding (logo + colour) persists across logout/login" can only verify the server half, not the UX half.)
-
-## Checkpoint 1.3 — Navigate to Rate Cards / Tariff UI, verify LSSA tariff pre-seeded
-- Result: **PASS** (with route naming discrepancy)
-- Scenario path: "Settings > Rate Cards" — actual tariff UI lives at top-level `/org/<slug>/legal/tariffs`. Settings > Finance > Rates & Currency (`/settings/rates`) is the per-member billing rate sheet (orthogonal feature). Route naming is a copy gap, not a data gap.
-- Evidence:
-  - Navigated `/org/mathebula-partners/legal/tariffs` → page renders "Tariff Schedules / Browse and manage LSSA tariff schedules and items / 1 schedule / LSSA 2024/2025 High Court Party-and-Party / Effective from 2024-04-01 · 19 items".
-  - DB cross-check (read-only): `SELECT name, category, court_level, effective_from, COUNT(items) FROM tariff_schedules ... GROUP BY ...` → `LSSA 2024/2025 High Court Party-and-Party | PARTY_AND_PARTY | HIGH_COURT | 2024-04-01 | 19`. Matches UI.
-
-## Checkpoint 1.4 — Verify specific tariff entry (High Court — attending at court, per hour, 2026 rate)
-- Result: **PARTIAL**
-- Evidence:
-  - Clicked the LSSA schedule row → 7 sections expanded (Sections 1–7). Full item list shown below.
-  - **No exact "High Court — attending at court, per hour" row**. Closest matches in Section 4 (Attendances and Hearings):
-    - 4(a) **Attendance at court (per day)** — Per Day — **R 7,800.00**
-    - 4(b) Attendance at court (per half day) — Per Item — R 4,680.00
-    - 4(c) **Waiting time at court (per hour)** — Per Hour — **R 780.00**
-  - Schedule is LSSA 2024/2025 — **not** the 2026 schedule the scenario expects. `effective_from = 2024-04-01`. No 2026 schedule seeded in DB.
-  - Rates are ZAR-denominated and shown with "R" prefix + two decimals; formatting fine.
-- Gap: not re-logged as separate GAP — this is scenario-vs-seeded-data mismatch (minor), already covered by seeded-data maturity roadmap. Flag for scenario author to either (a) update scenario to "2024/2025 schedule" and "Attendance at court (per day) R 7,800" OR (b) add 2026 schedule to `LegalTariffSeeder`.
-
-## Checkpoint 1.5 — Create Trust Account (SECTION_86, Mathebula Trust — Main)
-- Result: **PARTIAL** (workaround used per GAP-L-25 — created as GENERAL)
-- Evidence:
-  - Navigated `/trust-accounting` → "No Trust Accounts" empty state → clicked **Add Account**.
-  - Dialog fields filled:
-    - Account Name: `Mathebula Trust — Main`
-    - Bank Name: `Standard Bank`
-    - Branch Code: `051001`
-    - Account Number: `12345678`
-    - Account Type: **GENERAL** (only options offered are General / Investment — `SECTION_86` not available; this is GAP-L-25 carried forward)
-    - Opened Date: `2026-04-21` (prefilled)
-    - Set as primary trust account: checked (default)
-    - Require dual approval: unchecked (default)
-  - Clicked **Create Account** → dialog closed, page redirected to the Trust Accounting dashboard showing:
-    - Trust Balance card: "R 0,00 / Mathebula Trust — Main cashbook balance"
-    - Active Clients: 0 / Pending Approvals: 0 / Reconciliation: "Not yet reconciled"
-    - Recent Transactions: "No transactions recorded yet"
-  - DB read-only: `SELECT account_name, bank_name, account_number, account_type, is_primary FROM trust_accounts;` → `Mathebula Trust — Main | Standard Bank | 12345678 | GENERAL | t`. Row created, primary flag set.
-- Gap: GAP-L-25 remains OPEN (Trust Account Type enum missing SECTION_86). Account classification is "GENERAL" instead of the statutory LSSA §86 classification the scenario expects.
-
-## Checkpoint 1.6 — Trust account saves, balance R 0.00, appears in list
-- Result: **PASS**
-- Evidence: Trust Balance card renders "R 0,00 / Mathebula Trust — Main cashbook balance" immediately after create. Persistence verified via DB.
-- Nit: SA number formatting uses comma decimal "R 0,00" — consistent with `ZAR` + `en-ZA` locale; matches currency-rendering requirement downstream.
-
-## Checkpoint 1.7 — Screenshot `day-01-trust-account-created.png`
-- Result: **PASS**
-- Evidence: `qa_cycle/checkpoint-results/day-01-trust-account-created.png`.
-
-## Day 1 summary checks
-- Firm branding (logo + colour) persists across logout/login: **PARTIAL — persists server-side (DB row confirms after refresh), does not render on sidebar UI (GAP-L-26)**.
-- LSSA tariff table pre-populated, non-empty: **PASS — 19 items, Party-and-Party, High Court**; effective year 2024/2025 (scenario expects 2026, flagged but not blocker).
-- Trust account created under Section 86 basis: **PARTIAL — created as GENERAL via L-25 workaround; statutory §86 classification unavailable.**
-
-## Carry-Forward watch-list verifications this turn
-
-| Prior gap | Re-observed? | Notes |
-|---|---|---|
-| GAP-L-22 (post-registration session handoff) | Workaround verified | Explicit KC logout + fresh OIDC login landed Thandi on `/dashboard` with her own identity in sidebar — clean. Still OPEN (needs fix); workaround still reliable. |
-| GAP-L-23 (settings server-actions ReferenceError) | **VERIFIED FIXED** | All 4+ POSTs returned 200. `.svc/logs/frontend.log` clean. DB values persist. |
-| GAP-L-24 (Vertical Profile "Failed to load profiles") | **VERIFIED FIXED (cascade)** | fetchProfiles returns all 4 industry profiles. No error card. |
-| GAP-L-25 (Trust Account Type missing SECTION_86) | Confirmed still present | Dropdown offers only General / Investment. Workaround = GENERAL. Remains OPEN. |
-| OBS-L-05 (tariff / tax naming) | **Re-observed** | Tax rate seeded as bare "Standard" in `tax_rates` (not "VAT — Standard"). Logged as new GAP-L-27 (LOW). Tariff items themselves are well-labelled ("Attendance at court (per day)"). |
-
-## New gaps
-
-| GAP-ID | Severity | Summary |
-|---|---|---|
-| GAP-L-26 | LOW | `/settings/general` Save Settings correctly persists `brand_color` (`#1B3358`) and `logo_s3_key` (`org/tenant_5039f2d497cf/branding/logo.png`) to `org_settings` (verified via DB after the GAP-L-23 fix). However, the frontend app shell does NOT consume those values: sidebar computed `background-color` remains slate-950 default; `--brand-color` CSS custom property on `document.documentElement` is empty; no image tag renders the uploaded logo in sidebar header / navbar. Scenario checkpoint 1.2 ("brand colour applied to sidebar accent + logo renders at top of sidebar") therefore FAILs. Fix likely lives in: (a) `frontend/components/layout/AppSidebar.tsx` or similar — needs to read `orgSettings.brandColor` / `orgSettings.logoUrl` and inject as CSS var + logo src; (b) possibly a `<style>` injection on the org-layout root emitting `--brand-color` from server-rendered props. Owner: frontend. Severity LOW because core persistence works; UX polish missing. |
-| GAP-L-27 | LOW | Tax rate seeded by `legal-za` pack (or common-tax seeder) as bare `"Standard"` with rate 15%. SA users expect `"VAT — Standard"` or `"VAT (Standard)"` for explicit disambiguation (SA legal-za vertical should not use generic accounting labels). Also seeded: `Zero-rated` 0% and `Exempt` 0%. Tenant `org_settings.tax_label` is NULL — legal-za tenant init should probably set `tax_label = 'VAT'` and rename `Standard` -> `VAT — Standard`. This is OBS-L-05 carried forward from prior legal-za archives. Owner: backend (likely `backend/.../vertical/legal/ZaLegalTaxSeeder.java` or the common tax seeder with a legal-za override). Severity LOW — cosmetic copy only. |
-
-## Halt reason
-None — Day 1 completed end-to-end. GAP-L-26 and GAP-L-27 are LOW and do not block progression.
-
-## QA Position on exit
-
-`Day 2 — 2.1` (Onboard Sipho as client, conflict check + KYC, actor = Bob Admin). Next QA turn: context-swap to Bob — explicit KC logout, fresh OIDC login as `bob@mathebula-test.local`.
-
----
-
-# Day 1 Re-Run — Cycle 1 Verify (post-L-25 / post-L-26 merge) — 2026-04-25 04:20 SAST
-
-**Branch**: `bugfix_cycle_2026-04-24`
-**Tenant**: `mathebula-partners` (schema `tenant_5039f2d497cf` — recreated fresh in Day 0 Verify run)
-**Actor**: Thandi Mathebula (Owner) — re-logged in via KC (`thandi@mathebula-test.local` / `<REDACTED>`)
-**Stack**: Keycloak dev stack — frontend :3000, BFF :8443, backend :8080, KC :8180
-
-## Pre-flight
-
-- Day 0 Verify re-run ended with Carol Mokoena logged in (last registered user). Signed out via sidebar user menu → landing page.
-- Navigated to `/dashboard` → KC login form → logged in as `thandi@mathebula-test.local` / `<REDACTED>` → redirect to `/org/mathebula-partners/dashboard`. Sidebar shows "Thandi Mathebula".
-- No console errors on login.
-
-## Checkpoint Results (Cycle 1)
+## Checkpoint Results
 
 | ID | Description | Result | Evidence |
 |----|-------------|--------|----------|
-| 1.1 | Settings > Organization → upload logo + brand colour + Save | PASS | `/settings/general` renders cleanly (L-23 remains VERIFIED — no 500). Clicked Upload Logo button → file chooser → uploaded 291-byte test PNG at `qa_cycle/checkpoint-results/day-01-screenshots/mathebula-logo.png`. Logo uploaded to LocalStack S3, presigned URL returned. Brand colour `#1B3358` typed into Brand Color input. Save Settings clicked → persisted. DB: `org_settings.logo_s3_key = org/tenant_5039f2d497cf/branding/logo.png`, `brand_color = #1B3358`. |
-| 1.2 | Refresh → brand colour applied + logo in sidebar | **PASS — GAP-L-26 VERIFIED FIXED** | After refresh at `/settings/general`, DB values re-hydrated into form. Navigated to `/dashboard`. **`getComputedStyle(document.documentElement).getPropertyValue('--brand-color') = '#1B3358'`** (prior cycle was empty string — now populated). Sidebar contains an `<img>` at 32×32 with src pointing at LocalStack presigned URL for the logo PNG. Screenshot `day-01-trust-account-created.png` shows navy accent stripe on the sidebar (brand-color applied to chrome). |
-| 1.3 | Settings > Rate Cards → LSSA tariff rates pre-seeded | PASS (doc drift reconfirmed) | Scenario says "Settings > Rate Cards" but actual IA places LSSA tariffs at `/legal/tariffs` (`/settings/rates` is per-member billing rates). `/legal/tariffs` shows 1 schedule: **LSSA 2024/2025 High Court Party-and-Party** (court_level=HIGH_COURT, effective 2024-04-01, 19 items, source "LSSA Gazette 2024", is_system=true). DB: `tariff_schedules` 1 row, `tariff_items` 19 rows. |
-| 1.4 | At least one tariff entry for High Court attending per hour in ZAR | PASS | Schedule expanded shows items including **4(a) Attendance at court (per day) — Per Day — R 7,800.00**, **4(c) Waiting time at court (per hour) — Per Hour — R 780.00**. ZAR implicit from `org_settings.default_currency=ZAR` + "R" prefix. Seeded year is 2024/2025 (scenario expected 2026 schedule — rollforward concern, not a blocker). |
-| 1.5 | Settings > Trust Accounts → create Mathebula Trust — Main as SECTION_86 | PASS — **GAP-L-25 VERIFIED FIXED** | `/settings/trust-accounting` → Add Account dialog. **Account Type combobox now offers three options: General, Investment, Section 86 Trust Account** (prior cycle had only General/Investment — L-25 OPEN; now closed via PR #1123 per status.md). Selected "Section 86 Trust Account". Filled Account Name="Mathebula Trust — Main", Bank="Standard Bank", Branch Code="051001", Account Number="12345678". Create Account succeeded on second attempt (first attempt hit required-field validation "Branch code is required" — scenario didn't specify branch code; re-filled and succeeded). |
-| 1.6 | Trust account saves, appears in list with balance R 0.00 | PASS | Settings list row: "Standard Bank · 051001 · 12345678 / **SECTION_86**" + LPFF §86(6) alert banner. Trust Accounting dashboard at `/trust-accounting`: Trust Balance card shows **R 0,00** for "Mathebula Trust — Main cashbook balance". DB: `trust_accounts` single row with `account_type=SECTION_86`, `is_primary=true`, `status=ACTIVE`, `opened_date=2026-04-25`. |
-| 1.7 | 📸 Screenshot `day-01-trust-account-created.png` | PASS | Saved `qa_cycle/checkpoint-results/day-01-screenshots/day-01-trust-account-created.png`. Shows Trust Accounting dashboard + navy brand stripe on sidebar (proof of L-26 visual fix). |
+| 1.1 | Settings > Organization → upload logo (≤200 KB PNG) → set brand colour `#1B3358` → Save | PASS | Settings sidebar entry is labeled **General** (not "Organization") but shows the Branding block with Logo + Brand Color + Footer fields. Uploaded `qa_cycle/test-fixtures/mathebula-logo.png` (10×10 RGB PNG, 75 B). Brand-color text input set to `#1B3358` via native-setter + bubbled events (Playwright `fill()` did not propagate through the controlled input). Save Settings POST body: `["mathebula-partners",{"defaultCurrency":"ZAR","brandColor":"#1B3358","documentFooterText":"$undefined"}]` → 200. DB: `tenant_5039f2d497cf.org_settings.brand_color='#1B3358'`, `logo_s3_key='org/tenant_5039f2d497cf/branding/logo.png'`. Screenshot `day-01-1.1-branding-saved.png`. |
+| 1.2 | Refresh → verify brand colour applied to sidebar accent + logo renders | **PARTIAL — GAP-L-90** | Logo renders correctly in sidebar (presigned LocalStack S3 URL, `alt="Mathebula & Partners logo"`). `--brand-color: #1B3358` is injected as an inline CSS variable on `<html>`, but **no stylesheet rule consumes `var(--brand-color)`** anywhere — search of `document.styleSheets` returns 0 references to `var(--brand-color)`. Sidebar background remains the default dark theme (`lab(2.214 -0.13 -1.01)`), not navy. No element has `color`/`background`/`border` containing `rgb(27, 51, 88)`. Screenshot `day-01-1.2-after-refresh.png`. Logging as `GAP-L-90` (BUG severity, not BLOCKER — branding persists in DB and logo renders, just no color tokens are wired). |
+| 1.3 | Settings > Rate Cards → verify LSSA tariff rates pre-seeded | PASS (with location note) | Sidebar `Settings > Rates & Currency` shows only per-member billing rates (Thandi/Bob/Carol "Not set"), NOT the LSSA tariff schedule. The LSSA schedule lives at `/org/mathebula-partners/legal/tariffs` (legal sub-nav, accessed by direct URL). Heading "Tariff Schedules — 1 schedule — LSSA 2024/2025 High Court Party-and-Party — 19 items". Schedule expands to 7 sections with all 19 items in ZAR. (Naming-only nit, not a defect: scenario says "Settings > Rate Cards" but the legal tariff entry-point is the standalone Tariffs page.) |
+| 1.4 | Verify ≥1 tariff entry: High Court "attending at court, per hour" with current-year (2026) rate in ZAR | **PARTIAL — GAP-L-91** | Closest entry is Section 4(c) "Waiting time at court (per hour)" — Per Hour — **R 780.00 ZAR**. Section 4(a) "Attendance at court (per day) — R 7800.00" and 4(b) "Attendance at court (per half day) — R 4680.00" cover daily/half-day rates. Schedule label is **LSSA 2024/2025**, not 2026. Logging `GAP-L-91` (LOW — LSSA tariff is published every 2-3 years; 2024/2025 schedule is the most recent real-world schedule, scenario expectation of "2026" is aspirational. Recommend dev/product confirm whether a 2026 seed pack should ship before demo.) Screenshot `day-01-1.3-1.4-tariff-schedule.png`. |
+| 1.5 | Settings > Trust Accounts → create Mathebula Trust — Main / Standard Bank / 12345678 / SECTION_86 | PASS | No `Settings > Trust Accounts` link; trust accounts are managed at `/org/mathebula-partners/trust-accounting`. Clicked Add Account, dialog `Add Trust Account` opened. Filled: Account Name `Mathebula Trust — Main`, Bank Name `Standard Bank`, Branch Code `051001` (required field — scenario didn't list it, supplied Standard Bank universal code), Account Number `12345678`, Account Type combobox set to **Section 86 Trust Account** via native-setter + bubbled change event (Playwright select-option did not propagate, same MCP-Radix quirk class as BUG-CYCLE26-01/02). Set as primary = checked (default), Require dual approval = unchecked. Create Account → dialog closed, dashboard refreshed. |
+| 1.6 | Trust account saves, no validation error, appears in list with R 0.00 | PASS | Trust Accounting dashboard now shows: **Trust Balance R 0,00 — Mathebula Trust — Main cashbook balance**. DB row: `account_name='Mathebula Trust — Main', bank_name='Standard Bank', branch_code='051001', account_number='12345678', account_type='SECTION_86', is_primary=true, status='ACTIVE', opened_date='2026-04-26'`. First Create-Account click failed validation ("Branch code is required" surfaced in dialog) — that was a missing-field error on my part, not a defect. After supplying branch code, save succeeded. |
+| 1.7 | 📸 Optional screenshot `day-01-trust-account-created.png` | PASS | `qa_cycle/checkpoint-results/day-01-trust-account-created.png` — Trust Accounting dashboard with Mathebula Trust — Main visible. |
 
-## Day 1 Summary Checkpoints (Cycle 1)
+## Day 1 wrap-up checks
 
-- **Firm branding (logo + colour) persists across logout/login**: PASS — DB persists `logo_s3_key` + `brand_color`; frontend now renders both via `--brand-color` CSS var + sidebar `<img>` (GAP-L-26 FIXED).
-- **LSSA tariff table pre-populated, non-empty**: PASS — 19 items.
-- **Trust account created under Section 86 basis**: PASS — **GAP-L-25 VERIFIED FIXED**. Full statutory §86 classification now available and persisted as `SECTION_86`.
+- [x] **Firm branding (logo) persists across navigation/reload** — Logo persists across `/dashboard → /settings/general → /legal/tariffs → /trust-accounting` and through cookie-clear navigation; presigned URL is regenerated each request. Brand color is persisted in DB but **does not visually apply** anywhere (see GAP-L-90).
+- [x] **LSSA tariff table pre-populated, non-empty** — 1 schedule × 7 sections × 19 items, all in ZAR. (Schedule year 2024/2025, see GAP-L-91.)
+- [x] **Trust account created under Section 86 basis** — Mathebula Trust — Main, account_type=SECTION_86, ACTIVE, R 0.00. DB-confirmed.
 
-## Verify-Focus re-observations
+## Bugs / observations opened this day
 
-- **GAP-L-23** (settings general 500 error): re-VERIFIED — Save Settings returned 200, no 500s, no console errors.
-- **GAP-L-24** (Vertical Profile loader): re-VERIFIED — combobox listed "Legal (South Africa)" correctly without a failure card.
-- **GAP-L-25** (SECTION_86 trust account type): **REGRESSION FIX VERIFIED end-to-end**. Dropdown offers it, backend persists it, list renders it. Prior cycle's PARTIAL is now PASS.
-- **GAP-L-26** (brand-color / logo not applied to sidebar chrome): **VERIFIED FIXED**. `--brand-color` CSS var emits `#1B3358`; sidebar `<img>` renders the uploaded logo at 32×32.
-- **L-27** (VAT/ZAR labels): PARTIALLY VERIFIED — Default Currency combobox shows "ZAR — South African Rand" (currency label VERIFIED). Tax-rate label verification ("VAT — Standard" / "VAT 15%") deferred to Day 7 fee-estimate / Day 28 fee-note checkpoints where the rendered label is exercised end-to-end.
+- **GAP-L-90** — **Severity: BUG** (not BLOCKER, but impacts demo polish). Brand-colour Save Settings flow correctly persists `brand_color` to `tenant_5039f2d497cf.org_settings` and injects `--brand-color: <hex>` as an inline style on `<html>`, but no Tailwind/CSS rule consumes `var(--brand-color)` anywhere in the bundle. Visual outcome: setting brand colour has zero visible effect on sidebar, header, accent, button hover, or any other UI surface. Repro:
+  1. As Thandi, Settings > General > Branding > set Brand Color = `#1B3358`, Save Settings.
+  2. Refresh dashboard.
+  3. Inspect: `getComputedStyle(document.documentElement).getPropertyValue('--brand-color')` → `#1B3358`.
+  4. Search stylesheets for `var(--brand-color)` → 0 hits. No element has `color`/`background`/`border` containing `rgb(27, 51, 88)`.
+  5. Sidebar accent renders default theme palette, identical to a fresh tenant with no brand color set.
 
-## Minor findings (non-blocker, logging informationally)
+  Expected: brand color should drive at least the active sidebar nav-item highlight, primary button surface, or breadcrumb accent — somewhere visible during the firm-onboarding wow moment. Recommend dev wire `--brand-color` into Tailwind theme tokens (e.g. expose as `--accent` override, or add a `data-brand-color` selector that styles `[data-active-nav], button[data-variant=primary]`).
 
-- **MINOR-Doc-Drift-Rates (docs)**: Scenario 1.3 says "Settings > Rate Cards" but actual IA places LSSA tariffs at `/legal/tariffs`, not under Settings. `/settings/rates` is for per-user billing rates. Not a product bug; docs drift only.
-- **MINOR-Trust-Type-Label (cosmetic)**: Trust accounts list in Settings renders the raw enum value `SECTION_86` as the badge. The dropdown shows "Section 86 Trust Account" friendly label. Non-blocker i18n polish concern.
-- **MINOR-Branch-Code-Required (UX, not a bug)**: Trust Account dialog requires a Branch Code; scenario doesn't specify one. Legitimate banking-integrity field. Non-blocker but could be noted in scenario.
+- **GAP-L-91** — **Severity: LOW** (data-freshness, not functional). The legal-za rate pack ships only the LSSA 2024/2025 High Court Party-and-Party schedule (19 items). Scenario 1.4 expects "current-year rate (2026 schedule) in ZAR". Two options: (a) accept 2024/2025 as latest real-world LSSA schedule (LSSA tariffs are revised every 2-3 years; no 2026 schedule has been published), and update scenario language; or (b) ship a stub 2026 schedule in the legal-za seed pack with placeholder rates. Recommend product decide before demo. Functionally, scenario 1.4's "non-empty + ZAR + hourly entry" intent is satisfied by Section 4(c) "Waiting time at court (per hour) R 780.00".
 
-## Tally (Cycle 1)
+## Pre-existing carry-over
 
-- PASS: 7/7 substantive checkpoints + 3 summary checkpoints.
-- FAIL: 0.
-- Blocker: 0.
-- Regression fixes VERIFIED: GAP-L-25, GAP-L-26.
+- **BUG-CYCLE26-01** / **BUG-CYCLE26-02** (LOW, tooling-only) — not retested per Cycle 2 instructions. Encountered the same class of MCP-Radix-Select desync today on the Trust Account Type combobox; native-setter workaround again worked cleanly.
+- **GAP-L-21** (WONT_FIX, no platform-admin access-request detail page) — not relevant on Day 1.
 
-## Next QA Position
+## Console errors observed
 
-**Day 2 — 2.1** (Onboard Sipho as client). Day 2 actor = Bob Ndlovu — context swap to Bob required.
+- Hydration mismatch on Trust Accounting page: Radix-generated `aria-controls` ID differs server vs client (`radix-_R_1cmbn5rknelb_` vs `radix-_R_5iqbn5rknelb_`). Cosmetic; React patches it up on next render. Pre-existing Radix/Next.js 16 RSC quirk.
+- KC favicon 404 (pre-existing).
 
-Day 1 gate (Cycle 1): **CLEARED**. Proceeding to Day 2.
+No functional console errors.
+
+## Wow-moment screenshots
+
+- `day-01-1.1-branding-saved.png` — General Settings with logo + #1B3358 brand color saved.
+- `day-01-1.2-after-refresh.png` — Dashboard after refresh: logo renders, sidebar accent **does NOT** show brand color (gap evidence).
+- `day-01-1.3-1.4-tariff-schedule.png` — Full LSSA 2024/2025 schedule with all 7 sections expanded.
+- `day-01-trust-account-created.png` — Trust Accounting dashboard with Mathebula Trust — Main R 0,00.
+- `day-01-branding-persists.png` — Dashboard after navigation/reload showing logo persistence.
+
+## Summary
+
+**5 PASS / 2 PARTIAL / 0 FAIL / 0 BLOCKER** for Day 1 (7 sub-checkpoints + 3 wrap-up checks).
+
+PARTIALs:
+- 1.2: Brand color does not propagate to UI accents (GAP-L-90, BUG severity).
+- 1.4: LSSA schedule is 2024/2025 not 2026 (GAP-L-91, LOW severity).
+
+Both PARTIALs are non-cascading — Day 2+ does not depend on brand-colour visual rendering or 2026 tariffs. Cycle proceeds to Day 2 next turn.

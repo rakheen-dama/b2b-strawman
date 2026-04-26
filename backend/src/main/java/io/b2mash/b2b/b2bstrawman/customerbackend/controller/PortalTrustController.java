@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.controller;
 
+import io.b2mash.b2b.b2bstrawman.customerbackend.dto.PortalTrustMovementResponse;
 import io.b2mash.b2b.b2bstrawman.customerbackend.dto.PortalTrustStatementDocumentResponse;
 import io.b2mash.b2b.b2bstrawman.customerbackend.dto.PortalTrustSummaryResponse;
 import io.b2mash.b2b.b2bstrawman.customerbackend.dto.PortalTrustTransactionResponse;
@@ -39,6 +40,17 @@ public class PortalTrustController {
   public ResponseEntity<PortalTrustSummaryResponse> getSummary() {
     UUID customerId = RequestScopes.requireCustomerId();
     return ResponseEntity.ok(portalTrustLedgerService.getSummary(customerId));
+  }
+
+  /**
+   * Returns the most recent trust movements across all of the authenticated customer's matters.
+   * Powers the portal home page's "Last trust movement" tile.
+   */
+  @GetMapping("/movements")
+  public ResponseEntity<List<PortalTrustMovementResponse>> listRecentMovements(
+      @RequestParam(defaultValue = "10") int limit) {
+    UUID customerId = RequestScopes.requireCustomerId();
+    return ResponseEntity.ok(portalTrustLedgerService.listRecentMovements(customerId, limit));
   }
 
   /** Returns the paginated trust transaction history for a single matter. */

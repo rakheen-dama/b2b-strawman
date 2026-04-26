@@ -131,4 +131,109 @@ describe("ActivityFeedClient", () => {
       expect(mockLoadMoreActivity).toHaveBeenCalledWith("p1", "TASK", 0);
     });
   });
+
+  it("populates the actor dropdown with distinct actors derived from events", async () => {
+    const user = userEvent.setup();
+    const items = [
+      makeActivityItem({ id: "a1", actorName: "Alice Johnson" }),
+      makeActivityItem({ id: "a2", actorName: "Bob Smith" }),
+      // Duplicate of Alice — should not appear twice in the dropdown.
+      makeActivityItem({ id: "a3", actorName: "Alice Johnson" }),
+      makeActivityItem({ id: "a4", actorName: "Carol Lee" }),
+    ];
+
+    render(<ActivityFeedClient projectId="p1" initialItems={items} initialTotalPages={1} />);
+
+    const trigger = screen.getByRole("combobox", { name: /filter by actor/i });
+    await user.click(trigger);
+
+    await waitFor(() => {
+      expect(screen.getByRole("option", { name: "All actors" })).toBeInTheDocument();
+    });
+    expect(screen.getByRole("option", { name: "Alice Johnson" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Bob Smith" })).toBeInTheDocument();
+    expect(screen.getByRole("option", { name: "Carol Lee" })).toBeInTheDocument();
+
+    // No duplicate Alice entry.
+    expect(screen.getAllByRole("option", { name: "Alice Johnson" })).toHaveLength(1);
+  });
+
+  it("hides events from other actors when an actor is selected", async () => {
+    const user = userEvent.setup();
+    const items = [
+      makeActivityItem({
+        id: "a1",
+        message: "Alice created task A",
+        actorName: "Alice Johnson",
+      }),
+      makeActivityItem({
+        id: "a2",
+        message: "Bob uploaded doc B",
+        actorName: "Bob Smith",
+      }),
+    ];
+
+    render(<ActivityFeedClient projectId="p1" initialItems={items} initialTotalPages={1} />);
+
+    // Both visible initially
+    expect(screen.getByText("Alice created task A")).toBeInTheDocument();
+    expect(screen.getByText("Bob uploaded doc B")).toBeInTheDocument();
+
+    const trigger = screen.getByRole("combobox", { name: /filter by actor/i });
+    await user.click(trigger);
+    await user.click(await screen.findByRole("option", { name: "Alice Johnson" }));
+
+    // Only Alice's event remains visible
+    await waitFor(() => {
+      expect(screen.queryByText("Bob uploaded doc B")).not.toBeInTheDocument();
+    });
+    expect(screen.getByText("Alice created task A")).toBeInTheDocument();
+  });
+
+  it("re-derives the actor list when the events array changes", async () => {
+    const user = userEvent.setup();
+    const initial = [
+      makeActivityItem({ id: "a1", actorName: "Alice Johnson", entityType: "task" }),
+      makeActivityItem({ id: "a2", actorName: "Bob Smith", entityType: "comment" }),
+    ];
+
+    // When the user clicks a chip (e.g. "Tasks"), the component re-fetches and
+    // calls setItems with a fresh array — triggering re-derivation of actors.
+    mockLoadMoreActivity.mockResolvedValue({
+      content: [
+        makeActivityItem({ id: "a3", actorName: "Dana Pritchard", entityType: "task" }),
+        makeActivityItem({ id: "a4", actorName: "Eli Vance", entityType: "task" }),
+      ],
+      page: { totalElements: 2, totalPages: 1, size: 20, number: 0 },
+    });
+
+    render(<ActivityFeedClient projectId="p1" initialItems={initial} initialTotalPages={1} />);
+
+    // Confirm initial actor set in dropdown
+    const trigger = screen.getByRole("combobox", { name: /filter by actor/i });
+    await user.click(trigger);
+    await waitFor(() => {
+      expect(screen.getByRole("option", { name: "Alice Johnson" })).toBeInTheDocument();
+    });
+    expect(screen.getByRole("option", { name: "Bob Smith" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Dana Pritchard" })).not.toBeInTheDocument();
+
+    // Close the dropdown then change the underlying events by clicking an
+    // entity-type chip (which calls loadMoreActivity → setItems).
+    await user.keyboard("{Escape}");
+    await user.click(screen.getByText("Tasks"));
+
+    await waitFor(() => {
+      expect(mockLoadMoreActivity).toHaveBeenCalledWith("p1", "TASK", 0);
+    });
+
+    // Reopen dropdown — actor list should now reflect the new events array.
+    await user.click(screen.getByRole("combobox", { name: /filter by actor/i }));
+    await waitFor(() => {
+      expect(screen.getByRole("option", { name: "Dana Pritchard" })).toBeInTheDocument();
+    });
+    expect(screen.getByRole("option", { name: "Eli Vance" })).toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Alice Johnson" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("option", { name: "Bob Smith" })).not.toBeInTheDocument();
+  });
 });

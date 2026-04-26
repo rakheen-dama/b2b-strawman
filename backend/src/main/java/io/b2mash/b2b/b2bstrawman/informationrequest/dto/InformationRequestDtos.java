@@ -77,7 +77,8 @@ public final class InformationRequestDtos {
         String customerName,
         String projectName,
         String portalContactName,
-        String portalContactEmail) {
+        String portalContactEmail,
+        Map<UUID, String> documentFileNames) {
       long submitted =
           items.stream()
               .filter(
@@ -120,7 +121,15 @@ public final class InformationRequestDtos {
           submitted,
           accepted,
           rejected,
-          items.stream().map(RequestItemResponse::from).toList(),
+          items.stream()
+              .map(
+                  i ->
+                      RequestItemResponse.from(
+                          i,
+                          i.getDocumentId() == null
+                              ? null
+                              : documentFileNames.getOrDefault(i.getDocumentId(), null)))
+              .toList(),
           r.getCreatedAt(),
           r.getUpdatedAt());
     }
@@ -138,6 +147,7 @@ public final class InformationRequestDtos {
       int sortOrder,
       String status,
       UUID documentId,
+      String documentFileName,
       String textResponse,
       String rejectionReason,
       Instant submittedAt,
@@ -146,7 +156,7 @@ public final class InformationRequestDtos {
       Instant createdAt,
       Instant updatedAt) {
 
-    public static RequestItemResponse from(RequestItem item) {
+    public static RequestItemResponse from(RequestItem item, String documentFileName) {
       return new RequestItemResponse(
           item.getId(),
           item.getRequestId(),
@@ -159,6 +169,7 @@ public final class InformationRequestDtos {
           item.getSortOrder(),
           item.getStatus().name(),
           item.getDocumentId(),
+          documentFileName,
           item.getTextResponse(),
           item.getRejectionReason(),
           item.getSubmittedAt(),

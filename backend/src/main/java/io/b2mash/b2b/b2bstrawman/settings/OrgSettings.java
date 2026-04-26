@@ -230,6 +230,18 @@ public class OrgSettings {
   @Column(name = "digest_last_sent_at")
   private Instant digestLastSentAt;
 
+  /**
+   * Per-tenant allowlist (GAP-L-72, slice 23) of generated-document template names whose {@code
+   * DocumentGeneratedEvent} should trigger an immediate portal-contact email via {@code
+   * PortalDocumentNotificationHandler}. Mirrors the JSONB-list shape of {@link #enabledModules}.
+   * Default (set by Flyway V117) is {@code ["matter-closure-letter", "statement-of-account"]}: the
+   * two portal-visible artefacts that warrant a per-event email on top of the weekly digest. An
+   * empty list disables per-event sends without affecting the weekly digest.
+   */
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "portal_notification_doc_types", columnDefinition = "jsonb")
+  private List<String> portalNotificationDocTypes = new ArrayList<>();
+
   protected OrgSettings() {}
 
   public OrgSettings(String defaultCurrency) {
@@ -992,6 +1004,26 @@ public class OrgSettings {
    */
   public void clearDigestLastSent() {
     this.digestLastSentAt = null;
+    this.updatedAt = Instant.now();
+  }
+
+  /**
+   * Returns an immutable view of the portal-notification document-type allowlist (GAP-L-72). The
+   * default JSONB seed ({@code ["matter-closure-letter", "statement-of-account"]}) is applied at
+   * the database layer via Flyway V117 — Java-side defaulting only kicks in when the column is
+   * absent (i.e. on a fresh entity not yet flushed from the DB).
+   */
+  public List<String> getPortalNotificationDocTypes() {
+    return portalNotificationDocTypes != null
+        ? List.copyOf(portalNotificationDocTypes)
+        : new ArrayList<>();
+  }
+
+  public void setPortalNotificationDocTypes(List<String> portalNotificationDocTypes) {
+    this.portalNotificationDocTypes =
+        portalNotificationDocTypes != null
+            ? new ArrayList<>(portalNotificationDocTypes)
+            : new ArrayList<>();
     this.updatedAt = Instant.now();
   }
 

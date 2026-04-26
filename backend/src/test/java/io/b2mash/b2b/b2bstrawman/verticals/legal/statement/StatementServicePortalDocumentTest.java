@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -15,9 +16,11 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
+import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.GenerateStatementRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.StatementResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.event.StatementOfAccountGeneratedEvent;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -29,6 +32,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -46,6 +51,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
+@RecordApplicationEvents
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class StatementServicePortalDocumentTest {
 
@@ -62,6 +68,7 @@ class StatementServicePortalDocumentTest {
   @Autowired private StatementService statementService;
   @Autowired private GeneratedDocumentRepository generatedDocumentRepository;
   @Autowired private DocumentRepository documentRepository;
+  @Autowired private ApplicationEvents events;
 
   private String tenantSchema;
   private UUID memberId;
@@ -146,6 +153,73 @@ class StatementServicePortalDocumentTest {
                   assertThat(paired.getContentType()).isEqualTo("application/pdf");
                   assertThat(paired.getUploadedBy()).isEqualTo(memberId);
                 }));
+  }
+
+  /**
+   * GAP-OBS-Day61 / E2.5 regression: SoA generation must publish BOTH {@link
+   * StatementOfAccountGeneratedEvent} (the SoA-specific domain event) AND {@link
+   * DocumentGeneratedEvent} (the canonical event consumed by NotificationEventHandler /
+   * activity-feed listeners). Pre-fix evidence: {@code StatementService.generate} only published
+   * StatementOfAccountGeneratedEvent, so SoA outputs never showed up on the activity feed or
+   * triggered notifications — unlike standard generated documents going through {@code
+   * GeneratedDocumentService.generateDocument}.
+   */
+  @Test
+  void generate_publishesBothStatementAndDocumentGeneratedEvents() {
+    StatementResponse response =
+        runInTenantReturning(
+            () ->
+                statementService.generate(
+                    projectId,
+                    new GenerateStatementRequest(
+                        LocalDate.parse("2026-05-01"),
+                        LocalDate.parse("2026-05-31"),
+                        /* templateId */ null),
+                    memberId));
+
+    assertThat(response).isNotNull();
+
+    // StatementOfAccountGeneratedEvent — preserved (existing behaviour).
+    var statementEvents =
+        events.stream(StatementOfAccountGeneratedEvent.class)
+            .filter(e -> e.generatedDocumentId().equals(response.id()))
+            .toList();
+    assertThat(statementEvents)
+        .as("StatementOfAccountGeneratedEvent must still publish")
+        .hasSize(1);
+
+    // DocumentGeneratedEvent — new (E2.5 fix). Must mirror GeneratedDocumentService:209 shape so
+    // notification + activity-feed listeners pick up SoA artefacts the same way as canonical
+    // generated documents.
+    var documentEvents =
+        events.stream(DocumentGeneratedEvent.class)
+            .filter(
+                e ->
+                    e.generatedDocumentId() != null
+                        && e.generatedDocumentId().equals(response.id()))
+            .toList();
+    assertThat(documentEvents)
+        .as("DocumentGeneratedEvent must be published from SoA generate")
+        .hasSize(1);
+
+    var docEvent = documentEvents.get(0);
+    assertThat(docEvent.eventType()).isEqualTo("document.generated");
+    assertThat(docEvent.entityType()).isEqualTo("generated_document");
+    assertThat(docEvent.entityId()).isEqualTo(response.id());
+    assertThat(docEvent.projectId()).isEqualTo(projectId);
+    assertThat(docEvent.actorMemberId()).isEqualTo(memberId);
+    assertThat(docEvent.tenantId()).isEqualTo(tenantSchema);
+    assertThat(docEvent.orgId()).isEqualTo(ORG_ID);
+    assertThat(docEvent.occurredAt()).isNotNull();
+    assertThat(docEvent.primaryEntityType()).isEqualTo(TemplateEntityType.PROJECT);
+    assertThat(docEvent.primaryEntityId()).isEqualTo(projectId);
+    assertThat(docEvent.fileName()).isNotBlank();
+    assertThat(docEvent.templateName()).isNotBlank();
+    assertThat(docEvent.details())
+        .containsEntry("scope", "PROJECT")
+        .containsEntry("visibility", "PORTAL")
+        .containsKey("file_name")
+        .containsKey("template_name");
   }
 
   // ── helpers ────────────────────────────────────────────────────────────

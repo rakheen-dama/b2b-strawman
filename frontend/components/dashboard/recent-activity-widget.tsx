@@ -15,6 +15,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { RelativeDate } from "@/components/ui/relative-date";
+import { useTerminology } from "@/lib/terminology";
 import type { CrossProjectActivityItem } from "@/lib/dashboard-types";
 
 interface RecentActivityWidgetProps {
@@ -47,6 +48,8 @@ function getInitials(name: string | null | undefined): string {
 }
 
 export function RecentActivityWidget({ items, orgSlug: _orgSlug }: RecentActivityWidgetProps) {
+  const { t } = useTerminology();
+
   if (items === null) {
     return (
       <Card>
@@ -72,7 +75,7 @@ export function RecentActivityWidget({ items, orgSlug: _orgSlug }: RecentActivit
           <EmptyState
             icon={Activity}
             title="No recent activity"
-            description="Activity will appear as your team works on projects."
+            description={`Activity will appear as your team works on ${t("projects")}.`}
           />
         </CardContent>
       </Card>

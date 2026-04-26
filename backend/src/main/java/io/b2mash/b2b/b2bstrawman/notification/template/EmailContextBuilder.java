@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.notification.template;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.time.Duration;
 import java.util.HashMap;
@@ -14,7 +15,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * Builds the common base context for email templates. Provides org branding (logo, brand color,
- * footer), recipient info, and platform URLs. All email templates receive this base context.
+ * footer), recipient info, terminology overrides (GAP-L-65), and platform URLs. All email templates
+ * receive this base context.
  */
 @Component
 public class EmailContextBuilder {
@@ -26,6 +28,7 @@ public class EmailContextBuilder {
   private final OrgSettingsRepository orgSettingsRepository;
   private final OrganizationRepository organizationRepository;
   private final StorageService storageService;
+  private final EmailTerminology emailTerminology;
   private final String appBaseUrl;
   private final String productName;
 
@@ -33,11 +36,13 @@ public class EmailContextBuilder {
       OrgSettingsRepository orgSettingsRepository,
       OrganizationRepository organizationRepository,
       StorageService storageService,
+      EmailTerminology emailTerminology,
       @Value("${docteams.app.base-url:http://localhost:3000}") String appBaseUrl,
       @Value("${docteams.app.product-name:Kazi}") String productName) {
     this.orgSettingsRepository = orgSettingsRepository;
     this.organizationRepository = organizationRepository;
     this.storageService = storageService;
+    this.emailTerminology = emailTerminology;
     this.appBaseUrl = appBaseUrl;
     this.productName = productName;
   }
@@ -57,7 +62,7 @@ public class EmailContextBuilder {
     context.put("orgName", orgName);
 
     // Branding from tenant-scoped OrgSettings
-    var settings = orgSettingsRepository.findForCurrentTenant().orElse(null);
+    OrgSettings settings = orgSettingsRepository.findForCurrentTenant().orElse(null);
 
     String orgLogoUrl = null;
     String brandColor = DEFAULT_BRAND_COLOR;
@@ -76,6 +81,16 @@ public class EmailContextBuilder {
     context.put("recipientName", recipientName);
     context.put("unsubscribeUrl", unsubscribeUrl);
     context.put("appUrl", appBaseUrl);
+
+    // GAP-L-65 -- terminology overrides keyed by verticalProfile (e.g. legal-za "Invoice" ->
+    // "Fee Note"). Convenience keys avoid Thymeleaf null-safety gymnastics in templates.
+    String namespace = settings != null ? settings.getVerticalProfile() : null;
+    Map<String, String> terminology = emailTerminology.resolve(namespace);
+    context.put("terminology", terminology);
+    context.put("invoiceTerm", terminology.getOrDefault("Invoice", "Invoice"));
+    context.put("invoiceTermLower", terminology.getOrDefault("invoice", "invoice"));
+    context.put("invoiceTermPlural", terminology.getOrDefault("Invoices", "Invoices"));
+    context.put("invoiceTermPluralLower", terminology.getOrDefault("invoices", "invoices"));
 
     return context;
   }

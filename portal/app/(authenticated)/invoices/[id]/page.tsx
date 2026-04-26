@@ -11,6 +11,7 @@ import { InvoiceStatusBadge } from "@/components/invoice-status-badge";
 import { InvoiceLineTable } from "@/components/invoice-line-table";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StickyActionBar } from "@/components/ui/sticky-action-bar";
+import { useTerminology } from "@/lib/terminology";
 import type { PortalInvoiceDetail, PortalDownload } from "@/lib/types";
 
 function PageSkeleton() {
@@ -28,6 +29,7 @@ export default function InvoiceDetailPage() {
   const params = useParams();
   const invoiceId = Array.isArray(params.id) ? params.id[0] : (params.id ?? "");
   const { orgName } = useBranding();
+  const { t } = useTerminology();
 
   const [invoice, setInvoice] = useState<PortalInvoiceDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -95,7 +97,7 @@ export default function InvoiceDetailPage() {
           className="inline-flex min-h-11 items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
         >
           <ArrowLeft className="size-4" />
-          Back to invoices
+          Back to {t("invoices")}
         </Link>
 
         {/* Header */}
@@ -127,7 +129,7 @@ export default function InvoiceDetailPage() {
           <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
             <CheckCircle className="size-5 text-green-600" />
             <p className="text-sm font-medium text-green-700">
-              This invoice has been paid
+              This {t("invoice")} has been paid
             </p>
           </div>
         )}

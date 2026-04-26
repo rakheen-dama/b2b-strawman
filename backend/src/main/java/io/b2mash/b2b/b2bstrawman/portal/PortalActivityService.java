@@ -39,7 +39,12 @@ public class PortalActivityService {
 
   public Page<PortalActivityEventResponse> listActivity(Tab tab, Pageable pageable) {
     UUID customerId = RequestScopes.requireCustomerId();
-    UUID portalContactId = RequestScopes.requirePortalContactId();
+    // PORTAL_CONTACT_ID is bound by CustomerAuthFilter when contact resolution succeeds; the
+    // filter falls through silently when no contact row exists for the authenticated customer
+    // (CustomerAuthFilter.java:96-104). Degrade to firm-only rather than 500 in that case so
+    // the page still renders for customers without a registered contact.
+    UUID portalContactId =
+        RequestScopes.PORTAL_CONTACT_ID.isBound() ? RequestScopes.PORTAL_CONTACT_ID.get() : null;
     // Native queries already ORDER BY occurred_at DESC. Strip any sort the caller passes so
     // Spring does not append a duplicate / property-name-based ORDER BY clause that would fail
     // against the snake_case column names.
@@ -47,11 +52,16 @@ public class PortalActivityService {
     Page<AuditEvent> page =
         switch (tab) {
           case MINE ->
-              auditEventRepository.findActivityMineForPortalContact(portalContactId, unsorted);
+              portalContactId == null
+                  ? Page.empty(unsorted)
+                  : auditEventRepository.findActivityMineForPortalContact(
+                      portalContactId, unsorted);
           case FIRM -> auditEventRepository.findActivityFirmForCustomer(customerId, unsorted);
           case ALL ->
-              auditEventRepository.findActivityForPortalContact(
-                  portalContactId, customerId, unsorted);
+              portalContactId == null
+                  ? auditEventRepository.findActivityFirmForCustomer(customerId, unsorted)
+                  : auditEventRepository.findActivityForPortalContact(
+                      portalContactId, customerId, unsorted);
         };
     return page.map(PortalActivityEventResponse::from);
   }

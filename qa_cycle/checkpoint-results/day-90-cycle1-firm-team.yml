@@ -1,0 +1,167 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e52]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e55]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e61]:
+          - generic [ref=e62]: Clients
+          - img [ref=e63]
+        - button "Finance" [ref=e67]:
+          - generic [ref=e68]: Finance
+          - img [ref=e69]
+        - generic [ref=e72]:
+          - button "Team" [expanded] [ref=e73]:
+            - generic [ref=e74]: Team
+            - img [ref=e75]
+          - link "Team" [ref=e78] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e80]
+            - text: Team
+      - generic [ref=e86]:
+        - link "Notifications" [ref=e87] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e88]
+          - text: Notifications
+        - link "Settings" [ref=e91] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e92]
+          - text: Settings
+        - link "Help" [ref=e95] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e96]
+          - text: Help
+      - generic [ref=e99]:
+        - generic [ref=e100]: TM
+        - generic [ref=e101]:
+          - paragraph [ref=e102]: Thandi Mathebula
+          - paragraph [ref=e103]: thandi@mathebula-test.local
+    - generic [ref=e104]:
+      - banner [ref=e105]:
+        - navigation "Breadcrumb" [ref=e106]:
+          - link "Mathebula & Partners" [ref=e107] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e108]:
+            - img [ref=e109]
+            - generic [ref=e111]: Team
+        - generic [ref=e112]:
+          - button "User menu" [ref=e114]: TM
+          - button "Notifications" [ref=e116]:
+            - img
+            - generic [ref=e117]: 20 unread notifications
+            - generic [ref=e157]: "20"
+      - main [ref=e118]:
+        - generic [ref=e121]:
+          - generic [ref=e122]:
+            - 'heading "Team Help: Team management" [level=1] [ref=e123]':
+              - text: Team
+              - 'button "Help: Team management" [ref=e124] [cursor=pointer]':
+                - img [ref=e125]
+            - generic [ref=e128]: 3 members
+          - generic [ref=e129]:
+            - heading "Invite a team member" [level=2] [ref=e130]
+            - generic [ref=e131]:
+              - generic [ref=e132]:
+                - generic [ref=e133]:
+                  - text: Email address
+                  - textbox "Email address" [ref=e134]:
+                    - /placeholder: colleague@company.com
+                - generic [ref=e135]:
+                  - text: Role
+                  - combobox "Role" [ref=e136]:
+                    - generic: Member
+                    - img
+                  - combobox [ref=e158]
+                - button "Send Invite" [ref=e138]
+              - paragraph [ref=e140]:
+                - text: 5 members
+                - generic [ref=e159]: (2 pending)
+          - generic [ref=e141]:
+            - tablist [ref=e142]:
+              - tab "Members" [selected] [ref=e143]: Members
+              - tab "Pending Invitations" [ref=e145]
+            - tabpanel "Members" [ref=e146]:
+              - table [ref=e161]:
+                - rowgroup [ref=e162]:
+                  - row "Member Email Role Joined" [ref=e163]:
+                    - columnheader "Member" [ref=e164]
+                    - columnheader "Email" [ref=e165]
+                    - columnheader "Role" [ref=e166]
+                    - columnheader "Joined" [ref=e167]
+                - rowgroup [ref=e168]:
+                  - button "Thandi Mathebula thandi@mathebula-test.local Owner —" [ref=e169]:
+                    - cell "Thandi Mathebula" [ref=e170]:
+                      - generic [ref=e171]:
+                        - generic [ref=e172]: TM
+                        - generic [ref=e173]: Thandi Mathebula
+                    - cell "thandi@mathebula-test.local" [ref=e174]
+                    - cell "Owner" [ref=e175]:
+                      - generic [ref=e177]: Owner
+                    - cell "—" [ref=e178]
+                  - button "Bob Ndlovu bob@mathebula-test.local Admin —" [ref=e179]:
+                    - cell "Bob Ndlovu" [ref=e180]:
+                      - generic [ref=e181]:
+                        - generic [ref=e182]: BN
+                        - generic [ref=e183]: Bob Ndlovu
+                    - cell "bob@mathebula-test.local" [ref=e184]
+                    - cell "Admin" [ref=e185]:
+                      - generic [ref=e187]: Admin
+                    - cell "—" [ref=e188]
+                  - button "Carol Mokoena carol@mathebula-test.local Member —" [ref=e189]:
+                    - cell "Carol Mokoena" [ref=e190]:
+                      - generic [ref=e191]:
+                        - generic [ref=e192]: CM
+                        - generic [ref=e193]: Carol Mokoena
+                    - cell "carol@mathebula-test.local" [ref=e194]
+                    - cell "Member" [ref=e195]:
+                      - generic [ref=e197]: Member
+                    - cell "—" [ref=e198]
+  - generic [ref=e199]:
+    - heading "Command Palette" [level=2] [ref=e200]
+    - paragraph [ref=e201]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e153] [cursor=pointer]:
+    - img [ref=e154]
+  - alert [ref=e202]

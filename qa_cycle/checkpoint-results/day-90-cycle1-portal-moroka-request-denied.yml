@@ -1,0 +1,15 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e55]
+      - button "User menu" [ref=e15]
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]
+      - main [ref=e49]
+    - contentinfo [ref=e51]:
+      - paragraph [ref=e53]: Powered by DocTeams

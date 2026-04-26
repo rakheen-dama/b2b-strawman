@@ -1,0 +1,148 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e52]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e55]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e61]:
+          - generic [ref=e62]: Clients
+          - img [ref=e63]
+        - button "Finance" [ref=e67]:
+          - generic [ref=e68]: Finance
+          - img [ref=e69]
+        - generic [ref=e72]:
+          - button "Team" [expanded] [ref=e73]:
+            - generic [ref=e74]: Team
+            - img [ref=e75]
+          - link "Team" [ref=e78] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e79]
+            - text: Team
+      - generic [ref=e85]:
+        - link "Notifications" [ref=e86] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e87]
+          - text: Notifications
+        - link "Settings" [ref=e90] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e91]
+          - text: Settings
+        - link "Help" [ref=e94] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e95]
+          - text: Help
+      - generic [ref=e98]:
+        - generic [ref=e99]: TM
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Thandi Mathebula
+          - paragraph [ref=e102]: thandi@mathebula-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "Mathebula & Partners" [ref=e106] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - link "Trust Accounting" [ref=e110] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting
+          - generic [ref=e111]:
+            - img [ref=e112]
+            - generic [ref=e114]: client-ledgers
+        - generic [ref=e115]:
+          - button "User menu" [ref=e117]: TM
+          - button "Notifications" [ref=e119]:
+            - img
+            - generic [ref=e120]: 20 unread notifications
+            - generic [ref=e176]: "20"
+      - main [ref=e121]:
+        - generic [ref=e124]:
+          - generic [ref=e126]:
+            - heading "Client Ledgers" [level=1] [ref=e127]
+            - paragraph [ref=e128]: Trust account balances by client
+          - generic [ref=e129]:
+            - link "Non-zero balances only" [ref=e130] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/client-ledgers?nonZeroOnly=true
+            - generic [ref=e131]:
+              - textbox "Search clients..." [ref=e132]
+              - button "Search" [ref=e133]
+          - generic [ref=e134]:
+            - generic [ref=e135]:
+              - generic [ref=e136]: Client Balances
+              - generic [ref=e137]: 2 clients found
+            - table [ref=e140]:
+              - rowgroup [ref=e141]:
+                - row "Client Name Trust Balance Total Deposits Total Payments Total Fee Transfers Last Transaction" [ref=e142]:
+                  - columnheader "Client Name" [ref=e143]
+                  - columnheader "Trust Balance" [ref=e144]
+                  - columnheader "Total Deposits" [ref=e145]
+                  - columnheader "Total Payments" [ref=e146]
+                  - columnheader "Total Fee Transfers" [ref=e147]
+                  - columnheader "Last Transaction" [ref=e148]
+              - rowgroup [ref=e149]:
+                - row "Moroka Family Trust R 25 000,00 R 25 000,00 R 0,00 R 0,00 25 Apr 2026" [ref=e150]:
+                  - cell "Moroka Family Trust" [ref=e151]:
+                    - link "Moroka Family Trust" [ref=e152] [cursor=pointer]:
+                      - /url: /org/mathebula-partners/trust-accounting/client-ledgers/2b454c42-ac4e-4e96-af64-4f3d2a409d45
+                  - cell "R 25 000,00" [ref=e153]
+                  - cell "R 25 000,00" [ref=e154]
+                  - cell "R 0,00" [ref=e155]
+                  - cell "R 0,00" [ref=e156]
+                  - cell "25 Apr 2026" [ref=e157]
+                - row "Sipho Dlamini R 0,00 R 70 000,00 R 0,00 R 1 250,00 25 Apr 2026" [ref=e158]:
+                  - cell "Sipho Dlamini" [ref=e159]:
+                    - link "Sipho Dlamini" [ref=e160] [cursor=pointer]:
+                      - /url: /org/mathebula-partners/trust-accounting/client-ledgers/c3ad51f5-2bda-4a27-b626-7b5c63f37102
+                  - cell "R 0,00" [ref=e161]
+                  - cell "R 70 000,00" [ref=e162]
+                  - cell "R 0,00" [ref=e163]
+                  - cell "R 1 250,00" [ref=e164]
+                  - cell "25 Apr 2026" [ref=e165]
+  - generic [ref=e177]:
+    - heading "Command Palette" [level=2] [ref=e178]
+    - paragraph [ref=e179]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e171] [cursor=pointer]:
+    - img [ref=e172]
+  - alert [ref=e175]

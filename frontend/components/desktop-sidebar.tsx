@@ -71,7 +71,12 @@ export function DesktopSidebar({
       </div>
       <div className="mx-4 border-t border-white/10" />
       <div className="flex items-center gap-2 px-4 py-3">
-        <span className="truncate text-xs font-medium text-teal-500/80">{orgName ?? slug}</span>
+        <span
+          className="truncate text-xs font-medium opacity-80"
+          style={{ color: "var(--brand-color)" }}
+        >
+          {orgName ?? slug}
+        </span>
       </div>
       <div className="mx-4 border-t border-white/10" />
 
@@ -156,7 +161,8 @@ export function DesktopSidebar({
                 <motion.div
                   layoutId="sidebar-indicator"
                   aria-hidden="true"
-                  className="absolute top-1 bottom-1 left-0 w-0.5 rounded-full bg-teal-500"
+                  className="absolute top-1 bottom-1 left-0 w-0.5 rounded-full"
+                  style={{ backgroundColor: "var(--brand-color)" }}
                   transition={{ type: "spring", stiffness: 350, damping: 30 }}
                 />
               )}

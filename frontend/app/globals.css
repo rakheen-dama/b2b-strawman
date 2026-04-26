@@ -129,6 +129,10 @@
   --sidebar-accent-foreground: oklch(100% 0 0);
   --sidebar-border: oklch(100% 0 0 / 10%);
   --sidebar-ring: var(--teal-500);
+
+  /* Tenant brand colour — overridable via inline style on <html>.
+     Defaults to teal-500 so unbranded orgs see the standard accent. */
+  --brand-color: var(--teal-500);
 }
 
 .dark {
@@ -167,6 +171,8 @@
   --sidebar-accent-foreground: oklch(100% 0 0);
   --sidebar-border: oklch(100% 0 0 / 10%);
   --sidebar-ring: var(--teal-500);
+
+  --brand-color: var(--teal-500);
 }
 
 @layer base {

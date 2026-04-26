@@ -82,7 +82,8 @@ export function NavZone({ zone, slug, onNavItemClick }: NavZoneProps) {
                     <motion.div
                       layoutId={`sidebar-indicator-${zone.id}`}
                       aria-hidden="true"
-                      className="absolute top-1 bottom-1 left-0 w-0.5 rounded-full bg-teal-500"
+                      className="absolute top-1 bottom-1 left-0 w-0.5 rounded-full"
+                      style={{ backgroundColor: "var(--brand-color)" }}
                       transition={{ type: "spring", stiffness: 350, damping: 30 }}
                     />
                   )}

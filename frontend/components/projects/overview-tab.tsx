@@ -11,7 +11,9 @@ import {
   fetchProjectHealthDetail,
   fetchProjectTaskSummary,
   fetchProjectMemberHours,
+  fetchProjectUpcomingDeadlines,
 } from "@/lib/actions/dashboard";
+import { UpcomingDeadlinesTile } from "@/components/projects/upcoming-deadlines-tile";
 import { fetchProjectActivity } from "@/lib/actions/activity";
 import { api } from "@/lib/api";
 import { resolveDateRange } from "@/lib/date-utils";
@@ -128,7 +130,10 @@ export async function OverviewTab({
   customerId,
   canManage,
   isAdmin,
-  tasks,
+  // GAP-L-58: tasks no longer feed the Upcoming Deadlines tile (which now
+  // unions court_dates + regulatory_deadlines). Kept in the props interface
+  // for backwards-compatibility with the page that still supplies them.
+  tasks: _tasks,
   slug,
   setupStatus,
   setupSteps,
@@ -147,6 +152,7 @@ export async function OverviewTab({
     budgetResult,
     profitabilityResult,
     activityResult,
+    upcomingDeadlinesResult,
   ] = await Promise.allSettled([
     fetchProjectHealthDetail(projectId),
     fetchProjectTaskSummary(projectId),
@@ -158,6 +164,7 @@ export async function OverviewTab({
           .catch(() => null)
       : Promise.resolve(null),
     fetchProjectActivity(projectId, undefined, 0, 10).catch(() => null),
+    fetchProjectUpcomingDeadlines(projectId),
   ]);
 
   const health = settled(healthResult);
@@ -166,6 +173,7 @@ export async function OverviewTab({
   const budgetStatus = settled(budgetResult);
   const profitability = settled(profitabilityResult);
   const activityResponse = settled(activityResult);
+  const upcomingDeadlines = settled(upcomingDeadlinesResult) ?? [];
 
   // Compute margin from profitability data
   const marginPercent = profitability?.currencies?.[0]?.marginPercent ?? null;
@@ -185,15 +193,9 @@ export async function OverviewTab({
   const taskDone = taskSummary?.done ?? 0;
   const taskTotal = taskSummary?.total ?? 0;
 
-  // Tasks: upcoming deadlines
-  const now = new Date();
-  const upcomingTasks = tasks
-    .filter(
-      (t) =>
-        t.dueDate && new Date(t.dueDate) >= now && t.status !== "DONE" && t.status !== "CANCELLED"
-    )
-    .sort((a, b) => new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime())
-    .slice(0, 5);
+  // GAP-L-58: the matter-Overview "Upcoming Deadlines" tile now sources the union of
+  // court_dates + regulatory_deadlines from a backend aggregator (see
+  // fetchProjectUpcomingDeadlines above) instead of task due dates.
 
   const activityItems: ActivityItem[] = activityResponse?.content ?? [];
 
@@ -455,35 +457,14 @@ export async function OverviewTab({
             </CardContent>
           </Card>
 
-          {/* Upcoming Task Deadlines */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Upcoming Deadlines</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {upcomingTasks.length === 0 ? (
-                <p className="text-muted-foreground text-sm italic">No upcoming deadlines</p>
-              ) : (
-                <div className="space-y-1">
-                  {upcomingTasks.map((task) => (
-                    <div key={task.id} className="flex items-center gap-2 py-1.5 pr-2 pl-2">
-                      <CheckSquare className="size-3.5 shrink-0 text-slate-400 dark:text-slate-500" />
-                      <span className="min-w-0 flex-1 truncate text-sm text-slate-700 dark:text-slate-300">
-                        {task.title}
-                      </span>
-                      <span className="text-muted-foreground shrink-0 text-xs">
-                        due{" "}
-                        {new Date(task.dueDate!).toLocaleDateString("en-US", {
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {/*
+            Upcoming Deadlines tile (GAP-L-58 / E9.3) — sources the union of court_dates +
+            regulatory_deadlines from GET /api/projects/{id}/upcoming-deadlines, sorted by
+            date ASC with a per-row badge distinguishing COURT vs REGULATORY. Previously
+            this tile sourced task due dates only; court dates set by the judge never
+            surfaced. The tile component is in the same folder for cohesion.
+          */}
+          <UpcomingDeadlinesTile deadlines={upcomingDeadlines ?? []} />
         </div>
 
         {/* Right panel: budget, time breakdown, team roster, unbilled callout */}

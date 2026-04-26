@@ -109,3 +109,73 @@ Re-entered the cycle after user-directed release of the Day-2 hold. Confirmed Da
 
 **Verification stop**: Day 2 is complete, all gaps observed in the prior cycle-6 run still reproduce on `main`. Advancing QA Position to Day 3 / 3.1.
 
+## Cycle 10 Retest 2026-04-26 SAST — PR #1168 fixes on main
+
+**Branch**: `main` (post-merge of PR #1168, commit `1c0fde1b`)
+**Date**: 2026-04-26 SAST (UTC 21:24–21:34)
+**Tenant**: `mathebula-partners` (tenant_5039f2d497cf)
+**Actor**: Thandi Mathebula (Owner) — `thandi@mathebula-test.local` / `SecureP@ss1` (logged out prior Bob session, re-authenticated as Thandi via Keycloak OIDC at `:8180`)
+**Stack**: Keycloak dev stack — frontend :3000 (HMR auto-loaded merged code), gateway :8443, backend :8080, KC :8180
+
+**Pre-state**: Sipho Dlamini still in DB at `c4f70d86-c292-4d02-9f6f-2e900099ba57`. KYC integration row `(KYC_VERIFICATION, verifynow, enabled=f, key_suffix='-12345')` carried forward from cycle-6 verification.
+
+### Fix 1 — BUG-CYCLE26-04A: KYC Enable Switch on KycIntegrationCard
+
+| Check | Result | Evidence |
+|-------|--------|----------|
+| 1.1 Switch renders in KYC card body when provider configured | PASS | DOM probe: `#enabled-KYC_VERIFICATION` exists, `role=switch`, initial `data-state=unchecked`. YAML: `retest-pr1168-kyc-toggle-before.yml` (`switch "Enabled" [ref=e285]`). Card status badge "Disabled". |
+| 1.2 Toggle ON → switch flips, card status changes to "Configured", DB enabled=true | PASS | After click: `data-state=checked`, `aria-checked=true`. Card text snippet: "KYC Verification / Configured / … / Provider / VerifyNow / Enabled". DB: `SELECT enabled FROM tenant_5039f2d497cf.org_integrations WHERE domain='KYC_VERIFICATION'` → `t`. |
+| 1.3 Toggle OFF → switch flips back, card status "Disabled", DB enabled=false | PASS | YAML: `retest-pr1168-kyc-snapshot-3.yml` shows `[checked]`, after toggle: `data-state=unchecked`, card text "Disabled". DB: `enabled` → `f`. |
+| 1.4 Toggle ON again (final state for downstream tests) | PASS | After final click: `data-state=checked`, card "Configured". DB: `enabled=t`. |
+
+**Result: VERIFIED.** Switch round-trips both directions, server action `toggleIntegrationAction("KYC_VERIFICATION", { enabled })` reaches backend, DB persists, `revalidatePath` re-renders card status correctly.
+
+### Fix 2 — BUG-CYCLE26-04B: KYC status badge + Verify-KYC shortcut
+
+| Check | Result | Evidence |
+|-------|--------|----------|
+| 2.1 Customer detail header renders correctly with Active/Prospect badges | PASS | YAML: `retest-pr1168-customer-detail.yml` — `heading "Sipho Dlamini" / "Active" / "Prospect"`. |
+| 2.2 KYC status badge renders per state derivation (verified/pending/null) | PASS (state=unverified) | Sipho has 0 `checklist_instances` rows (`SELECT id FROM tenant_5039f2d497cf.checklist_instances WHERE customer_id='c4f70d86-…'` → 0 rows). Per `kyc-status-badge.tsx:40`, `unverified` state returns `null` to keep header uncluttered — exactly per spec. Code path verified at `customers/[id]/page.tsx:261–297` — the derivation correctly returns `{state:"unverified"}` and line 505 conditionally renders only when summary is truthy. |
+| 2.3 Verify-KYC outline button visible in admin action bar (`kycStatus.configured && state !== "verified"`) | PASS | YAML shows `link "Verify KYC" [ref=e231]` with `/url: /org/mathebula-partners/customers/c4f70d86-…?tab=onboarding`. ShieldCheck icon present. |
+| 2.4 Click Verify-KYC → URL becomes `?tab=onboarding` | PASS | After click, URL = `…/customers/c4f70d86-c292-4d02-9f6f-2e900099ba57?tab=onboarding`. |
+| 2.5 Onboarding tab is active after navigation | INFORMATIONAL — not a regression | Sipho's lifecycle is `PROSPECT` with 0 checklist instances, so per `customers/[id]/page.tsx:348` (`showOnboardingTab = lifecycleStatus==="ONBOARDING" \|\| checklistInstances.length>0`) the Onboarding tab itself is not rendered. Tabs gracefully fall back to "Matters" (the `customer-tabs.tsx:118` validation). The button correctly emits the documented deep-link URL — the tab being absent is a pre-existing upstream behavior, not introduced by PR #1168. Real-world Day 2→3 path is: Change Status → Onboarding → tab appears → Verify-KYC button lands on it. |
+| 2.6 Edge case: conflict-check button still renders alongside Verify-KYC (reviewer-fix) | PASS | YAML shows both `link "Run Conflict Check" [ref=e229]` AND `link "Verify KYC" [ref=e231]` in same admin action bar block. `enabledModules` fetched outside admin try-catch is working as intended. |
+
+**Optional verified-state badge transition path** (spec §5): SKIPPED — would require completing a checklist verification through KycVerificationDialog, which (a) requires creating a checklist instance first via lifecycle transition or admin checklist setup, and (b) creates Day 3 state outside the retest scope. The badge code path was verified by reading `kyc-status-badge.tsx` (handles all three states) and the derivation logic in `page.tsx:261–297` (correctly walks `verificationStatus="VERIFIED"` items first, then pending, then unverified).
+
+**Result: VERIFIED.** Badge component, derivation logic, and Verify-KYC button gate all behave per spec. Header correctly renders no badge for Sipho's unverified state (intentional UX decision per fix-spec §2 last line).
+
+### Fix 3 — BUG-CYCLE26-03: Run Conflict Check shortcut
+
+| Check | Result | Evidence |
+|-------|--------|----------|
+| 3.1 Run Conflict Check button visible in admin action bar (non-ANONYMIZED + module enabled) | PASS | YAML: `link "Run Conflict Check" [ref=e229]` with `data-testid="run-conflict-check-link"`. |
+| 3.2 Deep-link URL contains `customerId` (UUID), `checkedName`, `checkedIdNumber` | PASS | `/url: /org/mathebula-partners/conflict-check?customerId=c4f70d86-c292-4d02-9f6f-2e900099ba57&checkedName=Sipho+Dlamini&checkedIdNumber=8501015800088`. |
+| 3.3 Conflict-check page reads searchParams and prefills form | PASS | After click, form inputs: `checkedName="Sipho Dlamini"`, `checkedIdNumber="8501015800088"`. Customer combobox shows `option "Sipho Dlamini" [selected]`. Check Type defaults to `"New Client"` [selected]. |
+| 3.4 Submit form → conflict check runs, "No Conflict" result, DB row created | PASS | Click "Run Conflict Check" → response panel: "No Conflict / Checked 'Sipho Dlamini' at 26/04/2026, 23:33:40". History tab now `(3)`. DB: `SELECT FROM tenant_5039f2d497cf.conflict_checks ORDER BY checked_at DESC LIMIT 3` → newest row `dee0a260-e8d9-45af-9960-00f60e4d8951` at `2026-04-26 21:33:40.333326+00`, `result=NO_CONFLICT`, `customer_id=c4f70d86-…`. |
+| 3.5 Edge case: invalid `customerId` (`?customerId=not-a-uuid`) does not crash | PASS | Navigated to `/conflict-check?customerId=not-a-uuid&checkedName=Test&checkedIdNumber=999`. Page renders normally (h2="Conflict Check"), no error overlay. Customer dropdown shows "-- None --" (correctly didn't pre-select on invalid UUID). Name/ID still prefill from valid params. Reviewer-flagged low-risk edge case is NON-BLOCKING per spec. |
+
+**Result: VERIFIED.** Customer-detail action bar surfaces Run Conflict Check, deep-link merges into form defaults, end-to-end conflict-check submission with `customer_id` FK linkage works.
+
+### Surprises / Notes
+
+- **Bob's session expired mid-test**: First toggle-OFF attempt during Fix 1 returned 500 from frontend with `ApiError: Authentication session expired` (cookie age). Re-authenticated as Thandi (Owner) via KC OIDC and the toggle path completed cleanly. Since admin-gated UI surfaces test the same code path for Owner+Admin, switching to Thandi has no impact on the verification claim — both roles satisfy the `isAdmin` gate.
+- **Screenshot tooling still degraded** (BUG-CYCLE26-05 WONT_FIX): `browser_take_screenshot` continues to time out (`Timeout 5000ms exceeded after fonts loaded`). YAML DOM snapshots used as substitute evidence. Prior session captured `day-02-2.4-client-detail.png` for Sipho's detail page so the visual reference exists in the repo.
+- **No regression introduced**: Pre-existing Day-2 evidence (Sipho still in DB with full fields, 3rd conflict-check row inserted, no other unexpected DB churn). KYC integration toggle operates idempotently — DB count unchanged outside the deliberate transitions.
+
+### Summary
+
+**3/3 fixes VERIFIED. 0 REOPENED.**
+
+Evidence files (all in `qa_cycle/checkpoint-results/`):
+- `retest-pr1168-kyc-toggle-before.yml` — initial state (Disabled, switch unchecked)
+- `retest-pr1168-kyc-toggle-after-on.yml` — after first toggle ON (Configured, switch checked)
+- `retest-pr1168-kyc-snapshot-3.yml` — pre-toggle-OFF state
+- `retest-pr1168-kyc-snapshot-4.yml` — post-toggle-OFF (Disabled, switch unchecked)
+- `retest-pr1168-customer-detail.yml` — Sipho detail page with Run Conflict Check + Verify KYC buttons
+- `retest-pr1168-after-verify-kyc-click.yml` — post-Verify-KYC navigation to `?tab=onboarding`
+- `retest-pr1168-sipho-prospect.yml` — full Sipho detail snapshot
+- `retest-pr1168-conflict-check-prefilled.yml` — conflict-check form prefilled with Sipho's values
+
+PNG screenshots `retest-pr1168-kyc-toggle.png` / `retest-pr1168-customer-kyc-badge.png` / `retest-pr1168-conflict-check-prefill.png` could not be captured due to ongoing BUG-CYCLE26-05 (WONT_FIX tooling regression) — YAML evidence is sufficient.
+

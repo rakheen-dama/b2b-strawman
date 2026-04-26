@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.statement;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
@@ -166,6 +167,25 @@ public class StatementService {
     var savedDocument = documentRepository.save(pairedDocument);
     generatedDoc.linkToDocument(savedDocument.getId());
     // generatedDoc is managed in this @Transactional — Hibernate flushes the link on commit.
+
+    // GAP-OBS-Day61 / E2.5: SoA bypasses DocumentService.confirmUpload (which is the canonical
+    // emitter of DocumentCreatedEvent → portal projection upsert). Without this manual publish,
+    // SoA documents never appear in `portal.portal_documents`. Mirror DocumentService.java:320-332.
+    // Slice 25 (E2.6 refactor) will route SoA through the unified path and delete this inline
+    // emission.
+    eventPublisher.publishEvent(
+        new DocumentCreatedEvent(
+            savedDocument.getId(),
+            savedDocument.getProjectId(),
+            savedDocument.getCustomerId(),
+            savedDocument.getFileName(),
+            savedDocument.getScope(),
+            savedDocument.getVisibility(),
+            savedDocument.getS3Key(),
+            savedDocument.getSize(),
+            savedDocument.getContentType(),
+            RequestScopes.requireOrgId(),
+            tenantId));
 
     auditService.log(
         AuditEventBuilder.builder()

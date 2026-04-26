@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
@@ -220,6 +221,23 @@ class StatementServicePortalDocumentTest {
         .containsEntry("visibility", "PORTAL")
         .containsKey("file_name")
         .containsKey("template_name");
+
+    // DocumentCreatedEvent — new (E2.5 fix). Drives the portal.portal_documents projection via
+    // PortalEventHandler.onDocumentCreated. Without this, SoA documents never surface in the
+    // portal projection (the gap the slice is named after).
+    var createdEvents =
+        events.stream(DocumentCreatedEvent.class)
+            .filter(e -> response.id() != null && e.getDocumentId() != null)
+            .filter(e -> e.getProjectId() != null && e.getProjectId().equals(projectId))
+            .toList();
+    assertThat(createdEvents)
+        .as("DocumentCreatedEvent must be published so the portal projection upserts SoA rows")
+        .hasSize(1);
+    var createdEvent = createdEvents.get(0);
+    assertThat(createdEvent.getVisibility()).isEqualTo("PORTAL");
+    assertThat(createdEvent.getFileName()).isNotBlank();
+    assertThat(createdEvent.getOrgId()).isEqualTo(ORG_ID);
+    assertThat(createdEvent.getTenantId()).isEqualTo(tenantSchema);
   }
 
   // ── helpers ────────────────────────────────────────────────────────────

@@ -11,20 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { formatComplianceDateWithTime } from "@/lib/format";
 
 const PAGE_SIZE = 50;
-
-function formatOccurredAt(iso: string): string {
-  const date = new Date(iso);
-  return date.toLocaleString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-}
 
 function resolveActor(event: AuditEventResponse): string {
   if (event.actorId) return event.actorId;
@@ -121,7 +110,7 @@ export default async function AuditLogPage({
                 {content.map((event) => (
                   <TableRow key={event.id}>
                     <TableCell className="font-mono text-xs text-slate-700 dark:text-slate-300">
-                      {formatOccurredAt(event.occurredAt)}
+                      {formatComplianceDateWithTime(event.occurredAt)}
                     </TableCell>
                     <TableCell className="text-xs text-slate-600 dark:text-slate-400">
                       {event.actorType ?? "—"}

@@ -33,6 +33,7 @@ interface ConflictCheckFormProps {
   slug: string;
   initialCustomers?: { id: string; name: string }[];
   initialProjects?: { id: string; name: string }[];
+  initialFormDefaults?: Partial<PerformConflictCheckFormData>;
   onCheckComplete?: () => void;
 }
 
@@ -40,6 +41,7 @@ export function ConflictCheckForm({
   slug,
   initialCustomers,
   initialProjects,
+  initialFormDefaults,
   onCheckComplete,
 }: ConflictCheckFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -59,6 +61,7 @@ export function ConflictCheckForm({
       checkType: "NEW_CLIENT",
       customerId: "",
       projectId: "",
+      ...initialFormDefaults,
     },
   });
 

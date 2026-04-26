@@ -92,6 +92,7 @@ import {
   ArrowRight,
   Download,
   ShieldCheck,
+  Scale,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -136,6 +137,7 @@ export default async function CustomerDetailPage({
   let customerBillingRates: BillingRate[] = [];
   let orgMembers: OrgMember[] = [];
   let defaultCurrency = "USD";
+  let enabledModules: string[] = [];
   let customerProfitability: CustomerProfitabilityResponse | null = null;
   let projectBreakdown: OrgProfitabilityResponse | null = null;
   let customerInvoices: InvoiceResponse[] = [];
@@ -161,6 +163,7 @@ export default async function CustomerDetailPage({
       if (settingsRes?.defaultCurrency) {
         defaultCurrency = settingsRes.defaultCurrency;
       }
+      enabledModules = settingsRes?.enabledModules ?? [];
       customerProfitability = profitabilityRes;
       projectBreakdown = breakdownRes;
       customerInvoices = invoicesRes ?? [];
@@ -488,6 +491,29 @@ export default async function CustomerDetailPage({
                   slug={slug}
                 />
               )}
+            {customer.lifecycleStatus !== "ANONYMIZED" &&
+              enabledModules.includes("conflict_check") &&
+              (() => {
+                const conflictCheckParams = new URLSearchParams();
+                conflictCheckParams.set("customerId", customer.id);
+                if (customer.name) {
+                  conflictCheckParams.set("checkedName", customer.name);
+                }
+                if (customer.idNumber) {
+                  conflictCheckParams.set("checkedIdNumber", customer.idNumber);
+                }
+                return (
+                  <Button asChild variant="outline" size="sm">
+                    <Link
+                      href={`/org/${slug}/conflict-check?${conflictCheckParams.toString()}`}
+                      data-testid="run-conflict-check-link"
+                    >
+                      <Scale className="mr-1.5 size-4" />
+                      <TerminologyText template="Run Conflict Check" />
+                    </Link>
+                  </Button>
+                );
+              })()}
             {customerTemplates.length > 0 && customer.lifecycleStatus !== "ANONYMIZED" && (
               <GenerateDocumentDropdown
                 templates={customerTemplates}

@@ -1,0 +1,197 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e53]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e55] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e56]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e62]:
+          - generic [ref=e63]: Clients
+          - img [ref=e64]
+        - button "Finance" [ref=e68]:
+          - generic [ref=e69]: Finance
+          - img [ref=e70]
+        - generic [ref=e73]:
+          - button "Team" [expanded] [ref=e74]:
+            - generic [ref=e75]: Team
+            - img [ref=e76]
+          - link "Team" [ref=e79] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e80]
+            - text: Team
+      - generic [ref=e86]:
+        - link "Notifications" [ref=e87] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e88]
+          - text: Notifications
+        - link "Settings" [ref=e91] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e92]
+          - text: Settings
+        - link "Help" [ref=e95] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e96]
+          - text: Help
+      - generic [ref=e99]:
+        - generic [ref=e100]: BN
+        - generic [ref=e101]:
+          - paragraph [ref=e102]: Bob Ndlovu
+          - paragraph [ref=e103]: bob@mathebula-test.local
+    - generic [ref=e104]:
+      - banner [ref=e105]:
+        - navigation "Breadcrumb" [ref=e106]:
+          - link "Mathebula & Partners" [ref=e107] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e314]:
+            - img [ref=e315]
+            - link "information-requests" [ref=e317] [cursor=pointer]:
+              - /url: /org/mathebula-partners/information-requests
+          - generic [ref=e318]:
+            - img [ref=e319]
+            - generic [ref=e321]: d8a58ade-9912-4dde-b931-b7e349afbe9b
+        - generic [ref=e116]:
+          - button "User menu" [ref=e118]: BN
+          - button "Notifications" [ref=e120]:
+            - img
+            - generic [ref=e121]: 7 unread notifications
+            - generic [ref=e122]: "7"
+      - main [ref=e123]:
+        - generic [ref=e323]:
+          - link "Back to Sipho Dlamini" [ref=e325] [cursor=pointer]:
+            - /url: /org/mathebula-partners/customers/c4f70d86-c292-4d02-9f6f-2e900099ba57
+            - img [ref=e326]
+            - text: Back to Sipho Dlamini
+          - generic [ref=e328]:
+            - generic [ref=e329]:
+              - generic [ref=e330]:
+                - heading "REQ-0002" [level=1] [ref=e331]
+                - generic [ref=e332]: In Progress
+              - generic [ref=e333]:
+                - link "Sipho Dlamini" [ref=e334] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/customers/c4f70d86-c292-4d02-9f6f-2e900099ba57
+                - generic [ref=e335]: "|"
+                - generic [ref=e336]: Dlamini v Road Accident Fund
+            - button [ref=e338]:
+              - img
+          - generic [ref=e339]:
+            - generic [ref=e340]:
+              - generic [ref=e341]:
+                - img [ref=e342]
+                - text: Contact
+              - paragraph [ref=e345]: Sipho Dlamini
+              - paragraph [ref=e346]: sipho.portal@example.com
+            - generic [ref=e347]:
+              - generic [ref=e348]:
+                - img [ref=e349]
+                - text: Reminder Interval
+              - paragraph [ref=e352]: Every 5 days
+            - generic [ref=e353]:
+              - generic [ref=e354]:
+                - img [ref=e355]
+                - text: Sent
+              - paragraph [ref=e357]: Apr 27, 2026
+            - generic [ref=e358]:
+              - generic [ref=e359]:
+                - img [ref=e360]
+                - text: Due
+              - paragraph [ref=e362]: No due date
+            - generic [ref=e363]:
+              - generic [ref=e364]:
+                - img [ref=e365]
+                - text: Progress
+              - generic [ref=e367]:
+                - progressbar [ref=e368]
+                - generic [ref=e370]: 0/3 accepted
+          - generic [ref=e371]:
+            - heading "Items (3)" [level=2] [ref=e373]
+            - generic [ref=e374]:
+              - generic [ref=e376]:
+                - generic [ref=e377]:
+                  - generic [ref=e378]:
+                    - generic [ref=e379]: ID copy
+                    - generic [ref=e380]: File Upload
+                    - generic [ref=e381]: Submitted
+                  - paragraph [ref=e382]: Certified copy of the client's South African ID document or passport bio page. Must be certified by a Commissioner of Oaths, SAPS, or other accepted certifier within the last 3 months.
+                - generic [ref=e383]:
+                  - button "Accept" [ref=e384]:
+                    - img
+                    - text: Accept
+                  - button "Reject" [ref=e385]:
+                    - img
+                    - text: Reject
+              - generic [ref=e387]:
+                - generic [ref=e388]:
+                  - generic [ref=e389]:
+                    - generic [ref=e390]: Proof of residence (≤ 3 months)
+                    - generic [ref=e391]: File Upload
+                    - generic [ref=e392]: Submitted
+                  - paragraph [ref=e393]: Recent utility bill, municipal rates account, bank statement, or similar document confirming the client's residential address. Document date must be within the last 3 months.
+                - generic [ref=e394]:
+                  - button "Accept" [ref=e395]:
+                    - img
+                    - text: Accept
+                  - button "Reject" [ref=e396]:
+                    - img
+                    - text: Reject
+              - generic [ref=e398]:
+                - generic [ref=e399]:
+                  - generic [ref=e400]:
+                    - generic [ref=e401]: Bank statement (≤ 3 months)
+                    - generic [ref=e402]: File Upload
+                    - generic [ref=e403]: Submitted
+                  - paragraph [ref=e404]: Most recent bank statement evidencing the client's source of funds. Statement must be dated within the last 3 months and show the client's name, account number, and at least one transaction.
+                - generic [ref=e405]:
+                  - button "Accept" [ref=e406]:
+                    - img
+                    - text: Accept
+                  - button "Reject" [ref=e407]:
+                    - img
+                    - text: Reject
+  - generic [ref=e148]:
+    - heading "Command Palette" [level=2] [ref=e149]
+    - paragraph [ref=e150]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e156] [cursor=pointer]:
+    - img [ref=e157]
+  - alert [ref=e160]

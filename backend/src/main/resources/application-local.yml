@@ -85,6 +85,15 @@ portal:
 integration:
   encryption-key: dGhpcy1pcy1hLTMyLWJ5dGUtbG9jYWwtZGV2LWtleSE=
 
+# Dev-only mock payment gateway: the checkout page is served by MockPaymentController
+# on the backend (port 8080), NOT the Next.js frontend (port 3000). docteams.app.base-url
+# points at the frontend, so we set an explicit backend host here for the mock checkout
+# redirect URL. See GAP-L-66.
+docteams:
+  payment:
+    mock:
+      checkout-base-url: http://localhost:8080
+
 cors:
   allowed-origins:
     - http://localhost:3000

@@ -52,3 +52,12 @@ portal:
     secret: ${PORTAL_JWT_SECRET}
   magic-link:
     secret: ${PORTAL_MAGIC_LINK_SECRET}
+
+# Dev-only mock payment gateway: the checkout page is served by MockPaymentController
+# on the backend (port 8080), NOT the Next.js frontend. docteams.app.base-url points at
+# the frontend, so we set an explicit backend host here for the mock checkout redirect
+# URL. See GAP-L-66.
+docteams:
+  payment:
+    mock:
+      checkout-base-url: ${MOCK_PAYMENT_CHECKOUT_BASE_URL:http://localhost:8080}

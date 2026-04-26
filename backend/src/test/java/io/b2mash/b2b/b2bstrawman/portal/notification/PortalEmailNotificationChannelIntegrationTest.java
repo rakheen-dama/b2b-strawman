@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.retainer.event.RetainerPeriodRolloverEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
 import jakarta.mail.internet.MimeMessage;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -167,6 +168,80 @@ class PortalEmailNotificationChannelIntegrationTest {
   }
 
   // ──────────────────────────────────────────────────────────────────────
+  // Trust deposit recorded (GAP-Trust-Nudge-Email-Missing) — DEPOSIT
+  // bypasses the awaiting-approval flow and goes straight to RECORDED, so
+  // without this listener the client never gets notified by email.
+  // ──────────────────────────────────────────────────────────────────────
+
+  @Test
+  void trustRecordedEvent_depositTriggersTrustActivityEmail() throws Exception {
+    UUID txnId = UUID.randomUUID();
+    UUID trustAccountId = UUID.randomUUID();
+
+    publishInsideTenantTxn(
+        () ->
+            eventPublisher.publishEvent(
+                TrustTransactionRecordedEvent.recorded(
+                    txnId,
+                    trustAccountId,
+                    "DEPOSIT",
+                    new BigDecimal("750.00"),
+                    customerId,
+                    memberId,
+                    tenantSchema,
+                    ORG_ID)));
+
+    assertThat(greenMail.waitForIncomingEmail(5000, 1)).isTrue();
+    MimeMessage[] received = greenMail.getReceivedMessages();
+    boolean matched = false;
+    for (MimeMessage msg : received) {
+      if (CONTACT_EMAIL.equals(msg.getAllRecipients()[0].toString())
+          && msg.getSubject() != null
+          && msg.getSubject().toLowerCase().contains("trust account activity")) {
+        matched = true;
+        break;
+      }
+    }
+    assertThat(matched)
+        .as("trust-activity email should be received for DEPOSIT recorded event")
+        .isTrue();
+
+    var logs = findLogsByReferenceType("PORTAL_TRUST_ACTIVITY");
+    assertThat(logs)
+        .as("delivery log should record referenceType=PORTAL_TRUST_ACTIVITY for DEPOSIT")
+        .isNotEmpty();
+  }
+
+  @Test
+  void trustRecordedEvent_nonDepositDoesNotTriggerEmail() throws Exception {
+    int before = countNewChannelLogs();
+
+    publishInsideTenantTxn(
+        () ->
+            eventPublisher.publishEvent(
+                TrustTransactionRecordedEvent.recorded(
+                    UUID.randomUUID(),
+                    UUID.randomUUID(),
+                    "TRANSFER_OUT",
+                    new BigDecimal("250.00"),
+                    customerId,
+                    memberId,
+                    tenantSchema,
+                    ORG_ID)));
+
+    // Wait briefly to let any phantom listeners run; expect none.
+    greenMail.waitForIncomingEmail(2000, 1);
+
+    int after = countNewChannelLogs();
+    assertThat(after)
+        .as(
+            "Non-DEPOSIT recorded events (TRANSFER_OUT/TRANSFER_IN) must NOT trigger a portal email "
+                + "— WITHDRAWAL/FEE_TRANSFER/REFUND have their own notifications coming in E5.1, "
+                + "and double-sending is forbidden by ADR-258.")
+        .isEqualTo(before);
+  }
+
+  // ──────────────────────────────────────────────────────────────────────
   // Retainer period rollover
   // ──────────────────────────────────────────────────────────────────────
 
@@ -305,6 +380,7 @@ class PortalEmailNotificationChannelIntegrationTest {
     java.util.Set<Class<?>> allowed =
         java.util.Set.of(
             TrustTransactionApprovalEvent.class,
+            TrustTransactionRecordedEvent.class,
             RetainerPeriodRolloverEvent.class,
             FieldDateApproachingEvent.class);
 

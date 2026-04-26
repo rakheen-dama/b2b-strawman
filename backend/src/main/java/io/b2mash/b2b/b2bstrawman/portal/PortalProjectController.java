@@ -37,7 +37,12 @@ public class PortalProjectController {
             .map(
                 p ->
                     new PortalProjectResponse(
-                        p.id(), p.name(), p.description(), p.documentCount(), p.createdAt()))
+                        p.id(),
+                        p.name(),
+                        p.status(),
+                        p.description(),
+                        p.documentCount(),
+                        p.createdAt()))
             .toList();
 
     return ResponseEntity.ok(response);
@@ -80,7 +85,12 @@ public class PortalProjectController {
   }
 
   public record PortalProjectResponse(
-      UUID id, String name, String description, long documentCount, Instant createdAt) {}
+      UUID id,
+      String name,
+      String status,
+      String description,
+      long documentCount,
+      Instant createdAt) {}
 
   public record PortalProjectDetailResponse(
       UUID id,

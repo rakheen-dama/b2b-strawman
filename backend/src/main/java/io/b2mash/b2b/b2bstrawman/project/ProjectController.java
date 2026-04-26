@@ -190,8 +190,9 @@ public class ProjectController {
     var pwr = projectService.getProject(id, actor);
     var tags = entityTagService.getEntityTags("PROJECT", id);
     var memberNames = projectService.resolveProjectMemberNames(List.of(pwr.project()));
+    LocalDate retentionEndsOn = projectService.computeRetentionEndsOn(pwr.project());
     return ResponseEntity.ok(
-        ProjectResponse.from(pwr.project(), pwr.projectRole(), tags, memberNames));
+        ProjectResponse.from(pwr.project(), pwr.projectRole(), tags, memberNames, retentionEndsOn));
   }
 
   @PostMapping
@@ -385,6 +386,7 @@ public class ProjectController {
       String completedByName,
       Instant archivedAt,
       Instant retentionClockStartedAt,
+      LocalDate retentionEndsOn,
       String projectRole,
       Map<String, Object> customFields,
       List<UUID> appliedFieldGroups,
@@ -415,6 +417,7 @@ public class ProjectController {
           project.getArchivedAt(),
           project.getRetentionClockStartedAt(),
           null,
+          null,
           project.getCustomFields(),
           project.getAppliedFieldGroups(),
           List.of(),
@@ -441,6 +444,7 @@ public class ProjectController {
           project.getCompletedBy() != null ? memberNames.get(project.getCompletedBy()) : null,
           project.getArchivedAt(),
           project.getRetentionClockStartedAt(),
+          null,
           projectRole,
           project.getCustomFields(),
           project.getAppliedFieldGroups(),
@@ -455,6 +459,21 @@ public class ProjectController {
         String projectRole,
         List<TagResponse> tags,
         Map<UUID, String> memberNames) {
+      return from(project, projectRole, tags, memberNames, null);
+    }
+
+    /**
+     * Detail-endpoint factory that includes the per-matter retention end date
+     * (GAP-OBS-Day60-RetentionShape). {@code retentionEndsOn} is null whenever the matter is not
+     * CLOSED, the retention clock isn't stamped, or the org's {@code legalMatterRetentionYears} is
+     * unconfigured (see {@link ProjectService#computeRetentionEndsOn}).
+     */
+    public static ProjectResponse from(
+        Project project,
+        String projectRole,
+        List<TagResponse> tags,
+        Map<UUID, String> memberNames,
+        LocalDate retentionEndsOn) {
       return new ProjectResponse(
           project.getId(),
           project.getName(),
@@ -471,6 +490,7 @@ public class ProjectController {
           project.getCompletedBy() != null ? memberNames.get(project.getCompletedBy()) : null,
           project.getArchivedAt(),
           project.getRetentionClockStartedAt(),
+          retentionEndsOn,
           projectRole,
           project.getCustomFields(),
           project.getAppliedFieldGroups(),

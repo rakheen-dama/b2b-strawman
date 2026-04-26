@@ -26,6 +26,18 @@ export interface Project {
   completedByName: string | null;
   archivedAt: string | null;
   closedAt: string | null;
+  /**
+   * Stamped on first ACTIVE→COMPLETED or ACTIVE→CLOSED transition (ADR-249) and preserved across
+   * reopens. Anchors the per-matter retention clock for legal-vertical CLOSED matters.
+   */
+  retentionClockStartedAt: string | null;
+  /**
+   * GAP-OBS-Day60-RetentionShape — server-computed retention end date for CLOSED matters,
+   * derived from `retentionClockStartedAt + orgSettings.legalMatterRetentionYears`. Null when
+   * the matter isn't closed, the clock isn't stamped, or the org's retention years aren't
+   * configured.
+   */
+  retentionEndsOn: string | null;
   projectRole: ProjectRole | null;
   customFields?: Record<string, unknown>;
   appliedFieldGroups?: string[];

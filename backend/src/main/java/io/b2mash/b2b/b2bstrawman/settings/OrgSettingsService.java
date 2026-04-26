@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -385,6 +386,25 @@ public class OrgSettingsService {
         .findForCurrentTenant()
         .map(OrgSettings::getDefaultCurrency)
         .orElse(DEFAULT_CURRENCY);
+  }
+
+  /**
+   * Returns the raw {@code legal_matter_retention_years} value for the current tenant — without
+   * applying the {@link OrgSettings#DEFAULT_LEGAL_MATTER_RETENTION_YEARS} fallback. Returns {@link
+   * Optional#empty()} when no settings row exists, when the column is null, or when the stored
+   * value is &le; 0 (defensive — the DB CHECK enforces &ge; 1, but legacy rows or future schema
+   * widening shouldn't surface a misleading retention end-date).
+   *
+   * <p>Used by the matter detail endpoint (GAP-OBS-Day60-RetentionShape) where a missing/zero value
+   * must surface as {@code retentionEndsOn = null} rather than masking a misconfigured tenant with
+   * the silent 5-year default.
+   */
+  @Transactional(readOnly = true)
+  public Optional<Integer> getRawLegalMatterRetentionYears() {
+    return orgSettingsRepository
+        .findForCurrentTenant()
+        .map(OrgSettings::getLegalMatterRetentionYears)
+        .filter(years -> years != null && years > 0);
   }
 
   /**

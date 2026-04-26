@@ -22,14 +22,17 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskStatus;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneOffset;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +56,7 @@ public class ProjectService {
   private final ProjectFieldService projectFieldService;
   private final ProjectDeletionGuard projectDeletionGuard;
   private final CustomerProjectRepository customerProjectRepository;
+  private final OrgSettingsService orgSettingsService;
 
   public ProjectService(
       ProjectRepository repository,
@@ -65,7 +69,8 @@ public class ProjectService {
       TimeEntryRepository timeEntryRepository,
       ProjectFieldService projectFieldService,
       ProjectDeletionGuard projectDeletionGuard,
-      CustomerProjectRepository customerProjectRepository) {
+      CustomerProjectRepository customerProjectRepository,
+      OrgSettingsService orgSettingsService) {
     this.repository = repository;
     this.projectMemberRepository = projectMemberRepository;
     this.projectAccessService = projectAccessService;
@@ -77,6 +82,44 @@ public class ProjectService {
     this.projectFieldService = projectFieldService;
     this.projectDeletionGuard = projectDeletionGuard;
     this.customerProjectRepository = customerProjectRepository;
+    this.orgSettingsService = orgSettingsService;
+  }
+
+  /**
+   * Computes the per-matter retention end date (GAP-OBS-Day60-RetentionShape) for a CLOSED matter.
+   *
+   * <p>Returns {@code null} when:
+   *
+   * <ul>
+   *   <li>the project is not in {@link ProjectStatus#CLOSED} state, or
+   *   <li>{@code retentionClockStartedAt} is null (matter was never closed), or
+   *   <li>the org's {@code legalMatterRetentionYears} setting is null/missing/zero — in which case
+   *       a non-fatal log line is emitted to surface the misconfiguration. We deliberately do NOT
+   *       fall back to {@link OrgSettings#DEFAULT_LEGAL_MATTER_RETENTION_YEARS} here so the UI can
+   *       distinguish "configured" from "unconfigured" tenants.
+   * </ul>
+   *
+   * <p>Calendar-year arithmetic via {@link LocalDate#plusYears(long)} so leap years don't shift the
+   * end date by a day. The clock instant is normalised to UTC before truncation.
+   */
+  LocalDate computeRetentionEndsOn(Project project) {
+    if (project.getStatus() != ProjectStatus.CLOSED) {
+      return null;
+    }
+    Instant clock = project.getRetentionClockStartedAt();
+    if (clock == null) {
+      return null;
+    }
+    Optional<Integer> years = orgSettingsService.getRawLegalMatterRetentionYears();
+    if (years.isEmpty()) {
+      log.debug(
+          "Cannot compute retentionEndsOn for project {}: legalMatterRetentionYears is "
+              + "null/zero/missing on the org. UI will hide the retention card until the setting "
+              + "is configured under data-protection settings.",
+          project.getId());
+      return null;
+    }
+    return clock.atZone(ZoneOffset.UTC).toLocalDate().plusYears(years.get());
   }
 
   @Transactional(readOnly = true)

@@ -767,6 +767,7 @@ export default async function ProjectDetailPage({
           <OverviewTab
             projectId={id}
             projectName={project.name}
+            projectStatus={project.status}
             customerName={customers.length > 0 ? customers[0].name : null}
             customerId={customers.length > 0 ? customers[0].id : null}
             canManage={canManage}
@@ -778,6 +779,8 @@ export default async function ProjectDetailPage({
             unbilledSummary={unbilledSummary}
             templateReadiness={templateReadiness}
             ficaStatus={ficaStatus}
+            retentionClockStartedAt={project.retentionClockStartedAt}
+            retentionEndsOn={project.retentionEndsOn}
           />
         }
         documentsPanel={

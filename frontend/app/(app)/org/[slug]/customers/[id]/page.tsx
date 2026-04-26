@@ -134,21 +134,25 @@ export default async function CustomerDetailPage({
     // Non-fatal: show empty documents list if fetch fails
   }
 
+  // Org settings drive currency + module gates for both admin and non-admin
+  // surfaces (e.g. the conflict-check button gate). Fetched independently so a
+  // failing admin-only fetch can't suppress module-gated UI.
+  const orgSettings = await api.get<OrgSettings>("/api/settings").catch(() => null);
+  const defaultCurrency = orgSettings?.defaultCurrency ?? "USD";
+  const enabledModules: string[] = orgSettings?.enabledModules ?? [];
+
   // Billing rates + org members for the "Rates" tab (admin/owner only)
   let customerBillingRates: BillingRate[] = [];
   let orgMembers: OrgMember[] = [];
-  let defaultCurrency = "USD";
-  let enabledModules: string[] = [];
   let customerProfitability: CustomerProfitabilityResponse | null = null;
   let projectBreakdown: OrgProfitabilityResponse | null = null;
   let customerInvoices: InvoiceResponse[] = [];
   if (isAdmin) {
     try {
-      const [ratesRes, membersRes, settingsRes, profitabilityRes, breakdownRes, invoicesRes] =
-        await Promise.all([
+      const [ratesRes, membersRes, profitabilityRes, breakdownRes, invoicesRes] = await Promise.all(
+        [
           api.get<{ content: BillingRate[] }>(`/api/billing-rates?customerId=${id}`),
           api.get<OrgMember[]>("/api/members"),
-          api.get<OrgSettings>("/api/settings").catch(() => null),
           api
             .get<CustomerProfitabilityResponse>(`/api/customers/${id}/profitability`)
             .catch(() => null),
@@ -158,13 +162,10 @@ export default async function CustomerDetailPage({
           api
             .get<InvoiceResponse[]>(`/api/invoices?customerId=${id}`)
             .catch(() => [] as InvoiceResponse[]),
-        ]);
+        ]
+      );
       customerBillingRates = ratesRes?.content ?? [];
       orgMembers = membersRes;
-      if (settingsRes?.defaultCurrency) {
-        defaultCurrency = settingsRes.defaultCurrency;
-      }
-      enabledModules = settingsRes?.enabledModules ?? [];
       customerProfitability = profitabilityRes;
       projectBreakdown = breakdownRes;
       customerInvoices = invoicesRes ?? [];
@@ -259,18 +260,21 @@ export default async function CustomerDetailPage({
   // verified / pending / unverified.
   const kycSummary: KycSummary | null = (() => {
     if (!kycStatus.configured) return null;
-    let latestVerified: { verifiedAt: string; provider: string } | null = null;
+    let latestVerified: { verifiedAt: string | null; provider: string } | null = null;
     let hasPending = false;
     for (const inst of checklistInstances) {
       for (const item of inst.items ?? []) {
-        if (
-          item.verificationStatus === "VERIFIED" &&
-          item.verificationProvider &&
-          item.verifiedAt
-        ) {
-          if (!latestVerified || item.verifiedAt > latestVerified.verifiedAt) {
+        // A VERIFIED item without a verifiedAt timestamp is still verified —
+        // don't demote it to "pending". The badge tolerates a null timestamp.
+        if (item.verificationStatus === "VERIFIED" && item.verificationProvider) {
+          const itemVerifiedAt = item.verifiedAt ?? null;
+          const isNewer =
+            !latestVerified ||
+            (itemVerifiedAt &&
+              (latestVerified.verifiedAt === null || itemVerifiedAt > latestVerified.verifiedAt));
+          if (isNewer) {
             latestVerified = {
-              verifiedAt: item.verifiedAt,
+              verifiedAt: itemVerifiedAt,
               provider: item.verificationProvider,
             };
           }

@@ -156,3 +156,52 @@ Day 7 complete clean — proceeding directly to Day 8 in same turn.
 
 `Day 8 — 8.1 (next)` — same turn continuing.
 
+---
+
+## Cycle 14 (2026-04-27) — Day 7 fresh walk on main 3e018078
+
+**Branch**: `bugfix_cycle_2026-04-26-day7`
+**Auth**: Keycloak — context swap from Bob (Day 5 actor) to Thandi (Owner) via gateway POST /logout + KC login (`thandi@mathebula-test.local` / `SecureP@ss1`).
+**Pre-state**: Sipho Dlamini ACTIVE (id `c4f70d86-…`), RAF matter `cc390c4f-…` ACTIVE, REQ-0002 COMPLETED. Mailpit purged. `proposals=0`, `acceptance_requests=0`, `generated_documents=0` at start.
+
+### Session prep (auth context swap)
+
+- Tried User-menu DropdownMenu in app — Radix popover failed to render despite `aria-expanded=true` after MCP click (mirrors prior cycle observation; Radix dropdown / MCP click race).
+- Triggered logout via in-page JS form POST to `http://localhost:8443/logout` with CSRF token from `/bff/csrf` (mirrors `performKeycloakLogout` in `frontend/components/auth/user-menu-bff.tsx`).
+- Re-authed at KC login screen as Thandi → landed on `/org/mathebula-partners/dashboard` as "Thandi Mathebula" (sidebar `<aside p>` confirms email `thandi@mathebula-test.local`).
+- Mid-walk JWT expired at `2026-04-26T23:42:15Z` (Spring Cloud Gateway TokenRelay using stale access token; refresh did not fire). Recovered by navigating to `http://localhost:8443/oauth2/authorization/keycloak` which forced a fresh code grant (KC SSO session was still alive, so silent re-auth completed). After this, RAF matter detail rendered cleanly.
+
+### Checkpoints (Day 7)
+
+| ID | Description | Result | Evidence | Gap |
+|---|---|---|---|---|
+| 7.1 | Matter-level "+ New Engagement Letter" CTA opens proposal-create dialog | **PASS (L-48 verified)** | RAF matter detail header now exposes `New Engagement Letter` button (`data-testid=matter-new-engagement-letter`) alongside `Generate Document` / `Edit` / `Delete`. Click opens `New Engagement Letter` dialog; `Customer` combobox is pre-selected `Sipho Dlamini` and **disabled** (locked to matter's customer — correct UX; no broken `/api/customers` 404 anymore). Filled Title `RAF Litigation Engagement — Sipho Dlamini`, Fee Model `Hourly`, Hourly Rate Note `R850/hr per LSSA 2024/2025 schedule`, Expiry `2026-05-04`. Clicked Create Proposal → routed to `/org/mathebula-partners/proposals/0781c5ad-…`. DB row: `proposals.id=0781c5ad-bc4a-4796-a546-6e51a7b27226 / proposal_number=PROP-0001 / status=DRAFT / fee_model=HOURLY / hourly_rate_note='R850/hr per LSSA 2024/2025 schedule' / expires_at=2026-05-04 23:59:59+00`. **GAP-L-48 (HIGH) VERIFIED on UI** — matter-level CTA is the canonical happy path; org-level proposals-page customer combobox is no longer the only path. Evidence files: `day07-cycle14-7.1-matter-detail.yml`, `day07-cycle14-7.1-engagement-dialog.yml`, `day07-cycle14-7.2-proposal-detail.yml`. | L-48 VERIFIED |
+| 7.2 | Template dropdown shows legal-specific proposal templates; pick Litigation Engagement | **SKIPPED-BY-DESIGN** | Matter-level New Engagement Letter dialog exposes Title / Customer (locked) / Fee Model / Hourly Rate Note / Expiry Date only — **no template dropdown**. The proposal entity scaffold (Title + Fee Model + free-text Hourly Rate Note) is the product reality; legal-specific Litigation/Conveyancing/Standard/General engagement-letter templates only surface under the matter-level `Generate Document` flow (separate code path), not on the proposal entity. Cascade of L-49 — clause/template-driven proposal authoring is Sprint 3 deferred. | L-49 (Sprint 3) |
+| 7.3 | Fee estimate auto-populates with LSSA tariff line items | **SKIPPED-BY-DESIGN** | Proposal detail page (`/proposals/0781c5ad-…`) renders only `Proposal Details` block (Fee Model / Hourly Rate (free text) / Created / Expires) — no fee-estimate section, no LSSA tariff lookup, no line-item table. | L-49 (Sprint 3) |
+| 7.4 | Adjust hours (30h Bob + 5h Thandi) — auto ZAR | **SKIPPED-BY-DESIGN** | No hours / rate / fee inputs on proposal entity. Cascade of 7.3. | L-49 (Sprint 3) |
+| 7.5 | Engagement scope in Tiptap | **SKIPPED-BY-DESIGN** | No Tiptap editor on proposal entity. `content_json` column exists but no UI surface to edit it. Cascade of L-49. | L-49 (Sprint 3) |
+| 7.6 | Effective date + 7-day expiry | **PARTIAL** | Expiry-date input exists on the create dialog (filled `2026-05-04`); DB stores `expires_at` correctly. **No effective-date field** (scenario asserts effective=Day 10, expiry=Day 17). Same as cycle-1: effective-date concept not modelled. | — |
+| 7.7 | Save → status=Draft | **PASS** | Proposal detail page header shows "RAF Litigation Engagement — Sipho Dlamini" + status badge `Draft` + `PROP-0001`. DB row confirms `status=DRAFT`. Single-step create (no separate Save action — Create Proposal button on the dialog acts as Save). | — |
+| 7.8 | Send for Acceptance → confirmation → Confirm | **FAIL — BLOCKER (BUG-CYCLE26-06 NEW)** | Click Send Proposal → opens `Send Proposal` dialog with Recipient combobox; selected `Sipho Dlamini (sipho.portal@example.com)` (only option). Click Send → dialog stays open with red-text validation: **"2 required field(s) missing for Proposal Sending"**. Backend `ProposalService.sendProposal()` calls `prerequisiteService.checkForContext(PROPOSAL_SEND, EntityType.CUSTOMER, customerId)` which checks **`Customer.contact_name` + `Customer.contact_email`** must be populated. Sipho's customer row has both fields NULL (`contact_name=NULL, contact_email=NULL`). Sipho IS an `INDIVIDUAL` customer with a working portal_contact (the very contact the user just selected as Recipient — `sipho.portal@example.com`), but the prerequisite check looks at the customer-entity contact fields, not the portal contact. UX trap: the dialog allowed Recipient selection but Send fails after submit. **No surface in the proposal/matter UI explains which 2 fields are missing or links to fix**. | **BUG-CYCLE26-06 (HIGH, blocker for proposal send when customer is INDIVIDUAL with portal_contact-only addressing)** |
+| 7.9–7.11 | Sent status / acceptance URL / Mailpit / portal href | **BLOCKED** | Cannot exercise — proposal stuck in DRAFT pending 7.8. Mailpit empty (purged at session start, no proposal email queued). | Cascade of BUG-CYCLE26-06 |
+
+### New gaps
+
+| GAP-ID | Severity | Summary |
+|---|---|---|
+| BUG-CYCLE26-06 | **HIGH** | Sending a proposal to an INDIVIDUAL customer fails with "2 required field(s) missing for Proposal Sending" because the `PROPOSAL_SEND` structural prerequisite (`StructuralPrerequisiteCheck.PROPOSAL_SEND_FIELDS`) checks `Customer.contact_name` + `Customer.contact_email` — but for INDIVIDUAL customers in the legal-za vertical, the canonical addressable contact is the **portal_contact** (the same one the firm just selected as Recipient in the Send dialog). The customer-entity contact fields are blank by design (the "Add Client" dialog for INDIVIDUAL doesn't surface contact_name / contact_email — those are reserved for COMPANY customers where the natural-person liaison differs from the legal entity). UI surface in the dialog reads "2 required field(s) missing" with no link to which fields or where to set them. Owner: backend (proposal prerequisite logic) — for INDIVIDUAL customers, fall back to the portal_contact identity OR to the customer's `name` + a portal-contact email (if exactly one ACTIVE portal contact exists). Alt fix: surface the missing fields in the Send dialog with a deep-link to `/customers/{id}` so the user can populate them inline. **Blocks all of Day 7 from 7.8 onwards (Send / acceptance URL / email)**. Evidence: `day07-cycle14-7.9-after-send.yml` — paragraph `2 required field(s) missing for Proposal Sending`; backend file `prerequisite/StructuralPrerequisiteCheck.java` `PROPOSAL_SEND_FIELDS = [contact_name, contact_email]`. |
+
+### Halt reason
+
+7.8 BLOCKER for proposal-send on INDIVIDUAL customer. Rest of Day 7 (7.9 status transition, 7.10 Mailpit, 7.11 portal URL) cascades. Per dispatch rules: blocker → log GAP, stop, exit.
+
+### QA Position on exit
+
+`Day 7 — 7.8 (BLOCKED on BUG-CYCLE26-06; needs prereq logic fix or UX deep-link before Day 7 can complete)`.
+
+### Carry-forward observations
+
+- L-48 fix (matter-level CTA) is **VERIFIED on UI** for the first time (cycle-1 was workaround via Generate Document; verify cycle was REST-only). The org-level `/proposals` page Customer combobox path was *not* exercised this turn — only the canonical matter-level New Engagement Letter happy path. Spec note: matter-scoped create disables the Customer combobox (locked to matter's customer) which is correct UX.
+- L-49 (Sprint 3 deferred — clause-driven authoring + LSSA tariff fee block) — confirmed still Sprint 3; product reality remains a thin proposal scaffold (Title + Fee Model + free-text rate note + expiry).
+- Mid-walk JWT expiry recovered via gateway re-auth — not a regression, just session age. Refresh-token rotation isn't firing automatically when the page sits idle past access-token TTL; minor UX papercut, not a Day-7 blocker.
+

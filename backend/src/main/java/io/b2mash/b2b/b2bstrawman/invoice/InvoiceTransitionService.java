@@ -6,6 +6,8 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.event.InvoiceSyncEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.TaxContext;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceApprovedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoicePaidEvent;
+import io.b2mash.b2b.b2bstrawman.event.InvoicePaymentPartiallyReversedEvent;
+import io.b2mash.b2b.b2bstrawman.event.InvoicePaymentReversedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.InvoiceVoidedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -523,6 +525,214 @@ public class InvoiceTransitionService {
     paymentLinkService.refreshPaymentLink(invoice);
 
     return invoiceRenderingService.buildResponse(invoice);
+  }
+
+  /**
+   * Reverses a previously-recorded payment on an invoice. Called from the trust-side reversal path
+   * ({@code TrustTransactionService.reverseTransaction}) when a FEE_TRANSFER linked to this invoice
+   * is reversed.
+   *
+   * <p>Inverse of {@link #recordPayment(UUID, String)} for the manual-payment path: deletes the
+   * named payment_event row, then either flips the invoice {@code PAID → SENT} (no other COMPLETED
+   * payments remain) or keeps it {@code PAID} (multi-payment partial reversal).
+   *
+   * <p>Audit-event types: {@code invoice.payment_reversed} (full) or {@code
+   * invoice.payment_partially_reversed} (partial). These are referenced by the portal /activity
+   * page (slice 20 / E4.3) and must remain stable.
+   *
+   * <p>Uses default {@link org.springframework.transaction.annotation.Propagation#REQUIRED} so it
+   * joins the caller's transaction — trust ledger and invoice changes commit atomically or not at
+   * all.
+   *
+   * @throws InvalidStateException when the invoice is not PAID, the payment event doesn't belong to
+   *     the invoice, or the payment event is not in COMPLETED status (idempotency guard).
+   * @throws ResourceNotFoundException when the invoice or payment event cannot be found.
+   */
+  @Transactional
+  public void reversePayment(UUID invoiceId, UUID paymentEventId) {
+    var invoice =
+        invoiceRepository
+            .findById(invoiceId)
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+
+    if (invoice.getStatus() != InvoiceStatus.PAID) {
+      throw new InvalidStateException(
+          "Invalid status for payment reversal",
+          "Only paid invoices can have a payment reversed (current status: "
+              + invoice.getStatus()
+              + ")");
+    }
+
+    var paymentEvent =
+        paymentEventRepository
+            .findById(paymentEventId)
+            .orElseThrow(() -> new ResourceNotFoundException("PaymentEvent", paymentEventId));
+
+    if (!paymentEvent.getInvoiceId().equals(invoiceId)) {
+      throw new InvalidStateException(
+          "Mismatched payment event",
+          "Payment event " + paymentEventId + " does not belong to invoice " + invoiceId);
+    }
+
+    if (paymentEvent.getStatus() != PaymentEventStatus.COMPLETED) {
+      throw new InvalidStateException(
+          "Payment event not reversible",
+          "Only COMPLETED payment events can be reversed (current status: "
+              + paymentEvent.getStatus()
+              + ")");
+    }
+
+    var amount = paymentEvent.getAmount();
+    paymentEventRepository.delete(paymentEvent);
+    paymentEventRepository.flush();
+
+    var remainingCompleted =
+        paymentEventRepository.findByInvoiceIdAndStatus(invoiceId, PaymentEventStatus.COMPLETED);
+
+    UUID actorId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
+    String tenantIdForEvent = RequestScopes.getTenantIdOrNull();
+    String orgIdForEvent = RequestScopes.getOrgIdOrNull();
+    UUID projectId = inferProjectIdFromInvoice(invoiceId);
+
+    if (remainingCompleted.isEmpty()) {
+      try {
+        invoice.reversePayment();
+      } catch (IllegalStateException e) {
+        throw new ResourceConflictException("Invalid status transition", e.getMessage());
+      }
+      invoice = invoiceRepository.save(invoice);
+
+      log.info(
+          "Reversed payment {} on invoice {} — flipping PAID -> SENT (no other completed payments)",
+          paymentEventId,
+          invoiceId);
+
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("invoice.payment_reversed")
+              .entityType("invoice")
+              .entityId(invoice.getId())
+              .details(buildReversalAuditDetails(invoice, paymentEventId, projectId, amount, false))
+              .build());
+
+      eventPublisher.publishEvent(
+          new InvoicePaymentReversedEvent(
+              "invoice.payment_reversed",
+              "invoice",
+              invoice.getId(),
+              projectId,
+              actorId,
+              resolveActorName(actorId),
+              tenantIdForEvent,
+              orgIdForEvent,
+              Instant.now(),
+              Map.of(
+                  "invoice_number",
+                  invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : "",
+                  "customer_name",
+                  invoice.getCustomerName(),
+                  "payment_event_id",
+                  paymentEventId.toString(),
+                  "amount",
+                  amount.toString()),
+              invoice.getCreatedBy(),
+              invoice.getInvoiceNumber(),
+              invoice.getCustomerName(),
+              invoice.getCustomerId(),
+              paymentEventId,
+              amount));
+
+      eventPublisher.publishEvent(
+          new InvoiceSyncEvent(
+              invoice.getId(),
+              invoice.getCustomerId(),
+              invoice.getInvoiceNumber(),
+              "SENT",
+              invoice.getIssueDate(),
+              invoice.getDueDate(),
+              invoice.getSubtotal(),
+              invoice.getTaxAmount(),
+              invoice.getTotal(),
+              invoice.getCurrency(),
+              invoice.getNotes(),
+              invoice.getPaymentUrl(),
+              invoice.getPaymentSessionId(),
+              orgIdForEvent,
+              tenantIdForEvent,
+              null));
+    } else {
+      log.info(
+          "Reversed payment {} on invoice {} — invoice stays PAID ({} other completed payments remain)",
+          paymentEventId,
+          invoiceId,
+          remainingCompleted.size());
+
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("invoice.payment_partially_reversed")
+              .entityType("invoice")
+              .entityId(invoice.getId())
+              .details(buildReversalAuditDetails(invoice, paymentEventId, projectId, amount, true))
+              .build());
+
+      eventPublisher.publishEvent(
+          new InvoicePaymentPartiallyReversedEvent(
+              "invoice.payment_partially_reversed",
+              "invoice",
+              invoice.getId(),
+              projectId,
+              actorId,
+              resolveActorName(actorId),
+              tenantIdForEvent,
+              orgIdForEvent,
+              Instant.now(),
+              Map.of(
+                  "invoice_number",
+                  invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : "",
+                  "customer_name",
+                  invoice.getCustomerName(),
+                  "payment_event_id",
+                  paymentEventId.toString(),
+                  "amount",
+                  amount.toString(),
+                  "remaining_completed_payments",
+                  String.valueOf(remainingCompleted.size())),
+              invoice.getCreatedBy(),
+              invoice.getInvoiceNumber(),
+              invoice.getCustomerName(),
+              invoice.getCustomerId(),
+              paymentEventId,
+              amount));
+    }
+  }
+
+  private Map<String, Object> buildReversalAuditDetails(
+      Invoice invoice,
+      UUID paymentEventId,
+      UUID projectId,
+      java.math.BigDecimal amount,
+      boolean partial) {
+    var details = new java.util.LinkedHashMap<String, Object>();
+    details.put(
+        "invoice_number", invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : "");
+    details.put("customer_id", invoice.getCustomerId().toString());
+    details.put("payment_event_id", paymentEventId.toString());
+    details.put("amount", amount.toString());
+    details.put("partial", String.valueOf(partial));
+    if (projectId != null) {
+      details.put("project_id", projectId.toString());
+    }
+    return details;
+  }
+
+  /**
+   * Returns the single distinct projectId across the invoice's lines, or null when the invoice
+   * spans multiple matters or has no project-bound lines. Mirrors the inference used by the trust
+   * fee-transfer recording path (GAP-L-69) so reversal events carry the same matter binding.
+   */
+  private UUID inferProjectIdFromInvoice(UUID invoiceId) {
+    var distinctProjectIds = lineRepository.findDistinctProjectIdsByInvoiceId(invoiceId);
+    return distinctProjectIds.size() == 1 ? distinctProjectIds.get(0) : null;
   }
 
   @Transactional

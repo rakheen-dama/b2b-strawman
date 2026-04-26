@@ -31,6 +31,8 @@ public sealed interface DomainEvent
         InvoiceApprovedEvent,
         InvoiceSentEvent,
         InvoicePaidEvent,
+        InvoicePaymentReversedEvent,
+        InvoicePaymentPartiallyReversedEvent,
         InvoiceVoidedEvent,
         DocumentGeneratedEvent,
         TimeEntryChangedEvent,

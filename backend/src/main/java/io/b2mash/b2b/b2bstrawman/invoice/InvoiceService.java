@@ -199,6 +199,16 @@ public class InvoiceService {
     return transitionService.refreshPaymentLink(invoiceId);
   }
 
+  /**
+   * Reverses a previously-recorded payment on an invoice. See {@link
+   * InvoiceTransitionService#reversePayment(UUID, UUID)} for full semantics. Joins the caller's
+   * transaction so it commits atomically with the trust-side reversal.
+   */
+  @Transactional
+  public void reversePayment(UUID invoiceId, UUID paymentEventId) {
+    transitionService.reversePayment(invoiceId, paymentEventId);
+  }
+
   @Transactional
   public InvoiceResponse voidInvoice(UUID invoiceId) {
     return transitionService.voidInvoice(invoiceId);

@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.InformationRequestCancelledEvent;
 import io.b2mash.b2b.b2bstrawman.event.InformationRequestCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.InformationRequestSentEvent;
@@ -54,6 +55,7 @@ public class InformationRequestService {
   private final CustomerRepository customerRepository;
   private final ProjectRepository projectRepository;
   private final PortalContactRepository portalContactRepository;
+  private final DocumentRepository documentRepository;
   private final ApplicationEventPublisher eventPublisher;
   private final AuditService auditService;
   private final MemberRepository memberRepository;
@@ -67,6 +69,7 @@ public class InformationRequestService {
       CustomerRepository customerRepository,
       ProjectRepository projectRepository,
       PortalContactRepository portalContactRepository,
+      DocumentRepository documentRepository,
       ApplicationEventPublisher eventPublisher,
       AuditService auditService,
       MemberRepository memberRepository) {
@@ -78,6 +81,7 @@ public class InformationRequestService {
     this.customerRepository = customerRepository;
     this.projectRepository = projectRepository;
     this.portalContactRepository = portalContactRepository;
+    this.documentRepository = documentRepository;
     this.eventPublisher = eventPublisher;
     this.auditService = auditService;
     this.memberRepository = memberRepository;
@@ -877,8 +881,33 @@ public class InformationRequestService {
       portalContactEmail = contact.get().getEmail();
     }
 
+    Map<UUID, String> documentFileNames = resolveDocumentFileNames(items);
+
     return InformationRequestResponse.from(
-        request, items, customerName, projectName, portalContactName, portalContactEmail);
+        request,
+        items,
+        customerName,
+        projectName,
+        portalContactName,
+        portalContactEmail,
+        documentFileNames);
+  }
+
+  /**
+   * Resolves display file names for any request items that have an attached document. Mirrors the
+   * pattern used in {@code AcceptanceService} (line 822) so the firm-side request-detail UI can
+   * surface the per-item Download button (which is gated on both {@code documentId} and {@code
+   * documentFileName}).
+   */
+  private Map<UUID, String> resolveDocumentFileNames(List<RequestItem> items) {
+    var documentIds =
+        items.stream().map(RequestItem::getDocumentId).filter(Objects::nonNull).distinct().toList();
+    if (documentIds.isEmpty()) {
+      return Map.of();
+    }
+    Map<UUID, String> names = new HashMap<>();
+    documentRepository.findAllById(documentIds).forEach(d -> names.put(d.getId(), d.getFileName()));
+    return names;
   }
 
   /**
@@ -927,8 +956,15 @@ public class InformationRequestService {
               var contact = contactMap.get(request.getPortalContactId());
               String portalContactName = contact != null ? contact.getDisplayName() : null;
               String portalContactEmail = contact != null ? contact.getEmail() : null;
+              Map<UUID, String> documentFileNames = resolveDocumentFileNames(items);
               return InformationRequestResponse.from(
-                  request, items, customerName, projectName, portalContactName, portalContactEmail);
+                  request,
+                  items,
+                  customerName,
+                  projectName,
+                  portalContactName,
+                  portalContactEmail,
+                  documentFileNames);
             })
         .toList();
   }

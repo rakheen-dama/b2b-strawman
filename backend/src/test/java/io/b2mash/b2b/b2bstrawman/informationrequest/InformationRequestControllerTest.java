@@ -409,6 +409,96 @@ class InformationRequestControllerTest {
         .andExpect(jsonPath("$.status").value("COMPLETED"));
   }
 
+  /**
+   * GAP-L-45-regression: when an item has a linked Document, the response DTO must surface the
+   * document's display file name. The firm-side request-detail page hides the per-item Download
+   * button unless both {@code documentId} AND {@code documentFileName} are present
+   * (request-detail-client.tsx:342-356), so an empty file name silently breaks the download UX.
+   */
+  @Test
+  void shouldExposeDocumentFileNameForAcceptedItems() throws Exception {
+    String requestId = createInfoRequest();
+    mockMvc.perform(
+        post("/api/information-requests/{id}/send", requestId)
+            .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")));
+
+    var getResult =
+        mockMvc
+            .perform(
+                get("/api/information-requests/{id}", requestId)
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
+            .andReturn();
+    String responseBody = getResult.getResponse().getContentAsString();
+    List<Map<String, Object>> itemsList = JsonPath.read(responseBody, "$.items");
+
+    // Pick the first FILE_UPLOAD-required item, link a real Document, accept it.
+    String fileUploadItemId = null;
+    for (var item : itemsList) {
+      if ("FILE_UPLOAD".equals(item.get("responseType")) && (boolean) item.get("required")) {
+        fileUploadItemId = item.get("id").toString();
+        break;
+      }
+    }
+    org.junit.jupiter.api.Assertions.assertNotNull(
+        fileUploadItemId, "Template should have at least one required FILE_UPLOAD item");
+
+    String expectedFileName = "bank-statements-2025.pdf";
+    simulateItemSubmissionWithRealDocument(fileUploadItemId, customerId, expectedFileName);
+    mockMvc
+        .perform(
+            post(
+                    "/api/information-requests/{id}/items/{itemId}/accept",
+                    requestId,
+                    fileUploadItemId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
+        .andExpect(status().isOk());
+
+    // GET single — toResponse path
+    final String acceptedItemId = fileUploadItemId;
+    var detailResult =
+        mockMvc
+            .perform(
+                get("/api/information-requests/{id}", requestId)
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
+            .andExpect(status().isOk())
+            .andReturn();
+    String detailBody = detailResult.getResponse().getContentAsString();
+    int acceptedIdx = indexOfItem(detailBody, acceptedItemId);
+    org.junit.jupiter.api.Assertions.assertEquals(
+        expectedFileName,
+        JsonPath.read(detailBody, "$.items[" + acceptedIdx + "].documentFileName"),
+        "documentFileName must surface on the GET-by-id (toResponse) path");
+    org.junit.jupiter.api.Assertions.assertEquals(
+        "ACCEPTED", JsonPath.read(detailBody, "$.items[" + acceptedIdx + "].status"));
+
+    // LIST — toResponseList path (separate code branch, must also surface the field)
+    var listResult =
+        mockMvc
+            .perform(
+                get("/api/information-requests")
+                    .param("customerId", customerId)
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inforeq_owner")))
+            .andExpect(status().isOk())
+            .andReturn();
+    String listBody = listResult.getResponse().getContentAsString();
+    List<String> listIds = JsonPath.read(listBody, "$[*].id");
+    int requestIdx = listIds.indexOf(requestId);
+    org.junit.jupiter.api.Assertions.assertTrue(
+        requestIdx >= 0, "request must appear in the list response");
+    List<String> listItemIds = JsonPath.read(listBody, "$[" + requestIdx + "].items[*].id");
+    int listAcceptedIdx = listItemIds.indexOf(acceptedItemId);
+    org.junit.jupiter.api.Assertions.assertEquals(
+        expectedFileName,
+        JsonPath.read(
+            listBody, "$[" + requestIdx + "].items[" + listAcceptedIdx + "].documentFileName"),
+        "documentFileName must also surface on the list (toResponseList) path");
+  }
+
+  private int indexOfItem(String body, String itemId) {
+    List<String> ids = JsonPath.read(body, "$.items[*].id");
+    return ids.indexOf(itemId);
+  }
+
   // ========== Numbering Tests ==========
 
   @Test
@@ -786,6 +876,33 @@ class InformationRequestControllerTest {
             .formatted(schema),
         UUID.randomUUID().toString(),
         itemId);
+  }
+
+  /**
+   * Creates a real customer-scoped Document row and links it to the given request item, mirroring
+   * what the portal write path produces. Returns the document's file name so callers can assert
+   * round-tripping through the response DTO.
+   */
+  private String simulateItemSubmissionWithRealDocument(
+      String itemId, String customerIdForDoc, String fileName) {
+    String schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
+    String docId = UUID.randomUUID().toString();
+    jdbcTemplate.update(
+        "INSERT INTO \"%s\".documents (id, project_id, file_name, content_type, size, s3_key, status, uploaded_by, uploaded_at, created_at, scope, customer_id, visibility) VALUES (?::uuid, NULL, ?, ?, ?, ?, 'UPLOADED', ?::uuid, now(), now(), 'CUSTOMER', ?::uuid, 'SHARED')"
+            .formatted(schema),
+        docId,
+        fileName,
+        "application/pdf",
+        1024L,
+        "tenants/" + schema + "/" + docId,
+        memberIdOwner,
+        customerIdForDoc);
+    jdbcTemplate.update(
+        "UPDATE \"%s\".request_items SET status = 'SUBMITTED', submitted_at = now(), document_id = ?::uuid WHERE id = ?::uuid"
+            .formatted(schema),
+        docId,
+        itemId);
+    return fileName;
   }
 
   private String createCustomer(JwtRequestPostProcessor jwt) throws Exception {

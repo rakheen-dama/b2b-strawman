@@ -7,17 +7,17 @@
 - **Branch**: `bugfix_cycle_2026-04-26`
 - **Scenario**: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md`
 - **ALL_DAYS_COMPLETE**: false
-- **QA Position**: Day 0, Checkpoint 1 (scenario start)
+- **QA Position**: Day 1, Checkpoint 1.1 (Day 0 complete — Thandi/Bob/Carol all registered, vertical=legal-za, ready for Day 1 firm onboarding polish)
 - **Dev Stack**: Running — backend:8080, gateway:8443, frontend:3000, portal:3002, keycloak:8180 all healthy as of 2026-04-26
 - **NEEDS_REBUILD**: false
-- **Cycle Count**: 0 (about to start)
+- **Cycle Count**: 1
 
 ## Tracker
 
 | GAP_ID | Severity | Status | Owner | Summary | Evidence |
 |--------|----------|--------|-------|---------|----------|
-
-(Tracker is empty — QA agent will populate as it walks the scenario.)
+| BUG-CYCLE26-01 | LOW | OPEN | dev (low priority) | Team-invite form: Radix Select role choice ("Admin") does not propagate to backend POST under Playwright MCP; backend records role=member regardless. Production users in real browsers should not hit this. Workaround documented in day-00.md. | qa_cycle/checkpoint-results/day-00.md §0.28; backend.log `Created invitation for email=bob@mathebula-test.local with role=member` |
+| BUG-CYCLE26-02 | LOW | OPEN | dev (low priority) | Team-invite form: MCP-driven `fill()` on email input does not consistently flow through react-hook-form `register()`; Server Action POSTs return 200 but never reach backend. Workaround: native input setter + bubbled events. Production users in real browsers should not hit this. | qa_cycle/checkpoint-results/day-00.md §0.29 |
 
 ## Standing Rules (apply to every agent)
 
@@ -34,4 +34,5 @@
 
 ## Log
 
-- 2026-04-26 — Orchestrator: cycle initialized on branch `bugfix_cycle_2026-04-26`. Prior verify-cycle status (ALL_DAYS_COMPLETE 2026-04-25) archived. Dev stack confirmed healthy. About to dispatch QA agent for Day 0.
+- 2026-04-26 SAST — Orchestrator: cycle initialized on branch `bugfix_cycle_2026-04-26`. Prior verify-cycle status (ALL_DAYS_COMPLETE 2026-04-25) archived. Dev stack confirmed healthy. About to dispatch QA agent for Day 0.
+- 2026-04-26 SAST — QA: Day 0 cycle-1 — 30 PASS / 2 PARTIAL (tooling) / 0 FAIL / 0 BLOCKER. All Day-0 wrap-up checks satisfied: 3 KC users registered, tenant_5039f2d497cf provisioned with vertical=legal-za, full legal sidebar nav present, zero tier/upgrade UI. Two LOW-severity tooling-only bugs logged (BUG-CYCLE26-01, BUG-CYCLE26-02) — both Playwright-MCP-Radix interaction quirks, not real-user product defects. L-22 (KC owner registration → /org/{slug}/dashboard) reconfirmed working. Bumping QA Position to Day 1, Checkpoint 1.1.

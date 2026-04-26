@@ -1,0 +1,85 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e59]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e22]
+            - generic [ref=e25]: Home
+          - link "Matters" [ref=e26] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e27]
+            - generic [ref=e29]: Matters
+          - link "Trust" [ref=e60] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e61]
+            - generic [ref=e65]: Trust
+          - link "Deadlines" [ref=e66] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e67]
+            - generic [ref=e71]: Deadlines
+          - link "Fee Notes" [ref=e72] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e31]
+            - generic [ref=e34]: Fee Notes
+          - link "Proposals" [ref=e35] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e36]
+            - generic [ref=e39]: Proposals
+          - link "Requests" [ref=e73] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e75]
+            - generic [ref=e77]: Requests
+          - link "Activity" [ref=e40] [cursor=pointer]:
+            - /url: /activity
+            - img [ref=e41]
+            - generic [ref=e43]: Activity
+        - generic [ref=e44]:
+          - link "Profile" [ref=e45] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e46]
+            - text: Profile
+          - button "Logout" [ref=e49]:
+            - img [ref=e50]
+            - text: Logout
+      - main [ref=e53]:
+        - generic [ref=e78]:
+          - generic [ref=e79]:
+            - paragraph [ref=e80]: REQ-0002
+            - heading "Dlamini v Road Accident Fund" [level=1] [ref=e81]
+            - paragraph [ref=e82]: 3/3 submitted • status IN_PROGRESS
+          - list [ref=e83]:
+            - listitem [ref=e84]:
+              - generic [ref=e85]:
+                - generic [ref=e86]:
+                  - generic [ref=e87]: ID copyrequired
+                  - paragraph [ref=e88]: Certified copy of the client's South African ID document or passport bio page. Must be certified by a Commissioner of Oaths, SAPS, or other accepted certifier within the last 3 months.
+                  - paragraph [ref=e89]: "Accepts: PDF, JPG, PNG"
+                - paragraph [ref=e115]: "Submitted — status: SUBMITTED"
+            - listitem [ref=e94]:
+              - generic [ref=e95]:
+                - generic [ref=e96]:
+                  - generic [ref=e97]: Proof of residence (≤ 3 months)required
+                  - paragraph [ref=e98]: Recent utility bill, municipal rates account, bank statement, or similar document confirming the client's residential address. Document date must be within the last 3 months.
+                  - paragraph [ref=e99]: "Accepts: PDF, JPG, PNG"
+                - paragraph [ref=e117]: "Submitted — status: SUBMITTED"
+            - listitem [ref=e104]:
+              - generic [ref=e105]:
+                - generic [ref=e106]:
+                  - generic [ref=e107]: Bank statement (≤ 3 months)required
+                  - paragraph [ref=e108]: Most recent bank statement evidencing the client's source of funds. Statement must be dated within the last 3 months and show the client's name, account number, and at least one transaction.
+                  - paragraph [ref=e109]: "Accepts: PDF"
+                - paragraph [ref=e119]: "Submitted — status: SUBMITTED"
+    - contentinfo [ref=e55]:
+      - paragraph [ref=e57]: Powered by DocTeams

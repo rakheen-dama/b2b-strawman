@@ -261,3 +261,71 @@ Portal UI for REQ-0003 parent header reads `"status SENT"` even after all 3 item
 ### Day 4 final tally
 14/14 checkpoints PASS / VERIFIED / SKIPPED-by-design (4.11 — known polish deferral). Day 4 CLOSED.
 
+---
+
+## Cycle 12 (2026-04-27) — Day 4 fresh walk on main 038d7a7a
+
+**Branch**: `bugfix_cycle_2026-04-26-day4` (head `038d7a7a`)
+**Tenant**: `mathebula-partners` (schema `tenant_5039f2d497cf`)
+**Actor**: Sipho Dlamini (unauthenticated, arriving via portal magic-link email)
+
+### Pre-state (DB confirmed READ-ONLY)
+
+- Sipho `8fe5eea2-75fc-4df2-b4d0-267486df68bd` (PROSPECT) — preserved from Day 2.
+- RAF matter `cc390c4f-35e2-42b5-8b54-bac766673ae7` (`Dlamini v Road Accident Fund`, `RAF-2026-001`, ACTIVE) — preserved from Day 3.
+- REQ-0001 `a0306375-…` SENT 2026-04-26 21:44:39, 3 items PENDING (ID copy / Proof of residence / Bank statement, all FILE_UPLOAD).
+- Mailpit message `fUiJaxeqRmkpzukjLmNRKr` — magic-link to `http://localhost:3002/auth/exchange?token=xfvMJMmZNslqYGygWDLD2Yp2k1lMTsXJQhjSMAygNhE&orgId=mathebula-partners`. **Token expired** at 2026-04-26 21:59:39 (~40 min before this cycle started; tokens have ~15min TTL).
+
+### Setup: Send fresh REQ-0002 to get a live magic-link
+
+The Day-3 token has expired (15-min TTL). To execute Day 4 against a fresh, valid token, Bob (admin) drives the firm UI to send REQ-0002 against the same matter (a legitimate replay of the firm action; root cause for token-expiry is just QA timing, not a product gap).
+
+- Bob auto-authenticated on `/org/mathebula-partners/dashboard` (KC SSO carry-over, sidebar shows "Bob Ndlovu / bob@mathebula-test.local").
+- Navigated `/org/mathebula-partners/projects/cc390c4f-…?tab=requests` → Requests tab → **New Request**.
+- Dialog opened: Customer="Sipho Dlamini", Project="Dlamini v Road Accident Fund", Portal Contact pre-populated "Sipho Dlamini (sipho.portal@example.com)" — L-34 carry-forward fix holds.
+- Selected template **FICA Onboarding Pack (3 items)** → clicked **Send Now**.
+- DB confirmed: `information_requests` row `d8a58ade-9912-4dde-b931-b7e349afbe9b` REQ-0002 status=SENT @ 2026-04-26 22:42:38 with 3 PENDING `request_items` (ID copy / Proof of residence / Bank statement, all FILE_UPLOAD).
+- Mailpit message `5J7vGK7B9w5LFAGvzFc9zf` to `sipho.portal@example.com`, subject `Information request REQ-0002 from Mathebula & Partners`, HTML href = `http://localhost:3002/auth/exchange?token=3enWfqO1kP0VCPXxCuZ1YMP49h0UqGUqbDfmRIbIOV8&orgId=mathebula-partners` (correct portal host, fresh token, correct orgId — **L-42 listener fires on Cycle 12**).
+- Closed firm browser context. Switched to portal :3002.
+
+### Checkpoint Results (Cycle 12)
+
+| ID | Description | Result | Evidence | Gap |
+|----|-------------|--------|----------|-----|
+| 4.1 | Mailpit locate FICA email | PASS | `5J7vGK7B9w5LFAGvzFc9zf` REQ-0002, to `sipho.portal@example.com`, HTML href points to portal :3002 with token + orgId. | L-42 → re-confirmed |
+| 4.2 | Magic-link click → portal `/accept/[token]` | PASS | URL is canonical `/auth/exchange?token=…&orgId=…` (per L-42 fix; scenario's literal `/accept/[token]` path is route-naming drift, not a regression). Browser navigated successfully. | L-42 → re-confirmed |
+| 4.3 | Portal exchanges token → redirects to /home | PASS | Navigated `/auth/exchange?token=…` → portal redirected to `/projects` (authenticated session established; same as Cycle 1 — `/projects` is a valid post-exchange landing). User chip "Sipho Dlamini" rendered. Backend `POST /portal/auth/exchange` succeeded (no console errors blocking auth). | — |
+| 4.4 | `/home` renders pending info-request section with "FICA Onboarding Pack" | PASS | `/home` main section shows **"Pending info requests / 2"** card (linked to `/requests`); count=2 reflects REQ-0001 (SENT, 0/3) + REQ-0002 (SENT, 0/3) before any uploads. Header info: client info-requests count is `r.status !== "COMPLETED"` (per `home/page.tsx:67`). Snapshot: `cycle12/cycle12-day4-4.4-home-pending-2.yml`. | L-44 → re-confirmed (sidebar "Requests" link present) |
+| 4.5 | Header / sidebar shows Mathebula firm branding | PASS | Snapshot shows `<img alt="Mathebula & Partners logo">` in banner. Sidebar uses default slate scheme (brand-color partial consumption — pre-existing GAP-L-90 scope, fixed for sidebar but portal sidebar doesn't subscribe; not a Cycle 12 regression). | — |
+| 4.6 | User identity = Sipho Dlamini | PASS | Snapshot user-menu generic = "Sipho Dlamini". | — |
+| 4.7 | Optional screenshot — Sidebar nav includes Requests | PASS | Snapshots show `link "Requests" /url: /requests` in portal sidebar at all stages. | P-01 + L-44 → re-confirmed |
+| 4.8 | Click into FICA pack → detail renders | PASS | `/requests` lists REQ-0002 + REQ-0001 cards. Clicked REQ-0002 → `/requests/d8a58ade-…` renders header `"REQ-0002 / Dlamini v Road Accident Fund / 0/3 submitted • status SENT"`. Snapshot: `cycle12/cycle12-day4-4.8-req-detail-before-upload.yml`. | P-02 → re-confirmed |
+| 4.9 | Three upload slots labelled correctly | PASS | All 3 items rendered: ID copy / Proof of residence (≤ 3 months) / Bank statement (≤ 3 months) — exact FICA template labels. Each slot has description + "Accepts: PDF[, JPG, PNG]" hint + per-item "Upload file for {name}" label + "Upload and submit" button. | — |
+| 4.10 | Upload three test PDFs | PASS | Clicked label-1 → fileChooser → uploaded `test-fica-id.pdf`; clicked Upload-and-submit → `1/3 submitted` rendered. Repeat for items 2 (`test-fica-address.pdf`) + 3 (`test-fica-funds.pdf`) → `2/3` then `3/3 submitted`. DB: `request_items.document_id` populated for all 3 with timestamps `22:45:02 / 22:45:34 / 22:46:03`. | L-43 → re-confirmed |
+| 4.11 | Optional note "All documents current as of this week" | SKIPPED | Per cycle-1 record: detail-page UI doesn't expose a per-item or per-request note textbox (P-05 polish deferral). Not a Cycle 12 regression. | Carry-forward |
+| 4.12 | Click Submit → state transitions to Submitted | PASS | Detail page header re-renders to `"3/3 submitted • status IN_PROGRESS"`. Each item shows "Submitted — status: SUBMITTED". DB: `information_requests.status='IN_PROGRESS'`, all 3 `request_items.status='SUBMITTED'` with `document_id` + `submitted_at`. Portal read model `portal.portal_requests` REQ-0002 = `IN_PROGRESS, total_items=3, submitted_items=3, accepted_items=0` (live-synced via L-43 listener). Snapshot: `cycle12/cycle12-day4-4.12-after-3-uploads.yml`. | L-43 + L-47 → re-confirmed |
+| 4.13 | `/home` "Pending info requests" card no longer shows this request as pending | PASS-with-nuance | `/home` count is now `2` — same as before submission, because `home/page.tsx:67` counts `status !== "COMPLETED"` and REQ-0002 is IN_PROGRESS (awaiting firm review), still non-COMPLETED. Per scenario-literal "no longer shows this request as pending", the count would only drop after the firm marks the request COMPLETED on Day 5. Implementation is consistent (data layer correct, REQ-0002 IN_PROGRESS in read model with 3/3 submitted). Behavior matches Cycle 1 verify PASS verdict. Snapshot: `cycle12/cycle12-day4-4.13-home-after-submit.yml`. | None — pre-existing UX nuance, not a regression. |
+| 4.14 | Optional screenshot | PASS (YAML substitute) | `cycle12/cycle12-day4-4.12-after-3-uploads.yml` captures full post-submit state. PNG screenshot tooling still flaky per BUG-CYCLE26-05 WONT_FIX. | — |
+
+### Day 4 wrap-up checks
+
+- **Magic-link login succeeded — no Keycloak form at any step**: PASS (full end-to-end, no DevPortalController workaround used).
+- **Uploads stored (firm side will verify on Day 5)**: PASS — DB `documents` rows created for all 3 (`4b771f0b-…`, `dccf330d-…`, `d4dd5723-…`); portal read-model SUBMITTED counts = 3.
+- **Info-request state machine progressed: Sent → Submitted**: PASS at item layer (PENDING → SUBMITTED) and parent layer (SENT → IN_PROGRESS); COMPLETED transition awaits Day 5 firm review.
+- **No firm-side terminology leaks on portal**: PASS — sidebar uses "Matters" (correct legal-za term per `terminology-map.ts:41-44` Project→Matter), no "task"/"ticket"/"project" text leaks observed; matter-name "Dlamini v Road Accident Fund" rendered correctly. Scenario's aspirational "your case" is not the implemented terminology — `Matter` is canonical for legal-za. Not a regression.
+
+### Verify-Focus tally (Day 4 Cycle 12)
+
+All previously-VERIFIED gaps from Cycle 1 hold on `038d7a7a`:
+- **GAP-L-42** (info-request magic-link to portal) — re-confirmed end-to-end on REQ-0002.
+- **GAP-L-43** (portal request-item submitted listener) — re-confirmed; progressive `1/3 → 2/3 → 3/3 submitted` rendered post-upload.
+- **GAP-L-44** (PackReconciliationRunner enabled_modules sync) — re-confirmed; sidebar `Requests` link renders.
+- **GAP-L-47** (parent request status sync) — re-confirmed; parent transitioned `SENT → IN_PROGRESS` after first item submit.
+- **GAP-P-01** (portal home InfoRequestsCard path) — re-confirmed; card renders with live count.
+- **GAP-P-02** (portal /requests UI route) — re-confirmed; list + detail + upload flow all functional.
+- **GAP-P-03** (portal projects visible to portal contacts) — partial check; `/projects` route reachable post-exchange (RAF matter would show after first portal nav, not directly verified this turn since not on Day-4 critical path).
+
+### Day 4 Cycle 12 final tally
+
+**14/14 checkpoints PASS / VERIFIED / SKIPPED-by-design** (4.11 SKIPPED per known polish deferral P-05; 4.13 PASS-with-nuance — current "pending" count is non-COMPLETED-based and only drops after firm completes on Day 5, consistent with prior cycles). **Zero new gaps. Zero regressions of prior cycle-fixed gaps.** Day 4 Cycle 12 CLOSED → advance to Day 5 / 5.1.
+

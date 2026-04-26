@@ -2,11 +2,14 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.statement;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -23,6 +26,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.StatementResponse
 import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.StatementSummary;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.event.StatementOfAccountGeneratedEvent;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
@@ -70,6 +74,7 @@ public class StatementService {
   private final PdfRenderingService pdfRenderingService;
   private final StorageService storageService;
   private final AuditService auditService;
+  private final MemberNameResolver memberNameResolver;
   private final ApplicationEventPublisher eventPublisher;
 
   public StatementService(
@@ -83,6 +88,7 @@ public class StatementService {
       PdfRenderingService pdfRenderingService,
       StorageService storageService,
       AuditService auditService,
+      MemberNameResolver memberNameResolver,
       ApplicationEventPublisher eventPublisher) {
     this.moduleGuard = moduleGuard;
     this.projectRepository = projectRepository;
@@ -94,6 +100,7 @@ public class StatementService {
     this.pdfRenderingService = pdfRenderingService;
     this.storageService = storageService;
     this.auditService = auditService;
+    this.memberNameResolver = memberNameResolver;
     this.eventPublisher = eventPublisher;
   }
 
@@ -161,6 +168,25 @@ public class StatementService {
     generatedDoc.linkToDocument(savedDocument.getId());
     // generatedDoc is managed in this @Transactional — Hibernate flushes the link on commit.
 
+    // GAP-OBS-Day61 / E2.5: SoA bypasses DocumentService.confirmUpload (which is the canonical
+    // emitter of DocumentCreatedEvent → portal projection upsert). Without this manual publish,
+    // SoA documents never appear in `portal.portal_documents`. Mirror DocumentService.java:320-332.
+    // Slice 25 (E2.6 refactor) will route SoA through the unified path and delete this inline
+    // emission.
+    eventPublisher.publishEvent(
+        new DocumentCreatedEvent(
+            savedDocument.getId(),
+            savedDocument.getProjectId(),
+            savedDocument.getCustomerId(),
+            savedDocument.getFileName(),
+            savedDocument.getScope(),
+            savedDocument.getVisibility(),
+            savedDocument.getS3Key(),
+            savedDocument.getSize(),
+            savedDocument.getContentType(),
+            RequestScopes.requireOrgId(),
+            tenantId));
+
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("statement.generated")
@@ -178,6 +204,41 @@ public class StatementService {
     eventPublisher.publishEvent(
         StatementOfAccountGeneratedEvent.of(
             projectId, generatedDoc.getId(), request.periodStart(), request.periodEnd(), memberId));
+
+    // GAP-OBS-Day61 / E2.5: also publish DocumentGeneratedEvent so notification + activity-feed
+    // listeners (NotificationEventHandler.onDocumentGenerated et al.) wake up the same way they do
+    // for the canonical GeneratedDocumentService.generateDocument path. SoA bypasses
+    // GeneratedDocumentService.createLinkedDocument (see class Javadoc), so without this publish
+    // SoA generation is silent on the activity feed. Mirrors the emission shape at
+    // GeneratedDocumentService.java:209-225. Slice 25 (E2.6 refactor) may delete this inline
+    // publish once SoA routes through the unified GeneratedDocumentService path.
+    String orgId = RequestScopes.requireOrgId();
+    String actorName = memberNameResolver.resolveName(memberId);
+    eventPublisher.publishEvent(
+        new DocumentGeneratedEvent(
+            "document.generated",
+            "generated_document",
+            generatedDoc.getId(),
+            projectId,
+            memberId,
+            actorName,
+            tenantId,
+            orgId,
+            Instant.now(),
+            Map.of(
+                "file_name",
+                fileName,
+                "template_name",
+                template.getName(),
+                "scope",
+                "PROJECT",
+                "visibility",
+                "PORTAL"),
+            template.getName(),
+            TemplateEntityType.PROJECT,
+            projectId,
+            fileName,
+            generatedDoc.getId()));
 
     log.info(
         "Generated Statement of Account: project={}, period={}..{}, generatedDoc={}",

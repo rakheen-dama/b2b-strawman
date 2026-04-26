@@ -60,6 +60,8 @@ class VerticalProfileRegistryTest {
     assertThat(profile).isPresent();
 
     var p = profile.get();
+    // GAP-L-61-followup (E9.2): bulk_billing ships ON by default for legal-za because
+    // most SA law firms invoice clients in monthly batches.
     assertThat(p.enabledModules())
         .containsExactlyInAnyOrder(
             "court_calendar",
@@ -69,7 +71,8 @@ class VerticalProfileRegistryTest {
             "disbursements",
             "matter_closure",
             "deadlines",
-            "information_requests");
+            "information_requests",
+            "bulk_billing");
   }
 
   @Test

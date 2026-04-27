@@ -208,8 +208,16 @@ class ProposalSendTest {
 
   @Test
   void sendProposal_emptyContent_returns400() throws Exception {
-    // Create proposal without content (default empty map)
+    // BUG-CYCLE26-07: create-time seeder now populates content_json with a default Tiptap doc,
+    // so omitting contentJson in the request no longer leaves the row empty. To keep gate-2
+    // honest we forcibly clear content_json via direct SQL (mirrors what a future code path
+    // explicitly mutating content back to empty would do) and then attempt to send.
     String proposalId = createProposalWithoutContent("Empty Content", "HOURLY");
+    String schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
+    jdbcTemplate.update(
+        "UPDATE \"%s\".proposals SET content_json = '{}'::jsonb WHERE id = ?::uuid"
+            .formatted(schema),
+        proposalId);
 
     mockMvc
         .perform(
@@ -218,6 +226,36 @@ class ProposalSendTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"portalContactId\": \"%s\"}".formatted(portalContactId)))
         .andExpect(status().isBadRequest());
+  }
+
+  // --- BUG-CYCLE26-07: create-time seeder produces sendable content ---
+
+  @Test
+  void createProposal_withoutContent_seedsDefaultDocSendableEndToEnd() throws Exception {
+    // BUG-CYCLE26-07 regression: matter-level "+ New Engagement Letter" dialog never sends
+    // contentJson. Without the seeder, sendProposal() would throw gate-2. With the seeder,
+    // the persisted row has a non-empty Tiptap doc and the proposal sends successfully.
+    String proposalId = createProposalWithoutContent("Seeded Default Content", "HOURLY");
+
+    String schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
+    String contentJson =
+        jdbcTemplate.queryForObject(
+            "SELECT content_json::text FROM \"%s\".proposals WHERE id = ?::uuid".formatted(schema),
+            String.class,
+            proposalId);
+    assertThat(contentJson).isNotNull();
+    assertThat(contentJson).contains("\"type\"").contains("\"doc\"");
+    assertThat(contentJson).contains("client_name");
+
+    mockMvc
+        .perform(
+            post("/api/proposals/{id}/send", proposalId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"portalContactId\": \"%s\"}".formatted(portalContactId)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("SENT"))
+        .andExpect(jsonPath("$.sentAt").isNotEmpty());
   }
 
   @Test

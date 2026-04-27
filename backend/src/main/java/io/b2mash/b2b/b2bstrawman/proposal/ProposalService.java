@@ -65,6 +65,7 @@ public class ProposalService {
   private final NotificationDispatcher notificationDispatcher;
   private final PrerequisiteService prerequisiteService;
   private final ProjectTemplateRepository projectTemplateRepository;
+  private final ProposalContentSeeder proposalContentSeeder;
 
   public ProposalService(
       ProposalRepository proposalRepository,
@@ -81,7 +82,8 @@ public class ProposalService {
       NotificationService notificationService,
       NotificationDispatcher notificationDispatcher,
       PrerequisiteService prerequisiteService,
-      ProjectTemplateRepository projectTemplateRepository) {
+      ProjectTemplateRepository projectTemplateRepository,
+      ProposalContentSeeder proposalContentSeeder) {
     this.proposalRepository = proposalRepository;
     this.milestoneRepository = milestoneRepository;
     this.teamMemberRepository = teamMemberRepository;
@@ -97,6 +99,7 @@ public class ProposalService {
     this.notificationDispatcher = notificationDispatcher;
     this.prerequisiteService = prerequisiteService;
     this.projectTemplateRepository = projectTemplateRepository;
+    this.proposalContentSeeder = proposalContentSeeder;
   }
 
   // --- 231.1: createProposal ---
@@ -153,7 +156,26 @@ public class ProposalService {
       if (contingencyDescription != null)
         proposal.setContingencyDescription(contingencyDescription);
     }
-    if (contentJson != null) proposal.setContentJson(contentJson);
+    // BUG-CYCLE26-07: when callers (matter-level "+ New Engagement Letter" dialog, scripts, etc.)
+    // omit contentJson, seed a minimal Tiptap doc derived from the form fields so every persisted
+    // proposal is in a sendable state. Gate-2 in sendProposal() stays as a defensive guard for
+    // any future code path that explicitly empties content_json after creation.
+    Map<String, Object> effectiveContentJson =
+        (contentJson != null && !contentJson.isEmpty())
+            ? contentJson
+            : proposalContentSeeder.buildDefaultContent(
+                title,
+                feeModel,
+                hourlyRateNote,
+                fixedFeeAmount,
+                fixedFeeCurrency,
+                retainerAmount,
+                retainerCurrency,
+                retainerHoursIncluded,
+                contingencyPercent,
+                contingencyDescription,
+                expiresAt);
+    proposal.setContentJson(effectiveContentJson);
     if (projectTemplateId != null) proposal.setProjectTemplateId(projectTemplateId);
     if (expiresAt != null) proposal.setExpiresAt(expiresAt);
 

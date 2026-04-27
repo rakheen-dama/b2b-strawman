@@ -77,11 +77,7 @@ describe("CreateRequestDialog (GAP-L-67) — ad-hoc items", () => {
 
   it("shows the items section by default (ad-hoc is default template)", async () => {
     render(
-      <CreateRequestDialog
-        slug="test-org"
-        customerId="cust-1"
-        customerName="Mathebula Trust"
-      />
+      <CreateRequestDialog slug="test-org" customerId="cust-1" customerName="Mathebula Trust" />
     );
 
     await openDialog();
@@ -92,11 +88,7 @@ describe("CreateRequestDialog (GAP-L-67) — ad-hoc items", () => {
 
   it("Add Item button appends a blank row, Trash button removes it", async () => {
     render(
-      <CreateRequestDialog
-        slug="test-org"
-        customerId="cust-1"
-        customerName="Mathebula Trust"
-      />
+      <CreateRequestDialog slug="test-org" customerId="cust-1" customerName="Mathebula Trust" />
     );
 
     const user = await openDialog();
@@ -115,11 +107,7 @@ describe("CreateRequestDialog (GAP-L-67) — ad-hoc items", () => {
 
   it("Send Now is disabled when ad-hoc has 0 items", async () => {
     render(
-      <CreateRequestDialog
-        slug="test-org"
-        customerId="cust-1"
-        customerName="Mathebula Trust"
-      />
+      <CreateRequestDialog slug="test-org" customerId="cust-1" customerName="Mathebula Trust" />
     );
 
     await openDialog();
@@ -129,11 +117,7 @@ describe("CreateRequestDialog (GAP-L-67) — ad-hoc items", () => {
 
   it("Send Now is disabled when an item name is blank", async () => {
     render(
-      <CreateRequestDialog
-        slug="test-org"
-        customerId="cust-1"
-        customerName="Mathebula Trust"
-      />
+      <CreateRequestDialog slug="test-org" customerId="cust-1" customerName="Mathebula Trust" />
     );
 
     const user = await openDialog();
@@ -147,11 +131,7 @@ describe("CreateRequestDialog (GAP-L-67) — ad-hoc items", () => {
 
   it("Send Now submits createRequestAction with the items array (sortOrder, trimmed names)", async () => {
     render(
-      <CreateRequestDialog
-        slug="test-org"
-        customerId="cust-1"
-        customerName="Mathebula Trust"
-      />
+      <CreateRequestDialog slug="test-org" customerId="cust-1" customerName="Mathebula Trust" />
     );
 
     const user = await openDialog();
@@ -162,10 +142,7 @@ describe("CreateRequestDialog (GAP-L-67) — ad-hoc items", () => {
       screen.getByTestId("ad-hoc-item-name-0"),
       "  Latest specialist medical reports  "
     );
-    await user.type(
-      screen.getByTestId("ad-hoc-item-name-1"),
-      "Independent expert assessment"
-    );
+    await user.type(screen.getByTestId("ad-hoc-item-name-1"), "Independent expert assessment");
 
     await user.click(screen.getByTestId("create-request-send-now"));
 
@@ -205,11 +182,7 @@ describe("CreateRequestDialog (GAP-L-67) — ad-hoc items", () => {
 
   it("template path hides the items section and omits items from payload", async () => {
     render(
-      <CreateRequestDialog
-        slug="test-org"
-        customerId="cust-1"
-        customerName="Mathebula Trust"
-      />
+      <CreateRequestDialog slug="test-org" customerId="cust-1" customerName="Mathebula Trust" />
     );
 
     const user = await openDialog();
@@ -241,11 +214,7 @@ describe("CreateRequestDialog (GAP-L-67) — ad-hoc items", () => {
 
   it("Save as Draft allows ad-hoc with 0 items (existing behaviour)", async () => {
     render(
-      <CreateRequestDialog
-        slug="test-org"
-        customerId="cust-1"
-        customerName="Mathebula Trust"
-      />
+      <CreateRequestDialog slug="test-org" customerId="cust-1" customerName="Mathebula Trust" />
     );
 
     const user = await openDialog();

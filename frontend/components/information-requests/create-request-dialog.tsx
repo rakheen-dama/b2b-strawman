@@ -93,8 +93,7 @@ export function CreateRequestDialog({
   const [items, setItems] = useState<AdHocItem[]>([]);
 
   const isAdHoc = templateId === "ad-hoc";
-  const hasValidAdHocItems =
-    items.length > 0 && items.every((it) => it.name.trim().length > 0);
+  const hasValidAdHocItems = items.length > 0 && items.every((it) => it.name.trim().length > 0);
 
   const loadDialogData = useCallback(async () => {
     setLoadingData(true);
@@ -360,10 +359,7 @@ export function CreateRequestDialog({
                               />
                             </div>
                             <div className="space-y-1">
-                              <Label
-                                htmlFor={`ad-hoc-item-description-${idx}`}
-                                className="text-xs"
-                              >
+                              <Label htmlFor={`ad-hoc-item-description-${idx}`} className="text-xs">
                                 Description (optional)
                               </Label>
                               <Textarea

@@ -538,6 +538,7 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
                             TrustTransactionApprovalEvent.approved(
                                 txnId,
                                 trustAccountId,
+                                matterId,
                                 type,
                                 amount,
                                 customerId,
@@ -592,6 +593,7 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
                             TrustTransactionRecordedEvent.recorded(
                                 txnId,
                                 trustAccountId,
+                                matterId,
                                 type,
                                 amount,
                                 customerId,

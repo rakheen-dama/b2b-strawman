@@ -76,6 +76,7 @@ class TrustNotificationHandlerTest {
                       TrustTransactionApprovalEvent.awaitingApproval(
                           UUID.randomUUID(),
                           UUID.randomUUID(),
+                          UUID.randomUUID(),
                           "PAYMENT",
                           new BigDecimal("5000.00"),
                           UUID.randomUUID(),
@@ -116,6 +117,7 @@ class TrustNotificationHandlerTest {
                 tx -> {
                   var event =
                       TrustTransactionApprovalEvent.approved(
+                          UUID.randomUUID(),
                           UUID.randomUUID(),
                           UUID.randomUUID(),
                           "PAYMENT",
@@ -160,6 +162,7 @@ class TrustNotificationHandlerTest {
                 tx -> {
                   var event =
                       TrustTransactionApprovalEvent.rejected(
+                          UUID.randomUUID(),
                           UUID.randomUUID(),
                           UUID.randomUUID(),
                           "FEE_TRANSFER",

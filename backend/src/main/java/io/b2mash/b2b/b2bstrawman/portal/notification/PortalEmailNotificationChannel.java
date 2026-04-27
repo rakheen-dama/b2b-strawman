@@ -293,11 +293,13 @@ public class PortalEmailNotificationChannel {
     context.put("amount", amount != null ? amount.toPlainString() : null);
     context.put("currency", context.getOrDefault("currency", ""));
     context.put("occurredAt", event.occurredAt());
-    // Deep link keys the portal trust page by matter id when present.
-    UUID matterKey = event.trustAccountId();
+    // Deep link keys the portal trust page by matter (project) id when present.
+    // Falls back to the /trust index page when the transaction has no matter
+    // (e.g. cross-customer transfers, or matter id genuinely unset).
+    UUID matterId = event.projectId();
     context.put(
         "trustUrl",
-        matterKey != null ? portalBaseUrl + "/trust/" + matterKey : portalBaseUrl + "/trust");
+        matterId != null ? portalBaseUrl + "/trust/" + matterId : portalBaseUrl + "/trust");
     context.put("portalBaseUrl", portalBaseUrl);
     return context;
   }
@@ -319,10 +321,13 @@ public class PortalEmailNotificationChannel {
     context.put("amount", amount != null ? amount.toPlainString() : null);
     context.put("currency", context.getOrDefault("currency", ""));
     context.put("occurredAt", event.occurredAt());
-    UUID matterKey = event.trustAccountId();
+    // Deep link keys the portal trust page by matter (project) id when present.
+    // Falls back to the /trust index page when the transaction has no matter
+    // (e.g. cross-customer transfers, or matter id genuinely unset).
+    UUID matterId = event.projectId();
     context.put(
         "trustUrl",
-        matterKey != null ? portalBaseUrl + "/trust/" + matterKey : portalBaseUrl + "/trust");
+        matterId != null ? portalBaseUrl + "/trust/" + matterId : portalBaseUrl + "/trust");
     context.put("portalBaseUrl", portalBaseUrl);
     return context;
   }

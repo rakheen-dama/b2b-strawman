@@ -42,9 +42,9 @@ import org.springframework.transaction.support.TransactionTemplate;
  * Integration tests for {@link PortalEmailNotificationChannel} (Epic 498B, Phase 68, ADR-258).
  *
  * <ol>
- *   <li>{@link TrustTransactionApprovalEvent#approved(UUID, UUID, String, BigDecimal, UUID, UUID,
- *       UUID, String, String)} → {@code portal-trust-activity} email + delivery log entry with
- *       {@code referenceType=PORTAL_TRUST_ACTIVITY}.
+ *   <li>{@link TrustTransactionApprovalEvent#approved(UUID, UUID, UUID, String, BigDecimal, UUID,
+ *       UUID, UUID, String, String)} → {@code portal-trust-activity} email + delivery log entry
+ *       with {@code referenceType=PORTAL_TRUST_ACTIVITY}.
  *   <li>{@link RetainerPeriodRolloverEvent} → {@code portal-retainer-period-closed} email +
  *       delivery log entry with {@code referenceType=PORTAL_RETAINER}.
  *   <li>{@link FieldDateApproachingEvent} → {@code portal-deadline-approaching} email + delivery
@@ -132,6 +132,7 @@ class PortalEmailNotificationChannelIntegrationTest {
   void trustApprovalEvent_triggersTrustActivityEmail() throws Exception {
     UUID txnId = UUID.randomUUID();
     UUID trustAccountId = UUID.randomUUID();
+    UUID projectId = UUID.randomUUID();
 
     publishInsideTenantTxn(
         () ->
@@ -139,6 +140,7 @@ class PortalEmailNotificationChannelIntegrationTest {
                 TrustTransactionApprovalEvent.approved(
                     txnId,
                     trustAccountId,
+                    projectId,
                     "DEPOSIT",
                     new BigDecimal("500.00"),
                     customerId,
@@ -149,16 +151,25 @@ class PortalEmailNotificationChannelIntegrationTest {
 
     assertThat(greenMail.waitForIncomingEmail(5000, 1)).isTrue();
     MimeMessage[] received = greenMail.getReceivedMessages();
-    boolean matched = false;
+    MimeMessage matchedMessage = null;
     for (MimeMessage msg : received) {
       if (CONTACT_EMAIL.equals(msg.getAllRecipients()[0].toString())
           && msg.getSubject() != null
           && msg.getSubject().toLowerCase().contains("trust account activity")) {
-        matched = true;
+        matchedMessage = msg;
         break;
       }
     }
-    assertThat(matched).as("trust-activity email should be received").isTrue();
+    assertThat(matchedMessage).as("trust-activity email should be received").isNotNull();
+
+    // BUG-CYCLE26-11: CTA href must deep-link by matter (project) id, NOT trust-account id.
+    String body = extractBody(matchedMessage);
+    assertThat(body)
+        .as("CTA href must deep-link by matter (project) id")
+        .contains("/trust/" + projectId);
+    assertThat(body)
+        .as("CTA href must NOT use trust-account id")
+        .doesNotContain("/trust/" + trustAccountId);
 
     // Delivery log reference type stamped correctly.
     var logs = findLogsByReferenceType("PORTAL_TRUST_ACTIVITY");
@@ -177,6 +188,7 @@ class PortalEmailNotificationChannelIntegrationTest {
   void trustRecordedEvent_depositTriggersTrustActivityEmail() throws Exception {
     UUID txnId = UUID.randomUUID();
     UUID trustAccountId = UUID.randomUUID();
+    UUID projectId = UUID.randomUUID();
 
     publishInsideTenantTxn(
         () ->
@@ -184,6 +196,7 @@ class PortalEmailNotificationChannelIntegrationTest {
                 TrustTransactionRecordedEvent.recorded(
                     txnId,
                     trustAccountId,
+                    projectId,
                     "DEPOSIT",
                     new BigDecimal("750.00"),
                     customerId,
@@ -193,23 +206,79 @@ class PortalEmailNotificationChannelIntegrationTest {
 
     assertThat(greenMail.waitForIncomingEmail(5000, 1)).isTrue();
     MimeMessage[] received = greenMail.getReceivedMessages();
-    boolean matched = false;
+    MimeMessage matchedMessage = null;
     for (MimeMessage msg : received) {
       if (CONTACT_EMAIL.equals(msg.getAllRecipients()[0].toString())
           && msg.getSubject() != null
           && msg.getSubject().toLowerCase().contains("trust account activity")) {
-        matched = true;
+        matchedMessage = msg;
         break;
       }
     }
-    assertThat(matched)
+    assertThat(matchedMessage)
         .as("trust-activity email should be received for DEPOSIT recorded event")
-        .isTrue();
+        .isNotNull();
+
+    // BUG-CYCLE26-11: CTA href must deep-link by matter (project) id, NOT trust-account id.
+    String body = extractBody(matchedMessage);
+    assertThat(body)
+        .as("CTA href must deep-link by matter (project) id")
+        .contains("/trust/" + projectId);
+    assertThat(body)
+        .as("CTA href must NOT use trust-account id")
+        .doesNotContain("/trust/" + trustAccountId);
 
     var logs = findLogsByReferenceType("PORTAL_TRUST_ACTIVITY");
     assertThat(logs)
         .as("delivery log should record referenceType=PORTAL_TRUST_ACTIVITY for DEPOSIT")
         .isNotEmpty();
+  }
+
+  @Test
+  void trustRecordedEvent_nullProjectIdFallsBackToTrustIndex() throws Exception {
+    UUID txnId = UUID.randomUUID();
+    UUID trustAccountId = UUID.randomUUID();
+
+    publishInsideTenantTxn(
+        () ->
+            eventPublisher.publishEvent(
+                TrustTransactionRecordedEvent.recorded(
+                    txnId,
+                    trustAccountId,
+                    null, // projectId — TRANSFER_OUT/TRANSFER_IN cross-customer txns may have no
+                    // matter
+                    "DEPOSIT",
+                    new BigDecimal("125.00"),
+                    customerId,
+                    memberId,
+                    tenantSchema,
+                    ORG_ID)));
+
+    assertThat(greenMail.waitForIncomingEmail(5000, 1)).isTrue();
+    MimeMessage[] received = greenMail.getReceivedMessages();
+    MimeMessage matchedMessage = null;
+    for (MimeMessage msg : received) {
+      if (CONTACT_EMAIL.equals(msg.getAllRecipients()[0].toString())
+          && msg.getSubject() != null
+          && msg.getSubject().toLowerCase().contains("trust account activity")) {
+        matchedMessage = msg;
+        break;
+      }
+    }
+    assertThat(matchedMessage)
+        .as("trust-activity email should be received even when projectId is null")
+        .isNotNull();
+
+    // BUG-CYCLE26-11 regression: when projectId is null, CTA must point at /trust index,
+    // never at /trust/null or /trust/{trustAccountId}.
+    String body = extractBody(matchedMessage);
+    assertThat(body).as("CTA href must NOT contain /trust/null").doesNotContain("/trust/null");
+    assertThat(body)
+        .as("CTA href must NOT fall back to trust-account id")
+        .doesNotContain("/trust/" + trustAccountId);
+    assertThat(body)
+        .as("CTA href must point at /trust index when projectId is null")
+        .containsPattern("href=\"[^\"]+/trust\"");
   }
 
   @Test
@@ -220,6 +289,7 @@ class PortalEmailNotificationChannelIntegrationTest {
         () ->
             eventPublisher.publishEvent(
                 TrustTransactionRecordedEvent.recorded(
+                    UUID.randomUUID(),
                     UUID.randomUUID(),
                     UUID.randomUUID(),
                     "TRANSFER_OUT",
@@ -455,5 +525,34 @@ class PortalEmailNotificationChannelIntegrationTest {
         .where(RequestScopes.MEMBER_ID, memberId)
         .where(RequestScopes.ORG_ROLE, "owner")
         .call(callable::call);
+  }
+
+  /**
+   * Extracts the textual body of a multipart MimeMessage so we can grep for CTA hrefs. Walks
+   * jakarta.mail multipart structures so HTML parts (where the {@code href} lives) are surfaced.
+   */
+  private static String extractBody(MimeMessage message) throws Exception {
+    Object content = message.getContent();
+    if (content instanceof String s) {
+      return s;
+    }
+    StringBuilder out = new StringBuilder();
+    if (content instanceof jakarta.mail.Multipart multipart) {
+      collectMultipart(multipart, out);
+    }
+    return out.toString();
+  }
+
+  private static void collectMultipart(jakarta.mail.Multipart multipart, StringBuilder out)
+      throws Exception {
+    for (int i = 0; i < multipart.getCount(); i++) {
+      var part = multipart.getBodyPart(i);
+      Object inner = part.getContent();
+      if (inner instanceof String s) {
+        out.append(s);
+      } else if (inner instanceof jakarta.mail.Multipart nested) {
+        collectMultipart(nested, out);
+      }
+    }
   }
 }

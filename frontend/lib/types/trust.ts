@@ -48,6 +48,23 @@ export type TrustTransactionType =
   | "REVERSAL"
   | "DISBURSEMENT_PAYMENT";
 
+const TRUST_TRANSACTION_TYPE_LABELS: Record<TrustTransactionType, string> = {
+  DEPOSIT: "Deposit",
+  PAYMENT: "Payment",
+  TRANSFER_IN: "Transfer In",
+  TRANSFER_OUT: "Transfer Out",
+  FEE_TRANSFER: "Fee Transfer",
+  REFUND: "Refund",
+  INTEREST_CREDIT: "Interest Credit",
+  INTEREST_LPFF: "Interest LPFF",
+  REVERSAL: "Reversal",
+  DISBURSEMENT_PAYMENT: "Disbursement Payment",
+};
+
+export function transactionTypeLabel(type: TrustTransactionType): string {
+  return TRUST_TRANSACTION_TYPE_LABELS[type] ?? type;
+}
+
 export type TrustTransactionStatus =
   | "RECORDED"
   | "AWAITING_APPROVAL"

@@ -16,7 +16,11 @@ import { ApprovalBadge } from "@/components/trust/approval-badge";
 import { ReversalButton } from "@/components/trust/reversal-button";
 import { TransactionFilters } from "@/components/trust/transaction-filters";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
-import type { TrustTransactionStatus, TrustTransactionType } from "@/lib/types";
+import {
+  transactionTypeLabel,
+  type TrustTransactionStatus,
+  type TrustTransactionType,
+} from "@/lib/types";
 
 // ── Helpers ───────────────────────────────────────────────────────
 
@@ -35,13 +39,6 @@ function statusBadgeVariant(
     default:
       return "neutral";
   }
-}
-
-function transactionTypeLabel(type: TrustTransactionType): string {
-  return type
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function isInflowType(type: TrustTransactionType): boolean {

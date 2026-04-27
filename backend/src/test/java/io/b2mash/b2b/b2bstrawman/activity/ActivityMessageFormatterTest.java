@@ -314,4 +314,18 @@ class ActivityMessageFormatterTest {
     var item = formatter.format(event, actorMap());
     assertThat(item.message()).contains("generated document").contains("Invoice Template");
   }
+
+  @Test
+  void informationRequestItemAcceptedInterpolatesRequestNumber() {
+    // BUG-CYCLE26-10 regression: acceptItem now writes request_number into audit details
+    // so the activity feed renders "for REQ-0042" instead of literal "for unknown".
+    var event =
+        createEvent(
+            "information_request.item_accepted",
+            "request_item",
+            Map.of("request_number", "REQ-0042", "item_name", "ID copy"));
+    var item = formatter.format(event, actorMap());
+    assertThat(item.message()).isEqualTo("Alice accepted \"ID copy\" for REQ-0042");
+    assertThat(item.message()).doesNotContain("unknown");
+  }
 }

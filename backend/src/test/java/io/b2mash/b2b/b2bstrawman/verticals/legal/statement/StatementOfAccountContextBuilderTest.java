@@ -929,6 +929,62 @@ class StatementOfAccountContextBuilderTest {
         .isEqualByComparingTo(new BigDecimal("1000.00"));
   }
 
+  @Test
+  void aggregate_skipsVatWhenDefaultRateInactive() {
+    var project = projectWithCustomer("Inactive VAT Matter", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+
+    var te = timeEntry(LocalDate.of(2026, 4, 5), 60, true, new BigDecimal("1000.00"), "Work");
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of(te));
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+    // Inactive default rate (e.g., a deactivated VAT registration). Even with non-zero
+    // percentage and isDefault=true, VAT must be 0 — `!rate.isActive()` short-circuits.
+    var inactive = new TaxRate("VAT", new BigDecimal("15.00"), true, false, 0);
+    inactive.deactivate();
+    when(taxRateRepository.findByIsDefaultTrue()).thenReturn(Optional.of(inactive));
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> fees = (Map<String, Object>) context.get("fees");
+    assertThat((BigDecimal) fees.get("vat_amount")).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat((BigDecimal) fees.get("total_amount_incl_vat"))
+        .isEqualByComparingTo(new BigDecimal("1000.00"));
+  }
+
+  @Test
+  void aggregate_skipsVatWhenDefaultRatePercentageIsZero() {
+    // Note: `TaxRate(BigDecimal rate, ...)` constructor enforces non-null rate via
+    // Objects.requireNonNull, so the null-percentage code path in computeFeesVat is
+    // unreachable through the public API for fresh entities. We test the equivalent
+    // observable behaviour — zero-percentage rate (`signum() == 0`) — which the same
+    // guard short-circuits to BigDecimal.ZERO.
+    var project = projectWithCustomer("Zero VAT Matter", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+
+    var te = timeEntry(LocalDate.of(2026, 4, 5), 60, true, new BigDecimal("1000.00"), "Work");
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of(te));
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+    var zeroRate = new TaxRate("Zero VAT", new BigDecimal("0.00"), true, false, 0);
+    when(taxRateRepository.findByIsDefaultTrue()).thenReturn(Optional.of(zeroRate));
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> fees = (Map<String, Object>) context.get("fees");
+    assertThat((BigDecimal) fees.get("vat_amount")).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat((BigDecimal) fees.get("total_amount_incl_vat"))
+        .isEqualByComparingTo(new BigDecimal("1000.00"));
+  }
+
   // ---------- GAP-L-94: trust block resolves customer-active trust account ----------
 
   @Test
@@ -1086,6 +1142,56 @@ class StatementOfAccountContextBuilderTest {
     assertThat((BigDecimal) trust.get("closing_balance"))
         .isEqualByComparingTo(new BigDecimal("250.00"));
     verify(clientLedgerService).getClientBalanceAsOfDate(customerId, firstAccountId, periodStart);
+  }
+
+  @Test
+  void buildTrustBlock_primaryGeneralExistsButCustomerNeverUsedIt_fallsBackToFirstId() {
+    // A tenant-wide primary GENERAL exists, but the customer's deposits live on different
+    // accounts entirely. The previous resolver wrongly used the primary GENERAL (silently
+    // returning empty trust activity for THIS customer). The fix prefers the customer's
+    // first activity account when the primary's id is not in the customer's set.
+    UUID primaryGeneralId = UUID.randomUUID();
+    UUID firstAccountId = UUID.randomUUID();
+    UUID secondAccountId = UUID.randomUUID();
+    var project = projectWithCustomer("Primary-Not-Used", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of());
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+
+    // Customer activity is on firstAccountId + secondAccountId; primary GENERAL is a different
+    // account entirely (e.g., tenant rolled over to a new primary mid-engagement, or the
+    // customer's funds were never moved to the primary).
+    when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
+        .thenReturn(List.of(firstAccountId, secondAccountId));
+    var primaryGeneral = trustAccountWithId(primaryGeneralId);
+    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
+        .thenReturn(Optional.of(primaryGeneral));
+    when(clientLedgerService.getClientBalanceAsOfDate(customerId, firstAccountId, periodStart))
+        .thenReturn(BigDecimal.ZERO);
+    when(clientLedgerService.getClientBalanceAsOfDate(customerId, firstAccountId, periodEnd))
+        .thenReturn(new BigDecimal("750.00"));
+    when(clientLedgerService.getClientLedgerStatement(
+            customerId, firstAccountId, periodStart, periodEnd))
+        .thenReturn(
+            new LedgerStatementResponse(
+                BigDecimal.ZERO,
+                new BigDecimal("750.00"),
+                List.of(ledgerLine("DEPOSIT", new BigDecimal("750.00")))));
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    // Closing balance comes from firstAccountId activity, NOT the primaryGeneralId.
+    @SuppressWarnings("unchecked")
+    Map<String, Object> trust = (Map<String, Object>) context.get("trust");
+    assertThat((BigDecimal) trust.get("closing_balance"))
+        .isEqualByComparingTo(new BigDecimal("750.00"));
+    verify(clientLedgerService).getClientBalanceAsOfDate(customerId, firstAccountId, periodStart);
+    verify(clientLedgerService, never())
+        .getClientBalanceAsOfDate(customerId, primaryGeneralId, periodStart);
   }
 
   // ---------- helpers ----------

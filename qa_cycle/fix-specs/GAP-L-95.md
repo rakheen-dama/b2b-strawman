@@ -20,7 +20,7 @@ BigDecimal vatAmount = BigDecimal.ZERO; // line-level VAT not modelled on TimeEn
 BigDecimal totalFeesIncl = totalFeesExcl.add(vatAmount);
 ```
 
-The author left a literal `// line-level VAT not modelled on TimeEntry yet` TODO and hard-coded VAT to zero. The SoA never references `org_settings.vat_rate` (`OrgSettings.getVatRate()`) nor any per-line VAT computation.
+The author left a literal `// line-level VAT not modelled on TimeEntry yet` TODO and hard-coded VAT to zero. The SoA never references the default `TaxRate` row (the canonical VAT source the codebase uses elsewhere — see `InvoiceTaxService` which reads `TaxRateRepository.findByIsDefaultTrue()`). **Spec correction (2026-04-27, post-implementation)**: original spec body below references `OrgSettings.getVatRate()` / `isVatRegistered()` which do **not** exist on `OrgSettings`. The codebase models VAT via the `TaxRate` entity (with `isDefault` flag), not org-level settings. The implemented fix in PR #1194 uses `TaxRateRepository.findByIsDefaultTrue()` instead — preserving this spec body unchanged below for archival accuracy of the original triage.
 
 Comparison with the invoicing path: `InvoiceLineDisbursement` and `InvoiceLine` carry per-line `vatAmount` already; the invoice generator multiplies fees by `org_settings.vat_rate` at billing time. The SoA bypasses the invoicing path entirely (it recomputes fees from `time_entries.duration × billingRateSnapshot` for the period), so it must replicate the VAT computation itself.
 

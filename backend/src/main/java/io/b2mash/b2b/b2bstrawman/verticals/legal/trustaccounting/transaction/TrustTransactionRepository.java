@@ -232,6 +232,7 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       WHERE t.customerId = :customerId
         AND t.status IN ('RECORDED', 'APPROVED')
         AND t.transactionType <> 'REVERSAL'
+      ORDER BY t.trustAccountId ASC
       """)
   List<UUID> findDistinctTrustAccountIdsByCustomerId(@Param("customerId") UUID customerId);
 }

@@ -35,6 +35,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountTyp
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.LedgerStatementLine;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService.LedgerStatementResponse;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -70,6 +71,7 @@ class StatementOfAccountContextBuilderTest {
   @Mock private TemplateContextHelper templateContextHelper;
   @Mock private VerticalModuleGuard moduleGuard;
   @Mock private TaxRateRepository taxRateRepository;
+  @Mock private TrustTransactionRepository trustTransactionRepository;
 
   // Real ObjectMapper (Jackson 3 — `tools.jackson.databind`, the same artifact Spring Boot 4
   // autoconfigures and injects in production). Needed because the GAP-L-71 fix uses
@@ -101,6 +103,12 @@ class StatementOfAccountContextBuilderTest {
     // Default: no default tax rate configured → VAT computes to ZERO. Individual VAT-aware
     // tests override this to assert the populated-rate path.
     lenient().when(taxRateRepository.findByIsDefaultTrue()).thenReturn(Optional.empty());
+    // GAP-L-94: SoA now resolves the trust account from the customer's actual activity.
+    // Default empty list mirrors a customer with no trust activity; tests that exercise the
+    // trust block override this with the trust-account id(s) the test scenario expects.
+    lenient()
+        .when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(any()))
+        .thenReturn(List.of());
   }
 
   @Test
@@ -141,9 +149,8 @@ class StatementOfAccountContextBuilderTest {
         .thenReturn(List.of(d1, d2));
 
     // Trust: opening 100, two deposits totalling 500, one payment of 200, closing 400.
-    var trustAccount = trustAccountWithId(trustAccountId);
-    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
-        .thenReturn(Optional.of(trustAccount));
+    when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
+        .thenReturn(List.of(trustAccountId));
     when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
         .thenReturn(new BigDecimal("100.00"));
     when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
@@ -206,8 +213,6 @@ class StatementOfAccountContextBuilderTest {
         .thenReturn(List.of());
     when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
         .thenReturn(List.of());
-    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
-        .thenReturn(Optional.empty());
     when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
 
     var context = builder.build(projectId, periodStart, periodEnd);
@@ -259,9 +264,8 @@ class StatementOfAccountContextBuilderTest {
     when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
         .thenReturn(List.of());
 
-    var trustAccount = trustAccountWithId(trustAccountId);
-    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
-        .thenReturn(Optional.of(trustAccount));
+    when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
+        .thenReturn(List.of(trustAccountId));
     when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
         .thenReturn(BigDecimal.ZERO);
     when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
@@ -314,8 +318,6 @@ class StatementOfAccountContextBuilderTest {
         .thenReturn(List.of(inRange));
     when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
         .thenReturn(List.of());
-    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
-        .thenReturn(Optional.empty());
     when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
 
     var context = builder.build(projectId, periodStart, periodEnd);
@@ -355,8 +357,6 @@ class StatementOfAccountContextBuilderTest {
             "REF-CNSL");
     when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
         .thenReturn(List.of(inRange));
-    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
-        .thenReturn(Optional.empty());
     when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
 
     var context = builder.build(projectId, periodStart, periodEnd);
@@ -383,9 +383,8 @@ class StatementOfAccountContextBuilderTest {
     when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
         .thenReturn(List.of());
 
-    var trustAccount = trustAccountWithId(trustAccountId);
-    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
-        .thenReturn(Optional.of(trustAccount));
+    when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
+        .thenReturn(List.of(trustAccountId));
     // Opening read at periodStart, closing at periodEnd.
     when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
         .thenReturn(new BigDecimal("750.00"));
@@ -434,8 +433,6 @@ class StatementOfAccountContextBuilderTest {
             "REF-CRT");
     when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
         .thenReturn(List.of(disb));
-    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
-        .thenReturn(Optional.empty());
 
     // Previous balance: an old SENT invoice (issueDate before periodStart) with R500 outstanding.
     var oldInvoice =
@@ -476,8 +473,6 @@ class StatementOfAccountContextBuilderTest {
         .thenReturn(List.of());
     when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
         .thenReturn(List.of());
-    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
-        .thenReturn(Optional.empty());
 
     var carryover =
         invoiceWithStatusTotalAndIssueDate(
@@ -505,8 +500,6 @@ class StatementOfAccountContextBuilderTest {
         .thenReturn(List.of());
     when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
         .thenReturn(List.of());
-    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
-        .thenReturn(Optional.empty());
 
     var voided =
         invoiceWithStatusTotalAndIssueDate(
@@ -535,8 +528,6 @@ class StatementOfAccountContextBuilderTest {
         .thenReturn(List.of(te));
     when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
         .thenReturn(List.of());
-    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
-        .thenReturn(Optional.empty());
     when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
 
     var context = builder.build(projectId, periodStart, periodEnd);
@@ -583,7 +574,9 @@ class StatementOfAccountContextBuilderTest {
 
     // Crucially, the ClientLedgerService is never hit — avoids ModuleNotEnabledException (403).
     verifyNoInteractions(clientLedgerService);
-    // TrustAccount lookup is also skipped (short-circuit is before that).
+    // TrustTransaction + TrustAccount lookups are also skipped (the module-guard short-circuit
+    // sits before the customer-activity lookup introduced in GAP-L-94).
+    verifyNoInteractions(trustTransactionRepository);
     verify(trustAccountRepository, never()).findByAccountTypeAndPrimaryTrue(any());
   }
 
@@ -618,9 +611,8 @@ class StatementOfAccountContextBuilderTest {
     when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
         .thenReturn(List.of(disb));
 
-    var trustAccount = trustAccountWithId(trustAccountId);
-    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
-        .thenReturn(Optional.of(trustAccount));
+    when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
+        .thenReturn(List.of(trustAccountId));
     when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
         .thenReturn(BigDecimal.ZERO);
     when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
@@ -708,9 +700,8 @@ class StatementOfAccountContextBuilderTest {
     when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
         .thenReturn(List.of(disb));
 
-    var trustAccount = trustAccountWithId(trustAccountId);
-    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
-        .thenReturn(Optional.of(trustAccount));
+    when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
+        .thenReturn(List.of(trustAccountId));
     when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
         .thenReturn(BigDecimal.ZERO);
     when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
@@ -805,9 +796,8 @@ class StatementOfAccountContextBuilderTest {
     when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
         .thenReturn(List.of());
 
-    var trustAccount = trustAccountWithId(trustAccountId);
-    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
-        .thenReturn(Optional.of(trustAccount));
+    when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
+        .thenReturn(List.of(trustAccountId));
     when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
         .thenReturn(BigDecimal.ZERO);
     when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
@@ -872,8 +862,6 @@ class StatementOfAccountContextBuilderTest {
         .thenReturn(List.of(te1, te2));
     when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
         .thenReturn(List.of());
-    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
-        .thenReturn(Optional.empty());
     when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
 
     var rate = new TaxRate("VAT", new BigDecimal("15.00"), true, false, 0);
@@ -901,8 +889,6 @@ class StatementOfAccountContextBuilderTest {
         .thenReturn(List.of(te));
     when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
         .thenReturn(List.of());
-    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
-        .thenReturn(Optional.empty());
     when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
     // Default-rate lookup returns empty (lenient setUp default — explicit here for clarity).
     when(taxRateRepository.findByIsDefaultTrue()).thenReturn(Optional.empty());
@@ -929,8 +915,6 @@ class StatementOfAccountContextBuilderTest {
         .thenReturn(List.of(te));
     when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
         .thenReturn(List.of());
-    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
-        .thenReturn(Optional.empty());
     when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
     // Exempt rate (e.g., service for an export client). Even with isDefault=true, VAT must be 0.
     var exempt = new TaxRate("Exempt", new BigDecimal("0.00"), true, true, 0);
@@ -943,6 +927,165 @@ class StatementOfAccountContextBuilderTest {
     assertThat((BigDecimal) fees.get("vat_amount")).isEqualByComparingTo(BigDecimal.ZERO);
     assertThat((BigDecimal) fees.get("total_amount_incl_vat"))
         .isEqualByComparingTo(new BigDecimal("1000.00"));
+  }
+
+  // ---------- GAP-L-94: trust block resolves customer-active trust account ----------
+
+  @Test
+  void buildTrustBlock_resolvesAccountFromCustomerActivity_returnsAllRecordedDeposits() {
+    // Customer has activity on a single trust account that is NOT necessarily the primary
+    // GENERAL — the SoA must still surface it. Pre-fix `findByAccountTypeAndPrimaryTrue` would
+    // either return null or a different id, hiding the trust activity.
+    var project = projectWithCustomer("Sipho RAF", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Sipho")));
+
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of());
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+
+    when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
+        .thenReturn(List.of(trustAccountId));
+    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
+        .thenReturn(BigDecimal.ZERO);
+    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
+        .thenReturn(new BigDecimal("70100.00"));
+    var dep1 = ledgerLine("DEPOSIT", new BigDecimal("50000.00"));
+    var dep2 = ledgerLine("DEPOSIT", new BigDecimal("100.00"));
+    var dep3 = ledgerLine("DEPOSIT", new BigDecimal("20000.00"));
+    when(clientLedgerService.getClientLedgerStatement(
+            customerId, trustAccountId, periodStart, periodEnd))
+        .thenReturn(
+            new LedgerStatementResponse(
+                BigDecimal.ZERO, new BigDecimal("70100.00"), List.of(dep1, dep2, dep3)));
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> trust = (Map<String, Object>) context.get("trust");
+    @SuppressWarnings("unchecked")
+    List<?> deposits = (List<?>) trust.get("deposits");
+    assertThat(deposits).hasSize(3);
+    assertThat((BigDecimal) trust.get("opening_balance")).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat((BigDecimal) trust.get("closing_balance"))
+        .isEqualByComparingTo(new BigDecimal("70100.00"));
+    @SuppressWarnings("unchecked")
+    Map<String, Object> summary = (Map<String, Object>) context.get("summary");
+    assertThat((BigDecimal) summary.get("trust_balance_held"))
+        .isEqualByComparingTo(new BigDecimal("70100.00"));
+  }
+
+  @Test
+  void buildTrustBlock_returnsEmpty_whenCustomerHasNoTrustActivity() {
+    var project = projectWithCustomer("No Trust Customer", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of());
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+    // Default lenient stub returns empty list — explicit here for clarity.
+    when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
+        .thenReturn(List.of());
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> trust = (Map<String, Object>) context.get("trust");
+    assertThat(((List<?>) trust.get("deposits"))).isEmpty();
+    assertThat(((List<?>) trust.get("payments"))).isEmpty();
+    assertThat((BigDecimal) trust.get("opening_balance")).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat((BigDecimal) trust.get("closing_balance")).isEqualByComparingTo(BigDecimal.ZERO);
+    // The ledger service must not be queried for a customer with no activity (avoids redundant
+    // db traffic and stops a tenant-wide audit trail of empty-result trust queries).
+    verifyNoInteractions(clientLedgerService);
+  }
+
+  @Test
+  void buildTrustBlock_multiAccountCustomer_prefersPrimaryGeneralWhenItHasActivity() {
+    // Customer holds funds on two accounts — primary GENERAL and a secondary. The SoA must pick
+    // the primary GENERAL when the customer has activity on it (matches the operational shape
+    // ZA Section 86 firms expect: a primary trust account holds the bulk of client funds).
+    UUID secondaryAccountId = UUID.randomUUID();
+    var project = projectWithCustomer("Multi-Account", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of());
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+
+    when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
+        .thenReturn(List.of(secondaryAccountId, trustAccountId));
+    var primaryGeneral = trustAccountWithId(trustAccountId);
+    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
+        .thenReturn(Optional.of(primaryGeneral));
+    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodStart))
+        .thenReturn(BigDecimal.ZERO);
+    when(clientLedgerService.getClientBalanceAsOfDate(customerId, trustAccountId, periodEnd))
+        .thenReturn(new BigDecimal("500.00"));
+    when(clientLedgerService.getClientLedgerStatement(
+            customerId, trustAccountId, periodStart, periodEnd))
+        .thenReturn(
+            new LedgerStatementResponse(
+                BigDecimal.ZERO,
+                new BigDecimal("500.00"),
+                List.of(ledgerLine("DEPOSIT", new BigDecimal("500.00")))));
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    // Primary GENERAL was preferred → balance pulled from THAT account, not the secondary.
+    @SuppressWarnings("unchecked")
+    Map<String, Object> trust = (Map<String, Object>) context.get("trust");
+    assertThat((BigDecimal) trust.get("closing_balance"))
+        .isEqualByComparingTo(new BigDecimal("500.00"));
+    // Verify the ledger query targeted the primary GENERAL id, not the secondary.
+    verify(clientLedgerService).getClientBalanceAsOfDate(customerId, trustAccountId, periodStart);
+  }
+
+  @Test
+  void buildTrustBlock_multiAccountCustomer_fallsBackToFirstWhenNoPrimaryGeneral() {
+    // No primary GENERAL exists (or it is not in the customer's activity set). Fall back to
+    // the first account id returned. Section 86 compliance still surfaces the activity.
+    UUID firstAccountId = UUID.randomUUID();
+    UUID secondAccountId = UUID.randomUUID();
+    var project = projectWithCustomer("Multi-Account-NoGeneral", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of());
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+
+    when(trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customerId))
+        .thenReturn(List.of(firstAccountId, secondAccountId));
+    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
+        .thenReturn(Optional.empty());
+    when(clientLedgerService.getClientBalanceAsOfDate(customerId, firstAccountId, periodStart))
+        .thenReturn(BigDecimal.ZERO);
+    when(clientLedgerService.getClientBalanceAsOfDate(customerId, firstAccountId, periodEnd))
+        .thenReturn(new BigDecimal("250.00"));
+    when(clientLedgerService.getClientLedgerStatement(
+            customerId, firstAccountId, periodStart, periodEnd))
+        .thenReturn(
+            new LedgerStatementResponse(
+                BigDecimal.ZERO,
+                new BigDecimal("250.00"),
+                List.of(ledgerLine("DEPOSIT", new BigDecimal("250.00")))));
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> trust = (Map<String, Object>) context.get("trust");
+    assertThat((BigDecimal) trust.get("closing_balance"))
+        .isEqualByComparingTo(new BigDecimal("250.00"));
+    verify(clientLedgerService).getClientBalanceAsOfDate(customerId, firstAccountId, periodStart);
   }
 
   // ---------- helpers ----------

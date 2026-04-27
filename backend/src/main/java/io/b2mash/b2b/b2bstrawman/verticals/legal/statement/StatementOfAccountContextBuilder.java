@@ -27,6 +27,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -38,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.type.TypeReference;
@@ -56,6 +59,8 @@ import tools.jackson.databind.ObjectMapper;
  */
 @Component
 public class StatementOfAccountContextBuilder {
+
+  private static final Logger log = LoggerFactory.getLogger(StatementOfAccountContextBuilder.class);
 
   private static final BigDecimal MINUTES_PER_HOUR = new BigDecimal("60");
   private static final DateTimeFormatter REFERENCE_DATE = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -90,6 +95,7 @@ public class StatementOfAccountContextBuilder {
   private final VerticalModuleGuard moduleGuard;
   private final ObjectMapper objectMapper;
   private final TaxRateRepository taxRateRepository;
+  private final TrustTransactionRepository trustTransactionRepository;
 
   public StatementOfAccountContextBuilder(
       ProjectRepository projectRepository,
@@ -104,7 +110,8 @@ public class StatementOfAccountContextBuilder {
       TemplateContextHelper templateContextHelper,
       VerticalModuleGuard moduleGuard,
       ObjectMapper objectMapper,
-      TaxRateRepository taxRateRepository) {
+      TaxRateRepository taxRateRepository,
+      TrustTransactionRepository trustTransactionRepository) {
     this.projectRepository = projectRepository;
     this.customerRepository = customerRepository;
     this.timeEntryRepository = timeEntryRepository;
@@ -118,6 +125,7 @@ public class StatementOfAccountContextBuilder {
     this.moduleGuard = moduleGuard;
     this.objectMapper = objectMapper;
     this.taxRateRepository = taxRateRepository;
+    this.trustTransactionRepository = trustTransactionRepository;
   }
 
   /**
@@ -449,13 +457,36 @@ public class StatementOfAccountContextBuilder {
     if (!moduleGuard.isModuleEnabled(TRUST_ACCOUNTING_MODULE)) {
       return TrustBlock.empty();
     }
-    UUID trustAccountId =
-        trustAccountRepository
-            .findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL)
-            .map(TrustAccount::getId)
-            .orElse(null);
-    if (trustAccountId == null) {
+    // GAP-L-94: prefer the trust account(s) where THIS customer actually has activity. The
+    // previous resolver (`findByAccountTypeAndPrimaryTrue(GENERAL)`) returned a tenant-wide
+    // primary account and silently short-circuited the SoA when the customer's deposits
+    // happened to live on a different account (multi-account tenants, or a tenant where the
+    // primary GENERAL flag was not set). Section 86 / LPC compliance breaks if the SoA's
+    // Trust Activity section is empty for a customer with active funds.
+    List<UUID> customerTrustAccountIds =
+        trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customer.getId());
+    UUID trustAccountId;
+    if (customerTrustAccountIds.isEmpty()) {
       return TrustBlock.empty();
+    } else if (customerTrustAccountIds.size() == 1) {
+      trustAccountId = customerTrustAccountIds.get(0);
+    } else {
+      // Multi-account customer (unusual for ZA Section 86 firms — usually GENERAL only). Prefer
+      // the primary GENERAL trust account when the customer has activity on it; otherwise fall
+      // back to the first account id returned. Logging is intentional: a tenant with multiple
+      // active trust accounts per customer is an unusual operational shape worth surfacing.
+      UUID preferred =
+          trustAccountRepository
+              .findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL)
+              .map(TrustAccount::getId)
+              .filter(customerTrustAccountIds::contains)
+              .orElse(customerTrustAccountIds.get(0));
+      log.warn(
+          "Customer {} has activity on {} trust accounts; using {} for SoA Trust Activity section",
+          customer.getId(),
+          customerTrustAccountIds.size(),
+          preferred);
+      trustAccountId = preferred;
     }
     BigDecimal opening =
         clientLedgerService.getClientBalanceAsOfDate(customer.getId(), trustAccountId, periodStart);

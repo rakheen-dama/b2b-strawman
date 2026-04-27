@@ -234,7 +234,12 @@ public class StatementService {
                 "PROJECT",
                 "visibility",
                 "PORTAL"),
-            template.getName(),
+            // GAP-L-97: PortalDocumentNotificationHandler keys off
+            // DocumentGeneratedEvent.templateName
+            // against an allowlist of SLUGS (OrgSettings.portalNotificationDocTypes default
+            // ["matter-closure-letter","statement-of-account"]). Pass the slug here; the display
+            // name remains in details.template_name above for activity-feed UX.
+            template.getSlug(),
             TemplateEntityType.PROJECT,
             projectId,
             fileName,

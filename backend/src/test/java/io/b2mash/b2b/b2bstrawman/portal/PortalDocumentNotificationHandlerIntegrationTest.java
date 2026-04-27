@@ -161,6 +161,25 @@ class PortalDocumentNotificationHandlerIntegrationTest {
     assertThat(received).isEmpty();
   }
 
+  /**
+   * GAP-L-97 regression guard: if a future change accidentally reverts a publisher to passing the
+   * display NAME (e.g., "Statement of Account") instead of the SLUG ("statement-of-account"), the
+   * allowlist must still reject it. This prevents the silent-skip mode that broke the Day 60 portal
+   * email kick-off in cycle 46.
+   */
+  @Test
+  void displayNamePublishedAsTemplateName_skipsEmail() {
+    UUID generatedDocId = UUID.randomUUID();
+    publishEvent(generatedDocId, projectId, "Statement of Account", "PROJECT", "PORTAL");
+
+    MimeMessage[] received = greenMail.getReceivedMessages();
+    assertThat(received)
+        .as(
+            "Display name 'Statement of Account' must NOT match the slug allowlist — guarding"
+                + " against GAP-L-97 regressions where a publisher reverts to template.getName().")
+        .isEmpty();
+  }
+
   /** Empty per-tenant allowlist (toggle off) → no email even for normally allowlisted templates. */
   @Test
   void emptyAllowlist_disablesAllSends() {

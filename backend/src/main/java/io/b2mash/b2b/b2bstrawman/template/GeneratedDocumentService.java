@@ -217,7 +217,12 @@ public class GeneratedDocumentService {
             orgId,
             Instant.now(),
             Map.of("file_name", pdfResult.fileName(), "template_name", templateDetail.name()),
-            templateDetail.name(),
+            // GAP-L-97: PortalDocumentNotificationHandler keys off
+            // DocumentGeneratedEvent.templateName
+            // against an allowlist of SLUGS (OrgSettings.portalNotificationDocTypes default
+            // ["matter-closure-letter","statement-of-account"]). Pass the slug here; the display
+            // name remains in details.template_name above for activity-feed UX.
+            templateDetail.slug(),
             TemplateEntityType.valueOf(templateDetail.primaryEntityType()),
             entityId,
             pdfResult.fileName(),

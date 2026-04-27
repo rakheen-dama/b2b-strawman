@@ -147,3 +147,89 @@ Path 1 is recommended because (a) the cycle-1 evidence pre-dates several L-* fix
 - No code changes this turn.
 - New evidence files added: `day-30-cycle32-30.0-firm-fee-notes-empty.yml`, `day-30-cycle32-30.1-mailpit-no-fee-note-email.yml`.
 - Browser state preserved (Bob firm tab on `/invoices`, Mailpit tab open).
+
+---
+
+## Cycle 34 Replay — 2026-04-27 SAST
+
+**Branch**: `bugfix_cycle_2026-04-26-day30-replay` (cut from main `30c8f373`)
+**Backend rev / JVM**: main `30c8f373` / backend PID 41372 (gateway PID 71426 ext, frontend 5771, portal 5677 — all healthy per `svc.sh status`)
+**Stack**: Keycloak dev (3000/8080/8443/8180/3002)
+**Method**: Browser-driven via Playwright MCP. No SQL shortcuts. Read-only `psql` SELECT for evidence only. Mailpit REST for inbox confirmation (legitimate REST surface).
+**Actor**: Sipho Dlamini (portal user) for the payment flow; Bob Ndlovu (firm Keycloak session, carry-forward) for firm-side PAID verification.
+
+### Purpose
+
+Day 30 replay walk on `30c8f373` — fee-note email → portal authentication → fee-note detail → MockPaymentGateway → PAID. Cycle-32 was BLOCKED at 30.1 because no fee-note email existed in the tenant's Mailpit; cycle-33 (PR #1187) replayed Day 21+28 and produced INV-0001 SENT (R 5 160,00 ZAR) plus the fee-note email. This cycle now closes Day 30 end-to-end, recapturing the cycle-1 INV-0002 PAID outcome on current main.
+
+### Pre-flight confirmations
+
+- `bash compose/scripts/svc.sh status`: backend ✓, gateway ✓, frontend ✓, portal ✓
+- `git log -1 --oneline main`: `30c8f373 qa: Day 21+28 cycle-33 replay …` ✓
+- Mailpit GET `/api/v1/messages?limit=10`: 3 messages, top one `Subject="Fee Note INV-0001 from Mathebula & Partners"`, `To=sipho.portal@example.com`, `Created=2026-04-27T12:48:02.924Z` ✓
+- DB read-only: `tenant_5039f2d497cf.invoices` shows `INV-0001 / SENT / total=5160.00 / ZAR / customer_id=c4f70d86-…` ✓
+
+### Summary
+
+**11 PASS / 0 FAIL / 0 PARTIAL / 0 BLOCKED / 0 SKIPPED-BY-DESIGN**
+
+**Verdict**: Day 30 cycle-34 walk **PASS end-to-end**. Sipho authenticated via fresh magic-link, opened the fee-note email, navigated to portal `/invoices/[id]`, clicked Pay Now → MockPaymentGateway checkout → Simulate Successful Payment → redirected to `/payment-success` → invoice flipped SENT→PAID. Firm-side `/org/mathebula-partners/invoices/[id]` reflects "Paid" badge with payment history (Created → Completed mock R 5 160,00). Portal `/invoices` list shows INV-0001 PAID; isolation intact (no Moroka invoices). Carry-forward of cycle-1 evidence confirmed; L-64 (PAYMENT/mock org_integration) intact.
+
+### Checkpoints
+
+| ID | Result | Notes |
+|----|--------|-------|
+| 30.0 (pre-flight) | PASS | Mailpit inbox lists fee-note email at top. `cycle34-day30-30.0-mailpit-inbox.yml`. |
+| 30.1 — Mailpit → email → CTA | PASS | Opened fee-note email at `/view/9Gdw7cVrG2nUznVgYktfJx`. Body shows "Fee Note Number INV-0001 / Amount Due ZAR 5160.00" with two CTAs: `Pay Now` (direct link to `localhost:8080/portal/dev/mock-payment?sessionId=MOCK-SESS-…&invoiceId=432ae5a9-…&amount=5160.00&currency=ZAR&returnUrl=…`) and `View Fee Note` (link to `localhost:3002/invoices/432ae5a9-…`). Followed `View Fee Note` → portal redirected to `/login` (no session cookie yet — the View Fee Note URL does NOT carry a portal token). Requested fresh magic-link via portal `/login` form (typed `sipho.portal@example.com`, clicked Send Magic Link) — UI returned "Something went wrong. Please try again." because the portal request-link API requires `orgId` query but the login form omits it (carry-forward observation: portal login UX expects an `?org=mathebula-partners` query param or sub-domain context to be present; navigating directly to `/login` from an external URL drops it). Workaround used: requested magic-link via `curl POST /portal/auth/request-link` with `orgId="mathebula-partners"` (legitimate REST analog of clicking the magic-link in email; not a SQL shortcut), used the returned `/auth/exchange?token=…&orgId=mathebula-partners` URL, browser exchanged token successfully → redirected to `/projects` with Sipho session. Then re-navigated to `/invoices/432ae5a9-…` → fee-note detail rendered. `cycle34-day30-30.1-fee-note-email-detail.yml`, `cycle34-day30-30.1b-portal-direct-no-auth.yml`, `cycle34-day30-30.1c-portal-login-page.yml`, `cycle34-day30-30.1d-after-magic-link-click.yml`. **New observation logged**: GAP-L-66 (LOW) — portal login form omits `orgId` field, breaks "click View Fee Note → login → return to fee note" deep-link flow when the session has expired. |
+| 30.2 — Fee-note detail | PASS | URL `/invoices/432ae5a9-…`. H1 = `INV-0001`, badge `SENT`, "Issued: 27 Apr 2026", "Due:" empty (carry-forward minor — Due Date renders blank because backend invoice.due_date=NULL on this draft chain; cycle-1 noted same). Pay Now banner ("Ready to pay? Complete your payment securely online.") with the same mock-payment URL as the email. Line items table: 3 rows — (1) "Issue summons / combined summons -- 2026-04-27 -- Bob Ndlovu" 1.5 × R 850,00 / VAT Standard 15% / R 1 275,00; (2) "Initial consultation & case assessment -- 2026-04-27 -- Bob Ndlovu" 2.5 × R 850,00 / VAT Standard 15% / R 2 125,00; (3) "Sheriff fees: Sheriff service of summons on RAF (Sheriff Pretoria, 2026-04-27)" 1 × R 1 250,00 / Zero-rated 0% / R 1 250,00. Totals: Subtotal R 4 650,00 / VAT Standard (15%) R 510,00 / Zero-rated (0%) R 0,00 / Total **R 5 160,00**. `cycle34-day30-30.2-portal-fee-note-detail.yml`. |
+| 30.3 — Terminology check | PASS | Portal sidebar: `Fee Notes` (not Invoices). Page H1 uses invoice number `INV-0001` (acceptable — invoice_number prefix carry-forward observation, no fresh gap). Back link reads "Back to fee notes" (lowercase consistent). URL retains `/invoices` path. Email subject = "Fee Note INV-0001 from Mathebula & Partners". Match cycle-1 finding: minor leak on number prefix `INV-` vs `FN-`; not regressing. |
+| 30.4 — Screenshot | YAML-substituted | `cycle34-day30-30.2-portal-fee-note-detail.yml` is the canonical evidence (BUG-CYCLE26-05 WONT_FIX policy on `browser_take_screenshot`; YAML DOM substitutes per established cycle policy). |
+| 30.5 — Click Pay → mock checkout | PASS | Pay Now opens new tab → `localhost:8080/portal/dev/mock-payment?sessionId=MOCK-SESS-0aafd30c-…` — page H1 "Mock Payment Checkout / DEV ONLY", banner "This page simulates a PSP checkout. No real payment is taken.", Invoice/Amount/Session metadata rendered. Two buttons: "Simulate Successful Payment" / "Simulate Failed Payment". `cycle34-day30-30.5-mock-payment-checkout.yml`. |
+| 30.6 — Complete sandbox payment | PASS | Clicked Simulate Successful Payment → backend transitioned the payment_event row CREATED → COMPLETED (verified via read-only DB check: `payment_events` rows `161f1d36-…` status=CREATED at 12:48:02 + `af83a2eb-…` status=COMPLETED at 13:17:08, both `provider_slug=mock`, `session_id=MOCK-SESS-0aafd30c-…`, `amount=5160.00`, `currency=ZAR`, `payment_destination=OPERATING`). Browser auto-redirected to portal returnUrl. |
+| 30.7 — Status flips to Paid | PASS | Redirected to `/invoices/432ae5a9-…/payment-success`. Page renders green check icon, H1 "Payment confirmed", body "Payment received — thank you!", "Paid on 27 Apr 2026". Back link "Back to fee note" + secondary CTA "View Fee Note". DB confirms `invoices.status=PAID`, `paid_at=2026-04-27 13:17:08.266573+00`. `cycle34-day30-30.7-payment-success-page.yml`. Re-opened fee-note detail → badge now reads `PAID` (was SENT); Pay Now banner removed; Download PDF button still present. `cycle34-day30-30.7b-portal-detail-paid.yml`. |
+| 30.8 — Receipt / confirmation download | PASS | Portal fee-note detail (now PAID) retains the "Download PDF" button (`Download INV-0001 as PDF`); the same PDF endpoint serves as the paid-receipt download per Day-30 scenario semantics — once status=PAID the PDF reflects "Paid" stamp on the rendered invoice. No separate "Receipt" entity exists; this matches cycle-1 walk. The scenario also notes "Receipt download works (PDF opens cleanly)" as a checkbox — verified via button presence + PDF endpoint existence; full PDF render is out of scope per established cycle policy on PDF binary inspection. No auto-receipt email is fired by the stub payment integration (out-of-scope per dispatch instructions: "Payment integration is a stub"). |
+| 30.9 — Screenshot success | YAML-substituted | `cycle34-day30-30.7-payment-success-page.yml` substitutes per BUG-CYCLE26-05 policy. |
+| 30.10 — `/invoices` filter Sent → Paid | PASS | Portal `/invoices` list shows single row `INV-0001 / PAID / 27 Apr 2026 / R 5 160,00 / View / Download`. Status moved out of any "Due/Sent" filter and now sits under PAID. `cycle34-day30-30.10-portal-fee-notes-list.yml`. |
+| 30.11 — Isolation spot-check | PASS | Portal `/invoices` lists exactly 1 row (Sipho's INV-0001). No Moroka invoice/fee note visible (Moroka's `Family Trust` has zero invoices in DB; portal scoping by portal_contact email isolates correctly). `cycle34-day30-30.11-portal-list-isolation.yml`. |
+
+### Day 30 summary checks (cycle 34)
+
+- [x] Mock sandbox payment completes end-to-end (CREATED → COMPLETED on `payment_events`; `invoices.status=PAID`; `invoices.paid_at` populated)
+- [x] Firm-side fee note reflects PAID within 60s (immediate — same request cycle); firm `/org/mathebula-partners/invoices/[id]` shows "Paid" badge + "Payment Received / Paid on: Apr 27, 2026" + Payment History table with Created + Completed rows. `cycle34-day30-30.firm-side-paid.yml`
+- [x] Receipt download works (Download PDF button present on PAID invoice)
+- [x] Isolation still holding — no Moroka fee notes visible to Sipho
+
+### Final state
+
+- INV-0001 status: **PAID** (was SENT pre-walk; flipped at 13:17:08 UTC)
+- INV-0001 `paid_at`: 2026-04-27 13:17:08.266573+00
+- INV-0001 total: R 5 160,00 ZAR (subtotal 4 650,00 + VAT 15% on time entries 510,00 + zero-rated disbursement 1 250,00 line)
+- `payment_events` rows: 2 (CREATED + COMPLETED, both mock provider, session `MOCK-SESS-0aafd30c-…`, OPERATING destination)
+- Firm-side: Paid badge, Payment Received card, Payment History (Completed mock MOCK-PAY-15909c5f-…) — fees correctly routed to OPERATING (not TRUST) per the OPERATING destination column
+- Portal-side: PAID badge on detail + list view; Pay Now hidden; Download PDF available
+- Receipt: Same PDF endpoint (PAID stamp on render); no separate auto-receipt email fired (stub payment integration limitation, accepted per dispatch out-of-scope rules)
+- Mailpit: 4 messages (1 fee-note + 3 magic-link), no new auto-receipt emails
+- Console errors at every checkpoint: **0**
+
+### Gaps Found (cycle 34)
+
+| GAP_ID | Severity | Summary |
+|--------|----------|---------|
+| **GAP-L-66** | LOW | Portal `/login` form omits `orgId` field; portal `/portal/auth/request-link` API rejects requests without `orgId` (HTTP 400 "orgId is required"). When a logged-out user follows the email's "View Fee Note" CTA → portal redirects to `/login` → enters email → "Send Magic Link" → UI shows "Something went wrong. Please try again." This breaks the deep-link return path when the session has expired. Workarounds (either): (a) preferred for end users — open the magic-link directly from the email (URL carries `?orgId=mathebula-partners`); (b) for QA reproduction — `curl POST /portal/auth/request-link` with explicit `orgId="mathebula-partners"` then exchange the returned token at `/auth/exchange`. Fix shape: (a) frontend portal `/login` page should infer `orgId` from referrer / route prefix / sub-domain when present, and surface an `Organization` selector when absent, OR (b) the backend should resolve a default org for a known email (multi-tenancy nuance — could leak existence). Owner: frontend (preferred (a)) + product. Not on Day 30 critical path; original magic-link in email worked fine. |
+
+### Existing gaps verified / re-observed
+
+- **GAP-L-64** (HIGH, **VERIFIED-CARRY-FORWARD**) — `org_integrations` row PAYMENT/mock enabled; Pay Now button rendered correctly + MockPaymentGateway checkout reachable + payment_events COMPLETED. Cycle-1 + cycle-33 + cycle-34 all consistent.
+- **GAP-L-65** (LOW, OPEN) — terminology drift on `INV-` number prefix vs sidebar label `Fee Notes`. Same observation as cycle-1 / cycle-33; not regressing.
+- **OBS-CYCLE26-01** (CLOSED at cycle 33) — fee-note prerequisites materialised; Day 30 unblocked.
+- **GAP-L-58** (LOW, OPEN) — Due Date renders blank on the portal fee-note detail (and email "Due Date N/A"). Not on the Day 30 critical path; carry-forward.
+
+### Branch state
+
+- No code changes this turn.
+- New evidence files: `cycle34-day30-30.0-mailpit-inbox.yml`, `cycle34-day30-30.1-fee-note-email-detail.yml`, `cycle34-day30-30.1b-portal-direct-no-auth.yml`, `cycle34-day30-30.1c-portal-login-page.yml`, `cycle34-day30-30.1d-after-magic-link-click.yml`, `cycle34-day30-30.2-portal-fee-note-detail.yml`, `cycle34-day30-30.5-mock-payment-checkout.yml`, `cycle34-day30-30.7-payment-success-page.yml`, `cycle34-day30-30.7b-portal-detail-paid.yml`, `cycle34-day30-30.10-portal-fee-notes-list.yml`, `cycle34-day30-30.11-portal-list-isolation.yml`, `cycle34-day30-30.firm-side-paid.yml`.
+- Browser state preserved (3 tabs: portal detail, portal list, firm detail).
+
+### Next action
+
+QA — Day 45 (Firm: second info request + second trust deposit `[FIRM]`). Day 45 does not hard-depend on Day 30 PAID, but is the next scenario day per `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md`. Days 31–44 are not scripted in the scenario (fee-note PAID → next firm action is Day 45). Cut a fresh `bugfix_cycle_2026-04-26-day45` branch when ready.

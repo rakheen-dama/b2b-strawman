@@ -1,0 +1,15 @@
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e9] [cursor=pointer]:
+    - img [ref=e10]
+  - alert [ref=e13]
+  - main [ref=e14]:
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - generic [ref=e17]: DocTeams
+        - generic [ref=e18]: Sign in to your client portal
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - generic [ref=e22]: Email address
+          - textbox "Email address" [active] [ref=e23]:
+            - /placeholder: you@example.com
+        - button "Send Magic Link" [ref=e24]

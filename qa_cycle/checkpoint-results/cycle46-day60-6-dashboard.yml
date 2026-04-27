@@ -1,0 +1,337 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e26]
+              - text: Dashboard
+            - link "My Work" [ref=e31] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e32]
+              - text: My Work
+            - link "Calendar" [ref=e35] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e36]
+              - text: Calendar
+            - link "Court Calendar" [ref=e38] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e39]
+              - text: Court Calendar
+        - generic [ref=e46]:
+          - button "Matters" [expanded] [ref=e47]:
+            - generic [ref=e48]: Matters
+            - img [ref=e49]
+          - generic [ref=e51]:
+            - link "Matters" [ref=e52] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e53]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e55] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e56]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e62]:
+          - generic [ref=e63]: Clients
+          - img [ref=e64]
+        - button "Finance" [ref=e68]:
+          - generic [ref=e69]: Finance
+          - img [ref=e70]
+        - generic [ref=e73]:
+          - button "Team" [expanded] [ref=e74]:
+            - generic [ref=e75]: Team
+            - img [ref=e76]
+          - link "Team" [ref=e79] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e80]
+            - text: Team
+      - generic [ref=e86]:
+        - link "Notifications" [ref=e87] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e88]
+          - text: Notifications
+        - link "Settings" [ref=e91] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e92]
+          - text: Settings
+        - link "Help" [ref=e95] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e96]
+          - text: Help
+      - generic [ref=e99]:
+        - generic [ref=e100]: TM
+        - generic [ref=e101]:
+          - paragraph [ref=e102]: Thandi Mathebula
+          - paragraph [ref=e103]: thandi@mathebula-test.local
+    - generic [ref=e104]:
+      - banner [ref=e105]:
+        - navigation "Breadcrumb" [ref=e106]:
+          - link "Mathebula & Partners" [ref=e107] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e108]:
+            - img [ref=e109]
+            - generic [ref=e111]: Dashboard
+        - generic [ref=e112]:
+          - button "User menu" [ref=e114]: TM
+          - button "Notifications" [ref=e116]:
+            - img
+            - generic [ref=e117]: 7 unread notifications
+            - generic [ref=e191]: "7"
+      - main [ref=e118]:
+        - generic [ref=e192]:
+          - generic [ref=e193]:
+            - generic [ref=e194]:
+              - heading "Dashboard" [level=1] [ref=e195]
+              - paragraph [ref=e196]: Company overview and matter health
+            - generic [ref=e197]:
+              - button "This Week" [ref=e198]
+              - button "This Month" [ref=e199]
+              - button "Last 30 Days" [ref=e200]
+              - button "This Quarter" [ref=e201]
+              - button "Custom" [disabled]
+              - button "Refresh data" [ref=e202]:
+                - img
+          - generic [ref=e203]:
+            - generic [ref=e204]:
+              - paragraph [ref=e205]: Active Matters
+              - generic [ref=e206]:
+                - generic [ref=e207]: "3"
+                - img [ref=e208]
+            - generic [ref=e209]:
+              - paragraph [ref=e210]: Hours This Month
+              - generic [ref=e211]:
+                - generic [ref=e212]: 4.0h
+                - generic [ref=e213]:
+                  - 'generic "Billable: 4" [ref=e214]'
+                  - 'generic "Non-billable: 0"'
+            - generic [ref=e215]:
+              - paragraph [ref=e216]: Avg. Margin
+              - generic [ref=e218]: "--"
+            - generic [ref=e219]:
+              - paragraph [ref=e220]: Overdue Tasks
+              - generic [ref=e221]: "0"
+            - generic [ref=e222]:
+              - paragraph [ref=e223]: Budget Health
+              - generic [ref=e224]:
+                - generic [ref=e227]: "2"
+                - generic [ref=e230]: "0"
+                - generic [ref=e233]: "0"
+          - generic [ref=e234]:
+            - generic [ref=e236]:
+              - generic [ref=e238]: Project Health
+              - generic [ref=e239]:
+                - generic [ref=e240]:
+                  - button "All" [ref=e241]
+                  - button "At Risk" [ref=e242]
+                  - button "Over Budget" [ref=e243]
+                - generic [ref=e244]:
+                  - columnheader "Sort by project name" [ref=e245]: Project
+                  - columnheader "Sort by health status" [ref=e246]:
+                    - text: Status
+                    - img [ref=e247]
+                  - generic [ref=e249]: Progress
+                  - generic [ref=e250]: Hours
+                  - generic [ref=e251]: Tasks
+                - generic [ref=e252]:
+                  - button "Estate Late Peter Moroka Moroka Family Trust Healthy 0% 0h 0/9" [ref=e253]:
+                    - generic [ref=e254]:
+                      - paragraph [ref=e255]: Estate Late Peter Moroka
+                      - paragraph [ref=e256]: Moroka Family Trust
+                    - generic "Healthy" [ref=e258]
+                    - generic [ref=e262]: 0%
+                    - generic [ref=e263]: 0h
+                    - generic [ref=e264]: 0/9
+                  - button "Dlamini v Road Accident Fund Sipho Dlamini Healthy 0% 4.0h 0/9" [ref=e265]:
+                    - generic [ref=e266]:
+                      - paragraph [ref=e267]: Dlamini v Road Accident Fund
+                      - paragraph [ref=e268]: Sipho Dlamini
+                    - generic "Healthy" [ref=e270]
+                    - generic [ref=e274]: 0%
+                    - generic [ref=e275]: 4.0h
+                    - generic [ref=e276]: 0/9
+                  - button "Cycle19 Verify Sipho Dlamini Unknown 0% 0h 0/0" [ref=e277]:
+                    - generic [ref=e278]:
+                      - paragraph [ref=e279]: Cycle19 Verify
+                      - paragraph [ref=e280]: Sipho Dlamini
+                    - generic "Unknown" [ref=e282]
+                    - generic [ref=e286]: 0%
+                    - generic [ref=e287]: 0h
+                    - generic [ref=e288]: 0/0
+              - button "View all matters →" [ref=e290]
+            - generic [ref=e292]:
+              - generic [ref=e294]: Team Time
+              - generic [ref=e295]:
+                - application [ref=e298]:
+                  - generic [ref=e308]:
+                    - generic [ref=e309]:
+                      - generic [ref=e311]: "0"
+                      - generic [ref=e313]: "10"
+                      - generic [ref=e315]: "20"
+                      - generic [ref=e317]: "30"
+                      - generic [ref=e319]: "40"
+                    - generic [ref=e322]: BobNdlovu
+                    - generic [ref=e323]: "32"
+                - generic [ref=e324]:
+                  - generic [ref=e326]:
+                    - list [ref=e328]:
+                      - listitem [ref=e329]:
+                        - img "Dlamini v Road Accident Fund legend icon" [ref=e330]
+                        - text: Dlamini v Road Accident Fund
+                    - application [ref=e332]
+                  - generic:
+                    - generic: 4h
+                    - generic: total
+          - generic [ref=e338]:
+            - generic [ref=e339]:
+              - generic [ref=e341]: Recent Activity
+              - generic [ref=e342]:
+                - generic [ref=e343]:
+                  - generic [ref=e344]: S
+                  - generic [ref=e346]:
+                    - img [ref=e347]
+                    - paragraph [ref=e349]: System performed portal.request_item.submitted
+                  - generic [ref=e350]: 1 hour ago
+                - generic [ref=e351]:
+                  - generic [ref=e352]: S
+                  - generic [ref=e354]:
+                    - img [ref=e355]
+                    - paragraph [ref=e357]: System performed portal.document.upload_initiated
+                  - generic [ref=e358]: 1 hour ago
+                - generic [ref=e359]:
+                  - generic [ref=e360]: S
+                  - generic [ref=e362]:
+                    - img [ref=e363]
+                    - paragraph [ref=e365]: System performed portal.request_item.submitted
+                  - generic [ref=e366]: 1 hour ago
+                - generic [ref=e367]:
+                  - generic [ref=e368]: S
+                  - generic [ref=e370]:
+                    - img [ref=e371]
+                    - paragraph [ref=e373]: System performed portal.document.upload_initiated
+                  - generic [ref=e374]: 1 hour ago
+                - generic [ref=e375]:
+                  - generic [ref=e376]: BN
+                  - generic [ref=e378]:
+                    - img [ref=e379]
+                    - paragraph [ref=e381]: Bob Ndlovu performed information_request.sent
+                  - generic [ref=e382]: 1 hour ago
+                - generic [ref=e383]:
+                  - generic [ref=e384]: BN
+                  - generic [ref=e386]:
+                    - img [ref=e387]
+                    - paragraph [ref=e389]: Bob Ndlovu created a information_request
+                  - generic [ref=e390]: 1 hour ago
+                - generic [ref=e391]:
+                  - generic [ref=e392]: BN
+                  - generic [ref=e394]:
+                    - img [ref=e395]
+                    - paragraph [ref=e397]: Bob Ndlovu performed information_request.sent
+                  - generic [ref=e398]: 2 hours ago
+                - generic [ref=e399]:
+                  - generic [ref=e400]: BN
+                  - generic [ref=e402]:
+                    - img [ref=e403]
+                    - paragraph [ref=e405]: Bob Ndlovu created a information_request
+                  - generic [ref=e406]: 2 hours ago
+                - generic [ref=e407]:
+                  - generic [ref=e408]: S
+                  - generic [ref=e410]:
+                    - img [ref=e411]
+                    - paragraph [ref=e413]: System performed portal.invoice.paid
+                  - generic [ref=e414]: 3 hours ago
+                - generic [ref=e415]:
+                  - generic [ref=e416]: BN
+                  - generic [ref=e418]:
+                    - img [ref=e419]
+                    - paragraph [ref=e421]: Bob Ndlovu performed disbursement.billed
+                  - generic [ref=e422]: 4 hours ago
+                - generic [ref=e423]:
+                  - generic [ref=e424]: BN
+                  - generic [ref=e426]:
+                    - img [ref=e427]
+                    - paragraph [ref=e429]: Bob Ndlovu performed disbursement.approved
+                  - generic [ref=e430]: 4 hours ago
+                - generic [ref=e431]:
+                  - generic [ref=e432]: BN
+                  - generic [ref=e434]:
+                    - img [ref=e435]
+                    - paragraph [ref=e437]: Bob Ndlovu performed disbursement.submitted
+                  - generic [ref=e438]: 4 hours ago
+                - generic [ref=e439]:
+                  - generic [ref=e440]: BN
+                  - generic [ref=e442]:
+                    - img [ref=e443]
+                    - paragraph [ref=e446]: Bob Ndlovu created a time_entry
+                  - generic [ref=e447]: 4 hours ago
+                - generic [ref=e448]:
+                  - generic [ref=e449]: BN
+                  - generic [ref=e451]:
+                    - img [ref=e452]
+                    - paragraph [ref=e455]: Bob Ndlovu deleted a time_entry
+                  - generic [ref=e456]: 4 hours ago
+                - generic [ref=e457]:
+                  - generic [ref=e458]: BN
+                  - generic [ref=e460]:
+                    - img [ref=e461]
+                    - paragraph [ref=e464]: Bob Ndlovu created a time_entry
+                  - generic [ref=e465]: 4 hours ago
+              - button "View all activity →" [ref=e467]
+            - generic [ref=e468]:
+              - generic [ref=e470]: Admin
+              - generic [ref=e471]:
+                - link "0 Incomplete profiles" [ref=e472] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/customers?showIncomplete=true
+                  - img [ref=e473]
+                  - generic [ref=e478]: "0"
+                  - generic [ref=e479]: Incomplete profiles
+                - link "2 Pending requests" [ref=e480] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/customers
+                  - img [ref=e481]
+                  - generic [ref=e484]: "2"
+                  - generic [ref=e485]: Pending requests
+          - generic [ref=e487]:
+            - generic [ref=e489]:
+              - img [ref=e490]
+              - text: Upcoming Court Dates
+            - generic [ref=e497]:
+              - generic [ref=e498]:
+                - generic [ref=e499]: 2026-05-11
+                - generic [ref=e500]: Pre-Trial
+                - generic [ref=e501]: Dlamini v Road Accident Fund
+              - generic [ref=e502]: Gauteng Division, Pretoria
+            - link "View All →" [ref=e504] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+  - generic [ref=e505]:
+    - heading "Command Palette" [level=2] [ref=e506]
+    - paragraph [ref=e507]: Search pages and settings
+  - region "Notifications alt+T"
+  - generic [ref=e176] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e177]:
+      - img [ref=e178]
+    - generic [ref=e181]:
+      - button "Open issues overlay" [ref=e182]:
+        - generic [ref=e508]:
+          - generic [ref=e509]: "1"
+          - generic [ref=e510]: "2"
+        - generic [ref=e186]:
+          - text: Issue
+          - generic [ref=e511]: s
+      - button "Collapse issues badge" [ref=e187]:
+        - img [ref=e188]
+  - alert [ref=e190]
+  - generic [ref=e512]: Bob Ndlovu

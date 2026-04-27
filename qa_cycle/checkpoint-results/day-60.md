@@ -534,3 +534,148 @@ Two informational observations carved out (NOT new gaps blocking the verify cycl
 
 SoA re-gen + verification: ~3 min wall-clock.
 
+---
+
+## Day 60 Cycle 46 Walk — 2026-04-27 SAST
+
+**Branch**: `bugfix_cycle_2026-04-26-day60` (cut from main `18365feb`)
+**Backend rev / JVM**: main `18365feb` / backend PID 41372
+**Stack**: Keycloak dev (3000/8080/8443/8180)
+**Actor**: Thandi Mathebula (Owner — `thandi@mathebula-test.local` / `SecureP@ss1`)
+**Matter under test (current cycle)**: `cc390c4f-35e2-42b5-8b54-bac766673ae7` (RAF-2026-001 — Dlamini v Road Accident Fund). Note this is the matter id used since cycle 5 onward (the prior `e788a51b-…` references in this file's earlier sections come from a stale dev-data run).
+
+### Pre-state (read-only DB SELECT, all confirmed)
+- RAF matter `cc390c4f-…` status `ACTIVE`, customer Sipho `c4f70d86-…`
+- INV-0001 `432ae5a9-…` status `PAID`, total R 5 160,00, paid_at 2026-04-27 13:17:08+00
+- `client_ledger_cards` Sipho row `36765353-…`: balance R 70 100,00 / total_deposits R 70 100,00 / total_payments R 0 / total_fee_transfers R 0
+- 3 `trust_transactions` (DEPOSIT R 50 000 + R 100 cycle-29 + R 20 000), all RECORDED
+- `legal_disbursements` 1 row: Sheriff service R 1 250,00, billing_status BILLED, approval_status APPROVED
+- 2 `time_entries` (150 + 90 minutes) both already on INV-0001 — **no unbilled time exists for the matter**
+- 1 completed billing_run `9d772b71-…` (R 3 910,00) and 1 empty preview run `a7f6f47a-…`
+- `org_settings`: `retention_policy_enabled=false`, `legal_matter_retention_years=NULL` (no retention policy configured)
+
+### Summary
+**4 PASS / 1 FAIL / 4 PARTIAL / 0 BLOCKED / 2 SKIPPED**
+
+Matter closes successfully with override (gates fail; happy-path expectation broken). Closure letter + Statement of Account both attached to Documents tab. SoA reconciliation is broken in two ways (Trust ledger empty in SoA, VAT calculated as zero — elevating prior cycles' OBS-Day60-SoA-Fees/Trust-Empty into formal gaps). Day 60.1–60.3 (final fee note + trust transfer) skipped — no eligible unbilled work; scenario narrative is hypothetical.
+
+### Checkpoints
+
+#### 60.1 — Generate final fee note (R 15,000) for any remaining unbilled work
+- **Result**: SKIPPED (no unbilled work exists)
+- **Evidence**: `cycle46-day60-3-financials-tab.yml` (Revenue R 3 400 already billed); `cycle46-day60-11-billing-run-customers.yml` ("No customers with unbilled work found for this period."); DB SELECT (all 2 time_entries already linked to INV-0001).
+- **Notes**: All 4h of billable time was bulk-billed on Day 28 (INV-0001 R 5 160 incl VAT). The disbursement R 1 250 is also BILLED on the same fee note. The scenario narrative ("assume one more small fee note R 15,000") is hypothetical and cannot be exercised through the UI without injecting fake unbilled time. Thandi cannot easily log time herself either — the Log Time dialog warns "No rate card found for this combination" because only Bob has a project rate (`R850/hr`). Cycle proceeded to closure flow per Day 60 happy-path.
+
+#### 60.2 — Trust Accounting → Fee Transfer Out R 15,000 from Sipho's trust to firm business
+- **Result**: SKIPPED (depends on 60.1)
+- **Evidence**: n/a
+- **Notes**: No fee note to settle. Trust balance R 70 100,00 remains intact at closure (see 60.5 gate failure).
+
+#### 60.3 — Approve fee transfer; client ledger reflects transfer-out
+- **Result**: SKIPPED (depends on 60.1/60.2)
+
+#### 60.4 — Navigate to RAF matter → click Close Matter
+- **Result**: PASS
+- **Evidence**: `cycle46-day60-1-matter-detail.yml` (Close Matter button visible at ref=e175); `cycle46-day60-18-closure-dialog.yml` (closure dialog opened).
+- **Notes**: Action bar exposes `Close Matter`, `Generate Statement of Account`, `Complete Matter`, `Generate Document`, `New Engagement Letter`, `Edit`, `Delete`. Click opens "Close matter" Step-1 dialog "Review closure gates and confirm closure of Dlamini v Road Accident Fund."
+
+#### 60.5 — Closure Step 1 gate report renders, all gates GREEN
+- **Result**: FAIL (4 of 9 gates FAIL — scenario expected all GREEN on happy path)
+- **Evidence**: `cycle46-day60-18-closure-dialog.yml` lines 444-483.
+- **Gate breakdown**:
+  - **FAIL** — "Matter trust balance is R70100.00. Transfer to client or office before closure." (Fix-this link to `?tab=trust`)
+  - PASS — "All disbursements approved."
+  - PASS — "All approved disbursements are settled."
+  - PASS — "Final bill issued with no unbilled items."
+  - **FAIL** — "1 court dates scheduled for today or later." (Fix-this link to court-calendar)
+  - PASS — "No prescription timers still running."
+  - **FAIL** — "9 tasks remain open." (Fix-this link to `?tab=tasks`)
+  - **FAIL** — "3 client information requests outstanding." (Fix-this link to `?tab=requests`)
+  - PASS — "No document acceptances pending."
+- **Notes**: Continue button is enabled despite failing gates (gates surface a warning, not a hard block). Dialog allows Step 2 to proceed and offer the override toggle.
+
+#### 60.6 — Click Continue → Step 2 (Close form)
+- **Result**: PASS
+- **Evidence**: `cycle46-day60-19-closure-step2.yml` lines 438-477.
+- **Notes**: Step 2 renders Reason combobox (defaulted to `Concluded`), Notes textbox, Generate-closure-letter checkbox (checked by default), and Override-failing-gates toggle.
+
+#### 60.7 — Reason: CONCLUDED (settlement reached)
+- **Result**: PASS
+- **Evidence**: combobox default `Concluded`. DB row `matter_closure_log.reason='CONCLUDED'` (`eb934998-…`).
+
+#### 60.8 — Generate closure letter checked + Generate Statement of Account flag
+- **Result**: PARTIAL (closure letter checkbox present + checked; **NO Statement-of-Account checkbox in the closure dialog**)
+- **Evidence**: `cycle46-day60-19-closure-step2.yml` line 457 (Generate closure letter is the ONLY checkbox in the form). Spec §60.8 expected a separate "Generate Statement of Account" flag inline. Implementation surfaces SoA only as a separate top-level button on the matter header (must be invoked manually, post-closure).
+- **Notes**: Logged as **GAP-L-93**.
+
+#### 60.9 — Click Confirm Close → matter status = CLOSED
+- **Result**: PASS
+- **Evidence**: `cycle46-day60-21-after-close.yml` lines 109 (`Closed`), 122 (`Reopen Matter` replaces `Close Matter`); DB `projects.status='CLOSED'`, `closed_at=2026-04-27 16:56:04.658+00`. `matter_closure_log` row `eb934998-0530-4719-88b4-e4a82dee39c2`: `reason=CONCLUDED`, `override_used=t`, `closure_letter_document_id=c582a54f-…`, justification persisted (≥ 20 chars).
+
+#### 60.10 — Closure letter + Statement of Account both attached to matter Documents tab
+- **Result**: PARTIAL — closure letter auto-attached on close; SoA requires SEPARATE manual generation step
+- **Evidence**: `cycle46-day60-22-documents-tab.yml` line 235 (closure letter only after close); `cycle46-day60-25-soa-generated.yml` (SoA generated via standalone "Generate Statement of Account" → modal → period 2026-04-01 → 2026-06-30 → Preview & Save); `cycle46-day60-26-statements-tab-after.yml` lines 237-245 (SoA row in Statements tab).
+- **DB state**:
+  - `documents` `85c501aa-…` `matter-closure-letter-…04-27.pdf` 1 638 bytes UPLOADED 16:56:05.10+00
+  - `documents` `2bc63982-…` `statement-of-account-…06-30.pdf` 4 100 bytes UPLOADED 16:58:22.95+00
+  - `generated_documents`: 2 PROJECT-scoped rows pointing at both documents
+- **Notes**: SoA preview iframe rendered Section 86 ledger structure (Reference SOA-cc390c4f-20260427, Period, Sipho address, Matter ref RAF-2026-001, Professional Fees / Disbursements / Trust Activity / Summary / Payment Instructions sections). Reconciliation gaps documented as GAP-L-94 + GAP-L-95.
+
+#### 60.11 — Retention policy row inserted with end_date = today + 5 years (ADR-249)
+- **Result**: PARTIAL — `projects.retention_clock_started_at = 2026-04-27 16:56:04.658` is set on closure, but **no per-matter `retention_policies` row inserted**, and `org_settings.legal_matter_retention_years = NULL` so no end-date can be derived
+- **Evidence**: `SELECT retention_clock_started_at FROM projects WHERE id='cc390c4f-…'` returns the closure timestamp. `SELECT * FROM retention_policies` shows only the 2 default org-level rows (AUDIT_EVENT 2555 days, CUSTOMER 1825 days) — no MATTER record_type row exists for this matter.
+- **Notes**: Logged as **GAP-L-96**.
+
+#### Day 60 supplementary — Mailpit notification "Your Statement of Account is ready"
+- **Result**: FAIL (no email sent)
+- **Evidence**: Mailpit `/api/v1/search?query=closure` returns 0; `query=statement+of+account` 0; `query=matter+closed` 0. Sipho's last email is the trust-deposit notification from 2026-04-27 14:22:48 UTC (Day 45 deposit).
+- **Notes**: Logged as **GAP-L-97**. Day 61 portal step 61.1 ("Mailpit → open 'Statement of Account ready' email") cannot be exercised — Sipho has no inbound notification for Day 60 closure or SoA generation.
+
+### Day 60 checkpoints (scenario summary, cycle 46)
+- [x] Matter closes — happy path NOT clean (override required); proceed-with-override allowed
+- [x] Statement of Account PDF generated and attached (separate flow from closure)
+- [ ] Notification email to Sipho — NOT sent
+
+### Cycle 46 NEW gaps
+
+#### GAP-L-93 (LOW) — Closure dialog has no Statement-of-Account flag
+- **Symptom**: Closure Step-2 dialog only offers `Generate closure letter` checkbox. Scenario §60.8 expects an inline `Generate Statement of Account` flag so SoA is auto-attached on close.
+- **Impact**: Operator must remember to invoke `Generate Statement of Account` separately after closure (extra cognitive step; risk of forgotten SoA on closed matters).
+- **Suggested fix scope**: S (~2 hrs). Add a second checkbox `Generate Statement of Account` to the closure form; on confirm, run both generators in the same backend transaction.
+- **Evidence**: `cycle46-day60-19-closure-step2.yml` lines 438-477.
+
+#### GAP-L-94 (HIGH) — Statement of Account does not include trust ledger activity
+- **Symptom**: SoA "Trust Activity" section renders empty Deposits + Payments tables, "Opening balance: 0", "Closing balance: 0", "Trust balance held: 0" — even though 3 RECORDED trust deposits totalling R 70 100,00 exist for Sipho on this matter.
+- **Impact**: SoA fails Section 86/LPC compliance (must reconcile trust ledger end-to-end). Cannot be sent to a client without legal misrepresentation.
+- **Root-cause hypothesis**: SoA generator likely queries trust_transactions filtered by something other than `customer_id`+`project_id` (perhaps requires `invoice_id` link or a status that none of the existing rows carry), or filters by period using `transaction_date` strictly inside the period and the deposits land outside the [start, end] window even though the period covers them.
+- **Suggested fix scope**: M (~4-6 hrs). Audit `StatementOfAccountService` (or equivalent) trust ledger query; widen period predicate to `transaction_date <= period_end` for opening balance; ensure all RECORDED transactions for the matter+customer pair are included.
+- **Evidence**: `cycle46-day60-25-soa-generated.yml` lines 463-510 (empty Trust Activity tables, all balances zero); `cycle46-day60-26-statements-tab-after.yml` line 240 (Statements tab shows "Trust balance held R 0,00" for the SoA row).
+- **Note**: This formalises the prior cycle-1 OBS-Day60-SoA-Fees/Trust-Empty observation into a HIGH-severity gap because Day 61 portal-side SoA download depends on accurate reconciliation.
+
+#### GAP-L-95 (BUG) — Statement of Account VAT line is R 0,00 despite VAT-registered firm + 15% rate
+- **Symptom**: SoA "Total fees (excl. VAT): 3400.00", "VAT: 0", "Total fees (incl. VAT): 3400.00". The same time entries on INV-0001 attracted R 510 VAT correctly (R 3 400 net + R 510 VAT = R 3 910 gross).
+- **Impact**: Gross fee total is mis-stated by R 510. "Closing balance owing -R 510,00" leaks the VAT shortfall into the over-payment line ("Payments received 5160.00" minus "Total fees 3400 + Total disbursements 1250" = R 510 — exactly the missing VAT).
+- **Root-cause hypothesis**: SoA generator's fee-line VAT computation is missing — the invoice line items already had VAT computed at billing time, but SoA appears to recompute fees from raw `time_entries.duration × rate` without the VAT step.
+- **Suggested fix scope**: S (~2 hrs). Use `org_settings.vat_rate` (or per-line `vat_amount` if persisted) to compute SoA VAT.
+- **Evidence**: `cycle46-day60-25-soa-generated.yml` lines 432-439 (VAT 0 / closing -510); cf. `invoice_lines` of INV-0001 which carry the correct VAT.
+
+#### GAP-L-96 (LOW / ADR-249 compliance) — Closure does not write a retention_policies row for the matter
+- **Symptom**: On close, `projects.retention_clock_started_at` is stamped, but no `retention_policies` row is inserted for `record_type='MATTER'` with the closed matter ID. `org_settings.legal_matter_retention_years` is NULL on this tenant.
+- **Impact**: ADR-249 requires an explicit retention policy row on closure with a concrete end-date so retention can be enforced. Current state means matter retention silently relies on undefined org defaults.
+- **Suggested fix scope**: S–M (~4 hrs). On `MatterClosureService.close()` insert a row into `retention_policies` (record_type=MATTER, retention_days = `org_settings.legal_matter_retention_years × 365` defaulting to 5 years per ADR-249 if NULL, trigger_event=MATTER_CLOSED, action=ARCHIVE, active=true).
+- **Evidence**: `SELECT * FROM retention_policies` (only 2 generic rows, no MATTER row); `SELECT retention_clock_started_at FROM projects WHERE id='cc390c4f-…'` set, but no derived end-date; `org_settings.legal_matter_retention_years = NULL`.
+
+#### GAP-L-97 (LOW) — No email notification sent to portal contact when matter closes / SoA generated
+- **Symptom**: Closure flow + Generate Statement of Account flow both completed without enqueueing any email to Sipho's portal contact. Mailpit search confirms 0 closure-related emails.
+- **Impact**: Day 61 (portal-side SoA download) cannot start from an inbound email — Sipho would have to log in proactively. Also leaves the audit trail thin (no client-facing record that closure happened).
+- **Suggested fix scope**: S–M (~4 hrs). Add a domain event publisher in `MatterClosureService` ("matter.closed") and `StatementOfAccountService` ("matter.soa.generated"); wire to existing `EmailNotificationListener`. Templates: "Your matter has been closed — Statement of Account attached" / standalone "Your Statement of Account is ready".
+- **Evidence**: `curl http://localhost:8025/api/v1/search?query=closure` 0 hits; `query=statement+of+account` 0 hits; last Sipho email is Day 45 trust deposit (16:22:17 UTC ≪ 16:56:04 UTC closure timestamp).
+
+### Console health
+0 errors during the closure flow + SoA generation. (5 transient SSR errors observed during a Keycloak SSO redirect mid-session and resolved on re-login — not Day-60-specific.)
+
+### Cross-cycle observations
+- Override toggle works as designed; gate report is informative (not blocking).
+- Closure letter generation is reliable end-to-end (DB → S3 → Documents tab).
+- SoA generation pipeline ships as a separate manual flow rather than a closure side-effect.
+

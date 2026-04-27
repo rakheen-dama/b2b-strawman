@@ -72,7 +72,7 @@ auditService.log(
 
 ## Fix
 
-Single-line backend change in `backend/src/main/java/io/b2mash/b2b/b2bstrawman/informationrequest/InformationRequestService.java`.
+One required backend line (+ one optional consistency line) in `backend/src/main/java/io/b2mash/b2b/b2bstrawman/informationrequest/InformationRequestService.java`.
 
 ### Step 1 — Add `request_number` to `acceptAuditDetails`
 

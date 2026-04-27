@@ -8,7 +8,7 @@ The Type filter row on `/trust-accounting/transactions` (and the same filter row
 
 ## Root Cause (verified)
 
-There are **three duplicate copies** of the same `transactionTypeLabel()` helper, all using a generic title-case algorithm that uppercases the first letter of each whitespace-separated word and lowercases the rest — destroying the LPFF acronym:
+There are **three duplicates** of the same `transactionTypeLabel()` helper, all using a generic title-case algorithm that uppercases the first letter of each whitespace-separated word and lowercases the rest — destroying the LPFF acronym:
 
 - `frontend/app/(app)/org/[slug]/trust-accounting/page.tsx:62-67`
 - `frontend/app/(app)/org/[slug]/trust-accounting/transactions/page.tsx:40-45`

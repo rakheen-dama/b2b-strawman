@@ -314,3 +314,101 @@ Day 10 walked end-to-end with no blockers. Per per-day workflow §1: "Stop at en
 - `qa_cycle/checkpoint-results/cycle21-day10-10.7-sipho-ledger-detail.yml`
 - `qa_cycle/checkpoint-results/cycle21-day10-10.8-matter-trust-tab.yml`
 - `qa_cycle/checkpoint-results/cycle21-day10-console-errors.log`
+
+---
+
+## Cycle 25 Retest — PR #1181 (squash `73c133b6`) on `main`
+
+Date: 2026-04-27 SAST | Auth: Keycloak | Actor: Thandi Mathebula (Owner)
+Scope: verify the three CR-flagged cosmetic polish fixes (BUG-CYCLE26-08/09/10) merged to `main` via PR #1181.
+
+Pre-conditions:
+- `git log -1 --oneline main` = `73c133b6 fix(cycle-2026-04-26 cr-polish): 3 LOW polish bugs from CR review of PR #1177 (#1181)` ✅
+- `bash compose/scripts/svc.sh status` — all 4 services healthy ✅
+- Backend was running on a stale JVM (PID 724, etime 03:03:02 → started before PR #1180 merge); restarted backend via `svc.sh restart backend` (new PID 21748) so the BUG-10 Java change is live.
+
+### BUG-CYCLE26-08 — `INTEREST_LPFF` enum-prettify  →  **VERIFIED (PASS)**
+
+Evidence files:
+- `qa_cycle/checkpoint-results/cycle25-retest-PR1181-BUG-08-transactions-page.yml`
+- `qa_cycle/checkpoint-results/cycle25-retest-PR1181-BUG-09-sipho-ledger-breadcrumb.yml` (also covers BUG-08 on per-customer ledger)
+- `qa_cycle/checkpoint-results/cycle25-retest-PR1181-BUG-08-trust-landing.yml` (landing — no LPFF text rendered today since no rows of that type exist; consolidated label map governs all three pages)
+
+Rendered text on `/trust-accounting/transactions` filter list (line 140 of `cycle25-retest-PR1181-BUG-08-transactions-page.yml`):
+```
+- link "Interest LPFF" [ref=e148] [cursor=pointer]:
+  - /url: /org/mathebula-partners/trust-accounting/transactions?type=INTEREST_LPFF
+```
+
+Rendered text on `/trust-accounting/client-ledgers/{sipho-id}` filter list (line 171 of breadcrumb snapshot):
+```
+- link "Interest LPFF" [ref=e183] [cursor=pointer]:
+  - /url: /org/mathebula-partners/trust-accounting/client-ledgers/c4f70d86-…?type=INTEREST_LPFF
+```
+
+Both pages now render the LPFF acronym preserved (was `Interest Lpff` in cycle 21, evidence `cycle21-day10-10.4-transactions-page.yml:140`).
+
+### BUG-CYCLE26-09 — Breadcrumb labels  →  **VERIFIED (PASS)**
+
+Evidence file: `qa_cycle/checkpoint-results/cycle25-retest-PR1181-BUG-09-sipho-ledger-breadcrumb.yml`
+
+URL: `/org/mathebula-partners/trust-accounting/client-ledgers/c4f70d86-c292-4d02-9f6f-2e900099ba57`
+
+Breadcrumb DOM (lines 83-96 of snapshot):
+```
+- navigation "Breadcrumb" [ref=e105]:
+  - link "Mathebula & Partners" [ref=e106]
+  - link "Trust Accounting" [ref=e110]
+  - link "Client Ledgers" [ref=e114]               ← was "client-ledgers" in cycle 21
+    - /url: /org/mathebula-partners/trust-accounting/client-ledgers
+  - generic [ref=e118]: Client Ledger              ← was raw UUID `c4f70d86-...` in cycle 21
+```
+
+Renders as `Mathebula & Partners › Trust Accounting › Client Ledgers › Client Ledger` — exactly the spec target. The customer UUID still appears in the route's `href` (line 156, `/url:`) but no longer leaks into displayed text.
+
+### BUG-CYCLE26-10 — Activity feed `for unknown`  →  **VERIFIED-CODE-ONLY (Option B)**
+
+Evidence files:
+- `qa_cycle/checkpoint-results/cycle25-retest-PR1181-BUG-10-raf-matter-detail.yml`
+- `qa_cycle/checkpoint-results/cycle25-retest-PR1181-BUG-10-requests-tab.yml`
+
+**Option chosen: B** (per spec — "If no new info-request items can be accepted").
+
+Rationale: REQ-0002 (Day-4/5 FICA pack) is already 3/3 ACCEPTED (terminal), and REQ-0001's items are all PENDING (Sipho's Day-3 magic-link expired before any upload — items are in PENDING, not SUBMITTED, so the firm cannot accept them). Triggering a fresh accept would require fabricating a new info request + reissuing a portal magic link + uploading 3 items via Sipho's portal — significant scope creep beyond a retest mandate. Spec explicitly authorises this branch.
+
+DB confirmation that pre-existing audit rows lack `request_number` (so they correctly still render "for unknown"):
+```
+$ docker exec -i b2b-postgres psql -U postgres -d docteams -c \
+  "SET search_path=tenant_5039f2d497cf;
+   SELECT details FROM audit_events
+   WHERE event_type = 'information_request.item_accepted'
+   ORDER BY occurred_at DESC LIMIT 1;"
+
+{"item_name": "Bank statement (≤ 3 months)", "actor_name": "Bob Ndlovu",
+ "project_id": "cc390c4f-…", "request_id": "d8a58ade-…"}
+                                            ↑
+        no `request_number` key — predates PR #1180; correctly renders "for unknown"
+```
+
+The activity feed at `/projects/cc390c4f-…` snapshot still shows three "Bob Ndlovu accepted '…' for unknown" entries (lines 276/283/290) because those rows date to 2026-04-26 23:05–23:06, before PR #1180's backend code was deployed. The fix is forward-only by design — existing audit rows are immutable.
+
+Authoritative confirmation that the **formatter contract is now correctly enforced** for new rows:
+- Backend test `ActivityMessageFormatterTest#informationRequestItemAcceptedInterpolatesRequestNumber` (PR #1180, file `backend/src/test/java/io/b2mash/b2b/b2bstrawman/activity/ActivityMessageFormatterTest.java:319-330`) asserts:
+  - `assertThat(item.message()).isEqualTo("Alice accepted \"ID copy\" for REQ-0042");`
+  - `assertThat(item.message()).doesNotContain("unknown");`
+- Backend code change verified live on `main` (`git show 73c133b6 -- …InformationRequestService.java`):
+  ```diff
+   var acceptAuditDetails = new HashMap<String, Object>();
+   acceptAuditDetails.put("request_id", requestId.toString());
+  +acceptAuditDetails.put("request_number", request.getRequestNumber());
+  ```
+  (Same defensive add to `rejectItem`.)
+- Backend JVM restarted post-merge (PID 724 → 21748) so the change is live; any future accept/reject event will write `request_number` and the activity feed will render "for REQ-NNNN" correctly.
+
+### Cycle 25 Retest summary
+
+- BUG-CYCLE26-08: **VERIFIED** (browser-driven, 2 pages with LPFF rendered correctly).
+- BUG-CYCLE26-09: **VERIFIED** (browser-driven, breadcrumb shows `Client Ledgers › Client Ledger`).
+- BUG-CYCLE26-10: **VERIFIED-CODE-ONLY (Option B per spec)** — formatter regression test + backend code change + fresh JVM = forward-only correctness; pre-existing audit rows remain "for unknown" as expected.
+
+3 PASS / 0 FAIL / 0 REOPENED. Day 11 walk **may proceed**.

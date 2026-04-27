@@ -18,11 +18,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AddTrustAccountButton } from "@/components/trust/AddTrustAccountButton";
 import { fetchTrustAccounts, fetchDashboardData } from "./actions";
-import type {
-  TrustDashboardData,
-  TrustTransactionStatus,
-  TrustTransactionType,
-  TrustAlertSeverity,
+import {
+  transactionTypeLabel,
+  type TrustDashboardData,
+  type TrustTransactionStatus,
+  type TrustTransactionType,
+  type TrustAlertSeverity,
 } from "@/lib/types";
 
 // ── Helpers ────────────────────────────────────────────────────────
@@ -57,13 +58,6 @@ function statusBadgeVariant(
     default:
       return "neutral";
   }
-}
-
-function transactionTypeLabel(type: TrustTransactionType): string {
-  return type
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function isInflowType(type: TrustTransactionType): boolean {

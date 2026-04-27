@@ -156,3 +156,147 @@ Row still RECORDED. No write happened from portal-side rendering — confirms re
 7/8 PASS, 1 STILL-FAIL (11.1 → downgraded to MINOR), 0 N/A. **L-52 verified — Day 11 cycle-1 CLOSED.**
 
 Next dispatch: Day 14 (Moroka onboarding, isolation setup) or earlier deferred UI walks (L-48 EL CTA, L-58 Overview court-dates tile).
+
+---
+
+# Day 11 Checkpoint Results — Cycle 26 — 2026-04-27 SAST
+
+**Branch**: `bugfix_cycle_2026-04-26-day11` (cut from `main` `1b984153` after cycle-25 retest)
+**Backend rev / JVM**: main `1b984153` / backend PID 21748 (fresh JVM post-PR #1180/1181)
+**Stack**: Keycloak dev — backend:8080, gateway:8443, frontend:3000, portal:3002 all healthy at dispatch start
+**Auth**: Sipho Dlamini (portal magic-link). Day-10 token expired pre-walk; fresh magic-link requested via backend `/portal/auth/request-link` (token `5ytQGx75…`); exchanged at `:3002/auth/exchange` and landed authenticated on `:3002/projects`.
+
+## Summary
+
+**6 PASS / 0 FAIL / 1 PARTIAL / 1 BLOCKED-AT-LINK / 0 SKIPPED-BY-DESIGN** (8 in-scope checkpoints + 4 wrap-up rollups).
+
+Day 11's underlying portal trust-ledger view works end-to-end (R 50 000,00 balance, RAF deposit row, ZAR formatting, line-level transaction history) — but the **trust-deposit nudge email's CTA is broken**: it deep-links to `/trust/{trust_account_id}` instead of `/trust/{matter_id}`, and the portal's `/trust/[matterId]` route renders "No trust balance is recorded for this matter / The requested resource was not found." for the trust-account UUID. Sipho can still reach the correct page via the sidebar Trust link or `/home` → "Last trust movement" tile (both auto-redirect `/trust` → `/trust/{matterId}` when the contact has exactly one matter with activity), so the read path itself is intact. The only thing broken is the deep-link in the auto-fired email — exactly the §11.2 "Click the View trust balance link → lands on /trust" checkpoint.
+
+**One new gap logged**: BUG-CYCLE26-11 (LOW — broken email CTA; trust-account ID vs matter ID mismatch in `PortalEmailNotificationChannel.buildTrustActivityContext`).
+
+Two pre-existing template polish items re-observed (NOT logged as new gaps; already noted post-Day-10): nudge email body shows raw ISO timestamp + unformatted amount `50000` + uppercase `DEPOSIT`; portal trust ledger row still surfaces uppercase `DEPOSIT` enum in the Type column.
+
+## Pre-state verified
+
+| Check | Expected | Actual | Result |
+|---|---|---|---|
+| Trust-activity email exists in Mailpit | subject contains "trust" | `m7qSdt8XULPXMs6mX6Vbcn` "Mathebula & Partners: Trust account activity" 2026-04-27T04:01:46Z | PASS |
+| Email recipient | `sipho.portal@example.com` | `sipho.portal@example.com` | PASS |
+| Email CTA href | portal trust deep-link | `http://localhost:3002/trust/46d1177a-d1c3-48d8-9ba8-427f14b8278f` (trust account ID) | **wrong-id** (see BUG-CYCLE26-11) |
+| Portal session establishable | magic-link exchange succeeds | fresh token via backend; landed at `:3002/projects` | PASS |
+| Trust account `46d1177a-…` (Mathebula Trust — Main) | exists, R 50 000,00 | confirmed (Day 10) | PASS |
+| RAF matter `cc390c4f-…` | ACTIVE, has R 50 000 ledger card | confirmed (Day 10) | PASS |
+
+## Checkpoints
+
+### 11.1 — Mailpit verifies trust-deposit nudge email arrived for `sipho.portal@example.com`
+- Result: **PASS (with wording note)**
+- Evidence: `curl http://localhost:8025/api/v1/messages` lists `m7qSdt8XULPXMs6mX6Vbcn` from `noreply@docteams.app` to `sipho.portal@example.com`, subject **"Mathebula & Partners: Trust account activity"**, sent 2026-04-27T04:01:46Z. Body greets "Hi Sipho Dlamini," then: "A new transaction has been recorded in your trust account." with Date/Type/Amount table and a "View trust ledger" CTA.
+- Notes: Scenario expected subject containing "trust deposit" / "funds received" / "trust balance update". Actual subject "Trust account activity" is functionally equivalent (auto-fired via `PortalEmailNotificationChannel.onTrustTransactionRecorded` for `DEPOSIT`); NOT logging a wording-mismatch gap because it clearly conveys the trust-deposit notification semantically. Wrap-up "Trust deposit visible on portal within 1 business day of firm posting" — Day 10 firm post 04:01:46Z, email same minute; satisfied.
+
+### 11.2 — Click the "View trust balance" link → lands on `/trust`
+- Result: **BLOCKED-AT-LINK (broken CTA — non-cascading)**
+- Evidence: Email's only HREF (extracted via regex on Mailpit-served HTML) is `http://localhost:3002/trust/46d1177a-d1c3-48d8-9ba8-427f14b8278f`. Navigating there in an authenticated Sipho session yields the snapshot at `qa_cycle/checkpoint-results/cycle26-day11-11.2-trust-by-account.yml`:
+  ```
+  generic [ref=e85]: No trust balance is recorded for this matter.
+  generic [ref=e86]:
+    heading "Transactions" [level=2]
+    generic [ref=e88]: The requested resource was not found.
+  generic [ref=e89]:
+    heading "Statements" [level=2]
+    generic [ref=e91]: The requested resource was not found.
+  ```
+  The UUID `46d1177a-…` is the trust account ID (`Mathebula Trust — Main`), not a matter ID; portal `/trust/[matterId]` route interprets the path param as a matter ID, looks it up, and 404s on every section.
+- Notes: Root cause located at `backend/src/main/java/io/b2mash/b2b/b2bstrawman/portal/notification/PortalEmailNotificationChannel.java:284-303` (and twin `:310-328` for the recorded-event variant). Line 297 reads `UUID matterKey = event.trustAccountId();` — the variable is named `matterKey` but actually receives the **trust account ID**. The CTA URL is then composed as `portalBaseUrl + "/trust/" + matterKey`. The portal route `portal/app/(authenticated)/trust/[matterId]/page.tsx` expects a project/matter UUID. Mismatch is structural (different domain objects), not data-quality. Logged as **BUG-CYCLE26-11** (LOW) — see Gaps Found below. Per execution rule: **non-cascading bug** — Sipho can still reach the correct ledger via sidebar/home tile (verified §11.3+); not a Day-11 hard blocker, just a broken email CTA.
+
+### 11.3 — Verify `/trust` renders: trust balance card, recent deposits list, ledger preview
+- Result: **PASS** (via `/trust` index → auto-redirect to `/trust/{matterId}`)
+- Evidence: `qa_cycle/checkpoint-results/cycle26-day11-11.3-trust-by-matter.yml` — navigated to `:3002/trust`, auto-redirected to `:3002/trust/cc390c4f-35e2-42b5-8b54-bac766673ae7` (RAF matter ID), page renders:
+  - Trust balance card: `R 50 000,00 / As of 27 Apr 2026 / Matter cc390c4f`
+  - Transactions table heading + columns (Date, Type, Description, Amount, Running balance) + 1 data row
+  - Statements section with empty-state ("No statement documents yet")
+- Notes: The portal `/trust` index page (`portal/app/(authenticated)/trust/page.tsx:65-67`) auto-redirects to `/trust/{matterId}` when the contact has exactly one matter with trust activity — that's why navigation from sidebar/home works correctly. The email CTA bypasses the index by deep-linking the wrong type of UUID directly to `/trust/[matterId]`.
+
+### 11.4 — Trust balance card shows R 50,000.00 (matches firm-side Day 10 posting)
+- Result: **PASS**
+- Evidence: From snapshot above, balance card paragraph `R 50 000,00` matches Day-10 firm-side trust account cashbook balance and Sipho's client ledger card balance (DB `client_ledger_cards.balance=50000.00`). ZAR locale: spaced-thousands, comma-decimal, R prefix — correct.
+
+### 11.5 — Recent deposits list shows R50,000 deposit dated Day 10 with source description (sanitised)
+- Result: **PARTIAL (sanitisation works; "DEPOSIT" type label remains uppercase enum)**
+- Evidence: Single transaction row in Transactions table:
+  ```
+  27 Apr 2026 | DEPOSIT | Initial trust deposit — RAF-2026-001 | R 50 000,00 | R 50 000,00
+  ```
+- Notes:
+  - **Description sanitisation: PASS.** The firm-side description "Initial trust deposit — RAF-2026-001" is client-safe — no `[internal]` tags, no fee/staffing leakage, ≤140 chars, references the matter ref (RAF-2026-001) which the client already knows. Scenario step "any firm-internal `[internal]` tags stripped" is moot because firm side did not emit any.
+  - **Type column polish: WONT_LOG (pre-existing).** Type column shows raw enum `DEPOSIT` (uppercase). This is the same template polish carry-forward as the email body and matches the firm-side `cycle21-day10-10.5-after-record-deposit.yml` Transactions History rendering — already noted post-Day-10 as "NOT logged as gap" because it spans multiple surfaces. Will be a single shared label-map fix similar to BUG-CYCLE26-08 if/when product wants to clean up.
+  - Date format `27 Apr 2026` (not raw ISO) — portal-side date formatting works correctly here (unlike in the email body).
+
+### 11.6 — Click into matter trust ledger → line-level history renders with all transactions
+- Result: **PASS**
+- Evidence: Same snapshot — the auto-redirect lands directly on the matter trust ledger detail at `/trust/cc390c4f-…`. Line-level transaction table (1 deposit, all 5 columns populated, running balance reconciles to R 50 000,00). "Back to trust" link present (`/trust`) for navigation back. Statements section visible with empty-state.
+- Notes: This route IS the matter trust ledger — there is no separate "click into matter trust ledger" step in this build's information architecture; the `/trust/[matterId]` page combines balance card + line-level transactions + statements in one view.
+
+### 11.7 — Screenshot: `day-11-portal-trust-balance.png` — trust balance card with first deposit
+- Result: **PASS** (DOM YAML preferred per BUG-CYCLE26-05 WONT_FIX)
+- Evidence: `qa_cycle/checkpoint-results/cycle26-day11-11.3-trust-by-matter.yml` — full DOM tree at `/trust/cc390c4f-…` showing balance card, transaction row, statements section, sidebar nav, header with brand logo + "Mathebula & Partners" + "Sipho Dlamini" user menu.
+
+### 11.8 — Verify currency rendered as **R** / **ZAR** (not $ / EUR / GBP)
+- Result: **PASS**
+- Evidence: All rendered amounts use ZAR locale convention: `R 50 000,00` (R prefix, NBSP-spaced thousands, comma decimal). Three spots: balance card paragraph, Amount cell, Running balance cell. Zero occurrences of `$`, `€`, `£`. Date format also SA-style (`27 Apr 2026`).
+
+## Day 11 wrap-up checkpoints
+
+| Wrap check | Result | Evidence |
+|---|---|---|
+| Trust deposit visible on portal within 1 business day of firm posting | **PASS** | Firm posted 2026-04-27 04:01:46Z (Day 10); portal renders the same row with same amount + date on Day 11 walk same SAST day, sub-minute latency. |
+| Amount matches firm-side Section 86 ledger (no rounding / display bug) | **PASS** | Three reconcile points all R 50 000,00: firm-side `client_ledger_cards.balance=50000.00`, portal balance card `R 50 000,00`, portal transaction row Amount + Running balance both `R 50 000,00`. No rounding drift. |
+| Description sanitisation — `[internal]` stripped, ≤140 chars, safe fallback | **PASS** | Description "Initial trust deposit — RAF-2026-001" is 36 chars, contains no `[internal]` tags, references matter ref the client already knows. |
+| ZAR currency throughout | **PASS** | R prefix, comma decimal, spaced thousands across all three monetary cells. SA date format `27 Apr 2026`. |
+
+## Gaps Found
+
+- **BUG-CYCLE26-11** — LOW — Trust-activity email CTA links to `/trust/{trust_account_id}` instead of `/trust/{matter_id}`; portal `/trust/[matterId]` 404s on the trust-account UUID
+  - Reproducer:
+    1. Firm side records a trust deposit (Day 10 §10.4 path).
+    2. Backend `PortalEmailNotificationChannel.onTrustTransactionRecorded` fires nudge email to portal contact.
+    3. Click "View trust ledger" CTA in email → lands on `:3002/trust/{trust_account_id}`.
+    4. Portal renders "No trust balance is recorded for this matter / The requested resource was not found." (twice — Transactions and Statements panels).
+  - Evidence: `qa_cycle/checkpoint-results/cycle26-day11-11.2-trust-by-account.yml` (broken landing page); curl extraction of email href = `http://localhost:3002/trust/46d1177a-d1c3-48d8-9ba8-427f14b8278f`; Day 10 trust-account ID confirmed `46d1177a-d1c3-48d8-9ba8-427f14b8278f` (Mathebula Trust — Main); RAF matter ID confirmed `cc390c4f-35e2-42b5-8b54-bac766673ae7` (different UUID — distinct domain object). Working URL via sidebar/`/home` tile auto-redirect: `qa_cycle/checkpoint-results/cycle26-day11-11.3-trust-by-matter.yml`.
+  - Hypothesis: `backend/src/main/java/io/b2mash/b2b/b2bstrawman/portal/notification/PortalEmailNotificationChannel.java:297` (and twin `:322`) reads `UUID matterKey = event.trustAccountId();` — variable is named `matterKey` but receives the trust account ID. Two possible fixes:
+    - **Fix A** (preferred — more contained): change the URL builder to either link the trust-account index page (`/trust` with no path arg, then the index auto-redirects when there's exactly one matter) or look up the matter ID at email-build time from the event's `customerId`+`projectId`/`trustTransaction.projectId`. Since `TrustTransactionRecordedEvent` likely already carries a `projectId` (matter ID), threading that into the context is one-line.
+    - **Fix B** (more invasive): change the portal `/trust/[matterId]` route to also accept trust-account IDs and disambiguate. Not recommended — different domain objects, would conflate URLs.
+  - Severity: LOW. Functional impact is medium (broken email CTA = bad first-touch UX after a trust deposit, exactly the moment a client is looking for confirmation), but Sipho can still reach the right page via sidebar Trust nav (which auto-redirects). Not a cascade-blocker for Day 11.
+
+## Console errors
+
+Sidebar/home walk: 0 errors. The `/auth/exchange` initial-token-expired attempt produced 1 error (expected — expired magic-link). The deep-link to `/trust/{trust_account_id}` produced 3 errors (likely the `PortalTrustMatterDetail` API 404 surfaced as fetch errors); not new bugs, expected response to a 404 from a misrouted UUID. No console regressions on the working flow.
+
+## How we know Day 11 happy-path is solid (verification chain)
+
+- Day-10 firm-side post created the deposit DB row + auto-fired the nudge email (Day-10 cycle-21 result).
+- Day-11 magic-link refresh issued via correct portal endpoint (`/portal/auth/request-link` with body containing email + orgId — fresh token, redirected to `:3002/projects`).
+- Sipho's `/home` tile shows "Last trust movement / R 50 000,00 / 27 Apr 2026" → tile click links to `/trust` (working path).
+- `/trust` auto-redirects to `/trust/{matterId}` per `portal/app/(authenticated)/trust/page.tsx:65-67` `if (matters && matters.length === 1) router.replace(...)` heuristic.
+- Matter trust ledger page renders balance card + transactions table + statements section with R 50 000,00 reconciled across three monetary cells.
+- ZAR locale + SA date format consistent throughout.
+
+The portal-side trust read-model + ZAR formatting + auto-redirect routing all work; only the email's deep-link UUID kind is broken. Day 11 closes with a single LOW-severity, non-cascading gap.
+
+## Halt reason
+
+Day 11 walked end-to-end. Per per-day workflow §1: "Stop at end-of-day or first blocker." End-of-day reached; the §11.2 BLOCKED-AT-LINK is non-cascading (alternate sidebar path verified §11.3+). One LOW gap (BUG-CYCLE26-11) logged as OPEN; orchestrator triages before advancing to Day 14.
+
+## QA Position on exit
+
+`Day 11 / 11.X (closed) — Day 14 / 14.1 (next, pending BUG-CYCLE26-11 triage)`. Per status.md per-day workflow §2: "Triage every gap found that day via Product Agent. WONT_FIX is allowed only for tooling/out-of-scope; real product bugs (even non-blocking UX issues) become SPEC_READY." BUG-CYCLE26-11 is a real product bug (broken CTA in an outbound email) so should become SPEC_READY before Day 14 walk.
+
+## Files
+
+- `qa_cycle/checkpoint-results/cycle26-day11-auth-exchange.yml` — initial expired magic-link landing
+- `qa_cycle/checkpoint-results/cycle26-day11-login.yml` — portal `/login` form (orgId-missing finding pre-existing)
+- `qa_cycle/checkpoint-results/cycle26-day11-login-after-submit.yml` — "Something went wrong" without orgId
+- `qa_cycle/checkpoint-results/cycle26-day11-11.2-trust-by-account.yml` — BLOCKED-AT-LINK evidence (broken email CTA landing)
+- `qa_cycle/checkpoint-results/cycle26-day11-11.3-trust-by-matter.yml` — working `/trust/{matterId}` page (PASS evidence for §11.3-§11.8)
+- `qa_cycle/checkpoint-results/cycle26-day11-home.yml` — `/home` tile "Last trust movement" working
+

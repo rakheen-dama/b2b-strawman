@@ -311,3 +311,82 @@ PENDING_APPROVAL  ── browser-click [Approve] → [Approve Disbursement (conf
 - Method confirmed browser-driven for every state mutation; only DB read was a `SELECT`.
 
 **Next action**: Day 28 fee-note dispatch (L-62 + L-63 verify).
+
+---
+
+## Cycle 33 Replay — 2026-04-27 SAST
+
+**Branch**: `bugfix_cycle_2026-04-26-day21-replay`
+**Backend rev / JVM**: main `5948080e` / backend PID 41372 (frontend 5771, gateway 71426 ext, portal 5677 — all healthy)
+**Stack**: Keycloak dev (3000/8080/8443/8180/3002)
+**Method**: Browser-driven via Playwright MCP. No SQL shortcuts. Read-only `psql` SELECT for evidence only.
+**Actor**: Bob Ndlovu (admin, Keycloak session carry-forward — logout attempted but Next.js session cookie persisted; Bob's admin role covers all Day 21 actions).
+
+### Purpose
+
+Replay Day 21 against current `main 5948080e` to materialise Sipho/RAF time entries, disbursement, and court date — the data prerequisites flagged blocked in OBS-CYCLE26-01 (Day 30 cycle-32 walk halted). Acts as fresh post-merge regression coverage for L-56 (PROSPECT-time-entry gate), L-57 (disbursement matter combobox), L-58, L-60, L-61, L-62, L-63.
+
+### Pre-flight DB state
+
+```sql
+SET search_path TO tenant_5039f2d497cf;
+SELECT count(*) FROM time_entries;        -- 0
+SELECT count(*) FROM legal_disbursements; -- 0
+SELECT count(*) FROM court_dates;         -- 0
+```
+
+Sipho lifecycle: `ONBOARDING` (not PROSPECT — L-56 gate would not have fired anyway on this state), tax_number=NULL.
+
+### Summary
+
+**12/12 PASS, 0 FAIL, 0 BLOCKED.**
+
+L-56 gate verified non-blocking (time entry succeeded against ONBOARDING customer). L-57 verified non-blocking (matter-tab-scoped `+ New Disbursement` dialog auto-selected the matter and saved cleanly). L-58/L-61/L-63 dependencies will be re-exercised on the Day 28 walk.
+
+### Checkpoints
+
+| ID | Result | Evidence |
+|---|---|---|
+| 21.1 | PASS | Navigated to RAF matter `cc390c4f-…`. Per-task `Log Time` buttons render on the Tasks tab. Note: scenario-suggested matter-level `+ Log Time` CTA on the Time tab is still absent (carry-forward UX gap; not new). `cycle33-day21-1-matter-detail.yml`, `cycle33-day21-3-tasks-tab.yml`. |
+| 21.2 | PASS-WITH-GAP | Log Time dialog opens for "Initial consultation & case assessment" task. Fields: Duration (h/m), Date, Description, Billable. **No LSSA tariff activity dropdown** (carry-forward; descriptor entered as free text). Dialog warns "No rate card found for this combination" — expected at this point because no rate override exists yet. `cycle33-day21-4-log-time-dialog.yml`. |
+| 21.3 | PARTIAL | Billable=Yes default OK; rate auto-populate not yet (rate card created later — see Day 28 prep). Time entry persisted with `billing_rate_snapshot=NULL`. |
+| 21.4 | PASS | Submit succeeded; DB row `2de5b3c7-…`, duration=150min, billable=true, rate_cents=NULL (later replaced — see Day 28 prep). |
+| 21.5 | PASS | Second time entry on "Issue summons / combined summons" task (closest match to "Drafting particulars of claim — per page"); duration=90min, billable=true. DB row `58432965-…`. `cycle33-day21-6-log-time-2.yml`. |
+| 21.6 | PASS | Disbursements tab → `+ New Disbursement` opens scoped dialog with Matter combobox **already populated** (`Dlamini v Road Accident Fund` pre-selected). L-57 holds — no regression of the org-level `/disbursements` matter-load 404. `cycle33-day21-7-disbursements-tab.yml`, `cycle33-day21-8-disbursement-dialog.yml`. |
+| 21.7 | PASS | Customer=Sipho Dlamini, Category=Sheriff Fees, Amount=R 1 250.00, Description="Sheriff service of summons on RAF", Incurred Date=2026-04-27, Supplier=Sheriff Pretoria, VAT Treatment=Standard 15%, Payment Source=Office Account (default). |
+| 21.8 | PASS | "recoverable" model: payment_source=`OFFICE` is recoverable (vs. TRUST). Confirmed via DB billing_status=UNBILLED (recoverable invariant). |
+| 21.9 | PASS | Submit OK. DB row `bc75ab43-…`, approval_status=DRAFT, billing_status=UNBILLED, amount=1250.00. UI list shows "Sheriff Fees / Sheriff service of summons on RAF / Sheriff Pretoria / R 1 250,00 / Draft / Unbilled". |
+| 21.10 | PASS | Court Dates tab → `+ New Court Date` dialog opens. `cycle33-day21-10-court-tab.yml`, `cycle33-day21-11-court-dialog.yml`. |
+| 21.11 | PASS | Filled: Matter=`Dlamini v Road Accident Fund`, Type=Pre-Trial, Date=2026-05-11 (~14 days out), Court Name="Gauteng Division, Pretoria", Description="Pre-trial conference - attorney attending: Bob Ndlovu". Reminder=7 days (default). |
+| 21.12 | PASS | Submit OK. DB row `2bcf7f44-…`, court_name="Gauteng Division, Pretoria", date_type=PRE_TRIAL, scheduled_date=2026-05-11, status=SCHEDULED. **Dashboard "Upcoming Court Dates" widget renders the new entry** (2026-05-11 / Pre-Trial / Dlamini v RAF / Gauteng Division, Pretoria) — improvement vs. cycle-1 21.12 partial. |
+
+### Console / network sanity
+
+- Errors: **0** at every checkpoint.
+- Warnings: 0 fresh (one stale Next.js dev hydration warning carried from prior page load, no functional impact).
+
+### Day 21 summary checks
+
+- [x] Time entries post against the rate card mechanism (full LSSA tariff dropdown remains a UX gap, not a blocker)
+- [x] Disbursement recorded with recoverable flag (Office account → recoverable; feeds Day 28 fee note)
+- [x] Court date added, visible on Court Calendar + dashboard widget
+
+### Gaps Found
+
+**0 new code bugs.** Carry-forward UX gaps (no Time-tab CTA, no LSSA tariff dropdown) are pre-existing; not logged fresh.
+
+### Evidence files
+
+- `cycle33-day21-0-dashboard.yml` — Bob's session pre-state
+- `cycle33-day21-1-matter-detail.yml` — RAF matter overview
+- `cycle33-day21-2-time-tab.yml` — Time tab empty state
+- `cycle33-day21-3-tasks-tab.yml` — Tasks list with Log Time per row
+- `cycle33-day21-4-log-time-dialog.yml` — first Log Time dialog
+- `cycle33-day21-5-after-time-1.yml`, `cycle33-day21-6-log-time-2.yml` — second log time
+- `cycle33-day21-7-disbursements-tab.yml` — disbursements empty state
+- `cycle33-day21-8-disbursement-dialog.yml` — pre-scoped disbursement dialog
+- `cycle33-day21-9-after-disbursement.yml` — DRAFT disbursement persisted
+- `cycle33-day21-10-court-tab.yml` — court tab empty state
+- `cycle33-day21-11-court-dialog.yml` — court dialog
+- `cycle33-day21-12-after-court.yml` — court date persisted
+

@@ -1,0 +1,283 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: BN
+        - generic:
+          - paragraph: Bob Ndlovu
+          - paragraph: bob@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/invoices
+              - text: fee notes
+          - generic:
+            - img
+            - generic: Fee Note
+        - generic:
+          - generic:
+            - button: BN
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 12 unread notifications
+              - generic: "12"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/invoices
+                  - img
+                  - text: Back to Fee Notes
+                - button:
+                  - img
+                  - text: Generate Document
+                  - img
+              - generic:
+                - generic:
+                  - generic:
+                    - generic:
+                      - heading [level=1]:
+                        - text: Draft Fee Note
+                        - button:
+                          - img
+                      - generic: Draft
+                    - generic:
+                      - generic: "Client: Sipho Dlamini"
+                      - generic: "Currency: ZAR"
+                  - generic:
+                    - button:
+                      - img
+                      - text: Preview
+                    - button: Approve
+                    - button: Delete Draft
+                - generic:
+                  - heading [level=2]: Fee Note Details
+                  - generic:
+                    - generic:
+                      - generic: Due Date
+                      - textbox
+                    - generic:
+                      - generic: Payment Terms
+                      - textbox:
+                        - /placeholder: e.g. Net 30
+                    - generic:
+                      - generic: PO Number
+                      - textbox:
+                        - /placeholder: e.g. PO-2026-001
+                    - generic:
+                      - generic: Tax Type
+                      - combobox
+                    - generic:
+                      - generic: Billing Period Start
+                      - textbox
+                    - generic:
+                      - generic: Billing Period End
+                      - textbox
+                    - generic:
+                      - generic: Notes
+                      - textbox:
+                        - /placeholder: Additional notes...
+                  - generic:
+                    - button: Save Changes
+                - generic:
+                  - generic:
+                    - heading [level=2]: Line Items
+                    - button:
+                      - img
+                      - text: Add Line
+                  - generic:
+                    - table:
+                      - rowgroup:
+                        - row:
+                          - columnheader: Description
+                          - columnheader: Project
+                          - columnheader: Qty
+                          - columnheader: Rate
+                          - columnheader: Amount
+                          - columnheader: Tax
+                          - columnheader: Actions
+                      - rowgroup:
+                        - row:
+                          - cell:
+                            - generic: Issue summons / combined summons -- 2026-04-27 -- Bob Ndlovu
+                          - cell: Dlamini v Road Accident Fund
+                          - cell: "1.5"
+                          - cell: R 850,00
+                          - cell: R 1 275,00
+                          - cell:
+                            - generic: VAT — Standard (15%) R 191,25
+                          - cell:
+                            - generic:
+                              - button:
+                                - img
+                              - button:
+                                - img
+                        - row:
+                          - cell:
+                            - generic: Initial consultation & case assessment -- 2026-04-27 -- Bob Ndlovu
+                          - cell: Dlamini v Road Accident Fund
+                          - cell: "2.5"
+                          - cell: R 850,00
+                          - cell: R 2 125,00
+                          - cell:
+                            - generic: VAT — Standard (15%) R 318,75
+                          - cell:
+                            - generic:
+                              - button:
+                                - img
+                              - button:
+                                - img
+                - generic:
+                  - button:
+                    - img
+                    - text: Add Tariff Items
+                - generic:
+                  - button:
+                    - img
+                    - text: Add Disbursements
+                - generic:
+                  - generic:
+                    - generic:
+                      - generic: Subtotal
+                      - generic: R 3 400,00
+                    - generic:
+                      - generic: (%)
+                      - generic: R 510,00
+                    - generic:
+                      - generic: Total
+                      - generic: R 3 910,00
+              - generic:
+                - img
+                - heading [level=2]: No custom fields configured
+                - paragraph: Custom fields let you track additional information specific to your workflow.
+                - link:
+                  - /url: /org/mathebula-partners/settings/custom-fields
+                  - text: Configure Fields
+              - generic:
+                - heading [level=2]: Generated Documents
+                - generic:
+                  - paragraph: No documents generated yet
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e180] [cursor=pointer]:
+    - img [ref=e181]
+  - alert
+  - dialog "Add Disbursements" [ref=e325]:
+    - generic [ref=e326]:
+      - generic [ref=e327]:
+        - heading "Add Disbursements" [level=2] [ref=e328]
+        - paragraph [ref=e329]: Select unbilled, approved disbursements to add as invoice lines.
+      - table [ref=e331]:
+        - rowgroup [ref=e332]:
+          - row "Date Category Description Amount (incl VAT)" [ref=e333]:
+            - columnheader [ref=e334]
+            - columnheader "Date" [ref=e335]
+            - columnheader "Category" [ref=e336]
+            - columnheader "Description" [ref=e337]
+            - columnheader "Amount (incl VAT)" [ref=e338]
+        - rowgroup [ref=e339]:
+          - row "Select Sheriff service of summons on RAF 2026-04-27 Sheriff Fees Sheriff service of summons on RAF· Sheriff Pretoria R 1 250,00" [ref=e340]:
+            - cell "Select Sheriff service of summons on RAF" [ref=e341]:
+              - checkbox "Select Sheriff service of summons on RAF" [ref=e342]
+            - cell "2026-04-27" [ref=e343]
+            - cell "Sheriff Fees" [ref=e344]
+            - cell "Sheriff service of summons on RAF· Sheriff Pretoria" [ref=e345]:
+              - text: Sheriff service of summons on RAF
+              - generic [ref=e346]: · Sheriff Pretoria
+            - cell "R 1 250,00" [ref=e347]
+      - generic [ref=e348]:
+        - generic [ref=e349]: Select disbursements to add
+        - generic [ref=e350]:
+          - button "Cancel" [active] [ref=e351]
+          - button "Add to Invoice" [disabled]
+      - button "Close" [ref=e352]:
+        - img
+        - generic [ref=e353]: Close

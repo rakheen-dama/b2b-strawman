@@ -1,0 +1,216 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e52]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e55]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e61]:
+          - generic [ref=e62]: Clients
+          - img [ref=e63]
+        - button "Finance" [ref=e67]:
+          - generic [ref=e68]: Finance
+          - img [ref=e69]
+        - generic [ref=e72]:
+          - button "Team" [expanded] [ref=e73]:
+            - generic [ref=e74]: Team
+            - img [ref=e75]
+          - link "Team" [ref=e78] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e79]
+            - text: Team
+      - generic [ref=e85]:
+        - link "Notifications" [ref=e86] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e87]
+          - text: Notifications
+        - link "Settings" [ref=e90] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e91]
+          - text: Settings
+        - link "Help" [ref=e94] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e95]
+          - text: Help
+      - generic [ref=e98]:
+        - generic [ref=e99]: BN
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Bob Ndlovu
+          - paragraph [ref=e102]: bob@mathebula-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "Mathebula & Partners" [ref=e106] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - link "fee notes" [ref=e189] [cursor=pointer]:
+              - /url: /org/mathebula-partners/invoices
+          - generic [ref=e190]:
+            - img [ref=e191]
+            - generic [ref=e193]: Fee Note
+        - generic [ref=e111]:
+          - button "User menu" [ref=e113]: BN
+          - button "Notifications" [ref=e115]:
+            - img
+            - generic [ref=e116]: 12 unread notifications
+            - generic [ref=e184]: "12"
+      - main [ref=e117]:
+        - generic [ref=e195]:
+          - generic [ref=e196]:
+            - link "Back to Fee Notes" [ref=e197] [cursor=pointer]:
+              - /url: /org/mathebula-partners/invoices
+              - img [ref=e198]
+              - text: Back to Fee Notes
+            - button "Generate Document" [ref=e200]:
+              - img
+              - text: Generate Document
+              - img
+          - generic [ref=e201]:
+            - generic [ref=e202]:
+              - generic [ref=e203]:
+                - generic [ref=e204]:
+                  - 'heading "INV-0001 Help: Invoice numbering" [level=1] [ref=e358]':
+                    - text: INV-0001
+                    - 'button "Help: Invoice numbering" [ref=e206] [cursor=pointer]':
+                      - img [ref=e207]
+                  - generic [ref=e210]: Sent
+                - generic [ref=e211]:
+                  - generic [ref=e212]: "Client: Sipho Dlamini"
+                  - generic [ref=e359]: "Issued: Apr 27, 2026"
+                  - generic [ref=e213]: "Currency: ZAR"
+              - generic [ref=e214]:
+                - button "Preview" [ref=e215]:
+                  - img
+                  - text: Preview
+                - button "Record Payment" [ref=e367]
+                - button "Void" [ref=e368]
+            - generic [ref=e369]:
+              - heading "Online Payment Link" [level=3] [ref=e370]
+              - generic [ref=e371]:
+                - textbox [ref=e372]: http://localhost:8080/portal/dev/mock-payment?sessionId=MOCK-SESS-0aafd30c-b822-41b5-8e25-9f96d9c31de2&invoiceId=432ae5a9-6a3c-4c25-86b3-302f0dd016e1&amount=5160.00&currency=ZAR&returnUrl=http%3A%2F%2Flocalhost%3A3002%2Finvoices%2F432ae5a9-6a3c-4c25-86b3-302f0dd016e1%2Fpayment-success
+                - button "Copy Link" [ref=e373]:
+                  - img
+                  - generic [ref=e374]: Copy Link
+                - button "Regenerate" [ref=e375]:
+                  - img
+                  - generic [ref=e376]: Regenerate
+            - generic [ref=e377]:
+              - heading "Payment History" [level=3] [ref=e378]
+              - table [ref=e380]:
+                - rowgroup [ref=e381]:
+                  - row "Status Provider Reference Amount Date" [ref=e382]:
+                    - columnheader "Status" [ref=e383]
+                    - columnheader "Provider" [ref=e384]
+                    - columnheader "Reference" [ref=e385]
+                    - columnheader "Amount" [ref=e386]
+                    - columnheader "Date" [ref=e387]
+                - rowgroup [ref=e388]:
+                  - row "Created mock — R 5 160,00 Apr 27, 2026" [ref=e389]:
+                    - cell "Created" [ref=e390]:
+                      - generic [ref=e391]: Created
+                    - cell "mock" [ref=e392]
+                    - cell "—" [ref=e393]
+                    - cell "R 5 160,00" [ref=e394]
+                    - cell "Apr 27, 2026" [ref=e395]
+            - heading "Fee Note Details" [level=2] [ref=e363]
+            - generic [ref=e244]:
+              - heading "Line Items" [level=2] [ref=e246]
+              - table [ref=e249]:
+                - rowgroup [ref=e250]:
+                  - row "Description Project Qty Rate Amount Tax" [ref=e364]:
+                    - columnheader "Description" [ref=e252]
+                    - columnheader "Project" [ref=e253]
+                    - columnheader "Qty" [ref=e254]
+                    - columnheader "Rate" [ref=e255]
+                    - columnheader "Amount" [ref=e256]
+                    - columnheader "Tax" [ref=e257]
+                - rowgroup [ref=e259]:
+                  - row "Issue summons / combined summons -- 2026-04-27 -- Bob Ndlovu Dlamini v Road Accident Fund 1.5 R 850,00 R 1 275,00 VAT — Standard (15%) R 191,25" [ref=e365]:
+                    - cell "Issue summons / combined summons -- 2026-04-27 -- Bob Ndlovu" [ref=e261]:
+                      - generic [ref=e262]: Issue summons / combined summons -- 2026-04-27 -- Bob Ndlovu
+                    - cell "Dlamini v Road Accident Fund" [ref=e263]
+                    - cell "1.5" [ref=e264]
+                    - cell "R 850,00" [ref=e265]
+                    - cell "R 1 275,00" [ref=e266]
+                    - cell "VAT — Standard (15%) R 191,25" [ref=e267]:
+                      - generic [ref=e268]: VAT — Standard (15%) R 191,25
+                  - row "Initial consultation & case assessment -- 2026-04-27 -- Bob Ndlovu Dlamini v Road Accident Fund 2.5 R 850,00 R 2 125,00 VAT — Standard (15%) R 318,75" [ref=e366]:
+                    - cell "Initial consultation & case assessment -- 2026-04-27 -- Bob Ndlovu" [ref=e280]:
+                      - generic [ref=e281]: Initial consultation & case assessment -- 2026-04-27 -- Bob Ndlovu
+                    - cell "Dlamini v Road Accident Fund" [ref=e282]
+                    - cell "2.5" [ref=e283]
+                    - cell "R 850,00" [ref=e284]
+                    - cell "R 2 125,00" [ref=e285]
+                    - cell "VAT — Standard (15%) R 318,75" [ref=e286]:
+                      - generic [ref=e287]: VAT — Standard (15%) R 318,75
+            - generic [ref=e303]:
+              - generic [ref=e304]:
+                - generic [ref=e305]: Subtotal
+                - generic [ref=e306]: R 4 650,00
+              - generic [ref=e307]:
+                - generic [ref=e308]: (%)
+                - generic [ref=e309]: R 510,00
+              - generic [ref=e355]:
+                - generic [ref=e356]: (%)
+                - generic [ref=e357]: R 0,00
+              - generic [ref=e310]:
+                - generic [ref=e311]: Total
+                - generic [ref=e312]: R 5 160,00
+          - generic [ref=e313]:
+            - img [ref=e314]
+            - heading "No custom fields configured" [level=2] [ref=e317]
+            - paragraph [ref=e318]: Custom fields let you track additional information specific to your workflow.
+            - link "Configure Fields" [ref=e319] [cursor=pointer]:
+              - /url: /org/mathebula-partners/settings/custom-fields
+          - generic [ref=e320]:
+            - heading "Generated Documents" [level=2] [ref=e321]
+            - paragraph [ref=e323]: No documents generated yet
+  - generic [ref=e185]:
+    - heading "Command Palette" [level=2] [ref=e186]
+    - paragraph [ref=e187]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e180] [cursor=pointer]:
+    - img [ref=e181]
+  - alert [ref=e188]

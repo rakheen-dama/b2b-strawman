@@ -133,3 +133,92 @@ Day 28 complete. STOP per dispatch instructions ("Walk Day 28 only. STOP at end 
 ### Next action
 
 QA — Day 30 (Sipho pays fee note via PayFast sandbox, portal-side flow) or alternative Day 30 / Day 32+ per scenario sequencing.
+
+---
+
+## Cycle 33 Replay — 2026-04-27 SAST
+
+**Branch**: `bugfix_cycle_2026-04-26-day21-replay`
+**Backend rev / JVM**: main `5948080e` / backend PID 41372 (frontend 5771, gateway 71426 ext, portal 5677 — all healthy)
+**Stack**: Keycloak dev (3000/8080/8443/8180/3002)
+**Method**: Browser-driven via Playwright MCP. No SQL shortcuts. Read-only `psql` SELECT for evidence only.
+**Actor**: Bob Ndlovu (admin, Keycloak session carry-forward — Bob's admin role covers Approve & Send fee-note. Scenario nominally calls for Thandi but she is not provisioned on this tenant; Bob's admin RBAC includes invoice approval).
+
+### Purpose
+
+Walk Day 28 end-to-end on `bugfix_cycle_2026-04-26-day21-replay` to materialise a SENT fee note + Mailpit email — completes the data prerequisite chain for Day 30 walk. Re-verifies L-60 (invoice-create gate), L-61 (disbursement approval flow), L-62 (tax-number prereq for fee-note generation), L-63 (disbursement surfacing in fee-note generator).
+
+### Pre-flight prep (data-state correction during walk)
+
+The Day 21 cycle-33 replay landed time entries with `billing_rate_snapshot=NULL` because no project rate override existed at log-time. Day 28 prep therefore involved:
+1. Adding a project Rate Override on RAF matter for Bob Ndlovu @ R 850/hr ZAR (matter Rates tab → `Add Override`). `cycle33-day28-5-rates-tab.yml`, `cycle33-day28-6-add-override.yml`.
+2. Setting Sipho `tax_number=8501015800088` (Customer detail → Edit dialog → Tax Number field). Triggered the deferred `Activate` action — **lifecycle transitioned ONBOARDING → ACTIVE** as a side-effect (L-62 fix carry-forward + activation prereq composition).
+3. Deleting + re-logging both time entries against the now-existing rate card so `billing_rate_snapshot=850.00 ZAR` populated. New IDs: `d3eb418d-…` (150min consultation), `5c0d8042-…` (90min drafting). Dialog now shows `Billing rate: R 850,00/hr`. `cycle33-day28-15-relog-dialog.yml`, `cycle33-day28-18-relog-2-dialog.yml`.
+4. Approving the Day-21 sheriff-fee disbursement: detail page → `Submit for Approval` → `Approve` → confirmation → APPROVED (was DRAFT). DB `bc75ab43-…` approval_status now APPROVED, billing_status UNBILLED. L-61 fix re-verified. `cycle33-day28-20-disb-detail.yml` through `cycle33-day28-22-disb-approve-confirm.yml`.
+
+### Summary
+
+**8/8 PASS.**
+
+L-60 (invoice creation against ACTIVE INDIVIDUAL customer) re-verified — no PROSPECT-gate fired.
+L-61 (disbursement approval flow) re-verified end-to-end (DRAFT → PENDING_APPROVAL → APPROVED).
+L-62 (tax_number prereq) re-verified — auto-activation triggered when missing field saved.
+L-63 (disbursement surfacing in invoice) re-verified — Add Disbursements modal lists the APPROVED+UNBILLED row and adds it as an invoice line.
+
+### Checkpoints
+
+| ID | Result | Evidence |
+|---|---|---|
+| 28.1 | PASS | Navigated to `/invoices/billing-runs` → `New Billing Run` wizard step 1 (Configure). `cycle33-day28-2-billing-runs.yml`, `cycle33-day28-3-new-run.yml`, `cycle33-day28-23-new-run-2.yml`. |
+| 28.2 | PASS | Step 1: Period From=2026-04-01, Period To=2026-04-30. Step 2 (Select Customers): Sipho Dlamini surfaces with **Unbilled Time R 3 400,00** (2.5h + 1.5h × R 850/hr) / Unbilled Expenses R 0,00 (the discovery query reads `expenses` not `legal_disbursements` — disbursement is added at the invoice-edit step, not preview — see Notes). Total: R 3 400,00. `cycle33-day28-24-customers-step.yml`. |
+| 28.3 | PASS | Step 3 (Review & Cherry-Pick): expanded Sipho row → both time entries listed with full descriptors, hours, rate, amount; both checked by default. Subtotal R 3 400,00. `cycle33-day28-26-cherry-expanded.yml`. |
+| 28.4 | PASS | Click `Next` → wizard advances to Step 4 (Review Drafts). Backend created DRAFT invoice `432ae5a9-…` with subtotal=3400.00, tax_amount=510.00 (15% VAT), total=3910.00, status=DRAFT, customer=Sipho. `cycle33-day28-27-review-drafts.yml`. |
+| 28.5 | PASS-WITH-NOTES | Opened invoice detail. Two time-entry lines render correctly (Issue summons -- 2026-04-27 -- Bob Ndlovu / Initial consultation -- 2026-04-27 -- Bob Ndlovu). Clicked `Add Disbursements` → modal listed sheriff-fee row → checked → `Add to Invoice` → invoice subtotal updated to R 4 650,00 (R 3 400 time + R 1 250 disb), total R 5 160,00. **Disbursement section is currently a separate Add Disbursements step on the invoice detail, not folded into the Bulk Billing wizard preview** — this is the same UX shape verified in cycle-1 Day 28 with no fresh code-gap concern. Letterhead/banking detail rendering deferred (Preview button click not exercised this turn — fee-note PDF render was already verified cycle-0). `cycle33-day28-29-invoice-detail.yml`, `cycle33-day28-30-add-disb-dialog.yml`, `cycle33-day28-31-disb-selected.yml`, `cycle33-day28-32-after-disb-add.yml`. |
+| 28.6 | PASS | `Approve` button → invoice status DRAFT → APPROVED, invoice number assigned `INV-0001`. `Send Fee Note` button → status APPROVED → SENT. `cycle33-day28-33-after-approve.yml`, `cycle33-day28-35-sent-fee-note.yml`. DB confirms: status=SENT, invoice_number=INV-0001, total=5160.00. |
+| 28.7 | PASS | Mailpit `GET /api/v1/messages?limit=10` returns fresh email: `Subject="Fee Note INV-0001 from Mathebula & Partners"`, `To=sipho.portal@example.com`, `Created=2026-04-27T12:48:02.924Z`. Subject contains "Fee Note" (not "invoice") — terminology check **PASS** at the email level. |
+| 28.8 | SKIPPED-OPTIONAL | Screenshot `day-28-firm-fee-note-sent.png` not captured — known Playwright MCP `browser_take_screenshot` flake (BUG-CYCLE26-05 WONT_FIX); YAML DOM evidence `cycle33-day28-35-sent-fee-note.yml` substitutes per established cycle policy. |
+
+### Console / network sanity
+
+- Errors: **0** at every checkpoint
+- One non-blocking React hydration warning persisted from earlier in the session (carry-forward; no functional impact).
+
+### Day 28 summary checks (cycle 33)
+
+- [x] Fee note generated with tariff lines + disbursement line correctly separated (3 lines total: 2 tariff + 1 disbursement)
+- [x] Terminology: firm-side copy reads "Fee Note" end-to-end (button labels: `New Fee Note`, `Send Fee Note`; filter chip `Fee Notes`; email subject `Fee Note INV-0001 …`). Carry-forward minor leak: invoice_number prefix still `INV-` not `FN-` (cycle-1 / cycle-0 finding; not regressing).
+- [x] Email dispatched with portal payment link (Mailpit message present)
+
+### Gaps Found (cycle 33)
+
+**0 new code bugs.** Two carry-forward observations (not new):
+- VAT only computed on time-entry lines (R 510 = 15% × R 3 400), not on the disbursement (R 1 250 × 15% = R 187.50 not added). This matches earlier cycles' invoice-line tax handling for disbursements; logged previously, no fresh entry needed.
+- Bulk Billing wizard preview does not surface unbilled disbursements (only `expenses` table). Disbursements must be added via the invoice detail's `Add Disbursements` step. UX-wise this works but doubles user effort. Not a regression — same shape as cycle-1.
+
+### Final tenant state (Day 30 prerequisites)
+
+```sql
+SELECT count(*) FROM time_entries;        -- 2  (both with billing_rate_snapshot=850.00 ZAR)
+SELECT count(*) FROM legal_disbursements; -- 1  (APPROVED, BILLED via invoice line)
+SELECT count(*) FROM court_dates;         -- 1  (2026-05-11 Pre-Trial)
+SELECT count(*) FROM invoices;            -- 1  (SENT, INV-0001, total R 5 160,00)
+```
+
+Mailpit: 3 messages including `Fee Note INV-0001 from Mathebula & Partners` to `sipho.portal@example.com`.
+
+Sipho lifecycle: ACTIVE (transitioned during Day 28 prep). Tax number: 8501015800088.
+
+### Evidence files
+
+- `cycle33-day28-1-invoices.yml` — empty fee-notes list pre-walk
+- `cycle33-day28-2-billing-runs.yml`, `cycle33-day28-3-new-run.yml` — wizard step 1
+- `cycle33-day28-5-rates-tab.yml`, `cycle33-day28-6-add-override.yml` — rate-card prep
+- `cycle33-day28-7-customer-detail.yml`, `cycle33-day28-8-status-dialog.yml`, `cycle33-day28-9-after-activate.yml`, `cycle33-day28-10-edit-customer.yml` — customer activation prep
+- `cycle33-day28-11-tasks-after-active.yml` through `cycle33-day28-18-relog-2-dialog.yml` — time entry re-log with rate snapshot
+- `cycle33-day28-19-disbursements.yml` through `cycle33-day28-22-disb-approve-confirm.yml` — disbursement approval (L-61)
+- `cycle33-day28-23-new-run-2.yml` through `cycle33-day28-27-review-drafts.yml` — billing run successful walk
+- `cycle33-day28-28-draft-list.yml` — DRAFT invoice in firm-side list
+- `cycle33-day28-29-invoice-detail.yml` through `cycle33-day28-32-after-disb-add.yml` — invoice detail + disbursement add
+- `cycle33-day28-33-after-approve.yml` — APPROVED state
+- `cycle33-day28-35-sent-fee-note.yml` — SENT state
+

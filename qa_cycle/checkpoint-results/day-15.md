@@ -117,7 +117,7 @@ No BUG-CYCLE26-12 raised — isolation is enforced as designed.
 
 ## Notes / observations
 
-- `/trust` auto-redirects to Sipho's matter route — there is no matter-switcher in the portal trust UI, which is desirable (no UI affordance to attempt cross-matter navigation by mistake).
+- `/trust` auto-redirects to Sipho's matter route — there is no matter-switcher in the portal trust UI, which is desirable (no UI affordance to accidentally attempt cross-matter navigation).
 - `/portal/documents/{id}` is not a real portal endpoint — the 404 is a Spring static-resource fallback ("No static resource"). Not a leak; the absence of this surface narrows the attack area.
 - `/documents` in the portal frontend is a Next.js 404 (no `app/documents/page.tsx` for portal). Sipho can only access documents via matter detail (out of scope of this probe).
 - 404 vs 403 nuance: the backend chose 404 throughout (resource-not-found framing) rather than 403 (forbidden). Both are acceptable per the probe plan; 404 has the side-benefit of not confirming existence to the caller (information-disclosure-safer).

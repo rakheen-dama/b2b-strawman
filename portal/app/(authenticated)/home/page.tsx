@@ -22,6 +22,8 @@ import type {
 interface InfoRequestSummary {
   id: string;
   status: string;
+  totalItems: number;
+  submittedItems: number;
 }
 
 interface DeadlineSummary {
@@ -64,7 +66,10 @@ function InfoRequestsCard() {
       .then((data) => {
         if (cancelled) return;
         const pending = Array.isArray(data)
-          ? data.filter((r) => r.status !== "COMPLETED").length
+          ? data.filter(
+              (r) =>
+                r.status !== "COMPLETED" && r.submittedItems < r.totalItems,
+            ).length
           : 0;
         setCount(pending);
       })

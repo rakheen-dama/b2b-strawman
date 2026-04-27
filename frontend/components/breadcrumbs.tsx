@@ -46,6 +46,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   "trust-accounting": "Trust Accounting",
   "court-calendar": "Court Calendar",
   "conflict-check": "Conflict Check",
+  "client-ledgers": "Client Ledgers",
 };
 
 /** Segments that contain dynamic child routes (e.g. /projects/[id]) */
@@ -55,6 +56,7 @@ const PARENT_SEGMENT_FALLBACKS: Record<string, string> = {
   customers: "Customer",
   invoices: "Invoice",
   proposals: "Proposal",
+  "client-ledgers": "Client Ledger",
 };
 
 function isUuid(value: string): boolean {

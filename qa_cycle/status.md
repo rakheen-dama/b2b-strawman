@@ -4,7 +4,7 @@
 
 **Purpose**: Run the legal ZA full-lifecycle scenario (`qa/testplan/demos/legal-za-full-lifecycle-keycloak.md`) end-to-end on the Keycloak dev stack. Fix every gap encountered at the root cause — no workarounds, no SQL shortcuts. Prior verify-cycle status archived to `qa_cycle/_archive_2026-04-26_post-verify/status.md`.
 
-- **Branch**: `bugfix_cycle_2026-04-26-day15` (cut from `main` `d20319c0` for Day 15 isolation-probe walk; Day 14 walk PR #1184 squash-merged)
+- **Branch**: `bugfix_cycle_2026-04-26-day30` (cut from `main` `51f286e5` for Day 30 walk; Day 15 isolation gate PR #1185 squash-merged with 15/15 probes PASS)
 - **Scenario**: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md`
 - **ALL_DAYS_COMPLETE**: false
 - **QA Position**: **Day 30 — 30.1 (next scenario day per Day-15 close)**. Day 15 isolation gate **CLEAN — ISOLATION VERIFIED** on cycle 31: 15/15 probes PASS (Phase A 8/8 frontend, Phase B 6/6 backend, Phase D 1/1 digest/email). Sipho's portal session sees ZERO Moroka entities at both UI tier and authenticated REST tier. Direct-by-ID fetches for Moroka resources (project `340c5bb2-…`, request `de3cffc7-…`, trust matter transactions) all return 404. List endpoints (`/portal/requests`, `/portal/trust/summary`) scope to Sipho's customer_id only — REQ-0003, "Liquidation and Distribution Account", "Peter Moroka", EST-2026-002, R 25 000 all absent. Trust summary contains exactly one matter entry (Sipho's `cc390c4f-…`, balance R 50 100,00); Moroka's `340c5bb2-…` not aggregated. Direct portal URLs to Moroka resources render "The requested resource was not found / you may not have access" empty-state. **No BUG-CYCLE26-12 raised.** Single tenant `tenant_5039f2d497cf` retained. Ready to advance to Day 30 walk per scenario.

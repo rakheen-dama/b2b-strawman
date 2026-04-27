@@ -36,6 +36,19 @@
 - **Read CLAUDE.md** in the relevant subdirectory before changing service code.
 - **Commit between turns**. Each agent pushes its state changes (status.md, fix-spec, checkpoint result) before returning.
 
+## Per-Day Workflow (orchestrator behavior — overrides default skill flow)
+
+The skill's default Step 1 flow says "ELSE → QA walks next checkpoint". This cycle uses a stricter per-day loop instead:
+
+1. **Walk one day** on a fresh `bugfix_cycle_2026-04-26-dayN` branch (cut from `main`). Stop at end-of-day or first blocker.
+2. **Triage every gap** found that day via Product Agent. WONT_FIX is allowed only for tooling/out-of-scope; real product bugs (even non-blocking UX issues) become SPEC_READY.
+3. **Fix every spec** via Dev Agent (worktree-isolated). Each fix is a PR into `bugfix_cycle_*-dayN` and squash-merges there.
+4. **When the day's tracker has 0 OPEN/SPEC_READY items**, PR `bugfix_cycle_*-dayN` → `main`. Run review cycle (CodeRabbit + independent reviewer). Address all actionable findings before merging.
+5. **After merge to main**, dispatch a QA retest agent that verifies each fix on `main` (no SQL shortcuts, real browser flow). Mark gaps `FIXED → VERIFIED` only after the retest passes on `main`.
+6. **Then** advance QA Position to next day. Cut a fresh `bugfix_cycle_*-dayN+1` branch from `main` and repeat.
+
+The orchestrator's job between agent turns is to read this status file, decide which step in the loop above is next, and dispatch the matching agent. Do NOT skip the PR-to-main-and-retest step at the end of each day.
+
 ## Known Out-of-Scope Constraints (do NOT open gaps for these)
 
 - **Payment integration is a stub**. There is no real PSP integration (Stripe, Yoco, Peach, etc.). Invoice "Mark Paid" / portal payment flows are stub endpoints that just flip status. Do NOT open gaps for missing payment-gateway redirects, webhook signing, real card processing, or PSP-side reconciliation. If the scenario asks the user to "pay an invoice", treat the stub Mark-Paid action as the equivalent and continue.

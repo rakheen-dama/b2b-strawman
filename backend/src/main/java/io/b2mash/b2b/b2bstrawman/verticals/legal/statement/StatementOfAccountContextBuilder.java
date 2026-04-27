@@ -12,6 +12,8 @@ import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventStatus;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.tax.TaxRate;
+import io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateContextHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
@@ -87,6 +89,7 @@ public class StatementOfAccountContextBuilder {
   private final TemplateContextHelper templateContextHelper;
   private final VerticalModuleGuard moduleGuard;
   private final ObjectMapper objectMapper;
+  private final TaxRateRepository taxRateRepository;
 
   public StatementOfAccountContextBuilder(
       ProjectRepository projectRepository,
@@ -100,7 +103,8 @@ public class StatementOfAccountContextBuilder {
       MemberNameResolver memberNameResolver,
       TemplateContextHelper templateContextHelper,
       VerticalModuleGuard moduleGuard,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      TaxRateRepository taxRateRepository) {
     this.projectRepository = projectRepository;
     this.customerRepository = customerRepository;
     this.timeEntryRepository = timeEntryRepository;
@@ -113,6 +117,7 @@ public class StatementOfAccountContextBuilder {
     this.templateContextHelper = templateContextHelper;
     this.moduleGuard = moduleGuard;
     this.objectMapper = objectMapper;
+    this.taxRateRepository = taxRateRepository;
   }
 
   /**
@@ -243,7 +248,13 @@ public class StatementOfAccountContextBuilder {
     var feeLines = loadFeeLines(projectId, periodStart, periodEnd);
     BigDecimal totalHours = sumHours(feeLines);
     BigDecimal totalFeesExcl = sumAmounts(feeLines);
-    BigDecimal vatAmount = BigDecimal.ZERO; // line-level VAT not modelled on TimeEntry yet
+    // GAP-L-95: apply the org's default tax rate to fees aggregate. Mirrors the invoice path
+    // (InvoiceTaxService) which derives VAT from the same default rate. Time entries do not
+    // carry per-line tax (unlike invoice lines), so the SoA aggregates at the total level —
+    // valid because every fee line attracts the same rate (no zero-rated/exempt time entries).
+    // Falls back to ZERO when no default rate is configured, the rate is exempt/inactive,
+    // or rate value is null/zero — so non-VAT-registered tenants render unchanged.
+    BigDecimal vatAmount = computeFeesVat(totalFeesExcl);
     BigDecimal totalFeesIncl = totalFeesExcl.add(vatAmount);
 
     var disbursementLines = disbursementService.listForStatement(projectId, periodStart, periodEnd);
@@ -386,6 +397,33 @@ public class StatementOfAccountContextBuilder {
 
   private BigDecimal sumAmounts(List<FeeLineDto> lines) {
     return lines.stream().map(FeeLineDto::amount).reduce(BigDecimal.ZERO, BigDecimal::add);
+  }
+
+  /**
+   * Computes VAT on the fees aggregate using the tenant's default tax rate. Returns ZERO when no
+   * default rate exists, the rate is inactive/exempt, or its value is null/zero — preserving
+   * non-VAT-registered tenant behaviour. Mirrors the invoice path's derivation of VAT from {@link
+   * io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository#findByIsDefaultTrue()}.
+   */
+  private BigDecimal computeFeesVat(BigDecimal totalFeesExcl) {
+    if (totalFeesExcl == null || totalFeesExcl.signum() == 0) {
+      return BigDecimal.ZERO;
+    }
+    var defaultRate = taxRateRepository.findByIsDefaultTrue();
+    if (defaultRate.isEmpty()) {
+      return BigDecimal.ZERO;
+    }
+    TaxRate rate = defaultRate.get();
+    if (!rate.isActive() || rate.isExempt()) {
+      return BigDecimal.ZERO;
+    }
+    BigDecimal ratePercent = rate.getRate();
+    if (ratePercent == null || ratePercent.signum() == 0) {
+      return BigDecimal.ZERO;
+    }
+    return totalFeesExcl
+        .multiply(ratePercent)
+        .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
   }
 
   private BigDecimal sumDisbursements(List<DisbursementStatementDto> lines) {

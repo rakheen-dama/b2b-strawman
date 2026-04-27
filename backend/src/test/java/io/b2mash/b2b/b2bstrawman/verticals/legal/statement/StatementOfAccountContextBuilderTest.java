@@ -19,6 +19,8 @@ import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.tax.TaxRate;
+import io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateContextHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
@@ -67,6 +69,7 @@ class StatementOfAccountContextBuilderTest {
   @Mock private MemberNameResolver memberNameResolver;
   @Mock private TemplateContextHelper templateContextHelper;
   @Mock private VerticalModuleGuard moduleGuard;
+  @Mock private TaxRateRepository taxRateRepository;
 
   // Real ObjectMapper (Jackson 3 — `tools.jackson.databind`, the same artifact Spring Boot 4
   // autoconfigures and injects in production). Needed because the GAP-L-71 fix uses
@@ -95,6 +98,9 @@ class StatementOfAccountContextBuilderTest {
     // Default: trust_accounting module is enabled (matches a fully legal tenant). Individual
     // tests override this when they need to assert the disabled-module behaviour.
     lenient().when(moduleGuard.isModuleEnabled("trust_accounting")).thenReturn(true);
+    // Default: no default tax rate configured → VAT computes to ZERO. Individual VAT-aware
+    // tests override this to assert the populated-rate path.
+    lenient().when(taxRateRepository.findByIsDefaultTrue()).thenReturn(Optional.empty());
   }
 
   @Test
@@ -847,6 +853,96 @@ class StatementOfAccountContextBuilderTest {
         .as("Payment row must expose transactionType (template column key) — not `type`.")
         .containsKey("transactionType");
     assertThat(payments.get(0).get("transactionType")).isEqualTo("PAYMENT");
+  }
+
+  // ---------- GAP-L-95: VAT applied on fees aggregate ----------
+
+  @Test
+  void aggregate_appliesVatWhenDefaultTaxRateConfigured() {
+    var project = projectWithCustomer("VAT Matter", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+
+    // 60min @ R1500 + 90min @ R2000 → R1500 + R3000 = R3000 + R1500 = R4500 excl.
+    // Wait: 60min/60 = 1.0h, 1.0 * 1500 = R1500. 90min/60 = 1.5h, 1.5 * 2000 = R3000.
+    // Excl total = R4500. With 15% VAT: R675. Incl = R5175.
+    var te1 = timeEntry(LocalDate.of(2026, 4, 5), 60, true, new BigDecimal("1500.00"), "Drafting");
+    var te2 = timeEntry(LocalDate.of(2026, 4, 10), 90, true, new BigDecimal("2000.00"), "Hearing");
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of(te1, te2));
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
+        .thenReturn(Optional.empty());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+
+    var rate = new TaxRate("VAT", new BigDecimal("15.00"), true, false, 0);
+    when(taxRateRepository.findByIsDefaultTrue()).thenReturn(Optional.of(rate));
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> fees = (Map<String, Object>) context.get("fees");
+    assertThat((BigDecimal) fees.get("total_amount_excl_vat"))
+        .isEqualByComparingTo(new BigDecimal("4500.00"));
+    assertThat((BigDecimal) fees.get("vat_amount")).isEqualByComparingTo(new BigDecimal("675.00"));
+    assertThat((BigDecimal) fees.get("total_amount_incl_vat"))
+        .isEqualByComparingTo(new BigDecimal("5175.00"));
+  }
+
+  @Test
+  void aggregate_skipsVatWhenNoDefaultRateConfigured() {
+    var project = projectWithCustomer("No VAT Matter", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+
+    var te = timeEntry(LocalDate.of(2026, 4, 5), 60, true, new BigDecimal("1000.00"), "Work");
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of(te));
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
+        .thenReturn(Optional.empty());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+    // Default-rate lookup returns empty (lenient setUp default — explicit here for clarity).
+    when(taxRateRepository.findByIsDefaultTrue()).thenReturn(Optional.empty());
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> fees = (Map<String, Object>) context.get("fees");
+    assertThat((BigDecimal) fees.get("total_amount_excl_vat"))
+        .isEqualByComparingTo(new BigDecimal("1000.00"));
+    assertThat((BigDecimal) fees.get("vat_amount")).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat((BigDecimal) fees.get("total_amount_incl_vat"))
+        .isEqualByComparingTo(new BigDecimal("1000.00"));
+  }
+
+  @Test
+  void aggregate_skipsVatWhenDefaultRateIsExempt() {
+    var project = projectWithCustomer("Exempt Matter", customerId);
+    when(projectRepository.findById(projectId)).thenReturn(Optional.of(project));
+    when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer("Client")));
+
+    var te = timeEntry(LocalDate.of(2026, 4, 5), 60, true, new BigDecimal("1000.00"), "Work");
+    when(timeEntryRepository.findByFilters(eq(projectId), eq(null), eq(periodStart), eq(periodEnd)))
+        .thenReturn(List.of(te));
+    when(disbursementService.listForStatement(projectId, periodStart, periodEnd))
+        .thenReturn(List.of());
+    when(trustAccountRepository.findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL))
+        .thenReturn(Optional.empty());
+    when(invoiceRepository.findByProjectId(projectId)).thenReturn(List.of());
+    // Exempt rate (e.g., service for an export client). Even with isDefault=true, VAT must be 0.
+    var exempt = new TaxRate("Exempt", new BigDecimal("0.00"), true, true, 0);
+    when(taxRateRepository.findByIsDefaultTrue()).thenReturn(Optional.of(exempt));
+
+    var context = builder.build(projectId, periodStart, periodEnd);
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> fees = (Map<String, Object>) context.get("fees");
+    assertThat((BigDecimal) fees.get("vat_amount")).isEqualByComparingTo(BigDecimal.ZERO);
+    assertThat((BigDecimal) fees.get("total_amount_incl_vat"))
+        .isEqualByComparingTo(new BigDecimal("1000.00"));
   }
 
   // ---------- helpers ----------

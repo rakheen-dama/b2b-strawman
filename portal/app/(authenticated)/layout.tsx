@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import { getLastOrgId } from "@/lib/auth";
 import {
   PortalContextProvider,
   useProfile,
@@ -64,6 +65,7 @@ export default function AuthenticatedLayout({
 }) {
   const { isAuthenticated } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const hasMounted = useSyncExternalStore(
     subscribe,
     getHasMounted,
@@ -72,9 +74,21 @@ export default function AuthenticatedLayout({
 
   useEffect(() => {
     if (hasMounted && !isAuthenticated) {
-      router.replace("/login");
+      // GAP-L-66: preserve the deep-link target + last-known orgId so /login
+      // can render branding and submit a valid magic-link request after
+      // session expiry.
+      const params = new URLSearchParams();
+      if (pathname && pathname !== "/login") {
+        params.set("redirectTo", pathname);
+      }
+      const lastOrg = getLastOrgId();
+      if (lastOrg) {
+        params.set("orgId", lastOrg);
+      }
+      const qs = params.toString();
+      router.replace(qs ? `/login?${qs}` : "/login");
     }
-  }, [hasMounted, isAuthenticated, router]);
+  }, [hasMounted, isAuthenticated, router, pathname]);
 
   if (!hasMounted || !isAuthenticated) {
     return (

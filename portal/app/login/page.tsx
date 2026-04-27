@@ -13,19 +13,44 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { publicFetch } from "@/lib/api-client";
+import { getLastOrgId } from "@/lib/auth";
 import type { BrandingInfo } from "@/lib/types";
 
 function LoginForm() {
   const searchParams = useSearchParams();
-  const orgId = searchParams.get("orgId");
+  // GAP-L-66: source orgId from query first, then last-known localStorage hint.
+  // null only when neither path resolves (first-ever visit with bare /login).
+  const queryOrgId = searchParams.get("orgId");
+  const [orgId, setOrgId] = useState<string | null>(queryOrgId);
+  const redirectTo = searchParams.get("redirectTo");
 
   const [email, setEmail] = useState("");
   const [branding, setBranding] = useState<BrandingInfo | null>(null);
-  const [brandingLoading, setBrandingLoading] = useState(!!orgId);
+  const [brandingLoading, setBrandingLoading] = useState(!!queryOrgId);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [magicLink, setMagicLink] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // GAP-L-66: hydrate orgId from localStorage on mount when the query param is
+  // missing. Done in an effect so SSR matches the initial client render.
+  useEffect(() => {
+    if (queryOrgId) return;
+    const lastOrg = getLastOrgId();
+    if (lastOrg) {
+      setOrgId(lastOrg);
+      setBrandingLoading(true);
+    }
+  }, [queryOrgId]);
+
+  // GAP-L-66: persist redirectTo to sessionStorage so the auth/exchange page
+  // can route the user back to the originally-requested deep-link after the
+  // magic-link round-trip.
+  useEffect(() => {
+    if (redirectTo && typeof window !== "undefined") {
+      sessionStorage.setItem("portal_post_login_redirect", redirectTo);
+    }
+  }, [redirectTo]);
 
   useEffect(() => {
     if (!orgId) return;
@@ -63,6 +88,19 @@ function LoginForm() {
       e.preventDefault();
       setError(null);
       setSubmitting(true);
+
+      // GAP-L-66: short-circuit before posting a guaranteed-400 body. orgId is
+      // null only when both the query param and localStorage hint are missing
+      // (first-ever visit to bare /login). Generic copy avoids tenant-existence
+      // leaks.
+      if (!orgId) {
+        setError(
+          "We couldn't determine which organization to sign you into. " +
+            "Please use the original link from your email.",
+        );
+        setSubmitting(false);
+        return;
+      }
 
       try {
         const response = await publicFetch("/portal/auth/request-link", {

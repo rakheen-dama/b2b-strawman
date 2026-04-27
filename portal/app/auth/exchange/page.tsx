@@ -68,7 +68,21 @@ function ExchangeHandler() {
         });
 
         if (!cancelled) {
-          router.push("/projects");
+          // GAP-L-66: consume sessionStorage redirectTo (set by /login when the
+          // user arrived via a deep-link redirect) so post-exchange routing
+          // returns the user to the originally-requested page. Open-redirect
+          // guard: only honour same-origin paths (must start with "/").
+          let target = "/projects";
+          if (typeof window !== "undefined") {
+            const redirect = sessionStorage.getItem(
+              "portal_post_login_redirect",
+            );
+            sessionStorage.removeItem("portal_post_login_redirect");
+            if (redirect && redirect.startsWith("/")) {
+              target = redirect;
+            }
+          }
+          router.push(target);
         }
       } catch {
         if (!cancelled) {

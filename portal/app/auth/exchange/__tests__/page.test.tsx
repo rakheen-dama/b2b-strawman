@@ -35,6 +35,9 @@ describe("ExchangePage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockSearchParams = new URLSearchParams("token=abc123&orgId=org_xyz");
+    if (typeof sessionStorage !== "undefined") {
+      sessionStorage.clear();
+    }
   });
 
   afterEach(() => {
@@ -108,5 +111,56 @@ describe("ExchangePage", () => {
 
     expect(screen.getByText(/Invalid login link/)).toBeInTheDocument();
     expect(mockPublicFetch).not.toHaveBeenCalled();
+  });
+
+  // GAP-L-66
+  it("redirects to sessionStorage portal_post_login_redirect when set and starts with /", async () => {
+    sessionStorage.setItem("portal_post_login_redirect", "/invoices/123");
+    mockPublicFetch.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          token: "jwt-token-here",
+          email: "alice@testcorp.com",
+          customerId: "cust-1",
+          customerName: "Test Corp",
+        }),
+        { status: 200 },
+      ),
+    );
+
+    render(<ExchangePage />);
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith("/invoices/123");
+    });
+    // Key consumed (one-shot semantics).
+    expect(sessionStorage.getItem("portal_post_login_redirect")).toBeNull();
+  });
+
+  // GAP-L-66
+  it("ignores external redirect URLs (open-redirect guard)", async () => {
+    sessionStorage.setItem(
+      "portal_post_login_redirect",
+      "https://evil.example.com/steal",
+    );
+    mockPublicFetch.mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          token: "jwt-token-here",
+          email: "alice@testcorp.com",
+          customerId: "cust-1",
+          customerName: "Test Corp",
+        }),
+        { status: 200 },
+      ),
+    );
+
+    render(<ExchangePage />);
+
+    await waitFor(() => {
+      expect(mockPush).toHaveBeenCalledWith("/projects");
+    });
+    // Even on rejection, the key is consumed to avoid lingering attack vectors.
+    expect(sessionStorage.getItem("portal_post_login_redirect")).toBeNull();
   });
 });

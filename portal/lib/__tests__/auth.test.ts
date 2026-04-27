@@ -4,6 +4,7 @@ import {
   getAuth,
   clearAuth,
   isAuthenticated,
+  getLastOrgId,
   type CustomerInfo,
 } from "@/lib/auth";
 
@@ -83,5 +84,38 @@ describe("auth", () => {
 
   it("isAuthenticated returns false when no JWT is stored", () => {
     expect(isAuthenticated()).toBe(false);
+  });
+
+  // GAP-L-66
+  it("storeAuth persists portal_last_org_id", () => {
+    const jwt = buildMockJwt();
+    storeAuth(jwt, mockCustomer);
+
+    expect(localStorage.getItem("portal_last_org_id")).toBe(mockCustomer.orgId);
+  });
+
+  // GAP-L-66
+  it("clearAuth preserves portal_last_org_id", () => {
+    const jwt = buildMockJwt();
+    storeAuth(jwt, mockCustomer);
+
+    clearAuth();
+
+    expect(localStorage.getItem("portal_jwt")).toBeNull();
+    expect(localStorage.getItem("portal_customer")).toBeNull();
+    // last-known orgId is a routing hint, not a credential — must survive
+    // clearAuth so /login can recover after session expiry.
+    expect(localStorage.getItem("portal_last_org_id")).toBe(mockCustomer.orgId);
+  });
+
+  // GAP-L-66
+  it("getLastOrgId returns persisted value", () => {
+    const jwt = buildMockJwt();
+    storeAuth(jwt, mockCustomer);
+
+    expect(getLastOrgId()).toBe(mockCustomer.orgId);
+
+    clearAuth();
+    expect(getLastOrgId()).toBe(mockCustomer.orgId);
   });
 });

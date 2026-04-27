@@ -98,3 +98,135 @@ Trust Accounting overview totals:
 - Tab 0 Bob firm session ALIVE on Sipho ledger detail page
 
 Tab 1 (Sipho portal) was not opened this turn; previous turn's portal session would have expired by JWT TTL anyway.
+
+---
+
+# Day 45 Checkpoint Results — Cycle 38 — 2026-04-27 SAST
+
+**Branch**: `bugfix_cycle_2026-04-26-day45` (cut from `main` `3b2eebfa`)
+**Backend rev / JVM**: main `3b2eebfa` / backend PID 41372 (gateway PID 71426 ext, frontend 5771, portal 5677 — all healthy per `svc.sh status`)
+**Stack**: Keycloak dev (3000/8080/8443/8180/3002)
+**Method**: Browser-driven via Playwright MCP. No SQL writes; no REST mutations except Mailpit GET. Read-only `psql` SELECT for evidence only.
+**Actor**: Bob Ndlovu (firm Keycloak session — fresh login this turn).
+
+## Pre-state (read-only SELECT)
+
+```
+trust_transactions (3 rows pre-walk):
+  13ca4d28-… DEPOSIT R 50 000,00 RAF Sipho 2026-04-27 RECORDED (carry-forward Day 10)
+  f2f692e8-… DEPOSIT R    100,00 RAF Sipho 2026-04-27 RECORDED (carry-forward BUG-CYCLE26-11 retest)
+  0e9f9c17-… DEPOSIT R 25 000,00 EST Moroka 2026-04-27 RECORDED (carry-forward Day 14)
+client_ledger_cards (2 rows pre-walk):
+  Sipho  c4f70d86-… balance R 50 100,00  total_deposits R 50 100,00
+  Moroka 0cb199f2-… balance R 25 000,00  total_deposits R 25 000,00
+information_requests (3 rows pre-walk):
+  REQ-0001 a0306375-… SENT       (RAF/Sipho)
+  REQ-0002 d8a58ade-… COMPLETED  (RAF/Sipho)  — 3/3 accepted
+  REQ-0003 de3cffc7-… SENT       (EST/Moroka) due 2026-05-11
+```
+
+> **Note**: pre-state Sipho balance is **R 50 100,00** not R 50 000,00 because of the BUG-CYCLE26-11 retest deposit (R 100,00) carried into the tenant on cycle 29. Therefore the post-walk Sipho balance lands at **R 70 100,00** instead of the scenario's R 70 000,00. This is **expected carry-forward** from a prior verify cycle, not a new gap.
+
+## Summary
+
+**5 PASS / 0 FAIL / 1 PARTIAL / 0 BLOCKED / 0 SKIPPED**
+
+**Verdict**: Day 45 cycle-38 walk completes end-to-end on `main 3b2eebfa`. 45.1 PARTIAL only because GAP-L-67 (carry-forward from cycle 1) still blocks ad-hoc free-form info request creation — same workaround as cycle 1 (FICA Onboarding Pack 3-item template substituted for "Supporting medical evidence" 2-item ad-hoc). All other Day 45 outcomes (magic-link email, R 20 000 deposit, client ledger total, matter trust tab) PASS. Trust-activity nudge email DID fire this cycle (cycle-1 cycle had `MINOR-Trust-Nudge-Email-Missing` because event hadn't been wired yet — BUG-CYCLE26-11 fix on PR #1183 wired it). Body still has cosmetic polish items (raw ISO date, unformatted amount) — already-known carry-forward "Trust-deposit nudge email body polish" per dispatch — NOT re-logged.
+
+## Checkpoints
+
+### 45.1 — On RAF matter, +New Info Request → free-form "Supporting medical evidence" / 2 items / due Day 52 → Send
+- Result: **PARTIAL**
+- Evidence: `qa_cycle/checkpoint-results/cycle38-day45-2-new-request-dialog.yml` (dialog with no Title/Items input — Ad-hoc selected); `cycle38-day45-3-template-options.yml` (template list — no "Medical Evidence" pack present)
+- Notes: GAP-L-67 carry-forward — `Create Information Request` dialog has no Title or Items input fields and no template named "Medical evidence"; selecting "Ad-hoc (no template)" creates a request with empty name + 0 items, which is then unsendable per cycle-1 finding (action menu only Cancel). Following cycle-1 substitution pattern, used **FICA Onboarding Pack (3 items)** as the closest analog. Set Due Date `2026-06-17` (Day 0 = 2026-04-26 + 52 days). Clicked Send Now → dialog closed → DB confirms `information_requests` row `d7dc4faf-7e9c-4a6c-9ffd-fb69c7fe8b80` REQ-0004 / SENT / due_date=2026-06-17 / sent_at=2026-04-27 14:21:16.797144+00. **Code path exercised** (create-request → magic-link dispatch) is identical to the scenario's intent; only the items list differs (FICA's ID copy / Proof of residence / Bank statement vs scenario's hospital discharge summary / orthopaedic report). No new bugs surfaced.
+
+### 45.2 — Mailpit verify second magic-link email to Sipho
+- Result: **PASS**
+- Evidence: Mailpit GET `/api/v1/messages?limit=5` — top message ID `cT5BtR26iNjg68FBmbtkhR`, Subject="Information request REQ-0004 from Mathebula & Partners", To=`sipho.portal@example.com`, Created=`2026-04-27T14:21:16.965Z`. HTML body href = `http://localhost:3002/auth/exchange?token=NNLCh0nZHVEJAEydH4YCeRkpqsL9N8etKs66m1zt0JA&orgId=mathebula-partners`. Port 3002 ✓, token present ✓, orgId=mathebula-partners ✓. **L-42 magic-link fix HOLDS for second info request on `3b2eebfa`.**
+
+### 45.3 — Record R 20 000 deposit against Sipho/RAF (description "Top-up per engagement letter")
+- Result: **PASS**
+- Evidence: `qa_cycle/checkpoint-results/cycle38-day45-6-deposit-dialog.yml` (Record Deposit dialog filled).
+- Notes: Trust Accounting → Record Transaction → Record Deposit. Filled Client ID `c4f70d86-…`, Matter `cc390c4f-…` (RAF), Amount 20000, Reference `DEP-2026-RAF-003`, Description "Top-up per engagement letter". Submit → dialog closed → DB confirms `trust_transactions` row `177065ec-709a-435b-a73c-b3648335683b` DEPOSIT R 20 000,00 / project_id=cc390c4f-… (RAF) / RECORDED. Sipho `client_ledger_cards.balance` updated 50 100 → **70 100**. Moroka unchanged at R 25 000 — isolation holds. Carry-forward UX-debt (already-known): Record Deposit dialog uses raw UUID textboxes for Client/Matter — NOT re-logged per dispatch.
+
+### 45.4 — Client ledger shows two (here, three) deposits totalling R 70 100
+- Result: **PASS**
+- Evidence: `qa_cycle/checkpoint-results/cycle38-day45-7-client-ledgers.yml` (overview), `cycle38-day45-8-sipho-ledger-detail.yml` (transactions list).
+- Notes: `/trust-accounting/client-ledgers` shows Sipho row "Trust Balance R 70 100,00 / Total Deposits R 70 100,00 / 27 Apr 2026" and Moroka row unchanged "R 25 000,00 / R 25 000,00". Sipho ledger detail page (`/trust-accounting/client-ledgers/c4f70d86-…`) "3 transactions found": DEP/2026/RAF-001 R 50 000,00 RECORDED (running balance R 70 100,00 — odd-sort cosmetic carry-forward), DEP/2026/RAF-002 R 100,00 RECORDED (running R 20 100,00), DEP-2026-RAF-003 R 20 000,00 RECORDED (running R 20 000,00). Total reconciles. Cosmetic running-balance sort note carries forward unchanged from cycle 1.
+
+### 45.5 — Matter Trust tab on RAF shows balance R 70 100
+- Result: **PASS**
+- Evidence: `qa_cycle/checkpoint-results/cycle38-day45-9-raf-trust-tab.yml`
+- Notes: RAF matter (`/projects/cc390c4f-…?tab=trust`) → Trust tab → Trust Balance card "R 70 100,00 / Funds Held"; Deposits R 70 100,00. Matches client-ledger total.
+
+### Trust-activity nudge email (already-known carry-forward — body polish)
+- Result: **PASS (email fires)** with cosmetic carry-forward
+- Evidence: Mailpit message `Mz58MAYnvZVQDp3Len47NC` Subject="Mathebula & Partners: Trust account activity" Created 2026-04-27T14:22:48.778Z (≈2s after deposit submit). HTML href `http://localhost:3002/trust/cc390c4f-35e2-42b5-8b54-bac766673ae7` — matter-UUID (not trust-account UUID, not /trust/null) — **BUG-CYCLE26-11 fix carry-forward VERIFIED on `3b2eebfa`.**
+- Notes: Body body still renders raw ISO date `2026-04-27T14:22:48.615311Z` and unformatted amount `20000` (instead of "27 April 2026" + "R 20 000,00"). This is the already-known "Trust-deposit nudge email body polish" carry-forward per dispatch — NOT re-logged.
+
+### Console errors
+- Result: **PASS**
+- Notes: 0 errors across all Day 45 navigation. (Initial dashboard navigation logged 1 console error from the Keycloak redirect-bounce flow — that error is in Keycloak's iframe, not on a Kazi page; not a regression.)
+
+### Trust isolation cross-check
+- Result: **PASS**
+- Notes: Moroka `client_ledger_cards.balance` unchanged at R 25 000,00 (DB SELECT post-walk). Trust-Accounting overview total = R 95 100,00 (50K + 100 + 20K Sipho + 25K Moroka). RAF matter Trust tab does NOT leak Moroka totals — only shows R 70 100,00. Cross-customer isolation HOLDS.
+
+## Day 45 summary checks (per scenario)
+
+- [x] Second info request dispatched (REQ-0004, SENT, due 2026-06-17; magic-link email delivered to Sipho)
+- [x] Trust balance reconciles to (R 70 100,00 — adjusted for carry-forward) on client ledger and matter trust tab
+
+## Gaps Found
+
+**No new gaps this cycle.** Re-observed (carry-forward, NOT re-logged):
+
+- **GAP-L-67** (HIGH, OPEN — first logged cycle 1, never spec'd) — Create Information Request dialog has no Title or Items input fields; ad-hoc requests are unsendable. Forces template substitution. Frontend: `frontend/components/.../create-request-dialog.tsx` lacks the title/items inputs that the scenario requires. Backend `POST /api/information-requests/{id}/items` exists at `InformationRequestController.java:73`. Suggested fix scope unchanged from cycle 1: M (~2-3 hr).
+- **OBS-cycle1-running-balance-sort** (cosmetic) — Running Balance column on client-ledger detail shows R 70 100 next to oldest deposit and R 20 000 next to newest, because the sort+running-balance accumulator treats top-of-table as latest. Not a data issue.
+- **OBS-cycle1-record-deposit-raw-uuids** — already-known carry-forward; NOT re-logged per dispatch.
+- **Trust-deposit nudge email body polish** — already-known carry-forward; NOT re-logged per dispatch.
+
+## DB final state
+
+```
+trust_transactions (4 rows post-walk):
+  13ca4d28-… DEPOSIT R 50 000,00 RAF Sipho   2026-04-27 RECORDED (carry-forward)
+  f2f692e8-… DEPOSIT R    100,00 RAF Sipho   2026-04-27 RECORDED (carry-forward, BUG-CYCLE26-11 retest)
+  0e9f9c17-… DEPOSIT R 25 000,00 EST Moroka  2026-04-27 RECORDED (carry-forward, isolation)
+  177065ec-… DEPOSIT R 20 000,00 RAF Sipho   2026-04-27 RECORDED  [NEW THIS DAY — DEP-2026-RAF-003]
+
+client_ledger_cards (2 rows post-walk):
+  Sipho  c4f70d86-… balance R 70 100,00 / total_deposits R 70 100,00  [updated +20K]
+  Moroka 0cb199f2-… balance R 25 000,00 / total_deposits R 25 000,00  [unchanged]
+
+information_requests (added REQ-0004):
+  REQ-0001 a0306375-… SENT      (RAF/Sipho)        — carry-forward
+  REQ-0002 d8a58ade-… COMPLETED (RAF/Sipho)        — carry-forward
+  REQ-0003 de3cffc7-… SENT      (EST/Moroka)       — carry-forward, due 2026-05-11
+  REQ-0004 d7dc4faf-… SENT      (RAF/Sipho) FICA   — NEW, due 2026-06-17
+
+Trust Accounting overview totals: R 95 100,00 (50K + 100 + 20K Sipho + 25K Moroka)
+```
+
+## Verify-focus items observed
+
+- **L-42 (magic-link to portal :3002 with orgId)**: VERIFIED — REQ-0004 magic-link href = `http://localhost:3002/auth/exchange?token=NNLCh0nZ…&orgId=mathebula-partners`.
+- **BUG-CYCLE26-11 (trust-activity email CTA points to matter UUID)**: VERIFIED-CARRY-FORWARD — nudge email CTA = `http://localhost:3002/trust/cc390c4f-…` (matter UUID). Fix from PR #1183 still effective on main `3b2eebfa`.
+- **GAP-L-66 (portal /login orgId preservation)**: NOT exercised this turn (firm-side only walk; portal-side will exercise on Day 46 when Sipho logs in via the new magic-link).
+
+## Stack at end-of-turn
+
+- Backend PID 41372 (no restart this cycle)
+- Gateway PID 71426 ext (unchanged)
+- Frontend PID 5771 (unchanged)
+- Portal PID 5677 (unchanged — no portal navigation this cycle)
+- Single Bob firm tab on RAF matter Trust tab
+
+## Branch state
+
+- No code changes this turn.
+- New evidence files: `cycle38-day45-0-raf-matter.yml`, `cycle38-day45-1-requests-tab.yml`, `cycle38-day45-2-new-request-dialog.yml`, `cycle38-day45-3-template-options.yml`, `cycle38-day45-4-trust-accounting.yml`, `cycle38-day45-5-transactions-page.yml`, `cycle38-day45-6-deposit-dialog.yml`, `cycle38-day45-7-client-ledgers.yml`, `cycle38-day45-8-sipho-ledger-detail.yml`, `cycle38-day45-9-raf-trust-tab.yml`.
+
+## Next action
+
+QA — Day 46 (Portal: Sipho responds to second info request + trust re-check + isolation). Day 45 walk complete. GAP-L-67 carry-forward still OPEN — orchestrator should decide whether to spec/fix it now (recommended; HIGH severity blocks "free-form info request" workflow per scenario semantics) or defer past Day 46 (which is portal-side and unaffected by GAP-L-67). Cut a fresh `bugfix_cycle_2026-04-26-day46` branch from `main` when ready.

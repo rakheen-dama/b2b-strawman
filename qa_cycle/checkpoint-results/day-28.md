@@ -158,7 +158,7 @@ The Day 21 cycle-33 replay landed time entries with `billing_rate_snapshot=NULL`
 
 ### Summary
 
-**8/8 PASS.**
+**7/8 PASS (one PASS-WITH-NOTES on 28.5 — disbursement add lives on the invoice-edit step, not the wizard preview), 1 SKIPPED-OPTIONAL (28.8 — PNG screenshot deferred to YAML evidence per BUG-CYCLE26-05 WONT_FIX), 0 FAIL.**
 
 L-60 (invoice creation against ACTIVE INDIVIDUAL customer) re-verified — no PROSPECT-gate fired.
 L-61 (disbursement approval flow) re-verified end-to-end (DRAFT → PENDING_APPROVAL → APPROVED).

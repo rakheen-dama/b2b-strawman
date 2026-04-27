@@ -339,7 +339,7 @@ Sipho lifecycle: `ONBOARDING` (not PROSPECT — L-56 gate would not have fired a
 
 ### Summary
 
-**12/12 PASS, 0 FAIL, 0 BLOCKED.**
+**10/12 PASS, 1 PASS-WITH-GAP (21.2 — LSSA tariff dropdown still absent, carry-forward), 1 PARTIAL (21.3 — rate auto-populate deferred to Day 28 prep), 0 FAIL, 0 BLOCKED, 0 new gaps.**
 
 L-56 gate verified non-blocking (time entry succeeded against ONBOARDING customer). L-57 verified non-blocking (matter-tab-scoped `+ New Disbursement` dialog auto-selected the matter and saved cleanly). L-58/L-61/L-63 dependencies will be re-exercised on the Day 28 walk.
 

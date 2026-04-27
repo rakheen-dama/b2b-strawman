@@ -183,7 +183,7 @@ Day 10 complete, zero blocker. Per dispatch scope ("Stop after Day 10"), halting
 **Branch**: `bugfix_cycle_2026-04-26-day10` (cut from `main` `c194faca` per status.md QA Position)
 **Backend rev / JVM**: main `c194faca` (Day 8 PR #1176 squash) / backend PID 58335 (fresh JVM, healthy)
 **Stack**: Keycloak dev — backend:8080, gateway:8443, frontend:3000, portal:3002 all healthy at dispatch start
-**Auth**: Thandi Mathebula (Owner) via Keycloak — `thandi@mathebula-test.local` / `SecureP@ss1`
+**Auth**: Thandi Mathebula (Owner) via Keycloak — `thandi@mathebula-test.local` / `[REDACTED — see qa/testplan/legal-onboarding-keycloak.md §1.5 for test creds]`
 **Prior state verified**: PROP-0002 ACCEPTED on 2026-04-27 03:18:57+00 (Day 8 cycle-20 result on main); RAF matter `cc390c4f-…` already ACTIVE; trust account `46d1177a-…` "Mathebula Trust — Main" SECTION_86, dual-approval OFF, balance R 0,00; 0 trust transactions, 0 client ledger cards pre-walk
 
 ## Summary

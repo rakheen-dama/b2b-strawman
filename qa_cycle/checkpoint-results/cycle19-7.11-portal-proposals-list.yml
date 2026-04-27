@@ -1,0 +1,84 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e67]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e22]
+            - generic [ref=e25]: Home
+          - link "Matters" [ref=e26] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e27]
+            - generic [ref=e29]: Matters
+          - link "Trust" [ref=e68] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e69]
+            - generic [ref=e73]: Trust
+          - link "Deadlines" [ref=e74] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e75]
+            - generic [ref=e79]: Deadlines
+          - link "Fee Notes" [ref=e80] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e31]
+            - generic [ref=e34]: Fee Notes
+          - link "Proposals" [ref=e35] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e37]
+            - generic [ref=e40]: Proposals
+          - link "Requests" [ref=e81] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e82]
+            - generic [ref=e84]: Requests
+          - link "Activity" [ref=e41] [cursor=pointer]:
+            - /url: /activity
+            - img [ref=e42]
+            - generic [ref=e44]: Activity
+        - generic [ref=e45]:
+          - link "Profile" [ref=e46] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e47]
+            - text: Profile
+          - button "Logout" [ref=e50]:
+            - img [ref=e51]
+            - text: Logout
+      - main [ref=e54]:
+        - generic [ref=e55]:
+          - heading "Proposals" [level=1] [ref=e56]
+          - generic [ref=e85]:
+            - heading "Awaiting Your Response" [level=2] [ref=e86]
+            - table "Proposal list" [ref=e88]:
+              - rowgroup [ref=e89]:
+                - 'row "Proposal # Title Status Sent Fee Actions" [ref=e90]':
+                  - 'columnheader "Proposal #" [ref=e91]'
+                  - columnheader "Title" [ref=e92]
+                  - columnheader "Status" [ref=e93]
+                  - columnheader "Sent" [ref=e94]
+                  - columnheader "Fee" [ref=e95]
+                  - columnheader "Actions" [ref=e96]
+              - rowgroup [ref=e97]:
+                - row "PROP-0002 Cycle19 Verify SENT 27 Apr 2026 - View" [ref=e98]:
+                  - cell "PROP-0002" [ref=e99]:
+                    - link "PROP-0002" [ref=e100] [cursor=pointer]:
+                      - /url: /proposals/69e3d65f-af25-4bf4-8119-afa73b3e44f8
+                  - cell "Cycle19 Verify" [ref=e101]
+                  - cell "SENT" [ref=e102]:
+                    - generic [ref=e103]: SENT
+                  - cell "27 Apr 2026" [ref=e104]
+                  - cell "-" [ref=e105]
+                  - cell "View" [ref=e106]:
+                    - link "View" [ref=e107] [cursor=pointer]:
+                      - /url: /proposals/69e3d65f-af25-4bf4-8119-afa73b3e44f8
+    - contentinfo [ref=e63]:
+      - paragraph [ref=e65]: Powered by DocTeams

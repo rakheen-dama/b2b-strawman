@@ -1,0 +1,171 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: TM
+        - generic:
+          - paragraph: Thandi Mathebula
+          - paragraph: thandi@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/proposals
+              - text: Engagement Letters
+          - generic:
+            - img
+            - generic: Engagement Letter
+        - generic:
+          - generic:
+            - button: TM
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 1 unread notifications
+              - generic: "1"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/proposals
+                  - img
+                  - text: Back to Proposals
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: Cycle19 Verify
+                    - generic: Draft
+                  - paragraph: PROP-0002
+                - generic:
+                  - generic:
+                    - button:
+                      - img
+                      - text: Send Proposal
+              - generic:
+                - generic:
+                  - generic: Proposal Details
+                - generic:
+                  - generic:
+                    - generic:
+                      - term: Fee Model
+                      - definition: Hourly
+                    - generic:
+                      - term: Hourly Rate
+                      - definition: R850/hr per LSSA 2024/2025 schedule
+                    - generic:
+                      - term: Created
+                      - definition: Apr 27, 2026
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - generic [ref=e404] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e405]:
+      - img [ref=e406]
+    - generic [ref=e409]:
+      - button "Open issues overlay" [ref=e410]:
+        - generic [ref=e411]:
+          - generic [ref=e412]: "0"
+          - generic [ref=e413]: "1"
+        - generic [ref=e414]: Issue
+      - button "Collapse issues badge" [ref=e415]:
+        - img [ref=e416]
+  - alert
+  - dialog "Send Proposal" [ref=e487]:
+    - generic [ref=e488]:
+      - heading "Send Proposal" [level=2] [ref=e490]
+      - generic [ref=e492]:
+        - generic [ref=e493]: Recipient
+        - combobox "Recipient" [ref=e494]:
+          - generic: Select a contact
+          - img
+      - generic [ref=e495]:
+        - button "Cancel" [active] [ref=e496]
+        - button "Send" [disabled]
+      - button "Close" [ref=e497]:
+        - img
+        - generic [ref=e498]: Close

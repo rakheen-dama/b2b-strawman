@@ -1,0 +1,141 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e53]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e55] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e56]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e62]:
+          - generic [ref=e63]: Clients
+          - img [ref=e64]
+        - button "Finance" [ref=e68]:
+          - generic [ref=e69]: Finance
+          - img [ref=e70]
+        - generic [ref=e73]:
+          - button "Team" [expanded] [ref=e74]:
+            - generic [ref=e75]: Team
+            - img [ref=e76]
+          - link "Team" [ref=e79] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e80]
+            - text: Team
+      - generic [ref=e86]:
+        - link "Notifications" [ref=e87] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e88]
+          - text: Notifications
+        - link "Settings" [ref=e91] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e92]
+          - text: Settings
+        - link "Help" [ref=e95] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e96]
+          - text: Help
+      - generic [ref=e99]:
+        - generic [ref=e100]: TM
+        - generic [ref=e101]:
+          - paragraph [ref=e102]: Thandi Mathebula
+          - paragraph [ref=e103]: thandi@mathebula-test.local
+    - generic [ref=e104]:
+      - banner [ref=e105]:
+        - navigation "Breadcrumb" [ref=e106]:
+          - link "Mathebula & Partners" [ref=e107] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e449]:
+            - img [ref=e450]
+            - link "Engagement Letters" [ref=e452] [cursor=pointer]:
+              - /url: /org/mathebula-partners/proposals
+          - generic [ref=e453]:
+            - img [ref=e454]
+            - generic [ref=e456]: Engagement Letter
+        - generic [ref=e116]:
+          - button "User menu" [ref=e118]: TM
+          - button "Notifications" [ref=e120]:
+            - img
+            - generic [ref=e121]: 1 unread notifications
+            - generic [ref=e122]: "1"
+      - main [ref=e123]:
+        - generic [ref=e458]:
+          - link "Back to Proposals" [ref=e460] [cursor=pointer]:
+            - /url: /org/mathebula-partners/proposals
+            - img [ref=e461]
+            - text: Back to Proposals
+          - generic [ref=e463]:
+            - generic [ref=e464]:
+              - generic [ref=e465]:
+                - heading "Cycle19 Verify" [level=1] [ref=e466]
+                - generic [ref=e467]: Draft
+              - paragraph [ref=e468]: PROP-0002
+            - button "Send Proposal" [ref=e471]:
+              - img
+              - text: Send Proposal
+          - generic [ref=e472]:
+            - generic [ref=e474]: Proposal Details
+            - generic [ref=e476]:
+              - generic [ref=e477]:
+                - term [ref=e478]: Fee Model
+                - definition [ref=e479]: Hourly
+              - generic [ref=e480]:
+                - term [ref=e481]: Hourly Rate
+                - definition [ref=e482]: R850/hr per LSSA 2024/2025 schedule
+              - generic [ref=e483]:
+                - term [ref=e484]: Created
+                - definition [ref=e485]: Apr 27, 2026
+  - generic [ref=e397]:
+    - heading "Command Palette" [level=2] [ref=e398]
+    - paragraph [ref=e399]: Search pages and settings
+  - region "Notifications alt+T"
+  - generic [ref=e404] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e405]:
+      - img [ref=e406]
+    - generic [ref=e409]:
+      - button "Open issues overlay" [ref=e410]:
+        - generic [ref=e411]:
+          - generic [ref=e412]: "0"
+          - generic [ref=e413]: "1"
+        - generic [ref=e414]: Issue
+      - button "Collapse issues badge" [ref=e415]:
+        - img [ref=e416]
+  - alert [ref=e418]

@@ -5,7 +5,7 @@
 **Stack**: Keycloak dev (3000/8080/8443/8180/3002)
 **Method**: Browser-driven via Playwright MCP. No SQL shortcuts. Read-only `psql` SELECT for evidence only.
 
-> **Note**: A prior Day 30 walk (cycle 1, dated 2026-04-25) is preserved in this file's history under git (commit `0a58a242` and parents); see `git show HEAD~3:qa_cycle/checkpoint-results/day-30.md` for the cycle-1 record. That walk completed end-to-end with INV-0002 PAID via MockPaymentGateway after GAP-L-64 was fixed. Cycle 32 reopens Day 30 against the current main HEAD `51f286e5` per QA Position rule.
+> **Note**: A prior Day 30 walk (cycle 1, dated 2026-04-25) is preserved in this file's history under git (commit `0a58a242` and parents); see `git show 0a58a242:qa_cycle/checkpoint-results/day-30.md` for the cycle-1 record. That walk completed end-to-end with INV-0002 PAID via MockPaymentGateway after GAP-L-64 was fixed. Cycle 32 reopens Day 30 against the current main HEAD `51f286e5` per QA Position rule.
 
 ## Summary
 

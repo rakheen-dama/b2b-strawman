@@ -15,7 +15,12 @@ import {
 import { PrintStatementButton } from "@/components/trust/print-statement-button";
 import { ClientHistoryFilters } from "@/components/trust/client-history-filters";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
-import type { TrustTransactionStatus, TrustTransactionType, ClientLedgerCard } from "@/lib/types";
+import {
+  transactionTypeLabel,
+  type TrustTransactionStatus,
+  type TrustTransactionType,
+  type ClientLedgerCard,
+} from "@/lib/types";
 
 // ── Helpers ───────────────────────────────────────────────────────
 
@@ -34,13 +39,6 @@ function statusBadgeVariant(
     default:
       return "neutral";
   }
-}
-
-function transactionTypeLabel(type: TrustTransactionType): string {
-  return type
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function isInflowType(type: TrustTransactionType): boolean {

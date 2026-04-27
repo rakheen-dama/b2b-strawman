@@ -1,0 +1,210 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: BN
+        - generic:
+          - paragraph: Bob Ndlovu
+          - paragraph: bob@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - generic: Clients
+        - generic:
+          - generic:
+            - button: BN
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 10 unread notifications
+              - generic: "10"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - heading [level=1]: Clients
+                  - generic: "1"
+                - generic:
+                  - button:
+                    - img
+                    - text: New Client
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+                    - button:
+                      - img
+                  - generic:
+                    - tablist:
+                      - tab [selected]: All
+                - button:
+                  - img
+                  - text: Save View
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/customers
+                  - text: All
+                - link:
+                  - /url: /org/mathebula-partners/customers?lifecycleStatus=PROSPECT
+                  - text: Prospect
+                - link:
+                  - /url: /org/mathebula-partners/customers?lifecycleStatus=ONBOARDING
+                  - text: Onboarding
+                - link:
+                  - /url: /org/mathebula-partners/customers?lifecycleStatus=ACTIVE
+                  - text: Active
+                - link:
+                  - /url: /org/mathebula-partners/customers?lifecycleStatus=DORMANT
+                  - text: Dormant
+                - link:
+                  - /url: /org/mathebula-partners/customers?lifecycleStatus=OFFBOARDING
+                  - text: Offboarding
+                - link:
+                  - /url: /org/mathebula-partners/customers?lifecycleStatus=OFFBOARDED
+                  - text: Offboarded
+                - link:
+                  - /url: /org/mathebula-partners/customers?showIncomplete=true
+                  - text: Show incomplete
+              - generic:
+                - table:
+                  - rowgroup:
+                    - row:
+                      - columnheader: Name
+                      - columnheader: Email
+                      - columnheader: Phone
+                      - columnheader: Lifecycle
+                      - columnheader: Status
+                      - columnheader:
+                        - link:
+                          - /url: /org/mathebula-partners/customers?sortBy=completeness&sortDir=asc
+                          - text: Completeness
+                      - columnheader: Created
+                  - rowgroup:
+                    - row:
+                      - cell:
+                        - link:
+                          - /url: /org/mathebula-partners/customers/c4f70d86-c292-4d02-9f6f-2e900099ba57
+                          - text: Sipho Dlamini
+                        - generic:
+                          - generic:
+                            - generic: "ID / Passport Number:"
+                            - text: "8501015800088"
+                          - generic:
+                            - generic: "Preferred Correspondence:"
+                            - text: Email
+                      - cell: sipho.portal@example.com
+                      - cell: +27 82 555 0101
+                      - cell:
+                        - generic: Onboarding
+                      - cell:
+                        - generic: Active
+                      - cell:
+                        - generic: N/A
+                      - cell: Apr 26, 2026
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e190] [cursor=pointer]:
+    - img [ref=e191]
+  - alert
+  - dialog "Additional Information" [active] [ref=e283]:
+    - generic [ref=e197]:
+      - generic [ref=e198]:
+        - heading "Additional Information" [level=2] [ref=e284]
+        - paragraph [ref=e200]: Step 2 of 2 — Fill in any required intake fields.
+      - generic [ref=e285]:
+        - button "SA Legal — Client Details" [ref=e288]:
+          - img [ref=e289]
+          - text: SA Legal — Client Details
+        - button "Skip for now" [ref=e292]
+      - generic [ref=e278]:
+        - button "Back" [ref=e293]
+        - button "Create Client" [ref=e294]
+      - button "Close" [ref=e281]:
+        - img
+        - generic [ref=e282]: Close

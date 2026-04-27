@@ -1,0 +1,255 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: BN
+        - generic:
+          - paragraph: Bob Ndlovu
+          - paragraph: bob@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - generic: Matters
+        - generic:
+          - generic:
+            - button: BN
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 10 unread notifications
+              - generic: "10"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - heading [level=1]: Matters
+                  - paragraph:
+                    - generic: 2 matters
+                - generic:
+                  - button [expanded]:
+                    - img
+                    - text: New from Template
+                  - generic:
+                    - button:
+                      - img
+                      - text: New Matter
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+                    - button:
+                      - img
+                  - generic:
+                    - tablist:
+                      - tab [selected]: All
+                - button:
+                  - img
+                  - text: Save View
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/projects?new=1&customerId=0cb199f2-9263-4d57-88c7-4a0350f8779c
+                  - text: Active
+                - link:
+                  - /url: /org/mathebula-partners/projects?new=1&customerId=0cb199f2-9263-4d57-88c7-4a0350f8779c&status=COMPLETED
+                  - text: Completed
+                - link:
+                  - /url: /org/mathebula-partners/projects?new=1&customerId=0cb199f2-9263-4d57-88c7-4a0350f8779c&status=ARCHIVED
+                  - text: Archived
+                - link:
+                  - /url: /org/mathebula-partners/projects?new=1&customerId=0cb199f2-9263-4d57-88c7-4a0350f8779c&status=CLOSED
+                  - text: Closed
+                - link:
+                  - /url: /org/mathebula-partners/projects?new=1&customerId=0cb199f2-9263-4d57-88c7-4a0350f8779c&status=ALL
+                  - text: All
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/projects/ee02e80e-8a6e-4f76-b4ee-b55fc4c5cb69
+                  - generic:
+                    - generic:
+                      - heading [level=3]: Cycle19 Verify
+                    - paragraph: No description
+                    - generic:
+                      - generic:
+                        - img
+                        - text: —
+                      - generic:
+                        - img
+                        - text: —
+                      - generic: Apr 27, 2026
+                - link:
+                  - /url: /org/mathebula-partners/projects/cc390c4f-35e2-42b5-8b54-bac766673ae7
+                  - generic:
+                    - generic:
+                      - heading [level=3]: Dlamini v Road Accident Fund
+                    - paragraph: "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION"
+                    - generic:
+                      - generic:
+                        - img
+                        - text: —
+                      - generic:
+                        - img
+                        - text: —
+                      - generic: Apr 26, 2026
+                    - generic:
+                      - generic:
+                        - generic: "Court:"
+                        - text: Gauteng Division, Pretoria
+                      - generic:
+                        - generic: "Case Number:"
+                        - text: RAF-2026-001-CASE
+                      - generic:
+                        - generic: "Opposing Party:"
+                        - text: Road Accident Fund
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e190] [cursor=pointer]:
+    - img [ref=e191]
+  - alert
+  - dialog "New from Template — Configure" [active] [ref=e553]:
+    - generic [ref=e513]:
+      - generic [ref=e514]:
+        - heading "New from Template — Configure" [level=2] [ref=e554]
+        - paragraph [ref=e516]: "Creating from: Deceased Estate Administration"
+      - generic [ref=e517]:
+        - generic [ref=e555]:
+          - generic [ref=e556]: Matter name
+          - textbox "Matter name" [ref=e557]:
+            - /placeholder: Matter name...
+            - text: Moroka Family Trust - Estate
+        - generic [ref=e558]:
+          - generic [ref=e559]:
+            - text: Description
+            - generic [ref=e560]: (optional)
+          - textbox "Description (optional)" [ref=e561]:
+            - /placeholder: Optional description...
+            - text: "Administration of deceased estate from reporting to final distribution. Matter type: ESTATES"
+        - generic [ref=e562]:
+          - generic [ref=e563]:
+            - text: Client
+            - generic [ref=e564]: (optional)
+          - combobox "Client (optional)" [ref=e565]:
+            - option "None"
+            - option "Sipho Dlamini"
+            - option "Moroka Family Trust" [selected]
+        - generic [ref=e566]:
+          - generic [ref=e567]:
+            - text: Matter lead
+            - generic [ref=e568]: (optional)
+          - combobox "Matter lead (optional)" [ref=e569]:
+            - option "Unassigned" [selected]
+            - option "Thandi Mathebula"
+            - option "Carol Mokoena"
+            - option "Bob Ndlovu"
+        - generic [ref=e570]:
+          - generic [ref=e571]:
+            - text: Reference Number
+            - generic [ref=e572]: (optional)
+          - textbox "Reference Number (optional)" [ref=e573]:
+            - /placeholder: e.g. PRJ-2026-001
+        - generic [ref=e574]:
+          - generic [ref=e575]:
+            - text: Priority
+            - generic [ref=e576]: (optional)
+          - combobox "Priority (optional)" [ref=e577]:
+            - option "Select priority..." [selected]
+            - option "Low"
+            - option "Medium"
+            - option "High"
+        - generic [ref=e578]:
+          - generic [ref=e579]:
+            - text: Work Type
+            - generic [ref=e580]: (optional)
+          - textbox "Work Type (optional)" [ref=e581]:
+            - /placeholder: e.g. Litigation, Consulting
+      - generic [ref=e548]:
+        - button "Back" [ref=e582]
+        - button "Create Matter" [ref=e583]
+      - button "Close" [ref=e550]:
+        - img
+        - generic [ref=e551]: Close

@@ -218,4 +218,21 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
       @Param("trustAccountId") UUID trustAccountId,
       @Param("startDate") LocalDate startDate,
       @Param("endDate") LocalDate endDate);
+
+  /**
+   * Returns the distinct trust account ids on which a customer has any RECORDED/APPROVED activity.
+   * Used by the Statement of Account context builder to resolve the correct trust account for the
+   * SoA "Trust Activity" section even when the customer's deposits are not on the primary GENERAL
+   * account (GAP-L-94). Excludes REVERSAL because reversals do not by themselves indicate that the
+   * customer ever held funds on the account.
+   */
+  @Query(
+      """
+      SELECT DISTINCT t.trustAccountId FROM TrustTransaction t
+      WHERE t.customerId = :customerId
+        AND t.status IN ('RECORDED', 'APPROVED')
+        AND t.transactionType <> 'REVERSAL'
+      ORDER BY t.trustAccountId ASC
+      """)
+  List<UUID> findDistinctTrustAccountIdsByCustomerId(@Param("customerId") UUID customerId);
 }

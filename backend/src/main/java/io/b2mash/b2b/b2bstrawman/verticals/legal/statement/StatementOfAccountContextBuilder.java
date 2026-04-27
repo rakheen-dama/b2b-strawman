@@ -12,6 +12,8 @@ import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventStatus;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.tax.TaxRate;
+import io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository;
 import io.b2mash.b2b.b2bstrawman.template.TemplateContextHelper;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
@@ -25,6 +27,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccountType;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.ledger.ClientLedgerService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
@@ -36,6 +39,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.type.TypeReference;
@@ -54,6 +59,8 @@ import tools.jackson.databind.ObjectMapper;
  */
 @Component
 public class StatementOfAccountContextBuilder {
+
+  private static final Logger log = LoggerFactory.getLogger(StatementOfAccountContextBuilder.class);
 
   private static final BigDecimal MINUTES_PER_HOUR = new BigDecimal("60");
   private static final DateTimeFormatter REFERENCE_DATE = DateTimeFormatter.ofPattern("yyyyMMdd");
@@ -87,6 +94,8 @@ public class StatementOfAccountContextBuilder {
   private final TemplateContextHelper templateContextHelper;
   private final VerticalModuleGuard moduleGuard;
   private final ObjectMapper objectMapper;
+  private final TaxRateRepository taxRateRepository;
+  private final TrustTransactionRepository trustTransactionRepository;
 
   public StatementOfAccountContextBuilder(
       ProjectRepository projectRepository,
@@ -100,7 +109,9 @@ public class StatementOfAccountContextBuilder {
       MemberNameResolver memberNameResolver,
       TemplateContextHelper templateContextHelper,
       VerticalModuleGuard moduleGuard,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      TaxRateRepository taxRateRepository,
+      TrustTransactionRepository trustTransactionRepository) {
     this.projectRepository = projectRepository;
     this.customerRepository = customerRepository;
     this.timeEntryRepository = timeEntryRepository;
@@ -113,6 +124,8 @@ public class StatementOfAccountContextBuilder {
     this.templateContextHelper = templateContextHelper;
     this.moduleGuard = moduleGuard;
     this.objectMapper = objectMapper;
+    this.taxRateRepository = taxRateRepository;
+    this.trustTransactionRepository = trustTransactionRepository;
   }
 
   /**
@@ -243,7 +256,13 @@ public class StatementOfAccountContextBuilder {
     var feeLines = loadFeeLines(projectId, periodStart, periodEnd);
     BigDecimal totalHours = sumHours(feeLines);
     BigDecimal totalFeesExcl = sumAmounts(feeLines);
-    BigDecimal vatAmount = BigDecimal.ZERO; // line-level VAT not modelled on TimeEntry yet
+    // GAP-L-95: apply the org's default tax rate to fees aggregate. Mirrors the invoice path
+    // (InvoiceTaxService) which derives VAT from the same default rate. Time entries do not
+    // carry per-line tax (unlike invoice lines), so the SoA aggregates at the total level —
+    // valid because every fee line attracts the same rate (no zero-rated/exempt time entries).
+    // Falls back to ZERO when no default rate is configured, the rate is exempt/inactive,
+    // or rate value is null/zero — so non-VAT-registered tenants render unchanged.
+    BigDecimal vatAmount = computeFeesVat(totalFeesExcl);
     BigDecimal totalFeesIncl = totalFeesExcl.add(vatAmount);
 
     var disbursementLines = disbursementService.listForStatement(projectId, periodStart, periodEnd);
@@ -388,6 +407,33 @@ public class StatementOfAccountContextBuilder {
     return lines.stream().map(FeeLineDto::amount).reduce(BigDecimal.ZERO, BigDecimal::add);
   }
 
+  /**
+   * Computes VAT on the fees aggregate using the tenant's default tax rate. Returns ZERO when no
+   * default rate exists, the rate is inactive/exempt, or its value is null/zero — preserving
+   * non-VAT-registered tenant behaviour. Mirrors the invoice path's derivation of VAT from {@link
+   * io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository#findByIsDefaultTrue()}.
+   */
+  private BigDecimal computeFeesVat(BigDecimal totalFeesExcl) {
+    if (totalFeesExcl == null || totalFeesExcl.signum() == 0) {
+      return BigDecimal.ZERO;
+    }
+    var defaultRate = taxRateRepository.findByIsDefaultTrue();
+    if (defaultRate.isEmpty()) {
+      return BigDecimal.ZERO;
+    }
+    TaxRate rate = defaultRate.get();
+    if (!rate.isActive() || rate.isExempt()) {
+      return BigDecimal.ZERO;
+    }
+    BigDecimal ratePercent = rate.getRate();
+    if (ratePercent == null || ratePercent.signum() == 0) {
+      return BigDecimal.ZERO;
+    }
+    return totalFeesExcl
+        .multiply(ratePercent)
+        .divide(new BigDecimal("100"), 2, RoundingMode.HALF_UP);
+  }
+
   private BigDecimal sumDisbursements(List<DisbursementStatementDto> lines) {
     return lines.stream()
         .map(
@@ -411,13 +457,36 @@ public class StatementOfAccountContextBuilder {
     if (!moduleGuard.isModuleEnabled(TRUST_ACCOUNTING_MODULE)) {
       return TrustBlock.empty();
     }
-    UUID trustAccountId =
-        trustAccountRepository
-            .findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL)
-            .map(TrustAccount::getId)
-            .orElse(null);
-    if (trustAccountId == null) {
+    // GAP-L-94: prefer the trust account(s) where THIS customer actually has activity. The
+    // previous resolver (`findByAccountTypeAndPrimaryTrue(GENERAL)`) returned a tenant-wide
+    // primary account and silently short-circuited the SoA when the customer's deposits
+    // happened to live on a different account (multi-account tenants, or a tenant where the
+    // primary GENERAL flag was not set). Section 86 / LPC compliance breaks if the SoA's
+    // Trust Activity section is empty for a customer with active funds.
+    List<UUID> customerTrustAccountIds =
+        trustTransactionRepository.findDistinctTrustAccountIdsByCustomerId(customer.getId());
+    UUID trustAccountId;
+    if (customerTrustAccountIds.isEmpty()) {
       return TrustBlock.empty();
+    } else if (customerTrustAccountIds.size() == 1) {
+      trustAccountId = customerTrustAccountIds.get(0);
+    } else {
+      // Multi-account customer (unusual for ZA Section 86 firms — usually GENERAL only). Prefer
+      // the primary GENERAL trust account when the customer has activity on it; otherwise fall
+      // back to the first account id returned. Logging is intentional: a tenant with multiple
+      // active trust accounts per customer is an unusual operational shape worth surfacing.
+      UUID preferred =
+          trustAccountRepository
+              .findByAccountTypeAndPrimaryTrue(TrustAccountType.GENERAL)
+              .map(TrustAccount::getId)
+              .filter(customerTrustAccountIds::contains)
+              .orElse(customerTrustAccountIds.get(0));
+      log.warn(
+          "Customer {} has activity on {} trust accounts; using {} for SoA Trust Activity section",
+          customer.getId(),
+          customerTrustAccountIds.size(),
+          preferred);
+      trustAccountId = preferred;
     }
     BigDecimal opening =
         clientLedgerService.getClientBalanceAsOfDate(customer.getId(), trustAccountId, periodStart);

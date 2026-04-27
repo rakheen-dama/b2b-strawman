@@ -216,6 +216,12 @@ class StatementServicePortalDocumentTest {
     assertThat(docEvent.primaryEntityId()).isEqualTo(projectId);
     assertThat(docEvent.fileName()).isNotBlank();
     assertThat(docEvent.templateName()).isNotBlank();
+    // GAP-L-97: templateName MUST be the slug (matches OrgSettings.portalNotificationDocTypes
+    // allowlist semantics — display name "Statement of Account" never matches the slug
+    // "statement-of-account" and the portal-document-ready email is silently skipped).
+    assertThat(docEvent.templateName())
+        .as("DocumentGeneratedEvent.templateName must be the slug, not the display name")
+        .isEqualTo("statement-of-account");
     assertThat(docEvent.details())
         .containsEntry("scope", "PROJECT")
         .containsEntry("visibility", "PORTAL")

@@ -452,6 +452,7 @@ public class InformationRequestService {
 
     var acceptAuditDetails = new HashMap<String, Object>();
     acceptAuditDetails.put("request_id", requestId.toString());
+    acceptAuditDetails.put("request_number", request.getRequestNumber());
     acceptAuditDetails.put("item_name", item.getName());
     if (request.getProjectId() != null) {
       acceptAuditDetails.put("project_id", request.getProjectId().toString());
@@ -504,6 +505,7 @@ public class InformationRequestService {
 
     var rejectAuditDetails = new HashMap<String, Object>();
     rejectAuditDetails.put("request_id", requestId.toString());
+    rejectAuditDetails.put("request_number", request.getRequestNumber());
     rejectAuditDetails.put("item_name", item.getName());
     rejectAuditDetails.put("reason", reason);
     if (request.getProjectId() != null) {

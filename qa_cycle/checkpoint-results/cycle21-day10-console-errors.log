@@ -1,0 +1,49 @@
+Total messages: 3 (Errors: 1, Warnings: 0)
+Returning 1 messages for level "error"
+
+[ERROR] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+%s%s https://react.dev/link/hydration-mismatch 
+
+  ...
+    <div className="flex min-h...">
+      <DesktopSidebar>
+      <div className="flex flex-...">
+        <header className="sticky top...">
+          <MobileSidebar slug="mathebula-..." orgName={"Mathebul..."} groups={[...]} userName="Thandi Mat..." ...>
+            <Sheet open={false} onOpenChange={function bound dispatchSetState}>
+              <Dialog data-slot="sheet" open={false} onOpenChange={function bound dispatchSetState}>
+                <DialogProvider scope={undefined} triggerRef={{current:null}} contentRef={{current:null}} ...>
+                  <SheetTrigger asChild={true}>
+                    <DialogTrigger data-slot="sheet-trigger" asChild={true}>
+                      <Primitive.button type="button" aria-haspopup="dialog" aria-expanded={false} ...>
+                        <Primitive.button.Slot type="button" aria-haspopup="dialog" aria-expanded={false} ...>
+                          <Primitive.button.SlotClone type="button" aria-haspopup="dialog" aria-expanded={false} ...>
+                            <Button variant="ghost" size="icon" className="md:hidden" type="button" ...>
+                              <button
+                                data-slot="sheet-trigger"
+                                data-variant="ghost"
+                                data-size="icon"
+                                className={"inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm f..."}
+                                type="button"
+                                aria-haspopup="dialog"
+                                aria-expanded={false}
++                               aria-controls="radix-_R_1cmbn5rknelb_"
+-                               aria-controls="radix-_R_5iqbn5rknelb_"
+                                data-state="closed"
+                                onClick={function handleEvent}
+                                ref={function}
+                              >
+                  ...
+          ...
+        ...
+    ...
+ @ http://localhost:3000/_next/static/chunks/18a56_next_dist_251d0377._.js:3127

@@ -1,0 +1,205 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: TM
+        - generic:
+          - paragraph: Thandi Mathebula
+          - paragraph: thandi@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/trust-accounting
+              - text: Trust Accounting
+          - generic:
+            - img
+            - generic: transactions
+        - generic:
+          - generic:
+            - button: TM
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 3 unread notifications
+              - generic: "3"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - heading [level=1]: Transactions
+                  - paragraph: Trust account transaction history
+                - button [expanded]:
+                  - img
+                  - text: Record Transaction
+              - generic:
+                - generic: "Status:"
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions
+                  - text: All
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?status=RECORDED
+                  - text: Recorded
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?status=AWAITING_APPROVAL
+                  - text: Awaiting Approval
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?status=APPROVED
+                  - text: Approved
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?status=REJECTED
+                  - text: Rejected
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?status=REVERSED
+                  - text: Reversed
+              - generic:
+                - generic: "Type:"
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions
+                  - text: All
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?type=DEPOSIT
+                  - text: Deposit
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?type=PAYMENT
+                  - text: Payment
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?type=TRANSFER_IN
+                  - text: Transfer In
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?type=TRANSFER_OUT
+                  - text: Transfer Out
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?type=FEE_TRANSFER
+                  - text: Fee Transfer
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?type=REFUND
+                  - text: Refund
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?type=INTEREST_CREDIT
+                  - text: Interest Credit
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?type=INTEREST_LPFF
+                  - text: Interest Lpff
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?type=REVERSAL
+                  - text: Reversal
+              - generic:
+                - generic:
+                  - generic: From
+                  - textbox
+                - generic:
+                  - generic: To
+                  - textbox
+                - generic:
+                  - generic: Client ID
+                  - textbox:
+                    - /placeholder: Client UUID
+                - generic:
+                  - generic: Matter ID
+                  - textbox:
+                    - /placeholder: Matter UUID
+              - generic:
+                - generic:
+                  - generic: Transaction History
+                  - generic: 0 transactions found
+                - generic:
+                  - generic:
+                    - paragraph: No transactions match the current filters
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e175] [cursor=pointer]:
+    - img [ref=e176]
+  - alert
+  - menu "Record Transaction" [active] [ref=e184]:
+    - menuitem "Record Deposit" [ref=e185]
+    - menuitem "Record Payment" [ref=e186]
+    - menuitem "Record Transfer" [ref=e187]
+    - menuitem "Record Fee Transfer" [ref=e188]
+    - menuitem "Record Refund" [ref=e189]

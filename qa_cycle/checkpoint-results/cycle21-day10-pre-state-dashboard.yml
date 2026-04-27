@@ -1,0 +1,302 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e26]
+              - text: Dashboard
+            - link "My Work" [ref=e31] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e32]
+              - text: My Work
+            - link "Calendar" [ref=e35] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e36]
+              - text: Calendar
+            - link "Court Calendar" [ref=e38] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e39]
+              - text: Court Calendar
+        - generic [ref=e46]:
+          - button "Matters" [expanded] [ref=e47]:
+            - generic [ref=e48]: Matters
+            - img [ref=e49]
+          - generic [ref=e51]:
+            - link "Matters" [ref=e52] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e53]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e55] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e56]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e62]:
+          - generic [ref=e63]: Clients
+          - img [ref=e64]
+        - button "Finance" [ref=e68]:
+          - generic [ref=e69]: Finance
+          - img [ref=e70]
+        - generic [ref=e73]:
+          - button "Team" [expanded] [ref=e74]:
+            - generic [ref=e75]: Team
+            - img [ref=e76]
+          - link "Team" [ref=e79] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e80]
+            - text: Team
+      - generic [ref=e86]:
+        - link "Notifications" [ref=e87] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e88]
+          - text: Notifications
+        - link "Settings" [ref=e91] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e92]
+          - text: Settings
+        - link "Help" [ref=e95] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e96]
+          - text: Help
+      - generic [ref=e99]:
+        - generic [ref=e100]: TM
+        - generic [ref=e101]:
+          - paragraph [ref=e102]: Thandi Mathebula
+          - paragraph [ref=e103]: thandi@mathebula-test.local
+    - generic [ref=e104]:
+      - banner [ref=e105]:
+        - navigation "Breadcrumb" [ref=e106]:
+          - link "Mathebula & Partners" [ref=e107] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e108]:
+            - img [ref=e109]
+            - generic [ref=e111]: Dashboard
+        - generic [ref=e112]:
+          - button "User menu" [ref=e114]: TM
+          - button "Notifications" [ref=e116]:
+            - img
+            - generic [ref=e117]: 3 unread notifications
+            - generic [ref=e118]: "3"
+      - main [ref=e119]:
+        - generic [ref=e122]:
+          - generic [ref=e123]:
+            - img [ref=e124]
+            - generic [ref=e127]:
+              - generic [ref=e128]: Getting started with Kazi
+              - 'button "Help: Getting started" [ref=e129] [cursor=pointer]':
+                - img [ref=e130]
+              - generic [ref=e133]: 3 of 6 complete
+              - progressbar [ref=e134]
+            - button "Dismiss" [ref=e136]:
+              - img
+          - generic [ref=e137]:
+            - generic [ref=e138]:
+              - heading "Dashboard" [level=1] [ref=e139]
+              - paragraph [ref=e140]: Company overview and matter health
+            - generic [ref=e141]:
+              - button "This Week" [ref=e142]
+              - button "This Month" [ref=e143]
+              - button "Last 30 Days" [ref=e144]
+              - button "This Quarter" [ref=e145]
+              - button "Custom" [disabled]
+              - button "Refresh data" [ref=e146]:
+                - img
+          - generic [ref=e147]:
+            - generic [ref=e148]:
+              - paragraph [ref=e149]: Active Matters
+              - generic [ref=e150]:
+                - generic [ref=e151]: "2"
+                - img [ref=e152]
+            - generic [ref=e153]:
+              - paragraph [ref=e154]: Hours This Month
+              - generic [ref=e156]: "0"
+            - generic [ref=e158]:
+              - paragraph [ref=e159]: Avg. Margin
+              - generic [ref=e161]: "--"
+            - generic [ref=e162]:
+              - paragraph [ref=e163]: Overdue Tasks
+              - generic [ref=e164]: "0"
+            - generic [ref=e165]:
+              - paragraph [ref=e166]: Budget Health
+              - generic [ref=e167]:
+                - generic [ref=e170]: "1"
+                - generic [ref=e173]: "0"
+                - generic [ref=e176]: "0"
+          - generic [ref=e177]:
+            - generic [ref=e179]:
+              - generic [ref=e181]: Project Health
+              - generic [ref=e182]:
+                - generic [ref=e183]:
+                  - button "All" [ref=e184]
+                  - button "At Risk" [ref=e185]
+                  - button "Over Budget" [ref=e186]
+                - generic [ref=e187]:
+                  - columnheader "Sort by project name" [ref=e188]: Project
+                  - columnheader "Sort by health status" [ref=e189]:
+                    - text: Status
+                    - img [ref=e190]
+                  - generic [ref=e192]: Progress
+                  - generic [ref=e193]: Hours
+                  - generic [ref=e194]: Tasks
+                - generic [ref=e195]:
+                  - button "Dlamini v Road Accident Fund Sipho Dlamini Healthy 0% 0h 0/9" [ref=e196]:
+                    - generic [ref=e197]:
+                      - paragraph [ref=e198]: Dlamini v Road Accident Fund
+                      - paragraph [ref=e199]: Sipho Dlamini
+                    - generic "Healthy" [ref=e201]
+                    - generic [ref=e205]: 0%
+                    - generic [ref=e206]: 0h
+                    - generic [ref=e207]: 0/9
+                  - button "Cycle19 Verify Sipho Dlamini Unknown 0% 0h 0/0" [ref=e208]:
+                    - generic [ref=e209]:
+                      - paragraph [ref=e210]: Cycle19 Verify
+                      - paragraph [ref=e211]: Sipho Dlamini
+                    - generic "Unknown" [ref=e213]
+                    - generic [ref=e217]: 0%
+                    - generic [ref=e218]: 0h
+                    - generic [ref=e219]: 0/0
+              - button "View all matters →" [ref=e221]
+            - generic [ref=e223]:
+              - generic [ref=e225]: Team Time
+              - generic [ref=e227]:
+                - img [ref=e228]
+                - heading "No time logged" [level=2] [ref=e230]
+                - paragraph [ref=e231]: Log time against tasks to see team workload distribution.
+          - generic [ref=e232]:
+            - generic [ref=e233]:
+              - generic [ref=e235]: Recent Activity
+              - generic [ref=e236]:
+                - generic [ref=e237]:
+                  - generic [ref=e238]: BN
+                  - generic [ref=e240]:
+                    - img [ref=e241]
+                    - paragraph [ref=e243]: Bob Ndlovu performed information_request.completed
+                  - generic [ref=e244]: 5 hours ago
+                - generic [ref=e245]:
+                  - generic [ref=e246]: BN
+                  - generic [ref=e248]:
+                    - img [ref=e249]
+                    - paragraph [ref=e251]: Bob Ndlovu performed information_request.item_accepted
+                  - generic [ref=e252]: 5 hours ago
+                - generic [ref=e253]:
+                  - generic [ref=e254]: BN
+                  - generic [ref=e256]:
+                    - img [ref=e257]
+                    - paragraph [ref=e259]: Bob Ndlovu performed information_request.item_accepted
+                  - generic [ref=e260]: 5 hours ago
+                - generic [ref=e261]:
+                  - generic [ref=e262]: BN
+                  - generic [ref=e264]:
+                    - img [ref=e265]
+                    - paragraph [ref=e267]: Bob Ndlovu performed information_request.item_accepted
+                  - generic [ref=e268]: 5 hours ago
+                - generic [ref=e269]:
+                  - generic [ref=e270]: S
+                  - generic [ref=e272]:
+                    - img [ref=e273]
+                    - paragraph [ref=e275]: System performed portal.request_item.submitted
+                  - generic [ref=e276]: 5 hours ago
+                - generic [ref=e277]:
+                  - generic [ref=e278]: S
+                  - generic [ref=e280]:
+                    - img [ref=e281]
+                    - paragraph [ref=e283]: System performed portal.document.upload_initiated
+                  - generic [ref=e284]: 5 hours ago
+                - generic [ref=e285]:
+                  - generic [ref=e286]: S
+                  - generic [ref=e288]:
+                    - img [ref=e289]
+                    - paragraph [ref=e291]: System performed portal.request_item.submitted
+                  - generic [ref=e292]: 5 hours ago
+                - generic [ref=e293]:
+                  - generic [ref=e294]: S
+                  - generic [ref=e296]:
+                    - img [ref=e297]
+                    - paragraph [ref=e299]: System performed portal.document.upload_initiated
+                  - generic [ref=e300]: 5 hours ago
+                - generic [ref=e301]:
+                  - generic [ref=e302]: S
+                  - generic [ref=e304]:
+                    - img [ref=e305]
+                    - paragraph [ref=e307]: System performed portal.request_item.submitted
+                  - generic [ref=e308]: 5 hours ago
+                - generic [ref=e309]:
+                  - generic [ref=e310]: S
+                  - generic [ref=e312]:
+                    - img [ref=e313]
+                    - paragraph [ref=e315]: System performed portal.document.upload_initiated
+                  - generic [ref=e316]: 5 hours ago
+                - generic [ref=e317]:
+                  - generic [ref=e318]: BN
+                  - generic [ref=e320]:
+                    - img [ref=e321]
+                    - paragraph [ref=e323]: Bob Ndlovu performed information_request.sent
+                  - generic [ref=e324]: 5 hours ago
+                - generic [ref=e325]:
+                  - generic [ref=e326]: BN
+                  - generic [ref=e328]:
+                    - img [ref=e329]
+                    - paragraph [ref=e331]: Bob Ndlovu created a information_request
+                  - generic [ref=e332]: 5 hours ago
+                - generic [ref=e333]:
+                  - generic [ref=e334]: BN
+                  - generic [ref=e336]:
+                    - img [ref=e337]
+                    - paragraph [ref=e339]: Bob Ndlovu performed information_request.sent
+                  - generic [ref=e340]: 6 hours ago
+                - generic [ref=e341]:
+                  - generic [ref=e342]: BN
+                  - generic [ref=e344]:
+                    - img [ref=e345]
+                    - paragraph [ref=e347]: Bob Ndlovu created a information_request
+                  - generic [ref=e348]: 6 hours ago
+              - button "View all activity →" [ref=e350]
+            - generic [ref=e351]:
+              - generic [ref=e353]: Admin
+              - generic [ref=e354]:
+                - link "0 Incomplete profiles" [ref=e355] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/customers?showIncomplete=true
+                  - img [ref=e356]
+                  - generic [ref=e361]: "0"
+                  - generic [ref=e362]: Incomplete profiles
+                - link "0 Pending requests" [ref=e363] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/customers
+                  - img [ref=e364]
+                  - generic [ref=e367]: "0"
+                  - generic [ref=e368]: Pending requests
+          - generic [ref=e370]:
+            - generic [ref=e372]:
+              - img [ref=e373]
+              - text: Upcoming Court Dates
+            - paragraph [ref=e380]: No upcoming court dates.
+  - generic [ref=e381]:
+    - heading "Command Palette" [level=2] [ref=e382]
+    - paragraph [ref=e383]: Search pages and settings
+  - region "Notifications alt+T"
+  - generic [ref=e388] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e389]:
+      - img [ref=e390]
+    - generic [ref=e393]:
+      - button "Open issues overlay" [ref=e394]:
+        - generic [ref=e395]:
+          - generic [ref=e396]: "0"
+          - generic [ref=e397]: "1"
+        - generic [ref=e398]: Issue
+      - button "Collapse issues badge" [ref=e399]:
+        - img [ref=e400]
+  - alert [ref=e402]

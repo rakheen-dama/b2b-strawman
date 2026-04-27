@@ -76,3 +76,183 @@
 
 ### Summary
 **5/5 substantive PASS + 1 PARTIAL (46.7 — semantic question, not regression) + 1 NEW LOW gap (GAP-L-68 home-tile endpoint mismatch). 0 BLOCKER.** Day 46 complete. Day 60 next per scenario.
+
+---
+
+## Day 46 Re-walk — Cycle 42 — 2026-04-27 SAST
+
+**Branch**: `bugfix_cycle_2026-04-26-day46` (cut from `main` `f227fd3e`)
+**Backend rev / JVM**: main `f227fd3e` / backend PID 41372 (gateway PID 71426 ext, frontend 5771, portal 5677 — all healthy per `svc.sh status`)
+**Stack**: Keycloak dev (3000/8080/8443/8180/3002)
+**Method**: Browser-driven via Playwright MCP. Mailpit GET (legitimate). Read-only `psql` SELECT for evidence only. No SQL writes; no REST mutations.
+**Actor**: Sipho Dlamini (portal contact — magic-link auth via REQ-0005 Mailpit email).
+
+### Pre-state (read-only SELECT, tenant `tenant_5039f2d497cf`)
+
+```text
+information_requests (5 rows pre-walk):
+  REQ-0001 a0306375-… SENT      (RAF/Sipho)        carry-forward Day 4
+  REQ-0002 d8a58ade-… COMPLETED (RAF/Sipho)        carry-forward (3 items submitted historically)
+  REQ-0003 de3cffc7-… SENT      (EST/Moroka)       carry-forward Day 14 — NOT visible to Sipho
+  REQ-0004 d7dc4faf-… SENT      (RAF/Sipho) FICA   carry-forward Day 45 (3 items, 0 submitted)
+  REQ-0005 73babd4e-… SENT      (RAF/Sipho) ad-hoc carry-forward cycle-41 retest (2 items, 0 submitted)
+
+request_items for REQ-0005 pre-walk:
+  9c416b24-… "Latest specialist medical reports" PENDING required
+  cc6f025c-… "Independent expert assessment"     PENDING required
+
+trust_transactions (4 rows, all carry-forward — no Day 46 mutations expected):
+  Sipho: R 50 000 (Day 10) + R 100 (BUG-CYCLE26-11 retest) + R 20 000 (Day 45) = R 70 100
+  Moroka: R 25 000 (Day 14, isolation reference)
+```
+
+> **Carry-forward note**: pre-state Sipho trust balance is **R 70 100,00** (not R 70 000,00) because of the BUG-CYCLE26-11 retest deposit (R 100). Therefore portal balance lands at R 70 100 — **expected carry-forward** documented in Day 45 cycle-38 results, not a new gap.
+>
+> **Cycle 1 GAP-L-68 status**: VERIFIED FIXED — portal `/home` "Last trust movement" tile now renders correctly ("R 20 000,00 / 27 Apr 2026") on `f227fd3e`; the missing `/portal/trust/movements?limit=1` endpoint that cycle-1 logged is no longer 404'ing. Cycle-1 GAP-L-68 closed by an intervening fix between cycle 1 and cycle 42 (presumably one of the L-44 / L-52 portal-trust-listing PRs).
+
+### Summary
+
+**5 PASS / 1 FAIL / 0 PARTIAL / 0 BLOCKED / 0 SKIPPED** (8 substantive checkpoints incl. console + isolation cross-check)
+
+**Verdict**: Day 46 cycle-42 walk completes the request-response, trust re-check, and isolation assertions cleanly on `main f227fd3e`. The two portal file uploads (presigned-URL flow → S3 → confirm) succeeded end-to-end; both items are SUBMITTED in DB with linked `document_id`s. Trust balance reconciles correctly on the portal at R 70 100 (matches firm-side after Day 45 deposit). Cross-customer isolation HOLDS — zero Moroka leakage on `/projects`, `/trust`, or `/requests`. **One new gap surfaced (MEDIUM)**: portal home "Pending info requests" tile counts IN_PROGRESS-but-fully-submitted requests as pending; after submitting REQ-0005's 2/2 items the count remained 3 instead of dropping to 2. Scenario §46.7 explicitly expects the count to drop. **GAP-L-92** logged. (Cycle 1 had logged the same observation as `OBS-Day46-PendingTileSemantics` and deferred to Product — cycle 42 elevates it to a tracked MEDIUM gap because the scenario expectation has not been updated and a code-side fix is small.)
+
+### Checkpoints
+
+#### 46.1 — Login via magic-link for second info request
+- Result: **PASS**
+- Evidence: Mailpit message `QiFckxzGK9bLNEhPeEouZb` "Information request REQ-0005 from Mathebula & Partners" at 2026-04-27T15:21:17.298Z. HTML body href = `http://localhost:3002/auth/exchange?token=ufXdPduQrpso1TdXQeqPARYUBMIkV1Y5jaMiUWbKwDY&orgId=mathebula-partners`. Navigated → exchange completed → redirect to `/projects`. Header shows "Sipho Dlamini" — session established. Snapshot `cycle42-day46-1-portal-home.yml`.
+- Notes: L-42 magic-link fix HOLDS for the cycle-41 ad-hoc REQ-0005 dispatch.
+
+#### 46.2 — `/home` → "Supporting medical evidence" pending → click into it
+- Result: **PASS** (with title-not-displayed observation)
+- Evidence: `cycle42-day46-1-portal-home.yml` (Pending tile = 3); `cycle42-day46-2-portal-requests-list.yml` (REQ-0005 listed `SENT 0/2 submitted`); `cycle42-day46-3-req0005-detail.yml` (detail page shows two items "Latest specialist medical reports" + "Independent expert assessment", both required, with Upload buttons).
+- Notes: Portal `/requests` rows show **REQ-number + matter name + status + counter** but NOT the request `name`. Detail-page heading is the matter name only. Same observation as cycle 1 — cosmetic UX not blocking. Logged as **OBS-cycle42-portal-request-title-missing**.
+
+#### 46.3 — Upload 2 test PDFs → submit → state SUBMITTED
+- Result: **PASS** (parent stays IN_PROGRESS — by design; see 46.7 gap)
+- Evidence: `cycle42-day46-4-after-file-pick-1.yml`, `cycle42-day46-5-after-submit-1.yml` (`Submitted — status: SUBMITTED` + parent `1/2 submitted • status IN_PROGRESS`), `cycle42-day46-6-file-pick-2.yml`, `cycle42-day46-7-after-submit-2.yml` (`2/2 submitted • status IN_PROGRESS`).
+- DB confirmation:
+  ```text
+  REQ-0005 (information_requests): status=IN_PROGRESS, items=2, submitted=2
+  request_items:
+    9c416b24-… "Latest specialist medical reports" SUBMITTED doc=2a3d25e1-3f64-4952-804f-b0062953a5e3 submitted_at=2026-04-27T15:29:31Z
+    cc6f025c-… "Independent expert assessment"     SUBMITTED doc=0d6c8cf6-9723-48b1-8053-153f8f31bcac submitted_at=2026-04-27T15:30:09Z
+  ```
+- Notes: Presigned-URL upload flow (init → S3 PUT → confirm) worked end-to-end for both items; `document_id` populated. Parent transitions SENT → IN_PROGRESS at first submit (L-43 + L-47 holds). Stays IN_PROGRESS at 2/2 — by design, only firm-side acceptance flips parent to COMPLETED.
+
+#### 46.4 — `/trust` → balance R 70 100 (R 70 000 expected + R 100 carry)
+- Result: **PASS**
+- Evidence: `cycle42-day46-8-portal-trust.yml`. Navigation to `/trust` correctly redirected to `/trust/cc390c4f-…` (RAF matter UUID — BUG-CYCLE26-11 fix carry-forward). Trust balance card "R 70 100,00 / As of 27 Apr 2026 / Matter cc390c4f".
+- Notes: Reconciles to firm-side post-Day 45 client_ledger_card balance for Sipho.
+
+#### 46.5 — Transaction list shows both deposits + carry-forward retest deposit
+- Result: **PASS**
+- Evidence: `cycle42-day46-8-portal-trust.yml` Transactions table (3 rows, descending by entry recency):
+  - 27 Apr 2026 / DEPOSIT / "Top-up per engagement letter" / R 20 000,00 / running R 70 100,00 (Day 45 NEW)
+  - 27 Apr 2026 / DEPOSIT / "Cycle 29 retest BUG-CYCLE26-11" / R 100,00 / running R 50 100,00 (carry)
+  - 27 Apr 2026 / DEPOSIT / "Initial trust deposit — RAF-2026-001" / R 50 000,00 / running R 50 000,00 (Day 10)
+- Notes: Running balance reads correctly bottom-up: 50 000 → 50 100 → 70 100. **Portal-side running-balance presentation is BETTER than firm-side** (which has the OBS-cycle1-running-balance-sort cosmetic gotcha). All amounts formatted `R N NNN,NN`. Scenario expected 2 deposits — the 3rd row is the documented BUG-CYCLE26-11 retest carry-forward.
+
+#### 46.6 — Passive isolation spot-check
+- Result: **PASS**
+- Evidence: `cycle42-day46-8-portal-trust.yml` (transactions table — zero R 25 000 / Moroka entries); `cycle42-day46-9-portal-projects.yml` (only "Dlamini v Road Accident Fund" in matters list).
+- Notes: `/trust` shows only RAF matter UUID with Sipho-owned transactions. `/projects` shows only RAF. `/requests` shows only Sipho's RAF requests (REQ-0001/0002/0004/0005 — no REQ-0003 EST/Moroka leak). Portal contact scoping holds 32 days into the lifecycle.
+
+#### 46.7 — `/home` "Pending info requests" no longer shows medical evidence request
+- Result: **FAIL — new gap GAP-L-92**
+- Evidence: `cycle42-day46-10-portal-home-after.yml` (Pending tile still reads "3" post-submit; pre-walk also "3"); `cycle42-day46-11-portal-requests-after.yml` (REQ-0005 still listed as `IN_PROGRESS 2/2 submitted`).
+- Notes: After 2/2 items submitted on REQ-0005, `/home` "Pending info requests" count remained at 3. Filter at `portal/app/(authenticated)/home/page.tsx:67` is `data.filter((r) => r.status !== "COMPLETED").length` — IN_PROGRESS counts as pending. From Sipho's POV the request is "done on my side" but the headline number says he still has 3 things to do. Cycle 1 logged this as a Product question (`OBS-Day46-PendingTileSemantics`); cycle 42 elevates to **GAP-L-92** because the scenario expectation has stood through 41 cycles and the fix is small.
+
+#### Console errors
+- Result: **PASS**
+- Notes: 0 errors / 0 warnings across all Day 46 navigation (login → home → requests list → REQ-0005 detail → 2 uploads → /trust → /projects → /home). Cycle 1's two `/portal/trust/movements?limit=1` 404s are GONE — that endpoint resolves cleanly now.
+
+#### Trust isolation cross-check
+- Result: **PASS**
+- Notes: Portal `/trust/cc390c4f-…` only shows Sipho's 3 RECORDED deposits totalling R 70 100. No Moroka R 25 000 line item. `/projects` only shows RAF. `/requests` only shows Sipho's 4 requests. Magic-link auth correctly scoped to portal_contact.organization=Sipho.
+
+### Day 46 summary checks (per scenario)
+
+- [x] Second info request lifecycle complete (items SUBMITTED end-to-end via presigned-URL flow; parent IN_PROGRESS by design)
+- [x] Trust balance update visible on portal (R 70 100 matches firm-side; both deposits visible + carry-forward retest)
+- [x] Isolation holds — no Moroka data leak 32 days after Day 14 onboarding
+- [ ] Pending info requests tile drops after submission — **FAIL** (GAP-L-92)
+
+### Gaps Found
+
+#### NEW
+
+- **GAP-L-92 — MEDIUM** — Portal home "Pending info requests" tile over-counts: includes IN_PROGRESS requests where ALL items are SUBMITTED. After Sipho uploaded REQ-0005's 2/2 items, the home tile remained at 3 instead of dropping to 2. Source: `portal/app/(authenticated)/home/page.tsx:67` filter `data.filter((r) => r.status !== "COMPLETED").length`. Suggested fix scope: S (~30 min) — change filter to also exclude IN_PROGRESS requests where all items are SUBMITTED, OR introduce an "AWAITING_REVIEW" pseudo-state semantically distinct from IN_PROGRESS, OR change the home tile copy to "Open info requests" and decrement on item-submission rather than parent-status. Owner: Product → Dev. Severity MEDIUM — directly contradicts scenario §46.7; portal contact gets a false sense of pending work. Evidence: `cycle42-day46-10-portal-home-after.yml`, `cycle42-day46-11-portal-requests-after.yml`. Backend support: `GET /portal/requests` already returns request status; would need to add per-request item counts (or compute client-side via separate fetch).
+
+#### Re-observed (NOT re-logged per dispatch carry-forward list)
+
+- **OBS-cycle1-running-balance-sort** (firm-side cosmetic) — not surfaced on portal-side this turn.
+- **Trust-deposit nudge email body polish** — no new deposit fired; not re-observed.
+- **Record Deposit raw UUIDs** — firm-side; not surfaced.
+- **Portal Type column raw enum** — not seen on Day 46 navigation.
+- **GAP-L-54 beneficial owners** — not exercised.
+
+#### Cosmetic observations (not logged as gaps)
+
+- **OBS-cycle42-portal-request-title-missing** — Portal `/requests` rows + REQ detail page never display the request's `name` ("Supporting medical evidence"); only matter name and REQ-number. Same as cycle 1.
+- **OBS-cycle42-portal-status-IN_PROGRESS-misleading** — Tied to GAP-L-92. When 2/2 items SUBMITTED, parent stays IN_PROGRESS until firm acceptance — list/detail headline reads `IN_PROGRESS 2/2 submitted` (technically correct, semantically confusing).
+
+### DB final state
+
+```text
+information_requests (5 rows, REQ-0005 transitioned):
+  REQ-0001 a0306375-… SENT       carry-forward
+  REQ-0002 d8a58ade-… COMPLETED  carry-forward
+  REQ-0003 de3cffc7-… SENT       carry-forward (Moroka — not visible to Sipho)
+  REQ-0004 d7dc4faf-… SENT       carry-forward Day 45 FICA
+  REQ-0005 73babd4e-… IN_PROGRESS  [TRANSITIONED THIS DAY: SENT → IN_PROGRESS @ 15:29Z]
+
+request_items for REQ-0005 (NEW THIS DAY):
+  9c416b24-… "Latest specialist medical reports" SUBMITTED doc=2a3d25e1-… submitted_at=2026-04-27T15:29:31Z
+  cc6f025c-… "Independent expert assessment"     SUBMITTED doc=0d6c8cf6-… submitted_at=2026-04-27T15:30:09Z
+
+trust_transactions: unchanged (4 rows, no Day 46 mutations)
+client_ledger_cards: unchanged (Sipho R 70 100, Moroka R 25 000)
+
+documents added (in document_metadata + S3): 2 PDFs uploaded by Sipho (~580 bytes each)
+```
+
+### Verify-focus items observed
+
+- **L-42 (magic-link to portal :3002 with orgId)**: VERIFIED — REQ-0005 magic-link exchange landed Sipho on portal with auth cookies set.
+- **L-43 (portal request-item submitted listener)**: VERIFIED — both submitted items have `status=SUBMITTED`, `document_id` linked, `submitted_at` populated.
+- **L-44 / portal modules sync**: VERIFIED — portal sidebar shows information_requests, trust_accounting, deadlines, document_acceptance, etc.
+- **L-47 (portal parent-request status sync)**: VERIFIED — parent transitions SENT → IN_PROGRESS at first item submit; stays IN_PROGRESS at 2/2 (by design). However home-tile count semantics fall out of step (GAP-L-92).
+- **L-52 (portal trust-ledger sync for RECORDED deposits)**: VERIFIED — Day 45 R 20 000 deposit + carry-forward R 100 + Day 10 R 50 000 all visible with correct amounts/descriptions/dates/running balances.
+- **BUG-CYCLE26-11 (trust deeplink → matter UUID)**: VERIFIED-CARRY-FORWARD — `/trust` redirects to `/trust/cc390c4f-…` (matter UUID).
+- **GAP-L-67 (ad-hoc info request items)**: VERIFIED-CARRY-FORWARD via cycle-41 retest — REQ-0005 was created with custom 2 items via the now-fixed dialog and successfully delivered to Sipho's portal, where he submitted both end-to-end. Full ad-hoc create→deliver→portal-respond loop closed.
+- **Cycle-1 GAP-L-68 (portal home /portal/trust/movements?limit=1 404)**: VERIFIED-FIXED — endpoint resolves cleanly; "Last trust movement" tile renders R 20 000,00 / 27 Apr 2026.
+
+### Stack at end-of-turn
+
+- Backend PID 41372 (no restart this cycle)
+- Gateway PID 71426 ext (unchanged)
+- Frontend PID 5771 (unchanged)
+- Portal PID 5677 (unchanged)
+- Single Sipho portal tab on `/requests` after walk
+- 2 PDF artefacts: `.playwright-mcp/day46/discharge-summary.pdf` (578 B), `.playwright-mcp/day46/orthopaedic-report.pdf` (581 B)
+
+### Branch state
+
+- No code changes this turn.
+- New evidence files (under `qa_cycle/checkpoint-results/`):
+  - `cycle42-day46-1-portal-home.yml`
+  - `cycle42-day46-2-portal-requests-list.yml`
+  - `cycle42-day46-3-req0005-detail.yml`
+  - `cycle42-day46-4-after-file-pick-1.yml`
+  - `cycle42-day46-5-after-submit-1.yml`
+  - `cycle42-day46-6-file-pick-2.yml`
+  - `cycle42-day46-7-after-submit-2.yml`
+  - `cycle42-day46-8-portal-trust.yml`
+  - `cycle42-day46-9-portal-projects.yml`
+  - `cycle42-day46-10-portal-home-after.yml`
+  - `cycle42-day46-11-portal-requests-after.yml`
+
+### Next action
+
+**Orchestrator**: Decide whether to spec/fix **GAP-L-92** (MEDIUM — portal home pending count over-states by including fully-submitted IN_PROGRESS requests) before advancing, or defer past Day 60. The bug is cosmetic-only (no data leak / no isolation break) but directly contradicts scenario §46.7 expectation. Suggested fix scope: S (~30 min). Day 47–59 in the scenario contain no checkpoints (Day 46 jumps straight to Day 60 firm closure). If GAP-L-92 is deferred, advance QA Position to **Day 60 — 60.1**. Branch `bugfix_cycle_2026-04-26-day46` ready for commit + push.

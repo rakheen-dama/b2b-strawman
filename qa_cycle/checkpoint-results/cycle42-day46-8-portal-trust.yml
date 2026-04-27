@@ -1,0 +1,105 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e64]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e22]
+            - generic [ref=e25]: Home
+          - link "Matters" [ref=e26] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e27]
+            - generic [ref=e29]: Matters
+          - link "Trust" [ref=e65] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e67]
+            - generic [ref=e71]: Trust
+          - link "Deadlines" [ref=e72] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e73]
+            - generic [ref=e77]: Deadlines
+          - link "Fee Notes" [ref=e78] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e31]
+            - generic [ref=e34]: Fee Notes
+          - link "Proposals" [ref=e35] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e36]
+            - generic [ref=e39]: Proposals
+          - link "Requests" [ref=e79] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e80]
+            - generic [ref=e82]: Requests
+          - link "Activity" [ref=e40] [cursor=pointer]:
+            - /url: /activity
+            - img [ref=e41]
+            - generic [ref=e43]: Activity
+        - generic [ref=e44]:
+          - link "Profile" [ref=e45] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e46]
+            - text: Profile
+          - button "Logout" [ref=e49]:
+            - img [ref=e50]
+            - text: Logout
+      - main [ref=e53]:
+        - generic [ref=e83]:
+          - link "Back to trust" [ref=e84] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e85]
+            - text: Back to trust
+          - generic [ref=e87]:
+            - generic [ref=e90]:
+              - img [ref=e91]
+              - text: Trust balance
+            - generic [ref=e95]:
+              - paragraph [ref=e96]: R 70 100,00
+              - paragraph [ref=e97]: As of 27 Apr 2026
+              - paragraph [ref=e98]: Matter cc390c4f
+          - generic [ref=e99]:
+            - heading "Transactions" [level=2] [ref=e100]
+            - table "Trust transactions" [ref=e103]:
+              - rowgroup [ref=e104]:
+                - row "Date Type Description Amount Running balance" [ref=e105]:
+                  - columnheader "Date" [ref=e106]
+                  - columnheader "Type" [ref=e107]
+                  - columnheader "Description" [ref=e108]
+                  - columnheader "Amount" [ref=e109]
+                  - columnheader "Running balance" [ref=e110]
+              - rowgroup [ref=e111]:
+                - row "27 Apr 2026 DEPOSIT Top-up per engagement letter R 20 000,00 R 70 100,00" [ref=e112]:
+                  - cell "27 Apr 2026" [ref=e113]
+                  - cell "DEPOSIT" [ref=e114]
+                  - cell "Top-up per engagement letter" [ref=e115]
+                  - cell "R 20 000,00" [ref=e116]
+                  - cell "R 70 100,00" [ref=e117]
+                - row "27 Apr 2026 DEPOSIT Cycle 29 retest BUG-CYCLE26-11 R 100,00 R 50 100,00" [ref=e118]:
+                  - cell "27 Apr 2026" [ref=e119]
+                  - cell "DEPOSIT" [ref=e120]
+                  - cell "Cycle 29 retest BUG-CYCLE26-11" [ref=e121]
+                  - cell "R 100,00" [ref=e122]
+                  - cell "R 50 100,00" [ref=e123]
+                - row "27 Apr 2026 DEPOSIT Initial trust deposit — RAF-2026-001 R 50 000,00 R 50 000,00" [ref=e124]:
+                  - cell "27 Apr 2026" [ref=e125]
+                  - cell "DEPOSIT" [ref=e126]
+                  - cell "Initial trust deposit — RAF-2026-001" [ref=e127]
+                  - cell "R 50 000,00" [ref=e128]
+                  - cell "R 50 000,00" [ref=e129]
+          - generic [ref=e130]:
+            - heading "Statements" [level=2] [ref=e131]
+            - generic [ref=e132]:
+              - img [ref=e133]
+              - paragraph [ref=e136]: No statement documents yet
+    - contentinfo [ref=e60]:
+      - paragraph [ref=e62]: Powered by DocTeams

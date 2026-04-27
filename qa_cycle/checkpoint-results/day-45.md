@@ -230,3 +230,22 @@ Trust Accounting overview totals: R 95 100,00 (50K + 100 + 20K Sipho + 25K Morok
 ## Next action
 
 QA — Day 46 (Portal: Sipho responds to second info request + trust re-check + isolation). Day 45 walk complete. GAP-L-67 carry-forward still OPEN — orchestrator should decide whether to spec/fix it now (recommended; HIGH severity blocks "free-form info request" workflow per scenario semantics) or defer past Day 46 (which is portal-side and unaffected by GAP-L-67). Cut a fresh `bugfix_cycle_2026-04-26-day46` branch from `main` when ready.
+
+## Cycle 41 Retest — PR #1191 GAP-L-67 — 2026-04-27 SAST
+
+Browser-driven retest of the ad-hoc info request items fix on `main` HEAD `79ad2602` ("fix(cycle-2026-04-26 Day 45): ad-hoc info request items + Day 45 walk results (#1191)"). PR #1190 (squash `2846fd1a`) merged to cycle branch; cycle-branch→main as PR #1191 (`79ad2602`). Bob (admin) drove the originally-blocked Day 45 §45.1 scenario request end-to-end.
+
+| Step | Result | Evidence |
+|------|--------|----------|
+| 1. Login as Bob (`bob@mathebula-test.local` / `SecureP@ss2`) via Keycloak → Mathebula & Partners dashboard | PASS | Header shows `Bob Ndlovu / bob@mathebula-test.local`; landed at `/org/mathebula-partners/dashboard` |
+| 2. Navigate Sipho `c4f70d86-…` → RAF `cc390c4f-…` → Requests tab → click "+ New Request" → Create Information Request dialog opens | PASS | `cycle41-retest-PR1191-GAP-L-67-step1-requests-tab.yml`, `cycle41-retest-PR1191-GAP-L-67-step2-requests-list.yml` |
+| 3. Dialog supports ad-hoc items: Template selector defaults to "Ad-hoc (no template)"; inline Items section visible with "Add Item" button + "Add at least one item before sending" hint; Send Now disabled at 0 items | PASS | `cycle41-retest-PR1191-GAP-L-67-step3-dialog-adhoc-empty.png` (dialog with empty Items section) |
+| 4. Add 2 items: row 0 Name="Latest specialist medical reports" (FILE_UPLOAD, required ✓), row 1 Name="Independent expert assessment" (FILE_UPLOAD, required ✓); set due_date 2026-05-11; recipient = Sipho's portal_contact (auto-selected `sipho.portal@example.com`); Send Now becomes enabled; click → dialog closes without error | PASS | `cycle41-retest-PR1191-GAP-L-67-step4-dialog-filled.png` (both items + due date filled) |
+| 5. New REQ-0005 row appears in matter Requests table — `0/2 accepted`, Sent, Apr 27 2026 | PASS | `cycle41-retest-PR1191-GAP-L-67-step5-req0005-in-list.png` |
+| 6. DB row written — `information_requests` id=`73babd4e-077e-4955-9b60-45abd03f0911`, request_number=REQ-0005, status=SENT, due_date=2026-05-11, project_id=`cc390c4f-…` (RAF), portal_contact_id=`f3f74a9d-…` (Sipho) | PASS | `docker exec b2b-postgres psql -U postgres -d docteams` query result; tenant `tenant_5039f2d497cf` |
+| 7. DB items written — `request_items` 2 rows for REQ-0005: (`9c416b24-…`, "Latest specialist medical reports", FILE_UPLOAD, required=t, sort_order=0), (`cc6f025c-…`, "Independent expert assessment", FILE_UPLOAD, required=t, sort_order=1) | PASS | psql query result |
+| 8. Mailpit email delivered — Subject "Information request REQ-0005 from Mathebula & Partners", To `sipho.portal@example.com`, msg ID `QiFckxzGK9bLNEhPeEouZb`, Created `2026-04-27T15:21:17.298Z` | PASS | `curl http://localhost:8025/api/v1/messages` |
+
+**Outcome: VERIFIED.** GAP-L-67 fix lands cleanly on `main`. The originally-blocked Day 45 §45.1 scenario flow ("Supporting medical evidence" 2-item ad-hoc info request) now works end-to-end without the FICA Onboarding Pack template substitute. No console errors during the flow. The placeholder text on item Name field literally reads "e.g. Latest specialist medical reports" (matches the scenario language). REQ-0005 / 2 items / SENT / 14-day due / Mailpit delivery — full ad-hoc create-with-items contract honoured.
+
+Day 46 walk may proceed.

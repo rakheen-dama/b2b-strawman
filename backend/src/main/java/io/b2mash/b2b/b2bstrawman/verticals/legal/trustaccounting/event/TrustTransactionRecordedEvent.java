@@ -25,6 +25,7 @@ public record TrustTransactionRecordedEvent(
     String eventType,
     UUID transactionId,
     UUID trustAccountId,
+    UUID projectId,
     String transactionType,
     BigDecimal amount,
     UUID customerId,
@@ -37,6 +38,7 @@ public record TrustTransactionRecordedEvent(
   public static TrustTransactionRecordedEvent recorded(
       UUID transactionId,
       UUID trustAccountId,
+      UUID projectId,
       String transactionType,
       BigDecimal amount,
       UUID customerId,
@@ -47,6 +49,7 @@ public record TrustTransactionRecordedEvent(
         "trust_transaction.recorded",
         transactionId,
         trustAccountId,
+        projectId,
         transactionType,
         amount,
         customerId,

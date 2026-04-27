@@ -57,8 +57,9 @@ function setRequestsList(list: Req[] | Error) {
     if (path === "/portal/requests") {
       return list instanceof Error ? Promise.reject(list) : Promise.resolve(list);
     }
-    // RecentInvoicesCard always renders — give it an empty list so it doesn't
-    // throw, even though we don't assert on it.
+    // Return a safe default for any non-/portal/requests calls so this focused
+    // test stays deterministic if additional cards (e.g., RecentInvoicesCard)
+    // mount.
     return Promise.resolve([]);
   });
 }
@@ -170,6 +171,15 @@ describe("InfoRequestsCard — pending count semantics (GAP-L-92)", () => {
       },
     ]);
     expect(await renderHomeAndReadCount()).toBe("2");
+  });
+
+  it("does NOT count CANCELLED requests (terminal — firm withdrew)", async () => {
+    setRequestsList([
+      // CANCELLED with 0 submitted — must not count even though submittedItems < totalItems.
+      // Pre-fix filter (`status !== "COMPLETED"`) wrongly counted this as pending.
+      { id: "r1", status: "CANCELLED", totalItems: 3, submittedItems: 0 },
+    ]);
+    expect(await renderHomeAndReadCount()).toBe("0");
   });
 
   it("network error renders 0", async () => {

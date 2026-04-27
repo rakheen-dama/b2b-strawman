@@ -111,11 +111,12 @@ Create `portal/app/(authenticated)/home/__tests__/page.test.tsx` covering `InfoR
 Cases:
 1. **Empty list** → tile renders `"0"`.
 2. **All SENT, none submitted** → tile equals list length (e.g. 3 SENT/0,3 → "3").
-3. **One IN_PROGRESS partial (1/3) + one SENT** → "2".
-4. **One IN_PROGRESS fully submitted (2/2) + one SENT** → "1" (the regression case for GAP-L-92).
-5. **One COMPLETED + one IN_PROGRESS partial** → "1".
-6. **One IN_PROGRESS fully submitted + one COMPLETED** → "0".
-7. **Network error** → tile renders `"0"` (existing catch behavior).
+3. **IN_PROGRESS partial (1/3) + SENT** → "2".
+4. **IN_PROGRESS fully submitted (2/2) + SENT** → "1" (regression case for GAP-L-92).
+5. **COMPLETED + IN_PROGRESS partial** → "1".
+6. **IN_PROGRESS fully submitted + COMPLETED** → "0".
+7. **CANCELLED 0/N** → "0" (terminal — firm withdrew).
+8. **Network error** → tile renders `"0"` (existing catch behavior).
 
 Test pattern mirrors `portal/app/(authenticated)/invoices/__tests__/page.test.tsx` (existing portal home-page-style test that mocks `portalGet`). Add `afterEach(() => cleanup())` per `frontend/CLAUDE.md` Radix-leak guidance.
 

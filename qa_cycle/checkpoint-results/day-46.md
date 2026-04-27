@@ -107,7 +107,7 @@ trust_transactions (4 rows, all carry-forward — no Day 46 mutations expected):
 ```
 
 > **Carry-forward note**: pre-state Sipho trust balance is **R 70 100,00** (not R 70 000,00) because of the BUG-CYCLE26-11 retest deposit (R 100). Therefore portal balance lands at R 70 100 — **expected carry-forward** documented in Day 45 cycle-38 results, not a new gap.
-
+>
 > **Cycle 1 GAP-L-68 status**: VERIFIED FIXED — portal `/home` "Last trust movement" tile now renders correctly ("R 20 000,00 / 27 Apr 2026") on `f227fd3e`; the missing `/portal/trust/movements?limit=1` endpoint that cycle-1 logged is no longer 404'ing. Cycle-1 GAP-L-68 closed by an intervening fix between cycle 1 and cycle 42 (presumably one of the L-44 / L-52 portal-trust-listing PRs).
 
 ### Summary

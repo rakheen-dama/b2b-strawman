@@ -68,7 +68,8 @@ function InfoRequestsCard() {
         const pending = Array.isArray(data)
           ? data.filter(
               (r) =>
-                r.status !== "COMPLETED" && r.submittedItems < r.totalItems,
+                (r.status === "SENT" || r.status === "IN_PROGRESS") &&
+                r.submittedItems < r.totalItems,
             ).length
           : 0;
         setCount(pending);

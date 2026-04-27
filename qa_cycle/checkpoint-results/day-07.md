@@ -161,7 +161,7 @@ Day 7 complete clean — proceeding directly to Day 8 in same turn.
 ## Cycle 14 (2026-04-27) — Day 7 fresh walk on main 3e018078
 
 **Branch**: `bugfix_cycle_2026-04-26-day7`
-**Auth**: Keycloak — context swap from Bob (Day 5 actor) to Thandi (Owner) via gateway POST /logout + KC login (`thandi@mathebula-test.local` / `SecureP@ss1`).
+**Auth**: Keycloak — context swap from Bob (Day 5 actor) to Thandi (Owner) via gateway POST /logout + KC login (`thandi@mathebula-test.local` / `<redacted>`).
 **Pre-state**: Sipho Dlamini ACTIVE (id `c4f70d86-…`), RAF matter `cc390c4f-…` ACTIVE, REQ-0002 COMPLETED. Mailpit purged. `proposals=0`, `acceptance_requests=0`, `generated_documents=0` at start.
 
 ### Session prep (auth context swap)

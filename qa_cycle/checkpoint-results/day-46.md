@@ -256,3 +256,33 @@ documents added (in document_metadata + S3): 2 PDFs uploaded by Sipho (~580 byte
 ### Next action
 
 **Orchestrator**: Decide whether to spec/fix **GAP-L-92** (MEDIUM — portal home pending count over-states by including fully-submitted IN_PROGRESS requests) before advancing, or defer past Day 60. The bug is cosmetic-only (no data leak / no isolation break) but directly contradicts scenario §46.7 expectation. Suggested fix scope: S (~30 min). Day 47–59 in the scenario contain no checkpoints (Day 46 jumps straight to Day 60 firm closure). If GAP-L-92 is deferred, advance QA Position to **Day 60 — 60.1**. Branch `bugfix_cycle_2026-04-26-day46` ready for commit + push.
+
+## Cycle 45 Retest — PR #1193 GAP-L-92 — 2026-04-27 SAST
+
+**Scope**: Verify GAP-L-92 fix on `main` after PR #1193 (squash `6c30e247`) merged. New filter rule: `(r.status === "SENT" || r.status === "IN_PROGRESS") && r.submittedItems < r.totalItems` (positive allow-list of actionable statuses; CR follow-up `65e5fd76` tightened from the negated form). 8 unit-test cases (incl. CANCELLED regression guard); 185/185 portal tests pass.
+
+**Setup**: `git log -1 --oneline main` → `6c30e247 fix(cycle-2026-04-26 Day 46): portal home pending-tile semantics + Day 46 walk results (#1193)`. `svc.sh status` → backend/gateway/frontend/portal all healthy. Frontend HMR — no restart needed.
+
+**Authentication**: Fresh magic-link via `POST http://localhost:8080/portal/auth/request-link` (email `sipho.portal@example.com`, orgId `mathebula-partners`). Response token `JdFvUQqGML8ioCCu0X3RarxxGBiH6sHfrvFWw5qlG-g` (Mailpit message `88oo8hqK9MMRSxZh4StdNA` corroborates). Exchanged at `http://localhost:3002/auth/exchange?token=…&orgId=mathebula-partners` → header reads "Sipho Dlamini".
+
+| Step | Result | Evidence |
+|------|--------|----------|
+| 1. Sipho auth via fresh magic-link | PASS | Mailpit `88oo8hqK9MMRSxZh4StdNA`; exchange to `:3002`; header "Sipho Dlamini" |
+| 2. `/home` "Pending info requests" tile reads "2" | PASS | `cycle45-retest-PR1193-GAP-L-92-portal-home.yml` (line 88-95: `link "Pending info requests 2"` → `paragraph: "2"`); `cycle45-retest-PR1193-GAP-L-92-home-tile.png` |
+| 3. `/requests` enumeration — REQ-0005 IN_PROGRESS 2/2, REQ-0004 SENT 0/3, REQ-0002 COMPLETED 0/3, REQ-0001 SENT 0/3 (4 rows visible to Sipho; REQ-0003 Moroka invisible per isolation) | PASS | `cycle45-retest-PR1193-GAP-L-92-portal-requests.yml` (lines 60-99); `cycle45-retest-PR1193-GAP-L-92-requests-list.png` |
+| 4. Expected count = 2 (REQ-0001 SENT 0/3 + REQ-0004 SENT 0/3); REQ-0005 IN_PROGRESS 2/2 excluded (regression case); REQ-0002 COMPLETED excluded; matches tile "2" | PASS | enumeration cross-reference confirms `(SENT \|\| IN_PROGRESS) && submittedItems < totalItems` semantics |
+
+**Outcome: VERIFIED.** Tile count "2" matches expected count 2. The CR-tightened filter correctly excludes the IN_PROGRESS-fully-submitted regression case (REQ-0005 2/2) and the COMPLETED case (REQ-0002), while keeping the two actionable SENT requests (REQ-0001, REQ-0004). 0 console errors. Day 60 walk should now proceed.
+
+### Branch state
+
+- No code changes this turn (read-only QA retest on `main`).
+- New evidence files (under `qa_cycle/checkpoint-results/`):
+  - `cycle45-retest-PR1193-GAP-L-92-portal-home.yml`
+  - `cycle45-retest-PR1193-GAP-L-92-portal-requests.yml`
+  - `cycle45-retest-PR1193-GAP-L-92-home-tile.png`
+  - `cycle45-retest-PR1193-GAP-L-92-requests-list.png`
+
+### Next action
+
+GAP-L-92 → VERIFIED. Day 60 — 60.1 walk is unblocked. Cut fresh `bugfix_cycle_2026-04-26-day60` from `main` (HEAD `6c30e247`) for the next per-day cycle (firm matter closure + Statement of Account).

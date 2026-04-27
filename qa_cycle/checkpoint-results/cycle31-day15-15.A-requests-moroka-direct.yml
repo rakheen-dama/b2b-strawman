@@ -1,0 +1,59 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e59]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e22]
+            - generic [ref=e25]: Home
+          - link "Matters" [ref=e26] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e27]
+            - generic [ref=e29]: Matters
+          - link "Trust" [ref=e60] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e61]
+            - generic [ref=e65]: Trust
+          - link "Deadlines" [ref=e66] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e67]
+            - generic [ref=e71]: Deadlines
+          - link "Fee Notes" [ref=e72] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e31]
+            - generic [ref=e34]: Fee Notes
+          - link "Proposals" [ref=e35] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e36]
+            - generic [ref=e39]: Proposals
+          - link "Requests" [ref=e73] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e75]
+            - generic [ref=e77]: Requests
+          - link "Activity" [ref=e40] [cursor=pointer]:
+            - /url: /activity
+            - img [ref=e41]
+            - generic [ref=e43]: Activity
+        - generic [ref=e44]:
+          - link "Profile" [ref=e45] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e46]
+            - text: Profile
+          - button "Logout" [ref=e49]:
+            - img [ref=e50]
+            - text: Logout
+      - main [ref=e53]:
+        - generic [ref=e78]: The requested resource was not found.
+    - contentinfo [ref=e55]:
+      - paragraph [ref=e57]: Powered by DocTeams

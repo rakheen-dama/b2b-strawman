@@ -275,6 +275,7 @@ public class TrustTransactionService {
         TrustTransactionRecordedEvent.recorded(
             saved.getId(),
             trustAccountId,
+            saved.getProjectId(),
             "DEPOSIT",
             request.amount(),
             request.customerId(),
@@ -435,6 +436,7 @@ public class TrustTransactionService {
         TrustTransactionRecordedEvent.recorded(
             savedOut.getId(),
             trustAccountId,
+            savedOut.getProjectId(),
             "TRANSFER_OUT",
             request.amount(),
             request.sourceCustomerId(),
@@ -445,6 +447,7 @@ public class TrustTransactionService {
         TrustTransactionRecordedEvent.recorded(
             savedIn.getId(),
             trustAccountId,
+            savedIn.getProjectId(),
             "TRANSFER_IN",
             request.amount(),
             request.targetCustomerId(),
@@ -512,6 +515,7 @@ public class TrustTransactionService {
         TrustTransactionApprovalEvent.awaitingApproval(
             saved.getId(),
             trustAccountId,
+            saved.getProjectId(),
             "PAYMENT",
             request.amount(),
             request.customerId(),
@@ -609,6 +613,7 @@ public class TrustTransactionService {
         TrustTransactionApprovalEvent.awaitingApproval(
             saved.getId(),
             trustAccountId,
+            saved.getProjectId(),
             "FEE_TRANSFER",
             request.amount(),
             request.customerId(),
@@ -677,6 +682,7 @@ public class TrustTransactionService {
         TrustTransactionApprovalEvent.awaitingApproval(
             saved.getId(),
             trustAccountId,
+            saved.getProjectId(),
             "REFUND",
             request.amount(),
             request.customerId(),
@@ -903,6 +909,7 @@ public class TrustTransactionService {
         TrustTransactionApprovalEvent.approved(
             transaction.getId(),
             transaction.getTrustAccountId(),
+            transaction.getProjectId(),
             transaction.getTransactionType(),
             transaction.getAmount(),
             transaction.getCustomerId(),
@@ -962,6 +969,7 @@ public class TrustTransactionService {
         TrustTransactionApprovalEvent.rejected(
             transaction.getId(),
             transaction.getTrustAccountId(),
+            transaction.getProjectId(),
             transaction.getTransactionType(),
             transaction.getAmount(),
             transaction.getCustomerId(),

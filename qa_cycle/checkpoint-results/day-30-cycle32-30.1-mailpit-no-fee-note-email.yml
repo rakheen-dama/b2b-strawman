@@ -1,0 +1,66 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - link "MailpitMailpit" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - img "Mailpit" [ref=e6]
+      - text: Mailpit
+    - generic [ref=e9]:
+      - textbox "Search" [ref=e11]:
+        - /placeholder: Search mailbox
+      - button "" [ref=e12] [cursor=pointer]:
+        - generic [ref=e13]: 
+    - generic [ref=e14]:
+      - text: 
+      - combobox "The number of messages displayed per page" [ref=e15]:
+        - option "25"
+        - option "50" [selected]
+        - option "100"
+        - option "200"
+      - generic [ref=e16]: 1-2 of 2
+      - button "" [disabled]:
+        - generic: 
+      - button "" [disabled]:
+        - generic: 
+  - text:      
+  - generic [ref=e17]:
+    - generic [ref=e18]:
+      - generic [ref=e20]:
+        - button " Inbox 2" [ref=e21] [cursor=pointer]:
+          - generic [ref=e22]: 
+          - text: Inbox
+          - generic "Unread messages" [ref=e23]: "2"
+        - button " Mark all read" [ref=e24] [cursor=pointer]:
+          - generic [ref=e25]: 
+          - text: Mark all read
+        - button " Delete all" [ref=e26] [cursor=pointer]:
+          - generic [ref=e27]: 
+          - text: Delete all
+      - generic [ref=e28]:
+        - button " About" [ref=e29] [cursor=pointer]:
+          - generic [ref=e30]: 
+          - text: About
+        - button "" [ref=e31] [cursor=pointer]:
+          - generic [ref=e32]: 
+        - button "" [ref=e33] [cursor=pointer]:
+          - generic [ref=e34]: 
+    - generic [ref=e37]:
+      - 'link "noreply@docteams.app To: sipho.portal@example.com Your portal access link from Mathebula & Partners Mathebula & Partners Access Your Portal Hi Sipho Dlamini, Click the button below to securely access your portal. This link will expire in 15 minutes. Access Portal If you didn''t request this link, you... 5.6 kB 33 minutes ago" [ref=e38] [cursor=pointer]':
+        - /url: /view/cJnYNKqF3zRiXWxtdnUDoZ
+        - generic [ref=e39]:
+          - generic [ref=e41]: noreply@docteams.app
+          - generic [ref=e43]: "To: sipho.portal@example.com"
+        - generic [ref=e44]:
+          - generic [ref=e45]: Your portal access link from Mathebula & Partners
+          - generic [ref=e46]: Mathebula & Partners Access Your Portal Hi Sipho Dlamini, Click the button below to securely access your portal. This link will expire in 15 minutes. Access Portal If you didn't request this link, you...
+        - generic [ref=e47]: 5.6 kB
+        - generic [ref=e48]: 33 minutes ago
+      - 'link "noreply@docteams.app To: sipho.portal@example.com Your portal access link from Mathebula & Partners Mathebula & Partners Access Your Portal Hi Sipho Dlamini, Click the button below to securely access your portal. This link will expire in 15 minutes. Access Portal If you didn''t request this link, you... 5.6 kB 33 minutes ago" [ref=e49] [cursor=pointer]':
+        - /url: /view/BCLmkYtapSxktqHQwBdyLw
+        - generic [ref=e50]:
+          - generic [ref=e52]: noreply@docteams.app
+          - generic [ref=e54]: "To: sipho.portal@example.com"
+        - generic [ref=e55]:
+          - generic [ref=e56]: Your portal access link from Mathebula & Partners
+          - generic [ref=e57]: Mathebula & Partners Access Your Portal Hi Sipho Dlamini, Click the button below to securely access your portal. This link will expire in 15 minutes. Access Portal If you didn't request this link, you...
+        - generic [ref=e58]: 5.6 kB
+        - generic [ref=e59]: 33 minutes ago

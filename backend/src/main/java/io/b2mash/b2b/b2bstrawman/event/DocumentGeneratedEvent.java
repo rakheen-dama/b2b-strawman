@@ -7,6 +7,11 @@ import java.util.UUID;
 
 /**
  * Published when a document is generated from a template. Used for notifications and activity feed.
+ *
+ * @param templateName template SLUG (e.g., {@code "matter-closure-letter"}) — matches the
+ *     per-tenant allowlist semantics in {@code OrgSettings.portalNotificationDocTypes}. The
+ *     human-readable display name lives in {@code details.template_name} for activity-feed UX.
+ *     Publishing the display name here breaks the portal-document-ready email gate (GAP-L-97).
  */
 public record DocumentGeneratedEvent(
     String eventType,

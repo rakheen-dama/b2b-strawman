@@ -1,0 +1,165 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: TM
+        - generic:
+          - paragraph: Thandi Mathebula
+          - paragraph: thandi@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/proposals
+              - text: Engagement Letters
+          - generic:
+            - img
+            - generic: Engagement Letter
+        - generic:
+          - generic:
+            - button: TM
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 1 unread notifications
+              - generic: "1"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/proposals
+                  - img
+                  - text: Back to Proposals
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: RAF Litigation Engagement — Sipho Dlamini
+                    - generic: Draft
+                  - paragraph: PROP-0001
+                - generic:
+                  - generic:
+                    - button:
+                      - img
+                      - text: Send Proposal
+              - generic:
+                - generic:
+                  - generic: Proposal Details
+                - generic:
+                  - generic:
+                    - generic:
+                      - term: Fee Model
+                      - definition: Hourly
+                    - generic:
+                      - term: Hourly Rate
+                      - definition: R850/hr per LSSA 2024/2025 schedule
+                    - generic:
+                      - term: Created
+                      - definition: Apr 27, 2026
+                    - generic:
+                      - term: Expires
+                      - definition: May 5, 2026
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e160] [cursor=pointer]:
+    - img [ref=e161]
+  - alert
+  - dialog "Send Proposal" [ref=e170]:
+    - generic [ref=e171]:
+      - heading "Send Proposal" [level=2] [ref=e173]
+      - generic [ref=e175]:
+        - generic [ref=e176]: Recipient
+        - combobox "Recipient" [active] [ref=e177]:
+          - generic: Sipho Dlamini (sipho.portal@example.com)
+          - img
+      - generic [ref=e178]:
+        - button "Cancel" [ref=e179]
+        - button "Send" [ref=e186]
+      - button "Close" [ref=e180]:
+        - img
+        - generic [ref=e181]: Close

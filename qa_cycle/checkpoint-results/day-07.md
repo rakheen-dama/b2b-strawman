@@ -205,3 +205,79 @@ Day 7 complete clean — proceeding directly to Day 8 in same turn.
 - L-49 (Sprint 3 deferred — clause-driven authoring + LSSA tariff fee block) — confirmed still Sprint 3; product reality remains a thin proposal scaffold (Title + Fee Model + free-text rate note + expiry).
 - Mid-walk JWT expiry recovered via gateway re-auth — not a regression, just session age. Refresh-token rotation isn't firing automatically when the page sits idle past access-token TTL; minor UX papercut, not a Day-7 blocker.
 
+---
+
+## Cycle 17 Retest 2026-04-27 SAST — PR #1173 fix on main 5365e48a
+
+**Branch**: `main` @ `5365e48a` (PR #1173 squash-merged — `fix(cycle-2026-04-26 Day 7): PROPOSAL_SEND prereq honors portal_contact`)
+**Backend PID**: 34944 (started 2026-04-27 00:19 UTC after PR #1173 deploy; replaces PID 16195+ noted in cycle 16 dispatch)
+**Stack**: backend:8080 healthy, gateway:8443 healthy, frontend:3000 healthy, portal:3002 healthy.
+**Auth**: Already-active Thandi (Owner) Keycloak session on `localhost:3000` — sidebar `<aside p>` confirmed `Thandi Mathebula / thandi@mathebula-test.local`.
+**Proposal under test**: same `0781c5ad-bc4a-4796-a546-6e51a7b27226 / PROP-0001 / DRAFT / Sipho Dlamini (INDIVIDUAL)` from cycle-14 — DB pre-check confirmed `status=DRAFT`, `sent_at=NULL`, `portal_contact_id=NULL`.
+
+### Pre-conditions verified
+
+| Check | Expected | Actual | Result |
+|---|---|---|---|
+| Proposal `0781c5ad-…` still DRAFT | DRAFT | DRAFT | PASS |
+| Sipho `c4f70d86-…` is INDIVIDUAL | INDIVIDUAL | INDIVIDUAL | PASS |
+| Sipho.contact_name | NULL | NULL | PASS |
+| Sipho.contact_email | NULL | NULL | PASS |
+| Sipho.address_line1 | populated | `12 Loveday St` | PASS |
+| Sipho's ACTIVE portal_contact with email | exists | `f3f74a9d-3540-483a-80bc-6f5ef4e911bb / ACTIVE / sipho.portal@example.com / Sipho Dlamini` | PASS |
+
+This is exactly the pre-fix scenario: INDIVIDUAL customer with NULL contact_name/contact_email, populated address_line1, and one ACTIVE portal_contact with non-blank email. Pre-fix this combination produced `"2 required field(s) missing for Proposal Sending"`.
+
+### Retest checkpoints
+
+| ID | Description | Result | Evidence |
+|---|---|---|---|
+| 7.8a | Open `/proposals/0781c5ad-…` and click `Send Proposal` | **PASS** | `Send Proposal` button visible on proposal header; click opens `Send Proposal` dialog with Recipient combobox + disabled Send button. |
+| 7.8b | Recipient combobox lists `Sipho Dlamini (sipho.portal@example.com)` and only that ACTIVE contact | **PASS** | Listbox shows exactly one option `Sipho Dlamini (sipho.portal@example.com)` (ACTIVE-tightening from the fix is observable — no inactive contacts surface). Selected. Send button became enabled. Snapshot: `cycle17-retest-7.8-send-dialog-recipient-selected.yml`. |
+| 7.8c | Click `Send` — pre-fix violation must NOT appear | **PASS (BUG-CYCLE26-06 FIX VERIFIED)** | Pre-fix expected: red "2 required field(s) missing for Proposal Sending". Actual: that error is GONE. The new dialog message reads `Proposal content must not be empty` (a different downstream check at `ProposalService.java:618-621`, originating from `InvalidStateException` AFTER `prerequisiteCheck.passed()` returns true at line 613-615). Snapshot: `cycle17-retest-7.8-after-send.yml` paragraph `e187`. |
+| 7.8d | DB state: proposal stays DRAFT (because content is empty), but no "missing field" violation surfaces | **PASS** | `SELECT status, sent_at, portal_contact_id FROM tenant_5039f2d497cf.proposals WHERE id='0781c5ad-…'` → `DRAFT / NULL / NULL`. Aborts at content gate, not prereq gate. |
+| 7.8e | Mailpit: no email queued (because send failed at content check, AFTER the prereq gate passed) | **PASS** | `GET http://localhost:8025/api/v1/messages?query=proposal` → `{"total":0, "count":0}`. |
+
+### How we know the BUG-CYCLE26-06 fix is actually working (not just hidden by content gate)
+
+`ProposalService.sendProposal()` runs three gates in order:
+1. `prerequisiteService.checkForContext(PROPOSAL_SEND, CUSTOMER, customerId)` (line 610-615) — throws `PrerequisiteNotMetException` with message shape `"N required field(s) missing for Proposal Sending"` when prereqs fail.
+2. `proposal.getContentJson() == null || proposal.getContentJson().isEmpty()` (line 618-621) — throws `InvalidStateException` with message `"Proposal content must not be empty"`.
+3. fee-model + currency + milestone validations.
+
+Pre-fix produced gate-1 error. Post-fix produces gate-2 error. The change in error string from "2 required field(s) missing for Proposal Sending" → "Proposal content must not be empty" is conclusive that gate 1 is now passing for this customer shape. If the prereq fix had not landed, gate 2 would never be reached.
+
+### Regression checks
+
+| Check | Expected | Actual | Result |
+|---|---|---|---|
+| `address_line1` still required (negative test impossible without mutating Sipho's address — skipped per fix-spec note "optional probe") | — | n/a | SKIPPED-by-design (would require destructive UPDATE) |
+| ACTIVE-tightening: SUSPENDED contacts must NOT satisfy prereq | covered by unit test `proposalSend_companyCustomer_noPortalContact_stillRequiresContactFields` in PR #1173 (33/33 backend tests green per cycle 16 dispatch note) | n/a | UPSTREAM-VERIFIED (unit-test layer) |
+| COMPANY customer without portal_contact still blocks | covered by same unit test as above; tenant has no COMPANY customer to drive UI regression | n/a | UPSTREAM-VERIFIED |
+
+### New finding (informational, NOT a BUG-CYCLE26-06 reopen)
+
+Side-effect of the fix: the **next** gate in `sendProposal()` (`content_json must not be empty`, pre-existing since Mar 1, 2026 commit `4023f683` Epic 232B) is now reachable for proposals created via the `New Engagement Letter` matter-level dialog. That dialog (per cycle-14 7.1 evidence) collects only Title / Customer / Fee Model / Hourly Rate Note / Expiry — it never populates `proposal.content_json` (DB row confirms `content_json = '{}'::jsonb`). Therefore the canonical happy path created by L-48 produces proposals that cannot be sent.
+
+This is **not** a BUG-CYCLE26-06 regression — gate-2 has been there all along; pre-fix tests just stopped at gate-1. It is a separate scaffold gap (the matter-level create flow needs to seed `content_json` with at least a stub document, OR the Send gate should auto-render a minimal letter from Title/Fee Model/Hourly Rate Note when `content_json` is empty, OR the proposal entity should treat empty `content_json` as "render-from-fields"). Recommend: orchestrator triages as **BUG-CYCLE26-07** (HIGH — blocks Day 7 7.8 onwards even after BUG-CYCLE26-06 fix) for next product/dev cycle. Suggested approaches:
+1. Backend: when `content_json` is empty/null, auto-build a minimal content payload at Send time from `(title, fee_model, hourly_rate_note, expires_at)` — no UI change.
+2. Frontend: matter-level New Engagement Letter dialog seeds `content_json` with a Tiptap-compatible default doc using the same fields.
+3. UX: surface a `Generate engagement letter` step before Send that opens Tiptap on `content_json`.
+
+Day 7 7.8 onwards remains blocked, but on a **different** root cause than BUG-CYCLE26-06.
+
+### Verdict
+
+| Bug | Status |
+|---|---|
+| BUG-CYCLE26-06 | **VERIFIED** — prereq fix is observable end-to-end. Recipient lookup tightened to ACTIVE; INDIVIDUAL customer with portal_contact no longer triggers contact_name/contact_email violations. |
+
+### QA Position on exit
+
+`Day 7 — 7.8 (PASS for BUG-CYCLE26-06 verification; new blocker BUG-CYCLE26-07 surfaced — content_json gate). Do NOT walk Day 8 — orchestrator triages BUG-CYCLE26-07 first.`
+
+### Files
+
+- `qa_cycle/checkpoint-results/cycle17-retest-7.8-send-dialog-recipient-selected.yml` — Sipho selected as recipient, Send button enabled
+- `qa_cycle/checkpoint-results/cycle17-retest-7.8-after-send.yml` — post-Send dialog state showing the new `Proposal content must not be empty` message and absence of the pre-fix `required field(s) missing` text
+

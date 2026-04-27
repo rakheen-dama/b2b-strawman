@@ -1,0 +1,412 @@
+- generic [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e53]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e55] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e56]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e62]:
+          - generic [ref=e63]: Clients
+          - img [ref=e64]
+        - button "Finance" [ref=e68]:
+          - generic [ref=e69]: Finance
+          - img [ref=e70]
+        - generic [ref=e73]:
+          - button "Team" [expanded] [ref=e74]:
+            - generic [ref=e75]: Team
+            - img [ref=e76]
+          - link "Team" [ref=e79] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e80]
+            - text: Team
+      - generic [ref=e86]:
+        - link "Notifications" [ref=e87] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e88]
+          - text: Notifications
+        - link "Settings" [ref=e91] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e92]
+          - text: Settings
+        - link "Help" [ref=e95] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e96]
+          - text: Help
+      - generic [ref=e99]:
+        - generic [ref=e100]: BN
+        - generic [ref=e101]:
+          - paragraph [ref=e102]: Bob Ndlovu
+          - paragraph [ref=e103]: bob@mathebula-test.local
+    - generic [ref=e104]:
+      - banner [ref=e105]:
+        - navigation "Breadcrumb" [ref=e106]:
+          - link "Mathebula & Partners" [ref=e107] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e108]:
+            - img [ref=e109]
+            - link "Matters" [ref=e111] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+          - generic [ref=e112]:
+            - img [ref=e113]
+            - generic [ref=e115]: Matter
+        - generic [ref=e116]:
+          - button "User menu" [ref=e118]: BN
+          - button "Notifications" [ref=e120]:
+            - img
+            - generic [ref=e121]: 11 unread notifications
+            - generic [ref=e122]: "11"
+      - main [ref=e123]:
+        - generic [ref=e161]:
+          - link "Back to Matters" [ref=e163] [cursor=pointer]:
+            - /url: /org/mathebula-partners/projects
+            - img [ref=e164]
+            - text: Back to Matters
+          - generic [ref=e166]:
+            - generic [ref=e167]:
+              - generic [ref=e168]:
+                - heading "Dlamini v Road Accident Fund" [level=1] [ref=e169]
+                - generic [ref=e170]: Active
+              - paragraph [ref=e171]: "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION"
+              - paragraph [ref=e172]:
+                - text: "Client:"
+                - link "Sipho Dlamini" [ref=e173] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/customers/c4f70d86-c292-4d02-9f6f-2e900099ba57
+              - generic [ref=e174]:
+                - generic [ref=e175]:
+                  - generic [ref=e176]: Ref
+                  - code [ref=e177]: RAF-2026-001
+                - generic [ref=e178]: Type Litigation
+              - paragraph [ref=e179]: Created Apr 26, 2026 · 3 documents · 1 member · 9 tasks
+            - generic [ref=e180]:
+              - button "Close Matter" [ref=e181]:
+                - img
+                - text: Close Matter
+              - button "Generate Statement of Account" [ref=e182]:
+                - img
+                - text: Generate Statement of Account
+              - button "Complete Matter" [ref=e183]:
+                - img
+                - text: Complete Matter
+              - button [ref=e184]:
+                - img
+              - button "Generate Document" [ref=e185]:
+                - img
+                - text: Generate Document
+                - img
+              - button "New Engagement Letter" [ref=e186]:
+                - img
+                - text: New Engagement Letter
+              - button "Edit" [ref=e187]:
+                - img
+                - text: Edit
+          - generic [ref=e188]:
+            - paragraph [ref=e189]: Field Groups
+            - generic [ref=e190]:
+              - generic [ref=e191]:
+                - text: SA Legal — Matter Details
+                - button "Remove SA Legal — Matter Details" [ref=e192]:
+                  - img [ref=e193]
+              - generic [ref=e196]:
+                - text: Project Info
+                - button "Remove Project Info" [ref=e197]:
+                  - img [ref=e198]
+              - button "Add Group" [ref=e201]:
+                - img
+                - text: Add Group
+          - generic [ref=e202]:
+            - generic [ref=e203]:
+              - generic [ref=e205]: SA Legal — Matter Details
+              - generic [ref=e207]:
+                - generic [ref=e208]:
+                  - generic [ref=e209]: Case Number
+                  - textbox "Case Number" [ref=e211]:
+                    - /placeholder: Court-assigned case number for the matter
+                    - text: RAF-2026-001-CASE
+                - generic [ref=e212]:
+                  - generic [ref=e213]: Court
+                  - textbox "Court" [ref=e215]:
+                    - /placeholder: Name of the court in which the matter is heard
+                    - text: Gauteng Division, Pretoria
+                - generic [ref=e216]:
+                  - generic [ref=e217]: Opposing Party
+                  - textbox "Opposing Party" [ref=e219]:
+                    - /placeholder: Name of the primary opposing party
+                    - text: Road Accident Fund
+                - generic [ref=e220]:
+                  - generic [ref=e221]: Opposing Attorney
+                  - textbox "Opposing Attorney" [ref=e223]:
+                    - /placeholder: Name of the opposing attorney or firm
+                - generic [ref=e224]:
+                  - generic [ref=e225]: Advocate
+                  - textbox "Advocate" [ref=e227]:
+                    - /placeholder: Name of the instructed advocate (if briefed)
+                - generic [ref=e228]:
+                  - generic [ref=e229]: Date of Instruction
+                  - textbox "Date of Instruction" [ref=e231]
+                - generic [ref=e232]:
+                  - generic [ref=e233]: Estimated Value
+                  - spinbutton "Estimated Value" [ref=e235]
+            - generic [ref=e236]:
+              - generic [ref=e238]: Project Info
+              - generic [ref=e241]:
+                - generic [ref=e242]: Category
+                - textbox "Category" [ref=e244]:
+                  - /placeholder: Project category or type
+            - button "Save Custom Fields" [ref=e246]:
+              - img
+              - text: Save Custom Fields
+          - generic [ref=e247]:
+            - paragraph [ref=e248]: Tags
+            - button "Add Tag" [ref=e251]:
+              - img
+              - text: Add Tag
+          - generic [ref=e252]:
+            - tablist [ref=e253]:
+              - tab "Overview" [ref=e254]
+              - tab "Documents" [ref=e256]
+              - tab "Members" [ref=e257]
+              - tab "Clients" [ref=e258]
+              - tab "Tasks" [selected] [ref=e259]: Tasks
+              - tab "Time" [ref=e260]
+              - tab "Fee Estimate" [ref=e261]
+              - tab "Financials" [ref=e262]
+              - tab "Staffing" [ref=e263]
+              - tab "Rates" [ref=e264]
+              - tab "Generated Docs" [ref=e265]
+              - tab "Requests" [ref=e266]
+              - tab "Client Comments" [ref=e267]
+              - tab "Court Dates" [ref=e268]
+              - tab "Adverse Parties" [ref=e269]
+              - tab "Trust" [ref=e270]
+              - tab "Disbursements" [ref=e271]
+              - tab "Statements" [ref=e272]
+              - tab "Activity" [ref=e273]
+            - tabpanel "Tasks" [ref=e452]:
+              - generic [ref=e453]:
+                - generic [ref=e454]:
+                  - generic [ref=e455]:
+                    - heading "Tasks" [level=2] [ref=e456]
+                    - generic [ref=e457]: "9"
+                  - button "New Task" [ref=e458]:
+                    - img
+                    - text: New Task
+                - generic [ref=e459]:
+                  - generic [ref=e460]:
+                    - generic [ref=e461]:
+                      - img [ref=e462]
+                      - 'button "Help: Saved views" [ref=e465] [cursor=pointer]':
+                        - img [ref=e466]
+                    - tablist [ref=e470]:
+                      - tab "All" [selected] [ref=e471]
+                  - button "Save View" [ref=e472]:
+                    - img
+                    - text: Save View
+                - group "Task filters" [ref=e473]:
+                  - button "All" [ref=e474]
+                  - button "Open" [pressed] [ref=e475]
+                  - button "In Progress" [pressed] [ref=e476]
+                  - button "Done" [ref=e477]
+                  - button "Cancelled" [ref=e478]
+                  - button "My Tasks" [ref=e479]
+                  - button "Recurring" [ref=e480]
+                - table [ref=e483]:
+                  - rowgroup [ref=e484]:
+                    - row "Priority Title Status Assignee Due Date Actions" [ref=e485]:
+                      - columnheader "Priority" [ref=e486]
+                      - columnheader "Title" [ref=e487]
+                      - columnheader "Status" [ref=e488]
+                      - columnheader "Assignee" [ref=e489]
+                      - columnheader "Due Date" [ref=e490]
+                      - columnheader "Actions" [ref=e491]
+                  - rowgroup [ref=e492]:
+                    - row "Medium Open task detail for Execution -- warrant / attachment Open Unassigned — Log Time Claim" [ref=e493]:
+                      - cell "Medium" [ref=e494]:
+                        - generic [ref=e495]: Medium
+                      - cell "Open task detail for Execution -- warrant / attachment" [ref=e496]:
+                        - button "Open task detail for Execution -- warrant / attachment" [ref=e497] [cursor=pointer]:
+                          - paragraph [ref=e500]: Execution -- warrant / attachment
+                      - cell "Open" [ref=e501]:
+                        - generic [ref=e502]: Open
+                      - cell "Unassigned" [ref=e503]
+                      - cell "—" [ref=e504]:
+                        - generic [ref=e505]: —
+                      - cell "Log Time Claim" [ref=e506]:
+                        - generic [ref=e507]:
+                          - button "Log Time" [ref=e508]:
+                            - img
+                            - text: Log Time
+                          - button "Claim" [ref=e509]:
+                            - img
+                            - text: Claim
+                    - row "Medium Open task detail for Post-judgment -- taxation of costs / appeal Open Bob Ndlovu — Log Time" [ref=e510]:
+                      - cell "Medium" [ref=e511]:
+                        - generic [ref=e512]: Medium
+                      - cell "Open task detail for Post-judgment -- taxation of costs / appeal" [ref=e513]:
+                        - button "Open task detail for Post-judgment -- taxation of costs / appeal" [ref=e514] [cursor=pointer]:
+                          - paragraph [ref=e517]: Post-judgment -- taxation of costs / appeal
+                      - cell "Open" [ref=e518]:
+                        - generic [ref=e519]: Open
+                      - cell "Bob Ndlovu" [ref=e520]
+                      - cell "—" [ref=e521]:
+                        - generic [ref=e522]: —
+                      - cell "Log Time" [ref=e523]:
+                        - button "Log Time" [ref=e525]:
+                          - img
+                          - text: Log Time
+                    - row "Medium Open task detail for Trial / hearing attendance Open Bob Ndlovu — Log Time" [ref=e526]:
+                      - cell "Medium" [ref=e527]:
+                        - generic [ref=e528]: Medium
+                      - cell "Open task detail for Trial / hearing attendance" [ref=e529]:
+                        - button "Open task detail for Trial / hearing attendance" [ref=e530] [cursor=pointer]:
+                          - paragraph [ref=e533]: Trial / hearing attendance
+                      - cell "Open" [ref=e534]:
+                        - generic [ref=e535]: Open
+                      - cell "Bob Ndlovu" [ref=e536]
+                      - cell "—" [ref=e537]:
+                        - generic [ref=e538]: —
+                      - cell "Log Time" [ref=e539]:
+                        - button "Log Time" [ref=e541]:
+                          - img
+                          - text: Log Time
+                    - row "Medium Open task detail for Pre-trial conference preparation Open Bob Ndlovu — Log Time" [ref=e542]:
+                      - cell "Medium" [ref=e543]:
+                        - generic [ref=e544]: Medium
+                      - cell "Open task detail for Pre-trial conference preparation" [ref=e545]:
+                        - button "Open task detail for Pre-trial conference preparation" [ref=e546] [cursor=pointer]:
+                          - paragraph [ref=e549]: Pre-trial conference preparation
+                      - cell "Open" [ref=e550]:
+                        - generic [ref=e551]: Open
+                      - cell "Bob Ndlovu" [ref=e552]
+                      - cell "—" [ref=e553]:
+                        - generic [ref=e554]: —
+                      - cell "Log Time" [ref=e555]:
+                        - button "Log Time" [ref=e557]:
+                          - img
+                          - text: Log Time
+                    - row "Medium Open task detail for Discovery -- request & exchange documents Open Unassigned — Log Time Claim" [ref=e558]:
+                      - cell "Medium" [ref=e559]:
+                        - generic [ref=e560]: Medium
+                      - cell "Open task detail for Discovery -- request & exchange documents" [ref=e561]:
+                        - button "Open task detail for Discovery -- request & exchange documents" [ref=e562] [cursor=pointer]:
+                          - paragraph [ref=e565]: Discovery -- request & exchange documents
+                      - cell "Open" [ref=e566]:
+                        - generic [ref=e567]: Open
+                      - cell "Unassigned" [ref=e568]
+                      - cell "—" [ref=e569]:
+                        - generic [ref=e570]: —
+                      - cell "Log Time Claim" [ref=e571]:
+                        - generic [ref=e572]:
+                          - button "Log Time" [ref=e573]:
+                            - img
+                            - text: Log Time
+                          - button "Claim" [ref=e574]:
+                            - img
+                            - text: Claim
+                    - row "Medium Open task detail for File plea / exception / counterclaim Open Bob Ndlovu — Log Time" [ref=e575]:
+                      - cell "Medium" [ref=e576]:
+                        - generic [ref=e577]: Medium
+                      - cell "Open task detail for File plea / exception / counterclaim" [ref=e578]:
+                        - button "Open task detail for File plea / exception / counterclaim" [ref=e579] [cursor=pointer]:
+                          - paragraph [ref=e582]: File plea / exception / counterclaim
+                      - cell "Open" [ref=e583]:
+                        - generic [ref=e584]: Open
+                      - cell "Bob Ndlovu" [ref=e585]
+                      - cell "—" [ref=e586]:
+                        - generic [ref=e587]: —
+                      - cell "Log Time" [ref=e588]:
+                        - button "Log Time" [ref=e590]:
+                          - img
+                          - text: Log Time
+                    - row "Medium Open task detail for Issue summons / combined summons Open Bob Ndlovu — Log Time" [ref=e591]:
+                      - cell "Medium" [ref=e592]:
+                        - generic [ref=e593]: Medium
+                      - cell "Open task detail for Issue summons / combined summons" [ref=e594]:
+                        - button "Open task detail for Issue summons / combined summons" [ref=e595] [cursor=pointer]:
+                          - paragraph [ref=e598]: Issue summons / combined summons
+                      - cell "Open" [ref=e599]:
+                        - generic [ref=e600]: Open
+                      - cell "Bob Ndlovu" [ref=e601]
+                      - cell "—" [ref=e602]:
+                        - generic [ref=e603]: —
+                      - cell "Log Time" [ref=e604]:
+                        - button "Log Time" [ref=e606]:
+                          - img
+                          - text: Log Time
+                    - row "Medium Open task detail for Letter of demand Open Bob Ndlovu — Log Time" [ref=e607]:
+                      - cell "Medium" [ref=e608]:
+                        - generic [ref=e609]: Medium
+                      - cell "Open task detail for Letter of demand" [ref=e610]:
+                        - button "Open task detail for Letter of demand" [ref=e611] [cursor=pointer]:
+                          - paragraph [ref=e614]: Letter of demand
+                      - cell "Open" [ref=e615]:
+                        - generic [ref=e616]: Open
+                      - cell "Bob Ndlovu" [ref=e617]
+                      - cell "—" [ref=e618]:
+                        - generic [ref=e619]: —
+                      - cell "Log Time" [ref=e620]:
+                        - button "Log Time" [ref=e622]:
+                          - img
+                          - text: Log Time
+                    - row "Medium Open task detail for Initial consultation & case assessment Open Bob Ndlovu — Log Time" [ref=e623]:
+                      - cell "Medium" [ref=e624]:
+                        - generic [ref=e625]: Medium
+                      - cell "Open task detail for Initial consultation & case assessment" [ref=e626]:
+                        - button "Open task detail for Initial consultation & case assessment" [ref=e627] [cursor=pointer]:
+                          - paragraph [ref=e630]: Initial consultation & case assessment
+                      - cell "Open" [ref=e631]:
+                        - generic [ref=e632]: Open
+                      - cell "Bob Ndlovu" [ref=e633]
+                      - cell "—" [ref=e634]:
+                        - generic [ref=e635]: —
+                      - cell "Log Time" [ref=e636]:
+                        - button "Log Time" [active] [ref=e638]:
+                          - img
+                          - text: Log Time
+  - generic [ref=e148]:
+    - heading "Command Palette" [level=2] [ref=e149]
+    - paragraph [ref=e150]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e156] [cursor=pointer]:
+    - img [ref=e157]
+  - alert [ref=e160]

@@ -1,0 +1,164 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e52]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e55]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e61]:
+          - generic [ref=e62]: Clients
+          - img [ref=e63]
+        - button "Finance" [ref=e67]:
+          - generic [ref=e68]: Finance
+          - img [ref=e69]
+        - generic [ref=e72]:
+          - button "Team" [expanded] [ref=e73]:
+            - generic [ref=e74]: Team
+            - img [ref=e75]
+          - link "Team" [ref=e78] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e79]
+            - text: Team
+      - generic [ref=e85]:
+        - link "Notifications" [ref=e86] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e87]
+          - text: Notifications
+        - link "Settings" [ref=e90] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e91]
+          - text: Settings
+        - link "Help" [ref=e94] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e95]
+          - text: Help
+      - generic [ref=e98]:
+        - generic [ref=e99]: BN
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Bob Ndlovu
+          - paragraph [ref=e102]: bob@mathebula-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "Mathebula & Partners" [ref=e106] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - generic [ref=e110]: fee notes
+        - generic [ref=e111]:
+          - button "User menu" [ref=e113]: BN
+          - button "Notifications" [ref=e115]:
+            - img
+            - generic [ref=e116]: 12 unread notifications
+            - generic [ref=e184]: "12"
+      - main [ref=e117]:
+        - generic [ref=e120]:
+          - generic [ref=e121]:
+            - generic [ref=e122]:
+              - 'heading "Fee Notes Help: Invoice lifecycle" [level=1] [ref=e123]':
+                - generic [ref=e124]: Fee Notes
+                - 'button "Help: Invoice lifecycle" [ref=e125] [cursor=pointer]':
+                  - img [ref=e126]
+              - generic [ref=e129]: "1"
+            - button "New Fee Note" [ref=e130]:
+              - img
+              - text: New Fee Note
+          - generic [ref=e131]:
+            - link "Fee Notes" [ref=e132] [cursor=pointer]:
+              - /url: /org/mathebula-partners/invoices
+            - link "Billing Runs" [ref=e133] [cursor=pointer]:
+              - /url: /org/mathebula-partners/invoices/billing-runs
+          - generic [ref=e134]:
+            - generic [ref=e135]:
+              - paragraph [ref=e136]: Total Outstanding
+              - paragraph [ref=e137]: R 0,00
+            - generic [ref=e138]:
+              - paragraph [ref=e139]: Total Overdue
+              - paragraph [ref=e140]: R 0,00
+            - generic [ref=e141]:
+              - paragraph [ref=e142]: Paid This Month
+              - paragraph [ref=e143]: R 0,00
+          - generic [ref=e144]:
+            - generic [ref=e145]: "Filter:"
+            - link "All" [ref=e146] [cursor=pointer]:
+              - /url: /org/mathebula-partners/invoices
+            - link "Draft" [ref=e147] [cursor=pointer]:
+              - /url: /org/mathebula-partners/invoices?status=DRAFT
+            - link "Approved" [ref=e148] [cursor=pointer]:
+              - /url: /org/mathebula-partners/invoices?status=APPROVED
+            - link "Sent" [ref=e149] [cursor=pointer]:
+              - /url: /org/mathebula-partners/invoices?status=SENT
+            - link "Paid" [ref=e150] [cursor=pointer]:
+              - /url: /org/mathebula-partners/invoices?status=PAID
+            - link "Void" [ref=e151] [cursor=pointer]:
+              - /url: /org/mathebula-partners/invoices?status=VOID
+          - table [ref=e153]:
+            - rowgroup [ref=e154]:
+              - row "Fee Note Customer Status Issue Date Due Date Total Currency" [ref=e155]:
+                - columnheader "Fee Note" [ref=e156]
+                - columnheader "Customer" [ref=e157]
+                - columnheader "Status" [ref=e158]
+                - columnheader "Issue Date" [ref=e159]
+                - columnheader "Due Date" [ref=e160]
+                - columnheader "Total" [ref=e161]
+                - columnheader "Currency" [ref=e162]
+            - rowgroup [ref=e163]:
+              - row "Draft Sipho Dlamini Draft — — R 3 910,00 ZAR" [ref=e164]:
+                - cell "Draft" [ref=e165]:
+                  - link "Draft" [ref=e166] [cursor=pointer]:
+                    - /url: /org/mathebula-partners/invoices/432ae5a9-6a3c-4c25-86b3-302f0dd016e1
+                - cell "Sipho Dlamini" [ref=e167]
+                - cell "Draft" [ref=e168]:
+                  - generic [ref=e170]: Draft
+                - cell "—" [ref=e171]
+                - cell "—" [ref=e172]
+                - cell "R 3 910,00" [ref=e173]
+                - cell "ZAR" [ref=e174]
+  - generic [ref=e185]:
+    - heading "Command Palette" [level=2] [ref=e186]
+    - paragraph [ref=e187]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e180] [cursor=pointer]:
+    - img [ref=e181]
+  - alert [ref=e188]

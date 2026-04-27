@@ -1,0 +1,505 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: BN
+        - generic:
+          - paragraph: Bob Ndlovu
+          - paragraph: bob@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - text: Matters
+          - generic:
+            - img
+            - generic: Matter
+        - generic:
+          - generic:
+            - button: BN
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 11 unread notifications
+              - generic: "11"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/projects
+                  - img
+                  - text: Back to Matters
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: Dlamini v Road Accident Fund
+                    - generic: Active
+                  - paragraph: "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION"
+                  - paragraph:
+                    - text: "Client:"
+                    - link:
+                      - /url: /org/mathebula-partners/customers/c4f70d86-c292-4d02-9f6f-2e900099ba57
+                      - text: Sipho Dlamini
+                  - generic:
+                    - generic:
+                      - generic: Ref
+                      - code: RAF-2026-001
+                    - generic: Type Litigation
+                  - paragraph: Created Apr 26, 2026 · 3 documents · 1 member · 9 tasks
+                - generic:
+                  - button:
+                    - img
+                    - text: Close Matter
+                  - button:
+                    - img
+                    - text: Generate Statement of Account
+                  - button:
+                    - img
+                    - text: Complete Matter
+                  - button:
+                    - img
+                  - button:
+                    - img
+                    - text: Generate Document
+                    - img
+                  - button:
+                    - img
+                    - text: New Engagement Letter
+                  - button:
+                    - img
+                    - text: Edit
+              - generic:
+                - paragraph: Field Groups
+                - generic:
+                  - generic:
+                    - text: SA Legal — Matter Details
+                    - button:
+                      - img
+                  - generic:
+                    - text: Project Info
+                    - button:
+                      - img
+                  - button:
+                    - img
+                    - text: Add Group
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: SA Legal — Matter Details
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Case Number
+                        - generic:
+                          - textbox:
+                            - /placeholder: Court-assigned case number for the matter
+                            - text: RAF-2026-001-CASE
+                      - generic:
+                        - generic: Court
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the court in which the matter is heard
+                            - text: Gauteng Division, Pretoria
+                      - generic:
+                        - generic: Opposing Party
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the primary opposing party
+                            - text: Road Accident Fund
+                      - generic:
+                        - generic: Opposing Attorney
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the opposing attorney or firm
+                      - generic:
+                        - generic: Advocate
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the instructed advocate (if briefed)
+                      - generic:
+                        - generic: Date of Instruction
+                        - generic:
+                          - textbox
+                      - generic:
+                        - generic: Estimated Value
+                        - generic:
+                          - spinbutton
+                - generic:
+                  - generic:
+                    - generic: Project Info
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Category
+                        - generic:
+                          - textbox:
+                            - /placeholder: Project category or type
+                - generic:
+                  - button:
+                    - img
+                    - text: Save Custom Fields
+              - generic:
+                - paragraph: Tags
+                - generic:
+                  - generic:
+                    - button:
+                      - img
+                      - text: Add Tag
+              - generic:
+                - tablist:
+                  - tab: Overview
+                  - tab: Documents
+                  - tab: Members
+                  - tab: Clients
+                  - tab [selected]: Tasks
+                  - tab: Time
+                  - tab: Fee Estimate
+                  - tab: Financials
+                  - tab: Staffing
+                  - tab: Rates
+                  - tab: Generated Docs
+                  - tab: Requests
+                  - tab: Client Comments
+                  - tab: Court Dates
+                  - tab: Adverse Parties
+                  - tab: Trust
+                  - tab: Disbursements
+                  - tab: Statements
+                  - tab: Activity
+                - tabpanel:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - heading [level=2]: Tasks
+                        - generic: "9"
+                      - button:
+                        - img
+                        - text: New Task
+                    - generic:
+                      - generic:
+                        - generic:
+                          - img
+                          - button:
+                            - img
+                        - generic:
+                          - tablist:
+                            - tab [selected]: All
+                      - button:
+                        - img
+                        - text: Save View
+                    - group:
+                      - button: All
+                      - button [pressed]: Open
+                      - button [pressed]: In Progress
+                      - button: Done
+                      - button: Cancelled
+                      - button: My Tasks
+                      - button: Recurring
+                    - generic:
+                      - generic:
+                        - table:
+                          - rowgroup:
+                            - row:
+                              - columnheader: Priority
+                              - columnheader: Title
+                              - columnheader: Status
+                              - columnheader: Assignee
+                              - columnheader: Due Date
+                              - columnheader: Actions
+                          - rowgroup:
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Execution -- warrant / attachment
+                              - cell:
+                                - generic: Open
+                              - cell: Unassigned
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                    - text: Log Time
+                                  - button:
+                                    - img
+                                    - text: Claim
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Post-judgment -- taxation of costs / appeal
+                              - cell:
+                                - generic: Open
+                              - cell: Bob Ndlovu
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                    - text: Log Time
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Trial / hearing attendance
+                              - cell:
+                                - generic: Open
+                              - cell: Bob Ndlovu
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                    - text: Log Time
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Pre-trial conference preparation
+                              - cell:
+                                - generic: Open
+                              - cell: Bob Ndlovu
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                    - text: Log Time
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Discovery -- request & exchange documents
+                              - cell:
+                                - generic: Open
+                              - cell: Unassigned
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                    - text: Log Time
+                                  - button:
+                                    - img
+                                    - text: Claim
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: File plea / exception / counterclaim
+                              - cell:
+                                - generic: Open
+                              - cell: Bob Ndlovu
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                    - text: Log Time
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Issue summons / combined summons
+                              - cell:
+                                - generic: Open
+                              - cell: Bob Ndlovu
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                    - text: Log Time
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Letter of demand
+                              - cell:
+                                - generic: Open
+                              - cell: Bob Ndlovu
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                    - text: Log Time
+                            - row:
+                              - cell:
+                                - generic: Medium
+                              - cell:
+                                - button:
+                                  - generic:
+                                    - generic:
+                                      - paragraph: Initial consultation & case assessment
+                              - cell:
+                                - generic: Open
+                              - cell: Bob Ndlovu
+                              - cell:
+                                - generic: —
+                              - cell:
+                                - generic:
+                                  - button [expanded]:
+                                    - img
+                                    - text: Log Time
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e156] [cursor=pointer]:
+    - img [ref=e157]
+  - alert
+  - dialog "Log Time" [ref=e640]:
+    - generic [ref=e641]:
+      - generic [ref=e642]:
+        - heading "Log Time" [level=2] [ref=e643]
+        - paragraph [ref=e644]: Record time spent on this task.
+      - generic [ref=e645]:
+        - generic [ref=e646]:
+          - generic [ref=e647]: Duration
+          - generic [ref=e648]:
+            - generic [ref=e649]:
+              - spinbutton [active] [ref=e650]: "0"
+              - generic [ref=e651]: h
+            - generic [ref=e652]:
+              - spinbutton [ref=e653]: "0"
+              - generic [ref=e654]: m
+        - generic [ref=e655]:
+          - generic [ref=e656]: Date
+          - textbox "Date" [ref=e657]: 2026-04-27
+        - generic [ref=e658]:
+          - generic [ref=e659]:
+            - text: Description
+            - generic [ref=e660]: (optional)
+          - textbox "Description (optional)" [ref=e661]:
+            - /placeholder: What did you work on?
+        - generic [ref=e662]:
+          - checkbox "Billable" [checked] [ref=e663]
+          - generic [ref=e664]: Billable
+          - 'button "Help: Billable vs. non-billable time" [ref=e665] [cursor=pointer]':
+            - img [ref=e666]
+        - paragraph [ref=e671]: No rate card found for this combination. This time entry will have no billable rate. Set up rates in Project Settings > Rates.
+        - generic [ref=e672]:
+          - button "Cancel" [ref=e673]
+          - button "Log Time" [ref=e674]
+      - button "Close" [ref=e675]:
+        - img
+        - generic [ref=e676]: Close

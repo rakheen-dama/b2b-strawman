@@ -1,0 +1,139 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e52]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e55]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e61]:
+          - generic [ref=e62]: Clients
+          - img [ref=e63]
+        - button "Finance" [ref=e67]:
+          - generic [ref=e68]: Finance
+          - img [ref=e69]
+        - generic [ref=e72]:
+          - button "Team" [expanded] [ref=e73]:
+            - generic [ref=e74]: Team
+            - img [ref=e75]
+          - link "Team" [ref=e78] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e79]
+            - text: Team
+      - generic [ref=e85]:
+        - link "Notifications" [ref=e86] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e87]
+          - text: Notifications
+        - link "Settings" [ref=e90] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e91]
+          - text: Settings
+        - link "Help" [ref=e94] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e95]
+          - text: Help
+      - generic [ref=e98]:
+        - generic [ref=e99]: BN
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Bob Ndlovu
+          - paragraph [ref=e102]: bob@mathebula-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "Mathebula & Partners" [ref=e106] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - link "fee notes" [ref=e172] [cursor=pointer]:
+              - /url: /org/mathebula-partners/invoices
+          - generic [ref=e173]:
+            - img [ref=e174]
+            - link "billing-runs" [ref=e194] [cursor=pointer]:
+              - /url: /org/mathebula-partners/invoices/billing-runs
+          - generic [ref=e195]:
+            - img [ref=e196]
+            - generic [ref=e198]: new
+        - generic [ref=e111]:
+          - button "User menu" [ref=e113]: BN
+          - button "Notifications" [ref=e115]:
+            - img
+            - generic [ref=e116]: 11 unread notifications
+            - generic [ref=e168]: "11"
+      - main [ref=e117]:
+        - generic [ref=e200]:
+          - heading "New Billing Run" [level=1] [ref=e201]
+          - generic [ref=e202]:
+            - navigation "Wizard steps" [ref=e203]:
+              - list [ref=e204]:
+                - listitem [ref=e205]:
+                  - generic [ref=e206]: "1"
+                  - generic [ref=e207]: Configure
+                - listitem [ref=e209]:
+                  - generic [ref=e210]: "2"
+                  - generic [ref=e211]: Select Customers
+                - listitem [ref=e213]:
+                  - generic [ref=e214]: "3"
+                  - generic [ref=e215]: Review & Cherry-Pick
+                - listitem [ref=e217]:
+                  - generic [ref=e218]: "4"
+                  - generic [ref=e219]: Review Drafts
+                - listitem [ref=e221]:
+                  - generic [ref=e222]: "5"
+                  - generic [ref=e223]: Send
+            - generic [ref=e246]:
+              - generic [ref=e247]:
+                - heading "Select Customers" [level=2] [ref=e248]
+                - paragraph [ref=e249]: No customers with unbilled work found for this period.
+              - generic [ref=e250]:
+                - paragraph [ref=e251]: 0 customers selected, R 0,00 total
+                - generic [ref=e252]:
+                  - button "Back" [ref=e253]
+                  - button "Next" [disabled]
+  - generic [ref=e169]:
+    - heading "Command Palette" [level=2] [ref=e170]
+    - paragraph [ref=e171]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e163] [cursor=pointer]:
+    - img [ref=e164]
+  - alert [ref=e167]

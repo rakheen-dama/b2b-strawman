@@ -279,7 +279,7 @@ After backend rebuild + restart (`bash compose/scripts/svc.sh restart backend`):
 6. **Regression — `address_line1` still required**: temp-null an INDIVIDUAL customer's `address_line1` while keeping the portal_contact in place. Attempt Send. Expected: fails with `Address Line 1 is required for Proposal Sending` and nothing else.
 
 Backend tests:
-```
+```bash
 ./mvnw -pl . test -Dtest=StructuralPrerequisiteCheckTest,ProposalSendTest
 ```
 

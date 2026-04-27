@@ -17,7 +17,7 @@ Day 45 is on the **Sipho/RAF matter** (RAF-2026-001), not Moroka — the dispatc
 
 ## Pre-state (read-only SELECT)
 
-```
+```text
 trust_transactions:
   0a6d1d60-… DEPOSIT R 50 000 RAF Sipho 2026-04-25 RECORDED (DEP-2026-001)
   446fa97c-… DEPOSIT R 25 000 EST Moroka 2026-04-25 RECORDED (DEP/2026/002)
@@ -64,7 +64,7 @@ information_requests:
 
 ## DB final state
 
-```
+```text
 trust_transactions (3 rows):
   0a6d1d60-… DEPOSIT R 50 000 RAF Sipho 2026-04-25 RECORDED (DEP-2026-001)
   446fa97c-… DEPOSIT R 25 000 EST Moroka 2026-04-25 RECORDED (DEP/2026/002)
@@ -111,7 +111,7 @@ Tab 1 (Sipho portal) was not opened this turn; previous turn's portal session wo
 
 ## Pre-state (read-only SELECT)
 
-```
+```text
 trust_transactions (3 rows pre-walk):
   13ca4d28-… DEPOSIT R 50 000,00 RAF Sipho 2026-04-27 RECORDED (carry-forward Day 10)
   f2f692e8-… DEPOSIT R    100,00 RAF Sipho 2026-04-27 RECORDED (carry-forward BUG-CYCLE26-11 retest)
@@ -188,7 +188,7 @@ information_requests (3 rows pre-walk):
 
 ## DB final state
 
-```
+```text
 trust_transactions (4 rows post-walk):
   13ca4d28-… DEPOSIT R 50 000,00 RAF Sipho   2026-04-27 RECORDED (carry-forward)
   f2f692e8-… DEPOSIT R    100,00 RAF Sipho   2026-04-27 RECORDED (carry-forward, BUG-CYCLE26-11 retest)

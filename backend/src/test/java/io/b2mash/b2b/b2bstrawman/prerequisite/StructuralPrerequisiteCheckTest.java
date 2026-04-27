@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.prerequisite;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.util.Map;
 import java.util.UUID;
@@ -247,6 +248,67 @@ class StructuralPrerequisiteCheckTest {
         StructuralPrerequisiteCheck.check(customer, PrerequisiteContext.PROJECT_CREATION);
 
     assertThat(violations).isEmpty();
+  }
+
+  @Test
+  void proposalSend_individualCustomer_withPortalContact_skipsContactFields() {
+    // BUG-CYCLE26-06: INDIVIDUAL customer (factory default) with portal_contact identity
+    // satisfied — contact_name/contact_email structural checks must be suppressed.
+    // address_line1 still required and present here, so result is empty.
+    var customer =
+        TestCustomerFactory.createActiveCustomer(
+            "Sipho Dlamini", "sipho@test.com", MEMBER_ID, CustomerType.INDIVIDUAL);
+    customer.setContactName(null);
+    customer.setContactEmail(null);
+    customer.setCustomFields(Map.of());
+    customer.setAddressLine1("12 Loveday St");
+
+    var violations =
+        StructuralPrerequisiteCheck.check(customer, PrerequisiteContext.PROPOSAL_SEND, true);
+
+    assertThat(violations).isEmpty();
+  }
+
+  @Test
+  void
+      proposalSend_individualCustomer_withPortalContact_butMissingAddress_returnsAddressViolation() {
+    // BUG-CYCLE26-06: with portal_contact identity satisfied but address_line1 still null,
+    // only the address violation should fire — contact_name/contact_email are suppressed.
+    var customer =
+        TestCustomerFactory.createActiveCustomer(
+            "Sipho Dlamini", "sipho@test.com", MEMBER_ID, CustomerType.INDIVIDUAL);
+    customer.setContactName(null);
+    customer.setContactEmail(null);
+    customer.setAddressLine1(null);
+    customer.setCustomFields(Map.of());
+
+    var violations =
+        StructuralPrerequisiteCheck.check(customer, PrerequisiteContext.PROPOSAL_SEND, true);
+
+    assertThat(violations).hasSize(1);
+    assertThat(violations.getFirst().fieldSlug()).isEqualTo("address_line1");
+  }
+
+  @Test
+  void proposalSend_companyCustomer_noPortalContact_stillRequiresContactFields() {
+    // BUG-CYCLE26-06: no portal_contact identity → legacy behaviour preserved (3 violations
+    // when contact_name + contact_email + address_line1 are all null). Verifies the relaxation
+    // is scoped to the portal_contact-satisfied path, not blanket.
+    var customer =
+        TestCustomerFactory.createActiveCustomer(
+            "Acme Pty Ltd", "billing@acme.com", MEMBER_ID, CustomerType.COMPANY);
+    customer.setContactName(null);
+    customer.setContactEmail(null);
+    customer.setAddressLine1(null);
+    customer.setCustomFields(Map.of());
+
+    var violations =
+        StructuralPrerequisiteCheck.check(customer, PrerequisiteContext.PROPOSAL_SEND, false);
+
+    assertThat(violations).hasSize(3);
+    assertThat(violations)
+        .extracting(PrerequisiteViolation::fieldSlug)
+        .containsExactlyInAnyOrder("contact_name", "contact_email", "address_line1");
   }
 
   @Test

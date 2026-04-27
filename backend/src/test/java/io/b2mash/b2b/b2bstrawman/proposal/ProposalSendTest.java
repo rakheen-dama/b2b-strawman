@@ -304,6 +304,37 @@ class ProposalSendTest {
         .andExpect(status().isForbidden());
   }
 
+  // --- BUG-CYCLE26-06: INDIVIDUAL customer with portal_contact only ---
+
+  @Test
+  void sendProposal_individualCustomer_withPortalContact_succeeds_evenWhenContactColumnsNull()
+      throws Exception {
+    // BUG-CYCLE26-06: INDIVIDUAL customer where Customer.contact_name/contact_email are NULL
+    // but an ACTIVE portal_contact bears the recipient identity. PROPOSAL_SEND prereq must
+    // honour the portal_contact and let the send through. Mirrors Day 7 §7.8 cycle-14 scenario.
+    String individualCustomerId =
+        createCustomer(
+            TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"),
+            "Sipho Dlamini",
+            "sipho@bug-cycle26-06.test");
+    fillIndividualCustomerWithoutContactFields(individualCustomerId);
+    UUID individualPortalContactId =
+        createPortalContact(individualCustomerId, "sipho.portal@bug-cycle26-06.test", "Sipho D.");
+
+    String proposalId =
+        createProposalForCustomer(individualCustomerId, "Individual Send Test", "HOURLY");
+
+    mockMvc
+        .perform(
+            post("/api/proposals/{id}/send", proposalId)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"portalContactId\": \"%s\"}".formatted(individualPortalContactId)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("SENT"))
+        .andExpect(jsonPath("$.sentAt").isNotEmpty());
+  }
+
   // --- 232.12: Withdraw test ---
 
   @Test
@@ -459,5 +490,53 @@ class ProposalSendTest {
   private void fillPrerequisiteFields(String customerIdStr) {
     String schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
     TestCustomerFactory.fillPrerequisiteFields(jdbcTemplate, schema, customerIdStr);
+  }
+
+  /**
+   * BUG-CYCLE26-06: mirrors how INDIVIDUAL legal-za customers are persisted. address_line1 is set
+   * (used in the proposal letter body), but contact_name/contact_email remain NULL on both the
+   * entity column and JSONB — the recipient identity lives in portal_contact. Also activates the
+   * customer so guard-checked operations (proposal send) are allowed.
+   */
+  private void fillIndividualCustomerWithoutContactFields(String customerIdStr) {
+    String schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
+    jdbcTemplate.update(
+        ("UPDATE \"%s\".customers SET"
+                + " custom_fields = '{\"address_line1\":\"12 Loveday St\",\"city\":\"Johannesburg\","
+                + "\"country\":\"ZA\",\"tax_number\":\"VAT-IND-001\"}'::jsonb,"
+                + " address_line1 = '12 Loveday St',"
+                + " city = 'Johannesburg',"
+                + " country = 'ZA',"
+                + " tax_number = 'VAT-IND-001',"
+                + " contact_name = NULL,"
+                + " contact_email = NULL,"
+                + " lifecycle_status = 'ACTIVE'"
+                + " WHERE id = ?::uuid")
+            .formatted(schema),
+        customerIdStr);
+  }
+
+  private String createProposalForCustomer(String targetCustomerId, String title, String feeModel)
+      throws Exception {
+    String contentJson =
+        """
+        {"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Proposal body."}]}]}
+        """;
+    String json =
+        """
+        {"title": "%s", "customerId": "%s", "feeModel": "%s", "contentJson": %s}
+        """
+            .formatted(title, targetCustomerId, feeModel, contentJson);
+
+    var result =
+        mockMvc
+            .perform(
+                post("/api/proposals")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(json))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return TestEntityHelper.extractIdFromLocation(result);
   }
 }

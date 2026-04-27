@@ -92,6 +92,22 @@ public final class StructuralPrerequisiteCheck {
    * @return a list of violations for null fields, empty if all required fields are populated
    */
   public static List<PrerequisiteViolation> check(Customer customer, PrerequisiteContext context) {
+    return check(customer, context, false);
+  }
+
+  /**
+   * Like {@link #check(Customer, PrerequisiteContext)}, but allows the caller to declare that an
+   * alternative source of recipient identity exists (e.g. an ACTIVE portal_contact with email) so
+   * that the {@code contact_name}/{@code contact_email} structural checks for PROPOSAL_SEND can be
+   * skipped. Other field checks (address, etc.) are unaffected.
+   *
+   * <p>Rationale: for legal-za INDIVIDUAL customers, recipient identity is held in {@code
+   * portal_contact}, not on the {@code Customer} entity columns. Hard-requiring those columns is a
+   * stale invariant from before {@code portal_contact} became the canonical proposal recipient. See
+   * BUG-CYCLE26-06.
+   */
+  public static List<PrerequisiteViolation> check(
+      Customer customer, PrerequisiteContext context, boolean portalContactIdentitySatisfied) {
     List<FieldCheck> requiredFields = CONTEXT_FIELDS.get(context);
     if (requiredFields == null) {
       return List.of();
@@ -101,6 +117,12 @@ public final class StructuralPrerequisiteCheck {
     List<PrerequisiteViolation> violations = new ArrayList<>();
 
     for (FieldCheck field : requiredFields) {
+      if (portalContactIdentitySatisfied
+          && context == PrerequisiteContext.PROPOSAL_SEND
+          && (field.fieldSlug().equals("contact_name")
+              || field.fieldSlug().equals("contact_email"))) {
+        continue;
+      }
       if (!hasValue(field, customer, customFields)) {
         violations.add(
             new PrerequisiteViolation(

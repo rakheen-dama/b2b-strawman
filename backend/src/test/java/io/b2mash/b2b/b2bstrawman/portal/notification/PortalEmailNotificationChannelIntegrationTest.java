@@ -276,6 +276,9 @@ class PortalEmailNotificationChannelIntegrationTest {
     assertThat(body)
         .as("CTA href must NOT fall back to trust-account id")
         .doesNotContain("/trust/" + trustAccountId);
+    assertThat(body)
+        .as("CTA href must point at /trust index when projectId is null")
+        .containsPattern("href=\"[^\"]+/trust\"");
   }
 
   @Test

@@ -679,3 +679,70 @@ Matter closes successfully with override (gates fail; happy-path expectation bro
 - Closure letter generation is reliable end-to-end (DB → S3 → Documents tab).
 - SoA generation pipeline ships as a separate manual flow rather than a closure side-effect.
 
+## Cycle 51 Retest — PR #1197 (3 SoA fixes: GAP-L-94 / GAP-L-95 / GAP-L-97) — 2026-04-28 SAST
+
+**Branch / HEAD verified:** `main` @ `0e9df9f4` (PR #1197 squash — bundles cycle-48 PR #1194 + cycle-49 PR #1195 + cycle-50 PR #1196 + CR-fix `0df066a7`).
+
+**Pre-flight:** Backend `svc.sh status` showed PID 35388 running with start-time 2026-04-27 20:25:22, but PR #1197 only landed at 23:43:13 — pre-merge code. **Restarted backend** via `bash compose/scripts/svc.sh restart backend` (27 s health-check); fresh process now serves the merged binary. Frontend HMR carried any UI changes through; gateway/portal untouched.
+
+**Mailpit cleared** immediately before trigger via `DELETE /api/v1/messages` (only legitimate QA REST surface) → `total: 0`.
+
+**Actor:** Bob Ndlovu (`bob@mathebula-test.local`, admin) via Keycloak SSO at `:3000`. Browser-driven via Playwright MCP — zero REST mutations to backend.
+
+**Trigger:** RAF matter `cc390c4f-35e2-42b5-8b54-bac766673ae7` (Sipho Dlamini, `c4f70d86-…`) → toolbar `Generate Statement of Account` button → modal → period `2026-04-01` → `2026-04-30` → `Preview & Save`. New `generated_documents` row written: `6b79c496-4ae2-4731-9fe7-3ac18677d394` `statement-of-account-dlamini-v-road-accident-fund-2026-04-30.pdf` at `2026-04-27 22:01:03.748+00`.
+
+### Per-fix retest results
+
+| Fix | Result | Evidence |
+|-----|--------|----------|
+| **GAP-L-95** (VAT) | **PASS — VERIFIED** | SoA preview iframe: `Total fees (excl. VAT): 3400.00` / `VAT: 510.00` / `Total fees (incl. VAT): 3910.00`. DB `generated_documents.context_snapshot.summary.total_fees = "3910.00"`. R 510 = 15 % × R 3 400 — matches default `tax_rates` row. Was R 0,00 in cycle 46. |
+| **GAP-L-94** (Trust Activity) | **PASS — VERIFIED** | SoA Trust Activity section is populated with 3 deposits: `DEP/2026/RAF-001 R 50 000,00`, `DEP/2026/RAF-002 R 100,00`, `DEP-2026-RAF-003 R 20 000,00`. `Closing balance: 70100.00` matches `trust_balance_held: 70100.00` in summary. Customer-aware resolver `findDistinctTrustAccountIdsByCustomerId` returned `46d1177a-d1c3-48d8-9ba8-427f14b8278f`. Was empty in cycle 46. |
+| **GAP-L-97** (portal email) | **PASS — VERIFIED** | Mailpit message `o7q6xXpr97YPC8czLw544N` (created `2026-04-27T22:01:04.057Z` — 1.4 s after SoA save) at `sipho.portal@example.com`, subject `"Document ready: statement-of-account-dlamini-v-road-accident-fund-2026-04-30.pdf from Mathebula & Partners"`. Backend log: `PortalEmailService - Portal notification sent template=portal-document-ready contact=f3f74a9d-3540-483a-80bc-6f5ef4e911bb to=sipho.portal@example.com`. Slug allowlist now matches the publisher's `statement-of-account` slug. Was 0 hits in cycle 46. |
+
+**Outcome: ALL THREE VERIFIED. 0 REOPENED.**
+
+### Read-only DB verification
+
+```sql
+-- generated_documents (new SoA row)
+SET search_path TO tenant_5039f2d497cf, public;
+SELECT id, file_name, generated_at FROM generated_documents
+ WHERE primary_entity_id='cc390c4f-35e2-42b5-8b54-bac766673ae7'
+ ORDER BY generated_at DESC LIMIT 1;
+-- 6b79c496-4ae2-4731-9fe7-3ac18677d394
+-- statement-of-account-dlamini-v-road-accident-fund-2026-04-30.pdf
+-- 2026-04-27 22:01:03.748348+00
+
+-- context_snapshot summary (proves VAT + trust closing persisted)
+SELECT jsonb_pretty(context_snapshot::jsonb->'summary')
+ FROM generated_documents WHERE id='6b79c496-4ae2-4731-9fe7-3ac18677d394';
+-- {
+--   "total_fees": "3910.00",            <- L-95: VAT-inclusive (R 3400 + R 510)
+--   "payments_received": "5160.00",
+--   "trust_balance_held": "70100.00",   <- L-94: customer-aware lookup returns Sipho's account
+--   "total_disbursements": "1250.00",
+--   "closing_balance_owing": "0.00",
+--   "previous_balance_owing": "0"
+-- }
+
+-- trust_transactions sanity (the 3 deposits the SoA renders)
+SELECT id, transaction_type, amount, reference, trust_account_id
+  FROM trust_transactions
+ WHERE customer_id='c4f70d86-c292-4d02-9f6f-2e900099ba57'
+ ORDER BY transaction_date;
+-- DEPOSIT 50000.00 DEP/2026/RAF-001 46d1177a-…
+-- DEPOSIT   100.00 DEP/2026/RAF-002 46d1177a-…
+-- DEPOSIT 20000.00 DEP-2026-RAF-003 46d1177a-…
+```
+
+**Note on `email_delivery_log`:** scenario spec referenced an `email_notification_log` table; actual table in this tenant is `email_delivery_log`. No new `PORTAL_DOCUMENT` row was written for this SoA email — the portal-document path persists only the backend log line (`PortalEmailService` — see backend.log at `22:01:04.158`) plus the actual outbound email (Mailpit confirms delivery). This is consistent with how cycle-46 also produced no `email_delivery_log` row even on the prior trigger (the email_delivery_log table is used by the in-app/transactional flow, not the portal-document-ready path). Out of scope for this retest; flagged for product/dev as an observability follow-up.
+
+### Console health
+0 console errors during the SoA generation flow.
+
+### Evidence files
+- `qa_cycle/evidence/cycle51-retest-PR1197-soa-context.json` — full SoA HTML + extracted values.
+- `qa_cycle/evidence/cycle51-retest-PR1197-soa-preview.png` — full-page screenshot at modal-open state.
+- `qa_cycle/evidence/cycle51-retest-PR1197-soa-email-full.json` — Mailpit message detail.
+- `qa_cycle/evidence/cycle51-retest-PR1197-soa-email-body.html` — Mailpit HTML + plain-text excerpts.
+

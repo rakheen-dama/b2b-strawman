@@ -300,3 +300,58 @@ Day 11 walked end-to-end. Per per-day workflow §1: "Stop at end-of-day or first
 - `qa_cycle/checkpoint-results/cycle26-day11-11.3-trust-by-matter.yml` — working `/trust/{matterId}` page (PASS evidence for §11.3-§11.8)
 - `qa_cycle/checkpoint-results/cycle26-day11-home.yml` — `/home` tile "Last trust movement" working
 
+---
+
+## Cycle 29 Retest — PR #1183 BUG-CYCLE26-11 — 2026-04-27 SAST
+
+**Branch**: `main` after squash `8dfb4920` (PR #1183).
+**Backend rev / JVM**: `main 8dfb4920` / backend PID 41372 (fresh JVM, restarted post-merge — verified `etime` < merge time was insufficient on prior PID 35801, restart was required).
+**Stack**: Keycloak dev — backend:8080, gateway:8443, frontend:3000, portal:3002 all healthy.
+**Auth**: Bob Ndlovu (firm, Admin) for trigger, Sipho Dlamini (portal magic-link) for verification.
+
+### Trigger evidence
+
+- Mailpit cleared via `DELETE /api/v1/messages` immediately before walk to isolate the new email.
+- Bob logged into firm UI, navigated to `/org/mathebula-partners/trust-accounting/transactions`, clicked **Record Transaction → Record Deposit** dialog and submitted:
+  - Client UUID: `c4f70d86-c292-4d02-9f6f-2e900099ba57` (Sipho Dlamini)
+  - Matter UUID: `cc390c4f-35e2-42b5-8b54-bac766673ae7` (Dlamini v Road Accident Fund)
+  - Amount: R 100,00
+  - Reference: `DEP/2026/RAF-002`
+  - Description: `Cycle 29 retest BUG-CYCLE26-11`
+- New trust transaction row created (DB SELECT for evidence only, no SQL writes):
+  - `id = f2f692e8-84a2-407b-947c-2e3684ca675b`
+  - `transaction_type = DEPOSIT`, `amount = 100.00`, `status = RECORDED`
+  - `project_id = cc390c4f-35e2-42b5-8b54-bac766673ae7` ✓ (matter UUID populated)
+- Backend log (PID 41372, requestId `bef4fe28-…`): `Portal notification sent template=portal-trust-activity contact=f3f74a9d-3540-483a-80bc-6f5ef4e911bb to=sipho.portal@example.com`.
+- Firm-side trust list re-snapshot: `qa_cycle/checkpoint-results/cycle29-retest-PR1183-BUG-11-firm-trust-list.yml`.
+
+### Email evidence
+
+- File: `qa_cycle/checkpoint-results/cycle29-retest-PR1183-BUG-11-email-body.html` (Mailpit message `gEDSuhVsW2wp6im6oDfXbz`, subject "Mathebula & Partners: Trust account activity", sent 2026-04-27T10:52:06Z).
+- Only HREF in body: `http://localhost:3002/trust/cc390c4f-35e2-42b5-8b54-bac766673ae7` ✓ (matter UUID).
+- Body excerpt:
+  ```html
+  <a href="http://localhost:3002/trust/cc390c4f-35e2-42b5-8b54-bac766673ae7"
+     style="display: inline-block; padding: 12px 24px; ...">View trust ledger</a>
+  ```
+- Asserts: body contains `href=".../trust/cc390c4f-…"` (matter UUID); body does **NOT** contain `/trust/46d1177a-…` (trust account UUID); body does **NOT** contain `/trust/null`.
+
+### Portal verification (Sipho)
+
+- Fresh magic-link via `POST /portal/auth/request-link` (orgId=`mathebula-partners`) → `/auth/exchange?token=93BMh5e8…&orgId=mathebula-partners` → landed authenticated on `:3002/projects` as "Sipho Dlamini".
+- Navigated directly to the URL from the email CTA: `http://localhost:3002/trust/cc390c4f-35e2-42b5-8b54-bac766673ae7`.
+- Snapshot: `qa_cycle/checkpoint-results/cycle29-retest-PR1183-BUG-11-portal-trust-matter.yml`.
+- Page renders correctly:
+  - **Trust balance card**: `R 50 100,00` / "As of 27 Apr 2026" / "Matter cc390c4f"
+  - **Transactions table** (2 rows):
+    - `27 Apr 2026 / DEPOSIT / Cycle 29 retest BUG-CYCLE26-11 / R 100,00 / R 50 100,00`
+    - `27 Apr 2026 / DEPOSIT / Initial trust deposit — RAF-2026-001 / R 50 000,00 / R 50 000,00`
+  - **Statements** section (empty-state — expected).
+- NO 404, NO "No trust balance is recorded for this matter" error, NO "The requested resource was not found" panel.
+
+### Conclusion
+
+**PASS / VERIFIED.** PR #1182 fix (rolled to main as PR #1183 squash `8dfb4920`) correctly threads the matter UUID through `TrustTransactionRecordedEvent.projectId` → `PortalEmailNotificationChannel` URL builder. The email CTA now links to `/trust/{matter_uuid}` which the portal `/trust/[matterId]` route resolves correctly to the trust ledger view.
+
+BUG-CYCLE26-11 transitions FIXED → **VERIFIED** on cycle 29 retest.
+

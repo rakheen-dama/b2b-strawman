@@ -34,21 +34,21 @@ trust_account_id      = 46d1177a-d1c3-48d8-9ba8-427f14b8278f   # "Mathebula Trus
 - `/documents` — must NOT list letters-of-authority.pdf (Moroka-attached variant).
 - `/requests` — must NOT list REQ-0003.
 - `/requests/de3cffc7-7744-43ce-9c80-d90a42a1de08` — must 403/404.
-- `/trust` and `/trust/340c5bb2-...` — balance shown must reflect ONLY Sipho's transactions, never Moroka's R 25 000.
+- `/trust` and `/trust/340c5bb2-16c9-4cb4-ae27-df757aa7ce6d` — balance shown must reflect ONLY Sipho's transactions, never Moroka's R 25 000.
 
 ### Backend (bearer = Sipho's portal_jwt, orgId=mathebula-partners)
 - `GET /portal/projects/340c5bb2-16c9-4cb4-ae27-df757aa7ce6d` → expect 403 or 404.
 - `GET /portal/requests/de3cffc7-7744-43ce-9c80-d90a42a1de08` → expect 403 or 404.
 - `GET /portal/requests` → response must NOT contain REQ-0003.
 - `GET /portal/documents/9eb9ed95-92be-4bb0-b656-5b2f6f96b9b6` → expect 403 or 404.
-- `GET /portal/trust/summary` → matters array must only contain `cc390c4f-…`, never `340c5bb2-…`.
-- `GET /portal/trust/matters/340c5bb2-.../transactions` → expect 403 or 404.
+- `GET /portal/trust/summary` → matters array must only contain `cc390c4f-35e2-42b5-8b54-bac766673ae7`, never `340c5bb2-16c9-4cb4-ae27-df757aa7ce6d`.
+- `GET /portal/trust/matters/340c5bb2-16c9-4cb4-ae27-df757aa7ce6d/transactions` → expect 403 or 404.
 
 ### Digest / email (Day 15 Phase D)
 - If weekly digest fires for Sipho, the email body must not mention "Moroka", "EST-2026-002", "Peter Moroka", "R 25 000" or REQ-0003.
 
 ## Notes on this cycle's seed
-- All 11 Day 14 checkpoints PASS in cycle 30 (14.4 SKIPPED-BY-DESIGN per scenario; 14.2 PARTIAL on beneficial-owners — GAP-L-54 carried forward, no new gap).
+- Day 14 cycle 30: 9 PASS / 1 PARTIAL (14.2 — GAP-L-54 beneficial-owners structured field absent for TRUST clients, carried forward into Day 15) / 1 SKIPPED-BY-DESIGN (14.4 conflict check per scenario) / 0 FAIL / 0 BLOCKED / 0 new gaps.
 - Liquidation and Distribution Account Pack template VERIFIED present (L-53 fix holds).
 - Portal contact auto-provisioned for TRUST customer_type (L-34 holds).
 - Matter applied_field_groups correctly excludes conveyancing pack (L-37-regression V112 holds).

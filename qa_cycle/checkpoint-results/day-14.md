@@ -273,7 +273,7 @@ Day 15 dispatch — Sipho portal isolation probes (List-view leak, Direct-URL ha
 
 ## Cycle-30 Isolation Probe IDs (for Day 15 dispatch)
 
-```
+```text
 Moroka customer_id          : 0cb199f2-9263-4d57-88c7-4a0350f8779c
 Moroka portal_contact_id    : 3c127b78-1d78-457f-a9cf-efd2783e0b66
 Moroka matter_id (project)  : 340c5bb2-16c9-4cb4-ae27-df757aa7ce6d

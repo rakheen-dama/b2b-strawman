@@ -206,10 +206,32 @@ class ProposalSendTest {
         .andExpect(status().isConflict());
   }
 
+  // --- BUG-CYCLE26-07: create-time seeder produces sendable content ---
+  // Gate-2 (`sendProposal()`: "Proposal content must not be empty") is now a defensive guard
+  // that is unreachable via the public API: createProposal seeds a default Tiptap doc when
+  // contentJson is omitted, and updateProposal only writes contentJson when the caller
+  // supplies a non-null value (it cannot be cleared back to empty). Gate-2 is kept as a
+  // safety net for any future code path that bypasses the seeder; we don't try to fake the
+  // "empty content via SQL" scenario in an integration test because forcing the DB into a
+  // state that cannot be produced by the API is misleading regression coverage.
+
   @Test
-  void sendProposal_emptyContent_returns400() throws Exception {
-    // Create proposal without content (default empty map)
-    String proposalId = createProposalWithoutContent("Empty Content", "HOURLY");
+  void createProposal_withoutContent_seedsDefaultDocSendableEndToEnd() throws Exception {
+    // BUG-CYCLE26-07 regression: matter-level "+ New Engagement Letter" dialog never sends
+    // contentJson. Without the seeder, sendProposal() would throw gate-2. With the seeder,
+    // the persisted row has a non-empty Tiptap doc and the proposal sends successfully and
+    // syncs to the portal read model.
+    String proposalId = createHourlyProposalWithoutContent("Seeded Default Content");
+
+    String schema = SchemaNameGenerator.generateSchemaName(ORG_ID);
+    String contentJson =
+        jdbcTemplate.queryForObject(
+            "SELECT content_json::text FROM \"%s\".proposals WHERE id = ?::uuid".formatted(schema),
+            String.class,
+            proposalId);
+    assertThat(contentJson).isNotNull();
+    assertThat(contentJson).contains("\"type\"").contains("\"doc\"");
+    assertThat(contentJson).contains("client_name");
 
     mockMvc
         .perform(
@@ -217,7 +239,18 @@ class ProposalSendTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_prop_send_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"portalContactId\": \"%s\"}".formatted(portalContactId)))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("SENT"))
+        .andExpect(jsonPath("$.sentAt").isNotEmpty());
+
+    // Verify the seeder-built doc actually flows through the portal sync — same assertion
+    // pattern as sendProposal_portalSyncWritesRow above.
+    Integer portalCount =
+        jdbcTemplate.queryForObject(
+            "SELECT COUNT(*) FROM portal.portal_proposals WHERE id = ?::uuid",
+            Integer.class,
+            proposalId);
+    assertThat(portalCount).isEqualTo(1);
   }
 
   @Test
@@ -434,12 +467,19 @@ class ProposalSendTest {
     return TestEntityHelper.extractIdFromLocation(result);
   }
 
-  private String createProposalWithoutContent(String title, String feeModel) throws Exception {
+  /**
+   * Creates an HOURLY proposal with no contentJson supplied. Hard-coded to HOURLY because other fee
+   * models (FIXED, RETAINER, CONTINGENCY) require fee-model-specific fields the helper doesn't
+   * supply — calling this with another fee model would silently fail the
+   * `andExpect(status().isCreated())` assertion via 400 from validateFeeConfiguration. Use {@link
+   * #createProposalWithContent} when fee-model variation is needed.
+   */
+  private String createHourlyProposalWithoutContent(String title) throws Exception {
     String json =
         """
-        {"title": "%s", "customerId": "%s", "feeModel": "%s"}
+        {"title": "%s", "customerId": "%s", "feeModel": "HOURLY"}
         """
-            .formatted(title, customerId, feeModel);
+            .formatted(title, customerId);
 
     var result =
         mockMvc

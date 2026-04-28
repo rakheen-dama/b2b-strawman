@@ -3,6 +3,7 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import type { RetainerPeriodPreview } from "@/lib/api/billing-runs";
+import { TerminologyHeading } from "@/components/terminology-heading";
 
 interface CherryPickRetainerSectionProps {
   retainers: RetainerPeriodPreview[];
@@ -27,7 +28,7 @@ export function CherryPickRetainerSection({
           <thead>
             <tr className="border-b border-slate-200 text-left dark:border-slate-700">
               <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">Include</th>
-              <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">Customer</th>
+              <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400"><TerminologyHeading term="Customer" /></th>
               <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">Period</th>
               <th className="pr-3 pb-2 text-right font-medium text-slate-500 dark:text-slate-400">
                 Consumed Hours

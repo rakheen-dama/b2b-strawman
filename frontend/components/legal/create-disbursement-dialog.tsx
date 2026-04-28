@@ -45,6 +45,7 @@ import { TrustTransactionLinkDialog } from "@/components/legal/trust-transaction
 import { formatCurrency } from "@/lib/format";
 import { useOrgProfile } from "@/lib/org-profile";
 import type { TrustTransaction } from "@/lib/types";
+import { useTerminology } from "@/lib/terminology";
 
 interface CreateDisbursementDialogProps {
   slug: string;
@@ -59,6 +60,7 @@ export function CreateDisbursementDialog({
   defaultCustomerId,
   onSuccess,
 }: CreateDisbursementDialogProps) {
+  const { t } = useTerminology();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -369,7 +371,7 @@ export function CreateDisbursementDialog({
                 name="customerId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Customer</FormLabel>
+                    <FormLabel>{t("Customer")}</FormLabel>
                     <FormControl>
                       <select
                         value={field.value}

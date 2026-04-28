@@ -117,7 +117,7 @@ export function ProjectHealthWidget({ projects, orgSlug }: ProjectHealthWidgetPr
   return (
     <Card data-testid="project-health-panel">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium">Project Health</CardTitle>
+        <CardTitle className="text-sm font-medium">{t("Project Health")}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 pt-0">
         {/* Filter Tabs */}
@@ -145,12 +145,12 @@ export function ProjectHealthWidget({ projects, orgSlug }: ProjectHealthWidgetPr
             role="columnheader"
             onClick={() => handleSort("name")}
             className="flex min-w-0 flex-1 items-center gap-1"
-            aria-label="Sort by project name"
+            aria-label={`Sort by ${t("project")} name`}
             aria-sort={
               sortField === "name" ? (sortDirection === "asc" ? "ascending" : "descending") : "none"
             }
           >
-            Project
+            {t("Project")}
             {sortField === "name" && <SortIcon className="size-3" />}
           </button>
           <button
@@ -177,7 +177,7 @@ export function ProjectHealthWidget({ projects, orgSlug }: ProjectHealthWidgetPr
 
         {/* Project Rows */}
         {visibleProjects.length === 0 ? (
-          <p className="py-2 text-center text-xs text-slate-500 italic">No matching projects</p>
+          <p className="py-2 text-center text-xs text-slate-500 italic">{`No matching ${t("projects")}`}</p>
         ) : (
           <div className="space-y-0">
             {visibleProjects.map((project) => (

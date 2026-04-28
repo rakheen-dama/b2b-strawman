@@ -47,6 +47,7 @@ const SEGMENT_LABELS: Record<string, string> = {
   "court-calendar": "Court Calendar",
   "conflict-check": "Conflict Check",
   "client-ledgers": "Client Ledgers",
+  invoices: "Invoices",
 };
 
 /** Segments that contain dynamic child routes (e.g. /projects/[id]) */

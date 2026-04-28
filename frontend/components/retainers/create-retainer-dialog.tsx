@@ -40,6 +40,7 @@ import type {
   CreateRetainerRequest,
 } from "@/lib/api/retainers";
 import { FREQUENCY_LABELS, TYPE_LABELS, ROLLOVER_LABELS } from "@/lib/retainer-constants";
+import { useTerminology } from "@/lib/terminology";
 
 interface CreateRetainerDialogProps {
   slug: string;
@@ -48,6 +49,7 @@ interface CreateRetainerDialogProps {
 }
 
 export function CreateRetainerDialog({ slug, customers, children }: CreateRetainerDialogProps) {
+  const { t } = useTerminology();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -154,7 +156,7 @@ export function CreateRetainerDialog({ slug, customers, children }: CreateRetain
         <div className="max-h-[60vh] space-y-4 overflow-y-auto py-2">
           {/* Customer Selector */}
           <div className="space-y-2">
-            <Label>Customer</Label>
+            <Label>{t("Customer")}</Label>
             <Popover open={customerPopoverOpen} onOpenChange={setCustomerPopoverOpen} modal={false}>
               <PopoverTrigger asChild>
                 <Button

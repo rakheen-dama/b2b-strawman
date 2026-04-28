@@ -60,6 +60,10 @@ export function NewFromTemplateDialog({
 }: NewFromTemplateDialogProps) {
   const router = useRouter();
   const { t } = useTerminology();
+  const referencePlaceholder =
+    t("project.referencePlaceholder") === "project.referencePlaceholder"
+      ? "e.g. PRJ-2026-001"
+      : t("project.referencePlaceholder");
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<1 | 2>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -366,7 +370,7 @@ export function NewFromTemplateDialog({
                     id="new-proj-ref"
                     value={referenceNumber}
                     onChange={(e) => setReferenceNumber(e.target.value)}
-                    placeholder="e.g. PRJ-2026-001"
+                    placeholder={referencePlaceholder}
                     maxLength={100}
                   />
                 </div>

@@ -65,9 +65,12 @@ interface OverviewTabProps {
    */
   ficaStatus: FicaStatus | null;
   /**
-   * GAP-OBS-Day60-RetentionShape — retention clock anchor + computed end date
-   * for the per-matter RetentionCard. Both null on non-closed matters; the
-   * card self-gates on `status === "CLOSED" && retentionClockStartedAt != null`.
+   * GAP-L-101 — retention clock anchor + computed end date for the per-matter
+   * RetentionCard. The card now self-gates into a 3-state surface:
+   *  - State A (pre-clock): COMPLETED or no anchor → informational copy
+   *  - State B (unconfigured): CLOSED + anchor + null end-date → warning + settings deep-link
+   *  - State C (active): CLOSED + anchor + end-date → existing days-remaining display
+   * Returns null (not rendered) for ACTIVE/DRAFT.
    */
   retentionClockStartedAt: string | null;
   retentionEndsOn: string | null;
@@ -553,10 +556,11 @@ export async function OverviewTab({
               today; expandable to adapter + BO coverage later. */}
           {customerId && <FicaStatusCard ficaStatus={ficaStatus} slug={slug} />}
 
-          {/* GAP-OBS-Day60-RetentionShape — per-matter retention end date.
-              Self-gates: only renders when status === "CLOSED" and the
-              retention clock is stamped. Sits below FicaStatusCard so the
-              compliance/lifecycle signals stack together on the right rail. */}
+          {/* GAP-L-101 — per-matter retention card. Self-gates into a 3-state
+              surface (pre-clock / unconfigured / active) for COMPLETED and
+              CLOSED matters; returns null for ACTIVE/DRAFT. Sits below
+              FicaStatusCard so the compliance/lifecycle signals stack
+              together on the right rail. */}
           <RetentionCard
             status={projectStatus}
             retentionClockStartedAt={retentionClockStartedAt}

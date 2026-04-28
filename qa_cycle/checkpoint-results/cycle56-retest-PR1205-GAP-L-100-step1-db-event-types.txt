@@ -1,0 +1,25 @@
+SET
+            event_type             | count 
+-----------------------------------+-------
+ court_date.created                |     1
+ disbursement.approved             |     1
+ disbursement.billed               |     1
+ disbursement.created              |     1
+ disbursement.submitted            |     1
+ document.generated                |     1
+ information_request.completed     |     1
+ information_request.created       |     4
+ information_request.item_accepted |     3
+ information_request.sent          |     4
+ matter_closure.closed             |     1
+ portal.document.downloaded        |     2
+ portal.document.upload_initiated  |     5
+ portal.invoice.paid               |     1
+ portal.request_item.submitted     |     5
+ project.created_from_template     |     1
+ project.updated                   |     2
+ statement.generated               |     2
+ time_entry.created                |     4
+ time_entry.deleted                |     2
+(20 rows)
+

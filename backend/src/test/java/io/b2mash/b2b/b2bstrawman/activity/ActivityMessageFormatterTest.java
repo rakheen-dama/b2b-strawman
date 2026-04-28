@@ -6,6 +6,8 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRecord;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
+import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -25,6 +27,10 @@ class ActivityMessageFormatterTest {
     return Map.of(ACTOR_ID, ACTOR_MEMBER);
   }
 
+  private Map<UUID, PortalContact> emptyPortalContactMap() {
+    return Map.of();
+  }
+
   private AuditEvent createEvent(String eventType, String entityType, Map<String, Object> details) {
     var record =
         new AuditEventRecord(
@@ -35,7 +41,7 @@ class ActivityMessageFormatterTest {
   @Test
   void taskCreatedProducesCorrectMessage() {
     var event = createEvent("task.created", "task", Map.of("title", "Fix login bug"));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice created task \"Fix login bug\"");
     assertThat(item.actorName()).isEqualTo("Alice");
     assertThat(item.entityType()).isEqualTo("task");
@@ -51,7 +57,7 @@ class ActivityMessageFormatterTest {
             Map.of(
                 "title", Map.of("from", "Old Title", "to", "Fix login bug"),
                 "assignee_id", Map.of("from", "", "to", UUID.randomUUID().toString())));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice assigned task \"Fix login bug\"");
   }
 
@@ -64,7 +70,7 @@ class ActivityMessageFormatterTest {
             Map.of(
                 "title", Map.of("from", "Fix login bug", "to", "Fix login bug"),
                 "status", Map.of("from", "OPEN", "to", "IN_PROGRESS")));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message())
         .isEqualTo("Alice changed task \"Fix login bug\" status to IN_PROGRESS");
   }
@@ -73,7 +79,7 @@ class ActivityMessageFormatterTest {
   void taskUpdatedGenericProducesUpdateMessage() {
     var event =
         createEvent("task.updated", "task", Map.of("title", Map.of("from", "Old", "to", "New")));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice updated task \"New\"");
   }
 
@@ -91,7 +97,7 @@ class ActivityMessageFormatterTest {
                 "Draft particulars of claim",
                 "assignee_id",
                 Map.of("from", "", "to", UUID.randomUUID().toString())));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice assigned task \"Draft particulars of claim\"");
     assertThat(item.message()).doesNotContain("unknown");
   }
@@ -106,7 +112,7 @@ class ActivityMessageFormatterTest {
                 "title", Map.of("from", "Task", "to", "Task"),
                 "assignee_id", Map.of("from", "", "to", UUID.randomUUID().toString()),
                 "status", Map.of("from", "OPEN", "to", "IN_PROGRESS")));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).contains("assigned task");
   }
 
@@ -117,7 +123,7 @@ class ActivityMessageFormatterTest {
             "task.claimed",
             "task",
             Map.of("title", "Fix login bug", "assignee_id", ACTOR_ID.toString()));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice claimed task \"Fix login bug\"");
   }
 
@@ -128,14 +134,14 @@ class ActivityMessageFormatterTest {
             "task.released",
             "task",
             Map.of("title", "Fix login bug", "previous_assignee_id", ACTOR_ID.toString()));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice released task \"Fix login bug\"");
   }
 
   @Test
   void documentUploadedProducesCorrectMessage() {
     var event = createEvent("document.uploaded", "document", Map.of("file_name", "Q4 Report.pdf"));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice uploaded document \"Q4 Report.pdf\"");
     assertThat(item.entityName()).isEqualTo("Q4 Report.pdf");
   }
@@ -143,7 +149,7 @@ class ActivityMessageFormatterTest {
   @Test
   void documentDeletedProducesCorrectMessage() {
     var event = createEvent("document.deleted", "document", Map.of("file_name", "Q4 Report.pdf"));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice deleted document \"Q4 Report.pdf\"");
   }
 
@@ -158,7 +164,7 @@ class ActivityMessageFormatterTest {
                 "entity_id", UUID.randomUUID().toString(),
                 "entity_name", "Pre-trial conference preparation",
                 "body", "Great work!"));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message())
         .isEqualTo("Alice commented on task \"Pre-trial conference preparation\"");
   }
@@ -173,7 +179,7 @@ class ActivityMessageFormatterTest {
                 "entity_type", "TASK",
                 "entity_id", UUID.randomUUID().toString(),
                 "body", "Great work!"));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice commented on task \"task\"");
   }
 
@@ -184,7 +190,7 @@ class ActivityMessageFormatterTest {
             "time_entry.created",
             "time_entry",
             Map.of("duration_minutes", 150, "task_id", UUID.randomUUID().toString()));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).contains("Alice logged 2h 30m on task");
   }
 
@@ -195,7 +201,7 @@ class ActivityMessageFormatterTest {
             "time_entry.created",
             "time_entry",
             Map.of("duration_minutes", 45, "task_id", UUID.randomUUID().toString()));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).contains("logged 45m");
   }
 
@@ -206,14 +212,14 @@ class ActivityMessageFormatterTest {
             "time_entry.created",
             "time_entry",
             Map.of("duration_minutes", 120, "task_id", UUID.randomUUID().toString()));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).contains("logged 2h");
   }
 
   @Test
   void projectMemberAddedProducesCorrectMessage() {
     var event = createEvent("project_member.added", "project_member", Map.of("name", "Bob"));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice added Bob to the project");
     assertThat(item.entityName()).isEqualTo("Bob");
   }
@@ -221,14 +227,14 @@ class ActivityMessageFormatterTest {
   @Test
   void projectMemberRemovedProducesCorrectMessage() {
     var event = createEvent("project_member.removed", "project_member", Map.of("name", "Bob"));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice removed Bob from the project");
   }
 
   @Test
   void unknownEventTypeProducesFallbackMessage() {
     var event = createEvent("customer.updated", "customer", Map.of());
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice performed customer.updated on customer");
   }
 
@@ -246,7 +252,7 @@ class ActivityMessageFormatterTest {
             null,
             Map.of("title", "Auto-created task"));
     var event = new AuditEvent(record);
-    var item = formatter.format(event, Map.of());
+    var item = formatter.format(event, Map.of(), emptyPortalContactMap());
     assertThat(item.actorName()).isEqualTo("System");
     assertThat(item.actorAvatarUrl()).isNull();
     assertThat(item.message()).contains("System created task");
@@ -267,7 +273,7 @@ class ActivityMessageFormatterTest {
             null,
             Map.of("title", "Some task"));
     var event = new AuditEvent(record);
-    var item = formatter.format(event, Map.of());
+    var item = formatter.format(event, Map.of(), emptyPortalContactMap());
     assertThat(item.actorName()).isEqualTo("Unknown");
   }
 
@@ -286,7 +292,7 @@ class ActivityMessageFormatterTest {
             null,
             Map.of("actor_name", "Jane Customer", "body", "Hello"));
     var event = new AuditEvent(record);
-    var item = formatter.format(event, Map.of());
+    var item = formatter.format(event, Map.of(), emptyPortalContactMap());
     assertThat(item.actorName()).isEqualTo("Jane Customer");
   }
 
@@ -297,7 +303,7 @@ class ActivityMessageFormatterTest {
             "document.generated",
             "generated_document",
             Map.of("file_name", "engagement-letter.pdf", "template_name", "Engagement Letter"));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message())
         .isEqualTo(
             "Alice generated document \"engagement-letter.pdf\" from template \"Engagement Letter\"");
@@ -311,7 +317,7 @@ class ActivityMessageFormatterTest {
             "docx_document.generated",
             "generated_document",
             Map.of("fileName", "invoice-acme.docx", "template_name", "Invoice Template"));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).contains("generated document").contains("Invoice Template");
   }
 
@@ -324,8 +330,129 @@ class ActivityMessageFormatterTest {
             "information_request.item_accepted",
             "request_item",
             Map.of("request_number", "REQ-0042", "item_name", "ID copy"));
-    var item = formatter.format(event, actorMap());
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
     assertThat(item.message()).isEqualTo("Alice accepted \"ID copy\" for REQ-0042");
     assertThat(item.message()).doesNotContain("unknown");
+  }
+
+  // ---------- OBS-Cycle55-PortalContactBucketedAsSystem ----------
+
+  /**
+   * PORTAL_CONTACT actor with a non-null {@code display_name} renders the display name (e.g. "Sipho
+   * Dlamini downloaded …") instead of bucketing under "System" / "Unknown".
+   */
+  @Test
+  void portalContactWithDisplayNameRendersDisplayName() {
+    UUID portalContactId = UUID.randomUUID();
+    PortalContact contact =
+        TestIds.withId(
+            new PortalContact(
+                "org_test",
+                UUID.randomUUID(),
+                "sipho@example.com",
+                "Sipho Dlamini",
+                PortalContact.ContactRole.PRIMARY),
+            portalContactId);
+
+    var record =
+        new AuditEventRecord(
+            "document.uploaded",
+            "document",
+            ENTITY_ID,
+            portalContactId,
+            "PORTAL_CONTACT",
+            "PORTAL",
+            null,
+            null,
+            Map.of("file_name", "ID copy.pdf"));
+    var event = new AuditEvent(record);
+
+    var item = formatter.format(event, Map.of(), Map.of(portalContactId, contact));
+
+    assertThat(item.actorName()).isEqualTo("Sipho Dlamini");
+    assertThat(item.actorAvatarUrl()).isNull();
+    assertThat(item.message()).isEqualTo("Sipho Dlamini uploaded document \"ID copy.pdf\"");
+    assertThat(item.message()).doesNotContain("System").doesNotContain("Unknown");
+  }
+
+  /**
+   * PORTAL_CONTACT actor with NULL {@code display_name} but non-null {@code email} falls back to
+   * the email as the actor label.
+   */
+  @Test
+  void portalContactWithoutDisplayNameFallsBackToEmail() {
+    UUID portalContactId = UUID.randomUUID();
+    PortalContact contact =
+        TestIds.withId(
+            new PortalContact(
+                "org_test",
+                UUID.randomUUID(),
+                "client@example.com",
+                null,
+                PortalContact.ContactRole.GENERAL),
+            portalContactId);
+
+    var record =
+        new AuditEventRecord(
+            "document.uploaded",
+            "document",
+            ENTITY_ID,
+            portalContactId,
+            "PORTAL_CONTACT",
+            "PORTAL",
+            null,
+            null,
+            Map.of("file_name", "FICA.pdf"));
+    var event = new AuditEvent(record);
+
+    var item = formatter.format(event, Map.of(), Map.of(portalContactId, contact));
+
+    assertThat(item.actorName()).isEqualTo("client@example.com");
+    assertThat(item.actorAvatarUrl()).isNull();
+    assertThat(item.message()).isEqualTo("client@example.com uploaded document \"FICA.pdf\"");
+  }
+
+  /**
+   * PORTAL_CONTACT actor whose UUID is not in {@code portalContactMap} (anonymized / archived /
+   * orphan) falls back to {@code details.actor_name}, then to the literal "Portal user". Covers
+   * GAP-L-39 anonymized-customer edge.
+   */
+  @Test
+  void portalContactOrphanFallsBackToDetailsThenPortalUser() {
+    UUID orphanContactId = UUID.randomUUID();
+
+    // 3a — orphan with details.actor_name → use the legacy emitter-side hint.
+    var withDetailsRecord =
+        new AuditEventRecord(
+            "document.uploaded",
+            "document",
+            ENTITY_ID,
+            orphanContactId,
+            "PORTAL_CONTACT",
+            "PORTAL",
+            null,
+            null,
+            Map.of("file_name", "doc.pdf", "actor_name", "Anonymized Contact"));
+    var withDetailsEvent = new AuditEvent(withDetailsRecord);
+    var withDetailsItem = formatter.format(withDetailsEvent, Map.of(), Map.of());
+    assertThat(withDetailsItem.actorName()).isEqualTo("Anonymized Contact");
+
+    // 3b — orphan with no actor_name in details → final fallback.
+    var bareRecord =
+        new AuditEventRecord(
+            "document.uploaded",
+            "document",
+            ENTITY_ID,
+            orphanContactId,
+            "PORTAL_CONTACT",
+            "PORTAL",
+            null,
+            null,
+            Map.of("file_name", "doc.pdf"));
+    var bareEvent = new AuditEvent(bareRecord);
+    var bareItem = formatter.format(bareEvent, Map.of(), Map.of());
+    assertThat(bareItem.actorName()).isEqualTo("Portal user");
+    assertThat(bareItem.actorAvatarUrl()).isNull();
+    assertThat(bareItem.message()).doesNotContain("System").doesNotContain("Unknown");
   }
 }

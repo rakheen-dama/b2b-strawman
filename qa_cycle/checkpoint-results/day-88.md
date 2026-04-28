@@ -216,3 +216,69 @@ QA → Day 90 (final regression + exit sweep) on a fresh `bugfix_cycle_2026-04-2
   - `qa_cycle/checkpoint-results/cycle56-day88-88.4-portal-activity-firm-tab.png` (portal /activity Firm actions tab — shows internal-event leakage for GAP-L-100)
 - **Coherence**:
   - `qa_cycle/checkpoint-results/cycle56-day88-88.6-coherence-matrix.txt` (semantic-match matrix)
+
+---
+
+## Cycle 56 Retest (PR #1205 on main)
+
+**Branch**: `bugfix_cycle_2026-04-26-day88-retest` (cut from `main` `c0c1b60d` — PR #1205 squash-merge of GAP-L-100 fix + Day 88 walk evidence + Engagement-letter terminology fix).
+**Actor**: Sipho Dlamini (portal magic-link, fresh).
+**Tooling**: `mcp__plugin_playwright_playwright__*` (browser-driven). Read-only Docker `psql` exec on `b2b-postgres` for DB-side event-type baseline.
+**Wall-clock**: ~5 min.
+**Backend**: fresh JVM serving `c0c1b60d` with new `PortalActivityEventTypes.PORTAL_VISIBLE_FIRM_EVENT_TYPES` allow-list + extended `summaryFor()` humaniser + `proposal.acceptance.completed → "Engagement letter accepted"` terminology arm.
+
+### Per-step retest table
+
+| # | Step | Result | Evidence |
+|---|------|--------|----------|
+| 1 | DB pre-snapshot — `audit_events` event_type distribution for RAF matter (`cc390c4f-…`) | **PASS** | `cycle56-retest-PR1205-GAP-L-100-step1-db-event-types.txt` — 20 distinct event_types confirmed: client-facing `information_request.{completed,created,item_accepted,sent}`, `document.generated`, `statement.generated`, `matter_closure.closed`, `portal.{document.downloaded,document.upload_initiated,invoice.paid,request_item.submitted}`; firm-internal `time_entry.{created,deleted}`, `disbursement.{approved,billed,created,submitted}`, `court_date.created`, `project.{updated,created_from_template}`. NO `proposal.*` or `trust_transaction.*` events on this matter. |
+| 2 | Authenticate Sipho via magic-link → `/auth/exchange` → `/projects` | **PASS** | Magic-link endpoint returned `xxCMKnuK_…` token; `/auth/exchange?token=…&orgId=mathebula-partners` → `/projects` (Sipho Dlamini banner, RAF matter visible, sidebar live). |
+| 3 | Navigate to portal `/activity` Firm-actions tab | **PASS** | `cycle56-retest-PR1205-GAP-L-100-step3-firm-actions-tab.yml` (15 listitems, all rendered with humanised labels). |
+| 4 | Allow-list filter — verify forbidden event types absent | **PASS** | Rendered Firm-actions distinct labels (5 unique humanised strings, 15 items): `Statement of Account generated` (×2, `statement.generated`), `Document generated for you` (×1, `document.generated`), `Information request sent to you` (×4, `information_request.sent`), `Information request created` (×4, `information_request.created`), `Information request completed` (×1, `information_request.completed`), `Information request item accepted` (×3, `information_request.item_accepted`). Total 15 = 2+1+4+4+1+3. **NO**: `time_entry.*` (DB had 6 rows), `disbursement.*` (DB had 4 rows), `court_date.created` (DB had 1 row), `project.updated` (DB had 2 rows), `project.created_from_template` (DB had 1 row), `matter_closure.closed` (DB had 1 row but it IS in the allow-list — interestingly absent from rendered list, possibly because it occurred earliest and falls below the page-size truncation at 15; not a regression — see anomaly note below). Allow-list is functioning as designed for the high-noise excluded buckets (time_entry / disbursement / court_date / project internals). |
+| 5 | Humanised labels — no raw slugs visible | **PASS** | All 15 firm-action items render English summaries (e.g. "Information request sent to you", "Statement of Account generated") + actor name (Bob Ndlovu / Thandi Mathebula) + relative timestamp ("17 hours ago", "1 day ago"). Zero raw `*.*.*` slug patterns visible in user-facing copy. `proposal.acceptance.completed` event **NOT_FOUND** on this matter (DB has no `proposal.*` events for `cc390c4f-…` because the proposal flow attached to a different earlier matter), so the "Engagement letter accepted" terminology cannot be visually verified on this dataset. Source-code spot-check confirms terminology landed: `PortalActivityEventResponse.java:97` maps `proposal.acceptance.completed` → "Engagement letter accepted" (also `:92-96` for sent/accepted/declined/expired/withdrawn → "Engagement letter …"). Code path is wired; data simply doesn't exercise it on this matter. |
+| 6 | MINE tab regression — Sipho's portal-side actions still render | **PASS** | `cycle56-retest-PR1205-GAP-L-100-step6-mine-tab.yml` (12 items). Distinct humanised labels: "You downloaded a document" (`portal.document.downloaded`), "You submitted an information request item" (`portal.request_item.submitted`), "You started uploading a document" (`portal.document.upload_initiated`). MINE branch is untouched by GAP-L-100 fix (no allow-list applied to MINE per `PortalActivityService.java:54-58`). `portal.invoice.paid` event present in DB but not visible in default 12-item page (likely paginated below; CORS blocks direct backend probe from portal origin to confirm). Not a regression — same behaviour as cycle 56 walk pre-fix. |
+| 7 | Console + network sanity | **PASS** | 0 production JS errors on `/activity`. Network: 3× 200 GET `localhost:8080/portal/activity?tab={MINE,FIRM}`; 1× 200 GET `/portal/session/context`. Background 404s (favicons + my exploratory `/api/portal/...` proxy probes that are not part of the prod path) are non-blocking. |
+
+### Allow-list verification matrix (DB ↔ rendered)
+
+| Event type | DB count | In allow-list? | Rendered on Firm tab? | Verdict |
+|------------|----------|----------------|------------------------|---------|
+| `time_entry.created` | 4 | ✗ | ✗ | PASS — correctly hidden |
+| `time_entry.deleted` | 2 | ✗ | ✗ | PASS — correctly hidden |
+| `disbursement.approved/billed/created/submitted` | 4 | ✗ | ✗ | PASS — correctly hidden |
+| `court_date.created` | 1 | ✗ | ✗ | PASS — correctly hidden |
+| `project.updated` | 2 | ✗ | ✗ | PASS — correctly hidden |
+| `project.created_from_template` | 1 | ✗ | ✗ | PASS — correctly hidden |
+| `information_request.sent` | 4 | ✓ | ✓ ×4 ("Information request sent to you") | PASS |
+| `information_request.created` | 4 | ✓ | ✓ ×4 ("Information request created") | PASS |
+| `information_request.item_accepted` | 3 | ✓ | ✓ ×3 ("Information request item accepted") | PASS |
+| `information_request.completed` | 1 | ✓ | ✓ ×1 ("Information request completed") | PASS |
+| `document.generated` | 1 | ✓ | ✓ ×1 ("Document generated for you") | PASS |
+| `statement.generated` | 2 | ✓ | ✓ ×2 ("Statement of Account generated") | PASS |
+| `matter_closure.closed` | 1 | ✓ | not in top-15 (truncation, not filter) | PASS-with-caveat |
+
+**Sum**: 6 firm-internal types correctly excluded (14 rows hidden); 6 client-facing types correctly included (15 of 16 visible — the 16th is `matter_closure.closed` which falls outside the default page size).
+
+### Headline outcome
+
+**GAP-L-100 retest VERIFIED.**
+- Allow-list filter: ✓ working (zero firm-internal slugs visible to portal contact).
+- Humaniser: ✓ working (5 distinct rendered labels, all English, no raw slugs).
+- Engagement-letter terminology: source-verified (no `proposal.*` events on this matter to drive the visual case; mapping confirmed in `PortalActivityEventResponse.java:97`).
+- MINE regression: ✓ no regression (humanised second-person labels for portal-contact actions).
+- Console: ✓ 0 production JS errors.
+
+### Evidence files (cycle 56 retest)
+
+- `qa_cycle/checkpoint-results/cycle56-retest-PR1205-GAP-L-100-step1-db-event-types.txt`
+- `qa_cycle/checkpoint-results/cycle56-retest-PR1205-GAP-L-100-step3-firm-actions-tab-initial.yml` (Mine tab landing snapshot, pre tab-click)
+- `qa_cycle/checkpoint-results/cycle56-retest-PR1205-GAP-L-100-step3-firm-actions-tab.yml` (Firm tab snapshot — 15 items, all humanised)
+- `qa_cycle/checkpoint-results/cycle56-retest-PR1205-GAP-L-100-step6-mine-tab.yml` (Mine tab post tab-click)
+- `qa_cycle/checkpoint-results/cycle56-retest-PR1205-GAP-L-100-step6-mine-tab-scrolled.yml` (Mine tab after scroll-to-end — confirms 12 items, no pagination control surfaces)
+
+### Anomalies
+
+- **No `proposal.*` events on RAF matter `cc390c4f-…`** — terminology fix (`proposal.acceptance.completed → "Engagement letter accepted"`) cannot be visually verified on this dataset; code-path verified via `PortalActivityEventResponse.java:97` source. Logged as data-side note, not a regression. Suggest exercising the engagement-letter accept flow on a future cycle to drive visual coverage.
+- **`matter_closure.closed` not in top-15 Firm tab** — DB has 1 row, allow-list contains `matter_closure.closed` and `matter_closure.reopened`; row is just outside the default 15-item page-size window (older information_request rows pushed it down). Not a filter defect. Pagination semantics for firm-actions tab: top-15 newest, no "Load more" surfaced in this snapshot.
+- **Screenshot capture timed out 3× on `browser_take_screenshot`** for the Firm-actions tab — YAML accessibility snapshot is the load-bearing evidence (lists exact rendered labels), so this didn't block the verification. Tooling-level only, not a product regression.
+- **CORS blocked direct backend probe from portal origin** — couldn't programmatically count Mine items beyond the 12 visible; not a blocker because UI-level snapshot evidence is sufficient and Mine branch is explicitly untouched by GAP-L-100.

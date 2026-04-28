@@ -26,6 +26,7 @@ import type {
   RequestTemplateOption,
 } from "@/components/schedules/PostCreateActionsSection";
 import type { PostCreateActions } from "@/lib/api/schedules";
+import { useTerminology } from "@/lib/terminology";
 
 interface ScheduleCreateDialogProps {
   slug: string;
@@ -47,6 +48,7 @@ export function ScheduleCreateDialog({
   documentTemplates,
   requestTemplates,
 }: ScheduleCreateDialogProps) {
+  const { t: term } = useTerminology();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -148,7 +150,7 @@ export function ScheduleCreateDialog({
 
           {/* Customer */}
           <div className="space-y-2">
-            <Label htmlFor="schedule-customer">Customer</Label>
+            <Label htmlFor="schedule-customer">{term("Customer")}</Label>
             <select
               id="schedule-customer"
               value={customerId}

@@ -14,6 +14,8 @@ export const TERMINOLOGY: Record<string, Record<string, string>> = {
     "rate cards": "billing rates",
     "Time Tracking": "Time Logs",
     "Rates & Currency": "Billing Rates",
+    "project.namePlaceholder": "e.g. Q4 Strategy Engagement",
+    "project.referencePlaceholder": "e.g. ENG-2026-001",
   },
   "accounting-za": {
     Project: "Engagement",
@@ -36,6 +38,8 @@ export const TERMINOLOGY: Record<string, Record<string, string>> = {
     "Create Customer": "Create Client",
     "Activate Customer": "Activate Client",
     "Offboard Customer": "Offboard Client",
+    "project.namePlaceholder": "e.g. FY2026 Audit",
+    "project.referencePlaceholder": "e.g. ENG-2026-001",
   },
   "legal-za": {
     Project: "Matter",
@@ -82,5 +86,7 @@ export const TERMINOLOGY: Record<string, Record<string, string>> = {
     "Create Customer": "Create Client",
     "Activate Customer": "Activate Client",
     "Offboard Customer": "Offboard Client",
+    "project.namePlaceholder": "e.g. Dlamini v Road Accident Fund",
+    "project.referencePlaceholder": "e.g. RAF-2026-001",
   },
 };

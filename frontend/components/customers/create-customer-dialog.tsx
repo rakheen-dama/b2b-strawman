@@ -342,7 +342,7 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="customer@example.com"
+                          placeholder={`${t("customer")}@example.com`}
                           maxLength={255}
                           {...field}
                         />

@@ -1,0 +1,164 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e53]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e55] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e56]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e62]:
+          - generic [ref=e63]: Clients
+          - img [ref=e64]
+        - button "Finance" [ref=e68]:
+          - generic [ref=e69]: Finance
+          - img [ref=e70]
+        - generic [ref=e73]:
+          - button "Team" [expanded] [ref=e74]:
+            - generic [ref=e75]: Team
+            - img [ref=e76]
+          - link "Team" [ref=e79] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e80]
+            - text: Team
+      - generic [ref=e86]:
+        - link "Notifications" [ref=e87] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e88]
+          - text: Notifications
+        - link "Settings" [ref=e91] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e92]
+          - text: Settings
+        - link "Help" [ref=e95] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e96]
+          - text: Help
+      - generic [ref=e99]:
+        - generic [ref=e100]: BN
+        - generic [ref=e101]:
+          - paragraph [ref=e102]: Bob Ndlovu
+          - paragraph [ref=e103]: bob@mathebula-test.local
+    - generic [ref=e104]:
+      - banner [ref=e105]:
+        - navigation "Breadcrumb" [ref=e106]:
+          - link "Mathebula & Partners" [ref=e107] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e108]:
+            - img [ref=e109]
+            - generic [ref=e111]: Matters
+        - generic [ref=e112]:
+          - button "User menu" [ref=e114]: BN
+          - button "Notifications" [ref=e116]:
+            - img
+            - generic [ref=e117]: 18 unread notifications
+            - generic [ref=e118]: "18"
+      - main [ref=e119]:
+        - generic [ref=e202]:
+          - generic [ref=e203]:
+            - generic [ref=e204]:
+              - heading "Matters" [level=1] [ref=e205]
+              - paragraph [ref=e206]:
+                - generic [ref=e207]: 2 matters
+            - generic [ref=e208]:
+              - button "New from Template" [ref=e209]:
+                - img
+                - text: New from Template
+              - button "New Matter" [ref=e211]:
+                - img
+                - text: New Matter
+          - generic [ref=e212]:
+            - generic [ref=e213]:
+              - generic [ref=e214]:
+                - img [ref=e215]
+                - 'button "Help: Saved views" [ref=e218] [cursor=pointer]':
+                  - img [ref=e219]
+              - tablist [ref=e223]:
+                - tab "All" [selected] [ref=e224]
+            - button "Save View" [ref=e225]:
+              - img
+              - text: Save View
+          - generic [ref=e226]:
+            - link "Active" [ref=e227] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+            - link "Completed" [ref=e228] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects?status=COMPLETED
+            - link "Archived" [ref=e229] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects?status=ARCHIVED
+            - link "Closed" [ref=e230] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects?status=CLOSED
+            - link "All" [ref=e231] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects?status=ALL
+          - generic [ref=e232]:
+            - 'link "Estate Late Peter Moroka Administration of deceased estate from reporting to final distribution. Matter type: ESTATES — — Apr 27, 2026" [ref=e233] [cursor=pointer]':
+              - /url: /org/mathebula-partners/projects/340c5bb2-16c9-4cb4-ae27-df757aa7ce6d
+              - generic [ref=e234]:
+                - heading "Estate Late Peter Moroka" [level=3] [ref=e236]
+                - paragraph [ref=e237]: "Administration of deceased estate from reporting to final distribution. Matter type: ESTATES"
+                - generic [ref=e238]:
+                  - generic [ref=e239]:
+                    - img [ref=e240]
+                    - text: —
+                  - generic [ref=e243]:
+                    - img [ref=e244]
+                    - text: —
+                  - generic [ref=e249]: Apr 27, 2026
+            - link "Cycle19 Verify No description — — Apr 27, 2026" [ref=e250] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects/ee02e80e-8a6e-4f76-b4ee-b55fc4c5cb69
+              - generic [ref=e251]:
+                - heading "Cycle19 Verify" [level=3] [ref=e253]
+                - paragraph [ref=e254]: No description
+                - generic [ref=e255]:
+                  - generic [ref=e256]:
+                    - img [ref=e257]
+                    - text: —
+                  - generic [ref=e260]:
+                    - img [ref=e261]
+                    - text: —
+                  - generic [ref=e266]: Apr 27, 2026
+  - generic [ref=e189]:
+    - heading "Command Palette" [level=2] [ref=e190]
+    - paragraph [ref=e191]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e197] [cursor=pointer]:
+    - img [ref=e198]
+  - alert [ref=e201]

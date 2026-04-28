@@ -1,3 +1,10 @@
+# Captured from two browser_console_messages calls during the §90.7 walk:
+# (1) initial unfiltered call after portal landing — 2 messages, 0 errors at that point
+# (2) follow-up filter call (level=error) after probing additional URLs — 10 errors below
+# All 10 errors below are classified non-product: 404s from URL-slug probes
+# (e.g., /matters vs /projects), favicon 404, and an SSR hydration warning
+# (same pre-existing radix-sheet quirk as cycle 1).
+
 Total messages: 2 (Errors: 0, Warnings: 0)
 Returning 10 messages for level "error"
 

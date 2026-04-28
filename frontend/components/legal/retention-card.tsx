@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatLocalDate } from "@/lib/format";
 
 export interface RetentionCardProps {
-  /** Project status — card only renders when this is "CLOSED". */
+  /** Project status — card renders for COMPLETED and CLOSED matters in different states. */
   status: string;
   /**
    * ISO instant when the retention clock was anchored (ADR-249). Set on the first
@@ -14,8 +14,8 @@ export interface RetentionCardProps {
   /**
    * Server-computed YYYY-MM-DD end date for the retention period
    * (`retentionClockStartedAt + orgSettings.legalMatterRetentionYears`). Null when
-   * the org's retention years setting isn't configured — in which case the card
-   * is hidden because there is nothing meaningful to display.
+   * the org's retention years setting isn't configured — the card surfaces a
+   * warning + settings deep-link in that case rather than hiding (GAP-L-101).
    */
   retentionEndsOn: string | null;
   /** Org slug used to deep-link into the data-protection settings page. */
@@ -38,12 +38,19 @@ function daysRemainingUntil(yyyyMmDd: string): number {
 }
 
 /**
- * Per-matter retention card (GAP-OBS-Day60-RetentionShape, slice E6.2).
+ * Per-matter retention card (GAP-L-101, originally GAP-OBS-Day60-RetentionShape).
  *
- * Surfaces the firm's retention policy as it applies to *this* closed matter so
- * staff don't have to look up `legalMatterRetentionYears` and do mental math.
- * Renders nothing when the matter isn't CLOSED, the clock isn't stamped, or the
- * server hasn't computed an end date (org's retention years unconfigured).
+ * Surfaces the firm's retention policy as it applies to *this* matter so staff
+ * don't have to look up `legalMatterRetentionYears` and do mental math. Renders
+ * in three states once the matter is COMPLETED or CLOSED:
+ *  - State A (pre-clock / completed-pending-close): clock not yet stamped, or
+ *    stamped but matter not yet CLOSED — informational copy, no settings link.
+ *  - State B (unconfigured): CLOSED with clock stamped but org's
+ *    `legalMatterRetentionYears` is unset → warn + deep-link to settings.
+ *  - State C (active): CLOSED with clock + computed end-date → existing
+ *    days-remaining display (the happy path).
+ *
+ * Returns null on ACTIVE / DRAFT — no retention signal yet.
  */
 export function RetentionCard({
   status,
@@ -51,20 +58,92 @@ export function RetentionCard({
   retentionEndsOn,
   slug,
 }: RetentionCardProps) {
-  if (status !== "CLOSED" || retentionClockStartedAt == null) {
-    return null;
-  }
-  if (retentionEndsOn == null) {
+  // ACTIVE / DRAFT / pre-completion: nothing to surface yet.
+  if (status !== "CLOSED" && status !== "COMPLETED") {
     return null;
   }
 
+  const clockStartedDate =
+    retentionClockStartedAt != null ? formatLocalDate(retentionClockStartedAt.slice(0, 10)) : null;
+
+  // State A — clock not yet stamped (rare race; legacy close path before ADR-249).
+  if (retentionClockStartedAt == null) {
+    return (
+      <Card data-testid="retention-card" data-state="pre-clock">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <ShieldAlert className="size-4 text-slate-500" aria-hidden="true" />
+            Retention period
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <p>
+            Retention clock not yet stamped. Close this matter from the actions menu to start the
+            retention period (5 years by default; your firm&apos;s setting overrides).
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // State A.2 — clock stamped at completion but matter not yet CLOSED.
+  if (status === "COMPLETED") {
+    return (
+      <Card data-testid="retention-card" data-state="completed-pending-close">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <ShieldAlert className="size-4 text-slate-500" aria-hidden="true" />
+            Retention period
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <p>
+            Retention will begin when this matter moves to{" "}
+            <strong className="text-slate-900 dark:text-slate-100">Closed</strong>. Anchor preview:{" "}
+            <strong className="text-slate-900 dark:text-slate-100">{clockStartedDate}</strong>.
+            Default retention period is 5 years; your firm&apos;s setting overrides.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // State B — clock running but org's retention period is unconfigured.
+  if (retentionEndsOn == null) {
+    return (
+      <Card data-testid="retention-card" data-state="unconfigured">
+        <CardHeader className="pb-2">
+          <CardTitle className="flex items-center gap-2 text-sm font-medium">
+            <ShieldAlert className="size-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+            Retention period
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
+          <p>
+            Retention clock started on{" "}
+            <strong className="text-slate-900 dark:text-slate-100">{clockStartedDate}</strong>. Your
+            firm&apos;s matter-retention period isn&apos;t configured yet, so the scheduled deletion
+            date can&apos;t be computed.
+          </p>
+          <Link
+            href={`/org/${slug}/settings/data-protection`}
+            className="inline-flex text-xs font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
+          >
+            Configure retention period →
+          </Link>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // State C — fully configured, end-date computed (existing happy path).
   const daysRemaining = daysRemainingUntil(retentionEndsOn);
   const formattedEndDate = formatLocalDate(retentionEndsOn);
   const remainingLabel =
     daysRemaining === 0 ? "0 days — pending deletion" : `${daysRemaining} days remaining`;
 
   return (
-    <Card data-testid="retention-card">
+    <Card data-testid="retention-card" data-state="active">
       <CardHeader className="pb-2">
         <CardTitle className="flex items-center gap-2 text-sm font-medium">
           <ShieldAlert className="size-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
@@ -73,7 +152,9 @@ export function RetentionCard({
       </CardHeader>
       <CardContent className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
         <p>
-          This closed matter will be permanently deleted on{" "}
+          Clock started on{" "}
+          <strong className="text-slate-900 dark:text-slate-100">{clockStartedDate}</strong>. This
+          closed matter will be permanently deleted on{" "}
           <strong className="text-slate-900 dark:text-slate-100">{formattedEndDate}</strong> (
           <span data-testid="retention-card-days-remaining">{remainingLabel}</span>).
         </p>

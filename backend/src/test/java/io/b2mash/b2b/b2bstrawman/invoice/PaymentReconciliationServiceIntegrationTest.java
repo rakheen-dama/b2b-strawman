@@ -15,6 +15,8 @@ import io.b2mash.b2b.b2bstrawman.integration.payment.WebhookResult;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
@@ -56,6 +58,7 @@ class PaymentReconciliationServiceIntegrationTest {
   @Autowired private PaymentEventRepository paymentEventRepository;
   @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private NotificationRepository notificationRepository;
+  @Autowired private PortalContactRepository portalContactRepository;
   @Autowired private PaymentReconciliationService reconciliationService;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -63,6 +66,8 @@ class PaymentReconciliationServiceIntegrationTest {
   private UUID memberIdOwner;
   private UUID customerId;
   private UUID projectId;
+  private UUID portalContactId;
+  private UUID customerWithoutContactId;
 
   @BeforeAll
   void setUp() throws Exception {
@@ -105,6 +110,30 @@ class PaymentReconciliationServiceIntegrationTest {
 
                       customerProjectRepository.save(
                           new CustomerProject(customerId, projectId, memberIdOwner));
+
+                      // Seed a PRIMARY active portal_contact for the main customer so
+                      // PaymentReconciliationService can resolve actor_id for portal.invoice.paid
+                      // audit rows. Tests below assert the row's actor_id matches this contact.
+                      var portalContact =
+                          new PortalContact(
+                              ORG_ID,
+                              customerId,
+                              "primary@recon.test",
+                              "Primary Recon Contact",
+                              PortalContact.ContactRole.PRIMARY);
+                      portalContact = portalContactRepository.save(portalContact);
+                      portalContactId = portalContact.getId();
+
+                      // Second customer with NO portal_contact rows — exercises the
+                      // null-fallback path in handlePaymentCompleted.
+                      var orphanCustomer =
+                          TestCustomerFactory.createActiveCustomerWithPrerequisiteFields(
+                              "No Portal Corp", "noportal@test.com", memberIdOwner);
+                      orphanCustomer = customerRepository.save(orphanCustomer);
+                      customerWithoutContactId = orphanCustomer.getId();
+
+                      customerProjectRepository.save(
+                          new CustomerProject(customerWithoutContactId, projectId, memberIdOwner));
                     }));
   }
 
@@ -144,10 +173,55 @@ class PaymentReconciliationServiceIntegrationTest {
                       var portalPaid = portalPaidEvents.get(0);
                       assertThat(portalPaid.getActorType()).isEqualTo("PORTAL_CONTACT");
                       assertThat(portalPaid.getSource()).isEqualTo("PORTAL");
+                      // OBS-PaymentRec: actor_id must resolve to the customer's preferred
+                      // active portal_contact (PRIMARY > BILLING > GENERAL). Without this,
+                      // actor_type=PORTAL_CONTACT rows have NULL actor_id, breaking
+                      // attribution on the matter Activity feed.
+                      assertThat(portalPaid.getActorId()).isEqualTo(portalContactId);
                       // project_id is load-bearing for matter Activity feed (findByProjectId)
                       assertThat(portalPaid.getDetails()).containsKey("project_id");
                       assertThat(portalPaid.getDetails().get("provider"))
                           .isEqualTo("test-provider");
+                    }));
+  }
+
+  @Test
+  void processWebhookResult_COMPLETED_when_no_portal_contact_actor_id_is_null() throws Exception {
+    String invoiceId = createAndSendInvoiceForCustomer(customerWithoutContactId);
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () ->
+                transactionTemplate.executeWithoutResult(
+                    tx -> {
+                      seedCreatedPaymentEvent(invoiceId, "sess_no_contact");
+                      var result =
+                          buildWebhookResult(
+                              invoiceId,
+                              PaymentStatus.COMPLETED,
+                              "pay_ref_no_contact",
+                              "sess_no_contact");
+                      reconciliationService.processWebhookResult(result, "test-provider");
+
+                      var portalPaidEvents =
+                          auditEventRepository
+                              .findByFilter(
+                                  "invoice",
+                                  UUID.fromString(invoiceId),
+                                  null,
+                                  "portal.invoice.paid",
+                                  null,
+                                  null,
+                                  PageRequest.of(0, 10))
+                              .getContent();
+                      assertThat(portalPaidEvents).isNotEmpty();
+                      var portalPaid = portalPaidEvents.get(0);
+                      assertThat(portalPaid.getActorType()).isEqualTo("PORTAL_CONTACT");
+                      // No portal_contact exists for this customer — preserve status-quo
+                      // null actor_id rather than fabricating attribution. The row must
+                      // still land (paid event is required for downstream reconciliation).
+                      assertThat(portalPaid.getActorId()).isNull();
                     }));
   }
 
@@ -381,7 +455,11 @@ class PaymentReconciliationServiceIntegrationTest {
   }
 
   private String createAndSendInvoice() throws Exception {
-    String invoiceId = createDraftInvoice();
+    return createAndSendInvoiceForCustomer(customerId);
+  }
+
+  private String createAndSendInvoiceForCustomer(UUID forCustomerId) throws Exception {
+    String invoiceId = createDraftInvoiceForCustomer(forCustomerId);
     addLineItem(invoiceId);
     approveInvoice(invoiceId);
     sendInvoice(invoiceId);
@@ -389,6 +467,10 @@ class PaymentReconciliationServiceIntegrationTest {
   }
 
   private String createDraftInvoice() throws Exception {
+    return createDraftInvoiceForCustomer(customerId);
+  }
+
+  private String createDraftInvoiceForCustomer(UUID forCustomerId) throws Exception {
     var result =
         mockMvc
             .perform(
@@ -402,7 +484,7 @@ class PaymentReconciliationServiceIntegrationTest {
                           "currency": "ZAR"
                         }
                         """
-                            .formatted(customerId)))
+                            .formatted(forCustomerId)))
             .andExpect(status().isCreated())
             .andReturn();
     return JsonPath.read(result.getResponse().getContentAsString(), "$.id");

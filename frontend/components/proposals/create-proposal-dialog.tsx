@@ -223,7 +223,9 @@ export function CreateProposalDialog({
                 name="customerId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Customer</FormLabel>
+                    <FormLabel>
+                      <TerminologyText template="{Customer}" />
+                    </FormLabel>
                     <Popover
                       open={customerPopoverOpen}
                       onOpenChange={(next) => {

@@ -41,6 +41,17 @@ interface CreateProjectDialogProps {
 
 export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
   const { t } = useTerminology();
+  // Map keys with dotted notation fall through to identity when no
+  // TerminologyProvider/vertical profile is mounted; substitute a
+  // generic English placeholder so the literal key never renders.
+  const namePlaceholder =
+    t("project.namePlaceholder") === "project.namePlaceholder"
+      ? "e.g. Q4 Roadmap"
+      : t("project.namePlaceholder");
+  const referencePlaceholder =
+    t("project.referencePlaceholder") === "project.referencePlaceholder"
+      ? "e.g. PRJ-2026-001"
+      : t("project.referencePlaceholder");
   const { isWriteEnabled } = useSubscription();
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -136,7 +147,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="My Project" maxLength={255} autoFocus {...field} />
+                    <Input placeholder={namePlaceholder} maxLength={255} autoFocus {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -153,7 +164,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                   </FormLabel>
                   <FormControl>
                     <Textarea
-                      placeholder="A brief description of the project..."
+                      placeholder={`A brief description of the ${t("project")}...`}
                       maxLength={2000}
                       rows={3}
                       {...field}
@@ -184,7 +195,8 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Customer <span className="text-muted-foreground font-normal">(optional)</span>
+                    {t("Customer")}{" "}
+                    <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
                     <select
@@ -214,7 +226,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                     <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. PRJ-2026-001" maxLength={100} {...field} />
+                    <Input placeholder={referencePlaceholder} maxLength={100} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

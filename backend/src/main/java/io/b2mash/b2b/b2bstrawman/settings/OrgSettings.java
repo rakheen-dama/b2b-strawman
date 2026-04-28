@@ -9,6 +9,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
@@ -200,6 +201,7 @@ public class OrgSettings {
    */
   @Column(name = "legal_matter_retention_years")
   @Min(value = 1, message = "legalMatterRetentionYears must be at least 1")
+  @Max(value = 100, message = "legalMatterRetentionYears must be at most 100")
   private Integer legalMatterRetentionYears;
 
   /**
@@ -944,9 +946,12 @@ public class OrgSettings {
   }
 
   public void setLegalMatterRetentionYears(Integer legalMatterRetentionYears) {
-    if (legalMatterRetentionYears != null && legalMatterRetentionYears < 1) {
+    if (legalMatterRetentionYears != null
+        && (legalMatterRetentionYears < 1 || legalMatterRetentionYears > 100)) {
       throw new IllegalArgumentException(
-          "legalMatterRetentionYears must be at least 1 (got " + legalMatterRetentionYears + ")");
+          "legalMatterRetentionYears must be between 1 and 100 (got "
+              + legalMatterRetentionYears
+              + ")");
     }
     this.legalMatterRetentionYears = legalMatterRetentionYears;
     this.updatedAt = Instant.now();

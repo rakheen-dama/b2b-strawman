@@ -157,3 +157,4 @@ node_modules/
 /tasks/insights/2026-04-04_2200-fdf0c499.stats.json
 /tasks/insights/2026-04-04_2225-b727c513.stats.json
 /tasks/insights/latest.stats.json
+.claude/scheduled_tasks.lock

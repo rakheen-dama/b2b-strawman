@@ -41,6 +41,9 @@ export interface CloseMatterResponse {
   closedAt: string;
   closureLogId: string;
   closureLetterDocumentId: string | null;
+  // GAP-L-93: id of the auto-generated Statement of Account GeneratedDocument when
+  // generateStatementOfAccount=true. Null when suppressed or on best-effort failure.
+  statementOfAccountDocumentId: string | null;
   retentionEndsAt: string;
 }
 
@@ -73,6 +76,9 @@ export interface CloseMatterRequest {
   reason: ClosureReason;
   notes?: string;
   generateClosureLetter: boolean;
+  // GAP-L-93: when true, the backend auto-generates a Statement of Account at close time
+  // (matter open-date → today period). Best-effort: failure does NOT roll back the close.
+  generateStatementOfAccount: boolean;
   override: boolean;
   overrideJustification?: string;
 }

@@ -27,6 +27,7 @@ import { updateProject, fetchActiveCustomers } from "@/app/(app)/org/[slug]/proj
 import type { Project, Customer } from "@/lib/types";
 import { editProjectSchema, type EditProjectFormData } from "@/lib/schemas/project";
 import { nativeSelectClassName } from "@/lib/styles/native-select";
+import { useTerminology } from "@/lib/terminology";
 
 interface EditProjectDialogProps {
   project: Project;
@@ -35,6 +36,11 @@ interface EditProjectDialogProps {
 }
 
 export function EditProjectDialog({ project, slug, children }: EditProjectDialogProps) {
+  const { t } = useTerminology();
+  const referencePlaceholder =
+    t("project.referencePlaceholder") === "project.referencePlaceholder"
+      ? "e.g. PRJ-2026-001"
+      : t("project.referencePlaceholder");
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -110,8 +116,8 @@ export function EditProjectDialog({ project, slug, children }: EditProjectDialog
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Edit Project</DialogTitle>
-          <DialogDescription>Update your project&apos;s details.</DialogDescription>
+          <DialogTitle>{`Edit ${t("Project")}`}</DialogTitle>
+          <DialogDescription>{`Update your ${t("project")}'s details.`}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -165,7 +171,8 @@ export function EditProjectDialog({ project, slug, children }: EditProjectDialog
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    Customer <span className="text-muted-foreground font-normal">(optional)</span>
+                    {t("Customer")}{" "}
+                    <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
                     <select
@@ -195,7 +202,7 @@ export function EditProjectDialog({ project, slug, children }: EditProjectDialog
                     <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. PRJ-2026-001" maxLength={100} {...field} />
+                    <Input placeholder={referencePlaceholder} maxLength={100} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

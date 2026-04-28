@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectStatus;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentRepository;
@@ -74,6 +75,7 @@ class MatterClosureServiceIntegrationTest {
   @Autowired private ApplicationEvents events;
   @Autowired private GeneratedDocumentRepository generatedDocumentRepository;
   @Autowired private DocumentRepository documentRepository;
+  @Autowired private RetentionPolicyRepository retentionPolicyRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -105,7 +107,7 @@ class MatterClosureServiceIntegrationTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var settings = orgSettingsService.getOrCreateForCurrentTenant();
-                  settings.setEnabledModules(List.of("matter_closure"));
+                  settings.setEnabledModules(List.of("matter_closure", "disbursements"));
                   orgSettingsRepository.save(settings);
 
                   var customer =
@@ -152,7 +154,8 @@ class MatterClosureServiceIntegrationTest {
                     () ->
                         matterClosureService.close(
                             projectId,
-                            new ClosureRequest(ClosureReason.CONCLUDED, "note", false, false, null),
+                            new ClosureRequest(
+                                ClosureReason.CONCLUDED, "note", false, false, false, null),
                             memberId))
                 .isInstanceOfSatisfying(
                     ClosureGateFailedException.class,
@@ -190,6 +193,7 @@ class MatterClosureServiceIntegrationTest {
                                     ClosureReason.CONCLUDED,
                                     null,
                                     false,
+                                    false,
                                     true,
                                     VALID_JUSTIFICATION),
                                 memberId))
@@ -207,7 +211,7 @@ class MatterClosureServiceIntegrationTest {
                         matterClosureService.close(
                             projectId,
                             new ClosureRequest(
-                                ClosureReason.CONCLUDED, null, false, true, "too short"),
+                                ClosureReason.CONCLUDED, null, false, false, true, "too short"),
                             memberId))
                 .isInstanceOf(InvalidStateException.class));
   }
@@ -226,6 +230,7 @@ class MatterClosureServiceIntegrationTest {
                       ClosureReason.CLIENT_TERMINATED,
                       "closing due to client termination",
                       /* generateClosureLetter */ false,
+                      /* generateStatementOfAccount */ false,
                       /* override */ true,
                       VALID_JUSTIFICATION),
                   memberId);
@@ -276,7 +281,7 @@ class MatterClosureServiceIntegrationTest {
             matterClosureService.close(
                 projectId,
                 new ClosureRequest(
-                    ClosureReason.CONCLUDED, "done", false, true, VALID_JUSTIFICATION),
+                    ClosureReason.CONCLUDED, "done", false, false, true, VALID_JUSTIFICATION),
                 memberId));
 
     runInTenantAsOwner(
@@ -324,7 +329,8 @@ class MatterClosureServiceIntegrationTest {
         () ->
             matterClosureService.close(
                 projectId,
-                new ClosureRequest(ClosureReason.CONCLUDED, null, false, true, VALID_JUSTIFICATION),
+                new ClosureRequest(
+                    ClosureReason.CONCLUDED, null, false, false, true, VALID_JUSTIFICATION),
                 memberId));
 
     runInTenantAsOwner(
@@ -344,7 +350,8 @@ class MatterClosureServiceIntegrationTest {
         () ->
             matterClosureService.close(
                 projectId,
-                new ClosureRequest(ClosureReason.CONCLUDED, null, false, true, VALID_JUSTIFICATION),
+                new ClosureRequest(
+                    ClosureReason.CONCLUDED, null, false, false, true, VALID_JUSTIFICATION),
                 memberId));
 
     // Backdate the retention anchor far past the retention window (default 7 years at OrgSettings).
@@ -385,6 +392,7 @@ class MatterClosureServiceIntegrationTest {
                         ClosureReason.CONCLUDED,
                         "L-74b regression",
                         /* generateClosureLetter */ true,
+                        /* generateStatementOfAccount */ false,
                         /* override */ true,
                         VALID_JUSTIFICATION),
                     memberId));
@@ -415,6 +423,158 @@ class MatterClosureServiceIntegrationTest {
                       .isEqualTo(Document.Visibility.PORTAL);
                   assertThat(linkedDoc.getProjectId()).isEqualTo(projectId);
                   assertThat(linkedDoc.getFileName()).startsWith("matter-closure-letter");
+                }));
+  }
+
+  // ==========================================================================
+  // GAP-L-93 — Statement of Account auto-attach on close
+  // ==========================================================================
+
+  @Test
+  void close_withGenerateStatementOfAccountTrue_returnsStatementOfAccountDocumentId() {
+    UUID projectId = createProject("L-93 SoA Auto-Attach Matter");
+
+    var response =
+        runInTenantReturning(
+            () ->
+                matterClosureService.close(
+                    projectId,
+                    new ClosureRequest(
+                        ClosureReason.CONCLUDED,
+                        "L-93 SoA on close",
+                        /* generateClosureLetter */ false,
+                        /* generateStatementOfAccount */ true,
+                        /* override */ true,
+                        VALID_JUSTIFICATION),
+                    memberId));
+
+    assertThat(response.statementOfAccountDocumentId())
+        .as(
+            "GAP-L-93: when generateStatementOfAccount=true, the SoA must be auto-attached and"
+                + " the response must carry the GeneratedDocument id")
+        .isNotNull();
+    assertThat(response.closureLetterDocumentId())
+        .as("Closure letter was suppressed in this test — expected null")
+        .isNull();
+  }
+
+  @Test
+  void close_withGenerateStatementOfAccountFalse_returnsNullStatementOfAccountDocumentId() {
+    UUID projectId = createProject("L-93 SoA Suppressed Matter");
+
+    var response =
+        runInTenantReturning(
+            () ->
+                matterClosureService.close(
+                    projectId,
+                    new ClosureRequest(
+                        ClosureReason.CONCLUDED,
+                        null,
+                        /* generateClosureLetter */ false,
+                        /* generateStatementOfAccount */ false,
+                        /* override */ true,
+                        VALID_JUSTIFICATION),
+                    memberId));
+
+    assertThat(response.statementOfAccountDocumentId())
+        .as("Suppressed SoA flag → response carries null statementOfAccountDocumentId")
+        .isNull();
+  }
+
+  @Test
+  void close_withGenerateStatementOfAccountNull_treatsAsFalse_backwardCompat() {
+    // GAP-L-93 backward-compat: legacy clients (older frontend) won't send the new flag at all
+    // — Boolean field on the record allows null, the helper treats null as false.
+    UUID projectId = createProject("L-93 SoA Null-Flag Backward-Compat Matter");
+
+    var response =
+        runInTenantReturning(
+            () ->
+                matterClosureService.close(
+                    projectId,
+                    new ClosureRequest(
+                        ClosureReason.CONCLUDED,
+                        null,
+                        /* generateClosureLetter */ false,
+                        /* generateStatementOfAccount */ null,
+                        /* override */ true,
+                        VALID_JUSTIFICATION),
+                    memberId));
+
+    assertThat(response.statementOfAccountDocumentId())
+        .as("null SoA flag must be treated as false (legacy-client compatibility)")
+        .isNull();
+  }
+
+  // ==========================================================================
+  // GAP-L-96 / ADR-249 — retention_policies MATTER row seed on close
+  // ==========================================================================
+
+  @Test
+  void close_seedsMatterRetentionPolicyIfMissing() {
+    UUID projectId = createProject("L-96 Retention Policy Seed Matter");
+
+    runInTenantAsOwner(
+        () ->
+            matterClosureService.close(
+                projectId,
+                new ClosureRequest(
+                    ClosureReason.CONCLUDED, null, false, false, true, VALID_JUSTIFICATION),
+                memberId));
+
+    runInTenantAsOwner(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var policy =
+                      retentionPolicyRepository
+                          .findByRecordTypeAndTriggerEvent("MATTER", "MATTER_CLOSED")
+                          .orElseThrow(
+                              () ->
+                                  new AssertionError(
+                                      "GAP-L-96: expected a MATTER retention policy row after"
+                                          + " first matter closure (ADR-249)"));
+                  // Default OrgSettings.legalMatterRetentionYears = 5 (per OrgSettings.java:36)
+                  assertThat(policy.getRetentionDays()).isEqualTo(5 * 365);
+                  assertThat(policy.getAction()).isEqualTo("ARCHIVE");
+                  assertThat(policy.isActive()).isTrue();
+                }));
+  }
+
+  @Test
+  void close_isIdempotentOnSecondClosure_doesNotThrow_keepsExactlyOneMatterPolicyRow() {
+    UUID projectIdA = createProject("L-96 Idempotent Close A");
+    UUID projectIdB = createProject("L-96 Idempotent Close B");
+
+    runInTenantAsOwner(
+        () ->
+            matterClosureService.close(
+                projectIdA,
+                new ClosureRequest(
+                    ClosureReason.CONCLUDED, null, false, false, true, VALID_JUSTIFICATION),
+                memberId));
+
+    // Second close on the same tenant — must NOT throw a ResourceConflictException, must NOT
+    // mark the outer transaction rollback-only, and must leave exactly ONE MATTER policy row.
+    runInTenantAsOwner(
+        () ->
+            matterClosureService.close(
+                projectIdB,
+                new ClosureRequest(
+                    ClosureReason.CONCLUDED, null, false, false, true, VALID_JUSTIFICATION),
+                memberId));
+
+    runInTenantAsOwner(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  long matterPolicies =
+                      retentionPolicyRepository.findByActive(true).stream()
+                          .filter(p -> "MATTER".equals(p.getRecordType()))
+                          .count();
+                  assertThat(matterPolicies)
+                      .as("Idempotent — second close must not insert a duplicate MATTER policy")
+                      .isEqualTo(1);
                 }));
   }
 

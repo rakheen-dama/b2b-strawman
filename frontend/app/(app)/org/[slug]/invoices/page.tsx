@@ -220,7 +220,7 @@ export default async function InvoicesPage({
                   <TerminologyHeading term="Invoice" />
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
-                  Customer
+                  <TerminologyHeading term="Customer" />
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium tracking-wide text-slate-600 uppercase dark:text-slate-400">
                   Status

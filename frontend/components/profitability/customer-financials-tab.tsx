@@ -15,6 +15,7 @@ import type {
   OrgProfitabilityResponse,
   ProjectProfitabilitySummary,
 } from "@/lib/types";
+import { TerminologyHeading } from "@/components/terminology-heading";
 
 interface CustomerFinancialsTabProps {
   profitability: CustomerProfitabilityResponse | null;
@@ -58,7 +59,9 @@ function ProjectBreakdownTable({ projects }: { projects: ProjectProfitabilitySum
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Project</TableHead>
+            <TableHead>
+              <TerminologyHeading term="Project" />
+            </TableHead>
             <TableHead>Currency</TableHead>
             <TableHead className="text-right">Hours</TableHead>
             <TableHead className="text-right">Revenue</TableHead>

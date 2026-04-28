@@ -1,0 +1,378 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: BN
+        - generic:
+          - paragraph: Bob Ndlovu
+          - paragraph: bob@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - generic: Clients
+        - generic:
+          - generic:
+            - button: BN
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 18 unread notifications
+              - generic: "18"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - heading [level=1]: Clients
+                  - generic: "2"
+                - generic:
+                  - button:
+                    - img
+                    - text: New Client
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+                    - button:
+                      - img
+                  - generic:
+                    - tablist:
+                      - tab [selected]: All
+                - button:
+                  - img
+                  - text: Save View
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/customers
+                  - text: All
+                - link:
+                  - /url: /org/mathebula-partners/customers?lifecycleStatus=PROSPECT
+                  - text: Prospect
+                - link:
+                  - /url: /org/mathebula-partners/customers?lifecycleStatus=ONBOARDING
+                  - text: Onboarding
+                - link:
+                  - /url: /org/mathebula-partners/customers?lifecycleStatus=ACTIVE
+                  - text: Active
+                - link:
+                  - /url: /org/mathebula-partners/customers?lifecycleStatus=DORMANT
+                  - text: Dormant
+                - link:
+                  - /url: /org/mathebula-partners/customers?lifecycleStatus=OFFBOARDING
+                  - text: Offboarding
+                - link:
+                  - /url: /org/mathebula-partners/customers?lifecycleStatus=OFFBOARDED
+                  - text: Offboarded
+                - link:
+                  - /url: /org/mathebula-partners/customers?showIncomplete=true
+                  - text: Show incomplete
+              - generic:
+                - table:
+                  - rowgroup:
+                    - row:
+                      - columnheader: Name
+                      - columnheader: Email
+                      - columnheader: Phone
+                      - columnheader: Lifecycle
+                      - columnheader: Status
+                      - columnheader:
+                        - link:
+                          - /url: /org/mathebula-partners/customers?sortBy=completeness&sortDir=asc
+                          - text: Completeness
+                      - columnheader: Created
+                  - rowgroup:
+                    - row:
+                      - cell:
+                        - link:
+                          - /url: /org/mathebula-partners/customers/0cb199f2-9263-4d57-88c7-4a0350f8779c
+                          - text: Moroka Family Trust
+                      - cell: moroka.portal@example.com
+                      - cell: —
+                      - cell:
+                        - generic: Prospect
+                      - cell:
+                        - generic: Active
+                      - cell:
+                        - generic: N/A
+                      - cell: Apr 27, 2026
+                    - row:
+                      - cell:
+                        - link:
+                          - /url: /org/mathebula-partners/customers/c4f70d86-c292-4d02-9f6f-2e900099ba57
+                          - text: Sipho Dlamini
+                        - generic:
+                          - generic:
+                            - generic: "ID / Passport Number:"
+                            - text: "8501015800088"
+                          - generic:
+                            - generic: "Preferred Correspondence:"
+                            - text: Email
+                      - cell: sipho.portal@example.com
+                      - cell: +27 82 555 0101
+                      - cell:
+                        - generic: Active
+                      - cell:
+                        - generic: Active
+                      - cell:
+                        - generic: N/A
+                      - cell: Apr 26, 2026
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e201] [cursor=pointer]:
+    - img [ref=e202]
+  - alert
+  - dialog "Create Client" [ref=e284]:
+    - generic [ref=e285]:
+      - generic [ref=e286]:
+        - heading "Create Client" [level=2] [ref=e287]
+        - paragraph [ref=e288]: Step 1 of 2 — Add a new client to your organization.
+      - generic [ref=e290]:
+        - generic [ref=e291]:
+          - generic [ref=e292]: Name
+          - textbox "Name" [active] [ref=e293]:
+            - /placeholder: Client name
+        - generic [ref=e294]:
+          - generic [ref=e295]: Type
+          - combobox "Type" [ref=e296]:
+            - option "Individual" [selected]
+            - option "Company"
+            - option "Trust"
+        - generic [ref=e297]:
+          - generic [ref=e298]: Email
+          - textbox "Email" [ref=e299]:
+            - /placeholder: client@example.com
+        - generic [ref=e300]:
+          - generic [ref=e301]:
+            - text: Phone
+            - generic [ref=e302]: (optional)
+          - textbox "Phone (optional)" [ref=e303]:
+            - /placeholder: +1 (555) 000-0000
+        - generic [ref=e304]:
+          - generic [ref=e305]:
+            - text: ID Number
+            - generic [ref=e306]: (optional)
+          - textbox "ID Number (optional)" [ref=e307]:
+            - /placeholder: e.g. CUS-001
+        - generic [ref=e308]:
+          - generic [ref=e309]:
+            - text: Tax Number
+            - generic [ref=e310]: (required to send an invoice; collectable later)
+          - textbox "Tax Number (required to send an invoice; collectable later)" [ref=e311]:
+            - /placeholder: e.g. VAT or tax registration number
+        - generic [ref=e312]:
+          - generic [ref=e313]:
+            - text: Notes
+            - generic [ref=e314]: (optional)
+          - textbox "Notes (optional)" [ref=e315]:
+            - /placeholder: Any additional notes about this client...
+        - generic [ref=e316]:
+          - heading "Address" [level=3] [ref=e317]
+          - generic [ref=e318]:
+            - generic [ref=e319]:
+              - generic [ref=e320]:
+                - text: Address Line 1
+                - generic [ref=e321]: (optional)
+              - textbox "Address Line 1 (optional)" [ref=e322]
+            - generic [ref=e323]:
+              - generic [ref=e324]:
+                - text: Address Line 2
+                - generic [ref=e325]: (optional)
+              - textbox "Address Line 2 (optional)" [ref=e326]
+            - generic [ref=e327]:
+              - generic [ref=e328]:
+                - generic [ref=e329]: City
+                - textbox "City" [ref=e330]
+              - generic [ref=e331]:
+                - generic [ref=e332]: State / Province
+                - textbox "State / Province" [ref=e333]
+            - generic [ref=e334]:
+              - generic [ref=e335]:
+                - generic [ref=e336]: Postal Code
+                - textbox "Postal Code" [ref=e337]
+              - generic [ref=e338]:
+                - generic [ref=e339]:
+                  - text: Country
+                  - generic [ref=e340]: (required for activation)
+                - combobox "Country (required for activation)" [ref=e341]:
+                  - option "Select country…" [selected]
+                  - option "South Africa (ZA)"
+                  - option "United States (US)"
+                  - option "United Kingdom (GB)"
+                  - option "Australia (AU)"
+                  - option "Canada (CA)"
+                  - option "New Zealand (NZ)"
+                  - option "Ireland (IE)"
+                  - option "Germany (DE)"
+                  - option "France (FR)"
+                  - option "Spain (ES)"
+                  - option "Italy (IT)"
+                  - option "Portugal (PT)"
+                  - option "Netherlands (NL)"
+                  - option "Belgium (BE)"
+                  - option "Switzerland (CH)"
+                  - option "Austria (AT)"
+                  - option "Denmark (DK)"
+                  - option "Sweden (SE)"
+                  - option "Norway (NO)"
+                  - option "Finland (FI)"
+                  - option "Poland (PL)"
+                  - option "Czechia (CZ)"
+                  - option "Hungary (HU)"
+                  - option "Greece (GR)"
+                  - option "Turkey (TR)"
+                  - option "Israel (IL)"
+                  - option "United Arab Emirates (AE)"
+                  - option "Saudi Arabia (SA)"
+                  - option "Egypt (EG)"
+                  - option "Kenya (KE)"
+                  - option "Nigeria (NG)"
+                  - option "Ghana (GH)"
+                  - option "Morocco (MA)"
+                  - option "Mozambique (MZ)"
+                  - option "Botswana (BW)"
+                  - option "Namibia (NA)"
+                  - option "Zimbabwe (ZW)"
+                  - option "Zambia (ZM)"
+                  - option "Mauritius (MU)"
+                  - option "India (IN)"
+                  - option "Pakistan (PK)"
+                  - option "Bangladesh (BD)"
+                  - option "Singapore (SG)"
+                  - option "Malaysia (MY)"
+                  - option "Indonesia (ID)"
+                  - option "Philippines (PH)"
+                  - option "Thailand (TH)"
+                  - option "Vietnam (VN)"
+                  - option "Japan (JP)"
+                  - option "South Korea (KR)"
+                  - option "China (CN)"
+                  - option "Hong Kong (HK)"
+                  - option "Taiwan (TW)"
+                  - option "Brazil (BR)"
+                  - option "Argentina (AR)"
+                  - option "Mexico (MX)"
+                  - option "Chile (CL)"
+        - generic [ref=e342]:
+          - heading "Contact" [level=3] [ref=e343]
+          - generic [ref=e344]:
+            - generic [ref=e345]:
+              - generic [ref=e346]: Contact Name
+              - textbox "Contact Name" [ref=e347]
+            - generic [ref=e348]:
+              - generic [ref=e349]: Contact Email
+              - textbox "Contact Email" [ref=e350]
+            - generic [ref=e351]:
+              - generic [ref=e352]: Contact Phone
+              - textbox "Contact Phone" [ref=e353]
+        - generic [ref=e354]:
+          - heading "Business Details" [level=3] [ref=e355]
+          - generic [ref=e356]:
+            - generic [ref=e357]:
+              - generic [ref=e358]: Registration Number
+              - textbox "Registration Number" [ref=e359]
+            - generic [ref=e360]:
+              - generic [ref=e361]: Entity Type
+              - combobox "Entity Type" [ref=e362]:
+                - option "Select entity type…" [selected]
+                - option "Individual"
+                - option "Sole Proprietor"
+                - option "Pty Ltd (Private Company)"
+                - option "Close Corporation"
+                - option "Partnership"
+                - option "Trust"
+                - option "Non-Profit"
+                - option "Public Company"
+            - generic [ref=e363]:
+              - generic [ref=e364]: Financial Year End
+              - textbox "Financial Year End" [ref=e365]
+      - generic [ref=e366]:
+        - button "Cancel" [ref=e367]
+        - button "Next" [ref=e368]
+      - button "Close" [ref=e369]:
+        - img
+        - generic [ref=e370]: Close

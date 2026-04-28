@@ -39,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -315,7 +316,13 @@ public class MatterClosureService {
       int days = retentionYears * 365;
       retentionPolicyService.create("MATTER", days, "MATTER_CLOSED", "ARCHIVE");
     } catch (ResourceConflictException already) {
-      // Defensive: a concurrent close on the same tenant beat us to the insert. Idempotent.
+      // Defensive: a concurrent close on the same tenant beat us to the insert (caught at the
+      // service layer's explicit check). Idempotent.
+    } catch (DataIntegrityViolationException raceLost) {
+      // True race: the existsByRecordTypeAndTriggerEvent check passed but a concurrent close
+      // inserted before our flush, surfacing the unique-key constraint at the DB layer. Treat as
+      // idempotent — the row we wanted exists. Without this catch the unique-key failure would
+      // surface on flush/commit outside the broader catch and abort the matter close.
     } catch (RuntimeException e) {
       log.warn("Failed to seed MATTER retention policy on closure; close proceeds", e);
     }

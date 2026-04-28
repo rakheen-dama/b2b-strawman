@@ -1,0 +1,65 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - navigation:
+      - link:
+        - /url: /platform-admin/access-requests
+        - text: Access Requests
+      - link:
+        - /url: /platform-admin/billing
+        - text: Billing
+      - link:
+        - /url: /platform-admin/demo
+        - text: Demo
+    - generic:
+      - heading [level=1]: Access Requests
+      - paragraph: Review and manage organization access requests.
+      - generic:
+        - generic:
+          - generic:
+            - tablist:
+              - tab: All
+              - tab [selected]: Pending
+              - tab: Approved
+              - tab: Rejected
+            - tabpanel:
+              - generic:
+                - table:
+                  - rowgroup:
+                    - row:
+                      - columnheader: Org Name
+                      - columnheader: Email
+                      - columnheader: Name
+                      - columnheader: Country
+                      - columnheader: Industry
+                      - columnheader: Submitted
+                      - columnheader: Status
+                      - columnheader: Actions
+                  - rowgroup:
+                    - row:
+                      - cell: Mathebula & Partners
+                      - cell: thandi@mathebula-test.local
+                      - cell: Thandi Mathebula
+                      - cell: South Africa
+                      - cell: Legal Services
+                      - cell: 59 seconds ago
+                      - cell:
+                        - generic: PENDING
+                      - cell:
+                        - generic:
+                          - button: Approve
+                          - button: Reject
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e51] [cursor=pointer]:
+    - img [ref=e52]
+  - alert
+  - alertdialog "Approve Access Request" [ref=e57]:
+    - generic [ref=e58]:
+      - generic [ref=e59]:
+        - heading "Approve Access Request" [level=2] [ref=e60]
+        - paragraph [ref=e61]: Approve access request for Mathebula & Partners? This will create a Keycloak organization, provision a tenant schema, and send an invitation to thandi@mathebula-test.local.
+      - generic [ref=e62]:
+        - button "Cancel" [active] [ref=e63]
+        - button "Approve" [ref=e64]

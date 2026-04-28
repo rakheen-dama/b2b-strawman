@@ -1,0 +1,363 @@
+- generic [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: Kazi
+      - generic [ref=e9]: Mathebula & Partners
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e34]
+              - text: Calendar
+            - link "Court Calendar" [ref=e36] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e37]
+              - text: Court Calendar
+        - generic [ref=e44]:
+          - button "Matters" [expanded] [ref=e45]:
+            - generic [ref=e46]: Matters
+            - img [ref=e47]
+          - generic [ref=e49]:
+            - link "Matters" [ref=e50] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e52]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e55]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e61]:
+          - generic [ref=e62]: Clients
+          - img [ref=e63]
+        - button "Finance" [ref=e67]:
+          - generic [ref=e68]: Finance
+          - img [ref=e69]
+        - generic [ref=e72]:
+          - button "Team" [expanded] [ref=e73]:
+            - generic [ref=e74]: Team
+            - img [ref=e75]
+          - link "Team" [ref=e78] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e79]
+            - text: Team
+      - generic [ref=e85]:
+        - link "Notifications" [ref=e86] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e87]
+          - text: Notifications
+        - link "Settings" [ref=e90] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e91]
+          - text: Settings
+        - link "Help" [ref=e94] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e95]
+          - text: Help
+      - generic [ref=e98]:
+        - generic [ref=e99]: BN
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Bob Ndlovu
+          - paragraph [ref=e102]: bob@mathebula-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "Mathebula & Partners" [ref=e106] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - link "Matters" [ref=e110] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+          - generic [ref=e111]:
+            - img [ref=e112]
+            - generic [ref=e114]: Matter
+        - generic [ref=e115]:
+          - button "User menu" [ref=e117]: BN
+          - button "Notifications" [ref=e119]:
+            - img
+            - generic [ref=e120]: 10 unread notifications
+            - generic [ref=e121]: "10"
+      - main [ref=e122]:
+        - generic [ref=e169]:
+          - link "Back to Matters" [ref=e171] [cursor=pointer]:
+            - /url: /org/mathebula-partners/projects
+            - img [ref=e172]
+            - text: Back to Matters
+          - generic [ref=e174]:
+            - generic [ref=e175]:
+              - generic [ref=e176]:
+                - heading "Dlamini v Road Accident Fund" [level=1] [ref=e177]
+                - generic [ref=e178]: Active
+              - paragraph [ref=e179]: "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION"
+              - paragraph [ref=e180]:
+                - text: "Client:"
+                - link "Sipho Dlamini" [ref=e181] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/customers/8fe5eea2-75fc-4df2-b4d0-267486df68bd
+              - generic [ref=e182]:
+                - generic [ref=e183]:
+                  - generic [ref=e184]: Ref
+                  - code [ref=e185]: RAF-2026-001
+                - generic [ref=e186]: Type Litigation — Road Accident Fund
+              - paragraph [ref=e187]: Created Apr 21, 2026 · 7 documents · 1 member · 9 tasks
+            - generic [ref=e188]:
+              - button "Close Matter" [ref=e189]:
+                - img
+                - text: Close Matter
+              - button "Generate Statement of Account" [ref=e190]:
+                - img
+                - text: Generate Statement of Account
+              - button "Complete Matter" [ref=e191]:
+                - img
+                - text: Complete Matter
+              - button [ref=e192]:
+                - img
+              - button "Generate Document" [ref=e193]:
+                - img
+                - text: Generate Document
+                - img
+              - button "Edit" [ref=e194]:
+                - img
+                - text: Edit
+          - generic [ref=e195]:
+            - paragraph [ref=e196]: Field Groups
+            - generic [ref=e197]:
+              - generic [ref=e198]:
+                - text: SA Conveyancing — Matter Details
+                - button "Remove SA Conveyancing — Matter Details" [ref=e199]:
+                  - img [ref=e200]
+              - generic [ref=e203]:
+                - text: SA Legal — Matter Details
+                - button "Remove SA Legal — Matter Details" [ref=e204]:
+                  - img [ref=e205]
+              - generic [ref=e208]:
+                - text: Project Info
+                - button "Remove Project Info" [ref=e209]:
+                  - img [ref=e210]
+          - generic [ref=e213]:
+            - generic [ref=e214]:
+              - generic [ref=e216]: SA Conveyancing — Matter Details
+              - generic [ref=e218]:
+                - generic [ref=e219]:
+                  - generic [ref=e220]: Conveyancing Type
+                  - combobox "Conveyancing Type" [ref=e222]:
+                    - option "Select..." [selected]
+                    - option "Transfer"
+                    - option "Bond Registration"
+                    - option "Bond Cancellation"
+                    - option "Sectional Title"
+                    - option "Estate Transfer"
+                - generic [ref=e223]:
+                  - generic [ref=e224]: Property Address
+                  - textbox "Property Address" [ref=e226]:
+                    - /placeholder: Full physical address of the property being transferred
+                - generic [ref=e227]:
+                  - generic [ref=e228]: Erf Number
+                  - textbox "Erf Number" [ref=e230]:
+                    - /placeholder: Erf/stand number identifying the property
+                - generic [ref=e231]:
+                  - generic [ref=e232]: Deeds Office
+                  - combobox "Deeds Office" [ref=e234]:
+                    - option "Select..." [selected]
+                    - option "Johannesburg"
+                    - option "Pretoria"
+                    - option "Cape Town"
+                    - option "Bloemfontein"
+                    - option "Pietermaritzburg"
+                    - option "King William's Town"
+                    - option "Kimberley"
+                    - option "Mahikeng"
+                    - option "Mthatha"
+                    - option "Vryburg"
+                - generic [ref=e235]:
+                  - generic [ref=e236]: Lodgement Date
+                  - textbox "Lodgement Date" [ref=e238]
+                - generic [ref=e239]:
+                  - generic [ref=e240]: Purchase Price
+                  - generic [ref=e242]:
+                    - spinbutton "Purchase Price" [ref=e243]
+                    - combobox "Currency" [ref=e244]:
+                      - option "Currency" [selected]
+                      - option "USD"
+                      - option "EUR"
+                      - option "GBP"
+                      - option "ZAR"
+                      - option "AUD"
+                      - option "CAD"
+                      - option "CHF"
+                      - option "JPY"
+                      - option "CNY"
+                      - option "INR"
+                - generic [ref=e245]:
+                  - generic [ref=e246]: Transfer Duty
+                  - generic [ref=e248]:
+                    - spinbutton "Transfer Duty" [ref=e249]
+                    - combobox "Currency" [ref=e250]:
+                      - option "Currency" [selected]
+                      - option "USD"
+                      - option "EUR"
+                      - option "GBP"
+                      - option "ZAR"
+                      - option "AUD"
+                      - option "CAD"
+                      - option "CHF"
+                      - option "JPY"
+                      - option "CNY"
+                      - option "INR"
+                - generic [ref=e251]:
+                  - generic [ref=e252]: Bond Institution
+                  - combobox "Bond Institution" [ref=e254]:
+                    - option "Select..." [selected]
+                    - option "ABSA"
+                    - option "FNB"
+                    - option "Standard Bank"
+                    - option "Nedbank"
+                    - option "Investec"
+                    - option "SA Home Loans"
+                    - option "Other"
+                    - option "None (Cash Purchase)"
+            - generic [ref=e255]:
+              - generic [ref=e257]: SA Legal — Matter Details
+              - generic [ref=e259]:
+                - generic [ref=e260]:
+                  - generic [ref=e261]: Case Number
+                  - textbox "Case Number" [ref=e263]:
+                    - /placeholder: Court-assigned case number for the matter
+                - generic [ref=e264]:
+                  - generic [ref=e265]: Court
+                  - textbox "Court" [ref=e267]:
+                    - /placeholder: Name of the court in which the matter is heard
+                - generic [ref=e268]:
+                  - generic [ref=e269]: Opposing Party
+                  - textbox "Opposing Party" [ref=e271]:
+                    - /placeholder: Name of the primary opposing party
+                - generic [ref=e272]:
+                  - generic [ref=e273]: Opposing Attorney
+                  - textbox "Opposing Attorney" [ref=e275]:
+                    - /placeholder: Name of the opposing attorney or firm
+                - generic [ref=e276]:
+                  - generic [ref=e277]: Advocate
+                  - textbox "Advocate" [ref=e279]:
+                    - /placeholder: Name of the instructed advocate (if briefed)
+                - generic [ref=e280]:
+                  - generic [ref=e281]: Date of Instruction
+                  - textbox "Date of Instruction" [ref=e283]
+                - generic [ref=e284]:
+                  - generic [ref=e285]: Estimated Value
+                  - spinbutton "Estimated Value" [ref=e287]
+            - generic [ref=e288]:
+              - generic [ref=e290]: Project Info
+              - generic [ref=e293]:
+                - generic [ref=e294]: Category
+                - textbox "Category" [ref=e296]:
+                  - /placeholder: Project category or type
+            - button "Save Custom Fields" [ref=e298]:
+              - img
+              - text: Save Custom Fields
+          - generic [ref=e299]:
+            - paragraph [ref=e300]: Tags
+            - button "Add Tag" [ref=e303]:
+              - img
+              - text: Add Tag
+          - generic [ref=e304]:
+            - tablist [ref=e305]:
+              - tab "Overview" [ref=e306]
+              - tab "Documents" [ref=e307]
+              - tab "Members" [ref=e308]
+              - tab "Clients" [ref=e309]
+              - tab "Action Items" [ref=e310]
+              - tab "Time" [ref=e311]
+              - tab "Disbursements" [ref=e312]
+              - tab "Fee Estimate" [ref=e313]
+              - tab "Financials" [ref=e314]
+              - tab "Staffing" [ref=e315]
+              - tab "Rates" [active] [ref=e316]
+              - tab "Generated Docs" [ref=e317]
+              - tab "Requests" [ref=e318]
+              - tab "Client Comments" [ref=e319]
+              - tab "Court Dates" [ref=e320]
+              - tab "Adverse Parties" [ref=e321]
+              - tab "Trust" [ref=e322]
+              - tab "Disbursements" [selected] [ref=e323]: Disbursements
+              - tab "Statements" [ref=e325]
+              - tab "Activity" [ref=e326]
+            - tabpanel "Disbursements" [ref=e327]:
+              - generic [ref=e328]:
+                - generic [ref=e329]:
+                  - heading "Disbursements" [level=3] [ref=e330]
+                  - button "New Disbursement" [ref=e331]:
+                    - img
+                    - text: New Disbursement
+                - table [ref=e333]:
+                  - rowgroup [ref=e334]:
+                    - row "Date Matter Category Description Supplier Amount (incl VAT) Approval Billing Actions" [ref=e335]:
+                      - columnheader "Date" [ref=e336]:
+                        - button "Date" [ref=e337]:
+                          - text: Date
+                          - img
+                      - columnheader "Matter" [ref=e338]
+                      - columnheader "Category" [ref=e339]
+                      - columnheader "Description" [ref=e340]
+                      - columnheader "Supplier" [ref=e341]:
+                        - button "Supplier" [ref=e342]:
+                          - text: Supplier
+                          - img
+                      - columnheader "Amount (incl VAT)" [ref=e343]:
+                        - button "Amount (incl VAT)" [ref=e344]:
+                          - text: Amount (incl VAT)
+                          - img
+                      - columnheader "Approval" [ref=e345]:
+                        - button "Approval" [ref=e346]:
+                          - text: Approval
+                          - img
+                      - columnheader "Billing" [ref=e347]
+                      - columnheader "Actions" [ref=e348]
+                  - rowgroup [ref=e349]:
+                    - 'row "2026-04-22 — Sheriff Fees QA L-57 re-verify: Sheriff service of summons on RAF Sheriff Pretoria R 1 250,00 Draft Unbilled Actions" [ref=e350] [cursor=pointer]':
+                      - cell "2026-04-22" [ref=e351]
+                      - cell "—" [ref=e352]
+                      - cell "Sheriff Fees" [ref=e353]:
+                        - generic [ref=e354]: Sheriff Fees
+                      - 'cell "QA L-57 re-verify: Sheriff service of summons on RAF" [ref=e355]'
+                      - cell "Sheriff Pretoria" [ref=e356]
+                      - cell "R 1 250,00" [ref=e357]
+                      - cell "Draft" [ref=e358]:
+                        - generic [ref=e359]: Draft
+                      - cell "Unbilled" [ref=e360]:
+                        - generic [ref=e361]: Unbilled
+                      - cell "Actions" [ref=e362]:
+                        - button "Actions" [ref=e363]:
+                          - img
+                          - generic [ref=e364]: Actions
+  - generic [ref=e147]:
+    - heading "Command Palette" [level=2] [ref=e148]
+    - paragraph [ref=e149]: Search pages and settings
+  - region "Notifications alt+T"
+  - generic [ref=e154] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e155]:
+      - img [ref=e156]
+    - generic [ref=e159]:
+      - button "Open issues overlay" [ref=e160]:
+        - generic [ref=e161]:
+          - generic [ref=e162]: "0"
+          - generic [ref=e163]: "1"
+        - generic [ref=e164]: Issue
+      - button "Collapse issues badge" [ref=e165]:
+        - img [ref=e166]
+  - alert [ref=e168]

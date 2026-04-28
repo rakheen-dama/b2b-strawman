@@ -1,0 +1,25 @@
+- generic [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e225]:
+    - heading "Kazi" [level=1] [ref=e227]
+    - generic [ref=e228]:
+      - generic [ref=e229]:
+        - generic [ref=e230]: Check Your Email
+        - generic [ref=e231]: If the email is valid, a verification code will be sent.
+      - generic [ref=e232]:
+        - paragraph [ref=e252]: Enter the verification code sent to thandi@mathebula-test.local to continue.
+        - generic [ref=e253]:
+          - generic [ref=e254]:
+            - generic [ref=e255]: Verification Code
+            - textbox "Verification Code" [active] [ref=e256]:
+              - /placeholder: "000000"
+          - paragraph [ref=e257]: Code expires in 09:59
+          - paragraph [ref=e258]:
+            - text: Didn't receive it?
+            - button "Resend code" [ref=e259]
+          - button "Verify" [disabled]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e220] [cursor=pointer]:
+    - img [ref=e221]
+  - alert [ref=e214]: Request Access | Kazi

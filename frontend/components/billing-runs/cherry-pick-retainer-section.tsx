@@ -28,7 +28,9 @@ export function CherryPickRetainerSection({
           <thead>
             <tr className="border-b border-slate-200 text-left dark:border-slate-700">
               <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">Include</th>
-              <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400"><TerminologyHeading term="Customer" /></th>
+              <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
+                <TerminologyHeading term="Customer" />
+              </th>
               <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">Period</th>
               <th className="pr-3 pb-2 text-right font-medium text-slate-500 dark:text-slate-400">
                 Consumed Hours

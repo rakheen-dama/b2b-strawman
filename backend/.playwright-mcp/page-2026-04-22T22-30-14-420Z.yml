@@ -1,0 +1,219 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: BN
+        - generic:
+          - paragraph: Bob Ndlovu
+          - paragraph: bob@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/legal
+              - text: legal
+          - generic:
+            - img
+            - generic: disbursements
+        - generic:
+          - generic:
+            - button: BN
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 10 unread notifications
+              - generic: "10"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - heading [level=1]: Disbursements
+                - paragraph: Manage client disbursements — matter costs paid by the firm on the client's behalf.
+              - generic:
+                - generic:
+                  - combobox
+                  - combobox
+                  - combobox
+                  - combobox
+                  - textbox
+                  - textbox
+                  - generic:
+                    - button [expanded]:
+                      - img
+                      - text: New Disbursement
+                - generic: 0 disbursements
+                - generic:
+                  - paragraph: No disbursements found.
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e148] [cursor=pointer]:
+    - img [ref=e149]
+  - alert
+  - dialog "New Disbursement" [ref=e155]:
+    - generic [ref=e156]:
+      - generic [ref=e157]:
+        - heading "New Disbursement" [level=2] [ref=e158]
+        - paragraph [ref=e159]: Record a client disbursement paid by the firm on the matter's behalf.
+      - generic [ref=e160]:
+        - generic [ref=e161]:
+          - generic [ref=e162]:
+            - generic [ref=e163]: Matter
+            - combobox "Matter" [ref=e164]:
+              - option "-- Select matter --" [selected]
+              - option "Estate Late Peter Moroka"
+              - option "Dlamini v Road Accident Fund"
+          - generic [ref=e165]:
+            - generic [ref=e166]: Customer
+            - combobox "Customer" [ref=e167]:
+              - option "-- Select customer --" [selected]
+              - option "Sipho Dlamini"
+              - option "Test Client FICA Verify"
+              - option "Moroka Family Trust"
+        - generic [ref=e168]:
+          - generic [ref=e169]: Category
+          - combobox "Category" [active] [ref=e170]:
+            - option "Sheriff Fees"
+            - option "Counsel Fees"
+            - option "Search Fees"
+            - option "Deeds Office Fees"
+            - option "Court Fees"
+            - option "Advocate Fees"
+            - option "Expert Witness"
+            - option "Travel"
+            - option "Other" [selected]
+        - generic [ref=e171]:
+          - generic [ref=e172]: Description
+          - textbox "Description" [ref=e173]:
+            - /placeholder: What was paid for...
+        - generic [ref=e174]:
+          - generic [ref=e175]:
+            - generic [ref=e176]: Amount (ZAR, excl VAT)
+            - spinbutton "Amount (ZAR, excl VAT)" [ref=e177]: "0"
+          - generic [ref=e178]:
+            - generic [ref=e179]: VAT Treatment
+            - combobox "VAT Treatment" [ref=e180]:
+              - option "Standard (15%)" [selected]
+              - option "Zero-rated pass-through"
+              - option "Exempt"
+        - generic [ref=e181]:
+          - generic [ref=e182]: Payment Source
+          - radiogroup [ref=e183]:
+            - generic [ref=e184]:
+              - radio "Office Account" [checked] [ref=e185]:
+                - img [ref=e187]
+              - radio [checked]
+              - generic [ref=e189]: Office Account
+            - generic [ref=e190]:
+              - radio "Trust Account" [ref=e191]
+              - radio
+              - generic [ref=e192]: Trust Account
+        - generic [ref=e193]:
+          - generic [ref=e194]:
+            - generic [ref=e195]: Incurred Date
+            - textbox "Incurred Date" [ref=e196]
+          - generic [ref=e197]:
+            - generic [ref=e198]: Supplier
+            - textbox "Supplier" [ref=e199]:
+              - /placeholder: e.g. Sheriff Sandton
+        - generic [ref=e200]:
+          - generic [ref=e201]:
+            - text: Supplier Reference
+            - generic [ref=e202]: (optional)
+          - textbox "Supplier Reference (optional)" [ref=e203]:
+            - /placeholder: Invoice or reference number
+        - generic [ref=e204]:
+          - generic [ref=e205]:
+            - text: Receipt
+            - generic [ref=e206]: (optional)
+          - button "Choose File" [disabled]
+          - paragraph [ref=e207]: Select a matter first to enable receipt upload.
+        - generic [ref=e208]:
+          - button "Cancel" [ref=e209]
+          - button "Create Disbursement" [ref=e210]
+      - button "Close" [ref=e211]:
+        - img
+        - generic [ref=e212]: Close

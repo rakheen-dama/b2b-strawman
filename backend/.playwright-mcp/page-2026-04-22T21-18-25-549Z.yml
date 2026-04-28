@@ -1,0 +1,167 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: Kazi
+      - generic [ref=e9]: Mathebula & Partners
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e34]
+              - text: Calendar
+            - link "Court Calendar" [ref=e36] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e52]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e55]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e61]:
+          - generic [ref=e62]: Clients
+          - img [ref=e63]
+        - button "Finance" [ref=e67]:
+          - generic [ref=e68]: Finance
+          - img [ref=e69]
+        - generic [ref=e72]:
+          - button "Team" [expanded] [ref=e73]:
+            - generic [ref=e74]: Team
+            - img [ref=e75]
+          - link "Team" [ref=e78] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e79]
+            - text: Team
+      - generic [ref=e85]:
+        - link "Notifications" [ref=e86] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e87]
+          - text: Notifications
+        - link "Settings" [ref=e90] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e91]
+          - text: Settings
+        - link "Help" [ref=e94] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e95]
+          - text: Help
+      - generic [ref=e98]:
+        - generic [ref=e99]: BN
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Bob Ndlovu
+          - paragraph [ref=e102]: bob@mathebula-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "Mathebula & Partners" [ref=e106] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - generic [ref=e110]: Court Calendar
+        - generic [ref=e111]:
+          - button "User menu" [ref=e113]: "?"
+          - button "Notifications" [ref=e115]:
+            - img
+      - main [ref=e117]:
+        - generic [ref=e120]:
+          - generic [ref=e121]:
+            - heading "Court Calendar" [level=1] [ref=e122]
+            - paragraph [ref=e123]: Manage court dates, hearings, and prescription tracking
+          - generic [ref=e124]:
+            - generic [ref=e125]:
+              - combobox [ref=e126]:
+                - option "All Statuses" [selected]
+                - option "Scheduled"
+                - option "Postponed"
+                - option "Heard"
+                - option "Cancelled"
+              - combobox [ref=e127]:
+                - option "All Types" [selected]
+                - option "Hearing"
+                - option "Trial"
+                - option "Motion"
+                - option "Mediation"
+                - option "Arbitration"
+                - option "Pre-Trial"
+                - option "Case Management"
+                - option "Taxation"
+                - option "Other"
+              - textbox "From date" [ref=e128]
+              - textbox "To date" [ref=e129]
+              - textbox "Search client or matter" [ref=e130]:
+                - /placeholder: Search client/matter...
+              - button "New Court Date" [ref=e132]:
+                - img
+                - text: New Court Date
+            - generic [ref=e133]:
+              - tablist [ref=e135]:
+                - tab "List" [selected] [ref=e136]
+                - tab "Calendar" [ref=e137]
+                - tab "Prescriptions" [ref=e138]
+              - generic [ref=e139]:
+                - generic [ref=e140]: 1 court dates
+                - generic [ref=e141]: 1 upcoming
+            - table [ref=e145]:
+              - rowgroup [ref=e146]:
+                - row "Date Time Type Court Matter Client Status Actions" [ref=e147]:
+                  - columnheader "Date" [ref=e148]:
+                    - button "Date" [ref=e149]:
+                      - text: Date
+                      - img
+                  - columnheader "Time" [ref=e150]
+                  - columnheader "Type" [ref=e151]
+                  - columnheader "Court" [ref=e152]:
+                    - button "Court" [ref=e153]:
+                      - text: Court
+                      - img
+                  - columnheader "Matter" [ref=e154]
+                  - columnheader "Client" [ref=e155]
+                  - columnheader "Status" [ref=e156]:
+                    - button "Status" [ref=e157]:
+                      - text: Status
+                      - img
+                  - columnheader "Actions" [ref=e158]
+              - rowgroup [ref=e159]:
+                - row "2026-05-06 — Pre-Trial Gauteng Division, Pretoria Dlamini v Road Accident Fund Sipho Dlamini Scheduled Actions" [ref=e160] [cursor=pointer]:
+                  - cell "2026-05-06" [ref=e161]
+                  - cell "—" [ref=e162]
+                  - cell "Pre-Trial" [ref=e163]:
+                    - generic [ref=e164]: Pre-Trial
+                  - cell "Gauteng Division, Pretoria" [ref=e165]
+                  - cell "Dlamini v Road Accident Fund" [ref=e166]
+                  - cell "Sipho Dlamini" [ref=e167]
+                  - cell "Scheduled" [ref=e168]:
+                    - generic [ref=e169]: Scheduled
+                  - cell "Actions" [ref=e170]:
+                    - button "Actions" [ref=e171]:
+                      - img
+                      - generic [ref=e172]: Actions
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e178] [cursor=pointer]:
+    - img [ref=e179]

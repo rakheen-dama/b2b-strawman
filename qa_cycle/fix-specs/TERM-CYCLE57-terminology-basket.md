@@ -96,7 +96,7 @@ The dialog is a hidden gap on the §90.1 walk because cycle 57 only opened the C
 | 114 | `<DialogDescription>Update your project's details.</DialogDescription>` | `<DialogDescription>{\`Update your ${t("project")}'s details.\`}</DialogDescription>` |
 | 168 | `<FormLabel>Customer <span ...>(optional)</span></FormLabel>` | `<FormLabel>{t("Customer")} <span ...>(optional)</span></FormLabel>` |
 
-`useTerminology()` is **not** currently imported in this file — add the same hook import + call as `CreateProjectDialog` (3 lines): `import { useTerminology } from "@/lib/terminology"` + `const { t } = useTerminology();` inside the component.
+`useTerminology()` is already imported and called in this file (`const { t } = useTerminology();` at the top of the component) — no new hook import/call needed; the line edits above just route the literals through the existing `t()` resolver.
 
 ### 5. New Client dialog (`CreateCustomerDialog`) — email placeholder
 

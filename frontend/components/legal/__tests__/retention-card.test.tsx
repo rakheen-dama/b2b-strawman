@@ -112,10 +112,7 @@ describe("RetentionCard (GAP-L-101 — 3-state surface)", () => {
       expect(card.textContent).toContain("27 Apr 2026");
       // Settings deep-link is present.
       const link = screen.getByRole("link", { name: /configure retention period/i });
-      expect(link).toHaveAttribute(
-        "href",
-        "/org/mathebula-partners/settings/data-protection"
-      );
+      expect(link).toHaveAttribute("href", "/org/mathebula-partners/settings/data-protection");
       // No days-remaining counter — end date can't be computed yet.
       expect(screen.queryByTestId("retention-card-days-remaining")).not.toBeInTheDocument();
     });

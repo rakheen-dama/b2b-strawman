@@ -1,0 +1,29 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - navigation [ref=e4]:
+      - link "Access Requests" [ref=e5] [cursor=pointer]:
+        - /url: /platform-admin/access-requests
+      - link "Billing" [ref=e6] [cursor=pointer]:
+        - /url: /platform-admin/billing
+      - link "Demo" [ref=e7] [cursor=pointer]:
+        - /url: /platform-admin/demo
+    - generic [ref=e8]:
+      - heading "Access Requests" [level=1] [ref=e9]
+      - paragraph [ref=e10]: Review and manage organization access requests.
+      - generic [ref=e13]:
+        - tablist [ref=e14]:
+          - tab "All" [ref=e15]
+          - tab "Pending" [selected] [ref=e16]
+          - tab "Approved" [ref=e17]
+          - tab "Rejected" [ref=e18]
+        - tabpanel "Pending" [ref=e19]:
+          - generic [ref=e65]:
+            - img [ref=e66]
+            - heading "No access requests" [level=2] [ref=e69]
+            - paragraph [ref=e70]: No pending access requests.
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e51] [cursor=pointer]:
+    - img [ref=e52]
+  - alert [ref=e55]

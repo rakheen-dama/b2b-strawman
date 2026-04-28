@@ -1,0 +1,269 @@
+- generic [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: Kazi
+      - generic [ref=e9]: Mathebula & Partners
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e34]
+              - text: Calendar
+            - link "Court Calendar" [ref=e36] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e37]
+              - text: Court Calendar
+        - generic [ref=e44]:
+          - button "Matters" [expanded] [ref=e45]:
+            - generic [ref=e46]: Matters
+            - img [ref=e47]
+          - generic [ref=e49]:
+            - link "Matters" [ref=e50] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e51]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e53] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e54]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e60]:
+          - generic [ref=e61]: Clients
+          - img [ref=e62]
+        - button "Finance" [ref=e66]:
+          - generic [ref=e67]: Finance
+          - img [ref=e68]
+        - generic [ref=e71]:
+          - button "Team" [expanded] [ref=e72]:
+            - generic [ref=e73]: Team
+            - img [ref=e74]
+          - link "Team" [ref=e77] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e78]
+            - text: Team
+      - generic [ref=e84]:
+        - link "Notifications" [ref=e85] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e86]
+          - text: Notifications
+        - link "Settings" [ref=e89] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e90]
+          - text: Settings
+        - link "Help" [ref=e93] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e94]
+          - text: Help
+      - generic [ref=e97]:
+        - generic [ref=e98]: BN
+        - generic [ref=e99]:
+          - paragraph [ref=e100]: Bob Ndlovu
+          - paragraph [ref=e101]: bob@mathebula-test.local
+    - generic [ref=e102]:
+      - banner [ref=e103]:
+        - navigation "Breadcrumb" [ref=e104]:
+          - link "Mathebula & Partners" [ref=e105] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e106]:
+            - img [ref=e107]
+            - link "My Work" [ref=e109] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+          - generic [ref=e110]:
+            - img [ref=e111]
+            - generic [ref=e113]: timesheet
+        - generic [ref=e114]:
+          - button "User menu" [ref=e116]: BN
+          - button "Notifications" [ref=e118]:
+            - img
+            - generic [ref=e119]: 10 unread notifications
+            - generic [ref=e201]: "10"
+      - main [ref=e120]:
+        - generic [ref=e202]:
+          - generic [ref=e203]:
+            - heading "Timesheet" [level=1] [ref=e204]
+            - paragraph [ref=e205]: Log your weekly hours across all tasks.
+          - generic [ref=e206]:
+            - generic [ref=e207]:
+              - generic [ref=e208]:
+                - button "Previous week" [ref=e209]:
+                  - img
+                - generic [ref=e210]: Apr 20 – Apr 26, 2026
+                - button "Next week" [ref=e211]:
+                  - img
+                - button "This Week" [ref=e212]
+              - generic [ref=e213]:
+                - button "Copy Previous Week" [ref=e214]:
+                  - img
+                  - text: Copy Previous Week
+                - button "Import CSV" [ref=e215]:
+                  - img
+                  - text: Import CSV
+                - button "Save" [disabled]
+            - table [ref=e218]:
+              - rowgroup [ref=e219]:
+                - row "Task Mon 20 Tue 21 Wed 22 Thu 23 Fri 24 Sat 25 Sun 26 Total" [ref=e220]:
+                  - columnheader "Task" [ref=e221]
+                  - columnheader "Mon 20" [ref=e222]
+                  - columnheader "Tue 21" [ref=e223]
+                  - columnheader "Wed 22" [ref=e224]
+                  - columnheader "Thu 23" [ref=e225]
+                  - columnheader "Fri 24" [ref=e226]
+                  - columnheader "Sat 25" [ref=e227]
+                  - columnheader "Sun 26" [ref=e228]
+                  - columnheader "Total" [ref=e229]
+              - rowgroup [ref=e230]:
+                - row "Post-judgment -- taxation of costs / appeal Dlamini v Road Accident Fund 1.5 1.5h" [ref=e231]:
+                  - cell "Post-judgment -- taxation of costs / appeal Dlamini v Road Accident Fund" [ref=e232]:
+                    - generic [ref=e233]:
+                      - paragraph [ref=e234]: Post-judgment -- taxation of costs / appeal
+                      - paragraph [ref=e235]: Dlamini v Road Accident Fund
+                  - cell [ref=e236]:
+                    - spinbutton "Hours for day 1" [ref=e237]
+                  - cell [ref=e238]:
+                    - spinbutton "Hours for day 2" [ref=e239]
+                  - cell [ref=e240]:
+                    - spinbutton "Hours for day 3" [ref=e241]
+                  - cell "1.5" [ref=e242]:
+                    - spinbutton "Hours for day 4" [ref=e243]: "1.5"
+                  - cell [ref=e244]:
+                    - spinbutton "Hours for day 5" [ref=e245]
+                  - cell [ref=e246]:
+                    - spinbutton "Hours for day 6" [ref=e247]
+                  - cell [ref=e248]:
+                    - spinbutton "Hours for day 7" [ref=e249]
+                  - cell "1.5h" [ref=e250]
+                - row "Trial / hearing attendance Dlamini v Road Accident Fund —" [ref=e251]:
+                  - cell "Trial / hearing attendance Dlamini v Road Accident Fund" [ref=e252]:
+                    - generic [ref=e253]:
+                      - paragraph [ref=e254]: Trial / hearing attendance
+                      - paragraph [ref=e255]: Dlamini v Road Accident Fund
+                  - cell [ref=e256]:
+                    - spinbutton "Hours for day 1" [active] [ref=e257]
+                  - cell [ref=e258]:
+                    - spinbutton "Hours for day 2" [ref=e259]
+                  - cell [ref=e260]:
+                    - spinbutton "Hours for day 3" [ref=e261]
+                  - cell [ref=e262]:
+                    - spinbutton "Hours for day 4" [ref=e263]
+                  - cell [ref=e264]:
+                    - spinbutton "Hours for day 5" [ref=e265]
+                  - cell [ref=e266]:
+                    - spinbutton "Hours for day 6" [ref=e267]
+                  - cell [ref=e268]:
+                    - spinbutton "Hours for day 7" [ref=e269]
+                  - cell "—" [ref=e270]
+                - row "Pre-trial conference preparation Dlamini v Road Accident Fund —" [ref=e271]:
+                  - cell "Pre-trial conference preparation Dlamini v Road Accident Fund" [ref=e272]:
+                    - generic [ref=e273]:
+                      - paragraph [ref=e274]: Pre-trial conference preparation
+                      - paragraph [ref=e275]: Dlamini v Road Accident Fund
+                  - cell [ref=e276]:
+                    - spinbutton "Hours for day 1" [ref=e277]
+                  - cell [ref=e278]:
+                    - spinbutton "Hours for day 2" [ref=e279]
+                  - cell [ref=e280]:
+                    - spinbutton "Hours for day 3" [ref=e281]
+                  - cell [ref=e282]:
+                    - spinbutton "Hours for day 4" [ref=e283]
+                  - cell [ref=e284]:
+                    - spinbutton "Hours for day 5" [ref=e285]
+                  - cell [ref=e286]:
+                    - spinbutton "Hours for day 6" [ref=e287]
+                  - cell [ref=e288]:
+                    - spinbutton "Hours for day 7" [ref=e289]
+                  - cell "—" [ref=e290]
+                - row "File plea / exception / counterclaim Dlamini v Road Accident Fund —" [ref=e291]:
+                  - cell "File plea / exception / counterclaim Dlamini v Road Accident Fund" [ref=e292]:
+                    - generic [ref=e293]:
+                      - paragraph [ref=e294]: File plea / exception / counterclaim
+                      - paragraph [ref=e295]: Dlamini v Road Accident Fund
+                  - cell [ref=e296]:
+                    - spinbutton "Hours for day 1" [ref=e297]
+                  - cell [ref=e298]:
+                    - spinbutton "Hours for day 2" [ref=e299]
+                  - cell [ref=e300]:
+                    - spinbutton "Hours for day 3" [ref=e301]
+                  - cell [ref=e302]:
+                    - spinbutton "Hours for day 4" [ref=e303]
+                  - cell [ref=e304]:
+                    - spinbutton "Hours for day 5" [ref=e305]
+                  - cell [ref=e306]:
+                    - spinbutton "Hours for day 6" [ref=e307]
+                  - cell [ref=e308]:
+                    - spinbutton "Hours for day 7" [ref=e309]
+                  - cell "—" [ref=e310]
+                - row "Issue summons / combined summons Dlamini v Road Accident Fund —" [ref=e311]:
+                  - cell "Issue summons / combined summons Dlamini v Road Accident Fund" [ref=e312]:
+                    - generic [ref=e313]:
+                      - paragraph [ref=e314]: Issue summons / combined summons
+                      - paragraph [ref=e315]: Dlamini v Road Accident Fund
+                  - cell [ref=e316]:
+                    - spinbutton "Hours for day 1" [ref=e317]
+                  - cell [ref=e318]:
+                    - spinbutton "Hours for day 2" [ref=e319]
+                  - cell [ref=e320]:
+                    - spinbutton "Hours for day 3" [ref=e321]
+                  - cell [ref=e322]:
+                    - spinbutton "Hours for day 4" [ref=e323]
+                  - cell [ref=e324]:
+                    - spinbutton "Hours for day 5" [ref=e325]
+                  - cell [ref=e326]:
+                    - spinbutton "Hours for day 6" [ref=e327]
+                  - cell [ref=e328]:
+                    - spinbutton "Hours for day 7" [ref=e329]
+                  - cell "—" [ref=e330]
+                - row "Letter of demand Dlamini v Road Accident Fund —" [ref=e331]:
+                  - cell "Letter of demand Dlamini v Road Accident Fund" [ref=e332]:
+                    - generic [ref=e333]:
+                      - paragraph [ref=e334]: Letter of demand
+                      - paragraph [ref=e335]: Dlamini v Road Accident Fund
+                  - cell [ref=e336]:
+                    - spinbutton "Hours for day 1" [ref=e337]
+                  - cell [ref=e338]:
+                    - spinbutton "Hours for day 2" [ref=e339]
+                  - cell [ref=e340]:
+                    - spinbutton "Hours for day 3" [ref=e341]
+                  - cell [ref=e342]:
+                    - spinbutton "Hours for day 4" [ref=e343]
+                  - cell [ref=e344]:
+                    - spinbutton "Hours for day 5" [ref=e345]
+                  - cell [ref=e346]:
+                    - spinbutton "Hours for day 6" [ref=e347]
+                  - cell [ref=e348]:
+                    - spinbutton "Hours for day 7" [ref=e349]
+                  - cell "—" [ref=e350]
+                - row "Daily Total — — — 1.5h — — — 1.5h" [ref=e351]:
+                  - cell "Daily Total" [ref=e352]
+                  - cell "—" [ref=e353]
+                  - cell "—" [ref=e354]
+                  - cell "—" [ref=e355]
+                  - cell "1.5h" [ref=e356]
+                  - cell "—" [ref=e357]
+                  - cell "—" [ref=e358]
+                  - cell "—" [ref=e359]
+                  - cell "1.5h" [ref=e360]
+            - textbox "Add task..." [ref=e362]
+  - generic [ref=e363]:
+    - heading "Command Palette" [level=2] [ref=e364]
+    - paragraph [ref=e365]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e197] [cursor=pointer]:
+    - img [ref=e198]
+  - alert [ref=e366]

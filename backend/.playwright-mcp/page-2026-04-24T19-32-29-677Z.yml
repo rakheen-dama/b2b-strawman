@@ -1,0 +1,16 @@
+- generic [ref=e4]:
+  - generic [ref=e5]: Kazi
+  - generic [ref=e6]:
+    - heading "Sign in to Kazi" [level=1] [ref=e7]
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - generic [ref=e10]: Email
+        - textbox "Email" [active] [ref=e11]: padmin@docteams.local
+      - generic [ref=e12]:
+        - generic [ref=e13]: Password
+        - textbox "Password" [ref=e14]
+      - link "Forgot Password?" [ref=e16] [cursor=pointer]:
+        - /url: /realms/docteams/login-actions/reset-credentials?client_id=gateway-bff&tab_id=d3SfFCY-C1o&client_data=eyJydSI6Imh0dHA6Ly9sb2NhbGhvc3Q6ODQ0My9sb2dpbi9vYXV0aDIvY29kZS9rZXljbG9hayIsInJ0IjoiY29kZSIsInN0IjoiWU9maC1YWFp5UkRVXzZuSnpyTDZ4M2pkWVlGR1NRMUNJWWQ1bmZ1OURJST0ifQ
+      - button "Sign In" [ref=e17]:
+        - generic [ref=e18]: Sign In
+  - paragraph [ref=e19]: © 2026 Kazi

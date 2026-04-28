@@ -167,11 +167,11 @@ Browser-driven on `bugfix_cycle_2026-04-26-slice1` after Dev lands the fix.
 1. Authenticate as Bob (admin) at `:3000` via Keycloak; navigate to RAF matter `/org/mathebula-partners/projects/cc390c4f-…?tab=activity`.
 2. Capture `cycleNN-OBS-PortalContactName-step2-firm-activity-tab.yml`. **Expected**: actor-filter combobox now lists `All actors / Bob Ndlovu / Sipho Dlamini / Thandi Mathebula / System` (4 named options + System for the 1 NULL actor_id row tracked under `OBS-Cycle55-PortalInvoicePaidNullActorId`). The "System" bucket should drop from ~7 portal events to ~1 (the null-actor `portal.invoice.paid` row).
 3. Open the actor combobox and select "Sipho Dlamini". Capture `step3-firm-activity-sipho-filter.yml`. **Expected**: 12 rows render, all prefixed "Sipho Dlamini" (`portal.document.downloaded` ×2, `portal.document.upload_initiated` ×5, `portal.request_item.submitted` ×5). Avatar circle renders "SD" initials, not "S".
-4. Switch to "System" filter. Capture `step4-firm-activity-system-filter.yml`. **Expected**: only 1 row (the null-actor `portal.invoice.paid`).
+4. Switch to "System" filter. Capture `step4-firm-activity-system-filter.yml`. **Expected (after slice 1)**: zero PORTAL_CONTACT rows in this bucket — slice 1 also lands `OBS-Cycle55-PortalInvoicePaidNullActorId` so the previously NULL-actor `portal.invoice.paid` row now resolves through the PRIMARY portal_contact and renders under that contact's name. (Pre-slice-1 baseline: only 1 row — the null-actor `portal.invoice.paid`.)
 5. Switch to "Bob Ndlovu" filter. Capture `step5-firm-activity-bob-filter.yml`. **Expected**: 11 firm-user rows unchanged from cycle 55 baseline (regression invariant — USER path untouched).
 6. DB invariant: `SELECT COUNT(*) FROM audit_events WHERE actor_type='PORTAL_CONTACT' AND actor_id IS NOT NULL` should still report 12 — the fix only changes rendering, not data.
 7. Backend test: `./mvnw test -Dtest=ActivityMessageFormatterTest` passes (existing USER cases + 3 new PORTAL_CONTACT cases).
-8. Regression: confirm `OBS-Cycle55-PortalInvoicePaidNullActorId` is **separately tracked** — this fix does NOT close that observation; the 1/13 NULL-actor row will continue rendering as "System" until that emitter-side spec is implemented.
+8. Regression: `OBS-Cycle55-PortalInvoicePaidNullActorId` was **bundled into slice 1** (separate PR #1209) — both fixes ship together, so the 1/13 NULL-actor `portal.invoice.paid` row should now resolve to a real PORTAL_CONTACT actor_id on subsequent webhook reconciliations (existing rows persist as-is — the fix is forward-only).
 
 ## Effort
 

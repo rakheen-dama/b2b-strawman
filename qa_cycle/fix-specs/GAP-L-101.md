@@ -20,7 +20,7 @@ and the card hides entirely. Result: 100 % of QA cycles since cycle 1 reported t
 (`OBS-Day60-RetentionShape` → `OBS-Day85-NoMatterRetentionUI`), reconfirmed cycle-57.
 
 This is a compliance-relevant disclosure: a closed-matter UI that goes silent on retention is the
-exact opposite of what POPIA/AML reviewers expect to see — they expect a visible clock + scheduled
+opposite of what POPIA/AML reviewers expect to see — they expect a visible clock + scheduled
 deletion date the moment a matter goes CLOSED.
 
 Evidence: `qa_cycle/checkpoint-results/day-85.md §85.3`; `qa_cycle/checkpoint-results/cycle55-day85-1.3-retention-clock.txt`;
@@ -393,7 +393,7 @@ total). Risk is low; rollback (revert the PR) is trivial since props and call si
 - No migration, no frontend↔backend contract change, no cross-cutting concerns. Risk is low;
   rollback is trivial.
 - Triaged across 3 cycles (1, 55, 57) as a persistent OBS — fixing it closes the loop on Sprint-2
-  followup tagged in the cycle-1 walk notes.
+  follow-up tagged in the cycle-1 walk notes.
 
 ## Notes
 

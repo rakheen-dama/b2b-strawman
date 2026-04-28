@@ -1,0 +1,340 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: BN
+        - generic:
+          - paragraph: Bob Ndlovu
+          - paragraph: bob@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - text: Matters
+          - generic:
+            - img
+            - generic: Matter
+        - generic:
+          - generic:
+            - button: BN
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 10 unread notifications
+              - generic: "10"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/projects
+                  - img
+                  - text: Back to Matters
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: Dlamini v Road Accident Fund
+                    - generic: Active
+                  - paragraph: "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION"
+                  - paragraph:
+                    - text: "Client:"
+                    - link:
+                      - /url: /org/mathebula-partners/customers/8fe5eea2-75fc-4df2-b4d0-267486df68bd
+                      - text: Sipho Dlamini
+                  - generic:
+                    - generic:
+                      - generic: Ref
+                      - code: RAF-2026-001
+                    - generic: Type Litigation — Road Accident Fund
+                  - paragraph: Created Apr 21, 2026 · 7 documents · 1 member · 9 tasks
+                - generic:
+                  - button:
+                    - img
+                    - text: Close Matter
+                  - button:
+                    - img
+                    - text: Generate Statement of Account
+                  - button:
+                    - img
+                    - text: Complete Matter
+                  - button:
+                    - img
+                  - button:
+                    - img
+                    - text: Generate Document
+                    - img
+                  - button:
+                    - img
+                    - text: Edit
+              - generic:
+                - paragraph: Field Groups
+                - generic:
+                  - generic:
+                    - text: SA Conveyancing — Matter Details
+                    - button:
+                      - img
+                  - generic:
+                    - text: SA Legal — Matter Details
+                    - button:
+                      - img
+                  - generic:
+                    - text: Project Info
+                    - button:
+                      - img
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: SA Conveyancing — Matter Details
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Conveyancing Type
+                        - generic:
+                          - combobox
+                      - generic:
+                        - generic: Property Address
+                        - generic:
+                          - textbox:
+                            - /placeholder: Full physical address of the property being transferred
+                      - generic:
+                        - generic: Erf Number
+                        - generic:
+                          - textbox:
+                            - /placeholder: Erf/stand number identifying the property
+                      - generic:
+                        - generic: Deeds Office
+                        - generic:
+                          - combobox
+                      - generic:
+                        - generic: Lodgement Date
+                        - generic:
+                          - textbox
+                      - generic:
+                        - generic: Purchase Price
+                        - generic:
+                          - generic:
+                            - spinbutton
+                            - combobox
+                      - generic:
+                        - generic: Transfer Duty
+                        - generic:
+                          - generic:
+                            - spinbutton
+                            - combobox
+                      - generic:
+                        - generic: Bond Institution
+                        - generic:
+                          - combobox
+                - generic:
+                  - generic:
+                    - generic: SA Legal — Matter Details
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Case Number
+                        - generic:
+                          - textbox:
+                            - /placeholder: Court-assigned case number for the matter
+                      - generic:
+                        - generic: Court
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the court in which the matter is heard
+                      - generic:
+                        - generic: Opposing Party
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the primary opposing party
+                      - generic:
+                        - generic: Opposing Attorney
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the opposing attorney or firm
+                      - generic:
+                        - generic: Advocate
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the instructed advocate (if briefed)
+                      - generic:
+                        - generic: Date of Instruction
+                        - generic:
+                          - textbox
+                      - generic:
+                        - generic: Estimated Value
+                        - generic:
+                          - spinbutton
+                - generic:
+                  - generic:
+                    - generic: Project Info
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Category
+                        - generic:
+                          - textbox:
+                            - /placeholder: Project category or type
+                - generic:
+                  - button:
+                    - img
+                    - text: Save Custom Fields
+              - generic:
+                - paragraph: Tags
+                - generic:
+                  - generic:
+                    - button:
+                      - img
+                      - text: Add Tag
+              - generic:
+                - tablist:
+                  - tab: Overview
+                  - tab: Documents
+                  - tab: Members
+                  - tab: Clients
+                  - tab: Action Items
+                  - tab: Time
+                  - tab: Disbursements
+                  - tab: Fee Estimate
+                  - tab: Financials
+                  - tab: Staffing
+                  - tab [selected]: Rates
+                  - tab: Generated Docs
+                  - tab: Requests
+                  - tab: Client Comments
+                  - tab: Court Dates
+                  - tab: Adverse Parties
+                  - tab: Trust
+                  - tab: Disbursements
+                  - tab: Statements
+                  - tab: Activity
+                - tabpanel:
+                  - generic:
+                    - generic:
+                      - img
+                      - heading [level=2]: No project rate overrides
+                      - paragraph: Add billing rate overrides for specific team members on this project.
+                      - button [expanded]:
+                        - img
+                        - text: Add Override
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e155] [cursor=pointer]:
+    - img [ref=e156]
+  - alert
+  - dialog "Add Project Rate Override" [ref=e327]:
+    - generic [ref=e328]:
+      - generic [ref=e329]:
+        - heading "Add Project Rate Override" [level=2] [ref=e330]
+        - paragraph [ref=e331]: Create a project-specific billing rate override for a team member.
+      - generic [ref=e332]:
+        - generic [ref=e333]:
+          - generic [ref=e334]: Member
+          - combobox "Member" [active] [ref=e335]:
+            - option "Select a member..." [selected]
+            - option "Bob Ndlovu"
+        - generic [ref=e336]:
+          - generic [ref=e337]: Hourly Rate
+          - spinbutton "Hourly Rate" [ref=e338]
+        - generic [ref=e339]:
+          - generic [ref=e340]: Currency
+          - combobox [ref=e341]:
+            - text: ZAR — South African Rand
+            - img
+        - generic [ref=e342]:
+          - generic [ref=e343]: Effective From
+          - textbox "Effective From" [ref=e344]: 2026-04-23
+        - generic [ref=e345]:
+          - generic [ref=e346]:
+            - text: Effective To
+            - generic [ref=e347]: (optional)
+          - textbox "Effective To (optional)" [ref=e348]
+        - generic [ref=e349]:
+          - button "Cancel" [ref=e350]
+          - button "Create Override" [ref=e351]
+      - button "Close" [ref=e352]:
+        - img
+        - generic [ref=e353]: Close

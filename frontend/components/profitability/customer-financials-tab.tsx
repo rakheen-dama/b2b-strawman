@@ -59,7 +59,9 @@ function ProjectBreakdownTable({ projects }: { projects: ProjectProfitabilitySum
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead><TerminologyHeading term="Project" /></TableHead>
+            <TableHead>
+              <TerminologyHeading term="Project" />
+            </TableHead>
             <TableHead>Currency</TableHead>
             <TableHead className="text-right">Hours</TableHead>
             <TableHead className="text-right">Revenue</TableHead>

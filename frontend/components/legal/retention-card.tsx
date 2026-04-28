@@ -64,9 +64,7 @@ export function RetentionCard({
   }
 
   const clockStartedDate =
-    retentionClockStartedAt != null
-      ? formatLocalDate(retentionClockStartedAt.slice(0, 10))
-      : null;
+    retentionClockStartedAt != null ? formatLocalDate(retentionClockStartedAt.slice(0, 10)) : null;
 
   // State A — clock not yet stamped (rare race; legacy close path before ADR-249).
   if (retentionClockStartedAt == null) {
@@ -80,9 +78,8 @@ export function RetentionCard({
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
           <p>
-            Retention clock not yet stamped. Close this matter from the actions
-            menu to start the retention period (5 years by default; your firm&apos;s
-            setting overrides).
+            Retention clock not yet stamped. Close this matter from the actions menu to start the
+            retention period (5 years by default; your firm&apos;s setting overrides).
           </p>
         </CardContent>
       </Card>
@@ -102,12 +99,9 @@ export function RetentionCard({
         <CardContent className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
           <p>
             Retention will begin when this matter moves to{" "}
-            <strong className="text-slate-900 dark:text-slate-100">Closed</strong>.
-            Anchor preview:{" "}
-            <strong className="text-slate-900 dark:text-slate-100">
-              {clockStartedDate}
-            </strong>
-            . Default retention period is 5 years; your firm&apos;s setting overrides.
+            <strong className="text-slate-900 dark:text-slate-100">Closed</strong>. Anchor preview:{" "}
+            <strong className="text-slate-900 dark:text-slate-100">{clockStartedDate}</strong>.
+            Default retention period is 5 years; your firm&apos;s setting overrides.
           </p>
         </CardContent>
       </Card>
@@ -120,21 +114,16 @@ export function RetentionCard({
       <Card data-testid="retention-card" data-state="unconfigured">
         <CardHeader className="pb-2">
           <CardTitle className="flex items-center gap-2 text-sm font-medium">
-            <ShieldAlert
-              className="size-4 text-amber-600 dark:text-amber-400"
-              aria-hidden="true"
-            />
+            <ShieldAlert className="size-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
             Retention period
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
           <p>
             Retention clock started on{" "}
-            <strong className="text-slate-900 dark:text-slate-100">
-              {clockStartedDate}
-            </strong>
-            . Your firm&apos;s matter-retention period isn&apos;t configured yet, so
-            the scheduled deletion date can&apos;t be computed.
+            <strong className="text-slate-900 dark:text-slate-100">{clockStartedDate}</strong>. Your
+            firm&apos;s matter-retention period isn&apos;t configured yet, so the scheduled deletion
+            date can&apos;t be computed.
           </p>
           <Link
             href={`/org/${slug}/settings/data-protection`}
@@ -164,8 +153,8 @@ export function RetentionCard({
       <CardContent className="space-y-2 text-sm text-slate-600 dark:text-slate-400">
         <p>
           Clock started on{" "}
-          <strong className="text-slate-900 dark:text-slate-100">{clockStartedDate}</strong>.
-          This closed matter will be permanently deleted on{" "}
+          <strong className="text-slate-900 dark:text-slate-100">{clockStartedDate}</strong>. This
+          closed matter will be permanently deleted on{" "}
           <strong className="text-slate-900 dark:text-slate-100">{formattedEndDate}</strong> (
           <span data-testid="retention-card-days-remaining">{remainingLabel}</span>).
         </p>

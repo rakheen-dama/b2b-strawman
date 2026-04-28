@@ -147,12 +147,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                 <FormItem>
                   <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder={namePlaceholder}
-                      maxLength={255}
-                      autoFocus
-                      {...field}
-                    />
+                    <Input placeholder={namePlaceholder} maxLength={255} autoFocus {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -231,11 +226,7 @@ export function CreateProjectDialog({ slug }: CreateProjectDialogProps) {
                     <span className="text-muted-foreground font-normal">(optional)</span>
                   </FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder={referencePlaceholder}
-                      maxLength={100}
-                      {...field}
-                    />
+                    <Input placeholder={referencePlaceholder} maxLength={100} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

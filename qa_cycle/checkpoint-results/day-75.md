@@ -121,3 +121,52 @@ This complements the prior cycle 1 OBS-Day75-NoManualDigestTrigger note (which w
 - Scheduler: `backend/src/main/java/io/b2mash/b2b/b2bstrawman/portal/notification/PortalDigestScheduler.java`
 - Cadence settings UI: `frontend/components/settings/portal-settings-section.tsx`
 
+---
+
+## Cycle 54 Retest (PR #1201 on main) — 2026-04-28 SAST
+
+**Branch**: `bugfix_cycle_2026-04-26-day75-retest` cut from `main` `5e9cb58f` (PR #1201 squash-merge — manual digest trigger + Day 75 walk results).
+**Tooling**: `curl` against new `POST /internal/portal/digest/run-weekly` endpoint (legitimate REST surface — like Mailpit API); Mailpit `GET /api/v1/messages` + `GET /api/v1/message/{id}` for digest body inspection; `grep` for isolation-invariant checks; Playwright MCP for §75.4 (locked — see anomaly #1).
+**Backend**: fresh JVM serving main `5e9cb58f` (~27s warmup at retest start; healthy `UP`).
+**Internal API key**: `local-dev-api-key-change-in-production` (X-API-KEY header).
+
+### Endpoint behavior matrix
+
+| Test | Request | Expected | Actual | Result |
+|------|---------|----------|--------|--------|
+| Auth — missing key | `POST …/run-weekly?targetEmail=sipho.portal@example.com` (no header) | 401 | **HTTP/1.1 401** | **PASS** |
+| Auth — invalid key | `POST …` `X-API-KEY: bogus-key-12345` | 401 | **HTTP/1.1 401** | **PASS** |
+| DryRun | `POST …?targetEmail=sipho.portal@example.com&dryRun=true` `X-API-KEY: local-dev-api-key-change-in-production` | response indicates would-have-been-sent; Mailpit unchanged | **`{"tenantsProcessed":4,"digestsSent":1,"skipped":0,"dryRun":true,"errors":[]}`** + Mailpit total 4 → 4 | **PASS** |
+| Real send | `POST …?targetEmail=sipho.portal@example.com` `X-API-KEY: local-dev-api-key-change-in-production` | response indicates digest sent; Mailpit gains 1 message | **`{"tenantsProcessed":4,"digestsSent":1,"skipped":0,"dryRun":false,"errors":[]}`** + Mailpit total 4 → 5 | **PASS** |
+
+### Per-checkpoint table — Cycle 54 retest
+
+| Step | Result | Evidence |
+|------|--------|----------|
+| **75.1** Mailpit weekly digest email; subject contains "weekly update" | **PASS** — Mailpit message `XuTUtmtbAK3nvAqcGSge2H` delivered to `sipho.portal@example.com` 2026-04-28T11:38:37.861Z. Subject: **"Mathebula & Partners: Your weekly update"** (literal scenario phrase match). | `cycle54-retest-PR1201-GAP-L-99-digest-message.json`, `cycle54-retest-PR1201-GAP-L-99-step4-real-send.json` |
+| **75.2** Body references Sipho's RAF activity (fee note, SoA, matter closure) | **PASS** — body greets "Hi Sipho Dlamini,"; "Recent fee notes" section lists **INV-0001 PAID ZAR 5160.00** (Sipho's only invoice, paid Day 60); "Information requests" section: "You have 3 open information request(s)" (REQ-0001, REQ-0004, REQ-0005 — all Sipho's per cycle 54 walk); "Trust account activity" section: "3 transaction(s) recorded in your trust account" (R 50k Day 10 + R 100 cycle-29 + R 20k Day 45 — all RAF-2026-001 deposits). All references use client-facing copy. CTA `Open portal →` href = `http://localhost:3002/home`. | `cycle54-retest-PR1201-GAP-L-99-digest-body.txt`, `cycle54-retest-PR1201-GAP-L-99-digest-body.html` |
+| **75.3** Digest must NOT reference Moroka / EST-2026-002 / any other client | **PASS — isolation invariant HOLDS** — `grep -ic` on both text and HTML body: `moroka`=0, `EST-2026`=0, `estate`=0, `25 000`/`25,000`/`25000`=0 (Moroka's R 25 000 trust deposit). Only client name in body is "Sipho Dlamini" (greeting). | `cycle54-retest-PR1201-GAP-L-99-summary.txt` §Step 6 |
+| **75.4** Click digest CTA → land authenticated on portal `/home` | **DEFERRED-ON-ENVIRONMENT** — Playwright MCP user-data-dir `/Users/rakheendama/Library/Caches/ms-playwright/mcp-chrome-5d273ba` held by foreign claude session (PID 4237 etime ~47h+, Chromium PID 25373 alive `--user-data-dir=…/mcp-chrome-5d273ba`). Identical pattern to **GAP-L-98** (RESOLVED in cycle 52 by orchestrator unblock). All routing wiring verified: magic-link issued (token `i2nybOZ_IMD2QJpAaZfvvvP1lIO87ouTRkiazEYu_d8`, Mailpit `9JYVpY7zQpbtWkyG9XDN57`); `GET /auth/exchange` returns 200 (37 KB rendered "Verifying" UI); `GET /home` returns 200 (49 KB rendered); digest CTA href = `http://localhost:3002/home` (verified via grep on emitted HTML). Browser-level authenticated /home render was already established in cycle-1 day-75 §75.6a (2026-04-25, `day-75-cycle1-portal-home.yml`). NOT a product gap; orchestrator-resolvable infra. | `cycle54-retest-PR1201-GAP-L-99-summary.txt` §Step 7 |
+
+### Decision
+
+**GAP-L-99 fix VERIFIED on main.** All four endpoint contract tests pass: 401 missing key, 401 bad key, dryRun honored (no email send + correct response), real send produces exactly 1 digest in Mailpit per call. Response shape `{tenantsProcessed, digestsSent, skipped, dryRun, errors[]}` matches PR #1200 spec. Cron path untouched.
+
+**§75.1, §75.2, §75.3 PASS on main** — digest email arrives, content references Sipho's actual RAF activity (INV-0001 PAID, 3 open info requests, 3 trust deposits), isolation invariant holds (zero Moroka / EST-2026 / R 25 000 leakage in either text or HTML body).
+
+**§75.4 DEFERRED-ON-ENVIRONMENT** — Playwright MCP locked by orphan foreign claude session. Routing-level evidence sufficient (CTA href correct, /auth/exchange + /home both 200, magic-link path works); browser-walk authenticated home render previously established cycle 1.
+
+### Anomalies / observations
+
+1. **OBS-Cycle54-PlaywrightLockedByForeignSession** (informational, infra) — `mcp-chrome-5d273ba` SingletonLock points to live PID 25373; foreign `claude --dangerously-skip-permissions --chrome` session (PID 4237, etime ~47h+) holds it. `mcp__playwright__browser_navigate` returns "Browser is already in use … use --isolated to run multiple instances of the same browser". Not a product defect; same precedent as GAP-L-98 (cycle 52 — resolved by orchestrator killing the foreign session). Logged here to inform orchestrator that the QA cycle would benefit from one of: (a) periodic stale-lock sweep before dispatching browser-using QA agents, (b) `--isolated` flag on the Playwright MCP launcher, (c) a hook that detects stale locks and unlinks them.
+2. **`tenantsProcessed: 4` on a single-org test** — endpoint sweeps all tenants and applies `targetEmail` filter at the contact level. `digestsSent: 1` confirms exactly Sipho's portal contact was matched and emailed. Working as designed (see PR #1200 spec).
+3. **Pre-existing trust-balance anomaly** (Day 60 R 15 000 fee-transfer not in `trust_transactions`) — out of GAP-L-99 retest scope; flagged in cycle-54 walk anomaly #3, still pre-existing.
+
+### References
+
+- Endpoint: `backend/src/main/java/io/b2mash/b2b/b2bstrawman/portal/notification/PortalDigestInternalController.java`
+- Scheduler refactor: `backend/src/main/java/io/b2mash/b2b/b2bstrawman/portal/notification/PortalDigestScheduler.java`
+- Spec: `qa_cycle/fix-specs/GAP-L-99.md`
+- Fix PR: #1200 (squash `c1c7afd7` cycle-branch) → #1201 (squash `5e9cb58f` main)
+- Retest evidence: `qa_cycle/checkpoint-results/cycle54-retest-PR1201-GAP-L-99-*.{json,txt,html}`
+

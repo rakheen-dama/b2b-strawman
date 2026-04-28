@@ -1,0 +1,76 @@
+GAP-L-99 Retest Summary — Cycle 54 — 2026-04-28 SAST
+======================================================
+
+Branch: bugfix_cycle_2026-04-26-day75-retest (cut from main 5e9cb58f, includes PR #1201)
+Endpoint: POST /internal/portal/digest/run-weekly
+Internal API key: local-dev-api-key-change-in-production (X-API-KEY header)
+
+Step 1 — Auth gating (target: 401 without/with bad key)
+-------------------------------------------------------
+- Missing X-API-KEY:    HTTP/1.1 401  PASS
+- Invalid X-API-KEY:    HTTP/1.1 401  PASS
+
+Step 2 — DryRun behavior (target: response shows what would happen, no email sent)
+----------------------------------------------------------------------------------
+- POST ?targetEmail=sipho.portal@example.com&dryRun=true
+- Response: {"tenantsProcessed":4,"digestsSent":1,"skipped":0,"dryRun":true,"errors":[]}
+- Mailpit count: 4 → 4 (unchanged)  PASS
+
+Step 3 — Real send (target: response indicates digest sent + Mailpit gains 1 message)
+-------------------------------------------------------------------------------------
+- POST ?targetEmail=sipho.portal@example.com (no dryRun)
+- Response: {"tenantsProcessed":4,"digestsSent":1,"skipped":0,"dryRun":false,"errors":[]}
+- Mailpit count: 4 → 5  PASS
+- New message ID: XuTUtmtbAK3nvAqcGSge2H
+- Subject: "Mathebula & Partners: Your weekly update"
+- To: sipho.portal@example.com
+- Created: 2026-04-28T11:38:37.861Z
+
+Step 4 — §75.1 Subject contains "weekly update" / "your week"  PASS
+-------------------------------------------------------------------
+"Mathebula & Partners: Your weekly update"  ✓
+
+Step 5 — §75.2 Body references Sipho's RAF activity  PASS
+---------------------------------------------------------
+- "Hi Sipho Dlamini,"
+- "Recent fee notes" section: INV-0001 PAID ZAR 5160.00
+- "Information requests" section: 3 open information request(s)
+- "Trust account activity" section: 3 transaction(s) recorded
+- CTA "Open portal →" → http://localhost:3002/home (well-formed)
+
+Step 6 — §75.3 Isolation invariant: NO Moroka leak  PASS
+--------------------------------------------------------
+Both text body and HTML body checked:
+- "Moroka" mentions: 0 / 0
+- "EST-2026" mentions: 0 / 0
+- "Estate" mentions: 0 / 0
+- "25 000" / "25,000" / "25000" mentions: 0 / 0
+- Sipho mentions: 1 (greeting)
+
+Step 7 — §75.4 Browser walk (Sipho clicks digest CTA → portal /home)
+---------------------------------------------------------------------
+DEFERRED-ON-ENVIRONMENT — not a product issue.
+- Magic-link successfully requested (POST /portal/auth/request-link → 200)
+- Token: i2nybOZ_IMD2QJpAaZfvvvP1lIO87ouTRkiazEYu_d8 (issued)
+- Mailpit message 9JYVpY7zQpbtWkyG9XDN57 confirms delivery
+- /auth/exchange route returns 200 (37 KB rendered)
+- /home route returns 200 (49 KB rendered)
+- Digest CTA href = "http://localhost:3002/home" (verified in HTML body)
+- Browser launch BLOCKED: Playwright MCP user-data-dir
+  /Users/rakheendama/Library/Caches/ms-playwright/mcp-chrome-5d273ba
+  held by long-running foreign claude session (PID 4237 etime 47+ hours,
+  Chromium PID 25373 etime 23h45m). Identical to GAP-L-98 precedent
+  (already RESOLVED in cycle 52 by orchestrator unblock action).
+- All wiring verified at routing + endpoint + email level. Browser-level
+  authenticated /home render is environmental-only check; cycle-1 day-75
+  §75.6a established this works on 2026-04-25.
+
+Decision
+========
+GAP-L-99 fix is VERIFIED — endpoint gates auth correctly, response shape
+is well-formed, dryRun mode is honored, Mailpit gains exactly 1 digest
+email per real-send call, subject matches scenario expectation,
+content is Sipho-only with zero Moroka leakage, CTA URL is well-formed.
+
+§75.1, §75.2, §75.3 PASS. §75.4 DEFERRED-ON-ENVIRONMENT (Playwright
+lock by foreign session, GAP-L-98 precedent — orchestrator-resolvable).

@@ -1,0 +1,77 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e110]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e22]
+            - generic [ref=e25]: Home
+          - link "Matters" [ref=e26] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e28]
+            - generic [ref=e30]: Matters
+          - link "Trust" [ref=e111] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e112]
+            - generic [ref=e116]: Trust
+          - link "Deadlines" [ref=e117] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e118]
+            - generic [ref=e122]: Deadlines
+          - link "Fee Notes" [ref=e123] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e32]
+            - generic [ref=e35]: Fee Notes
+          - link "Proposals" [ref=e36] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e37]
+            - generic [ref=e40]: Proposals
+          - link "Requests" [ref=e124] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e125]
+            - generic [ref=e127]: Requests
+          - link "Activity" [ref=e41] [cursor=pointer]:
+            - /url: /activity
+            - img [ref=e42]
+            - generic [ref=e44]: Activity
+        - generic [ref=e45]:
+          - link "Profile" [ref=e46] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e47]
+            - text: Profile
+          - button "Logout" [ref=e50]:
+            - img [ref=e51]
+            - text: Logout
+      - main [ref=e54]:
+        - generic [ref=e55]:
+          - heading "Your Projects" [level=1] [ref=e73]
+          - tablist "Filter projects" [ref=e74]:
+            - tab "All" [ref=e75]
+            - tab "Active" [ref=e76]
+            - tab "Past" [selected] [ref=e77]
+          - 'link "Dlamini v Road Accident Fund Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION 3 documents 1 day ago" [ref=e92] [cursor=pointer]':
+            - /url: /projects/cc390c4f-35e2-42b5-8b54-bac766673ae7
+            - generic [ref=e93]:
+              - generic [ref=e95]: Dlamini v Road Accident Fund
+              - generic [ref=e96]:
+                - paragraph [ref=e97]: "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION"
+                - generic [ref=e98]:
+                  - generic [ref=e99]:
+                    - img [ref=e100]
+                    - text: 3 documents
+                  - generic [ref=e103]:
+                    - img [ref=e104]
+                    - text: 1 day ago
+    - contentinfo [ref=e106]:
+      - paragraph [ref=e108]: Powered by DocTeams

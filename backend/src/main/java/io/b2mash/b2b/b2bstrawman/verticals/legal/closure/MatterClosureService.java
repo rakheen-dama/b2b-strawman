@@ -4,10 +4,13 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.document.DocumentService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
+import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyRepository;
+import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentService;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
@@ -20,6 +23,8 @@ import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ReopenMatterRespons
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ReopenRequest;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.event.MatterClosedEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.event.MatterReopenedEvent;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.StatementService;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.statement.dto.GenerateStatementRequest;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
@@ -85,11 +90,15 @@ public class MatterClosureService {
   private final DocumentService documentService;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
+  private final StatementService statementService;
+  private final RetentionPolicyService retentionPolicyService;
+  private final RetentionPolicyRepository retentionPolicyRepository;
 
   /**
-   * Self-reference used to invoke {@link #performClose} and {@link #generateClosureLetterSafely}
-   * through Spring's transactional proxy. A direct {@code this.performClose(...)} call bypasses the
-   * proxy and would run without the declared transaction boundary — breaking the fix for C2/C3.
+   * Self-reference used to invoke {@link #performClose}, {@link #generateClosureLetterSafely}, and
+   * {@link #generateSoaSafely} through Spring's transactional proxy. A direct {@code
+   * this.performClose(...)} call bypasses the proxy and would run without the declared transaction
+   * boundary — breaking the fix for C2/C3.
    */
   private final MatterClosureService self;
 
@@ -104,6 +113,9 @@ public class MatterClosureService {
       DocumentService documentService,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
+      StatementService statementService,
+      RetentionPolicyService retentionPolicyService,
+      RetentionPolicyRepository retentionPolicyRepository,
       @Lazy MatterClosureService self) {
     this.orderedGates = gates.stream().sorted(Comparator.comparingInt(ClosureGate::order)).toList();
     this.projectRepository = projectRepository;
@@ -115,6 +127,9 @@ public class MatterClosureService {
     this.documentService = documentService;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
+    this.statementService = statementService;
+    this.retentionPolicyService = retentionPolicyService;
+    this.retentionPolicyRepository = retentionPolicyRepository;
     this.self = self;
   }
 
@@ -171,15 +186,33 @@ public class MatterClosureService {
           self.generateClosureLetterSafely(projectId, internal.closureLogId(), actingMemberId);
     }
 
-    // TODO(489C): persist a retention_policies row inside performClose() and soft-cancel it in
-    // reopen(). For now the API returns only the computed retentionEndsAt — the retentionPolicyId
-    // field was removed from CloseMatterResponse because nothing was persisted behind it (C4).
+    // GAP-L-93: Statement of Account generation in its OWN separate transaction. Failure MUST NOT
+    // affect the close (mirrors the closure-letter REQUIRES_NEW guarantee). When suppressed (flag
+    // false) or on best-effort failure, soaDocId stays null — the response still returns and the
+    // operator can re-generate via the standalone "Generate Statement of Account" button.
+    UUID soaDocId = null;
+    if (req.isGenerateStatementOfAccount()) {
+      // Wrap the proxy call in try/catch so a rollback in the inner REQUIRES_NEW transaction
+      // (e.g., StatementService throws when the disbursements module is disabled) cannot
+      // poison the outer (already-committed) close. Mirrors C3's best-effort guarantee.
+      try {
+        soaDocId = self.generateSoaSafely(projectId, actingMemberId);
+      } catch (RuntimeException e) {
+        log.warn(
+            "SoA generation failed for project={}; closure proceeds without SoA", projectId, e);
+      }
+    }
+
+    // GAP-L-96 (TODO 489C resolved): retention_policies MATTER row is now seeded inside
+    // performClose() — see ensureMatterRetentionPolicy() invoked from the transactional core.
+    // The row is tenant-wide (UNIQUE on record_type+trigger_event), idempotent across closures.
     return new CloseMatterResponse(
         projectId,
         internal.status(),
         internal.closedAt(),
         internal.closureLogId(),
         closureLetterDocId,
+        soaDocId,
         internal.retentionEndsAt());
   }
 
@@ -242,9 +275,14 @@ public class MatterClosureService {
         MatterClosedEvent.of(
             projectId, savedLog.getId(), req.reason().name(), req.override(), actingMemberId));
 
-    // 7. Build intermediate result (letter id is filled in by the outer orchestrator).
+    // 7. ADR-249 / GAP-L-96: ensure a tenant-wide retention policy row exists for closed matters.
+    //    Idempotent — subsequent closures reuse the same row (UNIQUE on
+    //    (record_type, trigger_event)). Best-effort: any failure must not abort the close.
     int retentionYears =
         orgSettingsService.getOrCreateForCurrentTenant().getEffectiveLegalMatterRetentionYears();
+    ensureMatterRetentionPolicy(retentionYears);
+
+    // 8. Build intermediate result (letter id is filled in by the outer orchestrator).
     LocalDate retentionEndsAt =
         savedProject.getClosedAt().atZone(ZoneOffset.UTC).toLocalDate().plusYears(retentionYears);
 
@@ -253,6 +291,34 @@ public class MatterClosureService {
         savedProject.getClosedAt(),
         savedLog.getId(),
         retentionEndsAt);
+  }
+
+  /**
+   * GAP-L-96 / ADR-249: ensure a tenant-wide {@code retention_policies} row exists for {@code
+   * record_type='MATTER'} on first matter closure for this tenant. The row is forward-compatibility
+   * for the planned retention sweeper extension; subsequent closures reuse the same row (UNIQUE on
+   * {@code (record_type, trigger_event)}). Idempotent — pre-checks existence via the repository
+   * before delegating to {@link RetentionPolicyService#create} so the outer {@code performClose}
+   * transaction is never marked rollback-only by a {@link ResourceConflictException}. Any other
+   * RuntimeException is logged and swallowed so it cannot roll back the surrounding close
+   * transaction.
+   *
+   * <p>{@code retentionDays = retentionYears * 365}. Trigger event {@code MATTER_CLOSED}, action
+   * {@code ARCHIVE}. Note: MATTER is NOT in the financial-record-types list, so the JURISDICTION
+   * minimum-months check inside {@link RetentionPolicyService#create} does not apply.
+   */
+  private void ensureMatterRetentionPolicy(int retentionYears) {
+    try {
+      if (retentionPolicyRepository.existsByRecordTypeAndTriggerEvent("MATTER", "MATTER_CLOSED")) {
+        return;
+      }
+      int days = retentionYears * 365;
+      retentionPolicyService.create("MATTER", days, "MATTER_CLOSED", "ARCHIVE");
+    } catch (ResourceConflictException already) {
+      // Defensive: a concurrent close on the same tenant beat us to the insert. Idempotent.
+    } catch (RuntimeException e) {
+      log.warn("Failed to seed MATTER retention policy on closure; close proceeds", e);
+    }
   }
 
   /**
@@ -309,6 +375,35 @@ public class MatterClosureService {
           e);
       return null;
     }
+  }
+
+  /**
+   * GAP-L-93: generates the Statement of Account in its own transaction so that a render failure
+   * cannot roll back the (already-committed) close. Default period spans the matter's open date
+   * (project {@code createdAt}) → today (UTC). If a different window is needed, the operator can
+   * re-generate via the standalone "Generate Statement of Account" button on the matter header.
+   *
+   * <p>Deliberately does NOT swallow exceptions internally — Spring's REQUIRES_NEW proxy needs a
+   * clean throw path to roll back the inner transaction without marking it
+   * rollback-only-but-not-rolled-back. The caller ({@link #close}) wraps the proxy invocation in
+   * try/catch and treats any failure as a null SoA id, preserving the close commit (C3).
+   */
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public UUID generateSoaSafely(UUID projectId, UUID actingMemberId) {
+    LocalDate today = LocalDate.now(ZoneOffset.UTC);
+    LocalDate openDate =
+        projectRepository
+            .findById(projectId)
+            .map(
+                p ->
+                    p.getCreatedAt() != null
+                        ? p.getCreatedAt().atZone(ZoneOffset.UTC).toLocalDate()
+                        : today.minusYears(1))
+            .orElse(today.minusYears(1));
+    var resp =
+        statementService.generate(
+            projectId, new GenerateStatementRequest(openDate, today, null), actingMemberId);
+    return resp.id();
   }
 
   /** Intermediate result from {@link #performClose} feeding {@link #close}'s final response. */

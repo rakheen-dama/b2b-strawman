@@ -160,6 +160,7 @@ describe("MatterClosureDialog", () => {
         closedAt: "2026-04-17T10:15:02Z",
         closureLogId: "log-1",
         closureLetterDocumentId: "doc-1",
+        statementOfAccountDocumentId: "soa-1",
         retentionEndsAt: "2031-04-17",
       },
     });
@@ -197,6 +198,7 @@ describe("MatterClosureDialog", () => {
       reason: "CONCLUDED",
       notes: "All done.",
       generateClosureLetter: true,
+      generateStatementOfAccount: true,
       override: false,
     });
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
@@ -342,6 +344,84 @@ describe("MatterClosureDialog", () => {
     // ModuleGate renders its fallback (null). The dialog never mounts.
     expect(container).toBeEmptyDOMElement();
     expect(mockEvaluate).not.toHaveBeenCalled();
+  });
+
+  // GAP-L-93: Step-2 must offer BOTH "Generate closure letter" + "Generate Statement of Account"
+  // checkboxes. Both default-checked. Unchecking either flips the corresponding flag in the
+  // payload to false.
+  it("step 2: renders both Generate-letter AND Generate-SoA checkboxes, both default-checked", async () => {
+    const user = userEvent.setup();
+    mockEvaluate.mockResolvedValue({
+      success: true,
+      report: makeReport({ allPassed: true, gates: [makeGate()] }),
+    });
+    render(
+      withProviders(
+        <MatterClosureDialog
+          slug="acme"
+          projectId="p1"
+          projectName="Smith v Jones"
+          open={true}
+          onOpenChange={vi.fn()}
+        />
+      )
+    );
+
+    await waitFor(() => expect(screen.getByTestId("matter-closure-step-1")).toBeInTheDocument());
+    await user.click(screen.getByTestId("matter-closure-next-btn"));
+    await waitFor(() => expect(screen.getByTestId("matter-closure-step-2")).toBeInTheDocument());
+
+    const letterCheckbox = screen.getByTestId("matter-closure-generate-letter-checkbox");
+    const soaCheckbox = screen.getByTestId("matter-closure-generate-soa-checkbox");
+    expect(letterCheckbox).toBeInTheDocument();
+    expect(soaCheckbox).toBeInTheDocument();
+    expect(letterCheckbox).toHaveAttribute("data-state", "checked");
+    expect(soaCheckbox).toHaveAttribute("data-state", "checked");
+  });
+
+  it("step 2: unchecking Generate-SoA passes generateStatementOfAccount=false", async () => {
+    const user = userEvent.setup();
+    mockEvaluate.mockResolvedValue({
+      success: true,
+      report: makeReport({ allPassed: true, gates: [makeGate()] }),
+    });
+    mockClose.mockResolvedValue({
+      success: true,
+      data: {
+        projectId: "p1",
+        status: "CLOSED",
+        closedAt: "2026-04-28T08:00:00Z",
+        closureLogId: "log-1",
+        closureLetterDocumentId: "doc-1",
+        statementOfAccountDocumentId: null,
+        retentionEndsAt: "2031-04-28",
+      },
+    });
+
+    render(
+      withProviders(
+        <MatterClosureDialog
+          slug="acme"
+          projectId="p1"
+          projectName="Smith v Jones"
+          open={true}
+          onOpenChange={vi.fn()}
+        />
+      )
+    );
+
+    await waitFor(() => expect(screen.getByTestId("matter-closure-step-1")).toBeInTheDocument());
+    await user.click(screen.getByTestId("matter-closure-next-btn"));
+    await waitFor(() => expect(screen.getByTestId("matter-closure-step-2")).toBeInTheDocument());
+
+    await user.click(screen.getByTestId("matter-closure-generate-soa-checkbox"));
+    await user.click(screen.getByTestId("matter-closure-confirm-close-btn"));
+
+    await waitFor(() => expect(mockClose).toHaveBeenCalled());
+    expect(mockClose.mock.calls[0][2]).toMatchObject({
+      generateClosureLetter: true,
+      generateStatementOfAccount: false,
+    });
   });
 
   it("shows reason Select with CONCLUDED/CLIENT_TERMINATED/REFERRED_OUT/OTHER options", async () => {

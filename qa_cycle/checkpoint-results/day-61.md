@@ -114,3 +114,73 @@ Total Day 60 SoA re-gen + Day 61 attempt: ~8 min wall-clock, well under 75 min b
 ### Time
 
 Backfill (B1+B2) + Slice 1 (B3+B4) + Slice 2 (61.1-61.9): ~7 min wall-clock, well under 60 min target.
+
+---
+
+## Cycle 52 Walk — 2026-04-28 SAST
+
+**Branch:** `bugfix_cycle_2026-04-26-day61` (cut from `main` `d8a88315`; current commit `449134ba`)
+**Cycle:** 52
+**Scope:** Drive Day 61 §61.1–§61.9 against the cycle-46 matter `cc390c4f-35e2-42b5-8b54-bac766673ae7` (Sipho Dlamini's RAF matter that was actually closed in Day 60 cycle 46 and used for the cycle-51 SoA retest under PR #1197). The earlier cycle-1 walk above used the older `e788a51b-…` matter from a prior verify cycle — scenario reference is identical, but artefacts must be re-validated on the current closed matter.
+**Actor (firm side, for diagnostics only):** Bob Ndlovu (admin). **Actor (portal side):** Sipho Dlamini (portal contact `f3f74a9d-3540-483a-80bc-6f5ef4e911bb`).
+
+### Pre-flight setup completed (REST + DB read-only)
+
+| Step | Action | Result |
+|------|--------|--------|
+| Service health | `bash compose/scripts/svc.sh status` | All 4 services healthy (backend PID 53170, gateway PID 71426 ext, frontend PID 5771, portal PID 5677) |
+| Existing SoA email | `GET /api/v1/messages?query=to:sipho.portal@example.com` | Cycle-51 SoA email `o7q6xXpr97YPC8czLw544N` (`Document ready: statement-of-account-dlamini-v-road-accident-fund-2026-04-30.pdf`) still present in Mailpit. Body's `View document` CTA targets `http://localhost:3002/projects/cc390c4f-35e2-42b5-8b54-bac766673ae7` — matches §61.1 expectation. |
+| Magic-link issued | `POST /portal/auth/request-link {email,sipho.portal@…,orgId:mathebula-partners}` | HTTP 200 — `magicLink=/auth/exchange?token=t69Fq_HlpOVjW0uKp8dkmgGBzZTKtEWvggOA8Bs8jpk&orgId=mathebula-partners` |
+| Magic-link email arrival | Mailpit poll | `EfEPNBzqR4TE2tEyDTKrJp` arrived 2026-04-28T06:00:12.908Z, subject `"Your portal access link from Mathebula & Partners"` |
+| DB diagnostic — SoA artefacts | `SELECT id,file_name,file_size,s3_key,generated_at FROM generated_documents WHERE primary_entity_id='cc390c4f-…'` | Row `6b79c496-4ae2-4731-9fe7-3ac18677d394` `statement-of-account-dlamini-v-road-accident-fund-2026-04-30.pdf` `4863` bytes `org/tenant_5039f2d497cf/generated/statement-of-account-…-2026-04-30.pdf` `2026-04-27 22:01:03.748+00`. Closure letter `c582a54f-…` `matter-closure-letter-dlamini-v-road-accident-fund-2026-04-27.pdf` 1644 bytes also present. |
+
+All upstream artefacts confirmed — the SoA exists, is ~4.9 KB, has a valid `s3_key`, and is reachable through the Mailpit-delivered email. The `View document` CTA opens the matter detail (per L-74 verified in cycle-1 walk above, the SoA + closure letter should both show in portal `/projects/{matterId}`'s Documents tab).
+
+### BLOCKED — INFRA — Playwright MCP browser unavailable
+
+**Root cause:** the Playwright MCP user-data-dir `/Users/rakheendama/Library/Caches/ms-playwright/mcp-chrome-5d273ba` is held by a foreign Chromium process (PID 54166, etime 08:12:40, started 23:48 the previous day from a different long-running `claude --chrome` session — confirmed via `ps`, `SingletonLock` symlink target `Rakheens-MacBook-Pro.local-54166`, and `curl http://localhost:61789/json/list` showing 4 active tabs incl. `localhost:3000/org/mathebula-partners/projects/cc390c4f-…`). Every `mcp__playwright__browser_navigate` call returns:
+
+```
+Error: Browser is already in use for /Users/rakheendama/Library/Caches/ms-playwright/mcp-chrome-5d273ba,
+use --isolated to run multiple instances of the same browser
+```
+
+`mcp__claude-in-chrome__tabs_context_mcp` also unavailable: returns `Browser extension is not connected`.
+
+Per dispatch rule "If any service goes down mid-walk, do NOT restart it yourself — log the failure as an Infra blocker", I am **not** killing PID 54166 or any of the 4 long-running claude sessions (PIDs 4237, 28124, 69590, 73865). Logging as **GAP-L-98** for the orchestrator/Infra agent to dispatch resolution.
+
+### Per-checkpoint results — Cycle 52
+
+| ID | Scenario | Result | Evidence |
+|----|----------|--------|----------|
+| 61.1 | Mailpit → email → click link → portal landing on `/projects/[matterId]` | **BLOCKED** | Email + correct CTA target (`/projects/cc390c4f-…`) verified via Mailpit API; cannot click without browser. |
+| 61.2 | Documents tab on matter shows SoA + today's date + file size | **BLOCKED** | DB row `6b79c496-…` exists with `file_name`, `file_size 4863`, `generated_at`; UI render needs browser. |
+| 61.3 | Click Download → PDF downloads cleanly | **BLOCKED** | Portal presigned-URL flow needs authenticated browser. |
+| 61.4 | Open downloaded PDF + reconcile contents (letterhead, matter ref RAF-2026-001, opening R 0,00, deposits R 50 000 + R 20 000, fee transfers, closing balance, VAT line) | **BLOCKED** | Per cycle-51 firm-side iframe + DB `context_snapshot.summary`: VAT R 510 (GAP-L-95), trust closing R 70 100 (GAP-L-94), 3 deposits incl. R 100 retest deposit; portal-side render pending browser. |
+| 61.5 | Screenshot `day-61-portal-soa-download.png` | **BLOCKED** | Browser unavailable. |
+| 61.6 | Byte-size match firm vs portal ±5% | **BLOCKED** | Firm-side baseline `4863` bytes captured from DB; portal-side download size pending browser. |
+| 61.7 | Document title matches firm copy — no "Untitled" leak | **BLOCKED** | DB `file_name` correct; portal-rendered title pending browser. |
+| 61.8 | Closure letter also visible + renders | **BLOCKED** | DB `c582a54f-…` 1644 bytes exists; portal render pending browser. |
+| 61.9 | Firm-side audit: portal contact accessed SoA with matching timestamp | **BLOCKED** | No portal access event yet (cycle-1 cycle observation OBS-Day61-NoPortalDocAuditEvent already noted absence of portal `document.viewed` events — would re-confirm under browser). |
+
+**Day 61 cycle-52 roll-up:** 0 PASS / 0 FAIL / 9 BLOCKED.
+
+### NEW gap opened — Cycle 52
+
+| ID | Severity | Status | Owner | Summary | Evidence |
+|----|----------|--------|-------|---------|----------|
+| GAP-L-98 | INFRA-BLOCKER | OPEN | infra | Playwright MCP browser profile `mcp-chrome-5d273ba` locked by another long-running `claude --chrome` session (Chromium PID 54166, port 61789, etime 08:12+, profile dir Singleton-locked). Blocks any browser-driven QA walk. Resolution options: (a) close the foreign claude session that holds the lock, OR (b) launch playwright MCP with `--isolated` / different user-data-dir, OR (c) terminate orphan Chromium PID 54166 if its parent claude session is unresponsive. NOT a product defect. | `cycle52-day61-prereq-mailpit-soa-email.json`, `cycle52-day61-prereq-mailpit-magic-link.json`, `cycle52-day61-prereq-generated-documents.txt` |
+
+### Evidence files (cycle 52)
+
+- `cycle52-day61-prereq-mailpit-soa-email.json` — full cycle-51 SoA email body (the email Sipho would click for §61.1).
+- `cycle52-day61-prereq-mailpit-magic-link.json` — fresh magic-link email body (cycle-52 self-service login fallback ready for browser-up).
+- `cycle52-day61-prereq-generated-documents.txt` — DB read of all generated docs on matter `cc390c4f-…`.
+
+### Decision
+
+**SLICE BLOCKED on GAP-L-98 (Infra — Playwright MCP browser unavailable).** Day 61 product flow is fully primed (cycle-51 SoA email delivered, fresh magic-link issued, DB artefacts confirmed); execution requires a free browser MCP. Per dispatch rule, exiting cleanly without modifying any service or process. Orchestrator dispatches Infra agent next.
+
+### Time
+
+Cycle-52 pre-flight + diagnostic confirmation: ~6 min wall-clock.

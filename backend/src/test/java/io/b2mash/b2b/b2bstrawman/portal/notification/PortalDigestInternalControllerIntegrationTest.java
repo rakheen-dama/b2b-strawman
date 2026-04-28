@@ -64,7 +64,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class PortalDigestInternalControllerTest {
+class PortalDigestInternalControllerIntegrationTest {
 
   private static final String API_KEY = "test-api-key";
   private static final String ORG_ID = "org_portal_digest_internal_test";
@@ -276,7 +276,10 @@ class PortalDigestInternalControllerTest {
             post("/internal/portal/digest/run-weekly")
                 .header("X-API-KEY", API_KEY)
                 .param("orgId", "org_does_not_exist"))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.title").exists())
+        .andExpect(jsonPath("$.detail").exists());
   }
 
   @Test

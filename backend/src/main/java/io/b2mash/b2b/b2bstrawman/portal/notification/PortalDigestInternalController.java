@@ -1,7 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.portal.notification;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,8 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/internal/portal/digest")
 public class PortalDigestInternalController {
 
-  private static final Logger log = LoggerFactory.getLogger(PortalDigestInternalController.class);
-
   private final PortalDigestScheduler scheduler;
 
   public PortalDigestInternalController(PortalDigestScheduler scheduler) {
@@ -38,21 +34,8 @@ public class PortalDigestInternalController {
       @RequestParam(required = false) String orgId,
       @RequestParam(required = false) String targetEmail,
       @RequestParam(defaultValue = "false") boolean dryRun) {
-    log.info(
-        "Manual portal digest trigger received: orgId={}, targetEmail={}, dryRun={}",
-        orgId,
-        targetEmail,
-        dryRun);
-    PortalDigestScheduler.RunResult result =
-        scheduler.runWeeklyDigest(new PortalDigestScheduler.RunOptions(orgId, targetEmail, dryRun));
-    log.info(
-        "Manual portal digest trigger complete: tenantsProcessed={}, digestsSent={}, skipped={},"
-            + " dryRun={}, errors={}",
-        result.tenantsProcessed(),
-        result.digestsSent(),
-        result.skipped(),
-        result.dryRun(),
-        result.errors().size());
-    return ResponseEntity.ok(result);
+    return ResponseEntity.ok(
+        scheduler.runWeeklyDigest(
+            new PortalDigestScheduler.RunOptions(orgId, targetEmail, dryRun)));
   }
 }

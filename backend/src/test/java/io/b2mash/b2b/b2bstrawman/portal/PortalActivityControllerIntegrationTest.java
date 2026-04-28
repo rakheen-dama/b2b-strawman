@@ -225,7 +225,7 @@ class PortalActivityControllerIntegrationTest {
         .andExpect(jsonPath("$.content.length()").value(1))
         .andExpect(jsonPath("$.content[0].actorType").value("PORTAL_CONTACT"))
         .andExpect(jsonPath("$.content[0].eventType").value("portal.document.downloaded"))
-        .andExpect(jsonPath("$.content[0].summary").value("Document downloaded"));
+        .andExpect(jsonPath("$.content[0].summary").value("You downloaded a document"));
   }
 
   @Test

@@ -56,12 +56,20 @@ public class PortalActivityService {
                   ? Page.empty(unsorted)
                   : auditEventRepository.findActivityMineForPortalContact(
                       portalContactId, unsorted);
-          case FIRM -> auditEventRepository.findActivityFirmForCustomer(customerId, unsorted);
+          case FIRM ->
+              auditEventRepository.findActivityFirmForCustomer(
+                  customerId, PortalActivityEventTypes.PORTAL_VISIBLE_FIRM_EVENT_TYPES, unsorted);
           case ALL ->
               portalContactId == null
-                  ? auditEventRepository.findActivityFirmForCustomer(customerId, unsorted)
+                  ? auditEventRepository.findActivityFirmForCustomer(
+                      customerId,
+                      PortalActivityEventTypes.PORTAL_VISIBLE_FIRM_EVENT_TYPES,
+                      unsorted)
                   : auditEventRepository.findActivityForPortalContact(
-                      portalContactId, customerId, unsorted);
+                      portalContactId,
+                      customerId,
+                      PortalActivityEventTypes.PORTAL_VISIBLE_FIRM_EVENT_TYPES,
+                      unsorted);
         };
     return page.map(PortalActivityEventResponse::from);
   }

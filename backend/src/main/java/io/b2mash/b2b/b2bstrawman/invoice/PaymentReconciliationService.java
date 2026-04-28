@@ -4,6 +4,8 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.integration.payment.WebhookResult;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -23,6 +25,7 @@ public class PaymentReconciliationService {
   private final PaymentEventRepository paymentEventRepository;
   private final AuditService auditService;
   private final NotificationService notificationService;
+  private final PortalContactRepository portalContactRepository;
 
   public PaymentReconciliationService(
       InvoiceService invoiceService,
@@ -30,13 +33,15 @@ public class PaymentReconciliationService {
       InvoiceLineRepository invoiceLineRepository,
       PaymentEventRepository paymentEventRepository,
       AuditService auditService,
-      NotificationService notificationService) {
+      NotificationService notificationService,
+      PortalContactRepository portalContactRepository) {
     this.invoiceService = invoiceService;
     this.invoiceRepository = invoiceRepository;
     this.invoiceLineRepository = invoiceLineRepository;
     this.paymentEventRepository = paymentEventRepository;
     this.auditService = auditService;
     this.notificationService = notificationService;
+    this.portalContactRepository = portalContactRepository;
   }
 
   /** Processes a verified webhook result, dispatching to the appropriate handler by status. */
@@ -139,11 +144,27 @@ public class PaymentReconciliationService {
     // filters on it for the matter Activity feed (GAP-L-75c E.14 audit-trail completeness).
     var projectIds = invoiceLineRepository.findDistinctProjectIdsByInvoiceId(invoice.getId());
     String projectId = projectIds.size() == 1 ? projectIds.get(0).toString() : "";
+
+    // Webhook reconciliation runs without RequestScopes.MEMBER_ID bound (no portal-contact
+    // session is on the call stack), so AuditEventBuilder cannot auto-populate actor_id.
+    // Resolve deterministically from the invoice's customer using the same PRIMARY > BILLING >
+    // GENERAL > createdAt ASC ordering as portal session resolution. If the customer has no
+    // active portal_contact, leave actor_id null rather than fabricating attribution — this
+    // preserves status-quo behaviour for that edge case.
+    UUID portalActorId =
+        invoice.getCustomerId() != null
+            ? portalContactRepository
+                .findPreferredActiveByCustomerId(invoice.getCustomerId())
+                .map(PortalContact::getId)
+                .orElse(null)
+            : null;
+
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("portal.invoice.paid")
             .entityType("invoice")
             .entityId(invoice.getId())
+            .actorId(portalActorId)
             .actorType("PORTAL_CONTACT")
             .source("PORTAL")
             .details(

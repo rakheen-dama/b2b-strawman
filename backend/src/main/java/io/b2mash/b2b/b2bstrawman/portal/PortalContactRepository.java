@@ -44,4 +44,18 @@ public interface PortalContactRepository extends JpaRepository<PortalContact, UU
           + " pc.status = 'ACTIVE' ORDER BY pc.createdAt ASC LIMIT 1")
   Optional<PortalContact> findFirstByCustomerIdAndRoleAndStatusActive(
       @Param("customerId") UUID customerId, @Param("role") PortalContact.ContactRole role);
+
+  /**
+   * Resolve the best-matching active portal contact for a customer using the same PRIMARY > BILLING
+   * > GENERAL > createdAt ASC ordering as {@link #findPreferredByCustomerIdAndOrgId}, but without
+   * an orgId filter. Use this from tenant-context-only call sites that don't have orgId in scope —
+   * currently webhook reconciliation (PaymentReconciliationService.handlePaymentCompleted), and
+   * suitable for future cron-driven flows that run inside RequestScopes.TENANT_ID without binding
+   * RequestScopes.ORG_ID. Tenant isolation is preserved by the schema-per-tenant model.
+   */
+  @Query(
+      "SELECT pc FROM PortalContact pc WHERE pc.customerId = :customerId AND pc.status = 'ACTIVE'"
+          + " ORDER BY CASE pc.role WHEN 'PRIMARY' THEN 0 WHEN 'BILLING' THEN 1 ELSE 2 END ASC,"
+          + " pc.createdAt ASC LIMIT 1")
+  Optional<PortalContact> findPreferredActiveByCustomerId(@Param("customerId") UUID customerId);
 }

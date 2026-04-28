@@ -1,0 +1,7 @@
+SET
+ record_type | retention_days |    trigger_event    | action 
+-------------+----------------+---------------------+--------
+ AUDIT_EVENT |           2555 | RECORD_CREATED      | FLAG
+ CUSTOMER    |           1825 | CUSTOMER_OFFBOARDED | FLAG
+(2 rows)
+

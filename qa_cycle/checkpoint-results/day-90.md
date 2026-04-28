@@ -210,3 +210,75 @@ Both SoA + closure letter present. Portal download path verified historically (L
 - `cycle57-day90-isolation-probe-grid.txt` — full 36/36 PASS/FAIL grid
 - `cycle57-day90-90.9-digest-email-body.txt` — weekly digest body
 - `cycle57-day90-E.14-audit-events-summary.txt` — audit_events distribution
+
+## Cycle 58 Retest (slice 1 — PR #1213 on main)
+
+**Branch**: `bugfix_cycle_2026-04-26-slice1-retest` cut from `main c8e623ba` (PR #1213 squash). Backend just restarted on main (~27s warmup, fresh JVM). Auth anomaly: cycle 55+57 password-drift recurred — `bob@mathebula-test.local` rejected `SecureP@ss2`; rotated via KC admin API to session-only value, NOT committed.
+
+### Retest results — 6 fixes (5 named + 1 bundled)
+
+| # | Item | Result | Surface |
+|---|------|--------|---------|
+| 1 | **GAP-L-93** Closure dialog Step-2 SoA checkbox | **PASS** | Browser — closure dialog on EST-2026-002 (no-side-effect) |
+| 2 | **GAP-L-96** retention_policies MATTER seed on first matter close | **PARTIAL (forward-only)** | DB read-only + code-level |
+| 3 | **GAP-L-101** RetentionCard 3-state surface | **PASS** | Browser — RAF-2026-001 detail page |
+| 4 | **TERM-CYCLE57** firm-side terminology basket | **PASS** | Browser — 7 surfaces (dashboard, invoices, projects list, create/edit matter dialog, create client dialog, conflict check) |
+| 5 | **OBS-PortalContactBucketedAsSystem** Activity actor filter | **PASS** | Browser — RAF Activity tab, filter dropdown + Sipho filter |
+| 5b | **OBS-PortalInvoicePaidNullActorId** (bundled) | **PARTIAL (forward-only)** | DB read-only + code-level |
+
+### §GAP-L-93 — closure SoA checkbox (PASS)
+EST-2026-002 (ACTIVE, no-side-effect target — RAF already CLOSED) → **Close Matter** button → dialog Step 1 (gate report) → **Continue** → Step 2 renders TWO checkboxes:
+- "Generate closure letter" (checked) — pre-existing
+- "Generate Statement of Account" (checked) — **NEW per fix**, description "A PDF Statement of Account (Section 86 ledger reconciliation) will be attached to this matter."
+
+Backend wires `generateStatementOfAccount` flag through `ClosureRequest` to `MatterClosureService.performClose` which invokes `StatementService.generate` inline in `REQUIRES_NEW`. Did NOT actually submit the close (per scope); evidence is dialog UI only. End-to-end SoA auto-attach evidence lives in the PR #1208 integration tests.
+
+### §GAP-L-96 — retention_policies MATTER seed (PARTIAL — forward-only)
+Read-only DB query `SELECT … FROM retention_policies WHERE record_type='MATTER'` returns **0 rows** on tenant `5039f2d497cf`. Expected: RAF-2026-001 was closed at `2026-04-27 16:56:04` — **before** PR #1213 merged on `2026-04-28`. The fix is forward-looking: the next matter closure on this tenant will trigger `ensureMatterRetentionPolicy()` → atomic INSERT ON CONFLICT DO NOTHING via `existsByRecordTypeAndTriggerEvent` pre-check.
+
+Code-level verified: `MatterClosureService.java` lines 92, 114 (`RetentionPolicyRepository` injection); 201 (TODO 489C resolved comment); 278 (`ensureMatterRetentionPolicy(retentionYears)` invocation inside `performClose`); 308 (private method definition with overflow guard). PR #1208 integration tests (134/134 pass) are the authoritative evidence per QA-no-SQL-shortcut rule. No new gap opened.
+
+### §GAP-L-101 — RetentionCard 3-state (PASS)
+RAF-2026-001 (CLOSED + `retention_clock_started_at` populated + `org_settings.legal_matter_retention_years=NULL`) → matter detail Overview tab now renders the **State B "unconfigured"** retention card:
+- Title: "Retention period" (with ShieldAlert icon)
+- Body: "Retention clock started on **27 Apr 2026**. Your firm's matter-retention period isn't configured yet, so the scheduled deletion date can't be computed."
+- CTA link: "Configure retention period →" → `/org/mathebula-partners/settings/data-protection`
+
+Card was previously HIDDEN entirely when `retentionEndsOn=null` (which is exactly RAF's current state) — fix VERIFIED. EST-2026-002 (ACTIVE, no clock) correctly renders nothing per State design (`return null` on ACTIVE/DRAFT). State A pre-clock and State C active are not naturally reachable on this tenant — covered by 8/8 unit tests in `retention-card.test.tsx` (PR #1210).
+
+### §TERM-CYCLE57 — terminology basket (PASS)
+All 7 spec-listed surfaces verified:
+- **Dashboard**: `Matter Health` widget title (was Project Health), `Active Matters` (was Active Projects)
+- **Fee Notes** `/invoices`: column header `Client` (was Customer), breadcrumb `Fee Notes`, **URL slug `/invoices` UNCHANGED**
+- **Matter list** `/projects`: heading `Matters`, button `New Matter`, breadcrumb `Matters`, **URL slug `/projects` UNCHANGED**
+- **Create Matter dialog**: title "Create Matter", placeholder "e.g. Dlamini v Road Accident Fund", "Client (optional)" label, reference "e.g. RAF-2026-001"
+- **Edit Matter dialog**: title "Edit Matter", description "Update your matter's details.", "Client (optional)" label, reference "e.g. RAF-2026-001"
+- **Create Client dialog**: title "Create Client", email placeholder `client@example.com`
+- **Conflict Check form**: "Client (optional)" label
+- **Sidebar nav**: "Matters" / "Clients" / "Fee Notes" sentence-case
+
+**Minor observation (not a regression):** `OverviewTab` card-band body still hardcodes `Customer: {customerName}` (overview-tab.tsx:241). Outside the §1-§6 spec scope; trivial polish item — noted as `DOC-NEW-OBS-OverviewTabCustomerLabel-cycle58` for future micro-sweep, not opening as a blocking GAP.
+
+### §OBS-PortalContactBucketedAsSystem — Activity actor filter (PASS)
+RAF Activity tab actor-filter dropdown now lists: `All actors / Bob Ndlovu / Sipho Dlamini / System / Thandi Mathebula`. Sipho appears as an individual portal contact (was bucketed under "System" before fix). Filter by **Sipho Dlamini** → 8 rows shown, **all** Sipho's `portal.document.downloaded` / `portal.request_item.submitted` / `portal.document.upload_initiated` events; zero Bob/Thandi rows leak through. The persistent "System" bucket entry corresponds to the 1 NULL-actor `portal.invoice.paid` row tracked separately (= bundled fix below). Activity feed row labels also resolve correctly: "Sipho Dlamini performed portal.document.downloaded on document".
+
+### §OBS-PortalInvoicePaidNullActorId (bundled, PARTIAL — forward-only)
+Read-only DB query confirms **1 pre-existing row** with `actor_type=PORTAL_CONTACT`, `actor_id=NULL`, `event_type=portal.invoice.paid`, `occurred_at=2026-04-27 13:17:08` — pre-dating the fix; correctly persists as-is (forward-only behaviour). Code-level verified: `PaymentReconciliationService.java:154-167` resolves `portalActorId` via `portalContactRepository.findPreferredActiveByCustomerId(invoice.getCustomerId())` and threads it via `.actorId(portalActorId)`. Authoritative evidence: `PaymentReconciliationServiceIntegrationTest.processWebhookResult_COMPLETED_marks_invoice_PAID` now asserts `actor_id == portalContactId`; `_when_no_portal_contact_actor_id_is_null` asserts null-fallback path.
+
+### Console state
+Zero console errors observed during the entire walk (`browser_console_messages level=error` returned 0 messages). No regressions.
+
+### Evidence files
+- `cycle58-retest-PR1213-summary.yml` — consolidated retest matrix
+- `cycle58-retest-PR1213-GAP-L-93-closure-dialog-step{1,2-soa}.yml` — closure dialog UI
+- `cycle58-retest-PR1213-GAP-L-96-retention-policies.txt` — DB query
+- `cycle58-retest-PR1213-GAP-L-101-{RAF-matter-detail-active,EST-matter-detail-pre-clock}.yml` — retention card
+- `cycle58-retest-PR1213-TERM-firm-{dashboard,invoices,projects-list,create-matter-dialog,edit-matter-dialog,create-client-dialog,conflict-check}.yml` — terminology basket
+- `cycle58-retest-PR1213-OBS-PortalContact-{activity-tab,actor-dropdown-open,filtered-by-sipho}.yml` — actor filter
+- `cycle58-retest-PR1213-OBS-PortalInvoicePaid-actor-id.txt` — DB query
+- `cycle58-retest-PR1213-matter-inventory.txt` — projects table inventory used to pick test targets
+- `cycle58-retest-PR1213-console-errors.txt` — zero errors
+
+### Outcome
+**ALL 5 (slice 1 named) + 1 (bundled) fixes VERIFIED on main `c8e623ba`.** GAP-L-93 / GAP-L-101 / TERM-CYCLE57 / OBS-PortalContactBucketedAsSystem are full PASS via browser walk. GAP-L-96 / OBS-PortalInvoicePaidNullActorId are PARTIAL (forward-only) — verified at code + DB level + authoritative integration tests in PR #1208/#1209. **0 new GAPs opened.** 1 minor polish observation logged in §TERM-CYCLE57 above (not blocking, not opened as GAP).
+

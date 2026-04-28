@@ -1,0 +1,78 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e69]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e22]
+            - generic [ref=e25]: Home
+          - link "Matters" [ref=e26] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e27]
+            - generic [ref=e29]: Matters
+          - link "Trust" [ref=e70] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e71]
+            - generic [ref=e75]: Trust
+          - link "Deadlines" [ref=e76] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e77]
+            - generic [ref=e81]: Deadlines
+          - link "Fee Notes" [ref=e82] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e31]
+            - generic [ref=e34]: Fee Notes
+          - link "Proposals" [ref=e35] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e36]
+            - generic [ref=e39]: Proposals
+          - link "Requests" [ref=e83] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e84]
+            - generic [ref=e86]: Requests
+          - link "Activity" [ref=e40] [cursor=pointer]:
+            - /url: /activity
+            - img [ref=e41]
+            - generic [ref=e43]: Activity
+        - generic [ref=e44]:
+          - link "Profile" [ref=e45] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e46]
+            - text: Profile
+          - button "Logout" [ref=e49]:
+            - img [ref=e50]
+            - text: Logout
+      - main [ref=e53]:
+        - generic [ref=e54]:
+          - heading "Profile" [level=1] [ref=e55]
+          - generic [ref=e87]:
+            - generic [ref=e89]:
+              - img [ref=e90]
+              - text: Contact Information
+            - generic [ref=e94]:
+              - generic [ref=e95]:
+                - term [ref=e96]: Name
+                - definition [ref=e97]: Sipho Dlamini
+              - generic [ref=e98]:
+                - term [ref=e99]: Email
+                - definition [ref=e100]: sipho.portal@example.com
+              - generic [ref=e101]:
+                - term [ref=e102]: Role
+                - definition [ref=e103]:
+                  - generic [ref=e104]: General
+              - generic [ref=e105]:
+                - term [ref=e106]: Customer
+                - definition [ref=e107]: Sipho Dlamini
+    - contentinfo [ref=e65]:
+      - paragraph [ref=e67]: Powered by DocTeams

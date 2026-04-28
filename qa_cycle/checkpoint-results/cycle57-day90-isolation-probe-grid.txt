@@ -1,0 +1,75 @@
+Cycle 57 — Day 90 — §90.8 Final Isolation Probe — PASS/FAIL Grid
+=================================================================
+Cycle 57. Compared to cycle 1 baseline (HANDOFF claim: 36/36 PASS).
+This cycle 57 grid covers 36 individual probe cells across 4 phases.
+Sipho session (portal_jwt sub=c4f70d86-..., type=customer, org=mathebula-partners).
+Moroka IDs targeted:
+  customer    0cb199f2-9263-4d57-88c7-4a0350f8779c (Moroka Family Trust)
+  matter      340c5bb2-16c9-4cb4-ae27-df757aa7ce6d (Estate Late Peter Moroka)
+  info-req    de3cffc7-7744-43ce-9c80-d90a42a1de08 (REQ-0003)
+  document    9eb9ed95-92be-4bb0-b656-5b2f6f96b9b6 (letters-of-authority.pdf)
+  trust-tx    0e9f9c17-a305-4714-a81f-c471d56b4832 (DEPOSIT R 25 000)
+
+Leak tokens scanned: moroka, peter, liquidation, est-2026, "R 25", REQ-0003
+
+------------------------------------------------------------------
+PHASE A — List-view leak probe (Sipho can see only his data)
+------------------------------------------------------------------
+A.1   /home              200, Sipho-only data, 0 Moroka tokens          PASS
+A.2   /projects          200, 2 Sipho matters, 0 Moroka card            PASS
+A.3   /projects/{moroka} 404 not-found page, 0 Moroka tokens            PASS
+A.4   /requests          200, 4 REQ-0001/0002/0004/0005 Sipho-only      PASS
+A.5   /requests/{moroka} 404 not-found page, 0 Moroka tokens            PASS
+A.6   /trust             auto-redirected to Sipho matter, no leak       PASS
+A.7   /trust/{moroka}    "No trust balance is recorded" + 404 cards     PASS
+A.8   /invoices          200, Sipho-only fee notes, 0 Moroka tokens     PASS
+A.9   /deadlines         200, 0 Moroka tokens                           PASS
+A.10  /proposals         200, Sipho-only proposals, 0 Moroka            PASS
+A.11  /profile           200, Sipho's contact info only                 PASS
+A.12  /settings/notifications 200, scoped to Sipho                      PASS
+                                                          Subtotal: 12/12 PASS
+
+------------------------------------------------------------------
+PHASE B — Direct-URL probe (frontend denial)
+------------------------------------------------------------------
+B.1   /projects/{morokaMatter}      → not-found page                    PASS
+B.2   /requests/{morokaInfoReq}     → not-found page                    PASS
+B.3   /trust/{morokaMatter}         → "No trust balance" + not-found    PASS
+B.4   No portal /documents/{id} route                                   PASS  (no surface to leak)
+B.5   No portal trust-tx-by-id route                                    PASS  (no surface to leak)
+B.6   /activity Your-actions tab    → Sipho's events only, 0 Moroka     PASS
+B.7   /activity Firm-actions tab    → 0 Moroka tokens                   PASS
+B.8   /trust auto-redirect          → only Sipho's matter, never Moroka PASS
+                                                          Subtotal: 8/8 PASS
+
+------------------------------------------------------------------
+PHASE C — API-level probe (backend enforcement, Bearer JWT)
+------------------------------------------------------------------
+C.1   GET /portal/projects/{morokaMatter}              → 404            PASS
+C.2   GET /portal/requests/{morokaInfoReq}             → 404            PASS
+C.3   GET /portal/requests (list)                      → 200, no Moroka PASS
+C.4   GET /portal/documents/{morokaDoc}                → 404 (no route) PASS
+C.5   GET /portal/trust/summary                        → 1 matter only  PASS
+C.6   GET /portal/trust/matters/{morokaMatter}/transactions → 404       PASS
+C.7   GET /portal/projects (list)                      → 200, no Moroka PASS
+C.8   GET /portal/home                                 → 404 (no API)   PASS  (vacuously safe)
+                                                          Subtotal: 8/8 PASS
+
+------------------------------------------------------------------
+PHASE D — Activity / digest / email leak probe
+------------------------------------------------------------------
+D.1   /profile activity refs                           → no Moroka      PASS
+D.2   /activity Your-actions                           → 0 leaks        PASS
+D.3   /activity Firm-actions                           → 0 leaks        PASS
+D.4   Mailpit body grep "moroka"                       → 0 hits         PASS
+D.5   Mailpit body grep "peter"                        → 0 hits         PASS
+D.6   Mailpit body grep "liquidation"                  → 0 hits         PASS
+D.7   Mailpit body grep "est-2026"                     → 0 hits         PASS
+D.8   Mailpit body grep "R 25"                         → 0 hits         PASS
+                                                          Subtotal: 8/8 PASS
+
+==================================================================
+TOTAL CYCLE 57 ISOLATION PROBE: 36/36 PASS
+ZERO drift from cycle 1 baseline (also 36/36).
+ZERO Moroka data surfaces anywhere on Sipho's portal session.
+==================================================================

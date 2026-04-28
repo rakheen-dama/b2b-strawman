@@ -306,9 +306,23 @@ public class MatterClosureService {
    * layer.
    */
   private void ensureMatterRetentionPolicy(int retentionYears) {
+    final int retentionDays;
     try {
-      retentionPolicyRepository.insertIfAbsent(
-          "MATTER", retentionYears * 365, "MATTER_CLOSED", "ARCHIVE");
+      retentionDays = Math.multiplyExact(retentionYears, 365);
+    } catch (ArithmeticException overflow) {
+      // Defense-in-depth: OrgSettings now caps retentionYears at 100 (@Max), so this branch is
+      // unreachable in practice. Guarded anyway so a future relaxation of the cap or a direct
+      // DB write that bypasses bean validation cannot silently produce a negative retention_days
+      // value via Integer overflow.
+      log.warn(
+          "Skipping MATTER retention-policy seed: retentionYears={} overflows when multiplied by"
+              + " 365",
+          retentionYears,
+          overflow);
+      return;
+    }
+    try {
+      retentionPolicyRepository.insertIfAbsent("MATTER", retentionDays, "MATTER_CLOSED", "ARCHIVE");
     } catch (RuntimeException e) {
       // The atomic upsert already absorbs the race; this catch only handles unrelated runtime
       // failures (e.g. driver-level connection issues) and ensures the close proceeds.

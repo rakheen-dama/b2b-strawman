@@ -4,13 +4,11 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.document.DocumentService;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyRepository;
-import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentService;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
@@ -39,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Lazy;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -92,7 +89,6 @@ public class MatterClosureService {
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final StatementService statementService;
-  private final RetentionPolicyService retentionPolicyService;
   private final RetentionPolicyRepository retentionPolicyRepository;
 
   /**
@@ -115,7 +111,6 @@ public class MatterClosureService {
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       StatementService statementService,
-      RetentionPolicyService retentionPolicyService,
       RetentionPolicyRepository retentionPolicyRepository,
       @Lazy MatterClosureService self) {
     this.orderedGates = gates.stream().sorted(Comparator.comparingInt(ClosureGate::order)).toList();
@@ -129,7 +124,6 @@ public class MatterClosureService {
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.statementService = statementService;
-    this.retentionPolicyService = retentionPolicyService;
     this.retentionPolicyRepository = retentionPolicyRepository;
     this.self = self;
   }
@@ -298,32 +292,26 @@ public class MatterClosureService {
    * GAP-L-96 / ADR-249: ensure a tenant-wide {@code retention_policies} row exists for {@code
    * record_type='MATTER'} on first matter closure for this tenant. The row is forward-compatibility
    * for the planned retention sweeper extension; subsequent closures reuse the same row (UNIQUE on
-   * {@code (record_type, trigger_event)}). Idempotent — pre-checks existence via the repository
-   * before delegating to {@link RetentionPolicyService#create} so the outer {@code performClose}
-   * transaction is never marked rollback-only by a {@link ResourceConflictException}. Any other
-   * RuntimeException is logged and swallowed so it cannot roll back the surrounding close
-   * transaction.
+   * {@code (record_type, trigger_event)}).
+   *
+   * <p>Uses an atomic {@code INSERT ... ON CONFLICT DO NOTHING} so concurrent closes on the same
+   * tenant cannot race past an existence check and conflict at outer-transaction flush. The single
+   * SQL statement is race-proof at the DB level — no pre-check, no two-phase pattern, no commit-
+   * time exception that could abort {@code performClose}.
    *
    * <p>{@code retentionDays = retentionYears * 365}. Trigger event {@code MATTER_CLOSED}, action
    * {@code ARCHIVE}. Note: MATTER is NOT in the financial-record-types list, so the JURISDICTION
-   * minimum-months check inside {@link RetentionPolicyService#create} does not apply.
+   * minimum-months check that lives inside {@code RetentionPolicyService.create} does not apply —
+   * and we intentionally bypass that service to keep the insert path atomic at the repository
+   * layer.
    */
   private void ensureMatterRetentionPolicy(int retentionYears) {
     try {
-      if (retentionPolicyRepository.existsByRecordTypeAndTriggerEvent("MATTER", "MATTER_CLOSED")) {
-        return;
-      }
-      int days = retentionYears * 365;
-      retentionPolicyService.create("MATTER", days, "MATTER_CLOSED", "ARCHIVE");
-    } catch (ResourceConflictException already) {
-      // Defensive: a concurrent close on the same tenant beat us to the insert (caught at the
-      // service layer's explicit check). Idempotent.
-    } catch (DataIntegrityViolationException raceLost) {
-      // True race: the existsByRecordTypeAndTriggerEvent check passed but a concurrent close
-      // inserted before our flush, surfacing the unique-key constraint at the DB layer. Treat as
-      // idempotent — the row we wanted exists. Without this catch the unique-key failure would
-      // surface on flush/commit outside the broader catch and abort the matter close.
+      retentionPolicyRepository.insertIfAbsent(
+          "MATTER", retentionYears * 365, "MATTER_CLOSED", "ARCHIVE");
     } catch (RuntimeException e) {
+      // The atomic upsert already absorbs the race; this catch only handles unrelated runtime
+      // failures (e.g. driver-level connection issues) and ensures the close proceeds.
       log.warn("Failed to seed MATTER retention policy on closure; close proceeds", e);
     }
   }

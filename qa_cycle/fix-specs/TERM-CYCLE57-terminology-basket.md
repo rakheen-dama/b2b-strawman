@@ -172,10 +172,10 @@ Required (§1-§6 — strict §90.1 walk minimum):
 - `frontend/app/(app)/org/[slug]/invoices/page.tsx`
 - `frontend/components/breadcrumbs.tsx`
 - `frontend/components/projects/create-project-dialog.tsx`
-- `frontend/components/projects/edit-project-dialog.tsx` (add `useTerminology` import)
+- `frontend/components/projects/edit-project-dialog.tsx` (hook already present; route literals through existing `t()`)
 - `frontend/components/customers/create-customer-dialog.tsx`
 - `frontend/components/legal/conflict-check-form.tsx` (add `useTerminology` import)
-- `frontend/lib/terminology-map.ts` (new keys: `project.namePlaceholder`, `project.referencePlaceholder` × 4 maps)
+- `frontend/lib/terminology-map.ts` (new keys: `project.namePlaceholder`, `project.referencePlaceholder` in the 3 profile maps; identity fallback unchanged)
 
 Sweep (§7-§8 — recommended):
 - `frontend/components/proposals/create-proposal-dialog.tsx`

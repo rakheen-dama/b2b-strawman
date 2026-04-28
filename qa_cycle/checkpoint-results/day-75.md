@@ -51,3 +51,73 @@
 ### Time
 
 ~12 min wall-clock (mostly portal navigation + DB confirms + Mailpit lookup), well under 45 min target.
+
+---
+
+## Day 75 Walk — Cycle 54 — 2026-04-28 SAST
+
+**Branch**: `bugfix_cycle_2026-04-26-day75` (cut from main `c419f2c7` Day 62 skip-PR)
+**Tooling**: Playwright MCP (`mcp__playwright__*`) for portal navigation; Mailpit `GET /api/v1/messages` for digest-email lookup; read-only `psql` for DB sanity. Zero SQL/REST mutations.
+**Tenant**: `tenant_5039f2d497cf` (mathebula-partners)
+**Portal actor**: Sipho Dlamini (`sipho.portal@example.com`, portal_contact `f3f74a9d-3540-483a-80bc-6f5ef4e911bb`, customer `c4f70d86-c292-4d02-9f6f-2e900099ba57`)
+
+### Pre-flight
+
+| Service | Port | Status |
+|--------|------|--------|
+| backend | 8080 | 200 (`/actuator/health`) |
+| frontend | 3000 | 200 |
+| portal | 3002 | 307 healthy |
+| Mailpit | 8025 | 200 |
+
+Backend uptime: ~12h 11m (PID 53170, started 2026-04-27 ~23:40 SAST). Day-of-week today: **Tuesday** (`date +%u` = 2).
+
+Magic link issued → Mailpit `GfcMUMJGdRkb4jv7U9Zjh3` (2026-04-28T09:56:12Z) → token exchange → Sipho landed on `/projects`.
+
+### Per-checkpoint table — Cycle 54
+
+| Step | Result | Evidence |
+|------|--------|----------|
+| **75.1** Mailpit weekly digest email | **BLOCKED** — see GAP-L-99. Mailpit search `subject:digest`, `subject:weekly`, `subject:week` all return 0 hits. To-Sipho mailbox total = 3 emails (2 magic-link + 1 Day 60 SoA notification); zero digest emails ever delivered. Backend uptime started ~23:40 Mon 27th, AFTER Mon 08:00 cron tick — scheduler has not fired during this backend's life. No public REST trigger exists (`grep -rn runWeeklyDigest backend/src/main` confirms zero callers outside `scheduledRun()` and integration tests). | n/a (negative result) |
+| **75.2** Digest body mentions matter events | **BLOCKED** (75.1) | n/a |
+| **75.3** Digest must NOT reference Moroka | **BLOCKED** (75.1) | n/a |
+| **75.4** "View activity" link | **BLOCKED** (75.1) | n/a |
+| **75.5** Activity trail (Sipho only, zero Moroka) | **PASS** with cosmetic note (raw event keys still rendered in some rows). `/activity` "Your actions" tab: Document downloaded ×2 (Day 61 SoA + closure letter, 1h ago); `portal.request_item.submitted` + `portal.document.upload_initiated` runs (Days 4/45 FICA + medical evidence). "Firm actions" tab: `statement.generated`, `document.generated`, `information_request.*`, `disbursement.*`, `time_entry.*`, `court_date.created` — all by Bob/Thandi on RAF-only. `grep -ic 'moroka\|EST-2026\|0cb199f2\|340c5bb2'` on both YAML snapshots → **0 matches**. | `cycle54-day75-75.5-portal-activity.yml`, `cycle54-day75-75.5b-portal-activity-firm.yml` |
+| **75.6a** `/home` no Moroka entries | **PASS**. Tiles: Pending info requests = 2 (REQ-0001 + REQ-0004 SENT, both RAF), Upcoming deadlines = 0, Recent fee notes INV-0001 R 5 160,00 (Sipho's), Last trust movement R 20 000,00 27 Apr 2026 (Day 45 RAF top-up). Zero Moroka references. | `cycle54-day75-75.6b-portal-home.yml` |
+| **75.6b** `/trust` RAF-only balance, NO R 25 000 Moroka leak | **PASS**. `/trust` redirected to `/trust/cc390c4f-…`; balance = R 70 100,00; 3 deposit rows all RAF (R 50k Day 10 + R 100 cycle-29 retest + R 20k Day 45 top-up). DB cross-check: 4 trust_transactions in tenant — 3 RAF (R 50k/100/20k) + 1 Moroka (R 25k EST-2026-002, project `340c5bb2-…`, customer `0cb199f2-…`). Sipho's portal correctly excludes the Moroka row. | `cycle54-day75-75.6c-portal-trust.yml` |
+| **75.6c** `/projects` shows RAF-only matter as CLOSED | **PARTIAL**. `/projects` All tab shows 2 matters: `Cycle19 Verify` (ACTIVE) + `Dlamini v Road Accident Fund` (CLOSED). Past tab: RAF only. Active tab: `Cycle19 Verify` only. DB: 3 projects total — 2 Sipho (RAF CLOSED + Cycle19 Verify ACTIVE) + 1 Moroka (`Estate Late Peter Moroka`, customer `0cb199f2-…`). **Moroka NOT visible** — isolation holds. Scenario expectation "one matter only" is violated by the residual `Cycle19 Verify` test artifact (BUG-CYCLE26-07 verification leftover) — NOT an isolation issue, but a QA-test-data hygiene issue. Closed status correctly hidden behind Past tab. | `cycle54-day75-75.6a-portal-projects.yml`, `cycle54-day75-75.6d-portal-projects-past-tab.yml`, `cycle54-day75-75.6e-portal-projects-active-tab.yml` |
+| **75.7** Optional screenshot | **N/A** — digest portion BLOCKED; activity portion captured via YAML evidence. Skipped per "PNG only when visual layout is the assertion" rule. | n/a |
+| **Console errors** | `/auth/exchange` 1× favicon 404 (cosmetic, ignored). `/projects`, `/home`, `/trust`, `/trust/cc390c4f-…`, `/activity` — 0 errors. | console logs |
+
+### Day 75 Cycle 54 checkpoint summary
+
+- [x] **Digest contents match activity trail** — BLOCKED on GAP-L-99 (no digest ever delivered).
+- [x] **Closed matter correctly rendered as closed** — PASS (RAF appears in Past tab; CLOSED in DB).
+- [x] **Isolation still holds at Day 75** — PASS (zero Moroka leakage anywhere on Sipho's portal).
+
+### Counts (Cycle 54)
+
+- **PASS**: 4 (75.5 ×2 tabs, 75.6a, 75.6b)
+- **PARTIAL**: 1 (75.6c — extra Sipho test-artifact matter, not isolation)
+- **BLOCKED**: 4 (75.1, 75.2, 75.3, 75.4 — gated on weekly-digest send)
+- **N/A**: 1 (75.7 optional screenshot)
+
+### New gap opened (Cycle 54)
+
+**GAP-L-99** (MEDIUM, OPEN, owner=product) — `PortalDigestScheduler` cron-only trigger (`0 0 8 ? * MON`) with no public REST trigger or admin UI button blocks Day 75 walks whenever the backend was started or restarted after the most recent Monday 08:00 tick. Walk-blocker for the digest portion (75.1–75.4) of the lifecycle scenario.
+
+This complements the prior cycle 1 OBS-Day75-NoManualDigestTrigger note (which was deferred-Sprint-2). Day 75 has now been walked twice (cycle 1 → DEFERRED, cycle 54 → BLOCKED) and the scenario stays unwalkable end-to-end. Recommended fix: expose `POST /internal/portal/digest/run-weekly` (API-key gated) or `POST /api/admin/portal/digest/run-now` (owner-only via @RequiresCapability). S effort, ~30 min.
+
+### Anomalies / observations
+
+1. **Weekly digest never fires in QA**: cron requires backend liveness at Mon 08:00 server time + ≥1 digest-eligible event in 7-day lookback for ≥1 ACTIVE portal contact. Backend restarts (frequent in QA cycles — every Java change) routinely miss the cron window. Without a manual trigger, the scenario step is unfulfillable.
+2. **Residual cycle-19 matter** (`Cycle19 Verify`, ACTIVE, Sipho's customer) — leftover from BUG-CYCLE26-07 verification flow. Causes 75.6c PARTIAL but not an isolation issue.
+3. **Day 60 trust withdrawal row missing** — Day 60 fee-note paid R 15 000 was not recorded as a FEE_TRANSFER row in `trust_transactions`. Portal `/trust` shows R 70 100 (3-deposit sum) rather than the R 55 100 residual that the closure SoA narrative implies. Pre-existing Day 60-era concern, not Day 75 scope.
+4. **Activity-feed raw event keys** (e.g. `portal.request_item.submitted`, `statement.generated`, `information_request.sent`) — only `information_request.item_accepted` has humanised copy per BUG-CYCLE26-10. Outside Day 75 scope but flagged.
+
+### References
+
+- Scenario: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md` §Day 75 (lines 721–741)
+- Scheduler: `backend/src/main/java/io/b2mash/b2b/b2bstrawman/portal/notification/PortalDigestScheduler.java`
+- Cadence settings UI: `frontend/components/settings/portal-settings-section.tsx`
+

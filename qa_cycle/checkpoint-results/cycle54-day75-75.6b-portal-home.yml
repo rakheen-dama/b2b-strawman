@@ -1,0 +1,95 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e70]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e23]
+            - generic [ref=e26]: Home
+          - link "Matters" [ref=e27] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e28]
+            - generic [ref=e30]: Matters
+          - link "Trust" [ref=e71] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e72]
+            - generic [ref=e76]: Trust
+          - link "Deadlines" [ref=e77] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e78]
+            - generic [ref=e82]: Deadlines
+          - link "Fee Notes" [ref=e83] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e32]
+            - generic [ref=e35]: Fee Notes
+          - link "Proposals" [ref=e36] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e37]
+            - generic [ref=e40]: Proposals
+          - link "Requests" [ref=e84] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e85]
+            - generic [ref=e87]: Requests
+          - link "Activity" [ref=e41] [cursor=pointer]:
+            - /url: /activity
+            - img [ref=e42]
+            - generic [ref=e44]: Activity
+        - generic [ref=e45]:
+          - link "Profile" [ref=e46] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e47]
+            - text: Profile
+          - button "Logout" [ref=e50]:
+            - img [ref=e51]
+            - text: Logout
+      - main [ref=e54]:
+        - generic [ref=e55]:
+          - heading "Home" [level=1] [ref=e56]
+          - generic [ref=e57]:
+            - link "Pending info requests 2" [ref=e88] [cursor=pointer]:
+              - /url: /requests
+              - generic [ref=e89]:
+                - generic [ref=e91]:
+                  - img [ref=e92]
+                  - text: Pending info requests
+                - paragraph [ref=e95]: "2"
+            - link "Upcoming deadlines 0 Next 14 days" [ref=e96] [cursor=pointer]:
+              - /url: /deadlines
+              - generic [ref=e97]:
+                - generic [ref=e99]:
+                  - img [ref=e100]
+                  - text: Upcoming deadlines
+                - generic [ref=e104]:
+                  - paragraph [ref=e105]: "0"
+                  - paragraph [ref=e106]: Next 14 days
+            - generic [ref=e58]:
+              - generic [ref=e60]:
+                - img [ref=e61]
+                - text: Recent fee notes
+              - list [ref=e107]:
+                - listitem [ref=e108]:
+                  - link "INV-0001" [ref=e109] [cursor=pointer]:
+                    - /url: /invoices/432ae5a9-6a3c-4c25-86b3-302f0dd016e1
+                  - generic [ref=e110]: R 5 160,00
+            - link "Last trust movement R 20 000,00 27 Apr 2026" [ref=e111] [cursor=pointer]:
+              - /url: /trust
+              - generic [ref=e112]:
+                - generic [ref=e114]:
+                  - img [ref=e115]
+                  - text: Last trust movement
+                - generic [ref=e120]:
+                  - paragraph [ref=e121]: R 20 000,00
+                  - paragraph [ref=e122]: 27 Apr 2026
+    - contentinfo [ref=e66]:
+      - paragraph [ref=e68]: Powered by DocTeams

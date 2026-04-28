@@ -1,0 +1,125 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e71]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e22]
+            - generic [ref=e25]: Home
+          - link "Matters" [ref=e26] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e27]
+            - generic [ref=e29]: Matters
+          - link "Trust" [ref=e72] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e73]
+            - generic [ref=e77]: Trust
+          - link "Deadlines" [ref=e78] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e79]
+            - generic [ref=e83]: Deadlines
+          - link "Fee Notes" [ref=e84] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e31]
+            - generic [ref=e34]: Fee Notes
+          - link "Proposals" [ref=e35] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e36]
+            - generic [ref=e39]: Proposals
+          - link "Requests" [ref=e85] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e86]
+            - generic [ref=e88]: Requests
+          - link "Activity" [ref=e40] [cursor=pointer]:
+            - /url: /activity
+            - img [ref=e42]
+            - generic [ref=e44]: Activity
+        - generic [ref=e45]:
+          - link "Profile" [ref=e46] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e47]
+            - text: Profile
+          - button "Logout" [ref=e50]:
+            - img [ref=e51]
+            - text: Logout
+      - main [ref=e54]:
+        - generic [ref=e55]:
+          - heading "Activity" [level=1] [ref=e56]
+          - paragraph [ref=e57]: A timeline of actions on your matter.
+          - tablist "Activity tabs" [ref=e58]:
+            - tab "Your actions" [selected] [ref=e59]
+            - tab "Firm actions" [ref=e60]
+          - list [ref=e89]:
+            - listitem [ref=e90]:
+              - generic [ref=e91]:
+                - generic [ref=e92]: Document downloaded
+                - generic [ref=e93]: You
+              - generic [ref=e94]: 1 hour ago
+            - listitem [ref=e95]:
+              - generic [ref=e96]:
+                - generic [ref=e97]: Document downloaded
+                - generic [ref=e98]: You
+              - generic [ref=e99]: 1 hour ago
+            - listitem [ref=e100]:
+              - generic [ref=e101]:
+                - generic [ref=e102]: portal.request_item.submitted
+                - generic [ref=e103]: You
+              - generic [ref=e104]: 18 hours ago
+            - listitem [ref=e105]:
+              - generic [ref=e106]:
+                - generic [ref=e107]: portal.document.upload_initiated
+                - generic [ref=e108]: You
+              - generic [ref=e109]: 18 hours ago
+            - listitem [ref=e110]:
+              - generic [ref=e111]:
+                - generic [ref=e112]: portal.request_item.submitted
+                - generic [ref=e113]: You
+              - generic [ref=e114]: 18 hours ago
+            - listitem [ref=e115]:
+              - generic [ref=e116]:
+                - generic [ref=e117]: portal.document.upload_initiated
+                - generic [ref=e118]: You
+              - generic [ref=e119]: 18 hours ago
+            - listitem [ref=e120]:
+              - generic [ref=e121]:
+                - generic [ref=e122]: portal.request_item.submitted
+                - generic [ref=e123]: You
+              - generic [ref=e124]: 1 day ago
+            - listitem [ref=e125]:
+              - generic [ref=e126]:
+                - generic [ref=e127]: portal.document.upload_initiated
+                - generic [ref=e128]: You
+              - generic [ref=e129]: 1 day ago
+            - listitem [ref=e130]:
+              - generic [ref=e131]:
+                - generic [ref=e132]: portal.request_item.submitted
+                - generic [ref=e133]: You
+              - generic [ref=e134]: 1 day ago
+            - listitem [ref=e135]:
+              - generic [ref=e136]:
+                - generic [ref=e137]: portal.document.upload_initiated
+                - generic [ref=e138]: You
+              - generic [ref=e139]: 1 day ago
+            - listitem [ref=e140]:
+              - generic [ref=e141]:
+                - generic [ref=e142]: portal.request_item.submitted
+                - generic [ref=e143]: You
+              - generic [ref=e144]: 1 day ago
+            - listitem [ref=e145]:
+              - generic [ref=e146]:
+                - generic [ref=e147]: portal.document.upload_initiated
+                - generic [ref=e148]: You
+              - generic [ref=e149]: 1 day ago
+    - contentinfo [ref=e67]:
+      - paragraph [ref=e69]: Powered by DocTeams

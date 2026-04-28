@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.activity;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.member.Member;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
@@ -10,9 +11,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class ActivityMessageFormatter {
 
-  public ActivityItem format(AuditEvent event, Map<UUID, Member> actorMap) {
-    String actorName = resolveActorName(event.getActorId(), actorMap, event.getDetails());
-    String actorAvatarUrl = resolveActorAvatarUrl(event.getActorId(), actorMap);
+  public ActivityItem format(
+      AuditEvent event, Map<UUID, Member> actorMap, Map<UUID, PortalContact> portalContactMap) {
+    String actorName =
+        resolveActorName(
+            event.getActorType(),
+            event.getActorId(),
+            actorMap,
+            portalContactMap,
+            event.getDetails());
+    String actorAvatarUrl =
+        resolveActorAvatarUrl(event.getActorType(), event.getActorId(), actorMap);
     Map<String, Object> details = event.getDetails() != null ? event.getDetails() : Map.of();
 
     String message = formatMessage(event.getEventType(), event.getEntityType(), actorName, details);
@@ -205,23 +214,44 @@ public class ActivityMessageFormatter {
   }
 
   private String resolveActorName(
-      UUID actorId, Map<UUID, Member> actorMap, Map<String, Object> details) {
+      String actorType,
+      UUID actorId,
+      Map<UUID, Member> actorMap,
+      Map<UUID, PortalContact> portalContactMap,
+      Map<String, Object> details) {
     if (actorId == null) {
       return "System";
     }
+    if ("PORTAL_CONTACT".equals(actorType)) {
+      PortalContact pc = portalContactMap.get(actorId);
+      if (pc != null) {
+        if (pc.getDisplayName() != null && !pc.getDisplayName().isBlank()) {
+          return pc.getDisplayName();
+        }
+        if (pc.getEmail() != null && !pc.getEmail().isBlank()) {
+          return pc.getEmail();
+        }
+      }
+      // anonymized / archived / orphan portal_contact
+      if (details != null && details.get("actor_name") instanceof String name) {
+        return name;
+      }
+      return "Portal user";
+    }
+    // existing USER path
     Member member = actorMap.get(actorId);
     if (member != null) {
       return member.getName();
     }
-    // Fallback for non-member actors (e.g. portal customers)
     if (details != null && details.get("actor_name") instanceof String name) {
       return name;
     }
     return "Unknown";
   }
 
-  private String resolveActorAvatarUrl(UUID actorId, Map<UUID, Member> actorMap) {
-    if (actorId == null) {
+  private String resolveActorAvatarUrl(String actorType, UUID actorId, Map<UUID, Member> actorMap) {
+    if (actorId == null || "PORTAL_CONTACT".equals(actorType)) {
+      // portal contacts have no avatar; FE falls back to initials
       return null;
     }
     Member member = actorMap.get(actorId);

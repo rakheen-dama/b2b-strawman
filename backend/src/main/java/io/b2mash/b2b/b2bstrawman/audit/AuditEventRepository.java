@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.audit;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -178,6 +179,11 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
   /**
    * Combined portal-contact + firm activity for a portal contact. Returns events the contact
    * authored AND firm-side events on any project linked to the contact's customer.
+   *
+   * <p>The firm-side branch is filtered by {@code eventTypes} -- only allow-listed firm events
+   * surface to the portal. The portal-contact-authored branch is unfiltered: portal contacts always
+   * see their own actions. See {@link
+   * io.b2mash.b2b.b2bstrawman.portal.PortalActivityEventTypes#PORTAL_VISIBLE_FIRM_EVENT_TYPES}.
    */
   @Query(
       nativeQuery = true,
@@ -186,7 +192,8 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
           SELECT * FROM audit_events ae
           WHERE (ae.actor_type = 'PORTAL_CONTACT' AND ae.actor_id = :portalContactId)
              OR (
-               (ae.details->>'project_id') IS NOT NULL
+               ae.event_type IN (:eventTypes)
+               AND (ae.details->>'project_id') IS NOT NULL
                AND (ae.details->>'project_id') ~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
                AND (ae.details->>'project_id')::uuid IN (
                  SELECT project_id FROM customer_projects WHERE customer_id = :customerId
@@ -199,7 +206,8 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
           SELECT count(*) FROM audit_events ae
           WHERE (ae.actor_type = 'PORTAL_CONTACT' AND ae.actor_id = :portalContactId)
              OR (
-               (ae.details->>'project_id') IS NOT NULL
+               ae.event_type IN (:eventTypes)
+               AND (ae.details->>'project_id') IS NOT NULL
                AND (ae.details->>'project_id') ~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
                AND (ae.details->>'project_id')::uuid IN (
                  SELECT project_id FROM customer_projects WHERE customer_id = :customerId
@@ -209,6 +217,7 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
   Page<AuditEvent> findActivityForPortalContact(
       @Param("portalContactId") UUID portalContactId,
       @Param("customerId") UUID customerId,
+      @Param("eventTypes") Set<String> eventTypes,
       Pageable pageable);
 
   /** Portal-contact-authored events only ("Your actions" tab). */
@@ -231,6 +240,11 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
   /**
    * Firm-side events on any project linked to the customer ("Firm actions" tab). Excludes
    * portal-contact-authored events.
+   *
+   * <p>Filtered by {@code eventTypes} -- only allow-listed firm events surface to the portal so
+   * client-facing tabs don't over-disclose internal firm bookkeeping (time entries, disbursements,
+   * project mutations). See {@link
+   * io.b2mash.b2b.b2bstrawman.portal.PortalActivityEventTypes#PORTAL_VISIBLE_FIRM_EVENT_TYPES}.
    */
   @Query(
       nativeQuery = true,
@@ -238,6 +252,7 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
           """
           SELECT * FROM audit_events ae
           WHERE ae.actor_type <> 'PORTAL_CONTACT'
+            AND ae.event_type IN (:eventTypes)
             AND (ae.details->>'project_id') IS NOT NULL
             AND (ae.details->>'project_id') ~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
             AND (ae.details->>'project_id')::uuid IN (
@@ -249,6 +264,7 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
           """
           SELECT count(*) FROM audit_events ae
           WHERE ae.actor_type <> 'PORTAL_CONTACT'
+            AND ae.event_type IN (:eventTypes)
             AND (ae.details->>'project_id') IS NOT NULL
             AND (ae.details->>'project_id') ~ '^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
             AND (ae.details->>'project_id')::uuid IN (
@@ -256,5 +272,7 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
             )
           """)
   Page<AuditEvent> findActivityFirmForCustomer(
-      @Param("customerId") UUID customerId, Pageable pageable);
+      @Param("customerId") UUID customerId,
+      @Param("eventTypes") Set<String> eventTypes,
+      Pageable pageable);
 }

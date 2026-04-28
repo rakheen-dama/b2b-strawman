@@ -8,18 +8,18 @@
     "start": "next start -p 3003"
   },
   "dependencies": {
-    "next": "^16",
-    "nextra": "^4",
-    "nextra-theme-docs": "^4",
-    "react": "^19",
-    "react-dom": "^19"
+    "next": "^16.2.4",
+    "nextra": "^4.6.1",
+    "nextra-theme-docs": "^4.6.1",
+    "react": "^19.2.5",
+    "react-dom": "^19.2.5"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^22",
-    "@types/react": "^19",
-    "postcss": "^8",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "@tailwindcss/postcss": "^4.2.4",
+    "@types/node": "^22.19.17",
+    "@types/react": "^19.2.14",
+    "postcss": "^8.5.12",
+    "tailwindcss": "^4.2.4",
+    "typescript": "^5.9.3"
   }
 }

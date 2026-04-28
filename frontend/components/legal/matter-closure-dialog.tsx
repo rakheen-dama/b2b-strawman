@@ -80,6 +80,7 @@ function MatterClosureDialogInner({
       reason: "CONCLUDED",
       notes: "",
       generateClosureLetter: true,
+      generateStatementOfAccount: true,
       override: false,
       overrideJustification: "",
     },
@@ -116,6 +117,7 @@ function MatterClosureDialogInner({
       reason: "CONCLUDED",
       notes: "",
       generateClosureLetter: true,
+      generateStatementOfAccount: true,
       override: false,
       overrideJustification: "",
     });
@@ -142,6 +144,7 @@ function MatterClosureDialogInner({
         reason: values.reason,
         notes: trimmedNotes || undefined,
         generateClosureLetter: values.generateClosureLetter,
+        generateStatementOfAccount: values.generateStatementOfAccount,
         override: values.override,
         overrideJustification: values.override ? trimmedJustification || undefined : undefined,
       });
@@ -291,6 +294,31 @@ function MatterClosureDialogInner({
                       <FormLabel className="text-sm font-medium">Generate closure letter</FormLabel>
                       <p className="text-xs text-slate-500 dark:text-slate-400">
                         A PDF closure letter will be attached to this matter.
+                      </p>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="generateStatementOfAccount"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start gap-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(v) => field.onChange(v === true)}
+                        data-testid="matter-closure-generate-soa-checkbox"
+                      />
+                    </FormControl>
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-sm font-medium">
+                        Generate Statement of Account
+                      </FormLabel>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">
+                        A PDF Statement of Account (Section 86 ledger reconciliation) will be
+                        attached to this matter.
                       </p>
                     </div>
                   </FormItem>

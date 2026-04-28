@@ -10,6 +10,10 @@ export const closeMatterSchema = z
     reason: closureReasonEnum,
     notes: z.string().trim().max(5000).optional(),
     generateClosureLetter: z.boolean(),
+    // GAP-L-93: when true, the backend invokes StatementService.generate inline so the SoA is
+    // auto-attached on close (mirrors the closure-letter flag). Default true on the dialog so
+    // the firm doesn't have to remember the standalone "Generate Statement of Account" step.
+    generateStatementOfAccount: z.boolean(),
     override: z.boolean(),
     overrideJustification: z.string().trim().max(5000).optional(),
   })

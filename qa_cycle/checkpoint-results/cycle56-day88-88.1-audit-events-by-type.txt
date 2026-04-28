@@ -1,0 +1,25 @@
+SET
+            event_type             |   actor_type   | cnt 
+-----------------------------------+----------------+-----
+ portal.document.upload_initiated  | PORTAL_CONTACT |   5
+ portal.request_item.submitted     | PORTAL_CONTACT |   5
+ information_request.created       | USER           |   4
+ information_request.sent          | USER           |   4
+ time_entry.created                | USER           |   4
+ information_request.item_accepted | USER           |   3
+ portal.document.downloaded        | PORTAL_CONTACT |   2
+ project.updated                   | USER           |   2
+ statement.generated               | USER           |   2
+ time_entry.deleted                | USER           |   2
+ court_date.created                | USER           |   1
+ disbursement.approved             | USER           |   1
+ disbursement.billed               | USER           |   1
+ disbursement.created              | USER           |   1
+ disbursement.submitted            | USER           |   1
+ document.generated                | USER           |   1
+ information_request.completed     | USER           |   1
+ matter_closure.closed             | USER           |   1
+ portal.invoice.paid               | PORTAL_CONTACT |   1
+ project.created_from_template     | USER           |   1
+(20 rows)
+

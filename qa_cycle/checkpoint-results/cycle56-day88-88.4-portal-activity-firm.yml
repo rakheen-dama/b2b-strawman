@@ -1,0 +1,195 @@
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e71]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e22]
+            - generic [ref=e25]: Home
+          - link "Matters" [ref=e26] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e27]
+            - generic [ref=e29]: Matters
+          - link "Trust" [ref=e72] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e73]
+            - generic [ref=e77]: Trust
+          - link "Deadlines" [ref=e78] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e79]
+            - generic [ref=e83]: Deadlines
+          - link "Fee Notes" [ref=e84] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e31]
+            - generic [ref=e34]: Fee Notes
+          - link "Proposals" [ref=e35] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e36]
+            - generic [ref=e39]: Proposals
+          - link "Requests" [ref=e85] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e86]
+            - generic [ref=e88]: Requests
+          - link "Activity" [ref=e40] [cursor=pointer]:
+            - /url: /activity
+            - img [ref=e42]
+            - generic [ref=e44]: Activity
+        - generic [ref=e45]:
+          - link "Profile" [ref=e46] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e47]
+            - text: Profile
+          - button "Logout" [ref=e50]:
+            - img [ref=e51]
+            - text: Logout
+      - main [ref=e54]:
+        - generic [ref=e55]:
+          - heading "Activity" [level=1] [ref=e56]
+          - paragraph [ref=e57]: A timeline of actions on your matter.
+          - tablist "Activity tabs" [ref=e58]:
+            - tab "Your actions" [ref=e59]
+            - tab "Firm actions" [active] [selected] [ref=e60]
+          - list [ref=e150]:
+            - listitem [ref=e151]:
+              - generic [ref=e152]:
+                - generic [ref=e153]: statement.generated
+                - generic [ref=e154]: Bob Ndlovu
+              - generic [ref=e155]: 15 hours ago
+            - listitem [ref=e156]:
+              - generic [ref=e157]:
+                - generic [ref=e158]: statement.generated
+                - generic [ref=e159]: Thandi Mathebula
+              - generic [ref=e160]: 20 hours ago
+            - listitem [ref=e161]:
+              - generic [ref=e162]:
+                - generic [ref=e163]: document.generated
+                - generic [ref=e164]: Thandi Mathebula
+              - generic [ref=e165]: 20 hours ago
+            - listitem [ref=e166]:
+              - generic [ref=e167]:
+                - generic [ref=e168]: information_request.sent
+                - generic [ref=e169]: Bob Ndlovu
+              - generic [ref=e170]: 22 hours ago
+            - listitem [ref=e171]:
+              - generic [ref=e172]:
+                - generic [ref=e173]: information_request.created
+                - generic [ref=e174]: Bob Ndlovu
+              - generic [ref=e175]: 22 hours ago
+            - listitem [ref=e176]:
+              - generic [ref=e177]:
+                - generic [ref=e178]: information_request.sent
+                - generic [ref=e179]: Bob Ndlovu
+              - generic [ref=e180]: 23 hours ago
+            - listitem [ref=e181]:
+              - generic [ref=e182]:
+                - generic [ref=e183]: information_request.created
+                - generic [ref=e184]: Bob Ndlovu
+              - generic [ref=e185]: 23 hours ago
+            - listitem [ref=e186]:
+              - generic [ref=e187]:
+                - generic [ref=e188]: disbursement.billed
+                - generic [ref=e189]: Bob Ndlovu
+              - generic [ref=e190]: 1 day ago
+            - listitem [ref=e191]:
+              - generic [ref=e192]:
+                - generic [ref=e193]: disbursement.approved
+                - generic [ref=e194]: Bob Ndlovu
+              - generic [ref=e195]: 1 day ago
+            - listitem [ref=e196]:
+              - generic [ref=e197]:
+                - generic [ref=e198]: disbursement.submitted
+                - generic [ref=e199]: Bob Ndlovu
+              - generic [ref=e200]: 1 day ago
+            - listitem [ref=e201]:
+              - generic [ref=e202]:
+                - generic [ref=e203]: time_entry.created
+                - generic [ref=e204]: Bob Ndlovu
+              - generic [ref=e205]: 1 day ago
+            - listitem [ref=e206]:
+              - generic [ref=e207]:
+                - generic [ref=e208]: time_entry.deleted
+                - generic [ref=e209]: Bob Ndlovu
+              - generic [ref=e210]: 1 day ago
+            - listitem [ref=e211]:
+              - generic [ref=e212]:
+                - generic [ref=e213]: time_entry.created
+                - generic [ref=e214]: Bob Ndlovu
+              - generic [ref=e215]: 1 day ago
+            - listitem [ref=e216]:
+              - generic [ref=e217]:
+                - generic [ref=e218]: time_entry.deleted
+                - generic [ref=e219]: Bob Ndlovu
+              - generic [ref=e220]: 1 day ago
+            - listitem [ref=e221]:
+              - generic [ref=e222]:
+                - generic [ref=e223]: court_date.created
+                - generic [ref=e224]: Bob Ndlovu
+              - generic [ref=e225]: 1 day ago
+            - listitem [ref=e226]:
+              - generic [ref=e227]:
+                - generic [ref=e228]: disbursement.created
+                - generic [ref=e229]: Bob Ndlovu
+              - generic [ref=e230]: 1 day ago
+            - listitem [ref=e231]:
+              - generic [ref=e232]:
+                - generic [ref=e233]: time_entry.created
+                - generic [ref=e234]: Bob Ndlovu
+              - generic [ref=e235]: 1 day ago
+            - listitem [ref=e236]:
+              - generic [ref=e237]:
+                - generic [ref=e238]: time_entry.created
+                - generic [ref=e239]: Bob Ndlovu
+              - generic [ref=e240]: 1 day ago
+            - listitem [ref=e241]:
+              - generic [ref=e242]:
+                - generic [ref=e243]: information_request.completed
+                - generic [ref=e244]: Bob Ndlovu
+              - generic [ref=e245]: 1 day ago
+            - listitem [ref=e246]:
+              - generic [ref=e247]:
+                - generic [ref=e248]: information_request.item_accepted
+                - generic [ref=e249]: Bob Ndlovu
+              - generic [ref=e250]: 1 day ago
+            - listitem [ref=e251]:
+              - generic [ref=e252]:
+                - generic [ref=e253]: information_request.item_accepted
+                - generic [ref=e254]: Bob Ndlovu
+              - generic [ref=e255]: 1 day ago
+            - listitem [ref=e256]:
+              - generic [ref=e257]:
+                - generic [ref=e258]: information_request.item_accepted
+                - generic [ref=e259]: Bob Ndlovu
+              - generic [ref=e260]: 1 day ago
+            - listitem [ref=e261]:
+              - generic [ref=e262]:
+                - generic [ref=e263]: information_request.sent
+                - generic [ref=e264]: Bob Ndlovu
+              - generic [ref=e265]: 1 day ago
+            - listitem [ref=e266]:
+              - generic [ref=e267]:
+                - generic [ref=e268]: information_request.created
+                - generic [ref=e269]: Bob Ndlovu
+              - generic [ref=e270]: 1 day ago
+            - listitem [ref=e271]:
+              - generic [ref=e272]:
+                - generic [ref=e273]: information_request.sent
+                - generic [ref=e274]: Bob Ndlovu
+              - generic [ref=e275]: 1 day ago
+            - listitem [ref=e276]:
+              - generic [ref=e277]:
+                - generic [ref=e278]: information_request.created
+                - generic [ref=e279]: Bob Ndlovu
+              - generic [ref=e280]: 1 day ago
+    - contentinfo [ref=e67]:
+      - paragraph [ref=e69]: Powered by DocTeams

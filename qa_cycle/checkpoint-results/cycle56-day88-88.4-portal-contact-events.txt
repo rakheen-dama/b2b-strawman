@@ -1,0 +1,18 @@
+SET
+            event_type            |   actor_type   |               actor_id               |          occurred_at          |              project_id              
+----------------------------------+----------------+--------------------------------------+-------------------------------+--------------------------------------
+ portal.document.upload_initiated | PORTAL_CONTACT | f3f74a9d-3540-483a-80bc-6f5ef4e911bb | 2026-04-26 22:45:02.404638+00 | cc390c4f-35e2-42b5-8b54-bac766673ae7
+ portal.request_item.submitted    | PORTAL_CONTACT | f3f74a9d-3540-483a-80bc-6f5ef4e911bb | 2026-04-26 22:45:02.453368+00 | cc390c4f-35e2-42b5-8b54-bac766673ae7
+ portal.document.upload_initiated | PORTAL_CONTACT | f3f74a9d-3540-483a-80bc-6f5ef4e911bb | 2026-04-26 22:45:34.036141+00 | cc390c4f-35e2-42b5-8b54-bac766673ae7
+ portal.request_item.submitted    | PORTAL_CONTACT | f3f74a9d-3540-483a-80bc-6f5ef4e911bb | 2026-04-26 22:45:34.060768+00 | cc390c4f-35e2-42b5-8b54-bac766673ae7
+ portal.document.upload_initiated | PORTAL_CONTACT | f3f74a9d-3540-483a-80bc-6f5ef4e911bb | 2026-04-26 22:46:03.302142+00 | cc390c4f-35e2-42b5-8b54-bac766673ae7
+ portal.request_item.submitted    | PORTAL_CONTACT | f3f74a9d-3540-483a-80bc-6f5ef4e911bb | 2026-04-26 22:46:03.329557+00 | cc390c4f-35e2-42b5-8b54-bac766673ae7
+ portal.invoice.paid              | PORTAL_CONTACT |                                      | 2026-04-27 13:17:08.290726+00 | cc390c4f-35e2-42b5-8b54-bac766673ae7
+ portal.document.upload_initiated | PORTAL_CONTACT | f3f74a9d-3540-483a-80bc-6f5ef4e911bb | 2026-04-27 15:29:31.138549+00 | cc390c4f-35e2-42b5-8b54-bac766673ae7
+ portal.request_item.submitted    | PORTAL_CONTACT | f3f74a9d-3540-483a-80bc-6f5ef4e911bb | 2026-04-27 15:29:31.182698+00 | cc390c4f-35e2-42b5-8b54-bac766673ae7
+ portal.document.upload_initiated | PORTAL_CONTACT | f3f74a9d-3540-483a-80bc-6f5ef4e911bb | 2026-04-27 15:30:09.114071+00 | cc390c4f-35e2-42b5-8b54-bac766673ae7
+ portal.request_item.submitted    | PORTAL_CONTACT | f3f74a9d-3540-483a-80bc-6f5ef4e911bb | 2026-04-27 15:30:09.155533+00 | cc390c4f-35e2-42b5-8b54-bac766673ae7
+ portal.document.downloaded       | PORTAL_CONTACT | f3f74a9d-3540-483a-80bc-6f5ef4e911bb | 2026-04-28 08:36:15.923261+00 | cc390c4f-35e2-42b5-8b54-bac766673ae7
+ portal.document.downloaded       | PORTAL_CONTACT | f3f74a9d-3540-483a-80bc-6f5ef4e911bb | 2026-04-28 08:36:34.142552+00 | cc390c4f-35e2-42b5-8b54-bac766673ae7
+(13 rows)
+

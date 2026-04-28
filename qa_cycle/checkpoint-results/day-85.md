@@ -76,7 +76,7 @@ QA → Day 88 (firm + portal activity-feed wow moment). **Caveat**: Day 88.3-88.
 ## Day 85 Walk — Cycle 55 — 2026-04-28 SAST
 
 **Branch**: `bugfix_cycle_2026-04-26-day85` (cut from `main fa0245bb` — PR #1202 squash post-Day-75-retest landed).
-**Actor**: Bob Ndlovu (admin), authenticated via Keycloak OIDC (`bob@mathebula-test.local` / password reset to `DayWalk85!` via KC admin API after `SecureP@ss2` was rejected — see Anomalies).
+**Actor**: Bob Ndlovu (admin), authenticated via Keycloak OIDC (`bob@mathebula-test.local` / password rotated via KC admin API after the previously documented value was rejected — new value not committed here; see Anomalies).
 **Tooling**: `mcp__plugin_playwright_playwright__*` worked first try (orchestrator's prior cleanup of foreign sessions held). Backend PID 42803 / serving main `fa0245bb`. Read-only Docker `psql` exec on `b2b-postgres` for retention + audit-events spot checks.
 **Wall-clock**: ~12 min.
 
@@ -121,12 +121,12 @@ Recommend status.md GAP-L-75 row update to **VERIFIED** (no PR — emergent from
 ### NEW Observations (informational; not new GAPs)
 
 - **OBS-Cycle55-PortalContactBucketedAsSystem** (LOW, Sprint-3-cosmetic): The actor filter dropdown buckets all PORTAL_CONTACT events under a single "System" entry rather than surfacing the individual portal_contact's display name (e.g. "Sipho Dlamini"). DB has `actor_id=f3f74a9d-…` populated correctly on 12/13 events. The matter Activity feed renders rows with leading "System" label and "S" avatar even when the underlying audit row has `actor_type=PORTAL_CONTACT`. Functionally fine for cross-actor coverage; nit for portal-side-narrative reads.
-- **OBS-Cycle55-PortalInvoicePaidNullActorId** (LOW, observability): 1 of 13 PORTAL_CONTACT rows has NULL `actor_id` — `event_type=portal.invoice.paid` at 2026-04-27 13:17:08. The other 12 rows on Sipho's actions all carry his `portal_contact_id`. Likely a missed `actor_id` propagation in `PortalInvoiceService`'s payment audit emission. Not a regression of Day 85; surfaced in passing during the L-75 retest. Low priority.
+- **OBS-Cycle55-PortalInvoicePaidNullActorId** (LOW, observability): 1 of 13 PORTAL_CONTACT rows has NULL `actor_id` — `event_type=portal.invoice.paid` at 2026-04-27 13:17:08. The other 12 rows on Sipho's actions all carry his `portal_contact_id`. The audit row is emitted by `PaymentReconciliationService` (`backend/src/main/java/io/b2mash/b2b/b2bstrawman/invoice/PaymentReconciliationService.java:90-135`); the event builder there omits `.actorId(...)`. Not a regression of Day 85; surfaced in passing during the L-75 retest. Low priority.
 - **OBS-Day85-NoMatterRetentionUI** (= continuation of cycle-1 OBS-Day60-RetentionShape): per-matter retention metadata still has no UI surface on matter detail page. Sprint-2 followup unchanged.
 
 ### Anomalies (non-product, tooling/data)
 
-- **Auth password drift**: `bob@mathebula-test.local` rejected `SecureP@ss2` (the password documented across day-00.md, day-02.md, day-03.md, day-45.md). Reset via Keycloak admin API (`PUT /admin/realms/docteams/users/{id}/reset-password`) to `DayWalk85!` then login succeeded. Likely cause: a prior session's KC realm-import or password expiry policy reset the credential. Not blocking Day 85; logged as advisory for next-day handoff.
+- **Auth password drift**: `bob@mathebula-test.local` rejected the password documented across day-00.md, day-02.md, day-03.md, day-45.md. Rotated via Keycloak admin API (`PUT /admin/realms/docteams/users/{id}/reset-password`); the new value is held out-of-band (not committed here). Likely cause: a prior session's KC realm-import or password expiry policy reset the credential. Not blocking Day 85; logged as advisory for next-day handoff. The next QA agent should expect to rotate the password again if the documented value still fails — do not commit the working value to the repo.
 - **OBS-Cycle55-KCFormDoubleSubmit**: After typing the email and clicking the Sign In button on the email-step KC form, the form did not advance — required calling `form.submit()` via JS to actually POST. Same on the password step. This is the same Playwright-MCP/Radix interaction quirk pattern as BUG-CYCLE26-01/02 (KC native form, not Radix; possibly a Lit-styled form widget swallowing the click). Workaround in cycle is reliable.
 
 ### Headline outcome
@@ -138,7 +138,7 @@ Day 85 **FULLY COMPLETE — ALL CHECKPOINTS PASS**:
 - 85.4 PASS — both type filter (cycle 1) AND actor filter (cycle 55 NEW) functional. Portal-contact events ARE recorded (13 rows). Cycle-1 GAP-L-75 RESOLVED by build state.
 - 85.5 CAPTURED (`cycle55-day85-1.4-firm-activity-bob-filter.png` + `cycle55-day85-1.4-firm-activity-system-filter.png`).
 
-**No new GAPs opened.** Two LOW-severity observations + 1 anomaly (KC password drift) recorded.
+**No new GAPs opened.** Three LOW-severity observations (portal-contact bucketed-as-System rendering nit; portal.invoice.paid NULL actor_id from `PaymentReconciliationService`; KC form double-submit Playwright workaround) + 1 anomaly (KC password drift) recorded.
 
 **Demo-impact**: Exit checkpoint **E.14** ("Audit trail completeness") is now satisfied at the matter-scoped level. A standalone Phase-69 audit-log page is still not shipped, but the matter-activity surface meets the scenario's stated expectation ("filter by matter + filter by actor").
 

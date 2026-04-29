@@ -68,4 +68,46 @@
 
 **Why not force a shared `@TestConfiguration` for Keycloak mocks**: attempted mentally — the 4 Keycloak tests stub different method subsets, so a shared mock instance would need manual `Mockito.reset()` between methods. That trades ~6–9s of context rebuild for the risk of stub-leakage flakiness. Not a net win.
 
+## Dependabot Sweep — pnpm 10 Rewrites Specifiers (2026-04-29)
+
+**Symptom**: Plain `pnpm update` (no `--latest` flag) rewrote ~30 package.json specifiers across `frontend/`, `portal/`, etc. — tightening loose ranges like `^4` → `^4.2.4`, and incidentally bumping `recharts ^3.7.0` → `^3.8.1`. The recharts bump introduced a breaking `Formatter` type signature change that broke the Next.js production build.
+
+**Root cause**: In pnpm 10 (vs older versions), `pnpm update` updates the package.json specifier to the current installed version, not just the lockfile. This means it can pull in minor-bump breaking changes even when the user only intended a CVE-fix lockfile refresh.
+
+**Fix pattern**:
+- For dependabot CVE work, prefer `pnpm update <specific-pkg>` per affected package over the broader `pnpm update`.
+- When a broader sweep is preferred for batch efficiency, run `pnpm test` AND `pnpm run build` per package — the type checker catches breaking transitives that lint and unit tests miss.
+- If a single transitive bump breaks compilation, revert *just that one* with `pnpm add <pkg>@~OLD_MAJOR.MINOR.0` (tilde range) rather than abandoning the whole sweep.
+
+**Detection**: After `pnpm update`, `git diff --stat` shows package.json edits much larger than expected if `--latest` wasn't used. That's the cue to inspect for breaking minor bumps.
+
+## Dependabot Sweep — Stacked PRs for Same-File Dependencies (2026-04-29)
+
+**Pattern**: When two dependabot PRs both touch the same lockfile (e.g. PR-A is a broad refresh sweep, PR-B is a single explicit pin bump on `next`), cut PR-B from PR-A's branch tip rather than from `main`.
+
+**Why**: Lockfile diffs from concurrent PRs cannot merge. If both branch from `main`, the second to merge will need a manual rebase + `pnpm install` re-run. Stacking PR-B on PR-A means GitHub renders only the incremental diff in PR-B, and the merge of PR-A leaves PR-B with no conflict. Operationally `gh pr create --base <stacked-branch>` and retarget to `main` once the parent PR merges.
+
+**When NOT to stack**: If the two PRs touch different packages (e.g. backend/pom.xml vs frontend/pnpm-lock.yaml), branch them both from `main` — they're naturally independent and stacking would just add coupling.
+
+## Branch Cutting — Uncommitted Changes Follow You (2026-04-29)
+
+**Symptom**: Edited `backend/pom.xml` for PR-C, kicked off long-running `./mvnw verify` in the background, then `git checkout -b fix/slice2-2A-pr-D-mockidp-express` from main. The pom.xml change carried into the PR-D working tree (because git only refuses checkout when there's an actual conflict, not when the changes apply cleanly to the new branch).
+
+**Risk**: Easy to accidentally commit the wrong scope into the wrong PR.
+
+**Fix pattern**:
+1. Always `git status` before `git checkout -b` if you've been editing files.
+2. If there are uncommitted changes for the previous branch, commit them first (or `git stash`).
+3. If you've already crossed the boundary, switch back, commit, then re-create the new branch — the working tree should be clean.
+
+**Detection**: After cutting a new branch, run `git status --short`. If it shows files unrelated to the new PR's scope, you carried changes you didn't intend to.
+
+## Dormant Directory Audit — frontend-v2 (2026-04-29)
+
+**Pattern**: `frontend-v2/` was a parallel UI-rebuild experiment scaffolded 2026-02-28, last touched 2026-02-28 (Epic 249A), held the only `@clerk/nextjs` dependency in the entire repo (contradicting `frontend/CLAUDE.md`'s anti-pattern rule), and was responsible for 1 critical + ~10 high open Dependabot alerts. It was not referenced by any compose script, `svc.sh`, or root workspace.
+
+**Lesson**: Before triaging dependabot alerts, sweep the repo for orphan top-level directories with their own `package.json`/`pnpm-lock.yaml`. If they're not in any compose/script/svc reference and have no recent commits (>30 days), question whether they should exist at all. Deleting often eliminates more alerts than upgrading.
+
+**Detection one-liner**: `find . -maxdepth 3 -name 'pnpm-lock.yaml' -not -path '*/node_modules/*'` then for each, check `grep -rn "<dirname>" --include="*.sh" --include="*.yml" --include="*.yaml" -l` for active references.
+
 

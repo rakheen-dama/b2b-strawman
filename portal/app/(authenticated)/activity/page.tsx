@@ -57,7 +57,9 @@ export default function ActivityPage() {
   }, []);
 
   useEffect(() => {
-    fetchEvents(tab);
+    void (async () => {
+      await fetchEvents(tab);
+    })();
   }, [fetchEvents, tab]);
 
   return (

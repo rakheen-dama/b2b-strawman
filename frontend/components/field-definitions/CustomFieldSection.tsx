@@ -447,6 +447,7 @@ export function CustomFieldSection({
 
   // Reset values when initial data changes (e.g., after revalidation)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Re-sync server-fetched initial fields into local edit state after revalidation; deps only change on server refresh.
     setValues(initialCustomFields ?? {});
   }, [initialCustomFields]);
 

@@ -49,10 +49,11 @@ export default function RetainerDetailPage() {
       return;
     }
     let cancelled = false;
-    setIsLoading(true);
-    setError(null);
-    setSummary(null);
     (async () => {
+      setIsLoading(true);
+      setError(null);
+      setSummary(null);
+      if (cancelled) return;
       try {
         const retainers = await listRetainers();
         if (cancelled) return;

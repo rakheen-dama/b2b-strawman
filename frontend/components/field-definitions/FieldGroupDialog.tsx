@@ -84,6 +84,7 @@ export function FieldGroupDialog({
 
   useEffect(() => {
     if (!isEditing) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset selected fields when entityType changes during create flow; one-shot reset, no render loop.
       setSelectedFieldIds([]);
     }
   }, [entityType, isEditing]);

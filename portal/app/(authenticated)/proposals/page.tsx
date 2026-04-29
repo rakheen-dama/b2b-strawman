@@ -42,7 +42,9 @@ export default function ProposalsPage() {
   }, []);
 
   useEffect(() => {
-    fetchProposals();
+    void (async () => {
+      await fetchProposals();
+    })();
   }, [fetchProposals]);
 
   const actionable = proposals.filter((p) => p.status === "SENT");

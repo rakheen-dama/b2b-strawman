@@ -83,6 +83,7 @@ export function EditCourtDateDialog({
         description: courtDate.description ?? "",
         reminderDays: courtDate.reminderDays,
       });
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset error message when the dialog opens with a new courtDate; one-shot, no render loop.
       setError(null);
     }
   }, [open, courtDate, form]);

@@ -65,7 +65,9 @@ export default function ProjectsPage() {
   }, []);
 
   useEffect(() => {
-    fetchProjects();
+    void (async () => {
+      await fetchProjects();
+    })();
   }, [fetchProjects]);
 
   return (

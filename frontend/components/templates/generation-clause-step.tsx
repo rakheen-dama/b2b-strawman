@@ -81,6 +81,7 @@ export function GenerationClauseStep({
   }, [templateId, mapClauseData]);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- One-shot derivation: seed checked ids / clause data from props on mount or prop change; loadClauses is async-IIFE-internal so its setState calls are inside the async fn. */
     if (initialClauses) {
       setCheckedIds(new Set(initialClauses.map((c) => c.clauseId)));
       return;
@@ -93,7 +94,8 @@ export function GenerationClauseStep({
       setIsLoading(false);
       return;
     }
-    loadClauses();
+    void loadClauses();
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [loadClauses, initialClauses, preloadedClauses, mapClauseData]);
 
   function toggleChecked(clauseId: string) {

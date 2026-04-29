@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { CreditCard, KeyRound, Copy, Check, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -59,8 +59,10 @@ export function PaymentIntegrationCard({
   const isEnabled = !!integration?.enabled;
   const hasKey = !!integration?.keySuffix;
 
-  const initializeConfig = useCallback(() => {
-    if (!integration?.configJson) {
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- Sync stripe/payfast config form fields from server-provided integration JSON when it changes; pure synchronization of external state into local form state. */
+    const configJson = integration?.configJson;
+    if (!configJson) {
       setWebhookSigningSecret("");
       setMerchantId("");
       setMerchantKey("");
@@ -68,7 +70,7 @@ export function PaymentIntegrationCard({
       return;
     }
     try {
-      const parsed = JSON.parse(integration.configJson);
+      const parsed = JSON.parse(configJson);
       if (provider === "stripe") {
         const config = parsed as StripePaymentConfig;
         setWebhookSigningSecret(config.webhookSigningSecret ?? "");
@@ -81,11 +83,8 @@ export function PaymentIntegrationCard({
     } catch {
       // Invalid JSON, ignore
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [integration?.configJson, provider]);
-
-  useEffect(() => {
-    initializeConfig();
-  }, [initializeConfig]);
 
   function getStatusBadge() {
     if (!integration || !integration.providerSlug) {
@@ -214,6 +213,7 @@ export function PaymentIntegrationCard({
 
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_BACKEND_URL && typeof window !== "undefined") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- SSR hydration: window.location is browser-only; reading in render would cause hydration mismatch.
       setWebhookUrl(`${window.location.origin}/api/webhooks/payment/${provider}`);
     }
   }, [provider]);

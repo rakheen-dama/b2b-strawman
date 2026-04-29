@@ -68,18 +68,28 @@ export function CreateCourtDateDialog({ slug, onSuccess }: CreateCourtDateDialog
   });
 
   useEffect(() => {
-    if (open) {
+    let cancelled = false;
+    (async () => {
+      if (!open) return;
       setProjectsLoading(true);
       setProjectsError(null);
-      fetchProjects()
-        .then((all) => setProjects(all ?? []))
-        .catch((err) => {
-          console.error("Failed to load matters:", err);
-          setProjects([]);
-          setProjectsError("Failed to load matters. Please try again.");
-        })
-        .finally(() => setProjectsLoading(false));
-    }
+      if (cancelled) return;
+      try {
+        const all = await fetchProjects();
+        if (cancelled) return;
+        setProjects(all ?? []);
+      } catch (err) {
+        if (cancelled) return;
+        console.error("Failed to load matters:", err);
+        setProjects([]);
+        setProjectsError("Failed to load matters. Please try again.");
+      } finally {
+        if (!cancelled) setProjectsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [open]);
 
   async function onSubmit(values: CreateCourtDateFormData) {

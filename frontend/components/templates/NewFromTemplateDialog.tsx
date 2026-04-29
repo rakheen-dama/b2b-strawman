@@ -94,6 +94,7 @@ export function NewFromTemplateDialog({
   // `autoOpen` changes after the first open so manual toggling still works.
   useEffect(() => {
     if (autoOpen && templates.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- One-shot mount-time auto-open in response to ?new=1 query redirect (GAP-S3-05); no render loop because deps are empty.
       setOpen(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

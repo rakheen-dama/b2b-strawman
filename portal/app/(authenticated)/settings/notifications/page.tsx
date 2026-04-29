@@ -114,6 +114,7 @@ function NotificationsPageInner() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- SSR hydration: `mounted` flag toggles true after first client render to gate localStorage/jwt access without causing hydration mismatch.
     setMounted(true);
   }, []);
 
@@ -180,6 +181,7 @@ function NotificationsPageInner() {
     if (!shouldAutoUnsubscribe || autoUnsubscribed || !prefs) return;
     if (!prefs.digestEnabled) {
       // already off — still surface the banner so the link feels honoured
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Idempotent one-shot response to ?unsubscribe=1 query param; guarded by `autoUnsubscribed` flag and immediately strips the param via router.replace so the effect cannot re-fire.
       setAutoUnsubscribed(true);
       router.replace("/settings/notifications");
       return;

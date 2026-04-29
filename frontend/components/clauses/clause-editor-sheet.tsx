@@ -103,6 +103,7 @@ export function ClauseEditorSheet({
 
   // Reset form when sheet opens or clause changes
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- One-shot reset of form fields when sheet opens or target clause changes; no render loop. */
     if (open) {
       if (clause) {
         setTitle(clause.title);
@@ -117,6 +118,7 @@ export function ClauseEditorSheet({
       }
       setError(null);
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [open, clause]);
 
   async function handleSave() {

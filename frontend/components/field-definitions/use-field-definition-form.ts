@@ -77,14 +77,21 @@ export function useFieldDefinitionForm({
   const [usageOpen, setUsageOpen] = useState(false);
 
   useEffect(() => {
-    if (open && isEditing && field?.id) {
-      fetchFieldUsageAction(field.id).then((usage) => {
+    let cancelled = false;
+    (async () => {
+      if (open && isEditing && field?.id) {
+        const usage = await fetchFieldUsageAction(field.id);
+        if (cancelled) return;
         setFieldUsage(usage);
-      });
-    } else if (!open) {
-      setFieldUsage(null);
-      setUsageOpen(false);
-    }
+      } else if (!open) {
+        if (cancelled) return;
+        setFieldUsage(null);
+        setUsageOpen(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [open, isEditing, field?.id]);
 
   const totalUsageCount = (fieldUsage?.templates.length ?? 0) + (fieldUsage?.clauses.length ?? 0);

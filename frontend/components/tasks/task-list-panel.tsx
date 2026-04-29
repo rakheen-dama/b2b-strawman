@@ -94,11 +94,13 @@ export function TaskListPanel({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- Re-derive task list when server-fetched initialTasks prop changes (after revalidation); deps only change on server refresh. */
     if (myTasksActive) {
       setTasks(currentMemberId ? initialTasks.filter((t) => t.assigneeId === currentMemberId) : []);
     } else {
       setTasks(initialTasks.filter((t) => activeStatuses.has(t.status)));
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialTasks]);
 

@@ -72,9 +72,10 @@ export default function DeadlinesPage() {
   useEffect(() => {
     if (!ctx?.enabledModules.includes(DEADLINES_MODULE)) return;
     let cancelled = false;
-    setIsLoading(true);
-    setError(null);
     (async () => {
+      setIsLoading(true);
+      setError(null);
+      if (cancelled) return;
       try {
         const data = await listDeadlines({
           from: dateWindow.from,

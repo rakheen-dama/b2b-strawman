@@ -82,6 +82,7 @@ export function RetentionPoliciesTable({
 
   // Sync local rows when the policies prop changes (e.g. after evaluate/purge triggers a server refresh)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Re-sync server-fetched policies prop into local editable state; deps only change when server returns new data, not a render loop.
     setRows(policies.map(toEditableRow));
   }, [policies]);
   const [evaluateMessage, setEvaluateMessage] = useState<string | null>(null);

@@ -64,6 +64,7 @@ export function GenerateDocumentDialog({
   // Check if template has clause associations on open
   useEffect(() => {
     if (!open) {
+      /* eslint-disable react-hooks/set-state-in-effect -- Reset dialog state on close; one-shot, no render loop. */
       setHtml(null);
       setError(null);
       setSuccessMessage(null);
@@ -74,6 +75,7 @@ export function GenerateDocumentDialog({
       setSelectedClauses([]);
       setSavedDocumentId(null);
       setAcceptanceDialogOpen(false);
+      /* eslint-enable react-hooks/set-state-in-effect */
       return;
     }
 
@@ -141,6 +143,7 @@ export function GenerateDocumentDialog({
   // Auto-load preview for no-clause flow only
   useEffect(() => {
     if (!open || isCheckingClauses || hasClauses !== false || step !== "preview") return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Triggers an async preview fetch whose setState calls live inside the async fn; lint flags the synchronous invocation here.
     loadPreview();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, isCheckingClauses, hasClauses, step]);

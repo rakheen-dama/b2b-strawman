@@ -55,7 +55,15 @@ export function TemplateEditor({
   availableRequestTemplates = [],
 }: TemplateEditorProps) {
   const router = useRouter();
-  const nextKeyRef = useRef(0);
+  // Start the key counter past any keys we'll seed into initial tasks below
+  // (template.tasks length + nested item count). This avoids reading the ref
+  // during render (which lint flags) while still guaranteeing unique keys.
+  const initialKeyCount =
+    template?.tasks?.reduce(
+      (sum, t) => sum + 1 + (t.items?.length ?? 0),
+      0,
+    ) ?? 0;
+  const nextKeyRef = useRef(initialKeyCount);
 
   function newTask(): TaskRow {
     return {
@@ -84,11 +92,12 @@ export function TemplateEditor({
   const [requestTemplateId, setRequestTemplateId] = useState(template?.requestTemplateId ?? "");
   const [tasks, setTasks] = useState<TaskRow[]>(() => {
     if (template?.tasks && template.tasks.length > 0) {
+      let counter = 0;
       return template.tasks
         .slice()
         .sort((a, b) => a.sortOrder - b.sortOrder)
         .map((t) => ({
-          key: `task-${nextKeyRef.current++}`,
+          key: `task-${counter++}`,
           name: t.name,
           description: t.description ?? "",
           estimatedHours: t.estimatedHours != null ? String(t.estimatedHours) : "",
@@ -98,7 +107,7 @@ export function TemplateEditor({
             .slice()
             .sort((a, b) => a.sortOrder - b.sortOrder)
             .map((item) => ({
-              key: `item-${nextKeyRef.current++}`,
+              key: `item-${counter++}`,
               title: item.title,
             })),
           itemsExpanded: (t.items ?? []).length > 0,

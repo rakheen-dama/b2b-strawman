@@ -29,17 +29,16 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
 
   useEffect(() => {
     const orgId = customer?.orgId;
-    if (!orgId) {
-      setIsLoading(false);
-      return;
-    }
-
     let cancelled = false;
 
-    async function fetchBranding() {
+    (async () => {
+      if (!orgId) {
+        if (!cancelled) setIsLoading(false);
+        return;
+      }
       try {
         const response = await publicFetch(
-          `/portal/branding?orgId=${encodeURIComponent(orgId!)}`,
+          `/portal/branding?orgId=${encodeURIComponent(orgId)}`,
         );
         if (!cancelled && response.ok) {
           const data: BrandingInfo = await response.json();
@@ -52,9 +51,7 @@ export function BrandingProvider({ children }: BrandingProviderProps) {
           setIsLoading(false);
         }
       }
-    }
-
-    fetchBranding();
+    })();
 
     return () => {
       cancelled = true;

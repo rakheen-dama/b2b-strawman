@@ -124,7 +124,9 @@ export default function PortalProposalDetailPage() {
   }, [proposalId, router]);
 
   useEffect(() => {
-    fetchProposal();
+    void (async () => {
+      await fetchProposal();
+    })();
   }, [fetchProposal]);
 
   async function handleAccept() {

@@ -51,11 +51,13 @@ export function ProposalDetailActions({
 
   useEffect(() => {
     if (!sendDialogOpen) {
+      /* eslint-disable react-hooks/set-state-in-effect -- Reset dialog state on close; one-shot, no render loop. */
       setContacts([]);
       setSelectedContactId("");
       setError(null);
       setIsLoadingContacts(false);
       setIsSending(false);
+      /* eslint-enable react-hooks/set-state-in-effect */
       return;
     }
 

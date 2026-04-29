@@ -38,7 +38,9 @@ function LoginForm() {
     if (queryOrgId) return;
     const lastOrg = getLastOrgId();
     if (lastOrg) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- SSR hydration: localStorage is browser-only; reading in render would cause hydration mismatch (GAP-L-66). TODO: refactor when React 19 hydration patterns mature.
       setOrgId(lastOrg);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- SSR hydration: see above
       setBrandingLoading(true);
     }
   }, [queryOrgId]);

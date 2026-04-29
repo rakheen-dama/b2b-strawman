@@ -52,14 +52,16 @@ export function TransactionList({
   // Reset pagination when switching matters so we don't request page N+1
   // of a matter that may only have one page.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset paging state on matterId change. Pure render-derived alternatives (useMemo + key on parent) are heavier; this is a one-shot reset that does not loop.
     setPage(0);
   }, [matterId]);
 
   useEffect(() => {
     let cancelled = false;
-    setIsLoading(true);
-    setError(null);
     (async () => {
+      setIsLoading(true);
+      setError(null);
+      if (cancelled) return;
       try {
         const data = await getMatterTransactions(matterId, {
           page,

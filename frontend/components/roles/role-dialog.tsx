@@ -37,10 +37,12 @@ export function RoleDialog({ slug, role, open, onOpenChange }: RoleDialogProps) 
   // Reset form when dialog opens
   useEffect(() => {
     if (open) {
+      /* eslint-disable react-hooks/set-state-in-effect -- One-shot reset of form fields when dialog opens with a target role; no render loop. */
       setName(role?.name ?? "");
       setDescription(role?.description ?? "");
       setCapabilities(new Set(role?.capabilities ?? []));
       setError(null);
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [open, role]);
 

@@ -45,8 +45,10 @@ export function ClausePickerDialog({
 
   useEffect(() => {
     if (!open) {
+      /* eslint-disable react-hooks/set-state-in-effect -- Reset dialog state on close; one-shot, no render loop. */
       setSearch("");
       setSelectedIds(new Set());
+      /* eslint-enable react-hooks/set-state-in-effect */
       return;
     }
 

@@ -1,16 +1,16 @@
-# QA Cycle Status — Legal ZA Full Lifecycle (Keycloak) — 2026-04-26
+# QA Cycle Status — Legal ZA Full Lifecycle (Keycloak) — 2026-04-29
 
 ## Current State
 
 **Purpose**: Run the legal ZA full-lifecycle scenario (`qa/testplan/demos/legal-za-full-lifecycle-keycloak.md`) end-to-end on the Keycloak dev stack. Fix every gap encountered at the root cause — no workarounds, no SQL shortcuts. Prior verify-cycle status archived to `qa_cycle/_archive_2026-04-26_post-verify/status.md`.
 
-- **Branch**: `main` at `8263d1c0` — slice 1 production-readiness sweep VERIFIED on main (PR #1213 squash `c8e623ba` + retest evidence PR #1214 squash `8263d1c0`). All slice 1 fixes (GAP-L-93, GAP-L-96, GAP-L-99, GAP-L-100, GAP-L-101, TERM-CYCLE57, OBS-PortalContactBucketedAsSystem, OBS-PortalInvoicePaidNullActorId) VERIFIED. **Resume action**: read `qa_cycle/HANDOFF.md` for slice 2 scope (dependabot security backlog, KC password-drift root-cause, cycle-1 carry-forward LOW gaps). Slice 2 is project work, not a per-day QA cycle — DO NOT invoke `/qa-cycle-kc` for it.
+- **Branch**: `main` at `ac796a1b` — **Slice 2A production-readiness sweep CLOSED**. 8 PRs landed on 2026-04-28/29: PR-0 (#1215, frontend-v2 deletion), PR-A (#1216, pnpm sweep), PR-A2 (#1221, React 19 lint baseline), PR-B (#1222, next.js 16.2.4 bump), PR-C (#1220, bouncycastle 1.84), PR-D (#1218, mock-idp express), PR-E (#1223, vite 7.3.2), plus #1219 (lessons.md). Dependabot **92 → 4** (96% reduction): 2 critical → 0, 37 high → 0, 47 moderate → 4, 6 low → 0. Slice 1 fixes plus 90-day lifecycle remain VERIFIED. **Resume action**: read `qa_cycle/HANDOFF.md` for slice 2B-onward scope. Slice 2A's rollup regression surfaced pre-existing E2E data/seed issues (subscription expiry, plan-sync 404, portal auth flow) — these are NOT slice 2A regressions but block future verify cycles; slot into slice 2B as the first task.
 - **Scenario**: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md` (already walked end-to-end PASS through Day 90; isolation 36/36; demo-ready)
 - **ALL_DAYS_COMPLETE**: true
-- **QA Position**: **ALL_DAYS_COMPLETE**: Day 90 final walk PASS on cycle 57. Slice 1 production-readiness sweep VERIFIED on main `8263d1c0` (cycle 58). Next active scope: **Slice 2** — see `qa_cycle/HANDOFF.md`. Sub-slices: 2A dependabot security backlog (92 vulns, 2 critical + 37 high, production blocker); 2B KC password-drift root-cause (~3 hrs); 2C cycle-1 carry-forward LOW gaps (~19 active items grouped into 4 sub-slices); 2D production hygiene (security review / load / observability / DR); 2E stub integrations (PSP / KYC). Tighter recommendation: 2A + 2B + 4 POPIA-relevant LOW gaps (L-30, L-37, L-46, L-54) for ~1 week.
-- **Dev Stack**: Running on commit `8263d1c0` — backend:8080, gateway:8443, frontend:3000, portal:3002 all healthy. **Resume check**: run `bash compose/scripts/svc.sh status` first; if any service is stale (e.g. backend serving an older commit), restart with `bash compose/scripts/svc.sh restart {service}`. If services are down: `bash compose/scripts/dev-up.sh` (Docker infra) → `bash compose/scripts/keycloak-bootstrap.sh` (first-time only) → `bash compose/scripts/svc.sh start all`.
-- **NEEDS_REBUILD**: false
-- **Cycle Count**: 58
+- **QA Position**: **ALL_DAYS_COMPLETE**: Day 90 final walk PASS on cycle 57. Slice 1 sweep VERIFIED on main `8263d1c0` (cycle 58). Slice 2A sweep CLOSED on main `ac796a1b` (cycle 59). Next active scope: **Slice 2B onwards** — see `qa_cycle/HANDOFF.md`. Highest priority: E2E regression-stack data hygiene (subscription/plan-sync/portal auth seed bugs surfaced during slice 2A rollup regression) before any further verify cycles. Then 2B KC password-drift root-cause (~3 hrs), 2C cycle-1 carry-forward LOW gaps (~19 items grouped into 4 sub-slices), 2D production hygiene (security review / load / observability / DR), 2E stub integrations (PSP / KYC).
+- **Dev Stack**: Running on commit `ac796a1b` — backend:8080, gateway:8443, frontend:3000, portal:3002. **Resume check**: run `bash compose/scripts/svc.sh status` first; if any service is stale (e.g. backend serving an older commit), restart with `bash compose/scripts/svc.sh restart {service}`. After slice 2A's frontend dep bumps + lint refactor, frontend should pick up changes via HMR; backend needs no restart (only bcprov bumped, picked up on next JVM cycle).
+- **NEEDS_REBUILD**: false (frontend/portal HMR handles slice 2A's JS changes; backend's bcprov bump applies on next ./mvnw spring-boot:run)
+- **Cycle Count**: 59
 
 ## Tracker
 

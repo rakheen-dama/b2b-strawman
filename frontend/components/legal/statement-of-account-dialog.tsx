@@ -130,11 +130,13 @@ function StatementOfAccountDialogInner({
 
   useEffect(() => {
     if (!open) {
+      /* eslint-disable react-hooks/set-state-in-effect -- Reset dialog state on close; one-shot, no render loop. */
       setPreviewHtml(null);
       setLastGenerated(null);
       setError(null);
       setIsGenerating(false);
       setIsDownloading(false);
+      /* eslint-enable react-hooks/set-state-in-effect */
       return;
     }
     // When the dialog (re-)opens, recompute defaults from prior statements.

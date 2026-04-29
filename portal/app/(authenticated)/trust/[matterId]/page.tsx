@@ -70,12 +70,13 @@ export default function TrustMatterDetailPage() {
   useEffect(() => {
     if (!matterId || !ctx?.enabledModules.includes("trust_accounting")) return;
     let cancelled = false;
-    // Reset per-matter state so switching matters doesn't briefly show
-    // stale data from the previous matter.
-    setSummaryLoading(true);
-    setSummaryError(null);
-    setSummary(null);
     (async () => {
+      // Reset per-matter state so switching matters doesn't briefly show
+      // stale data from the previous matter.
+      setSummaryLoading(true);
+      setSummaryError(null);
+      setSummary(null);
+      if (cancelled) return;
       try {
         const res = await getTrustSummary();
         if (cancelled) return;
@@ -104,12 +105,13 @@ export default function TrustMatterDetailPage() {
   useEffect(() => {
     if (!matterId || !ctx?.enabledModules.includes("trust_accounting")) return;
     let cancelled = false;
-    // Reset per-matter state before the fetch so switching matters doesn't
-    // render the previous matter's documents.
-    setStatementsLoading(true);
-    setStatementsError(null);
-    setStatements([]);
     (async () => {
+      // Reset per-matter state before the fetch so switching matters doesn't
+      // render the previous matter's documents.
+      setStatementsLoading(true);
+      setStatementsError(null);
+      setStatements([]);
+      if (cancelled) return;
       try {
         const docs = await getMatterStatementDocuments(matterId);
         if (!cancelled) {

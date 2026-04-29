@@ -82,9 +82,10 @@ export function ConsumptionList({
 
   useEffect(() => {
     let cancelled = false;
-    setIsLoading(true);
-    setError(null);
     (async () => {
+      setIsLoading(true);
+      setError(null);
+      if (cancelled) return;
       try {
         const data = await getConsumption(retainerId, range);
         if (cancelled) return;

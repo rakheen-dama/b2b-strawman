@@ -95,7 +95,9 @@ export default function PortalRequestDetailPage() {
   }, [requestId, router]);
 
   useEffect(() => {
-    fetchRequest();
+    void (async () => {
+      await fetchRequest();
+    })();
   }, [fetchRequest]);
 
   // --- File upload handler ---

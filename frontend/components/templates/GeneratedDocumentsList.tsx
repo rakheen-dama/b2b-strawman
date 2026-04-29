@@ -111,11 +111,15 @@ export function GeneratedDocumentsList({
   }, [customerId]);
 
   useEffect(() => {
-    fetchDocuments();
+    void (async () => {
+      await fetchDocuments();
+    })();
   }, [fetchDocuments, refreshKey]);
 
   useEffect(() => {
-    fetchAcceptanceStatuses();
+    void (async () => {
+      await fetchAcceptanceStatuses();
+    })();
   }, [fetchAcceptanceStatuses, refreshKey]);
 
   // Listen for custom event dispatched after "Save to Documents"

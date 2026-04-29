@@ -91,7 +91,9 @@ export function MemberDetailPanel({
 
   useEffect(() => {
     if (open && member) {
-      loadMemberCapabilities();
+      void (async () => {
+        await loadMemberCapabilities();
+      })();
     }
   }, [open, member, loadMemberCapabilities]);
 

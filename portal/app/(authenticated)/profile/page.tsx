@@ -84,7 +84,9 @@ export default function ProfilePage() {
   }, [jwt, router]);
 
   useEffect(() => {
-    fetchProfile();
+    void (async () => {
+      await fetchProfile();
+    })();
   }, [fetchProfile]);
 
   return (

@@ -73,6 +73,7 @@ export function TariffLineDialog({
   // Reset state when dialog closes
   useEffect(() => {
     if (!open) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset selected items when dialog closes; one-shot, no render loop.
       setSelectedItems(new Map());
     }
   }, [open]);

@@ -46,34 +46,39 @@ export function SendForAcceptanceDialog({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!open) {
-      // Reset state on close
-      setContacts([]);
-      setSelectedContactId("");
-      setExpiryDays("");
-      setError(null);
-      setSuccessMessage(null);
-      setIsLoadingContacts(false);
-      setIsSending(false);
-      return;
-    }
+    let cancelled = false;
+    (async () => {
+      if (!open) {
+        // Reset state on close
+        if (cancelled) return;
+        setContacts([]);
+        setSelectedContactId("");
+        setExpiryDays("");
+        setError(null);
+        setSuccessMessage(null);
+        setIsLoadingContacts(false);
+        setIsSending(false);
+        return;
+      }
 
-    async function loadContacts() {
       setIsLoadingContacts(true);
       setError(null);
       try {
         const result = await fetchPortalContacts(customerId);
+        if (cancelled) return;
         setContacts(result);
       } catch {
+        if (cancelled) return;
         setError(
           "Could not load portal contacts. Please configure them in the customer's portal settings."
         );
       } finally {
-        setIsLoadingContacts(false);
+        if (!cancelled) setIsLoadingContacts(false);
       }
-    }
-
-    loadContacts();
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, [open, customerId]);
 
   async function handleSend() {

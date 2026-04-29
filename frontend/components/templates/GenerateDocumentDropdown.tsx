@@ -60,7 +60,9 @@ export function GenerateDocumentDropdown({
     if (!generateTemplateId) return;
     const match = templates.find((t) => t.id === generateTemplateId);
     if (match) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- One-shot response to a URL query param; opens the dialog with the matched template. No render loop because state change does not modify deps.
       setSelectedTemplate(match);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- See above
       setDialogOpen(true);
     }
   }, [generateTemplateId, templates]);

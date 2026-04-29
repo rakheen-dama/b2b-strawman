@@ -77,7 +77,9 @@ export default function ProposalDetailPage() {
   }, [proposalId]);
 
   useEffect(() => {
-    fetchProposal();
+    void (async () => {
+      await fetchProposal();
+    })();
   }, [fetchProposal]);
 
   async function handleAccept() {

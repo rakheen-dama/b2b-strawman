@@ -87,7 +87,6 @@ export function TemplatePreviewDialog({ templateId, entityType }: TemplatePrevie
   useEffect(() => {
     if (!open) return;
     let cancelled = false;
-    setEntitiesLoading(true);
 
     const fetcher =
       entityType === "PROJECT"
@@ -96,19 +95,20 @@ export function TemplatePreviewDialog({ templateId, entityType }: TemplatePrevie
           ? fetchCustomersForPicker
           : fetchInvoicesForPicker;
 
-    fetcher()
-      .then((data) => {
-        if (!cancelled) {
-          setEntities(mapToPickerItems(entityType, data));
-          setEntitiesLoading(false);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setEntitiesLoading(false);
-          setError(`Failed to load ${entityLabel.toLowerCase()}s.`);
-        }
-      });
+    (async () => {
+      setEntitiesLoading(true);
+      if (cancelled) return;
+      try {
+        const data = await fetcher();
+        if (cancelled) return;
+        setEntities(mapToPickerItems(entityType, data));
+        setEntitiesLoading(false);
+      } catch {
+        if (cancelled) return;
+        setEntitiesLoading(false);
+        setError(`Failed to load ${entityLabel.toLowerCase()}s.`);
+      }
+    })();
 
     return () => {
       cancelled = true;

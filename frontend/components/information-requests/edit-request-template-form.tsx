@@ -35,8 +35,25 @@ interface EditRequestTemplateFormProps {
 
 export function EditRequestTemplateForm({ slug, template }: EditRequestTemplateFormProps) {
   const router = useRouter();
-  const nextKeyRef = useRef(0);
   const isPlatform = template.source === "PLATFORM";
+
+  const [name, setName] = useState(template.name);
+  const [description, setDescription] = useState(template.description ?? "");
+
+  const sortedItems = [...template.items].sort((a, b) => a.sortOrder - b.sortOrder);
+  const [items, setItems] = useState<TemplateItem[]>(() =>
+    sortedItems.map((item, idx) => ({
+      key: `existing-${idx}`,
+      name: item.name,
+      description: item.description ?? "",
+      responseType: item.responseType,
+      required: item.required,
+      fileTypeHints: item.fileTypeHints ?? "",
+    }))
+  );
+  // Counter starts after the initial item keys; ref is only read/written in
+  // event handlers (addItem), never during render.
+  const nextKeyRef = useRef(template.items.length);
 
   function newItem(): TemplateItem {
     return {
@@ -48,21 +65,6 @@ export function EditRequestTemplateForm({ slug, template }: EditRequestTemplateF
       fileTypeHints: "",
     };
   }
-
-  const [name, setName] = useState(template.name);
-  const [description, setDescription] = useState(template.description ?? "");
-
-  const sortedItems = [...template.items].sort((a, b) => a.sortOrder - b.sortOrder);
-  const [items, setItems] = useState<TemplateItem[]>(
-    sortedItems.map((item) => ({
-      key: `existing-${nextKeyRef.current++}`,
-      name: item.name,
-      description: item.description ?? "",
-      responseType: item.responseType,
-      required: item.required,
-      fileTypeHints: item.fileTypeHints ?? "",
-    }))
-  );
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

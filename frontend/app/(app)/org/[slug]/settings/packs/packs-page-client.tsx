@@ -42,10 +42,12 @@ export function PacksPageClient({
 
   // Re-sync from server when props change (e.g. after revalidatePath)
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Re-sync server-fetched props into local state after revalidatePath; not a render loop because deps only change when the server returns new data.
     setCatalog(initialCatalog);
   }, [initialCatalog]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Re-sync server-fetched props into local state after revalidatePath; see above.
     setInstalled(initialInstalled);
   }, [initialInstalled]);
 

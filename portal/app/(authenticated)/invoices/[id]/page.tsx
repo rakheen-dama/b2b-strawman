@@ -51,7 +51,9 @@ export default function InvoiceDetailPage() {
   }, [invoiceId]);
 
   useEffect(() => {
-    fetchInvoice();
+    void (async () => {
+      await fetchInvoice();
+    })();
   }, [fetchInvoice]);
 
   async function handleDownload() {

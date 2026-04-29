@@ -102,9 +102,12 @@ export function LogTimeDialog({
   // Trigger rate resolution when billable, date, or dialog open changes
   useEffect(() => {
     if (open && billable && memberId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Debounced rate-resolution callback; setState calls live inside the debounced async timeout, but the lint rule still flags the synchronous invocation.
       doResolveRate(date);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Clear resolved rate state when conditions for fetching no longer hold; one-shot, no render loop.
       setResolvedRate(null);
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- See above
       setRateChecked(false);
     }
 

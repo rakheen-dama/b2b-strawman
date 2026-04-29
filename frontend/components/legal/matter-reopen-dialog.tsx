@@ -60,6 +60,7 @@ function MatterReopenDialogInner({
 
   useEffect(() => {
     if (!open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Reset submitError + form when reopen dialog (re-)opens; one-shot, no render loop.
     setSubmitError(null);
     form.reset({ notes: "" });
   }, [open, projectId, form]);

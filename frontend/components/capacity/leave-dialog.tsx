@@ -49,6 +49,7 @@ export function LeaveDialog({
   const isEditing = !!editingLeave;
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect -- Reset form fields when the dialog opens / target leave changes; one-shot, no render loop. */
     if (editingLeave) {
       setStartDate(editingLeave.startDate);
       setEndDate(editingLeave.endDate);
@@ -60,6 +61,7 @@ export function LeaveDialog({
     }
     setError(null);
     setValidationError(null);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [editingLeave, open]);
 
   function validate(): boolean {

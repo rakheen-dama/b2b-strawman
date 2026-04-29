@@ -89,6 +89,7 @@ function AddDisbursementsPickerContent({
   // or the item set changes. Prevents orphaned ids from being posted.
   useEffect(() => {
     if (!open) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- One-shot prune of stale selection ids when item set changes; uses functional updater so it never causes a render loop (returns same reference when no-op).
     setSelectedIds((prev) => {
       if (prev.size === 0) return prev;
       const availableIds = new Set(items.map((i) => i.id));

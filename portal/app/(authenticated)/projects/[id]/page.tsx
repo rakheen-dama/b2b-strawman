@@ -93,7 +93,9 @@ export default function ProjectDetailPage() {
   }, [projectId]);
 
   useEffect(() => {
-    fetchData();
+    void (async () => {
+      await fetchData();
+    })();
   }, [fetchData]);
 
   function handleCommentPosted() {

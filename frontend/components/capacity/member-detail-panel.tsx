@@ -97,7 +97,9 @@ export function MemberDetailPanel({
 
   useEffect(() => {
     if (open && member) {
-      loadData();
+      void (async () => {
+        await loadData();
+      })();
     }
   }, [open, member, loadData]);
 

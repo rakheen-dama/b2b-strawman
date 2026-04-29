@@ -35,7 +35,28 @@ interface EditChecklistTemplateFormProps {
 
 export function EditChecklistTemplateForm({ slug, template }: EditChecklistTemplateFormProps) {
   const router = useRouter();
-  const nextKeyRef = useRef(0);
+
+  const [name, setName] = useState(template.name);
+  const [description, setDescription] = useState(template.description ?? "");
+  const [customerType, setCustomerType] = useState<CustomerType>(
+    (template.customerType as CustomerType) ?? "COMPANY"
+  );
+  const [autoInstantiate, setAutoInstantiate] = useState(template.autoInstantiate);
+
+  const [items, setItems] = useState<ChecklistItem[]>(() => {
+    const sortedItems = [...template.items].sort((a, b) => a.sortOrder - b.sortOrder);
+    return sortedItems.map((item, idx) => ({
+      key: `existing-${idx}`,
+      name: item.name,
+      description: item.description ?? "",
+      required: item.required,
+      requiresDocument: item.requiresDocument,
+      requiredDocumentLabel: item.requiredDocumentLabel ?? "",
+    }));
+  });
+  // Counter starts after the initial item keys; ref is only read/written in
+  // event handlers (addItem), never during render.
+  const nextKeyRef = useRef(template.items.length);
 
   function newItem(): ChecklistItem {
     return {
@@ -47,25 +68,6 @@ export function EditChecklistTemplateForm({ slug, template }: EditChecklistTempl
       requiredDocumentLabel: "",
     };
   }
-
-  const [name, setName] = useState(template.name);
-  const [description, setDescription] = useState(template.description ?? "");
-  const [customerType, setCustomerType] = useState<CustomerType>(
-    (template.customerType as CustomerType) ?? "COMPANY"
-  );
-  const [autoInstantiate, setAutoInstantiate] = useState(template.autoInstantiate);
-
-  const sortedItems = [...template.items].sort((a, b) => a.sortOrder - b.sortOrder);
-  const [items, setItems] = useState<ChecklistItem[]>(
-    sortedItems.map((item) => ({
-      key: `existing-${nextKeyRef.current++}`,
-      name: item.name,
-      description: item.description ?? "",
-      required: item.required,
-      requiresDocument: item.requiresDocument,
-      requiredDocumentLabel: item.requiredDocumentLabel ?? "",
-    }))
-  );
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 

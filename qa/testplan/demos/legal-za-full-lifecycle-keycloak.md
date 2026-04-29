@@ -135,7 +135,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **0.10** Login as `padmin@docteams.local` / `password` → lands on platform admin home
 - [ ] **0.11** Navigate to `/platform-admin/access-requests`
 - [ ] **0.12** Mathebula & Partners visible in Pending: Industry = Legal Services, Country = South Africa
-- [ ] **0.13** Click into request → detail shows all submitted fields
+- [ ] **0.13** Verify all submitted fields render inline on the request row: Org Name, Email, Name, Country, Industry, Submitted timestamp, Status. (No separate detail view — the table row IS the detail surface; OBS-001 closed.)
 - [ ] **0.14** Click **Approve** → AlertDialog → **Confirm**
 - [ ] **0.15** Status = **Approved**, no provisioning error banner
 - [ ] **0.16** Vertical profile auto-assigned = `legal-za`. Verify via `curl -sS http://localhost:8443/api/orgs/mathebula-partners/profile -H "Authorization: Bearer $PADMIN_TOKEN"` OR approval card display
@@ -158,7 +158,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Thandi (Owner, logged in)
 
-- [ ] **0.26** Navigate to **Settings > Team** (`/settings/team`)
+- [ ] **0.26** Navigate to **Team** via the main sidebar's **Team** group → "Team" entry (`/org/{slug}/team`). (Team is a top-level nav item, not a Settings sub-page; OBS-002 closed.)
 - [ ] **0.27** Thandi listed as Owner. Confirm no "Upgrade to Pro" gate exists anywhere on the invite flow
 - [ ] **0.28** Invite `bob@mathebula-test.local` as **Admin** → Send
 - [ ] **0.29** Invite `carol@mathebula-test.local` as **Member** → Send
@@ -180,13 +180,15 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **1.1** Navigate to **Settings > Organization** → upload firm logo (any ≤ 200 KB PNG) → set brand colour to Mathebula navy `#1B3358` → Save
 - [ ] **1.2** Refresh → verify brand colour applied to sidebar accent + logo renders at top of sidebar
-- [ ] **1.3** Navigate to **Settings > Rate Cards** → verify LSSA tariff rates pre-seeded (from `legal-za` rate pack, Phase 55)
-- [ ] **1.4** Verify at least one tariff entry: **High Court — attending at court, per hour** with the latest published LSSA schedule in ZAR (currently 2024/2025 at the time of this test run; LSSA tariffs are revised every 2–3 years)
-- [ ] **1.5** Navigate to **Settings > Trust Accounts** → create a new trust account:
+- [ ] **1.3** Navigate to **Tariffs** via the main sidebar's **Finance** group → "Tariffs" entry (`/org/{slug}/legal/tariffs`). Verify LSSA tariff rates pre-seeded (from `legal-za` rate pack, Phase 55). (Tariffs is a Finance-group module nav item, not a Settings sub-page; OBS-101 closed.)
+- [ ] **1.4** Verify at least one tariff entry: section 4 of the LSSA 2024/2025 High Court Party-and-Party schedule contains **4(c) "Waiting time at court (per hour)" — R 780.00** OR **4(a) "Attendance at court (per day)" — R 7800.00**. All values in ZAR. LSSA tariffs are revised every 2–3 years; the latest published schedule will appear here.
+- [ ] **1.5** Navigate to **Settings > Trust Accounting** (Settings sidebar, Finance group → "Trust Accounting"; route `/org/{slug}/settings/trust-accounting`) → click **Add Account** → fill the trust account form:
   - Name: **Mathebula Trust — Main**
   - Bank: **Standard Bank**
+  - Branch Code: **051001** (real Standard Bank universal branch code; required field)
   - Account number: `12345678` (test placeholder)
   - Type: **SECTION_86** (Legal Practice Act)
+  - (OBS-103 closed: branch code is a hard-required field — real banks always have one. The Standard Bank universal code `051001` is the realistic value.)
 - [ ] **1.6** Trust account saves, no validation error, appears in list with balance **R 0.00**
 - [ ] **1.7** 📸 Optional screenshot: `day-01-trust-account-created.png`
 

@@ -59,10 +59,7 @@ export function TemplateEditor({
   // (template.tasks length + nested item count). This avoids reading the ref
   // during render (which lint flags) while still guaranteeing unique keys.
   const initialKeyCount =
-    template?.tasks?.reduce(
-      (sum, t) => sum + 1 + (t.items?.length ?? 0),
-      0,
-    ) ?? 0;
+    template?.tasks?.reduce((sum, t) => sum + 1 + (t.items?.length ?? 0), 0) ?? 0;
   const nextKeyRef = useRef(initialKeyCount);
 
   function newTask(): TaskRow {

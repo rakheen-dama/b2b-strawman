@@ -63,6 +63,12 @@ export const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
         requiredModule: "bulk_billing",
       },
       { label: "Capacity", href: "capacity" },
+      {
+        label: "Trust Accounting",
+        href: "trust-accounting",
+        adminOnly: true,
+        requiredModule: "trust_accounting",
+      },
     ],
   },
   {

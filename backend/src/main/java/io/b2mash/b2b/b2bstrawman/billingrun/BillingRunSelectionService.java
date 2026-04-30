@@ -464,71 +464,92 @@ public class BillingRunSelectionService {
   @SuppressWarnings("unchecked")
   private List<CustomerDiscoveryRow> discoverCustomers(
       List<UUID> customerIds, LocalDate periodFrom, LocalDate periodTo, String currency) {
-    String whereClause;
+    String customerFilterClause;
     if (customerIds != null) {
-      whereClause = "WHERE c.lifecycle_status = 'ACTIVE' AND c.id IN :customerIds";
+      customerFilterClause = "WHERE c.lifecycle_status = 'ACTIVE' AND c.id IN :customerIds";
     } else {
-      whereClause = "WHERE c.lifecycle_status = 'ACTIVE'";
+      customerFilterClause = "WHERE c.lifecycle_status = 'ACTIVE'";
     }
 
-    // OBS-2104: Two cascading defects fixed here.
-    // (1) `te.billing_rate_currency = :currency` excluded time entries with NULL currency
-    //     (logged before a rate card was set up — see OBS-2101 cascade). Loosened to
-    //     also accept NULL so the fee note can render those lines at R 0,00.
-    // (2) Legal disbursements live in `legal_disbursements`, not `expenses`. The legal
-    //     vertical is single-currency (ZAR) so we gate by table presence and the
-    //     billing_status='UNBILLED' / approval_status='APPROVED' lifecycle. The amount
-    //     billed is `amount + vat_amount` (no markup column on this table).
+    // OBS-2104b: rewrote the query as a set of per-customer CTEs (one per source table)
+    // so the SUMs are not multiplied by the cross-product of sibling LEFT JOIN cardinalities.
+    //
+    // Previously the query flat-joined customers→customer_projects→projects then LEFT JOINed
+    // tasks, time_entries, expenses, legal_disbursements all hanging off projects. For a
+    // matter with N tasks and 1 disbursement, the disbursement row appeared N times in the
+    // join product, so SUM(ld.amount + ld.vat_amount) returned `tasks_count × actual`.
+    // COUNT(DISTINCT) hid the bug for the count columns; only the SUMs were inflated.
+    //
+    // Each CTE aggregates one source table per customer in isolation (own GROUP BY), so the
+    // final SELECT joins one row per customer per source — no row multiplication possible.
+    //
+    // OBS-2104 invariants preserved:
+    // (1) time_entries.billing_rate_currency NULL is treated as eligible (no rate card yet).
+    // (2) legal_disbursements gated by billing_status='UNBILLED' AND approval_status='APPROVED'
+    //     and amount billed = amount + COALESCE(vat_amount, 0).
     String sql =
         """
+        WITH customer_filter AS (
+            SELECT c.id AS customer_id, c.name AS customer_name
+            FROM customers c
+            %s
+        ),
+        time_agg AS (
+            SELECT cp.customer_id,
+                   COUNT(DISTINCT te.id) AS time_count,
+                   COALESCE(SUM((te.duration_minutes / 60.0) * COALESCE(te.billing_rate_snapshot, 0)), 0) AS time_amount
+            FROM customer_projects cp
+            JOIN tasks t ON t.project_id = cp.project_id
+            JOIN time_entries te ON te.task_id = t.id
+            WHERE te.billable = true
+              AND te.invoice_id IS NULL
+              AND (te.billing_rate_currency = :currency OR te.billing_rate_currency IS NULL)
+              AND te.date >= :periodFrom
+              AND te.date <= :periodTo
+            GROUP BY cp.customer_id
+        ),
+        expense_agg AS (
+            SELECT cp.customer_id,
+                   COUNT(DISTINCT e.id) AS expense_count,
+                   COALESCE(SUM(e.amount * (1 + COALESCE(e.markup_percent, 0) / 100.0)), 0) AS expense_amount
+            FROM customer_projects cp
+            JOIN expenses e ON e.project_id = cp.project_id
+            WHERE e.billable = true
+              AND e.invoice_id IS NULL
+              AND e.currency = :currency
+              AND e.date >= :periodFrom
+              AND e.date <= :periodTo
+            GROUP BY cp.customer_id
+        ),
+        disbursement_agg AS (
+            SELECT cp.customer_id,
+                   COUNT(DISTINCT ld.id) AS disbursement_count,
+                   COALESCE(SUM(ld.amount + COALESCE(ld.vat_amount, 0)), 0) AS disbursement_amount
+            FROM customer_projects cp
+            JOIN legal_disbursements ld ON ld.project_id = cp.project_id
+            WHERE ld.billing_status = 'UNBILLED'
+              AND ld.approval_status = 'APPROVED'
+              AND ld.incurred_date >= :periodFrom
+              AND ld.incurred_date <= :periodTo
+            GROUP BY cp.customer_id
+        )
         SELECT
-            c.id AS customer_id,
-            c.name AS customer_name,
-            COUNT(DISTINCT te.id) AS unbilled_time_count,
-            COALESCE(SUM(
-                CASE WHEN te.id IS NOT NULL
-                THEN (te.duration_minutes / 60.0) * COALESCE(te.billing_rate_snapshot, 0)
-                ELSE 0 END
-            ), 0) AS unbilled_time_amount,
-            (COUNT(DISTINCT e.id) + COUNT(DISTINCT ld.id)) AS unbilled_expense_count,
-            COALESCE(SUM(
-                CASE WHEN e.id IS NOT NULL
-                THEN e.amount * (1 + COALESCE(e.markup_percent, 0) / 100.0)
-                ELSE 0 END
-            ), 0) + COALESCE(SUM(
-                CASE WHEN ld.id IS NOT NULL
-                THEN ld.amount + COALESCE(ld.vat_amount, 0)
-                ELSE 0 END
-            ), 0) AS unbilled_expense_amount
-        FROM customers c
-        JOIN customer_projects cp ON cp.customer_id = c.id
-        JOIN projects p ON cp.project_id = p.id
-        LEFT JOIN tasks t ON t.project_id = p.id
-        LEFT JOIN time_entries te ON te.task_id = t.id
-            AND te.billable = true
-            AND te.invoice_id IS NULL
-            AND (te.billing_rate_currency = :currency OR te.billing_rate_currency IS NULL)
-            AND te.date >= :periodFrom
-            AND te.date <= :periodTo
-        LEFT JOIN expenses e ON e.project_id = p.id
-            AND e.billable = true
-            AND e.invoice_id IS NULL
-            AND e.currency = :currency
-            AND e.date >= :periodFrom
-            AND e.date <= :periodTo
-        LEFT JOIN legal_disbursements ld ON ld.project_id = p.id
-            AND ld.billing_status = 'UNBILLED'
-            AND ld.approval_status = 'APPROVED'
-            AND ld.incurred_date >= :periodFrom
-            AND ld.incurred_date <= :periodTo
-        %s
-        GROUP BY c.id, c.name
-        HAVING COUNT(DISTINCT te.id) > 0
-            OR COUNT(DISTINCT e.id) > 0
-            OR COUNT(DISTINCT ld.id) > 0
-        ORDER BY c.name
+            cf.customer_id AS customer_id,
+            cf.customer_name AS customer_name,
+            COALESCE(ta.time_count, 0) AS unbilled_time_count,
+            COALESCE(ta.time_amount, 0) AS unbilled_time_amount,
+            (COALESCE(ea.expense_count, 0) + COALESCE(da.disbursement_count, 0)) AS unbilled_expense_count,
+            (COALESCE(ea.expense_amount, 0) + COALESCE(da.disbursement_amount, 0)) AS unbilled_expense_amount
+        FROM customer_filter cf
+        LEFT JOIN time_agg ta ON ta.customer_id = cf.customer_id
+        LEFT JOIN expense_agg ea ON ea.customer_id = cf.customer_id
+        LEFT JOIN disbursement_agg da ON da.customer_id = cf.customer_id
+        WHERE COALESCE(ta.time_count, 0) > 0
+           OR COALESCE(ea.expense_count, 0) > 0
+           OR COALESCE(da.disbursement_count, 0) > 0
+        ORDER BY cf.customer_name
         """
-            .formatted(whereClause);
+            .formatted(customerFilterClause);
 
     var query =
         entityManager

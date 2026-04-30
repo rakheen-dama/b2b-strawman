@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { formatDate } from "@/lib/format";
+import { useNowMs } from "@/hooks/use-now-ms";
 import type { ProposalResponse, ProposalStatus } from "@/lib/types/proposal";
 
 const STATUS_BADGE: Record<
@@ -29,11 +30,11 @@ const STATUS_FILTERS: { label: string; value: ProposalStatus | "ALL" }[] = [
 interface ProposalTableProps {
   proposals: ProposalResponse[];
   slug: string;
-  now: number;
 }
 
-export function ProposalTable({ proposals, slug, now }: ProposalTableProps) {
+export function ProposalTable({ proposals, slug }: ProposalTableProps) {
   const [activeFilter, setActiveFilter] = useState<ProposalStatus | "ALL">("ALL");
+  const now = useNowMs();
 
   const filtered =
     activeFilter === "ALL" ? proposals : proposals.filter((p) => p.status === activeFilter);
@@ -89,9 +90,12 @@ export function ProposalTable({ proposals, slug, now }: ProposalTableProps) {
             <tbody>
               {filtered.map((proposal) => {
                 const badge = STATUS_BADGE[proposal.status];
-                const daysSinceSent = proposal.sentAt
-                  ? Math.floor((now - new Date(proposal.sentAt).getTime()) / (1000 * 60 * 60 * 24))
-                  : null;
+                const daysSinceSent =
+                  proposal.sentAt && now > 0
+                    ? Math.floor(
+                        (now - new Date(proposal.sentAt).getTime()) / (1000 * 60 * 60 * 24)
+                      )
+                    : null;
 
                 return (
                   <tr

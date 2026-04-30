@@ -1,7 +1,6 @@
 "use client";
 
-import { cloneElement, isValidElement, useState } from "react";
-import type { MouseEvent, ReactElement } from "react";
+import { useState, type ReactNode } from "react";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -11,23 +10,41 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Button, type buttonVariants } from "@/components/ui/button";
+import type { VariantProps } from "class-variance-authority";
 import { archiveCustomer } from "@/app/(app)/org/[slug]/customers/actions";
 import { useRouter } from "next/navigation";
 import { AlertTriangle } from "lucide-react";
+
+type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["variant"]>;
+type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>["size"]>;
 
 interface ArchiveCustomerDialogProps {
   slug: string;
   customerId: string;
   customerName: string;
-  children: React.ReactNode;
+  /**
+   * OBS-2103b: dialog owns the trigger button. See `edit-customer-dialog.tsx`
+   * for the full rationale — adjacent cloneElement-injected onClicks under
+   * React 19 lose one of the two siblings on commit, so the dialog renders
+   * the `<Button>` itself rather than relying on consumer-supplied children.
+   */
+  triggerLabel: ReactNode;
+  triggerVariant?: ButtonVariant;
+  triggerSize?: ButtonSize;
+  triggerClassName?: string;
+  triggerIcon?: ReactNode;
 }
 
 export function ArchiveCustomerDialog({
   slug,
   customerId,
   customerName,
-  children,
+  triggerLabel,
+  triggerVariant = "ghost",
+  triggerSize = "sm",
+  triggerClassName,
+  triggerIcon,
 }: ArchiveCustomerDialogProps) {
   const [open, setOpen] = useState(false);
   const [isArchiving, setIsArchiving] = useState(false);
@@ -53,26 +70,20 @@ export function ArchiveCustomerDialog({
     }
   }
 
-  // OBS-2103: avoid Radix `Slot` (`asChild`) here. The Archive dialog renders
-  // adjacent to <EditCustomerDialog/> on the customer detail page; under
-  // React 19 + radix-ui, two unkeyed sibling Slots cloning a <Button> child
-  // (Dialog vs AlertDialog) collapse during commit and only one survives in
-  // the DOM. Inject the open handler via React.cloneElement instead so the
-  // child renders as a plain <Button> with no Slot wrapper.
-  const trigger = isValidElement<{ onClick?: (event: MouseEvent<HTMLElement>) => void }>(children)
-    ? cloneElement(children as ReactElement<{ onClick?: (event: MouseEvent<HTMLElement>) => void }>, {
-        onClick: (event: MouseEvent<HTMLElement>) => {
-          children.props.onClick?.(event);
-          if (!event.defaultPrevented) {
-            setOpen(true);
-          }
-        },
-      })
-    : children;
-
+  // OBS-2103 / OBS-2103b: dialog owns the trigger button. See
+  // `edit-customer-dialog.tsx` for the full rationale.
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      {trigger}
+      <Button
+        type="button"
+        variant={triggerVariant}
+        size={triggerSize}
+        className={triggerClassName}
+        onClick={() => setOpen(true)}
+      >
+        {triggerIcon}
+        {triggerLabel}
+      </Button>
       <AlertDialogContent className="border-t-4 border-t-red-500">
         <AlertDialogHeader>
           <div className="flex justify-center">

@@ -1,10 +1,10 @@
 "use client";
 
-import { cloneElement, isValidElement, useState } from "react";
-import type { MouseEvent, ReactElement } from "react";
+import { useState, type ReactNode } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
+import { Button, type buttonVariants } from "@/components/ui/button";
+import type { VariantProps } from "class-variance-authority";
 import {
   Dialog,
   DialogContent,
@@ -36,10 +36,24 @@ const CUSTOMER_TYPES: { value: CustomerType; label: string }[] = [
   { value: "TRUST", label: "Trust" },
 ];
 
+type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["variant"]>;
+type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>["size"]>;
+
 interface EditCustomerDialogProps {
   customer: Customer;
   slug: string;
-  children: React.ReactNode;
+  /**
+   * OBS-2103b: dialog owns the trigger button. Pass a label and (optionally)
+   * a variant/size + leading icon — the component renders the `<Button>`
+   * itself rather than cloning a consumer-supplied element. This avoids both
+   * the Radix `Slot` adjacency collision (OBS-2103) AND the lazy/RSC
+   * `cloneElement` onClick-strip that bit OBS-2103b.
+   */
+  triggerLabel: ReactNode;
+  triggerVariant?: ButtonVariant;
+  triggerSize?: ButtonSize;
+  triggerClassName?: string;
+  triggerIcon?: ReactNode;
 }
 
 function buildDefaults(customer: Customer): EditCustomerFormData {
@@ -70,7 +84,15 @@ function buildDefaults(customer: Customer): EditCustomerFormData {
   };
 }
 
-export function EditCustomerDialog({ customer, slug, children }: EditCustomerDialogProps) {
+export function EditCustomerDialog({
+  customer,
+  slug,
+  triggerLabel,
+  triggerVariant = "outline",
+  triggerSize = "sm",
+  triggerClassName,
+  triggerIcon,
+}: EditCustomerDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -125,26 +147,30 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
     setOpen(newOpen);
   }
 
-  // OBS-2103: avoid Radix `Slot` (`asChild`) here. The Edit dialog renders
-  // adjacent to <ArchiveCustomerDialog/> on the customer detail page; under
-  // React 19 + radix-ui, two unkeyed sibling Slots cloning a <Button> child
-  // (Dialog vs AlertDialog) collapse during commit and only one survives in
-  // the DOM. Inject the open handler via React.cloneElement instead so the
-  // child renders as a plain <Button> with no Slot wrapper.
-  const trigger = isValidElement<{ onClick?: (event: MouseEvent<HTMLElement>) => void }>(children)
-    ? cloneElement(children as ReactElement<{ onClick?: (event: MouseEvent<HTMLElement>) => void }>, {
-        onClick: (event: MouseEvent<HTMLElement>) => {
-          children.props.onClick?.(event);
-          if (!event.defaultPrevented) {
-            setOpen(true);
-          }
-        },
-      })
-    : children;
-
+  // OBS-2103 / OBS-2103b: dialog owns the trigger button.
+  //
+  // OBS-2103 (PR #1239) avoided Radix `Slot` (`asChild`) because two adjacent
+  // sibling Slots cloning <Button> children (Dialog + AlertDialog) collapsed
+  // during React 19 commit and only one survived. We switched to
+  // `cloneElement(children, { onClick })` — but that still failed under
+  // OBS-2103b: the EditCustomerDialog children prop arrives as a lazy/RSC
+  // element where `children.props` is undefined, so `cloneElement` returns
+  // an element with default props only and the injected onClick disappears.
+  //
+  // The structurally correct fix is to render the trigger directly here.
+  // No Slot wrapper, no cloneElement, no lazy-children fragility.
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      {trigger}
+      <Button
+        type="button"
+        variant={triggerVariant}
+        size={triggerSize}
+        className={triggerClassName}
+        onClick={() => setOpen(true)}
+      >
+        {triggerIcon}
+        {triggerLabel}
+      </Button>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Edit Customer</DialogTitle>

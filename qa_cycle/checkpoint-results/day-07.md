@@ -1,348 +1,145 @@
-# Day 7 — Firm drafts + sends proposal (engagement letter)  `[FIRM]`
-Cycle: 1 | Date: 2026-04-22 | Auth: Keycloak (Thandi — Owner) | Frontend: :3000 | Actor: Thandi Mathebula
+# Day 7 — Firm drafts + sends proposal (LSSA tariff fee estimate) — Checkpoint Results
 
-Scenario: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md` → Day 7 (checkpoints 7.1–7.11).
-
-**Result summary (Day 7): 11/11 checkpoints executed — 5 PASS, 3 PARTIAL, 3 FAIL. No firm-side BLOCKERs encountered; Day 7 completes at data layer (engagement letter generated, saved, dispatched, email delivered) but scenario-asserted features (template dropdown with legal-specific proposals, LSSA tariff integration, Tiptap scope editor, VAT line, estimated hours field) are NOT implemented — the workflow uses a **document-generation** code path (Generate Document → Engagement Letter — Litigation → Save to Documents → Send for Acceptance) rather than a true proposal builder.**
-
-New gaps: **GAP-L-47** (LOW, backend — portal read-model parent request status lags tenant state after submits), **GAP-L-48** (HIGH, product/frontend — org-level `/proposals` page customer dropdown is broken because `GET /api/customers` returns 404; unable to create a proposal via the documented `+ New Proposal` path), **GAP-L-49** (MED, product — no LSSA tariff / fee-estimate / VAT breakdown surfaced in engagement-letter generation; scenario 7.2–7.4 unexecutable), **GAP-L-50** (MED, backend — Send for Acceptance email uses `http://localhost:3001/accept/...` host instead of portal `http://localhost:3002/accept/...`; acceptance link unreachable), **GAP-L-51** (LOW, copy — email subject "Document for your acceptance" does not contain scenario-asserted keywords "proposal" / "engagement letter"; reads like a generic doc-share).
-
-## Session prep
-
-Bob signed out via User menu → Sign out → Keycloak re-login as `thandi@mathebula-test.local` / `<redacted>`. Landed on `/org/mathebula-partners/dashboard` as "Thandi Mathebula" (TM chip, owner role). No stale session handoff issues surfaced (GAP-L-22 workaround held).
-
-## Phase A: Locate proposal builder
-
-### Checkpoint 7.1 — Navigate to matter RAF-2026-001 → click **+ New Proposal**
-- Result: **FAIL (GAP-L-48, PARTIAL workaround via Generate Document)**
-- Evidence:
-  - Matter detail page tab bar (20 tabs) has **no Proposals tab** (tabs: Overview, Documents, Members, Clients, Action Items, Time, Disbursements, Fee Estimate, Financials, Staffing, Rates, Generated Docs, Requests, Client Comments, Court Dates, Adverse Parties, Trust, Disbursements, Statements, Activity).
-  - Matter header has no `+ New Proposal` CTA — only `Close Matter / Generate Statement of Account / Complete Matter / Generate Document / Edit / Delete`.
-  - Org-level `/proposals` page exists with `New Engagement Letter` button. Dialog opens with Title / Customer / Fee Model / Retainer Amount / Currency / Hours Included / Expiry Date. **Customer dropdown cannot open** — `GET /api/customers` returns 404, so the combobox stays empty; clicking does not expand. Unable to create a proposal via this path.
-  - Scenario 7.1 assertion ("+ New Proposal") does not map to an existing affordance. **Workaround**: used matter-level `Generate Document` → `Engagement Letter — Litigation` code path for downstream checkpoints.
-  - Logged **GAP-L-48** (HIGH, product/frontend).
-
-### Checkpoint 7.2 — Proposal template dropdown shows legal-specific templates from doc-template pack; select **Litigation Engagement — RAF**
-- Result: **PARTIAL (via Generate Document menu, not proposal builder)**
-- Evidence:
-  - Matter header `Generate Document` dropdown exposes 13 templates, including 4 engagement-letter variants: "Engagement Letter — Litigation" / "Standard Engagement Letter" / "Engagement Letter — Conveyancing" / "Engagement Letter — General" plus legal docs ("Notice of Motion", "Founding Affidavit", "Matter Closure Letter", "Statement of Account", "Offer to Purchase", "Deed of Transfer", "Power of Attorney to Pass Transfer", "Bond Cancellation Instruction", "Project Summary Report"). **No "Litigation Engagement — RAF"** specifically — the RAF-specific preset expected by scenario does not exist (carry-forward of GAP-L-36, matter-type template gap).
-  - Selected "Engagement Letter — Litigation" as the closest match.
-
-### Checkpoint 7.3 — Fee estimate section pre-populates with LSSA tariff line items (attendances, drafting, court appearances)
-- Result: **FAIL (GAP-L-49)**
-- Evidence:
-  - Generate Document dialog Step 1 of 2 shows a **Clause library** (Scope of Mandate / Fees — Hourly Basis / Trust Account Deposits / Termination of Mandate / Data Protection (POPIA) / Conflict of Interest Waiver). No fee-estimate line-item table, no LSSA tariff lookup, no attendances / drafting / court-appearance breakdown. The "Fees — Hourly Basis" clause inserts narrative copy only.
-  - No fields to enter estimated hours, rates, or tariff items. Cross-checked Step 2 preview: Terms and Conditions narrative mentions "hourly basis at the applicable rates of Mathebula & Partners as communicated to the client from time to time" — no numeric breakdown rendered.
-  - Logged **GAP-L-49** (MED, product — engagement letter lacks LSSA tariff / fee-estimate block).
-
-### Checkpoint 7.4 — Adjust estimated hours: 30h Bob + 5h Thandi — ZAR estimate calculates automatically
-- Result: **FAIL (cascade of 7.3 — no hours field)**
-- Evidence: No hours / rate / fee inputs in the engagement-letter generation flow. Scenario unexecutable as written.
-
-### Checkpoint 7.5 — Add engagement scope in Tiptap editor
-- Result: **PARTIAL (scope copy is template-driven, not freely editable via Tiptap during generation)**
-- Evidence: Step 1 of 2 does not expose a Tiptap editor. The "Scope of Mandate" clause auto-renders canned copy: "We are instructed to act on your behalf in the above litigation matter, which includes but is not limited to: Drafting and filing of all necessary court documents and pleadings; Attending to discovery and inspection of documents; Briefing of counsel where necessary; Attendance at court hearings and pre-trial conferences; Negotiations and settlement discussions where appropriate." This is close to scenario intent but is not editable at generation time. The **library-level** template is presumably editable in settings, but that's out of turn scope.
-- Not a new gap — treated as scope-drift from scenario wording.
-
-### Checkpoint 7.6 — Set effective date = Day 10, expiry = Day 17 (7-day acceptance window)
-- Result: **PARTIAL**
-- Evidence: Step 1 of 2 has no effective-date or expiry fields. These surfaced later in the Send for Acceptance dialog as a single "Expiry (days)" spinbutton (filled `7`). No effective-date input exists. Scenario's "effective date" concept is not modelled.
-
-### Checkpoint 7.7 — Click **Save** → proposal status = **Draft**
-- Result: **PASS (adapted to Save to Documents — no Draft proposal status)**
-- Evidence: Step 2 of 2 (preview) → clicked **Save to Documents** → "Document saved successfully" toast. Matter document count bumped from 3 → 6 (including the 3 FICA files + generated engagement letter PDF). Matter activity feed shows: `"Thandi Mathebula generated document \"engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-22.pdf\" from template \"Engagement Letter — Litigation\""`. There is no distinct "proposal" entity with status=Draft — it's a generated document artefact.
-
-### Checkpoint 7.8 — Click **Send for Acceptance** → confirmation dialog → Confirm
-- Result: **PASS**
-- Evidence: Post-save, Step 2 of 2 gains a **Send for Acceptance** button. Clicking opens a "Send for Acceptance: Engagement Letter — Litigation" modal with Recipient (combobox) + Expiry (days) (spinbutton). Only listed portal contact: "Sipho Dlamini (sipho.portal@example.com)" — selected. Filled Expiry=7. Click **Send**. Modal dismissed, no error toast.
-
-### Checkpoint 7.9 — Proposal status transitions to **Sent**, acceptance URL generated
-- Result: **PARTIAL (acceptance URL generated but points to wrong host — see 7.11)**
-- Evidence: Backend returns valid acceptance resource for the minted token. `curl http://localhost:8080/api/portal/acceptance/<redacted-token>` → 200 with `{"requestId":"a23d81a3-…","status":"VIEWED","documentTitle":"engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-22.pdf","expiresAt":"2026-04-28T22:44:58Z","orgName":"Mathebula & Partners","brandColor":"#1B3358"}`. However there is no status=SENT/ACCEPTED visible in firm UI — there is no Proposals tab to inspect (cascade of 7.1).
-
-### Checkpoint 7.10 — Mailpit → proposal email to Sipho with subject containing "proposal" / "engagement letter" / "please review"
-- Result: **PARTIAL (email sent; subject copy miss)**
-- Evidence: Mailpit message `jtrVksK2HnwPVj9KCDDuP6` (22:44:59) → Sipho. Subject: **"Mathebula & Partners -- Document for your acceptance: engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-22.pdf"**. Contains "acceptance" + "engagement-letter-litigation" (in filename) but not the scenario-asserted "proposal" / "please review" keywords. Logged **GAP-L-51** (LOW, copy).
-
-### Checkpoint 7.11 — Email body includes click-through link to portal proposal URL
-- Result: **FAIL (GAP-L-50 — wrong host)**
-- Evidence: Email HTML single href = `http://localhost:3001/accept/<redacted-token>` — port **:3001** is the legacy E2E-mock port (not in use in current Keycloak stack). Portal runs on **:3002**. Curl to `:3001` fails (exit 7 connection refused). Real portal user clicking this link would hit a dead host. Mirrors the shape of now-fixed **GAP-L-42** but for proposal/acceptance link generation.
-  - Attempted portal `/accept/{token}` on the correct host (:3002) as a fallback: page renders "Unable to process this acceptance request. Please contact the sender." Backend API `GET /api/portal/acceptance/{token}` returns 200 with valid payload — portal page's own render logic rejects the response (likely different schema expected: proposal with line items + VAT; backend returns minimal acceptance shape with documentTitle only).
-  - Logged **GAP-L-50** (HIGH, backend — proposal send uses `:3001` instead of portal `{portal.base-url}`; blocks Day 8 portal POV).
-
-## Day 7 checkpoints (final rollup)
-
-- Proposal template from legal-za doc-template pack is instantiable: **PARTIAL** — engagement-letter templates exist, but no RAF-specific preset and no proposal-entity concept (doc generation only).
-- LSSA tariff line items render in fee estimate: **FAIL** — no tariff integration in the generation flow (GAP-L-49).
-- Proposal dispatched, magic-link / secure link email sent to portal contact: **PARTIAL / FAIL** — email sent, but acceptance URL points to wrong host (GAP-L-50).
-
-## New gaps
-
-| GAP-ID | Severity | Summary |
-|---|---|---|
-| GAP-L-47 | LOW | Portal read-model parent request status projection lags behind tenant state. After GAP-L-43 fix, item SUBMITTED transitions project correctly to `portal.portal_request_items`, but the **parent** `portal.portal_requests.status` stays at `SENT` even after all items are SUBMITTED (tenant-side parent correctly shows `IN_PROGRESS`). Portal detail page header reads "N/3 submitted • status SENT". Cosmetic — scenario 4.12 asserts item state, not parent. Owner: backend — extend new `onRequestItemSubmitted` listener (or add a new listener) to re-read parent request status and call `readModelRepo.updatePortalRequestStatus(requestId, parent.getStatus())`. |
-| GAP-L-48 | HIGH | Org-level `/proposals` page's **Customer** combobox cannot open — `GET /api/customers` returns 404 (no such frontend route). Clicking the combobox does not expand; no option list renders; Send button stays disabled. Scenario 7.1's documented "+ New Proposal" path on the matter is also missing (no Proposals tab, no matter-level New Proposal CTA). Owner: frontend + product — either (a) implement `/api/customers` proxy in `frontend/app/api/customers/route.ts` to `GET /api/customers` on backend, (b) re-scope the combobox to use a server-component data fetch, or (c) add a matter-level `+ New Proposal` action. Workaround for Day 7: Generate Document → Engagement Letter template. Owner: both. |
-| GAP-L-49 | MED | Engagement-letter generation flow has **no fee-estimate block**: no LSSA tariff lookup, no line-item hours × rate table, no ZAR subtotal, no VAT 15% line, no grand total. Step 1 is a clause library (narrative clauses only); Step 2 is the rendered PDF preview. Scenario 7.3/7.4 (tariff line items, adjust estimated hours, auto-calc ZAR) and Day 8 (fee estimate breakdown on portal) are both unexecutable. Couples to GAP-L-27 (VAT naming) — even once VAT shows up, it would render as bare "Standard" unless L-27 fixed. Owner: product — decide whether "engagement letter" in this codebase IS the proposal (current reality) OR needs a parallel "fee estimate" / "proposal" entity with line-item structure. |
-| GAP-L-50 | **HIGH** | Proposal / acceptance email generated by `Send for Acceptance` uses `http://localhost:3001/accept/{token}` — port **3001** is defunct (not in current Keycloak stack; connection refused). Portal runs on **3002**. Same shape as fixed GAP-L-42 but in a different service layer (proposal/acceptance dispatch, not information-request). Portal does have a `/accept/[token]` route on 3002, but direct-nav there renders "Unable to process this acceptance request" because the portal UI's render logic rejects the valid-but-minimal backend payload (doc-title only, no line items). **Blocks Day 8 portal-side proposal acceptance for real clients**. Owner: backend — locate the proposal acceptance email template / URL builder; swap hard-coded `3001` → config value (likely `docteams.app.portal-base-url`) so email href = `{portal-base-url}/accept/{token}`. Coupled to GAP-L-49 — even with the host fixed, the `/accept/[token]` portal page may still fail to render until the proposal payload includes line-item structure. |
-| GAP-L-51 | LOW | "Send for Acceptance" email subject reads "Mathebula & Partners -- Document for your acceptance: engagement-letter-litigation-...pdf". Scenario expects keyword "proposal" / "engagement letter" / "please review" to help Sipho recognise it as something to action (vs. a generic doc-share). Copy tweak only; filename contains "engagement-letter" but subject header does not. Owner: backend — update subject template in `AcceptanceDocumentEmailService` (or equivalent). |
-
-## Carry-forward observations
-- Activity feed continues to surface `"for unknown"` leak on item-accept activities (REQ-0002 entries: `"Bob Ndlovu accepted \"Bank statement (≤ 3 months)\" for unknown"`). Pre-existing carry-forward; not re-logged.
-- `Information request REQ-0003 sent to Bob Ndlovu` — activity feed identifies the recipient as **Bob Ndlovu** (the sender), not Sipho Dlamini (the portal contact). Same leak as REQ-0001/REQ-0002. Pre-existing carry-forward.
-- Tab switching on matter detail is flaky — clicking `role=tab` "Fee Estimate" / "Generated Docs" did not switch from "Overview" selection during this turn (but `?tab=requests` query param earlier did work). Didn't deep-dive; non-blocking.
-
-## Halt reason
-Day 7 completed end-to-end within the reduced feature scope (no proposal entity; Generate Document → engagement letter used instead). Proceeded straight to Day 8 without halt — BLOCKER severity on GAP-L-50 only manifests when attempting Day 8 portal-side acceptance, not mid-Day-7.
-
-## QA Position on exit
-`Day 8 — 8.1 (blocked at acceptance URL host; portal /accept render also fails pending GAP-L-50 + proposal-payload schema work)`.
-
-## Screenshots
-- `day-07-engagement-letter-preview.png` — Step 2 of 2 preview with Mathebula letterhead, Dear Sipho Dlamini, Matter Details (Client: Sipho Dlamini / Matter: Dlamini v Road Accident Fund), Scope of Mandate bulleted list, Terms and Conditions narrative.
+**Date**: 2026-04-30
+**QA Agent**: cycle 7 (post OBS-501/502 fix)
+**Branch**: `bugfix_cycle_2026-04-30`
+**Stack**: Keycloak dev (firm `:3000`, portal `:3002`, backend `:8080`, gateway `:8443`, KC `:8180`, Mailpit `:8025`)
 
 ---
 
-## Day 7 Re-Verify — Cycle 1 — 2026-04-25 SAST
+## Verifications (carried over from Day 5 fix cycle)
 
-**Method**: REST API end-to-end as Thandi (Keycloak password-grant via gateway-bff client; chrome-in-mcp extension disconnected this turn — REST is allowed per dispatch). Engagement letter generation + Send for Acceptance flow exercised against the post-PR-#1124/#1127 main branch.
+### OBS-501 — Matter FICA Status Card "View request" link → /information-requests/{id}
 
-**Result summary**: **11/11 executed — 7 PASS, 1 PARTIAL (7.5 cascade of L-49 SKIPPED-BY-DESIGN), 3 SKIPPED-BY-DESIGN (7.3/7.4/7.6 LSSA tariff + effective-date — Sprint 3 per L-49). Zero BLOCKER. L-50 VERIFIED, L-51 VERIFIED, L-48 PARTIAL-VERIFIED (backend capability green; UI affordance not browser-driven this turn).**
+- Logged in firm `:3000` as Bob Ndlovu (Admin) via Keycloak.
+- Navigated to matter RAF-2026-001 → Overview tab.
+- FICA Status Card on the right rail of Overview shows "FICA Done — Verified Apr 30, 2026 — View request".
+- Inspected DOM: `<a href="/org/mathebula-partners/information-requests/7f8f9422-e8ae-4966-976e-85f90199d6c2">` (canonical segment, not `/requests/`).
+- Clicked View request → navigated to `http://localhost:3000/org/mathebula-partners/information-requests/7f8f9422-e8ae-4966-976e-85f90199d6c2`.
+- Page title `REQ-0001`, status `Completed`, progress `3/3 accepted`, all 3 items render with `Accepted` chip + downloadable file (`fica-id.pdf`, `fica-address.pdf`, `fica-bank.pdf`).
+- NOT a 404. No console errors.
 
-### Pre-state
+**Evidence**: `qa_cycle/evidence/day-07/obs-501-verify-fica-card-link-overview.png`, `obs-501-verify-fica-card-link.png`.
+**Status**: FIXED → **VERIFIED**.
 
-- Tenant DB clean: `acceptance_requests=0`, `generated_documents=0` (full reset from prior cycle).
-- Mailpit purged (only REQ-0001..3 + KC org-invite emails present at start of turn).
-- Trust account: 1 row, R 0,00 balance, account_type=SECTION_86.
-- Sipho ACTIVE PROSPECT customer, portal_contact `127d1c7d-…` ACTIVE/GENERAL.
-- RAF matter `e788a51b-…` ACTIVE.
+### OBS-502 — Portal envelope counter shows accepted/total when COMPLETED
 
-### Checkpoints
+- Standing portal session as Sipho Dlamini still valid (post-Day-5 logged in).
+- Visited `/requests` index — single row "REQ-0001 — Dlamini v Road Accident Fund — COMPLETED — 3/3 accepted". Counter literal reads "3/3 accepted" (not "0/3 submitted"). PASS.
+- Visited `/requests/7f8f9422-e8ae-4966-976e-85f90199d6c2` detail — header reads "3/3 accepted • status COMPLETED"; each item renders "Submitted — status: ACCEPTED". PASS.
+- Zero console errors on both pages.
 
-| ID | Description | Result | Evidence | Gap |
-|---|---|---|---|---|
-| 7.1 | Matter-level "+ New Engagement Letter" CTA (post-L-48) | **PARTIAL-VERIFIED** | Backend capability path: `POST /api/templates/{id}/generate` with `entityId=<projectId>` succeeded (HTTP 201, `documentId=b1f81ae2-…`). UI CTA placement not browser-driven this turn (chrome MCP unavailable). | L-48 firm UI element relies on this same backend; backend tier proven. |
-| 7.2 | Template dropdown shows legal-specific templates; pick "Engagement Letter — Litigation" | **PASS** | `GET /api/templates` returns 4 engagement-letter variants (Litigation `0b786248-…`, Standard, Conveyancing, General) plus 16 other legal templates. Used `engagement-letter-litigation`. | — |
-| 7.3 | Fee estimate auto-populates with LSSA tariff line items | **SKIPPED-BY-DESIGN** | L-49 deferred to Sprint 3 — clause-only generation flow has no tariff line-item table. | L-49 (Sprint 3 deferred) |
-| 7.4 | Adjust hours; auto-calc ZAR | **SKIPPED-BY-DESIGN** | Cascade of 7.3. | L-49 (Sprint 3 deferred) |
-| 7.5 | Engagement scope via Tiptap | **PARTIAL** | Scope is supplied through "Scope of Mandate" required clause — not freely editable at generation time. Same scope-drift call as prior cycle. | — |
-| 7.6 | Effective date / expiry (7-day window) | **PARTIAL** | No effective-date field; expiry surfaces only at Send-for-Acceptance step (`expiryDays=7`). | — |
-| 7.7 | Save → status=Draft (or generated-doc artefact) | **PASS** | `POST /api/templates/0b786248-…/generate` body `{entityId, saveToDocuments:true, acknowledgeWarnings:true, clauses:[…3 required…]}` → HTTP 201, generated_doc `276d7b95-…`, fileSize=3718B, fileName=`engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-25.pdf`. | — |
-| 7.8 | Send for Acceptance | **PASS** | `POST /api/acceptance-requests` body `{generatedDocumentId, portalContactId:127d1c7d-…, expiryDays:7}` → HTTP 201, acceptance_request `97f17ebe-…`, status=SENT, sentAt=`09:56:07 Z`. | — |
-| 7.9 | Status transitions to Sent, acceptance URL generated | **PASS** | DB row `acceptance_requests / 97f17ebe-… / status=SENT / sent_at=09:56:07 Z / request_token=<redacted-token> / expires_at=2026-05-02 09:56:07 Z`. | — |
-| 7.10 | Mailpit subject contains action keywords (L-51) | **VERIFIED (L-51)** | Subject = `"Mathebula & Partners -- Please review engagement letter for acceptance: engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-25.pdf"` — contains "review" + "engagement letter" + "acceptance" keywords (was previously just "Document for your acceptance"). | **GAP-L-51 VERIFIED** |
-| 7.11 | Email body URL → portal `:3002` (L-50) | **VERIFIED (L-50)** | Both HTML href and text URL = `http://localhost:3002/accept/<redacted-token>`. Port :3002 ✓, fresh single-use token ✓. Mailpit message ID `jQafLva6oWCinjMkfpF78A`. | **GAP-L-50 VERIFIED** |
-
-### L-58 — Court dates union into Overview deadlines
-
-- Created court date for the RAF matter via `POST /api/court-dates` body `{projectId:e788a51b-…, dateType:"PRE_TRIAL", scheduledDate:"2026-05-15", courtName:"Pretoria High Court", …}` → HTTP 201 row `d4cd7dcd-…` SCHEDULED.
-- Matter Overview "Upcoming Deadlines" tile is a UI element (no single REST aggregator exposed — `/api/deadlines/*` is gated behind `regulatory_deadlines` module which legal-za doesn't enable). UI verification not driven this turn (chrome MCP unavailable).
-- **Result**: L-58 **NOT-RE-VERIFIED-THIS-TURN** — backend path (court_dates row exists) is set up; UI tile rendering check deferred to next chrome-MCP-available QA turn.
-
-### Day 7 rollup checkpoints
-
-- Proposal template from legal-za doc-template pack instantiable: **PASS**.
-- LSSA tariff line items render in fee estimate: **SKIPPED-BY-DESIGN** (L-49 Sprint 3).
-- Proposal dispatched, magic-link sent to portal contact: **PASS** — fresh email at port :3002.
-
-### New gaps
-
-None.
-
-### Halt reason
-
-Day 7 complete clean — proceeding directly to Day 8 in same turn.
-
-### QA Position on exit
-
-`Day 8 — 8.1 (next)` — same turn continuing.
+**Evidence**: `qa_cycle/evidence/day-07/obs-502-verify-portal-list.png`, `obs-502-verify-portal-detail.png`.
+**Status**: FIXED → **VERIFIED**.
 
 ---
 
-## Cycle 14 (2026-04-27) — Day 7 fresh walk on main 3e018078
+## Day 7 Execution
 
-**Branch**: `bugfix_cycle_2026-04-26-day7`
-**Auth**: Keycloak — context swap from Bob (Day 5 actor) to Thandi (Owner) via gateway POST /logout + KC login (`thandi@mathebula-test.local` / `<redacted>`).
-**Pre-state**: Sipho Dlamini ACTIVE (id `c4f70d86-…`), RAF matter `cc390c4f-…` ACTIVE, REQ-0002 COMPLETED. Mailpit purged. `proposals=0`, `acceptance_requests=0`, `generated_documents=0` at start.
+### Pre-flight: Logged out as Bob, logged in as Thandi (Owner)
 
-### Session prep (auth context swap)
+- Firm `:3000` user-menu → Sign out → redirected to `/`.
+- Re-navigated to matter, KC challenge appeared, signed in as `thandi@mathebula-test.local` / `SecureP@ss1`.
+- Landed on `/dashboard` → drove to `/org/mathebula-partners/projects/b7e319f7-fd7e-4526-a8b3-b40b1f85b34b`.
 
-- Tried User-menu DropdownMenu in app — Radix popover failed to render despite `aria-expanded=true` after MCP click (mirrors prior cycle observation; Radix dropdown / MCP click race).
-- Triggered logout via in-page JS form POST to `http://localhost:8443/logout` with CSRF token from `/bff/csrf` (mirrors `performKeycloakLogout` in `frontend/components/auth/user-menu-bff.tsx`).
-- Re-authed at KC login screen as Thandi → landed on `/org/mathebula-partners/dashboard` as "Thandi Mathebula" (sidebar `<aside p>` confirms email `thandi@mathebula-test.local`).
-- Mid-walk JWT expired at `2026-04-26T23:42:15Z` (Spring Cloud Gateway TokenRelay using stale access token; refresh did not fire). Recovered by navigating to `http://localhost:8443/oauth2/authorization/keycloak` which forced a fresh code grant (KC SSO session was still alive, so silent re-auth completed). After this, RAF matter detail rendered cleanly.
+### 7.1 — Navigate to matter RAF-2026-001 → click + New Proposal
 
-### Checkpoints (Day 7)
+- The matter Overview action bar exposes a button labelled **"New Engagement Letter"** (legal-za terminology mapping: `Proposal → Engagement Letter`). There is no separate "+ New Proposal" CTA, AND no Proposals tab on the matter sidebar — proposals are managed at the org-level page `/org/{slug}/proposals` (titled "Engagement Letters" via terminology mapping).
+- Clicked **New Engagement Letter** on the matter → modal dialog opened with `Client = Sipho Dlamini` (disabled / pre-filled from matter context). PASS — entry point reachable.
 
-| ID | Description | Result | Evidence | Gap |
-|---|---|---|---|---|
-| 7.1 | Matter-level "+ New Engagement Letter" CTA opens proposal-create dialog | **PASS (L-48 verified)** | RAF matter detail header now exposes `New Engagement Letter` button (`data-testid=matter-new-engagement-letter`) alongside `Generate Document` / `Edit` / `Delete`. Click opens `New Engagement Letter` dialog; `Customer` combobox is pre-selected `Sipho Dlamini` and **disabled** (locked to matter's customer — correct UX; no broken `/api/customers` 404 anymore). Filled Title `RAF Litigation Engagement — Sipho Dlamini`, Fee Model `Hourly`, Hourly Rate Note `R850/hr per LSSA 2024/2025 schedule`, Expiry `2026-05-04`. Clicked Create Proposal → routed to `/org/mathebula-partners/proposals/0781c5ad-…`. DB row: `proposals.id=0781c5ad-bc4a-4796-a546-6e51a7b27226 / proposal_number=PROP-0001 / status=DRAFT / fee_model=HOURLY / hourly_rate_note='R850/hr per LSSA 2024/2025 schedule' / expires_at=2026-05-04 23:59:59+00`. **GAP-L-48 (HIGH) VERIFIED on UI** — matter-level CTA is the canonical happy path; org-level proposals-page customer combobox is no longer the only path. Evidence files: `day07-cycle14-7.1-matter-detail.yml`, `day07-cycle14-7.1-engagement-dialog.yml`, `day07-cycle14-7.2-proposal-detail.yml`. | L-48 VERIFIED |
-| 7.2 | Template dropdown shows legal-specific proposal templates; pick Litigation Engagement | **SKIPPED-BY-DESIGN** | Matter-level New Engagement Letter dialog exposes Title / Customer (locked) / Fee Model / Hourly Rate Note / Expiry Date only — **no template dropdown**. The proposal entity scaffold (Title + Fee Model + free-text Hourly Rate Note) is the product reality; legal-specific Litigation/Conveyancing/Standard/General engagement-letter templates only surface under the matter-level `Generate Document` flow (separate code path), not on the proposal entity. Cascade of L-49 — clause/template-driven proposal authoring is Sprint 3 deferred. | L-49 (Sprint 3) |
-| 7.3 | Fee estimate auto-populates with LSSA tariff line items | **SKIPPED-BY-DESIGN** | Proposal detail page (`/proposals/0781c5ad-…`) renders only `Proposal Details` block (Fee Model / Hourly Rate (free text) / Created / Expires) — no fee-estimate section, no LSSA tariff lookup, no line-item table. | L-49 (Sprint 3) |
-| 7.4 | Adjust hours (30h Bob + 5h Thandi) — auto ZAR | **SKIPPED-BY-DESIGN** | No hours / rate / fee inputs on proposal entity. Cascade of 7.3. | L-49 (Sprint 3) |
-| 7.5 | Engagement scope in Tiptap | **SKIPPED-BY-DESIGN** | No Tiptap editor on proposal entity. `content_json` column exists but no UI surface to edit it. Cascade of L-49. | L-49 (Sprint 3) |
-| 7.6 | Effective date + 7-day expiry | **PARTIAL** | Expiry-date input exists on the create dialog (filled `2026-05-04`); DB stores `expires_at` correctly. **No effective-date field** (scenario asserts effective=Day 10, expiry=Day 17). Same as cycle-1: effective-date concept not modelled. | — |
-| 7.7 | Save → status=Draft | **PASS** | Proposal detail page header shows "RAF Litigation Engagement — Sipho Dlamini" + status badge `Draft` + `PROP-0001`. DB row confirms `status=DRAFT`. Single-step create (no separate Save action — Create Proposal button on the dialog acts as Save). | — |
-| 7.8 | Send for Acceptance → confirmation → Confirm | **FAIL — BLOCKER (BUG-CYCLE26-06 NEW)** | Click Send Proposal → opens `Send Proposal` dialog with Recipient combobox; selected `Sipho Dlamini (sipho.portal@example.com)` (only option). Click Send → dialog stays open with red-text validation: **"2 required field(s) missing for Proposal Sending"**. Backend `ProposalService.sendProposal()` calls `prerequisiteService.checkForContext(PROPOSAL_SEND, EntityType.CUSTOMER, customerId)` which checks **`Customer.contact_name` + `Customer.contact_email`** must be populated. Sipho's customer row has both fields NULL (`contact_name=NULL, contact_email=NULL`). Sipho IS an `INDIVIDUAL` customer with a working portal_contact (the very contact the user just selected as Recipient — `sipho.portal@example.com`), but the prerequisite check looks at the customer-entity contact fields, not the portal contact. UX trap: the dialog allowed Recipient selection but Send fails after submit. **No surface in the proposal/matter UI explains which 2 fields are missing or links to fix**. | **BUG-CYCLE26-06 (HIGH, blocker for proposal send when customer is INDIVIDUAL with portal_contact-only addressing)** |
-| 7.9–7.11 | Sent status / acceptance URL / Mailpit / portal href | **BLOCKED** | Cannot exercise — proposal stuck in DRAFT pending 7.8. Mailpit empty (purged at session start, no proposal email queued). | Cascade of BUG-CYCLE26-06 |
+### 7.2 — Proposal template dropdown (Litigation Engagement — RAF) — **NOT IMPLEMENTED**
 
-### New gaps
+- The "New Engagement Letter" dialog has only these inputs: `Title`, `Client`, `Fee Model` (Fixed Fee / Hourly / Retainer / Contingency), `Hourly Rate Note (optional)`, `Expiry Date (optional)`. Some fee models swap to `Retainer Amount + Currency + Hours Included`.
+- **There is NO template-selection dropdown.** Verified via DOM inspection of `[role="dialog"]` and source-grep of `frontend/components/proposals/create-proposal-dialog.tsx` (only occurrence of "template" is the i18n `TerminologyText template="…"` substitution prop, not a feature template picker).
+- The legal-za doc-template pack (`backend/src/main/resources/template-packs/legal-za/pack.json`) DOES define a document template `engagement-letter-litigation` titled "Engagement Letter — Litigation" with `category: "ENGAGEMENT_LETTER"`, but it surfaces via the matter's "Generate Document" action — it produces a **document**, not a **proposal**. Document templates and proposal authoring are two different code paths in this build.
+- Filed **OBS-701** (proposal authoring lacks template/library integration) — see status.md.
+- Marked checkpoint FAIL but proceeded with available authoring fields.
 
-| GAP-ID | Severity | Summary |
-|---|---|---|
-| BUG-CYCLE26-06 | **HIGH** | Sending a proposal to an INDIVIDUAL customer fails with "2 required field(s) missing for Proposal Sending" because the `PROPOSAL_SEND` structural prerequisite (`StructuralPrerequisiteCheck.PROPOSAL_SEND_FIELDS`) checks `Customer.contact_name` + `Customer.contact_email` — but for INDIVIDUAL customers in the legal-za vertical, the canonical addressable contact is the **portal_contact** (the same one the firm just selected as Recipient in the Send dialog). The customer-entity contact fields are blank by design (the "Add Client" dialog for INDIVIDUAL doesn't surface contact_name / contact_email — those are reserved for COMPANY customers where the natural-person liaison differs from the legal entity). UI surface in the dialog reads "2 required field(s) missing" with no link to which fields or where to set them. Owner: backend (proposal prerequisite logic) — for INDIVIDUAL customers, fall back to the portal_contact identity OR to the customer's `name` + a portal-contact email (if exactly one ACTIVE portal contact exists). Alt fix: surface the missing fields in the Send dialog with a deep-link to `/customers/{id}` so the user can populate them inline. **Blocks all of Day 7 from 7.8 onwards (Send / acceptance URL / email)**. Evidence: `day07-cycle14-7.9-after-send.yml` — paragraph `2 required field(s) missing for Proposal Sending`; backend file `prerequisite/StructuralPrerequisiteCheck.java` `PROPOSAL_SEND_FIELDS = [contact_name, contact_email]`. |
+### 7.3 — Fee estimate section pre-populates LSSA tariff line items — **NOT IMPLEMENTED**
 
-### Halt reason
+- No fee-estimate line-item builder in the dialog. Hourly fee model exposes only a single free-text `Hourly Rate Note` input — no per-line tariff picker, no totals calculation, no VAT line.
+- The matter has a "Fee Estimate" tab (`Budget` mapped to "Fee Estimate" for legal-za) — that's a separate matter-level budget surface, not a proposal-attached estimate.
+- **Folded under OBS-701** (same root: proposal authoring is a thin lifecycle wrapper, not a document-builder).
+- FAIL — workaround: stuffed the rate breakdown into the free-text `Hourly Rate Note`.
 
-7.8 BLOCKER for proposal-send on INDIVIDUAL customer. Rest of Day 7 (7.9 status transition, 7.10 Mailpit, 7.11 portal URL) cascades. Per dispatch rules: blocker → log GAP, stop, exit.
+### 7.4 — Adjust estimated hours: 30h Bob + 5h Thandi = ZAR estimate — **NOT IMPLEMENTED**
 
-### QA Position on exit
+- No hours-input → no auto-calculation. Used the `Hourly Rate Note` to encode the breakdown as plain text:
+  > `R 2 500/hr (LSSA tariff High Court Party-and-Party 2024/2025) — 30h Bob Ndlovu (attorney) + 5h Thandi Mathebula (senior partner) ≈ R 87 500.00 estimate.`
+- FAIL — folded under OBS-701.
 
-`Day 7 — 7.8 (BLOCKED on BUG-CYCLE26-06; needs prereq logic fix or UX deep-link before Day 7 can complete)`.
+### 7.5 — Add engagement scope in Tiptap editor — **NOT IMPLEMENTED**
 
-### Carry-forward observations
+- No Tiptap editor (or any rich-text scope field) on the proposal dialog.
+- Verified `frontend/components/proposals/create-proposal-dialog.tsx` — there is NO `<Editor>`, `<RichText>`, `useEditor`, or `@tiptap/*` import.
+- FAIL — folded under OBS-701.
 
-- L-48 fix (matter-level CTA) is **VERIFIED on UI** for the first time (cycle-1 was workaround via Generate Document; verify cycle was REST-only). The org-level `/proposals` page Customer combobox path was *not* exercised this turn — only the canonical matter-level New Engagement Letter happy path. Spec note: matter-scoped create disables the Customer combobox (locked to matter's customer) which is correct UX.
-- L-49 (Sprint 3 deferred — clause-driven authoring + LSSA tariff fee block) — confirmed still Sprint 3; product reality remains a thin proposal scaffold (Title + Fee Model + free-text rate note + expiry).
-- Mid-walk JWT expiry recovered via gateway re-auth — not a regression, just session age. Refresh-token rotation isn't firing automatically when the page sits idle past access-token TTL; minor UX papercut, not a Day-7 blocker.
+### 7.6 — Effective date / expiry — partial
 
----
+- No "effective date" field. There IS an `Expiry Date (optional)` field. Set expiry = 2026-05-12 (Day 17 from scenario Day 0 of 2026-04-25; Day 17 = 2026-05-12).
+- The detail page renders "Expires May 13, 2026" — display shows +1 day vs the ISO input. Likely UTC-vs-local-tz formatter quirk; flagged as **OBS-702** (cosmetic).
+- PARTIAL.
 
-## Cycle 17 Retest 2026-04-27 SAST — PR #1173 fix on main 5365e48a
+### 7.7 — Click Save → Draft
 
-**Branch**: `main` @ `5365e48a` (PR #1173 squash-merged — `fix(cycle-2026-04-26 Day 7): PROPOSAL_SEND prereq honors portal_contact`)
-**Backend PID**: 34944 (started 2026-04-27 00:19 UTC after PR #1173 deploy; replaces PID 16195+ noted in cycle 16 dispatch)
-**Stack**: backend:8080 healthy, gateway:8443 healthy, frontend:3000 healthy, portal:3002 healthy.
-**Auth**: Already-active Thandi (Owner) Keycloak session on `localhost:3000` — sidebar `<aside p>` confirmed `Thandi Mathebula / thandi@mathebula-test.local`.
-**Proposal under test**: same `0781c5ad-bc4a-4796-a546-6e51a7b27226 / PROP-0001 / DRAFT / Sipho Dlamini (INDIVIDUAL)` from cycle-14 — DB pre-check confirmed `status=DRAFT`, `sent_at=NULL`, `portal_contact_id=NULL`.
+- Submitted dialog → POST `/api/proposals` (verified backend log `Created proposal 9042d2a4-aa3f-45ba-9a58-cf0cfe8988b0 (PROP-0001) for customer a30bb16b-743c-45a5-9fb5-13167fb92fde`) → redirected to `/org/mathebula-partners/proposals/9042d2a4-aa3f-45ba-9a58-cf0cfe8988b0` — **status badge = Draft**, PROP-0001 reference number assigned. PASS.
+- Evidence: `qa_cycle/evidence/day-07/day-07-dialog-filled.png`, `day-07-proposal-draft.png`.
 
-### Pre-conditions verified
+### 7.8 — Click Send for Acceptance → confirmation → Confirm
 
-| Check | Expected | Actual | Result |
-|---|---|---|---|
-| Proposal `0781c5ad-…` still DRAFT | DRAFT | DRAFT | PASS |
-| Sipho `c4f70d86-…` is INDIVIDUAL | INDIVIDUAL | INDIVIDUAL | PASS |
-| Sipho.contact_name | NULL | NULL | PASS |
-| Sipho.contact_email | NULL | NULL | PASS |
-| Sipho.address_line1 | populated | `12 Loveday St` | PASS |
-| Sipho's ACTIVE portal_contact with email | exists | `f3f74a9d-3540-483a-80bc-6f5ef4e911bb / ACTIVE / sipho.portal@example.com / Sipho Dlamini` | PASS |
+- Detail page exposes a **Send Proposal** button (top-right). Clicked it → "Send Proposal" sub-dialog opened with `Recipient = Select a contact` combobox.
+- Opened combobox → only option `Sipho Dlamini (sipho.portal@example.com)`. Selected.
+- Clicked **Send** → dialog closed, page reloaded.
 
-This is exactly the pre-fix scenario: INDIVIDUAL customer with NULL contact_name/contact_email, populated address_line1, and one ACTIVE portal_contact with non-blank email. Pre-fix this combination produced `"2 required field(s) missing for Proposal Sending"`.
+### 7.9 — Status transitions to Sent, acceptance URL generated
 
-### Retest checkpoints
+- Detail page header now shows status badge **Sent** with `Sent: Apr 30, 2026` field added to Proposal Details. Action button changed to `Withdraw`. PASS.
+- Backend log confirms: `Sent proposal 9042d2a4-aa3f-45ba-9a58-cf0cfe8988b0 to contact c99db0e9-6745-465e-a542-3c842e829758` and `Portal sync completed for proposal PROP-0001 after commit`.
+- Evidence: `qa_cycle/evidence/day-07/day-07-proposal-sent.png`.
 
-| ID | Description | Result | Evidence |
-|---|---|---|---|
-| 7.8a | Open `/proposals/0781c5ad-…` and click `Send Proposal` | **PASS** | `Send Proposal` button visible on proposal header; click opens `Send Proposal` dialog with Recipient combobox + disabled Send button. |
-| 7.8b | Recipient combobox lists `Sipho Dlamini (sipho.portal@example.com)` and only that ACTIVE contact | **PASS** | Listbox shows exactly one option `Sipho Dlamini (sipho.portal@example.com)` (ACTIVE-tightening from the fix is observable — no inactive contacts surface). Selected. Send button became enabled. Snapshot: `cycle17-retest-7.8-send-dialog-recipient-selected.yml`. |
-| 7.8c | Click `Send` — pre-fix violation must NOT appear | **PASS (BUG-CYCLE26-06 FIX VERIFIED)** | Pre-fix expected: red "2 required field(s) missing for Proposal Sending". Actual: that error is GONE. The new dialog message reads `Proposal content must not be empty` (a different downstream check at `ProposalService.java:618-621`, originating from `InvalidStateException` AFTER `prerequisiteCheck.passed()` returns true at line 613-615). Snapshot: `cycle17-retest-7.8-after-send.yml` paragraph `e187`. |
-| 7.8d | DB state: proposal stays DRAFT (because content is empty), but no "missing field" violation surfaces | **PASS** | `SELECT status, sent_at, portal_contact_id FROM tenant_5039f2d497cf.proposals WHERE id='0781c5ad-…'` → `DRAFT / NULL / NULL`. Aborts at content gate, not prereq gate. |
-| 7.8e | Mailpit: no email queued (because send failed at content check, AFTER the prereq gate passed) | **PASS** | `GET http://localhost:8025/api/v1/messages?query=proposal` → `{"total":0, "count":0}`. |
+### 7.10 — Mailpit → proposal email to sipho.portal@example.com — **NO EMAIL SENT**
 
-### How we know the BUG-CYCLE26-06 fix is actually working (not just hidden by content gate)
+- Polled Mailpit `GET /api/v1/messages` immediately after Send and again after a 5-second + 8-second delay — message count remained 11 (top message: "Request REQ-0001 completed (Mathebula & Partners)" at `2026-04-30T06:34:35Z`). The proposal was sent at `2026-04-30T07:26:25Z`. **No new email arrived for Sipho.**
+- Backend log shows: `AutomationActionExecutor — Scheduled action 6f91c5a8-… (type SEND_NOTIFICATION) for execution at 2026-05-05T07:26:25Z` — that's a **5-day-out follow-up** ("Proposal Follow-up (5 days)"), not an immediate "proposal sent" email.
+- The email template `backend/src/main/resources/templates/email/portal-new-proposal.html` exists but is **not invoked on send**. No `ProposalEmailService` or equivalent handler appears in the `ProposalService.send` path; only `ProposalPortalSyncEventHandler` (the in-product portal projection sync) fires.
+- Filed **OBS-703** (Send Proposal does not dispatch portal email — portal contact has no out-of-band notification of new proposal).
+- FAIL.
 
-`ProposalService.sendProposal()` runs three gates in order:
-1. `prerequisiteService.checkForContext(PROPOSAL_SEND, CUSTOMER, customerId)` (line 610-615) — throws `PrerequisiteNotMetException` with message shape `"N required field(s) missing for Proposal Sending"` when prereqs fail.
-2. `proposal.getContentJson() == null || proposal.getContentJson().isEmpty()` (line 618-621) — throws `InvalidStateException` with message `"Proposal content must not be empty"`.
-3. fee-model + currency + milestone validations.
+### 7.11 — Verify email body contains click-through link — **N/A**
 
-Pre-fix produced gate-1 error. Post-fix produces gate-2 error. The change in error string from "2 required field(s) missing for Proposal Sending" → "Proposal content must not be empty" is conclusive that gate 1 is now passing for this customer shape. If the prereq fix had not landed, gate 2 would never be reached.
+- No email body to verify. FAIL by dependency on 7.10.
 
-### Regression checks
+### Compensating verification: portal /proposals shows the new proposal
 
-| Check | Expected | Actual | Result |
-|---|---|---|---|
-| `address_line1` still required (negative test impossible without mutating Sipho's address — skipped per fix-spec note "optional probe") | — | n/a | SKIPPED-by-design (would require destructive UPDATE) |
-| ACTIVE-tightening: SUSPENDED contacts must NOT satisfy prereq | covered by unit test `proposalSend_companyCustomer_noPortalContact_stillRequiresContactFields` in PR #1173 (33/33 backend tests green per cycle 16 dispatch note) | n/a | UPSTREAM-VERIFIED (unit-test layer) |
-| COMPANY customer without portal_contact still blocks | covered by same unit test as above; tenant has no COMPANY customer to drive UI regression | n/a | UPSTREAM-VERIFIED |
-
-### New finding (informational, NOT a BUG-CYCLE26-06 reopen)
-
-Side-effect of the fix: the **next** gate in `sendProposal()` (`content_json must not be empty`, pre-existing since Mar 1, 2026 commit `4023f683` Epic 232B) is now reachable for proposals created via the `New Engagement Letter` matter-level dialog. That dialog (per cycle-14 7.1 evidence) collects only Title / Customer / Fee Model / Hourly Rate Note / Expiry — it never populates `proposal.content_json` (DB row confirms `content_json = '{}'::jsonb`). Therefore the canonical happy path created by L-48 produces proposals that cannot be sent.
-
-This is **not** a BUG-CYCLE26-06 regression — gate-2 has been there all along; pre-fix tests just stopped at gate-1. It is a separate scaffold gap (the matter-level create flow needs to seed `content_json` with at least a stub document, OR the Send gate should auto-render a minimal letter from Title/Fee Model/Hourly Rate Note when `content_json` is empty, OR the proposal entity should treat empty `content_json` as "render-from-fields"). Recommend: orchestrator triages as **BUG-CYCLE26-07** (HIGH — blocks Day 7 7.8 onwards even after BUG-CYCLE26-06 fix) for next product/dev cycle. Suggested approaches:
-1. Backend: when `content_json` is empty/null, auto-build a minimal content payload at Send time from `(title, fee_model, hourly_rate_note, expires_at)` — no UI change.
-2. Frontend: matter-level New Engagement Letter dialog seeds `content_json` with a Tiptap-compatible default doc using the same fields.
-3. UX: surface a `Generate engagement letter` step before Send that opens Tiptap on `content_json`.
-
-Day 7 7.8 onwards remains blocked, but on a **different** root cause than BUG-CYCLE26-06.
-
-### Verdict
-
-| Bug | Status |
-|---|---|
-| BUG-CYCLE26-06 | **VERIFIED** — prereq fix is observable end-to-end. Recipient lookup tightened to ACTIVE; INDIVIDUAL customer with portal_contact no longer triggers contact_name/contact_email violations. |
-
-### QA Position on exit
-
-`Day 7 — 7.8 (PASS for BUG-CYCLE26-06 verification; new blocker BUG-CYCLE26-07 surfaced — content_json gate). Do NOT walk Day 8 — orchestrator triages BUG-CYCLE26-07 first.`
-
-### Files
-
-- `qa_cycle/checkpoint-results/cycle17-retest-7.8-send-dialog-recipient-selected.yml` — Sipho selected as recipient, Send button enabled
-- `qa_cycle/checkpoint-results/cycle17-retest-7.8-after-send.yml` — post-Send dialog state showing the new `Proposal content must not be empty` message and absence of the pre-fix `required field(s) missing` text
+- Switched to portal `:3002` as Sipho (standing session valid).
+- `/proposals` renders "Awaiting Your Response" section with single row: `PROP-0001 — Engagement Letter — Litigation (Dlamini v RAF) — SENT — 30 Apr 2026 — - — View`. PASS — firm→portal sync IS working at the projection level even without email.
+- Evidence: `qa_cycle/evidence/day-07/day-07-portal-proposals-list.png`.
+- Zero console errors.
 
 ---
 
-## Cycle 19 Retest + Resume 2026-04-27 SAST — PR #1175 fix on main 0a58a242
+## Day 7 Checkpoint Summary
 
-**Branch**: `main` @ `0a58a242` (PR #1175 squash-merged — `fix(cycle-2026-04-26 Day 7 R2): seed default proposal content_json`)
-**Backend PID**: 58574 (fresh JVM after PR #1175 deploy)
-**Stack**: backend:8080 healthy, gateway:8443 healthy, frontend:3000 healthy, portal:3002 healthy.
-**Auth**: Already-active Thandi (Owner) Keycloak session on `localhost:3000` — sidebar `aside p` confirmed `Thandi Mathebula`.
-**Goal**: (Phase 1) verify BUG-CYCLE26-07 by creating a fresh proposal post-fix, sending end-to-end. (Phase 2) resume Day 7 walk from §7.8 → §7.11.
+| Checkpoint | Result | Notes |
+|------------|--------|-------|
+| Proposal template from legal-za doc-template pack is instantiable | **FAIL** | OBS-701 — no template/library integration in proposal authoring |
+| LSSA tariff line items render in fee estimate (tariff integration verified) | **FAIL** | OBS-701 — no fee-estimate line-item builder; only free-text rate note |
+| Proposal dispatched, magic-link / secure link email sent to portal contact | **FAIL** | OBS-703 — Send Proposal does not invoke email service; portal projection works but contact has no email notification |
 
-### Phase 1 — BUG-CYCLE26-07 verification (fresh proposal Path A)
+## Console Hygiene
 
-Pre-state per fix-spec §"QA browser-driven re-walk" Path A: existing proposal `0781c5ad-…` predates seeder fix and still has `content_json='{}'` (would still hit gate-2). To exercise the fix, we created a NEW proposal post-fix.
+- Firm: 1 hydration mismatch console error on `/org/{slug}/proposals` index page (Engagement Letters page). Filed as **OBS-704**.
+- Firm matter Overview, FICA card detail navigation, proposal authoring/sending: zero console errors.
+- Portal `/requests`, `/requests/[id]`, `/proposals`: zero console errors.
 
-| ID | Description | Result | Evidence |
-|---|---|---|---|
-| 7.1 | Matter-level `+ New Engagement Letter` dialog opens with Customer locked to Sipho | **PASS** | RAF matter detail rendered toolbar with `+ New Engagement Letter`. Click → dialog opens with `Customer` combobox `[disabled]` showing "Sipho Dlamini", Title textbox active. Snapshot: `cycle19-7.1-engagement-dialog.yml` (refs e420-e447). |
-| 7.1b | Fill dialog (Title, HOURLY, Hourly Rate Note); Create Proposal | **PASS** | Filled Title=`Cycle19 Verify`, Fee Model=Hourly (default), Hourly Rate Note=`R850/hr per LSSA 2024/2025 schedule`. Click `Create Proposal` → dialog closed cleanly, navigated to `/org/mathebula-partners/proposals/69e3d65f-af25-4bf4-8119-afa73b3e44f8`. Backend log: `Created proposal 69e3d65f-af25-4bf4-8119-afa73b3e44f8 (PROP-0002) for customer c4f70d86-c292-4d02-9f6f-2e900099ba57`. |
-| **CYCLE26-07 fix verification (DB)** | `content_json` is non-empty Tiptap doc post-create | **PASS — fix observed** | Pre-fix existing proposal `0781c5ad-…` row: `content_json='{}'` (length 2). Post-fix new proposal `69e3d65f-…` row: `content_json` length 774, `content_json->>'type'='doc'`, `jsonb_array_length(content_json->'content')=6`. Tiptap structure: heading "Cycle19 Verify" → paragraph "Dear " + `variable{key:client_name}` + "," → heading "Fee Arrangement" → paragraph "Fees will be charged on an hourly basis." → paragraph "Rate: R850/hr per LSSA 2024/2025 schedule" → paragraph "This proposal is subject to our standard terms and conditions. Please contact us if you have any questions." Matches `ProposalContentSeeder` spec exactly. |
-| 7.7 | Status DRAFT post-create | **PASS** | DB: `SELECT status FROM tenant_5039f2d497cf.proposals WHERE id='69e3d65f-…'` → `DRAFT`. UI header shows `PROP-0002` with status badge. Snapshot: `cycle19-7.7-proposal-detail.yml`. |
-| 7.8a | Click `Send Proposal` → dialog opens | **PASS** | `Send Proposal` button rendered (ref e471). Click → `Send Proposal` dialog with Recipient combobox + disabled Send button. Snapshot: `cycle19-7.8-send-dialog.yml`. |
-| 7.8b | Recipient list shows Sipho only (ACTIVE-tightening retained) | **PASS** | Combobox option list shows exactly `Sipho Dlamini (sipho.portal@example.com)` (ACTIVE portal_contact). Selected. Send button enabled. Snapshot: `cycle19-7.8-recipient-options.yml`. |
-| 7.8c | Click Send → no `Proposal content must not be empty` error (gate-2 cleared) | **PASS — BUG-CYCLE26-07 FIX VERIFIED** | Post-Send: dialog closed cleanly, no inline error string. Backend log: `Sent proposal 69e3d65f-… to contact f3f74a9d-3540-483a-80bc-6f5ef4e911bb`. The gate-2 error from cycle-17 (`Proposal content must not be empty`) is GONE — definitive evidence the seeder-fed `content_json` passes gate-2 in `ProposalService.sendProposal()`. Snapshot: `cycle19-7.9-after-send.yml`. |
-| 7.9 | Status SENT, sent_at populated, portal_contact_id set | **PASS** | DB: `SELECT status, sent_at, portal_contact_id FROM tenant_5039f2d497cf.proposals WHERE id='69e3d65f-…'` → `SENT / 2026-04-27 01:54:31.181629+00 / f3f74a9d-3540-483a-80bc-6f5ef4e911bb`. Backend log: `Portal sync completed for proposal PROP-0002 after commit`. UI header now shows status `Sent`. |
-| **Portal sync (downstream consumer of content_json)** | `portal.portal_proposals` row written with rendered HTML; `client_name` variable resolved | **PASS** | `SELECT id, proposal_number, status, title, length(content_html) FROM portal.portal_proposals WHERE id='69e3d65f-…'` → `PROP-0002 / SENT / Cycle19 Verify / 1223 chars`. Body HTML contains `<h2>Cycle19 Verify</h2><p>Dear Sipho Dlamini,</p><h3>Fee Arrangement</h3>...` — confirming `TiptapRenderer` rendered the seeder doc and `ProposalVariableResolver` substituted `{{client_name}}` → `Sipho Dlamini`. |
-| 7.10 | Mailpit acceptance email | **NOT-APPLICABLE (informational)** | `GET http://localhost:8025/api/v1/messages` → `total=0` post-send. Investigation: `ProposalService.sendProposal()` publishes `ProposalSentEvent`. The only listeners are `NotificationEventHandler.onProposalSent` (creates in-app notifications for admins/owners — firm-side only, not portal-facing) and `ProposalPortalSyncEventHandler.onProposalSent` (writes `portal.portal_proposals` row). Neither sends an email to the portal contact. The existing template `templates/email/portal-new-proposal.html` is orphaned (no Java caller). This is a **pre-existing scope gap** in the matter-level "Send Proposal" path, NOT a regression from PR #1175. The fix-spec §Verification anticipated a Mailpit email; that anticipation is incorrect for this codepath. NOT logged as a new BUG-CYCLE26-XX because: (a) the proposal IS visible to Sipho via portal sync (verified §7.11 below), so notification exists in-app on portal home, (b) the legacy `Send for Acceptance` path (Generate Document → AcceptanceService) DOES send an email — that codepath is the one cycle-1 used. Suggested follow-up gap (deferred — not blocker): wire `PortalEmailService.sendNewProposalEmail()` to listen to `ProposalSentEvent`. |
-| 7.11 | Portal `/proposals/{id}` renders proposal with rendered body, Accept/Decline buttons | **PASS** | Generated dev portal magic-link for `sipho.portal@example.com`, exchanged at `http://localhost:3002/auth/exchange?token=…&orgId=mathebula-partners` (this IS the same URL shape the spec asks for). Navigated to `/proposals` — table shows `PROP-0002 / Cycle19 Verify / SENT / 27 Apr 2026 / View`. Click into detail at `/proposals/69e3d65f-…` — page renders heading `Cycle19 Verify`, status badge `SENT`, body `Dear Sipho Dlamini,`, heading `Fee Arrangement`, paragraph `Rate: R850/hr per LSSA 2024/2025 schedule`, plus `Accept Proposal` + `Decline` buttons. Snapshots: `cycle19-7.11-portal-proposals-list.yml`, `cycle19-7.11-portal-proposal-detail.yml`. |
+## New Gaps Filed
 
-### Phase 2 — Day 7 walk continuation (§7.8 → §7.11)
+- **OBS-701** (bug) — Proposal authoring has no template/document-pack integration; missing fee-estimate line-item builder; no Tiptap scope editor. Day 7.2-7.5 cannot be performed as written. Severity: bug (blocks Day 7 fidelity but workable via free-text fields).
+- **OBS-702** (nit) — Expiry date displays +1 day vs ISO input (likely UTC↔local tz formatter). Cosmetic; ISO `2026-05-12` displays as "May 13, 2026".
+- **OBS-703** (bug) — `Send Proposal` does not dispatch a portal email to the recipient. Backend has the template (`portal-new-proposal.html`) but no service invocation on the send path; only a 5-day follow-up automation is scheduled. Day 8 (Sipho clicks email link) is therefore blocked unless we substitute the portal `/proposals` list for the email entry point.
+- **OBS-704** (nit) — Hydration mismatch on `/org/{slug}/proposals` page (Engagement Letters index). The mismatch is on the `<button>` rendered by the New-Proposal `DialogTrigger`. Minor — page still works.
 
-The cycle-19 retest above completes §7.8 (PASS), §7.9 (PASS), §7.10 (NOT-APPLICABLE per fix-spec interpretation gap), §7.11 (PASS). Per the dispatch instruction "Stop at end of Day 7 — do NOT walk Day 8", QA halts here.
+## QA Position
 
-### Verdict
-
-| Bug | Status |
-|---|---|
-| BUG-CYCLE26-07 | **VERIFIED** — `ProposalContentSeeder` populates content_json on create; gate-2 in `sendProposal()` no longer fires for matter-level dialog-created proposals; content_json renders as expected portal HTML with `client_name` variable interpolated. |
-
-### How we know the fix landed (not just hidden by a different gate)
-
-Cycle 17 evidence: post-prereq-fix path produced `Proposal content must not be empty` (gate-2). Cycle 19 evidence: same dialog flow, same INDIVIDUAL customer (Sipho), same ACTIVE portal_contact — Send now succeeds end-to-end with status DRAFT→SENT, sent_at populated, portal_contact_id set, portal sync row written with rendered HTML. The error-state → success-state transition between cycles 17 and 19 is conclusive that PR #1175 (`ProposalContentSeeder` + wiring in `createProposal`) is the cause of unblocking.
-
-### Day 7 final rollup
-
-- §7.1–7.7: PASS (cycle-14 walked these; re-confirmed via PROP-0002 create flow this turn).
-- §7.8 Send for Acceptance: **PASS** post-fix.
-- §7.9 status SENT + acceptance URL: **PASS** (status flipped, portal_contact_id set, sent_at populated, portal sync committed).
-- §7.10 Mailpit: NOT-APPLICABLE (matter-level Send Proposal codepath does not currently send an email — orphaned template). Informational, not a blocker, separate from BUG-CYCLE26-07.
-- §7.11 portal click-through link: **PASS** (Sipho's magic-link exchange → `/proposals/{id}` renders heading + body + Accept/Decline; client_name variable resolved to "Sipho Dlamini" in the rendered HTML).
-
-### QA Position on exit
-
-`Day 7 CLOSED on main 0a58a242. BUG-CYCLE26-07 VERIFIED. §7.10 informational gap noted but non-blocking. Advance QA Position to Day 8 / 8.1.`
-
-### Files
-
-- `qa_cycle/checkpoint-results/cycle19-7.1-matter-detail.yml`
-- `qa_cycle/checkpoint-results/cycle19-7.1-engagement-dialog.yml`
-- `qa_cycle/checkpoint-results/cycle19-7.7-proposal-detail.yml`
-- `qa_cycle/checkpoint-results/cycle19-7.8-send-dialog.yml`
-- `qa_cycle/checkpoint-results/cycle19-7.8-recipient-options.yml`
-- `qa_cycle/checkpoint-results/cycle19-7.9-after-send.yml`
-- `qa_cycle/checkpoint-results/cycle19-7.11-portal-proposals-list.yml`
-- `qa_cycle/checkpoint-results/cycle19-7.11-portal-proposal-detail.yml`
-
+- **Day 7 BLOCKED on OBS-701 + OBS-703** for full-fidelity scenario execution. The available authoring surface produced a Sent proposal that's visible on the portal (Day 8.1 alternative path: portal `/proposals` → click View). Email-link click-through (Day 8.1 canonical) cannot be tested.
+- Recommend: Product triage of OBS-701/702/703/704 → if OBS-703 is fixed, Day 8 can run via canonical email-link path; OBS-701 is a larger feature gap that may end up WONT_FIX with scenario amendment (mirror Day 4's OBS-401/402/403 pattern of recognising the proposal product surface as canonical and rewriting Day 7 to fit).

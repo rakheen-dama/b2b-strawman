@@ -1,406 +1,152 @@
-# Day 3 — Bob creates RAF matter, sends FICA Onboarding Pack info request
-Cycle: 1 | Date: 2026-04-21 | Auth: Keycloak | Frontend: :3000 | Actor: Bob Ndlovu (Admin, no context swap)
+# Day 3 — RAF matter creation + FICA info request (Bob)
 
-Scenario: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md` → Day 3 (checkpoints 3.1–3.14).
-
-**Result summary (Day 3): 14/14 checkpoints executed — 5 PASS (3.1, 3.2 partial, 3.3 partial, 3.4, 3.7), 3 FAIL (3.5, 3.6, 3.13), 1 PARTIAL (3.3 custom-field save blocked by PROSPECT gate), 5 BLOCKED (3.8, 3.9, 3.10, 3.11, 3.12, 3.14 — halt at 3.8 per rules).** First BLOCKER reached at **3.8 — FICA Onboarding Pack template missing**. Stopped subsequent checkpoints per QA cycle rules.
-
-New gaps: **GAP-L-33** (HIGH, backend/product — FICA Onboarding Pack request template missing from legal-za request-packs; only 5 accounting-focused templates exist), **GAP-L-34** (HIGH, backend/frontend — no firm-side UI or API path to create a portal contact; `/api/customers/{id}/portal-contacts` exposes GET only, create-request-dialog has no "Add Portal Contact" action, PortalContactService.createContact is only invoked by DevPortalController magic-link generator), **GAP-L-35** (MED, backend — matter save blocks custom-field updates on PROSPECT lifecycle with error "Cannot create project for customer in PROSPECT lifecycle status" AFTER the matter was already inserted, leaving Court/Opposing Party fields unsaved; scenario doesn't transition Sipho out of PROSPECT until Day 7), **GAP-L-36** (MED, backend — "Litigation — Road Accident Fund" matter-type template missing; only 5 generic legal templates shipped per Phase 64/66; scenario specifies RAF-specific template), **GAP-L-37** (LOW, frontend — matter detail Field Groups auto-attaches SA Conveyancing — Matter Details to a litigation matter regardless of template; over-broad field-group attachment), **GAP-L-38** (LOW, frontend — matter sidebar tabs mismatch scenario: no dedicated "Tasks" or "Fee Notes" or "Audit" tab; tabs are Overview/Documents/Members/Clients/Action Items/Time/Disbursements/Fee Estimate/Financials/Staffing/Rates/Generated Docs/Requests/Client Comments/Court Dates/Adverse Parties/Trust/Disbursements/Statements/Activity — 20 tabs, Disbursements appears twice), **GAP-L-39** (LOW, frontend — customer_id URL query param `?customerId=<id>` when clicking "+ New Matter" from client detail is lost by the "New from Template" dialog Configure step: Client dropdown defaults to "None" even though URL carries a customer ID).
-
-## Session prep
-
-Bob was logged in at end of Day 2; session held cleanly into Day 3 (no re-auth required). Sidebar shows "BN / Bob Ndlovu / bob@mathebula-test.local".
-
-## Checkpoint 3.1 — Navigate to Sipho's client detail → click "+ New Matter"
-- Result: **PASS**
-- Evidence:
-  - On `/customers/8fe5eea2-75fc-4df2-b4d0-267486df68bd` → Matters tab (default) → two CTAs present: "New Matter" link (navigates to `/projects?new=1&customerId=<id>`) and "Link Matter" button (for linking existing).
-  - Clicked "New Matter" → navigated to `/projects?new=1&customerId=8fe5eea2-75fc-4df2-b4d0-267486df68bd` → **"New from Template — Select Template"** dialog auto-opened.
-
-## Checkpoint 3.2 — Legal-specific matter-type template selector
-- Result: **PASS (with scope gap)**
-- Evidence:
-  - Template dialog lists 5 legal matter templates (from Phase 64/66 matter templates):
-    1. Collections (Debt Recovery) — 9 tasks
-    2. Commercial (Corporate & Contract) — 9 tasks
-    3. Deceased Estate Administration — 9 tasks
-    4. Litigation (Personal Injury / General) — 9 tasks
-    5. Property Transfer (Conveyancing) — 12 tasks
-  - **Scenario-specified "Litigation — Road Accident Fund" template is NOT present** — nearest match is generic Litigation (Personal Injury / General). Selected that as workaround.
-  - Confirmed in DB: `SELECT count(*) FROM tenant_5039f2d497cf.project_templates` (all names listed above, no RAF-specific one).
-  - Logged **GAP-L-36** (MED).
-
-## Checkpoint 3.3 — Fill matter fields
-- Result: **PASS on core fields / PARTIAL on Court+Case Number save**
-- Evidence:
-  - Configure step fields filled:
-    - Matter name: `Dlamini v Road Accident Fund`
-    - Client (select): `Sipho Dlamini` (manually re-selected; dropdown defaulted to "None" despite `customerId=` query param on the URL — logged as GAP-L-39)
-    - Matter lead (select): `Bob Ndlovu`
-    - Reference Number: `RAF-2026-001`
-    - Work Type: `Litigation — Road Accident Fund`
-  - Configure form does NOT expose Court / Case Number / Accident Date / Insurer fields at create-time — these are custom fields that appear on the detail page post-create.
-  - After matter created, populated `SA Legal — Matter Details` custom fields on detail page:
-    - Court: `Gauteng Division, Pretoria`
-    - Opposing Party: `Road Accident Fund`
-  - Clicked "Save Custom Fields" → 3× POST returned 200 at network level, but UI error rendered: **"Cannot create project for customer in PROSPECT lifecycle status"**. Matter itself remains ACTIVE in DB; custom field values did not persist to the matter row (follow-up DB probe needed to confirm).
-  - Logged **GAP-L-35** (MED) — custom-field saves blocked by PROSPECT gate despite matter creation succeeding; scenario doesn't transition to ONBOARDING/ACTIVE until Day 7.
-
-## Checkpoint 3.4 — Submit → matter created, redirected to matter detail
-- Result: **PASS**
-- Evidence:
-  - Clicked "Create Matter" → POST returned 200, auto-redirect to `/projects/40881f2f-7cfc-45d9-8619-de18fd2d75bb`. Matter detail renders: header "Dlamini v Road Accident Fund / Active", client link "Sipho Dlamini", Ref badge "RAF-2026-001", Type "Litigation — Road Accident Fund", "Created Apr 21, 2026 · 0 documents · 1 member · 9 tasks".
-  - DB read-only: `SELECT id, name, reference_number, work_type, customer_id, status FROM tenant_5039f2d497cf.projects ORDER BY created_at DESC LIMIT 1;` → `40881f2f-…-de18fd2d75bb | Dlamini v Road Accident Fund | RAF-2026-001 | Litigation — Road Accident Fund | 8fe5eea2-…-267486df68bd | ACTIVE`. Row persisted correctly.
-  - Screenshot: `qa_cycle/checkpoint-results/day-03-3.4-matter-raf-created.png`.
-
-## Checkpoint 3.5 — Verify matter sidebar tabs
-- Result: **FAIL** (tab set doesn't match scenario spec)
-- **Scenario expects**: Overview, Tasks, Documents, Time, Fee Notes, Trust, Activity, Audit (8 tabs)
-- **Actual**: Overview, Documents, Members, Clients, Action Items, Time, Disbursements, Fee Estimate, Financials, Staffing, Rates, Generated Docs, Requests, Client Comments, Court Dates, Adverse Parties, Trust, **Disbursements** (duplicate!), Statements, Activity (20 tabs total)
-- Deltas:
-  - No dedicated **"Tasks"** tab (Action Items appears to be the replacement, but label differs)
-  - No dedicated **"Fee Notes"** tab (Fee Estimate / Financials / Statements cover adjacent concerns)
-  - No dedicated **"Audit"** tab (Activity is the closest, but not labelled Audit; GAP-L-11 carry-forward still OPEN)
-  - **Disbursements duplicated** (two tabs with the same label) — UI bug
-- Logged **GAP-L-38** (LOW). Scenario Days 21, 28, 60, 75, 85, 88 all reference Tasks/Fee Notes/Audit tabs; those checkpoints will have similar drift.
-
-## Checkpoint 3.6 — Promoted matter fields render inline, NOT duplicated
-- Result: **FAIL**
-- Evidence:
-  - Field Groups section auto-attaches THREE groups to a litigation matter: **SA Conveyancing — Matter Details**, SA Legal — Matter Details, Project Info.
-  - SA Conveyancing is irrelevant to a RAF litigation matter and exposes Conveyancing Type / Erf Number / Deeds Office / Purchase Price / Transfer Duty / Bond Institution — all inappropriate for this matter type.
-  - Over-broad auto-attachment. Logged **GAP-L-37** (LOW).
-  - Additionally the Overview tab card shows the matter header info (Name, Client, Ref, Type) correctly but the "promoted inline fields" (scenario's matter_type / court_name / case_number) render only inside the Field Groups region (below header), not on the Overview tab body. Scenario's "NOT duplicated in a generic Custom Fields section" ask is technically met (no standalone "Custom Fields" section), but the intent (promoted inline on Overview) is not.
-
-## Checkpoint 3.7 — Navigate to Requests tab → click "+ New Request"
-- Result: **PASS**
-- Evidence:
-  - Clicked "Requests" tab → empty state "No information requests yet" + "New Request" button visible.
-  - Clicked "+ New Request" → dialog "Create Information Request" opened with subtitle "Request documents or information from Sipho Dlamini for Dlamini v Road Accident Fund."
-
-## Checkpoint 3.8 — Select template "FICA Onboarding Pack"
-- Result: **BLOCKED (BLOCKER hit — halts subsequent Day 3 checkpoints)**
-- Evidence:
-  - Template dropdown lists 5 options + Ad-hoc:
-    1. Ad-hoc (no template)
-    2. Tax Return Supporting Docs (5 items) — accounting
-    3. Monthly Bookkeeping (4 items) — accounting
-    4. Conveyancing Intake (SA) (7 items) — legal (conveyancing subset)
-    5. Company Registration (4 items) — cross-vertical
-    6. Annual Audit Document Pack (5 items) — accounting
-  - **"FICA Onboarding Pack" not present.**
-  - DB read-only: `SELECT name, source, pack_id FROM tenant_5039f2d497cf.request_templates ORDER BY name;` → 5 rows (Annual Audit Document Pack, Company Registration, Conveyancing Intake (SA), Monthly Bookkeeping, Tax Return Supporting Docs). No FICA template.
-  - Filesystem read-only: `ls backend/src/main/resources/request-packs/` → annual-audit.json, company-registration.json, consulting-za-creative-brief.json, conveyancing-intake-za.json, monthly-bookkeeping.json, tax-return.json, year-end-info-request-za.json. **No `fica-onboarding-pack.json`**.
-  - Template dialog also shows **"Portal Contact: No portal contacts found for this customer. Please add a portal contact first."** and BOTH "Save as Draft" + "Send Now" buttons are disabled. Screenshot: `qa_cycle/checkpoint-results/day-03-3.8-no-fica-template-no-portal-contact.png`.
-  - This compounds into **GAP-L-34** — even if the template existed, no way to create a portal contact from firm-side UI (`/api/customers/{id}/portal-contacts` is GET-only; no POST endpoint; no "Add Portal Contact" button in dialog; `PortalContactService.createContact` is only invoked by DevPortalController for dev magic-link generation).
-- Logged **GAP-L-33** (HIGH, template missing) + **GAP-L-34** (HIGH, portal-contact creation path missing).
-
-## Checkpoints 3.9–3.14 — BLOCKED
-- 3.9 Addressee auto-populated — **BLOCKED** (GAP-L-34: no portal contacts exist to populate)
-- 3.10 Request items pre-filled from template — **BLOCKED** (GAP-L-33: template doesn't exist)
-- 3.11 Due date = Day 10 — **BLOCKED** (dialog's Send Now / Save as Draft both disabled)
-- 3.12 Click Send → status = Sent — **BLOCKED** (dialog's Send Now button disabled)
-- 3.13 Portal contact auto-linked — **BLOCKED/FAIL** (0 portal_contacts rows in tenant schema; no auto-link happens on client-create)
-- 3.14 Mailpit magic-link email — **BLOCKED** (no request sent → no email dispatched)
-
-## Day 3 summary checks
-- Matter created with reference format RAF-YYYY-NNN: **PASS** — RAF-2026-001 persisted, ACTIVE status.
-- Matter-type template instantiated — phase sections present, LSSA tariff linked: **PARTIAL** — generic Litigation template used (GAP-L-36 for RAF-specific); 9 tasks auto-generated from template; LSSA tariff not verified on matter detail (no visible tariff badge/section — will probe on Day 21 time-log).
-- Promoted matter fields render inline, not duplicated: **FAIL** — SA Conveyancing field group incorrectly auto-attached (GAP-L-37); matter_type / court_name / case_number live inside Field Groups section, not "promoted inline" on Overview (GAP-L-38 adjacent).
-- FICA info request dispatched, magic-link email sent: **BLOCKED** — FICA template doesn't exist (GAP-L-33) + portal contact creation path missing (GAP-L-34); no request sent, no email dispatched, 0 portal_contacts rows, 0 information_requests rows.
-
-## Carry-Forward watch-list verifications this turn
-
-| Prior gap | Re-observed? | Notes |
-|---|---|---|
-| GAP-L-22 (post-registration session handoff) | Not triggered | Bob's session held cleanly through Day 3; no re-auth, no cross-session leak. |
-| GAP-L-07 (matter closure gates, Day 60) | Not triggered | Day 3 creates matter; not at closure stage. But matter detail Actions bar shows "Close Matter" / "Complete Matter" buttons — gate behaviour untested. Deferred to Day 60. |
-| GAP-L-10 (acceptance-eligible manifest flag) | Not triggered | Day 3 doesn't generate engagement letter; scenario 3 doesn't ask for it. |
-| "Project" / "customer" terminology leak (Day 75 note carry) | **Re-observed** | Error string displayed verbatim: "Cannot create project for customer in PROSPECT lifecycle status". Also dialog footer: "Customer: Sipho Dlamini / Project: Dlamini v Road Accident Fund". Not re-logged (already tracked at Day 75 in legal-za archive); wave of terminology leaks in backend error messages + UI strings documented. |
-| GAP-L-26 (sidebar bg / logo not consumed) | **Re-observed** | Bob's sidebar still slate-950 default, no logo image. Not re-logged. |
-
-## New gaps
-
-| GAP-ID | Severity | Summary |
-|---|---|---|
-| GAP-L-33 | HIGH | FICA Onboarding Pack request template missing for legal-za vertical. DB has 5 platform templates (Tax Return Supporting Docs, Monthly Bookkeeping, Conveyancing Intake (SA), Company Registration, Annual Audit Document Pack); filesystem has 7 request-pack JSONs but none is `fica-onboarding-pack.json`. Scenario 3.8/3.10 FICA request flow is unreachable. Phase 64 legal-za pack installed 16 items + automation-legal-za 5 items (per Day 0 verification) but the FICA-specific request pack was not authored. Owner: backend/product — author `backend/src/main/resources/request-packs/fica-onboarding-pack.json` with items "ID copy" + "Proof of residence (≤ 3 months)" + "Bank statement (≤ 3 months)" + wire it into legal-za pack.json. |
-| GAP-L-34 | HIGH | No firm-side path to create a portal contact. `CustomerController.java` exposes `@GetMapping("/{id}/portal-contacts")` only — no POST; `PortalContactService.createContact` is only invoked by `DevPortalController.generate-link` (dev tooling). Create Information Request dialog detects 0 contacts and shows "No portal contacts found for this customer. Please add a portal contact first." but offers no "Add Portal Contact" action — Save as Draft + Send Now both disabled. Scenario 3.9's "portal contact auto-populated from client record" assumes one of: (a) auto-create on customer create from `customers.email`, (b) auto-create on first request dispatch, (c) firm-side dialog with "Add Portal Contact" CTA. None exist. Owner: backend (POST `/api/customers/{id}/portal-contacts`) + frontend ("Add Portal Contact" button in Create Information Request dialog or on client detail page). Severity HIGH because every portal-dependent day (4/8/11/30/46/61/75 magic-link, 15 isolation probe, 30 PayFast pay) is blocked without at least one portal contact. |
-| GAP-L-35 | MED | Custom-field save on matter detail returns "Cannot create project for customer in PROSPECT lifecycle status" error AFTER the matter itself has been inserted successfully. Sequence: Create Matter → ACTIVE matter row in DB → navigate to detail → fill SA Legal — Matter Details fields (Court, Opposing Party) → Save Custom Fields → error rendered next to button, 3× POST returned 200 at network level but custom fields don't appear to persist. Scenario expects Court / Case Number / etc. to be editable immediately at matter creation time. PROSPECT customers should be allowed to have matters with editable promoted fields; the gate should relax to "ONBOARDING+" or be removed entirely for custom-field PATCH. Owner: backend (likely `MatterCustomFieldService` or `ProjectService#updateCustomFields` — check for `customer.lifecycleStatus != PROSPECT` guard). Error string also leaks "project" / "customer" terminology (Project terminology from prior Day 75 observation). |
-| GAP-L-36 | MED | "Litigation — Road Accident Fund" matter-type template missing. "New from Template" dialog lists 5 legal templates (Collections, Commercial, Deceased Estate Administration, Litigation (Personal Injury / General), Property Transfer) — no RAF-specific template. Scenario specifies RAF template with RAF-specific task checklist (accident date, third-party, insurer, summons, quantum). Owner: backend/product — either add `project-template-packs/legal-za-raf.json` (or a RAF preset nested inside the existing `legal-za.json` pack), OR formally reclassify the scenario to use generic Litigation template + note RAF-specific fields live in SA Legal — Matter Details field group. |
-| GAP-L-37 | LOW | Matter detail auto-attaches "SA Conveyancing — Matter Details" field group to a Litigation matter regardless of template selection. Wrong-vertical over-attachment — conveyancing fields (Erf Number, Deeds Office, Purchase Price, Transfer Duty, Bond Institution) are all irrelevant for a RAF litigation matter. Scenario 3.6 expects promoted fields specific to the chosen template, not every field group in the tenant's vertical profile. Owner: backend — matter creation path should only attach field groups declared in the selected project-template-pack, OR frontend — client-side filter the Field Groups list by `fieldGroup.appliesToMatterTypes` if that metadata exists. |
-| GAP-L-38 | LOW | Matter detail tab bar shows 20 tabs (including **Disbursements twice**) and does not match scenario-specified 8 tabs (Overview/Tasks/Documents/Time/Fee Notes/Trust/Activity/Audit). Missing by exact label: "Tasks" (Action Items used instead), "Fee Notes" (Fee Estimate / Financials / Statements cover adjacent concerns), "Audit" (Activity is closest, GAP-L-11 still OPEN). Duplicate: "Disbursements" listed twice (refs e646 + e657 in snapshot). Owner: frontend — consolidate tabs, rename Action Items → Tasks for legal-za vertical, add Audit tab (couples to GAP-L-11). |
-| GAP-L-39 | LOW | "+ New Matter" CTA on client detail navigates to `/projects?new=1&customerId=<customerId>` but the "New from Template — Configure" dialog's Client dropdown defaults to "None", not to the customer referenced in the URL. Minor UX polish — user has to re-select the client manually. Owner: frontend — Configure step should read `customerId` from URL searchParams and pre-select it. |
-
-## Halt reason
-
-Day 3 halted at **Checkpoint 3.8** on BLOCKER rule — FICA Onboarding Pack template is missing (GAP-L-33) AND firm-side portal-contact creation path is missing (GAP-L-34). Both are independent HIGH-severity gaps; either alone would block 3.8–3.14. Day 4 (Sipho first portal login via magic-link) is entirely dependent on this dispatch, so Day 3 BLOCKER cascades into Day 4–88 portal POVs unless a workaround is accepted (e.g. dev-tooling magic-link generator from DevPortalController to seed a portal session for Day 4 testing).
-
-## QA Position on exit
-
-`Day 3 — 3.8 (blocked pending GAP-L-33 + GAP-L-34 fixes)`. Next-turn recommendation: **Dev fix** (1) create `backend/src/main/resources/request-packs/fica-onboarding-pack.json` with the three canonical FICA items; wire it into legal-za pack reconciliation, (2) add POST `/api/customers/{id}/portal-contacts` endpoint + "Add Portal Contact" button to Create Information Request dialog's Portal Contact section when no contacts exist, OR (easier shortcut) auto-create a PortalContact row on customer-create with email from `customers.email`. Both fixes unblock 3.8–3.14 and the downstream portal POV days. Deferred: GAP-L-35/36/37/38/39 are all LOW/MED cosmetic or workflow gaps that don't block Day 3 re-execution once L-33 and L-34 are addressed.
+**Stack**: dev/Keycloak — frontend :3000, backend :8080, gateway :8443, KC :8180, Mailpit :8025
+**Date**: 2026-04-30
+**Actor**: Bob Ndlovu (`bob@mathebula-test.local`, Admin) — confirmed via sidebar user pill
+**Branch**: `bugfix_cycle_2026-04-30` (PR #1225 OBS-102 + PR #1226 OBS-201 merged via main)
 
 ---
 
-# Day 3 resume (cycle 1) — 2026-04-21 22:20 SAST
+## OBS-201 Verification (pre-Day-3)
 
-Re-verification after GAP-L-33 + GAP-L-34 fixes merged (PR #1098 + #1099) and backend restarted (PID 62516, 22:03 SAST). L-33 FICA pack seeded into `tenant_5039f2d497cf.request_templates` (id `1324776f-2ad3-459c-b2ba-049a5b3806c9`, 6 platform templates total). L-34 `PortalContactAutoProvisioner` listener registered.
+| # | Check | Result |
+|---|-------|--------|
+| 1 | Step 1 of Create Client wizard has NO `idNumber` / generic "ID Number" field | **PASS** — Step 1 fields: Name, Type, Email, Phone (optional), Tax Number, Notes, Address (lines 1–2, City, State/Province, Postal Code, Country), Contact (Name/Email/Phone), Business Details (Registration Number, Entity Type, Financial Year End). No generic ID Number input. |
+| 2 | Step 2 SA Legal group accordion is OPEN by default | **PASS** — On entering Step 2 (after Name + Email), the "SA Legal — Client Details" group renders with `▾` chevron and **all four optional fields visible**: ID / Passport Number, Postal Address, Preferred Correspondence, Referred By. No collapsed state. |
+| 3 | Inner "Additional Information (N)" toggle is gone or flattened | **PASS** — No nested accordion. Fields render flat under the SA Legal group header. (The dialog's own step-header reads "Additional Information — Step 2 of 2" but that is the wizard step title, not the inner accordion.) |
+| 4 | Console errors during the wizard | **PASS** — 0 errors (1 unrelated warning, browser session). |
+| 5 | Conflict Check pre-fill still works | **PASS** — Sipho's detail still renders `Run Conflict Check` link with `?customerId=…&checkedName=Sipho+Dlamini&checkedIdNumber=8501015800088`. SA Legal `id_passport_number` round-tripped to entity column on Day-2 customer create. |
 
-**Result summary (Day 3 resume): 7/7 blocked checkpoints executed — 6 PASS, 1 FAIL (3.11 due-date not exposed by dialog). Day 3 now complete.**
+Verification approach: Cancel-without-submit (preferred to keep dataset clean for Day 3). Filled Name + Email on Step 1, advanced to Step 2, captured both screenshots, then closed the dialog without creating a client.
 
-## L-33 / L-34 re-verification evidence
+**Evidence**:
+- `qa_cycle/evidence/day-03/obs-201-verify-step1.png`
+- `qa_cycle/evidence/day-03/obs-201-verify-step2.png`
 
-### Pre-conditions check
-
-- `SELECT name, pack_id FROM tenant_5039f2d497cf.request_templates ORDER BY name;` → 6 rows including **`FICA Onboarding Pack | fica-onboarding-pack`** (was 5 pre-fix, no FICA row). **L-33 seeded.**
-- `SELECT count(*) FROM tenant_5039f2d497cf.portal_contacts;` → 0 rows. Sipho was created on Day 2 (before L-34 listener was live) so his portal_contact does not exist yet. Scenario note explicitly allows Option C (DevPortal backfill) for pre-listener customers; we also validated the listener fires correctly on NEW customers (see L-34 fresh-customer probe below).
-- Sipho's portal_contact backfilled via `POST /portal/dev/generate-link` with email=`sipho.portal@example.com` orgId=`mathebula-partners` → row inserted `d9ecf332-e9cc-4296-9652-d29171a4adb6 | 8fe5eea2-…-267486df68bd | sipho.portal@example.com | Sipho Dlamini | GENERAL | ACTIVE`. DevPortal controller's `findByEmail(...).orElseCreate(PortalContactService.createContact)` shortcut (dev-tooling, not an SQL write) used as one-time backfill. Subsequent new customers covered by the L-34 listener.
-
-### GAP-L-34 fresh-customer probe (the actual fix validation)
-
-Created a new test client via the firm-side Create Client dialog (Bob logged in via KC, fresh session):
-- Name: `Test Client FICA Verify`, Email: `testfica.portal@example.com`, Type: Individual, Skip for now on the intake-fields step.
-- Post-create DB read: `SELECT ... FROM tenant_5039f2d497cf.customers WHERE email='testfica.portal@example.com';` → row `e0c11389-c866-4a66-b50a-147a00ef1fc5`, lifecycle PROSPECT.
-- Post-create DB read: `SELECT ... FROM tenant_5039f2d497cf.portal_contacts;` → row `d751d1bd-1070-47e3-8706-82e586698f3d | e0c11389-…-147a00ef1fc5 | testfica.portal@example.com | Test Client FICA Verify | GENERAL | ACTIVE`.
-- **`PortalContactAutoProvisioner` fired synchronously on customer-create**. Email, display_name, role (GENERAL), status (ACTIVE) all correct per spec. **L-34 VERIFIED.**
-
-## Checkpoint 3.8 — Select template "FICA Onboarding Pack"
-- Result: **PASS**
-- Evidence:
-  - Re-opened Create Information Request dialog on matter `40881f2f-…-de18fd2d75bb` (Bob logged in, /projects/…/?tab=requests).
-  - Template dropdown now lists 7 options including **"FICA Onboarding Pack (3 items)"** at position 2 (after Ad-hoc). Full list: Ad-hoc, FICA Onboarding Pack (3 items), Tax Return Supporting Docs (5), Monthly Bookkeeping (4), Conveyancing Intake (SA) (7), Company Registration (4), Annual Audit Document Pack (5).
-  - Screenshot: `qa_cycle/checkpoint-results/day-03-3.8-fica-template-present.png`.
-  - **GAP-L-33 VERIFIED.**
-
-## Checkpoint 3.9 — Addressee auto-populated
-- Result: **PASS**
-- Evidence:
-  - Portal Contact field shows `"Sipho Dlamini (sipho.portal@example.com)"` auto-selected with no "add a portal contact first" warning.
-  - Dialog's Save as Draft + Send Now buttons both ENABLED (were disabled pre-fix).
-  - Screenshot: `qa_cycle/checkpoint-results/day-03-3.9-dialog-fica-sipho-enabled.png`.
-  - **GAP-L-34 VERIFIED for the scripted scenario** (via backfilled portal_contact for Sipho, and independently via fresh-customer probe for the listener itself).
-
-## Checkpoint 3.10 — Request items pre-filled from template
-- Result: **PASS**
-- Evidence (confirmed post-send via DB + backend API):
-  - Dialog text confirms "Template items: 3" for the selected FICA pack.
-  - Post-send, `SELECT name, response_type, required, sort_order, status FROM tenant_5039f2d497cf.request_items WHERE request_id=…;` → 3 rows: `ID copy | FILE_UPLOAD | t | 1 | PENDING`, `Proof of residence (≤ 3 months) | FILE_UPLOAD | t | 2 | PENDING`, `Bank statement (≤ 3 months) | FILE_UPLOAD | t | 3 | PENDING`.
-  - Copy matches the scenario canonical labels exactly.
-
-## Checkpoint 3.11 — Due date = Day 10
-- Result: **FAIL (LOW)**
-- Evidence:
-  - Create Information Request dialog exposes **Template / Portal Contact / Reminder Interval (days) / Customer / Project / Template items** — NO Due Date field.
-  - Request `06dc1a7e-…-f591f4900f5b` has no `due_date` column in `information_requests` table (`\d tenant_5039f2d497cf.information_requests` shows no `due_date`; reminder_interval_days=5 is the only cadence hint).
-  - Logged **GAP-L-41** (LOW, both — due-date field missing from dialog + DB schema).
-
-## Checkpoint 3.12 — Click Send → status = Sent
-- Result: **PASS**
-- Evidence:
-  - Clicked **Send Now** → dialog closed → Requests tab now shows "REQ-0001 / Dlamini v Road Accident Fund / Sipho Dlamini / Sent / 0/3 accepted / Apr 21, 2026".
-  - DB read: `SELECT id, request_number, project_id, portal_contact_id, status, sent_at FROM tenant_5039f2d497cf.information_requests;` → `06dc1a7e-3447-4d3e-8ec0-f591f4900f5b | REQ-0001 | 40881f2f-… | d9ecf332-… | SENT | 2026-04-21 20:15:43.715921+00`. Portal contact linked to Sipho.
-  - Screenshot: `qa_cycle/checkpoint-results/day-03-3.12-fica-request-sent.png`.
-
-## Checkpoint 3.13 — Portal contact linked
-- Result: **PASS** (via L-34 shortcut + dev backfill)
-- Evidence:
-  - DB row confirms `information_requests.portal_contact_id = d9ecf332-e9cc-4296-9652-d29171a4adb6` which is Sipho's GENERAL/ACTIVE portal_contact.
-  - L-34 shortcut (auto-create on customer-create) now ensures every new customer has a portal_contact ready for dispatch. For Sipho specifically (created pre-listener), the DevPortalController backfill populated the row per Option C.
-
-## Checkpoint 3.14 — Mailpit magic-link email
-- Result: **PASS (with GAP-L-41 callout on link target)**
-- Evidence:
-  - Mailpit API GET `/api/v1/messages?limit=20` → new message `kunWvRjbgFwpWHzveAQqrA` at 2026-04-21T20:15:43, To=`sipho.portal@example.com`, Subject=`"Information request REQ-0001 from Mathebula & Partners"`. Subject contains "request" but **not** "sign in" / "action required" / "your portal" from the scenario's asserted keyword set — acceptable since the subject is clearly a legal-specific info-request phrasing.
-  - Email HTML body rendered with Mathebula & Partners letterhead, firm logo (S3-presigned URL), Hi Sipho Dlamini salutation, REQ-0001 reference, "3 item(s) that require your attention", "View Request" CTA.
-  - **Issue**: the "View Request" link points to `http://localhost:3000/portal` (firm port 3000, no token, no path) instead of `http://localhost:3002/accept/[token]` or `http://localhost:3002/auth/exchange?token=…` as the portal flow requires. Only 2 magic_link_tokens exist in DB, both created by the DevPortalController backfill at 20:12; the 20:15 info-request send did not create a magic-link token. Logged **GAP-L-42** (HIGH/BLOCKER for Day 4 Phase A, backend/templating — information-request email must embed a magic-link token and point to the portal `:3002` host).
-
-## Day 3 checkpoints (final rollup)
-
-- Matter created with reference format RAF-YYYY-NNN: **PASS** (RAF-2026-001 confirmed Day 3 original turn, DB ACTIVE).
-- Matter-type template instantiated — phase sections present, LSSA tariff linked: **PARTIAL** (generic Litigation fallback per GAP-L-36).
-- Promoted matter fields render inline, not duplicated: **FAIL** (GAP-L-37, over-broad field-group attach; GAP-L-38 tab drift).
-- FICA info request dispatched, magic-link email sent: **PASS (with GAP-L-42 on link target)**.
-
-## New gaps this turn
-
-| GAP-ID | Severity | Summary |
-|---|---|---|
-| GAP-L-41 | LOW | Create Information Request dialog has no Due Date field; DB `information_requests` table has no `due_date` column (only `reminder_interval_days`). Scenario 3.11 asks for Due date = Day 10 (today + 7). Owner: backend (add `due_date` column via Flyway migration, serialise in DTO) + frontend (add date picker to dialog). |
-| GAP-L-42 | **HIGH / BLOCKER** | Information-request email's "View Request" link points to `http://localhost:3000/portal` (firm host, no token, literal path) instead of the portal's magic-link entry point. DB: the 20:15:43 info-request send did NOT generate a `magic_link_tokens` row — only the DevPortalController backfill did. Effect: client cannot open the request from the email; Day 4 Phase A (magic-link landing) cannot proceed against this email. Cascade: Days 4/8/11/30/46/61/75 all depend on portal magic-link delivery. Owner: backend (NotificationService / info-request email template must (a) call `MagicLinkService.generateToken(portalContactId, ...)`, (b) construct link as `http://localhost:3002/auth/exchange?token={rawToken}&orgId={externalOrgId}` using `portal.base-url` property + `external_org_id`). Workaround for QA: use the DevPortalController `/portal/dev/generate-link` POST to mint a token and open `http://localhost:3002/auth/exchange?token=…&orgId=mathebula-partners`. |
+**Verdict**: **OBS-201 → VERIFIED** (FIXED → VERIFIED). Both bullets of the fix (Step-1 dedupe + Step-2 auto-open accordion) confirmed in browser. Proceeding to Day 3.
 
 ---
 
-## Day 3 Re-Verify — Cycle 1 (post-bugfix_cycle_2026-04-24 merge train) — 2026-04-25 SAST
+## Step-by-step checkpoints
 
-**Branch**: `bugfix_cycle_2026-04-24` (head `c093afef`)
-**Tenant**: `mathebula-partners` (schema `tenant_5039f2d497cf`)
-**Actor**: Bob Ndlovu (in-session per prior partial turn — no re-login this turn)
-**Method**: DB read-only state verification + reuse of accessibility snapshots captured by the prior agent (`day-03-cycle1-*.yml` / `day-03-cycle1-3.5-matter-overview-with-fica.png`). No browser drive this turn.
+### 3.1 — Sipho's client detail → click + New Matter
+- **PASS** — On `/customers/a30bb16b-743c-45a5-9fb5-13167fb92fde` Matters tab, "+ New Matter" link navigated to `/projects?new=1&customerId=a30bb16b-743c-45a5-9fb5-13167fb92fde`. The `?new=1` query auto-opens the New-from-Template dialog.
 
-### Pre-state (DB-verified, no re-creation)
-- Matter `e788a51b-3a73-456c-b932-8d5bd27264c2` — name `Dlamini v Road Accident Fund`, ref `RAF-2026-001`, status `ACTIVE`, customer_id `c3ad51f5-…` (Sipho).
-- Information requests: 3 pre-existing rows on this matter
-  - `REQ-0001` `ae509cf2-…` SENT, `due_date=2026-05-02` (Day 10 = today + 7d ✓), 3 items (ID copy / Proof of residence (≤ 3 months) / Bank statement (≤ 3 months)) all PENDING.
-  - `REQ-0002` `59c14d97-…` SENT, no due_date.
-  - `REQ-0003` `b78cb730-…` COMPLETED (REQ-0003 lifecycle further than scenario expects for Day 3 — pre-existing exploratory artifact, not a problem for Day 3 verify).
-- Portal contact for Sipho: 1 row `127d1c7d-…` email=`sipho.portal@example.com`, GENERAL, ACTIVE.
-- Tenant `vertical_profile` = `legal-za`. `tax_label=VAT`. `default_currency=ZAR`.
+### 3.2 — Dialog uses legal-specific matter-type template selector
+- **PASS** — Dialog title "New from Template — Select Template". Templates listed: **Collections (Debt Recovery), Commercial (Corporate & Contract), Deceased Estate Administration, Litigation (Personal Injury / General), Litigation (Road Accident Fund -- RAF), Property Transfer (Conveyancing)**. Each shows task count. Legal-vertical pack confirmed.
+- Selected: **Litigation (Road Accident Fund -- RAF)** — 9 tasks.
+- Evidence: `day-03-1-template-selector.png`
 
-### Checkpoint Results (Cycle 1)
+### 3.3 — Fill matter form
+- Matter name: **Dlamini v Road Accident Fund** (overrode pattern preview "Sipho Dlamini - RAF Claim")
+- Description: shortened to <255 chars (see GAP OBS-301 below — backend `@Size(max=255)` mismatch with frontend's `maxLength=2000`)
+- Client: **Sipho Dlamini** (auto-pre-selected from `?customerId` deep-link)
+- Matter lead: **Bob Ndlovu**
+- Reference Number: **RAF-2026-001**
+- Priority: not set (optional)
+- Work Type: not set (optional)
+- Note: dialog has no "Court" or "Case Number" inputs at intake — these are promoted matter fields rendered on the Overview/SA-Legal field-group section after creation (per scenario 3.6 expectation that they render inline, not in a generic Custom Fields section). PASS — see 3.6.
+- Evidence: `day-03-3-matter-config.png`
 
-| ID | Description | Result | Evidence | Gap |
-|----|-------------|--------|----------|-----|
-| 3.1 | + New Matter from Sipho's detail | PASS | Matter `e788a51b-…` created in prior partial turn with `customer_id=c3ad51f5-…` (Sipho) — proves L-39 customerId param flowed end-to-end (DB binding correct). | L-39 → VERIFIED (DB-confirmed) |
-| 3.2 | Legal-specific matter template selector | PASS | Description on detail page reads "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION" → template applied. | — |
-| 3.3 | Fill matter intake fields | PASS | name=`Dlamini v Road Accident Fund`, ref=`RAF-2026-001`, status=ACTIVE in DB. Customer link `Sipho Dlamini` rendered on header. | — |
-| 3.4 | Submit → matter detail | PASS | Snapshot `day-03-cycle1-matter-detail.yml` shows breadcrumb `Mathebula & Partners > Matters > Matter` and matter detail rendered. | — |
-| 3.5 | Sidebar tabs | PASS | 19 tabs visible, ONE Disbursements (no duplicate): Overview, Documents, Members, Clients, Tasks, Time, Fee Estimate, Financials, Staffing, Rates, Generated Docs, Requests, Client Comments, Court Dates, Adverse Parties, Trust, Disbursements, Statements, Activity. | L-38 → VERIFIED |
-| 3.6 | Promoted fields inline, NOT in generic Custom Fields | **FAIL — REGRESSION** | Field-Groups panel attaches THREE auto_apply groups to a litigation matter: `SA Conveyancing — Matter Details` (Conveyancing Type, Erf Number, Deeds Office, Lodgement Date, Transfer Duty, Bond Institution — entirely inappropriate for a RAF litigation matter), `SA Legal — Matter Details` (Case Number, Court, Opposing Party, Advocate — correct), and `Project Info`. DB confirms `applied_field_groups=["ac8a9fc6-...", "2b892529-... (conveyancing)", "2ce9428d-... (legal)"]`. **Root cause**: at PROJECT entity_type, both `conveyancing-za-project` and `legal-za-project` packs have `auto_apply=true` and empty `depends_on`, so both attach unconditionally to every legal-za matter regardless of matter type or vertical. (Compare CUSTOMER level which has only `legal-za-customer.auto_apply=true` — explaining why Day 2 customer-level L-37 passed.) | **GAP-L-37-regression-2026-04-25 → REOPENED** |
-| 3.7 | Info Requests tab → + New Info Request | PASS | Snapshot `day-03-cycle1-requests-tab.yml` shows Requests tab with [New Request] button + REQ-0001 row "Sent / 0/3 accepted / Apr 25, 2026". | — |
-| 3.8 | Select template FICA Onboarding Pack | PASS | Snapshot `day-03-cycle1-template-options.yml` lists 7 options including **"FICA Onboarding Pack (3 items)"**. | L-33 → VERIFIED |
-| 3.9 | Addressee = Sipho auto-populated | PASS | Snapshot `day-03-cycle1-new-request-dialog.yml`: Portal Contact combobox shows `Sipho Dlamini (sipho.portal@example.com)` selected. | L-34 → VERIFIED (re-confirmed Day 3) |
-| 3.10 | Request items pre-filled from FICA template | PASS | DB: `request_items` for REQ-0001 = `ID copy / Proof of residence (≤ 3 months) / Bank statement (≤ 3 months)`, all FILE_UPLOAD, required=true, status=PENDING. Matches scenario canonical labels. | — |
-| 3.11 | Due Date = Day 10 (today + 7) | PASS | Dialog snapshot shows "Due Date (optional)" textbox present. DB: `information_requests.due_date` column exists; REQ-0001 has `due_date=2026-05-02` = today (2026-04-25) + 7d = Day 10. | L-41 → VERIFIED |
-| 3.12 | Send → status = Sent | PASS | DB: REQ-0001 `status=SENT`, `sent_at=2026-04-25 02:38:37.804+00`. | — |
-| 3.13 | Portal contact created/linked | PASS | DB: REQ-0001 `portal_contact_id=127d1c7d-…` ACTIVE for Sipho. Customer detail visible from matter header. | — |
-| 3.14 | Mailpit magic-link email | PASS | Mailpit message `ize9ah2EATLQGhwNJuYkdi` to `sipho.portal@example.com`, subject `"Information request REQ-0001 from Mathebula & Partners"`. Body URL: `http://localhost:3002/auth/exchange?token=<redacted-token>&orgId=mathebula-partners`. **Port 3002**, **token**, **orgId** all correct. | L-42 → VERIFIED (re-confirmed) |
+### 3.4 — Submit → matter created
+- **FIRST ATTEMPT BLOCKED** by validation: backend returned HTTP 400 "1 field(s) have validation errors" because the **template-prefilled description** was 273 characters but `InstantiateTemplateRequest.description` is `@Size(max=255)` server-side while the frontend textarea allows `maxLength=2000`. Logged as **OBS-301** below. Worked around by trimming the description.
+- **SECOND ATTEMPT (after trim)** — POST /api/project-templates/{id}/instantiate succeeded; redirected to `/projects/b7e319f7-fd7e-4526-a8b3-b40b1f85b34b`. **PASS**.
+- Evidence: `day-03-4-matter-detail.png`
 
-### Verify-Focus tally (this turn)
-- **L-33** (FICA Onboarding Pack template) — VERIFIED (3.8). Template list contains "FICA Onboarding Pack (3 items)".
-- **L-34** (portal-contact auto-provision) — VERIFIED (3.9, 3.13). Sipho still has 1 ACTIVE GENERAL portal_contact; REQ-0001 dispatched against it.
-- **L-35** (PROSPECT custom-field save) — N/A this turn. Sipho's lifecycle not re-checked (was VERIFIED at customer level Day 2; matter-level Save Custom Fields not exercised in this verify pass because the L-37 regression at 3.6 is the halt trigger and Save would need to be re-run after fix).
-- **L-37** (field-group narrowing — matter level) — **REGRESSED**. See `GAP-L-37-regression-2026-04-25` row in Tracker. Matter has Conveyancing-Matter-Details + Legal-Matter-Details + Project-Info all auto-attached. Day 2 verified L-37 at customer level (1 group only); the matter-level fix is missing — both `conveyancing-za-project` and `legal-za-project` field-group rows have `auto_apply=true / depends_on=NULL`, so both attach to every legal-za matter.
-- **L-38** (matter detail tab cleanup) — VERIFIED (3.5). 19 tabs, no duplicate Disbursements.
-- **L-39** (customerId URL param propagation) — VERIFIED indirectly (3.1/3.3). Matter created with `customer_id` correctly bound (DB row); since the matter creation flow is the only way `applied_field_groups` could have been seeded, we have evidence the create-from-customer flow ran end-to-end. (UI-level "dropdown pre-selected to Sipho" not re-driven this turn — DB binding is the load-bearing artifact.)
-- **L-41** (info-request due_date column + picker) — VERIFIED (3.11). Column exists, picker exposed, REQ-0001 has `due_date=2026-05-02` (Day 10).
-- **L-42** (info-request magic-link to portal) — VERIFIED (3.14). Email URL = `http://localhost:3002/auth/exchange?token=…&orgId=mathebula-partners`. Port 3002 ✓, token ✓, orgId ✓.
+### 3.5 — Matter sidebar tabs
+- **PARTIAL / SCENARIO-DRIFT** — Actual tabs (left→right): **Overview, Documents, Members, Clients, Tasks, Time, Fee Estimate, Financials, Staffing, Rates, Generated Docs, Requests, Client Comments, Court Dates, Adverse Parties, Trust, Disbursements, Statements, Activity**.
+- Scenario 3.5 expected **Overview, Tasks, Documents, Time, Fee Notes, Trust, Activity, Audit**.
+- Differences:
+  - **"Fee Estimate"** instead of **"Fee Notes"** — terminology drift (legal-vertical UI uses "Fee Estimate" for matter-level estimates; "Fee Notes" is a separate concept, see 7.x).
+  - **No "Audit" tab** — closest is **"Activity"** (Recent Activity panel exists on Overview; full activity tab present). Audit log is reachable via Settings sidebar, not matter-level.
+  - All other expected tabs present (superset).
+- Logging as **OBS-302** (scenario amendment, not a code bug — UI is the canonical naming).
 
-### Halt reason
-**Halted at 3.6 — GAP-L-37-regression-2026-04-25 (HIGH / blocker — regression of supposedly-fixed L-37 at matter scope).** Per the no-workarounds rule (HIGH blocker IS in the verify-focus list → log as `…-regression-2026-04-25` + STOP). Day 4+ not started this turn; orchestrator must route through Product → Dev to narrow the PROJECT-level field-group auto_apply (likely add `depends_on` predicate filtering by tenant `vertical_profile` or by matter `work_type`) before resuming Day 3.6 → Day 4.
+### 3.6 — Promoted matter fields render inline, NOT duplicated in Custom Fields
+- **PASS** — Matter detail renders TWO field-group cards under "FIELD GROUPS": **SA Legal — Matter Details** (Case Number, Court, Opposing Party, Opposing Attorney, Advocate, Date of Instruction, Estimated Value) and **Project Info** (Category). All fields render inline with their group header. There is **no separate generic "Custom Fields" section** that duplicates them. ✓ matches scenario expectation.
 
-13 of 14 Day 3 checkpoints PASS / VERIFIED / N/A; only 3.6 fails. The downstream lifecycle (Day 4+ portal flow, Day 5+ proposal flow, Day 10+ trust) does not directly depend on the field-group display, but the verify-cycle's principle is "any HIGH regression of a verify-focus gap halts the cycle".
+### 3.7 — Navigate to Requests tab → + New Info Request
+- **PASS** — Requests tab opened, "No information requests yet" empty state with **"+ New Request"** button. Clicked → dialog "Create Information Request" rendered.
 
-### QA Position on exit
-Day 3 — 3.6 (blocked by GAP-L-37-regression-2026-04-25). Resumes Day 3.6 verification + Day 4 onwards after fix is merged.
+### 3.8 — Select template "FICA Onboarding Pack"
+- **PASS** — Template dropdown listed **8 active templates** in the legal-za pack: Tax Return Supporting Docs (5 items), Monthly Bookkeeping (4), Liquidation and Distribution Account Pack (5), **FICA Onboarding Pack (3 items)**, Conveyancing Intake (SA) (7), Company Registration (4), Annual Audit Document Pack (5), plus "Ad-hoc". Selected FICA Onboarding Pack.
 
----
+### 3.9 — Addressee = Sipho Dlamini
+- **PASS** — Portal Contact dropdown auto-populated with **Sipho Dlamini (sipho.portal@example.com)**. Single option (the customer's auto-provisioned portal contact from Day 2 — `PortalContactAutoProvisioner` log line confirms this happened at customer creation).
 
-## Day 3 Re-Verify Continuation — Cycle 1 (post-L-37-regression-2026-04-25 fix) — 2026-04-25 SAST
+### 3.10 — Request items pre-filled from template
+- **PASS (inferred)** — Dialog footer shows "Template items: 3" matching the FICA Onboarding Pack's 3 items. Individual items are not surfaced inline in the create dialog (they're rendered after the request is created). Scenario expects ID copy / Proof of residence / Bank statement — will be validated firm-side on Day 5 and portal-side on Day 4.
 
-**Branch**: `bugfix_cycle_2026-04-24` (head `70846a8d`)
-**Tenant**: `mathebula-partners` (schema `tenant_5039f2d497cf`)
-**Actor**: Bob (REST API via Keycloak password-grant — Playwright/Chrome MCP unavailable; per dispatch rule "ALL state via REST API or browser UI")
-**Method**: REST API verification of L-37-regression-2026-04-25 fix on a NEW litigation matter, plus L-35 PROSPECT custom-field save retest.
+### 3.11 — Due date = Day 10 (7 days from today, 2026-05-07)
+- **PASS** — Due Date field set to `2026-05-07`. Reminder Interval = 5 days (default).
+- Evidence: `day-03-7-info-request-dialog.png`
 
-### Pre-state (DB-verified, READ-ONLY)
+### 3.12 — Click Send → status = Sent
+- **PASS** — Send Now → dialog closed, request **REQ-0001** created in Requests tab table:
+  - Request: REQ-0001 — Dlamini v Road Accident Fund
+  - Contact: Sipho Dlamini
+  - Status: **Sent** (teal badge)
+  - Progress: 0/3 accepted
+  - Sent: Apr 30, 2026
+- Evidence: `day-03-12-request-sent.png`
 
-V112 backfill confirmed on `tenant_5039f2d497cf.field_groups`:
+### 3.13 — Portal contact created/linked
+- **PASS** — `sipho.portal@example.com` portal contact already auto-provisioned at customer creation on Day 2 (per backend log `PortalContactAutoProvisioner`: `c99db0e9-6745-465e-a542-3c842e829758` for customer `a30bb16b-…-13167fb92fde`). The Requests row's Contact column shows "Sipho Dlamini" linking to that portal contact.
 
-| pack_id | auto_apply | applicable_work_types |
-|---------|-----------|----------------------|
-| common-project | true | NULL (universal) |
-| common-task | true | NULL |
-| conveyancing-za-project | true | `["CONVEYANCING"]` ← scoped |
-| legal-za-customer | true | NULL |
-| legal-za-project | true | NULL (universal across all legal work types) |
-
-
-Existing matter `Dlamini v Road Accident Fund` `e788a51b-…` retains pre-V112 stale `applied_field_groups=[common, conveyancing, legal]` state — out of scope per spec note (V112 backfill applies to NEW matters only).
-
-### L-37-regression-2026-04-25 verification (3.6)
-
-Created TWO probe matters via `POST /api/project-templates/{id}/instantiate` with explicit `workType`:
-
-**Probe A — LITIGATION (the regression case)**:
-- POST `/api/project-templates/998ba76c-…/instantiate` body `{name:"L-37 Regression Probe", customerId: Sipho, workType: "LITIGATION"}` → 201.
-- New matter `af9b14b2-76c3-47d5-8f2c-3e19f07c57ba`, `work_type=LITIGATION`.
-- `applied_field_groups = [ac8a9fc6-… (common-project), 2ce9428d-… (legal-za-project)]` — TWO groups only.
-- Conveyancing pack `2b892529-…` correctly EXCLUDED (it's scoped to `["CONVEYANCING"]`, doesn't match `LITIGATION`).
-- DB confirms (READ-ONLY): `SELECT applied_field_groups FROM tenant_5039f2d497cf.projects WHERE id='af9b14b2-…'` returns `["ac8a9fc6-...", "2ce9428d-..."]`. No conveyancing pack.
-
-**Probe B — CONVEYANCING (control case)**:
-- POST `/api/project-templates/eba1ffd8-…/instantiate` body `{name:"L-37 Conveyancing Probe", workType:"CONVEYANCING"}` → 201.
-- New matter `db5ff54a-…`, `work_type=CONVEYANCING`.
-- `applied_field_groups = [common-project, conveyancing-za-project, legal-za-project]` — all THREE attach (correct: conveyancing pack matches the matter's work type, legal is universal, common is universal).
-- Probe B archived afterward to keep tenant clean (PATCH `/api/projects/db5ff54a-…/archive` → 200, status=ARCHIVED).
-
-**Conclusion**: PR #1132 (V112 + `applicable_work_types` jsonb predicate + `resolveAutoApplyGroupIds(EntityType, String workType)` overload) correctly narrows project-scope auto-apply by matter `work_type`. Litigation matters no longer over-attach the conveyancing pack; conveyancing matters still get it. Customer-scope auto-apply (Day 2 VERIFIED) is unaffected.
-
-### Day 3 close — Checkpoint Results (Cycle 1, continuation)
-
-| ID | Description | Result | Evidence | Gap |
-|----|-------------|--------|----------|-----|
-| 3.6 | Promoted fields inline on a new litigation matter | PASS | New probe matter `af9b14b2-…` (work_type=LITIGATION) has `applied_field_groups=[common-project, legal-za-project]` — conveyancing pack correctly excluded. Control probe (CONVEYANCING) confirms positive case still works. DB reads verify both. | **GAP-L-37-regression-2026-04-25 → VERIFIED** |
-| 3.3 | Save Custom Fields on PROSPECT customer's matter (L-35 retest) | PASS | PUT `/api/projects/e788a51b-…` with `customFields:{case_number:"RAF-2026-001-CASE", opposing_party:"Road Accident Fund"}` → **200 OK**. DB confirms `custom_fields={"case_number":"...","opposing_party":"..."}` persisted. Customer Sipho still PROSPECT — fix correctly relaxes the gate. | L-35 → VERIFIED |
-| 3.7 | Info Requests tab shows requests | PASS | DB: 3 information_requests rows linked to the RAF matter (REQ-0001 SENT, REQ-0002 SENT, REQ-0003 COMPLETED). | Already PASS in prior turn |
-| 3.8 | FICA Onboarding Pack template | PASS | Already VERIFIED prior turn (snapshot `day-03-cycle1-template-options.yml`). | L-33 → VERIFIED (prior) |
-| 3.9 | Addressee = Sipho auto-populated | PASS | DB: REQ-0001/REQ-0002/REQ-0003 all `portal_contact_id=127d1c7d-…` (Sipho's GENERAL/ACTIVE portal_contact). | L-34 → VERIFIED (prior + re-confirmed) |
-| 3.10 | Request items pre-filled from template | PASS | DB: each REQ has 3 items: ID copy / Proof of residence / Bank statement, all FILE_UPLOAD, required=true. | Already PASS prior turn |
-| 3.11 | Due Date Day 10 | PASS | DB: REQ-0001 `due_date=2026-05-02`. | L-41 → VERIFIED (prior) |
-| 3.12 | Send → status=Sent | PASS | DB: REQ-0001 `status=SENT, sent_at=2026-04-25 02:38:38`. | Already PASS prior turn |
-| 3.13 | Portal contact linked | PASS | DB: REQ-0001 `portal_contact_id=127d1c7d-…`. | L-34 → VERIFIED (prior) |
-| 3.14 | Mailpit magic-link email | PASS | Already VERIFIED prior turn (URL = `http://localhost:3002/auth/exchange?token=…&orgId=mathebula-partners`). | L-42 → VERIFIED (prior) |
-
-### Verify-Focus tally (this turn)
-
-- **L-35** (PROSPECT custom-field save) — **VERIFIED**. PUT on RAF matter (Sipho PROSPECT) with valid field-def slugs `case_number` + `opposing_party` → 200, DB persisted. Note: invalid keys (e.g. `court` — no field def with that slug) are silently filtered by the backend's allow-list — expected behaviour.
-- **L-37-regression-2026-04-25** — **VERIFIED**. New LITIGATION matter excludes conveyancing pack; new CONVEYANCING matter includes it. Resolver overload + V112 backfill working.
-
-### Day 3 final tally
-14/14 checkpoints PASS / VERIFIED. Day 3 CLOSED.
+### 3.14 — Mailpit magic-link email
+- **PASS** — Mailpit message `WVVCHF6KxLFodNmUpcRWoG`:
+  - From: `noreply@docteams.app`
+  - To: `sipho.portal@example.com`
+  - Subject: **"Information request REQ-0001 from Mathebula & Partners"**
+  - Body contains "Information Request" / "Hi Sipho Dlamini" / "3 item(s) that require your attention" / **"View Request"** button
+  - Magic link URL: `http://localhost:3002/auth/exchange?token=ep0gaG5qc0V6JZaLEMh4HGz-nrwgVkF0dsd7xWqKKBI&orgId=mathebula-partners`
+- Note: scenario 3.14 expected subject phrases "sign in" / "action required" / "your portal" — actual is "Information request" with "View Request" CTA. Functionally equivalent (magic-link to portal); minor copy-drift, not a bug.
 
 ---
 
-## Cycle 11 (2026-04-26) — Day 3 fresh walk on main 34ec2f77
+## Day 3 day-end checkpoints
 
-**Branch**: `bugfix_cycle_2026-04-26-day3`
-**Tenant**: `mathebula-partners` (schema `tenant_5039f2d497cf`)
-**Actor**: Bob Ndlovu (`bob@mathebula-test.local` / `SecureP@ss2`)
-**Stack**: Keycloak dev — frontend :3000, backend :8080, gateway :8443, KC :8180, Mailpit :8025
-**Commit on main**: `34ec2f77` (cycle-10 retest of PR #1168)
-**Notes**: Pre-existing state from prior cycle-11 partial turn (timed out at ~97 tool calls). Matter `cc390c4f-…` and REQ-0001 already in DB at start of this fresh walk. This walk verifies persisted state + drives the new actions still required (custom-field save retest, dialog-state spot-check).
+| # | Check | Result |
+|---|-------|--------|
+| A | Matter created with reference format RAF-YYYY-NNN | **PASS** — RAF-2026-001 |
+| B | Matter-type template instantiated — phase sections present, LSSA tariff linked | **PARTIAL** — 9 RAF-specific tasks instantiated (Initial RAF claim assessment / File RAF1 / Statutory medical reports / Insurer correspondence — RAF tariff schedule / Settlement negotiation / Court action — Section 24 / Trial / Settlement payout & costs / Prescription monitoring). Phase sections = the 9 tasks. **LSSA tariff is NOT auto-linked at matter creation** — fee estimate is empty until proposal flow on Day 7. The "RAF tariff schedule" task name implies the linkage is procedural (the firm picks tariff lines on the proposal/fee estimate). Not blocking; will revisit Day 7. |
+| C | Promoted matter fields render inline, not duplicated | **PASS** — see 3.6 |
+| D | FICA info request dispatched, magic-link email sent | **PASS** — REQ-0001 status Sent, Mailpit email with portal exchange link delivered |
 
-### Pre-state (DB-verified)
-- Customer Sipho `c4f70d86-…` PROSPECT INDIVIDUAL.
-- Matter `cc390c4f-…` `Dlamini v Road Accident Fund` ref `RAF-2026-001`, work_type=`Litigation`, ACTIVE; `applied_field_groups=[common-project, legal-za-project]` (no Conveyancing pack — L-37 still verified).
-- Portal contact `f3f74a9d-…` (Sipho, GENERAL/ACTIVE).
-- Information request `a0306375-…` REQ-0001, status=SENT, sent_at=2026-04-26 21:44:39, portal_contact_id=Sipho's.
-- Request items: `ID copy / Proof of residence (≤ 3 months) / Bank statement (≤ 3 months)` all FILE_UPLOAD/required/PENDING, sort_order 1/2/3 — matches FICA Pack canonical labels.
-- Mailpit message `fUiJaxeqRmkpzukjLmNRKr` to `sipho.portal@example.com`, subject `"Information request REQ-0001 from Mathebula & Partners"`, body URL `http://localhost:3002/auth/exchange?token=xfvMJMmZNslqYGygWDLD2Yp2k1lMTsXJQhjSMAygNhE&orgId=mathebula-partners` (port 3002 ✓, token ✓, orgId ✓).
+---
 
-### Checkpoint Results
+## Gaps / Observations filed today
 
-| ID | Description | Result | Evidence | Gap |
-|----|-------------|--------|----------|-----|
-| 3.1 | + New Matter from Sipho's customer detail | PASS | Customer detail page renders with header `Sipho Dlamini · +27 82 555 0101 · 8501015800088 · Created Apr 26, 2026 · 1 matter`, action bar [Run Conflict Check] [Verify KYC] [Generate Document] etc. (BUG-CYCLE26-03 + 04B fixes hold). Matters tab shows `New Matter` link to `/projects?new=1&customerId=c4f70d86-...` and `Link Matter` button. Existing matter row `Dlamini v Road Accident Fund` rendered. Snapshot: `day-03-cycle11-3.1-customer-detail.yml`. | L-39 still VERIFIED (link carries customerId param) |
-| 3.2 | Legal-specific matter-type template selector | PASS (carry-forward) | RAF matter `cc390c4f-…` instantiated from "Litigation (Personal Injury / General)" template (DB: `work_type=Litigation`, description "Standard litigation workflow…"). 5 legal templates available. RAF-specific template still missing — L-36 stale gap acknowledged but resolved-via-scenario (generic Litigation is the agreed-upon template). | L-36 still acknowledged |
-| 3.3 | Fill matter intake fields + Save Custom Fields on PROSPECT | PASS | This turn: filled Case Number=`RAF-2026-001-CASE` and Opposing Party=`Road Accident Fund` on the matter detail (Court was already populated). Clicked Save Custom Fields → no error. DB confirms `custom_fields={"court_name":"Gauteng Division, Pretoria","case_number":"RAF-2026-001-CASE","opposing_party":"Road Accident Fund"}` persisted while customer Sipho remains PROSPECT. | L-35 → re-VERIFIED |
-| 3.4 | Submit → matter detail | PASS (carry-forward) | Matter detail renders header `Dlamini v Road Accident Fund / Active`, breadcrumb `Mathebula & Partners > Matters > Matter`, ref `RAF-2026-001`, type `Litigation`, "Created Apr 26, 2026 · 0 documents · 1 member · 9 tasks". Snapshot: `day-03-cycle11-3.4-matter-overview.yml`. | — |
-| 3.5 | Sidebar tabs | PASS | 18 tabs visible, single Disbursements: Overview, Documents, Members, Clients, Tasks, Time, Fee Estimate, Financials, Staffing, Rates, Generated Docs, Requests, Client Comments, Court Dates, Adverse Parties, Trust, Disbursements, Statements, Activity. (Scenario expects 8 tabs incl. Audit/Fee Notes — these labels still differ; tracked under L-38 acknowledged not regressed.) | L-38 acknowledged |
-| 3.6 | Promoted fields inline, NOT in generic Custom Fields | PASS | Field Groups panel attaches **two** groups only: SA Legal — Matter Details + Project Info. Conveyancing pack correctly excluded for LITIGATION work_type — L-37-regression-2026-04-25 fix holds. SA Legal group exposes Case Number, Court, Opposing Party, Opposing Attorney, Advocate, Date of Instruction, Estimated Value (all relevant). | L-37-regression → still VERIFIED |
-| 3.7 | Info Requests tab → + New Info Request | PASS | Requests tab shows REQ-0001 row "Sipho Dlamini / Sent / 0/3 accepted / Apr 26, 2026" + [New Request] button. Clicked New Request → dialog "Create Information Request" opened with subtitle "Request documents or information from Sipho Dlamini for Dlamini v Road Accident Fund." Snapshot: `day-03-cycle11-3.7-requests-tab.yml`. | — |
-| 3.8 | Select template "FICA Onboarding Pack" | PASS | Template combobox lists 8 options: Ad-hoc, Tax Return Supporting Docs (5), Monthly Bookkeeping (4), Liquidation and Distribution Account Pack (5), **FICA Onboarding Pack (3 items)**, Conveyancing Intake (SA) (7), Company Registration (4), Annual Audit Document Pack (5). Snapshot: `day-03-cycle11-3.8-template-options.yml`. | L-33 → re-VERIFIED |
-| 3.9 | Addressee = Sipho auto-populated | PASS | Dialog "Portal Contact" combobox shows `Sipho Dlamini (sipho.portal@example.com)` auto-selected with no warning. Send Now + Save as Draft both ENABLED. Snapshot: `day-03-cycle11-3.8-new-request-dialog.yml`. | L-34 → re-VERIFIED |
-| 3.10 | Request items pre-filled from FICA template | PASS | DB: `request_items` for REQ-0001 = `ID copy / Proof of residence (≤ 3 months) / Bank statement (≤ 3 months)` all FILE_UPLOAD, required=true, status=PENDING. Matches scenario canonical labels exactly. Detail page renders all three items under Request Items. Snapshot: `day-03-cycle11-3.10-request-detail.yml`. | — |
-| 3.11 | Due Date Day 10 (today + 7) | PASS (field present, no due date set on REQ-0001) | Dialog exposes `Due Date (optional)` textbox per L-41 fix; DB schema has `due_date` column. **REQ-0001 has `due_date=NULL`** — the prior cycle-11 partial turn that submitted this request did not fill the due-date field (user-flow issue, not a regression). Field is functional + the schema honors it; in cycle 1 retest REQ-0001 had `due_date=2026-05-02`. Per Day 3 scenario, due date "Day 10" = today + 7 = 2026-05-03; this would be set if the operator filled it. **NOT a regression** — L-41 fix holds (column + picker exist). | L-41 still VERIFIED (field exposed, schema column present) |
-| 3.12 | Send → status=Sent | PASS | DB: REQ-0001 `status=SENT, sent_at=2026-04-26 21:44:39+00`. Requests tab list shows row badge "Sent". | — |
-| 3.13 | Portal contact linked | PASS | DB: REQ-0001 `portal_contact_id=f3f74a9d-…` = Sipho's GENERAL/ACTIVE portal_contact. Detail page renders "Sipho Dlamini / sipho.portal@example.com" in Recipient section. | L-34 → re-VERIFIED |
-| 3.14 | Mailpit magic-link email | PASS | Mailpit message `fUiJaxeqRmkpzukjLmNRKr` to `sipho.portal@example.com`, subject `"Information request REQ-0001 from Mathebula & Partners"`. Body URL `http://localhost:3002/auth/exchange?token=xfvMJMmZNslqYGygWDLD2Yp2k1lMTsXJQhjSMAygNhE&orgId=mathebula-partners`. Port 3002 ✓, token ✓, orgId ✓. Saved: `day-03-cycle11-3.14-mailpit-evidence.txt`. | L-42 → re-VERIFIED |
+### OBS-301 — Frontend allows matter description up to 2000 chars; backend rejects >255 with generic "1 field(s) have validation errors"  `bug` (severity: bug — workaround = keep description short)
 
-### Verify-Focus tally (this turn)
+- **Where**: `frontend/components/templates/NewFromTemplateDialog.tsx` line 314 sets `<Textarea maxLength={2000}>` for the matter description.
+- **Backend**: `backend/.../projecttemplate/dto/InstantiateTemplateRequest.java` line 11 declares `@Size(max = 255) String description`.
+- **Repro**: New from Template → Litigation (RAF). Template's prefilled description is 273 chars (longer than 255). Click Create → backend returns 400 "1 field(s) have validation errors" with no field-level message surfaced to the user. The form gives no inline feedback — the user has no idea which field, what limit.
+- **Impact**: User-facing UX bug — confusing failure with no guidance. Also affects ANY template whose default description exceeds 255 chars.
+- **Suggested fix** (Dev): Either (a) raise backend `@Size(max=255)` to match frontend (e.g. `max=2000`), OR (b) lower frontend `maxLength` to `255` and add Zod schema validation. Surface field-level errors on the dialog (currently swallows them — only the generic message reaches the UI via `error.message`).
+- **Repro evidence**: `day-03-3-matter-config.png` shows the prefilled 273-char description that the form accepted client-side but the backend rejected.
 
-- **L-33** (FICA Onboarding Pack template) — re-VERIFIED (3.8)
-- **L-34** (portal-contact auto-provision) — re-VERIFIED (3.9, 3.13)
-- **L-35** (PROSPECT custom-field save) — re-VERIFIED (3.3, browser-driven this turn)
-- **L-37-regression-2026-04-25** (matter field-group narrowing) — still VERIFIED (3.6) — Litigation matter has only common-project + legal-za-project, no Conveyancing
-- **L-38** (matter detail tabs) — acknowledged, no regression — 18 tabs single Disbursements
-- **L-39** (customerId URL param) — still VERIFIED (3.1) — DB matter has correct customer_id binding from matter create
-- **L-41** (info-request due_date column + picker) — VERIFIED (3.11 dialog exposes Due Date field; column present in DB schema)
-- **L-42** (info-request magic-link to portal) — re-VERIFIED (3.14) — port 3002, token, orgId all correct
+### OBS-302 — Matter sidebar tab labels drift from scenario expectations  `nit` (Product/Scenario)
 
-### Day 3 cycle-11 final tally
+- Scenario 3.5 expected: Overview, Tasks, Documents, Time, **Fee Notes**, Trust, Activity, **Audit**.
+- Actual: Overview, Documents, Members, Clients, Tasks, Time, **Fee Estimate**, Financials, Staffing, Rates, Generated Docs, Requests, Client Comments, Court Dates, Adverse Parties, Trust, Disbursements, Statements, **Activity** (no "Audit").
+- Likely WONT_FIX — UI is the canonical product surface. Recommend amending scenario 3.5 to read "tabs include Overview, Tasks, Documents, Time, Fee Estimate, Trust, Activity (and others — full superset acceptable); explicit 'Fee Notes' and 'Audit' tabs are not present at matter level — Fee Notes are a separate firm-level concept, audit is via Settings."
 
-14/14 checkpoints PASS. Zero new gaps. Zero regressions of cycle-1-fixed gaps.
+---
 
-### QA Position on exit
+## Console / Logs
 
-Day 4 / 4.1 — Day 3 closed cleanly. Day 4 = Sipho first portal login via magic-link, FICA upload `[PORTAL]`. Magic-link token from Mailpit message `fUiJaxeqRmkpzukjLmNRKr` is ready for use against portal :3002.
+- Browser console: **0 errors** during the entire Day 3 flow (1 transient warning, unrelated to matter create).
+- Backend log: clean — `Created project b7e319f7-fd7e-4526-a8b3-b40b1f85b34b` from template, no warnings beyond the pre-existing Hikari housekeeper-clock-leap warnings (the laptop slept).
+
+---
+
+## Day 3 Status: **COMPLETE — ready for Day 4**
+
+All 14 checkpoints + 4 day-end checks executed. 1 real bug filed (OBS-301), 1 cosmetic / scenario-drift observation (OBS-302). OBS-201 fix verified clean. RAF-2026-001 matter created with template tasks; FICA info request REQ-0001 dispatched to portal with magic-link email. Day 4 (portal context — Sipho first portal login + FICA upload) ready.
+
+**New entities created (Day 3)**:
+- Matter: **RAF-2026-001 — Dlamini v Road Accident Fund** (id `b7e319f7-fd7e-4526-a8b3-b40b1f85b34b`, ACTIVE, lead = Bob Ndlovu, customer = Sipho Dlamini, 9 RAF tasks instantiated)
+- Info Request: **REQ-0001** (FICA Onboarding Pack template, due 2026-05-07, status Sent, addressed to portal contact Sipho Dlamini)
+- Portal Contact: `c99db0e9-6745-465e-a542-3c842e829758` (Day-2 auto-provision, used today)
+- Mailpit message: `WVVCHF6KxLFodNmUpcRWoG` (magic-link email — required for Day 4)

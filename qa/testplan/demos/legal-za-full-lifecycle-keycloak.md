@@ -135,7 +135,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **0.10** Login as `padmin@docteams.local` / `password` → lands on platform admin home
 - [ ] **0.11** Navigate to `/platform-admin/access-requests`
 - [ ] **0.12** Mathebula & Partners visible in Pending: Industry = Legal Services, Country = South Africa
-- [ ] **0.13** Click into request → detail shows all submitted fields
+- [ ] **0.13** Verify all submitted fields render inline on the request row: Org Name, Email, Name, Country, Industry, Submitted timestamp, Status. (No separate detail view — the table row IS the detail surface; OBS-001 closed.)
 - [ ] **0.14** Click **Approve** → AlertDialog → **Confirm**
 - [ ] **0.15** Status = **Approved**, no provisioning error banner
 - [ ] **0.16** Vertical profile auto-assigned = `legal-za`. Verify via `curl -sS http://localhost:8443/api/orgs/mathebula-partners/profile -H "Authorization: Bearer $PADMIN_TOKEN"` OR approval card display
@@ -158,7 +158,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Thandi (Owner, logged in)
 
-- [ ] **0.26** Navigate to **Settings > Team** (`/settings/team`)
+- [ ] **0.26** Navigate to **Team** via the main sidebar's **Team** group → "Team" entry (`/org/{slug}/team`). (Team is a top-level nav item, not a Settings sub-page; OBS-002 closed.)
 - [ ] **0.27** Thandi listed as Owner. Confirm no "Upgrade to Pro" gate exists anywhere on the invite flow
 - [ ] **0.28** Invite `bob@mathebula-test.local` as **Admin** → Send
 - [ ] **0.29** Invite `carol@mathebula-test.local` as **Member** → Send
@@ -180,13 +180,15 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **1.1** Navigate to **Settings > Organization** → upload firm logo (any ≤ 200 KB PNG) → set brand colour to Mathebula navy `#1B3358` → Save
 - [ ] **1.2** Refresh → verify brand colour applied to sidebar accent + logo renders at top of sidebar
-- [ ] **1.3** Navigate to **Settings > Rate Cards** → verify LSSA tariff rates pre-seeded (from `legal-za` rate pack, Phase 55)
-- [ ] **1.4** Verify at least one tariff entry: **High Court — attending at court, per hour** with the latest published LSSA schedule in ZAR (currently 2024/2025 at the time of this test run; LSSA tariffs are revised every 2–3 years)
-- [ ] **1.5** Navigate to **Settings > Trust Accounts** → create a new trust account:
+- [ ] **1.3** Navigate to **Tariffs** via the main sidebar's **Finance** group → "Tariffs" entry (`/org/{slug}/legal/tariffs`). Verify LSSA tariff rates pre-seeded (from `legal-za` rate pack, Phase 55). (Tariffs is a Finance-group module nav item, not a Settings sub-page; OBS-101 closed.)
+- [ ] **1.4** Verify at least one tariff entry: section 4 of the LSSA 2024/2025 High Court Party-and-Party schedule contains **4(c) "Waiting time at court (per hour)" — R 780.00** OR **4(a) "Attendance at court (per day)" — R 7800.00**. All values in ZAR. LSSA tariffs are revised every 2–3 years; the latest published schedule will appear here.
+- [ ] **1.5** Navigate to **Settings > Trust Accounting** (Settings sidebar, Finance group → "Trust Accounting"; route `/org/{slug}/settings/trust-accounting`) → click **Add Account** → fill the trust account form:
   - Name: **Mathebula Trust — Main**
   - Bank: **Standard Bank**
+  - Branch Code: **051001** (real Standard Bank universal branch code; required field)
   - Account number: `12345678` (test placeholder)
   - Type: **SECTION_86** (Legal Practice Act)
+  - (OBS-103 closed: branch code is a hard-required field — real banks always have one. The Standard Bank universal code `051001` is the realistic value.)
 - [ ] **1.6** Trust account saves, no validation error, appears in list with balance **R 0.00**
 - [ ] **1.7** 📸 Optional screenshot: `day-01-trust-account-created.png`
 
@@ -240,7 +242,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
   - Case number: (blank at intake; populated later)
   - Primary attorney: Bob Ndlovu
 - [ ] **3.4** Submit → matter created, redirected to matter detail
-- [ ] **3.5** Verify matter sidebar shows tabs: **Overview, Tasks, Documents, Time, Fee Notes, Trust, Activity, Audit**
+- [ ] **3.5** Verify matter sidebar tabs include the canonical legal-za set: **Overview, Documents, Members, Clients, Tasks, Time, Expenses, Fee Estimate, Financials, Staffing, Rates, Generated Docs, Requests, Client Comments, Court Dates, Adverse Parties, Trust, Disbursements, Statements, Activity**. Note: tab is "Fee Estimate" (legal-za term for matter-level budget/planning) — NOT "Fee Notes" (which is the legal-za term for invoices, surfaced under the Fee Notes module, not as a per-matter tab). Matter-level audit history is surfaced via the **Activity** tab; org-wide audit log lives under **Settings > Audit Log** (per OBS-302 triage — there is no per-matter "Audit" tab in this product).
 - [ ] **3.6** Promoted fields (matter_type, court_name, case_number) render inline on Overview tab — **NOT** duplicated in a generic "Custom Fields" section
 - [ ] **3.7** Navigate to **Info Requests** tab on matter → click **+ New Info Request**
 - [ ] **3.8** Select template: **FICA Onboarding Pack** (from `legal-za` request pack)
@@ -270,26 +272,27 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **4.1** Open Mailpit (`http://localhost:8025`) → locate FICA info-request magic-link email for `sipho.portal@example.com`
 - [ ] **4.2** Click the magic-link in email body → browser navigates to `http://localhost:3002/accept/[token]`
 - [ ] **4.3** Portal exchanges token (`POST /portal/auth/exchange` fires) → redirects to `/home`
-- [ ] **4.4** Verify `/home` renders: pending info request section shows **"FICA Onboarding Pack"** with due date
+- [ ] **4.4** Verify `/home` renders: pending info request section shows the matter context (e.g. "Dlamini v Road Accident Fund") with due date. _(OBS-401 amend: portal `/requests` and `/home` index by matter/project name, not by template title. The template title "FICA Onboarding Pack" is firm-side; portal contacts see what the firm sent them tied to the matter context. Functional flow is correct.)_
 - [ ] **4.5** Verify header / sidebar shows Mathebula firm branding (navy accent, firm logo if uploaded Day 1)
 - [ ] **4.6** Verify user identity displayed as "Sipho Dlamini" (from firm-side client record)
 - [ ] **4.7** 📸 Optional screenshot: `day-04-portal-home-first-login.png`
 
 ### Phase B: Upload FICA documents
 
-- [ ] **4.8** Click into "FICA Onboarding Pack" → info-request detail renders
+- [ ] **4.8** Click into the request row → info-request detail renders, showing matter context (project name + request number) at the top and the per-item upload list below.
 - [ ] **4.9** Verify three upload slots labelled: ID copy, Proof of residence, Bank statement
 - [ ] **4.10** Upload a test PDF (any ≤ 2 MB) to each slot → three upload-progress indicators → three completion states
-- [ ] **4.11** Add optional note: "All documents current as of this week"
-- [ ] **4.12** Click **Submit** → info-request state transitions to **Submitted** (or "Awaiting review")
-- [ ] **4.13** Verify `/home` "Pending info requests" card no longer shows this request as pending
+- [ ] **4.11** _(OBS-402 amend: removed.)_ The portal does not surface a request-level cover-message textarea — per-item context is set by the firm when sending and rendered as the item's `description`. There is no portal-side "optional note" input on the info-request detail page. Per-item submissions carry the document and (where applicable) a per-item text response only.
+- [ ] **4.12** Submit each FICA item via per-item **Upload and submit** → each item transitions individually to **Submitted**. _(OBS-403 amend: there is NO single "Submit" button on the request envelope. The envelope tracks `submittedItems / totalItems` counters; once all 3 required items are SUBMITTED the envelope status remains `IN_PROGRESS` until firm-side **Mark as Reviewed** in Day 5.4 transitions it to **Completed**. State machine: `Sent` → (per-item submits) → `IN_PROGRESS` (3/3 submitted) → `Completed` (firm review) — there is no auto-`Submitted` envelope state.)_
+- [ ] **4.13** Verify `/home` "Pending info requests" card pending count drops to 0 once all 3 items are SUBMITTED (envelope itself remains `IN_PROGRESS` — not pending from the portal contact's perspective).
 - [ ] **4.14** 📸 Optional screenshot: `day-04-fica-submitted.png`
 
 **Day 4 checkpoints**
 - [ ] Magic-link login succeeded — no Keycloak form appeared at any step
 - [ ] Uploads stored (firm side will verify on Day 5)
-- [ ] Info-request state machine progressed: Sent → Submitted
+- [ ] Info-request state machine progressed: per-item `Pending → Submitted` for all 3 required items; envelope status `Sent → IN_PROGRESS` (closes to `Completed` on firm Mark-as-Reviewed in Day 5)
 - [ ] No firm-side terminology leaks on portal ("matter" → "your case", "info request" retained, no "task" / "ticket")
+- [ ] Brand check: portal footer reads "Powered by Kazi" — never "DocTeams" (OBS-404 fix verification)
 
 ---
 
@@ -299,40 +302,67 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Bob Ndlovu
 
-- [ ] **5.1** Navigate to matter RAF-2026-001 → Info Requests tab
-- [ ] **5.2** FICA Onboarding Pack shows status = **Submitted** with 3 documents attached
-- [ ] **5.3** Click into request → download each document → verify all three open cleanly
-- [ ] **5.4** Click **Mark as Reviewed** / **Approve** → state transitions to **Completed**
-- [ ] **5.5** Verify matter Overview shows FICA status = **Complete** (or equivalent lifecycle indicator)
-- [ ] **5.6** Mailpit → notification email to Sipho: "Your FICA documents have been received" (or equivalent). Log gap if no such email is sent.
+- [ ] **5.1** Navigate to matter RAF-2026-001 → Info Requests tab (matter detail uses `?tab=requests` query param, not segment routes)
+- [ ] **5.2** FICA Onboarding Pack row shows envelope status = **In Progress** (per OBS-403: there is no `SUBMITTED` envelope status; firm review is mandatory before closure) with `0/3 accepted` counter; clicking the row link in the table navigates to `/org/{slug}/information-requests/{id}` (NOT `/requests/{id}` — see OBS-501). Reach the request detail page and confirm 3 items render with `Submitted` per-item status and the 3 PDFs (`fica-id.pdf`, `fica-address.pdf`, `fica-bank.pdf`) attached.
+- [ ] **5.3** Verify each per-item **Download** button is operational (no console errors on click; headless Playwright won't persist the file but the handler is wired).
+- [ ] **5.4** Click **Accept** on each item in turn (per-item Accept replaces a separate envelope-level "Mark as Reviewed" — refines OBS-403 lifecycle understanding). Counter advances 0/3 → 1/3 → 2/3 → 3/3 accepted; on the third Accept, envelope status auto-transitions `In Progress → Completed` with a "Completed on …" stamp.
+- [ ] **5.5** Verify matter Overview shows FICA status — Activity feed renders the full audit trail (`REQ-0001 completed — all items accepted`, three accept events, three submit events). The matter Overview tab also renders a **FICA Status Card** (`<FicaStatusCard>`); confirm its "View request" link emits the canonical `/org/{slug}/information-requests/{requestId}` route — NOT `/requests/{id}` (OBS-501 verification).
+- [ ] **5.6** Mailpit → notification emails to Sipho during firm review: 3× per-item-accepted (`Item accepted — {name} (Mathebula & Partners)`) + 1× envelope-completed (`Request REQ-0001 completed (Mathebula & Partners)`).
 
 **Day 5 checkpoints**
 - [ ] Three uploaded documents retrievable firm-side
-- [ ] Info request lifecycle: Submitted → Completed
-- [ ] Matter FICA / KYC status indicator updated
+- [ ] Info request lifecycle: `Sent → IN_PROGRESS → Completed` (envelope closes when the last per-item Accept lands; no separate "Mark as Reviewed" button)
+- [ ] Matter FICA / KYC status indicator updated; FICA card "View request" link routes to `/information-requests/{id}` (OBS-501 fix verification)
+- [ ] Portal-side post-completion spot-check (still authenticated as Sipho on `:3002`): `/requests` row for REQ-0001 shows status badge **COMPLETED** AND counter **`3/3 accepted`** (NOT `0/3 submitted` — OBS-502 fix verification); detail page header reads `3/3 accepted • status COMPLETED`
 
 ---
 
-## Day 7 — Firm drafts + sends proposal (LSSA tariff fee estimate)  `[FIRM]`
+## Day 7 — Firm drafts + sends proposal (engagement letter)  `[FIRM]`
 
 **Actor**: Thandi Mathebula (Owner — signs proposals) — context swap, login as Thandi
 
-- [ ] **7.1** Navigate to matter RAF-2026-001 → click **+ New Proposal** (or Proposals tab → New)
-- [ ] **7.2** Proposal template dropdown shows legal-specific templates from doc-template pack; select **Litigation Engagement — RAF**
-- [ ] **7.3** Verify fee estimate section pre-populates with LSSA tariff line items appropriate for RAF claims (attendances, drafting, court appearances)
-- [ ] **7.4** Adjust estimated hours: 30h attorney (Bob) + 5h senior partner (Thandi) — ZAR estimate calculates automatically
-- [ ] **7.5** Add engagement scope in Tiptap editor: "Represent client in Road Accident Fund claim following motor vehicle accident on [DATE], up to and including settlement or trial."
-- [ ] **7.6** Set effective date = Day 10, expiry = Day 17 (7-day acceptance window)
-- [ ] **7.7** Click **Save** → proposal status = **Draft**
-- [ ] **7.8** Click **Send for Acceptance** → confirmation dialog → Confirm
-- [ ] **7.9** Proposal status transitions to **Sent**, acceptance URL generated
-- [ ] **7.10** Mailpit → proposal email to `sipho.portal@example.com` with subject containing "proposal" / "engagement letter" / "please review"
-- [ ] **7.11** Verify email body includes click-through link to portal proposal URL
+> **Scenario amendment (OBS-701, WONT_FIX)**: The product's proposal authoring is a
+> thin lifecycle wrapper (Title / Client / Fee Model / rate-or-retainer / Expiry).
+> There is no template-picker, no fee-estimate line-item builder, and no Tiptap
+> scope editor in the proposal dialog — those are separate surfaces:
+> doc-template instantiation lives in the matter's "Generate Document" action
+> (legal-za pack: `engagement-letter-litigation`), and matter-level fee-estimate
+> work lives on the matter's "Fee Estimate" tab (Budget). Day 7 has been rewritten
+> to drive the proposal flow that actually exists; the template/tariff/Tiptap
+> surfaces are exercised separately on Day 88 if relevant. Same pattern as Day 4
+> OBS-401/402/403.
+
+- [ ] **7.1** Navigate to matter RAF-2026-001 → click **+ New Engagement Letter** (legal-za term map for "+ New Proposal")
+- [ ] **7.2** Engagement-letter dialog opens with Client pre-filled = Sipho Dlamini (disabled, from matter context)
+- [ ] **7.3** Set Title = "Engagement Letter — Litigation (Dlamini v RAF)"
+- [ ] **7.4** Fee Model = **Hourly** (legal-za default for engagement letters); set Hourly Rate Note = "R 2,500/hr (LSSA tariff High Court Party-and-Party 2024/2025) — 30h Bob Ndlovu (attorney) + 5h Thandi Mathebula (senior partner) ≈ R 87,500.00 estimate."
+- [ ] **7.5** Set Expiry Date = Day 17 (7-day acceptance window from Day 10 effective)
+- [ ] **7.6** Click **Create Proposal** → redirected to `/org/{slug}/proposals/{id}`; status badge = **Draft**, PROP-0001 reference assigned
+- [ ] **7.7** On detail page, click **Send Proposal** → recipient combobox lists portal contacts → select `Sipho Dlamini (sipho.portal@example.com)` → click **Send**
+- [ ] **7.8** Proposal status transitions to **Sent**; **Sent: {date}** field appears in Proposal Details; action button changes to **Withdraw**
+- [ ] **7.9** Backend log confirms `Sent proposal {id} to contact {portalContactId}` and `Portal sync completed for proposal PROP-0001 after commit`
+- [ ] **7.10** Mailpit → proposal email arrives at `sipho.portal@example.com` with subject containing "Proposal" or "Engagement Letter" (depends on terminology), body contains click-through to portal proposal URL (OBS-703 fix)
+- [ ] **7.11** Verify portal `/proposals` index for Sipho shows PROP-0001 in **Awaiting Your Response** with status `SENT` (firm→portal projection)
 
 **Day 7 checkpoints**
-- [ ] Proposal template from legal-za doc-template pack is instantiable
-- [ ] LSSA tariff line items render in fee estimate (tariff integration verified)
-- [ ] Proposal dispatched, magic-link / secure link email sent to portal contact
+- [ ] Proposal lifecycle: Draft → Sent succeeds end-to-end
+- [ ] Portal email dispatched (OBS-703) — subject + body verified, link reaches `/proposals/{id}` on portal
+- [ ] Portal `/proposals` projection shows PROP-0001 (firm→portal sync)
+- [ ] Frontend console clean (no hydration mismatch on `/proposals` index — OBS-704)
+- [ ] Expiry date renders consistently with the date input (no +1-day tz drift — OBS-702)
+
+> **Out-of-scope on Day 7 (covered separately)**:
+> - Document templates from legal-za pack (`engagement-letter-litigation`,
+>   `letter-of-demand`, `power-of-attorney`, `client-trust-statement`, etc.) are
+>   instantiated via the matter / customer **Generate Document** action — see
+>   Day 2 customer detail (4 doc templates rendered) and matter "Generate
+>   Document" surface. They are NOT wired into proposal authoring.
+> - LSSA tariff line items are surfaced under matter **Fee Estimate** tab
+>   (`Budget` mapped to Fee Estimate) and via `/org/{slug}/legal/tariffs`. They
+>   are NOT auto-populated into proposals.
+> - Rich-text scope authoring is not currently supported in the proposal dialog
+>   — backend auto-seeds a minimal Tiptap doc from the form fields when no
+>   `contentJson` is supplied (`ProposalContentSeeder.buildDefaultContent`).
 
 ---
 
@@ -528,13 +558,47 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 **Actor**: Bob Ndlovu
 
-### Phase A: Time entry against LSSA tariff
+### Phase A: Time entry (non-tariff free-text path)
 
-- [ ] **21.1** Navigate to matter RAF-2026-001 → Time tab → **+ Log Time**
-- [ ] **21.2** Log 2.5h of work → select tariff activity **"Consultation with client — per 15 minutes"** from LSSA dropdown (tariff Phase 55 integration)
-- [ ] **21.3** Billable = Yes, rate auto-populates from tariff
-- [ ] **21.4** Submit → time entry saved, amount calculated
-- [ ] **21.5** Log another 1.5h under **"Drafting particulars of claim — per page / per hour"** tariff entry
+> **Scenario amendment (OBS-2101, WONT_FIX feature-gap)**: The product has
+> NO tariff↔time-entry binding. `TimeEntry` has no `tariff_item_id` FK;
+> `LogTimeDialog` has no activity combobox; `RateSnapshotService` does
+> not resolve rates from LSSA tariffs. The legal-tariff schedule browser
+> at `/legal/tariffs` and the time-entry domain are two unrelated
+> surfaces. Same treatment as OBS-701 (proposal Tiptap/templates/
+> fee-estimate). Building a tariff↔time-entry integration is a
+> multi-epic legal-vertical phase — out of scope for this cycle. Day 21
+> Phase A is rewritten to drive the actual non-tariff time-entry path.
+
+- [ ] **21.1** Navigate to matter RAF-2026-001 → Tasks tab (Time tab is
+      read-only summary; the canonical `Log Time` CTA is on each task row).
+- [ ] **21.2** Pick the assigned RAF task "Initial RAF claim assessment &
+      instructions" → click **Log Time**. Dialog opens with Duration /
+      Date / Description / Billable fields (no tariff dropdown — does
+      not exist).
+- [ ] **21.3** Enter `Duration = 2h 30m`, `Date = today`, `Description =
+      "Initial consultation with Sipho — RAF claim assessment, intake
+      narrative, instructions on quantum"`. Leave **Billable = Yes**.
+      Rate-preview banner will display the resolved member rate card OR
+      the yellow "No rate card found …" warning if Bob has no rate set —
+      either is acceptable; the product correctly warns the user.
+- [ ] **21.4** Submit → time entry saved on the task (visible in Tasks
+      tab Time column / matter Time tab summary). If a member-rate snapshot
+      was captured, `billable_value` will be populated; if not, entry is
+      saved at `R 0` and the warning banner served its purpose.
+- [ ] **21.5** Pick a second RAF task (e.g. "Draft particulars of claim")
+      → log `Duration = 1h 30m`, `Description = "Drafted particulars of
+      claim incl. quantum schedule"`. Same dialog; same path.
+
+> **Out-of-scope on Day 21 Phase A (covered separately, future phase)**:
+> - LSSA tariff activity selection in the time-entry dialog (dependent
+>   activity combobox + rate auto-populate from `TariffItem.unitRate` +
+>   per-unit-type maths "per 15min" / "per hour" / "per page" / "per day").
+> - Tariff-typed invoice line generation on Day 28 fee note (currently
+>   `TIME` line-type only — no tariff descriptors).
+> - These will lift in a future legal-vertical phase that wires
+>   `time_entry.tariff_item_id` FK + `RateSnapshotService` tariff path
+>   + `InvoiceCreationService` tariff-line type + frontend tariff combobox.
 
 ### Phase B: Disbursement (Phase 67)
 
@@ -554,7 +618,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] **21.12** Submit → court event saved, appears on firm-side **Court Calendar** page and matter Overview
 
 **Day 21 checkpoints**
-- [ ] Time entries post against tariff, rate auto-populates
+- [ ] Time entries post (non-tariff path — duration + member-rate snapshot OR yellow `No rate card found` warning) — OBS-2101 WONT_FIX
 - [ ] Disbursement recorded with recoverable flag (feeds Day 28 fee note)
 - [ ] Court date added, visible on calendar + matter
 
@@ -564,18 +628,56 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 **Actor**: Thandi Mathebula (Owner — signs fee notes) — context swap, login as Thandi
 
+> **UNBLOCKED on cycle 16 (2026-04-30)**: PR #1237 (OBS-2102 fix —
+> `a50be2a0`) and PR #1238 (OBS-2104 fix — `f2da4e65`) merged. Sipho can
+> now activate (INDIVIDUAL skip on `tax_number`) and the wizard SQL accepts
+> NULL-currency time entries + joins `legal_disbursements`. Day 28 + Day
+> 30 verified PASS in cycle 16. The Edit-button render gap was filed as
+> separate cosmetic OBS-2103 (SPEC_READY, cycle 17) — it does not block
+> activation since the Change Status → Activate dropdown is the canonical
+> path.
+
+> **Scenario amendment (OBS-2101, WONT_FIX feature-gap — cascade from
+> Day 21 Phase A)**: Time entries from Day 21 are NOT tariff-bound (the
+> product has no tariff↔time-entry integration — see Day 21 Phase A
+> amendment). Day 28's fee note will therefore render `TIME` line-type
+> entries (one per time entry, labelled by task title + duration +
+> member rate snapshot if any) instead of "LSSA tariff line items with
+> activity descriptors". The `EXPENSE` line for the sheriff disbursement
+> is unchanged. Bulk billing run, cherry-pick, generate, approve, and
+> send flow are all exercised end-to-end on the canonical line types.
+
+> **Pre-condition (OBS-2104 fix, cycle 16)**: Sipho's R 1,250 sheriff
+> disbursement must be **Approved** before running the wizard — the
+> `discoverCustomers()` SQL gates `legal_disbursements` on
+> `approval_status='APPROVED'`. Submit + approve the disbursement via
+> Disbursements tab → detail page → Submit for Approval → Approve before
+> step 28.1.
+
+> **Known cosmetic gaps in wizard (OBS-2104b, OBS-2104c — SPEC_READY,
+> cycle 17)**: (1) Step 2 may display an inflated **Unbilled Expenses**
+> total (e.g. R 11,250 = 1 disbursement × N tasks Cartesian) — fee notes
+> still generate at the correct R 1,250. (2) Step 3 (Cherry-Pick) does
+> not render a Disbursements section — the disbursement is attachable
+> via the `Add Disbursements` modal in the step 4 draft editor. Both are
+> non-blocking; canonical workflow proceeds end-to-end.
+
 - [ ] **28.1** Navigate to **Bulk Billing** → **+ New Billing Run**
 - [ ] **28.2** Scope = `By Client`, select Sipho Dlamini → preview shows:
-  - Unbilled time: 4h (tariff-rated) → subtotal ZAR
-  - Unbilled disbursements: R 1,250 (sheriff's fee)
+  - Unbilled time entries (rendered as `TIME` line items — task title +
+    duration + member rate snapshot if any; total amount = sum of
+    `billable_value` where set, else `R 0`)
+  - Unbilled disbursements: R 1,250 (sheriff's fee, `EXPENSE` line type)
   - Combined total + VAT 15%
 - [ ] **28.3** Cherry-pick: keep all time entries + the disbursement checked
 - [ ] **28.4** Click **Generate Fee Notes** → preview opens showing draft fee note
 - [ ] **28.5** Verify fee note renders with:
   - Mathebula letterhead (logo + firm details)
   - Matter reference **RAF-2026-001**
-  - LSSA tariff line items with activity descriptors
-  - Sheriff's fee disbursement line, clearly labelled as disbursement
+  - `TIME` line items (task title + duration + rate snapshot — NOT tariff
+    descriptors; OBS-2101 WONT_FIX cascade)
+  - Sheriff's fee disbursement line (`EXPENSE` line type), clearly
+    labelled as disbursement
   - VAT 15% line
   - ZAR total
   - Banking details for payment
@@ -584,7 +686,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] **28.8** 📸 Optional: `day-28-firm-fee-note-sent.png`
 
 **Day 28 checkpoints**
-- [ ] Fee note generated with tariff lines + disbursement line correctly separated
+- [ ] Fee note generated with `TIME` time-entry lines + `EXPENSE` disbursement line correctly separated (tariff descriptors out-of-scope per OBS-2101)
 - [ ] Terminology: firm-side copy reads "Fee Note" (not "Invoice") end-to-end
 - [ ] Email dispatched with portal payment link
 
@@ -627,12 +729,12 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] **45.1** On matter RAF-2026-001 → **+ New Info Request** → free-form: title "Supporting medical evidence", 2 items (hospital discharge summary, orthopaedic report), due Day 52 → Send
 - [ ] **45.2** Mailpit → verify second magic-link email sent to Sipho
 - [ ] **45.3** Navigate to Trust Accounting → Mathebula Trust — Main → record / import a second deposit of **R 20,000** against Sipho / RAF-2026-001 (describe as "Top-up per engagement letter")
-- [ ] **45.4** Approve (if dual-approval) → client ledger now shows two deposits totalling **R 70,000** (R 50,000 + R 20,000)
-- [ ] **45.5** Matter Trust tab shows balance **R 70,000** (minus any fee-transfer-out if applied — in this script, none yet)
+- [ ] **45.4** Approve (if dual-approval) → client ledger now shows trust balance **R 71,000** (R 50,000 Day 10 + R 1,000 Day 14 OBS-1101 verify deposit + R 20,000 Day 45 top-up). NOTE (cycle 18 amend 2026-04-30): scenario originally said R 70,000 — actual R 71,000 reflects Day 14 cycle-15 R 1,000 OBS-1101 verify carry-over deposit.
+- [ ] **45.5** Matter Trust tab shows balance **R 71,000** (minus any fee-transfer-out if applied — in this script, none yet)
 
 **Day 45 checkpoints**
 - [ ] Second info request dispatched
-- [ ] Trust balance reconciles to R 70,000 on client ledger and matter trust tab
+- [ ] Trust balance reconciles to R 71,000 on client ledger and matter trust tab (amended cycle 18 from R 70,000 to capture Day 14 R 1,000 carry-over)
 
 ---
 

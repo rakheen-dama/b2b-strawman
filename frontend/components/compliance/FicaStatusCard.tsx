@@ -85,7 +85,7 @@ export function FicaStatusCard({ ficaStatus, slug }: FicaStatusCardProps) {
         )}
         {ficaStatus.requestId && (
           <Link
-            href={`/org/${slug}/requests/${ficaStatus.requestId}`}
+            href={`/org/${slug}/information-requests/${ficaStatus.requestId}`}
             className="mt-2 inline-block text-xs text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
             data-testid="fica-request-link"
           >

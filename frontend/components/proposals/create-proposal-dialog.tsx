@@ -170,7 +170,13 @@ export function CreateProposalDialog({
           }),
         }),
         ...(values.expiresAt && {
-          expiresAt: `${values.expiresAt}T23:59:59Z`,
+          // Encode as the LOCAL end-of-day of the user's picked calendar date.
+          // The previous `T23:59:59Z` form crossed the date line in any zone east of
+          // UTC, causing "expires May 12" inputs to render as "May 13" (OBS-702).
+          expiresAt: (() => {
+            const [y, m, d] = values.expiresAt.split("-").map(Number);
+            return new Date(y, m - 1, d, 23, 59, 59).toISOString();
+          })(),
         }),
       });
       if (result.success && result.data) {

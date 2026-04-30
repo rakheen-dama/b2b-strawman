@@ -108,6 +108,21 @@ export function formatLocalDate(yyyyMmDd: string): string {
 }
 
 /**
+ * Renders an ISO instant as a calendar date in the viewer's local zone.
+ * Intended for proposal expiry / matter due-date fields where the underlying
+ * value is a wall-clock end-of-day instant — calling toLocaleDateString with
+ * the default zone correctly maps the local-end-of-day instant back to the
+ * date the user picked.
+ */
+export function formatProposalExpiresAt(iso: string): string {
+  return new Date(iso).toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+/**
  * Returns true if the given "YYYY-MM-DD" deadline is strictly before today.
  */
 export function isOverdue(deadline: string): boolean {

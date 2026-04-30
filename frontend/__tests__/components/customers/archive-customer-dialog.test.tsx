@@ -34,12 +34,15 @@ describe("ArchiveCustomerDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <ArchiveCustomerDialog slug="acme" customerId="c1" customerName="Acme Corp">
-        <button>Archive Trigger</button>
-      </ArchiveCustomerDialog>
+      <ArchiveCustomerDialog
+        slug="acme"
+        customerId="c1"
+        customerName="Acme Corp"
+        triggerLabel="Archive Trigger"
+      />
     );
 
-    await user.click(screen.getByText("Archive Trigger"));
+    await user.click(screen.getByRole("button", { name: "Archive Trigger" }));
 
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
     expect(screen.getByText(/project links will be preserved/)).toBeInTheDocument();
@@ -50,13 +53,16 @@ describe("ArchiveCustomerDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <ArchiveCustomerDialog slug="acme" customerId="c1" customerName="Acme Corp">
-        <button>Archive Trigger</button>
-      </ArchiveCustomerDialog>
+      <ArchiveCustomerDialog
+        slug="acme"
+        customerId="c1"
+        customerName="Acme Corp"
+        triggerLabel="Archive Trigger"
+      />
     );
 
-    await user.click(screen.getByText("Archive Trigger"));
-    await user.click(screen.getByText("Archive"));
+    await user.click(screen.getByRole("button", { name: "Archive Trigger" }));
+    await user.click(screen.getByRole("button", { name: "Archive" }));
 
     await waitFor(() => {
       expect(mockArchiveCustomer).toHaveBeenCalledWith("acme", "c1");
@@ -72,13 +78,16 @@ describe("ArchiveCustomerDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <ArchiveCustomerDialog slug="acme" customerId="c1" customerName="Acme Corp">
-        <button>Archive Trigger</button>
-      </ArchiveCustomerDialog>
+      <ArchiveCustomerDialog
+        slug="acme"
+        customerId="c1"
+        customerName="Acme Corp"
+        triggerLabel="Archive Trigger"
+      />
     );
 
-    await user.click(screen.getByText("Archive Trigger"));
-    await user.click(screen.getByText("Archive"));
+    await user.click(screen.getByRole("button", { name: "Archive Trigger" }));
+    await user.click(screen.getByRole("button", { name: "Archive" }));
 
     await waitFor(() => {
       expect(screen.getByText("Permission denied")).toBeInTheDocument();

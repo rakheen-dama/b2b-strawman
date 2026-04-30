@@ -1,17 +1,27 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Button } from "@/components/ui/button";
 import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
 import { ArchiveCustomerDialog } from "@/components/customers/archive-customer-dialog";
 import type { Customer } from "@/lib/types";
 
-// OBS-2103 regression guard — adjacent <DialogTrigger asChild> +
-// <AlertDialogTrigger asChild> with Radix Slot collapsed under React 19,
-// dropping one button from the DOM. The fix removes asChild from both and
-// uses React.cloneElement to inject the open handler. This test asserts
-// both Edit and Archive triggers render side-by-side and both fire their
-// respective dialogs on click.
+// OBS-2103 + OBS-2103b regression guard.
+//
+// OBS-2103 (cycle 16):  adjacent <DialogTrigger asChild> + <AlertDialogTrigger asChild> with
+//                       Radix Slot collapsed under React 19, dropping one button from the DOM.
+//                       PR #1239 switched to React.cloneElement to avoid the Slot wrapper.
+//
+// OBS-2103b (cycle 17): cloneElement-injected onClick was stripped on one of the two adjacent
+//                       siblings (one dialog received a lazy/RSC element where children.props
+//                       was undefined, so cloneElement returned an element with default props
+//                       only). Edit click no-op'd on Sipho; Archive click no-op'd on Moroka.
+//
+// Fix:                  the dialog component owns the trigger button — no Slot, no cloneElement,
+//                       no consumer-supplied children. `triggerLabel`/`triggerVariant`/`triggerIcon`
+//                       props drive the button.
+//
+// This test guards both bugs together: both triggers must render, and clicking each must
+// open the *correct* dialog (independent setOpen state) — including across remount cycles.
 
 const mockUpdateCustomer = vi.fn();
 const mockArchiveCustomer = vi.fn();
@@ -49,25 +59,26 @@ const activeCustomer: Customer = {
 function ActionRow() {
   return (
     <div className="flex items-center gap-2">
-      <EditCustomerDialog customer={activeCustomer} slug="acme">
-        <Button variant="outline" size="sm">
-          Edit Action Row
-        </Button>
-      </EditCustomerDialog>
+      <EditCustomerDialog
+        customer={activeCustomer}
+        slug="acme"
+        triggerLabel="Edit Action Row"
+        triggerVariant="outline"
+        triggerSize="sm"
+      />
       <ArchiveCustomerDialog
         slug="acme"
         customerId={activeCustomer.id}
         customerName={activeCustomer.name}
-      >
-        <Button variant="ghost" size="sm">
-          Archive Action Row
-        </Button>
-      </ArchiveCustomerDialog>
+        triggerLabel="Archive Action Row"
+        triggerVariant="ghost"
+        triggerSize="sm"
+      />
     </div>
   );
 }
 
-describe("Customer detail action row — Edit + Archive (OBS-2103)", () => {
+describe("Customer detail action row — Edit + Archive (OBS-2103 + OBS-2103b)", () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -89,7 +100,7 @@ describe("Customer detail action row — Edit + Archive (OBS-2103)", () => {
     expect(editTrigger).not.toBe(archiveTrigger);
   });
 
-  it("opens the Edit dialog when the Edit trigger is clicked", async () => {
+  it("clicking Edit opens the Edit dialog (OBS-2103b: onClick survives commit)", async () => {
     const user = userEvent.setup();
     render(<ActionRow />);
 
@@ -99,9 +110,11 @@ describe("Customer detail action row — Edit + Archive (OBS-2103)", () => {
       expect(screen.getByText("Edit Customer")).toBeInTheDocument();
     });
     expect(screen.getByLabelText("Name")).toHaveValue("Sipho Dlamini");
+    // Archive dialog must NOT have opened.
+    expect(screen.queryByText(/project links will be preserved/)).not.toBeInTheDocument();
   });
 
-  it("opens the Archive dialog when the Archive trigger is clicked", async () => {
+  it("clicking Archive opens the Archive dialog (OBS-2103b: onClick survives commit)", async () => {
     const user = userEvent.setup();
     render(<ActionRow />);
 
@@ -111,6 +124,8 @@ describe("Customer detail action row — Edit + Archive (OBS-2103)", () => {
       expect(screen.getByText("Archive Customer")).toBeInTheDocument();
     });
     expect(screen.getByText(/project links will be preserved/)).toBeInTheDocument();
+    // Edit dialog must NOT have opened.
+    expect(screen.queryByText("Edit Customer")).not.toBeInTheDocument();
   });
 
   it("does not collide — clicking Edit does not open Archive (and vice versa)", async () => {
@@ -123,5 +138,29 @@ describe("Customer detail action row — Edit + Archive (OBS-2103)", () => {
       expect(screen.getByText("Edit Customer")).toBeInTheDocument();
     });
     expect(screen.queryByText(/project links will be preserved/)).not.toBeInTheDocument();
+  });
+
+  it("both dialogs operate independently after a remount cycle", async () => {
+    const user = userEvent.setup();
+    const { unmount } = render(<ActionRow />);
+
+    // First mount — open + close Edit.
+    await user.click(screen.getByRole("button", { name: "Edit Action Row" }));
+    await waitFor(() => {
+      expect(screen.getByText("Edit Customer")).toBeInTheDocument();
+    });
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+    act(() => {
+      unmount();
+    });
+
+    // Second mount — both triggers must still work.
+    render(<ActionRow />);
+    await user.click(screen.getByRole("button", { name: "Archive Action Row" }));
+    await waitFor(() => {
+      expect(screen.getByText("Archive Customer")).toBeInTheDocument();
+    });
+    expect(screen.queryByText("Edit Customer")).not.toBeInTheDocument();
   });
 });

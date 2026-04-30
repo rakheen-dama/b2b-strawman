@@ -36,12 +36,10 @@ describe("EditCustomerDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <EditCustomerDialog customer={mockCustomer} slug="acme">
-        <button>Edit Customer</button>
-      </EditCustomerDialog>
+      <EditCustomerDialog customer={mockCustomer} slug="acme" triggerLabel="Edit Customer" />
     );
 
-    await user.click(screen.getByText("Edit Customer"));
+    await user.click(screen.getByRole("button", { name: "Edit Customer" }));
 
     expect(screen.getByLabelText("Name")).toHaveValue("Acme Corp");
     expect(screen.getByLabelText("Email")).toHaveValue("contact@acme.com");
@@ -52,12 +50,10 @@ describe("EditCustomerDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <EditCustomerDialog customer={mockCustomer} slug="acme">
-        <button>Edit Customer</button>
-      </EditCustomerDialog>
+      <EditCustomerDialog customer={mockCustomer} slug="acme" triggerLabel="Edit Customer" />
     );
 
-    await user.click(screen.getByText("Edit Customer"));
+    await user.click(screen.getByRole("button", { name: "Edit Customer" }));
 
     const nameInput = screen.getByLabelText("Name");
     await user.clear(nameInput);
@@ -87,12 +83,14 @@ describe("EditCustomerDialog", () => {
     };
 
     render(
-      <EditCustomerDialog customer={customerWithPromoted} slug="acme">
-        <button>Edit Customer</button>
-      </EditCustomerDialog>
+      <EditCustomerDialog
+        customer={customerWithPromoted}
+        slug="acme"
+        triggerLabel="Edit Customer"
+      />
     );
 
-    await user.click(screen.getByText("Edit Customer"));
+    await user.click(screen.getByRole("button", { name: "Edit Customer" }));
 
     // Verify promoted fields are pre-populated
     expect(screen.getByLabelText(/address line 1/i)).toHaveValue("100 Main St");
@@ -121,12 +119,10 @@ describe("EditCustomerDialog", () => {
     const user = userEvent.setup();
 
     render(
-      <EditCustomerDialog customer={mockCustomer} slug="acme">
-        <button>Edit Customer</button>
-      </EditCustomerDialog>
+      <EditCustomerDialog customer={mockCustomer} slug="acme" triggerLabel="Edit Customer" />
     );
 
-    await user.click(screen.getByText("Edit Customer"));
+    await user.click(screen.getByRole("button", { name: "Edit Customer" }));
     await user.click(screen.getByText("Save Changes"));
 
     await waitFor(() => {

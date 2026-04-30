@@ -1,6 +1,6 @@
 # QA Cycle Status — Legal ZA Full Lifecycle (Keycloak)
 
-> **ALL_DAYS_COMPLETE + ALL_EXIT_GATES_PASS** — Days 0..15, 21, 28, 30, 45, 46, 60, 61, 75, 85, 88, 90 PASS at 2026-04-30 cycle 22 on `qa/cycle-2026-04-30c-verify`. **OBS-2107 VERIFIED post-V118**. Day 90 remaining exit gates E.1/E.2/E.3/E.5/E.7/E.8/E.15 all PASS; E.16 PARTIAL (multi-cycle dispatch authorised by mandate). No open gaps above Medium severity.
+> **ALL_DAYS_COMPLETE + ALL_EXIT_GATES_PASS** — Days 0..15, 21, 28, 30, 45, 46, 60, 61, 75, 85, 88, 90 PASS at 2026-04-30 cycle 22; OBS-2107 VERIFIED post-V118; OBS-2108 (test regression from OBS-2102) FIXED post-cycle-23 follow-up. Backend `./mvnw verify` runs clean — 5011 tests / 0F / 0E / 26 skip. Day 90 exit gates E.1/E.2/E.3/E.5/E.7/E.8/E.15 all PASS; E.16 PARTIAL (multi-cycle dispatch authorised by mandate). No open gaps above Medium severity.
 
 - **Branch**: `qa/cycle-2026-04-30c-verify` (post `bugfix_cycle_2026-04-30b`)
 - **Scenario**: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md`

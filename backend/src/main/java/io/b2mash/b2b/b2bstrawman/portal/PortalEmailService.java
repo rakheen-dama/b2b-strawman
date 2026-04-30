@@ -41,6 +41,9 @@ public class PortalEmailService {
   // GAP-L-72 (slice 23) — closure-pack + Statement-of-Account per-event sends.
   private static final String DOCUMENT_READY_TEMPLATE_NAME = "portal-document-ready";
   private static final String DOCUMENT_READY_REFERENCE_TYPE = "PORTAL_DOCUMENT_READY";
+  // OBS-703 — per-event "new proposal awaiting review" portal send.
+  private static final String NEW_PROPOSAL_TEMPLATE_NAME = "portal-new-proposal";
+  private static final String NEW_PROPOSAL_REFERENCE_TYPE = "PORTAL_NEW_PROPOSAL";
 
   private final IntegrationRegistry integrationRegistry;
   private final EmailTemplateRenderer emailTemplateRenderer;
@@ -203,6 +206,15 @@ public class PortalEmailService {
   public boolean sendDocumentReadyEmail(PortalContact contact, Map<String, Object> context) {
     return sendPortalNotification(
         contact, context, DOCUMENT_READY_TEMPLATE_NAME, DOCUMENT_READY_REFERENCE_TYPE);
+  }
+
+  /**
+   * Sends the per-event "new proposal awaiting your review" portal email. Fired by the proposal
+   * send-flow event listener (OBS-703). Fire-and-forget.
+   */
+  public boolean sendNewProposalEmail(PortalContact contact, Map<String, Object> context) {
+    return sendPortalNotification(
+        contact, context, NEW_PROPOSAL_TEMPLATE_NAME, NEW_PROPOSAL_REFERENCE_TYPE);
   }
 
   /**

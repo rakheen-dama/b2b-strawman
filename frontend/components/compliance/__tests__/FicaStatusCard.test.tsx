@@ -24,8 +24,25 @@ describe("FicaStatusCard (GAP-L-46)", () => {
     expect(screen.getByTestId("fica-last-verified-at")).toBeInTheDocument();
     const link = screen.getByTestId("fica-request-link") as HTMLAnchorElement;
     expect(link.getAttribute("href")).toBe(
-      "/org/legal-test/requests/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+      "/org/legal-test/information-requests/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
     );
+  });
+
+  it("links to the canonical /information-requests/{id} route (OBS-501)", () => {
+    render(
+      <FicaStatusCard
+        slug="acme"
+        ficaStatus={{
+          customerId: "11111111-1111-1111-1111-111111111111",
+          status: "IN_PROGRESS",
+          lastVerifiedAt: null,
+          requestId: "req-123",
+        }}
+      />
+    );
+    const link = screen.getByTestId("fica-request-link") as HTMLAnchorElement;
+    expect(link).toHaveAttribute("href", "/org/acme/information-requests/req-123");
+    expect(link.getAttribute("href")).not.toMatch(/\/org\/[^/]+\/requests\//);
   });
 
   it("renders the In Progress badge + awaiting-review copy when FICA request exists but items are not all accepted", () => {

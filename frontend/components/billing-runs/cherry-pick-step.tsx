@@ -154,18 +154,32 @@ export function CherryPickStep({
   );
 
   function toggleSection(itemId: string) {
+    // OBS-2104c2: keep the setState updater pure — never trigger side
+    // effects (loadCustomerData → setCustomerData → server-action dispatch)
+    // from inside a state-updater function, because the updater can run
+    // multiple times during render under React 19 strict mode and the
+    // resulting setState-on-render dispatches the
+    //   "Cannot update a component (Router) while rendering a different
+    //    component (CherryPickStep)"
+    // warning. Resolve the next-expanded state synchronously OUTSIDE the
+    // updater, then issue the load after committing the toggle.
+    const isCurrentlyExpanded = expandedIds.has(itemId);
     setExpandedIds((prev) => {
       const next = new Set(prev);
-      if (next.has(itemId)) {
+      if (isCurrentlyExpanded) {
         next.delete(itemId);
       } else {
         next.add(itemId);
-        if (!customerData[itemId]?.isLoaded && !customerData[itemId]?.isLoading) {
-          loadCustomerData(itemId);
-        }
       }
       return next;
     });
+    if (
+      !isCurrentlyExpanded &&
+      !customerData[itemId]?.isLoaded &&
+      !customerData[itemId]?.isLoading
+    ) {
+      loadCustomerData(itemId);
+    }
   }
 
   function flushSelections(itemId: string) {

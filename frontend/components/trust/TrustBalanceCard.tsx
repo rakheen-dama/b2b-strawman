@@ -41,12 +41,10 @@ function formatCurrency(amount: number): string {
 export function TrustBalanceCard({
   customerId,
   trustAccountId,
-  projectId: _projectId,
+  projectId,
   slug,
   showQuickActions = false,
 }: TrustBalanceCardProps) {
-  // _projectId reserved for future per-project transaction filtering
-  void _projectId;
   const { isModuleEnabled } = useOrgProfile();
   const moduleEnabled = isModuleEnabled("trust_accounting");
   const [depositOpen, setDepositOpen] = useState(false);
@@ -183,12 +181,22 @@ export function TrustBalanceCard({
                     open={depositOpen}
                     onOpenChange={setDepositOpen}
                     onSuccess={handleMutationSuccess}
+                    customers={[
+                      { id: customerId, name: ledger.customerName, email: "" },
+                    ]}
+                    defaultCustomerId={customerId}
+                    defaultProjectId={projectId}
                   />
                   <RecordPaymentDialog
                     accountId={resolvedAccountId}
                     open={paymentOpen}
                     onOpenChange={setPaymentOpen}
                     onSuccess={handleMutationSuccess}
+                    customers={[
+                      { id: customerId, name: ledger.customerName, email: "" },
+                    ]}
+                    defaultCustomerId={customerId}
+                    defaultProjectId={projectId}
                   />
                   <RecordFeeTransferDialog
                     accountId={resolvedAccountId}

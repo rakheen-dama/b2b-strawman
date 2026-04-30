@@ -14,13 +14,19 @@ import { RecordPaymentDialog } from "./RecordPaymentDialog";
 import { RecordTransferDialog } from "./RecordTransferDialog";
 import { RecordFeeTransferDialog } from "./RecordFeeTransferDialog";
 import { RecordRefundDialog } from "./RecordRefundDialog";
+import type { TrustPickerCustomer } from "./TrustEntityPickers";
 
 interface TransactionActionsProps {
   accountId: string;
   slug: string;
+  /**
+   * Customer roster for the embedded picker dialogs (Deposit / Payment /
+   * Refund). Server-fetched by the parent page.
+   */
+  customers: TrustPickerCustomer[];
 }
 
-export function TransactionActions({ accountId, slug }: TransactionActionsProps) {
+export function TransactionActions({ accountId, slug, customers }: TransactionActionsProps) {
   const [depositOpen, setDepositOpen] = useState(false);
   const [paymentOpen, setPaymentOpen] = useState(false);
   const [transferOpen, setTransferOpen] = useState(false);
@@ -52,8 +58,14 @@ export function TransactionActions({ accountId, slug }: TransactionActionsProps)
         slug={slug}
         open={depositOpen}
         onOpenChange={setDepositOpen}
+        customers={customers}
       />
-      <RecordPaymentDialog accountId={accountId} open={paymentOpen} onOpenChange={setPaymentOpen} />
+      <RecordPaymentDialog
+        accountId={accountId}
+        open={paymentOpen}
+        onOpenChange={setPaymentOpen}
+        customers={customers}
+      />
       <RecordTransferDialog
         accountId={accountId}
         open={transferOpen}
@@ -64,7 +76,12 @@ export function TransactionActions({ accountId, slug }: TransactionActionsProps)
         open={feeTransferOpen}
         onOpenChange={setFeeTransferOpen}
       />
-      <RecordRefundDialog accountId={accountId} open={refundOpen} onOpenChange={setRefundOpen} />
+      <RecordRefundDialog
+        accountId={accountId}
+        open={refundOpen}
+        onOpenChange={setRefundOpen}
+        customers={customers}
+      />
     </>
   );
 }

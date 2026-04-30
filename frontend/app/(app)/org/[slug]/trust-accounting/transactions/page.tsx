@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight, ArrowDownLeft, ChevronLeft, ChevronRight } from "lucide-react";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
+import { api } from "@/lib/api";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,7 @@ import { TransactionFilters } from "@/components/trust/transaction-filters";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import {
   transactionTypeLabel,
+  type Customer,
   type TrustTransactionStatus,
   type TrustTransactionType,
 } from "@/lib/types";
@@ -145,6 +147,25 @@ export default async function TransactionsPage({
     }
   }
 
+  // Fetch the customer roster for the picker dialogs (Deposit/Payment/
+  // Refund). Trimmed to {id, name, email} so the prop crosses the
+  // server→client boundary cheaply.
+  let pickerCustomers: Array<{ id: string; name: string; email: string }> = [];
+  if (canManageTrust) {
+    try {
+      const customers = await api.get<Customer[]>("/api/customers?status=ACTIVE");
+      pickerCustomers = customers.map((c) => ({
+        id: c.id,
+        name: c.name,
+        email: c.email ?? "",
+      }));
+    } catch {
+      // Non-fatal — pickers will render with an empty list and the dialog
+      // surface its own "No clients found." empty state.
+      pickerCustomers = [];
+    }
+  }
+
   const currentPage = transactionPage?.pageNumber ?? 0;
   const totalPages = transactionPage?.totalPages ?? 0;
   const currency = settings.defaultCurrency ?? "ZAR";
@@ -180,7 +201,9 @@ export default async function TransactionsPage({
             Trust account transaction history
           </p>
         </div>
-        {canManageTrust && accountId && <TransactionActions accountId={accountId} slug={slug} />}
+        {canManageTrust && accountId && (
+          <TransactionActions accountId={accountId} slug={slug} customers={pickerCustomers} />
+        )}
       </div>
 
       {/* Status Filter Pills */}

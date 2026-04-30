@@ -7,6 +7,7 @@ import { formatCurrency } from "@/lib/format";
 import {
   getUnbilledTimeAction,
   getUnbilledExpensesAction,
+  getUnbilledDisbursementsAction,
   updateSelectionsAction,
   excludeCustomerAction,
   includeCustomerAction,
@@ -18,6 +19,7 @@ import type {
   BillingRunItem,
   UnbilledTimeEntry,
   UnbilledExpense,
+  UnbilledDisbursement,
   RetainerPeriodPreview,
   EntrySelectionDto,
 } from "@/lib/api/billing-runs";
@@ -34,8 +36,11 @@ interface CherryPickStepProps {
 interface CustomerData {
   timeEntries: UnbilledTimeEntry[];
   expenses: UnbilledExpense[];
+  // OBS-2104c — third entry type alongside time/expense.
+  disbursements: UnbilledDisbursement[];
   includedTimeIds: Set<string>;
   includedExpenseIds: Set<string>;
+  includedDisbursementIds: Set<string>;
   isLoading: boolean;
   isLoaded: boolean;
   error: string | null;
@@ -89,38 +94,50 @@ export function CherryPickStep({
         [itemId]: {
           timeEntries: [],
           expenses: [],
+          disbursements: [],
           includedTimeIds: new Set(),
           includedExpenseIds: new Set(),
+          includedDisbursementIds: new Set(),
           isLoading: true,
           isLoaded: false,
           error: null,
         },
       }));
       try {
-        const [timeResult, expenseResult] = await Promise.all([
+        // OBS-2104c — load disbursements alongside time/expense in the same Promise.all so
+        // step 3 surfaces all three chargeable categories without staggered fetches.
+        const [timeResult, expenseResult, disbursementResult] = await Promise.all([
           getUnbilledTimeAction(billingRunId, itemId),
           getUnbilledExpensesAction(billingRunId, itemId),
+          getUnbilledDisbursementsAction(billingRunId, itemId),
         ]);
-        if (!timeResult.success || !expenseResult.success) {
+        if (!timeResult.success || !expenseResult.success || !disbursementResult.success) {
           setCustomerData((prev) => ({
             ...prev,
             [itemId]: {
               ...prev[itemId],
               isLoading: false,
-              error: timeResult.error || expenseResult.error || "Failed to load data.",
+              error:
+                timeResult.error ||
+                expenseResult.error ||
+                disbursementResult.error ||
+                "Failed to load data.",
             },
           }));
           return;
         }
         const timeEntries = timeResult.entries ?? [];
         const expenses = expenseResult.entries ?? [];
+        const disbursements = disbursementResult.entries ?? [];
         setCustomerData((prev) => ({
           ...prev,
           [itemId]: {
             timeEntries,
             expenses,
+            disbursements,
             includedTimeIds: new Set(timeEntries.map((e) => e.id)),
             includedExpenseIds: new Set(expenses.map((e) => e.id)),
+            includedDisbursementIds: new Set(disbursements.map((d) => d.id)),
             isLoading: false,
             isLoaded: true,
             error: null,
@@ -209,6 +226,27 @@ export function CherryPickStep({
     scheduleFlush(itemId);
   }
 
+  // OBS-2104c — mirror of toggleExpenseEntry for the third entry type.
+  function toggleDisbursementEntry(itemId: string, entryId: string) {
+    const data = customerData[itemId];
+    if (!data) return;
+    const newIncluded = !data.includedDisbursementIds.has(entryId);
+    setCustomerData((prev) => {
+      const current = prev[itemId];
+      const nextIds = new Set(current.includedDisbursementIds);
+      if (newIncluded) nextIds.add(entryId);
+      else nextIds.delete(entryId);
+      return { ...prev, [itemId]: { ...current, includedDisbursementIds: nextIds } };
+    });
+    if (!pendingSelections.current[itemId]) pendingSelections.current[itemId] = [];
+    pendingSelections.current[itemId].push({
+      entryType: "LEGAL_DISBURSEMENT",
+      entryId,
+      included: newIncluded,
+    });
+    scheduleFlush(itemId);
+  }
+
   async function handleExcludeCustomer(itemId: string) {
     const result = await excludeCustomerAction(billingRunId, itemId);
     if (result.success && result.item)
@@ -230,7 +268,11 @@ export function CherryPickStep({
     const expenseTotal = data.expenses
       .filter((e) => data.includedExpenseIds.has(e.id))
       .reduce((sum, e) => sum + e.billableAmount, 0);
-    return timeTotal + expenseTotal;
+    // OBS-2104c — disbursements `billableAmount` already includes any vatAmount component.
+    const disbursementTotal = data.disbursements
+      .filter((d) => data.includedDisbursementIds.has(d.id))
+      .reduce((sum, d) => sum + d.billableAmount, 0);
+    return timeTotal + expenseTotal + disbursementTotal;
   }
 
   function toggleRetainer(agreementId: string) {
@@ -306,6 +348,7 @@ export function CherryPickStep({
                         onInclude={handleIncludeCustomer}
                         onToggleTimeEntry={toggleTimeEntry}
                         onToggleExpenseEntry={toggleExpenseEntry}
+                        onToggleDisbursementEntry={toggleDisbursementEntry}
                       />
                     )}
                   </div>

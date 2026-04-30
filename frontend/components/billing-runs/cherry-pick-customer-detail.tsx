@@ -3,13 +3,20 @@
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
-import type { UnbilledTimeEntry, UnbilledExpense } from "@/lib/api/billing-runs";
+import type {
+  UnbilledTimeEntry,
+  UnbilledExpense,
+  UnbilledDisbursement,
+} from "@/lib/api/billing-runs";
 
 interface CustomerDetailData {
   timeEntries: UnbilledTimeEntry[];
   expenses: UnbilledExpense[];
+  // OBS-2104c — third entry type rendered in its own table below Expenses.
+  disbursements: UnbilledDisbursement[];
   includedTimeIds: Set<string>;
   includedExpenseIds: Set<string>;
+  includedDisbursementIds: Set<string>;
   isLoading: boolean;
   isLoaded: boolean;
   error: string | null;
@@ -25,6 +32,7 @@ interface CherryPickCustomerDetailProps {
   onInclude: (itemId: string) => void;
   onToggleTimeEntry: (itemId: string, entryId: string) => void;
   onToggleExpenseEntry: (itemId: string, entryId: string) => void;
+  onToggleDisbursementEntry: (itemId: string, entryId: string) => void;
 }
 
 export function CherryPickCustomerDetail({
@@ -37,6 +45,7 @@ export function CherryPickCustomerDetail({
   onInclude,
   onToggleTimeEntry,
   onToggleExpenseEntry,
+  onToggleDisbursementEntry,
 }: CherryPickCustomerDetailProps) {
   return (
     <div className="border-t border-slate-200 p-4 dark:border-slate-700">
@@ -202,11 +211,83 @@ export function CherryPickCustomerDetail({
             </div>
           )}
 
-          {data.timeEntries.length === 0 && data.expenses.length === 0 && (
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              No unbilled entries for this customer.
-            </p>
+          {/* Disbursements Table — OBS-2104c. Mirrors the Expenses table shape; columns are
+              tuned to the legal-vertical disbursement model (incurredDate / category /
+              supplierName) rather than the generic Expense model. */}
+          {data.disbursements.length > 0 && (
+            <div className="mt-4">
+              <h3 className="mb-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                Disbursements
+              </h3>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-left dark:border-slate-700">
+                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
+                        Include
+                      </th>
+                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
+                        Date
+                      </th>
+                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
+                        Description
+                      </th>
+                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
+                        Category
+                      </th>
+                      <th className="pr-3 pb-2 font-medium text-slate-500 dark:text-slate-400">
+                        Supplier
+                      </th>
+                      <th className="pb-2 text-right font-medium text-slate-500 dark:text-slate-400">
+                        Amount
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {data.disbursements.map((disbursement) => (
+                      <tr
+                        key={disbursement.id}
+                        className="border-b border-slate-100 dark:border-slate-800"
+                      >
+                        <td className="py-2 pr-3">
+                          <Checkbox
+                            checked={data.includedDisbursementIds.has(disbursement.id)}
+                            onCheckedChange={() =>
+                              onToggleDisbursementEntry(itemId, disbursement.id)
+                            }
+                            aria-label={`Include disbursement ${disbursement.description}`}
+                          />
+                        </td>
+                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
+                          {formatLocalDate(disbursement.incurredDate)}
+                        </td>
+                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
+                          {disbursement.description}
+                        </td>
+                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
+                          {disbursement.category}
+                        </td>
+                        <td className="py-2 pr-3 text-slate-600 dark:text-slate-400">
+                          {disbursement.supplierName}
+                        </td>
+                        <td className="py-2 text-right font-medium text-slate-950 dark:text-slate-50">
+                          {formatCurrency(disbursement.billableAmount, currency)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           )}
+
+          {data.timeEntries.length === 0 &&
+            data.expenses.length === 0 &&
+            data.disbursements.length === 0 && (
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                No unbilled entries for this customer.
+              </p>
+            )}
 
           {/* Subtotal */}
           <div className="mt-3 flex justify-end border-t border-slate-200 pt-3 dark:border-slate-700">

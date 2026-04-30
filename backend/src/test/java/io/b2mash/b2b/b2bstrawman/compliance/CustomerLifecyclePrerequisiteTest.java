@@ -14,7 +14,9 @@ import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplate;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateItem;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateItemRepository;
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistTemplateRepository;
+import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.PrerequisiteNotMetException;
@@ -304,11 +306,19 @@ class CustomerLifecyclePrerequisiteTest {
     UUID customerId =
         runInTenant(
             () -> {
+              // Use COMPANY so tax_number remains a LIFECYCLE_ACTIVATION prerequisite —
+              // OBS-2102 (PR #1237) made StructuralPrerequisiteCheck skip tax_number for
+              // INDIVIDUAL customers (factory default), which would auto-transition to
+              // ACTIVE on checklist completion and defeat this test's premise.
               var customer =
-                  TestCustomerFactory.createCustomerWithStatus(
+                  new Customer(
                       "Late Tax Corp " + (++counter),
                       "late_tax_" + counter + "@test.com",
+                      null,
+                      null,
+                      null,
                       memberId,
+                      CustomerType.COMPANY,
                       LifecycleStatus.ONBOARDING);
               // Fill all structural fields EXCEPT tax_number
               customer.setAddressLine1("123 Test Street");

@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.prerequisite;
 
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -55,10 +56,14 @@ public final class StructuralPrerequisiteCheck {
 
   /**
    * Required fields for LIFECYCLE_ACTIVATION context. An active customer must have a full billing
-   * address AND a tax number — the tax number is still mandatory for activation because an ACTIVE
-   * customer is invoiceable and the tax-number prerequisite is strictly enforced at send time. Not
-   * aliased to {@link #INVOICE_GENERATION_FIELDS} so that relaxing draft creation (GAP-L-62) does
-   * not leak into activation semantics.
+   * address AND (for COMPANY/TRUST customers) a tax number. INDIVIDUAL customers are exempt from
+   * the tax-number activation prerequisite — SARS does not issue tax numbers to every natural
+   * person, and SA-ID (id_passport_number / {@code Customer.idNumber}) is the canonical identifier.
+   * The tax-number requirement is still strictly enforced at invoice-send time via {@link
+   * #checkInvoiceSendOnly(Customer)}, so SARS-correctness on issued invoices is preserved
+   * regardless of customer type. Not aliased to {@link #INVOICE_GENERATION_FIELDS} so that relaxing
+   * draft creation (GAP-L-62) does not leak into activation semantics. See OBS-2102 for the
+   * INDIVIDUAL activation skip.
    */
   private static final List<FieldCheck> LIFECYCLE_ACTIVATION_FIELDS =
       List.of(
@@ -121,6 +126,15 @@ public final class StructuralPrerequisiteCheck {
           && context == PrerequisiteContext.PROPOSAL_SEND
           && (field.fieldSlug().equals("contact_name")
               || field.fieldSlug().equals("contact_email"))) {
+        continue;
+      }
+      // OBS-2102: INDIVIDUAL customers do not need tax_number for activation — SARS does not issue
+      // tax numbers to every natural person, and SA-ID (id_passport_number / Customer.idNumber) is
+      // the canonical identifier. Tax number is still hard-enforced at invoice send via
+      // checkInvoiceSendOnly(...), so SARS-correctness on issued invoices is preserved.
+      if (context == PrerequisiteContext.LIFECYCLE_ACTIVATION
+          && field.fieldSlug().equals("tax_number")
+          && customer.getCustomerType() == CustomerType.INDIVIDUAL) {
         continue;
       }
       if (!hasValue(field, customer, customFields)) {

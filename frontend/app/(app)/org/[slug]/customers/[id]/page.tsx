@@ -603,29 +603,29 @@ export default async function CustomerDetailPage({
                 </Button>
               </AnonymizeCustomerDialog>
             )}
+            {customer.lifecycleStatus !== "ANONYMIZED" && (
+              <EditCustomerDialog customer={customer} slug={slug}>
+                <Button variant="outline" size="sm">
+                  <Pencil className="mr-1.5 size-4" />
+                  Edit
+                </Button>
+              </EditCustomerDialog>
+            )}
             {customer.status === "ACTIVE" && customer.lifecycleStatus !== "ANONYMIZED" && (
-              <>
-                <EditCustomerDialog customer={customer} slug={slug}>
-                  <Button variant="outline" size="sm">
-                    <Pencil className="mr-1.5 size-4" />
-                    Edit
-                  </Button>
-                </EditCustomerDialog>
-                <ArchiveCustomerDialog
-                  slug={slug}
-                  customerId={customer.id}
-                  customerName={customer.name}
+              <ArchiveCustomerDialog
+                slug={slug}
+                customerId={customer.id}
+                customerName={customer.name}
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
                 >
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
-                  >
-                    <Archive className="mr-1.5 size-4" />
-                    Archive
-                  </Button>
-                </ArchiveCustomerDialog>
-              </>
+                  <Archive className="mr-1.5 size-4" />
+                  Archive
+                </Button>
+              </ArchiveCustomerDialog>
             )}
           </div>
         )}

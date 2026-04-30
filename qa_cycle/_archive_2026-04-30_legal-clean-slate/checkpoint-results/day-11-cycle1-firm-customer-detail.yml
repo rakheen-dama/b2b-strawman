@@ -1,0 +1,327 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e52]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e55]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e61]:
+          - generic [ref=e62]: Clients
+          - img [ref=e63]
+        - button "Finance" [ref=e67]:
+          - generic [ref=e68]: Finance
+          - img [ref=e69]
+        - generic [ref=e72]:
+          - button "Team" [expanded] [ref=e73]:
+            - generic [ref=e74]: Team
+            - img [ref=e75]
+          - link "Team" [ref=e78] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e79]
+            - text: Team
+      - generic [ref=e85]:
+        - link "Notifications" [ref=e86] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e87]
+          - text: Notifications
+        - link "Settings" [ref=e90] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e91]
+          - text: Settings
+        - link "Help" [ref=e94] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e95]
+          - text: Help
+      - generic [ref=e98]:
+        - generic [ref=e99]: BN
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Bob Ndlovu
+          - paragraph [ref=e102]: bob@mathebula-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "Mathebula & Partners" [ref=e106] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - link "Clients" [ref=e110] [cursor=pointer]:
+              - /url: /org/mathebula-partners/customers
+          - generic [ref=e111]:
+            - img [ref=e112]
+            - generic [ref=e114]: Client
+        - generic [ref=e115]:
+          - button "User menu" [ref=e117]: BN
+          - button "Notifications" [ref=e119]:
+            - img
+            - generic [ref=e120]: 6 unread notifications
+            - generic [ref=e121]: "6"
+      - main [ref=e122]:
+        - generic [ref=e214]:
+          - link "Back to Clients" [ref=e216] [cursor=pointer]:
+            - /url: /org/mathebula-partners/customers
+            - img [ref=e217]
+            - text: Back to Clients
+          - generic [ref=e219]:
+            - generic [ref=e220]:
+              - generic [ref=e221]:
+                - heading "Sipho Dlamini" [level=1] [ref=e222]
+                - generic [ref=e223]: Active
+                - generic [ref=e224]: Prospect
+              - paragraph [ref=e225]: sipho.portal@example.com
+              - paragraph [ref=e226]:
+                - text: +27 82 555 0101 · 8501015800088 · Created Apr 25, 2026 ·
+                - generic [ref=e227]: 3 matters
+            - generic [ref=e228]:
+              - button "Change Status" [ref=e229]:
+                - text: Change Status
+                - img
+              - button "Generate Document" [ref=e230]:
+                - img
+                - text: Generate Document
+                - img
+              - button "Export Data" [ref=e231]:
+                - img
+                - text: Export Data
+              - button "Edit" [ref=e232]:
+                - img
+                - text: Edit
+              - button "Archive" [ref=e233]:
+                - img
+                - text: Archive
+          - generic [ref=e234]:
+            - generic [ref=e235]:
+              - generic [ref=e237]:
+                - img [ref=e238]
+                - generic [ref=e241]: Address
+              - generic [ref=e243]:
+                - generic [ref=e244]: 12 Loveday St
+                - generic [ref=e245]: Johannesburg, 2001
+                - generic [ref=e246]: ZA
+            - generic [ref=e247]:
+              - generic [ref=e249]:
+                - img [ref=e250]
+                - generic [ref=e253]: Primary Contact
+              - paragraph [ref=e255]: No contact on file.
+          - generic [ref=e256]:
+            - paragraph [ref=e257]: Field Groups
+            - generic [ref=e258]:
+              - generic [ref=e259]:
+                - text: SA Legal — Client Details
+                - button "Remove SA Legal — Client Details" [ref=e260]:
+                  - img [ref=e261]
+              - button "Add Group" [ref=e264]:
+                - img
+                - text: Add Group
+          - generic [ref=e265]:
+            - generic [ref=e266]:
+              - generic [ref=e268]: SA Legal — Client Details
+              - generic [ref=e270]:
+                - generic [ref=e271]:
+                  - generic [ref=e272]: ID / Passport Number
+                  - textbox "ID / Passport Number" [ref=e274]:
+                    - /placeholder: South African ID number or passport number for natural persons
+                - generic [ref=e275]:
+                  - generic [ref=e276]: Postal Address
+                  - textbox "Postal Address" [ref=e278]:
+                    - /placeholder: Postal address if different from physical address
+                - generic [ref=e279]:
+                  - generic [ref=e280]: Preferred Correspondence
+                  - combobox "Preferred Correspondence" [ref=e282]:
+                    - option "Select..." [selected]
+                    - option "Email"
+                    - option "Post"
+                    - option "Hand Delivery"
+                - generic [ref=e283]:
+                  - generic [ref=e284]: Referred By
+                  - textbox "Referred By" [ref=e286]:
+                    - /placeholder: Source of client referral for tracking
+            - button "Save Custom Fields" [ref=e288]:
+              - img
+              - text: Save Custom Fields
+          - generic [ref=e289]:
+            - paragraph [ref=e290]: Tags
+            - button "Add Tag" [ref=e293]:
+              - img
+              - text: Add Tag
+          - generic [ref=e294]:
+            - generic [ref=e296]:
+              - img [ref=e297]
+              - generic [ref=e301]: Trust Balance
+              - generic [ref=e302]: Funds Held
+            - generic [ref=e304]:
+              - generic [ref=e305]: R 50 000,00
+              - generic [ref=e306]:
+                - generic [ref=e307]:
+                  - paragraph [ref=e308]: Deposits
+                  - paragraph [ref=e309]: R 50 000,00
+                - generic [ref=e310]:
+                  - paragraph [ref=e311]: Payments
+                  - paragraph [ref=e312]: R 0,00
+                - generic [ref=e313]:
+                  - paragraph [ref=e314]: Fee Transfers
+                  - paragraph [ref=e315]: R 0,00
+              - paragraph [ref=e316]: "Last transaction: 2026/04/25"
+          - generic [ref=e318]:
+            - generic [ref=e319]:
+              - generic [ref=e320]: Client Readiness
+              - button "Expand setup steps" [ref=e321]:
+                - img
+            - generic [ref=e322]:
+              - img [ref=e323]
+              - generic [ref=e326]: Setup complete
+          - generic [ref=e327]:
+            - generic [ref=e329]: Document Templates
+            - list [ref=e331]:
+              - listitem [ref=e332]:
+                - generic [ref=e333]:
+                  - img [ref=e334]
+                  - generic [ref=e337]: Power of Attorney
+                - link "Generate" [ref=e338] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/customers/c3ad51f5-2bda-4a27-b626-7b5c63f37102?generateTemplate=548daf02-f57c-460f-b0a6-13ccedfb9b16
+              - listitem [ref=e339]:
+                - generic [ref=e340]:
+                  - img [ref=e341]
+                  - generic [ref=e344]: Letter of Demand
+                - link "Generate" [ref=e345] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/customers/c3ad51f5-2bda-4a27-b626-7b5c63f37102?generateTemplate=41581833-7171-4e76-8b36-5d000a5efe47
+              - listitem [ref=e346]:
+                - generic [ref=e347]:
+                  - img [ref=e348]
+                  - generic [ref=e351]: Client Trust Statement
+                - link "Generate" [ref=e352] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/customers/c3ad51f5-2bda-4a27-b626-7b5c63f37102?generateTemplate=4723438d-a978-46b6-8785-8bc50f099132
+              - listitem [ref=e353]:
+                - generic [ref=e354]:
+                  - img [ref=e355]
+                  - generic [ref=e358]: Trust Receipt
+                - link "Generate" [ref=e359] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/customers/c3ad51f5-2bda-4a27-b626-7b5c63f37102?generateTemplate=999f501f-6c34-4669-8e68-074440ade725
+          - generic [ref=e361]:
+            - img [ref=e362]
+            - generic [ref=e364]:
+              - heading "Ready to start onboarding?" [level=3] [ref=e365]
+              - paragraph [ref=e366]: Move this customer to Onboarding to begin compliance checklists.
+              - link "Start Onboarding" [ref=e368] [cursor=pointer]:
+                - /url: "#lifecycle-transition"
+          - generic [ref=e369]:
+            - tablist [ref=e370]:
+              - tab "Matters" [selected] [ref=e371]: Matters
+              - tab "Documents" [ref=e373]
+              - tab "Fee Notes" [ref=e374]
+              - tab "Mandate" [ref=e375]
+              - tab "Requests" [ref=e376]
+              - tab "Rates" [ref=e377]
+              - tab "Generated Docs" [ref=e378]
+              - tab "Financials" [ref=e379]
+              - tab "Trust" [ref=e380]
+            - tabpanel "Matters" [ref=e381]:
+              - generic [ref=e382]:
+                - generic [ref=e383]:
+                  - generic [ref=e384]:
+                    - heading "Matters" [level=2] [ref=e385]
+                    - generic [ref=e386]: "3"
+                  - generic [ref=e387]:
+                    - link "New Matter" [ref=e388] [cursor=pointer]:
+                      - /url: /org/mathebula-partners/projects?new=1&customerId=c3ad51f5-2bda-4a27-b626-7b5c63f37102
+                      - img
+                      - text: New Matter
+                    - button "Link Matter" [ref=e389]:
+                      - img
+                      - text: Link Matter
+                - table [ref=e391]:
+                  - rowgroup [ref=e392]:
+                    - row "Matter Status Description Due Date Created" [ref=e393]:
+                      - columnheader "Matter" [ref=e394]
+                      - columnheader "Status" [ref=e395]
+                      - columnheader "Description" [ref=e396]
+                      - columnheader "Due Date" [ref=e397]
+                      - columnheader "Created" [ref=e398]
+                      - columnheader [ref=e399]
+                  - rowgroup [ref=e400]:
+                    - 'row "Dlamini v Road Accident Fund Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION — Apr 25, 2026 Unlink" [ref=e401]':
+                      - cell "Dlamini v Road Accident Fund" [ref=e402]:
+                        - link "Dlamini v Road Accident Fund" [ref=e403] [cursor=pointer]:
+                          - /url: /org/mathebula-partners/projects/e788a51b-3a73-456c-b932-8d5bd27264c2
+                      - cell [ref=e404]
+                      - 'cell "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION" [ref=e406]':
+                        - generic [ref=e407]: "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION"
+                      - cell "—" [ref=e408]
+                      - cell "Apr 25, 2026" [ref=e409]
+                      - cell "Unlink" [ref=e410]:
+                        - button "Unlink" [ref=e411]:
+                          - img
+                          - generic [ref=e412]: Unlink
+                    - 'row "L-37 Regression Probe Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION — Apr 25, 2026 Unlink" [ref=e413]':
+                      - cell "L-37 Regression Probe" [ref=e414]:
+                        - link "L-37 Regression Probe" [ref=e415] [cursor=pointer]:
+                          - /url: /org/mathebula-partners/projects/af9b14b2-76c3-47d5-8f2c-3e19f07c57ba
+                      - cell [ref=e416]
+                      - 'cell "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION" [ref=e418]':
+                        - generic [ref=e419]: "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION"
+                      - cell "—" [ref=e420]
+                      - cell "Apr 25, 2026" [ref=e421]
+                      - cell "Unlink" [ref=e422]:
+                        - button "Unlink" [ref=e423]:
+                          - img
+                          - generic [ref=e424]: Unlink
+                    - 'row "L-37 Conveyancing Probe Standard conveyancing workflow for property transfer from instruction through registration and file closure. Matter type: CONVEYANCING — Apr 25, 2026 Unlink" [ref=e425]':
+                      - cell "L-37 Conveyancing Probe" [ref=e426]:
+                        - link "L-37 Conveyancing Probe" [ref=e427] [cursor=pointer]:
+                          - /url: /org/mathebula-partners/projects/db5ff54a-46ff-4477-b2ba-f462d8fd60af
+                      - cell [ref=e428]
+                      - 'cell "Standard conveyancing workflow for property transfer from instruction through registration and file closure. Matter type: CONVEYANCING" [ref=e430]':
+                        - generic [ref=e431]: "Standard conveyancing workflow for property transfer from instruction through registration and file closure. Matter type: CONVEYANCING"
+                      - cell "—" [ref=e432]
+                      - cell "Apr 25, 2026" [ref=e433]
+                      - cell "Unlink" [ref=e434]:
+                        - button "Unlink" [ref=e435]:
+                          - img
+                          - generic [ref=e436]: Unlink
+  - generic [ref=e201]:
+    - heading "Command Palette" [level=2] [ref=e202]
+    - paragraph [ref=e203]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e209] [cursor=pointer]:
+    - img [ref=e210]
+  - alert [ref=e213]

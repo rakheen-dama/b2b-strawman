@@ -1,0 +1,16 @@
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e9] [cursor=pointer]:
+    - img [ref=e10]
+  - alert [ref=e13]
+  - main [ref=e14]:
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - img "Mathebula & Partners logo" [ref=e17]
+        - generic [ref=e18]: Mathebula & Partners
+        - generic [ref=e19]: Sign in to your client portal
+      - generic [ref=e21]:
+        - generic [ref=e22]:
+          - generic [ref=e23]: Email address
+          - textbox "Email address" [active] [ref=e24]:
+            - /placeholder: you@example.com
+        - button "Send Magic Link" [ref=e25]

@@ -1,0 +1,191 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e52]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e55]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e61]:
+          - generic [ref=e62]: Clients
+          - img [ref=e63]
+        - button "Finance" [ref=e67]:
+          - generic [ref=e68]: Finance
+          - img [ref=e69]
+        - generic [ref=e72]:
+          - button "Team" [expanded] [ref=e73]:
+            - generic [ref=e74]: Team
+            - img [ref=e75]
+          - link "Team" [ref=e78] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e79]
+            - text: Team
+      - generic [ref=e85]:
+        - link "Notifications" [ref=e86] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e87]
+          - text: Notifications
+        - link "Settings" [ref=e90] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e91]
+          - text: Settings
+        - link "Help" [ref=e94] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e95]
+          - text: Help
+      - generic [ref=e98]:
+        - generic [ref=e99]: TM
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Thandi Mathebula
+          - paragraph [ref=e102]: thandi@mathebula-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "Mathebula & Partners" [ref=e106] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - link "Trust Accounting" [ref=e110] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting
+          - generic [ref=e111]:
+            - img [ref=e112]
+            - generic [ref=e114]: transactions
+        - generic [ref=e115]:
+          - button "User menu" [ref=e117]: TM
+          - button "Notifications" [ref=e119]:
+            - img
+            - generic [ref=e120]: 3 unread notifications
+            - generic [ref=e179]: "3"
+      - main [ref=e121]:
+        - generic [ref=e124]:
+          - generic [ref=e125]:
+            - generic [ref=e126]:
+              - heading "Transactions" [level=1] [ref=e127]
+              - paragraph [ref=e128]: Trust account transaction history
+            - button "Record Transaction" [ref=e129]:
+              - img
+              - text: Record Transaction
+          - generic [ref=e130]:
+            - generic [ref=e131]: "Status:"
+            - link "All" [ref=e132] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/transactions
+            - link "Recorded" [ref=e133] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/transactions?status=RECORDED
+            - link "Awaiting Approval" [ref=e134] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/transactions?status=AWAITING_APPROVAL
+            - link "Approved" [ref=e135] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/transactions?status=APPROVED
+            - link "Rejected" [ref=e136] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/transactions?status=REJECTED
+            - link "Reversed" [ref=e137] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/transactions?status=REVERSED
+          - generic [ref=e138]:
+            - generic [ref=e139]: "Type:"
+            - link "All" [ref=e140] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/transactions
+            - link "Deposit" [ref=e141] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/transactions?type=DEPOSIT
+            - link "Payment" [ref=e142] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/transactions?type=PAYMENT
+            - link "Transfer In" [ref=e143] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/transactions?type=TRANSFER_IN
+            - link "Transfer Out" [ref=e144] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/transactions?type=TRANSFER_OUT
+            - link "Fee Transfer" [ref=e145] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/transactions?type=FEE_TRANSFER
+            - link "Refund" [ref=e146] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/transactions?type=REFUND
+            - link "Interest Credit" [ref=e147] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/transactions?type=INTEREST_CREDIT
+            - link "Interest Lpff" [ref=e148] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/transactions?type=INTEREST_LPFF
+            - link "Reversal" [ref=e149] [cursor=pointer]:
+              - /url: /org/mathebula-partners/trust-accounting/transactions?type=REVERSAL
+          - generic [ref=e150]:
+            - generic [ref=e151]:
+              - generic [ref=e152]: From
+              - textbox "From" [ref=e153]
+            - generic [ref=e154]:
+              - generic [ref=e155]: To
+              - textbox "To" [ref=e156]
+            - generic [ref=e157]:
+              - generic [ref=e158]: Client ID
+              - textbox "Client ID" [ref=e159]:
+                - /placeholder: Client UUID
+            - generic [ref=e160]:
+              - generic [ref=e161]: Matter ID
+              - textbox "Matter ID" [ref=e162]:
+                - /placeholder: Matter UUID
+          - generic [ref=e163]:
+            - generic [ref=e164]:
+              - generic [ref=e165]: Transaction History
+              - generic [ref=e166]: 1 transaction found
+            - table [ref=e220]:
+              - rowgroup [ref=e221]:
+                - row "Date Reference Type Amount Status Actions" [ref=e222]:
+                  - columnheader "Date" [ref=e223]
+                  - columnheader "Reference" [ref=e224]
+                  - columnheader "Type" [ref=e225]
+                  - columnheader "Amount" [ref=e226]
+                  - columnheader "Status" [ref=e227]
+                  - columnheader "Actions" [ref=e228]
+              - rowgroup [ref=e229]:
+                - row "27 Apr 2026 DEP/2026/RAF-001 Deposit R 50 000,00 RECORDED" [ref=e230]:
+                  - cell "27 Apr 2026" [ref=e231]
+                  - cell "DEP/2026/RAF-001" [ref=e232]
+                  - cell "Deposit" [ref=e233]:
+                    - generic [ref=e234]: Deposit
+                  - cell "R 50 000,00" [ref=e235]:
+                    - generic [ref=e236]:
+                      - img [ref=e237]
+                      - text: R 50 000,00
+                  - cell "RECORDED" [ref=e240]:
+                    - generic [ref=e241]: RECORDED
+                  - cell [ref=e242]
+  - generic [ref=e180]:
+    - heading "Command Palette" [level=2] [ref=e181]
+    - paragraph [ref=e182]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e175] [cursor=pointer]:
+    - img [ref=e176]
+  - alert [ref=e183]

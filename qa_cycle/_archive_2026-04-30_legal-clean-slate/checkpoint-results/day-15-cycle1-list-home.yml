@@ -1,0 +1,85 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e66]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e23]
+            - generic [ref=e26]: Home
+          - link "Matters" [ref=e27] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e28]
+            - generic [ref=e30]: Matters
+          - link "Trust" [ref=e67] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e68]
+            - generic [ref=e72]: Trust
+          - link "Deadlines" [ref=e73] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e74]
+            - generic [ref=e78]: Deadlines
+          - link "Invoices" [ref=e31] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e32]
+            - generic [ref=e35]: Invoices
+          - link "Proposals" [ref=e36] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e37]
+            - generic [ref=e40]: Proposals
+          - link "Requests" [ref=e79] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e80]
+            - generic [ref=e82]: Requests
+        - generic [ref=e41]:
+          - link "Profile" [ref=e42] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e43]
+            - text: Profile
+          - button "Logout" [ref=e46]:
+            - img [ref=e47]
+            - text: Logout
+      - main [ref=e50]:
+        - generic [ref=e51]:
+          - heading "Home" [level=1] [ref=e52]
+          - generic [ref=e53]:
+            - link "Pending info requests 3" [ref=e83] [cursor=pointer]:
+              - /url: /requests
+              - generic [ref=e84]:
+                - generic [ref=e86]:
+                  - img [ref=e87]
+                  - text: Pending info requests
+                - paragraph [ref=e90]: "3"
+            - link "Upcoming deadlines 0 Next 14 days" [ref=e91] [cursor=pointer]:
+              - /url: /deadlines
+              - generic [ref=e92]:
+                - generic [ref=e94]:
+                  - img [ref=e95]
+                  - text: Upcoming deadlines
+                - generic [ref=e99]:
+                  - paragraph [ref=e100]: "0"
+                  - paragraph [ref=e101]: Next 14 days
+            - generic [ref=e54]:
+              - generic [ref=e56]:
+                - img [ref=e57]
+                - text: Recent invoices
+              - paragraph [ref=e61]: No invoices yet.
+            - link "Last trust movement No recent activity" [ref=e102] [cursor=pointer]:
+              - /url: /trust
+              - generic [ref=e103]:
+                - generic [ref=e105]:
+                  - img [ref=e106]
+                  - text: Last trust movement
+                - paragraph [ref=e111]: No recent activity
+    - contentinfo [ref=e62]:
+      - paragraph [ref=e64]: Powered by DocTeams

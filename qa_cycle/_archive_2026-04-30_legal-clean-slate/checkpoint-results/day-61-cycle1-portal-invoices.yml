@@ -1,0 +1,98 @@
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e11] [cursor=pointer]:
+    - img [ref=e12]
+  - alert [ref=e15]
+  - generic [ref=e16]:
+    - banner [ref=e17]:
+      - link "Skip to content" [ref=e18] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e20]
+      - button "User menu" [ref=e21]:
+        - generic [ref=e22]: Sipho Dlamini
+    - generic [ref=e23]:
+      - complementary "Portal sidebar" [ref=e24]:
+        - generic [ref=e25]: Portal
+        - navigation "Portal navigation" [ref=e26]:
+          - link "Home" [ref=e27] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e28]
+            - generic [ref=e31]: Home
+          - link "Matters" [ref=e32] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e34]
+            - generic [ref=e36]: Matters
+          - link "Trust" [ref=e37] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e38]
+            - generic [ref=e42]: Trust
+          - link "Deadlines" [ref=e43] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e44]
+            - generic [ref=e48]: Deadlines
+          - link "Invoices" [active] [ref=e49] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e50]
+            - generic [ref=e53]: Invoices
+          - link "Proposals" [ref=e54] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e55]
+            - generic [ref=e58]: Proposals
+          - link "Requests" [ref=e59] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e60]
+            - generic [ref=e62]: Requests
+        - generic [ref=e63]:
+          - link "Profile" [ref=e64] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e65]
+            - text: Profile
+          - button "Logout" [ref=e68]:
+            - img [ref=e69]
+            - text: Logout
+      - main [ref=e72]:
+        - generic [ref=e273]:
+          - heading "Invoices" [level=1] [ref=e274]
+          - table "Invoice list" [ref=e276]:
+            - rowgroup [ref=e277]:
+              - 'row "Invoice # Status Issue Date Due Date Total Actions" [ref=e278]':
+                - 'columnheader "Invoice #" [ref=e279]'
+                - columnheader "Status" [ref=e280]
+                - columnheader "Issue Date" [ref=e281]
+                - columnheader "Due Date" [ref=e282]
+                - columnheader "Total" [ref=e283]
+                - columnheader "Actions" [ref=e284]
+            - rowgroup [ref=e285]:
+              - row "INV-0001 PAID 25 Apr 2026 R 1 250,00 View Download INV-0001" [ref=e286]:
+                - cell "INV-0001" [ref=e287]:
+                  - link "INV-0001" [ref=e288] [cursor=pointer]:
+                    - /url: /invoices/8f718728-5fb6-40fe-abf1-2cafc86c0f10
+                - cell "PAID" [ref=e289]:
+                  - generic [ref=e290]: PAID
+                - cell "25 Apr 2026" [ref=e291]
+                - cell [ref=e292]
+                - cell "R 1 250,00" [ref=e293]
+                - cell "View Download INV-0001" [ref=e294]:
+                  - generic [ref=e295]:
+                    - link "View" [ref=e296] [cursor=pointer]:
+                      - /url: /invoices/8f718728-5fb6-40fe-abf1-2cafc86c0f10
+                    - button "Download INV-0001" [ref=e297]:
+                      - img [ref=e298]
+                      - text: PDF
+              - row "INV-0002 PAID 25 Apr 2026 R 100,00 View Download INV-0002" [ref=e301]:
+                - cell "INV-0002" [ref=e302]:
+                  - link "INV-0002" [ref=e303] [cursor=pointer]:
+                    - /url: /invoices/62c56974-b633-43ec-b2d7-73406a43df08
+                - cell "PAID" [ref=e304]:
+                  - generic [ref=e305]: PAID
+                - cell "25 Apr 2026" [ref=e306]
+                - cell [ref=e307]
+                - cell "R 100,00" [ref=e308]
+                - cell "View Download INV-0002" [ref=e309]:
+                  - generic [ref=e310]:
+                    - link "View" [ref=e311] [cursor=pointer]:
+                      - /url: /invoices/62c56974-b633-43ec-b2d7-73406a43df08
+                    - button "Download INV-0002" [ref=e312]:
+                      - img [ref=e313]
+                      - text: PDF
+    - contentinfo [ref=e118]:
+      - paragraph [ref=e120]: Powered by DocTeams

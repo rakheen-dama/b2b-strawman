@@ -1,0 +1,87 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e91]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e22]
+            - generic [ref=e25]: Home
+          - link "Matters" [ref=e26] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e27]
+            - generic [ref=e29]: Matters
+          - link "Trust" [ref=e92] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e93]
+            - generic [ref=e97]: Trust
+          - link "Deadlines" [ref=e98] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e99]
+            - generic [ref=e103]: Deadlines
+          - link "Fee Notes" [ref=e104] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e31]
+            - generic [ref=e34]: Fee Notes
+          - link "Proposals" [ref=e35] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e37]
+            - generic [ref=e40]: Proposals
+          - link "Requests" [ref=e105] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e106]
+            - generic [ref=e108]: Requests
+          - link "Activity" [ref=e41] [cursor=pointer]:
+            - /url: /activity
+            - img [ref=e42]
+            - generic [ref=e44]: Activity
+        - generic [ref=e45]:
+          - link "Profile" [ref=e46] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e47]
+            - text: Profile
+          - button "Logout" [ref=e50]:
+            - img [ref=e51]
+            - text: Logout
+      - main [ref=e54]:
+        - generic [ref=e55]:
+          - link "Back to proposals" [ref=e56] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e57]
+            - text: Back to proposals
+          - generic [ref=e60]:
+            - generic [ref=e61]:
+              - heading "Cycle19 Verify" [level=1] [ref=e62]
+              - generic [ref=e63]: ACCEPTED
+            - generic [ref=e64]:
+              - generic [ref=e65]: PROP-0002
+              - generic [ref=e66]: "Sent: 27 Apr 2026"
+          - generic [ref=e67]:
+            - img [ref=e68]
+            - paragraph [ref=e71]: This proposal has been accepted.
+          - generic [ref=e72]:
+            - heading "Fee Details" [level=2] [ref=e73]
+            - generic [ref=e76]:
+              - text: Fee Model
+              - paragraph [ref=e77]: Hourly Rate
+          - generic [ref=e78]:
+            - heading "Proposal Details" [level=2] [ref=e79]
+            - generic [ref=e80]:
+              - heading "Cycle19 Verify" [level=2] [ref=e109]
+              - paragraph [ref=e110]: Dear Sipho Dlamini,
+              - heading "Fee Arrangement" [level=3] [ref=e111]
+              - paragraph [ref=e112]: Fees will be charged on an hourly basis.
+              - paragraph [ref=e113]: "Rate: R850/hr per LSSA 2024/2025 schedule"
+              - paragraph [ref=e114]: This proposal is subject to our standard terms and conditions. Please contact us if you have any questions.
+    - contentinfo [ref=e87]:
+      - paragraph [ref=e89]: Powered by DocTeams

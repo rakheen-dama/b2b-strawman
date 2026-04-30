@@ -1,0 +1,8 @@
+SET
+                  id                  |             name             | reference_number | status | clock_started |           closed_at           
+--------------------------------------+------------------------------+------------------+--------+---------------+-------------------------------
+ 340c5bb2-16c9-4cb4-ae27-df757aa7ce6d | Estate Late Peter Moroka     | EST-2026-002     | ACTIVE | f             | 
+ ee02e80e-8a6e-4f76-b4ee-b55fc4c5cb69 | Cycle19 Verify               |                  | ACTIVE | f             | 
+ cc390c4f-35e2-42b5-8b54-bac766673ae7 | Dlamini v Road Accident Fund | RAF-2026-001     | CLOSED | t             | 2026-04-27 16:56:04.658143+00
+(3 rows)
+

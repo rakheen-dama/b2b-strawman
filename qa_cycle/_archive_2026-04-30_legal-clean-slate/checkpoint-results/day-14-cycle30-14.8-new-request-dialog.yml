@@ -1,0 +1,302 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: BN
+        - generic:
+          - paragraph: Bob Ndlovu
+          - paragraph: bob@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - text: Matters
+          - generic:
+            - img
+            - generic: Matter
+        - generic:
+          - generic:
+            - button: BN
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 10 unread notifications
+              - generic: "10"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/projects
+                  - img
+                  - text: Back to Matters
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: Estate Late Peter Moroka
+                    - generic: Active
+                  - paragraph: "Administration of deceased estate from reporting to final distribution. Matter type: ESTATES"
+                  - paragraph:
+                    - text: "Client:"
+                    - link:
+                      - /url: /org/mathebula-partners/customers/0cb199f2-9263-4d57-88c7-4a0350f8779c
+                      - text: Moroka Family Trust
+                  - generic:
+                    - generic:
+                      - generic: Ref
+                      - code: EST-2026-002
+                  - paragraph: Created Apr 27, 2026 · 0 documents · 0 members · 9 tasks
+                - generic:
+                  - button:
+                    - img
+                    - text: Close Matter
+                  - button:
+                    - img
+                    - text: Generate Statement of Account
+                  - button:
+                    - img
+                    - text: Complete Matter
+                  - button:
+                    - img
+                  - button:
+                    - img
+                    - text: Generate Document
+                    - img
+                  - button:
+                    - img
+                    - text: New Engagement Letter
+                  - button:
+                    - img
+                    - text: Edit
+              - generic:
+                - paragraph: Field Groups
+                - generic:
+                  - generic:
+                    - text: SA Legal — Matter Details
+                    - button:
+                      - img
+                  - generic:
+                    - text: Project Info
+                    - button:
+                      - img
+                  - button:
+                    - img
+                    - text: Add Group
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: SA Legal — Matter Details
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Case Number
+                        - generic:
+                          - textbox:
+                            - /placeholder: Court-assigned case number for the matter
+                      - generic:
+                        - generic: Court
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the court in which the matter is heard
+                      - generic:
+                        - generic: Opposing Party
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the primary opposing party
+                      - generic:
+                        - generic: Opposing Attorney
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the opposing attorney or firm
+                      - generic:
+                        - generic: Advocate
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the instructed advocate (if briefed)
+                      - generic:
+                        - generic: Date of Instruction
+                        - generic:
+                          - textbox
+                      - generic:
+                        - generic: Estimated Value
+                        - generic:
+                          - spinbutton
+                - generic:
+                  - generic:
+                    - generic: Project Info
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Category
+                        - generic:
+                          - textbox:
+                            - /placeholder: Project category or type
+                - generic:
+                  - button:
+                    - img
+                    - text: Save Custom Fields
+              - generic:
+                - paragraph: Tags
+                - generic:
+                  - generic:
+                    - button:
+                      - img
+                      - text: Add Tag
+              - generic:
+                - tablist:
+                  - tab: Overview
+                  - tab: Documents
+                  - tab: Members
+                  - tab: Clients
+                  - tab: Tasks
+                  - tab: Time
+                  - tab: Fee Estimate
+                  - tab: Financials
+                  - tab: Staffing
+                  - tab: Rates
+                  - tab: Generated Docs
+                  - tab [selected]: Requests
+                  - tab: Client Comments
+                  - tab: Court Dates
+                  - tab: Adverse Parties
+                  - tab: Trust
+                  - tab: Disbursements
+                  - tab: Statements
+                  - tab: Activity
+                - tabpanel:
+                  - generic:
+                    - generic:
+                      - button [expanded]:
+                        - img
+                        - text: New Request
+                    - generic:
+                      - img
+                      - paragraph: No information requests yet
+                      - link:
+                        - /url: https://docs.heykazi.com/features/information-requests
+                        - text: Read the guide
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e190] [cursor=pointer]:
+    - img [ref=e191]
+  - alert
+  - dialog "Create Information Request" [ref=e811]:
+    - generic [ref=e812]:
+      - generic [ref=e813]:
+        - heading "Create Information Request" [level=2] [ref=e814]
+        - paragraph [ref=e815]: Request documents or information from Moroka Family Trust for Estate Late Peter Moroka.
+      - generic [ref=e816]:
+        - generic [ref=e817]:
+          - generic [ref=e818]: Template
+          - combobox "Template" [ref=e819]:
+            - generic: Ad-hoc (no template)
+            - img
+        - generic [ref=e820]:
+          - generic [ref=e821]: Portal Contact
+          - combobox "Portal Contact" [ref=e822]:
+            - generic: Moroka Family Trust (moroka.portal@example.com)
+            - img
+        - generic [ref=e823]:
+          - generic [ref=e824]: Reminder Interval (days)
+          - spinbutton "Reminder Interval (days)" [ref=e825]: "5"
+          - paragraph [ref=e826]: Automated reminders will be sent at this interval after the request is sent.
+        - generic [ref=e827]:
+          - generic [ref=e828]: Due Date (optional)
+          - textbox "Due Date (optional)" [ref=e829]
+          - paragraph [ref=e830]: The date by which the client is expected to return the requested information.
+        - generic [ref=e831]:
+          - paragraph [ref=e832]: "Customer: Moroka Family Trust"
+          - paragraph [ref=e833]: "Project: Estate Late Peter Moroka"
+      - generic [ref=e834]:
+        - button "Cancel" [active] [ref=e835]
+        - button "Save as Draft" [ref=e836]
+        - button "Send Now" [ref=e837]
+      - button "Close" [ref=e838]:
+        - img
+        - generic [ref=e839]: Close

@@ -1,0 +1,465 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e53]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e55] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e56]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e62]:
+          - generic [ref=e63]: Clients
+          - img [ref=e64]
+        - button "Finance" [ref=e68]:
+          - generic [ref=e69]: Finance
+          - img [ref=e70]
+        - generic [ref=e73]:
+          - button "Team" [expanded] [ref=e74]:
+            - generic [ref=e75]: Team
+            - img [ref=e76]
+          - link "Team" [ref=e79] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e80]
+            - text: Team
+      - generic [ref=e86]:
+        - link "Notifications" [ref=e87] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e88]
+          - text: Notifications
+        - link "Settings" [ref=e91] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e92]
+          - text: Settings
+        - link "Help" [ref=e95] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e96]
+          - text: Help
+      - generic [ref=e99]:
+        - generic [ref=e100]: BN
+        - generic [ref=e101]:
+          - paragraph [ref=e102]: Bob Ndlovu
+          - paragraph [ref=e103]: bob@mathebula-test.local
+    - generic [ref=e104]:
+      - banner [ref=e105]:
+        - navigation "Breadcrumb" [ref=e106]:
+          - link "Mathebula & Partners" [ref=e107] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e108]:
+            - img [ref=e109]
+            - link "Matters" [ref=e111] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+          - generic [ref=e112]:
+            - img [ref=e113]
+            - generic [ref=e115]: Matter
+        - generic [ref=e116]:
+          - button "User menu" [ref=e118]: BN
+          - button "Notifications" [ref=e120]:
+            - img
+            - generic [ref=e121]: 7 unread notifications
+            - generic [ref=e122]: "7"
+      - main [ref=e123]:
+        - generic [ref=e170]:
+          - link "Back to Matters" [ref=e172] [cursor=pointer]:
+            - /url: /org/mathebula-partners/projects
+            - img [ref=e173]
+            - text: Back to Matters
+          - generic [ref=e175]:
+            - generic [ref=e176]:
+              - generic [ref=e177]:
+                - heading "Dlamini v Road Accident Fund" [level=1] [ref=e178]
+                - generic [ref=e179]: Active
+              - paragraph [ref=e180]: "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION"
+              - paragraph [ref=e181]:
+                - text: "Client:"
+                - link "Sipho Dlamini" [ref=e182] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/customers/c3ad51f5-2bda-4a27-b626-7b5c63f37102
+              - generic [ref=e184]:
+                - generic [ref=e185]: Ref
+                - code [ref=e186]: RAF-2026-001
+              - paragraph [ref=e187]: Created Apr 25, 2026 · 4 documents · 1 member · 9 tasks
+            - generic [ref=e188]:
+              - button "Close Matter" [ref=e189]:
+                - img
+                - text: Close Matter
+              - button "Generate Statement of Account" [ref=e190]:
+                - img
+                - text: Generate Statement of Account
+              - button "Complete Matter" [ref=e191]:
+                - img
+                - text: Complete Matter
+              - button [ref=e192]:
+                - img
+              - button "Generate Document" [ref=e193]:
+                - img
+                - text: Generate Document
+                - img
+              - button "New Engagement Letter" [ref=e194]:
+                - img
+                - text: New Engagement Letter
+              - button "Edit" [ref=e195]:
+                - img
+                - text: Edit
+          - generic [ref=e196]:
+            - paragraph [ref=e197]: Field Groups
+            - generic [ref=e198]:
+              - generic [ref=e199]:
+                - text: SA Conveyancing — Matter Details
+                - button "Remove SA Conveyancing — Matter Details" [ref=e200]:
+                  - img [ref=e201]
+              - generic [ref=e204]:
+                - text: SA Legal — Matter Details
+                - button "Remove SA Legal — Matter Details" [ref=e205]:
+                  - img [ref=e206]
+              - generic [ref=e209]:
+                - text: Project Info
+                - button "Remove Project Info" [ref=e210]:
+                  - img [ref=e211]
+          - generic [ref=e214]:
+            - generic [ref=e215]:
+              - generic [ref=e217]: SA Conveyancing — Matter Details
+              - generic [ref=e219]:
+                - generic [ref=e220]:
+                  - generic [ref=e221]: Conveyancing Type
+                  - combobox "Conveyancing Type" [ref=e223]:
+                    - option "Select..." [selected]
+                    - option "Transfer"
+                    - option "Bond Registration"
+                    - option "Bond Cancellation"
+                    - option "Sectional Title"
+                    - option "Estate Transfer"
+                - generic [ref=e224]:
+                  - generic [ref=e225]: Property Address
+                  - textbox "Property Address" [ref=e227]:
+                    - /placeholder: Full physical address of the property being transferred
+                - generic [ref=e228]:
+                  - generic [ref=e229]: Erf Number
+                  - textbox "Erf Number" [ref=e231]:
+                    - /placeholder: Erf/stand number identifying the property
+                - generic [ref=e232]:
+                  - generic [ref=e233]: Deeds Office
+                  - combobox "Deeds Office" [ref=e235]:
+                    - option "Select..." [selected]
+                    - option "Johannesburg"
+                    - option "Pretoria"
+                    - option "Cape Town"
+                    - option "Bloemfontein"
+                    - option "Pietermaritzburg"
+                    - option "King William's Town"
+                    - option "Kimberley"
+                    - option "Mahikeng"
+                    - option "Mthatha"
+                    - option "Vryburg"
+                - generic [ref=e236]:
+                  - generic [ref=e237]: Lodgement Date
+                  - textbox "Lodgement Date" [ref=e239]
+                - generic [ref=e240]:
+                  - generic [ref=e241]: Purchase Price
+                  - generic [ref=e243]:
+                    - spinbutton "Purchase Price" [ref=e244]
+                    - combobox "Currency" [ref=e245]:
+                      - option "Currency" [selected]
+                      - option "USD"
+                      - option "EUR"
+                      - option "GBP"
+                      - option "ZAR"
+                      - option "AUD"
+                      - option "CAD"
+                      - option "CHF"
+                      - option "JPY"
+                      - option "CNY"
+                      - option "INR"
+                - generic [ref=e246]:
+                  - generic [ref=e247]: Transfer Duty
+                  - generic [ref=e249]:
+                    - spinbutton "Transfer Duty" [ref=e250]
+                    - combobox "Currency" [ref=e251]:
+                      - option "Currency" [selected]
+                      - option "USD"
+                      - option "EUR"
+                      - option "GBP"
+                      - option "ZAR"
+                      - option "AUD"
+                      - option "CAD"
+                      - option "CHF"
+                      - option "JPY"
+                      - option "CNY"
+                      - option "INR"
+                - generic [ref=e252]:
+                  - generic [ref=e253]: Bond Institution
+                  - combobox "Bond Institution" [ref=e255]:
+                    - option "Select..." [selected]
+                    - option "ABSA"
+                    - option "FNB"
+                    - option "Standard Bank"
+                    - option "Nedbank"
+                    - option "Investec"
+                    - option "SA Home Loans"
+                    - option "Other"
+                    - option "None (Cash Purchase)"
+            - generic [ref=e256]:
+              - generic [ref=e258]: SA Legal — Matter Details
+              - generic [ref=e260]:
+                - generic [ref=e261]:
+                  - generic [ref=e262]: Case Number
+                  - textbox "Case Number" [ref=e264]:
+                    - /placeholder: Court-assigned case number for the matter
+                    - text: RAF-2026-001-CASE
+                - generic [ref=e265]:
+                  - generic [ref=e266]: Court
+                  - textbox "Court" [ref=e268]:
+                    - /placeholder: Name of the court in which the matter is heard
+                - generic [ref=e269]:
+                  - generic [ref=e270]: Opposing Party
+                  - textbox "Opposing Party" [ref=e272]:
+                    - /placeholder: Name of the primary opposing party
+                    - text: Road Accident Fund
+                - generic [ref=e273]:
+                  - generic [ref=e274]: Opposing Attorney
+                  - textbox "Opposing Attorney" [ref=e276]:
+                    - /placeholder: Name of the opposing attorney or firm
+                - generic [ref=e277]:
+                  - generic [ref=e278]: Advocate
+                  - textbox "Advocate" [ref=e280]:
+                    - /placeholder: Name of the instructed advocate (if briefed)
+                - generic [ref=e281]:
+                  - generic [ref=e282]: Date of Instruction
+                  - textbox "Date of Instruction" [ref=e284]
+                - generic [ref=e285]:
+                  - generic [ref=e286]: Estimated Value
+                  - spinbutton "Estimated Value" [ref=e288]
+            - generic [ref=e289]:
+              - generic [ref=e291]: Project Info
+              - generic [ref=e294]:
+                - generic [ref=e295]: Category
+                - textbox "Category" [ref=e297]:
+                  - /placeholder: Project category or type
+            - button "Save Custom Fields" [ref=e299]:
+              - img
+              - text: Save Custom Fields
+          - generic [ref=e300]:
+            - paragraph [ref=e301]: Tags
+            - button "Add Tag" [ref=e304]:
+              - img
+              - text: Add Tag
+          - generic [ref=e305]:
+            - tablist [ref=e306]:
+              - tab "Overview" [selected] [ref=e307]: Overview
+              - tab "Documents" [ref=e309]
+              - tab "Members" [ref=e310]
+              - tab "Clients" [ref=e311]
+              - tab "Tasks" [ref=e312]
+              - tab "Time" [ref=e313]
+              - tab "Fee Estimate" [ref=e314]
+              - tab "Financials" [ref=e315]
+              - tab "Staffing" [ref=e316]
+              - tab "Rates" [ref=e317]
+              - tab "Generated Docs" [ref=e318]
+              - tab "Requests" [ref=e319]
+              - tab "Client Comments" [ref=e320]
+              - tab "Court Dates" [ref=e321]
+              - tab "Adverse Parties" [ref=e322]
+              - tab "Trust" [ref=e323]
+              - tab "Disbursements" [ref=e324]
+              - tab "Statements" [ref=e325]
+              - tab "Activity" [ref=e326]
+            - tabpanel "Overview" [ref=e327]:
+              - generic [ref=e328]:
+                - generic [ref=e329]:
+                  - generic [ref=e330]:
+                    - generic [ref=e334]: Healthy
+                    - generic [ref=e335]:
+                      - heading "Dlamini v Road Accident Fund" [level=2] [ref=e336]
+                      - paragraph [ref=e337]: "Customer: Sipho Dlamini"
+                  - generic [ref=e338]:
+                    - generic [ref=e339]:
+                      - paragraph [ref=e340]: Budget
+                      - text: "--"
+                    - generic [ref=e341]:
+                      - paragraph [ref=e342]: Hours
+                      - generic [ref=e343]: 0.0h
+                    - generic [ref=e344]:
+                      - paragraph [ref=e345]: Tasks
+                      - generic [ref=e346]: 0/9
+                      - text: complete
+                    - generic [ref=e347]:
+                      - paragraph [ref=e348]: Revenue
+                      - text: "--"
+                - group [ref=e349]:
+                  - generic "2/5 setup steps complete 40%" [ref=e350] [cursor=pointer]:
+                    - generic [ref=e351]:
+                      - generic [ref=e353]: 2/5 setup steps complete
+                      - generic [ref=e358]: 40%
+                    - img [ref=e359]
+                - generic [ref=e361]:
+                  - generic [ref=e362]:
+                    - generic [ref=e363]:
+                      - generic [ref=e365]:
+                        - generic [ref=e366]: Recent Activity
+                        - link "View all" [ref=e367] [cursor=pointer]:
+                          - /url: /org/mathebula-partners/projects/e788a51b-3a73-456c-b932-8d5bd27264c2?tab=activity
+                      - generic [ref=e369]:
+                        - generic [ref=e370]:
+                          - generic [ref=e371]: BN
+                          - generic [ref=e372]:
+                            - generic [ref=e373]:
+                              - img [ref=e374]
+                              - paragraph [ref=e376]: Information request REQ-0007 sent to Bob Ndlovu
+                            - text: 15 minutes ago
+                        - generic [ref=e377]:
+                          - generic [ref=e378]: BN
+                          - generic [ref=e379]:
+                            - generic [ref=e380]:
+                              - img [ref=e381]
+                              - paragraph [ref=e383]: Bob Ndlovu created information request REQ-0007
+                            - text: 15 minutes ago
+                        - generic [ref=e384]:
+                          - generic [ref=e385]: BN
+                          - generic [ref=e386]:
+                            - generic [ref=e387]:
+                              - img [ref=e388]
+                              - paragraph [ref=e390]: Bob Ndlovu cancelled information request REQ-0006
+                            - text: 17 minutes ago
+                        - generic [ref=e391]:
+                          - generic [ref=e392]: BN
+                          - generic [ref=e393]:
+                            - generic [ref=e394]:
+                              - img [ref=e395]
+                              - paragraph [ref=e397]: Bob Ndlovu created information request REQ-0006
+                            - text: 19 minutes ago
+                        - generic [ref=e398]:
+                          - generic [ref=e399]: BN
+                          - generic [ref=e400]:
+                            - generic [ref=e401]:
+                              - img [ref=e402]
+                              - paragraph [ref=e404]: Bob Ndlovu performed disbursement.billed on legal_disbursement
+                            - text: 3 hours ago
+                        - generic [ref=e405]:
+                          - generic [ref=e406]: BN
+                          - generic [ref=e407]:
+                            - generic [ref=e408]:
+                              - img [ref=e409]
+                              - paragraph [ref=e411]: Bob Ndlovu performed disbursement.approved on legal_disbursement
+                            - text: 3 hours ago
+                        - generic [ref=e412]:
+                          - generic [ref=e413]: BN
+                          - generic [ref=e414]:
+                            - generic [ref=e415]:
+                              - img [ref=e416]
+                              - paragraph [ref=e418]: Bob Ndlovu performed disbursement.submitted on legal_disbursement
+                            - text: 3 hours ago
+                        - generic [ref=e419]:
+                          - generic [ref=e420]: BN
+                          - generic [ref=e421]:
+                            - generic [ref=e422]:
+                              - img [ref=e423]
+                              - paragraph [ref=e425]: Bob Ndlovu performed disbursement.created on legal_disbursement
+                            - text: 3 hours ago
+                        - generic [ref=e426]:
+                          - generic [ref=e427]: BN
+                          - generic [ref=e428]:
+                            - generic [ref=e429]:
+                              - img [ref=e430]
+                              - paragraph [ref=e432]: Bob Ndlovu performed disbursement.billed on legal_disbursement
+                            - text: 4 hours ago
+                        - generic [ref=e433]:
+                          - generic [ref=e434]: BN
+                          - generic [ref=e435]:
+                            - generic [ref=e436]:
+                              - img [ref=e437]
+                              - paragraph [ref=e439]: Bob Ndlovu performed disbursement.approved on legal_disbursement
+                            - text: 5 hours ago
+                    - generic [ref=e440]:
+                      - generic [ref=e442]:
+                        - generic [ref=e443]: Task Status
+                        - link "View all tasks" [ref=e444] [cursor=pointer]:
+                          - /url: /org/mathebula-partners/projects/e788a51b-3a73-456c-b932-8d5bd27264c2?tab=tasks
+                      - generic [ref=e446]:
+                        - generic [ref=e447]:
+                          - 'generic "Done: 0"'
+                          - 'generic "In Progress: 0"'
+                          - 'generic "Open: 9" [ref=e448]'
+                        - generic [ref=e449]:
+                          - generic [ref=e450]: Done 0
+                          - generic [ref=e452]: In Progress 0
+                          - generic [ref=e454]: Open 9
+                    - generic [ref=e456]:
+                      - generic [ref=e458]: Upcoming Deadlines
+                      - paragraph [ref=e460]: No upcoming deadlines
+                  - generic [ref=e461]:
+                    - generic [ref=e462]:
+                      - generic [ref=e464]: Budget
+                      - paragraph [ref=e466]: No budget configured
+                    - generic [ref=e467]:
+                      - generic [ref=e469]:
+                        - generic [ref=e470]: Time Breakdown
+                        - link "View all time" [ref=e471] [cursor=pointer]:
+                          - /url: /org/mathebula-partners/projects/e788a51b-3a73-456c-b932-8d5bd27264c2?tab=time
+                      - paragraph [ref=e473]: No hours logged this month
+                    - generic [ref=e474]:
+                      - generic [ref=e476]: Team
+                      - paragraph [ref=e478]: No team members assigned
+                    - generic [ref=e479]:
+                      - generic [ref=e481]:
+                        - generic [ref=e482]:
+                          - img [ref=e483]
+                          - text: FICA
+                        - generic [ref=e486]: Done
+                      - generic [ref=e487]:
+                        - paragraph [ref=e488]: Verified Apr 25, 2026
+                        - link "View request" [ref=e489] [cursor=pointer]:
+                          - /url: /org/mathebula-partners/requests/b78cb730-a52c-48c1-87ea-f360fe457047
+  - generic [ref=e148]:
+    - heading "Command Palette" [level=2] [ref=e149]
+    - paragraph [ref=e150]: Search pages and settings
+  - region "Notifications alt+T"
+  - generic [ref=e155] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e156]:
+      - img [ref=e157]
+    - generic [ref=e160]:
+      - button "Open issues overlay" [ref=e161]:
+        - generic [ref=e162]:
+          - generic [ref=e163]: "0"
+          - generic [ref=e164]: "1"
+        - generic [ref=e165]: Issue
+      - button "Collapse issues badge" [ref=e166]:
+        - img [ref=e167]
+  - alert [ref=e169]

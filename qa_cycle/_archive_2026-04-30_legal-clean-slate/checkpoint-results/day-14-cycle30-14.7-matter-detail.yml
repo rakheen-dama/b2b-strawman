@@ -1,0 +1,299 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e52]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e55]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e61]:
+          - generic [ref=e62]: Clients
+          - img [ref=e63]
+        - button "Finance" [ref=e67]:
+          - generic [ref=e68]: Finance
+          - img [ref=e69]
+        - generic [ref=e72]:
+          - button "Team" [expanded] [ref=e73]:
+            - generic [ref=e74]: Team
+            - img [ref=e75]
+          - link "Team" [ref=e78] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e79]
+            - text: Team
+      - generic [ref=e85]:
+        - link "Notifications" [ref=e86] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e87]
+          - text: Notifications
+        - link "Settings" [ref=e90] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e91]
+          - text: Settings
+        - link "Help" [ref=e94] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e95]
+          - text: Help
+      - generic [ref=e98]:
+        - generic [ref=e99]: BN
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Bob Ndlovu
+          - paragraph [ref=e102]: bob@mathebula-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "Mathebula & Partners" [ref=e106] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e586]:
+            - img [ref=e587]
+            - link "Matters" [ref=e589] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+          - generic [ref=e590]:
+            - img [ref=e591]
+            - generic [ref=e593]: Matter
+        - generic [ref=e111]:
+          - button "User menu" [ref=e113]: BN
+          - button "Notifications" [ref=e115]:
+            - img
+            - generic [ref=e116]: 10 unread notifications
+            - generic [ref=e117]: "10"
+      - main [ref=e118]:
+        - generic [ref=e595]:
+          - link "Back to Matters" [ref=e597] [cursor=pointer]:
+            - /url: /org/mathebula-partners/projects
+            - img [ref=e598]
+            - text: Back to Matters
+          - generic [ref=e600]:
+            - generic [ref=e601]:
+              - generic [ref=e602]:
+                - heading "Estate Late Peter Moroka" [level=1] [ref=e603]
+                - generic [ref=e604]: Active
+              - paragraph [ref=e605]: "Administration of deceased estate from reporting to final distribution. Matter type: ESTATES"
+              - paragraph [ref=e606]:
+                - text: "Client:"
+                - link "Moroka Family Trust" [ref=e607] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/customers/0cb199f2-9263-4d57-88c7-4a0350f8779c
+              - generic [ref=e609]:
+                - generic [ref=e610]: Ref
+                - code [ref=e611]: EST-2026-002
+              - paragraph [ref=e612]: Created Apr 27, 2026 · 0 documents · 0 members · 9 tasks
+            - generic [ref=e613]:
+              - button "Close Matter" [ref=e614]:
+                - img
+                - text: Close Matter
+              - button "Generate Statement of Account" [ref=e615]:
+                - img
+                - text: Generate Statement of Account
+              - button "Complete Matter" [ref=e616]:
+                - img
+                - text: Complete Matter
+              - button [ref=e617]:
+                - img
+              - button "Generate Document" [ref=e618]:
+                - img
+                - text: Generate Document
+                - img
+              - button "New Engagement Letter" [ref=e619]:
+                - img
+                - text: New Engagement Letter
+              - button "Edit" [ref=e620]:
+                - img
+                - text: Edit
+          - generic [ref=e621]:
+            - paragraph [ref=e622]: Field Groups
+            - generic [ref=e623]:
+              - generic [ref=e624]:
+                - text: SA Legal — Matter Details
+                - button "Remove SA Legal — Matter Details" [ref=e625]:
+                  - img [ref=e626]
+              - generic [ref=e629]:
+                - text: Project Info
+                - button "Remove Project Info" [ref=e630]:
+                  - img [ref=e631]
+              - button "Add Group" [ref=e634]:
+                - img
+                - text: Add Group
+          - generic [ref=e635]:
+            - generic [ref=e636]:
+              - generic [ref=e638]: SA Legal — Matter Details
+              - generic [ref=e640]:
+                - generic [ref=e641]:
+                  - generic [ref=e642]: Case Number
+                  - textbox "Case Number" [ref=e644]:
+                    - /placeholder: Court-assigned case number for the matter
+                - generic [ref=e645]:
+                  - generic [ref=e646]: Court
+                  - textbox "Court" [ref=e648]:
+                    - /placeholder: Name of the court in which the matter is heard
+                - generic [ref=e649]:
+                  - generic [ref=e650]: Opposing Party
+                  - textbox "Opposing Party" [ref=e652]:
+                    - /placeholder: Name of the primary opposing party
+                - generic [ref=e653]:
+                  - generic [ref=e654]: Opposing Attorney
+                  - textbox "Opposing Attorney" [ref=e656]:
+                    - /placeholder: Name of the opposing attorney or firm
+                - generic [ref=e657]:
+                  - generic [ref=e658]: Advocate
+                  - textbox "Advocate" [ref=e660]:
+                    - /placeholder: Name of the instructed advocate (if briefed)
+                - generic [ref=e661]:
+                  - generic [ref=e662]: Date of Instruction
+                  - textbox "Date of Instruction" [ref=e664]
+                - generic [ref=e665]:
+                  - generic [ref=e666]: Estimated Value
+                  - spinbutton "Estimated Value" [ref=e668]
+            - generic [ref=e669]:
+              - generic [ref=e671]: Project Info
+              - generic [ref=e674]:
+                - generic [ref=e675]: Category
+                - textbox "Category" [ref=e677]:
+                  - /placeholder: Project category or type
+            - button "Save Custom Fields" [ref=e679]:
+              - img
+              - text: Save Custom Fields
+          - generic [ref=e680]:
+            - paragraph [ref=e681]: Tags
+            - button "Add Tag" [ref=e684]:
+              - img
+              - text: Add Tag
+          - generic [ref=e685]:
+            - tablist [ref=e686]:
+              - tab "Overview" [selected] [ref=e687]: Overview
+              - tab "Documents" [ref=e689]
+              - tab "Members" [ref=e690]
+              - tab "Clients" [ref=e691]
+              - tab "Tasks" [ref=e692]
+              - tab "Time" [ref=e693]
+              - tab "Fee Estimate" [ref=e694]
+              - tab "Financials" [ref=e695]
+              - tab "Staffing" [ref=e696]
+              - tab "Rates" [ref=e697]
+              - tab "Generated Docs" [ref=e698]
+              - tab "Requests" [ref=e699]
+              - tab "Client Comments" [ref=e700]
+              - tab "Court Dates" [ref=e701]
+              - tab "Adverse Parties" [ref=e702]
+              - tab "Trust" [ref=e703]
+              - tab "Disbursements" [ref=e704]
+              - tab "Statements" [ref=e705]
+              - tab "Activity" [ref=e706]
+            - tabpanel "Overview" [ref=e707]:
+              - generic [ref=e708]:
+                - generic [ref=e709]:
+                  - generic [ref=e710]:
+                    - generic [ref=e714]: Healthy
+                    - generic [ref=e715]:
+                      - heading "Estate Late Peter Moroka" [level=2] [ref=e716]
+                      - paragraph [ref=e717]: "Customer: Moroka Family Trust"
+                  - generic [ref=e718]:
+                    - generic [ref=e719]:
+                      - paragraph [ref=e720]: Budget
+                      - text: "--"
+                    - generic [ref=e721]:
+                      - paragraph [ref=e722]: Hours
+                      - generic [ref=e723]: 0.0h
+                    - generic [ref=e724]:
+                      - paragraph [ref=e725]: Tasks
+                      - generic [ref=e726]: 0/9
+                      - text: complete
+                    - generic [ref=e727]:
+                      - paragraph [ref=e728]: Revenue
+                      - text: "--"
+                - group [ref=e729]:
+                  - generic "2/5 setup steps complete 40%" [ref=e730] [cursor=pointer]:
+                    - generic [ref=e731]:
+                      - generic [ref=e733]: 2/5 setup steps complete
+                      - generic [ref=e738]: 40%
+                    - img [ref=e739]
+                - generic [ref=e741]:
+                  - generic [ref=e742]:
+                    - generic [ref=e743]:
+                      - generic [ref=e745]:
+                        - generic [ref=e746]: Recent Activity
+                        - link "View all" [ref=e747] [cursor=pointer]:
+                          - /url: /org/mathebula-partners/projects/340c5bb2-16c9-4cb4-ae27-df757aa7ce6d?tab=activity
+                      - paragraph [ref=e749]: No recent activity
+                    - generic [ref=e750]:
+                      - generic [ref=e752]:
+                        - generic [ref=e753]: Task Status
+                        - link "View all tasks" [ref=e754] [cursor=pointer]:
+                          - /url: /org/mathebula-partners/projects/340c5bb2-16c9-4cb4-ae27-df757aa7ce6d?tab=tasks
+                      - generic [ref=e756]:
+                        - generic [ref=e757]:
+                          - 'generic "Done: 0"'
+                          - 'generic "In Progress: 0"'
+                          - 'generic "Open: 9" [ref=e758]'
+                        - generic [ref=e759]:
+                          - generic [ref=e760]: Done 0
+                          - generic [ref=e762]: In Progress 0
+                          - generic [ref=e764]: Open 9
+                    - generic [ref=e766]:
+                      - generic [ref=e768]: Upcoming Deadlines
+                      - paragraph [ref=e770]: No upcoming deadlines.
+                  - generic [ref=e771]:
+                    - generic [ref=e772]:
+                      - generic [ref=e774]: Budget
+                      - paragraph [ref=e776]: No budget configured
+                    - generic [ref=e777]:
+                      - generic [ref=e779]:
+                        - generic [ref=e780]: Time Breakdown
+                        - link "View all time" [ref=e781] [cursor=pointer]:
+                          - /url: /org/mathebula-partners/projects/340c5bb2-16c9-4cb4-ae27-df757aa7ce6d?tab=time
+                      - paragraph [ref=e783]: No hours logged this month
+                    - generic [ref=e784]:
+                      - generic [ref=e786]: Team
+                      - paragraph [ref=e788]: No team members assigned
+                    - generic [ref=e789]:
+                      - generic [ref=e791]:
+                        - generic [ref=e792]:
+                          - img [ref=e793]
+                          - text: FICA
+                        - generic [ref=e796]: Not Started
+                      - paragraph [ref=e798]: No FICA onboarding request yet.
+  - generic [ref=e182]:
+    - heading "Command Palette" [level=2] [ref=e183]
+    - paragraph [ref=e184]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e190] [cursor=pointer]:
+    - img [ref=e191]
+  - alert [ref=e194]

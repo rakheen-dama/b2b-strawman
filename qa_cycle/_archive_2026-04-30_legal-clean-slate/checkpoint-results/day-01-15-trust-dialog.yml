@@ -1,0 +1,183 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: TM
+        - generic:
+          - paragraph: Thandi Mathebula
+          - paragraph: thandi@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - generic: Trust Accounting
+        - generic:
+          - generic:
+            - button: TM
+          - generic:
+            - button "Notifications":
+              - img
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - heading [level=1]: Trust Accounting
+                  - paragraph: LSSA-compliant trust account management for client funds
+              - generic:
+                - generic:
+                  - img
+                  - heading [level=3]: No Trust Accounts
+                  - paragraph: No trust accounts have been set up yet. Create your first trust account to get started.
+                  - generic:
+                    - button:
+                      - img
+                      - text: Add Account
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e139] [cursor=pointer]:
+    - img [ref=e140]
+  - alert
+  - dialog "Add Trust Account" [ref=e148]:
+    - generic [ref=e149]:
+      - generic [ref=e150]:
+        - heading "Add Trust Account" [level=2] [ref=e151]
+        - paragraph [ref=e152]: Register a new trust bank account for the firm. This account will be available for receipts, payments, and reconciliation.
+      - generic [ref=e153]:
+        - generic [ref=e154]:
+          - generic [ref=e155]: Account Name
+          - textbox "Account Name" [active] [ref=e156]:
+            - /placeholder: e.g. Mathebula Trust Account
+        - generic [ref=e157]:
+          - generic [ref=e158]:
+            - generic [ref=e159]: Bank Name
+            - textbox "Bank Name" [ref=e160]:
+              - /placeholder: e.g. Standard Bank
+          - generic [ref=e161]:
+            - generic [ref=e162]: Branch Code
+            - textbox "Branch Code" [ref=e163]:
+              - /placeholder: e.g. 051001
+        - generic [ref=e164]:
+          - generic [ref=e165]: Account Number
+          - textbox "Account Number" [ref=e166]:
+            - /placeholder: e.g. 1234567890
+        - generic [ref=e167]:
+          - generic [ref=e168]:
+            - generic [ref=e169]: Account Type
+            - combobox "Account Type" [ref=e170]:
+              - generic: General
+              - img
+            - combobox [ref=e171]
+          - generic [ref=e172]:
+            - generic [ref=e173]: Opened Date
+            - textbox "Opened Date" [ref=e174]: 2026-04-21
+        - generic [ref=e175]:
+          - checkbox "Set as primary trust account" [checked] [ref=e176]:
+            - generic:
+              - img
+          - checkbox [checked]
+          - generic [ref=e177]:
+            - generic [ref=e178]: Set as primary trust account
+            - paragraph [ref=e179]: The primary account is used by default for dashboards and reporting.
+        - generic [ref=e180]:
+          - checkbox "Require dual approval" [ref=e181]
+          - checkbox
+          - generic [ref=e182]:
+            - generic [ref=e183]: Require dual approval
+            - paragraph [ref=e184]: When enabled, trust payments need two approvers before release.
+        - generic [ref=e185]:
+          - generic [ref=e186]: Payment Approval Threshold (ZAR)
+          - spinbutton "Payment Approval Threshold (ZAR)" [ref=e187]
+        - generic [ref=e188]:
+          - generic [ref=e189]: Notes (Optional)
+          - textbox "Notes (Optional)" [ref=e190]:
+            - /placeholder: Internal notes about this trust account
+        - generic [ref=e191]:
+          - button "Cancel" [ref=e192]
+          - button "Create Account" [ref=e193]
+      - button "Close" [ref=e194]:
+        - img
+        - generic [ref=e195]: Close

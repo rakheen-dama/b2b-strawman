@@ -1,0 +1,61 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e63]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e22]
+            - generic [ref=e25]: Home
+          - link "Matters" [ref=e26] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e28]
+            - generic [ref=e30]: Matters
+          - link "Trust" [ref=e64] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e65]
+            - generic [ref=e69]: Trust
+          - link "Deadlines" [ref=e70] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e71]
+            - generic [ref=e75]: Deadlines
+          - link "Invoices" [ref=e31] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e32]
+            - generic [ref=e35]: Invoices
+          - link "Proposals" [ref=e36] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e37]
+            - generic [ref=e40]: Proposals
+          - link "Requests" [ref=e76] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e77]
+            - generic [ref=e79]: Requests
+        - generic [ref=e41]:
+          - link "Profile" [ref=e42] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e43]
+            - text: Profile
+          - button "Logout" [ref=e46]:
+            - img [ref=e47]
+            - text: Logout
+      - main [ref=e50]:
+        - generic [ref=e80]:
+          - paragraph [ref=e81]: The requested resource was not found.
+          - paragraph [ref=e82]: This project may have been removed, you may not have access, or the request failed. Please try again.
+          - generic [ref=e83]:
+            - button "Try again" [ref=e84]
+            - link "Back to projects" [ref=e85] [cursor=pointer]:
+              - /url: /projects
+    - contentinfo [ref=e59]:
+      - paragraph [ref=e61]: Powered by DocTeams

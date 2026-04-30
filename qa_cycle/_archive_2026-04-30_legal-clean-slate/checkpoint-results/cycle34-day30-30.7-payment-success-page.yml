@@ -1,0 +1,71 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e16]
+      - button "User menu" [ref=e17]:
+        - generic [ref=e18]: Sipho Dlamini
+    - generic [ref=e19]:
+      - complementary "Portal sidebar" [ref=e20]:
+        - generic [ref=e21]: Portal
+        - navigation "Portal navigation" [ref=e22]:
+          - link "Home" [ref=e23] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e24]
+            - generic [ref=e27]: Home
+          - link "Matters" [ref=e28] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e29]
+            - generic [ref=e31]: Matters
+          - link "Trust" [ref=e32] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e33]
+            - generic [ref=e37]: Trust
+          - link "Deadlines" [ref=e38] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e39]
+            - generic [ref=e43]: Deadlines
+          - link "Fee Notes" [ref=e44] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e46]
+            - generic [ref=e49]: Fee Notes
+          - link "Proposals" [ref=e50] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e51]
+            - generic [ref=e54]: Proposals
+          - link "Requests" [ref=e55] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e56]
+            - generic [ref=e58]: Requests
+          - link "Activity" [ref=e59] [cursor=pointer]:
+            - /url: /activity
+            - img [ref=e60]
+            - generic [ref=e62]: Activity
+        - generic [ref=e63]:
+          - link "Profile" [ref=e64] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e65]
+            - text: Profile
+          - button "Logout" [ref=e68]:
+            - img [ref=e69]
+            - text: Logout
+      - main [ref=e72]:
+        - generic [ref=e73]:
+          - link "Back to fee note" [ref=e74] [cursor=pointer]:
+            - /url: /invoices/432ae5a9-6a3c-4c25-86b3-302f0dd016e1
+            - img [ref=e75]
+            - text: Back to fee note
+          - generic [ref=e77]:
+            - generic [ref=e78]:
+              - img [ref=e80]
+              - heading "Payment confirmed" [level=1] [ref=e83]
+              - paragraph [ref=e84]: Payment received — thank you!
+              - paragraph [ref=e85]: Paid on 27 Apr 2026
+            - link "View Fee Note" [ref=e87] [cursor=pointer]:
+              - /url: /invoices/432ae5a9-6a3c-4c25-86b3-302f0dd016e1
+    - contentinfo [ref=e88]:
+      - paragraph [ref=e90]: Powered by DocTeams

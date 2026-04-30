@@ -1,0 +1,200 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: BN
+        - generic:
+          - paragraph: Bob Ndlovu
+          - paragraph: bob@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/legal
+              - text: legal
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/legal/disbursements
+              - text: disbursements
+          - generic:
+            - img
+            - generic: bc75ab43-830f-4fb8-901d-b6e65a6da063
+        - generic:
+          - generic:
+            - button: BN
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 11 unread notifications
+              - generic: "11"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/legal/disbursements
+                  - img
+                  - text: Back to Disbursements
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: Sheriff Fees
+                    - generic: Pending
+                    - generic: Unbilled
+                  - paragraph: "Supplier: Sheriff Pretoria"
+                  - paragraph: Incurred 2026-04-27
+                - generic:
+                  - button:
+                    - img
+                    - text: Upload receipt
+                  - button:
+                    - img
+                    - text: Edit
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: Financial summary
+                  - generic:
+                    - generic:
+                      - generic: Amount (excl VAT)
+                      - generic: R 1 250,00
+                    - generic:
+                      - generic: VAT
+                      - generic: R 0,00 — Zero-rated pass-through
+                    - generic:
+                      - generic: Total (incl VAT)
+                      - generic: R 1 250,00
+                    - generic:
+                      - generic: Payment Source
+                      - generic: Office Account
+                - generic:
+                  - generic:
+                    - generic: Description & receipt
+                  - generic:
+                    - generic:
+                      - paragraph: Description
+                      - paragraph: Sheriff service of summons on RAF
+                    - generic:
+                      - paragraph: Receipt
+                      - paragraph: No receipt uploaded
+              - generic:
+                - generic:
+                  - generic: Approval Required
+                - generic:
+                  - paragraph: This disbursement is pending approval. Review the amount and supplier details before approving, or reject with a reason.
+                  - generic:
+                    - button:
+                      - img
+                      - text: Approve
+                    - button:
+                      - img
+                      - text: Reject
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e156] [cursor=pointer]:
+    - img [ref=e157]
+  - alert
+  - dialog "Approve Disbursement" [ref=e378]:
+    - generic [ref=e379]:
+      - generic [ref=e380]:
+        - heading "Approve Disbursement" [level=2] [ref=e381]
+        - paragraph [ref=e382]: Optionally add notes explaining the approval decision.
+      - generic [ref=e383]:
+        - generic [ref=e384]:
+          - generic [ref=e385]:
+            - text: Notes
+            - generic [ref=e386]: (optional)
+          - textbox "Notes (optional)" [active] [ref=e387]:
+            - /placeholder: Approval notes
+        - generic [ref=e388]:
+          - button "Cancel" [ref=e389]
+          - button "Approve Disbursement" [ref=e390]
+      - button "Close" [ref=e391]:
+        - img
+        - generic [ref=e392]: Close

@@ -1,0 +1,157 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e754] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e755]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e756]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e757]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e758]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e759] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e760] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e761] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e762] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e763]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e764] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e53]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e765] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e56]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e766]:
+          - generic [ref=e63]: Clients
+          - img [ref=e64]
+        - button "Finance" [ref=e767]:
+          - generic [ref=e69]: Finance
+          - img [ref=e70]
+        - generic [ref=e73]:
+          - button "Team" [expanded] [ref=e768]:
+            - generic [ref=e75]: Team
+            - img [ref=e76]
+          - link "Team" [ref=e769] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e80]
+            - text: Team
+      - generic [ref=e86]:
+        - link "Notifications" [ref=e770] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e88]
+          - text: Notifications
+        - link "Settings" [ref=e771] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e92]
+          - text: Settings
+        - link "Help" [ref=e772] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e96]
+          - text: Help
+      - generic [ref=e99]:
+        - generic [ref=e100]: BN
+        - generic [ref=e101]:
+          - paragraph [ref=e102]: Bob Ndlovu
+          - paragraph [ref=e103]: bob@mathebula-test.local
+    - generic [ref=e104]:
+      - banner [ref=e105]:
+        - navigation "Breadcrumb" [ref=e773]:
+          - link "Mathebula & Partners" [ref=e774] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e857]:
+            - img [ref=e858]
+            - link "legal" [ref=e860] [cursor=pointer]:
+              - /url: /org/mathebula-partners/legal
+          - generic [ref=e861]:
+            - img [ref=e862]
+            - link "disbursements" [ref=e864] [cursor=pointer]:
+              - /url: /org/mathebula-partners/legal/disbursements
+          - generic [ref=e865]:
+            - img [ref=e866]
+            - generic [ref=e868]: bb9ee2ac-b1e5-4e2f-bf43-e40a63809530
+        - generic [ref=e112]:
+          - button "User menu" [ref=e776]: BN
+          - button "Notifications" [ref=e116]:
+            - img
+            - generic [ref=e117]: 6 unread notifications
+            - generic [ref=e118]: "6"
+      - main [ref=e119]:
+        - generic [ref=e870]:
+          - link "Back to Disbursements" [ref=e872] [cursor=pointer]:
+            - /url: /org/mathebula-partners/legal/disbursements
+            - img [ref=e873]
+            - text: Back to Disbursements
+          - generic [ref=e875]:
+            - generic [ref=e876]:
+              - generic [ref=e877]:
+                - heading "Sheriff Fees" [level=1] [ref=e878]
+                - generic [ref=e879]: Draft
+                - generic [ref=e880]: Unbilled
+              - paragraph [ref=e881]:
+                - text: "Supplier: Sheriff Pretoria · Ref"
+                - code [ref=e882]: SHF-RAF-2026-001
+              - paragraph [ref=e883]: Incurred 2026-04-25
+            - generic [ref=e884]:
+              - button "Upload receipt" [ref=e885]:
+                - img
+                - text: Upload receipt
+              - button "Edit" [ref=e886]:
+                - img
+                - text: Edit
+          - generic [ref=e887]:
+            - generic [ref=e888]:
+              - generic [ref=e890]: Financial summary
+              - generic [ref=e891]:
+                - generic [ref=e892]:
+                  - generic [ref=e893]: Amount (excl VAT)
+                  - generic [ref=e894]: R 1 250,00
+                - generic [ref=e895]:
+                  - generic [ref=e896]: VAT
+                  - generic [ref=e897]: R 0,00 — Zero-rated pass-through
+                - generic [ref=e898]:
+                  - generic [ref=e899]: Total (incl VAT)
+                  - generic [ref=e900]: R 1 250,00
+                - generic [ref=e901]:
+                  - generic [ref=e902]: Payment Source
+                  - generic [ref=e903]: Office Account
+            - generic [ref=e904]:
+              - generic [ref=e906]: Description & receipt
+              - generic [ref=e907]:
+                - generic [ref=e908]:
+                  - paragraph [ref=e909]: Description
+                  - paragraph [ref=e910]: Sheriff service of summons on RAF — Day 21 cycle-1 verify
+                - generic [ref=e911]:
+                  - paragraph [ref=e912]: Receipt
+                  - paragraph [ref=e913]: No receipt uploaded
+  - generic [ref=e209]:
+    - heading "Command Palette" [level=2] [ref=e856]
+    - paragraph [ref=e211]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e217] [cursor=pointer]:
+    - img [ref=e218]
+  - alert [ref=e221]

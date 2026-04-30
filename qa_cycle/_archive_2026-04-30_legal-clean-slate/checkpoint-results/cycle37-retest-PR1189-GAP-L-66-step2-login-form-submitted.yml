@@ -1,0 +1,17 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e9] [cursor=pointer]:
+    - img [ref=e10]
+  - alert [ref=e13]
+  - main [ref=e14]:
+    - generic [ref=e15]:
+      - generic [ref=e16]:
+        - img "Mathebula & Partners logo" [ref=e26]
+        - generic [ref=e27]: Mathebula & Partners
+      - generic [ref=e20]:
+        - generic [ref=e28]:
+          - paragraph [ref=e29]: Check your email for a login link.
+          - paragraph [ref=e30]: We sent a link to sipho.portal@example.com.
+        - generic [ref=e31]:
+          - paragraph [ref=e32]: "Dev mode — click to sign in:"
+          - link "/auth/exchange?token=QxHxYW9dbtSgiperXxund9mbbNuwpu1ma6WitvDraU4&orgId=mathebula-partners" [ref=e33] [cursor=pointer]:
+            - /url: /auth/exchange?token=QxHxYW9dbtSgiperXxund9mbbNuwpu1ma6WitvDraU4&orgId=mathebula-partners

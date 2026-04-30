@@ -1,0 +1,99 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e62]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e22]
+            - generic [ref=e25]: Home
+          - link "Matters" [ref=e26] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e27]
+            - generic [ref=e29]: Matters
+          - link "Trust" [ref=e63] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e65]
+            - generic [ref=e69]: Trust
+          - link "Deadlines" [ref=e70] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e71]
+            - generic [ref=e75]: Deadlines
+          - link "Fee Notes" [ref=e76] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e31]
+            - generic [ref=e34]: Fee Notes
+          - link "Proposals" [ref=e35] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e36]
+            - generic [ref=e39]: Proposals
+          - link "Requests" [ref=e77] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e78]
+            - generic [ref=e80]: Requests
+          - link "Activity" [ref=e40] [cursor=pointer]:
+            - /url: /activity
+            - img [ref=e41]
+            - generic [ref=e43]: Activity
+        - generic [ref=e44]:
+          - link "Profile" [ref=e45] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e46]
+            - text: Profile
+          - button "Logout" [ref=e49]:
+            - img [ref=e50]
+            - text: Logout
+      - main [ref=e53]:
+        - generic [ref=e81]:
+          - link "Back to trust" [ref=e82] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e83]
+            - text: Back to trust
+          - generic [ref=e85]:
+            - generic [ref=e88]:
+              - img [ref=e89]
+              - text: Trust balance
+            - generic [ref=e93]:
+              - paragraph [ref=e94]: R 50 100,00
+              - paragraph [ref=e95]: As of 27 Apr 2026
+              - paragraph [ref=e96]: Matter cc390c4f
+          - generic [ref=e97]:
+            - heading "Transactions" [level=2] [ref=e98]
+            - table "Trust transactions" [ref=e101]:
+              - rowgroup [ref=e102]:
+                - row "Date Type Description Amount Running balance" [ref=e103]:
+                  - columnheader "Date" [ref=e104]
+                  - columnheader "Type" [ref=e105]
+                  - columnheader "Description" [ref=e106]
+                  - columnheader "Amount" [ref=e107]
+                  - columnheader "Running balance" [ref=e108]
+              - rowgroup [ref=e109]:
+                - row "27 Apr 2026 DEPOSIT Cycle 29 retest BUG-CYCLE26-11 R 100,00 R 50 100,00" [ref=e110]:
+                  - cell "27 Apr 2026" [ref=e111]
+                  - cell "DEPOSIT" [ref=e112]
+                  - cell "Cycle 29 retest BUG-CYCLE26-11" [ref=e113]
+                  - cell "R 100,00" [ref=e114]
+                  - cell "R 50 100,00" [ref=e115]
+                - row "27 Apr 2026 DEPOSIT Initial trust deposit — RAF-2026-001 R 50 000,00 R 50 000,00" [ref=e116]:
+                  - cell "27 Apr 2026" [ref=e117]
+                  - cell "DEPOSIT" [ref=e118]
+                  - cell "Initial trust deposit — RAF-2026-001" [ref=e119]
+                  - cell "R 50 000,00" [ref=e120]
+                  - cell "R 50 000,00" [ref=e121]
+          - generic [ref=e122]:
+            - heading "Statements" [level=2] [ref=e123]
+            - generic [ref=e124]:
+              - img [ref=e125]
+              - paragraph [ref=e128]: No statement documents yet
+    - contentinfo [ref=e58]:
+      - paragraph [ref=e60]: Powered by DocTeams

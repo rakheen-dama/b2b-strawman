@@ -1,0 +1,183 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e52]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e55]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e61]:
+          - generic [ref=e62]: Clients
+          - img [ref=e63]
+        - button "Finance" [ref=e67]:
+          - generic [ref=e68]: Finance
+          - img [ref=e69]
+        - generic [ref=e72]:
+          - button "Team" [expanded] [ref=e73]:
+            - generic [ref=e74]: Team
+            - img [ref=e75]
+          - link "Team" [ref=e78] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e79]
+            - text: Team
+      - generic [ref=e85]:
+        - link "Notifications" [ref=e86] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e87]
+          - text: Notifications
+        - link "Settings" [ref=e90] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e91]
+          - text: Settings
+        - link "Help" [ref=e94] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e95]
+          - text: Help
+      - generic [ref=e98]:
+        - generic [ref=e99]: BN
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Bob Ndlovu
+          - paragraph [ref=e102]: bob@mathebula-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "Mathebula & Partners" [ref=e106] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - link "legal" [ref=e110] [cursor=pointer]:
+              - /url: /org/mathebula-partners/legal
+          - generic [ref=e111]:
+            - img [ref=e112]
+            - generic [ref=e114]: disbursements
+        - generic [ref=e115]:
+          - button "User menu" [ref=e117]: BN
+          - button "Notifications" [ref=e119]:
+            - img
+            - generic [ref=e120]: 6 unread notifications
+            - generic [ref=e179]: "6"
+      - main [ref=e121]:
+        - generic [ref=e124]:
+          - generic [ref=e125]:
+            - heading "Disbursements" [level=1] [ref=e126]
+            - paragraph [ref=e127]: Manage client disbursements — matter costs paid by the firm on the client's behalf.
+          - generic [ref=e128]:
+            - generic [ref=e129]:
+              - combobox "Matter filter" [ref=e130]:
+                - option "All Matters" [selected]
+                - option "Estate Late Peter Moroka"
+                - option "L-37 Regression Probe"
+                - option "Dlamini v Road Accident Fund"
+              - combobox "Category filter" [ref=e131]:
+                - option "All Categories" [selected]
+                - option "Sheriff Fees"
+                - option "Counsel Fees"
+                - option "Search Fees"
+                - option "Deeds Office Fees"
+                - option "Court Fees"
+                - option "Advocate Fees"
+                - option "Expert Witness"
+                - option "Travel"
+                - option "Other"
+              - combobox "Approval status filter" [ref=e132]:
+                - option "All Approval Statuses" [selected]
+                - option "Draft"
+                - option "Pending Approval"
+                - option "Approved"
+                - option "Rejected"
+              - combobox "Billing status filter" [ref=e133]:
+                - option "All Billing Statuses" [selected]
+                - option "Unbilled"
+                - option "Billed"
+                - option "Written Off"
+              - textbox "From date" [ref=e134]
+              - textbox "To date" [ref=e135]
+              - button "New Disbursement" [ref=e137]:
+                - img
+                - text: New Disbursement
+            - generic [ref=e138]: 1 disbursement
+            - table [ref=e140]:
+              - rowgroup [ref=e141]:
+                - row "Date Matter Category Description Supplier Amount (incl VAT) Approval Billing Actions" [ref=e142]:
+                  - columnheader "Date" [ref=e143]:
+                    - button "Date" [ref=e144]:
+                      - text: Date
+                      - img
+                  - columnheader "Matter" [ref=e145]
+                  - columnheader "Category" [ref=e146]
+                  - columnheader "Description" [ref=e147]
+                  - columnheader "Supplier" [ref=e148]:
+                    - button "Supplier" [ref=e149]:
+                      - text: Supplier
+                      - img
+                  - columnheader "Amount (incl VAT)" [ref=e150]:
+                    - button "Amount (incl VAT)" [ref=e151]:
+                      - text: Amount (incl VAT)
+                      - img
+                  - columnheader "Approval" [ref=e152]:
+                    - button "Approval" [ref=e153]:
+                      - text: Approval
+                      - img
+                  - columnheader "Billing" [ref=e154]
+                  - columnheader "Actions" [ref=e155]
+              - rowgroup [ref=e156]:
+                - row "2026-04-25 Dlamini v Road Accident Fund Sheriff Fees Sheriff service of summons on RAF — Day 21 cycle-1 verify Sheriff Pretoria R 1 250,00 Draft Unbilled" [ref=e157] [cursor=pointer]:
+                  - cell "2026-04-25" [ref=e158]
+                  - cell "Dlamini v Road Accident Fund" [ref=e159]
+                  - cell "Sheriff Fees" [ref=e160]:
+                    - generic [ref=e161]: Sheriff Fees
+                  - cell "Sheriff service of summons on RAF — Day 21 cycle-1 verify" [ref=e162]
+                  - cell "Sheriff Pretoria" [ref=e163]
+                  - cell "R 1 250,00" [ref=e164]
+                  - cell "Draft" [ref=e165]:
+                    - generic [ref=e166]: Draft
+                  - cell "Unbilled" [ref=e167]:
+                    - generic [ref=e168]: Unbilled
+                  - cell [ref=e169]
+  - generic [ref=e180]:
+    - heading "Command Palette" [level=2] [ref=e181]
+    - paragraph [ref=e182]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e175] [cursor=pointer]:
+    - img [ref=e176]
+  - alert [ref=e183]

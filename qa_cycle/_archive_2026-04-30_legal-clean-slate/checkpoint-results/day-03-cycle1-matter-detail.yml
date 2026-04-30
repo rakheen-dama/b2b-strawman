@@ -1,0 +1,396 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e53]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e55] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e56]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e62]:
+          - generic [ref=e63]: Clients
+          - img [ref=e64]
+        - button "Finance" [ref=e68]:
+          - generic [ref=e69]: Finance
+          - img [ref=e70]
+        - generic [ref=e73]:
+          - button "Team" [expanded] [ref=e74]:
+            - generic [ref=e75]: Team
+            - img [ref=e76]
+          - link "Team" [ref=e79] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e80]
+            - text: Team
+      - generic [ref=e86]:
+        - link "Notifications" [ref=e87] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e88]
+          - text: Notifications
+        - link "Settings" [ref=e91] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e92]
+          - text: Settings
+        - link "Help" [ref=e95] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e96]
+          - text: Help
+      - generic [ref=e99]:
+        - generic [ref=e100]: BN
+        - generic [ref=e101]:
+          - paragraph [ref=e102]: Bob Ndlovu
+          - paragraph [ref=e103]: bob@mathebula-test.local
+    - generic [ref=e104]:
+      - banner [ref=e105]:
+        - navigation "Breadcrumb" [ref=e106]:
+          - link "Mathebula & Partners" [ref=e107] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e108]:
+            - img [ref=e109]
+            - link "Matters" [ref=e111] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+          - generic [ref=e112]:
+            - img [ref=e113]
+            - generic [ref=e115]: Matter
+        - generic [ref=e116]:
+          - button "User menu" [ref=e118]: BN
+          - button "Notifications" [ref=e120]:
+            - img
+      - main [ref=e122]:
+        - generic [ref=e160]:
+          - link "Back to Matters" [ref=e162] [cursor=pointer]:
+            - /url: /org/mathebula-partners/projects
+            - img [ref=e163]
+            - text: Back to Matters
+          - generic [ref=e165]:
+            - generic [ref=e166]:
+              - generic [ref=e167]:
+                - heading "Dlamini v Road Accident Fund" [level=1] [ref=e168]
+                - generic [ref=e169]: Active
+              - paragraph [ref=e170]: "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION"
+              - paragraph [ref=e171]:
+                - text: "Client:"
+                - link "Sipho Dlamini" [ref=e172] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/customers/c3ad51f5-2bda-4a27-b626-7b5c63f37102
+              - generic [ref=e174]:
+                - generic [ref=e175]: Ref
+                - code [ref=e176]: RAF-2026-001
+              - paragraph [ref=e177]: Created Apr 25, 2026 · 0 documents · 1 member · 9 tasks
+            - generic [ref=e178]:
+              - button "Close Matter" [ref=e179]:
+                - img
+                - text: Close Matter
+              - button "Generate Statement of Account" [ref=e180]:
+                - img
+                - text: Generate Statement of Account
+              - button "Complete Matter" [ref=e181]:
+                - img
+                - text: Complete Matter
+              - button [ref=e182]:
+                - img
+              - button "Generate Document" [ref=e183]:
+                - img
+                - text: Generate Document
+                - img
+              - button "New Engagement Letter" [ref=e184]:
+                - img
+                - text: New Engagement Letter
+              - button "Edit" [ref=e185]:
+                - img
+                - text: Edit
+          - generic [ref=e186]:
+            - paragraph [ref=e187]: Field Groups
+            - generic [ref=e188]:
+              - generic [ref=e189]:
+                - text: SA Conveyancing — Matter Details
+                - button "Remove SA Conveyancing — Matter Details" [ref=e190]:
+                  - img [ref=e191]
+              - generic [ref=e194]:
+                - text: SA Legal — Matter Details
+                - button "Remove SA Legal — Matter Details" [ref=e195]:
+                  - img [ref=e196]
+              - generic [ref=e199]:
+                - text: Project Info
+                - button "Remove Project Info" [ref=e200]:
+                  - img [ref=e201]
+          - generic [ref=e204]:
+            - generic [ref=e205]:
+              - generic [ref=e207]: SA Conveyancing — Matter Details
+              - generic [ref=e209]:
+                - generic [ref=e210]:
+                  - generic [ref=e211]: Conveyancing Type
+                  - combobox "Conveyancing Type" [ref=e213]:
+                    - option "Select..." [selected]
+                    - option "Transfer"
+                    - option "Bond Registration"
+                    - option "Bond Cancellation"
+                    - option "Sectional Title"
+                    - option "Estate Transfer"
+                - generic [ref=e214]:
+                  - generic [ref=e215]: Property Address
+                  - textbox "Property Address" [ref=e217]:
+                    - /placeholder: Full physical address of the property being transferred
+                - generic [ref=e218]:
+                  - generic [ref=e219]: Erf Number
+                  - textbox "Erf Number" [ref=e221]:
+                    - /placeholder: Erf/stand number identifying the property
+                - generic [ref=e222]:
+                  - generic [ref=e223]: Deeds Office
+                  - combobox "Deeds Office" [ref=e225]:
+                    - option "Select..." [selected]
+                    - option "Johannesburg"
+                    - option "Pretoria"
+                    - option "Cape Town"
+                    - option "Bloemfontein"
+                    - option "Pietermaritzburg"
+                    - option "King William's Town"
+                    - option "Kimberley"
+                    - option "Mahikeng"
+                    - option "Mthatha"
+                    - option "Vryburg"
+                - generic [ref=e226]:
+                  - generic [ref=e227]: Lodgement Date
+                  - textbox "Lodgement Date" [ref=e229]
+                - generic [ref=e230]:
+                  - generic [ref=e231]: Purchase Price
+                  - generic [ref=e233]:
+                    - spinbutton "Purchase Price" [ref=e234]
+                    - combobox "Currency" [ref=e235]:
+                      - option "Currency" [selected]
+                      - option "USD"
+                      - option "EUR"
+                      - option "GBP"
+                      - option "ZAR"
+                      - option "AUD"
+                      - option "CAD"
+                      - option "CHF"
+                      - option "JPY"
+                      - option "CNY"
+                      - option "INR"
+                - generic [ref=e236]:
+                  - generic [ref=e237]: Transfer Duty
+                  - generic [ref=e239]:
+                    - spinbutton "Transfer Duty" [ref=e240]
+                    - combobox "Currency" [ref=e241]:
+                      - option "Currency" [selected]
+                      - option "USD"
+                      - option "EUR"
+                      - option "GBP"
+                      - option "ZAR"
+                      - option "AUD"
+                      - option "CAD"
+                      - option "CHF"
+                      - option "JPY"
+                      - option "CNY"
+                      - option "INR"
+                - generic [ref=e242]:
+                  - generic [ref=e243]: Bond Institution
+                  - combobox "Bond Institution" [ref=e245]:
+                    - option "Select..." [selected]
+                    - option "ABSA"
+                    - option "FNB"
+                    - option "Standard Bank"
+                    - option "Nedbank"
+                    - option "Investec"
+                    - option "SA Home Loans"
+                    - option "Other"
+                    - option "None (Cash Purchase)"
+            - generic [ref=e246]:
+              - generic [ref=e248]: SA Legal — Matter Details
+              - generic [ref=e250]:
+                - generic [ref=e251]:
+                  - generic [ref=e252]: Case Number
+                  - textbox "Case Number" [ref=e254]:
+                    - /placeholder: Court-assigned case number for the matter
+                - generic [ref=e255]:
+                  - generic [ref=e256]: Court
+                  - textbox "Court" [ref=e258]:
+                    - /placeholder: Name of the court in which the matter is heard
+                - generic [ref=e259]:
+                  - generic [ref=e260]: Opposing Party
+                  - textbox "Opposing Party" [ref=e262]:
+                    - /placeholder: Name of the primary opposing party
+                - generic [ref=e263]:
+                  - generic [ref=e264]: Opposing Attorney
+                  - textbox "Opposing Attorney" [ref=e266]:
+                    - /placeholder: Name of the opposing attorney or firm
+                - generic [ref=e267]:
+                  - generic [ref=e268]: Advocate
+                  - textbox "Advocate" [ref=e270]:
+                    - /placeholder: Name of the instructed advocate (if briefed)
+                - generic [ref=e271]:
+                  - generic [ref=e272]: Date of Instruction
+                  - textbox "Date of Instruction" [ref=e274]
+                - generic [ref=e275]:
+                  - generic [ref=e276]: Estimated Value
+                  - spinbutton "Estimated Value" [ref=e278]
+            - generic [ref=e279]:
+              - generic [ref=e281]: Project Info
+              - generic [ref=e284]:
+                - generic [ref=e285]: Category
+                - textbox "Category" [ref=e287]:
+                  - /placeholder: Project category or type
+            - button "Save Custom Fields" [ref=e289]:
+              - img
+              - text: Save Custom Fields
+          - generic [ref=e290]:
+            - paragraph [ref=e291]: Tags
+            - button "Add Tag" [ref=e294]:
+              - img
+              - text: Add Tag
+          - generic [ref=e295]:
+            - tablist [ref=e296]:
+              - tab "Overview" [selected] [ref=e297]: Overview
+              - tab "Documents" [ref=e299]
+              - tab "Members" [ref=e300]
+              - tab "Clients" [ref=e301]
+              - tab "Tasks" [ref=e302]
+              - tab "Time" [ref=e303]
+              - tab "Fee Estimate" [ref=e304]
+              - tab "Financials" [ref=e305]
+              - tab "Staffing" [ref=e306]
+              - tab "Rates" [ref=e307]
+              - tab "Generated Docs" [ref=e308]
+              - tab "Requests" [ref=e309]
+              - tab "Client Comments" [ref=e310]
+              - tab "Court Dates" [ref=e311]
+              - tab "Adverse Parties" [ref=e312]
+              - tab "Trust" [ref=e313]
+              - tab "Disbursements" [ref=e314]
+              - tab "Statements" [ref=e315]
+              - tab "Activity" [ref=e316]
+            - tabpanel "Overview" [ref=e317]:
+              - generic [ref=e318]:
+                - generic [ref=e319]:
+                  - generic [ref=e320]:
+                    - generic [ref=e324]: Healthy
+                    - generic [ref=e325]:
+                      - heading "Dlamini v Road Accident Fund" [level=2] [ref=e326]
+                      - paragraph [ref=e327]: "Customer: Sipho Dlamini"
+                  - generic [ref=e328]:
+                    - generic [ref=e329]:
+                      - paragraph [ref=e330]: Budget
+                      - text: "--"
+                    - generic [ref=e331]:
+                      - paragraph [ref=e332]: Hours
+                      - generic [ref=e333]: 0.0h
+                    - generic [ref=e334]:
+                      - paragraph [ref=e335]: Tasks
+                      - generic [ref=e336]: 0/9
+                      - text: complete
+                    - generic [ref=e337]:
+                      - paragraph [ref=e338]: Revenue
+                      - text: "--"
+                - group [ref=e339]:
+                  - generic "2/5 setup steps complete 40%" [ref=e340] [cursor=pointer]:
+                    - generic [ref=e341]:
+                      - generic [ref=e343]: 2/5 setup steps complete
+                      - generic [ref=e348]: 40%
+                    - img [ref=e349]
+                - generic [ref=e351]:
+                  - generic [ref=e352]:
+                    - generic [ref=e353]:
+                      - generic [ref=e355]:
+                        - generic [ref=e356]: Recent Activity
+                        - link "View all" [ref=e357] [cursor=pointer]:
+                          - /url: /org/mathebula-partners/projects/e788a51b-3a73-456c-b932-8d5bd27264c2?tab=activity
+                      - generic [ref=e359]:
+                        - generic [ref=e360]:
+                          - generic [ref=e361]: BN
+                          - generic [ref=e362]:
+                            - generic [ref=e363]:
+                              - img [ref=e364]
+                              - paragraph [ref=e366]: Information request REQ-0001 sent to Bob Ndlovu
+                            - text: 1 hour ago
+                        - generic [ref=e367]:
+                          - generic [ref=e368]: BN
+                          - generic [ref=e369]:
+                            - generic [ref=e370]:
+                              - img [ref=e371]
+                              - paragraph [ref=e373]: Bob Ndlovu created information request REQ-0001
+                            - text: 1 hour ago
+                    - generic [ref=e374]:
+                      - generic [ref=e376]:
+                        - generic [ref=e377]: Task Status
+                        - link "View all tasks" [ref=e378] [cursor=pointer]:
+                          - /url: /org/mathebula-partners/projects/e788a51b-3a73-456c-b932-8d5bd27264c2?tab=tasks
+                      - generic [ref=e380]:
+                        - generic [ref=e381]:
+                          - 'generic "Done: 0"'
+                          - 'generic "In Progress: 0"'
+                          - 'generic "Open: 9" [ref=e382]'
+                        - generic [ref=e383]:
+                          - generic [ref=e384]: Done 0
+                          - generic [ref=e386]: In Progress 0
+                          - generic [ref=e388]: Open 9
+                    - generic [ref=e390]:
+                      - generic [ref=e392]: Upcoming Deadlines
+                      - paragraph [ref=e394]: No upcoming deadlines
+                  - generic [ref=e395]:
+                    - generic [ref=e396]:
+                      - generic [ref=e398]: Budget
+                      - paragraph [ref=e400]: No budget configured
+                    - generic [ref=e401]:
+                      - generic [ref=e403]:
+                        - generic [ref=e404]: Time Breakdown
+                        - link "View all time" [ref=e405] [cursor=pointer]:
+                          - /url: /org/mathebula-partners/projects/e788a51b-3a73-456c-b932-8d5bd27264c2?tab=time
+                      - paragraph [ref=e407]: No hours logged this month
+                    - generic [ref=e408]:
+                      - generic [ref=e410]: Team
+                      - paragraph [ref=e412]: No team members assigned
+                    - generic [ref=e413]:
+                      - generic [ref=e415]:
+                        - generic [ref=e416]:
+                          - img [ref=e417]
+                          - text: FICA
+                        - generic [ref=e420]: In Progress
+                      - generic [ref=e421]:
+                        - paragraph [ref=e422]: Awaiting client response and firm-side review.
+                        - link "View request" [ref=e423] [cursor=pointer]:
+                          - /url: /org/mathebula-partners/requests/ae509cf2-ae26-4e09-adcb-35b028ff6c44
+  - generic [ref=e147]:
+    - heading "Command Palette" [level=2] [ref=e148]
+    - paragraph [ref=e149]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e155] [cursor=pointer]:
+    - img [ref=e156]
+  - alert [ref=e159]

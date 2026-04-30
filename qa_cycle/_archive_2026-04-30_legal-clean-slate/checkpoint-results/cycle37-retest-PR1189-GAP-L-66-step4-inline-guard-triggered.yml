@@ -1,0 +1,17 @@
+- generic [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - generic [ref=e5]: DocTeams
+        - generic [ref=e6]: Sign in to your client portal
+      - generic [ref=e8]:
+        - generic [ref=e9]:
+          - generic [ref=e10]: Email address
+          - textbox "Email address" [ref=e11]:
+            - /placeholder: you@example.com
+            - text: sipho.portal@example.com
+        - alert [ref=e23]: We couldn't determine which organization to sign you into. Please use the original link from your email.
+        - button "Send Magic Link" [active] [ref=e12]
+  - button "Open Next.js Dev Tools" [ref=e18] [cursor=pointer]:
+    - img [ref=e19]
+  - alert [ref=e22]

@@ -1,0 +1,158 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e52]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e55]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e61]:
+          - generic [ref=e62]: Clients
+          - img [ref=e63]
+        - button "Finance" [ref=e67]:
+          - generic [ref=e68]: Finance
+          - img [ref=e69]
+        - generic [ref=e72]:
+          - button "Team" [expanded] [ref=e73]:
+            - generic [ref=e74]: Team
+            - img [ref=e75]
+          - link "Team" [ref=e78] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e79]
+            - text: Team
+      - generic [ref=e85]:
+        - link "Notifications" [ref=e86] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e87]
+          - text: Notifications
+        - link "Settings" [ref=e90] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e91]
+          - text: Settings
+        - link "Help" [ref=e94] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e95]
+          - text: Help
+      - generic [ref=e98]:
+        - generic [ref=e99]: TM
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Thandi Mathebula
+          - paragraph [ref=e102]: thandi@mathebula-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "Mathebula & Partners" [ref=e106] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - link "fee notes" [ref=e110] [cursor=pointer]:
+              - /url: /org/mathebula-partners/invoices
+          - generic [ref=e111]:
+            - img [ref=e112]
+            - generic [ref=e114]: billing-runs
+        - generic [ref=e115]:
+          - button "User menu" [ref=e117]: TM
+          - button "Notifications" [ref=e119]:
+            - img
+            - generic [ref=e120]: 7 unread notifications
+            - generic [ref=e179]: "7"
+      - main [ref=e121]:
+        - generic [ref=e124]:
+          - generic [ref=e125]:
+            - heading "Invoices" [level=1] [ref=e127]
+            - link "New Billing Run" [ref=e128] [cursor=pointer]:
+              - /url: /org/mathebula-partners/invoices/billing-runs/new
+              - img
+              - text: New Billing Run
+          - generic [ref=e129]:
+            - link "Invoices" [ref=e130] [cursor=pointer]:
+              - /url: /org/mathebula-partners/invoices
+            - link "Billing Runs" [ref=e131] [cursor=pointer]:
+              - /url: /org/mathebula-partners/invoices/billing-runs
+          - generic [ref=e132]:
+            - img [ref=e133]
+            - generic [ref=e135]:
+              - paragraph [ref=e136]: Active billing run in progress
+              - paragraph [ref=e137]: “” is currently in preview.
+            - link "View" [ref=e138] [cursor=pointer]:
+              - /url: /org/mathebula-partners/invoices/billing-runs/a7f6f47a-c562-4d03-8621-f8697169b755
+          - table [ref=e140]:
+            - rowgroup [ref=e141]:
+              - row "Name Status Period Customers Invoices Total Created" [ref=e142]:
+                - columnheader "Name" [ref=e143]
+                - columnheader "Status" [ref=e144]
+                - columnheader "Period" [ref=e145]
+                - columnheader "Customers" [ref=e146]
+                - columnheader "Invoices" [ref=e147]
+                - columnheader "Total" [ref=e148]
+                - columnheader "Created" [ref=e149]
+            - rowgroup [ref=e150]:
+              - row "Completed 01 Apr 2026 – 30 Apr 2026 1 1 R 3 910,00 27 Apr 2026" [ref=e151]:
+                - cell [ref=e152]:
+                  - link:
+                    - /url: /org/mathebula-partners/invoices/billing-runs/9d772b71-1784-4bd3-a464-bcaea70b1e91
+                - cell "Completed" [ref=e153]:
+                  - generic [ref=e154]: Completed
+                - cell "01 Apr 2026 – 30 Apr 2026" [ref=e155]
+                - cell "1" [ref=e156]
+                - cell "1" [ref=e157]
+                - cell "R 3 910,00" [ref=e158]
+                - cell "27 Apr 2026" [ref=e159]
+              - row "Preview 01 Apr 2026 – 30 Apr 2026 0 0 R 0,00 27 Apr 2026" [ref=e160]:
+                - cell [ref=e161]:
+                  - link:
+                    - /url: /org/mathebula-partners/invoices/billing-runs/a7f6f47a-c562-4d03-8621-f8697169b755
+                - cell "Preview" [ref=e162]:
+                  - generic [ref=e163]: Preview
+                - cell "01 Apr 2026 – 30 Apr 2026" [ref=e164]
+                - cell "0" [ref=e165]
+                - cell "0" [ref=e166]
+                - cell "R 0,00" [ref=e167]
+                - cell "27 Apr 2026" [ref=e168]
+  - generic [ref=e180]:
+    - heading "Command Palette" [level=2] [ref=e181]
+    - paragraph [ref=e182]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e174] [cursor=pointer]:
+    - img [ref=e175]
+  - alert [ref=e178]

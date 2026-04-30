@@ -1,0 +1,226 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: Kazi
+      - generic [ref=e9]: Mathebula & Partners
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e34]
+              - text: Calendar
+            - link "Court Calendar" [ref=e36] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e37]
+              - text: Court Calendar
+        - generic [ref=e44]:
+          - button "Matters" [expanded] [ref=e45]:
+            - generic [ref=e46]: Matters
+            - img [ref=e47]
+          - generic [ref=e49]:
+            - link "Matters" [ref=e50] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e51]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e53] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e54]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e60]:
+          - generic [ref=e61]: Clients
+          - img [ref=e62]
+        - button "Finance" [ref=e66]:
+          - generic [ref=e67]: Finance
+          - img [ref=e68]
+        - generic [ref=e71]:
+          - button "Team" [expanded] [ref=e72]:
+            - generic [ref=e73]: Team
+            - img [ref=e74]
+          - link "Team" [ref=e77] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e78]
+            - text: Team
+      - generic [ref=e84]:
+        - link "Notifications" [ref=e85] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e86]
+          - text: Notifications
+        - link "Settings" [ref=e89] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e90]
+          - text: Settings
+        - link "Help" [ref=e93] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e94]
+          - text: Help
+      - generic [ref=e97]:
+        - generic [ref=e98]: TM
+        - generic [ref=e99]:
+          - paragraph [ref=e100]: Thandi Mathebula
+          - paragraph [ref=e101]: thandi@mathebula-test.local
+    - generic [ref=e102]:
+      - banner [ref=e103]:
+        - navigation "Breadcrumb" [ref=e104]:
+          - link "Mathebula & Partners" [ref=e105] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e106]:
+            - img [ref=e107]
+            - link "Settings" [ref=e109] [cursor=pointer]:
+              - /url: /org/mathebula-partners/settings
+          - generic [ref=e110]:
+            - img [ref=e111]
+            - generic [ref=e113]: Rates & Currency
+        - generic [ref=e114]:
+          - button "User menu" [ref=e116]: TM
+          - button "Notifications" [ref=e118]:
+            - img
+      - main [ref=e120]:
+        - generic [ref=e123]:
+          - complementary [ref=e124]:
+            - navigation "Settings navigation" [ref=e125]:
+              - generic [ref=e126]:
+                - generic [ref=e127]: General
+                - link "General" [ref=e128] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/general
+                - link "Billing" [ref=e129] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/billing
+                - link "Notifications" [ref=e130] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/notifications
+                - link "Email" [ref=e131] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/email
+                - generic [ref=e132]:
+                  - text: Security
+                  - generic [ref=e133]: Coming soon
+              - generic [ref=e134]:
+                - generic [ref=e136]: Work
+                - link "Time Tracking" [ref=e137] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/time-tracking
+                - link "Matter Templates" [ref=e138] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/project-templates
+                - link "Matter Naming" [ref=e139] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/project-naming
+              - generic [ref=e140]:
+                - generic [ref=e142]: Documents
+                - link "Templates" [ref=e143] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/templates
+                - link "Clauses" [ref=e144] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/clauses
+                - link "Checklists" [ref=e145] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/checklists
+                - link "Document Acceptance" [ref=e146] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/acceptance
+              - generic [ref=e147]:
+                - generic [ref=e149]: Finance
+                - link "Rates & Currency" [ref=e150] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/rates
+                - link "Tax" [ref=e151] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/tax
+                - link "Capacity" [ref=e152] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/capacity
+              - generic [ref=e153]:
+                - generic [ref=e155]: Clients
+                - link "Custom Fields" [ref=e156] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/custom-fields
+                - link "Tags" [ref=e157] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/tags
+                - link "Request Templates" [ref=e158] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/request-templates
+                - link "Request Settings" [ref=e159] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/request-settings
+                - link "Compliance" [ref=e160] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/compliance
+                - link "Data Protection" [ref=e161] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/data-protection
+              - generic [ref=e162]:
+                - generic [ref=e164]: Features
+                - link "Features" [ref=e165] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/features
+                - link "Packs" [ref=e166] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/packs
+              - generic [ref=e167]:
+                - generic [ref=e169]: Access & Integrations
+                - link "Roles & Permissions" [ref=e170] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/roles
+                - link "Integrations" [ref=e171] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/integrations
+          - generic [ref=e173]:
+            - link "Settings" [ref=e174] [cursor=pointer]:
+              - /url: /org/mathebula-partners/settings
+              - img [ref=e175]
+              - text: Settings
+            - generic [ref=e177]:
+              - 'heading "Rates & Currency Help: Rate card hierarchy" [level=1] [ref=e178]':
+                - text: Rates & Currency
+                - 'button "Help: Rate card hierarchy" [ref=e179] [cursor=pointer]':
+                  - img [ref=e180]
+              - paragraph [ref=e183]: Manage billing rates, cost rates, and the default currency for your organization.
+            - generic [ref=e184]:
+              - generic [ref=e186]:
+                - generic [ref=e187]:
+                  - 'heading "Default Currency Help: Currency settings" [level=2] [ref=e188]':
+                    - text: Default Currency
+                    - 'button "Help: Currency settings" [ref=e189] [cursor=pointer]':
+                      - img [ref=e190]
+                  - paragraph [ref=e193]: This currency will be pre-selected when creating new rates.
+                - combobox [ref=e194]:
+                  - text: ZAR — South African Rand
+                  - img
+              - generic [ref=e195]:
+                - 'button "Help: Rate snapshots" [ref=e196] [cursor=pointer]':
+                  - img [ref=e197]
+                - paragraph [ref=e200]: Rate changes only affect new time entries. Existing entries and invoices retain their original snapshotted rate.
+              - generic [ref=e201]:
+                - tablist [ref=e202]:
+                  - tab "Billing Rates" [selected] [ref=e203]
+                  - tab "Cost Rates" [ref=e204]
+                - tabpanel "Billing Rates" [ref=e205]:
+                  - table [ref=e208]:
+                    - rowgroup [ref=e209]:
+                      - row "Member Hourly Rate Currency Effective From Effective To Actions" [ref=e210]:
+                        - columnheader "Member" [ref=e211]
+                        - columnheader "Hourly Rate" [ref=e212]
+                        - columnheader "Currency" [ref=e213]
+                        - columnheader "Effective From" [ref=e214]
+                        - columnheader "Effective To" [ref=e215]
+                        - columnheader "Actions" [ref=e216]
+                    - rowgroup [ref=e217]:
+                      - row "Thandi Mathebula thandi@mathebula-test.local Not set — — — Add rate for Thandi Mathebula" [ref=e218]:
+                        - cell "Thandi Mathebula thandi@mathebula-test.local" [ref=e219]:
+                          - generic [ref=e220]:
+                            - generic [ref=e221]: TM
+                            - generic [ref=e222]:
+                              - paragraph [ref=e223]: Thandi Mathebula
+                              - paragraph [ref=e224]: thandi@mathebula-test.local
+                        - cell "Not set" [ref=e225]
+                        - cell "—" [ref=e226]
+                        - cell "—" [ref=e227]
+                        - cell "—" [ref=e228]
+                        - cell "Add rate for Thandi Mathebula" [ref=e229]:
+                          - button "Add rate for Thandi Mathebula" [ref=e231]:
+                            - img
+                            - generic [ref=e232]: Add Rate
+  - generic [ref=e242]:
+    - heading "Command Palette" [level=2] [ref=e243]
+    - paragraph [ref=e244]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e238] [cursor=pointer]:
+    - img [ref=e239]
+  - alert [ref=e245]

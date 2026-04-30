@@ -1,0 +1,185 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e52]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e55]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e61]:
+          - generic [ref=e62]: Clients
+          - img [ref=e63]
+        - button "Finance" [ref=e67]:
+          - generic [ref=e68]: Finance
+          - img [ref=e69]
+        - generic [ref=e72]:
+          - button "Team" [expanded] [ref=e73]:
+            - generic [ref=e74]: Team
+            - img [ref=e75]
+          - link "Team" [ref=e78] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e79]
+            - text: Team
+      - generic [ref=e85]:
+        - link "Notifications" [ref=e86] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e87]
+          - text: Notifications
+        - link "Settings" [ref=e90] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e91]
+          - text: Settings
+        - link "Help" [ref=e94] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e95]
+          - text: Help
+      - generic [ref=e98]:
+        - generic [ref=e99]: BN
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Bob Ndlovu
+          - paragraph [ref=e102]: bob@mathebula-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "Mathebula & Partners" [ref=e106] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - generic [ref=e110]: Trust Accounting
+        - generic [ref=e111]:
+          - button "User menu" [ref=e113]: BN
+          - button "Notifications" [ref=e115]:
+            - img
+            - generic [ref=e116]: 7 unread notifications
+            - generic [ref=e219]: "7"
+      - main [ref=e117]:
+        - generic [ref=e120]:
+          - generic [ref=e121]:
+            - generic [ref=e122]:
+              - heading "Trust Accounting" [level=1] [ref=e123]
+              - paragraph [ref=e124]: LSSA-compliant trust account management for client funds
+            - generic [ref=e125]:
+              - link "Client Ledgers" [ref=e126] [cursor=pointer]:
+                - /url: /org/mathebula-partners/trust-accounting/client-ledgers
+                - img
+                - text: Client Ledgers
+              - link "Record Transaction" [ref=e127] [cursor=pointer]:
+                - /url: /org/mathebula-partners/trust-accounting/transactions
+                - img
+                - text: Record Transaction
+          - generic [ref=e128]:
+            - generic [ref=e129]:
+              - generic [ref=e130]:
+                - generic [ref=e131]: Trust Balance
+                - img [ref=e132]
+              - generic [ref=e135]:
+                - generic [ref=e136]: R 75 000,00
+                - paragraph [ref=e137]: Mathebula Trust — Main cashbook balance
+            - generic [ref=e138]:
+              - generic [ref=e139]:
+                - generic [ref=e140]: Active Clients
+                - img [ref=e141]
+              - generic [ref=e146]:
+                - generic [ref=e147]: "2"
+                - paragraph [ref=e148]: Clients with trust balances
+            - generic [ref=e149]:
+              - generic [ref=e150]:
+                - generic [ref=e151]: Pending Approvals
+                - img [ref=e152]
+              - generic [ref=e155]:
+                - generic [ref=e157]: "0"
+                - paragraph [ref=e158]: Transactions awaiting approval
+            - generic [ref=e159]:
+              - generic [ref=e160]:
+                - generic [ref=e161]: Reconciliation
+                - img [ref=e162]
+              - generic [ref=e166]:
+                - generic [ref=e167]: Not yet reconciled
+                - paragraph [ref=e168]: No reconciliation records found
+          - generic [ref=e169]:
+            - generic [ref=e170]:
+              - generic [ref=e171]:
+                - generic [ref=e172]: Recent Transactions
+                - generic [ref=e173]: Last 10 transactions across all client ledgers
+              - link "View all" [ref=e174] [cursor=pointer]:
+                - /url: /org/mathebula-partners/trust-accounting/transactions
+                - text: View all
+                - img
+            - table [ref=e177]:
+              - rowgroup [ref=e178]:
+                - row "Date Reference Type Amount Status" [ref=e179]:
+                  - columnheader "Date" [ref=e180]
+                  - columnheader "Reference" [ref=e181]
+                  - columnheader "Type" [ref=e182]
+                  - columnheader "Amount" [ref=e183]
+                  - columnheader "Status" [ref=e184]
+              - rowgroup [ref=e185]:
+                - row "25 Apr 2026 DEP-2026-001 Deposit R 50 000,00 RECORDED" [ref=e186]:
+                  - cell "25 Apr 2026" [ref=e187]
+                  - cell "DEP-2026-001" [ref=e188]
+                  - cell "Deposit" [ref=e189]:
+                    - generic [ref=e190]: Deposit
+                  - cell "R 50 000,00" [ref=e191]:
+                    - generic [ref=e192]:
+                      - img [ref=e193]
+                      - text: R 50 000,00
+                  - cell "RECORDED" [ref=e196]:
+                    - generic [ref=e197]: RECORDED
+                - row "25 Apr 2026 DEP/2026/002 Deposit R 25 000,00 RECORDED" [ref=e198]:
+                  - cell "25 Apr 2026" [ref=e199]
+                  - cell "DEP/2026/002" [ref=e200]
+                  - cell "Deposit" [ref=e201]:
+                    - generic [ref=e202]: Deposit
+                  - cell "R 25 000,00" [ref=e203]:
+                    - generic [ref=e204]:
+                      - img [ref=e205]
+                      - text: R 25 000,00
+                  - cell "RECORDED" [ref=e208]:
+                    - generic [ref=e209]: RECORDED
+  - generic [ref=e220]:
+    - heading "Command Palette" [level=2] [ref=e221]
+    - paragraph [ref=e222]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e215] [cursor=pointer]:
+    - img [ref=e216]
+  - alert [ref=e223]

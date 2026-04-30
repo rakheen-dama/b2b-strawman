@@ -1,0 +1,258 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e6]: Kazi
+      - generic [ref=e9]: Mathebula & Partners
+      - button "Search, Command K" [ref=e11]:
+        - img [ref=e12]
+        - text: Search...
+        - generic [ref=e15]: ⌘K
+      - navigation "Main navigation" [ref=e16]:
+        - generic [ref=e17]:
+          - button "Work" [expanded] [ref=e18]:
+            - generic [ref=e19]: Work
+            - img [ref=e20]
+          - generic [ref=e22]:
+            - link "Dashboard" [ref=e23] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e24]
+              - text: Dashboard
+            - link "My Work" [ref=e29] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e30]
+              - text: My Work
+            - link "Calendar" [ref=e33] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e34]
+              - text: Calendar
+            - link "Court Calendar" [ref=e36] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e37]
+              - text: Court Calendar
+        - generic [ref=e44]:
+          - button "Matters" [expanded] [ref=e45]:
+            - generic [ref=e46]: Matters
+            - img [ref=e47]
+          - generic [ref=e49]:
+            - link "Matters" [ref=e50] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e51]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e53] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e54]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e60]:
+          - generic [ref=e61]: Clients
+          - img [ref=e62]
+        - button "Finance" [ref=e66]:
+          - generic [ref=e67]: Finance
+          - img [ref=e68]
+        - generic [ref=e71]:
+          - button "Team" [expanded] [ref=e72]:
+            - generic [ref=e73]: Team
+            - img [ref=e74]
+          - link "Team" [ref=e77] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e78]
+            - text: Team
+      - generic [ref=e84]:
+        - link "Notifications" [ref=e85] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e86]
+          - text: Notifications
+        - link "Settings" [ref=e89] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e90]
+          - text: Settings
+        - link "Help" [ref=e93] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e94]
+          - text: Help
+      - generic [ref=e97]:
+        - generic [ref=e98]: TM
+        - generic [ref=e99]:
+          - paragraph [ref=e100]: Thandi Mathebula
+          - paragraph [ref=e101]: thandi@mathebula-test.local
+    - generic [ref=e102]:
+      - banner [ref=e103]:
+        - navigation "Breadcrumb" [ref=e104]:
+          - link "Mathebula & Partners" [ref=e105] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e106]:
+            - img [ref=e107]
+            - link "legal" [ref=e109] [cursor=pointer]:
+              - /url: /org/mathebula-partners/legal
+          - generic [ref=e110]:
+            - img [ref=e111]
+            - generic [ref=e113]: tariffs
+        - generic [ref=e114]:
+          - button "User menu" [ref=e116]: TM
+          - button "Notifications" [ref=e118]:
+            - img
+      - main [ref=e120]:
+        - generic [ref=e123]:
+          - generic [ref=e124]:
+            - heading "Tariff Schedules" [level=1] [ref=e125]
+            - paragraph [ref=e126]: Browse and manage LSSA tariff schedules and items
+          - generic [ref=e127]:
+            - generic [ref=e128]: 1 schedule
+            - generic [ref=e131]:
+              - generic [ref=e132] [cursor=pointer]:
+                - img [ref=e156]
+                - generic [ref=e136]:
+                  - generic [ref=e138]: LSSA 2024/2025 High Court Party-and-Party
+                  - generic [ref=e140]: Effective from 2024-04-01 · 19 items
+                - button "Clone" [ref=e142]:
+                  - img
+                  - text: Clone
+              - generic [ref=e159]:
+                - generic [ref=e160]:
+                  - img [ref=e161]
+                  - textbox "Search items..." [ref=e164]
+                - generic [ref=e165]:
+                  - generic [ref=e166]:
+                    - button "Section 1 (3)" [ref=e167]:
+                      - img [ref=e168]
+                      - text: Section 1
+                      - generic [ref=e170]: (3)
+                    - generic [ref=e171]:
+                      - generic [ref=e172]:
+                        - generic [ref=e173]: 1(a)
+                        - generic [ref=e174]: Instructions to sue or defend
+                        - generic [ref=e175]: Per Item
+                        - generic [ref=e176]: R 780.00
+                      - generic [ref=e177]:
+                        - generic [ref=e178]: 1(b)
+                        - generic [ref=e179]: Consultation with client (per quarter-hour)
+                        - generic [ref=e180]: Per 15 min
+                        - generic [ref=e181]: R 780.00
+                      - generic [ref=e182]:
+                        - generic [ref=e183]: 1(c)
+                        - generic [ref=e184]: Consultation with advocate (per quarter-hour)
+                        - generic [ref=e185]: Per 15 min
+                        - generic [ref=e186]: R 780.00
+                  - generic [ref=e187]:
+                    - button "Section 2 (4)" [ref=e188]:
+                      - img [ref=e189]
+                      - text: Section 2
+                      - generic [ref=e191]: (4)
+                    - generic [ref=e192]:
+                      - generic [ref=e193]:
+                        - generic [ref=e194]: 2(a)
+                        - generic [ref=e195]: Drawing of summons
+                        - generic [ref=e196]: Per Item
+                        - generic [ref=e197]: R 1250.00
+                      - generic [ref=e198]:
+                        - generic [ref=e199]: 2(b)
+                        - generic [ref=e200]: Drawing of plea or exception
+                        - generic [ref=e201]: Per Item
+                        - generic [ref=e202]: R 1250.00
+                      - generic [ref=e203]:
+                        - generic [ref=e204]: 2(c)
+                        - generic [ref=e205]: Drawing of notice of motion
+                        - generic [ref=e206]: Per Item
+                        - generic [ref=e207]: R 1250.00
+                      - generic [ref=e208]:
+                        - generic [ref=e209]: 2(d)
+                        - generic [ref=e210]: Drawing of affidavit (per folio)
+                        - generic [ref=e211]: Per Folio
+                        - generic [ref=e212]: R 195.00
+                  - generic [ref=e213]:
+                    - button "Section 3 (4)" [ref=e214]:
+                      - img [ref=e215]
+                      - text: Section 3
+                      - generic [ref=e217]: (4)
+                    - generic [ref=e218]:
+                      - generic [ref=e219]:
+                        - generic [ref=e220]: 3(a)
+                        - generic [ref=e221]: Letters written (per folio)
+                        - generic [ref=e222]: Per Folio
+                        - generic [ref=e223]: R 195.00
+                      - generic [ref=e224]:
+                        - generic [ref=e225]: 3(b)
+                        - generic [ref=e226]: Letters received and perused (per folio)
+                        - generic [ref=e227]: Per Folio
+                        - generic [ref=e228]: R 130.00
+                      - generic [ref=e229]:
+                        - generic [ref=e230]: 3(c)
+                        - generic [ref=e231]: Telephone calls (per call)
+                        - generic [ref=e232]: Per Item
+                        - generic [ref=e233]: R 195.00
+                      - generic [ref=e234]:
+                        - generic [ref=e235]: 3(d)
+                        - generic [ref=e236]: Emails sent (per email)
+                        - generic [ref=e237]: Per Item
+                        - generic [ref=e238]: R 130.00
+                  - generic [ref=e239]:
+                    - button "Section 4 (3)" [ref=e240]:
+                      - img [ref=e241]
+                      - text: Section 4
+                      - generic [ref=e243]: (3)
+                    - generic [ref=e244]:
+                      - generic [ref=e245]:
+                        - generic [ref=e246]: 4(a)
+                        - generic [ref=e247]: Attendance at court (per day)
+                        - generic [ref=e248]: Per Day
+                        - generic [ref=e249]: R 7800.00
+                      - generic [ref=e250]:
+                        - generic [ref=e251]: 4(b)
+                        - generic [ref=e252]: Attendance at court (per half day)
+                        - generic [ref=e253]: Per Item
+                        - generic [ref=e254]: R 4680.00
+                      - generic [ref=e255]:
+                        - generic [ref=e256]: 4(c)
+                        - generic [ref=e257]: Waiting time at court (per hour)
+                        - generic [ref=e258]: Per Hour
+                        - generic [ref=e259]: R 780.00
+                  - generic [ref=e260]:
+                    - button "Section 5 (2)" [ref=e261]:
+                      - img [ref=e262]
+                      - text: Section 5
+                      - generic [ref=e264]: (2)
+                    - generic [ref=e265]:
+                      - generic [ref=e266]:
+                        - generic [ref=e267]: 5(a)
+                        - generic [ref=e268]: Preparation of discovery affidavit
+                        - generic [ref=e269]: Per Item
+                        - generic [ref=e270]: R 1250.00
+                      - generic [ref=e271]:
+                        - generic [ref=e272]: 5(b)
+                        - generic [ref=e273]: Inspection of documents (per hour)
+                        - generic [ref=e274]: Per Hour
+                        - generic [ref=e275]: R 780.00
+                  - generic [ref=e276]:
+                    - button "Section 6 (2)" [ref=e277]:
+                      - img [ref=e278]
+                      - text: Section 6
+                      - generic [ref=e280]: (2)
+                    - generic [ref=e281]:
+                      - generic [ref=e282]:
+                        - generic [ref=e283]: 6(a)
+                        - generic [ref=e284]: Preparation for trial (per day)
+                        - generic [ref=e285]: Per Day
+                        - generic [ref=e286]: R 7800.00
+                      - generic [ref=e287]:
+                        - generic [ref=e288]: 6(b)
+                        - generic [ref=e289]: Preparation of heads of argument (per folio)
+                        - generic [ref=e290]: Per Folio
+                        - generic [ref=e291]: R 260.00
+                  - generic [ref=e292]:
+                    - button "Section 7 (1)" [ref=e293]:
+                      - img [ref=e294]
+                      - text: Section 7
+                      - generic [ref=e296]: (1)
+                    - generic [ref=e298]:
+                      - generic [ref=e299]: 7(a)
+                      - generic [ref=e300]: Service of process (per service)
+                      - generic [ref=e301]: Per Item
+                      - generic [ref=e302]: R 390.00
+  - generic [ref=e152]:
+    - heading "Command Palette" [level=2] [ref=e153]
+    - paragraph [ref=e154]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e148] [cursor=pointer]:
+    - img [ref=e149]
+  - alert [ref=e155]

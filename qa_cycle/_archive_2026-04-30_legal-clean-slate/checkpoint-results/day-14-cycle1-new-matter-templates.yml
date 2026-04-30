@@ -1,0 +1,243 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: BN
+        - generic:
+          - paragraph: Bob Ndlovu
+          - paragraph: bob@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - generic: Matters
+        - generic:
+          - generic:
+            - button: BN
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 6 unread notifications
+              - generic: "6"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - heading [level=1]: Matters
+                  - paragraph:
+                    - generic: 2 matters
+                - generic:
+                  - button [expanded]:
+                    - img
+                    - text: New from Template
+                  - generic:
+                    - button:
+                      - img
+                      - text: New Matter
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+                    - button:
+                      - img
+                  - generic:
+                    - tablist:
+                      - tab [selected]: All
+                - button:
+                  - img
+                  - text: Save View
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/projects?new=1&customerId=2b454c42-ac4e-4e96-af64-4f3d2a409d45
+                  - text: Active
+                - link:
+                  - /url: /org/mathebula-partners/projects?new=1&customerId=2b454c42-ac4e-4e96-af64-4f3d2a409d45&status=COMPLETED
+                  - text: Completed
+                - link:
+                  - /url: /org/mathebula-partners/projects?new=1&customerId=2b454c42-ac4e-4e96-af64-4f3d2a409d45&status=ARCHIVED
+                  - text: Archived
+                - link:
+                  - /url: /org/mathebula-partners/projects?new=1&customerId=2b454c42-ac4e-4e96-af64-4f3d2a409d45&status=CLOSED
+                  - text: Closed
+                - link:
+                  - /url: /org/mathebula-partners/projects?new=1&customerId=2b454c42-ac4e-4e96-af64-4f3d2a409d45&status=ALL
+                  - text: All
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/projects/af9b14b2-76c3-47d5-8f2c-3e19f07c57ba
+                  - generic:
+                    - generic:
+                      - heading [level=3]: L-37 Regression Probe
+                    - paragraph: "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION"
+                    - generic:
+                      - generic:
+                        - img
+                        - text: —
+                      - generic:
+                        - img
+                        - text: —
+                      - generic: Apr 25, 2026
+                - link:
+                  - /url: /org/mathebula-partners/projects/e788a51b-3a73-456c-b932-8d5bd27264c2
+                  - generic:
+                    - generic:
+                      - heading [level=3]: Dlamini v Road Accident Fund
+                    - paragraph: "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION"
+                    - generic:
+                      - generic:
+                        - img
+                        - text: —
+                      - generic:
+                        - img
+                        - text: —
+                      - generic: Apr 25, 2026
+                    - generic:
+                      - generic:
+                        - generic: "Case Number:"
+                        - text: RAF-2026-001-CASE
+                      - generic:
+                        - generic: "Opposing Party:"
+                        - text: Road Accident Fund
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - generic [ref=e180] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e181]:
+      - img [ref=e182]
+    - generic [ref=e185]:
+      - button "Open issues overlay" [ref=e186]:
+        - generic [ref=e199]:
+          - generic [ref=e200]: "1"
+          - generic [ref=e201]: "2"
+        - generic [ref=e190]:
+          - text: Issue
+          - generic [ref=e202]: s
+      - button "Collapse issues badge" [ref=e191]:
+        - img [ref=e192]
+  - alert
+  - dialog "New from Template — Select Template" [ref=e521]:
+    - generic [ref=e522]:
+      - generic [ref=e523]:
+        - heading "New from Template — Select Template" [level=2] [ref=e524]
+        - paragraph [ref=e525]: Choose a template to create a new matter.
+      - generic [ref=e527]:
+        - generic [ref=e529]:
+          - img [ref=e530]
+          - combobox [expanded] [active] [ref=e533]
+        - listbox "Suggestions" [ref=e534]:
+          - group [ref=e536]:
+            - option "Collections (Debt Recovery) 9 tasks" [selected] [ref=e537]:
+              - img
+              - generic [ref=e538]:
+                - paragraph [ref=e539]: Collections (Debt Recovery)
+                - paragraph [ref=e540]: 9 tasks
+            - option "Commercial (Corporate & Contract) 9 tasks" [ref=e541]:
+              - img
+              - generic [ref=e542]:
+                - paragraph [ref=e543]: Commercial (Corporate & Contract)
+                - paragraph [ref=e544]: 9 tasks
+            - option "Deceased Estate Administration 9 tasks" [ref=e545]:
+              - img
+              - generic [ref=e546]:
+                - paragraph [ref=e547]: Deceased Estate Administration
+                - paragraph [ref=e548]: 9 tasks
+            - option "Litigation (Personal Injury / General) 9 tasks" [ref=e549]:
+              - img
+              - generic [ref=e550]:
+                - paragraph [ref=e551]: Litigation (Personal Injury / General)
+                - paragraph [ref=e552]: 9 tasks
+            - option "Property Transfer (Conveyancing) 12 tasks" [ref=e553]:
+              - img
+              - generic [ref=e554]:
+                - paragraph [ref=e555]: Property Transfer (Conveyancing)
+                - paragraph [ref=e556]: 12 tasks
+      - generic [ref=e557]:
+        - button "Cancel" [ref=e558]
+        - button "Next" [disabled]
+      - button "Close" [ref=e559]:
+        - img
+        - generic [ref=e560]: Close

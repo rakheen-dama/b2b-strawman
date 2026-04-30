@@ -1,0 +1,40 @@
+Day 88 §88.6 — Narrative coherence matrix (firm matter Activity vs portal /activity tabs)
+Cycle 56 — 2026-04-28 SAST — actor: Bob (firm) + Sipho (portal contact f3f74a9d-…)
+
+Firm matter Activity tab (cc390c4f-…) — visible to firm:
+[USER]            Bob/Thandi: time_entry, disbursement, court_date, info_request, statement, document, matter_closure
+[PORTAL_CONTACT]  Sipho:      portal.document.upload_initiated, portal.request_item.submitted, portal.invoice.paid, portal.document.downloaded
+[bucketed System] Same PORTAL_CONTACT rows shown with "System" label (cycle-55 OBS confirmed; cosmetic)
+
+Portal /activity (Sipho's POV) — visible to client:
+[Your actions]    portal.document.downloaded ×2, portal.request_item.submitted ×5, portal.document.upload_initiated ×5  (12 rows)
+[Firm actions]    statement.generated ×2, document.generated ×1, information_request.created ×4, information_request.sent ×4,
+                  information_request.item_accepted ×3, information_request.completed ×1, time_entry.created ×4, time_entry.deleted ×2,
+                  disbursement.billed/approved/submitted/created (4), court_date.created ×1, matter_closure.closed ×1, project.updated ×2,
+                  project.created_from_template ×1
+
+Firm → Portal coherence (every client-visible firm event has matching portal entry):
+  ✓ statement.generated (2) — appears on portal Firm actions
+  ✓ document.generated (closure letter) — appears on portal Firm actions
+  ✓ information_request.* (created/sent/accepted/completed) — appears on portal Firm actions
+  ✓ matter_closure.closed — appears on portal Firm actions
+
+Portal → Firm coherence:
+  ✓ portal.document.upload_initiated ×5 — appears on firm Activity feed (as System)
+  ✓ portal.request_item.submitted ×5 — appears on firm Activity feed (as System)
+  ✓ portal.document.downloaded ×2 — appears on firm Activity feed (as System)
+  ✓ portal.invoice.paid (1, NULL actor_id row) — appears on firm Activity feed
+
+Pre-L-75c historical events (NOT recorded at the time, will not retroactively appear):
+  ✗ Day 4 FICA submit
+  ✗ Day 8 proposal accept (acceptance.viewed/accepted recorded but at acceptance entity, not project)
+  ✗ Day 11 trust balance view (reads not recorded)
+  ✗ Day 30 fee-note paid (only the most-recent paid event is in audit_events with NULL actor_id)
+  ✗ Day 46 second info-req submit (only recent retest events)
+  ✗ Day 61 SoA download (only the recent download events)
+
+Internal-only firm event types EXPOSED to client portal (NEW concern):
+  ⚠ time_entry.created/deleted (×6) — billable hours leaked
+  ⚠ disbursement.billed/approved/submitted/created (×4) — internal billing workflow
+  ⚠ court_date.created — court-scheduling internal action
+  These are typically internal firm operations not surfaced to clients in legal practice management.

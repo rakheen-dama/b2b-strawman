@@ -1,0 +1,359 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: BN
+        - generic:
+          - paragraph: Bob Ndlovu
+          - paragraph: bob@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/trust-accounting
+              - text: Trust Accounting
+          - generic:
+            - img
+            - generic: transactions
+        - generic:
+          - generic:
+            - button: BN
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 27 unread notifications
+              - generic: "27"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - generic:
+                  - heading [level=1]: Transactions
+                  - paragraph: Trust account transaction history
+                - button:
+                  - img
+                  - text: Record Transaction
+              - generic:
+                - generic: "Status:"
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions
+                  - text: All
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?status=RECORDED
+                  - text: Recorded
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?status=AWAITING_APPROVAL
+                  - text: Awaiting Approval
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?status=APPROVED
+                  - text: Approved
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?status=REJECTED
+                  - text: Rejected
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?status=REVERSED
+                  - text: Reversed
+              - generic:
+                - generic: "Type:"
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions
+                  - text: All
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?type=DEPOSIT
+                  - text: Deposit
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?type=PAYMENT
+                  - text: Payment
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?type=TRANSFER_IN
+                  - text: Transfer In
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?type=TRANSFER_OUT
+                  - text: Transfer Out
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?type=FEE_TRANSFER
+                  - text: Fee Transfer
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?type=REFUND
+                  - text: Refund
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?type=INTEREST_CREDIT
+                  - text: Interest Credit
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?type=INTEREST_LPFF
+                  - text: Interest Lpff
+                - link:
+                  - /url: /org/mathebula-partners/trust-accounting/transactions?type=REVERSAL
+                  - text: Reversal
+              - generic:
+                - generic:
+                  - generic: From
+                  - textbox
+                - generic:
+                  - generic: To
+                  - textbox
+                - generic:
+                  - generic: Client ID
+                  - textbox:
+                    - /placeholder: Client UUID
+                - generic:
+                  - generic: Matter ID
+                  - textbox:
+                    - /placeholder: Matter UUID
+              - generic:
+                - generic:
+                  - generic: Transaction History
+                  - generic: 10 transactions found
+                - generic:
+                  - generic:
+                    - table:
+                      - rowgroup:
+                        - row:
+                          - columnheader: Date
+                          - columnheader: Reference
+                          - columnheader: Type
+                          - columnheader: Amount
+                          - columnheader: Status
+                          - columnheader: Actions
+                      - rowgroup:
+                        - row:
+                          - cell: 25 Apr 2026
+                          - cell: DEP-2026-001
+                          - cell:
+                            - generic: Deposit
+                          - cell:
+                            - generic:
+                              - img
+                              - text: R 50 000,00
+                          - cell:
+                            - generic: RECORDED
+                          - cell
+                        - row:
+                          - cell: 25 Apr 2026
+                          - cell: DEP/2026/002
+                          - cell:
+                            - generic: Deposit
+                          - cell:
+                            - generic:
+                              - img
+                              - text: R 25 000,00
+                          - cell:
+                            - generic: RECORDED
+                          - cell
+                        - row:
+                          - cell: 25 Apr 2026
+                          - cell: DEP-2026-002
+                          - cell:
+                            - generic: Deposit
+                          - cell:
+                            - generic:
+                              - img
+                              - text: R 20 000,00
+                          - cell:
+                            - generic: RECORDED
+                          - cell
+                        - row:
+                          - cell: 25 Apr 2026
+                          - cell: FEE-TRANSFER-INV-0001-DAY60
+                          - cell:
+                            - generic: Fee Transfer
+                          - cell:
+                            - generic:
+                              - img
+                              - text: R 1 250,00
+                          - cell:
+                            - generic: REJECTED
+                          - cell
+                        - row:
+                          - cell: 25 Apr 2026
+                          - cell: FEE-TRANSFER-INV-0001-DAY60
+                          - cell:
+                            - generic: Fee Transfer
+                          - cell:
+                            - generic:
+                              - img
+                              - text: R 1 250,00
+                          - cell:
+                            - generic: REJECTED
+                          - cell
+                        - row:
+                          - cell: 25 Apr 2026
+                          - cell: FEE-TRANSFER-INV-0001-DAY60
+                          - cell:
+                            - generic: Fee Transfer
+                          - cell:
+                            - generic:
+                              - img
+                              - text: R 1 250,00
+                          - cell:
+                            - generic: REJECTED
+                          - cell
+                        - row:
+                          - cell: 25 Apr 2026
+                          - cell: REV-FEE-TRANSFER-INV-0001-DAY60-RETRY
+                          - cell:
+                            - generic: Reversal
+                          - cell:
+                            - generic:
+                              - img
+                              - text: R 1 250,00
+                          - cell:
+                            - generic: RECORDED
+                          - cell
+                        - row:
+                          - cell: 25 Apr 2026
+                          - cell: FEE-TRANSFER-INV-0001-DAY60-RETRY
+                          - cell:
+                            - generic: Fee Transfer
+                          - cell:
+                            - generic:
+                              - img
+                              - text: R 1 250,00
+                          - cell:
+                            - generic: REVERSED
+                          - cell
+                        - row:
+                          - cell: 25 Apr 2026
+                          - cell: REV-REFUND-DLAMINI-CLOSURE-DAY60
+                          - cell:
+                            - generic: Reversal
+                          - cell:
+                            - generic:
+                              - img
+                              - text: R 68 750,00
+                          - cell:
+                            - generic: RECORDED
+                          - cell
+                        - row:
+                          - cell: 25 Apr 2026
+                          - cell: REFUND-DLAMINI-CLOSURE-DAY60
+                          - cell:
+                            - generic: Refund
+                          - cell:
+                            - generic:
+                              - img
+                              - text: R 68 750,00
+                          - cell:
+                            - generic: REVERSED
+                          - cell
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e314] [cursor=pointer]:
+    - img [ref=e315]
+  - alert
+  - dialog "Record Fee Transfer" [active] [ref=e330]:
+    - generic [ref=e331]:
+      - generic [ref=e332]:
+        - heading "Record Fee Transfer" [level=2] [ref=e333]
+        - paragraph [ref=e334]: Transfer fees from trust to the office account against an unpaid invoice.
+      - generic [ref=e335]:
+        - generic [ref=e336]:
+          - generic [ref=e337]: Client ID
+          - textbox "Client ID" [ref=e338]:
+            - /placeholder: Client UUID
+            - text: c3ad51f5-2bda-4a27-b626-7b5c63f37102
+        - generic [ref=e339]:
+          - generic [ref=e340]: Invoice ID
+          - textbox "Invoice ID" [ref=e341]:
+            - /placeholder: Invoice UUID
+            - text: 8f718728-5fb6-40fe-abf1-2cafc86c0f10
+        - generic [ref=e342]:
+          - generic [ref=e343]: Amount
+          - spinbutton "Amount" [ref=e344]: "1250"
+        - generic [ref=e345]:
+          - generic [ref=e346]: Reference
+          - textbox "Reference" [ref=e347]:
+            - /placeholder: e.g. FEE/2026/001
+            - text: FEE-TRANSFER-INV-0001-DAY60-FIXED
+        - paragraph [ref=e353]: "Invoice must be in APPROVED or SENT status, current status: PAID"
+        - generic [ref=e348]:
+          - button "Cancel" [ref=e349]
+          - button "Record Fee Transfer" [ref=e350]
+      - button "Close" [ref=e351]:
+        - img
+        - generic [ref=e352]: Close

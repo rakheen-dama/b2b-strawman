@@ -1,0 +1,55 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e55]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e22]
+            - generic [ref=e25]: Home
+          - link "Matters" [ref=e26] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e27]
+            - generic [ref=e29]: Matters
+          - link "Trust" [ref=e56] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e57]
+            - generic [ref=e61]: Trust
+          - link "Deadlines" [ref=e62] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e63]
+            - generic [ref=e67]: Deadlines
+          - link "Invoices" [ref=e30] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e31]
+            - generic [ref=e34]: Invoices
+          - link "Proposals" [ref=e35] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e36]
+            - generic [ref=e39]: Proposals
+          - link "Requests" [ref=e68] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e70]
+            - generic [ref=e72]: Requests
+        - generic [ref=e40]:
+          - link "Profile" [ref=e41] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e42]
+            - text: Profile
+          - button "Logout" [ref=e45]:
+            - img [ref=e46]
+            - text: Logout
+      - main [ref=e49]:
+        - generic [ref=e73]: The requested resource was not found.
+    - contentinfo [ref=e51]:
+      - paragraph [ref=e53]: Powered by DocTeams

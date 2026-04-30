@@ -1,0 +1,220 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e63]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e22]
+            - generic [ref=e25]: Home
+          - link "Matters" [ref=e26] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e28]
+            - generic [ref=e30]: Matters
+          - link "Trust" [ref=e64] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e65]
+            - generic [ref=e69]: Trust
+          - link "Deadlines" [ref=e70] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e71]
+            - generic [ref=e75]: Deadlines
+          - link "Invoices" [ref=e31] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e32]
+            - generic [ref=e35]: Invoices
+          - link "Proposals" [ref=e36] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e37]
+            - generic [ref=e40]: Proposals
+          - link "Requests" [ref=e76] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e77]
+            - generic [ref=e79]: Requests
+        - generic [ref=e41]:
+          - link "Profile" [ref=e42] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e43]
+            - text: Profile
+          - button "Logout" [ref=e46]:
+            - img [ref=e47]
+            - text: Logout
+      - main [ref=e50]:
+        - generic [ref=e80]:
+          - link "Back to projects" [ref=e81] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e82]
+            - text: Back to projects
+          - generic [ref=e84]:
+            - generic [ref=e85]:
+              - heading "Dlamini v Road Accident Fund" [level=1] [ref=e86]
+              - generic [ref=e87]: CLOSED
+            - paragraph [ref=e88]: "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION"
+          - generic [ref=e89]:
+            - heading "Tasks" [level=2] [ref=e90]
+            - table [ref=e92]:
+              - rowgroup [ref=e93]:
+                - row "Task Status Assignee" [ref=e94]:
+                  - columnheader "Task" [ref=e95]
+                  - columnheader "Status" [ref=e96]
+                  - columnheader "Assignee" [ref=e97]
+              - rowgroup [ref=e98]:
+                - row "Execution -- warrant / attachment CANCELLED Unassigned" [ref=e99]:
+                  - cell "Execution -- warrant / attachment" [ref=e100]
+                  - cell "CANCELLED" [ref=e101]:
+                    - generic [ref=e102]: CANCELLED
+                  - cell "Unassigned" [ref=e103]
+                - row "Letter of demand CANCELLED Bob Ndlovu" [ref=e104]:
+                  - cell "Letter of demand" [ref=e105]
+                  - cell "CANCELLED" [ref=e106]:
+                    - generic [ref=e107]: CANCELLED
+                  - cell "Bob Ndlovu" [ref=e108]
+                - row "Issue summons / combined summons CANCELLED Bob Ndlovu" [ref=e109]:
+                  - cell "Issue summons / combined summons" [ref=e110]
+                  - cell "CANCELLED" [ref=e111]:
+                    - generic [ref=e112]: CANCELLED
+                  - cell "Bob Ndlovu" [ref=e113]
+                - row "File plea / exception / counterclaim CANCELLED Bob Ndlovu" [ref=e114]:
+                  - cell "File plea / exception / counterclaim" [ref=e115]
+                  - cell "CANCELLED" [ref=e116]:
+                    - generic [ref=e117]: CANCELLED
+                  - cell "Bob Ndlovu" [ref=e118]
+                - row "Discovery -- request & exchange documents CANCELLED Unassigned" [ref=e119]:
+                  - cell "Discovery -- request & exchange documents" [ref=e120]
+                  - cell "CANCELLED" [ref=e121]:
+                    - generic [ref=e122]: CANCELLED
+                  - cell "Unassigned" [ref=e123]
+                - row "Initial consultation & case assessment CANCELLED Bob Ndlovu" [ref=e124]:
+                  - cell "Initial consultation & case assessment" [ref=e125]
+                  - cell "CANCELLED" [ref=e126]:
+                    - generic [ref=e127]: CANCELLED
+                  - cell "Bob Ndlovu" [ref=e128]
+                - row "Post-judgment -- taxation of costs / appeal CANCELLED Bob Ndlovu" [ref=e129]:
+                  - cell "Post-judgment -- taxation of costs / appeal" [ref=e130]
+                  - cell "CANCELLED" [ref=e131]:
+                    - generic [ref=e132]: CANCELLED
+                  - cell "Bob Ndlovu" [ref=e133]
+                - row "Pre-trial conference preparation CANCELLED Bob Ndlovu" [ref=e134]:
+                  - cell "Pre-trial conference preparation" [ref=e135]
+                  - cell "CANCELLED" [ref=e136]:
+                    - generic [ref=e137]: CANCELLED
+                  - cell "Bob Ndlovu" [ref=e138]
+                - row "Trial / hearing attendance CANCELLED Bob Ndlovu" [ref=e139]:
+                  - cell "Trial / hearing attendance" [ref=e140]
+                  - cell "CANCELLED" [ref=e141]:
+                    - generic [ref=e142]: CANCELLED
+                  - cell "Bob Ndlovu" [ref=e143]
+          - generic [ref=e144]:
+            - heading "Documents" [level=2] [ref=e145]
+            - table [ref=e147]:
+              - rowgroup [ref=e148]:
+                - row "File Size Uploaded Action" [ref=e149]:
+                  - columnheader "File" [ref=e150]
+                  - columnheader "Size" [ref=e151]
+                  - columnheader "Uploaded" [ref=e152]
+                  - columnheader "Action" [ref=e153]
+              - rowgroup [ref=e154]:
+                - row "fica-id.pdf 344 B 25 Apr 2026 Download fica-id.pdf" [ref=e155]:
+                  - cell "fica-id.pdf" [ref=e156]:
+                    - generic [ref=e157]:
+                      - img [ref=e158]
+                      - generic [ref=e161]: fica-id.pdf
+                  - cell "344 B" [ref=e162]
+                  - cell "25 Apr 2026" [ref=e163]
+                  - cell "Download fica-id.pdf" [ref=e164]:
+                    - button "Download fica-id.pdf" [ref=e165]:
+                      - img
+                - row "fica-address.pdf 344 B 25 Apr 2026 Download fica-address.pdf" [ref=e166]:
+                  - cell "fica-address.pdf" [ref=e167]:
+                    - generic [ref=e168]:
+                      - img [ref=e169]
+                      - generic [ref=e172]: fica-address.pdf
+                  - cell "344 B" [ref=e173]
+                  - cell "25 Apr 2026" [ref=e174]
+                  - cell "Download fica-address.pdf" [ref=e175]:
+                    - button "Download fica-address.pdf" [ref=e176]:
+                      - img
+                - row "fica-bank.pdf 344 B 25 Apr 2026 Download fica-bank.pdf" [ref=e177]:
+                  - cell "fica-bank.pdf" [ref=e178]:
+                    - generic [ref=e179]:
+                      - img [ref=e180]
+                      - generic [ref=e183]: fica-bank.pdf
+                  - cell "344 B" [ref=e184]
+                  - cell "25 Apr 2026" [ref=e185]
+                  - cell "Download fica-bank.pdf" [ref=e186]:
+                    - button "Download fica-bank.pdf" [ref=e187]:
+                      - img
+                - row "fica-id.pdf 344 B 25 Apr 2026 Download fica-id.pdf" [ref=e188]:
+                  - cell "fica-id.pdf" [ref=e189]:
+                    - generic [ref=e190]:
+                      - img [ref=e191]
+                      - generic [ref=e194]: fica-id.pdf
+                  - cell "344 B" [ref=e195]
+                  - cell "25 Apr 2026" [ref=e196]
+                  - cell "Download fica-id.pdf" [ref=e197]:
+                    - button "Download fica-id.pdf" [ref=e198]:
+                      - img
+                - row "fica-address.pdf 344 B 25 Apr 2026 Download fica-address.pdf" [ref=e199]:
+                  - cell "fica-address.pdf" [ref=e200]:
+                    - generic [ref=e201]:
+                      - img [ref=e202]
+                      - generic [ref=e205]: fica-address.pdf
+                  - cell "344 B" [ref=e206]
+                  - cell "25 Apr 2026" [ref=e207]
+                  - cell "Download fica-address.pdf" [ref=e208]:
+                    - button "Download fica-address.pdf" [ref=e209]:
+                      - img
+                - row "fica-bank.pdf 344 B 25 Apr 2026 Download fica-bank.pdf" [ref=e210]:
+                  - cell "fica-bank.pdf" [ref=e211]:
+                    - generic [ref=e212]:
+                      - img [ref=e213]
+                      - generic [ref=e216]: fica-bank.pdf
+                  - cell "344 B" [ref=e217]
+                  - cell "25 Apr 2026" [ref=e218]
+                  - cell "Download fica-bank.pdf" [ref=e219]:
+                    - button "Download fica-bank.pdf" [ref=e220]:
+                      - img
+                - row "statement-of-account-dlamini-v-road-accident-fund-2026-04-25.pdf 4.0 KB 26 Apr 2026 Download statement-of-account-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e221]:
+                  - cell "statement-of-account-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e222]:
+                    - generic [ref=e223]:
+                      - img [ref=e224]
+                      - generic [ref=e227]: statement-of-account-dlamini-v-road-accident-fund-2026-04-25.pdf
+                  - cell "4.0 KB" [ref=e228]
+                  - cell "26 Apr 2026" [ref=e229]
+                  - cell "Download statement-of-account-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e230]:
+                    - button "Download statement-of-account-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e231]:
+                      - img
+                - row "matter-closure-letter-dlamini-v-road-accident-fund-2026-04-26.pdf 1.6 KB 26 Apr 2026 Download matter-closure-letter-dlamini-v-road-accident-fund-2026-04-26.pdf" [ref=e232]:
+                  - cell "matter-closure-letter-dlamini-v-road-accident-fund-2026-04-26.pdf" [ref=e233]:
+                    - generic [ref=e234]:
+                      - img [ref=e235]
+                      - generic [ref=e238]: matter-closure-letter-dlamini-v-road-accident-fund-2026-04-26.pdf
+                  - cell "1.6 KB" [ref=e239]
+                  - cell "26 Apr 2026" [ref=e240]
+                  - cell "Download matter-closure-letter-dlamini-v-road-accident-fund-2026-04-26.pdf" [ref=e241]:
+                    - button "Download matter-closure-letter-dlamini-v-road-accident-fund-2026-04-26.pdf" [ref=e242]:
+                      - img
+          - generic [ref=e243]:
+            - heading "Comments" [level=2] [ref=e244]
+            - generic [ref=e245]:
+              - generic [ref=e246]:
+                - img [ref=e247]
+                - paragraph [ref=e249]: No comments yet.
+              - generic [ref=e250]:
+                - text: Add a comment
+                - textbox "Add a comment" [ref=e251]:
+                  - /placeholder: Write a comment...
+                - generic [ref=e252]:
+                  - button "Post Comment" [disabled]
+    - contentinfo [ref=e59]:
+      - paragraph [ref=e61]: Powered by DocTeams

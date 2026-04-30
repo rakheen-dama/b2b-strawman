@@ -1,0 +1,81 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e59]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e22]
+            - generic [ref=e25]: Home
+          - link "Matters" [ref=e26] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e27]
+            - generic [ref=e29]: Matters
+          - link "Trust" [ref=e60] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e61]
+            - generic [ref=e65]: Trust
+          - link "Deadlines" [ref=e66] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e67]
+            - generic [ref=e71]: Deadlines
+          - link "Invoices" [ref=e30] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e31]
+            - generic [ref=e34]: Invoices
+          - link "Proposals" [ref=e35] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e36]
+            - generic [ref=e39]: Proposals
+          - link "Requests" [ref=e72] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e74]
+            - generic [ref=e76]: Requests
+        - generic [ref=e40]:
+          - link "Profile" [ref=e41] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e42]
+            - text: Profile
+          - button "Logout" [ref=e45]:
+            - img [ref=e46]
+            - text: Logout
+      - main [ref=e49]:
+        - generic [ref=e123]:
+          - generic [ref=e124]:
+            - paragraph [ref=e125]: REQ-0007
+            - heading "Dlamini v Road Accident Fund" [level=1] [ref=e126]
+            - paragraph [ref=e127]: 3/3 submitted • status IN_PROGRESS
+          - list [ref=e128]:
+            - listitem [ref=e129]:
+              - generic [ref=e130]:
+                - generic [ref=e131]:
+                  - generic [ref=e132]: ID copyrequired
+                  - paragraph [ref=e133]: Certified copy of the client's South African ID document or passport bio page. Must be certified by a Commissioner of Oaths, SAPS, or other accepted certifier within the last 3 months.
+                  - paragraph [ref=e134]: "Accepts: PDF, JPG, PNG"
+                - paragraph [ref=e160]: "Submitted — status: SUBMITTED"
+            - listitem [ref=e139]:
+              - generic [ref=e140]:
+                - generic [ref=e141]:
+                  - generic [ref=e142]: Proof of residence (≤ 3 months)required
+                  - paragraph [ref=e143]: Recent utility bill, municipal rates account, bank statement, or similar document confirming the client's residential address. Document date must be within the last 3 months.
+                  - paragraph [ref=e144]: "Accepts: PDF, JPG, PNG"
+                - paragraph [ref=e162]: "Submitted — status: SUBMITTED"
+            - listitem [ref=e149]:
+              - generic [ref=e150]:
+                - generic [ref=e151]:
+                  - generic [ref=e152]: Bank statement (≤ 3 months)required
+                  - paragraph [ref=e153]: Most recent bank statement evidencing the client's source of funds. Statement must be dated within the last 3 months and show the client's name, account number, and at least one transaction.
+                  - paragraph [ref=e154]: "Accepts: PDF"
+                - paragraph [ref=e164]: "Submitted — status: SUBMITTED"
+    - contentinfo [ref=e55]:
+      - paragraph [ref=e57]: Powered by DocTeams

@@ -1,0 +1,81 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e63]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e22]
+            - generic [ref=e25]: Home
+          - link "Matters" [ref=e26] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e27]
+            - generic [ref=e29]: Matters
+          - link "Trust" [ref=e64] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e65]
+            - generic [ref=e69]: Trust
+          - link "Deadlines" [ref=e70] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e71]
+            - generic [ref=e75]: Deadlines
+          - link "Fee Notes" [ref=e76] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e31]
+            - generic [ref=e34]: Fee Notes
+          - link "Proposals" [ref=e35] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e36]
+            - generic [ref=e39]: Proposals
+          - link "Requests" [ref=e77] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e79]
+            - generic [ref=e81]: Requests
+          - link "Activity" [ref=e40] [cursor=pointer]:
+            - /url: /activity
+            - img [ref=e41]
+            - generic [ref=e43]: Activity
+        - generic [ref=e44]:
+          - link "Profile" [ref=e45] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e46]
+            - text: Profile
+          - button "Logout" [ref=e49]:
+            - img [ref=e50]
+            - text: Logout
+      - main [ref=e53]:
+        - generic [ref=e54]:
+          - heading "Information requests" [level=1] [ref=e55]
+          - list [ref=e82]:
+            - listitem [ref=e83]:
+              - link "REQ-0002 Dlamini v Road Accident Fund COMPLETED 0/3 submitted" [ref=e84] [cursor=pointer]:
+                - /url: /requests/d8a58ade-9912-4dde-b931-b7e349afbe9b
+                - generic [ref=e85]:
+                  - generic [ref=e86]:
+                    - paragraph [ref=e87]: REQ-0002
+                    - paragraph [ref=e88]: Dlamini v Road Accident Fund
+                  - generic [ref=e89]:
+                    - paragraph [ref=e90]: COMPLETED
+                    - paragraph [ref=e91]: 0/3 submitted
+            - listitem [ref=e92]:
+              - link "REQ-0001 Dlamini v Road Accident Fund SENT 0/3 submitted" [ref=e93] [cursor=pointer]:
+                - /url: /requests/a0306375-b108-40e6-b7c3-1b2bb854763d
+                - generic [ref=e94]:
+                  - generic [ref=e95]:
+                    - paragraph [ref=e96]: REQ-0001
+                    - paragraph [ref=e97]: Dlamini v Road Accident Fund
+                  - generic [ref=e98]:
+                    - paragraph [ref=e99]: SENT
+                    - paragraph [ref=e100]: 0/3 submitted
+    - contentinfo [ref=e59]:
+      - paragraph [ref=e61]: Powered by DocTeams

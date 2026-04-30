@@ -1,0 +1,449 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e53]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e55] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e56]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e62]:
+          - generic [ref=e63]: Clients
+          - img [ref=e64]
+        - button "Finance" [ref=e68]:
+          - generic [ref=e69]: Finance
+          - img [ref=e70]
+        - generic [ref=e73]:
+          - button "Team" [expanded] [ref=e74]:
+            - generic [ref=e75]: Team
+            - img [ref=e76]
+          - link "Team" [ref=e79] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e80]
+            - text: Team
+      - generic [ref=e86]:
+        - link "Notifications" [ref=e87] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e88]
+          - text: Notifications
+        - link "Settings" [ref=e91] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e92]
+          - text: Settings
+        - link "Help" [ref=e95] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e96]
+          - text: Help
+      - generic [ref=e99]:
+        - generic [ref=e100]: TM
+        - generic [ref=e101]:
+          - paragraph [ref=e102]: Thandi Mathebula
+          - paragraph [ref=e103]: thandi@mathebula-test.local
+    - generic [ref=e104]:
+      - banner [ref=e105]:
+        - navigation "Breadcrumb" [ref=e106]:
+          - link "Mathebula & Partners" [ref=e107] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e108]:
+            - img [ref=e109]
+            - link "Matters" [ref=e111] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+          - generic [ref=e112]:
+            - img [ref=e113]
+            - generic [ref=e115]: Matter
+        - generic [ref=e116]:
+          - button "User menu" [ref=e118]: TM
+          - button "Notifications" [ref=e120]:
+            - img
+            - generic [ref=e121]: 20 unread notifications
+            - generic [ref=e122]: "20"
+      - main [ref=e123]:
+        - generic [ref=e161]:
+          - link "Back to Matters" [ref=e163] [cursor=pointer]:
+            - /url: /org/mathebula-partners/projects
+            - img [ref=e164]
+            - text: Back to Matters
+          - generic [ref=e166]:
+            - generic:
+              - generic:
+                - heading "Dlamini v Road Accident Fund" [level=1] [ref=e167]
+                - generic [ref=e168]: Closed
+              - paragraph: "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION"
+              - paragraph:
+                - text: "Client:"
+                - link "Sipho Dlamini" [ref=e169] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/customers/c3ad51f5-2bda-4a27-b626-7b5c63f37102
+              - generic [ref=e170]:
+                - generic [ref=e171]: Ref
+                - code [ref=e172]: RAF-2026-001
+              - paragraph: Created Apr 25, 2026 · 10 documents · 1 member · 0 tasks
+            - generic [ref=e173]:
+              - button "Reopen Matter" [ref=e174]:
+                - img
+                - text: Reopen Matter
+              - button "Generate Statement of Account" [ref=e175]:
+                - img
+                - text: Generate Statement of Account
+              - button "Generate Document" [ref=e176]:
+                - img
+                - text: Generate Document
+                - img
+              - button "New Engagement Letter" [ref=e177]:
+                - img
+                - text: New Engagement Letter
+              - button "Save as Template" [ref=e178]:
+                - img
+                - text: Save as Template
+              - button "Edit" [ref=e179]:
+                - img
+                - text: Edit
+              - button "Delete" [ref=e180]:
+                - img
+                - text: Delete
+          - generic [ref=e181]:
+            - paragraph [ref=e182]: Field Groups
+            - generic [ref=e183]:
+              - generic [ref=e184]:
+                - text: SA Conveyancing — Matter Details
+                - button "Remove SA Conveyancing — Matter Details" [ref=e185]:
+                  - img [ref=e186]
+              - generic [ref=e189]:
+                - text: SA Legal — Matter Details
+                - button "Remove SA Legal — Matter Details" [ref=e190]:
+                  - img [ref=e191]
+              - generic [ref=e194]:
+                - text: Project Info
+                - button "Remove Project Info" [ref=e195]:
+                  - img [ref=e196]
+          - generic [ref=e199]:
+            - generic [ref=e200]:
+              - generic [ref=e202]: SA Conveyancing — Matter Details
+              - generic [ref=e204]:
+                - generic [ref=e205]:
+                  - generic [ref=e206]: Conveyancing Type
+                  - combobox "Conveyancing Type" [ref=e208]:
+                    - option "Select..." [selected]
+                    - option "Transfer"
+                    - option "Bond Registration"
+                    - option "Bond Cancellation"
+                    - option "Sectional Title"
+                    - option "Estate Transfer"
+                - generic [ref=e209]:
+                  - generic [ref=e210]: Property Address
+                  - textbox "Property Address" [ref=e212]:
+                    - /placeholder: Full physical address of the property being transferred
+                - generic [ref=e213]:
+                  - generic [ref=e214]: Erf Number
+                  - textbox "Erf Number" [ref=e216]:
+                    - /placeholder: Erf/stand number identifying the property
+                - generic [ref=e217]:
+                  - generic [ref=e218]: Deeds Office
+                  - combobox "Deeds Office" [ref=e220]:
+                    - option "Select..." [selected]
+                    - option "Johannesburg"
+                    - option "Pretoria"
+                    - option "Cape Town"
+                    - option "Bloemfontein"
+                    - option "Pietermaritzburg"
+                    - option "King William's Town"
+                    - option "Kimberley"
+                    - option "Mahikeng"
+                    - option "Mthatha"
+                    - option "Vryburg"
+                - generic [ref=e221]:
+                  - generic [ref=e222]: Lodgement Date
+                  - textbox "Lodgement Date" [ref=e224]
+                - generic [ref=e225]:
+                  - generic [ref=e226]: Purchase Price
+                  - generic [ref=e228]:
+                    - spinbutton "Purchase Price" [ref=e229]
+                    - combobox "Currency" [ref=e230]:
+                      - option "Currency" [selected]
+                      - option "USD"
+                      - option "EUR"
+                      - option "GBP"
+                      - option "ZAR"
+                      - option "AUD"
+                      - option "CAD"
+                      - option "CHF"
+                      - option "JPY"
+                      - option "CNY"
+                      - option "INR"
+                - generic [ref=e231]:
+                  - generic [ref=e232]: Transfer Duty
+                  - generic [ref=e234]:
+                    - spinbutton "Transfer Duty" [ref=e235]
+                    - combobox "Currency" [ref=e236]:
+                      - option "Currency" [selected]
+                      - option "USD"
+                      - option "EUR"
+                      - option "GBP"
+                      - option "ZAR"
+                      - option "AUD"
+                      - option "CAD"
+                      - option "CHF"
+                      - option "JPY"
+                      - option "CNY"
+                      - option "INR"
+                - generic [ref=e237]:
+                  - generic [ref=e238]: Bond Institution
+                  - combobox "Bond Institution" [ref=e240]:
+                    - option "Select..." [selected]
+                    - option "ABSA"
+                    - option "FNB"
+                    - option "Standard Bank"
+                    - option "Nedbank"
+                    - option "Investec"
+                    - option "SA Home Loans"
+                    - option "Other"
+                    - option "None (Cash Purchase)"
+            - generic [ref=e241]:
+              - generic [ref=e243]: SA Legal — Matter Details
+              - generic [ref=e245]:
+                - generic [ref=e246]:
+                  - generic [ref=e247]: Case Number
+                  - textbox "Case Number" [ref=e249]:
+                    - /placeholder: Court-assigned case number for the matter
+                    - text: RAF-2026-001-CASE
+                - generic [ref=e250]:
+                  - generic [ref=e251]: Court
+                  - textbox "Court" [ref=e253]:
+                    - /placeholder: Name of the court in which the matter is heard
+                - generic [ref=e254]:
+                  - generic [ref=e255]: Opposing Party
+                  - textbox "Opposing Party" [ref=e257]:
+                    - /placeholder: Name of the primary opposing party
+                    - text: Road Accident Fund
+                - generic [ref=e258]:
+                  - generic [ref=e259]: Opposing Attorney
+                  - textbox "Opposing Attorney" [ref=e261]:
+                    - /placeholder: Name of the opposing attorney or firm
+                - generic [ref=e262]:
+                  - generic [ref=e263]: Advocate
+                  - textbox "Advocate" [ref=e265]:
+                    - /placeholder: Name of the instructed advocate (if briefed)
+                - generic [ref=e266]:
+                  - generic [ref=e267]: Date of Instruction
+                  - textbox "Date of Instruction" [ref=e269]
+                - generic [ref=e270]:
+                  - generic [ref=e271]: Estimated Value
+                  - spinbutton "Estimated Value" [ref=e273]
+            - generic [ref=e274]:
+              - generic [ref=e276]: Project Info
+              - generic [ref=e279]:
+                - generic [ref=e280]: Category
+                - textbox "Category" [ref=e282]:
+                  - /placeholder: Project category or type
+            - button "Save Custom Fields" [ref=e284]:
+              - img
+              - text: Save Custom Fields
+          - generic [ref=e285]:
+            - paragraph [ref=e286]: Tags
+            - button "Add Tag" [ref=e289]:
+              - img
+              - text: Add Tag
+          - generic [ref=e290]:
+            - tablist [ref=e291]:
+              - tab "Overview" [ref=e292]
+              - tab "Documents" [selected] [ref=e293]: Documents
+              - tab "Members" [ref=e295]
+              - tab "Clients" [ref=e296]
+              - tab "Tasks" [ref=e297]
+              - tab "Time" [ref=e298]
+              - tab "Fee Estimate" [ref=e299]
+              - tab "Financials" [ref=e300]
+              - tab "Staffing" [ref=e301]
+              - tab "Rates" [ref=e302]
+              - tab "Generated Docs" [ref=e303]
+              - tab "Requests" [ref=e304]
+              - tab "Client Comments" [ref=e305]
+              - tab "Court Dates" [ref=e306]
+              - tab "Adverse Parties" [ref=e307]
+              - tab "Trust" [ref=e308]
+              - tab "Disbursements" [ref=e309]
+              - tab "Statements" [ref=e310]
+              - tab "Activity" [ref=e311]
+            - tabpanel "Documents" [ref=e312]:
+              - generic [ref=e313]:
+                - heading "Documents" [level=2] [ref=e314]
+                - table [ref=e317]:
+                  - rowgroup [ref=e318]:
+                    - row "File Size Status Uploaded" [ref=e319]:
+                      - columnheader "File" [ref=e320]
+                      - columnheader "Size" [ref=e321]
+                      - columnheader "Status" [ref=e322]
+                      - columnheader "Uploaded" [ref=e323]
+                      - columnheader [ref=e324]
+                  - rowgroup [ref=e325]:
+                    - row "Expand comments for engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-25.pdf 3.6 KB Uploaded Apr 25, 2026 Download engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e326]:
+                      - cell "Expand comments for engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e327]:
+                        - button "Expand comments for engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e328]:
+                          - img [ref=e329]
+                          - img [ref=e331]
+                          - generic [ref=e334]: engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-25.pdf
+                      - cell "3.6 KB" [ref=e335]
+                      - cell "Uploaded" [ref=e336]:
+                        - generic [ref=e337]: Uploaded
+                      - cell "Apr 25, 2026" [ref=e338]
+                      - cell "Download engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e339]:
+                        - button "Download engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e341]:
+                          - img
+                          - generic [ref=e342]: Download engagement-letter-litigation-dlamini-v-road-accident-fund-2026-04-25.pdf
+                    - row "Expand comments for matter-closure-letter-dlamini-v-road-accident-fund-2026-04-25.pdf 1.6 KB Uploaded Apr 25, 2026 Download matter-closure-letter-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e343]:
+                      - cell "Expand comments for matter-closure-letter-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e344]:
+                        - button "Expand comments for matter-closure-letter-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e345]:
+                          - img [ref=e346]
+                          - img [ref=e348]
+                          - generic [ref=e351]: matter-closure-letter-dlamini-v-road-accident-fund-2026-04-25.pdf
+                      - cell "1.6 KB" [ref=e352]
+                      - cell "Uploaded" [ref=e353]:
+                        - generic [ref=e354]: Uploaded
+                      - cell "Apr 25, 2026" [ref=e355]
+                      - cell "Download matter-closure-letter-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e356]:
+                        - button "Download matter-closure-letter-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e358]:
+                          - img
+                          - generic [ref=e359]: Download matter-closure-letter-dlamini-v-road-accident-fund-2026-04-25.pdf
+                    - row "Expand comments for fica-id.pdf 344 B Pending —" [ref=e360]:
+                      - cell "Expand comments for fica-id.pdf" [ref=e361]:
+                        - button "Expand comments for fica-id.pdf" [ref=e362]:
+                          - img [ref=e363]
+                          - img [ref=e365]
+                          - generic [ref=e368]: fica-id.pdf
+                      - cell "344 B" [ref=e369]
+                      - cell "Pending" [ref=e370]:
+                        - generic [ref=e371]: Pending
+                      - cell "—" [ref=e372]
+                      - cell [ref=e373]
+                    - row "Expand comments for fica-address.pdf 344 B Pending —" [ref=e374]:
+                      - cell "Expand comments for fica-address.pdf" [ref=e375]:
+                        - button "Expand comments for fica-address.pdf" [ref=e376]:
+                          - img [ref=e377]
+                          - img [ref=e379]
+                          - generic [ref=e382]: fica-address.pdf
+                      - cell "344 B" [ref=e383]
+                      - cell "Pending" [ref=e384]:
+                        - generic [ref=e385]: Pending
+                      - cell "—" [ref=e386]
+                      - cell [ref=e387]
+                    - row "Expand comments for fica-bank.pdf 344 B Pending —" [ref=e388]:
+                      - cell "Expand comments for fica-bank.pdf" [ref=e389]:
+                        - button "Expand comments for fica-bank.pdf" [ref=e390]:
+                          - img [ref=e391]
+                          - img [ref=e393]
+                          - generic [ref=e396]: fica-bank.pdf
+                      - cell "344 B" [ref=e397]
+                      - cell "Pending" [ref=e398]:
+                        - generic [ref=e399]: Pending
+                      - cell "—" [ref=e400]
+                      - cell [ref=e401]
+                    - row "Expand comments for fica-id.pdf 344 B Pending —" [ref=e402]:
+                      - cell "Expand comments for fica-id.pdf" [ref=e403]:
+                        - button "Expand comments for fica-id.pdf" [ref=e404]:
+                          - img [ref=e405]
+                          - img [ref=e407]
+                          - generic [ref=e410]: fica-id.pdf
+                      - cell "344 B" [ref=e411]
+                      - cell "Pending" [ref=e412]:
+                        - generic [ref=e413]: Pending
+                      - cell "—" [ref=e414]
+                      - cell [ref=e415]
+                    - row "Expand comments for fica-address.pdf 344 B Pending —" [ref=e416]:
+                      - cell "Expand comments for fica-address.pdf" [ref=e417]:
+                        - button "Expand comments for fica-address.pdf" [ref=e418]:
+                          - img [ref=e419]
+                          - img [ref=e421]
+                          - generic [ref=e424]: fica-address.pdf
+                      - cell "344 B" [ref=e425]
+                      - cell "Pending" [ref=e426]:
+                        - generic [ref=e427]: Pending
+                      - cell "—" [ref=e428]
+                      - cell [ref=e429]
+                    - row "Expand comments for fica-bank.pdf 344 B Pending —" [ref=e430]:
+                      - cell "Expand comments for fica-bank.pdf" [ref=e431]:
+                        - button "Expand comments for fica-bank.pdf" [ref=e432]:
+                          - img [ref=e433]
+                          - img [ref=e435]
+                          - generic [ref=e438]: fica-bank.pdf
+                      - cell "344 B" [ref=e439]
+                      - cell "Pending" [ref=e440]:
+                        - generic [ref=e441]: Pending
+                      - cell "—" [ref=e442]
+                      - cell [ref=e443]
+                    - row "Expand comments for statement-of-account-dlamini-v-road-accident-fund-2026-04-25.pdf 4.0 KB Uploaded Apr 26, 2026 Download statement-of-account-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e444]:
+                      - cell "Expand comments for statement-of-account-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e445]:
+                        - button "Expand comments for statement-of-account-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e446]:
+                          - img [ref=e447]
+                          - img [ref=e449]
+                          - generic [ref=e452]: statement-of-account-dlamini-v-road-accident-fund-2026-04-25.pdf
+                      - cell "4.0 KB" [ref=e453]
+                      - cell "Uploaded" [ref=e454]:
+                        - generic [ref=e455]: Uploaded
+                      - cell "Apr 26, 2026" [ref=e456]
+                      - cell "Download statement-of-account-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e457]:
+                        - button "Download statement-of-account-dlamini-v-road-accident-fund-2026-04-25.pdf" [ref=e459]:
+                          - img
+                          - generic [ref=e460]: Download statement-of-account-dlamini-v-road-accident-fund-2026-04-25.pdf
+                    - row "Expand comments for matter-closure-letter-dlamini-v-road-accident-fund-2026-04-26.pdf 1.6 KB Uploaded Apr 26, 2026 Download matter-closure-letter-dlamini-v-road-accident-fund-2026-04-26.pdf" [ref=e461]:
+                      - cell "Expand comments for matter-closure-letter-dlamini-v-road-accident-fund-2026-04-26.pdf" [ref=e462]:
+                        - button "Expand comments for matter-closure-letter-dlamini-v-road-accident-fund-2026-04-26.pdf" [ref=e463]:
+                          - img [ref=e464]
+                          - img [ref=e466]
+                          - generic [ref=e469]: matter-closure-letter-dlamini-v-road-accident-fund-2026-04-26.pdf
+                      - cell "1.6 KB" [ref=e470]
+                      - cell "Uploaded" [ref=e471]:
+                        - generic [ref=e472]: Uploaded
+                      - cell "Apr 26, 2026" [ref=e473]
+                      - cell "Download matter-closure-letter-dlamini-v-road-accident-fund-2026-04-26.pdf" [ref=e474]:
+                        - button "Download matter-closure-letter-dlamini-v-road-accident-fund-2026-04-26.pdf" [ref=e476]:
+                          - img
+                          - generic [ref=e477]: Download matter-closure-letter-dlamini-v-road-accident-fund-2026-04-26.pdf
+                - button "Drag and drop files here, or click to browse Max 100 MB per file" [ref=e478] [cursor=pointer]:
+                  - img [ref=e479]
+                  - paragraph [ref=e482]: Drag and drop files here, or click to browse
+                  - paragraph [ref=e483]: Max 100 MB per file
+  - generic [ref=e148]:
+    - heading "Command Palette" [level=2] [ref=e149]
+    - paragraph [ref=e150]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e156] [cursor=pointer]:
+    - img [ref=e157]
+  - alert [ref=e160]

@@ -1,0 +1,525 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: TM
+        - generic:
+          - paragraph: Thandi Mathebula
+          - paragraph: thandi@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - text: Matters
+          - generic:
+            - img
+            - generic: Matter
+        - generic:
+          - generic:
+            - button: TM
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 8 unread notifications
+              - generic: "8"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/projects
+                  - img
+                  - text: Back to Matters
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: Dlamini v Road Accident Fund
+                    - generic: Closed
+                  - paragraph: "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION"
+                  - paragraph:
+                    - text: "Client:"
+                    - link:
+                      - /url: /org/mathebula-partners/customers/c4f70d86-c292-4d02-9f6f-2e900099ba57
+                      - text: Sipho Dlamini
+                  - generic:
+                    - generic:
+                      - generic: Ref
+                      - code: RAF-2026-001
+                    - generic: Type Litigation
+                  - paragraph: Created Apr 26, 2026 · 7 documents · 1 member · 9 tasks
+                - generic:
+                  - button:
+                    - img
+                    - text: Reopen Matter
+                  - button:
+                    - img
+                    - text: Generate Statement of Account
+                  - button:
+                    - img
+                    - text: Generate Document
+                    - img
+                  - button:
+                    - img
+                    - text: New Engagement Letter
+                  - button:
+                    - img
+                    - text: Edit
+                  - button:
+                    - img
+                    - text: Delete
+              - generic:
+                - paragraph: Field Groups
+                - generic:
+                  - generic:
+                    - text: SA Legal — Matter Details
+                    - button:
+                      - img
+                  - generic:
+                    - text: Project Info
+                    - button:
+                      - img
+                  - button:
+                    - img
+                    - text: Add Group
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: SA Legal — Matter Details
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Case Number
+                        - generic:
+                          - textbox:
+                            - /placeholder: Court-assigned case number for the matter
+                            - text: RAF-2026-001-CASE
+                      - generic:
+                        - generic: Court
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the court in which the matter is heard
+                            - text: Gauteng Division, Pretoria
+                      - generic:
+                        - generic: Opposing Party
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the primary opposing party
+                            - text: Road Accident Fund
+                      - generic:
+                        - generic: Opposing Attorney
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the opposing attorney or firm
+                      - generic:
+                        - generic: Advocate
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the instructed advocate (if briefed)
+                      - generic:
+                        - generic: Date of Instruction
+                        - generic:
+                          - textbox
+                      - generic:
+                        - generic: Estimated Value
+                        - generic:
+                          - spinbutton
+                - generic:
+                  - generic:
+                    - generic: Project Info
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Category
+                        - generic:
+                          - textbox:
+                            - /placeholder: Project category or type
+                - generic:
+                  - button:
+                    - img
+                    - text: Save Custom Fields
+              - generic:
+                - paragraph: Tags
+                - generic:
+                  - generic:
+                    - button:
+                      - img
+                      - text: Add Tag
+              - generic:
+                - tablist:
+                  - tab: Overview
+                  - tab [selected]: Documents
+                  - tab: Members
+                  - tab: Clients
+                  - tab: Tasks
+                  - tab: Time
+                  - tab: Fee Estimate
+                  - tab: Financials
+                  - tab: Staffing
+                  - tab: Rates
+                  - tab: Generated Docs
+                  - tab: Requests
+                  - tab: Client Comments
+                  - tab: Court Dates
+                  - tab: Adverse Parties
+                  - tab: Trust
+                  - tab: Disbursements
+                  - tab: Statements
+                  - tab: Activity
+                - tabpanel:
+                  - generic:
+                    - heading [level=2]: Documents
+                    - generic:
+                      - generic:
+                        - table:
+                          - rowgroup:
+                            - row:
+                              - columnheader: File
+                              - columnheader: Size
+                              - columnheader: Status
+                              - columnheader: Uploaded
+                              - columnheader
+                          - rowgroup:
+                            - row:
+                              - cell:
+                                - button:
+                                  - img
+                                  - img
+                                  - generic: matter-closure-letter-dlamini-v-road-accident-fund-2026-04-27.pdf
+                              - cell: 1.6 KB
+                              - cell:
+                                - generic: Uploaded
+                              - cell: Apr 27, 2026
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                    - generic: Download matter-closure-letter-dlamini-v-road-accident-fund-2026-04-27.pdf
+                            - row:
+                              - cell:
+                                - button:
+                                  - img
+                                  - img
+                                  - generic: statement-of-account-dlamini-v-road-accident-fund-2026-06-30.pdf
+                              - cell: 4.0 KB
+                              - cell:
+                                - generic: Uploaded
+                              - cell: Apr 27, 2026
+                              - cell:
+                                - generic:
+                                  - button:
+                                    - img
+                                    - generic: Download statement-of-account-dlamini-v-road-accident-fund-2026-06-30.pdf
+                            - row:
+                              - cell:
+                                - button:
+                                  - img
+                                  - img
+                                  - generic: test-fica-id.pdf
+                              - cell: 750 B
+                              - cell:
+                                - generic: Pending
+                              - cell: —
+                              - cell
+                            - row:
+                              - cell:
+                                - button:
+                                  - img
+                                  - img
+                                  - generic: test-fica-address.pdf
+                              - cell: 757 B
+                              - cell:
+                                - generic: Pending
+                              - cell: —
+                              - cell
+                            - row:
+                              - cell:
+                                - button:
+                                  - img
+                                  - img
+                                  - generic: test-fica-funds.pdf
+                              - cell: 748 B
+                              - cell:
+                                - generic: Pending
+                              - cell: —
+                              - cell
+                            - row:
+                              - cell:
+                                - button:
+                                  - img
+                                  - img
+                                  - generic: discharge-summary.pdf
+                              - cell: 578 B
+                              - cell:
+                                - generic: Pending
+                              - cell: —
+                              - cell
+                            - row:
+                              - cell:
+                                - button:
+                                  - img
+                                  - img
+                                  - generic: orthopaedic-report.pdf
+                              - cell: 581 B
+                              - cell:
+                                - generic: Pending
+                              - cell: —
+                              - cell
+                    - button:
+                      - img
+                      - paragraph: Drag and drop files here, or click to browse
+                      - paragraph: Max 100 MB per file
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e156] [cursor=pointer]:
+    - img [ref=e157]
+  - alert
+  - dialog "Generate Statement of Account" [active] [ref=e697]:
+    - generic [ref=e698]:
+      - generic [ref=e699]:
+        - heading "Generate Statement of Account" [level=2] [ref=e700]
+        - paragraph [ref=e701]: Generate a statement of account for Dlamini v Road Accident Fund. The PDF will be saved to this matter's documents.
+      - generic [ref=e702]:
+        - generic [ref=e703]:
+          - generic [ref=e704]:
+            - generic [ref=e705]: Period start
+            - textbox "Period start" [ref=e706]: 2026-04-01
+          - generic [ref=e707]:
+            - generic [ref=e708]: Period end
+            - textbox "Period end" [ref=e709]: 2026-06-30
+        - iframe [ref=e721]:
+          - generic [active] [ref=f1e1]:
+            - heading "Mathebula & Partners" [level=1] [ref=f1e2]
+            - paragraph [ref=f1e3]:
+              - strong [ref=f1e4]: "VAT Reg:"
+            - heading "Statement of Account" [level=2] [ref=f1e5]
+            - paragraph [ref=f1e6]:
+              - strong [ref=f1e7]: "Reference:"
+              - text: SOA-cc390c4f-20260427
+            - paragraph [ref=f1e8]:
+              - strong [ref=f1e9]: "Period:"
+              - text: 2026-04-01 — 2026-06-30
+            - paragraph [ref=f1e10]:
+              - strong [ref=f1e11]: "Generated:"
+              - text: 2026-04-27
+            - separator [ref=f1e12]
+            - heading "To" [level=3] [ref=f1e13]
+            - paragraph [ref=f1e14]: Sipho Dlamini
+            - paragraph [ref=f1e15]: 12 Loveday St Johannesburg 2001 ZA
+            - separator [ref=f1e16]
+            - heading "Matter" [level=3] [ref=f1e17]
+            - paragraph [ref=f1e18]:
+              - strong [ref=f1e19]: "Matter:"
+              - text: Dlamini v Road Accident Fund
+            - paragraph [ref=f1e20]:
+              - strong [ref=f1e21]: "File reference:"
+              - text: RAF-2026-001
+            - paragraph [ref=f1e22]:
+              - strong [ref=f1e23]: "Opened:"
+              - text: 2026-04-26
+            - separator [ref=f1e24]
+            - heading "Professional Fees" [level=3] [ref=f1e25]
+            - table [ref=f1e26]:
+              - rowgroup [ref=f1e27]:
+                - row "Date Fee Earner Description Hours Rate Amount" [ref=f1e28]:
+                  - columnheader "Date" [ref=f1e29]
+                  - columnheader "Fee Earner" [ref=f1e30]
+                  - columnheader "Description" [ref=f1e31]
+                  - columnheader "Hours" [ref=f1e32]
+                  - columnheader "Rate" [ref=f1e33]
+                  - columnheader "Amount" [ref=f1e34]
+              - rowgroup [ref=f1e35]:
+                - row "27 April 2026 Bob Ndlovu Consultation with client - per 15 minutes (LSSA tariff) 2,5 R850,00 R2 125,00" [ref=f1e36]:
+                  - cell "27 April 2026" [ref=f1e37]
+                  - cell "Bob Ndlovu" [ref=f1e38]
+                  - cell "Consultation with client - per 15 minutes (LSSA tariff)" [ref=f1e39]
+                  - cell "2,5" [ref=f1e40]
+                  - cell "R850,00" [ref=f1e41]
+                  - cell "R2 125,00" [ref=f1e42]
+                - row "27 April 2026 Bob Ndlovu Drafting particulars of claim - per page (LSSA tariff) 1,5 R850,00 R1 275,00" [ref=f1e43]:
+                  - cell "27 April 2026" [ref=f1e44]
+                  - cell "Bob Ndlovu" [ref=f1e45]
+                  - cell "Drafting particulars of claim - per page (LSSA tariff)" [ref=f1e46]
+                  - cell "1,5" [ref=f1e47]
+                  - cell "R850,00" [ref=f1e48]
+                  - cell "R1 275,00" [ref=f1e49]
+            - paragraph [ref=f1e50]:
+              - strong [ref=f1e51]: "Total fees (excl. VAT):"
+              - text: "3400.00"
+            - paragraph [ref=f1e52]:
+              - strong [ref=f1e53]: "VAT:"
+              - text: "0"
+            - paragraph [ref=f1e54]:
+              - strong [ref=f1e55]: "Total fees (incl. VAT):"
+              - text: "3400.00"
+            - separator [ref=f1e56]
+            - heading "Disbursements" [level=3] [ref=f1e57]
+            - table [ref=f1e58]:
+              - rowgroup [ref=f1e59]:
+                - row "Date Category Description Supplier Amount VAT" [ref=f1e60]:
+                  - columnheader "Date" [ref=f1e61]
+                  - columnheader "Category" [ref=f1e62]
+                  - columnheader "Description" [ref=f1e63]
+                  - columnheader "Supplier" [ref=f1e64]
+                  - columnheader "Amount" [ref=f1e65]
+                  - columnheader "VAT" [ref=f1e66]
+              - rowgroup [ref=f1e67]:
+                - row "27 April 2026 SHERIFF_FEES Sheriff service of summons on RAF Sheriff Pretoria R1 250,00 R0,00" [ref=f1e68]:
+                  - cell "27 April 2026" [ref=f1e69]
+                  - cell "SHERIFF_FEES" [ref=f1e70]
+                  - cell "Sheriff service of summons on RAF" [ref=f1e71]
+                  - cell "Sheriff Pretoria" [ref=f1e72]
+                  - cell "R1 250,00" [ref=f1e73]
+                  - cell "R0,00" [ref=f1e74]
+            - paragraph [ref=f1e75]:
+              - strong [ref=f1e76]: "Total disbursements:"
+              - text: "1250.00"
+            - separator [ref=f1e77]
+            - heading "Trust Activity" [level=3] [ref=f1e78]
+            - paragraph [ref=f1e79]:
+              - strong [ref=f1e80]: "Opening balance:"
+              - text: "0"
+            - paragraph [ref=f1e81]:
+              - strong [ref=f1e82]: Deposits
+            - table [ref=f1e83]:
+              - rowgroup [ref=f1e84]:
+                - row "Date Reference Description Amount" [ref=f1e85]:
+                  - columnheader "Date" [ref=f1e86]
+                  - columnheader "Reference" [ref=f1e87]
+                  - columnheader "Description" [ref=f1e88]
+                  - columnheader "Amount" [ref=f1e89]
+              - rowgroup
+            - paragraph [ref=f1e90]:
+              - strong [ref=f1e91]: Payments
+            - table [ref=f1e92]:
+              - rowgroup [ref=f1e93]:
+                - row "Date Type Reference Description Amount" [ref=f1e94]:
+                  - columnheader "Date" [ref=f1e95]
+                  - columnheader "Type" [ref=f1e96]
+                  - columnheader "Reference" [ref=f1e97]
+                  - columnheader "Description" [ref=f1e98]
+                  - columnheader "Amount" [ref=f1e99]
+              - rowgroup
+            - paragraph [ref=f1e100]:
+              - strong [ref=f1e101]: "Closing balance:"
+              - text: "0"
+            - separator [ref=f1e102]
+            - heading "Summary" [level=3] [ref=f1e103]
+            - paragraph [ref=f1e104]:
+              - strong [ref=f1e105]: "Total fees:"
+              - text: "3400.00"
+            - paragraph [ref=f1e106]:
+              - strong [ref=f1e107]: "Total disbursements:"
+              - text: "1250.00"
+            - paragraph [ref=f1e108]:
+              - strong [ref=f1e109]: "Previous balance owing:"
+              - text: "0"
+            - paragraph [ref=f1e110]:
+              - strong [ref=f1e111]: "Payments received:"
+              - text: "5160.00"
+            - paragraph [ref=f1e112]:
+              - strong [ref=f1e113]: "Closing balance owing:"
+              - text: "-510.00"
+            - paragraph [ref=f1e114]:
+              - strong [ref=f1e115]: "Trust balance held:"
+              - text: "0"
+            - separator [ref=f1e116]
+            - heading "Payment Instructions" [level=3] [ref=f1e117]
+            - paragraph
+            - paragraph
+        - generic [ref=e712]:
+          - button "Close" [ref=e713]
+          - button "Download PDF" [ref=e722]:
+            - img
+            - text: Download PDF
+          - button "Regenerate" [ref=e723]:
+            - img
+            - text: Regenerate
+      - button "Close" [ref=e715]:
+        - img
+        - generic [ref=e716]: Close

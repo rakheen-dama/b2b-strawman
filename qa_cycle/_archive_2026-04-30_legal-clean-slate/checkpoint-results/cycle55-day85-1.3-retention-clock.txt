@@ -1,0 +1,13 @@
+SET
+                  id                  | status |           closed_at           | retention_clock_started_at |     computed_end_date      
+--------------------------------------+--------+-------------------------------+----------------------------+----------------------------
+ cc390c4f-35e2-42b5-8b54-bac766673ae7 | CLOSED | 2026-04-27 16:56:04.658143+00 | 2026-04-27 16:56:04.658143 | 2031-04-26 16:56:04.658143
+(1 row)
+
+SET
+ record_type | retention_days |    trigger_event    | action | active 
+-------------+----------------+---------------------+--------+--------
+ AUDIT_EVENT |           2555 | RECORD_CREATED      | FLAG   | t
+ CUSTOMER    |           1825 | CUSTOMER_OFFBOARDED | FLAG   | t
+(2 rows)
+

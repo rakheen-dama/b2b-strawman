@@ -1,0 +1,21 @@
+- generic [active] [ref=e1]:
+  - heading "Mock Payment Checkout DEV ONLY" [level=1] [ref=e2]:
+    - text: Mock Payment Checkout
+    - generic [ref=e3]: DEV ONLY
+  - paragraph [ref=e4]: This page simulates a PSP checkout. No real payment is taken.
+  - generic [ref=e6]:
+    - term [ref=e7]: Invoice
+    - definition [ref=e8]: 432ae5a9-6a3c-4c25-86b3-302f0dd016e1
+    - term [ref=e9]: Amount
+    - definition [ref=e10]: ZAR 5160.00
+    - term [ref=e11]: Session
+    - definition [ref=e12]: MOCK-SESS-0aafd30c-b822-41b5-8e25-9f96d9c31de2
+  - generic [ref=e13]:
+    - button "Simulate Successful Payment" [ref=e14] [cursor=pointer]
+    - button "Simulate Failed Payment" [ref=e15] [cursor=pointer]
+  - paragraph [ref=e16]:
+    - text: Profile-gated to non-prod. Pairs with
+    - code [ref=e17]: MockPaymentGateway
+    - text: registered under
+    - code [ref=e18]: "@IntegrationAdapter(domain=PAYMENT, slug=\"mock\")"
+    - text: .

@@ -1,0 +1,173 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: BN
+        - generic:
+          - paragraph: Bob Ndlovu
+          - paragraph: bob@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/information-requests
+              - text: information-requests
+          - generic:
+            - img
+            - generic: 44d6d8df-b3bf-4426-b510-b8002ac8a26e
+        - generic:
+          - generic:
+            - button: BN
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 7 unread notifications
+              - generic: "7"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/customers/c3ad51f5-2bda-4a27-b626-7b5c63f37102
+                  - img
+                  - text: Back to Sipho Dlamini
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: REQ-0006
+                    - generic: Draft
+                  - generic:
+                    - link:
+                      - /url: /org/mathebula-partners/customers/c3ad51f5-2bda-4a27-b626-7b5c63f37102
+                      - text: Sipho Dlamini
+                    - generic: "|"
+                    - generic: Dlamini v Road Accident Fund
+                - button [expanded]:
+                  - img
+              - generic:
+                - generic:
+                  - generic:
+                    - img
+                    - text: Contact
+                  - paragraph: Sipho Dlamini
+                  - paragraph: sipho.portal@example.com
+                - generic:
+                  - generic:
+                    - img
+                    - text: Reminder Interval
+                  - paragraph: Every 5 days
+                - generic:
+                  - generic:
+                    - img
+                    - text: Sent
+                  - paragraph: Not sent
+                - generic:
+                  - generic:
+                    - img
+                    - text: Due
+                  - paragraph: May 2, 2026
+                - generic:
+                  - generic:
+                    - img
+                    - text: Progress
+                  - generic:
+                    - progressbar
+                    - generic: 0/0 accepted
+              - generic:
+                - heading [level=2]: Items (0)
+                - generic:
+                  - generic: No items in this request.
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e156] [cursor=pointer]:
+    - img [ref=e157]
+  - alert
+  - menu [active] [ref=e684]:
+    - menuitem "Cancel Request" [ref=e685]:
+      - img
+      - text: Cancel Request

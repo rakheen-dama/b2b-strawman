@@ -1,0 +1,55 @@
+Cycle 57 Day 90 §90.3 — Progressive disclosure — firm sidebar nav links
+
+ALL 25 firm-side nav links extracted via DOM (Bob, KC SSO, dashboard /org/mathebula-partners):
+
+Work group:
+  - Dashboard       /org/mathebula-partners/dashboard
+  - My Work         /org/mathebula-partners/my-work
+  - Calendar        /org/mathebula-partners/calendar
+  - Court Calendar  /org/mathebula-partners/court-calendar
+
+Matters group:
+  - Matters             /org/mathebula-partners/projects
+  - Recurring Schedules /org/mathebula-partners/schedules
+
+Clients group:
+  - Clients             /org/mathebula-partners/customers
+  - Engagement Letters  /org/mathebula-partners/proposals
+  - Mandates            /org/mathebula-partners/retainers
+  - Compliance          /org/mathebula-partners/compliance
+  - Conflict Check      /org/mathebula-partners/conflict-check
+  - Adverse Parties     /org/mathebula-partners/legal/adverse-parties
+
+Finance group:
+  - Fee Notes           /org/mathebula-partners/invoices
+  - Billing Runs        /org/mathebula-partners/invoices/billing-runs
+  - Profitability       /org/mathebula-partners/profitability
+  - Reports             /org/mathebula-partners/reports
+  - Trust Accounting    /org/mathebula-partners/trust-accounting
+  - Transactions        /org/mathebula-partners/trust-accounting/transactions
+  - Client Ledgers      /org/mathebula-partners/trust-accounting/client-ledgers
+  - Reconciliation      /org/mathebula-partners/trust-accounting/reconciliation
+  - Interest            /org/mathebula-partners/trust-accounting/interest
+  - Investments         /org/mathebula-partners/trust-accounting/investments
+  - Trust Reports       /org/mathebula-partners/trust-accounting/reports
+  - Tariffs             /org/mathebula-partners/legal/tariffs
+
+Team group:
+  - Team                /org/mathebula-partners/team
+
+Required legal modules check:
+  Matters         PRESENT (label correct, slug /projects retained)
+  Trust Accounting PRESENT with 7 subnav items
+  Court Calendar  PRESENT (top-level under Work)
+  Conflict Check  PRESENT (under Clients)
+
+Cross-vertical leak scan:
+  - "GL Accounts"       NOT FOUND (accounting leak)
+  - "Journal Entries"   NOT FOUND (accounting leak)
+  - "Engagements"       NOT FOUND (consulting leak; "Engagement Letters" is legal-correct)
+  - "Subscriptions"     NOT FOUND (SaaS-tier leak)
+  - "Tasks" surfaces under My Work (canonical)
+
+Result: §90.3 PASS — all 4 required legal modules present; zero cross-vertical nav leaks.
+
+Compared to cycle 1: identical sidebar shape (cycle 1 noted: Matters, Trust Accounting, Court Calendar, Conflict Check). Cycle 57 zero-drift.

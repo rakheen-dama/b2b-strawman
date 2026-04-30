@@ -1,0 +1,146 @@
+- generic [ref=e2]:
+  - generic [ref=e72]:
+    - link "MailpitMailpit" [ref=e74] [cursor=pointer]:
+      - /url: /
+      - img "Mailpit" [ref=e75]
+      - text: Mailpit
+    - generic [ref=e76]:
+      - text: 
+      - button " Mark unread" [ref=e77] [cursor=pointer]:
+        - generic [ref=e78]: 
+        - generic [ref=e79]: Mark unread
+      - button " Delete" [ref=e80] [cursor=pointer]:
+        - generic [ref=e81]: 
+        - text: Delete
+    - generic [ref=e82]:
+      - generic [ref=e83]:
+        - button " Download" [ref=e84] [cursor=pointer]:
+          - generic [ref=e85]: 
+          - text: Download
+        - text: 
+      - link "":
+        - /url: /view/false
+        - generic: 
+      - link "" [ref=e86] [cursor=pointer]:
+        - /url: /view/cJnYNKqF3zRiXWxtdnUDoZ
+        - generic "View next message" [ref=e87]: 
+  - generic [ref=e88]:
+    - generic [ref=e89]:
+      - button " Return to inbox 2" [ref=e91] [cursor=pointer]:
+        - generic [ref=e92]: 
+        - generic [ref=e93]: Return to inbox
+        - generic "Unread messages" [ref=e94]: "2"
+      - generic [ref=e96]:
+        - 'link "noreply@docteams.app  27 minutes ago To: sipho.portal@example.com Fee Note INV-0001 from Mathebula & Partners" [ref=e97] [cursor=pointer]':
+          - /url: /view/9Gdw7cVrG2nUznVgYktfJx
+          - strong [ref=e100]: noreply@docteams.app
+          - generic [ref=e101]:
+            - generic [ref=e102]: 
+            - text: 27 minutes ago
+          - generic [ref=e104]: "To: sipho.portal@example.com"
+          - generic [ref=e106]: Fee Note INV-0001 from Mathebula & Partners
+        - 'link "noreply@docteams.app 2 hours ago To: sipho.portal@example.com Your portal access link from Mathebula & Partners" [ref=e107] [cursor=pointer]':
+          - /url: /view/cJnYNKqF3zRiXWxtdnUDoZ
+          - strong [ref=e110]: noreply@docteams.app
+          - generic [ref=e111]: 2 hours ago
+          - generic [ref=e113]: "To: sipho.portal@example.com"
+          - generic [ref=e115]: Your portal access link from Mathebula & Partners
+        - 'link "noreply@docteams.app 2 hours ago To: sipho.portal@example.com Your portal access link from Mathebula & Partners" [ref=e116] [cursor=pointer]':
+          - /url: /view/BCLmkYtapSxktqHQwBdyLw
+          - strong [ref=e119]: noreply@docteams.app
+          - generic [ref=e120]: 2 hours ago
+          - generic [ref=e122]: "To: sipho.portal@example.com"
+          - generic [ref=e124]: Your portal access link from Mathebula & Partners
+      - generic [ref=e125]:
+        - button " About" [ref=e126] [cursor=pointer]:
+          - generic [ref=e127]: 
+          - text: About
+        - button "" [ref=e128] [cursor=pointer]:
+          - generic [ref=e129]: 
+        - button "" [ref=e130] [cursor=pointer]:
+          - generic [ref=e131]: 
+    - generic [ref=e134]:
+      - generic [ref=e135]:
+        - table [ref=e137]:
+          - rowgroup [ref=e138]:
+            - row "From <noreply@docteams.app>" [ref=e139]:
+              - rowheader "From" [ref=e140]
+              - cell "<noreply@docteams.app>" [ref=e141]:
+                - generic [ref=e143]:
+                  - text: <
+                  - link "noreply@docteams.app" [ref=e144] [cursor=pointer]:
+                    - /url: /search?q=noreply%40docteams.app
+                  - text: ">"
+            - row "To <sipho.portal@example.com>" [ref=e145]:
+              - rowheader "To" [ref=e146]
+              - cell "<sipho.portal@example.com>" [ref=e147]:
+                - generic [ref=e149]:
+                  - text: <
+                  - link "sipho.portal@example.com" [ref=e150] [cursor=pointer]:
+                    - /url: /search?q=sipho.portal%40example.com
+                  - text: ">"
+            - row "Subject Fee Note INV-0001 from Mathebula & Partners" [ref=e151]:
+              - rowheader "Subject" [ref=e152]
+              - cell "Fee Note INV-0001 from Mathebula & Partners" [ref=e153]:
+                - strong [ref=e154]: Fee Note INV-0001 from Mathebula & Partners
+            - row "Date Mon, 27 Apr 2026, 2:48 pm (9.7 kB)" [ref=e155]:
+              - rowheader "Date" [ref=e156]
+              - cell "Mon, 27 Apr 2026, 2:48 pm (9.7 kB)" [ref=e157]
+            - row "Tags" [ref=e158]:
+              - rowheader "Tags" [ref=e159]
+              - cell [ref=e160]:
+                - combobox "Type a value" [ref=e163]
+        - generic "Attachments in this message" [ref=e166]: Attachment (1)
+      - tablist [ref=e167]:
+        - tab "HTML" [selected] [ref=e169] [cursor=pointer]
+        - tab "HTML Source" [ref=e170] [cursor=pointer]
+        - tab "Text" [ref=e171] [cursor=pointer]
+        - tab "Headers" [ref=e172] [cursor=pointer]
+        - tab "Raw" [ref=e173] [cursor=pointer]
+        - tab "HTML Check 93%" [ref=e174] [cursor=pointer]:
+          - text: HTML Check
+          - generic [ref=e175]: 93%
+        - tab "Link Check" [ref=e176] [cursor=pointer]
+        - generic [ref=e177]:
+          - button "" [ref=e178] [cursor=pointer]:
+            - generic [ref=e179]: 
+          - button "" [ref=e180] [cursor=pointer]:
+            - generic [ref=e181]: 
+          - button "" [disabled]:
+            - generic: 
+      - generic [ref=e182]:
+        - tabpanel "HTML" [ref=e183]:
+          - iframe [ref=e185]:
+            - generic [active] [ref=f1e1]:
+              - text: Mathebula & Partners
+              - generic [ref=f1e3]:
+                - heading "Fee Note from Mathebula & Partners" [level=2] [ref=f1e4]
+                - paragraph [ref=f1e5]: Hi Sipho Dlamini,
+                - paragraph [ref=f1e6]: Please find your fee note details below.
+                - text: Fee Note Number
+                - text: INV-0001 Due Date
+                - text: N/A Amount Due
+                - generic [ref=f1e7]: ZAR 5160.00
+                - link "Pay Now" [ref=f1e9] [cursor=pointer]:
+                  - /url: http://localhost:8080/portal/dev/mock-payment?sessionId=MOCK-SESS-0aafd30c-b822-41b5-8e25-9f96d9c31de2&invoiceId=432ae5a9-6a3c-4c25-86b3-302f0dd016e1&amount=5160.00&currency=ZAR&returnUrl=http%3A%2F%2Flocalhost%3A3002%2Finvoices%2F432ae5a9-6a3c-4c25-86b3-302f0dd016e1%2Fpayment-success
+                - link "View Fee Note" [ref=f1e10] [cursor=pointer]:
+                  - /url: http://localhost:3002/invoices/432ae5a9-6a3c-4c25-86b3-302f0dd016e1
+                - paragraph [ref=f1e11]:
+                  - text: Best,
+                  - text: Mathebula & Partners
+              - paragraph [ref=f1e12]: Mathebula & Partners
+          - separator [ref=e186]
+          - button " Show attachment details" [ref=e187] [cursor=pointer]:
+            - generic [ref=e188]: 
+            - text: Show attachment details
+          - link "  1.2 kB INV-0001.pdf INV-0001.pdf" [ref=e193] [cursor=pointer]:
+            - /url: /api/v1/message/9Gdw7cVrG2nUznVgYktfJx/part/2
+            - generic [ref=e195]: 
+            - generic [ref=e196]:
+              - paragraph [ref=e197]:
+                - generic [ref=e198]: 
+                - text: 1.2 kB
+              - paragraph [ref=e199]: INV-0001.pdf
+            - generic [ref=e200]: INV-0001.pdf
+          - text: 
+        - text:                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 

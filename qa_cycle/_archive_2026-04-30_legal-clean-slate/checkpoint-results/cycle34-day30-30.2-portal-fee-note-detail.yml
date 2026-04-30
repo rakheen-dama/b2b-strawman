@@ -1,0 +1,121 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e64]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e22]
+            - generic [ref=e25]: Home
+          - link "Matters" [ref=e26] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e27]
+            - generic [ref=e29]: Matters
+          - link "Trust" [ref=e65] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e66]
+            - generic [ref=e70]: Trust
+          - link "Deadlines" [ref=e71] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e72]
+            - generic [ref=e76]: Deadlines
+          - link "Fee Notes" [ref=e77] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e32]
+            - generic [ref=e35]: Fee Notes
+          - link "Proposals" [ref=e36] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e37]
+            - generic [ref=e40]: Proposals
+          - link "Requests" [ref=e78] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e79]
+            - generic [ref=e81]: Requests
+          - link "Activity" [ref=e41] [cursor=pointer]:
+            - /url: /activity
+            - img [ref=e42]
+            - generic [ref=e44]: Activity
+        - generic [ref=e45]:
+          - link "Profile" [ref=e46] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e47]
+            - text: Profile
+          - button "Logout" [ref=e50]:
+            - img [ref=e51]
+            - text: Logout
+      - main [ref=e54]:
+        - generic [ref=e82]:
+          - link "Back to fee notes" [ref=e83] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e84]
+            - text: Back to fee notes
+          - generic [ref=e86]:
+            - generic [ref=e87]:
+              - generic [ref=e88]:
+                - heading "INV-0001" [level=1] [ref=e89]
+                - generic [ref=e90]: SENT
+              - generic [ref=e91]:
+                - generic [ref=e92]: "Issued: 27 Apr 2026"
+                - generic [ref=e93]: "Due:"
+            - button "Download INV-0001 as PDF" [ref=e94]:
+              - img [ref=e95]
+              - text: Download PDF
+          - generic [ref=e98]:
+            - img [ref=e99]
+            - paragraph [ref=e102]: Ready to pay? Complete your payment securely online.
+            - link "Pay Now" [ref=e103] [cursor=pointer]:
+              - /url: http://localhost:8080/portal/dev/mock-payment?sessionId=MOCK-SESS-0aafd30c-b822-41b5-8e25-9f96d9c31de2&invoiceId=432ae5a9-6a3c-4c25-86b3-302f0dd016e1&amount=5160.00&currency=ZAR&returnUrl=http%3A%2F%2Flocalhost%3A3002%2Finvoices%2F432ae5a9-6a3c-4c25-86b3-302f0dd016e1%2Fpayment-success
+          - generic [ref=e104]:
+            - heading "Line Items" [level=2] [ref=e105]
+            - table [ref=e107]:
+              - rowgroup [ref=e108]:
+                - row "Description Quantity Rate VAT Amount" [ref=e109]:
+                  - columnheader "Description" [ref=e110]
+                  - columnheader "Quantity" [ref=e111]
+                  - columnheader "Rate" [ref=e112]
+                  - columnheader "VAT" [ref=e113]
+                  - columnheader "Amount" [ref=e114]
+              - rowgroup [ref=e115]:
+                - row "Issue summons / combined summons -- 2026-04-27 -- Bob Ndlovu 1.5 R 850,00 VAT — Standard 15% R 1 275,00" [ref=e116]:
+                  - cell "Issue summons / combined summons -- 2026-04-27 -- Bob Ndlovu" [ref=e117]
+                  - cell "1.5" [ref=e118]
+                  - cell "R 850,00" [ref=e119]
+                  - cell "VAT — Standard 15%" [ref=e120]
+                  - cell "R 1 275,00" [ref=e121]
+                - row "Initial consultation & case assessment -- 2026-04-27 -- Bob Ndlovu 2.5 R 850,00 VAT — Standard 15% R 2 125,00" [ref=e122]:
+                  - cell "Initial consultation & case assessment -- 2026-04-27 -- Bob Ndlovu" [ref=e123]
+                  - cell "2.5" [ref=e124]
+                  - cell "R 850,00" [ref=e125]
+                  - cell "VAT — Standard 15%" [ref=e126]
+                  - cell "R 2 125,00" [ref=e127]
+                - 'row "Sheriff fees: Sheriff service of summons on RAF (Sheriff Pretoria, 2026-04-27) 1 R 1 250,00 Zero-rated 0% R 1 250,00" [ref=e128]':
+                  - 'cell "Sheriff fees: Sheriff service of summons on RAF (Sheriff Pretoria, 2026-04-27)" [ref=e129]'
+                  - cell "1" [ref=e130]
+                  - cell "R 1 250,00" [ref=e131]
+                  - cell "Zero-rated 0%" [ref=e132]
+                  - cell "R 1 250,00" [ref=e133]
+              - rowgroup [ref=e134]:
+                - row "Subtotal R 4 650,00" [ref=e135]:
+                  - cell "Subtotal" [ref=e136]
+                  - cell "R 4 650,00" [ref=e137]
+                - row "VAT — Standard (15%) R 510,00" [ref=e138]:
+                  - cell "VAT — Standard (15%)" [ref=e139]
+                  - cell "R 510,00" [ref=e140]
+                - row "Zero-rated (0%) R 0,00" [ref=e141]:
+                  - cell "Zero-rated (0%)" [ref=e142]
+                  - cell "R 0,00" [ref=e143]
+                - row "Total R 5 160,00" [ref=e144]:
+                  - cell "Total" [ref=e145]
+                  - cell "R 5 160,00" [ref=e146]
+    - contentinfo [ref=e60]:
+      - paragraph [ref=e62]: Powered by DocTeams

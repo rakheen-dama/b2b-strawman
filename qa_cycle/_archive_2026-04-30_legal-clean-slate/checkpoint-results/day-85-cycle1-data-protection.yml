@@ -1,0 +1,294 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e52]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e54] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e55]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e61]:
+          - generic [ref=e62]: Clients
+          - img [ref=e63]
+        - button "Finance" [ref=e67]:
+          - generic [ref=e68]: Finance
+          - img [ref=e69]
+        - generic [ref=e72]:
+          - button "Team" [expanded] [ref=e73]:
+            - generic [ref=e74]: Team
+            - img [ref=e75]
+          - link "Team" [ref=e78] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e79]
+            - text: Team
+      - generic [ref=e85]:
+        - link "Notifications" [ref=e86] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e87]
+          - text: Notifications
+        - link "Settings" [ref=e90] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e91]
+          - text: Settings
+        - link "Help" [ref=e94] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e95]
+          - text: Help
+      - generic [ref=e98]:
+        - generic [ref=e99]: TM
+        - generic [ref=e100]:
+          - paragraph [ref=e101]: Thandi Mathebula
+          - paragraph [ref=e102]: thandi@mathebula-test.local
+    - generic [ref=e103]:
+      - banner [ref=e104]:
+        - navigation "Breadcrumb" [ref=e105]:
+          - link "Mathebula & Partners" [ref=e106] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e107]:
+            - img [ref=e108]
+            - link "Settings" [ref=e110] [cursor=pointer]:
+              - /url: /org/mathebula-partners/settings
+          - generic [ref=e111]:
+            - img [ref=e112]
+            - generic [ref=e114]: data-protection
+        - generic [ref=e115]:
+          - button "User menu" [ref=e117]: TM
+          - button "Notifications" [ref=e119]:
+            - img
+            - generic [ref=e120]: 20 unread notifications
+            - generic [ref=e291]: "20"
+      - main [ref=e121]:
+        - generic [ref=e124]:
+          - complementary [ref=e125]:
+            - navigation "Settings navigation" [ref=e126]:
+              - generic [ref=e127]:
+                - generic [ref=e128]: General
+                - link "General" [ref=e129] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/general
+                - link "Billing" [ref=e130] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/billing
+                - link "Notifications" [ref=e131] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/notifications
+                - link "Email" [ref=e132] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/email
+                - generic [ref=e133]:
+                  - text: Security
+                  - generic [ref=e134]: Coming soon
+              - generic [ref=e135]:
+                - generic [ref=e137]: Work
+                - link "Time Tracking" [ref=e138] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/time-tracking
+                - link "Matter Templates" [ref=e139] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/project-templates
+                - link "Matter Naming" [ref=e140] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/project-naming
+              - generic [ref=e141]:
+                - generic [ref=e143]: Documents
+                - link "Templates" [ref=e144] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/templates
+                - link "Clauses" [ref=e145] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/clauses
+                - link "Checklists" [ref=e146] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/checklists
+                - link "Document Acceptance" [ref=e147] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/acceptance
+              - generic [ref=e148]:
+                - generic [ref=e150]: Finance
+                - link "Rates & Currency" [ref=e151] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/rates
+                - link "Tax" [ref=e152] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/tax
+                - link "Capacity" [ref=e153] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/capacity
+              - generic [ref=e154]:
+                - generic [ref=e156]: Clients
+                - link "Custom Fields" [ref=e157] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/custom-fields
+                - link "Tags" [ref=e158] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/tags
+                - link "Request Templates" [ref=e159] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/request-templates
+                - link "Request Settings" [ref=e160] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/request-settings
+                - link "Compliance" [ref=e161] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/compliance
+                - link "Data Protection" [ref=e162] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/data-protection
+              - generic [ref=e163]:
+                - generic [ref=e165]: Features
+                - link "Features" [ref=e166] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/features
+                - link "Packs" [ref=e167] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/packs
+              - generic [ref=e168]:
+                - generic [ref=e170]: Access & Integrations
+                - link "Roles & Permissions" [ref=e171] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/roles
+                - link "Integrations" [ref=e172] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/settings/integrations
+          - generic [ref=e174]:
+            - link "Settings" [ref=e175] [cursor=pointer]:
+              - /url: /org/mathebula-partners/settings
+              - img [ref=e176]
+              - text: Settings
+            - generic [ref=e178]:
+              - heading "Data Protection" [level=1] [ref=e179]
+              - paragraph [ref=e180]: Configure data protection jurisdiction, information officer details, and manage compliance settings.
+            - generic [ref=e181]:
+              - heading "Jurisdiction" [level=2] [ref=e182]
+              - paragraph [ref=e183]: Select the data protection jurisdiction that applies to your organisation. This determines default retention policies and processing register entries.
+              - combobox [ref=e185]:
+                - generic: Select a jurisdiction
+                - img
+            - generic [ref=e187]:
+              - heading "Information Officer" [level=2] [ref=e188]
+              - paragraph [ref=e189]: The designated information officer responsible for data protection compliance. Required for DSAR handling.
+              - generic [ref=e190]:
+                - generic [ref=e191]:
+                  - generic [ref=e192]: Name
+                  - textbox "Name" [ref=e193]:
+                    - /placeholder: e.g. Jane Smith
+                - generic [ref=e194]:
+                  - generic [ref=e195]: Email
+                  - textbox "Email" [ref=e196]:
+                    - /placeholder: e.g. privacy@company.com
+              - generic [ref=e197]:
+                - button "Save" [disabled]
+            - generic [ref=e198]:
+              - heading "Data Subject Access Requests" [level=2] [ref=e199]
+              - paragraph [ref=e200]: Track and manage data subject access requests (DSARs) including access, deletion, correction, and portability requests.
+              - link "View DSAR Requests →" [ref=e202] [cursor=pointer]:
+                - /url: /org/mathebula-partners/settings/data-protection/requests
+            - generic [ref=e203]:
+              - generic [ref=e204]:
+                - heading "Retention Policies" [level=2] [ref=e205]
+                - paragraph [ref=e206]: Configure how long different types of data are retained before automatic anonymisation or deletion.
+              - table [ref=e209]:
+                - rowgroup [ref=e210]:
+                  - row "Entity Type Retention Period Action Enabled Last Evaluated Save" [ref=e211]:
+                    - columnheader "Entity Type" [ref=e212]
+                    - columnheader "Retention Period" [ref=e213]
+                    - columnheader "Action" [ref=e214]
+                    - columnheader "Enabled" [ref=e215]
+                    - columnheader "Last Evaluated" [ref=e216]
+                    - columnheader "Save" [ref=e217]
+                - rowgroup [ref=e218]:
+                  - row "CUSTOMER 1825 days Flag Toggle CUSTOMER policy Never Save CUSTOMER policy" [ref=e219]:
+                    - cell "CUSTOMER" [ref=e220]
+                    - cell "1825 days" [ref=e221]:
+                      - generic [ref=e222]:
+                        - spinbutton "Retention days for CUSTOMER" [ref=e223]: "1825"
+                        - generic [ref=e224]: days
+                    - cell "Flag" [ref=e225]:
+                      - combobox "Action for CUSTOMER" [ref=e226]:
+                        - option "Anonymize"
+                        - option "Flag" [selected]
+                    - cell "Toggle CUSTOMER policy" [ref=e227]:
+                      - switch "Toggle CUSTOMER policy" [checked] [ref=e228]
+                    - cell "Never" [ref=e229]
+                    - cell "Save CUSTOMER policy" [ref=e230]:
+                      - button "Save CUSTOMER policy" [ref=e232]:
+                        - img
+                        - generic [ref=e233]: Save
+                  - row "AUDIT EVENT 2555 days Flag Toggle AUDIT_EVENT policy Never Save AUDIT_EVENT policy" [ref=e234]:
+                    - cell "AUDIT EVENT" [ref=e235]
+                    - cell "2555 days" [ref=e236]:
+                      - generic [ref=e237]:
+                        - spinbutton "Retention days for AUDIT_EVENT" [ref=e238]: "2555"
+                        - generic [ref=e239]: days
+                    - cell "Flag" [ref=e240]:
+                      - combobox "Action for AUDIT_EVENT" [ref=e241]:
+                        - option "Anonymize"
+                        - option "Flag" [selected]
+                    - cell "Toggle AUDIT_EVENT policy" [ref=e242]:
+                      - switch "Toggle AUDIT_EVENT policy" [checked] [ref=e243]
+                    - cell "Never" [ref=e244]
+                    - cell "Save AUDIT_EVENT policy" [ref=e245]:
+                      - button "Save AUDIT_EVENT policy" [ref=e247]:
+                        - img
+                        - generic [ref=e248]: Save
+              - generic [ref=e249]:
+                - button "Run Retention Check" [ref=e250]:
+                  - img
+                  - text: Run Retention Check
+                - button "Execute Purge" [ref=e251]
+            - generic [ref=e252]:
+              - generic [ref=e253]:
+                - generic [ref=e254]:
+                  - heading "Processing Register" [level=2] [ref=e255]
+                  - paragraph [ref=e256]: Maintain a register of all personal data processing activities as required by your jurisdiction.
+                - generic [ref=e257]:
+                  - button "Export Register" [ref=e258]:
+                    - img
+                    - text: Export Register
+                  - button "Add Activity" [ref=e259]:
+                    - img
+                    - text: Add Activity
+              - table [ref=e262]:
+                - rowgroup [ref=e263]:
+                  - row "Category Description Legal Basis Data Subjects Retention Period Actions" [ref=e264]:
+                    - columnheader "Category" [ref=e265]
+                    - columnheader "Description" [ref=e266]
+                    - columnheader "Legal Basis" [ref=e267]
+                    - columnheader "Data Subjects" [ref=e268]
+                    - columnheader "Retention Period" [ref=e269]
+                    - columnheader "Actions" [ref=e270]
+                - rowgroup [ref=e271]:
+                  - row "No processing activities recorded. Click “Add Activity” to create one." [ref=e272]:
+                    - cell "No processing activities recorded. Click “Add Activity” to create one." [ref=e273]
+            - generic [ref=e274]:
+              - heading "PAIA Manual" [level=2] [ref=e275]
+              - paragraph [ref=e276]: Generate and manage your PAIA (Promotion of Access to Information Act) manual for South African compliance.
+              - generic [ref=e277]:
+                - img [ref=e278]
+                - generic [ref=e280]: Jurisdiction required. Please set your data protection jurisdiction above before generating a PAIA manual.
+              - generic [ref=e281]:
+                - button "Generate PAIA Manual" [disabled]:
+                  - img
+                  - text: Generate PAIA Manual
+  - generic [ref=e292]:
+    - heading "Command Palette" [level=2] [ref=e293]
+    - paragraph [ref=e294]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e287] [cursor=pointer]:
+    - img [ref=e288]
+  - alert [ref=e295]

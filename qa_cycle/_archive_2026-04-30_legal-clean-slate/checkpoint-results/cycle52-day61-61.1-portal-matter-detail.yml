@@ -1,0 +1,175 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e7] [cursor=pointer]:
+    - img [ref=e8]
+  - alert [ref=e11]
+  - generic [ref=e12]:
+    - banner [ref=e13]:
+      - link "Skip to content" [ref=e14] [cursor=pointer]:
+        - /url: "#main-content"
+      - img "Mathebula & Partners logo" [ref=e67]
+      - button "User menu" [ref=e15]:
+        - generic [ref=e16]: Sipho Dlamini
+    - generic [ref=e17]:
+      - complementary "Portal sidebar" [ref=e18]:
+        - generic [ref=e19]: Portal
+        - navigation "Portal navigation" [ref=e20]:
+          - link "Home" [ref=e21] [cursor=pointer]:
+            - /url: /home
+            - img [ref=e22]
+            - generic [ref=e25]: Home
+          - link "Matters" [ref=e26] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e28]
+            - generic [ref=e30]: Matters
+          - link "Trust" [ref=e68] [cursor=pointer]:
+            - /url: /trust
+            - img [ref=e69]
+            - generic [ref=e73]: Trust
+          - link "Deadlines" [ref=e74] [cursor=pointer]:
+            - /url: /deadlines
+            - img [ref=e75]
+            - generic [ref=e79]: Deadlines
+          - link "Fee Notes" [ref=e80] [cursor=pointer]:
+            - /url: /invoices
+            - img [ref=e32]
+            - generic [ref=e35]: Fee Notes
+          - link "Proposals" [ref=e36] [cursor=pointer]:
+            - /url: /proposals
+            - img [ref=e37]
+            - generic [ref=e40]: Proposals
+          - link "Requests" [ref=e81] [cursor=pointer]:
+            - /url: /requests
+            - img [ref=e82]
+            - generic [ref=e84]: Requests
+          - link "Activity" [ref=e41] [cursor=pointer]:
+            - /url: /activity
+            - img [ref=e42]
+            - generic [ref=e44]: Activity
+        - generic [ref=e45]:
+          - link "Profile" [ref=e46] [cursor=pointer]:
+            - /url: /profile
+            - img [ref=e47]
+            - text: Profile
+          - button "Logout" [ref=e50]:
+            - img [ref=e51]
+            - text: Logout
+      - main [ref=e54]:
+        - generic [ref=e85]:
+          - link "Back to projects" [ref=e86] [cursor=pointer]:
+            - /url: /projects
+            - img [ref=e87]
+            - text: Back to projects
+          - generic [ref=e89]:
+            - generic [ref=e90]:
+              - heading "Dlamini v Road Accident Fund" [level=1] [ref=e91]
+              - generic [ref=e92]: CLOSED
+            - paragraph [ref=e93]: "Standard litigation workflow for personal injury and general civil matters. Matter type: LITIGATION"
+          - generic [ref=e94]:
+            - heading "Tasks" [level=2] [ref=e95]
+            - generic [ref=e96]:
+              - img [ref=e97]
+              - paragraph [ref=e100]: No tasks yet.
+          - generic [ref=e101]:
+            - heading "Documents" [level=2] [ref=e102]
+            - table [ref=e104]:
+              - rowgroup [ref=e105]:
+                - row "File Size Uploaded Action" [ref=e106]:
+                  - columnheader "File" [ref=e107]
+                  - columnheader "Size" [ref=e108]
+                  - columnheader "Uploaded" [ref=e109]
+                  - columnheader "Action" [ref=e110]
+              - rowgroup [ref=e111]:
+                - row "matter-closure-letter-dlamini-v-road-accident-fund-2026-04-27.pdf 1.6 KB 27 Apr 2026 Download matter-closure-letter-dlamini-v-road-accident-fund-2026-04-27.pdf" [ref=e112]:
+                  - cell "matter-closure-letter-dlamini-v-road-accident-fund-2026-04-27.pdf" [ref=e113]:
+                    - generic [ref=e114]:
+                      - img [ref=e115]
+                      - generic [ref=e118]: matter-closure-letter-dlamini-v-road-accident-fund-2026-04-27.pdf
+                  - cell "1.6 KB" [ref=e119]
+                  - cell "27 Apr 2026" [ref=e120]
+                  - cell "Download matter-closure-letter-dlamini-v-road-accident-fund-2026-04-27.pdf" [ref=e121]:
+                    - button "Download matter-closure-letter-dlamini-v-road-accident-fund-2026-04-27.pdf" [ref=e122]:
+                      - img
+                - row "statement-of-account-dlamini-v-road-accident-fund-2026-06-30.pdf 4.0 KB 27 Apr 2026 Download statement-of-account-dlamini-v-road-accident-fund-2026-06-30.pdf" [ref=e123]:
+                  - cell "statement-of-account-dlamini-v-road-accident-fund-2026-06-30.pdf" [ref=e124]:
+                    - generic [ref=e125]:
+                      - img [ref=e126]
+                      - generic [ref=e129]: statement-of-account-dlamini-v-road-accident-fund-2026-06-30.pdf
+                  - cell "4.0 KB" [ref=e130]
+                  - cell "27 Apr 2026" [ref=e131]
+                  - cell "Download statement-of-account-dlamini-v-road-accident-fund-2026-06-30.pdf" [ref=e132]:
+                    - button "Download statement-of-account-dlamini-v-road-accident-fund-2026-06-30.pdf" [ref=e133]:
+                      - img
+                - row "statement-of-account-dlamini-v-road-accident-fund-2026-04-30.pdf 4.7 KB 28 Apr 2026 Download statement-of-account-dlamini-v-road-accident-fund-2026-04-30.pdf" [ref=e134]:
+                  - cell "statement-of-account-dlamini-v-road-accident-fund-2026-04-30.pdf" [ref=e135]:
+                    - generic [ref=e136]:
+                      - img [ref=e137]
+                      - generic [ref=e140]: statement-of-account-dlamini-v-road-accident-fund-2026-04-30.pdf
+                  - cell "4.7 KB" [ref=e141]
+                  - cell "28 Apr 2026" [ref=e142]
+                  - cell "Download statement-of-account-dlamini-v-road-accident-fund-2026-04-30.pdf" [ref=e143]:
+                    - button "Download statement-of-account-dlamini-v-road-accident-fund-2026-04-30.pdf" [ref=e144]:
+                      - img
+                - row "test-fica-id.pdf 750 B 27 Apr 2026 Download test-fica-id.pdf" [ref=e145]:
+                  - cell "test-fica-id.pdf" [ref=e146]:
+                    - generic [ref=e147]:
+                      - img [ref=e148]
+                      - generic [ref=e151]: test-fica-id.pdf
+                  - cell "750 B" [ref=e152]
+                  - cell "27 Apr 2026" [ref=e153]
+                  - cell "Download test-fica-id.pdf" [ref=e154]:
+                    - button "Download test-fica-id.pdf" [ref=e155]:
+                      - img
+                - row "test-fica-address.pdf 757 B 27 Apr 2026 Download test-fica-address.pdf" [ref=e156]:
+                  - cell "test-fica-address.pdf" [ref=e157]:
+                    - generic [ref=e158]:
+                      - img [ref=e159]
+                      - generic [ref=e162]: test-fica-address.pdf
+                  - cell "757 B" [ref=e163]
+                  - cell "27 Apr 2026" [ref=e164]
+                  - cell "Download test-fica-address.pdf" [ref=e165]:
+                    - button "Download test-fica-address.pdf" [ref=e166]:
+                      - img
+                - row "test-fica-funds.pdf 748 B 27 Apr 2026 Download test-fica-funds.pdf" [ref=e167]:
+                  - cell "test-fica-funds.pdf" [ref=e168]:
+                    - generic [ref=e169]:
+                      - img [ref=e170]
+                      - generic [ref=e173]: test-fica-funds.pdf
+                  - cell "748 B" [ref=e174]
+                  - cell "27 Apr 2026" [ref=e175]
+                  - cell "Download test-fica-funds.pdf" [ref=e176]:
+                    - button "Download test-fica-funds.pdf" [ref=e177]:
+                      - img
+                - row "discharge-summary.pdf 578 B 27 Apr 2026 Download discharge-summary.pdf" [ref=e178]:
+                  - cell "discharge-summary.pdf" [ref=e179]:
+                    - generic [ref=e180]:
+                      - img [ref=e181]
+                      - generic [ref=e184]: discharge-summary.pdf
+                  - cell "578 B" [ref=e185]
+                  - cell "27 Apr 2026" [ref=e186]
+                  - cell "Download discharge-summary.pdf" [ref=e187]:
+                    - button "Download discharge-summary.pdf" [ref=e188]:
+                      - img
+                - row "orthopaedic-report.pdf 581 B 27 Apr 2026 Download orthopaedic-report.pdf" [ref=e189]:
+                  - cell "orthopaedic-report.pdf" [ref=e190]:
+                    - generic [ref=e191]:
+                      - img [ref=e192]
+                      - generic [ref=e195]: orthopaedic-report.pdf
+                  - cell "581 B" [ref=e196]
+                  - cell "27 Apr 2026" [ref=e197]
+                  - cell "Download orthopaedic-report.pdf" [ref=e198]:
+                    - button "Download orthopaedic-report.pdf" [ref=e199]:
+                      - img
+          - generic [ref=e200]:
+            - heading "Comments" [level=2] [ref=e201]
+            - generic [ref=e202]:
+              - generic [ref=e203]:
+                - img [ref=e204]
+                - paragraph [ref=e206]: No comments yet.
+              - generic [ref=e207]:
+                - text: Add a comment
+                - textbox "Add a comment" [ref=e208]:
+                  - /placeholder: Write a comment...
+                - generic [ref=e209]:
+                  - button "Post Comment" [disabled]
+    - contentinfo [ref=e63]:
+      - paragraph [ref=e65]: Powered by DocTeams

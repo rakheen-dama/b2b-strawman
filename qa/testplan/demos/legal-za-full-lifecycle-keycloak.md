@@ -628,15 +628,14 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 **Actor**: Thandi Mathebula (Owner — signs fee notes) — context swap, login as Thandi
 
-> **BLOCKED on cycle 14 (2026-04-30)**: Day 28 cannot proceed because
-> Sipho's `lifecycle_status='ONBOARDING'` excludes him from the eligible-
-> customer SQL in `BillingRunSelectionService.discoverCustomers(...)`
-> (filter: `WHERE c.lifecycle_status='ACTIVE'`). Activating him is blocked
-> by two stacked bugs (OBS-2102, HIGH): the Edit Customer dialog button
-> does not render for Sipho's customer page (paints fine for Moroka), and
-> `LIFECYCLE_ACTIVATION_FIELDS` in `StructuralPrerequisiteCheck` requires
-> `tax_number` for INDIVIDUAL ZA customers (no override). Awaiting Dev/
-> Product fix. See `qa_cycle/fix-specs/OBS-2102.md`.
+> **UNBLOCKED on cycle 16 (2026-04-30)**: PR #1237 (OBS-2102 fix —
+> `a50be2a0`) and PR #1238 (OBS-2104 fix — `f2da4e65`) merged. Sipho can
+> now activate (INDIVIDUAL skip on `tax_number`) and the wizard SQL accepts
+> NULL-currency time entries + joins `legal_disbursements`. Day 28 + Day
+> 30 verified PASS in cycle 16. The Edit-button render gap was filed as
+> separate cosmetic OBS-2103 (SPEC_READY, cycle 17) — it does not block
+> activation since the Change Status → Activate dropdown is the canonical
+> path.
 
 > **Scenario amendment (OBS-2101, WONT_FIX feature-gap — cascade from
 > Day 21 Phase A)**: Time entries from Day 21 are NOT tariff-bound (the
@@ -647,6 +646,21 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 > activity descriptors". The `EXPENSE` line for the sheriff disbursement
 > is unchanged. Bulk billing run, cherry-pick, generate, approve, and
 > send flow are all exercised end-to-end on the canonical line types.
+
+> **Pre-condition (OBS-2104 fix, cycle 16)**: Sipho's R 1,250 sheriff
+> disbursement must be **Approved** before running the wizard — the
+> `discoverCustomers()` SQL gates `legal_disbursements` on
+> `approval_status='APPROVED'`. Submit + approve the disbursement via
+> Disbursements tab → detail page → Submit for Approval → Approve before
+> step 28.1.
+
+> **Known cosmetic gaps in wizard (OBS-2104b, OBS-2104c — SPEC_READY,
+> cycle 17)**: (1) Step 2 may display an inflated **Unbilled Expenses**
+> total (e.g. R 11,250 = 1 disbursement × N tasks Cartesian) — fee notes
+> still generate at the correct R 1,250. (2) Step 3 (Cherry-Pick) does
+> not render a Disbursements section — the disbursement is attachable
+> via the `Add Disbursements` modal in the step 4 draft editor. Both are
+> non-blocking; canonical workflow proceeds end-to-end.
 
 - [ ] **28.1** Navigate to **Bulk Billing** → **+ New Billing Run**
 - [ ] **28.2** Scope = `By Client`, select Sipho Dlamini → preview shows:

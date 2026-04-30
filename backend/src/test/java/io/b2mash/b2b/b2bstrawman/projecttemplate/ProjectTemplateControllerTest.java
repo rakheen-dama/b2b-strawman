@@ -706,6 +706,26 @@ class ProjectTemplateControllerTest {
   }
 
   @Test
+  @Order(215)
+  // OBS-301: long-description (>255) must succeed against the 2000-char @Size cap.
+  void shouldInstantiateTemplateWithLongDescription() throws Exception {
+    // OBS-301: backend @Size(max=2000) on InstantiateTemplateRequest.description must allow
+    // descriptions > 255 chars (e.g. legal-za RAF Litigation template ships ~273 chars).
+    String longDescription = "x".repeat(1500);
+    String body =
+        String.format("{\"name\":\"Long Desc Project\",\"description\":\"%s\"}", longDescription);
+    mockMvc
+        .perform(
+            post("/api/project-templates/" + createdTemplateId + "/instantiate")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_tmpl_ctrl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.name").value("Long Desc Project"))
+        .andExpect(jsonPath("$.description").value(longDescription));
+  }
+
+  @Test
   @Order(22)
   void shouldReturn404WhenInstantiatingUnknownTemplate() throws Exception {
     mockMvc

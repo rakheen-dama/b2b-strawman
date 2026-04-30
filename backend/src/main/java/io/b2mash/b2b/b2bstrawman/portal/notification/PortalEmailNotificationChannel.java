@@ -7,13 +7,17 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.portal.PortalEmailService;
 import io.b2mash.b2b.b2bstrawman.retainer.event.RetainerPeriodRolloverEvent;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
@@ -63,10 +67,19 @@ public class PortalEmailNotificationChannel {
   /** Same ADR-256 window used by {@code DeadlinePortalSyncService}. */
   private static final long DEADLINE_DUE_SOON_DAYS = 7;
 
+  /**
+   * Date pattern for the trust-activity nudge email body. Matches the QA-fixture format used by
+   * OBS-1101 (e.g. {@code "30 Apr 2026"}) and mirrors the {@code formatLocalDate} helper used by
+   * the portal frontend.
+   */
+  private static final DateTimeFormatter OCCURRED_AT_FMT =
+      DateTimeFormatter.ofPattern("d MMM yyyy", Locale.ENGLISH);
+
   private final PortalContactRepository portalContactRepository;
   private final PortalNotificationPreferenceService preferenceService;
   private final PortalEmailService portalEmailService;
   private final EmailContextBuilder emailContextBuilder;
+  private final OrgSettingsRepository orgSettingsRepository;
   private final TransactionTemplate transactionTemplate;
   private final String portalBaseUrl;
   private final String productName;
@@ -76,6 +89,7 @@ public class PortalEmailNotificationChannel {
       PortalNotificationPreferenceService preferenceService,
       PortalEmailService portalEmailService,
       EmailContextBuilder emailContextBuilder,
+      OrgSettingsRepository orgSettingsRepository,
       PlatformTransactionManager transactionManager,
       @Value("${docteams.app.portal-base-url:http://localhost:3002}") String portalBaseUrl,
       @Value("${docteams.app.product-name:Kazi}") String productName) {
@@ -83,6 +97,7 @@ public class PortalEmailNotificationChannel {
     this.preferenceService = preferenceService;
     this.portalEmailService = portalEmailService;
     this.emailContextBuilder = emailContextBuilder;
+    this.orgSettingsRepository = orgSettingsRepository;
     // Build a REQUIRES_NEW template so dispatch writes from an AFTER_COMMIT listener always
     // run inside a fresh tenant transaction (the originating tx has already committed and
     // unbound its EM/session by the time the listener fires).
@@ -290,9 +305,12 @@ public class PortalEmailNotificationChannel {
     context.put("contactName", contact.getDisplayName());
     context.put("transactionType", event.transactionType());
     BigDecimal amount = event.amount();
+    String currencyCode = resolveCurrencyCode();
     context.put("amount", amount != null ? amount.toPlainString() : null);
-    context.put("currency", context.getOrDefault("currency", ""));
+    context.put("amountFormatted", formatAmount(amount, currencyCode));
+    context.put("currency", currencyCode);
     context.put("occurredAt", event.occurredAt());
+    context.put("occurredAtFormatted", formatOccurredAt(event.occurredAt()));
     // Deep link keys the portal trust page by matter (project) id when present.
     // Falls back to the /trust index page when the transaction has no matter
     // (e.g. cross-customer transfers, or matter id genuinely unset).
@@ -318,9 +336,12 @@ public class PortalEmailNotificationChannel {
     context.put("contactName", contact.getDisplayName());
     context.put("transactionType", event.transactionType());
     BigDecimal amount = event.amount();
+    String currencyCode = resolveCurrencyCode();
     context.put("amount", amount != null ? amount.toPlainString() : null);
-    context.put("currency", context.getOrDefault("currency", ""));
+    context.put("amountFormatted", formatAmount(amount, currencyCode));
+    context.put("currency", currencyCode);
     context.put("occurredAt", event.occurredAt());
+    context.put("occurredAtFormatted", formatOccurredAt(event.occurredAt()));
     // Deep link keys the portal trust page by matter (project) id when present.
     // Falls back to the /trust index page when the transaction has no matter
     // (e.g. cross-customer transfers, or matter id genuinely unset).
@@ -444,6 +465,88 @@ public class PortalEmailNotificationChannel {
     }
     String s = o.toString();
     return s.isBlank() ? null : s;
+  }
+
+  /**
+   * Resolves the tenant's default currency code from {@code OrgSettings}, falling back to {@code
+   * "ZAR"} when settings or currency code are not set. Mirrors the fallback used by {@link
+   * io.b2mash.b2b.b2bstrawman.expense.ExpenseService} and {@link
+   * io.b2mash.b2b.b2bstrawman.retainer.RetainerPeriodService}.
+   */
+  private String resolveCurrencyCode() {
+    try {
+      return orgSettingsRepository
+          .findForCurrentTenant()
+          .map(s -> s.getDefaultCurrency())
+          .filter(c -> c != null && !c.isBlank())
+          .orElse("ZAR");
+    } catch (RuntimeException e) {
+      log.debug("Falling back to ZAR currency for trust-activity email: {}", e.getMessage());
+      return "ZAR";
+    }
+  }
+
+  /**
+   * Formats a {@link BigDecimal} amount as a currency string (e.g. {@code "R 50 000,00"} for ZAR).
+   * Returns {@code null} when the amount is null so the template can render an "N/A" fallback.
+   *
+   * <p>The JDK's locale-data provider does not reliably resolve {@code en-ZA} on every distribution
+   * (it falls back to the default currency, producing {@code "$50,000.00"}). To get a stable
+   * client-facing render we hard-code the ZA conventions — {@code "R"} symbol, space grouping
+   * separator, comma decimal separator — rather than trusting {@code
+   * NumberFormat.getCurrencyInstance(locale)} or {@code DecimalFormatSymbols.getInstance(locale)}.
+   */
+  private static String formatAmount(BigDecimal amount, String currencyCode) {
+    if (amount == null) {
+      return null;
+    }
+    String code = (currencyCode == null || currencyCode.isBlank()) ? "ZAR" : currencyCode;
+
+    String symbol;
+    char grouping;
+    char decimal;
+    if ("ZAR".equals(code)) {
+      symbol = "R";
+      grouping = ' ';
+      decimal = ',';
+    } else if ("USD".equals(code)) {
+      symbol = "$";
+      grouping = ',';
+      decimal = '.';
+    } else if ("GBP".equals(code)) {
+      symbol = "£";
+      grouping = ',';
+      decimal = '.';
+    } else if ("EUR".equals(code)) {
+      symbol = "€";
+      grouping = '.';
+      decimal = ',';
+    } else {
+      // Unknown ISO code — fall through to the JDK's view, with ZA-style grouping defaults.
+      try {
+        symbol = java.util.Currency.getInstance(code).getSymbol();
+      } catch (IllegalArgumentException ignored) {
+        symbol = code;
+      }
+      grouping = ' ';
+      decimal = ',';
+    }
+    java.text.DecimalFormatSymbols symbols = new java.text.DecimalFormatSymbols(Locale.ENGLISH);
+    symbols.setGroupingSeparator(grouping);
+    symbols.setDecimalSeparator(decimal);
+    java.text.DecimalFormat df = new java.text.DecimalFormat("#,##0.00", symbols);
+    return symbol + " " + df.format(amount);
+  }
+
+  /**
+   * Formats an {@link Instant} timestamp as a calendar-day string (e.g. {@code "30 Apr 2026"}) at
+   * UTC. Returns {@code null} for null input so the template can render an "N/A" fallback.
+   */
+  private static String formatOccurredAt(Instant occurredAt) {
+    if (occurredAt == null) {
+      return null;
+    }
+    return occurredAt.atZone(ZoneOffset.UTC).format(OCCURRED_AT_FMT);
   }
 
   private void handleInTenantScope(String tenantId, String orgId, Runnable action) {

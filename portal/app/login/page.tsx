@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { publicFetch } from "@/lib/api-client";
 import { getLastOrgId } from "@/lib/auth";
+import { BRAND_NAME } from "@/lib/brand";
 import type { BrandingInfo } from "@/lib/types";
 
 function LoginForm() {
@@ -134,7 +135,7 @@ function LoginForm() {
     [email, orgId],
   );
 
-  const orgName = branding?.orgName ?? "DocTeams";
+  const orgName = branding?.orgName ?? BRAND_NAME;
   const logoUrl = branding?.logoUrl;
 
   if (success) {

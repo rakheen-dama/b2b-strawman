@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StickyActionBar } from "@/components/ui/sticky-action-bar";
+import { BRAND_NAME } from "@/lib/brand";
 import { formatDate } from "@/lib/format";
 import { isSafeImageUrl, isValidHexColor } from "@/lib/utils";
 import {
@@ -135,7 +136,7 @@ export function AcceptancePage({ token }: AcceptancePageProps) {
   );
 
   const pdfUrl = getAcceptancePdfUrl(token);
-  const orgName = pageData?.orgName ?? "DocTeams";
+  const orgName = pageData?.orgName ?? BRAND_NAME;
   const logoUrl = pageData?.orgLogo;
   const brandColor = pageData?.brandColor;
   const showLogo = logoUrl && isSafeImageUrl(logoUrl);

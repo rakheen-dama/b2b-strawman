@@ -1,0 +1,382 @@
+- generic [active] [ref=e1]:
+  - link "Skip to content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - complementary [ref=e4]:
+      - generic [ref=e5]:
+        - img "Mathebula & Partners logo" [ref=e6]
+        - generic [ref=e7]: Kazi
+      - generic [ref=e10]: Mathebula & Partners
+      - button "Search, Command K" [ref=e12]:
+        - img [ref=e13]
+        - text: Search...
+        - generic [ref=e16]: ⌘K
+      - navigation "Main navigation" [ref=e17]:
+        - generic [ref=e18]:
+          - button "Work" [expanded] [ref=e19]:
+            - generic [ref=e20]: Work
+            - img [ref=e21]
+          - generic [ref=e23]:
+            - link "Dashboard" [ref=e24] [cursor=pointer]:
+              - /url: /org/mathebula-partners/dashboard
+              - img [ref=e25]
+              - text: Dashboard
+            - link "My Work" [ref=e30] [cursor=pointer]:
+              - /url: /org/mathebula-partners/my-work
+              - img [ref=e31]
+              - text: My Work
+            - link "Calendar" [ref=e34] [cursor=pointer]:
+              - /url: /org/mathebula-partners/calendar
+              - img [ref=e35]
+              - text: Calendar
+            - link "Court Calendar" [ref=e37] [cursor=pointer]:
+              - /url: /org/mathebula-partners/court-calendar
+              - img [ref=e38]
+              - text: Court Calendar
+        - generic [ref=e45]:
+          - button "Matters" [expanded] [ref=e46]:
+            - generic [ref=e47]: Matters
+            - img [ref=e48]
+          - generic [ref=e50]:
+            - link "Matters" [ref=e51] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+              - img [ref=e53]
+              - text: Matters
+            - link "Recurring Schedules" [ref=e55] [cursor=pointer]:
+              - /url: /org/mathebula-partners/schedules
+              - img [ref=e56]
+              - text: Recurring Schedules
+        - button "Clients" [ref=e62]:
+          - generic [ref=e63]: Clients
+          - img [ref=e64]
+        - button "Finance" [ref=e68]:
+          - generic [ref=e69]: Finance
+          - img [ref=e70]
+        - generic [ref=e73]:
+          - button "Team" [expanded] [ref=e74]:
+            - generic [ref=e75]: Team
+            - img [ref=e76]
+          - link "Team" [ref=e79] [cursor=pointer]:
+            - /url: /org/mathebula-partners/team
+            - img [ref=e80]
+            - text: Team
+      - generic [ref=e86]:
+        - link "Notifications" [ref=e87] [cursor=pointer]:
+          - /url: /org/mathebula-partners/notifications
+          - img [ref=e88]
+          - text: Notifications
+        - link "Settings" [ref=e91] [cursor=pointer]:
+          - /url: /org/mathebula-partners/settings/general
+          - img [ref=e92]
+          - text: Settings
+        - link "Help" [ref=e95] [cursor=pointer]:
+          - /url: https://docs.heykazi.com
+          - img [ref=e96]
+          - text: Help
+      - generic [ref=e99]:
+        - generic [ref=e100]: TM
+        - generic [ref=e101]:
+          - paragraph [ref=e102]: Thandi Mathebula
+          - paragraph [ref=e103]: thandi@mathebula-test.local
+    - generic [ref=e104]:
+      - banner [ref=e105]:
+        - navigation "Breadcrumb" [ref=e106]:
+          - link "Mathebula & Partners" [ref=e107] [cursor=pointer]:
+            - /url: /org/mathebula-partners/dashboard
+          - generic [ref=e108]:
+            - img [ref=e109]
+            - link "Matters" [ref=e111] [cursor=pointer]:
+              - /url: /org/mathebula-partners/projects
+          - generic [ref=e112]:
+            - img [ref=e113]
+            - generic [ref=e115]: Matter
+        - generic [ref=e116]:
+          - button "User menu" [ref=e118]: TM
+          - button "Notifications" [ref=e120]:
+            - img
+            - generic [ref=e121]: 14 unread notifications
+            - generic [ref=e122]: "14"
+      - main [ref=e123]:
+        - generic [ref=e161]:
+          - link "Back to Matters" [ref=e163] [cursor=pointer]:
+            - /url: /org/mathebula-partners/projects
+            - img [ref=e164]
+            - text: Back to Matters
+          - generic [ref=e166]:
+            - generic:
+              - generic:
+                - heading "Dlamini v Road Accident Fund" [level=1] [ref=e167]
+                - generic [ref=e168]: Closed
+              - paragraph: RAF claim under Road Accident Fund Act 56 of 1996. Covers RAF1 filing, medicals, tariff negotiation, Section 24 court action, prescription monitoring.
+              - paragraph:
+                - text: "Client:"
+                - link "Sipho Dlamini" [ref=e169] [cursor=pointer]:
+                  - /url: /org/mathebula-partners/customers/a30bb16b-743c-45a5-9fb5-13167fb92fde
+              - generic [ref=e170]:
+                - generic [ref=e171]: Ref
+                - code [ref=e172]: RAF-2026-001
+              - paragraph: Created Apr 30, 2026 · 7 documents · 1 member · 0 tasks
+            - generic [ref=e173]:
+              - button "Reopen Matter" [ref=e174]:
+                - img
+                - text: Reopen Matter
+              - button "Generate Statement of Account" [ref=e175]:
+                - img
+                - text: Generate Statement of Account
+              - button "Generate Document" [ref=e176]:
+                - img
+                - text: Generate Document
+                - img
+              - button "New Engagement Letter" [ref=e177]:
+                - img
+                - text: New Engagement Letter
+              - button "Save as Template" [ref=e178]:
+                - img
+                - text: Save as Template
+              - button "Edit" [ref=e179]:
+                - img
+                - text: Edit
+              - button "Delete" [ref=e180]:
+                - img
+                - text: Delete
+          - generic [ref=e181]:
+            - paragraph [ref=e182]: Field Groups
+            - generic [ref=e183]:
+              - generic [ref=e184]:
+                - text: SA Legal — Matter Details
+                - button "Remove SA Legal — Matter Details" [ref=e185]:
+                  - img [ref=e186]
+              - generic [ref=e189]:
+                - text: Project Info
+                - button "Remove Project Info" [ref=e190]:
+                  - img [ref=e191]
+              - button "Add Group" [ref=e194]:
+                - img
+                - text: Add Group
+          - generic [ref=e195]:
+            - generic [ref=e196]:
+              - generic [ref=e198]: SA Legal — Matter Details
+              - generic [ref=e200]:
+                - generic [ref=e201]:
+                  - generic [ref=e202]: Case Number
+                  - textbox "Case Number" [ref=e204]:
+                    - /placeholder: Court-assigned case number for the matter
+                - generic [ref=e205]:
+                  - generic [ref=e206]: Court
+                  - textbox "Court" [ref=e208]:
+                    - /placeholder: Name of the court in which the matter is heard
+                - generic [ref=e209]:
+                  - generic [ref=e210]: Opposing Party
+                  - textbox "Opposing Party" [ref=e212]:
+                    - /placeholder: Name of the primary opposing party
+                - generic [ref=e213]:
+                  - generic [ref=e214]: Opposing Attorney
+                  - textbox "Opposing Attorney" [ref=e216]:
+                    - /placeholder: Name of the opposing attorney or firm
+                - generic [ref=e217]:
+                  - generic [ref=e218]: Advocate
+                  - textbox "Advocate" [ref=e220]:
+                    - /placeholder: Name of the instructed advocate (if briefed)
+                - generic [ref=e221]:
+                  - generic [ref=e222]: Date of Instruction
+                  - textbox "Date of Instruction" [ref=e224]
+                - generic [ref=e225]:
+                  - generic [ref=e226]: Estimated Value
+                  - spinbutton "Estimated Value" [ref=e228]
+            - generic [ref=e229]:
+              - generic [ref=e231]: Project Info
+              - generic [ref=e234]:
+                - generic [ref=e235]: Category
+                - textbox "Category" [ref=e237]:
+                  - /placeholder: Project category or type
+            - button "Save Custom Fields" [ref=e239]:
+              - img
+              - text: Save Custom Fields
+          - generic [ref=e240]:
+            - paragraph [ref=e241]: Tags
+            - button "Add Tag" [ref=e244]:
+              - img
+              - text: Add Tag
+          - generic [ref=e245]:
+            - tablist [ref=e246]:
+              - tab "Overview" [ref=e247]
+              - tab "Documents" [ref=e248]
+              - tab "Members" [ref=e249]
+              - tab "Clients" [ref=e250]
+              - tab "Tasks" [ref=e251]
+              - tab "Time" [ref=e252]
+              - tab "Fee Estimate" [ref=e253]
+              - tab "Financials" [ref=e254]
+              - tab "Staffing" [ref=e255]
+              - tab "Rates" [ref=e256]
+              - tab "Generated Docs" [ref=e257]
+              - tab "Requests" [ref=e258]
+              - tab "Client Comments" [ref=e259]
+              - tab "Court Dates" [ref=e260]
+              - tab "Adverse Parties" [ref=e261]
+              - tab "Trust" [ref=e262]
+              - tab "Disbursements" [ref=e263]
+              - tab "Statements" [ref=e264]
+              - tab "Activity" [selected] [ref=e265]: Activity
+            - tabpanel "Activity" [ref=e267]:
+              - generic [ref=e268]:
+                - generic [ref=e269]:
+                  - generic [ref=e270]:
+                    - button "All" [ref=e271]
+                    - button "Tasks" [ref=e272]
+                    - button "Documents" [ref=e273]
+                    - button "Comments" [ref=e274]
+                    - button "Members" [ref=e275]
+                    - button "Time" [ref=e276]
+                  - combobox "Filter by actor" [ref=e277]:
+                    - generic: All actors
+                    - img
+                - generic [ref=e278]:
+                  - generic [ref=e279]:
+                    - generic [ref=e280]: SD
+                    - generic [ref=e281]:
+                      - generic [ref=e282]:
+                        - img [ref=e283]
+                        - paragraph [ref=e286]: Sipho Dlamini performed portal.document.downloaded on document
+                      - text: 6 minutes ago
+                  - generic [ref=e287]:
+                    - generic [ref=e288]: TM
+                    - generic [ref=e289]:
+                      - generic [ref=e290]:
+                        - img [ref=e291]
+                        - paragraph [ref=e293]: Thandi Mathebula performed statement.generated on generated_document
+                      - text: 11 minutes ago
+                  - generic [ref=e294]:
+                    - generic [ref=e295]: TM
+                    - generic [ref=e296]:
+                      - generic [ref=e297]:
+                        - img [ref=e298]
+                        - paragraph [ref=e300]: Thandi Mathebula generated document "matter-closure-letter-dlamini-v-road-accident-fund-2026-04-30.pdf" from template "Matter Closure Letter"
+                      - text: 11 minutes ago
+                  - generic [ref=e301]:
+                    - generic [ref=e302]: BN
+                    - generic [ref=e303]:
+                      - generic [ref=e304]:
+                        - img [ref=e305]
+                        - paragraph [ref=e307]: Bob Ndlovu performed disbursement.billed on legal_disbursement
+                      - text: 28 minutes ago
+                  - generic [ref=e308]:
+                    - generic [ref=e309]: BN
+                    - generic [ref=e310]:
+                      - generic [ref=e311]:
+                        - img [ref=e312]
+                        - paragraph [ref=e314]: REQ-0003 completed — all items accepted
+                      - text: 30 minutes ago
+                  - generic [ref=e315]:
+                    - generic [ref=e316]: BN
+                    - generic [ref=e317]:
+                      - generic [ref=e318]:
+                        - img [ref=e319]
+                        - paragraph [ref=e321]: Bob Ndlovu accepted "Orthopaedic specialist report" for REQ-0003
+                      - text: 30 minutes ago
+                  - generic [ref=e322]:
+                    - generic [ref=e323]: BN
+                    - generic [ref=e324]:
+                      - generic [ref=e325]:
+                        - img [ref=e326]
+                        - paragraph [ref=e328]: Bob Ndlovu accepted "Hospital discharge summary" for REQ-0003
+                      - text: 30 minutes ago
+                  - generic [ref=e329]:
+                    - generic [ref=e330]: BN
+                    - generic [ref=e331]:
+                      - generic [ref=e332]:
+                        - img [ref=e333]
+                        - paragraph [ref=e336]: Bob Ndlovu changed task "File RAF1 claim form + supporting documents (within 3-year prescription)" status to CANCELLED
+                      - text: 35 minutes ago
+                  - generic [ref=e337]:
+                    - generic [ref=e338]: BN
+                    - generic [ref=e339]:
+                      - generic [ref=e340]:
+                        - img [ref=e341]
+                        - paragraph [ref=e344]: Bob Ndlovu changed task "Settlement negotiation with RAF" status to CANCELLED
+                      - text: 35 minutes ago
+                  - generic [ref=e345]:
+                    - generic [ref=e346]: BN
+                    - generic [ref=e347]:
+                      - generic [ref=e348]:
+                        - img [ref=e349]
+                        - paragraph [ref=e352]: Bob Ndlovu changed task "Settlement / judgment payout & costs" status to CANCELLED
+                      - text: 35 minutes ago
+                  - generic [ref=e353]:
+                    - generic [ref=e354]: BN
+                    - generic [ref=e355]:
+                      - generic [ref=e356]:
+                        - img [ref=e357]
+                        - paragraph [ref=e360]: Bob Ndlovu changed task "Prescription monitoring (3-year claim, 5-year for damages)" status to CANCELLED
+                      - text: 35 minutes ago
+                  - generic [ref=e361]:
+                    - generic [ref=e362]: BN
+                    - generic [ref=e363]:
+                      - generic [ref=e364]:
+                        - img [ref=e365]
+                        - paragraph [ref=e368]: "Bob Ndlovu changed task \"Follow-up: Trial / hearing attendance\" status to CANCELLED"
+                      - text: 35 minutes ago
+                  - generic [ref=e369]:
+                    - generic [ref=e370]: BN
+                    - generic [ref=e371]:
+                      - generic [ref=e372]:
+                        - img [ref=e373]
+                        - paragraph [ref=e376]: Bob Ndlovu changed task "Insurer correspondence -- RAF tariff schedule" status to CANCELLED
+                      - text: 35 minutes ago
+                  - generic [ref=e377]:
+                    - generic [ref=e378]: BN
+                    - generic [ref=e379]:
+                      - generic [ref=e380]:
+                        - img [ref=e381]
+                        - paragraph [ref=e384]: Bob Ndlovu changed task "Court action if no settlement (Section 24 RAF Act)" status to CANCELLED
+                      - text: 35 minutes ago
+                  - generic [ref=e385]:
+                    - generic [ref=e386]: BN
+                    - generic [ref=e387]:
+                      - generic [ref=e388]:
+                        - img [ref=e389]
+                        - paragraph [ref=e392]: "Bob Ndlovu changed task \"Follow-up: Initial RAF claim assessment & instructions\" status to CANCELLED"
+                      - text: 36 minutes ago
+                  - generic [ref=e393]:
+                    - generic [ref=e394]: BN
+                    - generic [ref=e395]:
+                      - generic [ref=e396]:
+                        - img [ref=e397]
+                        - paragraph [ref=e400]: "Bob Ndlovu changed task \"Follow-up: Statutory medical reports & assessments\" status to CANCELLED"
+                      - text: 36 minutes ago
+                  - generic [ref=e401]:
+                    - generic [ref=e402]: BN
+                    - generic [ref=e403]:
+                      - generic [ref=e404]:
+                        - img [ref=e405]
+                        - paragraph [ref=e408]: "Bob Ndlovu created task \"Follow-up: Statutory medical reports & assessments\""
+                      - text: 37 minutes ago
+                  - generic [ref=e409]:
+                    - generic [ref=e410]: BN
+                    - generic [ref=e411]:
+                      - generic [ref=e412]:
+                        - img [ref=e413]
+                        - paragraph [ref=e416]: Bob Ndlovu performed task.completed on task
+                      - text: 37 minutes ago
+                  - generic [ref=e417]:
+                    - generic [ref=e418]: BN
+                    - generic [ref=e419]:
+                      - generic [ref=e420]:
+                        - img [ref=e421]
+                        - paragraph [ref=e424]: Bob Ndlovu changed task "Statutory medical reports & assessments" status to IN_PROGRESS
+                      - text: 37 minutes ago
+                  - generic [ref=e425]:
+                    - generic [ref=e426]: BN
+                    - generic [ref=e427]:
+                      - generic [ref=e428]:
+                        - img [ref=e429]
+                        - paragraph [ref=e432]: "Bob Ndlovu created task \"Follow-up: Trial / hearing attendance\""
+                      - text: 38 minutes ago
+                - button "Load more" [ref=e434]
+  - generic [ref=e148]:
+    - heading "Command Palette" [level=2] [ref=e149]
+    - paragraph [ref=e150]: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e156] [cursor=pointer]:
+    - img [ref=e157]
+  - alert [ref=e160]

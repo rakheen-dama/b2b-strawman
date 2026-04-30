@@ -171,7 +171,12 @@ export async function instantiateTemplateAction(
   slug: string,
   templateId: string,
   data: InstantiateTemplateRequest
-): Promise<{ success: boolean; error?: string; projectId?: string }> {
+): Promise<{
+  success: boolean;
+  error?: string;
+  projectId?: string;
+  fieldErrors?: Array<{ field: string; message: string }>;
+}> {
   try {
     const result = await instantiateProjectTemplate(templateId, data);
     revalidatePath(`/org/${slug}/projects`);
@@ -185,9 +190,17 @@ export async function instantiateTemplateAction(
         };
       }
       if (error.status === 400) {
+        // OBS-301: thread per-field validation errors through to the caller so the
+        // dialog can render inline messages under each input. The backend's
+        // GlobalExceptionHandler emits an array of { field, message } pairs on the
+        // ProblemDetail's `fieldErrors` property.
+        const fieldErrors = error.detail?.fieldErrors as
+          | Array<{ field: string; message: string }>
+          | undefined;
         return {
           success: false,
           error: error.message || "Template is inactive or invalid.",
+          fieldErrors,
         };
       }
       return { success: false, error: error.message };

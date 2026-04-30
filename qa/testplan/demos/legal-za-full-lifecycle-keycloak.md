@@ -302,17 +302,18 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Bob Ndlovu
 
-- [ ] **5.1** Navigate to matter RAF-2026-001 → Info Requests tab
-- [ ] **5.2** FICA Onboarding Pack shows status = **Submitted** with 3 documents attached
-- [ ] **5.3** Click into request → download each document → verify all three open cleanly
-- [ ] **5.4** Click **Mark as Reviewed** / **Approve** → state transitions to **Completed**
-- [ ] **5.5** Verify matter Overview shows FICA status = **Complete** (or equivalent lifecycle indicator)
-- [ ] **5.6** Mailpit → notification email to Sipho: "Your FICA documents have been received" (or equivalent). Log gap if no such email is sent.
+- [ ] **5.1** Navigate to matter RAF-2026-001 → Info Requests tab (matter detail uses `?tab=requests` query param, not segment routes)
+- [ ] **5.2** FICA Onboarding Pack row shows envelope status = **In Progress** (per OBS-403: there is no `SUBMITTED` envelope status; firm review is mandatory before closure) with `0/3 accepted` counter; clicking the row link in the table navigates to `/org/{slug}/information-requests/{id}` (NOT `/requests/{id}` — see OBS-501). Reach the request detail page and confirm 3 items render with `Submitted` per-item status and the 3 PDFs (`fica-id.pdf`, `fica-address.pdf`, `fica-bank.pdf`) attached.
+- [ ] **5.3** Verify each per-item **Download** button is operational (no console errors on click; headless Playwright won't persist the file but the handler is wired).
+- [ ] **5.4** Click **Accept** on each item in turn (per-item Accept replaces a separate envelope-level "Mark as Reviewed" — refines OBS-403 lifecycle understanding). Counter advances 0/3 → 1/3 → 2/3 → 3/3 accepted; on the third Accept, envelope status auto-transitions `In Progress → Completed` with a "Completed on …" stamp.
+- [ ] **5.5** Verify matter Overview shows FICA status — Activity feed renders the full audit trail (`REQ-0001 completed — all items accepted`, three accept events, three submit events). The matter Overview tab also renders a **FICA Status Card** (`<FicaStatusCard>`); confirm its "View request" link emits the canonical `/org/{slug}/information-requests/{requestId}` route — NOT `/requests/{id}` (OBS-501 verification).
+- [ ] **5.6** Mailpit → notification emails to Sipho during firm review: 3× per-item-accepted (`Item accepted — {name} (Mathebula & Partners)`) + 1× envelope-completed (`Request REQ-0001 completed (Mathebula & Partners)`).
 
 **Day 5 checkpoints**
 - [ ] Three uploaded documents retrievable firm-side
-- [ ] Info request lifecycle: Submitted → Completed
-- [ ] Matter FICA / KYC status indicator updated
+- [ ] Info request lifecycle: `Sent → IN_PROGRESS → Completed` (envelope closes when the last per-item Accept lands; no separate "Mark as Reviewed" button)
+- [ ] Matter FICA / KYC status indicator updated; FICA card "View request" link routes to `/information-requests/{id}` (OBS-501 fix verification)
+- [ ] Portal-side post-completion spot-check (still authenticated as Sipho on `:3002`): `/requests` row for REQ-0001 shows status badge **COMPLETED** AND counter **`3/3 accepted`** (NOT `0/3 submitted` — OBS-502 fix verification); detail page header reads `3/3 accepted • status COMPLETED`
 
 ---
 

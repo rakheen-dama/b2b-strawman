@@ -98,8 +98,10 @@ export default function RequestDetailPage({
           {detail.projectName}
         </h1>
         <p className="mt-2 text-sm text-slate-600">
-          {detail.submittedItems}/{detail.totalItems} submitted • status{" "}
-          {detail.status}
+          {detail.status === "COMPLETED"
+            ? `${detail.acceptedItems}/${detail.totalItems} accepted`
+            : `${detail.submittedItems}/${detail.totalItems} submitted`}{" "}
+          • status {detail.status}
         </p>
       </div>
       <ul className="space-y-4">

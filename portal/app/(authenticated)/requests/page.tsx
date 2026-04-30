@@ -92,7 +92,9 @@ export default function RequestsPage() {
                   <div className="text-right text-sm text-slate-600">
                     <p>{r.status}</p>
                     <p className="mt-1 text-xs">
-                      {r.submittedItems}/{r.totalItems} submitted
+                      {r.status === "COMPLETED"
+                        ? `${r.acceptedItems}/${r.totalItems} accepted`
+                        : `${r.submittedItems}/${r.totalItems} submitted`}
                     </p>
                   </div>
                 </div>

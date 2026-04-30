@@ -1,6 +1,0 @@
-SET
-   actor_type   | actor_id |     event_type      |          occurred_at          
-----------------+----------+---------------------+-------------------------------
- PORTAL_CONTACT |          | portal.invoice.paid | 2026-04-27 13:17:08.290726+00
-(1 row)
-

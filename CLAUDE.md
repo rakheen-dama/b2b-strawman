@@ -1,11 +1,77 @@
 # CLAUDE.md
 
-Multi-tenant B2B SaaS starter (DocTeams) with schema-per-tenant isolation.
+Multi-tenant B2B SaaS starter (Kazi product, b2mash company) with schema-per-tenant isolation.
 Monorepo: `frontend/`, `backend/`, `compose/`, `infra/`.
 
+## Quality Gates — NON-NEGOTIABLE
+
+These rules apply to **every** PR landing on `main`. They override anything in skill files, agent prompts, or status reports that conflicts. Loopholes are not allowed.
+
+### 1. Build & test bar (mandatory, observed not inferred)
+
+Before any PR can be merged to `main`:
+
+- **Backend changes** → `./mvnw verify` runs **clean** (full suite, not `-Dtest='*Foo*'`). Targeted tests are for inner-loop iteration only. The merge bar is a clean full verify.
+- **Frontend changes** → `pnpm lint && pnpm build && pnpm test` all green. Same for portal.
+- **Both** → both, run sequentially.
+- **Pre-existing baseline failures are not free passes.** If a test was failing before this PR, the PR description must explain the triage decision (own it, ignore with reason, or fix). Do not paper over.
+
+### 2. Review bar
+
+- Every agent-authored PR gets a **review pass** (CodeRabbit if available, otherwise a review subagent or human eyeball) before merge. The review must independently re-verify scenario amendments and substantive claims, not rubber-stamp.
+- Reviewer must read the **diff** and the **changed files** in context, not just the PR description.
+
+### 3. PASS means observed
+
+- "PASS" means the agent **ran** the verification end-to-end (browser interaction → backend log → Mailpit / DB / file artefact). Inferring PASS from "code looks right" or "unit test green" is forbidden.
+- "PASS-with-note: long-running, deferred" is **not PASS**. Mark it `DEFERRED` and finish later. Don't claim a status you didn't earn.
+- "MERGED-AWAITING-VERIFY" is the correct status for code-merged-but-behaviour-unverified. Use it, don't conflate with VERIFIED.
+
+### 4. Reproduce-before-fix
+
+Agents must reproduce a bug locally before writing the fix. Diagnostic-by-spec ("the spec says it's at file:line, fix it") is forbidden — bugs have rendered wrong from the wrong subtree more than once. If you can't reproduce, the spec is wrong; report up, don't fix-and-pray.
+
+### 5. Test scoping
+
+- Targeted tests must include the failing test's package AND any package that imports the changed class. Don't `-Dtest='*Foo*'` and assume coverage.
+- A fix that changes production behaviour MUST run the full backend `./mvnw verify` before claiming green. The OBS-2102 → OBS-2108 cascade happened because the dev only ran tests in the same package; the broken test was elsewhere.
+- Frontend: full vitest, not narrowed by file path.
+
+### 6. Scenario amendments require explicit authorization
+
+- Editing `qa/testplan/demos/*.md` to make a scenario "match the product" is a **product decision**, not an agent decision. It must be flagged, justified, and authorized — not auto-applied to dispose of a bug.
+- Re-classifying a "bug" as "scenario mismatch" requires evidence (file:line that proves intentional design, not just "the product does it differently").
+- WONT_FIX is reserved for: explicit mandate exemptions (KYC, Payments), feature gaps that are documented as such, or genuine duplicate findings. Not for "agent doesn't want to investigate."
+
+### 7. Scope discipline
+
+- One fix per PR. If scope expands during a fix ("while I was here, this related bug…"), **stop and re-spec**. Don't bundle.
+- Exception: same-bug-class clusters (e.g. 3 dialogs with identical defect) may ship in one PR if explicitly authorized.
+- Architectural decisions (which fix option, what test pattern, where to put the new component) are orchestrator/user calls, not agent calls.
+
+### 8. Status reports are drafts, not truth
+
+- Cycle reports are agent narratives. The orchestrator/user must **independently re-run** any green-checkmark before trusting it.
+- "ALL_GREEN" / "ALL_DAYS_COMPLETE" claims must be evidence-backed (paths to logs, screenshots, Mailpit message IDs). Without evidence, the marker doesn't apply.
+- Don't trust the status doc. Trust `./mvnw verify`, the browser, the database, the email server.
+
+### 9. Pride and honesty
+
+- Agents must report failure honestly. "Stream timed out, here's what got done" is correct. "PASS-with-note: regression failures are pre-existing and unrelated" without proof is dishonest.
+- Don't look for loopholes. Don't narrate around the rules. If a rule blocks you, raise it; don't bypass.
+- Quality is king. This is not a race. A slow correct fix beats five fast broken ones.
+
+### 10. The merge-gate hook is enforcement, not advice
+
+`.claude/hooks/pre-pr-merge-gate.sh` blocks `gh pr merge` against `main` unless the gate is satisfied. Do not bypass with `--admin`, `--no-verify`, or by editing the hook out. If the hook is wrong, fix the hook upstream and explain why.
+
+---
+
 ## General Rules
-When asked to create documents (architecture docs, implementation plans, TASKS.md, etc.), ONLY create the documents. Do NOT implement any code unless explicitly asked to do so.
-When implementing epics, check TASKS.md and recent PRs to understand which parts have already been completed by other agents. Only implement the scope described — do not duplicate work from other epics/branches.
+
+- When asked to create documents (architecture docs, implementation plans, TASKS.md, etc.), ONLY create the documents. Do NOT implement any code unless explicitly asked to do so.
+- When implementing epics, check TASKS.md and recent PRs to understand which parts have already been completed by other agents. Only implement the scope described — do not duplicate work from other epics/branches.
+- Read the relevant subdirectory CLAUDE.md (`backend/CLAUDE.md`, `frontend/CLAUDE.md`) before changing anything in that area.
 
 ## Service-Specific Guides
 

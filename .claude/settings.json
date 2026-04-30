@@ -10,6 +10,17 @@
             "timeout": 5
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/pre-pr-merge-gate.sh\"",
+            "timeout": 30,
+            "statusMessage": "Checking pre-merge quality gate..."
+          }
+        ]
       }
     ],
     "PostToolUse": [

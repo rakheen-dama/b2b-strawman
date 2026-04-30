@@ -68,6 +68,11 @@ export function NewFromTemplateDialog({
   const [step, setStep] = useState<1 | 2>(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // OBS-301: per-field validation errors keyed by backend field name
+  // (e.g. "description", "name", "referenceNumber", "workType"). Populated
+  // from the action's `fieldErrors` array on a 400 response and rendered
+  // inline beneath each input.
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Step 1
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
@@ -135,6 +140,7 @@ export function NewFromTemplateDialog({
       setPriority("");
       setWorkType("");
       setError(null);
+      setFieldErrors({});
     }
     setOpen(newOpen);
   }
@@ -166,6 +172,7 @@ export function NewFromTemplateDialog({
     if (!selectedTemplateId) return;
 
     setError(null);
+    setFieldErrors({});
     setIsSubmitting(true);
 
     try {
@@ -183,6 +190,17 @@ export function NewFromTemplateDialog({
         setOpen(false);
         router.push(`/org/${slug}/projects/${result.projectId}`);
       } else {
+        // OBS-301: surface per-field validation errors inline. The backend
+        // returns a `fieldErrors: [{ field, message }]` array on the
+        // ProblemDetail; collapse it into a Record<field, message> for
+        // O(1) lookup in the rendering loop.
+        if (result.fieldErrors && result.fieldErrors.length > 0) {
+          const map: Record<string, string> = {};
+          for (const fe of result.fieldErrors) {
+            map[fe.field] = fe.message;
+          }
+          setFieldErrors(map);
+        }
         setError(result.error ?? "Failed to create project.");
       }
     } catch {
@@ -297,6 +315,9 @@ export function NewFromTemplateDialog({
                       </span>
                     </p>
                   )}
+                  {fieldErrors.name && (
+                    <p className="text-destructive mt-1 text-xs">{fieldErrors.name}</p>
+                  )}
                 </div>
 
                 {/* Description */}
@@ -313,6 +334,9 @@ export function NewFromTemplateDialog({
                     rows={2}
                     maxLength={2000}
                   />
+                  {fieldErrors.description && (
+                    <p className="text-destructive mt-1 text-xs">{fieldErrors.description}</p>
+                  )}
                 </div>
 
                 {/* Customer */}
@@ -374,6 +398,9 @@ export function NewFromTemplateDialog({
                     placeholder={referencePlaceholder}
                     maxLength={100}
                   />
+                  {fieldErrors.referenceNumber && (
+                    <p className="text-destructive mt-1 text-xs">{fieldErrors.referenceNumber}</p>
+                  )}
                 </div>
 
                 {/* Priority */}
@@ -406,6 +433,9 @@ export function NewFromTemplateDialog({
                     placeholder="e.g. Litigation, Consulting"
                     maxLength={50}
                   />
+                  {fieldErrors.workType && (
+                    <p className="text-destructive mt-1 text-xs">{fieldErrors.workType}</p>
+                  )}
                 </div>
 
                 {error && <p className="text-destructive text-sm">{error}</p>}

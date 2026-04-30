@@ -272,26 +272,27 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **4.1** Open Mailpit (`http://localhost:8025`) → locate FICA info-request magic-link email for `sipho.portal@example.com`
 - [ ] **4.2** Click the magic-link in email body → browser navigates to `http://localhost:3002/accept/[token]`
 - [ ] **4.3** Portal exchanges token (`POST /portal/auth/exchange` fires) → redirects to `/home`
-- [ ] **4.4** Verify `/home` renders: pending info request section shows **"FICA Onboarding Pack"** with due date
+- [ ] **4.4** Verify `/home` renders: pending info request section shows the matter context (e.g. "Dlamini v Road Accident Fund") with due date. _(OBS-401 amend: portal `/requests` and `/home` index by matter/project name, not by template title. The template title "FICA Onboarding Pack" is firm-side; portal contacts see what the firm sent them tied to the matter context. Functional flow is correct.)_
 - [ ] **4.5** Verify header / sidebar shows Mathebula firm branding (navy accent, firm logo if uploaded Day 1)
 - [ ] **4.6** Verify user identity displayed as "Sipho Dlamini" (from firm-side client record)
 - [ ] **4.7** 📸 Optional screenshot: `day-04-portal-home-first-login.png`
 
 ### Phase B: Upload FICA documents
 
-- [ ] **4.8** Click into "FICA Onboarding Pack" → info-request detail renders
+- [ ] **4.8** Click into the request row → info-request detail renders, showing matter context (project name + request number) at the top and the per-item upload list below.
 - [ ] **4.9** Verify three upload slots labelled: ID copy, Proof of residence, Bank statement
 - [ ] **4.10** Upload a test PDF (any ≤ 2 MB) to each slot → three upload-progress indicators → three completion states
-- [ ] **4.11** Add optional note: "All documents current as of this week"
-- [ ] **4.12** Click **Submit** → info-request state transitions to **Submitted** (or "Awaiting review")
-- [ ] **4.13** Verify `/home` "Pending info requests" card no longer shows this request as pending
+- [ ] **4.11** _(OBS-402 amend: removed.)_ The portal does not surface a request-level cover-message textarea — per-item context is set by the firm when sending and rendered as the item's `description`. There is no portal-side "optional note" input on the info-request detail page. Per-item submissions carry the document and (where applicable) a per-item text response only.
+- [ ] **4.12** Submit each FICA item via per-item **Upload and submit** → each item transitions individually to **Submitted**. _(OBS-403 amend: there is NO single "Submit" button on the request envelope. The envelope tracks `submittedItems / totalItems` counters; once all 3 required items are SUBMITTED the envelope status remains `IN_PROGRESS` until firm-side **Mark as Reviewed** in Day 5.4 transitions it to **Completed**. State machine: `Sent` → (per-item submits) → `IN_PROGRESS` (3/3 submitted) → `Completed` (firm review) — there is no auto-`Submitted` envelope state.)_
+- [ ] **4.13** Verify `/home` "Pending info requests" card pending count drops to 0 once all 3 items are SUBMITTED (envelope itself remains `IN_PROGRESS` — not pending from the portal contact's perspective).
 - [ ] **4.14** 📸 Optional screenshot: `day-04-fica-submitted.png`
 
 **Day 4 checkpoints**
 - [ ] Magic-link login succeeded — no Keycloak form appeared at any step
 - [ ] Uploads stored (firm side will verify on Day 5)
-- [ ] Info-request state machine progressed: Sent → Submitted
+- [ ] Info-request state machine progressed: per-item `Pending → Submitted` for all 3 required items; envelope status `Sent → IN_PROGRESS` (closes to `Completed` on firm Mark-as-Reviewed in Day 5)
 - [ ] No firm-side terminology leaks on portal ("matter" → "your case", "info request" retained, no "task" / "ticket")
+- [ ] Brand check: portal footer reads "Powered by Kazi" — never "DocTeams" (OBS-404 fix verification)
 
 ---
 

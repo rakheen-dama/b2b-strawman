@@ -109,7 +109,7 @@ export default async function ProposalsPage({ params }: { params: Promise<{ slug
           secondaryLink={{ label: "Read the guide", href: docsLink("/features/proposals") }}
         />
       ) : (
-        <ProposalTable proposals={proposals} slug={slug} now={new Date().getTime()} />
+        <ProposalTable proposals={proposals} slug={slug} />
       )}
     </div>
   );

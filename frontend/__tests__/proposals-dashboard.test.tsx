@@ -195,7 +195,7 @@ describe("ProposalTable", () => {
   });
 
   it("renders all proposals with correct status badges", () => {
-    render(<ProposalTable proposals={mockProposals} slug="acme" now={Date.now()} />);
+    render(<ProposalTable proposals={mockProposals} slug="acme" />);
 
     expect(screen.getByText("Annual Audit Proposal")).toBeInTheDocument();
     expect(screen.getByText("Tax Advisory Proposal")).toBeInTheDocument();
@@ -217,7 +217,7 @@ describe("ProposalTable", () => {
   });
 
   it("renders filter tabs for all statuses", () => {
-    render(<ProposalTable proposals={mockProposals} slug="acme" now={Date.now()} />);
+    render(<ProposalTable proposals={mockProposals} slug="acme" />);
 
     expect(screen.getByRole("button", { name: "All" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Draft" })).toBeInTheDocument();

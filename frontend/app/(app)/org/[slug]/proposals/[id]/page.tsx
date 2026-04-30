@@ -6,7 +6,7 @@ import { api, handleApiError } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProposalDetailActions } from "@/components/proposals/proposal-detail-actions";
-import { formatDate, formatCurrencySafe } from "@/lib/format";
+import { formatDate, formatCurrencySafe, formatProposalExpiresAt } from "@/lib/format";
 import type { ProposalResponse, ProposalStatus } from "@/lib/types/proposal";
 
 const STATUS_BADGE: Record<
@@ -180,7 +180,7 @@ export default async function ProposalDetailPage({
               <div>
                 <dt className="text-slate-500 dark:text-slate-400">Expires</dt>
                 <dd className="mt-0.5 font-medium text-slate-900 dark:text-slate-100">
-                  {formatDate(proposal.expiresAt)}
+                  {formatProposalExpiresAt(proposal.expiresAt)}
                 </dd>
               </div>
             )}

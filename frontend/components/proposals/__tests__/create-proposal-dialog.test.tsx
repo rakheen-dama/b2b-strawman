@@ -96,3 +96,73 @@ describe("CreateProposalDialog — matter-level CTA (GAP-L-48)", () => {
     expect(screen.getByLabelText(/Retainer Amount/i)).toBeInTheDocument();
   });
 });
+
+describe("CreateProposalDialog — expiresAt timezone encoding (OBS-702)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockCreateProposal.mockResolvedValue({
+      success: true,
+      data: { id: "proposal-1" },
+    });
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("submits expiresAt as the LOCAL end-of-day of the user's picked date (does not cross the date line in zones east of UTC)", async () => {
+    const user = userEvent.setup();
+
+    render(
+      <CreateProposalDialog
+        slug="legal-test"
+        customers={[CUSTOMERS[0]]}
+        defaultCustomerId={CUSTOMERS[0].id}
+        defaultFeeModel="HOURLY"
+      >
+        <Button data-testid="open-obs702-proposal">New Engagement Letter</Button>
+      </CreateProposalDialog>
+    );
+
+    await user.click(screen.getByTestId("open-obs702-proposal"));
+    await waitFor(() => {
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+    });
+
+    // Fill required title.
+    const titleInput = screen.getByLabelText(/Title/i);
+    await user.type(titleInput, "Engagement letter");
+
+    // Fill the optional expiry date with a known calendar date.
+    const expiryInput = screen.getByLabelText(/Expiry Date/i);
+    await user.type(expiryInput, "2026-05-12");
+
+    // Submit.
+    await user.click(screen.getByRole("button", { name: /Create Proposal/i }));
+
+    await waitFor(() => {
+      expect(mockCreateProposal).toHaveBeenCalled();
+    });
+
+    const [, payload] = mockCreateProposal.mock.calls[0] as [
+      string,
+      { expiresAt?: string },
+    ];
+
+    expect(payload.expiresAt).toBeDefined();
+
+    // The submitted instant must decode back to the user's picked calendar
+    // date (May 12) when read in the SAME local zone the user picked it in.
+    // This is the round-trip the proposal detail page relies on. Crucially,
+    // the bug was the `T23:59:59Z` form which crossed the date line in any
+    // zone east of UTC.
+    const decoded = new Date(payload.expiresAt!);
+    expect(decoded.getFullYear()).toBe(2026);
+    expect(decoded.getMonth()).toBe(4); // May (0-indexed)
+    expect(decoded.getDate()).toBe(12);
+
+    // Belt-and-braces: the ISO string must NOT be the literal `T23:59:59Z`
+    // forced-UTC form that produced OBS-702.
+    expect(payload.expiresAt).not.toBe("2026-05-12T23:59:59Z");
+  });
+});

@@ -133,6 +133,18 @@ public class PortalDocumentNotificationHandler {
 
   /** Filter + dedup + send. Runs inside the tenant ScopedValue scope. */
   private void process(DocumentGeneratedEvent event) {
+    // OBS-2106 Part 1 (diagnostic uplift): every entry into process(...) is now logged at INFO so
+    // that future closure-pack regressions are visible at standard log level. Pairs with the 7
+    // skip-path log lines below (also INFO) so on-call can see *which* gate rejected an event
+    // without flipping the package to DEBUG and re-running the scenario.
+    log.info(
+        "PortalDocumentNotificationHandler.process entered: tenant={}, template={}, project={},"
+            + " generatedDoc={}",
+        event.tenantId(),
+        event.templateName(),
+        event.projectId(),
+        event.generatedDocumentId());
+
     UUID projectId = event.projectId();
     if (projectId == null) {
       return; // Not project-scoped — nothing for the portal to see.
@@ -147,18 +159,18 @@ public class PortalDocumentNotificationHandler {
     Optional<OrgSettings> settingsOpt =
         transactionTemplate.execute(tx -> orgSettingsRepository.findForCurrentTenant());
     if (settingsOpt == null || settingsOpt.isEmpty()) {
-      log.debug("Skipping portal-document-ready: no OrgSettings for tenant={}", event.tenantId());
+      log.info("Skipping portal-document-ready: no OrgSettings for tenant={}", event.tenantId());
       return;
     }
     List<String> allowlist = settingsOpt.get().getPortalNotificationDocTypes();
     if (allowlist == null || allowlist.isEmpty()) {
-      log.debug(
+      log.info(
           "Skipping portal-document-ready: per-tenant allowlist empty (tenant={})",
           event.tenantId());
       return;
     }
     if (!allowlist.contains(templateName)) {
-      log.debug(
+      log.info(
           "Skipping portal-document-ready: template={} not in allowlist (tenant={})",
           templateName,
           event.tenantId());
@@ -169,7 +181,7 @@ public class PortalDocumentNotificationHandler {
     //    closure-letter path (canonical GeneratedDocumentService emission, no details.visibility)
     //    still works once the visibility flip has been applied.
     if (!isPortalVisible(event)) {
-      log.debug(
+      log.info(
           "Skipping portal-document-ready: not portal-visible (template={}, doc={})",
           templateName,
           event.generatedDocumentId());
@@ -179,7 +191,7 @@ public class PortalDocumentNotificationHandler {
     // 3. Resolve project + customer + portal contact.
     String orgId = event.orgId();
     if (orgId == null) {
-      log.debug("Skipping portal-document-ready: missing orgId on event {}", event.entityId());
+      log.info("Skipping portal-document-ready: missing orgId on event {}", event.entityId());
       return;
     }
     var ctx =
@@ -202,7 +214,7 @@ public class PortalDocumentNotificationHandler {
               return new ResolvedContext(project, customerId, contactOpt.get());
             });
     if (ctx == null) {
-      log.debug(
+      log.info(
           "Skipping portal-document-ready: no portal contact resolved (project={}, template={})",
           projectId,
           templateName);
@@ -213,7 +225,7 @@ public class PortalDocumentNotificationHandler {
     //    single email. The first event in the 5-minute window wins.
     String dedupKey = event.tenantId() + ":" + ctx.customerId() + ":" + projectId;
     if (dedupCache.getIfPresent(dedupKey) != null) {
-      log.debug(
+      log.info(
           "Skipping portal-document-ready: dedup hit (key={}, template={})",
           dedupKey,
           templateName);

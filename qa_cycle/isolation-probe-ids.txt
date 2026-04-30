@@ -1,56 +1,33 @@
 # Isolation Probe IDs — Day 15 target data (Moroka Family Trust)
-# Generated: 2026-04-27 SAST (Day 14 cycle 30 walk on bugfix_cycle_2026-04-26-day14)
-# Tenant: tenant_5039f2d497cf (mathebula-partners)
-# Backend: main 7ea65235 / PID 41372
+# Generated: 2026-04-30 SAST (Day 14 of bugfix_cycle_2026-04-30)
+# Tenant: mathebula-partners
+# Branch: bugfix_cycle_2026-04-30
 
 ## Moroka Family Trust entities (Day 15 MUST-BE-INVISIBLE to Sipho)
 
-customer_id           = 0cb199f2-9263-4d57-88c7-4a0350f8779c   # name "Moroka Family Trust", customer_type=TRUST, lifecycle=PROSPECT
-portal_contact_id     = 3c127b78-1d78-457f-a9cf-efd2783e0b66   # email moroka.portal@example.com, role=GENERAL, status=ACTIVE (auto-provisioned via L-34)
-matter_id (project)   = 340c5bb2-16c9-4cb4-ae27-df757aa7ce6d   # "Estate Late Peter Moroka" EST-2026-002, ACTIVE, applied_field_groups=[Project Info, SA Legal — Matter Details]
-info_request_id       = de3cffc7-7744-43ce-9c80-d90a42a1de08   # REQ-0003, Liquidation and Distribution Account Pack (5 items), SENT, due 2026-05-11
-document_id           = 9eb9ed95-92be-4bb0-b656-5b2f6f96b9b6   # letters-of-authority.pdf, attached to matter 340c5bb2
-trust_transaction_id  = 0e9f9c17-a305-4714-a81f-c471d56b4832   # DEP/2026/EST-002, R 25 000.00, RECORDED, account=Mathebula Trust — Main
-client_ledger_card_id = 886e0759-eeb0-4452-93df-186418ed17d7   # Moroka per-customer balance R 25 000.00
+customer_id           = f09d5032-5801-4e35-b1a7-4a8d89fb88a1   # "Moroka Family Trust", customer_type=TRUST, lifecycle=PROSPECT
+matter_id (project)   = c10abc4c-344c-44ef-942d-33695da0c874   # "Estate Late Peter Moroka" EST-2026-002, ACTIVE
+info_request_id       = 75b8c43d-7170-45ae-be4f-b8a56e2752ce   # REQ-0002, "Liquidation and Distribution Account Pack" (5 items), SENT
+document_storage_key  = 081fe76e-c4b4-4774-872d-349369a30d18   # letters-of-authority.pdf, attached to matter c10abc4c (s3 key)
+trust_transaction_id  = e7625298-7c3a-4298-aba5-5ef51fc4f920   # DEP/2026/EST-002, R 25 000.00, RECORDED, account=Mathebula Trust — Main
 
 ## Reference — existing Sipho entities (Day 15 SHOULD be visible to Sipho)
 
-customer_id           = c4f70d86-c292-4d02-9f6f-2e900099ba57   # "Sipho Dlamini", INDIVIDUAL, ONBOARDING
-matter_id             = cc390c4f-35e2-42b5-8b54-bac766673ae7   # "Dlamini v Road Accident Fund" RAF-2026-001
-trust_transaction_ids = 13ca4d28-65d2-49cc-a831-0596e7a5bc94   # DEP/2026/RAF-001, R 50 000.00 RECORDED
-                        f2f692e8-84a2-407b-947c-2e3684ca675b   # DEP/2026/RAF-002, R 100.00 RECORDED
-client_ledger_card_id = 36765353-031f-4f5e-979b-a81747604ff8   # Sipho per-customer balance R 50 100.00
-
-## Shared (same trust account used by both clients)
-
-trust_account_id      = 46d1177a-d1c3-48d8-9ba8-427f14b8278f   # "Mathebula Trust — Main", SECTION_86, is_primary=t
+customer_id           = a30bb16b-743c-45a5-9fb5-13167fb92fde   # "Sipho Dlamini", INDIVIDUAL, ONBOARDING
+matter_id             = b7e319f7-fd7e-4526-a8b3-b40b1f85b34b   # "Dlamini v Road Accident Fund" RAF-2026-001
+trust_transaction_ids = 3bd2f0ec-c08c-46d2-8515-012fdded6917   # DEP/2026/001, R 50 000.00 RECORDED (Day 10)
+                        b752bbcc-cfee-41ca-8919-179df875bd94   # DEP/2026/002, R 1 000.00 RECORDED (OBS-1101 verify)
 
 ## Day 15 probe plan
 
 ### Frontend (portal :3002, Sipho logged in)
-- `/` or `/home` — must NOT show Moroka in any list/card.
+- `/home` — must NOT show Moroka in any list/card.
 - `/projects` — must NOT list EST-2026-002.
-- `/projects/340c5bb2-16c9-4cb4-ae27-df757aa7ce6d` — must 403/404 (not render Moroka matter).
-- `/documents` — must NOT list letters-of-authority.pdf (Moroka-attached variant).
-- `/requests` — must NOT list REQ-0003.
-- `/requests/de3cffc7-7744-43ce-9c80-d90a42a1de08` — must 403/404.
-- `/trust` and `/trust/340c5bb2-16c9-4cb4-ae27-df757aa7ce6d` — balance shown must reflect ONLY Sipho's transactions, never Moroka's R 25 000.
+- `/projects/c10abc4c-344c-44ef-942d-33695da0c874` — must 403/404 (not render Moroka matter).
+- `/info-requests/75b8c43d-7170-45ae-be4f-b8a56e2752ce` — must 403/404.
+- `/trust` and `/trust/c10abc4c-344c-44ef-942d-33695da0c874` — must NEVER show R 25 000 deposit; balance must remain Sipho-only (R 51 000).
 
-### Backend (bearer = Sipho's portal_jwt, orgId=mathebula-partners)
-- `GET /portal/projects/340c5bb2-16c9-4cb4-ae27-df757aa7ce6d` → expect 403 or 404.
-- `GET /portal/requests/de3cffc7-7744-43ce-9c80-d90a42a1de08` → expect 403 or 404.
-- `GET /portal/requests` → response must NOT contain REQ-0003.
-- `GET /portal/documents/9eb9ed95-92be-4bb0-b656-5b2f6f96b9b6` → expect 403 or 404.
-- `GET /portal/trust/summary` → matters array must only contain `cc390c4f-35e2-42b5-8b54-bac766673ae7`, never `340c5bb2-16c9-4cb4-ae27-df757aa7ce6d`.
-- `GET /portal/trust/matters/340c5bb2-16c9-4cb4-ae27-df757aa7ce6d/transactions` → expect 403 or 404.
-
-### Digest / email (Day 15 Phase D)
-- If weekly digest fires for Sipho, the email body must not mention "Moroka", "EST-2026-002", "Peter Moroka", "R 25 000" or REQ-0003.
-
-## Notes on this cycle's seed
-- Day 14 cycle 30: 9 PASS / 1 PARTIAL (14.2 — GAP-L-54 beneficial-owners structured field absent for TRUST clients, carried forward into Day 15) / 1 SKIPPED-BY-DESIGN (14.4 conflict check per scenario) / 0 FAIL / 0 BLOCKED / 0 new gaps.
-- Liquidation and Distribution Account Pack template VERIFIED present (L-53 fix holds).
-- Portal contact auto-provisioned for TRUST customer_type (L-34 holds).
-- Matter applied_field_groups correctly excludes conveyancing pack (L-37-regression V112 holds).
-- BUG-CYCLE26-11 fix holds — Moroka trust deposit has project_id correctly set on creation (no NULL).
-- Beneficial owners (scenario 14.2 ask) — no UI affordance on Create Client wizard for TRUST. Carried forward as GAP-L-54 / OBS-L-54, not re-logged.
+### Backend (Sipho's portal session, mathebula-partners tenant)
+- `GET /portal/api/projects/c10abc4c-344c-44ef-942d-33695da0c874` → expect 403 or 404.
+- `GET /portal/api/info-requests/75b8c43d-7170-45ae-be4f-b8a56e2752ce` → expect 403 or 404.
+- `GET /portal/api/trust/transactions/e7625298-7c3a-4298-aba5-5ef51fc4f920` → expect 403 or 404.

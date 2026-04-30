@@ -3,7 +3,8 @@
 **Date**: 2026-04-30  
 **Actor**: Bob Ndlovu (Admin, `bob@mathebula-test.local` / `SecureP@ss2`)  
 **Stack**: Keycloak dev stack (frontend `:3000`, gateway `:8443`, backend `:8080`, KC `:8180`).  
-**Result**: PARTIAL_PASS — Phase A blocked, Phases B+C pass with caveats. Gap **OBS-2101** filed.
+**Result (cycle 13)**: PARTIAL_PASS — Phase A blocked, Phases B+C pass with caveats. Gap **OBS-2101** filed.  
+**Result (cycle 14 retry)**: COMPLETE — Phase A retry per amended scenario PASS (4h logged across 2 RAF tasks, member-rate snapshot warning rendered as expected, time entries persist). OBS-2101 marked WONT_FIX feature-gap. Day 21 closed.
 
 ---
 
@@ -86,3 +87,33 @@ These are documented here, not amended in the scenario file (kept as-is for narr
 **Time on day**: ~10 min (login swap, all three phases, evidence capture).  
 **Tool count**: ~50 calls.  
 **No regressions in Days 0-15 evidence.**
+
+---
+
+## Cycle 14 (2026-04-30) — Phase A retry per amended scenario
+
+**Result**: PASS  
+**Actor**: Bob Ndlovu  
+
+After OBS-2101 was triaged WONT_FIX (Product agent confirmed feature-gap, scenario amended at lines 561-568 to drive the actual non-tariff `LogTimeDialog` path), the QA agent re-ran Phase A using the canonical free-text time-entry surface.
+
+| ck | Step | Result |
+|----|------|--------|
+| 21.1 | Navigate matter RAF-2026-001 → Tasks tab | PASS |
+| 21.2 | Click "Initial RAF claim assessment & instructions" task → `Log Time` button | PASS — dialog opens with Duration/Date/Description/Billable + yellow `No rate card found for this combination` warning (expected per amended scenario; Bob has no rate card and product correctly warns). |
+| 21.3 | Fill Duration=2h 30m, Date=2026-04-30, Description="Initial consultation with Sipho — RAF claim assessment, intake narrative, instructions on quantum", Billable=Yes | PASS |
+| 21.4 | Submit | PASS — dialog closes; Time tab now reads `Total Time 2h 30m / Billable 2h 30m / Contributors 1 / Entries 1 · By Task: Initial RAF claim assessment & instructions 2h 30m 1 · By Member: Bob Ndlovu 2h 30m`. `billable_value` empty (no rate card), as warned. |
+| 21.5 | Pick second RAF task → log Duration=1h 30m, Description="Drafted particulars of claim incl. quantum schedule" | PASS — RAF template has no "Drafting particulars of claim" task verbatim; used closest-fit "File RAF1 claim form + supporting documents (within 3-year prescription)". Logged 1h 30m. Time tab now reads `Total Time 4h / Billable 4h / Entries 2 / Bob Ndlovu 4h 0m 4h`. |
+
+Console: 0 errors / 1 warning (Next.js telemetry). No regressions.
+
+Evidence: `qa_cycle/evidence/day-21/{log-time-saved-entry-1.png,log-time-saved-both.png}`.
+
+**Day 21 final checkpoints**
+- [x] Time entries post (non-tariff path — duration + member-rate snapshot OR yellow `No rate card found` warning) — **PASS** (yellow warning surfaced as expected, OBS-2101 WONT_FIX cascade)
+- [x] Disbursement recorded with recoverable flag (feeds Day 28 fee note) — PASS via Office-Account proxy semantic (cycle 13)
+- [x] Court date added, visible on calendar + matter — PASS (cycle 13)
+
+**Time on cycle-14 retry**: ~5 min (login already on Bob, Phase A only).  
+**Tool count**: ~25 calls.  
+**Status**: Day 21 → COMPLETE.

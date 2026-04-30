@@ -628,6 +628,16 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 **Actor**: Thandi Mathebula (Owner — signs fee notes) — context swap, login as Thandi
 
+> **BLOCKED on cycle 14 (2026-04-30)**: Day 28 cannot proceed because
+> Sipho's `lifecycle_status='ONBOARDING'` excludes him from the eligible-
+> customer SQL in `BillingRunSelectionService.discoverCustomers(...)`
+> (filter: `WHERE c.lifecycle_status='ACTIVE'`). Activating him is blocked
+> by two stacked bugs (OBS-2102, HIGH): the Edit Customer dialog button
+> does not render for Sipho's customer page (paints fine for Moroka), and
+> `LIFECYCLE_ACTIVATION_FIELDS` in `StructuralPrerequisiteCheck` requires
+> `tax_number` for INDIVIDUAL ZA customers (no override). Awaiting Dev/
+> Product fix. See `qa_cycle/fix-specs/OBS-2102.md`.
+
 > **Scenario amendment (OBS-2101, WONT_FIX feature-gap — cascade from
 > Day 21 Phase A)**: Time entries from Day 21 are NOT tariff-bound (the
 > product has no tariff↔time-entry integration — see Day 21 Phase A

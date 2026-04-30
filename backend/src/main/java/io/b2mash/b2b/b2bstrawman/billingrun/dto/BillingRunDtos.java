@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.billingrun.EntryType;
 import io.b2mash.b2b.b2bstrawman.expense.Expense;
 import io.b2mash.b2b.b2bstrawman.expense.ExpenseCategory;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.LegalDisbursement;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -159,6 +160,37 @@ public final class BillingRunDtos {
           e.isBillable(),
           e.getMarkupPercent(),
           e.getBillableAmount());
+    }
+  }
+
+  public record DisbursementResponse(
+      UUID id,
+      UUID projectId,
+      UUID customerId,
+      LocalDate incurredDate,
+      String description,
+      String category,
+      BigDecimal amount,
+      BigDecimal vatAmount,
+      String vatTreatment,
+      String supplierName,
+      BigDecimal billableAmount) {
+
+    public static DisbursementResponse from(LegalDisbursement d) {
+      BigDecimal billable =
+          d.getAmount().add(d.getVatAmount() != null ? d.getVatAmount() : BigDecimal.ZERO);
+      return new DisbursementResponse(
+          d.getId(),
+          d.getProjectId(),
+          d.getCustomerId(),
+          d.getIncurredDate(),
+          d.getDescription(),
+          d.getCategory(),
+          d.getAmount(),
+          d.getVatAmount(),
+          d.getVatTreatment(),
+          d.getSupplierName(),
+          billable);
     }
   }
 

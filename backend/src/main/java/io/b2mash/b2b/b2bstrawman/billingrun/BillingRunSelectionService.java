@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.billingrun;
 
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunItemResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunPreviewResponse;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.DisbursementResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.ExpenseResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.LoadPreviewRequest;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.TimeEntryResponse;
@@ -17,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteContext;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteService;
 import io.b2mash.b2b.b2bstrawman.prerequisite.PrerequisiteViolation;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.Tuple;
 import java.math.BigDecimal;
@@ -48,6 +50,7 @@ public class BillingRunSelectionService {
   private final PrerequisiteService prerequisiteService;
   private final TimeEntryRepository timeEntryRepository;
   private final ExpenseRepository expenseRepository;
+  private final DisbursementRepository disbursementRepository;
   private final EntityManager entityManager;
 
   public BillingRunSelectionService(
@@ -58,6 +61,7 @@ public class BillingRunSelectionService {
       PrerequisiteService prerequisiteService,
       TimeEntryRepository timeEntryRepository,
       ExpenseRepository expenseRepository,
+      DisbursementRepository disbursementRepository,
       EntityManager entityManager) {
     this.billingRunRepository = billingRunRepository;
     this.billingRunItemRepository = billingRunItemRepository;
@@ -66,6 +70,7 @@ public class BillingRunSelectionService {
     this.prerequisiteService = prerequisiteService;
     this.timeEntryRepository = timeEntryRepository;
     this.expenseRepository = expenseRepository;
+    this.disbursementRepository = disbursementRepository;
     this.entityManager = entityManager;
   }
 
@@ -186,6 +191,32 @@ public class BillingRunSelectionService {
       return List.of();
     }
     return expenseRepository.findAllById(expenseIds).stream().map(ExpenseResponse::from).toList();
+  }
+
+  /**
+   * OBS-2104c — surfaces approved-and-unbilled legal disbursements as cherry-pickable lines in
+   * wizard step 3. Mirrors {@link #getUnbilledExpenses(UUID, UUID)} but resolves IDs against {@code
+   * DisbursementRepository} (separate domain table from {@code expenses}).
+   */
+  @Transactional(readOnly = true)
+  public List<DisbursementResponse> getUnbilledDisbursements(
+      UUID billingRunId, UUID billingRunItemId) {
+    validateItemBelongsToRun(billingRunId, billingRunItemId);
+
+    var selections = billingRunEntrySelectionRepository.findByBillingRunItemId(billingRunItemId);
+
+    List<UUID> disbursementIds =
+        selections.stream()
+            .filter(s -> s.getEntryType() == EntryType.LEGAL_DISBURSEMENT)
+            .map(BillingRunEntrySelection::getEntryId)
+            .toList();
+
+    if (disbursementIds.isEmpty()) {
+      return List.of();
+    }
+    return disbursementRepository.findAllById(disbursementIds).stream()
+        .map(DisbursementResponse::from)
+        .toList();
   }
 
   @Transactional
@@ -324,6 +355,18 @@ public class BillingRunSelectionService {
         .toList();
   }
 
+  /**
+   * OBS-2104c — resolves the list of cherry-picked, included legal disbursement IDs for a billing
+   * run item. Used by {@link BillingRunGenerationService} to attach disbursements to the generated
+   * draft fee note (parallel to time-entry / expense resolution).
+   */
+  List<UUID> resolveSelectedDisbursementIds(BillingRunItem item) {
+    return billingRunEntrySelectionRepository.findByBillingRunItemId(item.getId()).stream()
+        .filter(s -> s.getEntryType() == EntryType.LEGAL_DISBURSEMENT && s.isIncluded())
+        .map(BillingRunEntrySelection::getEntryId)
+        .toList();
+  }
+
   // --- Private helpers ---
 
   private void validateItemBelongsToRun(UUID billingRunId, UUID billingRunItemId) {
@@ -357,6 +400,15 @@ public class BillingRunSelectionService {
             .map(BillingRunEntrySelection::getEntryId)
             .toList();
 
+    // OBS-2104c — disbursements roll into the unbilledExpense aggregate (mirrors the
+    // discoverCustomers() projection where expenses_amount + disbursements_amount sum into the
+    // single unbilled_expense_amount column).
+    List<UUID> includedDisbursementIds =
+        selections.stream()
+            .filter(s -> s.getEntryType() == EntryType.LEGAL_DISBURSEMENT && s.isIncluded())
+            .map(BillingRunEntrySelection::getEntryId)
+            .toList();
+
     BigDecimal timeAmount = BigDecimal.ZERO;
     if (!includedTimeEntryIds.isEmpty()) {
       var timeEntries = timeEntryRepository.findAllById(includedTimeEntryIds);
@@ -375,10 +427,22 @@ public class BillingRunSelectionService {
               .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
+    if (!includedDisbursementIds.isEmpty()) {
+      var disbursements = disbursementRepository.findAllById(includedDisbursementIds);
+      BigDecimal disbursementAmount =
+          disbursements.stream()
+              .map(
+                  d ->
+                      d.getAmount()
+                          .add(d.getVatAmount() != null ? d.getVatAmount() : BigDecimal.ZERO))
+              .reduce(BigDecimal.ZERO, BigDecimal::add);
+      expenseAmount = expenseAmount.add(disbursementAmount);
+    }
+
     item.setUnbilledTimeAmount(timeAmount);
     item.setUnbilledTimeCount(includedTimeEntryIds.size());
     item.setUnbilledExpenseAmount(expenseAmount);
-    item.setUnbilledExpenseCount(includedExpenseIds.size());
+    item.setUnbilledExpenseCount(includedExpenseIds.size() + includedDisbursementIds.size());
   }
 
   private List<CustomerDiscoveryRow> discoverEligibleCustomers(
@@ -645,6 +709,43 @@ public class BillingRunSelectionService {
 
       for (UUID entryId : expenseIds) {
         selections.add(new BillingRunEntrySelection(billingRunItemId, EntryType.EXPENSE, entryId));
+      }
+    }
+
+    // OBS-2104c — persist approved-and-unbilled legal disbursements as cherry-pickable lines so
+    // step 3 of the wizard can render them in a dedicated Disbursements section. Mirrors the
+    // gating in discoverCustomers() so the same set of disbursements that contributes to the
+    // step-2 unbilled total surfaces in step 3 (UNBILLED + APPROVED + within period). Gated on
+    // includeExpenses (the wizard's existing toggle for non-time chargeables) so a time-only run
+    // skips disbursements as well. The query is harmless (returns empty) for non-legal tenants
+    // because the legal_disbursements table only exists in tenant schemas with the legal vertical
+    // module enabled (Flyway V100 in the legal-vertical migration set).
+    if (includeExpenses) {
+      String disbursementSql =
+          """
+          SELECT ld.id
+          FROM legal_disbursements ld
+          JOIN customer_projects cp ON cp.project_id = ld.project_id
+          WHERE cp.customer_id = :customerId
+            AND ld.billing_status = 'UNBILLED'
+            AND ld.approval_status = 'APPROVED'
+            AND ld.incurred_date >= :periodFrom
+            AND ld.incurred_date <= :periodTo
+          """;
+
+      List<UUID> disbursementIds =
+          ((List<Tuple>)
+                  entityManager
+                      .createNativeQuery(disbursementSql, Tuple.class)
+                      .setParameter("customerId", customerId)
+                      .setParameter("periodFrom", periodFrom)
+                      .setParameter("periodTo", periodTo)
+                      .getResultList())
+              .stream().map(t -> t.get("id", UUID.class)).toList();
+
+      for (UUID entryId : disbursementIds) {
+        selections.add(
+            new BillingRunEntrySelection(billingRunItemId, EntryType.LEGAL_DISBURSEMENT, entryId));
       }
     }
 

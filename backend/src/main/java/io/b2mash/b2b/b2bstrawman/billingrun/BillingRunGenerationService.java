@@ -119,6 +119,12 @@ public class BillingRunGenerationService {
 
                   List<UUID> timeEntryIds = selectionService.resolveSelectedTimeEntryIds(freshItem);
                   List<UUID> expenseIds = selectionService.resolveSelectedExpenseIds(freshItem);
+                  // OBS-2104c — attach cherry-picked legal disbursements directly during draft
+                  // creation so users no longer need to use the "Add Disbursements" modal in
+                  // step 4 as a workaround. The invoice creation pipeline already supports this
+                  // via CreateInvoiceRequest.disbursementIds (slice 487A).
+                  List<UUID> disbursementIds =
+                      selectionService.resolveSelectedDisbursementIds(freshItem);
 
                   var invoiceRequest =
                       new CreateInvoiceRequest(
@@ -126,7 +132,7 @@ public class BillingRunGenerationService {
                           run.getCurrency(),
                           timeEntryIds.isEmpty() ? null : timeEntryIds,
                           expenseIds.isEmpty() ? null : expenseIds,
-                          null,
+                          disbursementIds.isEmpty() ? null : disbursementIds,
                           null,
                           null,
                           null,

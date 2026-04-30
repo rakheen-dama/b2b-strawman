@@ -17,6 +17,8 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.retainer.event.RetainerPeriodRolloverEvent;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionApprovalEvent;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustTransactionRecordedEvent;
 import jakarta.mail.internet.MimeMessage;
@@ -73,6 +75,7 @@ class PortalEmailNotificationChannelIntegrationTest {
   @Autowired private EmailDeliveryLogRepository deliveryLogRepository;
   @Autowired private ApplicationEventPublisher eventPublisher;
   @Autowired private TransactionTemplate transactionTemplate;
+  @Autowired private OrgSettingsRepository orgSettingsRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -116,6 +119,17 @@ class PortalEmailNotificationChannelIntegrationTest {
                               PortalContact.ContactRole.PRIMARY);
                       contact = portalContactRepository.save(contact);
                       contactId = contact.getId();
+
+                      // OBS-1101: seed ZAR as the tenant's default currency so the trust-activity
+                      // nudge email renders amounts as "R 50 000,00" instead of "$50,000.00"
+                      // (TenantProvisioningService defaults to USD when country is null, which
+                      // would otherwise short-circuit OrgSettings creation entirely).
+                      OrgSettings settings =
+                          orgSettingsRepository
+                              .findForCurrentTenant()
+                              .orElse(new OrgSettings("ZAR"));
+                      settings.updateCurrency("ZAR");
+                      orgSettingsRepository.save(settings);
                     }));
   }
 
@@ -198,7 +212,7 @@ class PortalEmailNotificationChannelIntegrationTest {
                     trustAccountId,
                     projectId,
                     "DEPOSIT",
-                    new BigDecimal("750.00"),
+                    new BigDecimal("50000"),
                     customerId,
                     memberId,
                     tenantSchema,
@@ -227,6 +241,23 @@ class PortalEmailNotificationChannelIntegrationTest {
     assertThat(body)
         .as("CTA href must NOT use trust-account id")
         .doesNotContain("/trust/" + trustAccountId);
+
+    // OBS-1101: amount must be formatted as ZAR currency, not raw "50000".
+    // The Java currency formatter for en-ZA produces a non-breaking space (U+00A0) between the
+    // symbol and digits and a comma decimal separator (e.g. "R 50 000,00"). Assert on
+    // the digits + comma so the test is robust to symbol/whitespace variations across JDK ICU
+    // versions.
+    assertThat(body)
+        .as("amount must render as ZAR currency, not raw integer")
+        .containsPattern("R\\s*50\\s+000,00");
+    assertThat(body)
+        .as("body must not contain a bare unformatted amount line")
+        .doesNotContainPattern(">\\s*50000\\s*<");
+
+    // OBS-1101: timestamp must be formatted as "d MMM yyyy", not a raw ISO instant string.
+    assertThat(body)
+        .as("body must not contain a raw ISO timestamp like 2026-04-30T...Z")
+        .doesNotContainPattern("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}");
 
     var logs = findLogsByReferenceType("PORTAL_TRUST_ACTIVITY");
     assertThat(logs)

@@ -1,0 +1,16 @@
+{
+  "found": true,
+  "labels": [
+    "Name",
+    "Description (optional)",
+    "Due Date (optional)",
+    "Client (optional)",
+    "Reference Number (optional)",
+    "Priority (optional)",
+    "Work Type (optional)"
+  ],
+  "sections": [
+    "Create Matter"
+  ],
+  "customField": []
+}

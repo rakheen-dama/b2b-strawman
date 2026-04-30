@@ -1,0 +1,14 @@
+{
+  "found": true,
+  "labels": [
+    "Title",
+    "Description (optional)",
+    "Priority",
+    "Type (optional)",
+    "Due Date (optional)",
+    "Estimated Hours (optional)",
+    "Recurrence (optional)",
+    "Assign to (optional)"
+  ],
+  "customField": []
+}

@@ -209,9 +209,11 @@ class StructuralPrerequisiteCheckTest {
   @Test
   void lifecycleActivation_mirrorsInvoiceGenerationFields() {
     // LIFECYCLE_ACTIVATION uses the same structural check set as INVOICE_GENERATION so that a
-    // customer cannot transition to ACTIVE while missing billing address / tax info.
+    // customer cannot transition to ACTIVE while missing billing address / tax info. Use COMPANY
+    // here so the OBS-2102 INDIVIDUAL tax_number skip does not apply — all four violations fire.
     var customer =
-        TestCustomerFactory.createActiveCustomer("Test Corp", "test@test.com", MEMBER_ID);
+        TestCustomerFactory.createActiveCustomer(
+            "Test Corp", "test@test.com", MEMBER_ID, CustomerType.COMPANY);
     // No promoted fields set → expect all four violations.
 
     var violations =
@@ -221,6 +223,79 @@ class StructuralPrerequisiteCheckTest {
     assertThat(violations)
         .extracting(PrerequisiteViolation::fieldSlug)
         .containsExactlyInAnyOrder("address_line1", "city", "country", "tax_number");
+  }
+
+  @Test
+  void lifecycleActivation_individualWithoutTaxNumber_passes() {
+    // OBS-2102: INDIVIDUAL customers are exempt from the tax_number activation prerequisite.
+    // SARS does not issue tax numbers to every natural person; SA-ID is the canonical identifier.
+    var customer =
+        TestCustomerFactory.createActiveCustomer(
+            "Sipho Dlamini", "sipho@test.com", MEMBER_ID, CustomerType.INDIVIDUAL);
+    customer.setAddressLine1("12 Loveday St");
+    customer.setCity("Johannesburg");
+    customer.setCountry("ZA");
+    // taxNumber intentionally left null
+
+    var violations =
+        StructuralPrerequisiteCheck.check(customer, PrerequisiteContext.LIFECYCLE_ACTIVATION);
+
+    assertThat(violations).isEmpty();
+  }
+
+  @Test
+  void invoiceSendOnly_individualWithoutTaxNumber_stillBlocked() {
+    // OBS-2102: the INDIVIDUAL activation skip does NOT relax invoice-send semantics — SARS
+    // requires tax_number on every issued invoice, regardless of customer type.
+    var customer =
+        TestCustomerFactory.createActiveCustomer(
+            "Sipho Dlamini", "sipho@test.com", MEMBER_ID, CustomerType.INDIVIDUAL);
+    customer.setAddressLine1("12 Loveday St");
+    customer.setCity("Johannesburg");
+    customer.setCountry("ZA");
+    // taxNumber intentionally left null
+
+    var violations = StructuralPrerequisiteCheck.checkInvoiceSendOnly(customer);
+
+    assertThat(violations).hasSize(1);
+    assertThat(violations.getFirst().fieldSlug()).isEqualTo("tax_number");
+  }
+
+  @Test
+  void lifecycleActivation_companyWithoutTaxNumber_stillBlocked() {
+    // OBS-2102: the INDIVIDUAL skip is type-scoped — COMPANY customers must still supply
+    // tax_number for activation (real businesses have SARS tax numbers).
+    var customer =
+        TestCustomerFactory.createActiveCustomer(
+            "Acme Pty Ltd", "billing@acme.com", MEMBER_ID, CustomerType.COMPANY);
+    customer.setAddressLine1("123 Main St");
+    customer.setCity("Johannesburg");
+    customer.setCountry("ZA");
+    // taxNumber intentionally left null
+
+    var violations =
+        StructuralPrerequisiteCheck.check(customer, PrerequisiteContext.LIFECYCLE_ACTIVATION);
+
+    assertThat(violations).hasSize(1);
+    assertThat(violations.getFirst().fieldSlug()).isEqualTo("tax_number");
+  }
+
+  @Test
+  void lifecycleActivation_trustWithoutTaxNumber_stillBlocked() {
+    // OBS-2102: TRUST customers also retain the tax_number activation prerequisite.
+    var customer =
+        TestCustomerFactory.createActiveCustomer(
+            "Mandela Family Trust", "trust@test.com", MEMBER_ID, CustomerType.TRUST);
+    customer.setAddressLine1("123 Main St");
+    customer.setCity("Johannesburg");
+    customer.setCountry("ZA");
+    // taxNumber intentionally left null
+
+    var violations =
+        StructuralPrerequisiteCheck.check(customer, PrerequisiteContext.LIFECYCLE_ACTIVATION);
+
+    assertThat(violations).hasSize(1);
+    assertThat(violations.getFirst().fieldSlug()).isEqualTo("tax_number");
   }
 
   @Test

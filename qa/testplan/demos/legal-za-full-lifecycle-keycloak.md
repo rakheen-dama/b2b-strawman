@@ -242,7 +242,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
   - Case number: (blank at intake; populated later)
   - Primary attorney: Bob Ndlovu
 - [ ] **3.4** Submit → matter created, redirected to matter detail
-- [ ] **3.5** Verify matter sidebar shows tabs: **Overview, Tasks, Documents, Time, Fee Notes, Trust, Activity, Audit**
+- [ ] **3.5** Verify matter sidebar tabs include the canonical legal-za set: **Overview, Documents, Members, Clients, Tasks, Time, Expenses, Fee Estimate, Financials, Staffing, Rates, Generated Docs, Requests, Client Comments, Court Dates, Adverse Parties, Trust, Disbursements, Statements, Activity**. Note: tab is "Fee Estimate" (legal-za term for matter-level budget/planning) — NOT "Fee Notes" (which is the legal-za term for invoices, surfaced under the Fee Notes module, not as a per-matter tab). Matter-level audit history is surfaced via the **Activity** tab; org-wide audit log lives under **Settings > Audit Log** (per OBS-302 triage — there is no per-matter "Audit" tab in this product).
 - [ ] **3.6** Promoted fields (matter_type, court_name, case_number) render inline on Overview tab — **NOT** duplicated in a generic "Custom Fields" section
 - [ ] **3.7** Navigate to **Info Requests** tab on matter → click **+ New Info Request**
 - [ ] **3.8** Select template: **FICA Onboarding Pack** (from `legal-za` request pack)

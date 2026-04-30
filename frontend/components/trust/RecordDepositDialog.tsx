@@ -25,6 +25,11 @@ import {
 import { Loader2 } from "lucide-react";
 import { recordDeposit } from "@/app/(app)/org/[slug]/trust-accounting/transactions/actions";
 import { recordDepositSchema, type RecordDepositFormData } from "@/lib/schemas/trust";
+import {
+  TrustCustomerPicker,
+  TrustMatterPicker,
+  type TrustPickerCustomer,
+} from "./TrustEntityPickers";
 
 interface RecordDepositDialogProps {
   accountId: string;
@@ -32,14 +37,20 @@ interface RecordDepositDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
+  /** Pre-fetched customer roster for the picker (server-fetched by the parent). */
+  customers: TrustPickerCustomer[];
+  /** When set, locks the customer picker to this id (matter/client detail surface). */
+  defaultCustomerId?: string;
+  /** When set, locks the matter picker to this id (matter detail surface). */
+  defaultProjectId?: string;
 }
 
-function getDefaultValues() {
+function getDefaultValues(defaultCustomerId?: string, defaultProjectId?: string) {
   const now = new Date();
   const local = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
   return {
-    customerId: "",
-    projectId: "",
+    customerId: defaultCustomerId ?? "",
+    projectId: defaultProjectId ?? "",
     amount: 0,
     reference: "",
     description: "",
@@ -53,19 +64,25 @@ export function RecordDepositDialog({
   open,
   onOpenChange,
   onSuccess,
+  customers,
+  defaultCustomerId,
+  defaultProjectId,
 }: RecordDepositDialogProps) {
+  void slug;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<RecordDepositFormData>({
     resolver: zodResolver(recordDepositSchema),
-    defaultValues: getDefaultValues(),
+    defaultValues: getDefaultValues(defaultCustomerId, defaultProjectId),
   });
+
+  const customerId = form.watch("customerId");
 
   function handleOpenChange(newOpen: boolean) {
     onOpenChange(newOpen);
     if (!newOpen) {
-      form.reset(getDefaultValues());
+      form.reset(getDefaultValues(defaultCustomerId, defaultProjectId));
       setError(null);
     }
   }
@@ -106,10 +123,13 @@ export function RecordDepositDialog({
               name="customerId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Client ID</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Client UUID" {...field} />
-                  </FormControl>
+                  <FormLabel>Client</FormLabel>
+                  <TrustCustomerPicker
+                    field={field}
+                    customers={customers}
+                    defaultCustomerId={defaultCustomerId}
+                    triggerTestId="trust-deposit-customer-trigger"
+                  />
                   <FormMessage />
                 </FormItem>
               )}
@@ -121,9 +141,12 @@ export function RecordDepositDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Matter (Optional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Matter UUID (optional)" {...field} />
-                  </FormControl>
+                  <TrustMatterPicker
+                    field={field}
+                    customerId={customerId}
+                    defaultProjectId={defaultProjectId}
+                    triggerTestId="trust-deposit-matter-trigger"
+                  />
                   <FormMessage />
                 </FormItem>
               )}

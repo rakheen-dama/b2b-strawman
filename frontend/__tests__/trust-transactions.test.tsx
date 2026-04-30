@@ -47,6 +47,12 @@ vi.mock("@/app/(app)/org/[slug]/trust-accounting/actions", () => ({
   ]),
 }));
 
+// OBS-1001: dependent matter combobox calls fetchCustomerProjects via SWR.
+// Stub the server action so happy-dom never loads `server-only`.
+vi.mock("@/app/(app)/org/[slug]/customers/[id]/actions", () => ({
+  fetchCustomerProjects: vi.fn().mockResolvedValue([]),
+}));
+
 // ── Mock org settings & capabilities ─────────────────────────────
 vi.mock("@/lib/api/settings", () => ({
   getOrgSettings: vi.fn().mockResolvedValue({
@@ -185,21 +191,39 @@ describe("Trust Transactions", () => {
     expect(screen.getByText("2 transactions found")).toBeInTheDocument();
   });
 
-  // Test 2: Deposit dialog submits correctly
+  // Test 2: Deposit dialog submits correctly with the locked-picker pattern.
+  // OBS-1001 replaced the raw <Input placeholder="Client UUID"/> field with a
+  // Popover+Command combobox; we drive the form via `defaultCustomerId` so the
+  // submit path is exercised without scripting the popover open/select.
   it("submits deposit dialog with valid form data", async () => {
     mockRecordDeposit.mockResolvedValue({ success: true });
 
-    render(<RecordDepositDialog accountId="acc-1" open={true} onOpenChange={vi.fn()} />);
+    render(
+      <RecordDepositDialog
+        accountId="acc-1"
+        slug="acme"
+        open={true}
+        onOpenChange={vi.fn()}
+        customers={[
+          {
+            id: "550e8400-e29b-41d4-a716-446655440000",
+            name: "Sipho Dlamini",
+            email: "sipho@example.com",
+          },
+        ]}
+        defaultCustomerId="550e8400-e29b-41d4-a716-446655440000"
+      />
+    );
 
     expect(
       screen.getByText("Record a trust deposit from a client into the trust account.")
     ).toBeInTheDocument();
 
-    // Fill the client ID field
-    const clientInput = screen.getByPlaceholderText("Client UUID");
-    fireEvent.change(clientInput, {
-      target: { value: "550e8400-e29b-41d4-a716-446655440000" },
-    });
+    // Customer trigger should be disabled (locked) and show the customer name,
+    // not a UUID.
+    const customerTrigger = screen.getByTestId("trust-deposit-customer-trigger");
+    expect(customerTrigger).toBeDisabled();
+    expect(customerTrigger).toHaveTextContent("Sipho Dlamini");
 
     // Fill amount using fireEvent for number input
     const amountInput = screen.getByPlaceholderText("0.00");
@@ -222,6 +246,66 @@ describe("Trust Transactions", () => {
         })
       );
     });
+  });
+
+  // OBS-1001: when no `defaultCustomerId` is supplied the customer trigger
+  // is enabled, shows the placeholder text, and the legacy raw UUID inputs
+  // are gone. Driving the Radix Popover open is unreliable in happy-dom, so
+  // the deeper select-and-fill flow is exercised by the locked-picker
+  // submission test above.
+  it("renders the customer combobox (not raw UUID inputs) (OBS-1001)", () => {
+    render(
+      <RecordDepositDialog
+        accountId="acc-1"
+        slug="acme"
+        open={true}
+        onOpenChange={vi.fn()}
+        customers={[
+          {
+            id: "550e8400-e29b-41d4-a716-446655440000",
+            name: "Sipho Dlamini",
+            email: "sipho@example.com",
+          },
+          {
+            id: "660e8400-e29b-41d4-a716-446655440001",
+            name: "Thandi Khumalo",
+            email: "thandi@example.com",
+          },
+        ]}
+      />
+    );
+
+    const customerTrigger = screen.getByTestId("trust-deposit-customer-trigger");
+    expect(customerTrigger).not.toBeDisabled();
+    expect(customerTrigger).toHaveTextContent("Select a client...");
+
+    // The old raw UUID inputs must be gone.
+    expect(screen.queryByPlaceholderText("Client UUID")).toBeNull();
+    expect(screen.queryByPlaceholderText("Matter UUID (optional)")).toBeNull();
+  });
+
+  // OBS-1001: matter trigger is disabled with helper text until a client is
+  // selected.
+  it("disables the matter trigger until a client is selected (OBS-1001)", () => {
+    render(
+      <RecordDepositDialog
+        accountId="acc-1"
+        slug="acme"
+        open={true}
+        onOpenChange={vi.fn()}
+        customers={[
+          {
+            id: "550e8400-e29b-41d4-a716-446655440000",
+            name: "Sipho Dlamini",
+            email: "sipho@example.com",
+          },
+        ]}
+      />
+    );
+
+    const matterTrigger = screen.getByTestId("trust-deposit-matter-trigger");
+    expect(matterTrigger).toBeDisabled();
+    expect(matterTrigger).toHaveTextContent("Select a client first");
   });
 
   // Test 3: Approval badge shows buttons for AWAITING_APPROVAL

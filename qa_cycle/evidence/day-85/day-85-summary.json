@@ -1,0 +1,17 @@
+{
+  "timestamp": "2026-04-30T20:34:19.879Z",
+  "url": "http://localhost:3000/org/mathebula-partners/projects/b7e319f7-fd7e-4526-a8b3-b40b1f85b34b?tab=activity",
+  "day85Verdict": "PASS-WITH-NOTES",
+  "checkpoints": {
+    "85.1_closure_letter_attached_day60": "PASS - matter-closure-letter-dlamini-v-road-accident-fund-2026-04-30.pdf (1.6 KB) visible in Documents tab",
+    "85.2_final_paperwork": "PASS - generated fresh SoA (b7f4ea4f-d1af-414f-a0eb-1c78aa757d63) post-Day 60; closure-letter already on Day 60; no further closing-letter template required",
+    "85.3_retention_clock_started": "PARTIAL - retention banner shows \"Retention clock started on 30 Apr 2026\" (correct closedAt anchor per ADR-249), but firm-level matter-retention period not yet configured so 5-year deletion date is uncomputable. Scenario amend: retention period is a separate Settings concern, not a closure invariant.",
+    "85.4_audit_filter_by_actor": "PASS - actor filter combobox offers Bob Ndlovu, Thandi Mathebula (firm users) AND Sipho Dlamini (portal contact); filtering by Sipho narrows to \"Sipho Dlamini performed portal.document.downloaded on document\" event (Day 61 SoA download). Phase 50 + Phase 69 readiness PASS."
+  },
+  "obs2106Verification": {
+    "structuralFixLive": "YES - PortalDocumentNotificationHandler.process entered INFO log line fired at 20:29:53 for fresh statement-of-account event (template=statement-of-account, project=b7e319f7-fd7e-4526-a8b3-b40b1f85b34b, generatedDoc=b7f4ea4f-d1af-414f-a0eb-1c78aa757d63)",
+    "diagnosticUpliftLive": "YES - skip-path log line \"Skipping portal-document-ready: per-tenant allowlist empty (tenant=tenant_5039f2d497cf)\" fired at INFO level (was DEBUG before fix)",
+    "emailDelivery": "STILL_BROKEN - new gap OBS-2107 - org_settings.portal_notification_doc_types is empty for tenant_5039f2d497cf despite Flyway V117 default. PR #1246 did not include backfill migration for existing tenant rows whose pre-V117 row already had empty/null allowlist. Requires data fix or upsert in PortalNotificationDocTypes seeder.",
+    "obs2106Verdict": "VERIFIED on the structural-fix-live criterion per task instructions — PR #1246 Part 1 (diagnostic uplift) and Part 2 (publishPortalReadyFollowUp helper code path) are confirmed live. Email-delivery gap is a separate seed regression filed as OBS-2107."
+  }
+}

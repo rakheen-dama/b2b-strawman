@@ -747,8 +747,8 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] **46.1** Login via magic-link for second info request
 - [ ] **46.2** `/home` → "Supporting medical evidence" shows as pending → click into it
 - [ ] **46.3** Upload 2 test PDFs (discharge summary, orthopaedic report) → submit → state → **Submitted**
-- [ ] **46.4** Navigate to `/trust` → balance now shows **R 70,000** (reflects both deposits)
-- [ ] **46.5** Transaction list shows both deposits: Day 10 R 50,000 + Day 45 R 20,000, descending or ascending by date, both dated correctly, amounts correct
+- [ ] **46.4** Navigate to `/trust` → balance now shows **R 71,000** (R 50,000 Day 10 + R 1,000 Day 14 carry-over + R 20,000 Day 45). Note: scenario originally said R 70,000; cycle-15 OBS-1101 Mailpit-formatting verify added a R 1,000 third deposit, amended in cycle 18 / 19.
+- [ ] **46.5** Transaction list shows three deposits: Day 10 R 50,000 + Day 14 R 1,000 + Day 45 R 20,000, ordered descending by running-balance (newest first), all dates correct (2026-04-30 in this single-day E2E run), amounts correct
 - [ ] **46.6** **Passive isolation spot-check** — trust list still shows only Sipho's matter; no Moroka deposit (R 25,000) merged in anywhere
 - [ ] **46.7** `/home` → "Pending info requests" no longer shows the medical evidence request
 - [ ] **46.8** 📸 Optional: `day-46-portal-trust-two-deposits.png`

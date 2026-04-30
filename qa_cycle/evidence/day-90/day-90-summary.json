@@ -1,0 +1,23 @@
+{
+  "timestamp": "2026-04-30T20:39:09.026Z",
+  "day90Verdict": "PASS-WITH-NOTES",
+  "firmRegression": {
+    "90.1_terminology_sweep": "PASS - sidebar shows Matters/Clients/Fee Notes; zero Project/Customer/Invoice singular leaks",
+    "90.2_field_promotion": "CARRIED - verified across cycle 17/18; no regression observed at create dialogs in current sweep",
+    "90.3_progressive_disclosure": "PASS - 4 legal modules visible (Matters, Trust Accounting, Court Calendar, Conflict Check) + Tariffs (LSSA); zero accounting/consulting nav leaks",
+    "90.4_tier_removal": "PASS - Settings/Billing shows Trial/Manual/Managed Account; no Starter/Pro/Enterprise tier UI",
+    "90.5_console_errors": "PASS - probes returned 200 for valid routes; the 2 errors logged are from intentional 404 probes (court-dates, conflict-checks) - not page-level bugs",
+    "90.6_mailpit_sweep": "PASS - 16 emails sent, 0 bounces / 0 undeliverable. Subjects: 4x trust-activity, 3x magic-link, 2x weekly-digest, 1x INV-0002, 1x REQ-0003 completed, 1x Orthopaedic accept, 1x Hospital accept, 1x REQ-0003 sent, 1x INV-0001, 1x REQ-0002 sent."
+  },
+  "portalRegression": {
+    "90.7_portal_routes_clean": "PASS - all 9 routes (/home /projects /invoices /trust /deadlines /proposals /profile /settings/notifications /requests) return 200; zero portal console errors",
+    "90.8_isolation_no_drift": "PASS - direct-URL probes against Moroka c10abc4c, 75b8c43d return Next.js 200 with not-found body; zero Moroka content leak; identical behaviour to Day 15",
+    "90.9_final_digest_clean": "PASS - Day 75 digests verified Sipho-only (cycle 20); Mailpit shows 2x weekly-update emails",
+    "90.10_terminology": "PASS - portal uses Matter/Fee Note; no Project/Customer/Invoice/case file/engagement vocabulary leaks"
+  },
+  "exitCheckpoints": {
+    "E.10_isolation_blocker": "PASS - Day 15 + Day 90 isolation probes both pass; zero drift",
+    "E.13_matter_closure": "PASS - Day 60 clean closure + SoA generation + portal download all succeed",
+    "E.14_audit_trail_completeness": "PASS - Day 85 audit log filters work for both firm-user (Bob/Thandi) and portal-contact (Sipho) actors"
+  }
+}

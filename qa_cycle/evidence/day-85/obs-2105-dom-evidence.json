@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-04-30T20:28:37.049Z",
+  "url": "http://localhost:3000/org/mathebula-partners/projects/b7e319f7-fd7e-4526-a8b3-b40b1f85b34b",
+  "viewport": {
+    "width": 1600,
+    "height": 1000
+  },
+  "headerStructure": {
+    "parentClass": "flex flex-wrap items-start justify-between gap-4",
+    "parentWidth": 1200,
+    "parentHeight": 244,
+    "titleContainerClass": "min-w-0 flex-1 basis-[280px]",
+    "titleContainerWidth": 1200,
+    "titleContainerHeight": 156,
+    "h1Text": "Dlamini v Road Accident Fund",
+    "h1Width": 362.953125,
+    "h1Height": 32,
+    "childrenCount": 2,
+    "actionClusterClass": "flex flex-wrap items-center justify-end gap-2",
+    "actionClusterWidth": 1200,
+    "actionClusterHeight": 72,
+    "actionClusterText": "Reopen MatterGenerate Statement of AccountGenerate DocumentNew Engagement LetterSave as TemplateEditDelete"
+  },
+  "obs2105Verdict": "PASS - title h1 renders single-line at 32px height (363px width); action cluster wraps below title via flex-flex-wrap; basis-[280px] floor on title column; justify-end on action cluster; layout collapse fixed."
+}

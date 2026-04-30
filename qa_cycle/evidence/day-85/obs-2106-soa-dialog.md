@@ -1,0 +1,473 @@
+- generic:
+  - link:
+    - /url: "#main-content"
+    - text: Skip to content
+  - generic:
+    - complementary:
+      - generic:
+        - img
+        - generic: Kazi
+      - generic:
+        - generic: Mathebula & Partners
+      - button:
+        - img
+        - text: Search...
+        - generic: ⌘K
+      - navigation:
+        - generic:
+          - button [expanded]:
+            - generic: Work
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/dashboard
+              - img
+              - text: Dashboard
+            - link:
+              - /url: /org/mathebula-partners/my-work
+              - img
+              - text: My Work
+            - link:
+              - /url: /org/mathebula-partners/calendar
+              - img
+              - text: Calendar
+            - link:
+              - /url: /org/mathebula-partners/court-calendar
+              - img
+              - text: Court Calendar
+        - generic:
+          - button [expanded]:
+            - generic: Matters
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - img
+              - text: Matters
+            - link:
+              - /url: /org/mathebula-partners/schedules
+              - img
+              - text: Recurring Schedules
+        - generic:
+          - button:
+            - generic: Clients
+            - img
+        - generic:
+          - button:
+            - generic: Finance
+            - img
+        - generic:
+          - button [expanded]:
+            - generic: Team
+            - img
+          - generic:
+            - link:
+              - /url: /org/mathebula-partners/team
+              - img
+              - text: Team
+      - generic:
+        - link:
+          - /url: /org/mathebula-partners/notifications
+          - img
+          - text: Notifications
+        - link:
+          - /url: /org/mathebula-partners/settings/general
+          - img
+          - text: Settings
+        - link:
+          - /url: https://docs.heykazi.com
+          - img
+          - text: Help
+      - generic:
+        - generic: TM
+        - generic:
+          - paragraph: Thandi Mathebula
+          - paragraph: thandi@mathebula-test.local
+    - generic:
+      - banner:
+        - navigation:
+          - link:
+            - /url: /org/mathebula-partners/dashboard
+            - text: Mathebula & Partners
+          - generic:
+            - img
+            - link:
+              - /url: /org/mathebula-partners/projects
+              - text: Matters
+          - generic:
+            - img
+            - generic: Matter
+        - generic:
+          - generic:
+            - button: TM
+          - generic:
+            - button "Notifications":
+              - img
+              - generic: 14 unread notifications
+              - generic: "14"
+      - main:
+        - generic:
+          - generic:
+            - generic:
+              - generic:
+                - link:
+                  - /url: /org/mathebula-partners/projects
+                  - img
+                  - text: Back to Matters
+              - generic:
+                - generic:
+                  - generic:
+                    - heading [level=1]: Dlamini v Road Accident Fund
+                    - generic: Closed
+                  - paragraph: RAF claim under Road Accident Fund Act 56 of 1996. Covers RAF1 filing, medicals, tariff negotiation, Section 24 court action, prescription monitoring.
+                  - paragraph:
+                    - text: "Client:"
+                    - link:
+                      - /url: /org/mathebula-partners/customers/a30bb16b-743c-45a5-9fb5-13167fb92fde
+                      - text: Sipho Dlamini
+                  - generic:
+                    - generic:
+                      - generic: Ref
+                      - code: RAF-2026-001
+                  - paragraph: Created Apr 30, 2026 · 7 documents · 1 member · 0 tasks
+                - generic:
+                  - button:
+                    - img
+                    - text: Reopen Matter
+                  - button:
+                    - img
+                    - text: Generate Statement of Account
+                  - button:
+                    - img
+                    - text: Generate Document
+                    - img
+                  - button:
+                    - img
+                    - text: New Engagement Letter
+                  - button:
+                    - img
+                    - text: Save as Template
+                  - button:
+                    - img
+                    - text: Edit
+                  - button:
+                    - img
+                    - text: Delete
+              - generic:
+                - paragraph: Field Groups
+                - generic:
+                  - generic:
+                    - text: SA Legal — Matter Details
+                    - button:
+                      - img
+                  - generic:
+                    - text: Project Info
+                    - button:
+                      - img
+                  - button:
+                    - img
+                    - text: Add Group
+              - generic:
+                - generic:
+                  - generic:
+                    - generic: SA Legal — Matter Details
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Case Number
+                        - generic:
+                          - textbox:
+                            - /placeholder: Court-assigned case number for the matter
+                      - generic:
+                        - generic: Court
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the court in which the matter is heard
+                      - generic:
+                        - generic: Opposing Party
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the primary opposing party
+                      - generic:
+                        - generic: Opposing Attorney
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the opposing attorney or firm
+                      - generic:
+                        - generic: Advocate
+                        - generic:
+                          - textbox:
+                            - /placeholder: Name of the instructed advocate (if briefed)
+                      - generic:
+                        - generic: Date of Instruction
+                        - generic:
+                          - textbox
+                      - generic:
+                        - generic: Estimated Value
+                        - generic:
+                          - spinbutton
+                - generic:
+                  - generic:
+                    - generic: Project Info
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic: Category
+                        - generic:
+                          - textbox:
+                            - /placeholder: Project category or type
+                - generic:
+                  - button:
+                    - img
+                    - text: Save Custom Fields
+              - generic:
+                - paragraph: Tags
+                - generic:
+                  - generic:
+                    - button:
+                      - img
+                      - text: Add Tag
+              - generic:
+                - tablist:
+                  - tab [selected]: Overview
+                  - tab: Documents
+                  - tab: Members
+                  - tab: Clients
+                  - tab: Tasks
+                  - tab: Time
+                  - tab: Fee Estimate
+                  - tab: Financials
+                  - tab: Staffing
+                  - tab: Rates
+                  - tab: Generated Docs
+                  - tab: Requests
+                  - tab: Client Comments
+                  - tab: Court Dates
+                  - tab: Adverse Parties
+                  - tab: Trust
+                  - tab: Disbursements
+                  - tab: Statements
+                  - tab: Activity
+                - tabpanel:
+                  - generic:
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Healthy
+                        - generic:
+                          - heading [level=2]: Dlamini v Road Accident Fund
+                          - paragraph: "Customer: Sipho Dlamini"
+                      - generic:
+                        - generic:
+                          - paragraph: Budget
+                          - text: "--"
+                        - generic:
+                          - paragraph: Hours
+                          - generic: 4.0h
+                        - generic:
+                          - paragraph: Tasks
+                          - generic: 3/12
+                          - text: complete
+                        - generic:
+                          - paragraph: Revenue
+                          - text: "--"
+                    - group:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: 2/5 setup steps complete
+                          - generic:
+                            - generic:
+                              - generic: 40%
+                        - img
+                    - generic:
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: Recent Activity
+                              - link:
+                                - /url: /org/mathebula-partners/projects/b7e319f7-fd7e-4526-a8b3-b40b1f85b34b?tab=activity
+                                - text: View all
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: SD
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Sipho Dlamini performed portal.document.downloaded on document
+                                  - text: 52 minutes ago
+                              - generic:
+                                - generic: TM
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Thandi Mathebula performed statement.generated on generated_document
+                                  - text: 58 minutes ago
+                              - generic:
+                                - generic: TM
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Thandi Mathebula generated document "matter-closure-letter-dlamini-v-road-accident-fund-2026-04-30.pdf" from template "Matter Closure Letter"
+                                  - text: 58 minutes ago
+                              - generic:
+                                - generic: BN
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Bob Ndlovu performed disbursement.billed on legal_disbursement
+                                  - text: 1 hour ago
+                              - generic:
+                                - generic: BN
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: REQ-0003 completed — all items accepted
+                                  - text: 1 hour ago
+                              - generic:
+                                - generic: BN
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Bob Ndlovu accepted "Orthopaedic specialist report" for REQ-0003
+                                  - text: 1 hour ago
+                              - generic:
+                                - generic: BN
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Bob Ndlovu accepted "Hospital discharge summary" for REQ-0003
+                                  - text: 1 hour ago
+                              - generic:
+                                - generic: BN
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Bob Ndlovu changed task "File RAF1 claim form + supporting documents (within 3-year prescription)" status to CANCELLED
+                                  - text: 1 hour ago
+                              - generic:
+                                - generic: BN
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Bob Ndlovu changed task "Settlement negotiation with RAF" status to CANCELLED
+                                  - text: 1 hour ago
+                              - generic:
+                                - generic: BN
+                                - generic:
+                                  - generic:
+                                    - img
+                                    - paragraph: Bob Ndlovu changed task "Settlement / judgment payout & costs" status to CANCELLED
+                                  - text: 1 hour ago
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: Task Status
+                              - link:
+                                - /url: /org/mathebula-partners/projects/b7e319f7-fd7e-4526-a8b3-b40b1f85b34b?tab=tasks
+                                - text: View all tasks
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic: Done 3
+                                - generic: In Progress 0
+                                - generic: Open 0
+                        - generic:
+                          - generic:
+                            - generic: Upcoming Deadlines
+                          - generic:
+                            - generic:
+                              - generic:
+                                - img
+                                - generic: Court
+                                - generic: Gauteng Division, Pretoria
+                                - generic: May 14
+                      - generic:
+                        - generic:
+                          - generic:
+                            - generic: Budget
+                          - generic:
+                            - paragraph: No budget configured
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic: Time Breakdown
+                              - link:
+                                - /url: /org/mathebula-partners/projects/b7e319f7-fd7e-4526-a8b3-b40b1f85b34b?tab=time
+                                - text: View all time
+                          - generic:
+                            - generic:
+                              - generic:
+                                - generic:
+                                  - generic:
+                                    - list:
+                                      - listitem:
+                                        - img
+                                        - text: Bob Ndlovu
+                                  - application
+                              - generic:
+                                - generic: 4.0h
+                                - generic: total
+                        - generic:
+                          - generic:
+                            - generic: Team
+                          - generic:
+                            - generic:
+                              - generic: BN
+                        - generic:
+                          - generic:
+                            - generic:
+                              - generic:
+                                - img
+                                - text: FICA
+                              - generic: Done
+                          - generic:
+                            - paragraph: Verified Apr 30, 2026
+                            - link:
+                              - /url: /org/mathebula-partners/information-requests/7f8f9422-e8ae-4966-976e-85f90199d6c2
+                              - text: View request
+                        - generic:
+                          - generic:
+                            - generic:
+                              - img
+                              - text: Retention period
+                          - generic:
+                            - paragraph:
+                              - text: Retention clock started on
+                              - strong: 30 Apr 2026
+                              - text: . Your firm's matter-retention period isn't configured yet, so the scheduled deletion date can't be computed.
+                            - link:
+                              - /url: /org/mathebula-partners/settings/data-protection
+                              - text: Configure retention period →
+  - generic:
+    - heading [level=2]: Command Palette
+    - paragraph: Search pages and settings
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e437] [cursor=pointer]:
+    - img [ref=e438]
+  - alert
+  - dialog "Generate Statement of Account" [ref=e448]:
+    - generic [ref=e449]:
+      - generic [ref=e450]:
+        - heading "Generate Statement of Account" [level=2] [ref=e451]
+        - paragraph [ref=e452]: Generate a statement of account for Dlamini v Road Accident Fund. The PDF will be saved to this matter's documents.
+      - generic [ref=e453]:
+        - generic [ref=e454]:
+          - generic [ref=e455]:
+            - generic [ref=e456]: Period start
+            - textbox "Period start" [active] [ref=e457]: 2026-05-01
+          - generic [ref=e458]:
+            - generic [ref=e459]: Period end
+            - textbox "Period end" [ref=e460]: 2026-04-30
+        - paragraph [ref=e462]: Choose a period and click Preview & Save to generate the statement. It will be saved to this matter's documents.
+        - generic [ref=e463]:
+          - button "Close" [ref=e464]
+          - button "Preview & Save" [ref=e465]:
+            - img
+            - text: Preview & Save
+      - button "Close" [ref=e466]:
+        - img
+        - generic [ref=e467]: Close

@@ -8,6 +8,7 @@ import {
   loadPreview,
   getUnbilledTime,
   getUnbilledExpenses,
+  getUnbilledDisbursements,
   updateSelections,
   excludeCustomer,
   includeCustomer,
@@ -18,6 +19,7 @@ import {
   type CreateBillingRunRequest,
   type UnbilledTimeEntry,
   type UnbilledExpense,
+  type UnbilledDisbursement,
   type UpdateEntrySelectionsRequest,
   type RetainerPeriodPreview,
 } from "@/lib/api/billing-runs";
@@ -89,6 +91,10 @@ interface UnbilledExpenseResult extends ActionResult {
   entries?: UnbilledExpense[];
 }
 
+interface UnbilledDisbursementResult extends ActionResult {
+  entries?: UnbilledDisbursement[];
+}
+
 interface UpdateSelectionsResult extends ActionResult {
   item?: BillingRunItem;
 }
@@ -134,6 +140,29 @@ export async function getUnbilledExpensesAction(
       return { success: false, error: error.message };
     }
     return { success: false, error: "Failed to load unbilled expenses." };
+  }
+}
+
+// OBS-2104c — server-action wrapper for the new
+// `GET /api/billing-runs/{id}/items/{itemId}/unbilled-disbursements` endpoint. Mirrors the
+// expenses action above so the cherry-pick step can load the third entry type concurrently.
+export async function getUnbilledDisbursementsAction(
+  billingRunId: string,
+  itemId: string
+): Promise<UnbilledDisbursementResult> {
+  const caps = await fetchMyCapabilities();
+  if (!caps.isAdmin && !caps.isOwner) {
+    return { success: false, error: "Permission denied." };
+  }
+
+  try {
+    const entries = await getUnbilledDisbursements(billingRunId, itemId);
+    return { success: true, entries };
+  } catch (error) {
+    if (error instanceof ApiError) {
+      return { success: false, error: error.message };
+    }
+    return { success: false, error: "Failed to load unbilled disbursements." };
   }
 }
 

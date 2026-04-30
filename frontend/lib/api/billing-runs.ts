@@ -14,7 +14,7 @@ export type BillingRunItemStatus =
   | "EXCLUDED"
   | "CANCELLED";
 
-export type EntryType = "TIME_ENTRY" | "EXPENSE";
+export type EntryType = "TIME_ENTRY" | "EXPENSE" | "LEGAL_DISBURSEMENT";
 
 // ---- Response Interfaces ----
 
@@ -114,6 +114,23 @@ export interface UnbilledExpense {
   category: string;
   billable: boolean;
   markupPercent: number | null;
+  billableAmount: number;
+}
+
+// OBS-2104c — legal disbursements surfaced in cherry-pick step 3. Mirrors the backend
+// `BillingRunDtos.DisbursementResponse` record. `billableAmount` already includes any VAT
+// component (amount + vatAmount) so the cherry-pick subtotal can sum it directly.
+export interface UnbilledDisbursement {
+  id: string;
+  projectId: string;
+  customerId: string;
+  incurredDate: string;
+  description: string;
+  category: string;
+  amount: number;
+  vatAmount: number;
+  vatTreatment: string;
+  supplierName: string;
   billableAmount: number;
 }
 
@@ -231,6 +248,15 @@ export async function getUnbilledTime(id: string, itemId: string): Promise<Unbil
 
 export async function getUnbilledExpenses(id: string, itemId: string): Promise<UnbilledExpense[]> {
   return api.get<UnbilledExpense[]>(`/api/billing-runs/${id}/items/${itemId}/unbilled-expenses`);
+}
+
+export async function getUnbilledDisbursements(
+  id: string,
+  itemId: string
+): Promise<UnbilledDisbursement[]> {
+  return api.get<UnbilledDisbursement[]>(
+    `/api/billing-runs/${id}/items/${itemId}/unbilled-disbursements`
+  );
 }
 
 export async function generate(id: string): Promise<BillingRun> {

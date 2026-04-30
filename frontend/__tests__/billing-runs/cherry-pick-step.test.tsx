@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
@@ -8,6 +8,7 @@ vi.mock("server-only", () => ({}));
 // Mock server actions
 const mockGetUnbilledTime = vi.fn();
 const mockGetUnbilledExpenses = vi.fn();
+const mockGetUnbilledDisbursements = vi.fn();
 const mockUpdateSelections = vi.fn();
 const mockExcludeCustomer = vi.fn();
 const mockIncludeCustomer = vi.fn();
@@ -19,6 +20,7 @@ vi.mock("@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions", 
   getUnbilledSummaryAction: vi.fn().mockResolvedValue({ success: true }),
   getUnbilledTimeAction: (...args: unknown[]) => mockGetUnbilledTime(...args),
   getUnbilledExpensesAction: (...args: unknown[]) => mockGetUnbilledExpenses(...args),
+  getUnbilledDisbursementsAction: (...args: unknown[]) => mockGetUnbilledDisbursements(...args),
   updateSelectionsAction: (...args: unknown[]) => mockUpdateSelections(...args),
   excludeCustomerAction: (...args: unknown[]) => mockExcludeCustomer(...args),
   includeCustomerAction: (...args: unknown[]) => mockIncludeCustomer(...args),
@@ -26,7 +28,20 @@ vi.mock("@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions", 
 }));
 
 import { CherryPickStep } from "@/components/billing-runs/cherry-pick-step";
-import type { BillingRunItem, UnbilledTimeEntry, UnbilledExpense } from "@/lib/api/billing-runs";
+import type {
+  BillingRunItem,
+  UnbilledTimeEntry,
+  UnbilledExpense,
+  UnbilledDisbursement,
+} from "@/lib/api/billing-runs";
+
+// Default-stub disbursements (OBS-2104c) to empty so existing tests stay green;
+// individual tests override this when exercising the disbursement code path.
+// `vi.clearAllMocks()` clears call history only, not implementations, so this
+// initial setup persists across tests.
+beforeEach(() => {
+  mockGetUnbilledDisbursements.mockResolvedValue({ success: true, entries: [] });
+});
 
 afterEach(() => {
   cleanup();
@@ -106,6 +121,23 @@ const mockExpenses: UnbilledExpense[] = [
     billable: true,
     markupPercent: null,
     billableAmount: 500,
+  },
+];
+
+// OBS-2104c — fixture for the new Disbursements section in step 3.
+const mockDisbursements: UnbilledDisbursement[] = [
+  {
+    id: "disb-1",
+    projectId: "proj-1",
+    customerId: "cust-1",
+    incurredDate: "2026-03-15",
+    description: "Sheriff service of summons",
+    category: "SHERIFF_FEES",
+    amount: 1250,
+    vatAmount: 0,
+    vatTreatment: "ZERO_RATED_PASS_THROUGH",
+    supplierName: "Sheriff Sandton",
+    billableAmount: 1250,
   },
 ];
 
@@ -256,6 +288,60 @@ describe("CherryPickStep", () => {
     await waitFor(() => {
       expect(screen.getByText("Excluded")).toBeInTheDocument();
     });
+  });
+
+  // OBS-2104c — Disbursements section was missing from step 3 entirely; this test pins
+  // both the rendering and the toggle/subtotal recalculation paths.
+  it("renders disbursements section and recalculates subtotal on toggle", async () => {
+    const user = userEvent.setup();
+
+    mockGetUnbilledTime.mockResolvedValue({
+      success: true,
+      entries: [],
+    });
+    mockGetUnbilledExpenses.mockResolvedValue({
+      success: true,
+      entries: [],
+    });
+    mockGetUnbilledDisbursements.mockResolvedValue({
+      success: true,
+      entries: mockDisbursements,
+    });
+    mockUpdateSelections.mockResolvedValue({
+      success: true,
+      item: mockItems[0],
+    });
+
+    render(
+      <CherryPickStep
+        billingRunId="run-1"
+        currency="ZAR"
+        includeRetainers={false}
+        items={mockItems}
+        onBack={vi.fn()}
+        onNext={vi.fn()}
+      />
+    );
+
+    await user.click(screen.getByText("Acme Corp"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Disbursements")).toBeInTheDocument();
+    });
+
+    expect(screen.getByText("Sheriff service of summons")).toBeInTheDocument();
+    expect(screen.getByText("SHERIFF_FEES")).toBeInTheDocument();
+    expect(screen.getByText("Sheriff Sandton")).toBeInTheDocument();
+    const checkbox = screen.getByLabelText("Include disbursement Sheriff service of summons");
+    expect(checkbox).toBeInTheDocument();
+
+    // Initial subtotal: 1250 (only disbursement, no time/expense in this scenario).
+    // locale-agnostic: accepts en-ZA "R 1 250,00" or en-US "R 1,250.00"
+    expect(screen.getByText(/Subtotal:\s*R[\s ]1[\s ,]250[,.]00/)).toBeInTheDocument();
+
+    // Untick → subtotal becomes R 0,00.
+    await user.click(checkbox);
+    expect(screen.getByText(/Subtotal:\s*R[\s ]0[,.]00/)).toBeInTheDocument();
   });
 
   it("retainer section shows when includeRetainers is true", async () => {

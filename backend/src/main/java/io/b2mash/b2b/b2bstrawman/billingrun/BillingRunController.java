@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunItemRes
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunPreviewResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.CreateBillingRunRequest;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.DisbursementResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.ExpenseResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.LoadPreviewRequest;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.RetainerGenerateRequest;
@@ -110,6 +111,13 @@ public class BillingRunController {
   public ResponseEntity<List<ExpenseResponse>> getUnbilledExpenses(
       @PathVariable UUID id, @PathVariable UUID itemId) {
     return ResponseEntity.ok(billingRunService.getUnbilledExpenses(id, itemId));
+  }
+
+  @GetMapping("/{id}/items/{itemId}/unbilled-disbursements")
+  @RequiresCapability("INVOICING")
+  public ResponseEntity<List<DisbursementResponse>> getUnbilledDisbursements(
+      @PathVariable UUID id, @PathVariable UUID itemId) {
+    return ResponseEntity.ok(billingRunService.getUnbilledDisbursements(id, itemId));
   }
 
   @PutMapping("/{id}/items/{itemId}/selections")

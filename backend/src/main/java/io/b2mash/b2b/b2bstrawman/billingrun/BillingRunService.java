@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunItemRes
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunPreviewResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.BillingRunResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.CreateBillingRunRequest;
+import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.DisbursementResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.ExpenseResponse;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.LoadPreviewRequest;
 import io.b2mash.b2b.b2bstrawman.billingrun.dto.BillingRunDtos.RetainerGenerateRequest;
@@ -114,6 +115,14 @@ public class BillingRunService {
     moduleGuard.requireModule(MODULE_ID);
 
     return selectionService.getUnbilledExpenses(billingRunId, billingRunItemId);
+  }
+
+  @Transactional(readOnly = true)
+  public List<DisbursementResponse> getUnbilledDisbursements(
+      UUID billingRunId, UUID billingRunItemId) {
+    moduleGuard.requireModule(MODULE_ID);
+
+    return selectionService.getUnbilledDisbursements(billingRunId, billingRunItemId);
   }
 
   @Transactional

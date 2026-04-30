@@ -1,6 +1,7 @@
 "use client";
 
 import { useBranding } from "@/hooks/use-branding";
+import { BRAND_NAME } from "@/lib/brand";
 
 export function PortalFooter() {
   const { footerText } = useBranding();
@@ -11,7 +12,7 @@ export function PortalFooter() {
         {footerText && (
           <p className="mb-1 text-sm text-slate-600">{footerText}</p>
         )}
-        <p className="text-xs text-slate-400">Powered by DocTeams</p>
+        <p className="text-xs text-slate-400">Powered by {BRAND_NAME}</p>
       </div>
     </footer>
   );

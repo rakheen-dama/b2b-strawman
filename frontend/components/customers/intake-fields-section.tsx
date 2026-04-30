@@ -52,14 +52,22 @@ function GroupSection({ group, values, onChange }: GroupSectionProps) {
   const requiredFields = visibleFields.filter((f) => f.required);
   const optionalFields = visibleFields.filter((f) => !f.required);
 
-  const hasRequiredFields = requiredFields.length > 0;
-  // Derive initial open state: open if any required fields are visible.
-  // The key-based remount (see below) ensures this resets when required field
-  // visibility changes from 0 to non-zero.
-  const [isOpen, setIsOpen] = useState(hasRequiredFields);
+  // OBS-201 Part B: groups with any visible fields auto-open. Previously only
+  // groups with required fields opened, which buried all-optional packs (e.g.
+  // legal-za-customer) under a closed accordion by default. The key-based
+  // remount in IntakeFieldsSection ensures this resets when visibility
+  // changes (e.g. a conditional field appears).
+  const [isOpen, setIsOpen] = useState(visibleFields.length > 0);
   const [showOptional, setShowOptional] = useState(false);
 
   if (visibleFields.length === 0) return null;
+
+  // OBS-201 Part B: when a group has zero required fields, flatten the inner
+  // "Additional Information (N)" toggle so optional fields render directly
+  // under the open group (no two-deep accordion). When the group mixes
+  // required + optional fields, keep the toggle so required fields stay
+  // above-the-fold and optional ones can still be tucked away.
+  const flattenOptional = requiredFields.length === 0 && optionalFields.length > 0;
 
   return (
     <div className="rounded-lg border border-slate-200 shadow-sm">
@@ -93,7 +101,22 @@ function GroupSection({ group, values, onChange }: GroupSectionProps) {
             </div>
           ))}
 
-          {optionalFields.length > 0 && (
+          {flattenOptional &&
+            optionalFields.map((field) => (
+              <div key={field.id} className="space-y-1.5">
+                <Label htmlFor={`inline-${field.slug}`} className="text-sm">
+                  {field.name}
+                </Label>
+                {field.description && <p className="text-xs text-slate-500">{field.description}</p>}
+                <InlineFieldEditor
+                  fieldDefinition={field}
+                  value={values[field.slug] ?? null}
+                  onChange={(val) => onChange(field.slug, val)}
+                />
+              </div>
+            ))}
+
+          {!flattenOptional && optionalFields.length > 0 && (
             <div>
               <button
                 type="button"
@@ -141,15 +164,15 @@ export function IntakeFieldsSection({ groups, values, onChange }: IntakeFieldsSe
   return (
     <div className="space-y-3">
       {groups.map((group) => {
-        // Include whether the group has visible required fields in the key so
-        // that the component remounts (and re-derives isOpen) when a required
-        // field becomes visible due to a visibility condition change.
-        const hasVisibleRequired = group.fields.some(
-          (f) => f.required && isFieldVisible(f, values)
-        );
+        // OBS-201 Part B: include whether the group has any visible fields in
+        // the key so the component remounts (and re-derives isOpen) when a
+        // field appears via a visibility-condition change. Aligns with the
+        // updated initial-open state which auto-opens any group with visible
+        // fields (not just groups with required fields).
+        const hasVisibleFields = group.fields.some((f) => isFieldVisible(f, values));
         return (
           <GroupSection
-            key={`${group.id}-${hasVisibleRequired}`}
+            key={`${group.id}-${hasVisibleFields}`}
             group={group}
             values={values}
             onChange={onChange}

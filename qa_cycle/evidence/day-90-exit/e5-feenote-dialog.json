@@ -1,0 +1,32 @@
+{
+  "found": true,
+  "headings": [
+    "Generate Fee Note"
+  ],
+  "labels": [
+    "From Date",
+    "To Date",
+    "Currency"
+  ],
+  "customField": [],
+  "inputs": [
+    {
+      "type": "date",
+      "name": "",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "type": "date",
+      "name": "",
+      "placeholder": "",
+      "ariaLabel": null
+    },
+    {
+      "type": "text",
+      "name": "",
+      "placeholder": "USD",
+      "ariaLabel": null
+    }
+  ]
+}

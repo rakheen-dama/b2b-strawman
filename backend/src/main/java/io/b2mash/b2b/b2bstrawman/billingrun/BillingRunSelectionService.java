@@ -471,6 +471,14 @@ public class BillingRunSelectionService {
       whereClause = "WHERE c.lifecycle_status = 'ACTIVE'";
     }
 
+    // OBS-2104: Two cascading defects fixed here.
+    // (1) `te.billing_rate_currency = :currency` excluded time entries with NULL currency
+    //     (logged before a rate card was set up — see OBS-2101 cascade). Loosened to
+    //     also accept NULL so the fee note can render those lines at R 0,00.
+    // (2) Legal disbursements live in `legal_disbursements`, not `expenses`. The legal
+    //     vertical is single-currency (ZAR) so we gate by table presence and the
+    //     billing_status='UNBILLED' / approval_status='APPROVED' lifecycle. The amount
+    //     billed is `amount + vat_amount` (no markup column on this table).
     String sql =
         """
         SELECT
@@ -479,13 +487,17 @@ public class BillingRunSelectionService {
             COUNT(DISTINCT te.id) AS unbilled_time_count,
             COALESCE(SUM(
                 CASE WHEN te.id IS NOT NULL
-                THEN (te.duration_minutes / 60.0) * te.billing_rate_snapshot
+                THEN (te.duration_minutes / 60.0) * COALESCE(te.billing_rate_snapshot, 0)
                 ELSE 0 END
             ), 0) AS unbilled_time_amount,
-            COUNT(DISTINCT e.id) AS unbilled_expense_count,
+            (COUNT(DISTINCT e.id) + COUNT(DISTINCT ld.id)) AS unbilled_expense_count,
             COALESCE(SUM(
                 CASE WHEN e.id IS NOT NULL
                 THEN e.amount * (1 + COALESCE(e.markup_percent, 0) / 100.0)
+                ELSE 0 END
+            ), 0) + COALESCE(SUM(
+                CASE WHEN ld.id IS NOT NULL
+                THEN ld.amount + COALESCE(ld.vat_amount, 0)
                 ELSE 0 END
             ), 0) AS unbilled_expense_amount
         FROM customers c
@@ -495,7 +507,7 @@ public class BillingRunSelectionService {
         LEFT JOIN time_entries te ON te.task_id = t.id
             AND te.billable = true
             AND te.invoice_id IS NULL
-            AND te.billing_rate_currency = :currency
+            AND (te.billing_rate_currency = :currency OR te.billing_rate_currency IS NULL)
             AND te.date >= :periodFrom
             AND te.date <= :periodTo
         LEFT JOIN expenses e ON e.project_id = p.id
@@ -504,9 +516,16 @@ public class BillingRunSelectionService {
             AND e.currency = :currency
             AND e.date >= :periodFrom
             AND e.date <= :periodTo
+        LEFT JOIN legal_disbursements ld ON ld.project_id = p.id
+            AND ld.billing_status = 'UNBILLED'
+            AND ld.approval_status = 'APPROVED'
+            AND ld.incurred_date >= :periodFrom
+            AND ld.incurred_date <= :periodTo
         %s
         GROUP BY c.id, c.name
-        HAVING COUNT(DISTINCT te.id) > 0 OR COUNT(DISTINCT e.id) > 0
+        HAVING COUNT(DISTINCT te.id) > 0
+            OR COUNT(DISTINCT e.id) > 0
+            OR COUNT(DISTINCT ld.id) > 0
         ORDER BY c.name
         """
             .formatted(whereClause);
@@ -544,6 +563,8 @@ public class BillingRunSelectionService {
       LocalDate periodTo,
       String currency,
       boolean includeExpenses) {
+    // OBS-2104: include NULL-currency time entries (no rate card snapshotted) so they
+    // remain selectable in the wizard. Mirrors the loosened filter in discoverCustomers().
     String timeSql =
         """
         SELECT te.id
@@ -554,7 +575,7 @@ public class BillingRunSelectionService {
         WHERE cp.customer_id = :customerId
           AND te.billable = true
           AND te.invoice_id IS NULL
-          AND te.billing_rate_currency = :currency
+          AND (te.billing_rate_currency = :currency OR te.billing_rate_currency IS NULL)
           AND te.date >= :periodFrom
           AND te.date <= :periodTo
         """;

@@ -1,0 +1,57 @@
+Total messages: 3 (Errors: 1, Warnings: 0)
+Returning 1 messages for level "error"
+
+Error: Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <SegmentViewNode type="page" pagePath="(app)/org/...">
+      <SegmentTrieNode>
+      <ProposalsPage>
+        <div className="space-y-8">
+          <div className="flex items...">
+            <div>
+            <CreateProposalDialog slug="mathebula-..." customers={[...]}>
+              <Dialog open={false} onOpenChange={function handleOpenChange}>
+                <Dialog data-slot="dialog" open={false} onOpenChange={function handleOpenChange}>
+                  <DialogProvider scope={undefined} triggerRef={{current:null}} contentRef={{current:null}} ...>
+                    <DialogTrigger asChild={true}>
+                      <DialogTrigger data-slot="dialog-tri..." asChild={true}>
+                        <Primitive.button type="button" aria-haspopup="dialog" aria-expanded={false} ...>
+                          <Primitive.button.Slot type="button" aria-haspopup="dialog" aria-expanded={false} ...>
+                            <Primitive.button.SlotClone type="button" aria-haspopup="dialog" aria-expanded={false} ...>
++                             <button
++                               data-slot="button"
++                               data-variant="default"
++                               data-size="default"
++                               className={"inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm f..."}
++                               type="button"
++                               aria-haspopup="dialog"
++                               aria-expanded={false}
++                               aria-controls="radix-_R_4clritrqiqbn5rknelb_"
++                               data-state="closed"
++                               onClick={function handleEvent}
++                               ref={function}
++                             >
+                    ...
+          ...
+    ...
+
+    at throwOnHydrationMismatch (http://localhost:3000/_next/static/chunks/0v0__next_dist_compiled_react-dom_08l8v-3._.js:3318:56)
+    at beginWork (http://localhost:3000/_next/static/chunks/0v0__next_dist_compiled_react-dom_08l8v-3._.js:6758:918)
+    at runWithFiberInDEV (http://localhost:3000/_next/static/chunks/0v0__next_dist_compiled_react-dom_08l8v-3._.js:965:74)
+    at performUnitOfWork (http://localhost:3000/_next/static/chunks/0v0__next_dist_compiled_react-dom_08l8v-3._.js:9555:97)
+    at workLoopConcurrentByScheduler (http://localhost:3000/_next/static/chunks/0v0__next_dist_compiled_react-dom_08l8v-3._.js:9551:58)
+    at renderRootConcurrent (http://localhost:3000/_next/static/chunks/0v0__next_dist_compiled_react-dom_08l8v-3._.js:9534:71)
+    at performWorkOnRoot (http://localhost:3000/_next/static/chunks/0v0__next_dist_compiled_react-dom_08l8v-3._.js:9061:150)
+    at performWorkOnRootViaSchedulerTask (http://localhost:3000/_next/static/chunks/0v0__next_dist_compiled_react-dom_08l8v-3._.js:10255:9)
+    at MessagePort.performWorkUntilDeadline (http://localhost:3000/_next/static/chunks/0v0__next_dist_compiled_0_fv-15._.js:2647:64)

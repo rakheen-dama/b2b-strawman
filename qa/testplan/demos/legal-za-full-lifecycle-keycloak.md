@@ -317,26 +317,52 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ---
 
-## Day 7 — Firm drafts + sends proposal (LSSA tariff fee estimate)  `[FIRM]`
+## Day 7 — Firm drafts + sends proposal (engagement letter)  `[FIRM]`
 
 **Actor**: Thandi Mathebula (Owner — signs proposals) — context swap, login as Thandi
 
-- [ ] **7.1** Navigate to matter RAF-2026-001 → click **+ New Proposal** (or Proposals tab → New)
-- [ ] **7.2** Proposal template dropdown shows legal-specific templates from doc-template pack; select **Litigation Engagement — RAF**
-- [ ] **7.3** Verify fee estimate section pre-populates with LSSA tariff line items appropriate for RAF claims (attendances, drafting, court appearances)
-- [ ] **7.4** Adjust estimated hours: 30h attorney (Bob) + 5h senior partner (Thandi) — ZAR estimate calculates automatically
-- [ ] **7.5** Add engagement scope in Tiptap editor: "Represent client in Road Accident Fund claim following motor vehicle accident on [DATE], up to and including settlement or trial."
-- [ ] **7.6** Set effective date = Day 10, expiry = Day 17 (7-day acceptance window)
-- [ ] **7.7** Click **Save** → proposal status = **Draft**
-- [ ] **7.8** Click **Send for Acceptance** → confirmation dialog → Confirm
-- [ ] **7.9** Proposal status transitions to **Sent**, acceptance URL generated
-- [ ] **7.10** Mailpit → proposal email to `sipho.portal@example.com` with subject containing "proposal" / "engagement letter" / "please review"
-- [ ] **7.11** Verify email body includes click-through link to portal proposal URL
+> **Scenario amendment (OBS-701, WONT_FIX)**: The product's proposal authoring is a
+> thin lifecycle wrapper (Title / Client / Fee Model / rate-or-retainer / Expiry).
+> There is no template-picker, no fee-estimate line-item builder, and no Tiptap
+> scope editor in the proposal dialog — those are separate surfaces:
+> doc-template instantiation lives in the matter's "Generate Document" action
+> (legal-za pack: `engagement-letter-litigation`), and matter-level fee-estimate
+> work lives on the matter's "Fee Estimate" tab (Budget). Day 7 has been rewritten
+> to drive the proposal flow that actually exists; the template/tariff/Tiptap
+> surfaces are exercised separately on Day 88 if relevant. Same pattern as Day 4
+> OBS-401/402/403.
+
+- [ ] **7.1** Navigate to matter RAF-2026-001 → click **+ New Engagement Letter** (legal-za term map for "+ New Proposal")
+- [ ] **7.2** Engagement-letter dialog opens with Client pre-filled = Sipho Dlamini (disabled, from matter context)
+- [ ] **7.3** Set Title = "Engagement Letter — Litigation (Dlamini v RAF)"
+- [ ] **7.4** Fee Model = **Hourly** (legal-za default for engagement letters); set Hourly Rate Note = "R 2,500/hr (LSSA tariff High Court Party-and-Party 2024/2025) — 30h Bob Ndlovu (attorney) + 5h Thandi Mathebula (senior partner) ≈ R 87,500.00 estimate."
+- [ ] **7.5** Set Expiry Date = Day 17 (7-day acceptance window from Day 10 effective)
+- [ ] **7.6** Click **Create Proposal** → redirected to `/org/{slug}/proposals/{id}`; status badge = **Draft**, PROP-0001 reference assigned
+- [ ] **7.7** On detail page, click **Send Proposal** → recipient combobox lists portal contacts → select `Sipho Dlamini (sipho.portal@example.com)` → click **Send**
+- [ ] **7.8** Proposal status transitions to **Sent**; **Sent: {date}** field appears in Proposal Details; action button changes to **Withdraw**
+- [ ] **7.9** Backend log confirms `Sent proposal {id} to contact {portalContactId}` and `Portal sync completed for proposal PROP-0001 after commit`
+- [ ] **7.10** Mailpit → proposal email arrives at `sipho.portal@example.com` with subject containing "Proposal" or "Engagement Letter" (depends on terminology), body contains click-through to portal proposal URL (OBS-703 fix)
+- [ ] **7.11** Verify portal `/proposals` index for Sipho shows PROP-0001 in **Awaiting Your Response** with status `SENT` (firm→portal projection)
 
 **Day 7 checkpoints**
-- [ ] Proposal template from legal-za doc-template pack is instantiable
-- [ ] LSSA tariff line items render in fee estimate (tariff integration verified)
-- [ ] Proposal dispatched, magic-link / secure link email sent to portal contact
+- [ ] Proposal lifecycle: Draft → Sent succeeds end-to-end
+- [ ] Portal email dispatched (OBS-703) — subject + body verified, link reaches `/proposals/{id}` on portal
+- [ ] Portal `/proposals` projection shows PROP-0001 (firm→portal sync)
+- [ ] Frontend console clean (no hydration mismatch on `/proposals` index — OBS-704)
+- [ ] Expiry date renders consistently with the date input (no +1-day tz drift — OBS-702)
+
+> **Out-of-scope on Day 7 (covered separately)**:
+> - Document templates from legal-za pack (`engagement-letter-litigation`,
+>   `letter-of-demand`, `power-of-attorney`, `client-trust-statement`, etc.) are
+>   instantiated via the matter / customer **Generate Document** action — see
+>   Day 2 customer detail (4 doc templates rendered) and matter "Generate
+>   Document" surface. They are NOT wired into proposal authoring.
+> - LSSA tariff line items are surfaced under matter **Fee Estimate** tab
+>   (`Budget` mapped to Fee Estimate) and via `/org/{slug}/legal/tariffs`. They
+>   are NOT auto-populated into proposals.
+> - Rich-text scope authoring is not currently supported in the proposal dialog
+>   — backend auto-seeds a minimal Tiptap doc from the form fields when no
+>   `contentJson` is supplied (`ProposalContentSeeder.buildDefaultContent`).
 
 ---
 

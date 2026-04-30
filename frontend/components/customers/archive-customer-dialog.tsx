@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { cloneElement, isValidElement, useState } from "react";
+import type { MouseEvent, ReactElement } from "react";
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -9,7 +10,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { archiveCustomer } from "@/app/(app)/org/[slug]/customers/actions";
@@ -53,9 +53,26 @@ export function ArchiveCustomerDialog({
     }
   }
 
+  // OBS-2103: avoid Radix `Slot` (`asChild`) here. The Archive dialog renders
+  // adjacent to <EditCustomerDialog/> on the customer detail page; under
+  // React 19 + radix-ui, two unkeyed sibling Slots cloning a <Button> child
+  // (Dialog vs AlertDialog) collapse during commit and only one survives in
+  // the DOM. Inject the open handler via React.cloneElement instead so the
+  // child renders as a plain <Button> with no Slot wrapper.
+  const trigger = isValidElement<{ onClick?: (event: MouseEvent<HTMLElement>) => void }>(children)
+    ? cloneElement(children as ReactElement<{ onClick?: (event: MouseEvent<HTMLElement>) => void }>, {
+        onClick: (event: MouseEvent<HTMLElement>) => {
+          children.props.onClick?.(event);
+          if (!event.defaultPrevented) {
+            setOpen(true);
+          }
+        },
+      })
+    : children;
+
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
+      {trigger}
       <AlertDialogContent className="border-t-4 border-t-red-500">
         <AlertDialogHeader>
           <div className="flex justify-center">

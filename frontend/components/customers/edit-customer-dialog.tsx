@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { cloneElement, isValidElement, useState } from "react";
+import type { MouseEvent, ReactElement } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
@@ -11,7 +12,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -125,9 +125,26 @@ export function EditCustomerDialog({ customer, slug, children }: EditCustomerDia
     setOpen(newOpen);
   }
 
+  // OBS-2103: avoid Radix `Slot` (`asChild`) here. The Edit dialog renders
+  // adjacent to <ArchiveCustomerDialog/> on the customer detail page; under
+  // React 19 + radix-ui, two unkeyed sibling Slots cloning a <Button> child
+  // (Dialog vs AlertDialog) collapse during commit and only one survives in
+  // the DOM. Inject the open handler via React.cloneElement instead so the
+  // child renders as a plain <Button> with no Slot wrapper.
+  const trigger = isValidElement<{ onClick?: (event: MouseEvent<HTMLElement>) => void }>(children)
+    ? cloneElement(children as ReactElement<{ onClick?: (event: MouseEvent<HTMLElement>) => void }>, {
+        onClick: (event: MouseEvent<HTMLElement>) => {
+          children.props.onClick?.(event);
+          if (!event.defaultPrevented) {
+            setOpen(true);
+          }
+        },
+      })
+    : children;
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      {trigger}
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Edit Customer</DialogTitle>

@@ -558,13 +558,47 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 **Actor**: Bob Ndlovu
 
-### Phase A: Time entry against LSSA tariff
+### Phase A: Time entry (non-tariff free-text path)
 
-- [ ] **21.1** Navigate to matter RAF-2026-001 → Time tab → **+ Log Time**
-- [ ] **21.2** Log 2.5h of work → select tariff activity **"Consultation with client — per 15 minutes"** from LSSA dropdown (tariff Phase 55 integration)
-- [ ] **21.3** Billable = Yes, rate auto-populates from tariff
-- [ ] **21.4** Submit → time entry saved, amount calculated
-- [ ] **21.5** Log another 1.5h under **"Drafting particulars of claim — per page / per hour"** tariff entry
+> **Scenario amendment (OBS-2101, WONT_FIX feature-gap)**: The product has
+> NO tariff↔time-entry binding. `TimeEntry` has no `tariff_item_id` FK;
+> `LogTimeDialog` has no activity combobox; `RateSnapshotService` does
+> not resolve rates from LSSA tariffs. The legal-tariff schedule browser
+> at `/legal/tariffs` and the time-entry domain are two unrelated
+> surfaces. Same treatment as OBS-701 (proposal Tiptap/templates/
+> fee-estimate). Building a tariff↔time-entry integration is a
+> multi-epic legal-vertical phase — out of scope for this cycle. Day 21
+> Phase A is rewritten to drive the actual non-tariff time-entry path.
+
+- [ ] **21.1** Navigate to matter RAF-2026-001 → Tasks tab (Time tab is
+      read-only summary; the canonical `Log Time` CTA is on each task row).
+- [ ] **21.2** Pick the assigned RAF task "Initial RAF claim assessment &
+      instructions" → click **Log Time**. Dialog opens with Duration /
+      Date / Description / Billable fields (no tariff dropdown — does
+      not exist).
+- [ ] **21.3** Enter `Duration = 2h 30m`, `Date = today`, `Description =
+      "Initial consultation with Sipho — RAF claim assessment, intake
+      narrative, instructions on quantum"`. Leave **Billable = Yes**.
+      Rate-preview banner will display the resolved member rate card OR
+      the yellow "No rate card found …" warning if Bob has no rate set —
+      either is acceptable; the product correctly warns the user.
+- [ ] **21.4** Submit → time entry saved on the task (visible in Tasks
+      tab Time column / matter Time tab summary). If a member-rate snapshot
+      was captured, `billable_value` will be populated; if not, entry is
+      saved at `R 0` and the warning banner served its purpose.
+- [ ] **21.5** Pick a second RAF task (e.g. "Draft particulars of claim")
+      → log `Duration = 1h 30m`, `Description = "Drafted particulars of
+      claim incl. quantum schedule"`. Same dialog; same path.
+
+> **Out-of-scope on Day 21 Phase A (covered separately, future phase)**:
+> - LSSA tariff activity selection in the time-entry dialog (dependent
+>   activity combobox + rate auto-populate from `TariffItem.unitRate` +
+>   per-unit-type maths "per 15min" / "per hour" / "per page" / "per day").
+> - Tariff-typed invoice line generation on Day 28 fee note (currently
+>   `TIME` line-type only — no tariff descriptors).
+> - These will lift in a future legal-vertical phase that wires
+>   `time_entry.tariff_item_id` FK + `RateSnapshotService` tariff path
+>   + `InvoiceCreationService` tariff-line type + frontend tariff combobox.
 
 ### Phase B: Disbursement (Phase 67)
 
@@ -584,7 +618,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] **21.12** Submit → court event saved, appears on firm-side **Court Calendar** page and matter Overview
 
 **Day 21 checkpoints**
-- [ ] Time entries post against tariff, rate auto-populates
+- [ ] Time entries post (non-tariff path — duration + member-rate snapshot OR yellow `No rate card found` warning) — OBS-2101 WONT_FIX
 - [ ] Disbursement recorded with recoverable flag (feeds Day 28 fee note)
 - [ ] Court date added, visible on calendar + matter
 
@@ -594,18 +628,32 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 **Actor**: Thandi Mathebula (Owner — signs fee notes) — context swap, login as Thandi
 
+> **Scenario amendment (OBS-2101, WONT_FIX feature-gap — cascade from
+> Day 21 Phase A)**: Time entries from Day 21 are NOT tariff-bound (the
+> product has no tariff↔time-entry integration — see Day 21 Phase A
+> amendment). Day 28's fee note will therefore render `TIME` line-type
+> entries (one per time entry, labelled by task title + duration +
+> member rate snapshot if any) instead of "LSSA tariff line items with
+> activity descriptors". The `EXPENSE` line for the sheriff disbursement
+> is unchanged. Bulk billing run, cherry-pick, generate, approve, and
+> send flow are all exercised end-to-end on the canonical line types.
+
 - [ ] **28.1** Navigate to **Bulk Billing** → **+ New Billing Run**
 - [ ] **28.2** Scope = `By Client`, select Sipho Dlamini → preview shows:
-  - Unbilled time: 4h (tariff-rated) → subtotal ZAR
-  - Unbilled disbursements: R 1,250 (sheriff's fee)
+  - Unbilled time entries (rendered as `TIME` line items — task title +
+    duration + member rate snapshot if any; total amount = sum of
+    `billable_value` where set, else `R 0`)
+  - Unbilled disbursements: R 1,250 (sheriff's fee, `EXPENSE` line type)
   - Combined total + VAT 15%
 - [ ] **28.3** Cherry-pick: keep all time entries + the disbursement checked
 - [ ] **28.4** Click **Generate Fee Notes** → preview opens showing draft fee note
 - [ ] **28.5** Verify fee note renders with:
   - Mathebula letterhead (logo + firm details)
   - Matter reference **RAF-2026-001**
-  - LSSA tariff line items with activity descriptors
-  - Sheriff's fee disbursement line, clearly labelled as disbursement
+  - `TIME` line items (task title + duration + rate snapshot — NOT tariff
+    descriptors; OBS-2101 WONT_FIX cascade)
+  - Sheriff's fee disbursement line (`EXPENSE` line type), clearly
+    labelled as disbursement
   - VAT 15% line
   - ZAR total
   - Banking details for payment
@@ -614,7 +662,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] **28.8** 📸 Optional: `day-28-firm-fee-note-sent.png`
 
 **Day 28 checkpoints**
-- [ ] Fee note generated with tariff lines + disbursement line correctly separated
+- [ ] Fee note generated with `TIME` time-entry lines + `EXPENSE` disbursement line correctly separated (tariff descriptors out-of-scope per OBS-2101)
 - [ ] Terminology: firm-side copy reads "Fee Note" (not "Invoice") end-to-end
 - [ ] Email dispatched with portal payment link
 

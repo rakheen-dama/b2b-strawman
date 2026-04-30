@@ -130,7 +130,6 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
       "name",
       "email",
       "phone",
-      "idNumber",
       "notes",
       "customerType",
       "addressLine1",
@@ -186,11 +185,24 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
         }
       }
 
+      // OBS-201: mirror SA-Legal-pack `id_passport_number` (vertical-promoted
+      // intake field) into the entity-level `idNumber` column when the user
+      // hasn't separately supplied one. The Step-1 generic ID Number input was
+      // removed to avoid the duplicate-field UX trap, but downstream consumers
+      // (Conflict Check pre-fill, customer-detail header) read from
+      // `customer.idNumber`. This mirror keeps them working with a single
+      // source-of-truth field surfaced in Step 2.
+      const idPassportNumber = customFields.id_passport_number;
+      const mirroredIdNumber =
+        !values.idNumber && typeof idPassportNumber === "string" && idPassportNumber.trim() !== ""
+          ? idPassportNumber.trim()
+          : values.idNumber?.trim() || undefined;
+
       const result = await createCustomer(slug, {
         name: values.name.trim(),
         email: values.email.trim(),
         phone: values.phone?.trim() || undefined,
-        idNumber: values.idNumber?.trim() || undefined,
+        idNumber: mirroredIdNumber,
         notes: values.notes?.trim() || undefined,
         customerType: values.customerType || undefined,
         addressLine1: values.addressLine1?.trim() || undefined,
@@ -366,22 +378,6 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
                           maxLength={50}
                           {...field}
                         />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="idNumber"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>
-                        ID Number{" "}
-                        <span className="text-muted-foreground font-normal">(optional)</span>
-                      </FormLabel>
-                      <FormControl>
-                        <Input placeholder="e.g. CUS-001" maxLength={100} {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

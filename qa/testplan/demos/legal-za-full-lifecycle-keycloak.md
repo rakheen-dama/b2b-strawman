@@ -729,12 +729,12 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] **45.1** On matter RAF-2026-001 → **+ New Info Request** → free-form: title "Supporting medical evidence", 2 items (hospital discharge summary, orthopaedic report), due Day 52 → Send
 - [ ] **45.2** Mailpit → verify second magic-link email sent to Sipho
 - [ ] **45.3** Navigate to Trust Accounting → Mathebula Trust — Main → record / import a second deposit of **R 20,000** against Sipho / RAF-2026-001 (describe as "Top-up per engagement letter")
-- [ ] **45.4** Approve (if dual-approval) → client ledger now shows two deposits totalling **R 70,000** (R 50,000 + R 20,000)
-- [ ] **45.5** Matter Trust tab shows balance **R 70,000** (minus any fee-transfer-out if applied — in this script, none yet)
+- [ ] **45.4** Approve (if dual-approval) → client ledger now shows trust balance **R 71,000** (R 50,000 Day 10 + R 1,000 Day 14 OBS-1101 verify deposit + R 20,000 Day 45 top-up). NOTE (cycle 18 amend 2026-04-30): scenario originally said R 70,000 — actual R 71,000 reflects Day 14 cycle-15 R 1,000 OBS-1101 verify carry-over deposit.
+- [ ] **45.5** Matter Trust tab shows balance **R 71,000** (minus any fee-transfer-out if applied — in this script, none yet)
 
 **Day 45 checkpoints**
 - [ ] Second info request dispatched
-- [ ] Trust balance reconciles to R 70,000 on client ledger and matter trust tab
+- [ ] Trust balance reconciles to R 71,000 on client ledger and matter trust tab (amended cycle 18 from R 70,000 to capture Day 14 R 1,000 carry-over)
 
 ---
 

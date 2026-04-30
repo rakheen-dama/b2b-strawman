@@ -3,14 +3,18 @@ package io.b2mash.b2b.b2bstrawman.verticals.legal.closure;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.document.DocumentService;
+import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.CapabilityAuthorizationService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.template.GeneratedDocumentService;
+import io.b2mash.b2b.b2bstrawman.template.TemplateEntityType;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.CloseMatterResponse;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.closure.dto.ClosureLogResponse;
@@ -90,6 +94,7 @@ public class MatterClosureService {
   private final ApplicationEventPublisher eventPublisher;
   private final StatementService statementService;
   private final RetentionPolicyRepository retentionPolicyRepository;
+  private final MemberNameResolver memberNameResolver;
 
   /**
    * Self-reference used to invoke {@link #performClose}, {@link #generateClosureLetterSafely}, and
@@ -112,6 +117,7 @@ public class MatterClosureService {
       ApplicationEventPublisher eventPublisher,
       StatementService statementService,
       RetentionPolicyRepository retentionPolicyRepository,
+      MemberNameResolver memberNameResolver,
       @Lazy MatterClosureService self) {
     this.orderedGates = gates.stream().sorted(Comparator.comparingInt(ClosureGate::order)).toList();
     this.projectRepository = projectRepository;
@@ -125,6 +131,7 @@ public class MatterClosureService {
     this.eventPublisher = eventPublisher;
     this.statementService = statementService;
     this.retentionPolicyRepository = retentionPolicyRepository;
+    this.memberNameResolver = memberNameResolver;
     this.self = self;
   }
 
@@ -376,6 +383,31 @@ public class MatterClosureService {
         }
       }
 
+      // OBS-2106 Part 2 (structural fix): publish a follow-up DocumentGeneratedEvent with explicit
+      // scope=PROJECT and visibility=PORTAL in details, mirroring the SoA pattern in
+      // StatementService. Eliminates the timing-dependent DB fallback in
+      // PortalDocumentNotificationHandler.isPortalVisible — without this, the listener relies on
+      // the first event (published from inside GeneratedDocumentService BEFORE the visibility flip
+      // commits) and a race could let the AFTER_COMMIT listener observe the pre-flip INTERNAL
+      // visibility, dropping the closure-pack portal email. PortalDocumentNotificationHandler
+      // dedups on (tenant, customer, project) over a 5-minute window, so emitting a second event
+      // does not produce a duplicate email — the first one in either order wins. Best-effort: any
+      // failure here must not affect the (already committed) close.
+      try {
+        publishPortalReadyFollowUp(
+            result.generatedDocument().getId(),
+            projectId,
+            actingMemberId,
+            result.generatedDocument().getFileName());
+      } catch (RuntimeException publishEx) {
+        log.warn(
+            "Failed to publish portal-ready follow-up event for closure letter: project={},"
+                + " doc={}",
+            projectId,
+            letterDocId,
+            publishEx);
+      }
+
       return letterDocId;
     } catch (RuntimeException e) {
       log.warn(
@@ -384,6 +416,55 @@ public class MatterClosureService {
           e);
       return null;
     }
+  }
+
+  /**
+   * OBS-2106 Part 2: publishes a {@link DocumentGeneratedEvent} for the closure-letter that carries
+   * explicit {@code scope=PROJECT} and {@code visibility=PORTAL} in the {@code details} map.
+   *
+   * <p>The canonical event from {@link GeneratedDocumentService#generateDocument} is published
+   * BEFORE the visibility flip ({@code documentService.markSystemAutoShared}) commits, so the
+   * AFTER_COMMIT portal-notification listener has historically depended on a DB fallback to read
+   * the (post-flip) persisted Document visibility. That fallback is timing-dependent — under load
+   * or when the listener races the flip's commit, the closure-pack portal email is silently dropped
+   * (Day 60 OBS-2106 regression). This follow-up event short-circuits the visibility gate with
+   * explicit details, so {@link io.b2mash.b2b.b2bstrawman.portal.PortalDocumentNotificationHandler}
+   * can decide the gate from the event payload alone, without re-reading the Document row.
+   *
+   * <p>The portal handler dedups on {@code (tenant, customer, project)} over a 5-minute window, so
+   * emitting two events for the same closure-letter cannot produce a duplicate email — the first to
+   * arrive at the AFTER_COMMIT listener wins.
+   */
+  private void publishPortalReadyFollowUp(
+      UUID generatedDocId, UUID projectId, UUID actingMemberId, String fileName) {
+    String tenantId = RequestScopes.requireTenantId();
+    String orgId = RequestScopes.requireOrgId();
+    String actorName = memberNameResolver.resolveName(actingMemberId);
+    eventPublisher.publishEvent(
+        new DocumentGeneratedEvent(
+            "document.generated",
+            "generated_document",
+            generatedDocId,
+            projectId,
+            actingMemberId,
+            actorName,
+            tenantId,
+            orgId,
+            Instant.now(),
+            Map.of(
+                "file_name",
+                fileName,
+                "template_name",
+                CLOSURE_LETTER_SLUG,
+                "scope",
+                "PROJECT",
+                "visibility",
+                "PORTAL"),
+            CLOSURE_LETTER_SLUG,
+            TemplateEntityType.PROJECT,
+            projectId,
+            fileName,
+            generatedDocId));
   }
 
   /**

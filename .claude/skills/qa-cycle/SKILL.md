@@ -108,8 +108,8 @@ Read and update: qa_cycle/status.md
 - If rebuild fails after 2 attempts, report the error and exit
 
 ## Environment
-- Postgres host: b2mash.local:5432
-- LocalStack host: b2mash.local:4566
+- Postgres: localhost:5433 (E2E Docker), user: postgres, db: app
+- LocalStack: localhost:4566 (E2E Docker)
 - SHELL=/bin/bash prefix for docker build
 - E2E compose: compose/docker-compose.e2e.yml
 - Start: bash compose/scripts/e2e-up.sh
@@ -262,50 +262,114 @@ git checkout -b fix/{GAP_ID}
 ### 2. Implement
 Follow the fix spec steps exactly. Read files before editing. Keep changes minimal.
 
-### 3. Build & Verify
+### 3. Reproduce-before-fix (CLAUDE.md §4 — mandatory)
+Before writing any fix, you must reproduce the bug locally. Run the failing scenario / open the failing page / hit the failing endpoint, observe the actual broken behaviour, save evidence (screenshot, log line, payload). Diagnostic-by-spec ("the spec says line 88, change it") is forbidden — bugs have shipped from the wrong subtree more than once. If you can't reproduce, the spec is wrong; report up, don't fix-and-pray.
+
+### 4. Build & Verify (CLAUDE.md §1 — full verify is mandatory)
+Targeted tests are for inner-loop iteration. **The merge bar is a clean full verify.** Don't ship without it.
+
 **Backend** (if in scope):
-  cd backend
-  ./mvnw spotless:apply 2>&1 | tail -3
-  ./mvnw compile test-compile -q > /tmp/mvn-fix.log 2>&1
-  # Targeted tests, then full verify before PR
+```bash
+cd backend
+./mvnw spotless:apply 2>&1 | tail -3
+./mvnw compile test-compile -q > /tmp/mvn-compile.log 2>&1     # quick gate
+./mvnw test -Dtest='<your-targeted-class>' > /tmp/mvn-targeted.log 2>&1  # iterate
+# THEN before PR:
+./mvnw verify > /tmp/mvn-verify.log 2>&1                        # MANDATORY before PR
+# If verify is green (run from REPO ROOT, not the worktree subdir, so the marker
+# is written where the pre-PR-merge-gate hook reads it):
+cat > .claude/markers/verify-backend.json <<EOF
+{"commit":"$(git rev-parse --short HEAD)","command":"./mvnw verify","exit":0,"ts":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","summary":"<test count from log>"}
+EOF
+```
 
 **Frontend** (if in scope):
-  cd frontend
-  NODE_OPTIONS="" /opt/homebrew/bin/pnpm install > /dev/null 2>&1
-  NODE_OPTIONS="" /opt/homebrew/bin/pnpm run lint > /tmp/lint-fix.log 2>&1
-  NODE_OPTIONS="" /opt/homebrew/bin/pnpm run build > /tmp/build-fix.log 2>&1
-  NODE_OPTIONS="" /opt/homebrew/bin/pnpm test > /tmp/test-fix.log 2>&1
+```bash
+cd frontend
+NODE_OPTIONS="" /opt/homebrew/bin/pnpm install > /dev/null 2>&1
+NODE_OPTIONS="" /opt/homebrew/bin/pnpm run lint > /tmp/lint-fix.log 2>&1   # full lint
+NODE_OPTIONS="" /opt/homebrew/bin/pnpm run build > /tmp/build-fix.log 2>&1 # full build
+NODE_OPTIONS="" /opt/homebrew/bin/pnpm test > /tmp/test-fix.log 2>&1       # full vitest, NOT narrowed
+# If green (run from REPO ROOT):
+cat > .claude/markers/verify-frontend.json <<EOF
+{"commit":"$(git rev-parse --short HEAD)","command":"pnpm run lint && pnpm run build && pnpm test","exit":0,"ts":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","summary":"<test count>"}
+EOF
+```
 
-### 4. Commit & Push
-git add <specific files>
+**Portal** (if in scope): same pattern as Frontend, write `verify-portal.json`.
+
+If any step fails: fix it, re-run from the top. Max 3 attempts before marking STUCK and exiting. Do NOT write a marker for a failing run.
+
+### 5. Commit & Push
+```bash
+git add <specific files>                # ONLY the files for this fix — no scope creep
 git commit -m "fix({GAP_ID}): {short description}"
 git push -u origin fix/{GAP_ID}
+```
 
-### 5. Create PR
+### 6. Create PR
+```bash
 gh pr create --base {BRANCH} --title "Fix {GAP_ID}: {summary}" --body "..."
+```
 
-### 6. Self-Review, then Merge
+PR body MUST include:
+- Summary of the bug (with reproduction evidence: file:line, screenshot, log).
+- Root cause (verified, not hypothesized).
+- Files changed and why each one.
+- Verification results (`mvnw verify` test counts, lint/build/test outcomes).
+- Out-of-scope items (anything you noticed but did not fix).
+
+### 7. Review (CLAUDE.md §2 — mandatory for agent-authored PRs)
+Self-review is not enough. Either:
+- (a) Wait for CodeRabbit (if configured on the repo), or
+- (b) Dispatch a `superpowers:code-reviewer` subagent on the PR with framing "find the slop", or
+- (c) Stop and ask the user to review before merge.
+
+Do NOT merge an agent-authored PR without an independent review pass.
+
+### 8. Merge (gated by `.claude/hooks/pre-pr-merge-gate.sh`)
+The merge-gate hook will block `gh pr merge` if:
+- The verify marker for any touched area (backend / frontend / portal) is missing or stale (>24h) or `exit != 0`.
+- The PR is not documentation-only.
+
+If the hook blocks you, that means a marker is missing — fix the verify, write the marker, retry. Do NOT bypass with `--admin` or by editing the hook.
+
+```bash
 gh pr merge {PR_NUMBER} --squash --delete-branch
 git checkout {BRANCH} && git pull origin {BRANCH}
+```
 
-### 7. Update Status
-Set gap status to FIXED in qa_cycle/status.md.
-If backend/seed/docker changed: add NEEDS_REBUILD to Current State.
+### 9. Update Status (post-merge)
+Set gap status to FIXED in qa_cycle/status.md (NOT VERIFIED — that comes after QA re-runs the scenario).
+If backend/seed/docker changed: add NEEDS_REBUILD to Current State (the Infra Agent will pick this up to rebuild via `bash compose/scripts/e2e-rebuild.sh`).
+If frontend/portal changed: HMR doesn't apply on the E2E Docker stack — also add NEEDS_REBUILD.
 Add log entry. Commit and push to {BRANCH}.
 
-## Guard Rails
-- One fix per PR
-- Green build required before PR
-- Don't touch code outside the spec's scope
-- Max 3 build attempts — report failure and exit if still broken
-- If spec is wrong, note in status.md and exit
+Use `MERGED-AWAITING-VERIFY` if behaviour was not end-to-end verified post-merge. Don't claim VERIFIED without observing the fix work in browser/Mailpit/DB.
+
+## Guard Rails (CLAUDE.md §1–§10)
+
+These are NOT advice. Loopholes are forbidden. If a rule blocks you, raise it; don't bypass.
+
+- **One fix per PR.** Same-bug-class clusters (e.g. 3 dialogs with identical defect) only with explicit authorization.
+- **Reproduce before fix.** No diagnostic-by-spec. If you can't reproduce, the spec is wrong; report up.
+- **Full verify is mandatory before PR**, NOT targeted tests. The `.claude/markers/verify-*.json` files must exist and be current. The pre-merge hook will block merge without them.
+- **Don't touch code outside the spec's scope.** Scope expansion = halt and re-spec, not "while I was here."
+- **Max 3 build attempts.** Report failure (specific error) and exit STUCK if still broken. Don't band-aid.
+- **If spec is wrong, exit STUCK with notes.** Don't silently change scope or invent a different fix.
+- **PASS means observed end-to-end** (browser/log/Mailpit/DB). Inferred PASS is forbidden. Use DEFERRED or MERGED-AWAITING-VERIFY when behaviour is unverified.
+- **Status reports are drafts.** Write what you actually did. "Stream timed out, here's what got done" is correct. Inflated PASS claims are dishonest.
+- **Pride and quality.** Slow correct fix > fast broken fix. This is not a race.
 
 ## Environment
-- Postgres host: b2mash.local:5432
-- LocalStack host: b2mash.local:4566
+- Postgres host: localhost:5433 (E2E Docker), user: postgres, db: app
+- Frontend: http://localhost:3001 (Docker)
+- Backend: http://localhost:8081 (Docker)
+- Mock IDP: http://localhost:8090
 - pnpm: /opt/homebrew/bin/pnpm
 - NODE_OPTIONS="" needed before pnpm commands
 - SHELL=/bin/bash prefix for docker build
+- Stack start/stop: `bash compose/scripts/e2e-up.sh` / `e2e-down.sh` / `e2e-rebuild.sh <service>`
 ```
 
 **IMPORTANT**: If the Dev agent is dispatched with `isolation: "worktree"`, it already has an isolated copy. Adjust the branch/merge commands accordingly — the agent creates the fix branch from the worktree's HEAD, and the PR targets `{BRANCH}`.

@@ -226,9 +226,12 @@ CLAUDE.md files — the brief already contains the relevant extracts.
 - Implement ONLY the tasks in the brief — nothing more
 - If the brief mentions files to modify, read those specific files before editing
 
-### 2. Build & Verify
+### 2. Build & Verify (CLAUDE.md §1 — full verify is mandatory)
 Run the exact build commands from the brief's "Build & Verify" section.
 Build output is redirected to log files — only summaries enter your context.
+
+**Targeted tests are inner-loop only. The merge bar is a clean full verify** (`./mvnw verify` for backend, `pnpm lint && pnpm build && pnpm test` for frontend/portal). Don't ship without it.
+
 If the build fails:
   1. Read the relevant log file to understand the error
   2. Fix the root cause (not symptoms)
@@ -238,6 +241,35 @@ If the build fails:
 When reading log files for errors, use targeted reads:
   grep -n "ERROR\|FAILURE\|Caused by" /tmp/mvn-epic-{SLICE}.log | tail -20
   NOT: cat /tmp/mvn-epic-{SLICE}.log (this defeats the purpose of output redirection)
+
+### 2b. Write Verify Marker (required by pre-PR-merge-gate hook)
+After full verify is green, write the marker file the merge-gate hook reads. The hook runs at `gh pr merge` time, which the orchestrator invokes from the **main repo** (`/Users/rakheendama/Projects/2026/b2b-strawman`), not the worktree. So write the marker into the main repo's `.claude/markers/` — `cd` there first so the relative path resolves correctly:
+
+```bash
+# Capture the worktree's HEAD SHA BEFORE switching cwd — `git rev-parse` reads
+# from the current working dir's repo, so capturing it after `cd` would record
+# the main repo's HEAD instead of the PR's.
+WORKTREE_COMMIT="$(git rev-parse --short HEAD)"
+TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+# Write marker to main repo (NOT the worktree subdir) so the hook can read it.
+cd /Users/rakheendama/Projects/2026/b2b-strawman
+
+# If backend changed (use the exact command the brief's Build & Verify ran):
+cat > .claude/markers/verify-backend.json <<EOF
+{"commit":"${WORKTREE_COMMIT}","command":"./mvnw clean verify -q","exit":0,"ts":"${TS}","summary":"<test count from log>"}
+EOF
+
+# If frontend changed (include the install step and the full lint+build+test sequence):
+cat > .claude/markers/verify-frontend.json <<EOF
+{"commit":"${WORKTREE_COMMIT}","command":"pnpm install && pnpm run lint && pnpm run build && pnpm test","exit":0,"ts":"${TS}","summary":"<test count>"}
+EOF
+
+# Then cd back to your worktree to continue:
+cd /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}
+```
+
+**Portal**: same pattern, write `verify-portal.json`. Do NOT write a marker for a failing run.
 
 ### 3. Commit & Push
 - Stage only files you changed: `git add <specific files>`
@@ -330,11 +362,17 @@ Only report issues you're >80% confident about. Include file:line for every find
 
 If critical or high issues are found, dispatch another `general-purpose` subagent to fix them in the worktree. Pass the review findings AND the brief file path so the fixer has full context.
 
-## Step 5 — Merge (With Confirmation)
+## Step 5 — Merge (With Confirmation, gated by `.claude/hooks/pre-pr-merge-gate.sh`)
 
 **Ask the user before merging.** Do not auto-merge.
 
-If approved:
+The merge-gate hook will block `gh pr merge` if:
+- The verify marker for any touched area (backend / frontend / portal) is missing or stale (>24h) or `exit != 0`.
+- The PR is not documentation-only.
+
+If the hook blocks you, that means a marker is missing or stale — fix the verify, write the marker, retry. **Do NOT bypass with `--admin` or by editing the hook.** If you genuinely think the hook is wrong, raise it and fix the hook upstream.
+
+If user-approved and gate-clear:
 
 ```bash
 # 1. Merge the PR
@@ -352,15 +390,21 @@ Then update task status:
 - Update the status column in `TASKS.md`
 - Commit and push from main repo
 
-## Guardrails
+## Guardrails (CLAUDE.md §1–§10)
+
+These are NOT advice. Loopholes are forbidden. If a rule blocks you, raise it; don't bypass.
 
 - **Context hygiene**: Orchestrator NEVER reads architecture/ARCHITECTURE.md, full task files, or subdirectory CLAUDE.md files
 - **Brief is the contract**: Builder works from the brief only — if the brief is wrong, re-run the scout, don't have the builder explore
 - **Build output stays in files**: All build/test output goes to `/tmp/` log files — only summaries enter agent context
-- **No over-implementation**: Builder implements ONLY the brief's task list
-- **Verify before done**: Green build required before PR creation
+- **No over-implementation**: Builder implements ONLY the brief's task list (one slice per PR)
+- **Full verify is mandatory before PR**, NOT targeted tests. The `.claude/markers/verify-*.json` files must exist and be current. The pre-merge hook will block merge without them.
+- **Mandatory review pass**. CodeRabbit (preferred), `superpowers:code-reviewer` subagent, or human eyeball — never merge an agent-authored PR without one.
+- **Scope boundary**: If scope expands during a slice ("while I was here, this related thing…"), STOP and re-spec. Don't bundle.
+- **Max 3 build attempts.** Report failure (specific error) and exit STUCK if still broken. Don't band-aid.
+- **PASS means observed end-to-end**. Inferred PASS is forbidden. "Build green" alone is NOT PASS — it's compile-pass; behavioural verification (test or manual run) is required.
 - **No duplicate work**: Check `git branch -a` and `gh pr list` before starting
-- **Scope boundary**: If uncertain, STOP and ask the user
+- **Pride and quality.** Slow correct slice > fast broken slice. This is not a race.
 
 ## Recovery
 

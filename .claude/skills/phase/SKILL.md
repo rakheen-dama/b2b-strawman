@@ -240,9 +240,12 @@ CLAUDE.md files — the brief already contains the relevant extracts.
 - Implement ONLY the tasks in the brief — nothing more
 - If the brief mentions files to modify, read those specific files before editing
 
-### 2. Build & Verify
+### 2. Build & Verify (CLAUDE.md §1 — full verify is mandatory)
 Run the exact build commands from the brief's "Build & Verify" section.
 Build output is redirected to log files — only summaries enter your context.
+
+**Targeted tests are inner-loop only. The merge bar is a clean full verify** (`./mvnw verify` for backend, `pnpm lint && pnpm build && pnpm test` for frontend/portal). Don't ship without it.
+
 If the build fails:
   1. Read the relevant log file to understand the error
   2. Fix the root cause (not symptoms)
@@ -252,6 +255,35 @@ If the build fails:
 When reading log files for errors, use targeted reads:
   grep -n "ERROR\|FAILURE\|Caused by" /tmp/mvn-epic-{SLICE}.log | tail -20
   NOT: cat /tmp/mvn-epic-{SLICE}.log (this defeats the purpose of output redirection)
+
+### 2b. Write Verify Marker (required by pre-PR-merge-gate hook)
+After full verify is green, write the marker file the merge-gate hook reads. The hook runs at `gh pr merge` time, which the orchestrator invokes from the **main repo** (`/Users/rakheendama/Projects/2026/b2b-strawman`), not the worktree. So write the marker into the main repo's `.claude/markers/` — `cd` there first so the relative path resolves correctly:
+
+```bash
+# Capture the worktree's HEAD SHA BEFORE switching cwd — `git rev-parse` reads
+# from the current working dir's repo, so capturing it after `cd` would record
+# the main repo's HEAD instead of the PR's.
+WORKTREE_COMMIT="$(git rev-parse --short HEAD)"
+TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+# Write marker to main repo (NOT the worktree subdir) so the hook can read it.
+cd /Users/rakheendama/Projects/2026/b2b-strawman
+
+# If backend changed (use the exact command the brief's Build & Verify ran):
+cat > .claude/markers/verify-backend.json <<EOF
+{"commit":"${WORKTREE_COMMIT}","command":"./mvnw clean verify -q","exit":0,"ts":"${TS}","summary":"<test count from log>"}
+EOF
+
+# If frontend changed (include the install step and the full lint+build+test sequence):
+cat > .claude/markers/verify-frontend.json <<EOF
+{"commit":"${WORKTREE_COMMIT}","command":"pnpm install && pnpm run lint && pnpm run build && pnpm test","exit":0,"ts":"${TS}","summary":"<test count>"}
+EOF
+
+# Then cd back to your worktree to continue:
+cd /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}
+```
+
+**Portal**: same pattern, write `verify-portal.json`. Do NOT write a marker for a failing run.
 
 ### 3. Commit & Push
 - Stage only files you changed: `git add <specific files>`
@@ -335,9 +367,11 @@ Only report issues you're >80% confident about.
 
 If the review finds critical issues, dispatch another `general-purpose` agent with `model: "opus"` to fix them in the worktree. The fixer must evaluate each finding critically — skip false positives and explain why, don't blindly apply everything. Pass the review findings AND the brief file path (`/Users/rakheendama/Projects/2026/worktree-epic-{SLICE}/.epic-brief.md`) so the fixer has full context for conventions.
 
-### 1h. Merge
+### 1h. Merge (gated by `.claude/hooks/pre-pr-merge-gate.sh`)
 
-After review passes, merge using this exact sequence:
+After review passes AND the merge-gate hook clears, merge using this exact sequence:
+
+The merge-gate hook will block `gh pr merge` if the verify marker for any touched area (backend / frontend / portal) is missing or stale (>24h) or `exit != 0`. If the hook blocks you, that means the builder skipped the marker step or the verify failed — do NOT bypass with `--admin` or by editing the hook out of `settings.json`. Re-dispatch the builder to run the verify and write the marker, then retry.
 
 ```bash
 # Merge PR
@@ -359,16 +393,22 @@ Then update task status:
 
 Move to the next slice. Repeat from 1a.
 
-## Anti-Patterns
+## Anti-Patterns + Guard Rails (CLAUDE.md §1–§10)
+
+These are NOT advice. Loopholes are forbidden. If a rule blocks you, raise it; don't bypass.
 
 - **Do NOT** use `run_in_background: true` for Task calls — the orchestrator freezes with no reliable resume
 - **Do NOT** read phase task files in full in your own context — use `limit=60` for overview, delegate full reads to scouts
-- **Do NOT** implement multiple slices in parallel — one at a time, verify each
+- **Do NOT** implement multiple slices in parallel — one at a time, verify each (one slice per PR)
 - **Do NOT** write code yourself — you are the orchestrator
-- **Do NOT** skip code review — every PR gets reviewed before merge
-- **Do NOT** merge without a green build — builder must verify before PR creation
+- **Do NOT** skip code review — every agent-authored PR gets a CodeRabbit / `superpowers:code-reviewer` / human pass before merge
+- **Do NOT** merge without a green full verify — builder must run `./mvnw verify` (or `pnpm lint && build && test`) and write `.claude/markers/verify-*.json` before PR creation. Targeted tests are inner-loop only; full verify is the merge bar.
+- **Do NOT** bypass the merge-gate hook with `--admin` or by editing the hook out — if it blocks, fix the verify and write the marker
 - **Do NOT** forget to update status files after merge
 - **Do NOT** dispatch a single agent that does both research AND implementation — always split into scout + builder
+- **Do NOT** allow scope creep within a slice ("while I was here…") — STOP and re-spec, don't bundle
+- **PASS means observed**: builder must verify behaviourally (test or manual run) before claiming done, not just "compile-pass". Inferred PASS is forbidden.
+- **Pride and quality**: slow correct slice > fast broken slice. This is not a race.
 
 ## Recovery
 

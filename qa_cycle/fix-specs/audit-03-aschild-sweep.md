@@ -1,7 +1,7 @@
 # Fix Spec: Audit-03 sweep — propagate dialog-owns-button to remaining adjacency sites
 
 **Severity**: dormant bug class → eliminated (per `slop-hunt-BATCH-B.md` recommendation #2)
-**Surface**: Frontend — 4 files audited, 5 dialog components migrated, 2 new components extracted
+**Surface**: Frontend — 4 files audited, 6 dialog components migrated, 2 new components extracted
 **Effort**: M (~1.5h end-to-end including review)
 
 ## Problem
@@ -52,7 +52,7 @@ The OBS-2103 collision itself doesn't reproduce reliably in vitest+happy-dom (PR
 
 ## Scope
 
-- Migrated to dialog-owns-button: 5 dialogs (EditCommentDialog, AddCustomerRateDialog, EditCustomerRateDialog, DeleteCustomerRateDialog, EditProjectRateDialog, DeleteProjectRateDialog).
+- Migrated to dialog-owns-button: 6 dialogs (EditCommentDialog, AddCustomerRateDialog, EditCustomerRateDialog, DeleteCustomerRateDialog, EditProjectRateDialog, DeleteProjectRateDialog).
 - Extracted into new components: 2 (DeleteCommentDialog, DeleteExpenseDialog).
 - Left as-is with rationale: AddProjectRateDialog (not adjacent), LogExpenseDialog (extraction reduces row to one Slot, eliminating collision without API change).
 - Updated test: 1 (`__tests__/comments/edit-comment-dialog.test.tsx` API update).

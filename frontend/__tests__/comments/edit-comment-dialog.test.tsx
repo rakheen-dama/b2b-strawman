@@ -46,11 +46,11 @@ describe("EditCommentDialog", () => {
         orgSlug="acme"
         projectId="p1"
         canManageVisibility={false}
-        triggerLabel="Edit comment"
+        triggerLabel="Edit comment open"
       />
     );
 
-    await user.click(screen.getByRole("button", { name: "Edit comment" }));
+    await user.click(screen.getByRole("button", { name: "Edit comment open" }));
 
     expect(screen.getByLabelText("Comment")).toHaveValue("Original comment body");
   });
@@ -65,11 +65,11 @@ describe("EditCommentDialog", () => {
         orgSlug="acme"
         projectId="p1"
         canManageVisibility={false}
-        triggerLabel="Edit comment"
+        triggerLabel="Edit comment save"
       />
     );
 
-    await user.click(screen.getByRole("button", { name: "Edit comment" }));
+    await user.click(screen.getByRole("button", { name: "Edit comment save" }));
 
     const textarea = screen.getByLabelText("Comment");
     await user.clear(textarea);

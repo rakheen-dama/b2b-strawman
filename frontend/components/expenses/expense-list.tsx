@@ -354,6 +354,7 @@ export function ExpenseList({
                                     expenseId={expense.id}
                                     expenseDescription={expense.description}
                                     triggerLabel={<Trash2 className="size-3" />}
+                                    triggerAriaLabel={`Delete expense: ${expense.description}`}
                                   />
                                 )}
                                 {isAdminOrOwner && expense.billingStatus === "UNBILLED" && (

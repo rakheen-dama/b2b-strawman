@@ -46,9 +46,8 @@ describe("EditCommentDialog", () => {
         orgSlug="acme"
         projectId="p1"
         canManageVisibility={false}
-      >
-        <button>Edit comment</button>
-      </EditCommentDialog>
+        triggerLabel="Edit comment"
+      />
     );
 
     await user.click(screen.getByRole("button", { name: "Edit comment" }));
@@ -66,9 +65,8 @@ describe("EditCommentDialog", () => {
         orgSlug="acme"
         projectId="p1"
         canManageVisibility={false}
-      >
-        <button>Edit comment</button>
-      </EditCommentDialog>
+        triggerLabel="Edit comment"
+      />
     );
 
     await user.click(screen.getByRole("button", { name: "Edit comment" }));
@@ -99,9 +97,8 @@ describe("EditCommentDialog", () => {
         orgSlug="acme"
         projectId="p1"
         canManageVisibility={false}
-      >
-        <button>Edit no visibility</button>
-      </EditCommentDialog>
+        triggerLabel="Edit no visibility"
+      />
     );
 
     await user.click(screen.getByRole("button", { name: "Edit no visibility" }));
@@ -117,9 +114,8 @@ describe("EditCommentDialog", () => {
         orgSlug="acme"
         projectId="p1"
         canManageVisibility={true}
-      >
-        <button>Edit with visibility</button>
-      </EditCommentDialog>
+        triggerLabel="Edit with visibility"
+      />
     );
 
     await user.click(screen.getByRole("button", { name: "Edit with visibility" }));

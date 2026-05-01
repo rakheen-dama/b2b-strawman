@@ -18,26 +18,15 @@ import {
   CATEGORY_LABELS,
 } from "@/components/expenses/expense-category-badge";
 import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";
+import { DeleteExpenseDialog } from "@/components/expenses/delete-expense-dialog";
 import { formatCurrencySafe, formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import {
-  deleteExpense,
   writeOffExpense,
   restoreExpense,
 } from "@/app/(app)/org/[slug]/projects/[id]/expense-actions";
 import type { ExpenseResponse, ExpenseCategory, ExpenseBillingStatus } from "@/lib/types";
 import { Badge } from "@/components/ui/badge";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 
 type BillingStatusFilter = "all" | "UNBILLED" | "BILLED" | "NON_BILLABLE";
 
@@ -119,12 +108,6 @@ export function ExpenseList({
 
   function canDeleteExpense(expense: ExpenseResponse): boolean {
     return canEditExpense(expense);
-  }
-
-  function handleDelete(expenseId: string) {
-    startTransition(async () => {
-      await deleteExpense(slug, projectId, expenseId);
-    });
   }
 
   function handleWriteOff(expenseId: string) {
@@ -365,32 +348,13 @@ export function ExpenseList({
                                   </LogExpenseDialog>
                                 )}
                                 {deletable && (
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <Button size="xs" variant="ghost">
-                                        <Trash2 className="size-3" />
-                                      </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>Delete expense?</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          This will permanently delete the expense &quot;
-                                          {expense.description}
-                                          &quot;. This action cannot be undone.
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                        <AlertDialogAction
-                                          onClick={() => handleDelete(expense.id)}
-                                          disabled={isPending}
-                                        >
-                                          {isPending ? "Deleting..." : "Delete"}
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
+                                  <DeleteExpenseDialog
+                                    slug={slug}
+                                    projectId={projectId}
+                                    expenseId={expense.id}
+                                    expenseDescription={expense.description}
+                                    triggerLabel={<Trash2 className="size-3" />}
+                                  />
                                 )}
                                 {isAdminOrOwner && expense.billingStatus === "UNBILLED" && (
                                   <Tooltip>

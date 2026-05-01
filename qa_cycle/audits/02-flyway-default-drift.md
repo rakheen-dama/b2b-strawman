@@ -62,8 +62,16 @@ If non-zero → write a V-N+1 backfill migration mirroring the OBS-2107 V118 pat
 - Pre-V117 tenant row had `[]` (empty), causing the closure-pack email skip.
 - Fixed by V118 backfill.
 
-## Action items
+## Urgency note (2026-05-01)
 
-1. **Run the suspect-list `psql` queries against the dev tenant `tenant_5039f2d497cf`.** If any of the 6 suspect columns is NULL or empty, write a backfill migration in the next cycle.
-2. **Add a Flyway-test convention**: any `ADD COLUMN` that's not `NOT NULL DEFAULT` should have an accompanying `UPDATE` to backfill, OR the consuming Java code must NULL-safe-handle.
-3. **CLAUDE.md addition**: document the OBS-2107 lesson in `backend/CLAUDE.md` so future migrations follow the rule.
+User confirmed: **no production data, all data disposable, backward data compatibility is NOT a priority.** This downgrades the urgency of the suspect Flyway DEFAULT items significantly:
+
+- For dev/test tenants that surface NULL on a nullable-DEFAULT column: simplest fix is `dev-down --clean && dev-up && keycloak-bootstrap` to re-provision from scratch. Pre-existing rows are gone, new rows pick up the DEFAULT.
+- A V119 backfill migration is still worth writing if the consuming Java code is brittle (NPE on NULL) AND a re-provision is expensive in the moment. Otherwise prefer the re-provision.
+- The OBS-2107 V118 backfill was the right call at the time because the dev tenant had real cycle state and a re-provision would have lost the QA cycle's evidence. With a fresh cycle / fresh tenant, the same problem wouldn't have needed a migration.
+
+## Action items (revised priority)
+
+1. **Convention** (still worth doing): document in `backend/CLAUDE.md` that any `ADD COLUMN` that's not `NOT NULL DEFAULT` should be paired with an explicit `UPDATE ... SET` backfill OR a NULL-safe Java getter. Forward-looking — prevents the next OBS-2107.
+2. **Skip per-tenant `psql` audits** unless the consuming code shows a NULL-related bug at runtime. Re-provision dev environments rather than migrate.
+3. **No retroactive backfill PRs** for the 6 suspect columns. Defer until a real bug is observed.

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { renderToString } from "react-dom/server";
 
 // Mock server actions BEFORE importing the component — actions.ts is server-only.
 const mockCreateProposal = vi.fn();
@@ -164,5 +165,40 @@ describe("CreateProposalDialog — expiresAt timezone encoding (OBS-702)", () =>
     // Belt-and-braces: the ISO string must NOT be the literal `T23:59:59Z`
     // forced-UTC form that produced OBS-702.
     expect(payload.expiresAt).not.toBe("2026-05-12T23:59:59Z");
+  });
+});
+
+describe("CreateProposalDialog — SSR hydration contract (OBS-704 v3)", () => {
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("renders the DialogTrigger wrapper with aria-controls server-side (no mount-gate)", () => {
+    // OBS-704 v3 regression guard. The previous fix wrapped the Dialog tree in
+    // `if (!mounted) return <>{children}</>` to skip the Radix subtree on SSR
+    // and the first client commit, papering over an aria-controls hydration
+    // mismatch via subtree elision. The structural fix is to let Radix render
+    // normally on SSR — `@radix-ui/react-id` wraps `React.useId()` (stable
+    // across SSR + client in React 19), so the contentId allocated by the
+    // Dialog provider is the same on both sides and the aria-controls injected
+    // on the trigger is deterministic. This test asserts the SSR HTML actually
+    // contains the trigger AND that aria-controls is set — without the fix,
+    // SSR would emit the bare `children` (no Radix wrapper, no aria-controls)
+    // and re-render to the wrapped tree post-mount.
+    const ssrHtml = renderToString(
+      <CreateProposalDialog slug="legal-test" customers={CUSTOMERS}>
+        <Button data-testid="ssr-trigger">New Proposal</Button>
+      </CreateProposalDialog>
+    );
+
+    // The trigger child must be in the SSR output…
+    expect(ssrHtml).toContain('data-testid="ssr-trigger"');
+
+    // …and Radix's auto-injected aria-controls (id of the DialogContent) must
+    // be present on the trigger element. Match `aria-controls="radix-..."`
+    // anywhere within the SSR HTML for the trigger element. If this fails,
+    // the mount-gate was actually load-bearing and we need a deterministic-id
+    // fallback (pass aria-controls via the consumer Button directly).
+    expect(ssrHtml).toMatch(/aria-controls="radix-[^"]+"/);
   });
 });

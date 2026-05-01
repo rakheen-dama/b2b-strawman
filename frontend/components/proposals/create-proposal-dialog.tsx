@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronsUpDown, Check } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -84,17 +84,6 @@ export function CreateProposalDialog({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [customerPopoverOpen, setCustomerPopoverOpen] = useState(false);
-
-  // OBS-704: Radix DialogTrigger injects an `aria-controls="radix-_R_..."`
-  // attribute on the cloned trigger only after the Dialog mounts on the
-  // client. The server-rendered HTML lacks this attribute, which produced
-  // a hydration mismatch on /org/{slug}/proposals. Defer mounting the
-  // Dialog (and its DialogTrigger wrapper) until after the first client
-  // commit so SSR and the initial client render produce identical HTML.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const initialCustomerId = defaultCustomerId ?? "";
   const initialFeeModel: FeeModel = defaultFeeModel ?? "RETAINER";
@@ -201,14 +190,6 @@ export function CreateProposalDialog({
     } finally {
       setIsSubmitting(false);
     }
-  }
-
-  // Pre-mount: render the trigger child directly so server HTML and the
-  // first client commit are identical. The Radix DialogTrigger wrapper
-  // (which injects aria-controls post-mount) is only rendered after
-  // hydration completes.
-  if (!mounted) {
-    return <>{children}</>;
   }
 
   return (

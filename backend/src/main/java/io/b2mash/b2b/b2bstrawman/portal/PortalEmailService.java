@@ -44,6 +44,9 @@ public class PortalEmailService {
   // OBS-703 — per-event "new proposal awaiting review" portal send.
   private static final String NEW_PROPOSAL_TEMPLATE_NAME = "portal-new-proposal";
   private static final String NEW_PROPOSAL_REFERENCE_TYPE = "PORTAL_NEW_PROPOSAL";
+  // OBS-AUDIT-N1 — per-event "your proposal has expired" portal send.
+  private static final String PROPOSAL_EXPIRED_TEMPLATE_NAME = "portal-proposal-expired";
+  private static final String PROPOSAL_EXPIRED_REFERENCE_TYPE = "PORTAL_PROPOSAL_EXPIRED";
 
   private final IntegrationRegistry integrationRegistry;
   private final EmailTemplateRenderer emailTemplateRenderer;
@@ -215,6 +218,16 @@ public class PortalEmailService {
   public boolean sendNewProposalEmail(PortalContact contact, Map<String, Object> context) {
     return sendPortalNotification(
         contact, context, NEW_PROPOSAL_TEMPLATE_NAME, NEW_PROPOSAL_REFERENCE_TYPE);
+  }
+
+  /**
+   * Sends the per-event "your proposal has expired" portal email. Fired by {@code
+   * ProposalExpiredEventHandler} when a SENT proposal passes its {@code expiresAt} deadline without
+   * a portal-side accept/decline (OBS-AUDIT-N1). Fire-and-forget.
+   */
+  public boolean sendProposalExpiredEmail(PortalContact contact, Map<String, Object> context) {
+    return sendPortalNotification(
+        contact, context, PROPOSAL_EXPIRED_TEMPLATE_NAME, PROPOSAL_EXPIRED_REFERENCE_TYPE);
   }
 
   /**

@@ -19,13 +19,15 @@ Reported FAIL by the wrapper script. Detailed output was lost (the script's stdo
 
 ## Triage decision
 
-**Track for fix in a future cleanup PR. Not blocking for the current Task E / Task F work.**
+**Track for fix in a dedicated session. Not blocking for current Task E / Task F work.**
+
+Per user note (2026-05-01): the regression pack itself was built during a period when known bugs were live, so some assertions may encode buggy behaviour rather than correct behaviour. **Don't assume "test failure = production bug" until the regression pack has been audited and rebuilt against a known-good baseline.** That audit is itself a dedicated-session task — bigger than chasing each failure individually.
 
 Reasoning per Quality Gate rule §1 ("own it, ignore with reason, or fix"):
 
-- **Own**: yes — these go on the Task F backlog as concrete cleanup items.
-- **Ignore-with-reason**: not chosen for the long term; these are real test failures, not flakes. Reason for *not* fixing in-session: each requires its own investigation (5–30 min) and is unrelated to the slop-hunt audit findings I'm currently working through.
-- **Fix**: deferred. Recommend a dedicated session that reproduces locally on the e2e stack and triages each failure to either a code fix or a test update.
+- **Own**: yes — these go on the Task F backlog as concrete cleanup items, gated on the regression-pack audit.
+- **Ignore-with-reason**: not chosen for the long term; these are real test failures, not flakes. Reason for *not* fixing in-session: (1) regression pack provenance is suspect, (2) each failure needs its own investigation, (3) all four are unrelated to the slop-hunt audit findings I'm currently working through.
+- **Fix**: deferred. Recommend a dedicated session that (a) audits the regression pack against current product expectations, (b) discards or rewrites assertions that encode buggy old behaviour, (c) then triages remaining failures to either a code fix or a test update.
 
 ## Reproducer
 

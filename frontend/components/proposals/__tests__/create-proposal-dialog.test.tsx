@@ -145,10 +145,7 @@ describe("CreateProposalDialog — expiresAt timezone encoding (OBS-702)", () =>
       expect(mockCreateProposal).toHaveBeenCalled();
     });
 
-    const [, payload] = mockCreateProposal.mock.calls[0] as [
-      string,
-      { expiresAt?: string },
-    ];
+    const [, payload] = mockCreateProposal.mock.calls[0] as [string, { expiresAt?: string }];
 
     expect(payload.expiresAt).toBeDefined();
 

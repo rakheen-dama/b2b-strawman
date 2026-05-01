@@ -88,13 +88,13 @@ Detail (full in `slop-hunt-PR-1247.md`):
 
 The fix-spec considered Option A (V118 backfill — chosen) and Option B (Java read-time fallback — rejected). It did **not** consider Option C: fix the Java write-time initializer. Option C is the simplest correct fix and was missed.
 
-**Recommended follow-up**: a one-line PR changing `OrgSettings.java:245` to either initialize with the canonical default or set to null + mark `@Column(insertable = false)`. ~30 minutes including a unit test asserting a freshly constructed `OrgSettings` has the expected list.
+**Recommended follow-up**: a one-line PR changing `OrgSettings.java:245` to either initialize with the canonical default or set to null + mark `@Column(insertable = false)`. ~30 minutes including a unit test asserting a freshly constructed `OrgSettings` has the expected list. **Status (2026-05-01): Completed in PR #1254** — the canonical default is now seeded in the 1-arg `OrgSettings(String defaultCurrency)` constructor.
 
 ## Cross-cutting recommendations (for the orchestrator)
 
-1. **File a follow-up bug for OrgSettings.java initializer drift.** Class: "Hibernate-managed entity initializer races SQL DEFAULT." Audit other `OrgSettings` fields (and `field_definitions`, per audit-02 suspects) for the same pattern. ~30-60 min audit.
+1. ~~**File a follow-up bug for OrgSettings.java initializer drift.**~~ Done — see `qa_cycle/fix-specs/OBS-2107-followup.md` (PR #1254 merged 2026-05-01). The wider audit of "Hibernate-managed entity initializer races SQL DEFAULT" — other `OrgSettings` fields (and `field_definitions` per audit-02 suspects) — remains open.
 
-2. **Update `qa_cycle/audits/02-flyway-default-drift.md`** to add the new bug class. The audit currently distinguishes NOT-NULL-DEFAULT (auto-backfill) from nullable-DEFAULT (no backfill). It misses the case where the schema is NOT-NULL-DEFAULT but the Java entity overrides. Add a third category: "Java-initialized JPA fields that race SQL DEFAULT on INSERT." This is the actual bug class for OBS-2107.
+2. **Update `qa_cycle/audits/02-flyway-default-drift.md`** to add the new bug class. **Done** — see the "Hibernate entity initializer overrides SQL DEFAULT" section added in PR #1254.
 
 3. **Spot-check `ProjectRepository.java` and `AuditEventRepository.java`** per audit-04 — both still flagged as suspects after #1240's fix. ~5 min each.
 

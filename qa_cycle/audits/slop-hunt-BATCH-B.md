@@ -33,7 +33,7 @@
 **Verdict: COVER-UP, both PRs.**
 - #1231 misdiagnosed the root cause (timestamp prop, not Radix `aria-controls`). The `useNowMs` hook fixed nothing.
 - #1234 correctly identified the real cause (Radix Slot's client-only `aria-controls`) but chose a workaround (mount-gate) instead of a structural fix. The mount-gate doesn't fix the mismatch — it hides it by skipping the problematic Radix tree on first paint and re-rendering after `useEffect`. The result: SSR for this dialog is neutered (no trigger wrapper rendered), and the underlying bug class lives on in 66 other `*Trigger asChild` declarations across the codebase.
-- Recommended: open a v3 cleanup PR that (a) reverts #1231's `useNowMs` hook, (b) replaces the mount-gate with `suppressHydrationWarning` on the trigger or upgrades `radix-ui` to a version where `aria-controls` is allocated via `useId()` (deterministic SSR/client), (c) audits other dialogs for the same hydration mismatch, (d) adds an SSR-snapshot test.
+- Recommended: open a v3 cleanup PR that (a) reverts #1231's `useNowMs` hook, (b) replaces the mount-gate with a deterministic-ID fix — pin `radix-ui` to a version where `aria-controls` is allocated via `useId()`, or pass an explicit `id` to the trigger so SSR and client agree. Do NOT use `suppressHydrationWarning`: that is itself a cover-up (silences the warning, leaves the mismatch). (c) audits other dialogs for the same hydration mismatch, (d) adds an SSR-snapshot test.
 
 ### Pair 2: #1239 → #1242 (OBS-2103 / OBS-2103b customer Edit/Archive)
 **Verdict: GENUINE fix in #1242.**
@@ -62,7 +62,7 @@ Per audit-03's own action items, each is a 5-min eyeball check. None has been do
 ## NEEDS-FOLLOW-UP PRs
 
 - **#1231** — revert the `useNowMs` hook OR re-document what bug class it actually guards (it's not OBS-704). LOW-effort.
-- **#1234** — replace the mount-gate with a structural fix (`suppressHydrationWarning`, Radix version pin, or explicit `id` prop). MEDIUM-effort. This is the highest-value follow-up in the batch — the mount-gate as shipped is a documented antipattern and will scale badly if copied.
+- **#1234** — replace the mount-gate with a deterministic-ID fix (Radix version pin to a release that uses `useId()` for `aria-controls`, or explicit `id` prop on the trigger). Do NOT use `suppressHydrationWarning` — that just hides the warning. MEDIUM-effort. This is the highest-value follow-up in the batch — the mount-gate as shipped is a documented antipattern and will scale badly if copied.
 - **#1239** — already superseded by #1242 in the codebase, but the failure mode (cloneElement on RSC children) needs a `frontend/CLAUDE.md` anti-pattern entry. LOW-effort.
 
 ## Recommendations (ordered by impact)

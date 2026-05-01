@@ -24,7 +24,7 @@
 - One fix per PR (Quality Gate rule #7) — entity initializer fix is the single substantive change. Doc cleanup bundled per explicit scope-widening authorization (user, 2026-05-01).
 - Reproduce-before-fix (rule #4) — bug verified by reading entity + 16 call sites + V117/V118 migrations before writing the spec.
 - Build & test bar (rule #1) — full `./mvnw verify`, not targeted globs.
-- PASS means observed (rule #3) — pre-merge verify on the branch + post-merge verify on main (in flight at time of writing).
+- PASS means observed (rule #3) — pre-merge verify on the branch (5012 / 0F / 0E / 26 skip) + post-merge verify on main at `672bbb0af` (5012 / 0F / 0E / 26 skip — green, exit 0). Both runs witnessed end-to-end; no inferred PASS.
 - Reproduce on a freshly-provisioned tenant via `dev-down --clean && dev-up && keycloak-bootstrap` is the post-merge opportunistic check; not a blocker for merge per scope of this PR.
 
 ## Source

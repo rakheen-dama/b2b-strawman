@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.icegreen.greenmail.util.GreenMail;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
@@ -32,6 +33,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.event.ApplicationEvents;
+import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -63,6 +66,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@RecordApplicationEvents
 class MatterClosureEmailIntegrationTest {
 
   private static final GreenMail greenMail = GreenMailTestSupport.getInstance();
@@ -230,6 +234,61 @@ class MatterClosureEmailIntegrationTest {
     MimeMessage[] received = greenMail.getReceivedMessages();
     assertThat(received).hasSize(1);
     assertThat(received[0].getAllRecipients()[0].toString()).isEqualTo(CONTACT_EMAIL);
+  }
+
+  /**
+   * OBS-2106 follow-up (slop-hunt PR-1246 finding 1): closing a matter must publish exactly ONE
+   * canonical {@link DocumentGeneratedEvent} for the closure letter, and that event must carry
+   * explicit {@code scope=PROJECT, visibility=PORTAL} in its {@code details} map. The original
+   * #1246 fix worked around a race in the canonical emitter by publishing a SECOND compensating
+   * event from {@code MatterClosureService.publishPortalReadyFollowUp} and relying on the 5-minute
+   * Caffeine dedup in {@code PortalDocumentNotificationHandler} to coalesce the two into one email.
+   * That dedup is best-effort (single-JVM, evicted on listener restart, cold-tenant empty) — under
+   * unfortunate timing the listener could observe the canonical event first, fall through to a DB
+   * read of the still-INTERNAL Document row, and silently skip the email. The structural fix routes
+   * the closure-letter through {@code generateForProject} with explicit {@code
+   * intendedVisibility=PORTAL}, so the linked Document is born PORTAL and the canonical event
+   * carries the visibility hint atomically. The compensating second event is then unnecessary.
+   */
+  @Test
+  void close_publishesSingleCanonicalEventWithExplicitPortalVisibility(ApplicationEvents events)
+      throws Exception {
+    UUID projectId = createProject("OBS-2106 followup canonical event shape");
+
+    runInTenantAsOwner(
+        () ->
+            matterClosureService.close(
+                projectId,
+                new ClosureRequest(
+                    ClosureReason.CONCLUDED,
+                    "OBS-2106 follow-up: canonical-event-shape regression",
+                    /* generateClosureLetter */ true,
+                    /* generateStatementOfAccount */ false,
+                    /* override */ true,
+                    VALID_JUSTIFICATION),
+                memberId));
+
+    var closureLetterEvents =
+        events.stream(DocumentGeneratedEvent.class)
+            .filter(e -> "matter-closure-letter".equals(e.templateName()))
+            .toList();
+
+    assertThat(closureLetterEvents)
+        .as(
+            "OBS-2106 follow-up: a single canonical DocumentGeneratedEvent must be published per"
+                + " closure letter — the second compensating event from publishPortalReadyFollowUp"
+                + " is no longer needed once generateForProject carries the visibility hint")
+        .hasSize(1);
+
+    var details = closureLetterEvents.get(0).details();
+    assertThat(details)
+        .as(
+            "OBS-2106 follow-up: canonical DocumentGeneratedEvent for closure letter must carry"
+                + " scope=PROJECT and visibility=PORTAL in details (mirrors the SoA pattern in"
+                + " StatementService:228-236), eliminating the DB-fallback race in"
+                + " PortalDocumentNotificationHandler.isPortalVisible")
+        .containsEntry("scope", "PROJECT")
+        .containsEntry("visibility", "PORTAL");
   }
 
   // ── helpers ────────────────────────────────────────────────────────────

@@ -208,15 +208,29 @@ Report:
 - Any remaining failures with recommended action
 - If `--fix` was used: list PRs/commits created
 
-## Guard Rails
+## Guard Rails (CLAUDE.md §1–§10)
 
+These are NOT advice. Loopholes are forbidden. If a rule blocks you, raise it; don't bypass.
+
+**Reporting discipline:**
 - **Never skip failing tests** to make the suite "pass" — fix the test or fix the code
 - **Never modify seed data** to make tests pass — tests should be resilient to seed state
-- **Pre-existing lifecycle test failures** are known — don't count them as new regressions
+- **Pre-existing lifecycle test failures** are known — don't count them as new regressions, but DO surface them in the report so they get tracked. See `qa_cycle/known-failures-*.md` for the current baseline.
 - **Skipped tests** for unbuilt features are expected — don't try to unskip them
+- **PASS means observed end-to-end**. If the regression script's exit code is masked by a `| tail -N` pipe (the post-merge-hook bug), capture the script's stdout summary directly and trust the bordered SUMMARY block, not the apparent exit.
 - If the E2E stack needs a rebuild, do it before running tests (don't run against stale containers)
 - **KC mode auth mismatches** — standard tests failing at login in KC mode are NOT regressions
 - **Keycloak session state** — KC tests run with 1 worker (serial) to avoid session conflicts
+
+**`--fix` path discipline (when this skill authors code):**
+
+The `--fix` flag dispatches Dev subagents that author code. Those subagents must follow the canonical bug-fix lockdown:
+
+- **Reproduce before fix.** Run the failing test, observe actual broken behaviour, save evidence — don't fix from the test name alone.
+- **Full verify is mandatory before PR**, NOT just the targeted regression test. Backend changes → `./mvnw verify` + `.claude/markers/verify-backend.json`. Frontend → `pnpm lint && pnpm build && pnpm test` + `verify-frontend.json`. Portal same. See `.claude/markers/README.md`.
+- **Mandatory review pass** for the fix PR — CodeRabbit (preferred), `superpowers:code-reviewer` subagent, or human eyeball.
+- **Don't bypass the merge-gate hook** with `--admin` or by editing the hook out. If it blocks, fix the verify and write the marker.
+- **One fix per PR.** If the regression run flushed out 4 failures across 4 different bug classes, that's 4 separate PRs, not one bundle.
 
 ## Quick Reference
 

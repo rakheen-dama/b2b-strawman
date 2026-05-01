@@ -10,7 +10,7 @@
 
 `PortalDocumentNotificationHandler.process` skips every closure-pack / Statement-of-Account `DocumentGeneratedEvent` for tenants whose `org_settings.portal_notification_doc_types` is `'[]'::jsonb`, with the INFO log line:
 
-```
+```text
 Skipping portal-document-ready: per-tenant allowlist empty (tenant=tenant_xxx)
 ```
 

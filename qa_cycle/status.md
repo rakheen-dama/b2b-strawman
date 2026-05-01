@@ -8,6 +8,23 @@
 - **Started**: 2026-04-30
 - **Mode**: Clean slate. All Docker volumes wiped. Keycloak bootstrapped (padmin only). Orgs/users will be created through real onboarding flow.
 
+## Per-Day Workflow (NON-NEGOTIABLE — from user 2026-05-01)
+
+> No workarounds, fix actual flows and bugs as they are found. Follow this workflow strictly. Do not skip the retest.
+
+For each day-N walk in any future cycle:
+
+1. **QA agent walks Day N end-to-end.** Records every checkpoint PASS/FAIL/PARTIAL with evidence (screenshot, Mailpit ID, log line). Files OBS-* gaps for every defect.
+2. **Triage every gap.** Product agent (or orchestrator) reads each new gap and decides: SPEC_READY (real bug), WONT_FIX-EXEMPT (KYC/Payments only), or scenario-amendment (with explicit user authorisation). NO disposing of bugs by editing the scenario script without sign-off.
+3. **Fix every spec.** Dev agent ships per `qa-cycle-kc/SKILL.md`: reproduce-before-fix → full `./mvnw verify` (or `pnpm lint && build && test`) → marker write → commit → PR → independent review → merge.
+4. **PR the bugfix branch into main.** Each fix is its own PR against main. The bugfix-cycle branch tracks state; production code lands via individual PRs.
+5. **Address review findings.** Whatever the reviewer flags (HIGH/MEDIUM/LOW) — address before merge. Don't override the reviewer.
+6. **Merge.** Pre-merge gate hook (`.claude/hooks/pre-pr-merge-gate.sh`) blocks merge unless verify markers are present + green + recent. Don't bypass.
+7. **Retest each fix on main with the QA agent.** Sync main into bugfix branch, restart backend if needed, dispatch a focused QA agent that re-runs ONLY the checkpoint(s) that produced the gap. Mark VERIFIED only after observed end-to-end PASS in browser/Mailpit/DB.
+8. **Only then advance QA Position.** "QA Position" in this status doc moves forward only when ALL gaps from Day N are VERIFIED on main. Day N+1 does not start until Day N is closed.
+
+This sequence is explicit because earlier cycles short-circuited it (advance QA Position before retest, batch unrelated fixes, treat targeted-test green as PASS). Loopholes are forbidden — see `CLAUDE.md` § Quality Gates.
+
 ## Mandate (from user)
 - Only acceptable open gaps: **KYC** and **Payments** integrations not yet wired in.
 - No workarounds besides:

@@ -260,17 +260,23 @@ When reading log files for errors, use targeted reads:
 After full verify is green, write the marker file the merge-gate hook reads. The hook runs at `gh pr merge` time, which the orchestrator invokes from the **main repo** (`/Users/rakheendama/Projects/2026/b2b-strawman`), not the worktree. So write the marker into the main repo's `.claude/markers/` — `cd` there first so the relative path resolves correctly:
 
 ```bash
+# Capture the worktree's HEAD SHA BEFORE switching cwd — `git rev-parse` reads
+# from the current working dir's repo, so capturing it after `cd` would record
+# the main repo's HEAD instead of the PR's.
+WORKTREE_COMMIT="$(git rev-parse --short HEAD)"
+TS="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
 # Write marker to main repo (NOT the worktree subdir) so the hook can read it.
 cd /Users/rakheendama/Projects/2026/b2b-strawman
 
-# If backend changed:
+# If backend changed (use the exact command the brief's Build & Verify ran):
 cat > .claude/markers/verify-backend.json <<EOF
-{"commit":"$(git rev-parse --short HEAD)","command":"./mvnw verify","exit":0,"ts":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","summary":"<test count from log>"}
+{"commit":"${WORKTREE_COMMIT}","command":"./mvnw clean verify -q","exit":0,"ts":"${TS}","summary":"<test count from log>"}
 EOF
 
-# If frontend changed:
+# If frontend changed (include the install step and the full lint+build+test sequence):
 cat > .claude/markers/verify-frontend.json <<EOF
-{"commit":"$(git rev-parse --short HEAD)","command":"pnpm run lint && pnpm run build && pnpm test","exit":0,"ts":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","summary":"<test count>"}
+{"commit":"${WORKTREE_COMMIT}","command":"pnpm install && pnpm run lint && pnpm run build && pnpm test","exit":0,"ts":"${TS}","summary":"<test count>"}
 EOF
 
 # Then cd back to your worktree to continue:

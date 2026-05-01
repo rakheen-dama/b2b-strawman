@@ -277,20 +277,32 @@ Present:
 - Final pass/fail/skip counts
 - Which stack was tested
 
-## Guard Rails
+## Guard Rails (CLAUDE.md §1–§10)
 
+This is not advice — these rules are mandatory. Loopholes are forbidden. If a rule blocks you, raise it; don't bypass.
+
+**Test discipline:**
 - **Never delete a test** to make the suite pass — fix or skip with reason
 - **Never change assertions to match wrong behavior** — if the page shows an error, fix the page
 - **Preserve test intent** — if a test checks "member cannot access X", keep that assertion even if the selector changes
-- **One commit per category** — don't mix test fixes with code fixes
+- **One commit per category** — don't mix test fixes (Cat A) with code fixes (Cat B)
 - **Run the full suite after fixes** — catch cascading breakage before committing
 - When fixing selectors, prefer **resilient patterns**:
   - Regex over exact match: `/Save/i` not `'Save Changes'`
   - Role-based over CSS: `getByRole('button')` not `.btn-primary`
   - Scoped over global: `dialog.getByLabel()` not `page.getByLabel()`
 - **KC selector changes go in ONE file**: `e2e/fixtures/keycloak-selectors.ts` — all KC tests reference this
+
+**Code-fix discipline (Category B fixes — the broken-feature path):**
+- **Reproduce before fix.** Before writing any code change, run the failing test and observe the actual broken behaviour. Diagnostic-by-spec ("the test name says X, change Y") is forbidden — bugs have shipped from the wrong subtree more than once.
+- **Full verify is mandatory before PR**, NOT just the targeted regression test. If Cat B touches backend, run `./mvnw verify` and write `.claude/markers/verify-backend.json` (per `.claude/markers/README.md`). If it touches frontend, run `pnpm lint && pnpm build && pnpm test` and write `verify-frontend.json`. Same for portal. Write the marker into the main repo's `.claude/markers/` (where `gh pr merge` will read it), not a worktree's. The pre-PR-merge-gate hook will block merge without these markers.
+- **Mandatory review pass** for any agent-authored fix PR — CodeRabbit (preferred), `superpowers:code-reviewer` subagent, or human eyeball. Self-review is not enough.
+- **Don't bypass the merge-gate hook** with `--admin` or by editing the hook out of `settings.json`. If it blocks, fix the verify and write the marker.
+- **PASS means observed end-to-end**, not "the regression test passes again." A behavioural change should be re-checked in the browser/Mailpit/DB before claiming VERIFIED.
+
+**Stack hygiene:**
 - **After Java/Gateway fixes**: run `bash compose/scripts/svc.sh restart backend` (or gateway) — no hot-reload for JVM services
-- **Frontend/Portal HMR**: TypeScript changes picked up automatically — no restart needed
+- **Frontend/Portal HMR**: TypeScript changes picked up automatically — no restart needed (KC dev stack); E2E Docker stack requires `bash compose/scripts/e2e-rebuild.sh frontend`
 - **KC session cleanup**: If tests fail due to stale sessions, clear browser cookies via `page.context().clearCookies()`
 
 ## Proactive Mode

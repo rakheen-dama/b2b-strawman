@@ -196,9 +196,24 @@ Read: /Users/rakheendama/Projects/2026/worktree-template-{SLICE}/.epic-brief.md
 - Base package: io.github.rakheendama.starter (NOT io.b2mash.b2b.b2bstrawman)
 - Respect ALL conventions from the brief
 
-### 2. Build & Verify (Tiered)
+### 2. Build & Verify (Tiered) — Tier 3 full verify is MANDATORY before PR (CLAUDE.md §1)
 Follow the build strategy from the brief. Always go Tier 1→2→3.
-Max 3 Tier-3 attempts. If still failing, stop and report.
+Max 3 Tier-3 attempts. If still failing, stop and report. **Tier 3 (full `./mvnw verify`) is the merge bar — Tier 1/2 are inner-loop only.**
+
+If the target template repo has its own pre-PR-merge-gate hook (mirrored from this repo's `.claude/hooks/pre-pr-merge-gate.sh`), write the verify marker after Tier 3 is green. The merge runs from the template repo root, not the worktree — `cd` there first so the relative `.claude/markers/` path resolves correctly:
+
+```bash
+# Write marker to the template repo root (NOT the worktree subdir):
+cd /Users/rakheendama/Projects/2026/java-keycloak-multitenant-saas
+cat > .claude/markers/verify-backend.json <<EOF
+{"commit":"$(git rev-parse --short HEAD)","command":"./mvnw verify","exit":0,"ts":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","summary":"<test count>"}
+EOF
+
+# Then cd back to your worktree:
+cd /Users/rakheendama/Projects/2026/worktree-template-{SLICE}
+```
+
+Do NOT write a marker for a failing run.
 
 ### 3. Commit & Push
 - Stage only files you changed: git add <specific files>
@@ -230,12 +245,14 @@ Review PR #{PR_NUM} for the java-keycloak-multitenant-saas template.
 Check: compilation correctness, convention adherence, no DocTeams-specific code leaked,
 Spring Boot 4 imports correct, base package is io.github.rakheendama.starter.
 ```
-3. If review passes → merge immediately (auto-merge mode):
+3. If review passes AND the target repo's merge-gate hook clears → merge immediately (auto-merge mode):
 ```bash
 cd /Users/rakheendama/Projects/2026/java-keycloak-multitenant-saas
 gh pr merge {PR_NUM} --squash --delete-branch
 git pull origin main
 ```
+
+If the gate hook denies, the marker is missing or stale or the verify failed. Re-dispatch the builder to run Tier 3 and write the marker. **Do NOT bypass with `--admin` or by editing the hook.** If the hook itself is wrong, fix the hook upstream and explain why.
 4. If review finds issues → dispatch builder to fix, then re-review. Max 2 fix cycles.
 
 ## Step 5 — Cleanup & Mark Done (Orchestrator)

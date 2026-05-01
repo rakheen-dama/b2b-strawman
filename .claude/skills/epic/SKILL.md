@@ -243,9 +243,12 @@ When reading log files for errors, use targeted reads:
   NOT: cat /tmp/mvn-epic-{SLICE}.log (this defeats the purpose of output redirection)
 
 ### 2b. Write Verify Marker (required by pre-PR-merge-gate hook)
-After full verify is green, write the marker file the merge-gate hook reads. One marker per area touched:
+After full verify is green, write the marker file the merge-gate hook reads. The hook runs at `gh pr merge` time, which the orchestrator invokes from the **main repo** (`/Users/rakheendama/Projects/2026/b2b-strawman`), not the worktree. So write the marker into the main repo's `.claude/markers/` — `cd` there first so the relative path resolves correctly:
 
-```
+```bash
+# Write marker to main repo (NOT the worktree subdir) so the hook can read it.
+cd /Users/rakheendama/Projects/2026/b2b-strawman
+
 # If backend changed:
 cat > .claude/markers/verify-backend.json <<EOF
 {"commit":"$(git rev-parse --short HEAD)","command":"./mvnw verify","exit":0,"ts":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","summary":"<test count from log>"}
@@ -255,6 +258,9 @@ EOF
 cat > .claude/markers/verify-frontend.json <<EOF
 {"commit":"$(git rev-parse --short HEAD)","command":"pnpm run lint && pnpm run build && pnpm test","exit":0,"ts":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","summary":"<test count>"}
 EOF
+
+# Then cd back to your worktree to continue:
+cd /Users/rakheendama/Projects/2026/worktree-epic-{SLICE}
 ```
 
 **Portal**: same pattern, write `verify-portal.json`. Do NOT write a marker for a failing run.

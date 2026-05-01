@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.clause.Clause;
 import io.b2mash.b2b.b2bstrawman.clause.ClauseResolver;
+import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.event.DocumentGeneratedEvent;
@@ -121,6 +122,35 @@ public class GeneratedDocumentService {
       boolean acknowledgeWarnings,
       List<ClauseSelection> clauseSelections,
       UUID memberId) {
+    return generateDocument(
+        templateId,
+        entityId,
+        saveToDocuments,
+        acknowledgeWarnings,
+        clauseSelections,
+        memberId,
+        null);
+  }
+
+  /**
+   * Variant of {@link #generateDocument(UUID, UUID, boolean, boolean, List, UUID)} that lets the
+   * caller declare the intended {@link Document.Visibility} of the linked Document up-front. When
+   * non-null, the linked Document is created at that visibility from the start (no post-generation
+   * flip), the canonical {@link DocumentGeneratedEvent} carries explicit {@code scope} and {@code
+   * visibility} in its {@code details} map, and a {@link DocumentCreatedEvent} is published for
+   * portal-visible artefacts so the portal read-model picks them up. Mirrors the SoA pattern in
+   * {@code StatementService} — eliminates the race that the OBS-2106 follow-up event in {@code
+   * MatterClosureService.publishPortalReadyFollowUp} originally papered over via dedup.
+   */
+  @Transactional
+  public GenerationResult generateDocument(
+      UUID templateId,
+      UUID entityId,
+      boolean saveToDocuments,
+      boolean acknowledgeWarnings,
+      List<ClauseSelection> clauseSelections,
+      UUID memberId,
+      String intendedVisibility) {
     // 0. Check action-point prerequisites
     var template =
         documentTemplateRepository
@@ -196,15 +226,28 @@ public class GeneratedDocumentService {
     }
 
     // 6. Optionally save to Documents and link
+    Document linkedDocument = null;
     if (saveToDocuments) {
-      var document = createLinkedDocument(templateDetail, entityId, pdfResult, s3Key, memberId);
-      generatedDoc.linkToDocument(document.getId());
+      linkedDocument =
+          createLinkedDocument(
+              templateDetail, entityId, pdfResult, s3Key, memberId, intendedVisibility);
+      generatedDoc.linkToDocument(linkedDocument.getId());
       // No explicit save needed — entity is managed within this transaction
     }
 
-    // 7. Publish domain event
+    // 7. Publish domain event. When the caller declared an intended visibility, surface the
+    // linked Document's scope + visibility in details so PortalDocumentNotificationHandler can
+    // gate on the event payload alone — no DB-fallback race against the visibility-flip commit
+    // (OBS-2106 follow-up). Mirrors the SoA shape in StatementService:228-236.
     String orgId = RequestScopes.requireOrgId();
     String actorName = resolveActorName(memberId);
+    Map<String, Object> eventDetails = new HashMap<>();
+    eventDetails.put("file_name", pdfResult.fileName());
+    eventDetails.put("template_name", templateDetail.name());
+    if (linkedDocument != null && intendedVisibility != null) {
+      eventDetails.put("scope", linkedDocument.getScope());
+      eventDetails.put("visibility", linkedDocument.getVisibility());
+    }
     eventPublisher.publishEvent(
         new DocumentGeneratedEvent(
             "document.generated",
@@ -216,7 +259,7 @@ public class GeneratedDocumentService {
             tenantId,
             orgId,
             Instant.now(),
-            Map.of("file_name", pdfResult.fileName(), "template_name", templateDetail.name()),
+            Map.copyOf(eventDetails),
             // GAP-L-97: PortalDocumentNotificationHandler keys off
             // DocumentGeneratedEvent.templateName
             // against an allowlist of SLUGS (OrgSettings.portalNotificationDocTypes default
@@ -279,12 +322,25 @@ public class GeneratedDocumentService {
    */
   public GenerationResult generateForProject(
       UUID projectId, String templateSlug, UUID actingMemberId) {
+    return generateForProject(projectId, templateSlug, actingMemberId, null);
+  }
+
+  /**
+   * Variant of {@link #generateForProject(UUID, String, UUID)} that lets the caller declare the
+   * intended {@link Document.Visibility} of the linked Document. Used by closure-pack flows
+   * (closure-letter via {@code MatterClosureService.generateClosureLetterSafely}) so the linked
+   * Document is born portal-visible and the canonical {@link DocumentGeneratedEvent} carries the
+   * visibility hint atomically — no follow-up event, no DB-fallback race.
+   */
+  public GenerationResult generateForProject(
+      UUID projectId, String templateSlug, UUID actingMemberId, String intendedVisibility) {
     var template =
         documentTemplateRepository
             .findBySlug(templateSlug)
             .orElseThrow(
                 () -> new ResourceNotFoundException("DocumentTemplate", "slug=" + templateSlug));
-    return generateDocument(template.getId(), projectId, true, true, List.of(), actingMemberId);
+    return generateDocument(
+        template.getId(), projectId, true, true, List.of(), actingMemberId, intendedVisibility);
   }
 
   /**
@@ -651,17 +707,23 @@ public class GeneratedDocumentService {
       UUID entityId,
       PdfResult pdfResult,
       String s3Key,
-      UUID memberId) {
+      UUID memberId,
+      String intendedVisibility) {
+    String visibility =
+        intendedVisibility != null ? intendedVisibility : Document.Visibility.INTERNAL;
     var entityType = TemplateEntityType.valueOf(template.primaryEntityType());
     var document =
         switch (entityType) {
           case PROJECT ->
               new Document(
+                  Document.Scope.PROJECT,
                   entityId,
+                  null,
                   pdfResult.fileName(),
                   "application/pdf",
                   pdfResult.pdfBytes().length,
-                  memberId);
+                  memberId,
+                  visibility);
           case CUSTOMER ->
               new Document(
                   Document.Scope.CUSTOMER,
@@ -671,7 +733,7 @@ public class GeneratedDocumentService {
                   "application/pdf",
                   pdfResult.pdfBytes().length,
                   memberId,
-                  Document.Visibility.INTERNAL);
+                  visibility);
           case INVOICE ->
               new Document(
                   Document.Scope.ORG,
@@ -681,14 +743,36 @@ public class GeneratedDocumentService {
                   "application/pdf",
                   pdfResult.pdfBytes().length,
                   memberId,
-                  Document.Visibility.INTERNAL);
+                  visibility);
           case ORGANIZATION ->
               throw new IllegalStateException(
                   "Document linking not supported for ORGANIZATION entity type");
         };
     document.assignS3Key(s3Key);
     document.confirmUpload();
-    return documentRepository.save(document);
+    Document saved = documentRepository.save(document);
+
+    // OBS-2106 follow-up: when the linked Document is born portal-visible, publish a
+    // DocumentCreatedEvent so PortalEventHandler.onDocumentCreated projects it onto
+    // portal.portal_documents. Without this, the previous "create-INTERNAL-then-flip" path
+    // relied on DocumentVisibilityChangedEvent (emitted by DocumentService.markSystemAutoShared)
+    // to drive the projection. Mirrors the SoA pattern in StatementService:176-188.
+    if (Document.Visibility.isPortalVisible(visibility)) {
+      eventPublisher.publishEvent(
+          new DocumentCreatedEvent(
+              saved.getId(),
+              saved.getProjectId(),
+              saved.getCustomerId(),
+              saved.getFileName(),
+              saved.getScope(),
+              saved.getVisibility(),
+              saved.getS3Key(),
+              saved.getSize(),
+              saved.getContentType(),
+              RequestScopes.getOrgIdOrNull(),
+              RequestScopes.getTenantIdOrNull()));
+    }
+    return saved;
   }
 
   private UUID resolveProjectId(TemplateDetailResponse template, UUID entityId) {

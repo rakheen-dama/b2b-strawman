@@ -35,9 +35,7 @@ describe("EditCustomerDialog", () => {
   it("pre-populates form with customer data", async () => {
     const user = userEvent.setup();
 
-    render(
-      <EditCustomerDialog customer={mockCustomer} slug="acme" triggerLabel="Edit Customer" />
-    );
+    render(<EditCustomerDialog customer={mockCustomer} slug="acme" triggerLabel="Edit Customer" />);
 
     await user.click(screen.getByRole("button", { name: "Edit Customer" }));
 
@@ -49,9 +47,7 @@ describe("EditCustomerDialog", () => {
     mockUpdateCustomer.mockResolvedValue({ success: true });
     const user = userEvent.setup();
 
-    render(
-      <EditCustomerDialog customer={mockCustomer} slug="acme" triggerLabel="Edit Customer" />
-    );
+    render(<EditCustomerDialog customer={mockCustomer} slug="acme" triggerLabel="Edit Customer" />);
 
     await user.click(screen.getByRole("button", { name: "Edit Customer" }));
 
@@ -118,9 +114,7 @@ describe("EditCustomerDialog", () => {
     mockUpdateCustomer.mockResolvedValue({ success: false, error: "Email already exists" });
     const user = userEvent.setup();
 
-    render(
-      <EditCustomerDialog customer={mockCustomer} slug="acme" triggerLabel="Edit Customer" />
-    );
+    render(<EditCustomerDialog customer={mockCustomer} slug="acme" triggerLabel="Edit Customer" />);
 
     await user.click(screen.getByRole("button", { name: "Edit Customer" }));
     await user.click(screen.getByText("Save Changes"));

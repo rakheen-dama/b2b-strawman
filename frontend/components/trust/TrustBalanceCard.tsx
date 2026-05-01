@@ -181,9 +181,7 @@ export function TrustBalanceCard({
                     open={depositOpen}
                     onOpenChange={setDepositOpen}
                     onSuccess={handleMutationSuccess}
-                    customers={[
-                      { id: customerId, name: ledger.customerName, email: "" },
-                    ]}
+                    customers={[{ id: customerId, name: ledger.customerName, email: "" }]}
                     defaultCustomerId={customerId}
                     defaultProjectId={projectId}
                   />
@@ -192,9 +190,7 @@ export function TrustBalanceCard({
                     open={paymentOpen}
                     onOpenChange={setPaymentOpen}
                     onSuccess={handleMutationSuccess}
-                    customers={[
-                      { id: customerId, name: ledger.customerName, email: "" },
-                    ]}
+                    customers={[{ id: customerId, name: ledger.customerName, email: "" }]}
                     defaultCustomerId={customerId}
                     defaultProjectId={projectId}
                   />

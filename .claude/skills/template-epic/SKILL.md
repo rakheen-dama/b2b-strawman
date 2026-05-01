@@ -200,12 +200,17 @@ Read: /Users/rakheendama/Projects/2026/worktree-template-{SLICE}/.epic-brief.md
 Follow the build strategy from the brief. Always go Tier 1→2→3.
 Max 3 Tier-3 attempts. If still failing, stop and report. **Tier 3 (full `./mvnw verify`) is the merge bar — Tier 1/2 are inner-loop only.**
 
-If the target template repo has its own pre-PR-merge-gate hook (mirrored from this repo's `.claude/hooks/pre-pr-merge-gate.sh`), write the verify marker after Tier 3 is green:
+If the target template repo has its own pre-PR-merge-gate hook (mirrored from this repo's `.claude/hooks/pre-pr-merge-gate.sh`), write the verify marker after Tier 3 is green. The merge runs from the template repo root, not the worktree — `cd` there first so the relative `.claude/markers/` path resolves correctly:
 
-```
+```bash
+# Write marker to the template repo root (NOT the worktree subdir):
+cd /Users/rakheendama/Projects/2026/java-keycloak-multitenant-saas
 cat > .claude/markers/verify-backend.json <<EOF
 {"commit":"$(git rev-parse --short HEAD)","command":"./mvnw verify","exit":0,"ts":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","summary":"<test count>"}
 EOF
+
+# Then cd back to your worktree:
+cd /Users/rakheendama/Projects/2026/worktree-template-{SLICE}
 ```
 
 Do NOT write a marker for a failing run.

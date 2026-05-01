@@ -210,7 +210,7 @@ Report:
 
 ## Guard Rails (CLAUDE.md §1–§10)
 
-These are NOT advice. Loopholes are forbidden. If a rule blocks you, raise it; don't bypass.
+This is not advice — these rules are mandatory. Loopholes are forbidden. If a rule blocks you, raise it; don't bypass.
 
 **Reporting discipline:**
 - **Never skip failing tests** to make the suite "pass" — fix the test or fix the code
@@ -227,7 +227,7 @@ These are NOT advice. Loopholes are forbidden. If a rule blocks you, raise it; d
 The `--fix` flag dispatches Dev subagents that author code. Those subagents must follow the canonical bug-fix lockdown:
 
 - **Reproduce before fix.** Run the failing test, observe actual broken behaviour, save evidence — don't fix from the test name alone.
-- **Full verify is mandatory before PR**, NOT just the targeted regression test. Backend changes → `./mvnw verify` + `.claude/markers/verify-backend.json`. Frontend → `pnpm lint && pnpm build && pnpm test` + `verify-frontend.json`. Portal same. See `.claude/markers/README.md`.
+- **Full verify is mandatory before PR**, NOT just the targeted regression test. Backend changes → `./mvnw verify` + `.claude/markers/verify-backend.json`. Frontend → `pnpm lint && pnpm build && pnpm test` + `verify-frontend.json`. Portal same. Write the marker into the main repo's `.claude/markers/` (where `gh pr merge` will read it), not a worktree's. See `.claude/markers/README.md`.
 - **Mandatory review pass** for the fix PR — CodeRabbit (preferred), `superpowers:code-reviewer` subagent, or human eyeball.
 - **Don't bypass the merge-gate hook** with `--admin` or by editing the hook out. If it blocks, fix the verify and write the marker.
 - **One fix per PR.** If the regression run flushed out 4 failures across 4 different bug classes, that's 4 separate PRs, not one bundle.

@@ -279,7 +279,7 @@ Present:
 
 ## Guard Rails (CLAUDE.md §1–§10)
 
-These are NOT advice. Loopholes are forbidden. If a rule blocks you, raise it; don't bypass.
+This is not advice — these rules are mandatory. Loopholes are forbidden. If a rule blocks you, raise it; don't bypass.
 
 **Test discipline:**
 - **Never delete a test** to make the suite pass — fix or skip with reason
@@ -295,7 +295,7 @@ These are NOT advice. Loopholes are forbidden. If a rule blocks you, raise it; d
 
 **Code-fix discipline (Category B fixes — the broken-feature path):**
 - **Reproduce before fix.** Before writing any code change, run the failing test and observe the actual broken behaviour. Diagnostic-by-spec ("the test name says X, change Y") is forbidden — bugs have shipped from the wrong subtree more than once.
-- **Full verify is mandatory before PR**, NOT just the targeted regression test. If Cat B touches backend, run `./mvnw verify` and write `.claude/markers/verify-backend.json` (per `.claude/markers/README.md`). If it touches frontend, run `pnpm lint && pnpm build && pnpm test` and write `verify-frontend.json`. Same for portal. The pre-PR-merge-gate hook will block merge without these markers.
+- **Full verify is mandatory before PR**, NOT just the targeted regression test. If Cat B touches backend, run `./mvnw verify` and write `.claude/markers/verify-backend.json` (per `.claude/markers/README.md`). If it touches frontend, run `pnpm lint && pnpm build && pnpm test` and write `verify-frontend.json`. Same for portal. Write the marker into the main repo's `.claude/markers/` (where `gh pr merge` will read it), not a worktree's. The pre-PR-merge-gate hook will block merge without these markers.
 - **Mandatory review pass** for any agent-authored fix PR — CodeRabbit (preferred), `superpowers:code-reviewer` subagent, or human eyeball. Self-review is not enough.
 - **Don't bypass the merge-gate hook** with `--admin` or by editing the hook out of `settings.json`. If it blocks, fix the verify and write the marker.
 - **PASS means observed end-to-end**, not "the regression test passes again." A behavioural change should be re-checked in the browser/Mailpit/DB before claiming VERIFIED.

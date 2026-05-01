@@ -58,9 +58,34 @@ SELECT count(*) FROM org_settings WHERE default_request_reminder_days IS NULL;
 If non-zero → write a V-N+1 backfill migration mirroring the OBS-2107 V118 pattern.
 
 ### Already-fixed instance — OBS-2107
-- V117 added `org_settings.portal_notification_doc_types JSONB DEFAULT '...'::jsonb` (non-NOT-NULL JSONB).
-- Pre-V117 tenant row had `[]` (empty), causing the closure-pack email skip.
-- Fixed by V118 backfill.
+- V117 added `org_settings.portal_notification_doc_types JSONB NOT NULL DEFAULT '[...]'::jsonb`.
+- Tenants persisted `[]` (empty), causing the closure-pack email skip.
+- Backfilled by V118.
+- **Original misdiagnosis**: the OBS-2107 fix-spec attributed the empty rows to "Postgres DEFAULTs only apply to new INSERTs." This is factually wrong for `NOT NULL DEFAULT` (PG 11+ atomically backfills existing rows at ALTER time). See follow-up bug class below — the actual cause was the Java entity, not the migration.
+
+### New bug class — Hibernate entity initializer overrides SQL DEFAULT (OBS-2107 follow-up)
+
+**Pattern**: a JPA entity field with a non-null Java initializer (`= new ArrayList<>()`, `= ""`, `= 0`) that the constructor does not subsequently overwrite. Hibernate persists the Java field's value on every INSERT, **overriding the SQL DEFAULT** even when the schema is `NOT NULL DEFAULT X` and Postgres would otherwise apply `X`.
+
+This is **distinct** from the nullable-DEFAULT class above:
+- Nullable-DEFAULT class: schema is permissive, code reads NULL on pre-existing rows, can NPE.
+- Hibernate-override class: schema is strict (`NOT NULL DEFAULT X`), Postgres correctly applies `X` to new inserts at the SQL layer, but Hibernate's `INSERT INTO ... (col) VALUES ('java-default')` bypasses the SQL DEFAULT entirely.
+
+**Confirmed instance**: `OrgSettings.portalNotificationDocTypes` (the Java field initialized to `new ArrayList<>()` with no constructor override). V118 backfilled existing rows but every newly provisioned tenant recreates the bug. Fixed in OBS-2107 follow-up by setting the canonical default in the 1-arg `OrgSettings(String)` constructor.
+
+**Suspect items** (not yet audited — `@JdbcTypeCode(SqlTypes.JSON)` collection columns with default-empty Java initializers and unset-by-constructor fields):
+
+```bash
+# Heuristic search:
+grep -rn "@JdbcTypeCode(SqlTypes.JSON)" backend/src/main/java --include='*.java' -A 3 | \
+    grep "= new \(ArrayList\|HashMap\|HashSet\)"
+```
+
+For each hit: confirm the entity's constructor(s) set the field. If not, and the SQL DEFAULT is non-empty, the bug is latent.
+
+**Action**: add a regression test for any entity with a JSONB collection column that has a non-empty SQL DEFAULT. Test pattern: construct via the public constructor, assert the getter returns the canonical default. See `OrgSettingsTest.defaultPortalNotificationDocTypes_matchesV117CanonicalDefault`.
+
+**Convention** (proposed for `backend/CLAUDE.md`): "When an entity field maps to a column with a non-trivial SQL DEFAULT, the constructor must set the field to the same canonical value. Do not rely on the SQL DEFAULT to populate Hibernate-managed inserts — Hibernate always supplies the column."
 
 ## Urgency note (2026-05-01)
 

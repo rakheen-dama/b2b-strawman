@@ -36,6 +36,14 @@ public class OrgSettings {
   /** Default retention window (in years) for CLOSED legal matters (Phase 67, ADR-249). */
   public static final int DEFAULT_LEGAL_MATTER_RETENTION_YEARS = 5;
 
+  /**
+   * Canonical default for {@link #portalNotificationDocTypes}. Must stay in sync with the JSONB
+   * literal in Flyway tenant migration V117 — the Java constructor seeds this so newly provisioned
+   * tenants persist the canonical list rather than an empty array (OBS-2107 follow-up).
+   */
+  public static final List<String> DEFAULT_PORTAL_NOTIFICATION_DOC_TYPES =
+      List.of("matter-closure-letter", "statement-of-account");
+
   @Id
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
@@ -258,6 +266,7 @@ public class OrgSettings {
     this.retentionPolicyEnabled = false;
     this.billingBatchAsyncThreshold = 50;
     this.billingEmailRateLimit = 5;
+    this.portalNotificationDocTypes = new ArrayList<>(DEFAULT_PORTAL_NOTIFICATION_DOC_TYPES);
   }
 
   public void updateCurrency(String currency) {

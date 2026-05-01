@@ -1,8 +1,8 @@
 # Known regression baseline failures — 2026-05-01
 
-After PR #1255 merged (OBS-AUDIT-N1), the post-merge hook fired the regression suite (`bash scripts/run-regression-test.sh`). Both phases reported FAIL. Investigation confirmed all four Playwright failures are **pre-existing baseline** — the matching `frontend/test-results/*-chromium/` directories were present as untracked files at the start of this session, before any of the three PRs (#1254, #1255, #1256) merged today. None of those PRs touched the failing test paths.
+After PR #1255 merged (OBS-AUDIT-N1), the post-merge hook fired the regression suite (`bash scripts/run-regression-test.sh`). Both the Playwright UI regression and the API regression reported FAIL. Investigation confirmed all four Playwright failures are **pre-existing baseline** — the matching `frontend/test-results/*-chromium/` directories were present as untracked files at the start of this session, before any of the three PRs (#1254, #1255, #1256) merged today. None of those PRs touched the failing test paths.
 
-Filing this here so future PR descriptions and orchestrator sessions can either own/ignore/fix per Quality Gate rule §1 instead of treating each post-merge hook firing as a fresh signal.
+Filing this here so future PR descriptions and orchestrator sessions can either own/ignore/fix per [Quality Gate rule §1](../CLAUDE.md#1-build--test-bar-mandatory-observed-not-inferred) instead of treating each post-merge hook firing as a fresh signal.
 
 ## Confirmed pre-existing failures
 
@@ -23,7 +23,7 @@ Reported FAIL by the wrapper script. Detailed output was lost (the script's stdo
 
 Per user note (2026-05-01): the regression pack itself was built during a period when known bugs were live, so some assertions may encode buggy behaviour rather than correct behaviour. **Don't assume "test failure = production bug" until the regression pack has been audited and rebuilt against a known-good baseline.** That audit is itself a dedicated-session task — bigger than chasing each failure individually.
 
-Reasoning per Quality Gate rule §1 ("own it, ignore with reason, or fix"):
+Reasoning per [Quality Gate rule §1](../CLAUDE.md#1-build--test-bar-mandatory-observed-not-inferred) ("own it, ignore with reason, or fix"):
 
 - **Own**: yes — these go on the Task F backlog as concrete cleanup items, gated on the regression-pack audit.
 - **Ignore-with-reason**: not chosen for the long term; these are real test failures, not flakes. Reason for *not* fixing in-session: (1) regression pack provenance is suspect, (2) each failure needs its own investigation, (3) all four are unrelated to the slop-hunt audit findings I'm currently working through.

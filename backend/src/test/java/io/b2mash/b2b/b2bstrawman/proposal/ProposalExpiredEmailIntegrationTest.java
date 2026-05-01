@@ -5,7 +5,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.icegreen.greenmail.util.GreenMail;
-import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
@@ -71,7 +70,8 @@ class ProposalExpiredEmailIntegrationTest {
         mockMvc, ORG_ID, OWNER_USER, "obs-audit-n1-owner@test.com", "OBS-AUDIT-N1 Owner", "owner");
 
     customerId =
-        createCustomer(
+        TestEntityHelper.createCustomer(
+            mockMvc,
             TestJwtFactory.ownerJwt(ORG_ID, OWNER_USER),
             "OBS-AUDIT-N1 Customer",
             "obs-audit-n1-customer@test.com");
@@ -164,29 +164,6 @@ class ProposalExpiredEmailIntegrationTest {
             .andExpect(status().isCreated())
             .andReturn();
     return TestEntityHelper.extractIdFromLocation(result);
-  }
-
-  private String createCustomer(
-      org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors
-              .JwtRequestPostProcessor
-          jwt,
-      String name,
-      String email)
-      throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/customers")
-                    .with(jwt)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "%s", "email": "%s", "type": "INDIVIDUAL"}
-                        """
-                            .formatted(name, email)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return JsonPath.read(result.getResponse().getContentAsString(), "$.id").toString();
   }
 
   private UUID createPortalContact(String customerIdStr, String email, String displayName) {

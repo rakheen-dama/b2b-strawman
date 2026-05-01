@@ -108,8 +108,8 @@ Read and update: qa_cycle/status.md
 - If rebuild fails after 2 attempts, report the error and exit
 
 ## Environment
-- Postgres host: b2mash.local:5432
-- LocalStack host: b2mash.local:4566
+- Postgres: localhost:5433 (E2E Docker), user: postgres, db: app
+- LocalStack: localhost:4566 (E2E Docker)
 - SHELL=/bin/bash prefix for docker build
 - E2E compose: compose/docker-compose.e2e.yml
 - Start: bash compose/scripts/e2e-up.sh
@@ -269,27 +269,28 @@ Before writing any fix, you must reproduce the bug locally. Run the failing scen
 Targeted tests are for inner-loop iteration. **The merge bar is a clean full verify.** Don't ship without it.
 
 **Backend** (if in scope):
-```
+```bash
 cd backend
 ./mvnw spotless:apply 2>&1 | tail -3
 ./mvnw compile test-compile -q > /tmp/mvn-compile.log 2>&1     # quick gate
 ./mvnw test -Dtest='<your-targeted-class>' > /tmp/mvn-targeted.log 2>&1  # iterate
 # THEN before PR:
 ./mvnw verify > /tmp/mvn-verify.log 2>&1                        # MANDATORY before PR
-# If verify is green:
+# If verify is green (run from REPO ROOT, not the worktree subdir, so the marker
+# is written where the pre-PR-merge-gate hook reads it):
 cat > .claude/markers/verify-backend.json <<EOF
 {"commit":"$(git rev-parse --short HEAD)","command":"./mvnw verify","exit":0,"ts":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","summary":"<test count from log>"}
 EOF
 ```
 
 **Frontend** (if in scope):
-```
+```bash
 cd frontend
 NODE_OPTIONS="" /opt/homebrew/bin/pnpm install > /dev/null 2>&1
 NODE_OPTIONS="" /opt/homebrew/bin/pnpm run lint > /tmp/lint-fix.log 2>&1   # full lint
 NODE_OPTIONS="" /opt/homebrew/bin/pnpm run build > /tmp/build-fix.log 2>&1 # full build
 NODE_OPTIONS="" /opt/homebrew/bin/pnpm test > /tmp/test-fix.log 2>&1       # full vitest, NOT narrowed
-# If green:
+# If green (run from REPO ROOT):
 cat > .claude/markers/verify-frontend.json <<EOF
 {"commit":"$(git rev-parse --short HEAD)","command":"pnpm run lint && pnpm run build && pnpm test","exit":0,"ts":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","summary":"<test count>"}
 EOF
@@ -300,14 +301,14 @@ EOF
 If any step fails: fix it, re-run from the top. Max 3 attempts before marking STUCK and exiting. Do NOT write a marker for a failing run.
 
 ### 5. Commit & Push
-```
+```bash
 git add <specific files>                # ONLY the files for this fix — no scope creep
 git commit -m "fix({GAP_ID}): {short description}"
 git push -u origin fix/{GAP_ID}
 ```
 
 ### 6. Create PR
-```
+```bash
 gh pr create --base {BRANCH} --title "Fix {GAP_ID}: {summary}" --body "..."
 ```
 
@@ -333,7 +334,7 @@ The merge-gate hook will block `gh pr merge` if:
 
 If the hook blocks you, that means a marker is missing — fix the verify, write the marker, retry. Do NOT bypass with `--admin` or by editing the hook.
 
-```
+```bash
 gh pr merge {PR_NUMBER} --squash --delete-branch
 git checkout {BRANCH} && git pull origin {BRANCH}
 ```

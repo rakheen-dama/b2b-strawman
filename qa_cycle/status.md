@@ -27,6 +27,7 @@ This sequence is explicit because earlier cycles short-circuited it (advance QA 
 
 ## Mandate (from user)
 - Only acceptable open gaps: **KYC** and **Payments** integrations not yet wired in.
+- **No production data — backward data compatibility is NOT a priority.** All data is disposable. Schema changes can be aggressive; prefer break-and-rebuild over engineering migration paths to preserve dev data. (Backfill migrations still worth doing when cheap, but skip them when re-provisioning is simpler.) — added 2026-05-01.
 - No workarounds besides:
   - **Mailpit API** for OTP / invite-link extraction.
   - Dev-only **Keycloak issues** (theme, admin URL, etc.) — must be documented.

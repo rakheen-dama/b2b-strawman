@@ -1,0 +1,38 @@
+# Slop hunt — PR #1236: fix(OBS-1101): format trust-deposit nudge email
+
+**Batch**: A — notifications
+**Reviewed**: 2026-05-01
+**Verdict**: NEEDS-FOLLOW-UP
+
+## PR description vs diff
+
+Description claims a 3-file backend change (channel, template, integration test) using OBS-703's `expiresAtFormatted` pattern. Diff matches. The PR does what it says: pre-formats `amountFormatted` + `occurredAtFormatted` in the channel and renders them in the template with raw-value fallback.
+
+The author's currency-formatting block contains a long comment explaining why `Locale("en", "ZA")` was rejected. The reasoning is plausible but the resulting code is a lot heavier than the bug ("display 50000 as R 50 000,00") justifies.
+
+## Findings
+
+| # | Severity | Category | File:line | Finding | Suggested action |
+|---|----|---|---|---|---|
+| 1 | HIGH | Scope creep / hardcoded business logic | backend/.../portal/notification/PortalEmailNotificationChannel.java:486–530 | `formatAmount` hard-codes the symbol + grouping/decimal rules for ZAR/USD/GBP/EUR inline. This is **business policy in a notification channel**: any new currency requires editing this method. Worse, it duplicates currency formatting that lives in (per the comment) `ExpenseService` and `RetainerPeriodService` — meaning we now have at least 3 different currency-rendering paths. The comment "the JDK's locale-data provider does not reliably resolve en-ZA on every distribution" is an environment-fragility claim that should be tested, not asserted in a comment. | Extract to a shared `CurrencyFormatter` (in `notification/template/` or `format/`) and unit-test it for ZAR/USD/GBP/EUR. Then route ExpenseService + RetainerPeriodService + this channel through it. Also pin a JDK locale-data dependency or add a CI test that asserts `Locale.forLanguageTag("en-ZA")` produces the expected ZAR symbol on the build's JDK. |
+| 2 | HIGH | Test asserts wrong invariant | backend/.../PortalEmailNotificationChannelIntegrationTest.java:255 | The PR **changed the deposit amount** from `750.00` to `50000` to make the grouping-separator visible (`R 50 000,00`). That's a test-fixture nudge to make the regex pass — fine in isolation, but the assertion is `containsPattern("R\\s*50\\s+000,00")`, which forces a space-grouped form. If the eventual production behaviour ends up using a non-breaking space (Unicode 0x00A0) under a Locale-correct path, `\s+` matches it; under a different JDK ICU bundle, the grouping char might be different and the test fails for an environment reason, not a regression. The "robust to symbol/whitespace variations" claim in the comment is partially true but not robust to grouping-char drift. | Tighten the test: assert on the formatter's output directly (call the same `formatAmount` static method from the test rather than re-stating the regex). Or test at the Thymeleaf-rendered HTML escape level. |
+| 3 | MEDIUM | Workaround — try/catch on `findForCurrentTenant()` | backend/.../PortalEmailNotificationChannel.java:474–483 | `resolveCurrencyCode()` wraps `orgSettingsRepository.findForCurrentTenant()` in `try/catch RuntimeException` with debug-log fallback. This is defensive against an unspecified failure mode. Either the call CAN fail at this point (in which case the failure mode should be documented and the fallback to ZAR is a real product decision) or it CANNOT (and the catch is dead code that hides a real bug). The other 4 listeners on the same class (`buildDeadlineApproachingContext`, `buildRetainerPeriodClosedContext`, etc.) call `findForCurrentTenant()` directly without a try/catch. **Drift inside the same file.** | Either the catch is needed everywhere on this class (port it consistently) or nowhere (delete it). Read the call-stack: AFTER_COMMIT listener already runs in a fresh `REQUIRES_NEW` transactionTemplate, so `findForCurrentTenant()` should be safe. Lean toward deleting. |
+| 4 | MEDIUM | Test fixture coupling to provisioning default | backend/.../PortalEmailNotificationChannelIntegrationTest.java:121–131 | The PR seeds OrgSettings to ZAR explicitly because "TenantProvisioningService defaults to USD when country is null". This is a footgun, not a fix: the test's behaviour now depends on the assumption that the default never changes. If the provisioning default flips to "ZAR" or to "use country-mapping", the test's setup-then-overwrite becomes silently redundant or incorrect. Acknowledged in the comment but not addressed. | Either provision the tenant with a `legal-za` profile (which would seed ZAR by design) or assert that the seeded value was changed. Don't rely on "this is the provisioning default" as a test invariant. |
+| 5 | MEDIUM | AI smell — fully-qualified class names in middle of method | backend/.../PortalEmailNotificationChannel.java:516–520 | `java.text.DecimalFormatSymbols`, `java.text.DecimalFormat`, `java.util.Currency.getInstance(...)` — three FQNs inline rather than imports. Existing `java.time.format.DateTimeFormatter` is imported at the top. The mixed style is an LLM-generation tell and inconsistent with the rest of the file. | Add `import java.text.DecimalFormat; import java.text.DecimalFormatSymbols; import java.util.Currency;` at the top. Trivial. |
+| 6 | LOW | Duplicate change applied in 2 places | backend/.../PortalEmailNotificationChannel.java:307–315 + 339–347 | `buildTrustActivityContext` is overloaded for `TrustTransactionRecordedEvent` and `TrustTransactionApprovalEvent` — the same 4 lines (currency resolve / amountFormatted / occurredAtFormatted) were added to both branches. This is structurally fine but the two methods are the kind of pair that drifts. They share most of their body. | Out of scope for this PR. Note for future: extract a private `applyAmountAndDateContext(Map<String,Object>, BigDecimal, Instant)` helper to keep them in sync. |
+
+## Test scope check
+
+- PR test plan: `./mvnw test -Dtest='PortalEmailNotificationChannelIntegrationTest'` (8/8 pass) and `./mvnw test -Dtest='Portal*Test,*Trust*Test'` (439 tests pass). **No full `./mvnw verify`.** Same gate violation as #1233 — currency-formatting changes can affect every Thymeleaf-rendered email-related test, including ones not matched by `Portal*Test,*Trust*Test`.
+- The integration test does fire the real `ApplicationEventPublisher` event and read GreenMail (good — exercises the listener firing). The new assertions exercise the formatted-amount + formatted-date branches (good).
+- Negative-path coverage is missing: amount=null (which the production code handles), currency-code unknown, OrgSettings absent → fallback-to-ZAR. The fallback is the entire point of `resolveCurrencyCode`'s try/catch and it has no test.
+
+## Notes — listener-registration cross-reference
+
+This PR doesn't add a listener — it modifies existing listener context-builders. Cross-reference for batch A:
+
+- **Tenant scoping**: uses the existing `handleInTenantScope` on `PortalEmailNotificationChannel` (the warn-and-skip-on-null variant). Consistent with prior code in this file; differs from the silent-skip variant in PR #1233's `ProposalSentEmailHandler`. Cross-PR drift between #1233 and #1236 confirmed (already noted in #1233 audit).
+- **Dedup**: not added; not relevant since context-builder change.
+- **Currency resolution**: now lives in this file. Three different files do currency formatting (this, ExpenseService, RetainerPeriodService) — fragmentation problem flagged in Finding 1.
+
+This PR's pattern of `OrgSettingsRepository` injection is now also present in `ProposalSentEmailHandler` (PR #1233) — both query `findForCurrentTenant()` for similar reasons (resolve org name / currency) but neither shares a helper. Add to the consolidation backlog.

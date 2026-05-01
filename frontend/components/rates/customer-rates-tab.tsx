@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { AlertTriangle, DollarSign, Pencil, Plus, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import type { VariantProps } from "class-variance-authority";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -18,7 +19,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -28,7 +28,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,6 +41,13 @@ import {
 } from "@/app/(app)/org/[slug]/customers/[id]/rate-actions";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type { BillingRate, OrgMember } from "@/lib/types";
+
+// OBS-2103 / OBS-2103b / audit-03 sweep: dialog-owns-button pattern. Each
+// rate-row dialog renders its own Button directly (no DialogTrigger asChild),
+// so adjacent Edit + Delete triggers inside the same flex row cannot collide
+// on Radix Slot reconciliation. Mirrors PR #1242's pattern for customer dialogs.
+type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["variant"]>;
+type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>["size"]>;
 
 interface CustomerRatesTabProps {
   billingRates: BillingRate[];
@@ -73,12 +79,9 @@ export function CustomerRatesTab({
               customerId={customerId}
               members={members}
               defaultCurrency={defaultCurrency}
-            >
-              <Button>
-                <Plus className="mr-1.5 size-4" />
-                Add Override
-              </Button>
-            </AddCustomerRateDialog>
+              triggerLabel="Add Override"
+              triggerIcon={<Plus className="mr-1.5 size-4" />}
+            />
           }
         />
       </div>
@@ -101,12 +104,10 @@ export function CustomerRatesTab({
           customerId={customerId}
           members={members}
           defaultCurrency={defaultCurrency}
-        >
-          <Button size="sm">
-            <Plus className="mr-1.5 size-4" />
-            Add Override
-          </Button>
-        </AddCustomerRateDialog>
+          triggerLabel="Add Override"
+          triggerSize="sm"
+          triggerIcon={<Plus className="mr-1.5 size-4" />}
+        />
       </div>
 
       <div className="rounded-lg border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
@@ -148,29 +149,25 @@ export function CustomerRatesTab({
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <EditCustomerRateDialog slug={slug} customerId={customerId} rate={rate}>
-                      <Button
-                        variant="plain"
-                        size="sm"
-                        aria-label={`Edit customer rate for ${rate.memberName}`}
-                      >
-                        <Pencil className="size-4" />
-                      </Button>
-                    </EditCustomerRateDialog>
+                    <EditCustomerRateDialog
+                      slug={slug}
+                      customerId={customerId}
+                      rate={rate}
+                      triggerLabel={<Pencil className="size-4" />}
+                      triggerVariant="plain"
+                      triggerSize="sm"
+                      triggerAriaLabel={`Edit customer rate for ${rate.memberName}`}
+                    />
                     <DeleteCustomerRateDialog
                       slug={slug}
                       customerId={customerId}
                       rateId={rate.id}
                       memberName={rate.memberName}
-                    >
-                      <Button
-                        variant="plain"
-                        size="sm"
-                        aria-label={`Delete customer rate for ${rate.memberName}`}
-                      >
-                        <Trash2 className="size-4 text-red-500" />
-                      </Button>
-                    </DeleteCustomerRateDialog>
+                      triggerLabel={<Trash2 className="size-4 text-red-500" />}
+                      triggerVariant="plain"
+                      triggerSize="sm"
+                      triggerAriaLabel={`Delete customer rate for ${rate.memberName}`}
+                    />
                   </div>
                 </TableCell>
               </TableRow>
@@ -189,7 +186,12 @@ interface AddCustomerRateDialogProps {
   customerId: string;
   members: OrgMember[];
   defaultCurrency: string;
-  children: React.ReactNode;
+  triggerLabel: ReactNode;
+  triggerVariant?: ButtonVariant;
+  triggerSize?: ButtonSize;
+  triggerClassName?: string;
+  triggerIcon?: ReactNode;
+  triggerAriaLabel?: string;
 }
 
 function AddCustomerRateDialog({
@@ -197,7 +199,12 @@ function AddCustomerRateDialog({
   customerId,
   members,
   defaultCurrency,
-  children,
+  triggerLabel,
+  triggerVariant = "default",
+  triggerSize = "default",
+  triggerClassName,
+  triggerIcon,
+  triggerAriaLabel,
 }: AddCustomerRateDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -273,7 +280,17 @@ function AddCustomerRateDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <Button
+        type="button"
+        variant={triggerVariant}
+        size={triggerSize}
+        className={triggerClassName}
+        aria-label={triggerAriaLabel}
+        onClick={() => setOpen(true)}
+      >
+        {triggerIcon}
+        {triggerLabel}
+      </Button>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Customer Rate Override</DialogTitle>
@@ -369,10 +386,25 @@ interface EditCustomerRateDialogProps {
   slug: string;
   customerId: string;
   rate: BillingRate;
-  children: React.ReactNode;
+  triggerLabel: ReactNode;
+  triggerVariant?: ButtonVariant;
+  triggerSize?: ButtonSize;
+  triggerClassName?: string;
+  triggerIcon?: ReactNode;
+  triggerAriaLabel?: string;
 }
 
-function EditCustomerRateDialog({ slug, customerId, rate, children }: EditCustomerRateDialogProps) {
+function EditCustomerRateDialog({
+  slug,
+  customerId,
+  rate,
+  triggerLabel,
+  triggerVariant = "plain",
+  triggerSize = "sm",
+  triggerClassName,
+  triggerIcon,
+  triggerAriaLabel,
+}: EditCustomerRateDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -434,7 +466,17 @@ function EditCustomerRateDialog({ slug, customerId, rate, children }: EditCustom
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <Button
+        type="button"
+        variant={triggerVariant}
+        size={triggerSize}
+        className={triggerClassName}
+        aria-label={triggerAriaLabel}
+        onClick={() => setOpen(true)}
+      >
+        {triggerIcon}
+        {triggerLabel}
+      </Button>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Customer Rate Override</DialogTitle>
@@ -513,7 +555,12 @@ interface DeleteCustomerRateDialogProps {
   customerId: string;
   rateId: string;
   memberName: string;
-  children: React.ReactNode;
+  triggerLabel: ReactNode;
+  triggerVariant?: ButtonVariant;
+  triggerSize?: ButtonSize;
+  triggerClassName?: string;
+  triggerIcon?: ReactNode;
+  triggerAriaLabel?: string;
 }
 
 function DeleteCustomerRateDialog({
@@ -521,7 +568,12 @@ function DeleteCustomerRateDialog({
   customerId,
   rateId,
   memberName,
-  children,
+  triggerLabel,
+  triggerVariant = "plain",
+  triggerSize = "sm",
+  triggerClassName,
+  triggerIcon,
+  triggerAriaLabel,
 }: DeleteCustomerRateDialogProps) {
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -555,7 +607,17 @@ function DeleteCustomerRateDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
-      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
+      <Button
+        type="button"
+        variant={triggerVariant}
+        size={triggerSize}
+        className={triggerClassName}
+        aria-label={triggerAriaLabel}
+        onClick={() => setOpen(true)}
+      >
+        {triggerIcon}
+        {triggerLabel}
+      </Button>
       <AlertDialogContent className="border-t-4 border-t-red-500">
         <AlertDialogHeader>
           <div className="flex justify-center">

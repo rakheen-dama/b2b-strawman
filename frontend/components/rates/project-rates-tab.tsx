@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { AlertTriangle, DollarSign, Pencil, Plus, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import type { VariantProps } from "class-variance-authority";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -18,7 +19,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -28,7 +28,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -42,6 +41,12 @@ import {
 } from "@/app/(app)/org/[slug]/projects/[id]/rate-actions";
 import { formatCurrency, formatDate } from "@/lib/format";
 import type { BillingRate, ProjectMember } from "@/lib/types";
+
+// OBS-2103 / OBS-2103b / audit-03 sweep: dialog-owns-button pattern. Same
+// rationale as customer-rates-tab — Edit + Delete triggers inside the same
+// row's flex container avoid Radix Slot reconciliation collision.
+type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["variant"]>;
+type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>["size"]>;
 
 interface ProjectRatesTabProps {
   billingRates: BillingRate[];
@@ -148,29 +153,25 @@ export function ProjectRatesTab({
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-1">
-                    <EditProjectRateDialog slug={slug} projectId={projectId} rate={rate}>
-                      <Button
-                        variant="plain"
-                        size="sm"
-                        aria-label={`Edit project rate for ${rate.memberName}`}
-                      >
-                        <Pencil className="size-4" />
-                      </Button>
-                    </EditProjectRateDialog>
+                    <EditProjectRateDialog
+                      slug={slug}
+                      projectId={projectId}
+                      rate={rate}
+                      triggerLabel={<Pencil className="size-4" />}
+                      triggerVariant="plain"
+                      triggerSize="sm"
+                      triggerAriaLabel={`Edit project rate for ${rate.memberName}`}
+                    />
                     <DeleteProjectRateDialog
                       slug={slug}
                       projectId={projectId}
                       rateId={rate.id}
                       memberName={rate.memberName}
-                    >
-                      <Button
-                        variant="plain"
-                        size="sm"
-                        aria-label={`Delete project rate for ${rate.memberName}`}
-                      >
-                        <Trash2 className="size-4 text-red-500" />
-                      </Button>
-                    </DeleteProjectRateDialog>
+                      triggerLabel={<Trash2 className="size-4 text-red-500" />}
+                      triggerVariant="plain"
+                      triggerSize="sm"
+                      triggerAriaLabel={`Delete project rate for ${rate.memberName}`}
+                    />
                   </div>
                 </TableCell>
               </TableRow>
@@ -188,10 +189,25 @@ interface EditProjectRateDialogProps {
   slug: string;
   projectId: string;
   rate: BillingRate;
-  children: React.ReactNode;
+  triggerLabel: ReactNode;
+  triggerVariant?: ButtonVariant;
+  triggerSize?: ButtonSize;
+  triggerClassName?: string;
+  triggerIcon?: ReactNode;
+  triggerAriaLabel?: string;
 }
 
-function EditProjectRateDialog({ slug, projectId, rate, children }: EditProjectRateDialogProps) {
+function EditProjectRateDialog({
+  slug,
+  projectId,
+  rate,
+  triggerLabel,
+  triggerVariant = "plain",
+  triggerSize = "sm",
+  triggerClassName,
+  triggerIcon,
+  triggerAriaLabel,
+}: EditProjectRateDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -253,7 +269,17 @@ function EditProjectRateDialog({ slug, projectId, rate, children }: EditProjectR
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <Button
+        type="button"
+        variant={triggerVariant}
+        size={triggerSize}
+        className={triggerClassName}
+        aria-label={triggerAriaLabel}
+        onClick={() => setOpen(true)}
+      >
+        {triggerIcon}
+        {triggerLabel}
+      </Button>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Project Rate Override</DialogTitle>
@@ -332,7 +358,12 @@ interface DeleteProjectRateDialogProps {
   projectId: string;
   rateId: string;
   memberName: string;
-  children: React.ReactNode;
+  triggerLabel: ReactNode;
+  triggerVariant?: ButtonVariant;
+  triggerSize?: ButtonSize;
+  triggerClassName?: string;
+  triggerIcon?: ReactNode;
+  triggerAriaLabel?: string;
 }
 
 function DeleteProjectRateDialog({
@@ -340,7 +371,12 @@ function DeleteProjectRateDialog({
   projectId,
   rateId,
   memberName,
-  children,
+  triggerLabel,
+  triggerVariant = "plain",
+  triggerSize = "sm",
+  triggerClassName,
+  triggerIcon,
+  triggerAriaLabel,
 }: DeleteProjectRateDialogProps) {
   const [open, setOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -374,7 +410,17 @@ function DeleteProjectRateDialog({
 
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
-      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
+      <Button
+        type="button"
+        variant={triggerVariant}
+        size={triggerSize}
+        className={triggerClassName}
+        aria-label={triggerAriaLabel}
+        onClick={() => setOpen(true)}
+      >
+        {triggerIcon}
+        {triggerLabel}
+      </Button>
       <AlertDialogContent className="border-t-4 border-t-red-500">
         <AlertDialogHeader>
           <div className="flex justify-center">

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, type ReactNode } from "react";
+import type { VariantProps } from "class-variance-authority";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,12 +10,14 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { updateComment } from "@/lib/actions/comments";
 import type { Comment } from "@/lib/actions/comments";
+
+type ButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["variant"]>;
+type ButtonSize = NonNullable<VariantProps<typeof buttonVariants>["size"]>;
 
 interface EditCommentDialogProps {
   comment: Comment;
@@ -22,7 +25,12 @@ interface EditCommentDialogProps {
   projectId: string;
   canManageVisibility: boolean;
   onCommentChange?: () => void;
-  children: React.ReactNode;
+  triggerLabel: ReactNode;
+  triggerVariant?: ButtonVariant;
+  triggerSize?: ButtonSize;
+  triggerClassName?: string;
+  triggerIcon?: ReactNode;
+  triggerAriaLabel?: string;
 }
 
 export function EditCommentDialog({
@@ -31,7 +39,12 @@ export function EditCommentDialog({
   projectId,
   canManageVisibility,
   onCommentChange,
-  children,
+  triggerLabel,
+  triggerVariant = "ghost",
+  triggerSize = "xs",
+  triggerClassName,
+  triggerIcon,
+  triggerAriaLabel,
 }: EditCommentDialogProps) {
   const [open, setOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -72,9 +85,22 @@ export function EditCommentDialog({
     setOpen(newOpen);
   }
 
+  // OBS-2103 / OBS-2103b / audit-03 sweep: dialog owns the trigger button.
+  // No DialogTrigger / Slot wrapper, so adjacent dialog triggers cannot
+  // collide on Radix Slot reconciliation (PR #1242 pattern).
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <Button
+        type="button"
+        variant={triggerVariant}
+        size={triggerSize}
+        className={triggerClassName}
+        aria-label={triggerAriaLabel}
+        onClick={() => setOpen(true)}
+      >
+        {triggerIcon}
+        {triggerLabel}
+      </Button>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Comment</DialogTitle>

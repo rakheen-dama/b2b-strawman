@@ -1,22 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { Pencil, Trash2, AlertTriangle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Pencil, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AvatarCircle } from "@/components/ui/avatar-circle";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { deleteComment } from "@/lib/actions/comments";
 import { EditCommentDialog } from "@/components/comments/edit-comment-dialog";
+import { DeleteCommentDialog } from "@/components/comments/delete-comment-dialog";
 import { RelativeDate } from "@/components/ui/relative-date";
 import type { Comment } from "@/lib/actions/comments";
 
@@ -37,38 +25,8 @@ export function CommentItem({
   projectId,
   onCommentChange,
 }: CommentItemProps) {
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
-
   const isOwnComment = comment.authorMemberId === currentMemberId;
   const authorName = comment.authorName ?? "Unknown";
-
-  async function handleDelete() {
-    setDeleteError(null);
-    setIsDeleting(true);
-
-    try {
-      const result = await deleteComment(orgSlug, projectId, comment.id);
-      if (result.success) {
-        setDeleteOpen(false);
-        onCommentChange?.();
-      } else {
-        setDeleteError(result.error ?? "Failed to delete comment.");
-      }
-    } catch {
-      setDeleteError("An unexpected error occurred.");
-    } finally {
-      setIsDeleting(false);
-    }
-  }
-
-  function handleDeleteOpenChange(newOpen: boolean) {
-    if (newOpen) {
-      setDeleteError(null);
-    }
-    setDeleteOpen(newOpen);
-  }
 
   return (
     <div className="flex gap-3">
@@ -97,43 +55,20 @@ export function CommentItem({
               projectId={projectId}
               canManageVisibility={canManageVisibility}
               onCommentChange={onCommentChange}
-            >
-              <Button variant="ghost" size="xs" aria-label={`Edit comment by ${authorName}`}>
-                <Pencil className="size-3" />
-                Edit
-              </Button>
-            </EditCommentDialog>
+              triggerLabel="Edit"
+              triggerIcon={<Pencil className="size-3" />}
+              triggerAriaLabel={`Edit comment by ${authorName}`}
+            />
 
-            <AlertDialog open={deleteOpen} onOpenChange={handleDeleteOpenChange}>
-              <AlertDialogTrigger asChild>
-                <Button variant="ghost" size="xs" aria-label={`Delete comment by ${authorName}`}>
-                  <Trash2 className="size-3" />
-                  Delete
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="border-t-4 border-t-red-500">
-                <AlertDialogHeader>
-                  <div className="flex justify-center">
-                    <div className="flex size-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-950">
-                      <AlertTriangle className="size-6 text-red-600 dark:text-red-400" />
-                    </div>
-                  </div>
-                  <AlertDialogTitle className="text-center">Delete Comment</AlertDialogTitle>
-                  <AlertDialogDescription className="text-center">
-                    Delete this comment? This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                {deleteError && <p className="text-destructive text-sm">{deleteError}</p>}
-                <AlertDialogFooter>
-                  <AlertDialogCancel variant="plain" disabled={isDeleting}>
-                    Cancel
-                  </AlertDialogCancel>
-                  <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
-                    {isDeleting ? "Deleting..." : "Delete"}
-                  </Button>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+            <DeleteCommentDialog
+              commentId={comment.id}
+              orgSlug={orgSlug}
+              projectId={projectId}
+              onCommentChange={onCommentChange}
+              triggerLabel="Delete"
+              triggerIcon={<Trash2 className="size-3" />}
+              triggerAriaLabel={`Delete comment by ${authorName}`}
+            />
           </div>
         )}
       </div>

@@ -3,9 +3,12 @@ package io.b2mash.b2b.b2bstrawman.multitenancy;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.MissingOrganizationContextException;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import jakarta.annotation.Nullable;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 /**
  * Request-scoped values for multitenancy and member identity. Bound by servlet filters, read by
@@ -138,6 +141,73 @@ public final class RequestScopes {
    */
   public static boolean hasCapability(String capability) {
     return getCapabilities().contains(capability);
+  }
+
+  /**
+   * Run {@code action} with {@link #TENANT_ID} (and optionally {@link #ORG_ID}) bound on a fresh
+   * ScopedValue carrier. The only sanctioned way to bind tenant scope outside this class; see
+   * {@code TenantScopeBindingTest} and ADR-T008.
+   *
+   * <p>Replaces the duplicated private {@code handleInTenantScope} helpers that previously lived in
+   * 14 notification handlers (PR #1, 2026-05-02). Null-rejection is intentional: schema-per-tenant
+   * means an unbound tenant scope would run repository operations against the default {@code
+   * public} search_path, silently reading/writing the wrong schema. Failing fast at the entry point
+   * surfaces the bug at the call site rather than letting it fan out into Hibernate.
+   *
+   * <p>Blank {@code orgId} values are treated as null (no binding). This diverges slightly from the
+   * 14 original helpers, which would have bound an empty/whitespace string as ORG_ID — that
+   * behaviour is judged a bug since blank values are never legitimate input.
+   *
+   * <p><b>Nested-call note:</b> when {@code runForTenant} is called from within another {@code
+   * runForTenant} scope and the inner call passes {@code orgId == null} (or blank), the outer
+   * scope's {@code ORG_ID} binding remains visible to the inner action body via {@link
+   * #getOrgIdOrNull()}. {@code TENANT_ID} is always rebound, so this only affects {@code ORG_ID}
+   * reads. The migrated AFTER_COMMIT handlers do not exercise this path (every event payload they
+   * consume carries a non-null {@code orgId}), so the asymmetry is theoretical in PR #1's scope;
+   * documented here as a known limitation. See {@code
+   * RequestScopesTest.runForTenant_nestedCallWithNullOrgId_outerOrgIdRemainsVisible}.
+   *
+   * @throws IllegalArgumentException if {@code tenantId} is null or blank.
+   * @throws NullPointerException if {@code action} is null.
+   */
+  public static void runForTenant(String tenantId, @Nullable String orgId, Runnable action) {
+    Objects.requireNonNull(action, "action");
+    requireValidTenantId(tenantId);
+    bindTenantScope(tenantId, orgId).run(action);
+  }
+
+  /**
+   * Variant of {@link #runForTenant} that returns a value. Checked exceptions thrown by the
+   * Callable are wrapped in {@link RuntimeException} per JDK Callable convention.
+   *
+   * @throws IllegalArgumentException if {@code tenantId} is null or blank.
+   * @throws NullPointerException if {@code action} is null.
+   */
+  public static <T> T callForTenant(String tenantId, @Nullable String orgId, Callable<T> action) {
+    Objects.requireNonNull(action, "action");
+    requireValidTenantId(tenantId);
+    ScopedValue.CallableOp<T, Exception> op = action::call;
+    try {
+      return bindTenantScope(tenantId, orgId).call(op);
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static void requireValidTenantId(String tenantId) {
+    if (tenantId == null || tenantId.isBlank()) {
+      throw new IllegalArgumentException("tenantId must be non-null and non-blank");
+    }
+  }
+
+  private static ScopedValue.Carrier bindTenantScope(String tenantId, @Nullable String orgId) {
+    ScopedValue.Carrier carrier = ScopedValue.where(TENANT_ID, tenantId);
+    if (orgId != null && !orgId.isBlank()) {
+      carrier = carrier.where(ORG_ID, orgId);
+    }
+    return carrier;
   }
 
   private RequestScopes() {}

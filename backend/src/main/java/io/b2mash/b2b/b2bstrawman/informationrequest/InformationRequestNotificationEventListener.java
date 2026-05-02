@@ -31,7 +31,7 @@ public class InformationRequestNotificationEventListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onItemSubmitted(RequestItemSubmittedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -47,7 +47,7 @@ public class InformationRequestNotificationEventListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onRequestCompleted(InformationRequestCompletedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -65,7 +65,7 @@ public class InformationRequestNotificationEventListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onDraftCreated(InformationRequestDraftCreatedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -82,18 +82,6 @@ public class InformationRequestNotificationEventListener {
   private void dispatchAll(List<Notification> notifications) {
     for (var notification : notifications) {
       notificationDispatcher.dispatch(notification, null);
-    }
-  }
-
-  private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
-    if (tenantId != null) {
-      var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
-      if (orgId != null) {
-        carrier = carrier.where(RequestScopes.ORG_ID, orgId);
-      }
-      carrier.run(action);
-    } else {
-      action.run();
     }
   }
 }

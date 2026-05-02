@@ -121,7 +121,7 @@ public class RetainerPortalSyncService {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onRetainerAgreementCreated(RetainerAgreementCreatedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -140,7 +140,7 @@ public class RetainerPortalSyncService {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onRetainerAgreementUpdated(RetainerAgreementUpdatedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -159,7 +159,7 @@ public class RetainerPortalSyncService {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onTimeEntryChanged(TimeEntryChangedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -179,7 +179,7 @@ public class RetainerPortalSyncService {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onRetainerPeriodRollover(RetainerPeriodRolloverEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -361,6 +361,12 @@ public class RetainerPortalSyncService {
 
     int[] counts = new int[] {0}; // agreements projected
 
+    // NB: this is a 3-binding pattern (TENANT_ID + ORG_ID + MEMBER_ID = SYSTEM_ACTOR_ID) that
+    // does not fit RequestScopes.runForTenant (which only binds TENANT_ID + ORG_ID). The MEMBER_ID
+    // binding is required so downstream services that read RequestScopes.requireMemberId() for
+    // audit attribution see the system-actor sentinel rather than throwing. Migration to a
+    // RequestScopes.runForTenantAsSystemActor variant — or any other broader API — is queued for
+    // PR #2 (the same PR that consolidates the 13 scheduled jobs); see ADR-T008 "Follow-ups".
     ScopedValue.where(RequestScopes.TENANT_ID, schema)
         .where(RequestScopes.ORG_ID, orgId)
         .where(RequestScopes.MEMBER_ID, SYSTEM_ACTOR_ID)
@@ -453,17 +459,5 @@ public class RetainerPortalSyncService {
   private static BigDecimal minutesToHours(int durationMinutes) {
     return BigDecimal.valueOf(durationMinutes)
         .divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
-  }
-
-  private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
-    if (tenantId == null) {
-      log.warn("Retainer portal sync event received without tenantId — skipping");
-      return;
-    }
-    var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
-    if (orgId != null) {
-      carrier = carrier.where(RequestScopes.ORG_ID, orgId);
-    }
-    carrier.run(action);
   }
 }

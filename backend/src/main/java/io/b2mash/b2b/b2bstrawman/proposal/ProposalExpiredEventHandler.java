@@ -60,7 +60,7 @@ public class ProposalExpiredEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onProposalExpired(ProposalExpiredEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -133,18 +133,6 @@ public class ProposalExpiredEventHandler {
     } catch (Exception e) {
       log.error(
           "Failed to send portal-proposal-expired email for proposal {}", event.proposalId(), e);
-    }
-  }
-
-  private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
-    if (tenantId != null) {
-      var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
-      if (orgId != null) {
-        carrier = carrier.where(RequestScopes.ORG_ID, orgId);
-      }
-      carrier.run(action);
-    } else {
-      action.run();
     }
   }
 }

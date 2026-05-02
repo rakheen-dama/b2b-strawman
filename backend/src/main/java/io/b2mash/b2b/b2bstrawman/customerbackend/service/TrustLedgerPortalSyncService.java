@@ -103,7 +103,7 @@ public class TrustLedgerPortalSyncService {
     if (!"trust_transaction.approved".equals(event.eventType())) {
       return;
     }
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -130,7 +130,7 @@ public class TrustLedgerPortalSyncService {
    */
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onTrustTransactionRecorded(TrustTransactionRecordedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -150,7 +150,7 @@ public class TrustLedgerPortalSyncService {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInterestPosted(TrustDomainEvent.InterestPosted event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -170,7 +170,7 @@ public class TrustLedgerPortalSyncService {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onReconciliationCompleted(TrustDomainEvent.ReconciliationCompleted event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -329,6 +329,12 @@ public class TrustLedgerPortalSyncService {
     // portal wipe so we only ever touch this tenant's customers (the portal schema is shared).
     Set<UUID> tenantCustomerIds = new HashSet<>();
 
+    // NB: this is a 3-binding pattern (TENANT_ID + ORG_ID + MEMBER_ID = SYSTEM_ACTOR_ID) that
+    // does not fit RequestScopes.runForTenant (which only binds TENANT_ID + ORG_ID). The MEMBER_ID
+    // binding is required so downstream services that read RequestScopes.requireMemberId() for
+    // audit attribution see the system-actor sentinel rather than throwing. Migration to a
+    // RequestScopes.runForTenantAsSystemActor variant — or any other broader API — is queued for
+    // PR #2 (the same PR that consolidates the 13 scheduled jobs); see ADR-T008 "Follow-ups".
     ScopedValue.where(RequestScopes.TENANT_ID, schema)
         .where(RequestScopes.ORG_ID, orgId)
         .where(RequestScopes.MEMBER_ID, SYSTEM_ACTOR_ID)
@@ -540,17 +546,5 @@ public class TrustLedgerPortalSyncService {
     }
     // Fall back to transaction date at UTC midnight — transactionDate is always non-null.
     return txn.getTransactionDate().atStartOfDay(ZoneOffset.UTC).toInstant();
-  }
-
-  private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
-    if (tenantId == null) {
-      log.warn("Trust portal sync event received without tenantId — skipping");
-      return;
-    }
-    var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
-    if (orgId != null) {
-      carrier = carrier.where(RequestScopes.ORG_ID, orgId);
-    }
-    carrier.run(action);
   }
 }

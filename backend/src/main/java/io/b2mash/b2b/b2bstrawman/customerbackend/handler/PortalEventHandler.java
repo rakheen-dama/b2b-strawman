@@ -126,7 +126,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onCustomerProjectLinked(CustomerProjectLinkedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.getTenantId(),
         event.getOrgId(),
         () -> {
@@ -159,7 +159,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onCustomerProjectUnlinked(CustomerProjectUnlinkedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.getTenantId(),
         event.getOrgId(),
         () -> {
@@ -178,7 +178,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onProjectUpdated(ProjectUpdatedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.getTenantId(),
         event.getOrgId(),
         () -> {
@@ -203,7 +203,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onCustomerUpdated(CustomerUpdatedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.getTenantId(),
         event.getOrgId(),
         () -> {
@@ -226,7 +226,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onDocumentCreated(DocumentCreatedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.getTenantId(),
         event.getOrgId(),
         () -> {
@@ -261,7 +261,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onDocumentVisibilityChanged(DocumentVisibilityChangedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.getTenantId(),
         event.getOrgId(),
         () -> {
@@ -320,7 +320,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onDocumentDeleted(DocumentDeletedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.getTenantId(),
         event.getOrgId(),
         () -> {
@@ -353,7 +353,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onTimeEntryAggregated(TimeEntryAggregatedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.getTenantId(),
         event.getOrgId(),
         () -> {
@@ -382,7 +382,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInvoiceSynced(InvoiceSyncEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.getTenantId(),
         event.getOrgId(),
         () -> {
@@ -488,7 +488,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onTaskCreated(PortalTaskCreatedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.getTenantId(),
         event.getOrgId(),
         () -> {
@@ -509,7 +509,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onTaskUpdated(PortalTaskUpdatedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.getTenantId(),
         event.getOrgId(),
         () -> {
@@ -530,7 +530,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onTaskDeleted(PortalTaskDeletedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.getTenantId(),
         event.getOrgId(),
         () -> {
@@ -546,7 +546,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onCommentCreated(CommentCreatedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -571,7 +571,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onCommentVisibilityChanged(CommentVisibilityChangedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -624,7 +624,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onCommentDeleted(CommentDeletedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -650,7 +650,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onAcceptanceRequestSent(AcceptanceRequestSentEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -700,7 +700,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onAcceptanceRequestAccepted(AcceptanceRequestAcceptedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -717,7 +717,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onAcceptanceRequestRevoked(AcceptanceRequestRevokedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -734,7 +734,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onAcceptanceRequestExpired(AcceptanceRequestExpiredEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -753,7 +753,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInformationRequestSent(InformationRequestSentEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -818,7 +818,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInformationRequestCancelled(InformationRequestCancelledEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -835,7 +835,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInformationRequestCompleted(InformationRequestCompletedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -853,7 +853,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onRequestItemSubmitted(RequestItemSubmittedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -880,7 +880,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onRequestItemAccepted(RequestItemAcceptedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -896,7 +896,7 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onRequestItemRejected(RequestItemRejectedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -908,24 +908,5 @@ public class PortalEventHandler {
             log.warn("Failed to project RequestItemRejectedEvent: itemId={}", event.itemId(), e);
           }
         });
-  }
-
-  // ── Private helpers ────────────────────────────────────────────────
-
-  /**
-   * Binds tenant and org ScopedValues so that the correct dedicated schema is selected via {@code
-   * search_path} in the handler's new transaction.
-   */
-  private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
-    if (tenantId != null) {
-      var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
-      if (orgId != null) {
-        carrier = carrier.where(RequestScopes.ORG_ID, orgId);
-      }
-      carrier.run(action);
-    } else {
-      log.warn("Event received with null tenantId — running without tenant scope binding");
-      action.run();
-    }
   }
 }

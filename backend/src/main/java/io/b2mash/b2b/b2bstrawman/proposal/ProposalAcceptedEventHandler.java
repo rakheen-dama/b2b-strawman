@@ -41,7 +41,7 @@ public class ProposalAcceptedEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onProposalAccepted(ProposalAcceptedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -100,7 +100,7 @@ public class ProposalAcceptedEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_ROLLBACK)
   public void onProposalOrchestrationFailed(ProposalOrchestrationFailedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -120,17 +120,5 @@ public class ProposalAcceptedEventHandler {
             log.error("Failed to send failure notification for proposal {}", event.proposalId(), e);
           }
         });
-  }
-
-  private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
-    if (tenantId != null) {
-      var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
-      if (orgId != null) {
-        carrier = carrier.where(RequestScopes.ORG_ID, orgId);
-      }
-      carrier.run(action);
-    } else {
-      action.run();
-    }
   }
 }

@@ -50,9 +50,9 @@ import org.springframework.transaction.support.TransactionTemplate;
  *       packs may fan out into multiple documents within seconds; only the first send wins.
  * </ol>
  *
- * <p>Runs {@code AFTER_COMMIT} on a fresh ScopedValue binding (mirrors {@code
- * NotificationEventHandler.handleInTenantScope}). Fire-and-forget: any failure is logged and
- * swallowed so a malformed event never poisons the original commit.
+ * <p>Runs {@code AFTER_COMMIT} on a fresh ScopedValue binding via {@link
+ * io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes#runForTenant}. Fire-and-forget: any failure
+ * is logged and swallowed so a malformed event never poisons the original commit.
  *
  * <p>Coexists with {@code NotificationEventHandler.onDocumentGenerated} (which targets firm-side
  * member notifications and the activity feed). The two handlers are deliberately parallel — slice
@@ -113,10 +113,7 @@ public class PortalDocumentNotificationHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onDocumentGenerated(DocumentGeneratedEvent event) {
-    if (event == null || event.tenantId() == null) {
-      return;
-    }
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -318,22 +315,6 @@ public class PortalDocumentNotificationHandler {
       return event.fileName();
     }
     return event.templateName();
-  }
-
-  /**
-   * Mirrors {@code NotificationEventHandler.handleInTenantScope}: re-binds tenant + org
-   * ScopedValues so the AFTER_COMMIT listener runs against the correct schema.
-   */
-  private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
-    if (tenantId == null) {
-      action.run();
-      return;
-    }
-    var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
-    if (orgId != null) {
-      carrier = carrier.where(RequestScopes.ORG_ID, orgId);
-    }
-    carrier.run(action);
   }
 
   private record ResolvedContext(Project project, UUID customerId, PortalContact contact) {}

@@ -93,7 +93,7 @@ public class DeadlinePortalSyncService {
    */
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onFieldDateApproaching(FieldDateApproachingEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -334,17 +334,5 @@ public class DeadlinePortalSyncService {
     } catch (DateTimeParseException ex) {
       return null;
     }
-  }
-
-  private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
-    if (tenantId == null) {
-      log.warn("Deadline portal sync event received without tenantId — skipping");
-      return;
-    }
-    var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
-    if (orgId != null) {
-      carrier = carrier.where(RequestScopes.ORG_ID, orgId);
-    }
-    carrier.run(action);
   }
 }

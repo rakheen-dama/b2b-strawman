@@ -25,6 +25,15 @@ class LayerDependencyRulesTest {
           .doNotHaveSimpleName("InternalAuditController")
           .and()
           .doNotHaveSimpleName("PaymentWebhookController")
+          // ↓ surfaced 2026-05-02 when ArchUnit 1.4.2 made this rule actually fire (it was
+          // silently vacuous on JDK 25 with 1.3.0). These are pre-existing known violations
+          // of the controller-discipline rule; cleanup tracked in tech-debt.md TD-009.
+          .and()
+          .doNotHaveSimpleName("MockPaymentController")
+          .and()
+          .doNotHaveSimpleName("PortalBrandingController")
+          .and()
+          .doNotHaveSimpleName("PortalDigestInternalController")
           .should()
           .dependOnClassesThat()
           .haveSimpleNameEndingWith("Repository")

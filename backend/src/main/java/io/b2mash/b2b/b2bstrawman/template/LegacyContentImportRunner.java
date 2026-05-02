@@ -1,8 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.template;
 
 import io.b2mash.b2b.b2bstrawman.clause.ClauseRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -33,19 +32,19 @@ public class LegacyContentImportRunner implements ApplicationRunner {
 
   private static final Logger log = LoggerFactory.getLogger(LegacyContentImportRunner.class);
 
-  private final OrgSchemaMappingRepository mappingRepository;
+  private final TenantScopedRunner tenantScopedRunner;
   private final DocumentTemplateRepository templateRepository;
   private final ClauseRepository clauseRepository;
   private final LegacyContentImporter importer;
   private final TransactionTemplate transactionTemplate;
 
   public LegacyContentImportRunner(
-      OrgSchemaMappingRepository mappingRepository,
+      TenantScopedRunner tenantScopedRunner,
       DocumentTemplateRepository templateRepository,
       ClauseRepository clauseRepository,
       LegacyContentImporter importer,
       TransactionTemplate transactionTemplate) {
-    this.mappingRepository = mappingRepository;
+    this.tenantScopedRunner = tenantScopedRunner;
     this.templateRepository = templateRepository;
     this.clauseRepository = clauseRepository;
     this.importer = importer;
@@ -66,56 +65,39 @@ public class LegacyContentImportRunner implements ApplicationRunner {
 
   /** Visible for testing -- runs the import synchronously. */
   void runImport() {
-    var allMappings = mappingRepository.findAll();
-    if (allMappings.isEmpty()) {
-      log.info("No tenant schemas found -- skipping legacy content import");
+    int[] totals = {0, 0}; // [templates, clauses]
+    int tenantsProcessed =
+        tenantScopedRunner.forEachTenant(
+            (schemaName, orgId) -> {
+              int[] counts = {0, 0};
+              transactionTemplate.executeWithoutResult(
+                  tx -> {
+                    counts[0] = convertTemplates();
+                    counts[1] = convertClauses();
+                  });
+
+              totals[0] += counts[0];
+              totals[1] += counts[1];
+
+              if (counts[0] > 0 || counts[1] > 0) {
+                log.info(
+                    "Legacy content import for tenant {}: {} templates, {} clauses converted",
+                    schemaName,
+                    counts[0],
+                    counts[1]);
+              }
+            });
+
+    if (tenantsProcessed == 0) {
+      log.info("No tenant schemas processed -- skipping legacy content import summary");
       return;
-    }
-
-    log.info("Starting legacy content import for {} tenants", allMappings.size());
-    int totalTemplates = 0;
-    int totalClauses = 0;
-
-    for (var mapping : allMappings) {
-      try {
-        var schemaName = mapping.getSchemaName();
-        var orgId = mapping.getClerkOrgId();
-        int[] counts = {0, 0};
-
-        ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
-            .where(RequestScopes.ORG_ID, orgId)
-            .run(
-                () ->
-                    transactionTemplate.executeWithoutResult(
-                        tx -> {
-                          counts[0] = convertTemplates();
-                          counts[1] = convertClauses();
-                        }));
-
-        totalTemplates += counts[0];
-        totalClauses += counts[1];
-
-        if (counts[0] > 0 || counts[1] > 0) {
-          log.info(
-              "Legacy content import for tenant {}: {} templates, {} clauses converted",
-              schemaName,
-              counts[0],
-              counts[1]);
-        }
-      } catch (Exception e) {
-        log.error(
-            "Failed legacy content import for tenant {} (org {})",
-            mapping.getSchemaName(),
-            mapping.getClerkOrgId(),
-            e);
-      }
     }
 
     log.info(
         "Legacy content import complete: {} templates, {} clauses converted across {} tenants",
-        totalTemplates,
-        totalClauses,
-        allMappings.size());
+        totals[0],
+        totals[1],
+        tenantsProcessed);
   }
 
   @SuppressWarnings("unchecked")

@@ -6,8 +6,8 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
-import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -32,7 +32,7 @@ public class FieldDateScannerJob {
   private static final Logger log = LoggerFactory.getLogger(FieldDateScannerJob.class);
   private static final int[] THRESHOLDS = {14, 7, 1};
 
-  private final OrgSchemaMappingRepository mappingRepository;
+  private final TenantScopedRunner tenantScopedRunner;
   private final FieldDefinitionRepository fieldDefinitionRepository;
   private final CustomerRepository customerRepository;
   private final ProjectRepository projectRepository;
@@ -41,14 +41,14 @@ public class FieldDateScannerJob {
   private final TransactionTemplate transactionTemplate;
 
   public FieldDateScannerJob(
-      OrgSchemaMappingRepository mappingRepository,
+      TenantScopedRunner tenantScopedRunner,
       FieldDefinitionRepository fieldDefinitionRepository,
       CustomerRepository customerRepository,
       ProjectRepository projectRepository,
       FieldDateNotificationLogRepository notificationLogRepository,
       ApplicationEventPublisher eventPublisher,
       TransactionTemplate transactionTemplate) {
-    this.mappingRepository = mappingRepository;
+    this.tenantScopedRunner = tenantScopedRunner;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.customerRepository = customerRepository;
     this.projectRepository = projectRepository;
@@ -60,23 +60,11 @@ public class FieldDateScannerJob {
   @Scheduled(cron = "${app.automation.field-date-scan-cron:0 0 6 * * *}")
   public void execute() {
     log.debug("Field date scanner started");
-    var mappings = mappingRepository.findAll();
-    int totalFired = 0;
+    int[] totalFired = {0};
+    tenantScopedRunner.forEachTenant((tenantId, orgId) -> totalFired[0] += scanTenant());
 
-    for (var mapping : mappings) {
-      try {
-        int count =
-            ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                .where(RequestScopes.ORG_ID, mapping.getExternalOrgId())
-                .call(() -> scanTenant());
-        totalFired += count;
-      } catch (Exception e) {
-        log.error("Failed to scan field dates for schema {}", mapping.getSchemaName(), e);
-      }
-    }
-
-    if (totalFired > 0) {
-      log.info("Field date scanner completed: {} events fired", totalFired);
+    if (totalFired[0] > 0) {
+      log.info("Field date scanner completed: {} events fired", totalFired[0]);
     } else {
       log.debug("Field date scanner completed: 0 events fired");
     }

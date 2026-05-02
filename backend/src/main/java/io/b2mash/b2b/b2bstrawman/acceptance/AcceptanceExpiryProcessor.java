@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.acceptance;
 
-import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,38 +15,28 @@ public class AcceptanceExpiryProcessor {
 
   private static final Logger log = LoggerFactory.getLogger(AcceptanceExpiryProcessor.class);
 
-  private final OrgSchemaMappingRepository mappingRepository;
+  private final TenantScopedRunner tenantScopedRunner;
   private final AcceptanceService acceptanceService;
 
   public AcceptanceExpiryProcessor(
-      OrgSchemaMappingRepository mappingRepository, AcceptanceService acceptanceService) {
-    this.mappingRepository = mappingRepository;
+      TenantScopedRunner tenantScopedRunner, AcceptanceService acceptanceService) {
+    this.tenantScopedRunner = tenantScopedRunner;
     this.acceptanceService = acceptanceService;
   }
 
   @Scheduled(fixedDelay = 3600000)
   public void processExpired() {
     log.info("Acceptance expiry processor started");
-    var mappings = mappingRepository.findAll();
-    int totalExpired = 0;
+    int[] totalExpired = {0};
+    int tenantsProcessed =
+        tenantScopedRunner.forEachTenant(
+            (tenantId, orgId) -> totalExpired[0] += acceptanceService.processExpiredForTenant());
 
-    for (var mapping : mappings) {
-      try {
-        int expired =
-            ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                .where(RequestScopes.ORG_ID, mapping.getClerkOrgId())
-                .call(() -> acceptanceService.processExpiredForTenant());
-        totalExpired += expired;
-      } catch (Exception e) {
-        log.error("Expiry processor failed for schema {}", mapping.getSchemaName(), e);
-      }
-    }
-
-    if (totalExpired > 0) {
+    if (totalExpired[0] > 0) {
       log.info(
           "Expiry processor completed: {} requests expired across {} tenants",
-          totalExpired,
-          mappings.size());
+          totalExpired[0],
+          tenantsProcessed);
     } else {
       log.info("Expiry processor completed: no requests expired");
     }

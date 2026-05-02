@@ -15,7 +15,13 @@ describe("brand", () => {
     // Resolve the portal root from this test file's location so the walk is
     // independent of vitest's cwd.
     const portalRoot = resolve(__dirname, "..", "..");
-    const roots = ["app", "components", "lib"].map((r) => join(portalRoot, r));
+    // Recursive-walk roots. `hooks` added per slop-hunt-PR-1228 finding #1
+    // so brand strings can't leak through hooks. `e2e` is test code (same
+    // class as the existing `__tests__` exclusion) and is intentionally
+    // excluded.
+    const roots = ["app", "components", "lib", "hooks"].map((r) =>
+      join(portalRoot, r),
+    );
     const offenders: string[] = [];
 
     function walk(p: string): void {
@@ -41,6 +47,21 @@ describe("brand", () => {
     }
 
     roots.forEach(walk);
+
+    // Top-level portal-root files (e.g. middleware.ts, next.config.ts) ship
+    // to users but live under no walked directory. Scan them non-recursively
+    // so brand strings can't leak through root-level code.
+    for (const entry of readdirSync(portalRoot)) {
+      const full = join(portalRoot, entry);
+      const s = statSync(full);
+      if (s.isFile() && /\.(tsx?|jsx?)$/.test(entry)) {
+        const content = readFileSync(full, "utf8");
+        if (content.includes("DocTeams")) {
+          offenders.push(full);
+        }
+      }
+    }
+
     expect(offenders).toEqual([]);
   });
 });

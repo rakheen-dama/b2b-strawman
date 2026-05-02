@@ -146,10 +146,17 @@ public final class RequestScopes {
   /**
    * Run {@code action} with {@link #TENANT_ID} (and optionally {@link #ORG_ID}) bound on a fresh
    * ScopedValue carrier. The only sanctioned way to bind tenant scope outside this class; see
-   * ArchUnit rule {@code TenantScopeBindingRule} and ADR-T008.
+   * {@code TenantScopeBindingTest} and ADR-T008.
    *
    * <p>Replaces the duplicated private {@code handleInTenantScope} helpers that previously lived in
-   * 14 notification handlers (PR #1, 2026-05-02).
+   * 14 notification handlers (PR #1, 2026-05-02). Null-rejection is intentional: schema-per-tenant
+   * means an unbound tenant scope would run repository operations against the default {@code
+   * public} search_path, silently reading/writing the wrong schema. Failing fast at the entry point
+   * surfaces the bug at the call site rather than letting it fan out into Hibernate.
+   *
+   * <p>Blank {@code orgId} values are treated as null (no binding). This diverges slightly from the
+   * 14 original helpers, which would have bound an empty/whitespace string as ORG_ID — that
+   * behaviour is judged a bug since blank values are never legitimate input.
    *
    * @throws IllegalArgumentException if {@code tenantId} is null or blank.
    * @throws NullPointerException if {@code action} is null.

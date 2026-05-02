@@ -114,3 +114,31 @@ Tracked items that are acceptable for now but should be addressed as the system 
 **Fix when needed**: Promote security-relevant log statements to INFO level: `log.info("Magic link generated for contact {}", contactId)`, `log.warn("Failed token verification for contact {}", contactId)`.
 
 **Trigger to fix**: Before public launch of the customer portal.
+
+### TD-008: ArchUnit 1.3.0 silently imports zero classes on JDK 25 — RESOLVED
+
+**Introduced**: surfaced 2026-05-02 during PR #1265 (TenantScopedRunner consolidation, ADR-T008).
+**Resolved**: same PR, by upgrading `archunit-junit5` from `1.3.0` → `1.4.2` in `backend/pom.xml`. ArchUnit 1.4.x supports JDK 25's class-location resolution; verified post-upgrade that `@AnalyzeClasses(packages = "io.b2mash.b2b.b2bstrawman", importOptions = ImportOption.DoNotIncludeTests.class)` imports the full production class set (>100 classes), and that `methods().that().haveName(X).should().beDeclaredInClassesThat().resideInAPackage(Y)` rules now actually fire on injected violations (previously failed silently).
+
+**Side-effect of the fix**: `LayerDependencyRulesTest` and `TestConventionsTest` (which were previously passing vacuously) are now actually enforced. If either rule starts failing post-upgrade, the underlying violation was always present — surfacing was the point.
+
+**Original problem (kept for context)**: ArchUnit 1.3.0's `@AnalyzeClasses` returned zero classes on JDK 25 in this codebase's test setup. Both existing rules used `allowEmptyShould(true)`, passing vacuously rather than failing. A contributor could have added a `PostgreSQLContainer` to any test and `TestConventionsTest` would not have caught it.
+
+### TD-009: Pre-existing controller→repository violations surfaced by TD-008 fix
+
+**Introduced**: surfaced 2026-05-02 when the ArchUnit upgrade in TD-008 made `LayerDependencyRulesTest.controllers_should_not_depend_on_repositories` actually enforce. The violations themselves predate this PR by months — they were hidden by ArchUnit 1.3.0's silent vacuous pass.
+**Severity**: Low — these controllers work; the rule is about discipline / boundary clarity, not correctness.
+
+**Affected files** (all violate the controller-discipline rule by injecting `*Repository` types directly):
+
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/integration/payment/MockPaymentController.java` — injects `InvoiceRepository`, `OrgSchemaMappingRepository`.
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/portal/PortalBrandingController.java` — injects `OrgSchemaMappingRepository`, `OrganizationRepository`, `OrgSettingsRepository`.
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/portal/notification/PortalDigestInternalController.java` — injects repository types.
+
+(Plus pre-existing exemptions for `DevPortalController`, `InternalAuditController`, `PaymentWebhookController` — these were already on the rule's exclusion list before this PR.)
+
+**Why acceptable now**: Adding the three new violators to the rule's exclusion list (file: `backend/src/test/java/.../architecture/LayerDependencyRulesTest.java`) preserves the rule's enforcement for new code while explicitly carrying these three as known debt. The `backend/CLAUDE.md` "Known violations" section already lists 7 other controllers that should not be used as reference patterns; consider amending that list to include these 3 too.
+
+**Fix when needed**: For each controller, extract a service that does the repository work and have the controller delegate. Pattern: `controller calls exactly one service method per endpoint, returns ResponseEntity` (`backend/CLAUDE.md` "Controller Discipline" section). MockPaymentController is a dev-only mock and may stay as-is or move under the dev-profile-only path used by `DevPortalController`.
+
+**Trigger to fix**: Opportunistic — when next touching any of these controllers for a feature change.

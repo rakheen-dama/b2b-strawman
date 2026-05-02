@@ -57,9 +57,11 @@ Lands in PR #2; this ADR will be amended at that point with the bean's full cont
 
 ### Regression guard (PR #1)
 
-`backend/src/test/java/.../architecture/TenantScopeBindingTest.java` fails the build if any class outside `..multitenancy..` declares a method named `handleInTenantScope`, `runInTenantScope`, `executeInTenantScope`, or `withTenantScope`. This catches copy-paste regressions of the consolidated pattern.
+`backend/src/test/java/.../architecture/TenantScopeBindingTest.java` fails the build if any class outside `..multitenancy..` declares a method named `handleInTenantScope`, `runInTenantScope`, or `executeInTenantScope`. Uses the standard ArchUnit DSL (`methods().that().haveName(X).should().beDeclaredInClassesThat().resideInAPackage(Y)`), matching the convention of `LayerDependencyRulesTest` and `TestConventionsTest`. Verified to fire on injected violations and pass on clean trees.
 
-**Implementation note:** the regression guard scans `target/classes/` directly using JDK 25's `java.lang.classfile` API rather than ArchUnit's DSL. ArchUnit 1.3.0's class-location resolution silently imports zero classes on JDK 25 in this project's test setup — which would let any rule pass vacuously and defeat its purpose. The codebase's existing `LayerDependencyRulesTest` and `TestConventionsTest` have the same latent issue (they pass-through `allowEmptyShould(true)`); fixing the underlying ArchUnit-on-JDK-25 setup is out of scope for this PR.
+**Note on `withTenantScope`:** intentionally NOT in the banned set. ADR-204 reserves that name for a proposed (deferred) `RequestScopes.withCurrentScopes()` capture-and-rebind utility, so banning it would collide with a known legitimate future use case.
+
+**ArchUnit version note:** during the PR's development, ArchUnit 1.3.0 was found to silently import zero classes on JDK 25 — meaning all existing rules (`LayerDependencyRulesTest`, `TestConventionsTest`) were passing vacuously rather than enforcing anything. Resolved by upgrading `archunit-junit5` to `1.4.2` in the same PR. Documented in `documentation/tech-debt.md` as TD-008 (resolved).
 
 ### Companion regression guard (PR #2)
 
@@ -85,6 +87,13 @@ PR #2 will add a sibling test that bans direct `ScopedValue.where(RequestScopes.
 
 - The future PR #2 guard won't catch indirect access via local variable — `var key = RequestScopes.TENANT_ID; ScopedValue.where(key, ...)`. Not present in current code. Tightenable if it becomes a real evasion pattern.
 - `TenantTransactionHelper.executeInTenantTransaction(...)` is intentionally not consolidated. It does meaningfully more (forces `search_path` for raw SQL during provisioning); the concerns are different. Documented as deliberate non-consolidation.
+- **Blank-orgId behaviour change.** The new `runForTenant` skips `ORG_ID` binding when `orgId.isBlank()` is true; the original 14 helpers would have bound the empty/whitespace string. Judged a bug since blank values are never legitimate input. Documented in `RequestScopes.runForTenant` Javadoc.
+- **`withTenantScope` is NOT in the banned-name set** even though it would have been a plausible variant. ADR-204 reserves the name for a proposed (deferred) `RequestScopes.withCurrentScopes()` capture-and-rebind utility, so banning it would collide with a legitimate future use case.
+
+### Follow-ups
+
+- **ArchUnit-on-JDK-25 silent vacuous passes** — RESOLVED in this PR via upgrade to ArchUnit 1.4.2. See `documentation/tech-debt.md` TD-008.
+- **`@EventListener` (synchronous) handlers in `NotificationEventHandler`.** `onBillingRunCompleted` and `onBillingRunFailures` are `@EventListener`, not `@TransactionalEventListener(AFTER_COMMIT)` — they fire inside the originating transaction. Their publishers (`BillingRunGenerationService.generate` etc.) are reached only via request-driven controllers (`@PostMapping("/{id}/generate")`), so `TENANT_ID` is bound by `TenantFilter`. The audit holds for these too.
 
 ## Alternatives Considered
 
@@ -94,7 +103,7 @@ PR #2 will add a sibling test that bans direct `ScopedValue.where(RequestScopes.
 
 3. **Capture-current-scope variant only (the ADR-204 `withCurrentScopes` shape).** Rejected for this use case — handlers receive `(tenantId, orgId)` from the event payload, not from current scope. ADR-204's variant remains valid for its target use case (virtual-thread executors that inherit the parent request's scope) and is a sibling, not a substitute.
 
-4. **ArchUnit-based regression guard.** Attempted, rejected. ArchUnit 1.3.0 fails class-location resolution on JDK 25; the rule would pass vacuously and provide no protection. Switched to the JDK 25 native `java.lang.classfile` scanner.
+4. **JDK 25 native `java.lang.classfile` regression guard.** Initially adopted because ArchUnit 1.3.0 silently imported zero classes on JDK 25, making the standard DSL pass vacuously. Once we upgraded to ArchUnit 1.4.2 (which fixes the JDK 25 issue), reverted to the standard ArchUnit DSL — matches the convention of `LayerDependencyRulesTest` and `TestConventionsTest`, no external scanner code to maintain.
 
 ## References
 

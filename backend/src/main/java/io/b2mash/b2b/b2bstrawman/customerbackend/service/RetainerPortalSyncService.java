@@ -361,7 +361,7 @@ public class RetainerPortalSyncService {
 
     int[] counts = new int[] {0}; // agreements projected
 
-    RequestScopes.runForTenantAsSystemActor(
+    RequestScopes.runForTenantWithMember(
         schema,
         orgId,
         SYSTEM_ACTOR_ID,

@@ -76,7 +76,7 @@ class TenantScopeBindingTest {
    * <p>Bans direct {@code ScopedValue.where(...)} method calls in classes outside the {@code
    * ..multitenancy..} package and outside the documented exemption set. Catches re-introduction of
    * the inline binding pattern that PR #2 just consolidated to {@code RequestScopes.runForTenant} /
-   * {@code callForTenant} / {@code runForTenantAsSystemActor} / {@code
+   * {@code callForTenant} / {@code runForTenantWithMember} / {@code
    * TenantScopedRunner.forEachTenant}.
    *
    * <p><b>Why broader than TENANT_ID-specific:</b> the precise rule "ban {@code
@@ -143,7 +143,7 @@ class TenantScopeBindingTest {
               java.lang.ScopedValue.class, "where", java.lang.ScopedValue.class, Object.class)
           .because(
               "Bind tenant scope via RequestScopes.runForTenant / callForTenant / "
-                  + "runForTenantAsSystemActor or TenantScopedRunner.forEachTenant. "
+                  + "runForTenantWithMember or TenantScopedRunner.forEachTenant. "
                   + "See ADR-T008. Adding a new exemption to this rule requires explicit "
                   + "ADR-T008 amendment.")
           .allowEmptyShould(true);

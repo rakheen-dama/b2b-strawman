@@ -329,7 +329,7 @@ public class TrustLedgerPortalSyncService {
     // portal wipe so we only ever touch this tenant's customers (the portal schema is shared).
     Set<UUID> tenantCustomerIds = new HashSet<>();
 
-    RequestScopes.runForTenantAsSystemActor(
+    RequestScopes.runForTenantWithMember(
         schema,
         orgId,
         SYSTEM_ACTOR_ID,

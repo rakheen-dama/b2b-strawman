@@ -2,7 +2,7 @@
 
 > **For agentic workers:** This plan executes inline in the worktree at `.worktrees/tenant-scope-binding-consolidation` on branch `feat/tenant-scope-binding-consolidation`. Steps use checkbox (`- [ ]`) syntax for tracking. See spec at `docs/superpowers/specs/2026-05-02-tenant-scope-binding-consolidation.md`.
 
-**Goal:** Migrate 36 direct `ScopedValue.where(RequestScopes.TENANT_ID, ...)` sites outside `..multitenancy..` to canonical APIs (`RequestScopes.runForTenant`, `callForTenant`, new `runForTenantAsSystemActor`, new `TenantScopedRunner.forEachTenant`); ship companion ArchUnit rule with structured exemption set; amend ADR-T008.
+**Goal:** Migrate 36 direct `ScopedValue.where(RequestScopes.TENANT_ID, ...)` sites outside `..multitenancy..` to canonical APIs (`RequestScopes.runForTenant`, `callForTenant`, new `runForTenantWithMember`, new `TenantScopedRunner.forEachTenant`); ship companion ArchUnit rule with structured exemption set; amend ADR-T008.
 
 **Architecture:** Two new API surfaces added first (TDD), then mechanical per-file migrations grouped by pattern, then ArchUnit rule with conditional fallback (precise DSL → broader rule → name-only → defer to TD-010), then ADR amendment.
 
@@ -31,7 +31,7 @@
 
 ---
 
-## Task 1: Add `RequestScopes.runForTenantAsSystemActor` (TDD)
+## Task 1: Add `RequestScopes.runForTenantWithMember` (TDD)
 
 **Files:**
 - Test: `backend/src/test/java/io/b2mash/b2b/b2bstrawman/multitenancy/RequestScopesTest.java` (add 3 test methods)
@@ -43,13 +43,13 @@
 
   ```java
   @Test
-  void runForTenantAsSystemActor_bindsTenantOrgAndMember() {
+  void runForTenantWithMember_bindsTenantOrgAndMember() {
     UUID actorId = UUID.fromString("00000000-0000-0000-0000-000000000001");
     AtomicReference<String> tenantInside = new AtomicReference<>();
     AtomicReference<String> orgInside = new AtomicReference<>();
     AtomicReference<UUID> memberInside = new AtomicReference<>();
 
-    RequestScopes.runForTenantAsSystemActor("tenant_abc", "org_xyz", actorId, () -> {
+    RequestScopes.runForTenantWithMember("tenant_abc", "org_xyz", actorId, () -> {
       tenantInside.set(RequestScopes.TENANT_ID.get());
       orgInside.set(RequestScopes.ORG_ID.get());
       memberInside.set(RequestScopes.MEMBER_ID.get());
@@ -61,33 +61,33 @@
   }
 
   @Test
-  void runForTenantAsSystemActor_nullTenant_throwsIllegalArgumentException() {
+  void runForTenantWithMember_nullTenant_throwsIllegalArgumentException() {
     UUID actorId = UUID.randomUUID();
     assertThatThrownBy(
-            () -> RequestScopes.runForTenantAsSystemActor(null, "org_xyz", actorId, () -> {}))
+            () -> RequestScopes.runForTenantWithMember(null, "org_xyz", actorId, () -> {}))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  void runForTenantAsSystemActor_blankTenant_throwsIllegalArgumentException() {
+  void runForTenantWithMember_blankTenant_throwsIllegalArgumentException() {
     UUID actorId = UUID.randomUUID();
     assertThatThrownBy(
-            () -> RequestScopes.runForTenantAsSystemActor("  ", "org_xyz", actorId, () -> {}))
+            () -> RequestScopes.runForTenantWithMember("  ", "org_xyz", actorId, () -> {}))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  void runForTenantAsSystemActor_nullActor_throwsNullPointerException() {
+  void runForTenantWithMember_nullActor_throwsNullPointerException() {
     assertThatThrownBy(
-            () -> RequestScopes.runForTenantAsSystemActor("tenant_abc", "org_xyz", null, () -> {}))
+            () -> RequestScopes.runForTenantWithMember("tenant_abc", "org_xyz", null, () -> {}))
         .isInstanceOf(NullPointerException.class);
   }
 
   @Test
-  void runForTenantAsSystemActor_nullOrgId_skipsOrgBinding() {
+  void runForTenantWithMember_nullOrgId_skipsOrgBinding() {
     UUID actorId = UUID.randomUUID();
     AtomicBoolean orgBound = new AtomicBoolean(true);
-    RequestScopes.runForTenantAsSystemActor("tenant_abc", null, actorId, () -> {
+    RequestScopes.runForTenantWithMember("tenant_abc", null, actorId, () -> {
       orgBound.set(RequestScopes.ORG_ID.isBound());
     });
     assertThat(orgBound.get()).isFalse();
@@ -101,9 +101,9 @@
   ```bash
   cd backend && ./mvnw -q -pl . test -Dtest=RequestScopesTest 2>&1 | tail -30
   ```
-  Expected: 5 new test methods FAIL (`cannot find symbol: method runForTenantAsSystemActor`).
+  Expected: 5 new test methods FAIL (`cannot find symbol: method runForTenantWithMember`).
 
-- [ ] **Step 3: Implement runForTenantAsSystemActor in RequestScopes.java**
+- [ ] **Step 3: Implement runForTenantWithMember in RequestScopes.java**
 
   Add after the existing `callForTenant` method:
 
@@ -121,7 +121,7 @@
      * @throws IllegalArgumentException if tenantId is null or blank.
      * @throws NullPointerException if action or actorId is null.
      */
-    public static void runForTenantAsSystemActor(
+    public static void runForTenantWithMember(
         String tenantId, @Nullable String orgId, UUID actorId, Runnable action) {
       Objects.requireNonNull(action, "action");
       Objects.requireNonNull(actorId, "actorId");
@@ -142,7 +142,7 @@
   ```bash
   cd backend && ./mvnw -q spotless:apply
   cd .. && git add backend/src/main/java/io/b2mash/b2b/b2bstrawman/multitenancy/RequestScopes.java backend/src/test/java/io/b2mash/b2b/b2bstrawman/multitenancy/RequestScopesTest.java
-  git commit -m "feat(multitenancy): add RequestScopes.runForTenantAsSystemActor for 3-binding system-actor pattern
+  git commit -m "feat(multitenancy): add RequestScopes.runForTenantWithMember for 3-binding system-actor pattern
 
 Adds the API needed by the 2 portal read-model backfill helpers
 (RetainerPortalSyncService, TrustLedgerPortalSyncService) which bind
@@ -431,7 +431,7 @@ Spec: docs/superpowers/specs/2026-05-02-tenant-scope-binding-consolidation.md"
 
 ---
 
-## Task 4: Migrate 2 backfill helpers to `runForTenantAsSystemActor`
+## Task 4: Migrate 2 backfill helpers to `runForTenantWithMember`
 
 **Files:**
 - Modify: `backend/src/main/java/io/b2mash/b2b/b2bstrawman/customerbackend/service/RetainerPortalSyncService.java:364-373` (replace 6 lines with 1; drop NB-comment block)
@@ -442,7 +442,7 @@ Spec: docs/superpowers/specs/2026-05-02-tenant-scope-binding-consolidation.md"
   Replace lines 364-373 (the NB-comment block + `ScopedValue.where(...).where(...).where(MEMBER_ID, SYSTEM_ACTOR_ID).run(...)`) with:
 
   ```java
-      RequestScopes.runForTenantAsSystemActor(
+      RequestScopes.runForTenantWithMember(
           schema,
           orgId,
           SYSTEM_ACTOR_ID,
@@ -465,7 +465,7 @@ Spec: docs/superpowers/specs/2026-05-02-tenant-scope-binding-consolidation.md"
   Replace lines 332-341 (NB-comment block + 3-binding chain) with:
 
   ```java
-      RequestScopes.runForTenantAsSystemActor(
+      RequestScopes.runForTenantWithMember(
           schema,
           orgId,
           SYSTEM_ACTOR_ID,
@@ -514,7 +514,7 @@ Spec: docs/superpowers/specs/2026-05-02-tenant-scope-binding-consolidation.md"
   ```bash
   cd backend && ./mvnw -q spotless:apply
   cd .. && git add -u
-  git commit -m "refactor(multitenancy): migrate 2 backfill helpers to runForTenantAsSystemActor
+  git commit -m "refactor(multitenancy): migrate 2 backfill helpers to runForTenantWithMember
 
 RetainerPortalSyncService and TrustLedgerPortalSyncService backfillForTenant
 methods now use the canonical 3-binding API (TENANT + ORG + MEMBER=SYSTEM_ACTOR_ID)
@@ -685,7 +685,7 @@ Spec: docs/superpowers/specs/2026-05-02-tenant-scope-binding-consolidation.md"
             // ... helper method to check field accesses on the same source line
           })
           .because("Bind tenant scope via RequestScopes.runForTenant / callForTenant / "
-                + "runForTenantAsSystemActor or TenantScopedRunner.forEachTenant. See ADR-T008. "
+                + "runForTenantWithMember or TenantScopedRunner.forEachTenant. See ADR-T008. "
                 + "Adding a new exemption requires explicit ADR-T008 amendment.");
   ```
 
@@ -705,7 +705,7 @@ Spec: docs/superpowers/specs/2026-05-02-tenant-scope-binding-consolidation.md"
           .and().areNotAssignableTo(AcceptanceService.class)
           .should().notCallMethod(ScopedValue.class, "where", ScopedValue.class, Object.class)
           .because("Bind tenant scope via RequestScopes.runForTenant / callForTenant / "
-                + "runForTenantAsSystemActor or TenantScopedRunner.forEachTenant. See ADR-T008. "
+                + "runForTenantWithMember or TenantScopedRunner.forEachTenant. See ADR-T008. "
                 + "(Fallback A: rule bans all ScopedValue.where outside multitenancy; "
                 + "no current code binds non-TENANT_ID ScopedValues outside multitenancy/, so "
                 + "the broader rule has identical semantics today. Tightening to TENANT_ID-specific "
@@ -792,14 +792,14 @@ Spec: docs/superpowers/specs/2026-05-02-tenant-scope-binding-consolidation.md"
   Make these specific edits:
 
   1. **"Surface 2 (PR #2)"** subsection: replace forward-reference language with the actual final API:
-     - `runForTenantAsSystemActor(String tenantId, @Nullable String orgId, UUID actorId, Runnable action)` — full Javadoc summary.
+     - `runForTenantWithMember(String tenantId, @Nullable String orgId, UUID actorId, Runnable action)` — full Javadoc summary.
      - `TenantScopedRunner.forEachTenant(BiConsumer<String, String>)` — Spring bean, exception isolation, success-count return.
   2. **"Decision"** opening paragraph: soften "the only sanctioned way to bind tenant scope outside this class" to "the sanctioned APIs for the consolidatable patterns; legitimate boundary-binders (servlet filters, capture-rebind controllers, dev tooling, cross-tenant search) are in the rule's exemption set and tracked as awaiting ADR-204."
   3. **"Companion regression guard (PR #2)"** subsection: replace the forward-looking "cannot ship in PR #1 because all 15+ direct-binding sites would build-break" with the actual outcome — either:
      - Precise rule shipped: describe the rule + reference the exemption catalogue table.
      - Fallback A shipped: describe the broader rule + note the precise-rule trade-off.
      - Deferred: reference TD-010.
-  4. **"Alternatives Considered"**: append a new entry recording the API-shape decision (Option A: explicit `runForTenantAsSystemActor` over Option B map-of-bindings or Option C capture-and-rebind).
+  4. **"Alternatives Considered"**: append a new entry recording the API-shape decision (Option A: explicit `runForTenantWithMember` over Option B map-of-bindings or Option C capture-and-rebind).
   5. **"Follow-ups"**: add explicit follow-up: "When ADR-204 lands a sanctioned `withCurrentScopes()` API, migrate `CustomerAuthFilter:80`, `AssistantController:50`, `DevPortalController` (× 6 sites), `MockPaymentController` (× 2 sites), `AcceptanceService:736` (cross-tenant search may need its own future API), and remove the corresponding entries from `TenantScopeBindingTest`'s exemption set."
 
   Add the exemption catalogue table directly in the ADR (mirror spec §D).
@@ -810,7 +810,7 @@ Spec: docs/superpowers/specs/2026-05-02-tenant-scope-binding-consolidation.md"
   git add adr/ADR-T008-tenant-scoped-runner.md
   git commit -m "docs(adr-T008): amend with PR #2's final API + exemption catalogue + ADR-204 dependency
 
-Records the actual outcome of Surface 2 (PR #2): runForTenantAsSystemActor
+Records the actual outcome of Surface 2 (PR #2): runForTenantWithMember
 + TenantScopedRunner.forEachTenant. Documents the exemption catalogue for
 the boundary-binders (filters, capture-rebind controllers, dev tooling)
 that cannot use the canonical static APIs and await ADR-204's
@@ -874,14 +874,14 @@ Spec: docs/superpowers/specs/2026-05-02-tenant-scope-binding-consolidation.md"
   gh pr create --title "feat(multitenancy): tenant scope binding consolidation (backlog #8 / PR #2 / ADR-T008 Surface 2)" --body "$(cat <<'EOF'
 ## Summary
 
-PR #2 of the ADR-T008 series. Consolidates ~36 direct `ScopedValue.where(RequestScopes.TENANT_ID, ...)` call sites outside `..multitenancy..` into the canonical `RequestScopes` APIs, adds two new API surfaces (`runForTenantAsSystemActor` + `TenantScopedRunner.forEachTenant` Spring bean), ships a companion ArchUnit rule with structured exemption set, and amends ADR-T008.
+PR #2 of the ADR-T008 series. Consolidates ~36 direct `ScopedValue.where(RequestScopes.TENANT_ID, ...)` call sites outside `..multitenancy..` into the canonical `RequestScopes` APIs, adds two new API surfaces (`runForTenantWithMember` + `TenantScopedRunner.forEachTenant` Spring bean), ships a companion ArchUnit rule with structured exemption set, and amends ADR-T008.
 
 The handover's original "13 jobs + 2 backfills" framing was incomplete. Pre-migration audit (see spec) found ~21 additional single-tenant sites and ~10 boundary-binder sites that needed different treatment. The rescoped PR migrates everything that fits a sanctioned API and exempts the legitimate boundary-binders (servlet filter, SSE capture-rebind, dev tooling, cross-tenant search) until ADR-204's `withCurrentScopes()` lands.
 
 ## Migration breakdown
 
 - **13 fan-out scheduled jobs** → `TenantScopedRunner.forEachTenant`
-- **2 backfill helpers** → `runForTenantAsSystemActor` (3-binding TENANT + ORG + MEMBER=SYSTEM_ACTOR_ID)
+- **2 backfill helpers** → `runForTenantWithMember` (3-binding TENANT + ORG + MEMBER=SYSTEM_ACTOR_ID)
 - **~21 single-tenant sites** → `runForTenant` / `callForTenant` (includes one behaviour change in `InvoiceEmailEventListener`: null-tenant path now logs + drops instead of falling through to Hibernate failure)
 - **~10 documented exemptions** in the ArchUnit rule (CustomerAuthFilter, AssistantController, DevPortalController × 6, MockPaymentController × 2, AcceptanceService cross-tenant search)
 

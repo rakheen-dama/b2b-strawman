@@ -330,16 +330,16 @@ class RequestScopesTest {
   }
 
   // ========================================================================
-  // runForTenantAsSystemActor — 3-binding variant for system-actor backfills
+  // runForTenantWithMember — 3-binding variant for system-actor backfills
   // (TENANT_ID + ORG_ID + MEMBER_ID = system actor sentinel UUID). Used by
   // portal read-model backfill helpers (RetainerPortalSyncService,
   // TrustLedgerPortalSyncService). See ADR-T008 Surface 2.
   // ========================================================================
 
   @Test
-  void runForTenantAsSystemActor_bindsTenantOrgAndMember() {
+  void runForTenantWithMember_bindsTenantOrgAndMember() {
     UUID actorId = UUID.fromString("00000000-0000-0000-0000-000000000001");
-    RequestScopes.runForTenantAsSystemActor(
+    RequestScopes.runForTenantWithMember(
         "tenant_abc",
         "org_xyz",
         actorId,
@@ -351,9 +351,9 @@ class RequestScopesTest {
   }
 
   @Test
-  void runForTenantAsSystemActor_omitsOrgIdWhenNull() {
+  void runForTenantWithMember_omitsOrgIdWhenNull() {
     UUID actorId = UUID.randomUUID();
-    RequestScopes.runForTenantAsSystemActor(
+    RequestScopes.runForTenantWithMember(
         "tenant_abc",
         null,
         actorId,
@@ -365,44 +365,42 @@ class RequestScopesTest {
   }
 
   @Test
-  void runForTenantAsSystemActor_rejectsNullTenant() {
+  void runForTenantWithMember_rejectsNullTenant() {
     UUID actorId = UUID.randomUUID();
     Runnable action = () -> {};
-    assertThatThrownBy(
-            () -> RequestScopes.runForTenantAsSystemActor(null, "org_xyz", actorId, action))
+    assertThatThrownBy(() -> RequestScopes.runForTenantWithMember(null, "org_xyz", actorId, action))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  void runForTenantAsSystemActor_rejectsBlankTenant() {
+  void runForTenantWithMember_rejectsBlankTenant() {
     UUID actorId = UUID.randomUUID();
     Runnable action = () -> {};
-    assertThatThrownBy(
-            () -> RequestScopes.runForTenantAsSystemActor("  ", "org_xyz", actorId, action))
+    assertThatThrownBy(() -> RequestScopes.runForTenantWithMember("  ", "org_xyz", actorId, action))
         .isInstanceOf(IllegalArgumentException.class);
   }
 
   @Test
-  void runForTenantAsSystemActor_rejectsNullActor() {
+  void runForTenantWithMember_rejectsNullMember() {
     Runnable action = () -> {};
     assertThatThrownBy(
-            () -> RequestScopes.runForTenantAsSystemActor("tenant_abc", "org_xyz", null, action))
+            () -> RequestScopes.runForTenantWithMember("tenant_abc", "org_xyz", null, action))
         .isInstanceOf(NullPointerException.class);
   }
 
   @Test
-  void runForTenantAsSystemActor_rejectsNullAction() {
+  void runForTenantWithMember_rejectsNullAction() {
     UUID actorId = UUID.randomUUID();
     assertThatThrownBy(
-            () -> RequestScopes.runForTenantAsSystemActor("tenant_abc", "org_xyz", actorId, null))
+            () -> RequestScopes.runForTenantWithMember("tenant_abc", "org_xyz", actorId, null))
         .isInstanceOf(NullPointerException.class);
   }
 
   @Test
-  void runForTenantAsSystemActor_unbindsAfterScope() {
+  void runForTenantWithMember_unbindsAfterScope() {
     UUID actorId = UUID.randomUUID();
     assertThat(RequestScopes.MEMBER_ID.isBound()).isFalse();
-    RequestScopes.runForTenantAsSystemActor("tenant_abc", "org_xyz", actorId, () -> {});
+    RequestScopes.runForTenantWithMember("tenant_abc", "org_xyz", actorId, () -> {});
     assertThat(RequestScopes.TENANT_ID.isBound()).isFalse();
     assertThat(RequestScopes.ORG_ID.isBound()).isFalse();
     assertThat(RequestScopes.MEMBER_ID.isBound()).isFalse();

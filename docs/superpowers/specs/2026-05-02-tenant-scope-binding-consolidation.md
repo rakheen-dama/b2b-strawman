@@ -29,7 +29,7 @@ Not a bug fix. A code-quality refactor + regression guard. Same Class-1 (notific
 
 1. Eliminate ~36 direct `ScopedValue.where(RequestScopes.TENANT_ID, ...)` call sites outside `..multitenancy..` by migrating them to canonical APIs.
 2. Add two new API surfaces that PR #1's `runForTenant` doesn't cover:
-   - `RequestScopes.runForTenantAsSystemActor(tenantId, orgId, actorId, action)` — 3-binding for the 2 backfill helpers.
+   - `RequestScopes.runForTenantWithMember(tenantId, orgId, actorId, action)` — 3-binding for the 2 backfill helpers.
    - `TenantScopedRunner.forEachTenant(BiConsumer<String, String>)` Spring bean — per-tenant fan-out for the 13 scheduled jobs.
 3. Ship a companion ArchUnit rule with structured exemption set that:
    - Catches re-introduction of direct binding in non-exempt code immediately.
@@ -49,7 +49,7 @@ Not a bug fix. A code-quality refactor + regression guard. Same Class-1 (notific
 
 ## New API surfaces
 
-### `RequestScopes.runForTenantAsSystemActor`
+### `RequestScopes.runForTenantWithMember`
 
 ```java
 /**
@@ -66,7 +66,7 @@ Not a bug fix. A code-quality refactor + regression guard. Same Class-1 (notific
  * @throws IllegalArgumentException if tenantId is null or blank.
  * @throws NullPointerException if action or actorId is null.
  */
-public static void runForTenantAsSystemActor(
+public static void runForTenantWithMember(
     String tenantId, @Nullable String orgId, UUID actorId, Runnable action);
 ```
 
@@ -234,7 +234,7 @@ public void onInvoiceSent(InvoiceSentEvent event) {
 
 Same pattern as PR #1's 6 fail-closed→fail-fast handler conversions; same audit class.
 
-### C. 3-binding system actor → `runForTenantAsSystemActor` (2 sites)
+### C. 3-binding system actor → `runForTenantWithMember` (2 sites)
 
 ```java
 // Before:
@@ -244,7 +244,7 @@ ScopedValue.where(RequestScopes.TENANT_ID, schema)
     .run(() -> doBackfill());
 
 // After:
-RequestScopes.runForTenantAsSystemActor(schema, orgId, SYSTEM_ACTOR_ID, () -> doBackfill());
+RequestScopes.runForTenantWithMember(schema, orgId, SYSTEM_ACTOR_ID, () -> doBackfill());
 ```
 
 Files:
@@ -286,7 +286,7 @@ static final ArchRule no_direct_tenant_scope_binding_outside_multitenancy =
                 .and(declaredIn(ScopedValue.class))
                 .and(/* first arg is field reference RequestScopes.TENANT_ID */))
         .because("Bind tenant scope via RequestScopes.runForTenant / callForTenant / "
-              + "runForTenantAsSystemActor or TenantScopedRunner.forEachTenant. See ADR-T008. "
+              + "runForTenantWithMember or TenantScopedRunner.forEachTenant. See ADR-T008. "
               + "Adding a new exemption requires explicit ADR-T008 amendment.");
 ```
 
@@ -310,10 +310,10 @@ Time budget: **≤90 minutes** spent on the precise DSL. If still intractable at
 
 Edit `adr/ADR-T008-tenant-scoped-runner.md` after the migrations land:
 
-- **"Surface 2 (PR #2)"** — replace forward-reference language with the actual final API: `runForTenantAsSystemActor` static method (3-binding) + `TenantScopedRunner.forEachTenant` Spring bean (per-tenant fan-out).
+- **"Surface 2 (PR #2)"** — replace forward-reference language with the actual final API: `runForTenantWithMember` static method (3-binding) + `TenantScopedRunner.forEachTenant` Spring bean (per-tenant fan-out).
 - **"Decision"** — soften "the only sanctioned way to bind tenant scope outside this class" to "the sanctioned APIs for the consolidatable patterns; legitimate boundary-binders are in the rule's exemption set and tracked as awaiting ADR-204."
 - **"Companion regression guard (PR #2)"** — replace "cannot ship in PR #1 because all ~15 direct-binding sites would build-break" with the actual outcome: shipped in PR #2 with the exemption catalogue. Reference the catalogue table.
-- **"Alternatives Considered"** — record the API-shape decision (Option A: explicit `runForTenantAsSystemActor` over Option B map-of-bindings or Option C capture-and-rebind). Note that Option C is what ADR-204 will eventually provide for the boundary-binders.
+- **"Alternatives Considered"** — record the API-shape decision (Option A: explicit `runForTenantWithMember` over Option B map-of-bindings or Option C capture-and-rebind). Note that Option C is what ADR-204 will eventually provide for the boundary-binders.
 - **"Follow-ups"** — name the deferred-rule cleanup explicitly: "When ADR-204 lands a sanctioned `withCurrentScopes()` API, migrate `CustomerAuthFilter:80`, `AssistantController:50`, `DevPortalController` (× 6), `MockPaymentController` (× 2), `AcceptanceService:736` to it (the cross-tenant search may need its own future API), and remove the corresponding entries from `TenantScopeBindingTest`'s exemption set."
 - If the rule was deferred under §ArchUnit/Conditional deferral, replace the regression-guard subsection with a TD-010 reference and the deferral rationale.
 

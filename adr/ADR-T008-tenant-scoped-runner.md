@@ -42,7 +42,7 @@ Semantics:
 - **No re-binding of `MEMBER_ID` / `ORG_ROLE` / `CAPABILITIES`.** Handlers are system-level dispatch; actor scope ends at the originating request's commit boundary. Re-binding actor identity across `AFTER_COMMIT` would be a category mistake — audit attribution would lie.
 - **`Callable<T>` exceptions** rethrown via `RuntimeException` wrapping per JDK Callable convention. Java 25's `ScopedValue.Carrier.call` takes `CallableOp<T, X>` not `Callable<T>`, so the implementation adapts via method reference.
 
-### Surface 2 — `TenantScopedRunner` Spring bean + `runForTenantAsSystemActor` (PR #2, shipped 2026-05-02 PM)
+### Surface 2 — `TenantScopedRunner` Spring bean + `runForTenantWithMember` (PR #2, shipped 2026-05-02 PM)
 
 PR #2's pre-migration audit found the original "13 jobs + 2 backfills" framing was incomplete. The shipped scope:
 
@@ -55,9 +55,9 @@ PR #2's pre-migration audit found the original "13 jobs + 2 backfills" framing w
    }
    ```
 
-2. **`RequestScopes.runForTenantAsSystemActor` static method** for the 2 backfill helpers (3-binding TENANT + ORG + MEMBER=SYSTEM_ACTOR_ID):
+2. **`RequestScopes.runForTenantWithMember` static method** for the 2 backfill helpers (3-binding TENANT + ORG + MEMBER=SYSTEM_ACTOR_ID):
    ```java
-   public static void runForTenantAsSystemActor(
+   public static void runForTenantWithMember(
        String tenantId, @Nullable String orgId, UUID actorId, Runnable action);
    ```
    Tenant-isolation guard remains caller responsibility (see `RetainerPortalSyncService.backfillForTenant` for the canonical guard pattern: assert `ORG_ID` bound and matches the supplied `orgId` before calling).
@@ -72,7 +72,7 @@ PR #2's pre-migration audit found the original "13 jobs + 2 backfills" framing w
      `PaymentWebhookController`, `EmailWebhookService`, `UnsubscribeService`,
      `PortalBrandingController`, `PackReconciliationRunner`, `SubscriptionExpiryJob` audit helper.
 
-**API-shape decision for the 3-binding pattern:** Option A — explicit `runForTenantAsSystemActor` static method (mirrors PR #1's `runForTenant` shape). Considered and rejected: Option B (typed Map of additional bindings — type-unsafe, runtime cast required, weaker contract documentation), Option C (capture-and-rebind from a synthetic context — overlaps with ADR-204's `withCurrentScopes` and adds machinery without a clear second consumer).
+**API-shape decision for the 3-binding pattern:** Option A — explicit `runForTenantWithMember` static method (mirrors PR #1's `runForTenant` shape). Considered and rejected: Option B (typed Map of additional bindings — type-unsafe, runtime cast required, weaker contract documentation), Option C (capture-and-rebind from a synthetic context — overlaps with ADR-204's `withCurrentScopes` and adds machinery without a clear second consumer).
 
 ### Regression guard (PR #1)
 
@@ -105,7 +105,7 @@ PR #2's pre-migration audit found the original "13 jobs + 2 backfills" framing w
 
 ### Positive
 
-- The sanctioned APIs (`RequestScopes.runForTenant` / `callForTenant` / `runForTenantAsSystemActor`, `TenantScopedRunner.forEachTenant`) cover every consolidatable binding pattern outside the `multitenancy` package. The exemption catalogue captures the residual boundary-binders awaiting ADR-204 — explicit and bounded rather than implicit. Reduces the surface area for Class-1 (notification-pipeline gap) bugs.
+- The sanctioned APIs (`RequestScopes.runForTenant` / `callForTenant` / `runForTenantWithMember`, `TenantScopedRunner.forEachTenant`) cover every consolidatable binding pattern outside the `multitenancy` package. The exemption catalogue captures the residual boundary-binders awaiting ADR-204 — explicit and bounded rather than implicit. Reduces the surface area for Class-1 (notification-pipeline gap) bugs.
 - PR #1: ~110 net lines of duplicate code removed across 14 helper files. PR #2: ~24 sites migrated across 27 files (net negative LOC; final tally in PR #2 description).
 - Future binding-contract changes (e.g. adding `ORG_ID` blank-handling, new ScopedValue captures) are one-place edits.
 - Regression guard (PR #1 method-name + PR #2 call-site) prevents copy-paste regression of either pattern.

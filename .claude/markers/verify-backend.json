@@ -1,7 +1,7 @@
 {
-  "commit": "74cb5b74654410c8e17ce8232ab2c8d9345df0b4-pending-fixes",
+  "commit": "8a49722776f06a38291356336ee7d794a80b62b1",
   "command": "./mvnw verify",
   "exit": 0,
-  "ts": "2026-05-02T03:33:48Z",
-  "summary": "Pre-merge verify on feat/tenant-scoped-runner-handlers (post-CodeRabbit-fixes): 5030 tests / 0F / 0E / 26 skip in 12:26."
+  "ts": "2026-05-02T03:34:21Z",
+  "summary": "Pre-merge verify on feat/tenant-scoped-runner-handlers post-CodeRabbit-fixes (8a49722776f06a38291356336ee7d794a80b62b1): 5030 tests / 0F / 0E / 26 skip in 12:26."
 }

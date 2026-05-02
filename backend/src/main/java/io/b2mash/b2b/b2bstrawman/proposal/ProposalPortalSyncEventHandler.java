@@ -55,7 +55,7 @@ public class ProposalPortalSyncEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onProposalSent(ProposalSentEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -112,15 +112,4 @@ public class ProposalPortalSyncEventHandler {
    * Binds tenant and org ScopedValues so that the correct dedicated schema is selected via {@code
    * search_path} in the handler's new transaction.
    */
-  private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
-    if (tenantId != null) {
-      var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
-      if (orgId != null) {
-        carrier = carrier.where(RequestScopes.ORG_ID, orgId);
-      }
-      carrier.run(action);
-    } else {
-      action.run();
-    }
-  }
 }

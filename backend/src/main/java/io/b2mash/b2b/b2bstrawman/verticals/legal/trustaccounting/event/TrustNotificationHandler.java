@@ -49,7 +49,7 @@ public class TrustNotificationHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onTrustTransactionApprovalEvent(TrustTransactionApprovalEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -72,7 +72,7 @@ public class TrustNotificationHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onReconciliationCompleted(TrustDomainEvent.ReconciliationCompleted event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -89,7 +89,7 @@ public class TrustNotificationHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInvestmentMaturing(TrustDomainEvent.InvestmentMaturing event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -106,7 +106,7 @@ public class TrustNotificationHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInterestPosted(TrustDomainEvent.InterestPosted event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -253,18 +253,4 @@ public class TrustNotificationHandler {
    * notification handlers run outside of a member/request context, so MEMBER_ID, ORG_ROLE, and
    * CAPABILITIES are not bound. The handler only needs tenant scope for database routing.
    */
-  private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
-    if (tenantId == null) {
-      // Trust accounting events should always have a tenant context.
-      // Without one, queries would hit the public schema — skip rather than corrupt.
-      log.warn("Trust notification event received without tenantId — skipping notification");
-      return;
-    }
-
-    var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
-    if (orgId != null) {
-      carrier = carrier.where(RequestScopes.ORG_ID, orgId);
-    }
-    carrier.run(action);
-  }
 }

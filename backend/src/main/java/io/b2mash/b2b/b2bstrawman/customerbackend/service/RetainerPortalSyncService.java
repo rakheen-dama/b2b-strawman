@@ -121,7 +121,7 @@ public class RetainerPortalSyncService {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onRetainerAgreementCreated(RetainerAgreementCreatedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -140,7 +140,7 @@ public class RetainerPortalSyncService {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onRetainerAgreementUpdated(RetainerAgreementUpdatedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -159,7 +159,7 @@ public class RetainerPortalSyncService {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onTimeEntryChanged(TimeEntryChangedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -179,7 +179,7 @@ public class RetainerPortalSyncService {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onRetainerPeriodRollover(RetainerPeriodRolloverEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -453,17 +453,5 @@ public class RetainerPortalSyncService {
   private static BigDecimal minutesToHours(int durationMinutes) {
     return BigDecimal.valueOf(durationMinutes)
         .divide(BigDecimal.valueOf(60), 2, RoundingMode.HALF_UP);
-  }
-
-  private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
-    if (tenantId == null) {
-      log.warn("Retainer portal sync event received without tenantId — skipping");
-      return;
-    }
-    var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
-    if (orgId != null) {
-      carrier = carrier.where(RequestScopes.ORG_ID, orgId);
-    }
-    carrier.run(action);
   }
 }

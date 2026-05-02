@@ -67,7 +67,7 @@ public class ProposalSentEmailHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onProposalSent(ProposalSentEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -129,15 +129,4 @@ public class ProposalSentEmailHandler {
   }
 
   /** Mirrors the binding pattern used by {@link ProposalPortalSyncEventHandler}. */
-  private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
-    if (tenantId != null) {
-      var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
-      if (orgId != null) {
-        carrier = carrier.where(RequestScopes.ORG_ID, orgId);
-      }
-      carrier.run(action);
-    } else {
-      action.run();
-    }
-  }
 }

@@ -52,7 +52,7 @@ public class InformationRequestEmailEventListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onRequestSent(InformationRequestSentEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -102,7 +102,7 @@ public class InformationRequestEmailEventListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onItemAccepted(RequestItemAcceptedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -137,7 +137,7 @@ public class InformationRequestEmailEventListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onItemRejected(RequestItemRejectedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -173,7 +173,7 @@ public class InformationRequestEmailEventListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onRequestCompleted(InformationRequestCompletedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -200,20 +200,5 @@ public class InformationRequestEmailEventListener {
                 "Failed to send request-completed email for request={}", event.requestId(), e);
           }
         });
-  }
-
-  private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
-    // Fail closed: schema-per-tenant means an unbound tenant scope would run
-    // tenant-scoped repository operations against the default `public` search_path,
-    // silently reading/writing the wrong schema. Drop the event with a WARN instead.
-    if (tenantId == null || tenantId.isBlank()) {
-      log.warn("Information-request event missing tenantId; skipping to avoid cross-schema write");
-      return;
-    }
-    var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
-    if (orgId != null) {
-      carrier = carrier.where(RequestScopes.ORG_ID, orgId);
-    }
-    carrier.run(action);
   }
 }

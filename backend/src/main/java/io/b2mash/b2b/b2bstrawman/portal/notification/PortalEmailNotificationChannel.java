@@ -117,7 +117,7 @@ public class PortalEmailNotificationChannel {
     if (!"trust_transaction.approved".equals(event.eventType())) {
       return;
     }
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -154,7 +154,7 @@ public class PortalEmailNotificationChannel {
     if (!"DEPOSIT".equals(event.transactionType())) {
       return;
     }
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -181,7 +181,7 @@ public class PortalEmailNotificationChannel {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onRetainerPeriodRollover(RetainerPeriodRolloverEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -208,7 +208,7 @@ public class PortalEmailNotificationChannel {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onFieldDateApproaching(FieldDateApproachingEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -547,17 +547,5 @@ public class PortalEmailNotificationChannel {
       return null;
     }
     return occurredAt.atZone(ZoneOffset.UTC).format(OCCURRED_AT_FMT);
-  }
-
-  private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
-    if (tenantId == null) {
-      log.warn("Portal email channel event received without tenantId — skipping");
-      return;
-    }
-    var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
-    if (orgId != null) {
-      carrier = carrier.where(RequestScopes.ORG_ID, orgId);
-    }
-    carrier.run(action);
   }
 }

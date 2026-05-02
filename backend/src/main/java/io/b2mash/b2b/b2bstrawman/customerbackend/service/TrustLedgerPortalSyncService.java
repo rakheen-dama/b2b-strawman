@@ -103,7 +103,7 @@ public class TrustLedgerPortalSyncService {
     if (!"trust_transaction.approved".equals(event.eventType())) {
       return;
     }
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -130,7 +130,7 @@ public class TrustLedgerPortalSyncService {
    */
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onTrustTransactionRecorded(TrustTransactionRecordedEvent event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -150,7 +150,7 @@ public class TrustLedgerPortalSyncService {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInterestPosted(TrustDomainEvent.InterestPosted event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -170,7 +170,7 @@ public class TrustLedgerPortalSyncService {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onReconciliationCompleted(TrustDomainEvent.ReconciliationCompleted event) {
-    handleInTenantScope(
+    RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),
         () -> {
@@ -540,17 +540,5 @@ public class TrustLedgerPortalSyncService {
     }
     // Fall back to transaction date at UTC midnight — transactionDate is always non-null.
     return txn.getTransactionDate().atStartOfDay(ZoneOffset.UTC).toInstant();
-  }
-
-  private void handleInTenantScope(String tenantId, String orgId, Runnable action) {
-    if (tenantId == null) {
-      log.warn("Trust portal sync event received without tenantId — skipping");
-      return;
-    }
-    var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantId);
-    if (orgId != null) {
-      carrier = carrier.where(RequestScopes.ORG_ID, orgId);
-    }
-    carrier.run(action);
   }
 }

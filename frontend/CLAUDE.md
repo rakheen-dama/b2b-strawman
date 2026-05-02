@@ -268,7 +268,7 @@ export function EditCustomerDialog({
 }
 ```
 
-Call site: `<EditCustomerDialog triggerLabel="Edit" triggerIcon={<Pencil />} customer={c} slug={s} />`.
+Call site: `<EditCustomerDialog triggerLabel="Edit" triggerIcon={<Pencil />} customer={c} slug={s} />`. Both the dialog and its call site are Client Components — adjacency contexts (interactive table rows) are inherently `"use client"`, so passing pre-rendered `ReactNode` JSX is fine here. See _RSC Serialization Boundary_ above for the Server → Client cases that aren't.
 
 ❌ **Bad — two adjacent `asChild` triggers in the same parent JSX:**
 

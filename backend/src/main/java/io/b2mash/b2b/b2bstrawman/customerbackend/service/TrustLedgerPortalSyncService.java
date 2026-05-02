@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.customerbackend.service;
 
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -18,6 +19,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -313,6 +315,23 @@ public class TrustLedgerPortalSyncService {
    * Customers with no portal-eligible matters have their entire read-model wiped.
    */
   public BackfillResult backfillForTenant(String orgId) {
+    if (!RequestScopes.ORG_ID.isBound()) {
+      throw new IllegalStateException(
+          "backfillForTenant must run inside an authenticated request scope");
+    }
+    // Tenant-isolation guard: the authenticated caller's scoped orgId MUST match the argument.
+    // Otherwise an authenticated request for org A could call backfillForTenant("orgB") and the
+    // RequestScopes.runForTenantWithMember(...) below would silently rebind to org B — a
+    // cross-tenant escape. Mirrors the canonical guard in
+    // RetainerPortalSyncService.backfillForTenant. Issue #1267 / ADR-T008 follow-up.
+    String scopedOrgId = RequestScopes.ORG_ID.get();
+    // Null-safe equality: a null orgId argument should fall into the deny branch, not throw NPE
+    // and produce a 500 instead of the intended 403. Per CodeRabbit review on PR #1272.
+    if (!Objects.equals(orgId, scopedOrgId)) {
+      throw new ForbiddenException(
+          "Cross-tenant backfill denied",
+          "Authenticated orgId does not match backfill target orgId");
+    }
     var mapping =
         orgSchemaMappingRepository
             .findByClerkOrgId(orgId)

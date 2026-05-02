@@ -192,6 +192,28 @@ ruleTester.run("no-aschild-adjacency", rule as never, {
         { messageId: "adjacency", data: { trigger: "AlertDialogTrigger" } },
       ],
     },
+    // Two triggers separated by a non-trigger sibling in the same parent.
+    // Deliberately INVALID under this rule's "same parent JSX block" semantics
+    // (audit-03 fix-spec line 51). A reviewer might argue these aren't at
+    // colliding render positions; that's a tighter interpretation we're not
+    // adopting yet (would risk missing real collisions if the bug mechanism
+    // has any non-consecutive manifestation). Real false positives can be
+    // silenced with eslint-disable-line + a justification comment.
+    {
+      code: `
+        const x = (
+          <div className="flex">
+            <DialogTrigger asChild><Button>Edit</Button></DialogTrigger>
+            <span>—</span>
+            <AlertDialogTrigger asChild><Button>Delete</Button></AlertDialogTrigger>
+          </div>
+        );
+      `,
+      errors: [
+        { messageId: "adjacency", data: { trigger: "DialogTrigger" } },
+        { messageId: "adjacency", data: { trigger: "AlertDialogTrigger" } },
+      ],
+    },
     // Fragment flatten — `<div><Trigger /><>{<Trigger />}</></div>` has two
     // adjacent triggers at runtime once the fragment flattens. Per CodeRabbit
     // review on PR #1270.

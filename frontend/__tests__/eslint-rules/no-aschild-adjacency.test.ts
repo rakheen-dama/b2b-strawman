@@ -192,6 +192,45 @@ ruleTester.run("no-aschild-adjacency", rule as never, {
         { messageId: "adjacency", data: { trigger: "AlertDialogTrigger" } },
       ],
     },
+    // Fragment flatten — `<div><Trigger /><>{<Trigger />}</></div>` has two
+    // adjacent triggers at runtime once the fragment flattens. Per CodeRabbit
+    // review on PR #1270.
+    {
+      code: `
+        const x = (
+          <div>
+            <DialogTrigger asChild><Button>A</Button></DialogTrigger>
+            <>
+              <AlertDialogTrigger asChild><Button>B</Button></AlertDialogTrigger>
+            </>
+          </div>
+        );
+      `,
+      errors: [
+        { messageId: "adjacency", data: { trigger: "DialogTrigger" } },
+        { messageId: "adjacency", data: { trigger: "AlertDialogTrigger" } },
+      ],
+    },
+    // Fragment flatten with both triggers nested in the fragment — the outer
+    // <div> flattens through the fragment, sees [Trigger, Trigger], reports.
+    // The inner fragment visitor would see the same triggers, but the
+    // WeakSet dedupe stops a second report on the same nodes.
+    {
+      code: `
+        const x = (
+          <div>
+            <>
+              <DialogTrigger asChild><Button>A</Button></DialogTrigger>
+              <AlertDialogTrigger asChild><Button>B</Button></AlertDialogTrigger>
+            </>
+          </div>
+        );
+      `,
+      errors: [
+        { messageId: "adjacency", data: { trigger: "DialogTrigger" } },
+        { messageId: "adjacency", data: { trigger: "AlertDialogTrigger" } },
+      ],
+    },
     // excludeTriggers option: when caller drops TooltipTrigger from the
     // exclusion list, two adjacent TooltipTrigger asChild ARE flagged.
     {

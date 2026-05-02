@@ -78,14 +78,30 @@ function unwrapChild(child, excludeSet) {
   return null;
 }
 
-function checkSiblings(parentNode, context, excludeSet) {
+// JSXFragments flatten at render time — their children sit at the same
+// sibling-position layer as the fragment's parent's other children. So
+// `<div><Trigger /><>{<Trigger />}</></div>` has two adjacent Triggers at
+// runtime, even though the AST nests one inside a fragment. Flatten before
+// counting matches.
+function* flattenedChildren(children) {
+  for (const child of children || []) {
+    if (child?.type === "JSXFragment") {
+      yield* flattenedChildren(child.children);
+    } else {
+      yield child;
+    }
+  }
+}
+
+function checkSiblings(parentNode, context, excludeSet, reported) {
   const matches = [];
-  for (const child of parentNode.children || []) {
+  for (const child of flattenedChildren(parentNode.children)) {
     const m = unwrapChild(child, excludeSet);
-    if (m) matches.push(m);
+    if (m && !reported.has(m.node)) matches.push(m);
   }
   if (matches.length < 2) return;
   for (const m of matches) {
+    reported.add(m.node);
     context.report({
       node: m.node,
       messageId: "adjacency",
@@ -122,12 +138,15 @@ const rule = {
   create(context) {
     const options = context.options[0] || {};
     const excludeSet = new Set(options.excludeTriggers ?? DEFAULT_EXCLUDE);
+    // Track triggers already reported by an ancestor's flatten pass so a
+    // nested fragment visit doesn't double-report the same trigger node.
+    const reported = new WeakSet();
     return {
       JSXElement(node) {
-        checkSiblings(node, context, excludeSet);
+        checkSiblings(node, context, excludeSet, reported);
       },
       JSXFragment(node) {
-        checkSiblings(node, context, excludeSet);
+        checkSiblings(node, context, excludeSet, reported);
       },
     };
   },

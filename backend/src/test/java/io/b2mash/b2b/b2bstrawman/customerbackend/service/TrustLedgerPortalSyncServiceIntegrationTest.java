@@ -1,10 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.customerbackend.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalTrustReadModelRepository;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
@@ -430,7 +432,11 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
                       trustTransactionRepository.save(txn);
                     }));
 
-    syncService.backfillForTenant(ORG_ID);
+    // The cross-tenant guard added in issue #1267 requires ORG_ID to be bound and to match
+    // the argument before the backfill runs. Mirror what an authenticated controller request
+    // would do.
+    ScopedValue.where(RequestScopes.ORG_ID, ORG_ID)
+        .run(() -> syncService.backfillForTenant(ORG_ID));
 
     // The stale matter's balance row must be gone.
     assertThat(portalTrustRepo.findBalance(customerId, staleMatterId)).isEmpty();
@@ -473,7 +479,10 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
                       }
                     }));
 
-    var result = syncService.backfillForTenant(ORG_ID);
+    // Bind ORG_ID per the cross-tenant guard (issue #1267).
+    var result =
+        ScopedValue.where(RequestScopes.ORG_ID, ORG_ID)
+            .call(() -> syncService.backfillForTenant(ORG_ID));
     assertThat(result.mattersProjected()).isGreaterThanOrEqualTo(1);
     assertThat(result.transactionsProjected()).isGreaterThanOrEqualTo(3);
 
@@ -482,6 +491,34 @@ class TrustLedgerPortalSyncServiceIntegrationTest {
 
     var transactions = portalTrustRepo.findTransactions(customerId, matterId, null, null, 100, 0);
     assertThat(transactions).hasSizeGreaterThanOrEqualTo(3);
+  }
+
+  // ==========================================================================
+  // Cross-tenant guard (issue #1267 — must run before any future controller
+  // exposure). Mirrors the canonical guard in RetainerPortalSyncService.
+  // ==========================================================================
+
+  @Test
+  void backfillForTenantThrowsWhenOrgIdScopeIsUnbound() {
+    // No outer ScopedValue.where(ORG_ID, ...). The first guard branch must fire.
+    assertThatThrownBy(() -> syncService.backfillForTenant(ORG_ID))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("must run inside an authenticated request scope");
+  }
+
+  @Test
+  void backfillForTenantRejectsCrossTenantTargetWhenScopedOrgDiffers() {
+    // An authenticated caller for org A asks the service to backfill org B.
+    // The guard MUST refuse before binding any tenant scope. Without the
+    // guard, RequestScopes.runForTenantWithMember(...) would silently rebind
+    // to org B's schema and operate there — a cross-tenant escape.
+    String otherOrgId = "org_some_other_tenant";
+    assertThatThrownBy(
+            () ->
+                ScopedValue.where(RequestScopes.ORG_ID, ORG_ID)
+                    .run(() -> syncService.backfillForTenant(otherOrgId)))
+        .isInstanceOf(ForbiddenException.class)
+        .hasMessageContaining("Cross-tenant backfill denied");
   }
 
   // ==========================================================================

@@ -1,0 +1,7 @@
+{
+  "commit": "35487e30777f4587ad678f928746eb6f67837821",
+  "command": "./mvnw verify",
+  "exit": 0,
+  "ts": "2026-05-02T02:57:55Z",
+  "summary": "Pre-merge verify on feat/tenant-scoped-runner-handlers (35487e30777f4587ad678f928746eb6f67837821, ADR-T008 + handler migration + regression guard): 5030 tests / 0F / 0E / 26 skip in 11:59."
+}

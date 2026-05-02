@@ -95,7 +95,6 @@ PR #2's pre-migration audit found the original "13 jobs + 2 backfills" framing w
 | `CustomerAuthFilter` | class | Servlet filter; multi-binding from JWT (CUSTOMER_ID + TENANT_ID + ORG_ID + conditional PORTAL_CONTACT_ID). The binding IS the request boundary. |
 | `AssistantController` | class | 5-binding capture-and-rebind to bridge servlet thread → virtual thread for SSE LLM streaming. Awaits ADR-204's `withCurrentScopes()`. |
 | `MockPaymentController` | class | Profile-gated dev payment mock; site at line 182 is also a cross-tenant invoice search. |
-| `AcceptanceService` | class | `resolveByToken` does cross-tenant token discovery search (early-return scan of all tenant schemas). No sanctioned API for tenant-discovery exists yet. |
 | `MemberFilter` | class | Servlet filter; binds `MEMBER_ID` + `ORG_ROLE` from a tenant-scoped lookup. Filter boundary, like `CustomerAuthFilter`. |
 | `PlatformAdminFilter` | class | Servlet filter; binds `GROUPS` from JWT claims. Filter boundary. |
 | `AutomationActionExecutor` | class | Binds `AUTOMATION_EXECUTION_ID` on the scheduler→action-execution boundary. Same boundary-binder pattern as filters. |

@@ -14,8 +14,8 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
-import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantDiscoveryHelper;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
@@ -65,7 +65,7 @@ public class AcceptanceService {
   private final AuditService auditService;
 
   private final StorageService storageService;
-  private final OrgSchemaMappingRepository orgSchemaMappingRepository;
+  private final TenantDiscoveryHelper tenantDiscoveryHelper;
   private final OrganizationRepository organizationRepository;
   private final PortalReadModelRepository portalReadModelRepository;
   private final TransactionTemplate transactionTemplate;
@@ -86,7 +86,7 @@ public class AcceptanceService {
       AcceptanceNotificationService notificationService,
       AuditService auditService,
       StorageService storageService,
-      OrgSchemaMappingRepository orgSchemaMappingRepository,
+      TenantDiscoveryHelper tenantDiscoveryHelper,
       OrganizationRepository organizationRepository,
       PortalReadModelRepository portalReadModelRepository,
       TransactionTemplate transactionTemplate,
@@ -103,7 +103,7 @@ public class AcceptanceService {
     this.notificationService = notificationService;
     this.auditService = auditService;
     this.storageService = storageService;
-    this.orgSchemaMappingRepository = orgSchemaMappingRepository;
+    this.tenantDiscoveryHelper = tenantDiscoveryHelper;
     this.organizationRepository = organizationRepository;
     this.portalReadModelRepository = portalReadModelRepository;
     this.transactionTemplate = transactionTemplate;
@@ -728,30 +728,13 @@ public class AcceptanceService {
    * is always the authoritative source; the portal read-model is not relied upon for resolution.
    */
   public TenantAcceptanceContext resolveByToken(String token) {
-    // Schema scan — iterate all tenant schemas to find the token
-    var mappings = orgSchemaMappingRepository.findAll();
-    for (var mapping : mappings) {
-      try {
-        AcceptanceRequest found =
-            ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                .call(
-                    () ->
-                        transactionTemplate.execute(
-                            status ->
-                                acceptanceRequestRepository
-                                    .findByRequestToken(token)
-                                    .orElse(null)));
-        if (found != null) {
-          return new TenantAcceptanceContext(
-              found, mapping.getSchemaName(), mapping.getClerkOrgId());
-        }
-      } catch (RuntimeException e) {
-        // Infrastructure error (connection failure, schema misconfiguration, etc.)
-        log.warn(
-            "Error scanning schema {} for token: {}", mapping.getSchemaName(), e.getMessage(), e);
-      }
-    }
-    throw new ResourceNotFoundException("AcceptanceRequest", "token");
+    return tenantDiscoveryHelper
+        .findInTenants(
+            () ->
+                transactionTemplate.execute(
+                    status -> acceptanceRequestRepository.findByRequestToken(token)))
+        .map(match -> new TenantAcceptanceContext(match.value(), match.tenantId(), match.orgId()))
+        .orElseThrow(() -> new ResourceNotFoundException("AcceptanceRequest", "token"));
   }
 
   /**

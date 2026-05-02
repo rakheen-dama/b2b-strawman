@@ -102,8 +102,6 @@ class TenantScopeBindingTest {
    *       virtual thread for SSE LLM streaming. Awaits ADR-204's {@code withCurrentScopes()}.
    *   <li>{@code MockPaymentController} — profile-gated dev payment mock; site at line 182 is also
    *       a cross-tenant invoice search (find-which-owns).
-   *   <li>{@code AcceptanceService.resolveByToken} — cross-tenant token discovery search; no
-   *       sanctioned API for tenant-discovery exists yet.
    *   <li>{@code MemberFilter} — servlet filter; binds {@code MEMBER_ID} + {@code ORG_ROLE} from a
    *       tenant-scoped member lookup. Filter boundary, like {@code CustomerAuthFilter}.
    *   <li>{@code PlatformAdminFilter} — servlet filter; binds {@code GROUPS} from JWT claims.
@@ -125,8 +123,6 @@ class TenantScopeBindingTest {
           .doNotHaveSimpleName("AssistantController")
           .and()
           .doNotHaveSimpleName("MockPaymentController")
-          .and()
-          .doNotHaveSimpleName("AcceptanceService")
           .and()
           .doNotHaveSimpleName("MemberFilter")
           .and()

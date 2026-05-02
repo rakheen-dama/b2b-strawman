@@ -42,21 +42,37 @@ Semantics:
 - **No re-binding of `MEMBER_ID` / `ORG_ROLE` / `CAPABILITIES`.** Handlers are system-level dispatch; actor scope ends at the originating request's commit boundary. Re-binding actor identity across `AFTER_COMMIT` would be a category mistake — audit attribution would lie.
 - **`Callable<T>` exceptions** rethrown via `RuntimeException` wrapping per JDK Callable convention. Java 25's `ScopedValue.Carrier.call` takes `CallableOp<T, X>` not `Callable<T>`, so the implementation adapts via method reference.
 
-### Surface 2 — `TenantScopedRunner` Spring bean and broader scope-binding API (PR #2)
+### Surface 2 — `TenantScopedRunner` Spring bean + `runForTenantAsSystemActor` (PR #2, shipped 2026-05-02 PM)
 
-PR #2 covers two related migrations and is broader than the headline "scheduled jobs":
+PR #2's pre-migration audit found the original "13 jobs + 2 backfills" framing was incomplete. The shipped scope:
 
-1. **Scheduled jobs that fan out to all tenants** (13+ sites). Distinct shape: iteration over `OrgSchemaMappingRepository`, per-tenant exception isolation, success-count return:
+1. **`TenantScopedRunner` Spring bean for per-tenant fan-out** (11 scheduled jobs migrated; 1 originally listed job — `SubscriptionExpiryJob` — reclassified as single-tenant per-subscription rebind; 1 originally listed job — `PortalDigestScheduler` — reclassified as exempt due to dual-mode cron+manual shape):
    ```java
    @Component
    public class TenantScopedRunner {
+     /** Per-tenant exception isolation: failures logged at ERROR, iteration continues. */
      public int forEachTenant(BiConsumer<String, String> action);
    }
    ```
 
-2. **Direct `ScopedValue.where(...).where(...).where(MEMBER_ID, SYSTEM_ACTOR_ID).run(...)` 3-binding sites** in `RetainerPortalSyncService.backfillForTenant` and `TrustLedgerPortalSyncService.backfillForTenant`. These public methods bind `MEMBER_ID = SYSTEM_ACTOR_ID` so downstream services that read `requireMemberId()` for audit attribution see the system-actor sentinel rather than throwing. The current `RequestScopes.runForTenant(tenantId, orgId, action)` does not bind `MEMBER_ID`, so these sites cannot migrate to it without a new variant such as `runForTenantAsSystemActor(tenantId, orgId, actorId, action)` or a more general capture-and-rebind utility.
+2. **`RequestScopes.runForTenantAsSystemActor` static method** for the 2 backfill helpers (3-binding TENANT + ORG + MEMBER=SYSTEM_ACTOR_ID):
+   ```java
+   public static void runForTenantAsSystemActor(
+       String tenantId, @Nullable String orgId, UUID actorId, Runnable action);
+   ```
+   Tenant-isolation guard remains caller responsibility (see `RetainerPortalSyncService.backfillForTenant` for the canonical guard pattern: assert `ORG_ID` bound and matches the supplied `orgId` before calling).
 
-Both surfaces will be addressed in PR #2; this ADR will be amended with the final API at that point. PR #2's companion ArchUnit rule banning direct `ScopedValue.where(RequestScopes.TENANT_ID, ...)` calls outside `..multitenancy..` is what catches future regressions of either pattern — it cannot ship in PR #1 because both the 13 jobs and the 2 backfill methods would build-break the moment it lands.
+3. **Single-tenant `runForTenant` / `callForTenant` migrations** in 14 additional files (~22 sites) that the original handover scope missed:
+   - `AcceptanceService` (5 sites: portal markViewed, brand-color, document lookup, PDF stream, accept idempotency)
+   - `MemberSyncService` (3 sites: syncMember, deleteMember, findStaleMembers)
+   - `PortalAuthService` (3 sites: requestMagicLink, exchangeToken verify, exchangeToken contact load)
+   - `InternalAuditController` (2 sites: listAuditEvents, getStats)
+   - `PortalResyncService`, `PackInstallService.internalInstall`, `CustomerAuthFilter` inner read,
+     `InvoiceEmailEventListener` (with behaviour change — see "Negative" below),
+     `PaymentWebhookController`, `EmailWebhookService`, `UnsubscribeService`,
+     `PortalBrandingController`, `PackReconciliationRunner`, `SubscriptionExpiryJob` audit helper.
+
+**API-shape decision for the 3-binding pattern:** Option A — explicit `runForTenantAsSystemActor` static method (mirrors PR #1's `runForTenant` shape). Considered and rejected: Option B (typed Map of additional bindings — type-unsafe, runtime cast required, weaker contract documentation), Option C (capture-and-rebind from a synthetic context — overlaps with ADR-204's `withCurrentScopes` and adds machinery without a clear second consumer).
 
 ### Regression guard (PR #1)
 
@@ -66,37 +82,58 @@ Both surfaces will be addressed in PR #2; this ADR will be amended with the fina
 
 **ArchUnit version note:** during the PR's development, ArchUnit 1.3.0 was found to silently import zero classes on JDK 25 — meaning all existing rules (`LayerDependencyRulesTest`, `TestConventionsTest`) were passing vacuously rather than enforcing anything. Resolved by upgrading `archunit-junit5` to `1.4.2` in the same PR. Documented in `documentation/tech-debt.md` as TD-008 (resolved).
 
-### Companion regression guard (PR #2)
+### Companion regression guard (PR #2, shipped)
 
-PR #2 will add a sibling test that bans direct `ScopedValue.where(RequestScopes.TENANT_ID, ...)` calls outside `..multitenancy..`. It cannot ship now because the 13 unmigrated scheduled jobs would build-break the moment PR #1 merges. The two-phase rollout is an artifact of the migration order, not a permanent split.
+`backend/src/test/java/.../architecture/TenantScopeBindingTest.java` now also bans direct `ScopedValue.where(...)` calls outside `..multitenancy..` and outside a documented exemption set. Per spec §ArchUnit Conditional deferral, ships as **Fallback A**: the broader form (banning ALL `ScopedValue.where` outside the exemption set) rather than the precise TENANT_ID-first-arg form. Trade-off: the precise form requires first-argument-value introspection that ArchUnit's DSL doesn't expose cleanly; the broader form is robust to JDK changes and (because it caught 3 unaudited non-TENANT_ID boundary-binders on its first run) more disciplined. Verified empirically: the rule fired on `MemberFilter` / `PlatformAdminFilter` / `AutomationActionExecutor` before they were added to the exemption set, then passed once the set was complete.
+
+**Exemption catalogue** (each entry MUST stay in sync with the test class — adding a new exemption requires explicit ADR amendment):
+
+| Exemption | Type | Rationale |
+|---|---|---|
+| `..multitenancy..` | package | Owns the canonical APIs (`RequestScopes`, `TenantScopedRunner`) and the boundary-binding `TenantFilter`. |
+| `..dev..` | package | Profile-gated dev test harness (`DevPortalController` with 6 binding sites). |
+| `CustomerAuthFilter` | class | Servlet filter; multi-binding from JWT (CUSTOMER_ID + TENANT_ID + ORG_ID + conditional PORTAL_CONTACT_ID). The binding IS the request boundary. |
+| `AssistantController` | class | 5-binding capture-and-rebind to bridge servlet thread → virtual thread for SSE LLM streaming. Awaits ADR-204's `withCurrentScopes()`. |
+| `MockPaymentController` | class | Profile-gated dev payment mock; site at line 182 is also a cross-tenant invoice search. |
+| `AcceptanceService` | class | `resolveByToken` does cross-tenant token discovery search (early-return scan of all tenant schemas). No sanctioned API for tenant-discovery exists yet. |
+| `PortalDigestScheduler` | class | Dual-mode (cron all-tenants + manual single-tenant); doesn't fit either `forEachTenant` or `runForTenant` cleanly without breaking per-tenant exception-isolation contract. |
+| `MemberFilter` | class | Servlet filter; binds `MEMBER_ID` + `ORG_ROLE` from a tenant-scoped lookup. Filter boundary, like `CustomerAuthFilter`. |
+| `PlatformAdminFilter` | class | Servlet filter; binds `GROUPS` from JWT claims. Filter boundary. |
+| `AutomationActionExecutor` | class | Binds `AUTOMATION_EXECUTION_ID` on the scheduler→action-execution boundary. Same boundary-binder pattern as filters. |
 
 ## Consequences
 
 ### Positive
 
-- The only sanctioned way to bind tenant scope outside the `multitenancy` package is the canonical static API. Reduces the surface area for Class-1 (notification-pipeline gap) bugs.
-- `~110` net lines of duplicate code removed across 14 files.
+- The sanctioned APIs (`RequestScopes.runForTenant` / `callForTenant` / `runForTenantAsSystemActor`, `TenantScopedRunner.forEachTenant`) cover every consolidatable binding pattern outside the `multitenancy` package. The exemption catalogue captures the residual boundary-binders awaiting ADR-204 — explicit and bounded rather than implicit. Reduces the surface area for Class-1 (notification-pipeline gap) bugs.
+- PR #1: ~110 net lines of duplicate code removed across 14 helper files. PR #2: ~24 sites migrated across 27 files (net negative LOC; final tally in PR #2 description).
 - Future binding-contract changes (e.g. adding `ORG_ID` blank-handling, new ScopedValue captures) are one-place edits.
-- Regression guard prevents future copy-paste regression.
-- Surfaces a separate latent issue (ArchUnit-on-JDK-25 silent vacuous passes) that should be addressed in follow-up work.
+- Regression guard (PR #1 method-name + PR #2 call-site) prevents copy-paste regression of either pattern.
+- PR #2's broader-than-precise rule choice surfaced 3 unaudited non-TENANT_ID boundary-binders (`MemberFilter`, `PlatformAdminFilter`, `AutomationActionExecutor`) — net win for architectural visibility.
+- Surfaces a separate latent issue (ArchUnit-on-JDK-25 silent vacuous passes) addressed in PR #1 via upgrade.
 
 ### Negative / behaviour change
 
-- One observable behaviour change: null/blank `tenantId` now throws `IllegalArgumentException` instead of either falling through to `action.run()` (8 helpers) or silently dropping the event with a WARN (6 helpers). The pre-migration audit (in this PR's description) confirms no caller relies on the old fall-through and no test exercises the null path; both old behaviours were dead code.
+- **PR #1 behaviour change:** null/blank `tenantId` now throws `IllegalArgumentException` instead of either falling through to `action.run()` (8 helpers) or silently dropping the event with a WARN (6 helpers). The pre-migration audit (in PR #1265's description) confirms no caller relies on the old fall-through and no test exercises the null path; both old behaviours were dead code.
+- **PR #2 behaviour change** in `InvoiceEmailEventListener.onInvoiceSent`: a null-tenant event previously fell through to `handleInvoiceSent(event)` without scope binding (which then failed inside Hibernate; the surrounding try-catch swallowed it as a WARN). The migration converts this to an explicit `log.warn("InvoiceSentEvent has null tenantId, dropping...")` + early return. Same audit class as PR #1's 6 fail-closed handler conversions; pre-migration audit confirms every `InvoiceSentEvent` publisher is downstream of `TenantFilter`, so non-null tenantId is the empirical reality.
+- **PR #2 behaviour change** in `MagicLinkCleanupService.cleanupExpiredTokens`: previously bound only `TENANT_ID`; now binds `TENANT_ID + ORG_ID` via the bean. The inner `tokenRepository.deleteByExpiresAtBefore` doesn't read `ORG_ID`, so no observable behaviour change.
 - The `TenantScopedRunner` bean (PR #2) introduces a small DI surface — not yet justified by handlers but justified by jobs.
-- The regression guard is name-based — a contributor could circumvent by inventing a new helper name. Mitigated by PR #2's companion guard which catches the underlying primitive (`ScopedValue.where(TENANT_ID, ...)`) regardless of wrapper name.
+- The PR #1 regression guard is name-based — a contributor could circumvent by inventing a new helper name. The PR #2 companion guard catches the underlying primitive (`ScopedValue.where`) regardless of wrapper name.
+- PR #2's broader Fallback A rule means a contributor binding a NEW non-TENANT_ID ScopedValue from a non-exempt class will fail the build, even if the binding is for a non-tenant-isolation purpose. The right fix in that case is to add to the exemption catalogue (with rationale + ADR amendment), not bypass the rule.
 
 ### Known limitations
 
-- The future PR #2 guard won't catch indirect access via local variable — `var key = RequestScopes.TENANT_ID; ScopedValue.where(key, ...)`. Not present in current code. Tightenable if it becomes a real evasion pattern.
+- The PR #2 guard catches all `ScopedValue.where` calls outside the exemption set, regardless of which ScopedValue is bound. The precise alternative (catch only TENANT_ID-first-arg) was rejected in PR #2 (see Companion regression guard) — Fallback A's broader form has identical effect for tenant-isolation purposes today and is robust to JDK changes. The empirical pre-migration grep verified zero indirect-aliasing patterns (`var key = RequestScopes.TENANT_ID; ScopedValue.where(key, ...)`) in current code; if such a pattern emerges, the broader rule still catches it via the `ScopedValue.where` call regardless of how the field is referenced.
 - `TenantTransactionHelper.executeInTenantTransaction(...)` is intentionally not consolidated. It does meaningfully more (forces `search_path` for raw SQL during provisioning); the concerns are different. Documented as deliberate non-consolidation.
 - **Blank-orgId behaviour change.** The new `runForTenant` skips `ORG_ID` binding when `orgId.isBlank()` is true; the original 14 helpers would have bound the empty/whitespace string. Judged a bug since blank values are never legitimate input. Documented in `RequestScopes.runForTenant` Javadoc.
 - **`withTenantScope` is NOT in the banned-name set** even though it would have been a plausible variant. ADR-204 reserves the name for a proposed (deferred) `RequestScopes.withCurrentScopes()` capture-and-rebind utility, so banning it would collide with a legitimate future use case.
 
 ### Follow-ups
 
-- **ArchUnit-on-JDK-25 silent vacuous passes** — RESOLVED in this PR via upgrade to ArchUnit 1.4.2. See `documentation/tech-debt.md` TD-008.
+- **ArchUnit-on-JDK-25 silent vacuous passes** — RESOLVED in PR #1 via upgrade to ArchUnit 1.4.2. See `documentation/tech-debt.md` TD-008.
 - **`@EventListener` (synchronous) handlers in `NotificationEventHandler`.** `onBillingRunCompleted` and `onBillingRunFailures` are `@EventListener`, not `@TransactionalEventListener(AFTER_COMMIT)` — they fire inside the originating transaction. Their publishers (`BillingRunGenerationService.generate` etc.) are reached only via request-driven controllers (`@PostMapping("/{id}/generate")`), so `TENANT_ID` is bound by `TenantFilter`. The audit holds for these too.
+- **ADR-204 dependency — exemption-set cleanup follow-up.** When ADR-204 lands a sanctioned `RequestScopes.withCurrentScopes()` capture-and-rebind utility, migrate the boundary-binders that today require exemption: `CustomerAuthFilter:80`, `AssistantController:50`, `DevPortalController` (× 6 sites), `MockPaymentController:117`, `MemberFilter:63`, `PlatformAdminFilter:39`, `AutomationActionExecutor:115`. Then remove the corresponding entries from `TenantScopeBindingTest`'s exemption set. (`MockPaymentController:182`, `AcceptanceService:736`, and `PortalDigestScheduler:151` are not `withCurrentScopes`-shaped — they need their own targeted abstractions for cross-tenant search and dual-mode dispatch respectively, or stay exempt indefinitely.) The exemption catalogue in this ADR is the cleanup TODO; removing entries requires this ADR's amendment.
+- **`TrustLedgerPortalSyncService.backfillForTenant` cross-tenant guard asymmetry.** `RetainerPortalSyncService.backfillForTenant` requires `RequestScopes.ORG_ID.isBound() && ORG_ID.get().equals(orgId)` before binding the system-actor scope (preventing an authenticated org-A request from triggering a backfill of org-B). The Trust ledger sibling has no equivalent guard. Surfaced during PR #2's pre-migration audit; deliberately not bundled into PR #2 (separate security-class fix). Track separately.
 
 ## Alternatives Considered
 
@@ -110,8 +147,10 @@ PR #2 will add a sibling test that bans direct `ScopedValue.where(RequestScopes.
 
 ## References
 
-- Design spec: `docs/superpowers/specs/2026-05-02-tenant-scoped-runner-design.md`
-- Implementation plan: `docs/superpowers/plans/2026-05-02-tenant-scoped-runner-handlers.md`
+- PR #1 design spec: `docs/superpowers/specs/2026-05-02-tenant-scoped-runner-design.md`
+- PR #1 implementation plan: `docs/superpowers/plans/2026-05-02-tenant-scoped-runner-handlers.md`
+- PR #2 design spec: `docs/superpowers/specs/2026-05-02-tenant-scope-binding-consolidation.md`
+- PR #2 implementation plan: `docs/superpowers/plans/2026-05-02-tenant-scope-binding-consolidation.md`
 - Bug-class catalogue: `qa_cycle/bug-classes.md` (Class 1 — notification-pipeline gaps)
 - Quality Gates: top of `CLAUDE.md` (#1, #5, #7)
 - Adjacent ADRs: `adr/ADR-T002-scopedvalues-over-threadlocal.md`, `adr/ADR-204-virtual-thread-scoped-value-rebinding.md`

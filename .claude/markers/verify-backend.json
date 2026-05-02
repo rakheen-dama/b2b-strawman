@@ -1,7 +1,7 @@
 {
-  "commit": "post-bug-review-fixes",
+  "commit": "27e8342803464efc306975236a3840e0634a24ff",
   "command": "./mvnw verify",
   "exit": 0,
-  "ts": "2026-05-02T11:08:24Z",
-  "summary": "Pre-merge verify after bug-review fixes (backfill comments + nested-call doc/tests + ADR scope clarification): 5036 tests / 0F / 0E / 26 skip in 13:00."
+  "ts": "2026-05-02T11:08:49Z",
+  "summary": "Pre-merge verify after bug-review fixes (27e8342803464efc306975236a3840e0634a24ff): 5036 tests / 0F / 0E / 26 skip in 13:00."
 }

@@ -77,64 +77,62 @@ public class MemberSyncService {
       UUID orgRoleId) {
     String schemaName = resolveSchemaWithRetry(clerkOrgId);
     var result =
-        ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
-            .where(RequestScopes.ORG_ID, clerkOrgId)
-            .call(
-                () ->
-                    txTemplate.execute(
-                        status -> {
-                          var existing = memberRepository.findByClerkUserId(clerkUserId);
-                          if (existing.isPresent()) {
-                            var member = existing.get();
+        RequestScopes.callForTenant(
+            schemaName,
+            clerkOrgId,
+            () ->
+                txTemplate.execute(
+                    status -> {
+                      var existing = memberRepository.findByClerkUserId(clerkUserId);
+                      if (existing.isPresent()) {
+                        var member = existing.get();
 
-                            // Identity sync only — role changes are managed via
-                            // OrgRoleService.assignRole()
-                            member.updateFrom(email, name, avatarUrl, null);
-                            memberRepository.save(member);
-                            log.info("Updated member {} in tenant {}", clerkUserId, schemaName);
+                        // Identity sync only — role changes are managed via
+                        // OrgRoleService.assignRole()
+                        member.updateFrom(email, name, avatarUrl, null);
+                        memberRepository.save(member);
+                        log.info("Updated member {} in tenant {}", clerkUserId, schemaName);
 
-                            return new SyncResult(member.getId(), false);
-                          }
+                        return new SyncResult(member.getId(), false);
+                      }
 
-                          // Resolve the OrgRole entity for new member creation
-                          OrgRole resolvedRole = resolveOrgRole(orgRoleId, orgRole);
+                      // Resolve the OrgRole entity for new member creation
+                      OrgRole resolvedRole = resolveOrgRole(orgRoleId, orgRole);
 
-                          enforceMemberLimit(clerkOrgId);
+                      enforceMemberLimit(clerkOrgId);
 
-                          if (resolvedRole == null) {
-                            throw new IllegalStateException(
-                                "Cannot create member without a valid OrgRole for slug: "
-                                    + orgRole);
-                          }
+                      if (resolvedRole == null) {
+                        throw new IllegalStateException(
+                            "Cannot create member without a valid OrgRole for slug: " + orgRole);
+                      }
 
-                          var member =
-                              new Member(clerkUserId, email, name, avatarUrl, resolvedRole);
-                          memberRepository.save(member);
-                          log.info("Created member {} in tenant {}", clerkUserId, schemaName);
+                      var member = new Member(clerkUserId, email, name, avatarUrl, resolvedRole);
+                      memberRepository.save(member);
+                      log.info("Created member {} in tenant {}", clerkUserId, schemaName);
 
-                          // Seed MEMBER_DEFAULT billing + cost rates from the tenant's vertical
-                          // profile. Idempotent — safe if rates already exist.
-                          try {
-                            memberRateSeedingService.seedDefaultRatesIfMissing(member);
-                          } catch (Exception e) {
-                            log.warn(
-                                "Failed to seed default rates for member {}: {}",
-                                member.getId(),
-                                e.getMessage());
-                          }
+                      // Seed MEMBER_DEFAULT billing + cost rates from the tenant's vertical
+                      // profile. Idempotent — safe if rates already exist.
+                      try {
+                        memberRateSeedingService.seedDefaultRatesIfMissing(member);
+                      } catch (Exception e) {
+                        log.warn(
+                            "Failed to seed default rates for member {}: {}",
+                            member.getId(),
+                            e.getMessage());
+                      }
 
-                          auditService.log(
-                              AuditEventBuilder.builder()
-                                  .eventType("member.synced")
-                                  .entityType("member")
-                                  .entityId(member.getId())
-                                  .actorType("WEBHOOK")
-                                  .source("WEBHOOK")
-                                  .details(Map.of("action", "added", "email", email))
-                                  .build());
+                      auditService.log(
+                          AuditEventBuilder.builder()
+                              .eventType("member.synced")
+                              .entityType("member")
+                              .entityId(member.getId())
+                              .actorType("WEBHOOK")
+                              .source("WEBHOOK")
+                              .details(Map.of("action", "added", "email", email))
+                              .build());
 
-                          return new SyncResult(member.getId(), true);
-                        }));
+                      return new SyncResult(member.getId(), true);
+                    }));
     memberFilter.evictFromCache(schemaName, clerkUserId);
     return result;
   }
@@ -151,53 +149,52 @@ public class MemberSyncService {
 
   public void deleteMember(String clerkOrgId, String clerkUserId) {
     String schemaName = resolveSchema(clerkOrgId);
-    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
-        .where(RequestScopes.ORG_ID, clerkOrgId)
-        .call(
-            () -> {
-              txTemplate.executeWithoutResult(
-                  status -> {
-                    var member =
-                        memberRepository
-                            .findByClerkUserId(clerkUserId)
-                            .orElseThrow(
-                                () ->
-                                    ResourceNotFoundException.withDetail(
-                                        "Member not found",
-                                        "No member found with clerkUserId: " + clerkUserId));
-                    UUID memberId = member.getId();
-                    memberRepository.deleteByClerkUserId(clerkUserId);
-                    log.info("Deleted member {} from tenant {}", clerkUserId, schemaName);
+    RequestScopes.runForTenant(
+        schemaName,
+        clerkOrgId,
+        () -> {
+          txTemplate.executeWithoutResult(
+              status -> {
+                var member =
+                    memberRepository
+                        .findByClerkUserId(clerkUserId)
+                        .orElseThrow(
+                            () ->
+                                ResourceNotFoundException.withDetail(
+                                    "Member not found",
+                                    "No member found with clerkUserId: " + clerkUserId));
+                UUID memberId = member.getId();
+                memberRepository.deleteByClerkUserId(clerkUserId);
+                log.info("Deleted member {} from tenant {}", clerkUserId, schemaName);
 
-                    auditService.log(
-                        AuditEventBuilder.builder()
-                            .eventType("member.removed")
-                            .entityType("member")
-                            .entityId(memberId)
-                            .actorType("WEBHOOK")
-                            .source("WEBHOOK")
-                            .details(Map.of("clerk_user_id", clerkUserId))
-                            .build());
-                  });
-              memberFilter.evictFromCache(schemaName, clerkUserId);
-              return null;
-            });
+                auditService.log(
+                    AuditEventBuilder.builder()
+                        .eventType("member.removed")
+                        .entityType("member")
+                        .entityId(memberId)
+                        .actorType("WEBHOOK")
+                        .source("WEBHOOK")
+                        .details(Map.of("clerk_user_id", clerkUserId))
+                        .build());
+              });
+          memberFilter.evictFromCache(schemaName, clerkUserId);
+        });
   }
 
   public List<MemberSyncController.StaleMemberResponse> findStaleMembers(String clerkOrgId) {
     String schemaName = resolveSchema(clerkOrgId);
-    return ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
-        .where(RequestScopes.ORG_ID, clerkOrgId)
-        .call(
-            () ->
-                txTemplate.execute(
-                    status ->
-                        memberRepository.findByEmailEndingWith("@placeholder.internal").stream()
-                            .map(
-                                m ->
-                                    new MemberSyncController.StaleMemberResponse(
-                                        m.getId(), m.getClerkUserId(), m.getName(), m.getEmail()))
-                            .toList()));
+    return RequestScopes.callForTenant(
+        schemaName,
+        clerkOrgId,
+        () ->
+            txTemplate.execute(
+                status ->
+                    memberRepository.findByEmailEndingWith("@placeholder.internal").stream()
+                        .map(
+                            m ->
+                                new MemberSyncController.StaleMemberResponse(
+                                    m.getId(), m.getClerkUserId(), m.getName(), m.getEmail()))
+                        .toList()));
   }
 
   private void enforceMemberLimit(String clerkOrgId) {

@@ -200,20 +200,19 @@ public class SubscriptionExpiryJob {
 
     var mapping = mappingOpt.get();
     try {
-      ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-          .where(RequestScopes.ORG_ID, mapping.getExternalOrgId())
-          .run(
-              () -> {
-                auditService.log(
-                    AuditEventBuilder.builder()
-                        .eventType(eventType)
-                        .entityType("subscription")
-                        .entityId(sub.getId())
-                        .actorType("SYSTEM")
-                        .source("SCHEDULED")
-                        .details(details)
-                        .build());
-              });
+      RequestScopes.runForTenant(
+          mapping.getSchemaName(),
+          mapping.getExternalOrgId(),
+          () ->
+              auditService.log(
+                  AuditEventBuilder.builder()
+                      .eventType(eventType)
+                      .entityType("subscription")
+                      .entityId(sub.getId())
+                      .actorType("SYSTEM")
+                      .source("SCHEDULED")
+                      .details(details)
+                      .build()));
     } catch (Exception e) {
       log.warn("Failed to create audit event for subscription {}: {}", sub.getId(), e.getMessage());
     }

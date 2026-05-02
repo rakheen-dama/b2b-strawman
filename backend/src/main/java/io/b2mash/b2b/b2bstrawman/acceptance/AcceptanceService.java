@@ -767,9 +767,10 @@ public class AcceptanceService {
     if (currentRequest.isActive() && !currentRequest.isExpired()) {
       try {
         currentRequest =
-            ScopedValue.where(RequestScopes.TENANT_ID, ctx.tenantSchema())
-                .where(RequestScopes.ORG_ID, ctx.orgId())
-                .call(() -> transactionTemplate.execute(status -> markViewed(token, ipAddress)));
+            RequestScopes.callForTenant(
+                ctx.tenantSchema(),
+                ctx.orgId(),
+                () -> transactionTemplate.execute(status -> markViewed(token, ipAddress)));
       } catch (InvalidStateException e) {
         log.debug("Could not mark viewed: {}", e.getMessage());
         // Proceed with current state — still return page data
@@ -788,16 +789,16 @@ public class AcceptanceService {
     // Try to get brand color from org settings
     try {
       brandColor =
-          ScopedValue.where(RequestScopes.TENANT_ID, ctx.tenantSchema())
-              .where(RequestScopes.ORG_ID, ctx.orgId())
-              .call(
-                  () ->
-                      transactionTemplate.execute(
-                          status ->
-                              orgSettingsRepository
-                                  .findForCurrentTenant()
-                                  .map(s -> s.getBrandColor())
-                                  .orElse(null)));
+          RequestScopes.callForTenant(
+              ctx.tenantSchema(),
+              ctx.orgId(),
+              () ->
+                  transactionTemplate.execute(
+                      status ->
+                          orgSettingsRepository
+                              .findForCurrentTenant()
+                              .map(s -> s.getBrandColor())
+                              .orElse(null)));
     } catch (ResourceNotFoundException e) {
       log.debug("No org settings found for brand color: {}", e.getMessage());
     } catch (RuntimeException e) {
@@ -809,15 +810,15 @@ public class AcceptanceService {
     String documentTitle = null;
     try {
       GeneratedDocument doc =
-          ScopedValue.where(RequestScopes.TENANT_ID, ctx.tenantSchema())
-              .where(RequestScopes.ORG_ID, ctx.orgId())
-              .call(
-                  () ->
-                      transactionTemplate.execute(
-                          status ->
-                              generatedDocumentRepository
-                                  .findById(request.getGeneratedDocumentId())
-                                  .orElse(null)));
+          RequestScopes.callForTenant(
+              ctx.tenantSchema(),
+              ctx.orgId(),
+              () ->
+                  transactionTemplate.execute(
+                      status ->
+                          generatedDocumentRepository
+                              .findById(request.getGeneratedDocumentId())
+                              .orElse(null)));
       if (doc != null) {
         documentFileName = doc.getFileName();
         documentTitle = doc.getFileName();
@@ -857,18 +858,19 @@ public class AcceptanceService {
 
     // Look up the generated document in the tenant context
     GeneratedDocument doc =
-        ScopedValue.where(RequestScopes.TENANT_ID, ctx.tenantSchema())
-            .call(
-                () ->
-                    transactionTemplate.execute(
-                        status ->
-                            generatedDocumentRepository
-                                .findById(ctx.request().getGeneratedDocumentId())
-                                .orElseThrow(
-                                    () ->
-                                        new ResourceNotFoundException(
-                                            "GeneratedDocument",
-                                            ctx.request().getGeneratedDocumentId()))));
+        RequestScopes.callForTenant(
+            ctx.tenantSchema(),
+            null,
+            () ->
+                transactionTemplate.execute(
+                    status ->
+                        generatedDocumentRepository
+                            .findById(ctx.request().getGeneratedDocumentId())
+                            .orElseThrow(
+                                () ->
+                                    new ResourceNotFoundException(
+                                        "GeneratedDocument",
+                                        ctx.request().getGeneratedDocumentId()))));
 
     byte[] bytes = storageService.download(doc.getS3Key());
     return new CertificateDownload(bytes, doc.getFileName());
@@ -886,20 +888,20 @@ public class AcceptanceService {
 
     // Idempotency check + accept inside one transactional block to avoid TOCTOU race
     AcceptanceRequest request =
-        ScopedValue.where(RequestScopes.TENANT_ID, ctx.tenantSchema())
-            .where(RequestScopes.ORG_ID, ctx.orgId())
-            .call(
-                () ->
-                    transactionTemplate.execute(
-                        status -> {
-                          AcceptanceRequest current = findByTokenOrThrow(token);
-                          // Idempotent: if already accepted, return current state
-                          if (current.getStatus() == AcceptanceStatus.ACCEPTED) {
-                            return current;
-                          }
-                          // InvalidStateException from accept() will propagate naturally
-                          return accept(token, submission, ipAddress, userAgent);
-                        }));
+        RequestScopes.callForTenant(
+            ctx.tenantSchema(),
+            ctx.orgId(),
+            () ->
+                transactionTemplate.execute(
+                    status -> {
+                      AcceptanceRequest current = findByTokenOrThrow(token);
+                      // Idempotent: if already accepted, return current state
+                      if (current.getStatus() == AcceptanceStatus.ACCEPTED) {
+                        return current;
+                      }
+                      // InvalidStateException from accept() will propagate naturally
+                      return accept(token, submission, ipAddress, userAgent);
+                    }));
 
     return new PortalAcceptResponse(
         request.getStatus().name(), request.getAcceptedAt(), request.getAcceptorName());

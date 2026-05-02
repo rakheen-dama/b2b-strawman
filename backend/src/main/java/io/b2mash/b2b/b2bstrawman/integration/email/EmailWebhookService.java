@@ -154,24 +154,24 @@ public class EmailWebhookService {
     String recipientEmail = (String) event.get("email");
     String reason = (String) event.get("reason");
 
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
-        .run(
-            () -> {
-              deliveryLogService.updateStatus(providerMessageId, newStatus, reason);
+    RequestScopes.runForTenant(
+        tenantSchema,
+        null,
+        () -> {
+          deliveryLogService.updateStatus(providerMessageId, newStatus, reason);
 
-              // Fetch delivery log once for audit + notification (avoids redundant DB query)
-              EmailDeliveryLog deliveryLog = null;
-              if (newStatus == EmailDeliveryStatus.BOUNCED
-                  || newStatus == EmailDeliveryStatus.FAILED) {
-                deliveryLog =
-                    deliveryLogService.findByProviderMessageId(providerMessageId).orElse(null);
-                publishAuditEvent(newStatus, deliveryLog, recipientEmail, reason, tenantSchema);
-              }
+          // Fetch delivery log once for audit + notification (avoids redundant DB query)
+          EmailDeliveryLog deliveryLog = null;
+          if (newStatus == EmailDeliveryStatus.BOUNCED || newStatus == EmailDeliveryStatus.FAILED) {
+            deliveryLog =
+                deliveryLogService.findByProviderMessageId(providerMessageId).orElse(null);
+            publishAuditEvent(newStatus, deliveryLog, recipientEmail, reason, tenantSchema);
+          }
 
-              if (newStatus == EmailDeliveryStatus.BOUNCED) {
-                notifyAdminsIfInvoiceBounce(deliveryLog, recipientEmail, reason);
-              }
-            });
+          if (newStatus == EmailDeliveryStatus.BOUNCED) {
+            notifyAdminsIfInvoiceBounce(deliveryLog, recipientEmail, reason);
+          }
+        });
   }
 
   private void publishAuditEvent(

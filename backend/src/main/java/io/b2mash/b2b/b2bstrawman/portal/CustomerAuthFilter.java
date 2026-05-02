@@ -86,13 +86,13 @@ public class CustomerAuthFilter extends OncePerRequestFilter {
     // query so the result is deterministic (PRIMARY > BILLING > GENERAL, oldest first).
     try {
       var contact =
-          ScopedValue.where(RequestScopes.TENANT_ID, schema)
-              .call(
-                  () ->
-                      portalContactRepository
-                          .findPreferredByCustomerIdAndOrgId(
-                              claims.customerId(), claims.clerkOrgId())
-                          .orElse(null));
+          RequestScopes.callForTenant(
+              schema,
+              null,
+              () ->
+                  portalContactRepository
+                      .findPreferredByCustomerIdAndOrgId(claims.customerId(), claims.clerkOrgId())
+                      .orElse(null));
       if (contact != null) {
         carrier = carrier.where(RequestScopes.PORTAL_CONTACT_ID, contact.getId());
       }

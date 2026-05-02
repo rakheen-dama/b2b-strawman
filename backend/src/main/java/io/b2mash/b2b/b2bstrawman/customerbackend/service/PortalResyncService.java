@@ -68,12 +68,11 @@ public class PortalResyncService {
     log.info("Starting portal resync for org={}, schema={}", orgId, schema);
 
     // Step 1: Load all tenant data within ScopedValue binding
-    var carrier =
-        ScopedValue.where(RequestScopes.TENANT_ID, schema).where(RequestScopes.ORG_ID, orgId);
-
     var projections = new ArrayList<ProjectionData>();
 
-    carrier.run(
+    RequestScopes.runForTenant(
+        schema,
+        orgId,
         () -> {
           var allLinks = customerProjectRepository.findAll();
           var sharedDocsCache = new HashMap<UUID, List<Document>>();

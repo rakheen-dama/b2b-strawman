@@ -156,15 +156,16 @@ public class PackReconciliationRunner implements ApplicationRunner {
 
     // Resolve the tenant's vertical profile (requires tenant scope for DB access)
     String verticalProfile =
-        ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
-            .call(
-                () ->
-                    transactionTemplate.execute(
-                        tx ->
-                            orgSettingsRepository
-                                .findForCurrentTenant()
-                                .map(OrgSettings::getVerticalProfile)
-                                .orElse(null)));
+        RequestScopes.callForTenant(
+            schemaName,
+            null,
+            () ->
+                transactionTemplate.execute(
+                    tx ->
+                        orgSettingsRepository
+                            .findForCurrentTenant()
+                            .map(OrgSettings::getVerticalProfile)
+                            .orElse(null)));
 
     // Install profile-specific packs only when a profile is set
     if (verticalProfile != null) {

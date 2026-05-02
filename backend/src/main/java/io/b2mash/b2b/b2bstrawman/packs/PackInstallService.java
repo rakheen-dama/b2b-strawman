@@ -121,53 +121,53 @@ public class PackInstallService {
    * @param tenantId the tenant schema name
    */
   public void internalInstall(String packId, String tenantId) {
-    ScopedValue.where(RequestScopes.TENANT_ID, tenantId)
-        .run(
-            () ->
-                transactionTemplate.executeWithoutResult(
-                    tx -> {
-                      // 1. Resolve catalog entry
-                      PackCatalogEntry catalogEntry = packCatalogService.findCatalogEntry(packId);
-                      if (catalogEntry == null) {
-                        throw new ResourceNotFoundException("Pack", packId);
-                      }
+    RequestScopes.runForTenant(
+        tenantId,
+        null,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // 1. Resolve catalog entry
+                  PackCatalogEntry catalogEntry = packCatalogService.findCatalogEntry(packId);
+                  if (catalogEntry == null) {
+                    throw new ResourceNotFoundException("Pack", packId);
+                  }
 
-                      // 2. No profile affinity check for internal installs
+                  // 2. No profile affinity check for internal installs
 
-                      // 3. Idempotency check
-                      var existing = packInstallRepository.findByPackId(packId);
-                      if (existing.isPresent()) {
-                        log.info("Pack {} already installed (internal path), skipping", packId);
-                        return;
-                      }
+                  // 3. Idempotency check
+                  var existing = packInstallRepository.findByPackId(packId);
+                  if (existing.isPresent()) {
+                    log.info("Pack {} already installed (internal path), skipping", packId);
+                    return;
+                  }
 
-                      // 4. Resolve installer
-                      PackInstaller installer = resolveInstaller(catalogEntry.type());
+                  // 4. Resolve installer
+                  PackInstaller installer = resolveInstaller(catalogEntry.type());
 
-                      // 5. Delegate to installer (memberId is null for internal installs)
-                      installer.install(packId, tenantId, null);
+                  // 5. Delegate to installer (memberId is null for internal installs)
+                  installer.install(packId, tenantId, null);
 
-                      // 6. Retrieve the created PackInstall
-                      PackInstall install =
-                          packInstallRepository
-                              .findByPackId(packId)
-                              .orElseThrow(
-                                  () ->
-                                      new IllegalStateException(
-                                          "PackInstall not found after internal installation of "
-                                              + packId));
+                  // 6. Retrieve the created PackInstall
+                  PackInstall install =
+                      packInstallRepository
+                          .findByPackId(packId)
+                          .orElseThrow(
+                              () ->
+                                  new IllegalStateException(
+                                      "PackInstall not found after internal installation of "
+                                          + packId));
 
-                      // 7. Update legacy OrgSettings shim
-                      updateOrgSettingsOnInstall(catalogEntry);
+                  // 7. Update legacy OrgSettings shim
+                  updateOrgSettingsOnInstall(catalogEntry);
 
-                      // 8. Emit audit event (system actor, no member)
-                      emitInstallAuditEvent(install, null);
+                  // 8. Emit audit event (system actor, no member)
+                  emitInstallAuditEvent(install, null);
 
-                      // 9. No notification for internal installs (no member to notify)
+                  // 9. No notification for internal installs (no member to notify)
 
-                      log.info(
-                          "Internal install of pack {} completed for tenant {}", packId, tenantId);
-                    }));
+                  log.info("Internal install of pack {} completed for tenant {}", packId, tenantId);
+                }));
   }
 
   /**

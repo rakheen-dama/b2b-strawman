@@ -52,9 +52,7 @@ public class InternalAuditController {
         PageRequest.of(page, Math.min(size, 200), Sort.by(Sort.Direction.DESC, "occurredAt"));
 
     Page<AuditEvent> events =
-        ScopedValue.where(RequestScopes.TENANT_ID, schema)
-            .where(RequestScopes.ORG_ID, orgId)
-            .call(() -> auditService.findEvents(filter, pageable));
+        RequestScopes.callForTenant(schema, orgId, () -> auditService.findEvents(filter, pageable));
 
     return ResponseEntity.ok(events.map(InternalAuditEventResponse::from));
   }
@@ -65,9 +63,7 @@ public class InternalAuditController {
     String schema = resolveSchema(orgId);
 
     List<AuditEventRepository.EventTypeCount> counts =
-        ScopedValue.where(RequestScopes.TENANT_ID, schema)
-            .where(RequestScopes.ORG_ID, orgId)
-            .call(() -> auditService.countEventsByType());
+        RequestScopes.callForTenant(schema, orgId, () -> auditService.countEventsByType());
 
     long totalEvents =
         counts.stream().mapToLong(AuditEventRepository.EventTypeCount::getCount).sum();

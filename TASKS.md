@@ -567,6 +567,17 @@
 | 498 | Portal Notifications (digest + per-event + preferences) | Both | 495A or 496A or 497A | L | 498A, 498B, 498C | |
 | 499 | Mobile Polish & Responsive Pass | Frontend | 494B, 495B, 496B, 497B, 498B | M | 499A, 499B | 499A **Done** (PR #1093) |
 | 500 | Client-POV 90-Day QA Capstone + Screenshots + Gap Report | E2E/Process | 494–499 | L | 500A, 500B | **Done** (PRs #1095, #1096) |
+| **Phase 69 — Firm Audit View (Admin Surface)** | | | | | | See [tasks/phase69-firm-audit-view.md](tasks/phase69-firm-audit-view.md) |
+| 501 | Audit Metadata Registry + Severity / Group Foundation | Backend | -- | M | 501A | **Done** (PR #1273) |
+| 502 | Audit Facets API + Severity-Filtered List | Backend | 501 | M | 502A, 502B | |
+| 503 | Audit Export — CSV Streaming + Reflexive Audit | Backend | 501, 502A | M | 503A | |
+| 504 | Audit Export — PDF via Tiptap Pipeline | Backend | 501, 502A, 503A | M | 504A | |
+| 505 | DSAR Audit-Trail Folder Integration | Backend | 501 | M | 505A | |
+| 506 | Global Audit Log Page — Shell, Filters, Row Expansion, Presets, Export | Frontend | 502B | L | 506A, 506B | |
+| 507 | `<AuditTimeline>` Component + 3 Detail Page Tabs (Customer / Project / Invoice) | Frontend | 502B, 506A | M | 507A | |
+| 508 | `<AuditTimeline>` — Trust Tx / Matter Closure / Proposal / Information Request Detail Tabs | Frontend | 507A | M | 508A | |
+| 509 | Sensitive-Events Dashboard Widget | Frontend | 502B, 506B | S | 509A | |
+| 510 | Admin-POV 30-Day QA Capstone + Screenshots + Gap Report | E2E/Process | 501–509 | L | 510A, 510B | |
 
 ---
 

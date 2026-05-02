@@ -1,7 +1,7 @@
 {
-  "commit": "a37ceb3d7a8efff804404568f915b4bb4c41b562",
+  "commit": "db9c03b81599dba602a3f01836fa68580145db88",
   "command": "./mvnw verify",
   "exit": 0,
-  "ts": "2026-05-02T15:07:17Z",
-  "summary": "Post-review verify on feat/tenant-scope-binding-consolidation (a37ceb3d7a8efff804404568f915b4bb4c41b562): 5055 testcases / 0F / 0E / 26 skip. Architectural review findings H1+H2+M1+M3 addressed: TenantDiscoveryHelper extracted (+6 tests), PortalDigestScheduler migrated, runForTenantAsSystemActor renamed to runForTenantWithMember, exemption catalogue down from 10 to 8."
+  "ts": "2026-05-02T15:27:37Z",
+  "summary": "Post-CodeRabbit-fixes verify on feat/tenant-scope-binding-consolidation (db9c03b81599dba602a3f01836fa68580145db88): 5055 testcases / 0F / 0E / 26 skip. CodeRabbit nits + FQCN exemption tightening addressed."
 }

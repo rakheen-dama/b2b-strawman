@@ -1,7 +1,7 @@
 {
-  "commit": "30582a1b8aa82c65be3d86fcf29428d8a7d8b2c4",
+  "commit": "a37ceb3d7a8efff804404568f915b4bb4c41b562",
   "command": "./mvnw verify",
   "exit": 0,
-  "ts": "2026-05-02T14:22:26Z",
-  "summary": "Pre-PR verify on feat/tenant-scope-binding-consolidation (30582a1b8aa82c65be3d86fcf29428d8a7d8b2c4): 5049 testcases / 0F / 0E / 26 skip via testcase-element counting. PR #2 / ADR-T008 Surface 2: 36 site migrations + 2 new APIs + ArchUnit rule + ADR amendment."
+  "ts": "2026-05-02T15:07:17Z",
+  "summary": "Post-review verify on feat/tenant-scope-binding-consolidation (a37ceb3d7a8efff804404568f915b4bb4c41b562): 5055 testcases / 0F / 0E / 26 skip. Architectural review findings H1+H2+M1+M3 addressed: TenantDiscoveryHelper extracted (+6 tests), PortalDigestScheduler migrated, runForTenantAsSystemActor renamed to runForTenantWithMember, exemption catalogue down from 10 to 8."
 }

@@ -118,17 +118,19 @@ class TenantScopeBindingTest {
           .and()
           .resideOutsideOfPackage("..dev..")
           .and()
-          .doNotHaveSimpleName("CustomerAuthFilter")
+          .doNotHaveFullyQualifiedName("io.b2mash.b2b.b2bstrawman.portal.CustomerAuthFilter")
           .and()
-          .doNotHaveSimpleName("AssistantController")
+          .doNotHaveFullyQualifiedName("io.b2mash.b2b.b2bstrawman.assistant.AssistantController")
           .and()
-          .doNotHaveSimpleName("MockPaymentController")
+          .doNotHaveFullyQualifiedName(
+              "io.b2mash.b2b.b2bstrawman.integration.payment.MockPaymentController")
           .and()
-          .doNotHaveSimpleName("MemberFilter")
+          .doNotHaveFullyQualifiedName("io.b2mash.b2b.b2bstrawman.member.MemberFilter")
           .and()
-          .doNotHaveSimpleName("PlatformAdminFilter")
+          .doNotHaveFullyQualifiedName("io.b2mash.b2b.b2bstrawman.security.PlatformAdminFilter")
           .and()
-          .doNotHaveSimpleName("AutomationActionExecutor")
+          .doNotHaveFullyQualifiedName(
+              "io.b2mash.b2b.b2bstrawman.automation.AutomationActionExecutor")
           .should()
           .callMethod(
               java.lang.ScopedValue.class, "where", java.lang.ScopedValue.class, Object.class)
@@ -136,6 +138,8 @@ class TenantScopeBindingTest {
               "Bind tenant scope via RequestScopes.runForTenant / callForTenant / "
                   + "runForTenantWithMember or TenantScopedRunner.forEachTenant. "
                   + "See ADR-T008. Adding a new exemption to this rule requires explicit "
-                  + "ADR-T008 amendment.")
+                  + "ADR-T008 amendment. Exemptions use fully-qualified class names so a future "
+                  + "class with the same simple name in a different package is not accidentally "
+                  + "exempted.")
           .allowEmptyShould(true);
 }

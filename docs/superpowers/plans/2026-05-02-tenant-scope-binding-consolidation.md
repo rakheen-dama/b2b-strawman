@@ -25,7 +25,8 @@
 - [ ] **Step 2: Confirm baseline test count carries from main**
 
   ```bash
-  find /Users/rakheendama/Projects/2026/b2b-strawman/backend/target/surefire-reports -maxdepth 1 -name "TEST-*.xml" -exec grep -c "<testcase " {} \; | awk '{s+=$1} END {print s}'
+  # Run from repo root (use $(git rev-parse --show-toplevel) if you're elsewhere).
+  find backend/target/surefire-reports -maxdepth 1 -name "TEST-*.xml" -exec grep -c "<testcase " {} \; | awk '{s+=$1} END {print s}'
   ```
   Expected: 5038 (carries from main verify; same SHA, same code).
 

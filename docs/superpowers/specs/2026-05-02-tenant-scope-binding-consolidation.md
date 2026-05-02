@@ -126,7 +126,11 @@ The 13 fan-out call sites currently each implement this isolation-by-try-catch i
 
 ## Migration catalogue
 
-### A. Per-tenant fan-out → `TenantScopedRunner.forEachTenant` (13 sites)
+### A. Per-tenant fan-out → `TenantScopedRunner.forEachTenant` (originally 13 candidates; **11 actually migrated**)
+
+The original audit listed 13 candidates from grep. Two were reclassified during implementation:
+- **`SubscriptionExpiryJob:203`** is not fan-out — it's a per-subscription rebind inside an audit helper. Moved to category B (single-tenant `runForTenant`).
+- **`PortalDigestScheduler:151`** was originally exempted (dual-mode), then per the architectural review (H1 fix, post-merge) migrated to direct `RequestScopes.callForTenant` inside its existing manual loop — its per-tenant `RunResult.errors` aggregation requires preserving per-call exceptions that `forEachTenant`'s BiConsumer contract throws away.
 
 Migration shape:
 
@@ -146,23 +150,21 @@ for (var mapping : orgSchemaMappingRepository.findAll()) {
 tenantScopedRunner.forEachTenant((tenantId, orgId) -> doWork(tenantId, orgId));
 ```
 
-Files (one task per file in the plan):
+Files migrated (11 — one task per file in the plan):
 
 - `acceptance/AcceptanceExpiryProcessor.java:37`
 - `automation/AutomationScheduler.java:64`
 - `automation/FieldDateScannerJob.java:69`
-- `billing/SubscriptionExpiryJob.java:203`
 - `compliance/DormancyScheduledJob.java:48`
 - `informationrequest/RequestReminderScheduler.java:64`
 - `portal/MagicLinkCleanupService.java:45`
-- `portal/notification/PortalDigestScheduler.java:151`
 - `proposal/ProposalExpiryProcessor.java:66`
 - `schedule/RecurringScheduleExecutor.java:41`
 - `schedule/TimeReminderScheduler.java:70`
 - `template/LegacyContentImportRunner.java:85`
 - `verticals/legal/courtcalendar/CourtDateReminderJob.java:63`
 
-The 13 sites currently each inject `OrgSchemaMappingRepository` directly. After migration, the repository injection can be removed where it's no longer used elsewhere in the same class — verify per file.
+The 11 migrated sites previously each injected `OrgSchemaMappingRepository`. After migration, the repository injection can be removed where it's no longer used elsewhere in the same class — verify per file.
 
 ### B. Single-tenant → `runForTenant` / `callForTenant` (~21 sites)
 

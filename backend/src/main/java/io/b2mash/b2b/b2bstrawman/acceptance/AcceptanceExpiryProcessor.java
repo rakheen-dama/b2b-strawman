@@ -34,7 +34,7 @@ public class AcceptanceExpiryProcessor {
 
     if (totalExpired[0] > 0) {
       log.info(
-          "Expiry processor completed: {} requests expired across {} tenants",
+          "Expiry processor completed: {} requests expired after processing {} tenants",
           totalExpired[0],
           tenantsProcessed);
     } else {

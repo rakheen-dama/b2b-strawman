@@ -1,7 +1,7 @@
 {
-  "commit": "27e8342803464efc306975236a3840e0634a24ff",
+  "commit": "30582a1b8aa82c65be3d86fcf29428d8a7d8b2c4",
   "command": "./mvnw verify",
   "exit": 0,
-  "ts": "2026-05-02T11:08:49Z",
-  "summary": "Pre-merge verify after bug-review fixes (27e8342803464efc306975236a3840e0634a24ff): 5036 tests / 0F / 0E / 26 skip in 13:00."
+  "ts": "2026-05-02T14:22:26Z",
+  "summary": "Pre-PR verify on feat/tenant-scope-binding-consolidation (30582a1b8aa82c65be3d86fcf29428d8a7d8b2c4): 5049 testcases / 0F / 0E / 26 skip via testcase-element counting. PR #2 / ADR-T008 Surface 2: 36 site migrations + 2 new APIs + ArchUnit rule + ADR amendment."
 }

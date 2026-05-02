@@ -14,7 +14,7 @@ class TenantScopedRunnerTest {
   private static OrgSchemaMapping mapping(String schema, String orgId) {
     OrgSchemaMapping m = mock(OrgSchemaMapping.class);
     when(m.getSchemaName()).thenReturn(schema);
-    when(m.getClerkOrgId()).thenReturn(orgId);
+    when(m.getExternalOrgId()).thenReturn(orgId);
     return m;
   }
 

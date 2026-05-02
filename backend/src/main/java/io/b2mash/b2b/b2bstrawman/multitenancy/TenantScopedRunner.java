@@ -39,7 +39,7 @@ public class TenantScopedRunner {
     int succeeded = 0;
     for (var mapping : mappingRepository.findAll()) {
       String tenantId = mapping.getSchemaName();
-      String orgId = mapping.getClerkOrgId();
+      String orgId = mapping.getExternalOrgId();
       try {
         RequestScopes.runForTenant(tenantId, orgId, () -> action.accept(tenantId, orgId));
         succeeded++;

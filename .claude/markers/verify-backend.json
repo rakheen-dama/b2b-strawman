@@ -1,7 +1,7 @@
 {
-  "commit": "post-archunit-1.4.2-upgrade",
+  "commit": "dcf595f735a3d3fd0e04503d731d440ddec9681d",
   "command": "./mvnw verify",
   "exit": 0,
-  "ts": "2026-05-02T09:27:51Z",
-  "summary": "Pre-merge verify after ArchUnit 1.4.2 upgrade + DSL conversion + 3 controller exclusions: 5032 tests / 0F / 0E / 26 skip in 12:04. All 3 architecture test classes now actively enforce."
+  "ts": "2026-05-02T09:28:13Z",
+  "summary": "Pre-merge verify after ArchUnit 1.4.2 upgrade (dcf595f735a3d3fd0e04503d731d440ddec9681d): 5032 tests / 0F / 0E / 26 skip in 12:04. Architecture tests now actively enforce."
 }

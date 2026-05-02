@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -324,7 +325,9 @@ public class TrustLedgerPortalSyncService {
     // cross-tenant escape. Mirrors the canonical guard in
     // RetainerPortalSyncService.backfillForTenant. Issue #1267 / ADR-T008 follow-up.
     String scopedOrgId = RequestScopes.ORG_ID.get();
-    if (!orgId.equals(scopedOrgId)) {
+    // Null-safe equality: a null orgId argument should fall into the deny branch, not throw NPE
+    // and produce a 500 instead of the intended 403. Per CodeRabbit review on PR #1272.
+    if (!Objects.equals(orgId, scopedOrgId)) {
       throw new ForbiddenException(
           "Cross-tenant backfill denied",
           "Authenticated orgId does not match backfill target orgId");

@@ -52,8 +52,15 @@ public class AuditEventMetadataResolver {
     if (events == null || events.isEmpty()) {
       return List.of();
     }
+    // Deduplicate actor IDs before the bulk lookup — N events with K distinct actors should issue
+    // one IN-clause of size K, not size N (the Set in DatabaseAuditService dedupes too, but doing
+    // it here keeps the contract obvious at the call site).
     var actorIds =
-        events.stream().map(AuditEvent::getActorId).filter(java.util.Objects::nonNull).toList();
+        events.stream()
+            .map(AuditEvent::getActorId)
+            .filter(java.util.Objects::nonNull)
+            .distinct()
+            .toList();
     var nameLookup = auditService.resolveActorDisplayNames(actorIds);
     return events.stream()
         .map(
@@ -68,20 +75,16 @@ public class AuditEventMetadataResolver {
 
   private static String resolveDisplay(
       java.util.UUID actorId, String actorType, java.util.Map<java.util.UUID, String> nameLookup) {
-    return switch (actorType == null ? "" : actorType) {
-      case "USER" -> {
-        if (actorId == null) {
-          yield "System";
-        }
-        var name = nameLookup.get(actorId);
-        yield name != null ? name : "Former member (" + actorId + ")";
+    if ("USER".equals(actorType)) {
+      if (actorId == null) {
+        return "System";
       }
-      case "PORTAL_CONTACT" -> "Portal Contact";
-      case "SYSTEM" -> "System";
-      case "AUTOMATION" -> "Automation";
-      case "API_KEY" -> "API Key";
-      default -> "System";
-    };
+      var name = nameLookup.get(actorId);
+      return name != null ? name : "Former member (" + actorId + ")";
+    }
+    // Non-USER types share their labels with DatabaseAuditService.resolveActorDisplay so the two
+    // paths cannot drift when a new actor type is added.
+    return DatabaseAuditService.staticActorLabel(actorType);
   }
 
   /**

@@ -115,10 +115,14 @@ public class DatabaseAuditService implements AuditService {
     }
     // Single batched lookup against members — Spring Data's findAllById issues a single
     // SELECT ... WHERE id IN (?) so a batch of N actorIds produces one query, not N+1.
+    // Skip blank names so the batch path stays consistent with resolveActorDisplay's single-actor
+    // fallback (a blank Member.name must trigger the "Former member ({uuid})" branch, not show as
+    // an empty string).
     var out = new HashMap<UUID, String>();
     for (Member member : memberRepository.findAllById(distinctIds)) {
-      if (member.getName() != null) {
-        out.put(member.getId(), member.getName());
+      var name = member.getName();
+      if (name != null && !name.isBlank()) {
+        out.put(member.getId(), name);
       }
     }
     return Map.copyOf(out);
@@ -127,18 +131,27 @@ public class DatabaseAuditService implements AuditService {
   @Override
   @Transactional(readOnly = true)
   public String resolveActorDisplay(UUID actorId, String actorType) {
-    return switch (actorType == null ? "" : actorType) {
-      case "USER" -> {
-        if (actorId == null) {
-          // Defensive: a USER actor with no actorId is a logging bug; fall back to "System".
-          yield "System";
-        }
-        yield memberRepository
-            .findById(actorId)
-            .map(Member::getName)
-            .filter(name -> name != null && !name.isBlank())
-            .orElseGet(() -> "Former member (" + actorId + ")");
+    if ("USER".equals(actorType)) {
+      if (actorId == null) {
+        // Defensive: a USER actor with no actorId is a logging bug; fall back to "System".
+        return "System";
       }
+      return memberRepository
+          .findById(actorId)
+          .map(Member::getName)
+          .filter(name -> name != null && !name.isBlank())
+          .orElseGet(() -> "Former member (" + actorId + ")");
+    }
+    return staticActorLabel(actorType);
+  }
+
+  /**
+   * Returns the static display label for non-USER actor types per architecture §12.3.4. Shared with
+   * {@link AuditEventMetadataResolver} so the two resolution paths cannot drift. Unknown actor
+   * types map defensively to {@code "System"}.
+   */
+  static String staticActorLabel(String actorType) {
+    return switch (actorType == null ? "" : actorType) {
       case "PORTAL_CONTACT" -> "Portal Contact";
       case "SYSTEM" -> "System";
       case "AUTOMATION" -> "Automation";

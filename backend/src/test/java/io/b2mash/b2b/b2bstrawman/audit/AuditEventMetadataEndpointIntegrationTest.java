@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -66,15 +67,30 @@ class AuditEventMetadataEndpointIntegrationTest extends AbstractIntegrationTest 
 
   @Test
   void regularMemberWithoutTeamOversightForbidden() throws Exception {
+    // 403 path goes through GlobalExceptionHandler.handleAccessDenied which emits the project's
+    // standard ProblemDetail body. Asserting status, title, and detail enforces the project
+    // coding-guideline that error-path tests must verify the ProblemDetail contract, not just
+    // the HTTP status code.
     mockMvc
         .perform(
             get("/api/audit-events/metadata")
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_amd_member")))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").value("Access denied"))
+        .andExpect(jsonPath("$.detail").value("Insufficient permissions for this operation"));
   }
 
   @Test
   void unauthenticatedRequestRejected() throws Exception {
-    mockMvc.perform(get("/api/audit-events/metadata")).andExpect(status().isUnauthorized());
+    // 401 path is handled by Spring Security's BearerTokenAuthenticationEntryPoint, which writes
+    // a WWW-Authenticate challenge header and an empty response body — no ProblemDetail JSON. The
+    // status assertion plus the WWW-Authenticate header is the strongest contract we can verify
+    // without changing the global authentication-entry-point behaviour, which is out of scope for
+    // 501A. Documented here so future readers know why JSON fields are not asserted.
+    mockMvc
+        .perform(get("/api/audit-events/metadata"))
+        .andExpect(status().isUnauthorized())
+        .andExpect(header().exists("WWW-Authenticate"));
   }
 }

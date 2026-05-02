@@ -2,16 +2,18 @@ package io.b2mash.b2b.b2bstrawman.audit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.AbstractIntegrationTest;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.TestConstructor;
 
 /**
  * Integration tests for {@link AuditService#resolveActorDisplayNames(java.util.Collection)} and
@@ -27,17 +29,31 @@ import org.springframework.beans.factory.annotation.Autowired;
  * <p>Operates inside {@code ScopedValue.where(RequestScopes.TENANT_ID, schemaName).run(...)} so the
  * tenant-scoped {@code search_path} is set for the member lookups.
  */
+@TestConstructor(autowireMode = TestConstructor.AutowireMode.ALL)
 class AuditServiceActorDisplayIntegrationTest extends AbstractIntegrationTest {
 
   private static final String ORG_ID = "org_audit_actor_display_test";
 
-  @Autowired private AuditService auditService;
-  @Autowired private MemberRepository memberRepository;
-  @Autowired private TenantProvisioningService provisioningSvc;
+  // Constructor injection per project guideline — never @Autowired on fields. JUnit 5 +
+  // SpringExtension resolves these via the Spring application context at @TestInstance(PER_CLASS)
+  // construction time.
+  private final AuditService auditService;
+  private final MemberRepository memberRepository;
+  private final TenantProvisioningService provisioningSvc;
+
+  AuditServiceActorDisplayIntegrationTest(
+      AuditService auditService,
+      MemberRepository memberRepository,
+      TenantProvisioningService provisioningSvc) {
+    this.auditService = auditService;
+    this.memberRepository = memberRepository;
+    this.provisioningSvc = provisioningSvc;
+  }
 
   private String schemaName;
   private UUID liveMemberId;
   private UUID formerMemberId;
+  private UUID blankNameMemberId;
 
   @BeforeAll
   void provisionTenantAndSeed() throws Exception {
@@ -69,6 +85,33 @@ class AuditServiceActorDisplayIntegrationTest extends AbstractIntegrationTest {
     formerMemberId = UUID.fromString(formerMemberIdStr);
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
         .run(() -> memberRepository.deleteById(formerMemberId));
+
+    // Seed a member with a blank name so we can verify the blank-name fallback path. Member has
+    // no setName() in production code (names flow through Clerk sync); we reflectively blank the
+    // field, then save through the JPA repository inside the tenant scope so the row is persisted
+    // with name = "". The "Former member ({uuid})" fallback must fire for this case too.
+    var blankNameMemberIdStr =
+        TestMemberHelper.syncMember(
+            mockMvc,
+            ORG_ID,
+            "user_audit_actor_display_blank",
+            "audit_actor_display_blank@test.com",
+            "Will Be Blanked",
+            "member");
+    blankNameMemberId = UUID.fromString(blankNameMemberIdStr);
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .run(
+            () -> {
+              var member = memberRepository.findById(blankNameMemberId).orElseThrow();
+              try {
+                Field nameField = Member.class.getDeclaredField("name");
+                nameField.setAccessible(true);
+                nameField.set(member, "");
+              } catch (NoSuchFieldException | IllegalAccessException e) {
+                throw new IllegalStateException("Failed to blank member name reflectively", e);
+              }
+              memberRepository.save(member);
+            });
   }
 
   @Test
@@ -97,6 +140,24 @@ class AuditServiceActorDisplayIntegrationTest extends AbstractIntegrationTest {
               // entries that resolved).
               var batch = auditService.resolveActorDisplayNames(List.of(formerMemberId));
               assertThat(batch).doesNotContainKey(formerMemberId);
+            });
+  }
+
+  @Test
+  void blankMemberNameResolvesToFormerMemberFallback() {
+    // A Member row exists but its name is blank — the resolver must drop the blank and fall back
+    // to the "Former member ({uuid})" branch in both the single and batch code paths so the UI
+    // never renders an empty actor cell.
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .run(
+            () -> {
+              var name = auditService.resolveActorDisplay(blankNameMemberId, "USER");
+              assertThat(name).isEqualTo("Former member (" + blankNameMemberId + ")");
+
+              // Batch path must also exclude blank-name members so callers can apply the same
+              // fallback uniformly.
+              var batch = auditService.resolveActorDisplayNames(List.of(blankNameMemberId));
+              assertThat(batch).doesNotContainKey(blankNameMemberId);
             });
   }
 

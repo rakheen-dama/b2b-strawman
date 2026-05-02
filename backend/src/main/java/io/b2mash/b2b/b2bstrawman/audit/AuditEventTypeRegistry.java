@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 /**
@@ -113,7 +112,13 @@ public class AuditEventTypeRegistry {
                 "proposal.*", "Proposal", AuditSeverity.INFO, AuditEventGroup.FINANCIAL));
     var map = new HashMap<String, AuditEventTypeMetadata>();
     for (var entry : entries) {
-      map.put(entry.eventType(), entry);
+      var previous = map.put(entry.eventType(), entry);
+      if (previous != null) {
+        // Fail fast at bean construction — a duplicate key is a catalogue authoring bug; silently
+        // overwriting would mask reclassifications and cause severity/group drift downstream.
+        throw new IllegalStateException(
+            "Duplicate audit event type in registry: " + entry.eventType());
+      }
     }
     this.registry = Collections.unmodifiableMap(map);
     this.entriesList = List.copyOf(entries);
@@ -170,9 +175,7 @@ public class AuditEventTypeRegistry {
     if (severities == null || severities.isEmpty()) {
       return entriesList;
     }
-    return entriesList.stream()
-        .filter(entry -> severities.contains(entry.severity()))
-        .collect(Collectors.toUnmodifiableList());
+    return entriesList.stream().filter(entry -> severities.contains(entry.severity())).toList();
   }
 
   /** Synthesises the default metadata for an unregistered event type. */

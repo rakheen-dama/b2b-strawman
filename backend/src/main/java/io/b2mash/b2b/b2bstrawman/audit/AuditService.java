@@ -1,6 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.audit;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -35,4 +38,36 @@ public interface AuditService {
    * @return list of event type counts ordered by count descending
    */
   List<AuditEventRepository.EventTypeCount> countEventsByType();
+
+  /**
+   * Resolves a batch of {@code USER}-actor display names from the {@code members} table in a single
+   * query. The returned map only contains entries for {@code actorId}s that resolve to a live
+   * member row; non-USER actor types and missing/former members must be handled by the caller via
+   * {@link #resolveActorDisplay(UUID, String)} (or per architecture §12.3.4 fallback rules).
+   *
+   * @param actorIds candidate actor IDs (nulls are filtered out; duplicates collapsed)
+   * @return map keyed by member id, valued by {@code Member.name}; empty map if no input or no
+   *     matches
+   */
+  Map<UUID, String> resolveActorDisplayNames(Collection<UUID> actorIds);
+
+  /**
+   * Resolves a single audit event's actor display name per architecture §12.3.4:
+   *
+   * <ul>
+   *   <li>{@code actorType=USER} + live member ⇒ {@code Member.name}
+   *   <li>{@code actorType=USER} + missing member (or null actorId) ⇒ {@code "Former member
+   *       ({actorId})"} (or {@code "System"} when actorId is null)
+   *   <li>{@code actorType=PORTAL_CONTACT} ⇒ {@code "Portal Contact"}
+   *   <li>{@code actorType=SYSTEM} ⇒ {@code "System"}
+   *   <li>{@code actorType=AUTOMATION} ⇒ {@code "Automation"}
+   *   <li>{@code actorType=API_KEY} ⇒ {@code "API Key"}
+   *   <li>any other / null actor type ⇒ {@code "System"} (defensive fallback)
+   * </ul>
+   *
+   * @param actorId actor UUID (nullable)
+   * @param actorType actor type string from {@link AuditEvent#getActorType()}
+   * @return non-null display label suitable for UI presentation
+   */
+  String resolveActorDisplay(UUID actorId, String actorType);
 }

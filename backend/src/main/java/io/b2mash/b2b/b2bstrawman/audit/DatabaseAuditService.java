@@ -1,9 +1,15 @@
 package io.b2mash.b2b.b2bstrawman.audit;
 
+import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -95,5 +101,62 @@ public class DatabaseAuditService implements AuditService {
   @Transactional(readOnly = true)
   public List<AuditEventRepository.EventTypeCount> countEventsByType() {
     return auditEventRepository.countByEventType();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Map<UUID, String> resolveActorDisplayNames(Collection<UUID> actorIds) {
+    if (actorIds == null || actorIds.isEmpty()) {
+      return Map.of();
+    }
+    Set<UUID> distinctIds = actorIds.stream().filter(Objects::nonNull).collect(Collectors.toSet());
+    if (distinctIds.isEmpty()) {
+      return Map.of();
+    }
+    // Single batched lookup against members — Spring Data's findAllById issues a single
+    // SELECT ... WHERE id IN (?) so a batch of N actorIds produces one query, not N+1.
+    // Skip blank names so the batch path stays consistent with resolveActorDisplay's single-actor
+    // fallback (a blank Member.name must trigger the "Former member ({uuid})" branch, not show as
+    // an empty string).
+    var out = new HashMap<UUID, String>();
+    for (Member member : memberRepository.findAllById(distinctIds)) {
+      var name = member.getName();
+      if (name != null && !name.isBlank()) {
+        out.put(member.getId(), name);
+      }
+    }
+    return Map.copyOf(out);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public String resolveActorDisplay(UUID actorId, String actorType) {
+    if ("USER".equals(actorType)) {
+      if (actorId == null) {
+        // Defensive: a USER actor with no actorId is a logging bug; fall back to "System".
+        return "System";
+      }
+      return memberRepository
+          .findById(actorId)
+          .map(Member::getName)
+          .filter(name -> name != null && !name.isBlank())
+          .orElseGet(() -> "Former member (" + actorId + ")");
+    }
+    return staticActorLabel(actorType);
+  }
+
+  /**
+   * Returns the static display label for non-USER actor types per architecture §12.3.4. Shared with
+   * {@link AuditEventMetadataResolver} so the two resolution paths cannot drift. Unknown actor
+   * types map defensively to {@code "System"}.
+   */
+  static String staticActorLabel(String actorType) {
+    return switch (actorType == null ? "" : actorType) {
+      case "PORTAL_CONTACT" -> "Portal Contact";
+      case "SYSTEM" -> "System";
+      case "AUTOMATION" -> "Automation";
+      case "API_KEY" -> "API Key";
+      default -> "System";
+    };
   }
 }

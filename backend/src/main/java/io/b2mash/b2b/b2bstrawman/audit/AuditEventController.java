@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.audit;
 
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -17,9 +18,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuditEventController {
 
   private final AuditService auditService;
+  private final AuditEventTypeRegistry auditEventTypeRegistry;
 
-  public AuditEventController(AuditService auditService) {
+  public AuditEventController(
+      AuditService auditService, AuditEventTypeRegistry auditEventTypeRegistry) {
     this.auditService = auditService;
+    this.auditEventTypeRegistry = auditEventTypeRegistry;
   }
 
   @GetMapping("/api/audit-events")
@@ -40,6 +44,12 @@ public class AuditEventController {
     var events = auditService.findEvents(filter, pageable);
 
     return ResponseEntity.ok(events.map(AuditEventResponse::from));
+  }
+
+  @GetMapping("/api/audit-events/metadata")
+  @RequiresCapability("TEAM_OVERSIGHT")
+  public ResponseEntity<List<AuditEventTypeMetadata>> getMetadata() {
+    return ResponseEntity.ok(auditEventTypeRegistry.entries());
   }
 
   @GetMapping("/api/audit-events/{entityType}/{entityId}")

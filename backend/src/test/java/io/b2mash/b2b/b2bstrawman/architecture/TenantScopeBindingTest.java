@@ -104,9 +104,6 @@ class TenantScopeBindingTest {
    *       a cross-tenant invoice search (find-which-owns).
    *   <li>{@code AcceptanceService.resolveByToken} — cross-tenant token discovery search; no
    *       sanctioned API for tenant-discovery exists yet.
-   *   <li>{@code PortalDigestScheduler} — dual-mode (cron all-tenants + manual single-tenant)
-   *       doesn't fit either {@code TenantScopedRunner.forEachTenant} or {@code runForTenant}
-   *       cleanly without breaking the per-tenant exception isolation contract.
    *   <li>{@code MemberFilter} — servlet filter; binds {@code MEMBER_ID} + {@code ORG_ROLE} from a
    *       tenant-scoped member lookup. Filter boundary, like {@code CustomerAuthFilter}.
    *   <li>{@code PlatformAdminFilter} — servlet filter; binds {@code GROUPS} from JWT claims.
@@ -130,8 +127,6 @@ class TenantScopeBindingTest {
           .doNotHaveSimpleName("MockPaymentController")
           .and()
           .doNotHaveSimpleName("AcceptanceService")
-          .and()
-          .doNotHaveSimpleName("PortalDigestScheduler")
           .and()
           .doNotHaveSimpleName("MemberFilter")
           .and()

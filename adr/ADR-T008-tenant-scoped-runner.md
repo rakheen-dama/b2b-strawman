@@ -46,7 +46,7 @@ Semantics:
 
 PR #2's pre-migration audit found the original "13 jobs + 2 backfills" framing was incomplete. The shipped scope:
 
-1. **`TenantScopedRunner` Spring bean for per-tenant fan-out** (11 scheduled jobs migrated; 1 originally listed job — `SubscriptionExpiryJob` — reclassified as single-tenant per-subscription rebind; 1 originally listed job — `PortalDigestScheduler` — reclassified as exempt due to dual-mode cron+manual shape):
+1. **`TenantScopedRunner` Spring bean for per-tenant fan-out** (11 scheduled jobs migrated; 1 originally listed job — `SubscriptionExpiryJob` — reclassified as single-tenant per-subscription rebind; 1 originally listed job — `PortalDigestScheduler` — migrated to direct `RequestScopes.callForTenant` calls inside its existing manual for-loop, since its per-tenant `RunResult.errors` aggregation requires preserving per-call exceptions that `forEachTenant`'s BiConsumer contract throws away):
    ```java
    @Component
    public class TenantScopedRunner {
@@ -96,7 +96,6 @@ PR #2's pre-migration audit found the original "13 jobs + 2 backfills" framing w
 | `AssistantController` | class | 5-binding capture-and-rebind to bridge servlet thread → virtual thread for SSE LLM streaming. Awaits ADR-204's `withCurrentScopes()`. |
 | `MockPaymentController` | class | Profile-gated dev payment mock; site at line 182 is also a cross-tenant invoice search. |
 | `AcceptanceService` | class | `resolveByToken` does cross-tenant token discovery search (early-return scan of all tenant schemas). No sanctioned API for tenant-discovery exists yet. |
-| `PortalDigestScheduler` | class | Dual-mode (cron all-tenants + manual single-tenant); doesn't fit either `forEachTenant` or `runForTenant` cleanly without breaking per-tenant exception-isolation contract. |
 | `MemberFilter` | class | Servlet filter; binds `MEMBER_ID` + `ORG_ROLE` from a tenant-scoped lookup. Filter boundary, like `CustomerAuthFilter`. |
 | `PlatformAdminFilter` | class | Servlet filter; binds `GROUPS` from JWT claims. Filter boundary. |
 | `AutomationActionExecutor` | class | Binds `AUTOMATION_EXECUTION_ID` on the scheduler→action-execution boundary. Same boundary-binder pattern as filters. |

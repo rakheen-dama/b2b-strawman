@@ -148,9 +148,7 @@ public class PortalDigestScheduler {
       String orgId = mapping.getExternalOrgId();
       try {
         TenantResult tenantResult =
-            ScopedValue.where(RequestScopes.TENANT_ID, schema)
-                .where(RequestScopes.ORG_ID, orgId)
-                .call(() -> processTenant(options));
+            RequestScopes.callForTenant(schema, orgId, () -> processTenant(options));
         if (tenantResult != null) {
           totalDigestsSent += tenantResult.sent();
           totalSkipped += tenantResult.skipped();

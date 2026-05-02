@@ -14,8 +14,8 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
-import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantDiscoveryHelper;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
@@ -65,7 +65,7 @@ public class AcceptanceService {
   private final AuditService auditService;
 
   private final StorageService storageService;
-  private final OrgSchemaMappingRepository orgSchemaMappingRepository;
+  private final TenantDiscoveryHelper tenantDiscoveryHelper;
   private final OrganizationRepository organizationRepository;
   private final PortalReadModelRepository portalReadModelRepository;
   private final TransactionTemplate transactionTemplate;
@@ -86,7 +86,7 @@ public class AcceptanceService {
       AcceptanceNotificationService notificationService,
       AuditService auditService,
       StorageService storageService,
-      OrgSchemaMappingRepository orgSchemaMappingRepository,
+      TenantDiscoveryHelper tenantDiscoveryHelper,
       OrganizationRepository organizationRepository,
       PortalReadModelRepository portalReadModelRepository,
       TransactionTemplate transactionTemplate,
@@ -103,7 +103,7 @@ public class AcceptanceService {
     this.notificationService = notificationService;
     this.auditService = auditService;
     this.storageService = storageService;
-    this.orgSchemaMappingRepository = orgSchemaMappingRepository;
+    this.tenantDiscoveryHelper = tenantDiscoveryHelper;
     this.organizationRepository = organizationRepository;
     this.portalReadModelRepository = portalReadModelRepository;
     this.transactionTemplate = transactionTemplate;
@@ -728,30 +728,13 @@ public class AcceptanceService {
    * is always the authoritative source; the portal read-model is not relied upon for resolution.
    */
   public TenantAcceptanceContext resolveByToken(String token) {
-    // Schema scan — iterate all tenant schemas to find the token
-    var mappings = orgSchemaMappingRepository.findAll();
-    for (var mapping : mappings) {
-      try {
-        AcceptanceRequest found =
-            ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                .call(
-                    () ->
-                        transactionTemplate.execute(
-                            status ->
-                                acceptanceRequestRepository
-                                    .findByRequestToken(token)
-                                    .orElse(null)));
-        if (found != null) {
-          return new TenantAcceptanceContext(
-              found, mapping.getSchemaName(), mapping.getClerkOrgId());
-        }
-      } catch (RuntimeException e) {
-        // Infrastructure error (connection failure, schema misconfiguration, etc.)
-        log.warn(
-            "Error scanning schema {} for token: {}", mapping.getSchemaName(), e.getMessage(), e);
-      }
-    }
-    throw new ResourceNotFoundException("AcceptanceRequest", "token");
+    return tenantDiscoveryHelper
+        .findInTenants(
+            () ->
+                transactionTemplate.execute(
+                    status -> acceptanceRequestRepository.findByRequestToken(token)))
+        .map(match -> new TenantAcceptanceContext(match.value(), match.tenantId(), match.orgId()))
+        .orElseThrow(() -> new ResourceNotFoundException("AcceptanceRequest", "token"));
   }
 
   /**
@@ -767,9 +750,10 @@ public class AcceptanceService {
     if (currentRequest.isActive() && !currentRequest.isExpired()) {
       try {
         currentRequest =
-            ScopedValue.where(RequestScopes.TENANT_ID, ctx.tenantSchema())
-                .where(RequestScopes.ORG_ID, ctx.orgId())
-                .call(() -> transactionTemplate.execute(status -> markViewed(token, ipAddress)));
+            RequestScopes.callForTenant(
+                ctx.tenantSchema(),
+                ctx.orgId(),
+                () -> transactionTemplate.execute(status -> markViewed(token, ipAddress)));
       } catch (InvalidStateException e) {
         log.debug("Could not mark viewed: {}", e.getMessage());
         // Proceed with current state — still return page data
@@ -788,16 +772,16 @@ public class AcceptanceService {
     // Try to get brand color from org settings
     try {
       brandColor =
-          ScopedValue.where(RequestScopes.TENANT_ID, ctx.tenantSchema())
-              .where(RequestScopes.ORG_ID, ctx.orgId())
-              .call(
-                  () ->
-                      transactionTemplate.execute(
-                          status ->
-                              orgSettingsRepository
-                                  .findForCurrentTenant()
-                                  .map(s -> s.getBrandColor())
-                                  .orElse(null)));
+          RequestScopes.callForTenant(
+              ctx.tenantSchema(),
+              ctx.orgId(),
+              () ->
+                  transactionTemplate.execute(
+                      status ->
+                          orgSettingsRepository
+                              .findForCurrentTenant()
+                              .map(s -> s.getBrandColor())
+                              .orElse(null)));
     } catch (ResourceNotFoundException e) {
       log.debug("No org settings found for brand color: {}", e.getMessage());
     } catch (RuntimeException e) {
@@ -809,15 +793,15 @@ public class AcceptanceService {
     String documentTitle = null;
     try {
       GeneratedDocument doc =
-          ScopedValue.where(RequestScopes.TENANT_ID, ctx.tenantSchema())
-              .where(RequestScopes.ORG_ID, ctx.orgId())
-              .call(
-                  () ->
-                      transactionTemplate.execute(
-                          status ->
-                              generatedDocumentRepository
-                                  .findById(request.getGeneratedDocumentId())
-                                  .orElse(null)));
+          RequestScopes.callForTenant(
+              ctx.tenantSchema(),
+              ctx.orgId(),
+              () ->
+                  transactionTemplate.execute(
+                      status ->
+                          generatedDocumentRepository
+                              .findById(request.getGeneratedDocumentId())
+                              .orElse(null)));
       if (doc != null) {
         documentFileName = doc.getFileName();
         documentTitle = doc.getFileName();
@@ -857,18 +841,19 @@ public class AcceptanceService {
 
     // Look up the generated document in the tenant context
     GeneratedDocument doc =
-        ScopedValue.where(RequestScopes.TENANT_ID, ctx.tenantSchema())
-            .call(
-                () ->
-                    transactionTemplate.execute(
-                        status ->
-                            generatedDocumentRepository
-                                .findById(ctx.request().getGeneratedDocumentId())
-                                .orElseThrow(
-                                    () ->
-                                        new ResourceNotFoundException(
-                                            "GeneratedDocument",
-                                            ctx.request().getGeneratedDocumentId()))));
+        RequestScopes.callForTenant(
+            ctx.tenantSchema(),
+            null,
+            () ->
+                transactionTemplate.execute(
+                    status ->
+                        generatedDocumentRepository
+                            .findById(ctx.request().getGeneratedDocumentId())
+                            .orElseThrow(
+                                () ->
+                                    new ResourceNotFoundException(
+                                        "GeneratedDocument",
+                                        ctx.request().getGeneratedDocumentId()))));
 
     byte[] bytes = storageService.download(doc.getS3Key());
     return new CertificateDownload(bytes, doc.getFileName());
@@ -886,20 +871,20 @@ public class AcceptanceService {
 
     // Idempotency check + accept inside one transactional block to avoid TOCTOU race
     AcceptanceRequest request =
-        ScopedValue.where(RequestScopes.TENANT_ID, ctx.tenantSchema())
-            .where(RequestScopes.ORG_ID, ctx.orgId())
-            .call(
-                () ->
-                    transactionTemplate.execute(
-                        status -> {
-                          AcceptanceRequest current = findByTokenOrThrow(token);
-                          // Idempotent: if already accepted, return current state
-                          if (current.getStatus() == AcceptanceStatus.ACCEPTED) {
-                            return current;
-                          }
-                          // InvalidStateException from accept() will propagate naturally
-                          return accept(token, submission, ipAddress, userAgent);
-                        }));
+        RequestScopes.callForTenant(
+            ctx.tenantSchema(),
+            ctx.orgId(),
+            () ->
+                transactionTemplate.execute(
+                    status -> {
+                      AcceptanceRequest current = findByTokenOrThrow(token);
+                      // Idempotent: if already accepted, return current state
+                      if (current.getStatus() == AcceptanceStatus.ACCEPTED) {
+                        return current;
+                      }
+                      // InvalidStateException from accept() will propagate naturally
+                      return accept(token, submission, ipAddress, userAgent);
+                    }));
 
     return new PortalAcceptResponse(
         request.getStatus().name(), request.getAcceptedAt(), request.getAcceptorName());

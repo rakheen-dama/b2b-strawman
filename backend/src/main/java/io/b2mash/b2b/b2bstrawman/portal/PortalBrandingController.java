@@ -65,11 +65,12 @@ public class PortalBrandingController {
 
     // Read OrgSettings within tenant scope with a transaction
     OrgSettings settings =
-        ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-            .call(
-                () ->
-                    readOnlyTxTemplate.execute(
-                        status -> orgSettingsRepository.findForCurrentTenant().orElse(null)));
+        RequestScopes.callForTenant(
+            mapping.getSchemaName(),
+            null,
+            () ->
+                readOnlyTxTemplate.execute(
+                    status -> orgSettingsRepository.findForCurrentTenant().orElse(null)));
 
     // Build response
     String logoUrl = null;

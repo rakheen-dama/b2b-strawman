@@ -2,8 +2,7 @@ package io.b2mash.b2b.b2bstrawman.compliance;
 
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import java.util.List;
 import org.slf4j.Logger;
@@ -20,17 +19,17 @@ public class DormancyScheduledJob {
 
   private static final Logger log = LoggerFactory.getLogger(DormancyScheduledJob.class);
 
-  private final OrgSchemaMappingRepository mappingRepository;
+  private final TenantScopedRunner tenantScopedRunner;
   private final CustomerLifecycleService lifecycleService;
   private final NotificationService notificationService;
   private final MemberRepository memberRepository;
 
   public DormancyScheduledJob(
-      OrgSchemaMappingRepository mappingRepository,
+      TenantScopedRunner tenantScopedRunner,
       CustomerLifecycleService lifecycleService,
       NotificationService notificationService,
       MemberRepository memberRepository) {
-    this.mappingRepository = mappingRepository;
+    this.tenantScopedRunner = tenantScopedRunner;
     this.lifecycleService = lifecycleService;
     this.notificationService = notificationService;
     this.memberRepository = memberRepository;
@@ -39,25 +38,15 @@ public class DormancyScheduledJob {
   @Scheduled(cron = "0 0 2 * * *")
   public void executeDormancyCheck() {
     log.info("Auto-dormancy scheduled job started");
-    var mappings = mappingRepository.findAll();
-    int totalTransitioned = 0;
-
-    for (var mapping : mappings) {
-      try {
-        int transitioned =
-            ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                .where(RequestScopes.ORG_ID, mapping.getClerkOrgId())
-                .call(() -> processTenant());
-        totalTransitioned += transitioned;
-      } catch (Exception e) {
-        log.error("Auto-dormancy: failed to process tenant schema {}", mapping.getSchemaName(), e);
-      }
-    }
+    int[] totalTransitioned = {0};
+    int tenantsProcessed =
+        tenantScopedRunner.forEachTenant(
+            (tenantId, orgId) -> totalTransitioned[0] += processTenant());
 
     log.info(
         "Auto-dormancy scheduled job completed: {} tenants processed, {} total customers transitioned",
-        mappings.size(),
-        totalTransitioned);
+        tenantsProcessed,
+        totalTransitioned[0]);
   }
 
   private int processTenant() {

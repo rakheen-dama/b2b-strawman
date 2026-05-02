@@ -2,8 +2,7 @@ package io.b2mash.b2b.b2bstrawman.informationrequest;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
-import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.time.Duration;
@@ -24,7 +23,7 @@ public class RequestReminderScheduler {
   private static final long CHECK_INTERVAL_MS = 21_600_000; // 6 hours
   private static final int DEFAULT_REMINDER_INTERVAL_DAYS = 5;
 
-  private final OrgSchemaMappingRepository mappingRepository;
+  private final TenantScopedRunner tenantScopedRunner;
   private final OrgSettingsRepository orgSettingsRepository;
   private final InformationRequestRepository informationRequestRepository;
   private final RequestItemRepository requestItemRepository;
@@ -34,7 +33,7 @@ public class RequestReminderScheduler {
   private final TransactionTemplate transactionTemplate;
 
   public RequestReminderScheduler(
-      OrgSchemaMappingRepository mappingRepository,
+      TenantScopedRunner tenantScopedRunner,
       OrgSettingsRepository orgSettingsRepository,
       InformationRequestRepository informationRequestRepository,
       RequestItemRepository requestItemRepository,
@@ -42,7 +41,7 @@ public class RequestReminderScheduler {
       InformationRequestEmailService emailService,
       AuditService auditService,
       TransactionTemplate transactionTemplate) {
-    this.mappingRepository = mappingRepository;
+    this.tenantScopedRunner = tenantScopedRunner;
     this.orgSettingsRepository = orgSettingsRepository;
     this.informationRequestRepository = informationRequestRepository;
     this.requestItemRepository = requestItemRepository;
@@ -55,22 +54,10 @@ public class RequestReminderScheduler {
   @Scheduled(fixedRate = CHECK_INTERVAL_MS, initialDelay = CHECK_INTERVAL_MS)
   public void checkRequestReminders() {
     log.debug("Request reminder scheduler started");
-    var mappings = mappingRepository.findAll();
-    int remindersSent = 0;
+    int[] remindersSent = {0};
+    tenantScopedRunner.forEachTenant((tenantId, orgId) -> remindersSent[0] += processTenant());
 
-    for (var mapping : mappings) {
-      try {
-        int sent =
-            ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                .where(RequestScopes.ORG_ID, mapping.getExternalOrgId())
-                .call(() -> processTenant());
-        remindersSent += sent;
-      } catch (Exception e) {
-        log.error("Failed to process request reminders for schema {}", mapping.getSchemaName(), e);
-      }
-    }
-
-    log.info("Request reminder scheduler completed: {} reminders sent", remindersSent);
+    log.info("Request reminder scheduler completed: {} reminders sent", remindersSent[0]);
   }
 
   private int processTenant() {

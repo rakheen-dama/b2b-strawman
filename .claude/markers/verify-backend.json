@@ -1,7 +1,7 @@
 {
-  "commit": "27e8342803464efc306975236a3840e0634a24ff",
+  "commit": "db9c03b81599dba602a3f01836fa68580145db88",
   "command": "./mvnw verify",
   "exit": 0,
-  "ts": "2026-05-02T11:08:49Z",
-  "summary": "Pre-merge verify after bug-review fixes (27e8342803464efc306975236a3840e0634a24ff): 5036 tests / 0F / 0E / 26 skip in 13:00."
+  "ts": "2026-05-02T15:27:37Z",
+  "summary": "Post-CodeRabbit-fixes verify on feat/tenant-scope-binding-consolidation (db9c03b81599dba602a3f01836fa68580145db88): 5055 testcases / 0F / 0E / 26 skip. CodeRabbit nits + FQCN exemption tightening addressed."
 }

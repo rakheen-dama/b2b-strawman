@@ -3,8 +3,8 @@ package io.b2mash.b2b.b2bstrawman.proposal;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import java.time.Instant;
@@ -26,7 +26,7 @@ public class ProposalExpiryProcessor {
 
   private static final Logger log = LoggerFactory.getLogger(ProposalExpiryProcessor.class);
 
-  private final OrgSchemaMappingRepository mappingRepository;
+  private final TenantScopedRunner tenantScopedRunner;
   private final ProposalRepository proposalRepository;
   private final CustomerRepository customerRepository;
   private final PortalContactRepository portalContactRepository;
@@ -36,7 +36,7 @@ public class ProposalExpiryProcessor {
   private final TransactionTemplate transactionTemplate;
 
   public ProposalExpiryProcessor(
-      OrgSchemaMappingRepository mappingRepository,
+      TenantScopedRunner tenantScopedRunner,
       ProposalRepository proposalRepository,
       CustomerRepository customerRepository,
       PortalContactRepository portalContactRepository,
@@ -44,7 +44,7 @@ public class ProposalExpiryProcessor {
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       TransactionTemplate transactionTemplate) {
-    this.mappingRepository = mappingRepository;
+    this.tenantScopedRunner = tenantScopedRunner;
     this.proposalRepository = proposalRepository;
     this.customerRepository = customerRepository;
     this.portalContactRepository = portalContactRepository;
@@ -57,26 +57,16 @@ public class ProposalExpiryProcessor {
   @Scheduled(fixedRateString = "${proposal.expiry.interval:3600000}")
   public void processExpiredProposals() {
     log.info("Proposal expiry processor started");
-    var mappings = mappingRepository.findAll();
-    int totalExpired = 0;
+    int[] totalExpired = {0};
+    int tenantsProcessed =
+        tenantScopedRunner.forEachTenant(
+            (tenantId, orgId) -> totalExpired[0] += processExpiredForTenant(orgId));
 
-    for (var mapping : mappings) {
-      try {
-        int expired =
-            ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                .where(RequestScopes.ORG_ID, mapping.getClerkOrgId())
-                .call(() -> processExpiredForTenant(mapping.getClerkOrgId()));
-        totalExpired += expired;
-      } catch (Exception e) {
-        log.error("Proposal expiry processor failed for schema {}", mapping.getSchemaName(), e);
-      }
-    }
-
-    if (totalExpired > 0) {
+    if (totalExpired[0] > 0) {
       log.info(
           "Proposal expiry processor completed: {} proposals expired across {} tenants",
-          totalExpired,
-          mappings.size());
+          totalExpired[0],
+          tenantsProcessed);
     } else {
       log.info("Proposal expiry processor completed: no proposals expired");
     }

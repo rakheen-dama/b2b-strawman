@@ -1,8 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.schedule;
 
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
@@ -33,7 +32,7 @@ public class TimeReminderScheduler {
   /** Scheduler runs every 15 minutes (900 000 ms). */
   private static final long CHECK_INTERVAL_MS = 900_000;
 
-  private final OrgSchemaMappingRepository mappingRepository;
+  private final TenantScopedRunner tenantScopedRunner;
   private final OrgSettingsRepository orgSettingsRepository;
   private final MemberRepository memberRepository;
   private final TimeEntryRepository timeEntryRepository;
@@ -42,14 +41,14 @@ public class TimeReminderScheduler {
   private final TransactionTemplate transactionTemplate;
 
   public TimeReminderScheduler(
-      OrgSchemaMappingRepository mappingRepository,
+      TenantScopedRunner tenantScopedRunner,
       OrgSettingsRepository orgSettingsRepository,
       MemberRepository memberRepository,
       TimeEntryRepository timeEntryRepository,
       NotificationService notificationService,
       NotificationRepository notificationRepository,
       TransactionTemplate transactionTemplate) {
-    this.mappingRepository = mappingRepository;
+    this.tenantScopedRunner = tenantScopedRunner;
     this.orgSettingsRepository = orgSettingsRepository;
     this.memberRepository = memberRepository;
     this.timeEntryRepository = timeEntryRepository;
@@ -61,22 +60,10 @@ public class TimeReminderScheduler {
   @Scheduled(fixedRate = CHECK_INTERVAL_MS)
   public void checkTimeReminders() {
     log.debug("Time reminder scheduler started");
-    var mappings = mappingRepository.findAll();
-    int remindersCreated = 0;
+    int[] remindersCreated = {0};
+    tenantScopedRunner.forEachTenant((tenantId, orgId) -> remindersCreated[0] += processTenant());
 
-    for (var mapping : mappings) {
-      try {
-        int created =
-            ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                .where(RequestScopes.ORG_ID, mapping.getClerkOrgId())
-                .call(() -> processTenant());
-        remindersCreated += created;
-      } catch (Exception e) {
-        log.error("Failed to process time reminders for schema {}", mapping.getSchemaName(), e);
-      }
-    }
-
-    log.info("Time reminder scheduler completed: {} reminders created", remindersCreated);
+    log.info("Time reminder scheduler completed: {} reminders created", remindersCreated[0]);
   }
 
   private int processTenant() {

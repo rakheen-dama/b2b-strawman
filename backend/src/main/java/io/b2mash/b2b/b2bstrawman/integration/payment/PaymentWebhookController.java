@@ -72,11 +72,10 @@ public class PaymentWebhookController {
     }
 
     try {
-      var carrier = ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema);
-      if (orgId != null) {
-        carrier = carrier.where(RequestScopes.ORG_ID, orgId);
-      }
-      carrier.run(() -> paymentWebhookService.processWebhook(sanitizedProvider, payload, headers));
+      RequestScopes.runForTenant(
+          tenantSchema,
+          orgId,
+          () -> paymentWebhookService.processWebhook(sanitizedProvider, payload, headers));
     } catch (Exception e) {
       log.error("Error processing {} webhook", sanitizedProvider, e);
     }

@@ -34,15 +34,11 @@ public class InvoiceEmailEventListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInvoiceSent(InvoiceSentEvent event) {
-    if (event.tenantId() != null) {
-      var carrier = ScopedValue.where(RequestScopes.TENANT_ID, event.tenantId());
-      if (event.orgId() != null) {
-        carrier = carrier.where(RequestScopes.ORG_ID, event.orgId());
-      }
-      carrier.run(() -> handleInvoiceSent(event));
-    } else {
-      handleInvoiceSent(event);
+    if (event.tenantId() == null) {
+      log.warn("InvoiceSentEvent has null tenantId, dropping: invoice={}", event.entityId());
+      return;
     }
+    RequestScopes.runForTenant(event.tenantId(), event.orgId(), () -> handleInvoiceSent(event));
   }
 
   private void handleInvoiceSent(InvoiceSentEvent event) {

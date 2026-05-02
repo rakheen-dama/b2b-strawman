@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.automation;
 
-import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import java.time.Instant;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -24,7 +23,7 @@ public class AutomationScheduler {
   private static final Logger log = LoggerFactory.getLogger(AutomationScheduler.class);
   private static final long POLL_INTERVAL_MS = 900_000; // 15 minutes
 
-  private final OrgSchemaMappingRepository mappingRepository;
+  private final TenantScopedRunner tenantScopedRunner;
   private final ActionExecutionRepository actionExecutionRepository;
   private final AutomationExecutionRepository executionRepository;
   private final AutomationRuleRepository ruleRepository;
@@ -34,7 +33,7 @@ public class AutomationScheduler {
   private final ObjectMapper objectMapper;
 
   public AutomationScheduler(
-      OrgSchemaMappingRepository mappingRepository,
+      TenantScopedRunner tenantScopedRunner,
       ActionExecutionRepository actionExecutionRepository,
       AutomationExecutionRepository executionRepository,
       AutomationRuleRepository ruleRepository,
@@ -42,7 +41,7 @@ public class AutomationScheduler {
       AutomationActionExecutor automationActionExecutor,
       TransactionTemplate transactionTemplate,
       ObjectMapper objectMapper) {
-    this.mappingRepository = mappingRepository;
+    this.tenantScopedRunner = tenantScopedRunner;
     this.actionExecutionRepository = actionExecutionRepository;
     this.executionRepository = executionRepository;
     this.ruleRepository = ruleRepository;
@@ -55,23 +54,11 @@ public class AutomationScheduler {
   @Scheduled(fixedDelay = POLL_INTERVAL_MS)
   public void pollDelayedActions() {
     log.debug("Automation scheduler started");
-    var mappings = mappingRepository.findAll();
-    int processed = 0;
+    int[] processed = {0};
+    tenantScopedRunner.forEachTenant((tenantId, orgId) -> processed[0] += processTenant());
 
-    for (var mapping : mappings) {
-      try {
-        int count =
-            ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                .where(RequestScopes.ORG_ID, mapping.getExternalOrgId())
-                .call(() -> processTenant());
-        processed += count;
-      } catch (Exception e) {
-        log.error("Failed to process delayed actions for schema {}", mapping.getSchemaName(), e);
-      }
-    }
-
-    if (processed > 0) {
-      log.info("Automation scheduler completed: {} delayed actions processed", processed);
+    if (processed[0] > 0) {
+      log.info("Automation scheduler completed: {} delayed actions processed", processed[0]);
     } else {
       log.debug("Automation scheduler completed: 0 delayed actions processed");
     }

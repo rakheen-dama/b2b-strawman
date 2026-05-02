@@ -8,11 +8,11 @@ import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
-import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.orgrole.OrgRole;
 import java.util.List;
+import java.util.function.BiConsumer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,7 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class DormancyScheduledJobTest {
 
-  @Mock private OrgSchemaMappingRepository mappingRepository;
+  @Mock private TenantScopedRunner tenantScopedRunner;
   @Mock private CustomerLifecycleService lifecycleService;
   @Mock private NotificationService notificationService;
   @Mock private MemberRepository memberRepository;
@@ -33,12 +33,23 @@ class DormancyScheduledJobTest {
   void setUp() {
     job =
         new DormancyScheduledJob(
-            mappingRepository, lifecycleService, notificationService, memberRepository);
+            tenantScopedRunner, lifecycleService, notificationService, memberRepository);
+  }
+
+  /** Stubs forEachTenant to invoke the action once with synthetic tenant data. */
+  private void stubForEachTenantOnce(String tenantId, String orgId) {
+    when(tenantScopedRunner.forEachTenant(any()))
+        .thenAnswer(
+            invocation -> {
+              BiConsumer<String, String> action = invocation.getArgument(0);
+              action.accept(tenantId, orgId);
+              return 1;
+            });
   }
 
   @Test
   void executeDormancyCheck_noTenants_completesCleanly() {
-    when(mappingRepository.findAll()).thenReturn(List.of());
+    when(tenantScopedRunner.forEachTenant(any())).thenReturn(0);
 
     job.executeDormancyCheck();
 
@@ -47,8 +58,7 @@ class DormancyScheduledJobTest {
 
   @Test
   void executeDormancyCheck_withTransitions_notifiesAdmins() {
-    var mapping = new OrgSchemaMapping("org_test", "tenant_abc123");
-    when(mappingRepository.findAll()).thenReturn(List.of(mapping));
+    stubForEachTenantOnce("tenant_abc123", "org_test");
     when(lifecycleService.executeDormancyTransitions()).thenReturn(2);
 
     var adminRole = new OrgRole("Admin", "admin", "Admin role", true);
@@ -71,8 +81,7 @@ class DormancyScheduledJobTest {
 
   @Test
   void executeDormancyCheck_zeroTransitions_skipsNotification() {
-    var mapping = new OrgSchemaMapping("org_test2", "tenant_def456");
-    when(mappingRepository.findAll()).thenReturn(List.of(mapping));
+    stubForEachTenantOnce("tenant_def456", "org_test2");
     when(lifecycleService.executeDormancyTransitions()).thenReturn(0);
 
     job.executeDormancyCheck();
@@ -83,8 +92,7 @@ class DormancyScheduledJobTest {
 
   @Test
   void executeDormancyCheck_singleTransition_usesSingularTitle() {
-    var mapping = new OrgSchemaMapping("org_test3", "tenant_ghi789");
-    when(mappingRepository.findAll()).thenReturn(List.of(mapping));
+    stubForEachTenantOnce("tenant_ghi789", "org_test3");
     when(lifecycleService.executeDormancyTransitions()).thenReturn(1);
 
     var ownerRole = new OrgRole("Owner", "owner", "Owner role", true);

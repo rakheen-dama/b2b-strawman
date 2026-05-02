@@ -94,25 +94,23 @@ public class UnsubscribeService {
           "Invalid Token", "Invalid tenant schema in unsubscribe token");
     }
 
-    ScopedValue.where(RequestScopes.TENANT_ID, payload.tenantSchema())
-        .run(
-            () ->
-                transactionTemplate.executeWithoutResult(
-                    status -> {
-                      var pref =
-                          notificationPreferenceRepository
-                              .findByMemberIdAndNotificationType(
-                                  payload.memberId(), payload.notificationType())
-                              .orElseGet(
-                                  () ->
-                                      new NotificationPreference(
-                                          payload.memberId(),
-                                          payload.notificationType(),
-                                          true,
-                                          false));
-                      pref.setEmailEnabled(false);
-                      notificationPreferenceRepository.save(pref);
-                    }));
+    RequestScopes.runForTenant(
+        payload.tenantSchema(),
+        null,
+        () ->
+            transactionTemplate.executeWithoutResult(
+                status -> {
+                  var pref =
+                      notificationPreferenceRepository
+                          .findByMemberIdAndNotificationType(
+                              payload.memberId(), payload.notificationType())
+                          .orElseGet(
+                              () ->
+                                  new NotificationPreference(
+                                      payload.memberId(), payload.notificationType(), true, false));
+                  pref.setEmailEnabled(false);
+                  notificationPreferenceRepository.save(pref);
+                }));
 
     log.info(
         "Unsubscribed member {} from {} emails in {}",

@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.schedule;
 
-import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -19,39 +18,30 @@ public class RecurringScheduleExecutor {
 
   private static final Logger log = LoggerFactory.getLogger(RecurringScheduleExecutor.class);
 
-  private final OrgSchemaMappingRepository mappingRepository;
+  private final TenantScopedRunner tenantScopedRunner;
   private final RecurringScheduleService scheduleService;
 
   public RecurringScheduleExecutor(
-      OrgSchemaMappingRepository mappingRepository, RecurringScheduleService scheduleService) {
-    this.mappingRepository = mappingRepository;
+      TenantScopedRunner tenantScopedRunner, RecurringScheduleService scheduleService) {
+    this.tenantScopedRunner = tenantScopedRunner;
     this.scheduleService = scheduleService;
   }
 
   @Scheduled(cron = "0 0 2 * * *")
   public void executeSchedules() {
     log.info("Recurring schedule executor started");
-    var mappings = mappingRepository.findAll();
-    int totalProcessed = 0;
-    int totalCreated = 0;
-
-    for (var mapping : mappings) {
-      try {
-        int[] result =
-            ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                .where(RequestScopes.ORG_ID, mapping.getClerkOrgId())
-                .call(() -> processSchedulesForTenant());
-        totalProcessed += result[0];
-        totalCreated += result[1];
-      } catch (Exception e) {
-        log.error("Failed to process schedules for schema {}", mapping.getSchemaName(), e);
-      }
-    }
+    int[] totals = {0, 0}; // [processed, created]
+    tenantScopedRunner.forEachTenant(
+        (tenantId, orgId) -> {
+          int[] result = processSchedulesForTenant();
+          totals[0] += result[0];
+          totals[1] += result[1];
+        });
 
     log.info(
         "Recurring schedule executor completed: {} schedules processed, {} projects created",
-        totalProcessed,
-        totalCreated);
+        totals[0],
+        totals[1]);
   }
 
   /**

@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar;
 
-import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -23,7 +22,7 @@ public class CourtDateReminderJob {
   private static final int COURT_DATE_LOOKAHEAD_DAYS = 30;
   private static final int PRESCRIPTION_LOOKAHEAD_DAYS = 90;
 
-  private final OrgSchemaMappingRepository mappingRepository;
+  private final TenantScopedRunner tenantScopedRunner;
   private final CourtDateRepository courtDateRepository;
   private final PrescriptionTrackerRepository prescriptionTrackerRepository;
   private final NotificationService notificationService;
@@ -33,7 +32,7 @@ public class CourtDateReminderJob {
   private final TransactionTemplate transactionTemplate;
 
   public CourtDateReminderJob(
-      OrgSchemaMappingRepository mappingRepository,
+      TenantScopedRunner tenantScopedRunner,
       CourtDateRepository courtDateRepository,
       PrescriptionTrackerRepository prescriptionTrackerRepository,
       NotificationService notificationService,
@@ -41,7 +40,7 @@ public class CourtDateReminderJob {
       VerticalModuleGuard moduleGuard,
       ProjectRepository projectRepository,
       TransactionTemplate transactionTemplate) {
-    this.mappingRepository = mappingRepository;
+    this.tenantScopedRunner = tenantScopedRunner;
     this.courtDateRepository = courtDateRepository;
     this.prescriptionTrackerRepository = prescriptionTrackerRepository;
     this.notificationService = notificationService;
@@ -54,24 +53,12 @@ public class CourtDateReminderJob {
   @Scheduled(cron = "${court.reminder.cron:0 0 6 * * *}")
   public void execute() {
     log.debug("Court date reminder job started");
-    var mappings = mappingRepository.findAll();
-    int totalNotifications = 0;
+    int[] totalNotifications = {0};
+    tenantScopedRunner.forEachTenant((tenantId, orgId) -> totalNotifications[0] += processTenant());
 
-    for (var mapping : mappings) {
-      try {
-        int count =
-            ScopedValue.where(RequestScopes.TENANT_ID, mapping.getSchemaName())
-                .where(RequestScopes.ORG_ID, mapping.getExternalOrgId())
-                .call(() -> processTenant());
-        totalNotifications += count;
-      } catch (Exception e) {
-        log.error(
-            "Failed to process court date reminders for schema {}", mapping.getSchemaName(), e);
-      }
-    }
-
-    if (totalNotifications > 0) {
-      log.info("Court date reminder job completed: {} notifications created", totalNotifications);
+    if (totalNotifications[0] > 0) {
+      log.info(
+          "Court date reminder job completed: {} notifications created", totalNotifications[0]);
     } else {
       log.debug("Court date reminder job completed: 0 notifications created");
     }

@@ -158,6 +158,15 @@ public final class RequestScopes {
    * 14 original helpers, which would have bound an empty/whitespace string as ORG_ID — that
    * behaviour is judged a bug since blank values are never legitimate input.
    *
+   * <p><b>Nested-call note:</b> when {@code runForTenant} is called from within another {@code
+   * runForTenant} scope and the inner call passes {@code orgId == null} (or blank), the outer
+   * scope's {@code ORG_ID} binding remains visible to the inner action body via {@link
+   * #getOrgIdOrNull()}. {@code TENANT_ID} is always rebound, so this only affects {@code ORG_ID}
+   * reads. The migrated AFTER_COMMIT handlers do not exercise this path (every event payload they
+   * consume carries a non-null {@code orgId}), so the asymmetry is theoretical in PR #1's scope;
+   * documented here as a known limitation. See {@code
+   * RequestScopesTest.runForTenant_nestedCallWithNullOrgId_outerOrgIdRemainsVisible}.
+   *
    * @throws IllegalArgumentException if {@code tenantId} is null or blank.
    * @throws NullPointerException if {@code action} is null.
    */

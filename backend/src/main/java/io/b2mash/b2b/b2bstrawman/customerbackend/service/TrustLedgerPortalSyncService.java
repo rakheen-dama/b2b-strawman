@@ -329,6 +329,12 @@ public class TrustLedgerPortalSyncService {
     // portal wipe so we only ever touch this tenant's customers (the portal schema is shared).
     Set<UUID> tenantCustomerIds = new HashSet<>();
 
+    // NB: this is a 3-binding pattern (TENANT_ID + ORG_ID + MEMBER_ID = SYSTEM_ACTOR_ID) that
+    // does not fit RequestScopes.runForTenant (which only binds TENANT_ID + ORG_ID). The MEMBER_ID
+    // binding is required so downstream services that read RequestScopes.requireMemberId() for
+    // audit attribution see the system-actor sentinel rather than throwing. Migration to a
+    // RequestScopes.runForTenantAsSystemActor variant — or any other broader API — is queued for
+    // PR #2 (the same PR that consolidates the 13 scheduled jobs); see ADR-T008 "Follow-ups".
     ScopedValue.where(RequestScopes.TENANT_ID, schema)
         .where(RequestScopes.ORG_ID, orgId)
         .where(RequestScopes.MEMBER_ID, SYSTEM_ACTOR_ID)

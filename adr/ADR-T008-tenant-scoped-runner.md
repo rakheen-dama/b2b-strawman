@@ -42,18 +42,21 @@ Semantics:
 - **No re-binding of `MEMBER_ID` / `ORG_ROLE` / `CAPABILITIES`.** Handlers are system-level dispatch; actor scope ends at the originating request's commit boundary. Re-binding actor identity across `AFTER_COMMIT` would be a category mistake — audit attribution would lie.
 - **`Callable<T>` exceptions** rethrown via `RuntimeException` wrapping per JDK Callable convention. Java 25's `ScopedValue.Carrier.call` takes `CallableOp<T, X>` not `Callable<T>`, so the implementation adapts via method reference.
 
-### Surface 2 — `TenantScopedRunner` Spring bean (PR #2)
+### Surface 2 — `TenantScopedRunner` Spring bean and broader scope-binding API (PR #2)
 
-For scheduled jobs that fan out to all tenants. Distinct shape: iteration over `OrgSchemaMappingRepository`, per-tenant exception isolation, success-count return:
+PR #2 covers two related migrations and is broader than the headline "scheduled jobs":
 
-```java
-@Component
-public class TenantScopedRunner {
-  public int forEachTenant(BiConsumer<String, String> action);
-}
-```
+1. **Scheduled jobs that fan out to all tenants** (13+ sites). Distinct shape: iteration over `OrgSchemaMappingRepository`, per-tenant exception isolation, success-count return:
+   ```java
+   @Component
+   public class TenantScopedRunner {
+     public int forEachTenant(BiConsumer<String, String> action);
+   }
+   ```
 
-Lands in PR #2; this ADR will be amended at that point with the bean's full contract.
+2. **Direct `ScopedValue.where(...).where(...).where(MEMBER_ID, SYSTEM_ACTOR_ID).run(...)` 3-binding sites** in `RetainerPortalSyncService.backfillForTenant` and `TrustLedgerPortalSyncService.backfillForTenant`. These public methods bind `MEMBER_ID = SYSTEM_ACTOR_ID` so downstream services that read `requireMemberId()` for audit attribution see the system-actor sentinel rather than throwing. The current `RequestScopes.runForTenant(tenantId, orgId, action)` does not bind `MEMBER_ID`, so these sites cannot migrate to it without a new variant such as `runForTenantAsSystemActor(tenantId, orgId, actorId, action)` or a more general capture-and-rebind utility.
+
+Both surfaces will be addressed in PR #2; this ADR will be amended with the final API at that point. PR #2's companion ArchUnit rule banning direct `ScopedValue.where(RequestScopes.TENANT_ID, ...)` calls outside `..multitenancy..` is what catches future regressions of either pattern — it cannot ship in PR #1 because both the 13 jobs and the 2 backfill methods would build-break the moment it lands.
 
 ### Regression guard (PR #1)
 

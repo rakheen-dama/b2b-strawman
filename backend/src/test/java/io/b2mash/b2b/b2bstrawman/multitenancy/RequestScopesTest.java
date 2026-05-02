@@ -282,4 +282,50 @@ class RequestScopesTest {
     assertThatThrownBy(() -> RequestScopes.callForTenant("tenant_acme", null, null))
         .isInstanceOf(NullPointerException.class);
   }
+
+  @Test
+  void runForTenant_nestedCallRebindsTenantId() {
+    RequestScopes.runForTenant(
+        "outer_tenant",
+        "org_outer",
+        () -> {
+          assertThat(RequestScopes.requireTenantId()).isEqualTo("outer_tenant");
+          RequestScopes.runForTenant(
+              "inner_tenant",
+              "org_inner",
+              () -> {
+                // Both bindings rebind cleanly when the inner call provides both
+                assertThat(RequestScopes.requireTenantId()).isEqualTo("inner_tenant");
+                assertThat(RequestScopes.getOrgIdOrNull()).isEqualTo("org_inner");
+              });
+          // Outer scope restored on exit
+          assertThat(RequestScopes.requireTenantId()).isEqualTo("outer_tenant");
+          assertThat(RequestScopes.getOrgIdOrNull()).isEqualTo("org_outer");
+        });
+  }
+
+  @Test
+  void runForTenant_nestedCallWithNullOrgId_outerOrgIdRemainsVisible() {
+    // Documents a known asymmetry in bindTenantScope: ORG_ID is only bound when non-null/blank,
+    // so a nested runForTenant(t2, null, ...) inside an outer runForTenant(t1, "org_outer", ...)
+    // leaves the outer ORG_ID visible to the inner action body. TENANT_ID rebinds correctly.
+    //
+    // No migrated AFTER_COMMIT handler exercises this path (every event consumed carries a
+    // non-null orgId), so the leak is theoretical in PR #1's scope. Documented as a known
+    // limitation in RequestScopes.runForTenant Javadoc; revisit if PR #2's broader migration
+    // surfaces a use case where the asymmetry matters.
+    RequestScopes.runForTenant(
+        "outer_tenant",
+        "org_outer",
+        () -> {
+          RequestScopes.runForTenant(
+              "inner_tenant",
+              null,
+              () -> {
+                assertThat(RequestScopes.requireTenantId()).isEqualTo("inner_tenant");
+                // Asymmetry: outer ORG_ID remains visible because bindTenantScope didn't rebind it
+                assertThat(RequestScopes.getOrgIdOrNull()).isEqualTo("org_outer");
+              });
+        });
+  }
 }

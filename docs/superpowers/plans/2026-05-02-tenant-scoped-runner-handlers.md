@@ -665,7 +665,7 @@ Note: the front-matter (date, status), section headers (Context, Decision, Conse
 
 Write `adr/ADR-T008-tenant-scoped-runner.md`. Tailor wording if the existing T-series uses different headings; the section names below match the existing T-series convention as much as possible.
 
-```markdown
+````markdown
 # ADR-T008 — Tenant-Scoped Runner: Canonical API for binding tenant scope outside a request
 
 **Status:** Accepted
@@ -747,7 +747,7 @@ For scheduled jobs that fan out to all tenants — distinct shape, distinct conc
 - Bug-class catalogue: `qa_cycle/bug-classes.md`
 - Quality Gates: top of `CLAUDE.md` (Quality Gates #1, #5, #7)
 - Adjacent ADRs: ADR-T002, ADR-204
-```
+````
 
 - [ ] **Step 3: Verify ADR renders sanely (no broken markdown)**
 

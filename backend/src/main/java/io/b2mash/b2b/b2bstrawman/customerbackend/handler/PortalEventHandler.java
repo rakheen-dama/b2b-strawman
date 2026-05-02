@@ -909,11 +909,4 @@ public class PortalEventHandler {
           }
         });
   }
-
-  // ── Private helpers ────────────────────────────────────────────────
-
-  /**
-   * Binds tenant and org ScopedValues so that the correct dedicated schema is selected via {@code
-   * search_path} in the handler's new transaction.
-   */
 }

@@ -247,10 +247,4 @@ public class TrustNotificationHandler {
       notificationDispatcher.dispatch(notification, recipientEmail);
     }
   }
-
-  /**
-   * Runs the action within a tenant scope. Only binds TENANT_ID and ORG_ID intentionally —
-   * notification handlers run outside of a member/request context, so MEMBER_ID, ORG_ROLE, and
-   * CAPABILITIES are not bound. The handler only needs tenant scope for database routing.
-   */
 }

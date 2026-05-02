@@ -113,9 +113,6 @@ public class PortalDocumentNotificationHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onDocumentGenerated(DocumentGeneratedEvent event) {
-    if (event == null || event.tenantId() == null) {
-      return;
-    }
     RequestScopes.runForTenant(
         event.tenantId(),
         event.orgId(),

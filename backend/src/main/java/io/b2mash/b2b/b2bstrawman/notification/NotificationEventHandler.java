@@ -518,9 +518,4 @@ public class NotificationEventHandler {
       notificationDispatcher.dispatch(notification, recipientEmail);
     }
   }
-
-  /**
-   * Binds tenant and org ScopedValues so that the correct dedicated schema is selected via {@code
-   * search_path} in the handler's new transaction.
-   */
 }

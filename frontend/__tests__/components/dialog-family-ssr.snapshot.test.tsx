@@ -61,10 +61,17 @@ import type { Customer } from "@/lib/types";
 // form (which actually reads these fields) lives inside `DialogContent`
 // and is unmounted while the dialog is closed. `buildDefaults` walks
 // every field, so each must be a defined string / null-tolerant value.
+// Strictly typed against `Customer` (no double-cast) so shape drift in
+// the type breaks this fixture loud at compile time.
 const STUB_CUSTOMER: Customer = {
   id: "11111111-1111-1111-1111-111111111111",
   name: "Test Customer",
   email: "test@example.com",
+  status: "ACTIVE",
+  createdBy: "test-user",
+  createdByName: null,
+  createdAt: "2026-01-01T00:00:00Z",
+  updatedAt: "2026-01-01T00:00:00Z",
   customerType: "INDIVIDUAL",
   phone: null,
   idNumber: null,
@@ -82,7 +89,7 @@ const STUB_CUSTOMER: Customer = {
   registrationNumber: null,
   entityType: null,
   financialYearEnd: null,
-} as unknown as Customer;
+};
 
 const PROPOSAL_CUSTOMERS = [
   { id: "22222222-2222-2222-2222-222222222222", name: "Dlamini & Co", email: "dlamini@test.local" },

@@ -196,6 +196,31 @@ public final class RequestScopes {
     }
   }
 
+  /**
+   * Variant of {@link #runForTenant} that additionally binds {@link #MEMBER_ID} to a system-actor
+   * sentinel UUID. Use only from internal admin-authenticated callers (currently the two portal
+   * read-model backfill helpers — {@code RetainerPortalSyncService.backfillForTenant} and {@code
+   * TrustLedgerPortalSyncService.backfillForTenant}) where downstream services read {@link
+   * #requireMemberId()} for audit attribution and would throw without a bound member.
+   *
+   * <p>Tenant-isolation guard remains the caller's responsibility: this method binds whatever
+   * {@code tenantId} / {@code orgId} it is handed without an authorisation check. Callers that
+   * accept these values from a request parameter MUST verify they are authorised for the current
+   * request scope before invoking (see {@code RetainerPortalSyncService.backfillForTenant} for the
+   * canonical guard pattern: assert {@link #ORG_ID} is bound and matches the supplied {@code orgId}
+   * before calling).
+   *
+   * @throws IllegalArgumentException if {@code tenantId} is null or blank.
+   * @throws NullPointerException if {@code action} or {@code actorId} is null.
+   */
+  public static void runForTenantAsSystemActor(
+      String tenantId, @Nullable String orgId, UUID actorId, Runnable action) {
+    Objects.requireNonNull(action, "action");
+    Objects.requireNonNull(actorId, "actorId");
+    requireValidTenantId(tenantId);
+    bindTenantScope(tenantId, orgId).where(MEMBER_ID, actorId).run(action);
+  }
+
   private static void requireValidTenantId(String tenantId) {
     if (tenantId == null || tenantId.isBlank()) {
       throw new IllegalArgumentException("tenantId must be non-null and non-blank");

@@ -13,11 +13,29 @@ export default defineConfig({
     screenshot: "only-on-failure",
     trace: "on-first-retry",
   },
-  projects: [
-    {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
-      testIgnore: authMode === "keycloak" ? undefined : ["**/keycloak/**"],
-    },
-  ],
+  projects:
+    authMode === "keycloak"
+      ? [
+          // Onboarding writes /tmp/e2e-keycloak-state.json which member-invite-rbac
+          // reads at describe-collection time. Run it as a setup project so the
+          // state file exists before any dependent specs are collected.
+          {
+            name: "kc-setup",
+            use: { ...devices["Desktop Chrome"] },
+            testMatch: /keycloak\/onboarding\.spec\.ts/,
+          },
+          {
+            name: "chromium",
+            use: { ...devices["Desktop Chrome"] },
+            testIgnore: /keycloak\/onboarding\.spec\.ts/,
+            dependencies: ["kc-setup"],
+          },
+        ]
+      : [
+          {
+            name: "chromium",
+            use: { ...devices["Desktop Chrome"] },
+            testIgnore: ["**/keycloak/**"],
+          },
+        ],
 });

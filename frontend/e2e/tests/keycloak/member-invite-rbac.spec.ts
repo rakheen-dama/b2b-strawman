@@ -8,38 +8,21 @@ let ADMIN_EMAIL: string;
 let MEMBER_EMAIL: string;
 
 test.describe.serial("Keycloak Member Invite & RBAC", () => {
-  test.skip(!hasState(), "Requires onboarding.spec.ts to run first (state file missing)");
-
   test.beforeAll(() => {
+    // Runtime skip — describe-level test.skip(condition, ...) evaluates at
+    // collection time, before the kc-setup project (onboarding) has had a
+    // chance to write the state file. Checking here defers the decision until
+    // after kc-setup has run.
+    test.skip(!hasState(), "Requires onboarding.spec.ts to run first (state file missing)");
     state = loadState();
     ADMIN_EMAIL = `bob-${state.runId}@thornton-za.e2e-test.local`;
     MEMBER_EMAIL = `carol-${state.runId}@thornton-za.e2e-test.local`;
   });
 
-  test("1. Owner logs in and upgrades plan", async ({ page }) => {
-    await loginAs(page, state.ownerEmail, state.ownerPassword);
-    await page.waitForURL(/\/org\//);
-
-    await page.goto(`/org/${state.orgSlug}/settings/billing`);
-    await page.waitForLoadState("networkidle");
-
-    // Click "Upgrade to Pro"
-    await page.getByRole("button", { name: /upgrade to pro/i }).click();
-
-    // Confirm in AlertDialog — button text is "Upgrade Now"
-    await expect(page.getByRole("alertdialog").or(page.getByRole("dialog"))).toBeVisible({
-      timeout: 5_000,
-    });
-    await page.getByRole("button", { name: /upgrade now/i }).click();
-
-    // Wait for upgrade to complete
-    await page.waitForTimeout(3000);
-
-    // Verify plan shows Pro
-    await expect(page.getByText(/professional|pro/i)).toBeVisible({
-      timeout: 5_000,
-    });
-  });
+  // Product has no plan-tier subscriptions by design — no Starter/Pro tiers,
+  // no member-count gate, no self-service upgrade. Billing page only surfaces
+  // Trial/Manual/Managed states. Inviting members has no plan precondition.
+  test.skip("1. Owner logs in and upgrades plan", async () => {});
 
   test("2. Owner invites admin (Bob)", async ({ page }) => {
     await clearMailbox();

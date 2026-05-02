@@ -206,6 +206,7 @@ The `components/ui/` directory started from Shadcn scaffolding but **base compon
 - Never use indigo for accents — use **teal** instead
 - Never import `motion` in server components — it's client-only. Only import in `"use client"` files.
 - Never pass functions or component references as props from Server Components to `"use client"` components — Next.js 16 throws a runtime serialization error. Pass serializable data (strings, objects) instead.
+- Never place two `<DialogTrigger asChild>` / `<AlertDialogTrigger asChild>` Radix siblings adjacent in the same parent JSX — they collide under React 19 + Radix `Slot` reconciliation and only one trigger wires up its `onClick`. See _Dialog Trigger Composition_ below.
 
 ### RSC Serialization Boundary
 
@@ -222,6 +223,73 @@ Next.js 16 strictly enforces that only plain serializable values (strings, numbe
 - **Icon props**: Remove `"use client"` if the component doesn't actually need client interactivity (no hooks, no event handlers, no browser APIs). `LucideIcon` components render fine in Server Components.
 - **Callback props**: Replace function props with serializable data. E.g., instead of `generateHref={(id) => \`/path/${id}\`}`, pass `baseHref="/path"` and build the URL inside the client component.
 - **Component props**: Pass pre-rendered `ReactNode` (JSX) instead of component references, or restructure so the icon renders in the Server Component parent.
+
+### Dialog Trigger Composition
+
+When a dialog or alert-dialog renders next to another `<*Trigger asChild>` sibling in the same parent JSX block (e.g., an Edit + Delete action pair in a table row), **the dialog component must own its trigger button**: render a plain `<Button>` directly inside `<Dialog>` / `<AlertDialog>` and accept `triggerLabel` / `triggerVariant` / `triggerSize` / `triggerClassName` / `triggerIcon` props from the consumer. Do not use `<DialogTrigger asChild>` or `<AlertDialogTrigger asChild>` to wrap a consumer-supplied child at adjacency sites.
+
+**Why (Class-3 / OBS-2103):** two adjacent `<*Trigger asChild>{children}</*Trigger>` siblings collide under React 19 + Radix `Slot` reconciliation. Both call `cloneElement` on the inner child at the same unkeyed sibling position, so only one trigger wires up its `onClick`. Symptom: visible button, unresponsive click. Eliminating the `Slot` composition at the call site eliminates the bug class by elimination, not detection.
+
+✅ **Good — dialog owns its button:**
+
+```tsx
+interface EditCustomerDialogProps {
+  triggerLabel: ReactNode;
+  triggerVariant?: ButtonVariant;
+  triggerSize?: ButtonSize;
+  triggerClassName?: string;
+  triggerIcon?: ReactNode;
+  /* ...domain props */
+}
+
+export function EditCustomerDialog({
+  triggerLabel,
+  triggerVariant = "outline",
+  triggerSize = "sm",
+  triggerClassName,
+  triggerIcon,
+}: EditCustomerDialogProps) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <Button
+        type="button"
+        variant={triggerVariant}
+        size={triggerSize}
+        className={triggerClassName}
+        onClick={() => setOpen(true)}
+      >
+        {triggerIcon}
+        {triggerLabel}
+      </Button>
+      <DialogContent>{/* ... */}</DialogContent>
+    </Dialog>
+  );
+}
+```
+
+Call site: `<EditCustomerDialog triggerLabel="Edit" triggerIcon={<Pencil />} customer={c} slug={s} />`. Both the dialog and its call site are Client Components — adjacency contexts (interactive table rows) are inherently `"use client"`, so passing pre-rendered `ReactNode` JSX is fine here. See _RSC Serialization Boundary_ above for the Server → Client cases that aren't.
+
+❌ **Bad — two adjacent `asChild` triggers in the same parent JSX:**
+
+```tsx
+// Each wrapper internally renders <*Trigger asChild>{children}</*Trigger>.
+// Two of them side by side trigger the OBS-2103 collision.
+<div className="flex justify-end gap-1">
+  <EditFooDialog foo={f}>
+    <Button size="sm">Edit</Button>
+  </EditFooDialog>
+  <DeleteFooDialog fooId={f.id}>
+    <Button size="sm" variant="destructive">
+      Delete
+    </Button>
+  </DeleteFooDialog>
+</div>
+```
+
+**Children-API dialogs are still acceptable when there is at most one `asChild` Trigger in the adjacency** (e.g., `LogExpenseDialog` placed next to a non-`Slot` sibling). The collision only fires with two adjacent `Slot` siblings; a single `Slot` at a row position is fine.
+
+Precedent: PR #1242 introduced the dialog-owns-button pattern (`EditCustomerDialog`, `ArchiveCustomerDialog`). PR #1263 propagated it to four more adjacency sites (`comments/`, `rates/customer-rates-tab.tsx`, `rates/project-rates-tab.tsx`, `expenses/`). PR #1262 removed a related dead `mountRoot` workaround that the same composition class had motivated.
 
 ## Next.js 16 Patterns
 

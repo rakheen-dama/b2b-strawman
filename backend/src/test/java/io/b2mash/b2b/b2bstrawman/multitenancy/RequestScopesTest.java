@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import java.util.NoSuchElementException;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import org.junit.jupiter.api.Test;
 
 class RequestScopesTest {
@@ -141,5 +142,144 @@ class RequestScopesTest {
   @Test
   void requireOwner_withUnboundRole_throwsForbidden() {
     assertThatThrownBy(RequestScopes::requireOwner).isInstanceOf(ForbiddenException.class);
+  }
+
+  // ========================================================================
+  // runForTenant / callForTenant — canonical static API for binding tenant
+  // scope outside a request (replaces 14 duplicated handleInTenantScope
+  // helpers in notification handlers). See ADR-T008.
+  // ========================================================================
+
+  @Test
+  void runForTenant_bindsTenantId() {
+    RequestScopes.runForTenant(
+        "tenant_acme",
+        null,
+        () -> assertThat(RequestScopes.requireTenantId()).isEqualTo("tenant_acme"));
+  }
+
+  @Test
+  void runForTenant_bindsOrgIdWhenProvided() {
+    RequestScopes.runForTenant(
+        "tenant_acme",
+        "org_123",
+        () -> {
+          assertThat(RequestScopes.requireTenantId()).isEqualTo("tenant_acme");
+          assertThat(RequestScopes.getOrgIdOrNull()).isEqualTo("org_123");
+        });
+  }
+
+  @Test
+  void runForTenant_omitsOrgIdWhenNull() {
+    RequestScopes.runForTenant(
+        "tenant_acme",
+        null,
+        () -> {
+          assertThat(RequestScopes.requireTenantId()).isEqualTo("tenant_acme");
+          assertThat(RequestScopes.getOrgIdOrNull()).isNull();
+        });
+  }
+
+  @Test
+  void runForTenant_omitsOrgIdWhenBlank() {
+    RequestScopes.runForTenant(
+        "tenant_acme", "   ", () -> assertThat(RequestScopes.getOrgIdOrNull()).isNull());
+  }
+
+  @Test
+  void runForTenant_rejectsNullTenant() {
+    Runnable action = () -> {};
+    assertThatThrownBy(() -> RequestScopes.runForTenant(null, "org_123", action))
+        .isInstanceOf(IllegalArgumentException.class)
+        .hasMessageContaining("tenantId");
+  }
+
+  @Test
+  void runForTenant_rejectsBlankTenant() {
+    Runnable action = () -> {};
+    assertThatThrownBy(() -> RequestScopes.runForTenant("", "org_123", action))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThatThrownBy(() -> RequestScopes.runForTenant("   ", "org_123", action))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void runForTenant_rejectsNullAction() {
+    assertThatThrownBy(() -> RequestScopes.runForTenant("tenant_acme", null, null))
+        .isInstanceOf(NullPointerException.class);
+  }
+
+  @Test
+  void runForTenant_propagatesRuntimeException() {
+    assertThatThrownBy(
+            () ->
+                RequestScopes.runForTenant(
+                    "tenant_acme",
+                    null,
+                    () -> {
+                      throw new IllegalStateException("boom");
+                    }))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("boom");
+  }
+
+  @Test
+  void runForTenant_unbindsAfterScope() {
+    assertThat(RequestScopes.TENANT_ID.isBound()).isFalse();
+    RequestScopes.runForTenant("tenant_acme", "org_123", () -> {});
+    assertThat(RequestScopes.TENANT_ID.isBound()).isFalse();
+    assertThat(RequestScopes.ORG_ID.isBound()).isFalse();
+  }
+
+  @Test
+  void callForTenant_returnsResult() {
+    String result =
+        RequestScopes.callForTenant(
+            "tenant_acme",
+            "org_123",
+            () -> RequestScopes.requireTenantId() + ":" + RequestScopes.getOrgIdOrNull());
+    assertThat(result).isEqualTo("tenant_acme:org_123");
+  }
+
+  @Test
+  void callForTenant_propagatesRuntimeException() {
+    Callable<String> failing =
+        () -> {
+          throw new IllegalStateException("boom");
+        };
+    assertThatThrownBy(() -> RequestScopes.callForTenant("tenant_acme", null, failing))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessage("boom");
+  }
+
+  @Test
+  void callForTenant_wrapsCheckedException() {
+    Callable<String> failing =
+        () -> {
+          throw new java.io.IOException("disk full");
+        };
+    assertThatThrownBy(() -> RequestScopes.callForTenant("tenant_acme", null, failing))
+        .isInstanceOf(RuntimeException.class)
+        .hasCauseInstanceOf(java.io.IOException.class);
+  }
+
+  @Test
+  void callForTenant_rejectsNullTenant() {
+    Callable<String> action = () -> "x";
+    assertThatThrownBy(() -> RequestScopes.callForTenant(null, "org_123", action))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void callForTenant_rejectsBlankTenant() {
+    Callable<String> action = () -> "x";
+    assertThatThrownBy(() -> RequestScopes.callForTenant("", "org_123", action))
+        .isInstanceOf(IllegalArgumentException.class);
+  }
+
+  @Test
+  void callForTenant_rejectsNullAction() {
+    assertThatThrownBy(() -> RequestScopes.callForTenant("tenant_acme", null, null))
+        .isInstanceOf(NullPointerException.class);
   }
 }

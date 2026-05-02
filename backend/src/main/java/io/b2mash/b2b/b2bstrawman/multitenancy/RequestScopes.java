@@ -3,9 +3,12 @@ package io.b2mash.b2b.b2bstrawman.multitenancy;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.MissingOrganizationContextException;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import jakarta.annotation.Nullable;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 
 /**
  * Request-scoped values for multitenancy and member identity. Bound by servlet filters, read by
@@ -138,6 +141,57 @@ public final class RequestScopes {
    */
   public static boolean hasCapability(String capability) {
     return getCapabilities().contains(capability);
+  }
+
+  /**
+   * Run {@code action} with {@link #TENANT_ID} (and optionally {@link #ORG_ID}) bound on a fresh
+   * ScopedValue carrier. The only sanctioned way to bind tenant scope outside this class; see
+   * ArchUnit rule {@code TenantScopeBindingRule} and ADR-T008.
+   *
+   * <p>Replaces the duplicated private {@code handleInTenantScope} helpers that previously lived in
+   * 14 notification handlers (PR #1, 2026-05-02).
+   *
+   * @throws IllegalArgumentException if {@code tenantId} is null or blank.
+   * @throws NullPointerException if {@code action} is null.
+   */
+  public static void runForTenant(String tenantId, @Nullable String orgId, Runnable action) {
+    Objects.requireNonNull(action, "action");
+    requireValidTenantId(tenantId);
+    bindTenantScope(tenantId, orgId).run(action);
+  }
+
+  /**
+   * Variant of {@link #runForTenant} that returns a value. Checked exceptions thrown by the
+   * Callable are wrapped in {@link RuntimeException} per JDK Callable convention.
+   *
+   * @throws IllegalArgumentException if {@code tenantId} is null or blank.
+   * @throws NullPointerException if {@code action} is null.
+   */
+  public static <T> T callForTenant(String tenantId, @Nullable String orgId, Callable<T> action) {
+    Objects.requireNonNull(action, "action");
+    requireValidTenantId(tenantId);
+    ScopedValue.CallableOp<T, Exception> op = action::call;
+    try {
+      return bindTenantScope(tenantId, orgId).call(op);
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
+  private static void requireValidTenantId(String tenantId) {
+    if (tenantId == null || tenantId.isBlank()) {
+      throw new IllegalArgumentException("tenantId must be non-null and non-blank");
+    }
+  }
+
+  private static ScopedValue.Carrier bindTenantScope(String tenantId, @Nullable String orgId) {
+    ScopedValue.Carrier carrier = ScopedValue.where(TENANT_ID, tenantId);
+    if (orgId != null && !orgId.isBlank()) {
+      carrier = carrier.where(ORG_ID, orgId);
+    }
+    return carrier;
   }
 
   private RequestScopes() {}

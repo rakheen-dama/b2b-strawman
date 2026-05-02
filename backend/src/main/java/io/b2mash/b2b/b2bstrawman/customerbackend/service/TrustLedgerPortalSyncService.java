@@ -329,38 +329,32 @@ public class TrustLedgerPortalSyncService {
     // portal wipe so we only ever touch this tenant's customers (the portal schema is shared).
     Set<UUID> tenantCustomerIds = new HashSet<>();
 
-    // NB: this is a 3-binding pattern (TENANT_ID + ORG_ID + MEMBER_ID = SYSTEM_ACTOR_ID) that
-    // does not fit RequestScopes.runForTenant (which only binds TENANT_ID + ORG_ID). The MEMBER_ID
-    // binding is required so downstream services that read RequestScopes.requireMemberId() for
-    // audit attribution see the system-actor sentinel rather than throwing. Migration to a
-    // RequestScopes.runForTenantAsSystemActor variant — or any other broader API — is queued for
-    // PR #2 (the same PR that consolidates the 13 scheduled jobs); see ADR-T008 "Follow-ups".
-    ScopedValue.where(RequestScopes.TENANT_ID, schema)
-        .where(RequestScopes.ORG_ID, orgId)
-        .where(RequestScopes.MEMBER_ID, SYSTEM_ACTOR_ID)
-        .run(
-            () -> {
-              // Load every trust transaction once, filter portal-eligible + portal-status inline
-              // and bucket by matter. (Previously this looped over [RECORDED, APPROVED] with
-              // a findAll() call inside — O(2N) heap load + silent duplicates.)
-              for (var txn : trustTransactionRepository.findAll()) {
-                if (!PORTAL_STATUSES.contains(txn.getStatus())) {
-                  continue;
-                }
-                if (!hasPortalScope(txn) || !isPortalEligible(txn)) {
-                  continue;
-                }
-                UUID matterId = txn.getProjectId();
-                rollups
-                    .computeIfAbsent(matterId, id -> new MatterRollup(id, txn.getCustomerId()))
-                    .add(txn);
-              }
-              // Snapshot the tenant's customer id set inside the same scope binding — needed for
-              // the wipe-and-rewrite drift repair below.
-              for (var customer : customerRepository.findAll()) {
-                tenantCustomerIds.add(customer.getId());
-              }
-            });
+    RequestScopes.runForTenantAsSystemActor(
+        schema,
+        orgId,
+        SYSTEM_ACTOR_ID,
+        () -> {
+          // Load every trust transaction once, filter portal-eligible + portal-status inline
+          // and bucket by matter. (Previously this looped over [RECORDED, APPROVED] with
+          // a findAll() call inside — O(2N) heap load + silent duplicates.)
+          for (var txn : trustTransactionRepository.findAll()) {
+            if (!PORTAL_STATUSES.contains(txn.getStatus())) {
+              continue;
+            }
+            if (!hasPortalScope(txn) || !isPortalEligible(txn)) {
+              continue;
+            }
+            UUID matterId = txn.getProjectId();
+            rollups
+                .computeIfAbsent(matterId, id -> new MatterRollup(id, txn.getCustomerId()))
+                .add(txn);
+          }
+          // Snapshot the tenant's customer id set inside the same scope binding — needed for
+          // the wipe-and-rewrite drift repair below.
+          for (var customer : customerRepository.findAll()) {
+            tenantCustomerIds.add(customer.getId());
+          }
+        });
 
     // Write portal rows inside a portal-side transaction. Each matter's transactions are walked
     // in ascending occurrence order so every row gets its own progressive running balance.

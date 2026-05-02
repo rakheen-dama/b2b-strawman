@@ -361,27 +361,20 @@ public class RetainerPortalSyncService {
 
     int[] counts = new int[] {0}; // agreements projected
 
-    // NB: this is a 3-binding pattern (TENANT_ID + ORG_ID + MEMBER_ID = SYSTEM_ACTOR_ID) that
-    // does not fit RequestScopes.runForTenant (which only binds TENANT_ID + ORG_ID). The MEMBER_ID
-    // binding is required so downstream services that read RequestScopes.requireMemberId() for
-    // audit attribution see the system-actor sentinel rather than throwing. Migration to a
-    // RequestScopes.runForTenantAsSystemActor variant — or any other broader API — is queued for
-    // PR #2 (the same PR that consolidates the 13 scheduled jobs); see ADR-T008 "Follow-ups".
-    ScopedValue.where(RequestScopes.TENANT_ID, schema)
-        .where(RequestScopes.ORG_ID, orgId)
-        .where(RequestScopes.MEMBER_ID, SYSTEM_ACTOR_ID)
-        .run(
-            () -> {
-              // Delegate to syncSummary so backfill behaves identically to the event-driven path:
-              // agreements without an OPEN period get a terminal snapshot (via
-              // toTerminalSummaryView)
-              // rather than being silently skipped. syncSummary manages its own portal transaction
-              // per row via portalTxTemplate, so no outer tx wrapper is needed here.
-              for (var agreement : agreementRepository.findAll()) {
-                syncSummary(agreement.getId());
-                counts[0]++;
-              }
-            });
+    RequestScopes.runForTenantAsSystemActor(
+        schema,
+        orgId,
+        SYSTEM_ACTOR_ID,
+        () -> {
+          // Delegate to syncSummary so backfill behaves identically to the event-driven path:
+          // agreements without an OPEN period get a terminal snapshot (via toTerminalSummaryView)
+          // rather than being silently skipped. syncSummary manages its own portal transaction
+          // per row via portalTxTemplate, so no outer tx wrapper is needed here.
+          for (var agreement : agreementRepository.findAll()) {
+            syncSummary(agreement.getId());
+            counts[0]++;
+          }
+        });
 
     log.info(
         "Portal retainer backfill complete for org={} agreementsProjected={}", orgId, counts[0]);

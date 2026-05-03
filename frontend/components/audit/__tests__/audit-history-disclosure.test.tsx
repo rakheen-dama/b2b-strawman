@@ -39,12 +39,7 @@ describe("<AuditHistoryDisclosure>", () => {
 
   it("renders trigger when TEAM_OVERSIGHT is granted", () => {
     render(
-      <CapabilityProvider
-        capabilities={["TEAM_OVERSIGHT"]}
-        role="Admin"
-        isAdmin
-        isOwner={false}
-      >
+      <CapabilityProvider capabilities={["TEAM_OVERSIGHT"]} role="Admin" isAdmin isOwner={false}>
         <AuditHistoryDisclosure entityType="proposal" entityId="prop-with-cap" />
       </CapabilityProvider>
     );
@@ -55,12 +50,7 @@ describe("<AuditHistoryDisclosure>", () => {
 
   it("does NOT mount the audit timeline before first expand", () => {
     render(
-      <CapabilityProvider
-        capabilities={["TEAM_OVERSIGHT"]}
-        role="Admin"
-        isAdmin
-        isOwner={false}
-      >
+      <CapabilityProvider capabilities={["TEAM_OVERSIGHT"]} role="Admin" isAdmin isOwner={false}>
         <AuditHistoryDisclosure entityType="proposal" entityId="prop-lazy" />
       </CapabilityProvider>
     );
@@ -75,12 +65,7 @@ describe("<AuditHistoryDisclosure>", () => {
   it("mounts the audit timeline with correct entity props after expand", async () => {
     const user = userEvent.setup();
     render(
-      <CapabilityProvider
-        capabilities={["TEAM_OVERSIGHT"]}
-        role="Admin"
-        isAdmin
-        isOwner={false}
-      >
+      <CapabilityProvider capabilities={["TEAM_OVERSIGHT"]} role="Admin" isAdmin isOwner={false}>
         <AuditHistoryDisclosure entityType="matter_closure" entityId="closure-42" />
       </CapabilityProvider>
     );

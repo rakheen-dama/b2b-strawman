@@ -9,11 +9,7 @@ import type { ClosureLogEntry } from "@/lib/api/matter-closure";
 import { AuditTimelineTab } from "@/components/audit/audit-timeline-tab";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { formatDate } from "@/lib/format";
 
 export interface ClosureHistorySectionProps {
@@ -41,9 +37,8 @@ function reasonLabel(reason: string): string {
  * Rendered only on CLOSED matters by `<ProjectDetailPage>`.
  */
 export function ClosureHistorySection({ projectId }: ClosureHistorySectionProps) {
-  const { data, error, isLoading } = useSWR<ClosureLogEntry[]>(
-    `closure-log-${projectId}`,
-    () => fetchClosureLog(projectId)
+  const { data, error, isLoading } = useSWR<ClosureLogEntry[]>(`closure-log-${projectId}`, () =>
+    fetchClosureLog(projectId)
   );
 
   return (
@@ -63,10 +58,7 @@ export function ClosureHistorySection({ projectId }: ClosureHistorySectionProps)
           </p>
         )}
         {error && !isLoading && (
-          <p
-            className="text-sm text-red-600 dark:text-red-400"
-            data-testid="closure-history-error"
-          >
+          <p className="text-sm text-red-600 dark:text-red-400" data-testid="closure-history-error">
             Could not load closure history.
           </p>
         )}

@@ -3,15 +3,8 @@
 import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
-import {
-  AuditTimelineTab,
-  useAuditTabVisible,
-} from "@/components/audit/audit-timeline-tab";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+import { AuditTimelineTab, useAuditTabVisible } from "@/components/audit/audit-timeline-tab";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -84,9 +77,7 @@ export function AuditHistoryDisclosure({
         </CardHeader>
         <CollapsibleContent>
           <CardContent>
-            {hasOpened ? (
-              <AuditTimelineTab entityType={entityType} entityId={entityId} />
-            ) : null}
+            {hasOpened ? <AuditTimelineTab entityType={entityType} entityId={entityId} /> : null}
           </CardContent>
         </CollapsibleContent>
       </Collapsible>

@@ -132,19 +132,13 @@ test.describe("Epic 508B — Matter closure override audit surface", () => {
     await expect(section).toBeVisible({ timeout: 10_000 });
 
     // ── Find the override row and expand its audit toggle ──────────────
-    const overrideBadge = section
-      .locator('[data-testid^="closure-row-override-"]')
-      .first();
+    const overrideBadge = section.locator('[data-testid^="closure-row-override-"]').first();
     await expect(overrideBadge).toBeVisible();
 
     // Use the exact closureLogId from the seed to avoid prefix-collision with
     // descendant testids (closure-row-reason-*, closure-row-override-*, etc.).
-    const closureRow = section.locator(
-      `[data-testid="closure-row-${close.closureLogId}"]`
-    );
-    const toggle = closureRow.locator(
-      `[data-testid="closure-audit-toggle-${close.closureLogId}"]`
-    );
+    const closureRow = section.locator(`[data-testid="closure-row-${close.closureLogId}"]`);
+    const toggle = closureRow.locator(`[data-testid="closure-audit-toggle-${close.closureLogId}"]`);
     await toggle.click();
 
     // ── Assert the audit timeline contains a CRITICAL row ──────────────

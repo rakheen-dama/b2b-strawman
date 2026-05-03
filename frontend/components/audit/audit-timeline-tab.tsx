@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  AuditTimeline,
-  type AuditTimelineProps,
-} from "@/components/audit/audit-timeline";
+import { AuditTimeline, type AuditTimelineProps } from "@/components/audit/audit-timeline";
 import { CAPABILITIES, RequiresCapability, useCapabilities } from "@/lib/capabilities";
 
 /**

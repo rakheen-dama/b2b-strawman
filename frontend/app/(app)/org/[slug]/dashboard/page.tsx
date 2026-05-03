@@ -10,6 +10,7 @@ import { RecentActivityWidget } from "@/components/dashboard/recent-activity-wid
 import { AdminStatsColumn } from "@/components/dashboard/admin-stats-column";
 import { MyWeekColumn } from "@/components/dashboard/my-week-column";
 import { DeadlineWidget } from "@/components/dashboard/deadline-widget";
+import { SensitiveEventsWidget } from "@/components/dashboard/sensitive-events-widget";
 import { TeamUtilizationWidget } from "@/components/dashboard/team-utilization-widget";
 import { UpcomingCourtDatesWidget } from "@/components/legal/upcoming-court-dates-widget";
 import { ModuleGate } from "@/components/module-gate";
@@ -23,6 +24,12 @@ import {
   fetchAutomationSummary,
 } from "@/lib/actions/dashboard";
 import { getTeamCapacityGrid, type TeamCapacityGrid } from "@/lib/api/capacity";
+import {
+  listAuditEvents,
+  listFacetEventTypes,
+  type AuditEventResponse,
+  type EventTypeFacet,
+} from "@/lib/api/audit-events";
 import {
   resolveDateRange,
   getCurrentMonday,
@@ -95,6 +102,29 @@ export default async function OrgDashboardPage({
     handleApiError(error);
   }
 
+  // Sensitive events (Epic 509A) — last 7 days. Widget self-gates on
+  // TEAM_OVERSIGHT capability; fetches are best-effort and degrade gracefully
+  // (e.g. backend 403 for members without the capability).
+  const SENSITIVE_LOOKBACK_MS = 7 * 24 * 60 * 60 * 1000;
+  const sensitiveTo = new Date();
+  const sensitiveFrom = new Date(sensitiveTo.getTime() - SENSITIVE_LOOKBACK_MS);
+  const sensitiveFromIso = sensitiveFrom.toISOString();
+  const sensitiveToIso = sensitiveTo.toISOString();
+  const [sensitiveFacets, sensitiveRecentPage] = await Promise.all([
+    listFacetEventTypes({ from: sensitiveFromIso, to: sensitiveToIso }).catch(
+      () => [] as EventTypeFacet[]
+    ),
+    listAuditEvents({
+      severities: ["WARNING", "CRITICAL"],
+      from: sensitiveFromIso,
+      to: sensitiveToIso,
+      size: 5,
+    }).catch(() => null),
+  ]);
+  const sensitiveRecent: AuditEventResponse[] | null = sensitiveRecentPage
+    ? sensitiveRecentPage.content
+    : null;
+
   // Capacity data for dashboard widgets
   const monday = getCurrentMonday();
   const weekEnd = addWeeks(monday, 1);
@@ -129,6 +159,15 @@ export default async function OrgDashboardPage({
         <div className="lg:col-span-2">
           <TeamWorkloadWidget data={teamWorkload ?? null} isAdmin={isAdmin} />
         </div>
+      </div>
+
+      {/* Sensitive events row (Epic 509A) — self-gates on TEAM_OVERSIGHT capability */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <SensitiveEventsWidget
+          orgSlug={slug}
+          facets={sensitiveFacets}
+          recent={sensitiveRecent}
+        />
       </div>
 
       {/* Secondary three-column layout */}

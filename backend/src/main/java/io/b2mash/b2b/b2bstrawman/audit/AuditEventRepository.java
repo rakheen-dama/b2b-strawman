@@ -1,14 +1,18 @@
 package io.b2mash.b2b.b2bstrawman.audit;
 
+import jakarta.persistence.QueryHint;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Stream;
+import org.hibernate.jpa.HibernateHints;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.QueryHints;
 import org.springframework.data.repository.query.Param;
 
 public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
@@ -427,4 +431,76 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
           """)
   List<EntityTypeFacetProjection> projectEntityTypeFacets(
       @Param("fromTs") Instant from, @Param("toTs") Instant to);
+
+  // --- Epic 503A — streaming variants for CSV export ---
+
+  /**
+   * Streaming variant of {@link #findByFilter} for CSV export (Epic 503A). Ordered by {@code
+   * occurredAt DESC} — same as the paginated cousin. The {@link HibernateHints#HINT_FETCH_SIZE}
+   * keeps the JDBC driver pulling 100 rows at a time instead of materialising the entire result.
+   *
+   * <p>Caller MUST iterate inside an active transaction and close the stream (try-with-resources).
+   */
+  @QueryHints(@QueryHint(name = HibernateHints.HINT_FETCH_SIZE, value = "100"))
+  @Query(
+      """
+      SELECT e FROM AuditEvent e
+      WHERE (:entityType IS NULL OR e.entityType = :entityType)
+        AND (:entityId IS NULL OR e.entityId = :entityId)
+        AND (:actorId IS NULL OR e.actorId = :actorId)
+        AND (CAST(:eventTypePrefix AS string) IS NULL OR e.eventType LIKE CONCAT(CAST(:eventTypePrefix AS string), '%'))
+        AND (CAST(:from AS timestamp) IS NULL OR e.occurredAt >= :from)
+        AND (CAST(:to AS timestamp) IS NULL OR e.occurredAt < :to)
+      ORDER BY e.occurredAt DESC
+      """)
+  Stream<AuditEvent> streamByFilter(
+      @Param("entityType") String entityType,
+      @Param("entityId") UUID entityId,
+      @Param("actorId") UUID actorId,
+      @Param("eventTypePrefix") String eventTypePrefix,
+      @Param("from") Instant from,
+      @Param("to") Instant to);
+
+  /**
+   * Streaming variant of {@link #findByFilterWithEventTypes} for severity-filtered CSV exports
+   * (Epic 503A). Same WHERE semantics as the paginated cousin; no countQuery needed (streams do not
+   * paginate).
+   */
+  @QueryHints(@QueryHint(name = HibernateHints.HINT_FETCH_SIZE, value = "100"))
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT * FROM audit_events e
+          WHERE (CAST(:entityType AS TEXT) IS NULL OR e.entity_type = CAST(:entityType AS TEXT))
+            AND (CAST(:entityId AS UUID) IS NULL OR e.entity_id = CAST(:entityId AS UUID))
+            AND (CAST(:actorId AS UUID) IS NULL OR e.actor_id = CAST(:actorId AS UUID))
+            AND (CAST(:eventTypePrefix AS TEXT) IS NULL OR e.event_type LIKE CONCAT(CAST(:eventTypePrefix AS TEXT), '%'))
+            AND (CAST(:fromTs AS TIMESTAMPTZ) IS NULL OR e.occurred_at >= CAST(:fromTs AS TIMESTAMPTZ))
+            AND (CAST(:toTs AS TIMESTAMPTZ) IS NULL OR e.occurred_at < CAST(:toTs AS TIMESTAMPTZ))
+            AND (
+              (CAST(:exactTypes AS TEXT[]) IS NOT NULL AND e.event_type = ANY(CAST(:exactTypes AS TEXT[])))
+              OR (CAST(:prefixPatterns AS TEXT[]) IS NOT NULL AND e.event_type LIKE ANY(CAST(:prefixPatterns AS TEXT[])))
+              OR (
+                CAST(:allRegisteredExacts AS TEXT[]) IS NOT NULL
+                AND CAST(:allRegisteredPrefixes AS TEXT[]) IS NOT NULL
+                AND NOT (e.event_type = ANY(CAST(:allRegisteredExacts AS TEXT[])))
+                AND NOT (e.event_type LIKE ANY(CAST(:allRegisteredPrefixes AS TEXT[])))
+              )
+            )
+            AND (CAST(:excludeExact AS TEXT[]) IS NULL OR NOT (e.event_type = ANY(CAST(:excludeExact AS TEXT[]))))
+          ORDER BY e.occurred_at DESC
+          """)
+  Stream<AuditEvent> streamByFilterWithEventTypes(
+      @Param("entityType") String entityType,
+      @Param("entityId") UUID entityId,
+      @Param("actorId") UUID actorId,
+      @Param("eventTypePrefix") String eventTypePrefix,
+      @Param("fromTs") Instant from,
+      @Param("toTs") Instant to,
+      @Param("exactTypes") String[] exactTypes,
+      @Param("prefixPatterns") String[] prefixPatterns,
+      @Param("excludeExact") String[] excludeExact,
+      @Param("allRegisteredExacts") String[] allRegisteredExacts,
+      @Param("allRegisteredPrefixes") String[] allRegisteredPrefixes);
 }

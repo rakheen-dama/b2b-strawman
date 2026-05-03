@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.audit;
 
+import io.b2mash.b2b.b2bstrawman.audit.export.AuditExportService;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 /**
  * HTTP read surfaces for the firm-wide audit log. Per architecture §12.3.1 / §12.3.5, all routes
@@ -29,11 +31,15 @@ public class AuditEventController {
 
   private final AuditService auditService;
   private final AuditEventTypeRegistry auditEventTypeRegistry;
+  private final AuditExportService auditExportService;
 
   public AuditEventController(
-      AuditService auditService, AuditEventTypeRegistry auditEventTypeRegistry) {
+      AuditService auditService,
+      AuditEventTypeRegistry auditEventTypeRegistry,
+      AuditExportService auditExportService) {
     this.auditService = auditService;
     this.auditEventTypeRegistry = auditEventTypeRegistry;
+    this.auditExportService = auditExportService;
   }
 
   @GetMapping("/api/audit-events")
@@ -54,6 +60,20 @@ public class AuditEventController {
     var pageable = PageRequest.of(page, Math.min(size, 200));
     return ResponseEntity.ok(
         auditService.findEventsEnriched(filter, pageable).map(AuditEventResponse::from));
+  }
+
+  @GetMapping("/api/audit-events/export.csv")
+  @RequiresCapability("TEAM_OVERSIGHT")
+  public ResponseEntity<StreamingResponseBody> exportAuditEventsCsv(
+      @RequestParam(required = false) String entityType,
+      @RequestParam(required = false) UUID entityId,
+      @RequestParam(required = false) UUID actorId,
+      @RequestParam(required = false) String eventType,
+      @RequestParam(required = false) Instant from,
+      @RequestParam(required = false) Instant to,
+      @RequestParam(required = false) Set<AuditSeverity> severities) {
+    return auditExportService.streamCsv(
+        new AuditEventFilter(entityType, entityId, actorId, eventType, from, to, severities));
   }
 
   @GetMapping("/api/audit-events/metadata")

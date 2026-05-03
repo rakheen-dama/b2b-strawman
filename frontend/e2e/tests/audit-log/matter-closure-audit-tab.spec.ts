@@ -97,17 +97,29 @@ test.describe("Epic 508B — Matter closure override audit surface", () => {
     const token = await getApiToken("alice");
     const target = await findCloseableMatter(token);
     if (!target) {
-      test.skip(true, "No closeable matter available in e2e seed");
-      return;
+      // Not an env-not-up case — we got an authenticated session but no
+      // closeable matter exists. That's a seed-data bug; fail loudly so CI
+      // surfaces it instead of silently skipping the canonical Phase 69 demo.
+      throw new Error(
+        "No closeable matter available in e2e seed — this is the canonical " +
+          "Phase 69 Day 15 demo and requires a non-CLOSED, non-ARCHIVED matter " +
+          "in the seed. Fix the seed-data, do not skip."
+      );
     }
 
     const close = await closeMatterWithOverride(token, target.id);
     if (!close.ok) {
-      test.skip(
-        true,
-        `Closure with override failed (status ${close.status}). Seed likely lacks a matter requiring override.`
+      // Authenticated session succeeded but the close call failed — that's a
+      // seed/product bug, not an env-not-up condition. Fail loudly.
+      throw new Error(
+        `Closure with override failed (status ${close.status}) for matter ${target.id}. ` +
+          "This is the canonical Phase 69 Day 15 demo — surface the failure rather than skip."
       );
-      return;
+    }
+    if (!close.closureLogId) {
+      throw new Error(
+        "Closure call succeeded but did not return closureLogId — backend response shape regression."
+      );
     }
 
     // ── Login + navigate to project detail ─────────────────────────────
@@ -125,10 +137,14 @@ test.describe("Epic 508B — Matter closure override audit surface", () => {
       .first();
     await expect(overrideBadge).toBeVisible();
 
-    const closureRow = section.locator('[data-testid^="closure-row-"]').first();
-    const toggle = closureRow
-      .locator('[data-testid^="closure-audit-toggle-"]')
-      .first();
+    // Use the exact closureLogId from the seed to avoid prefix-collision with
+    // descendant testids (closure-row-reason-*, closure-row-override-*, etc.).
+    const closureRow = section.locator(
+      `[data-testid="closure-row-${close.closureLogId}"]`
+    );
+    const toggle = closureRow.locator(
+      `[data-testid="closure-audit-toggle-${close.closureLogId}"]`
+    );
     await toggle.click();
 
     // ── Assert the audit timeline contains a CRITICAL row ──────────────

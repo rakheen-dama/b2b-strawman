@@ -69,6 +69,7 @@ export function AuditHistoryDisclosure({
         <CardHeader>
           <CollapsibleTrigger
             data-testid="audit-history-disclosure-trigger"
+            aria-label={open ? `Collapse ${title}` : `Expand ${title}`}
             className="flex w-full items-center justify-between gap-2 text-left text-slate-700 transition-colors hover:text-slate-900 dark:text-slate-200 dark:hover:text-slate-50"
           >
             <CardTitle className="font-display text-slate-900 dark:text-slate-100">

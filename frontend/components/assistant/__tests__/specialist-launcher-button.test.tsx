@@ -78,6 +78,7 @@ describe("SpecialistLauncherButton", () => {
         entityId: "i-1",
       }),
       initialPrompt: "Draft for me",
+      surface: "INVOICE_DRAFT_TOOLBAR",
     });
 
     await waitFor(() =>

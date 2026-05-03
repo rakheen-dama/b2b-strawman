@@ -59,6 +59,11 @@ export const CAPABILITY_META = [
     label: "View Trust",
     description: "View trust account balances, transactions, and client ledgers",
   },
+  {
+    value: CAPABILITIES.AI_ASSISTANT_USE,
+    label: "AI Assistant",
+    description: "Use the AI assistant and specialist launchers across the app",
+  },
 ] as const;
 
 // ---- Context Types ----

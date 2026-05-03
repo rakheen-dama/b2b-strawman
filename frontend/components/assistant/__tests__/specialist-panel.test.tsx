@@ -13,15 +13,17 @@ let chatMessages: Array<{
   content: string;
 }> = [];
 
+const useAssistantChatMock = vi.fn(() => ({
+  messages: chatMessages,
+  isStreaming: false,
+  tokenUsage: { input: 0, output: 0 },
+  sendMessage: sendMessageMock,
+  stopStreaming: stopStreamingMock,
+  confirmToolCall: confirmToolCallMock,
+}));
+
 vi.mock("@/hooks/use-assistant-chat", () => ({
-  useAssistantChat: () => ({
-    messages: chatMessages,
-    isStreaming: false,
-    tokenUsage: { input: 0, output: 0 },
-    sendMessage: sendMessageMock,
-    stopStreaming: stopStreamingMock,
-    confirmToolCall: confirmToolCallMock,
-  }),
+  useAssistantChat: (args: unknown) => useAssistantChatMock(args as never),
 }));
 
 import {
@@ -46,10 +48,6 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
-  // Clean window state set by hand-off path
-  if (typeof window !== "undefined") {
-    delete (window as unknown as { __kaziHandOffSummary?: string }).__kaziHandOffSummary;
-  }
 });
 
 describe("SpecialistPanel", () => {
@@ -69,11 +67,15 @@ describe("SpecialistPanel", () => {
     await waitFor(() =>
       expect(sendMessageMock).toHaveBeenCalledWith("Draft an invoice for project X")
     );
+    // useAssistantChat must be scoped to the specialist session
+    expect(useAssistantChatMock).toHaveBeenCalledWith({
+      specialistId: "invoice-drafter",
+    });
     // Header renders the specialist's display name
     expect(screen.getByText("Invoice Drafter")).toBeInTheDocument();
   });
 
-  it("hand-off forwards a <=500-char transcript summary to the generalist via window bus", async () => {
+  it("hand-off dispatches a kazi:handoff CustomEvent with the transcript summary", async () => {
     const user = userEvent.setup();
     chatMessages = [
       { id: "u1", role: "user", content: "Help me draft an invoice." },
@@ -81,6 +83,8 @@ describe("SpecialistPanel", () => {
       { id: "u2", role: "user", content: "$500" },
     ];
     const onOpenChange = vi.fn();
+    const handler = vi.fn();
+    window.addEventListener("kazi:handoff", handler as EventListener);
 
     render(
       <AssistantProvider aiEnabled={true}>
@@ -97,12 +101,33 @@ describe("SpecialistPanel", () => {
     await user.click(handOff);
 
     expect(onOpenChange).toHaveBeenCalledWith(false);
-    const summary = (window as unknown as { __kaziHandOffSummary?: string })
-      .__kaziHandOffSummary;
-    expect(summary).toBeDefined();
-    expect(summary!.length).toBeLessThanOrEqual(500);
-    expect(summary).toContain("user: Help me draft an invoice.");
-    expect(summary).toContain("assistant: Sure");
+    expect(handler).toHaveBeenCalledTimes(1);
+    const event = handler.mock.calls[0][0] as CustomEvent<{
+      summary: string;
+      specialistId: string;
+      sessionId: string;
+    }>;
+    expect(event.detail.specialistId).toBe("invoice-drafter");
+    expect(event.detail.sessionId).toBe(baseHandle.sessionId);
+    expect(event.detail.summary.length).toBeLessThanOrEqual(500);
+    expect(event.detail.summary).toContain("user: Help me draft an invoice.");
+    expect(event.detail.summary).toContain("assistant: Sure");
+
+    window.removeEventListener("kazi:handoff", handler as EventListener);
+  });
+
+  it("renders without crashing when no AssistantProvider is in the tree", () => {
+    expect(() =>
+      render(
+        <SpecialistPanel
+          open={true}
+          onOpenChange={vi.fn()}
+          sessionHandle={baseHandle}
+          contextRef={{ entityType: "INVOICE", entityId: "i-1" }}
+        />
+      )
+    ).not.toThrow();
+    expect(screen.getByText("Invoice Drafter")).toBeInTheDocument();
   });
 });
 

@@ -42,6 +42,9 @@ export interface SpecialistPanelProps {
 /**
  * Truncate the message transcript into a <=500-char summary suitable for
  * pre-seeding the generalist on hand-off (see Phase 70 architecture §3.8).
+ *
+ * Trailing high-surrogate code units (the first half of a UTF-16 surrogate pair)
+ * are stripped so the resulting string never ends mid-codepoint.
  */
 export function buildHandOffSummary(messages: ChatMessage[], maxLen = 500): string {
   if (messages.length === 0) return "";
@@ -51,7 +54,25 @@ export function buildHandOffSummary(messages: ChatMessage[], maxLen = 500): stri
     parts.push(`${m.role}: ${m.content}`);
   }
   const joined = parts.join("\n");
-  return joined.length > maxLen ? joined.slice(0, maxLen) : joined;
+  const truncated = joined.length > maxLen ? joined.slice(0, maxLen) : joined;
+  // Avoid leaving a lone high-surrogate at the tail (would yield a broken codepoint).
+  return truncated.replace(/[\uD800-\uDBFF]$/, "");
+}
+
+/**
+ * Safely access the generalist assistant context. Returns `null` when the
+ * panel renders outside an `<AssistantProvider>` (e.g. preview surfaces).
+ *
+ * `useAssistant()` throws when the provider is missing, but the underlying
+ * `useContext(AssistantContext)` call is still made unconditionally — that's
+ * required to satisfy the Rules of Hooks. We just swallow the throw.
+ */
+function useOptionalAssistant(): ReturnType<typeof useAssistant> | null {
+  try {
+    return useAssistant();
+  } catch {
+    return null;
+  }
 }
 
 export function SpecialistPanel({
@@ -62,11 +83,10 @@ export function SpecialistPanel({
   contextRef,
   tagline,
 }: SpecialistPanelProps) {
-  // Reference `contextRef` so the linter doesn't flag it; future epics may use
-  // it to render context-aware panel chrome.
-  void contextRef;
+  // `contextRef` is currently surfaced through the hand-off event payload
+  // (see `handleHandOff`) so downstream panels/analytics can pick it up.
 
-  const generalist = useAssistant();
+  const generalist = useOptionalAssistant();
   const {
     messages,
     isStreaming,
@@ -130,22 +150,37 @@ export function SpecialistPanel({
     // Build summary first so we don't lose access after the panel closes.
     const summary = buildHandOffSummary(messages);
     onOpenChange(false);
-    if (!generalist.isOpen) {
+    if (generalist && !generalist.isOpen) {
       generalist.toggle();
     }
-    // The generalist's chat hook is a separate instance; re-issue the summary
-    // as a fresh user message there. Phase 52 doesn't expose a cross-instance
-    // pre-seed bus yet, so consumers wire their own bridging. For now we
-    // attach the summary to the global window so the generalist panel can
-    // optionally consume it. Future slices may replace this with a shared store.
+    // Notify the generalist panel (or any other listener) via a CustomEvent.
+    // The generalist's chat hook is a separate instance; consumers wire their
+    // own bridging by listening for `kazi:handoff` and re-issuing the summary
+    // as a fresh user message.
+    // TODO(514B/515B): replace this transient event with a shared assistant
+    // store once the generalist panel grows a cross-instance pre-seed slot.
     if (typeof window !== "undefined" && summary) {
-      (window as unknown as { __kaziHandOffSummary?: string }).__kaziHandOffSummary =
-        summary;
+      window.dispatchEvent(
+        new CustomEvent("kazi:handoff", {
+          detail: {
+            summary,
+            specialistId: sessionHandle.specialistId,
+            sessionId: sessionHandle.sessionId,
+            contextRef,
+          },
+        })
+      );
     }
   };
 
   // Optionally render a pre-seeded assistant message (from SessionHandle) once.
   const preSeed = sessionHandle.preSeededAssistantMessage;
+  // Build a complete ChatMessage shape so the pre-seed entry is uniform with
+  // streamed assistant messages (id/role surfaced for any future consumers,
+  // even though AssistantMessage only reads `.content` today).
+  const preSeedMessage: ChatMessage | null = preSeed
+    ? { id: "pre-seed", role: "assistant", content: preSeed }
+    : null;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -188,10 +223,10 @@ export function SpecialistPanel({
 
         <div className="flex-1 overflow-y-auto px-1 py-3">
           <div className="flex flex-col gap-2">
-            {preSeed && (
+            {preSeedMessage && (
               <AssistantMessage
-                key="pre-seed"
-                message={{ content: preSeed }}
+                key={preSeedMessage.id}
+                message={preSeedMessage}
                 isStreaming={false}
               />
             )}

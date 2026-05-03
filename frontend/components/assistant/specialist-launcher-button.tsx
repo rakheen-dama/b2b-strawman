@@ -33,9 +33,6 @@ function LauncherInner({
   const [inFlight, setInFlight] = useState(false);
   const [sessionHandle, setSessionHandle] = useState<SessionHandle | null>(null);
   const [error, setError] = useState<string | null>(null);
-  // Reference `surface` so future analytics/logging can attach it without the
-  // linter flagging it as unused.
-  void surface;
 
   const handleClick = useCallback(async () => {
     if (inFlight) return;
@@ -50,15 +47,17 @@ function LauncherInner({
       const handle = await startSession(specialistId, {
         contextRef: fullContextRef,
         initialPrompt,
+        surface,
       });
       setSessionHandle(handle);
       setOpen(true);
-    } catch {
+    } catch (err) {
+      console.error("[SpecialistLauncher] startSession failed", err);
       setError(SPECIALIST_STRINGS.errorStartingSession);
     } finally {
       setInFlight(false);
     }
-  }, [inFlight, specialistId, contextRef, initialPrompt]);
+  }, [inFlight, specialistId, surface, contextRef, initialPrompt]);
 
   const label = ctaLabel ?? SPECIALIST_STRINGS.defaultLauncherLabel;
 
@@ -82,8 +81,14 @@ function LauncherInner({
       )}
       {sessionHandle && (
         <SpecialistPanel
+          key={sessionHandle.sessionId}
           open={open}
-          onOpenChange={setOpen}
+          onOpenChange={(o) => {
+            setOpen(o);
+            // Drop the handle on close so the next launch mounts a fresh panel
+            // rather than stacking a second instance over the existing one.
+            if (!o) setSessionHandle(null);
+          }}
           sessionHandle={sessionHandle}
           initialPrompt={initialPrompt}
           contextRef={contextRef}

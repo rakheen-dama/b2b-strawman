@@ -49,6 +49,8 @@ export interface SessionHandle {
 export interface StartSessionRequest {
   contextRef: ContextRef;
   initialPrompt?: string;
+  /** Toolbar/surface identifier — propagated for backend analytics/logging. */
+  surface?: string;
 }
 
 // ---- Auth helpers (mirror use-assistant-chat.ts) ----

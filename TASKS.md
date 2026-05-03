@@ -571,7 +571,7 @@
 | 501 | Audit Metadata Registry + Severity / Group Foundation | Backend | -- | M | 501A | **Done** (PR #1273) |
 | 502 | Audit Facets API + Severity-Filtered List | Backend | 501 | M | 502A, 502B | **Done** (PRs #1274, #1275) |
 | 503 | Audit Export — CSV Streaming + Reflexive Audit | Backend | 501, 502A | M | 503A | **Done** (PR #1276) |
-| 504 | Audit Export — PDF via Tiptap Pipeline | Backend | 501, 502A, 503A | M | 504A | |
+| 504 | Audit Export — PDF via Tiptap Pipeline | Backend | 501, 502A, 503A | M | 504A | **Done** (PR #1277) |
 | 505 | DSAR Audit-Trail Folder Integration | Backend | 501 | M | 505A | |
 | 506 | Global Audit Log Page — Shell, Filters, Row Expansion, Presets, Export | Frontend | 502B | L | 506A, 506B | |
 | 507 | `<AuditTimeline>` Component + 3 Detail Page Tabs (Customer / Project / Invoice) | Frontend | 502B, 506A | M | 507A | |

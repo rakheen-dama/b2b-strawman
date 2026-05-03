@@ -28,7 +28,7 @@ The existing global audit log page at `frontend/app/(app)/org/[slug]/settings/au
 | 507 | `<AuditTimeline>` Component + 3 Detail Page Tabs (Customer / Project / Invoice) | Frontend | 502B, 506A | M | 507A | **Done** (PR #1281) |
 | 508 | Matter Closure Override Audit Surface (Backend + Frontend, Scope B′) | Both | 507A | M | 508A, 508B | **Done** (PRs #1282, #1283) |
 | 509 | Sensitive-Events Dashboard Widget | Frontend | 502B, 506B | S | 509A | **Done** (PR #1284) |
-| 510 | Admin-POV 30-Day QA Capstone + Screenshots + Gap Report | E2E / Process | 501–509 | L | 510A, 510B | |
+| 510 | Admin-POV 30-Day QA Capstone + Screenshots + Gap Report | E2E / Process | 501–509 | L | 510A, 510B | 510A **Done** (PR #1285); 510B **Deferred — user-managed** (manual `/qa-cycle-kc` run + follow-up PR for screenshots + gap report) |
 
 Slice count: **14 slices across 10 epics** (re-scoped from 13 on 2026-05-03 — Epic 508 was split into 508A backend + 508B frontend after the original 508A scout discovered both spec-vs-code drift in matter-closure audit emissions and four target detail pages that did not exist in their expected shape; see Phase 70 Backlog at the end of this file). Backend and frontend are always split into separate slices. Severity-foundation work in 501 blocks every read-time enrichment surface (502, 503, 504, 506, 507, 508, 509). Backend export and DSAR work parallelises after 502A. Frontend pages all wait on 502B (the API surface they consume). Epic 509 is the cuttable epic if scope tightens — the audit log page (506) and per-entity timeline (507/508) carry the phase.
 
@@ -149,8 +149,8 @@ PHASES already complete:
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 4a | 510 | 510A | `qa/testplan/demos/admin-audit-30day-keycloak.md` drafted (8 checkpoints per requirements §6.1); seed-scenario fixtures for the lifecycle (login, matter creation, trust deposit, deadline seeding, retainer setup, permission denial, trust approval, closure override, DSAR); `/qa-cycle-kc` compatibility verified. |
-| 4b | 510 | 510B | Full lifecycle run; curated screenshots to `documentation/screenshots/phase69/` (per requirements §6.2 — 12 shots); `tasks/phase69-gap-report.md` authored covering UX rough edges, missing event coverage, performance observations, Phase 70+ proposals. |
+| 4a | 510 | 510A | `qa/testplan/demos/admin-audit-30day-keycloak.md` drafted (8 checkpoints per requirements §6.1); seed-scenario fixtures for the lifecycle (login, matter creation, trust deposit, deadline seeding, retainer setup, permission denial, trust approval, closure override, DSAR); `/qa-cycle-kc` compatibility verified. **Done** (PR #1285) |
+| 4b | 510 | 510B | Full lifecycle run; curated screenshots to `documentation/screenshots/phase69/` (per requirements §6.2 — 12 shots); `tasks/phase69-gap-report.md` authored covering UX rough edges, missing event coverage, performance observations, Phase 70+ proposals. **Deferred — user-managed.** Will be executed by the user manually via `/qa-cycle-kc qa/testplan/demos/admin-audit-30day-keycloak.md` outside the autonomous orchestration; capstone artefacts (screenshots + gap report) land via a separate follow-up PR. |
 
 ### Timeline
 
@@ -830,8 +830,8 @@ A realistic day-by-day cadence: 501A days 1–3; 502A + 503A + 505A days 3–7 (
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **510A** | 510.1–510.4 | 5 files (1 lifecycle script, 1 seed-fixtures module, 2 Playwright spec scaffolds, 1 `/qa-cycle-kc` config check) | `qa/testplan/demos/admin-audit-30day-keycloak.md` drafted with 8 checkpoints (per requirements §6.1). Seed-scenario fixtures module producing the lifecycle's events deterministically. Playwright spec scaffolds under `frontend/e2e/tests/admin-audit-30day/`. `/qa-cycle-kc` compatibility verified (script structure matches the existing capstone format from Phase 67/68 — refer to `qa/testplan/demos/portal-client-90day-keycloak.md` and `qa/testplan/demos/legal-depth-30day-keycloak.md` shape). |
-| **510B** | 510.5–510.8 | ~14 files (lifecycle run logs, 12 screenshots, 1 gap report, 1 TASKS.md update) | Full lifecycle run via `/qa-cycle-kc qa/testplan/demos/admin-audit-30day-keycloak.md`. Screenshot baselines under `documentation/screenshots/phase69/` (12 shots per requirements §6.2). `tasks/phase69-gap-report.md` authored covering UX rough edges, missing event coverage, performance observations on large filters, and Phase 70+ proposals (template registry, portal activity trail, alert routing). `TASKS.md` Phase 69 row updated. |
+| **510A** | 510.1–510.4 | 5 files (1 lifecycle script, 1 seed-fixtures module, 2 Playwright spec scaffolds, 1 `/qa-cycle-kc` config check) | `qa/testplan/demos/admin-audit-30day-keycloak.md` drafted with 8 checkpoints (per requirements §6.1). Seed-scenario fixtures module producing the lifecycle's events deterministically. Playwright spec scaffolds under `frontend/e2e/tests/admin-audit-30day/`. `/qa-cycle-kc` compatibility verified (script structure matches the existing capstone format from Phase 67/68 — refer to `qa/testplan/demos/portal-client-90day-keycloak.md` and `qa/testplan/demos/legal-depth-30day-keycloak.md` shape). **Done** (PR #1285) |
+| **510B** | 510.5–510.8 | ~14 files (lifecycle run logs, 12 screenshots, 1 gap report, 1 TASKS.md update) | Full lifecycle run via `/qa-cycle-kc qa/testplan/demos/admin-audit-30day-keycloak.md`. Screenshot baselines under `documentation/screenshots/phase69/` (12 shots per requirements §6.2). `tasks/phase69-gap-report.md` authored covering UX rough edges, missing event coverage, performance observations on large filters, and Phase 70+ proposals (template registry, portal activity trail, alert routing). `TASKS.md` Phase 69 row updated. **Deferred — user-managed.** The user is running `/qa-cycle-kc` manually outside the autonomous orchestration; capstone artefacts (screenshots + gap report + TASKS.md update) land via a separate follow-up PR. The 510A scaffolding (script + fixtures + spec scaffolds) is in place to support that manual run. |
 
 ### Tasks
 

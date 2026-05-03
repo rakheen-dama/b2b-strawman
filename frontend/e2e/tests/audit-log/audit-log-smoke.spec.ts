@@ -22,9 +22,9 @@ test.describe("Audit Log — Smoke (Epic 506B)", () => {
     await expect(page.locator("body")).not.toContainText("Something went wrong");
 
     // Page heading visible
-    await expect(
-      page.locator("h1").filter({ hasText: /Audit log/i })
-    ).toBeVisible({ timeout: 10_000 });
+    await expect(page.locator("h1").filter({ hasText: /Audit log/i })).toBeVisible({
+      timeout: 10_000,
+    });
 
     // Apply Sensitive preset (Shadcn / Radix select — click trigger then option).
     const presetSelect = page.getByTestId("audit-preset-select");

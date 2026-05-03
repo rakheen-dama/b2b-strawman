@@ -89,8 +89,7 @@ describe("<ExportDropdown>", () => {
     await openMenu(user);
     const item = await screen.findByTestId("export-dropdown-pdf");
     // Radix sets data-disabled and/or aria-disabled on disabled MenuItem.
-    const disabledAttr =
-      item.getAttribute("data-disabled") ?? item.getAttribute("aria-disabled");
+    const disabledAttr = item.getAttribute("data-disabled") ?? item.getAttribute("aria-disabled");
     expect(disabledAttr).not.toBeNull();
   });
 

@@ -49,11 +49,7 @@ vi.mock("next/link", () => ({
 }));
 
 import AuditLogPage from "./page";
-import {
-  getAuditMetadata,
-  listAuditEvents,
-  type AuditEventResponse,
-} from "@/lib/api/audit-events";
+import { getAuditMetadata, listAuditEvents, type AuditEventResponse } from "@/lib/api/audit-events";
 import { ApiError } from "@/lib/api/client";
 
 const mockListAuditEvents = listAuditEvents as ReturnType<typeof vi.fn>;
@@ -284,9 +280,7 @@ describe("AuditLogPage (server shell)", () => {
     expect(urlPushed).toContain("/org/acme/settings/audit-log");
     // Sensitive is severity-only — no eventType sentinel and no banner.
     expect(urlPushed).not.toContain("eventType=");
-    expect(
-      screen.queryByTestId("audit-preset-multi-event-banner")
-    ).not.toBeInTheDocument();
+    expect(screen.queryByTestId("audit-preset-multi-event-banner")).not.toBeInTheDocument();
   });
 
   it("selecting Financial approvals preset uses multi-event sentinel and shows banner", async () => {
@@ -303,9 +297,7 @@ describe("AuditLogPage (server shell)", () => {
 
     const user = userEvent.setup();
     await user.click(screen.getByTestId("audit-preset-select"));
-    await user.click(
-      await screen.findByRole("option", { name: /Financial approvals/i })
-    );
+    await user.click(await screen.findByRole("option", { name: /Financial approvals/i }));
 
     await waitFor(() => expect(pushMock).toHaveBeenCalled());
     const urlPushed = pushMock.mock.calls[0]?.[0] as string;

@@ -167,7 +167,7 @@ export function ExportDropdown({ filter }: ExportDropdownProps) {
           {pdfHelp && (
             <p
               data-testid="export-dropdown-pdf-help"
-              className="px-2 pt-1 pb-1 text-[11px] text-muted-foreground"
+              className="text-muted-foreground px-2 pt-1 pb-1 text-[11px]"
             >
               {pdfHelp}
             </p>

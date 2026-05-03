@@ -36,9 +36,7 @@ export async function exportAuditPdfAction(
     return { data };
   } catch (error) {
     if (error instanceof ApiError) {
-      const detail = error.detail as
-        | { rowCount?: number; cap?: number }
-        | undefined;
+      const detail = error.detail as { rowCount?: number; cap?: number } | undefined;
       return { data: null, error: error.message, detail };
     }
     return { data: null, error: "Failed to export PDF." };

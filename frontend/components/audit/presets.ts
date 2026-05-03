@@ -1,7 +1,4 @@
-import type {
-  AuditEventTypeMetadata,
-  AuditSeverity,
-} from "@/lib/api/audit-events";
+import type { AuditEventTypeMetadata, AuditSeverity } from "@/lib/api/audit-events";
 
 /**
  * Filter presets for the audit log page (Epic 506B / 506.9).
@@ -10,11 +7,7 @@ import type {
  * mutates the page URL query string with the returned filter deltas.
  */
 
-export type PresetName =
-  | "sensitive"
-  | "compliance"
-  | "security"
-  | "financial-approvals";
+export type PresetName = "sensitive" | "compliance" | "security" | "financial-approvals";
 
 export interface PresetOption {
   value: PresetName;
@@ -87,17 +80,13 @@ export function resolvePreset(
     case "compliance":
       return {
         from: isoDaysAgo(now, 90),
-        eventTypes: metadata
-          .filter((m) => m.group === "COMPLIANCE")
-          .map((m) => m.eventType),
+        eventTypes: metadata.filter((m) => m.group === "COMPLIANCE").map((m) => m.eventType),
         isGroupPreset: true,
       };
     case "security":
       return {
         from: isoDaysAgo(now, 7),
-        eventTypes: metadata
-          .filter((m) => m.group === "SECURITY")
-          .map((m) => m.eventType),
+        eventTypes: metadata.filter((m) => m.group === "SECURITY").map((m) => m.eventType),
         isGroupPreset: true,
       };
     case "financial-approvals":

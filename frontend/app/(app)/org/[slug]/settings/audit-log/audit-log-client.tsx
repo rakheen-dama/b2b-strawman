@@ -300,8 +300,7 @@ export function AuditLogClient({
   const applyPreset = useCallback(
     (preset: PresetName) => {
       const def = resolvePreset(preset, metadata);
-      const presetLabel =
-        PRESET_OPTIONS.find((o) => o.value === preset)?.label ?? preset;
+      const presetLabel = PRESET_OPTIONS.find((o) => o.value === preset)?.label ?? preset;
       const eventTypes = def.eventTypes ?? [];
       const isGroupPreset = def.isGroupPreset === true;
 
@@ -402,9 +401,8 @@ export function AuditLogClient({
                   <span className="font-medium">
                     Preset &ldquo;{multiEventBanner.presetLabel}&rdquo;
                   </span>{" "}
-                  could not resolve any event types (metadata unavailable).
-                  Results temporarily empty &mdash; backend multi-value filter
-                  pending.
+                  could not resolve any event types (metadata unavailable). Results temporarily
+                  empty &mdash; backend multi-value filter pending.
                 </>
               ) : (
                 <>
@@ -413,11 +411,8 @@ export function AuditLogClient({
                   </span>{" "}
                   filters to {multiEventBanner.eventTypes.length} event{" "}
                   {multiEventBanner.eventTypes.length === 1 ? "type" : "types"}:{" "}
-                  <span className="font-mono">
-                    {multiEventBanner.eventTypes.join(", ")}
-                  </span>{" "}
-                  &mdash; backend multi-value filter pending; results
-                  temporarily empty.
+                  <span className="font-mono">{multiEventBanner.eventTypes.join(", ")}</span>{" "}
+                  &mdash; backend multi-value filter pending; results temporarily empty.
                 </>
               )}
             </div>

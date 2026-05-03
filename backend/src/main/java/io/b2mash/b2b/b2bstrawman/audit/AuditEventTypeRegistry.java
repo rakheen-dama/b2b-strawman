@@ -109,7 +109,43 @@ public class AuditEventTypeRegistry {
             new AuditEventTypeMetadata(
                 "invoice.*", "Invoice", AuditSeverity.INFO, AuditEventGroup.FINANCIAL),
             new AuditEventTypeMetadata(
-                "proposal.*", "Proposal", AuditSeverity.INFO, AuditEventGroup.FINANCIAL));
+                "proposal.*", "Proposal", AuditSeverity.INFO, AuditEventGroup.FINANCIAL),
+            // AI SPECIALIST — Phase 70
+            new AuditEventTypeMetadata(
+                "ai.specialist.invoked",
+                "AI Specialist Invoked",
+                AuditSeverity.INFO,
+                AuditEventGroup.STANDARD),
+            new AuditEventTypeMetadata(
+                "ai.specialist.approved",
+                "AI Specialist Output Approved",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.COMPLIANCE),
+            new AuditEventTypeMetadata(
+                "ai.specialist.rejected",
+                "AI Specialist Output Rejected",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.COMPLIANCE),
+            new AuditEventTypeMetadata(
+                "ai.specialist.failed",
+                "AI Specialist Failed",
+                AuditSeverity.WARNING,
+                AuditEventGroup.STANDARD),
+            new AuditEventTypeMetadata(
+                "ai.specialist.auto_applied",
+                "AI Specialist Output Auto-Applied",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.COMPLIANCE),
+            new AuditEventTypeMetadata(
+                "ai.specialist.expired",
+                "AI Specialist Output Expired",
+                AuditSeverity.INFO,
+                AuditEventGroup.STANDARD),
+            new AuditEventTypeMetadata(
+                "ai.specialist.*",
+                "AI Specialist Activity",
+                AuditSeverity.INFO,
+                AuditEventGroup.STANDARD));
     var map = new HashMap<String, AuditEventTypeMetadata>();
     for (var entry : entries) {
       var previous = map.put(entry.eventType(), entry);

@@ -573,7 +573,7 @@
 | 503 | Audit Export — CSV Streaming + Reflexive Audit | Backend | 501, 502A | M | 503A | **Done** (PR #1276) |
 | 504 | Audit Export — PDF via Tiptap Pipeline | Backend | 501, 502A, 503A | M | 504A | **Done** (PR #1277) |
 | 505 | DSAR Audit-Trail Folder Integration | Backend | 501 | M | 505A | **Done** (PR #1278) |
-| 506 | Global Audit Log Page — Shell, Filters, Row Expansion, Presets, Export | Frontend | 502B | L | 506A, 506B | |
+| 506 | Global Audit Log Page — Shell, Filters, Row Expansion, Presets, Export | Frontend | 502B | L | 506A, 506B | 506A **Done** (PR #1279) |
 | 507 | `<AuditTimeline>` Component + 3 Detail Page Tabs (Customer / Project / Invoice) | Frontend | 502B, 506A | M | 507A | |
 | 508 | `<AuditTimeline>` — Trust Tx / Matter Closure / Proposal / Information Request Detail Tabs | Frontend | 507A | M | 508A | |
 | 509 | Sensitive-Events Dashboard Widget | Frontend | 502B, 506B | S | 509A | |

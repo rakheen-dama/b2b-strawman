@@ -24,7 +24,7 @@ The existing global audit log page at `frontend/app/(app)/org/[slug]/settings/au
 | 503 | Audit Export — CSV Streaming + Reflexive Audit | Backend | 501, 502A | M | 503A | **Done** (PR #1276) |
 | 504 | Audit Export — PDF via Tiptap Pipeline | Backend | 501, 502A, 503A | M | 504A | **Done** (PR #1277) |
 | 505 | DSAR Audit-Trail Folder Integration | Backend | 501 | M | 505A | **Done** (PR #1278) |
-| 506 | Global Audit Log Page — Shell, Filters, Row Expansion | Frontend | 502B | L | 506A, 506B | |
+| 506 | Global Audit Log Page — Shell, Filters, Row Expansion | Frontend | 502B | L | 506A, 506B | 506A **Done** (PR #1279) |
 | 507 | `<AuditTimeline>` Component + 3 Detail Page Tabs (Customer / Project / Invoice) | Frontend | 502B, 506A | M | 507A | |
 | 508 | `<AuditTimeline>` — Remaining 4 Detail Page Tabs (TrustTx / MatterClosure / Proposal / InfoRequest) | Frontend | 507A | M | 508A | |
 | 509 | Sensitive-Events Dashboard Widget | Frontend | 502B, 506B | S | 509A | |
@@ -138,7 +138,7 @@ PHASES already complete:
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 3a | 506 | 506A | `app/(app)/org/[slug]/settings/audit-log/page.tsx` rebuilt: filter UI (date range / severity / actor / event type / entity type), URL query string state, paginated rows, row expansion. Shared primitives created: `<SeverityPill>`, `<AuditDetailsViewer>` (diff + JSON tree), `<ActorDisplay>`, entity-cell deep-link helper. `frontend/lib/api/audit-events.ts` extended with the six new endpoints. Frontend tests for filter mapping + row expansion. |
+| 3a | 506 | 506A | **Done** (PR #1279) — `app/(app)/org/[slug]/settings/audit-log/page.tsx` rebuilt: filter UI (date range / severity / actor / event type / entity type), URL query string state, paginated rows, row expansion. Shared primitives created: `<SeverityPill>`, `<AuditDetailsViewer>` (diff + JSON tree), `<ActorDisplay>`, entity-cell deep-link helper. `frontend/lib/api/audit-events.ts` extended with the six new endpoints. Frontend tests for filter mapping + row expansion. |
 | 3b (parallel) | 506 | 506B | Filter presets (Sensitive / Compliance / Security / Financial approvals); export dropdown wired to `/export.csv` + `/export.pdf`; PDF cap pre-check + disabled-with-tooltip; Playwright smoke spec. Depends on 506A; depends on 503A + 504A for the export endpoints. |
 | 3c (parallel after 506A) | 507 | 507A | `frontend/components/audit/audit-timeline.tsx` reusable component reusing 506A primitives; "Audit" tab added to Customer / Project / Invoice detail pages; capability-gated; terminology key `audit.tab` (legal-za → "Audit Trail"). Frontend tests for render + expansion + empty state. |
 | 3d | 508 | 508A | "Audit" tab dropped into TrustTransaction / Matter Closure / Proposal / Information Request detail pages reusing 507A's `<AuditTimeline>`. Playwright smoke for the matter-closure detail page asserting the override event with justification visible on expand. |
@@ -529,7 +529,7 @@ A realistic day-by-day cadence: 501A days 1–3; 502A + 503A + 505A days 3–7 (
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **506A** | 506.1–506.8 | 9 frontend files (1 page rewrite, 1 client component, 4 shared components, 1 API client extension, 2 test files) | `app/(app)/org/[slug]/settings/audit-log/page.tsx` rewritten; new `audit-log-client.tsx` client component owning filter state + URL sync. Shared primitives created under `frontend/components/audit/`: `<SeverityPill>`, `<AuditDetailsViewer>` (diff + JSON tree), `<ActorDisplay>`, entity-cell deep-link helper. `frontend/lib/api/audit-events.ts` extended with the six new endpoint methods. Empty states + i18n keys. Frontend tests for filter mapping + row expansion + entity deep-link. |
+| **506A** | 506.1–506.8 | 9 frontend files (1 page rewrite, 1 client component, 4 shared components, 1 API client extension, 2 test files) | **Done** (PR #1279) — `app/(app)/org/[slug]/settings/audit-log/page.tsx` rewritten; new `audit-log-client.tsx` client component owning filter state + URL sync. Shared primitives created under `frontend/components/audit/`: `<SeverityPill>`, `<AuditDetailsViewer>` (diff + JSON tree), `<ActorDisplay>`, entity-cell deep-link helper. `frontend/lib/api/audit-events.ts` extended with the six new endpoint methods. Empty states + i18n keys. Frontend tests for filter mapping + row expansion + entity deep-link. |
 | **506B** | 506.9–506.13 | 5 frontend files (preset logic + export dropdown component + Playwright spec + 2 tests) | Four built-in presets (Sensitive / Compliance / Security / Financial approvals) populating filters from URL query string; export dropdown component triggering CSV / PDF blob downloads; PDF cap pre-check via `?count=true` query param (debounced); Playwright smoke spec covering login → navigate → apply Sensitive preset → assert non-zero rows; frontend tests for preset selection + export trigger. |
 
 ### Tasks

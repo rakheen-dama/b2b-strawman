@@ -575,7 +575,7 @@
 | 505 | DSAR Audit-Trail Folder Integration | Backend | 501 | M | 505A | **Done** (PR #1278) |
 | 506 | Global Audit Log Page — Shell, Filters, Row Expansion, Presets, Export | Frontend | 502B | L | 506A, 506B | **Done** (PRs #1279, #1280) |
 | 507 | `<AuditTimeline>` Component + 3 Detail Page Tabs (Customer / Project / Invoice) | Frontend | 502B, 506A | M | 507A | **Done** (PR #1281) |
-| 508 | Matter Closure Override Audit Surface (Backend + Frontend, Scope B′) | Both | 507A | M | 508A, 508B | 508A **Done** (PR #1282); 508B pending |
+| 508 | Matter Closure Override Audit Surface (Backend + Frontend, Scope B′) | Both | 507A | M | 508A, 508B | **Done** (PRs #1282, #1283) |
 | 509 | Sensitive-Events Dashboard Widget | Frontend | 502B, 506B | S | 509A | |
 | 510 | Admin-POV 30-Day QA Capstone + Screenshots + Gap Report | E2E/Process | 501–509 | L | 510A, 510B | |
 

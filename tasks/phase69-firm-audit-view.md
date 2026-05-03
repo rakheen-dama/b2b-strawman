@@ -26,7 +26,7 @@ The existing global audit log page at `frontend/app/(app)/org/[slug]/settings/au
 | 505 | DSAR Audit-Trail Folder Integration | Backend | 501 | M | 505A | **Done** (PR #1278) |
 | 506 | Global Audit Log Page — Shell, Filters, Row Expansion | Frontend | 502B | L | 506A, 506B | **Done** (PRs #1279, #1280) |
 | 507 | `<AuditTimeline>` Component + 3 Detail Page Tabs (Customer / Project / Invoice) | Frontend | 502B, 506A | M | 507A | **Done** (PR #1281) |
-| 508 | Matter Closure Override Audit Surface (Backend + Frontend, Scope B′) | Both | 507A | M | 508A, 508B | 508A **Done** (PR #1282); 508B pending |
+| 508 | Matter Closure Override Audit Surface (Backend + Frontend, Scope B′) | Both | 507A | M | 508A, 508B | **Done** (PRs #1282, #1283) |
 | 509 | Sensitive-Events Dashboard Widget | Frontend | 502B, 506B | S | 509A | |
 | 510 | Admin-POV 30-Day QA Capstone + Screenshots + Gap Report | E2E / Process | 501–509 | L | 510A, 510B | |
 
@@ -142,7 +142,7 @@ PHASES already complete:
 | 3b (parallel) | 506 | 506B | **Done** (PR #1280) — Filter presets (Sensitive / Compliance / Security / Financial approvals) with fail-closed sentinel + banner for multi-eventType groups; export dropdown wired to `/export.csv` + `/export.pdf` via server actions; PDF cap pre-check (debounced count fetch, 30s timeout); Playwright smoke spec. |
 | 3c (parallel after 506A) | 507 | 507A | `frontend/components/audit/audit-timeline.tsx` reusable component reusing 506A primitives; "Audit" tab added to Customer / Project / Invoice detail pages; capability-gated; terminology key `audit.tab` (legal-za → "Audit Trail"). Frontend tests for render + expansion + empty state. **Done** (PR #1281) |
 | 3d | 508 | 508A | **Backend.** Add `matter.closure.override_used` audit emission in `MatterClosureService.performClose` when override is true (entityType="matter_closure", entityId=closureLogId, details include justification). Existing `matter_closure.closed` emission preserved for portal compatibility. Re-spec rationale: original 508A scout discovered all four target detail pages required new infrastructure AND the demo's CRITICAL event was never being emitted; split into thin BE + focused FE per Scope B′. **Done** (PR #1282) |
-| 3e | 508 | 508B | **Frontend.** Closure History section on project detail consuming the new override events from 508A. Inline `<AuditHistoryDisclosure>` on proposal detail (works against existing emissions). Playwright matter-closure override demo (canonical Phase 69 demo per requirements §6.1 Day 15). Trust Tx + Information Request deferred to Phase 70. |
+| 3e | 508 | 508B | **Frontend.** Closure History section on project detail consuming the new override events from 508A. Inline `<AuditHistoryDisclosure>` on proposal detail (works against existing emissions). Playwright matter-closure override demo (canonical Phase 69 demo per requirements §6.1 Day 15). Trust Tx + Information Request deferred to Phase 70. **Done** (PR #1283) |
 | 3e (parallel after 502B) | 509 | 509A | `<SensitiveEventsWidget>` on the firm admin dashboard: three count pills (NOTICE / WARNING / CRITICAL last 7 days) + top-5 list of CRITICAL+WARNING + "View all" deep link to Sensitive preset. Capability-gated. |
 
 ### Stage 4: QA capstone
@@ -684,7 +684,7 @@ A realistic day-by-day cadence: 501A days 1–3; 502A + 503A + 505A days 3–7 (
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **508A** | 508A.1–508A.4 | 3 backend files | Add `matter.closure.override_used` audit emission in `MatterClosureService.performClose` when `req.override()` is true. Uses `entityType="matter_closure"` + `entityId=closureLogId` (the closure log entry id, NOT the project id) to match the spec's entity-keying decision. Existing `matter_closure.closed` emission is preserved unchanged for portal compatibility (PortalActivityEventTypes whitelist + 11 dependent tests stay untouched). Verify registry resolves the new event to CRITICAL/COMPLIANCE. **Done** (PR #1282) |
-| **508B** | 508B.1–508B.6 | 6 frontend files | Closure History section appended to project detail (renders `ClosureLogEntry[]` from existing `listClosureLog` API; for entries with `overrideUsed=true`, embeds `<AuditTimelineTab entityType="matter_closure" entityId={entry.id} />` to surface the CRITICAL override event from 508A). Shared `<AuditHistoryDisclosure>` primitive. Inline audit disclosure section appended to proposal detail (works against existing `entityType="proposal"` emissions — no backend change needed). Playwright matter-closure override demo + component test. |
+| **508B** | 508B.1–508B.6 | 6 frontend files | Closure History section appended to project detail (renders `ClosureLogEntry[]` from existing `listClosureLog` API; for entries with `overrideUsed=true`, embeds `<AuditTimelineTab entityType="matter_closure" entityId={entry.id} />` to surface the CRITICAL override event from 508A). Shared `<AuditHistoryDisclosure>` primitive. Inline audit disclosure section appended to proposal detail (works against existing `entityType="proposal"` emissions — no backend change needed). Playwright matter-closure override demo + component test. **Done** (PR #1283) |
 
 ### Tasks — 508A (Backend)
 

@@ -7,6 +7,7 @@ import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useOrgProfile } from "@/lib/org-profile";
 import { useTerminology } from "@/lib/terminology";
+import { auditTabLabel } from "@/lib/terminology-map";
 
 interface CustomerTabsProps {
   projectsPanel: ReactNode;
@@ -19,6 +20,7 @@ interface CustomerTabsProps {
   generatedPanel?: ReactNode;
   onboardingPanel?: ReactNode;
   trustPanel?: ReactNode;
+  auditPanel?: ReactNode;
 }
 
 type TabId =
@@ -31,7 +33,8 @@ type TabId =
   | "retainer"
   | "requests"
   | "generated"
-  | "trust";
+  | "trust"
+  | "audit";
 
 interface TabDef {
   id: TabId;
@@ -50,6 +53,7 @@ function buildBaseTabs(t: (term: string) => string): TabDef[] {
     { id: "generated", label: "Generated Docs" },
     { id: "financials", label: "Financials" },
     { id: "trust", label: "Trust" },
+    { id: "audit", label: auditTabLabel(t) },
   ];
 }
 
@@ -64,6 +68,7 @@ const validTabIds = new Set<string>([
   "generated",
   "financials",
   "trust",
+  "audit",
 ]);
 
 export function CustomerTabs({
@@ -77,6 +82,7 @@ export function CustomerTabs({
   generatedPanel,
   onboardingPanel,
   trustPanel,
+  auditPanel,
 }: CustomerTabsProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
@@ -101,6 +107,7 @@ export function CustomerTabs({
       if (t.id === "generated" && !generatedPanel) return false;
       if (t.id === "financials" && !financialsPanel) return false;
       if (t.id === "trust" && !showTrust) return false;
+      if (t.id === "audit" && !auditPanel) return false;
       return true;
     });
   }, [
@@ -113,6 +120,7 @@ export function CustomerTabs({
     financialsPanel,
     generatedPanel,
     showTrust,
+    auditPanel,
   ]);
 
   // Validate activeTab is in the rendered tabs; fall back to "projects" if not
@@ -190,6 +198,11 @@ export function CustomerTabs({
       {showTrust && (
         <TabsPrimitive.Content value="trust" className="pt-6 outline-none">
           {trustPanel}
+        </TabsPrimitive.Content>
+      )}
+      {auditPanel && (
+        <TabsPrimitive.Content value="audit" className="pt-6 outline-none">
+          {auditPanel}
         </TabsPrimitive.Content>
       )}
     </TabsPrimitive.Root>

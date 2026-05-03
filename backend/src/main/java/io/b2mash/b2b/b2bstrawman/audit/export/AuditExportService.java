@@ -152,7 +152,17 @@ public class AuditExportService {
       return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(problem);
     }
 
-    String exportedBy = "Member " + memberId;
+    // Resolve the exporting member to a display name for the legal artefact's "Exported by:"
+    // header. Falls back to a short member id if resolution returns blank/null. We never ship a
+    // raw UUID into the PDF — that would undermine the forensic value of the export.
+    String resolved = auditService.resolveActorDisplay(memberId, "USER");
+    String exportedBy;
+    if (resolved == null || resolved.isBlank()) {
+      String shortId = memberId.toString();
+      exportedBy = "Member " + shortId.substring(0, Math.min(8, shortId.length()));
+    } else {
+      exportedBy = resolved;
+    }
     String filename = buildPdfFilename(filter);
     byte[] pdfBytes = renderAndEmitPdf(filter, exportedBy);
     return ResponseEntity.ok()

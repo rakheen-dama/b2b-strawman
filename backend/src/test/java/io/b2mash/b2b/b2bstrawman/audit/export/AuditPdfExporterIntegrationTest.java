@@ -17,6 +17,8 @@ import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.domain.PageRequest;
@@ -41,6 +43,7 @@ import org.springframework.test.web.servlet.MvcResult;
 class AuditPdfExporterIntegrationTest extends AbstractIntegrationTest {
 
   private static final String ORG_ID = "org_audit_pdf_export_test";
+  private static final String OTHER_ORG_ID = "org_audit_pdf_export_other";
 
   private final AuditService auditService;
   private final TenantProvisioningService provisioningSvc;
@@ -52,7 +55,9 @@ class AuditPdfExporterIntegrationTest extends AbstractIntegrationTest {
   }
 
   private String schemaName;
+  private String otherSchemaName;
   private UUID liveMemberId;
+  private UUID otherOrgMemberId;
 
   @BeforeAll
   void provisionAndSeed() throws Exception {
@@ -64,6 +69,21 @@ class AuditPdfExporterIntegrationTest extends AbstractIntegrationTest {
     liveMemberId = UUID.fromString(liveMemberIdStr);
     TestMemberHelper.syncMember(
         mockMvc, ORG_ID, "user_pdf_member", "pdf_member@test.com", "PDF Member", "member");
+
+    // Provision a second tenant + owner used by the tenant-isolation test below.
+    otherSchemaName =
+        provisioningSvc
+            .provisionTenant(OTHER_ORG_ID, "Audit PDF Export Other Org", null)
+            .schemaName();
+    var otherMemberIdStr =
+        TestMemberHelper.syncMember(
+            mockMvc,
+            OTHER_ORG_ID,
+            "user_pdf_owner_other",
+            "pdf_owner_other@test.com",
+            "PDF Owner Other",
+            "owner");
+    otherOrgMemberId = UUID.fromString(otherMemberIdStr);
 
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
         .run(
@@ -210,6 +230,90 @@ class AuditPdfExporterIntegrationTest extends AbstractIntegrationTest {
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_pdf_member")))
         .andExpect(status().isForbidden())
         .andExpect(jsonPath("$.status").value(403));
+  }
+
+  /**
+   * Tenant isolation guard: seed a uniquely-marked event in a second tenant's schema, then export
+   * as the first tenant's owner and assert the other tenant's marker text never appears in the
+   * rendered PDF. This catches any regression where the export bypasses the {@link
+   * RequestScopes#TENANT_ID} schema binding (e.g. a missing {@code @Transactional} or a stray
+   * cross-schema query).
+   */
+  @Test
+  void exportFromOrgADoesNotLeakOrgBEvents() throws Exception {
+    // Seed a distinctive entityType in BOTH tenants so we can prove org A's export sees only its
+    // own row even when the same entityType exists in another tenant's schema.
+    String sharedEntityType = "tenant_iso_pdf_marker";
+    UUID orgAEntityId = UUID.randomUUID();
+    UUID orgBEntityId = UUID.randomUUID();
+
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .run(
+            () ->
+                auditService.log(
+                    new AuditEventRecord(
+                        "task.created",
+                        sharedEntityType,
+                        orgAEntityId,
+                        liveMemberId,
+                        "USER",
+                        "API",
+                        null,
+                        null,
+                        null)));
+
+    ScopedValue.where(RequestScopes.TENANT_ID, otherSchemaName)
+        .run(
+            () ->
+                auditService.log(
+                    new AuditEventRecord(
+                        "task.created",
+                        sharedEntityType,
+                        orgBEntityId,
+                        otherOrgMemberId,
+                        "USER",
+                        "API",
+                        null,
+                        null,
+                        null)));
+
+    var result = performExport("user_pdf_owner", "entityType", sharedEntityType);
+    assertThat(result.getResponse().getStatus()).isEqualTo(200);
+    byte[] pdfBytes = result.getResponse().getContentAsByteArray();
+    assertThat(pdfBytes).isNotEmpty();
+
+    String text;
+    try (var doc = Loader.loadPDF(pdfBytes)) {
+      text = new PDFTextStripper().getText(doc);
+    }
+    // Strip whitespace — PDFBox introduces soft line breaks inside narrow table cells, which
+    // splits long UUIDs across multiple text-stream segments. The collapsed form is what we
+    // want to assert against.
+    String collapsed = text.replaceAll("\\s+", "");
+
+    // Org A's entityId must appear; org B's entityId must NOT appear in the rendered body.
+    assertThat(collapsed)
+        .as("PDF rendered for org A must contain org A's seeded entity id")
+        .contains(orgAEntityId.toString());
+    assertThat(collapsed)
+        .as("PDF rendered for org A must NOT leak org B's entity id")
+        .doesNotContain(orgBEntityId.toString());
+
+    // Defence in depth: confirm only one row of this entityType is visible to org A via the
+    // service-layer query — if this drifts from the PDF assertion above, both will fail and
+    // point at the same regression.
+    int visibleToOrgA =
+        ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+            .call(
+                () ->
+                    auditService
+                        .findEvents(
+                            new AuditEventFilter(
+                                sharedEntityType, null, null, null, null, null, null),
+                            PageRequest.of(0, 100))
+                        .getContent()
+                        .size());
+    assertThat(visibleToOrgA).isEqualTo(1);
   }
 
   private int countExportEvents() {

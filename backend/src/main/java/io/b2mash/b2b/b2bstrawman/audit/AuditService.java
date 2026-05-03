@@ -131,4 +131,18 @@ public interface AuditService {
    * @return open stream of matching audit events ordered by {@code occurredAt DESC}
    */
   Stream<AuditEvent> streamEvents(AuditEventFilter filter);
+
+  /**
+   * Returns the total number of audit events matching {@code filter}, scoped to the current tenant
+   * schema. Pre-flight cap check for the PDF export (Epic 504A) — the controller uses this to
+   * short-circuit a 413 ProblemDetail before committing response headers.
+   *
+   * <p>Severity-pre-flight semantics match {@link #findEvents(AuditEventFilter, Pageable)}: the
+   * same registry-derived include/exclude/INFO-fallback computation runs before the underlying
+   * COUNT query is issued.
+   *
+   * @param filter query filter (same semantics as {@link #findEvents})
+   * @return non-negative total of matching rows
+   */
+  long countEvents(AuditEventFilter filter);
 }

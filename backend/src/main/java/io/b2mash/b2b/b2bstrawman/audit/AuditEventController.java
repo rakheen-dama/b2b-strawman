@@ -76,6 +76,20 @@ public class AuditEventController {
         new AuditEventFilter(entityType, entityId, actorId, eventType, from, to, severities));
   }
 
+  @GetMapping("/api/audit-events/export.pdf")
+  @RequiresCapability("TEAM_OVERSIGHT")
+  public ResponseEntity<?> exportAuditEventsPdf(
+      @RequestParam(required = false) String entityType,
+      @RequestParam(required = false) UUID entityId,
+      @RequestParam(required = false) UUID actorId,
+      @RequestParam(required = false) String eventType,
+      @RequestParam(required = false) Instant from,
+      @RequestParam(required = false) Instant to,
+      @RequestParam(required = false) Set<AuditSeverity> severities) {
+    return auditExportService.streamPdf(
+        new AuditEventFilter(entityType, entityId, actorId, eventType, from, to, severities));
+  }
+
   @GetMapping("/api/audit-events/metadata")
   @RequiresCapability("TEAM_OVERSIGHT")
   public ResponseEntity<List<AuditEventTypeMetadata>> getMetadata() {

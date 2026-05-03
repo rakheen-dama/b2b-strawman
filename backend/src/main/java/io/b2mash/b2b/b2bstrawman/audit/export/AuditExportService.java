@@ -16,7 +16,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -40,14 +42,17 @@ public class AuditExportService {
   private static final String FILENAME_FALLBACK_DATE_FROM = "all";
 
   private final AuditCsvExporter auditCsvExporter;
+  private final AuditPdfExporter auditPdfExporter;
   private final AuditService auditService;
   private final TransactionTemplate transactionTemplate;
 
   public AuditExportService(
       AuditCsvExporter auditCsvExporter,
+      AuditPdfExporter auditPdfExporter,
       AuditService auditService,
       PlatformTransactionManager transactionManager) {
     this.auditCsvExporter = auditCsvExporter;
+    this.auditPdfExporter = auditPdfExporter;
     this.auditService = auditService;
     // Read-write tx — the reflexive auditService.log(...) call must persist inside the same
     // transaction as the streaming read so the cursor stays open until the body completes.
@@ -113,6 +118,85 @@ public class AuditExportService {
                       Map.of("filter", filterAsMap(filter), "rowCount", rowCount, "format", "CSV"))
                   .build());
         });
+  }
+
+  /**
+   * Builds the PDF audit-export response for {@code filter}. Performs a synchronous pre-flight
+   * count (Epic 504A) — when over the {@link AuditPdfExporter#MAX_ROWS} cap, returns a 413 {@link
+   * ProblemDetail}. Otherwise renders the full PDF in-memory (ADR-263 says in-memory is acceptable
+   * within the cap), emits the reflexive {@code audit.export.generated} event with {@code
+   * format=PDF}, and returns the PDF bytes as an {@code application/pdf} attachment.
+   *
+   * <p>Per ADR-264, failed exports (including the 413 cap path) do NOT emit the reflexive event —
+   * only successful disclosures are recorded as disclosures.
+   */
+  public ResponseEntity<?> streamPdf(AuditEventFilter filter) {
+    String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
+    UUID memberId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
+
+    if (tenantId == null || memberId == null) {
+      throw new IllegalStateException(
+          "Audit PDF export requires a bound tenant and member; refusing to stream unscoped.");
+    }
+
+    long preflightCount = auditService.countEvents(filter);
+    if (preflightCount > AuditPdfExporter.MAX_ROWS) {
+      ProblemDetail problem =
+          ProblemDetail.forStatusAndDetail(
+              HttpStatus.PAYLOAD_TOO_LARGE,
+              "PDF export limited to "
+                  + AuditPdfExporter.MAX_ROWS
+                  + " events. Narrow the date range or filters.");
+      problem.setProperty("rowCount", preflightCount);
+      problem.setProperty("cap", AuditPdfExporter.MAX_ROWS);
+      return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE).body(problem);
+    }
+
+    // Resolve the exporting member to a display name for the legal artefact's "Exported by:"
+    // header. Falls back to a short member id if resolution returns blank/null. We never ship a
+    // raw UUID into the PDF — that would undermine the forensic value of the export.
+    String resolved = auditService.resolveActorDisplay(memberId, "USER");
+    String exportedBy;
+    if (resolved == null || resolved.isBlank()) {
+      String shortId = memberId.toString();
+      exportedBy = "Member " + shortId.substring(0, Math.min(8, shortId.length()));
+    } else {
+      exportedBy = resolved;
+    }
+    String filename = buildPdfFilename(filter);
+    byte[] pdfBytes = renderAndEmitPdf(filter, exportedBy);
+    return ResponseEntity.ok()
+        .contentType(MediaType.APPLICATION_PDF)
+        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
+        .body(pdfBytes);
+  }
+
+  private byte[] renderAndEmitPdf(AuditEventFilter filter, String exportedBy) {
+    return transactionTemplate.execute(
+        status -> {
+          var buffer = new java.io.ByteArrayOutputStream();
+          long rowCount;
+          try {
+            rowCount = auditPdfExporter.writePdf(filter, exportedBy, buffer);
+          } catch (IOException e) {
+            throw new UncheckedIOException(e);
+          }
+          // Same ADR-264 contract as CSV: reflexive emit AFTER successful render only.
+          auditService.log(
+              AuditEventBuilder.builder()
+                  .eventType("audit.export.generated")
+                  .entityType("audit_export")
+                  .entityId(UUID.randomUUID())
+                  .details(
+                      Map.of("filter", filterAsMap(filter), "rowCount", rowCount, "format", "PDF"))
+                  .build());
+          return buffer.toByteArray();
+        });
+  }
+
+  static String buildPdfFilename(AuditEventFilter filter) {
+    String csvName = buildFilename(filter);
+    return csvName.substring(0, csvName.length() - ".csv".length()) + ".pdf";
   }
 
   static String buildFilename(AuditEventFilter filter) {

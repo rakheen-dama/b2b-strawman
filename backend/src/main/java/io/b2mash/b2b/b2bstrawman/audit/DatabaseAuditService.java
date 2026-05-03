@@ -264,6 +264,49 @@ public class DatabaseAuditService implements AuditService {
 
   @Override
   @Transactional(readOnly = true)
+  public long countEvents(AuditEventFilter filter) {
+    Set<AuditSeverity> severities = filter.severities();
+    var oneRow = org.springframework.data.domain.PageRequest.of(0, 1);
+    if (severities == null || severities.isEmpty()) {
+      // Spring Data derives a COUNT query for the JPQL @Query; fetching a 1-row page lets us read
+      // the total without adding a dedicated repository method.
+      return auditEventRepository
+          .findByFilter(
+              filter.entityType(),
+              filter.entityId(),
+              filter.actorId(),
+              filter.eventType(),
+              filter.from(),
+              filter.to(),
+              oneRow)
+          .getTotalElements();
+    }
+    var preflight = computeSeverityPreflight(severities);
+    if (preflight == null) {
+      // Step E short-circuit: nothing can match — skip the SQL roundtrip.
+      return 0L;
+    }
+    // findByFilterWithEventTypes already declares an explicit countQuery mirroring its WHERE
+    // clause, so .getTotalElements() returns a true COUNT (not a derived/incorrect one).
+    return auditEventRepository
+        .findByFilterWithEventTypes(
+            filter.entityType(),
+            filter.entityId(),
+            filter.actorId(),
+            filter.eventType(),
+            filter.from(),
+            filter.to(),
+            preflight.exactTypes(),
+            preflight.prefixPatterns(),
+            preflight.excludeExact(),
+            preflight.allRegisteredExacts(),
+            preflight.allRegisteredPrefixes(),
+            oneRow)
+        .getTotalElements();
+  }
+
+  @Override
+  @Transactional(readOnly = true)
   public Page<AuditEventMetadataResolver.EnrichedAuditEvent> findEventsEnriched(
       AuditEventFilter filter, Pageable pageable) {
     var rawPage = findEvents(filter, pageable);

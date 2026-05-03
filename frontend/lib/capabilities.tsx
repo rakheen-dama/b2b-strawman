@@ -14,6 +14,7 @@ export const CAPABILITIES = {
   AUTOMATIONS: "AUTOMATIONS",
   RESOURCE_PLANNING: "RESOURCE_PLANNING",
   VIEW_TRUST: "VIEW_TRUST",
+  AI_ASSISTANT_USE: "AI_ASSISTANT_USE",
 } as const;
 
 /** Capability metadata — single source of truth for labels, descriptions, and enum values. */

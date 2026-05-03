@@ -65,7 +65,17 @@ function buildHistory(messages: ChatMessage[]): { role: string; content: string 
 
 // ---- Hook ----
 
-export function useAssistantChat() {
+export interface UseAssistantChatOptions {
+  /**
+   * Optional specialist id. When provided, forwarded as `specialistId` in the
+   * `/api/assistant/chat` request body so the backend resolves the specialist's
+   * prompt + filtered tools instead of the generalist registry. (Phase 70 / 511B)
+   */
+  specialistId?: string;
+}
+
+export function useAssistantChat(options: UseAssistantChatOptions = {}) {
+  const { specialistId } = options;
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [tokenUsage, setTokenUsage] = useState<TokenUsage>({
@@ -83,7 +93,8 @@ export function useAssistantChat() {
     messagesRef.current = messages;
   }, [messages]);
 
-  const sendMessage = useCallback(async (text: string) => {
+  const sendMessage = useCallback(
+    async (text: string) => {
     const trimmed = text.trim();
     if (!trimmed || isStreamingRef.current) return;
 
@@ -122,6 +133,7 @@ export function useAssistantChat() {
           message: trimmed,
           history: buildHistory(currentMessages),
           currentPage: typeof window !== "undefined" ? window.location.pathname : "",
+          ...(specialistId ? { specialistId } : {}),
         }),
         signal: controller.signal,
       });
@@ -266,7 +278,9 @@ export function useAssistantChat() {
       abortControllerRef.current = null;
       streamingMessageIdRef.current = null;
     }
-  }, []);
+    },
+    [specialistId]
+  );
 
   const stopStreaming = useCallback(() => {
     if (abortControllerRef.current) {

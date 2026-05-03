@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.assistant.specialist;
 
+import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantTool;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantToolRegistry;
 import io.b2mash.b2b.b2bstrawman.billing.PlanTier;
 import io.b2mash.b2b.b2bstrawman.billing.PlanTierResolver;
@@ -11,6 +12,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 
@@ -54,16 +56,22 @@ public class SpecialistService {
         .toList();
   }
 
-  /** Returns a single specialist by id, gated by visibility. 404 if hidden, 404 if unknown. */
+  /**
+   * Returns a single specialist by id. Per spec §3.7 a STARTER (or capability-missing) caller
+   * receives 403 with an explanatory ProblemDetail; only an unknown id surfaces as 404. The tier +
+   * capability gate is therefore checked BEFORE the registry lookup so that an entitled lookup of
+   * an unknown id is the only path to 404.
+   */
   public SpecialistDtos.SpecialistSummary getOne(String specialistId) {
-    var tier = planTierResolver.resolveForCurrentOrg();
-    var caps = RequestScopes.getCapabilities();
-    var visible = registry.visibleToCapabilities(caps, tier, null);
-    return visible.stream()
-        .filter(s -> s.id().equals(specialistId))
-        .findFirst()
-        .map(SpecialistDtos::toSummary)
-        .orElseThrow(() -> new ResourceNotFoundException("Specialist", specialistId));
+    requirePro();
+    requireAiAssistantUseCapability();
+    Specialist specialist;
+    try {
+      specialist = registry.findById(specialistId);
+    } catch (IllegalArgumentException e) {
+      throw new ResourceNotFoundException("Specialist", specialistId);
+    }
+    return SpecialistDtos.toSummary(specialist);
   }
 
   /**
@@ -77,17 +85,9 @@ public class SpecialistService {
    */
   public SpecialistDtos.StartSessionResponse startSession(
       String specialistId, SpecialistDtos.StartSessionRequest request) {
-    var tier = planTierResolver.resolveForCurrentOrg();
-    if (tier != PlanTier.PRO) {
-      throw new ForbiddenException(
-          "Specialist unavailable",
-          "AI specialists require a PRO subscription. Please upgrade to access this feature.");
-    }
+    requirePro();
+    requireAiAssistantUseCapability();
     var caps = RequestScopes.getCapabilities();
-    if (!caps.contains(SpecialistRegistry.CAPABILITY_AI_ASSISTANT_USE)) {
-      throw new ForbiddenException(
-          "Specialist unavailable", "Your role does not have permission to use AI specialists.");
-    }
     Specialist specialist;
     try {
       specialist = registry.findById(specialistId);
@@ -95,9 +95,12 @@ public class SpecialistService {
       throw new ResourceNotFoundException("Specialist", specialistId);
     }
     var prompt = promptLoader.loadPrompt(specialist.systemPromptResource());
-    var allowedToolNames = toolRegistry.getToolsForUser(caps).stream().map(t -> t.name()).toList();
-    var allowed = java.util.Set.copyOf(allowedToolNames);
-    var resolvedToolIds = specialist.toolIds().stream().filter(allowed::contains).toList();
+    var allowedToolNames =
+        toolRegistry.getToolsForUser(caps).stream()
+            .map(AssistantTool::name)
+            .collect(java.util.stream.Collectors.toUnmodifiableSet());
+    var resolvedToolIds =
+        SpecialistChatRequestEnricher.intersectToolIds(specialist.toolIds(), allowedToolNames);
     var sessionId = UUID.randomUUID().toString();
     var hash = sha256(prompt.body());
     return new SpecialistDtos.StartSessionResponse(
@@ -107,6 +110,22 @@ public class SpecialistService {
         "sha256:" + hash,
         resolvedToolIds,
         request != null ? request.contextRef() : null);
+  }
+
+  private void requirePro() {
+    if (planTierResolver.resolveForCurrentOrg() != PlanTier.PRO) {
+      throw new ForbiddenException(
+          "Specialist unavailable",
+          "AI specialists require a PRO subscription. Please upgrade to access this feature.");
+    }
+  }
+
+  private void requireAiAssistantUseCapability() {
+    Set<String> caps = RequestScopes.getCapabilities();
+    if (caps == null || !caps.contains(SpecialistRegistry.CAPABILITY_AI_ASSISTANT_USE)) {
+      throw new ForbiddenException(
+          "Specialist unavailable", "Your role does not have permission to use AI specialists.");
+    }
   }
 
   private static String sha256(String input) {

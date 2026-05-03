@@ -6,8 +6,11 @@ import io.b2mash.b2b.b2bstrawman.assistant.provider.LlmChatProviderRegistry;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.StreamEvent;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.ToolResult;
 import io.b2mash.b2b.b2bstrawman.assistant.specialist.SpecialistChatRequestEnricher;
+import io.b2mash.b2b.b2bstrawman.assistant.specialist.SpecialistRegistry;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantToolRegistry;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
+import io.b2mash.b2b.b2bstrawman.billing.PlanTier;
+import io.b2mash.b2b.b2bstrawman.billing.PlanTierResolver;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionStatusCache;
 import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -60,6 +63,7 @@ public class AssistantService {
   private final OrganizationRepository organizationRepository;
   private final SubscriptionStatusCache subscriptionStatusCache;
   private final SpecialistChatRequestEnricher specialistChatRequestEnricher;
+  private final PlanTierResolver planTierResolver;
   private final ObjectMapper objectMapper;
   private final String systemGuide;
   private final ConcurrentHashMap<String, PendingConfirmation> pendingConfirmations;
@@ -76,6 +80,7 @@ public class AssistantService {
       OrganizationRepository organizationRepository,
       SubscriptionStatusCache subscriptionStatusCache,
       SpecialistChatRequestEnricher specialistChatRequestEnricher,
+      PlanTierResolver planTierResolver,
       ObjectMapper objectMapper,
       @Value("classpath:assistant/system-guide.md") Resource systemGuideResource) {
     this.providerRegistry = providerRegistry;
@@ -86,6 +91,7 @@ public class AssistantService {
     this.organizationRepository = organizationRepository;
     this.subscriptionStatusCache = subscriptionStatusCache;
     this.specialistChatRequestEnricher = specialistChatRequestEnricher;
+    this.planTierResolver = planTierResolver;
     this.objectMapper = objectMapper;
     this.pendingConfirmations = new ConcurrentHashMap<>();
     try {
@@ -141,11 +147,29 @@ public class AssistantService {
       var toolDefs = toolRegistry.getToolDefinitions(RequestScopes.getCapabilities());
       var systemPrompt = assembleSystemPrompt(context.currentPage(), getOrgName());
 
-      // Phase 70 / Epic 511B: when the caller targets a specialist, prepend its system prompt and
-      // narrow the tool list to the intersection of the specialist's declared tools and the
-      // caller's capability-allowed tools. Unknown specialistId surfaces as 404 to the SSE error
-      // channel rather than crashing the stream.
+      // Phase 70 / Epic 511B: when the caller targets a specialist, gate on PRO tier +
+      // AI_ASSISTANT_USE capability BEFORE running enrichment. Without this gate a STARTER tenant
+      // (or any authenticated member without the AI_ASSISTANT_USE capability) could bypass the
+      // read/start-session endpoints' authorization simply by including {@code specialistId} in
+      // the chat body. Then prepend the specialist system prompt and narrow the tool list to the
+      // intersection of the specialist's declared tools and the caller's capability-allowed
+      // tools. Unknown specialistId surfaces as 404 on the SSE error channel.
       if (context.specialistId() != null && !context.specialistId().isBlank()) {
+        if (planTierResolver.resolveForCurrentOrg() != PlanTier.PRO) {
+          emitError(
+              emitter,
+              emitterCompleted,
+              "AI specialists require a PRO subscription. Please upgrade to access this"
+                  + " feature.");
+          return;
+        }
+        if (!RequestScopes.hasCapability(SpecialistRegistry.CAPABILITY_AI_ASSISTANT_USE)) {
+          emitError(
+              emitter,
+              emitterCompleted,
+              "Your role does not have permission to use AI specialists.");
+          return;
+        }
         try {
           var enriched =
               specialistChatRequestEnricher.enrich(systemPrompt, toolDefs, context.specialistId());

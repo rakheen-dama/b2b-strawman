@@ -13,9 +13,12 @@ import org.springframework.stereotype.Service;
  *
  * <p>NOTE: this is a deliberate placeholder. There is no first-class {@code PlanTier} column on
  * {@link Subscription} today; a future billing slice will introduce one and replace this resolver.
- * Until then we map "write-enabled" subscription states (TRIALING, ACTIVE, PENDING_CANCELLATION,
- * PAST_DUE) to {@link PlanTier#PRO} and everything else to {@link PlanTier#STARTER}. This matches
- * the way AI features are otherwise gated.
+ * Until then we map only the "healthy paying" subscription states (TRIALING, ACTIVE,
+ * PENDING_CANCELLATION) to {@link PlanTier#PRO}. PAST_DUE deliberately maps to {@link
+ * PlanTier#STARTER} — a tenant whose payment has failed should NOT retain access to PRO-gated
+ * specialist features even though {@code isWriteEnabled()} keeps the door open for general writes
+ * during the dunning grace period. Everything else (EXPIRED / GRACE_PERIOD / SUSPENDED / LOCKED)
+ * maps to STARTER.
  */
 @Service
 public class PlanTierResolver {
@@ -33,7 +36,10 @@ public class PlanTierResolver {
   /** Resolves the plan tier for the given organization id. */
   public PlanTier resolveForOrganization(UUID organizationId) {
     var status = subscriptionStatusCache.getStatus(organizationId);
-    return status.isWriteEnabled() ? PlanTier.PRO : PlanTier.STARTER;
+    return switch (status) {
+      case TRIALING, ACTIVE, PENDING_CANCELLATION -> PlanTier.PRO;
+      default -> PlanTier.STARTER;
+    };
   }
 
   /**

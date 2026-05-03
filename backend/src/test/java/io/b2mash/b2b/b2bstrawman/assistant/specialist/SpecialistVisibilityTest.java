@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
  * io.b2mash.b2b.b2bstrawman.member.Member} capability override list. No Spring context — this
  * registry is a self-contained component.
  */
-class SpecialistVisibilityIntegrationTest {
+class SpecialistVisibilityTest {
 
   private final SpecialistRegistry registry = new SpecialistRegistry();
 

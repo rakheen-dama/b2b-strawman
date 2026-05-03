@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -17,6 +18,10 @@ import io.b2mash.b2b.b2bstrawman.assistant.provider.LlmChatProvider;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.LlmChatProviderRegistry;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.ModelInfo;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.StreamEvent;
+import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantTool;
+import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
+import io.b2mash.b2b.b2bstrawman.billing.PlanTier;
+import io.b2mash.b2b.b2bstrawman.billing.PlanTierResolver;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationService;
 import io.b2mash.b2b.b2bstrawman.integration.secret.SecretStore;
@@ -28,6 +33,7 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -39,7 +45,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -60,10 +68,15 @@ import org.springframework.test.web.servlet.MockMvc;
  * <p>The Anthropic LLM is mocked via {@code @MockitoBean LlmChatProviderRegistry} (the established
  * pattern; see {@code AssistantControllerTest}). No WireMock — Mockito gives us {@link
  * ArgumentCaptor} access to the {@link ChatRequest} which is exactly what we need to verify.
+ *
+ * <p>The intersection narrowing is asserted concretely by registering two test-only {@link
+ * AssistantTool} beans: one named {@code "GetInvoice"} (matches a BILLING {@code toolId}) and one
+ * named {@code "ZzzNonSpecialist"} (does not). After enrichment the captured tool list must contain
+ * only {@code GetInvoice} from those two — proving the intersection logic, not just "smaller list".
  */
 @SpringBootTest
 @AutoConfigureMockMvc
-@Import(TestcontainersConfiguration.class)
+@Import({TestcontainersConfiguration.class, SpecialistChatExtensionIntegrationTest.TestTools.class})
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class SpecialistChatExtensionIntegrationTest {
@@ -71,6 +84,7 @@ class SpecialistChatExtensionIntegrationTest {
   private static final String ORG_ID = "org_specialist_chat_test";
 
   @MockitoBean private LlmChatProviderRegistry llmChatProviderRegistry;
+  @MockitoBean private PlanTierResolver planTierResolver;
 
   private LlmChatProvider mockProvider;
 
@@ -120,6 +134,9 @@ class SpecialistChatExtensionIntegrationTest {
                 new ModelInfo("claude-opus-4-6", "Claude Opus 4.6", false)));
     when(mockProvider.validateKey(anyString(), anyString())).thenReturn(true);
     configureMockProviderTextResponse("ack");
+    // Default: PRO tier so existing chat extension behaviour is exercised.
+    when(planTierResolver.resolveForCurrentOrg()).thenReturn(PlanTier.PRO);
+    when(planTierResolver.resolveForOrganization(any())).thenReturn(PlanTier.PRO);
   }
 
   @Test
@@ -148,10 +165,11 @@ class SpecialistChatExtensionIntegrationTest {
     assertThat(captured.systemPrompt()).contains("ZAR");
     assertThat(captured.systemPrompt()).contains("LSSA tariff");
 
-    // Tool list narrowed to specialist intersection. The current production tool registry uses
-    // snake_case names while the BILLING specialist toolIds are PascalCase placeholders for
-    // future tools (511C); the intersection is therefore empty today but the narrowing has
-    // happened — assert the list is strictly smaller than the unfiltered baseline below.
+    // Concrete intersection assertion: BILLING declares "GetInvoice" + 8 others. Our two
+    // test-tools register "GetInvoice" (matches) and "ZzzNonSpecialist" (does not). After
+    // narrowing, the captured tool list must include "GetInvoice" and exclude "ZzzNonSpecialist".
+    assertThat(captured.tools()).extracting("name").contains("GetInvoice");
+    assertThat(captured.tools()).extracting("name").doesNotContain("ZzzNonSpecialist");
     var narrowedToolCount = captured.tools().size();
 
     // Reset and call without specialistId — should send the full capability-filtered list.
@@ -179,10 +197,12 @@ class SpecialistChatExtensionIntegrationTest {
     verify(mockProvider).chat(generalistCaptor.capture(), any());
     var generalist = generalistCaptor.getValue();
 
-    // Generalist gets the full capability-filtered tool list (>= specialist's narrowed list).
+    // Generalist gets the full capability-filtered tool list (strictly larger because the
+    // non-specialist test tool is included only here).
     assertThat(generalist.tools().size())
-        .as("generalist tool list should be >= specialist-narrowed list (intersection narrowing)")
-        .isGreaterThanOrEqualTo(narrowedToolCount);
+        .as("generalist tool list should be strictly larger than the specialist-narrowed list")
+        .isGreaterThan(narrowedToolCount);
+    assertThat(generalist.tools()).extracting("name").contains("ZzzNonSpecialist");
 
     // Generalist prompt should NOT contain specialist-specific SA tokens.
     assertThat(generalist.systemPrompt()).doesNotContain("LSSA tariff");
@@ -210,6 +230,70 @@ class SpecialistChatExtensionIntegrationTest {
     assertThat(body).contains("NOT_A_REAL_SPECIALIST");
   }
 
+  /**
+   * Critical security guard: a STARTER-tier tenant must NOT be able to bypass the
+   * read/start-session gates by passing {@code specialistId} on the chat endpoint. The provider
+   * must never be invoked because gate evaluation aborts the stream before LLM invocation.
+   */
+  @Test
+  void chatWithSpecialistIdReturns403WhenStarterTier() throws Exception {
+    when(planTierResolver.resolveForCurrentOrg()).thenReturn(PlanTier.STARTER);
+
+    var mvcResult =
+        mockMvc
+            .perform(
+                post("/api/assistant/chat")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_spec_chat_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"message":"hi","history":[],"currentPage":"/invoices/abc",\
+                        "specialistId":"BILLING"}
+                        """))
+            .andExpect(request().asyncStarted())
+            .andReturn();
+    mockMvc.perform(asyncDispatch(mvcResult)).andExpect(status().isOk());
+
+    String body = mvcResult.getResponse().getContentAsString();
+    assertThat(body).contains("error");
+    assertThat(body).containsIgnoringCase("PRO subscription");
+    // Critical: the provider must NOT have been invoked, so no captured ChatRequest with the
+    // billing prompt can have leaked to the LLM.
+    verifyNoInteractions(mockProvider);
+  }
+
+  /**
+   * Critical security guard: an authenticated member without {@code AI_ASSISTANT_USE} capability
+   * must NOT be able to bypass the gate via the chat endpoint. The default {@code member} system
+   * role does not grant AI_ASSISTANT_USE (only owner/admin via {@code ALL_NAMES}), so a JIT-synced
+   * member-role JWT exercises the capability-missing branch directly. Provider must NOT be invoked.
+   */
+  @Test
+  void chatWithSpecialistIdReturns403WhenCapabilityMissing() throws Exception {
+    TestMemberHelper.syncMember(
+        mockMvc, ORG_ID, "user_spec_chat_nocap", "spec_chat_nocap@test.com", "NoCap", "member");
+
+    var mvcResult =
+        mockMvc
+            .perform(
+                post("/api/assistant/chat")
+                    .with(TestJwtFactory.memberJwt(ORG_ID, "user_spec_chat_nocap"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"message":"hi","history":[],"currentPage":"/invoices/abc",\
+                        "specialistId":"BILLING"}
+                        """))
+            .andExpect(request().asyncStarted())
+            .andReturn();
+    mockMvc.perform(asyncDispatch(mvcResult)).andExpect(status().isOk());
+
+    String body = mvcResult.getResponse().getContentAsString();
+    assertThat(body).contains("error");
+    assertThat(body).contains("permission to use AI specialists");
+    verifyNoInteractions(mockProvider);
+  }
+
   // --- Helpers ---
 
   private void configureMockProviderTextResponse(String text) {
@@ -224,5 +308,66 @@ class SpecialistChatExtensionIntegrationTest {
             })
         .when(mockProvider)
         .chat(any(ChatRequest.class), any());
+  }
+
+  /**
+   * Test-only {@link AssistantTool} beans whose names exercise the specialist tool-subset
+   * intersection logic concretely. {@code GetInvoice} matches a BILLING {@code toolId}; {@code
+   * ZzzNonSpecialist} does not. Both have empty {@code requiredCapabilities} so they are visible to
+   * any caller (no capability filtering interference). They never execute in these tests — the LLM
+   * mock returns a text-only stream — so {@link #execute} is a never-called stub.
+   */
+  @TestConfiguration
+  static class TestTools {
+    @Bean
+    AssistantTool getInvoiceTestTool() {
+      return new StaticTool("GetInvoice", "Stub matching BILLING toolIds");
+    }
+
+    @Bean
+    AssistantTool nonSpecialistTestTool() {
+      return new StaticTool("ZzzNonSpecialist", "Stub NOT in any specialist toolIds");
+    }
+  }
+
+  /** Minimal stub that returns the configured name. Never executed in this test class. */
+  private static final class StaticTool implements AssistantTool {
+    private final String name;
+    private final String description;
+
+    StaticTool(String name, String description) {
+      this.name = name;
+      this.description = description;
+    }
+
+    @Override
+    public String name() {
+      return name;
+    }
+
+    @Override
+    public String description() {
+      return description;
+    }
+
+    @Override
+    public Map<String, Object> inputSchema() {
+      return Map.of("type", "object", "properties", Map.of(), "required", List.of());
+    }
+
+    @Override
+    public boolean requiresConfirmation() {
+      return false;
+    }
+
+    @Override
+    public Set<String> requiredCapabilities() {
+      return Set.of();
+    }
+
+    @Override
+    public Object execute(Map<String, Object> input, TenantToolContext context) {
+      throw new UnsupportedOperationException("test stub — should not be invoked");
+    }
   }
 }

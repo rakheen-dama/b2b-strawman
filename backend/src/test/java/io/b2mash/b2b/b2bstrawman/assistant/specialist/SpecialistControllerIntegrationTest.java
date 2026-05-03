@@ -140,4 +140,41 @@ class SpecialistControllerIntegrationTest {
                 .content("{}"))
         .andExpect(status().isNotFound());
   }
+
+  /**
+   * Spec §3.7: a STARTER caller hitting the GET-by-id endpoint must receive 403, not 404. The
+   * earlier inverted implementation built the visible list (empty for STARTER), then linear-scanned
+   * for the id, surfacing a 404 — leaking visibility logic as a not-found instead of an explicit
+   * forbidden. The fix gates tier+capability before the registry lookup.
+   */
+  @Test
+  void getSpecialistReturns403ForStarterTier() throws Exception {
+    when(planTierResolver.resolveForCurrentOrg()).thenReturn(PlanTier.STARTER);
+    mockMvc
+        .perform(
+            get("/api/assistant/specialists/BILLING")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_spec_owner")))
+        .andExpect(status().isForbidden());
+  }
+
+  /** Under PRO with capability, an unknown specialist id surfaces as 404 (not 403). */
+  @Test
+  void getSpecialistReturns404ForUnknownIdUnderPro() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/assistant/specialists/UNKNOWN_SPECIALIST")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_spec_owner")))
+        .andExpect(status().isNotFound());
+  }
+
+  /** Under PRO, fetching a known id returns the specialist summary. */
+  @Test
+  void getSpecialistReturns200ForKnownIdUnderPro() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/assistant/specialists/BILLING")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_spec_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value("BILLING"));
+  }
 }

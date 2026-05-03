@@ -183,6 +183,14 @@ public class DatabaseAuditService implements AuditService {
         includePrefixSql.isEmpty() ? null : includePrefixSql.toArray(new String[0]);
     String[] excludeArr = excludeExact.isEmpty() ? null : excludeExact.toArray(new String[0]);
 
+    // The native severity-pre-flight query bakes ORDER BY occurred_at DESC into its SQL. Spring
+    // Data appends Pageable.sort() literally onto a native query, so a JPA-style property name like
+    // "occurredAt" surfaces as a `e.occurredAt` SQL identifier — which is not a column. Strip the
+    // sort here (the query already orders correctly) so HTTP callers passing the conventional
+    // controller Sort do not trigger a 500.
+    var nativeSafePageable =
+        org.springframework.data.domain.PageRequest.of(
+            pageable.getPageNumber(), pageable.getPageSize());
     return auditEventRepository.findByFilterWithEventTypes(
         filter.entityType(),
         filter.entityId(),
@@ -195,7 +203,7 @@ public class DatabaseAuditService implements AuditService {
         excludeArr,
         allRegisteredExacts,
         allRegisteredPrefixes,
-        pageable);
+        nativeSafePageable);
   }
 
   @Override

@@ -14,6 +14,7 @@ export const CAPABILITIES = {
   AUTOMATIONS: "AUTOMATIONS",
   RESOURCE_PLANNING: "RESOURCE_PLANNING",
   VIEW_TRUST: "VIEW_TRUST",
+  AI_ASSISTANT_USE: "AI_ASSISTANT_USE",
 } as const;
 
 /** Capability metadata — single source of truth for labels, descriptions, and enum values. */
@@ -57,6 +58,11 @@ export const CAPABILITY_META = [
     value: CAPABILITIES.VIEW_TRUST,
     label: "View Trust",
     description: "View trust account balances, transactions, and client ledgers",
+  },
+  {
+    value: CAPABILITIES.AI_ASSISTANT_USE,
+    label: "AI Assistant",
+    description: "Use the AI assistant and specialist launchers across the app",
   },
 ] as const;
 

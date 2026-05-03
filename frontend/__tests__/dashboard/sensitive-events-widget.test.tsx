@@ -199,9 +199,7 @@ describe("SensitiveEventsWidget", () => {
       },
     ];
     render(
-      withCaps(
-        <SensitiveEventsWidget orgSlug="acme" facets={facetsWithUnknown} recent={[]} />
-      )
+      withCaps(<SensitiveEventsWidget orgSlug="acme" facets={facetsWithUnknown} recent={[]} />)
     );
     // Only the three known pills are rendered; counts unchanged from the base case.
     expect(screen.getByTestId("sensitive-count-CRITICAL").textContent).toContain("1");

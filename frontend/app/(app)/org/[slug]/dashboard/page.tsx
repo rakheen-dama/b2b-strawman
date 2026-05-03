@@ -1,4 +1,5 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
+import { CAPABILITIES } from "@/lib/capabilities";
 import { ApiError, handleApiError } from "@/lib/api";
 import { Loader2 } from "lucide-react";
 import { ProvisioningPendingRefresh } from "./provisioning-pending-refresh";
@@ -108,7 +109,7 @@ export default async function OrgDashboardPage({
   // events to Members in the same tenant via the RSC payload. We now resolve
   // TEAM_OVERSIGHT server-side and skip the fetch entirely when absent.
   const canSeeSensitive =
-    isAdmin || (caps.capabilities ?? []).includes("TEAM_OVERSIGHT");
+    isAdmin || (caps.capabilities ?? []).includes(CAPABILITIES.TEAM_OVERSIGHT);
   const SENSITIVE_LOOKBACK_MS = 7 * 24 * 60 * 60 * 1000;
   const SENSITIVE_VIEW_ALL_LOOKBACK_DAYS = 30;
   // Compute the View-all "from" timestamp ONCE in this server component and

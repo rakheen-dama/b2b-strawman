@@ -805,16 +805,15 @@ class MatterClosureServiceIntegrationTest {
   /**
    * Cross-tenant isolation: an override-emitted audit event in tenant A must not be visible from
    * tenant B querying for the same closure log id. This guards against an audit-event read path
-   * that drops the {@code @Filter} clause and leaks across schemas.
+   * that drops the {@code @Filter} clause and leaks across schemas. Note that {@code memberId} is
+   * reused as the tenant-B {@code MEMBER_ID} binding purely so a {@code RequestScopes} stack can be
+   * assembled — the audit read does not dereference the member, and we are exercising the schema
+   * boundary on {@code audit_events}, not member-id isolation.
    */
   @Test
-  void close_overrideAuditEvent_isIsolatedToOwningTenant() {
+  void close_overrideAuditEvent_isIsolatedToOwningTenant() throws Exception {
     final String ORG_ID_B = "org_matter_closure_svc_tenant_b";
-    try {
-      provisioningService.provisionTenant(ORG_ID_B, "Closure Svc Tenant B Firm", "legal-za");
-    } catch (Exception e) {
-      throw new RuntimeException(e);
-    }
+    provisioningService.provisionTenant(ORG_ID_B, "Closure Svc Tenant B Firm", "legal-za");
 
     String tenantSchemaB =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID_B).orElseThrow().getSchemaName();

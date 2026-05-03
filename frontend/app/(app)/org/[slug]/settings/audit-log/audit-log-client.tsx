@@ -1,7 +1,13 @@
 "use client";
 
-import { useCallback, useMemo, useState, useTransition } from "react";
-import Link from "next/link";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import {
@@ -25,7 +31,6 @@ import { formatComplianceDateWithTime } from "@/lib/format";
 import type {
   AuditEventFilter,
   AuditEventResponse,
-  AuditEventTypeMetadata,
   AuditEventsPage,
   AuditSeverity,
 } from "@/lib/api/audit-events";
@@ -41,12 +46,21 @@ const ALL_SEVERITIES: AuditSeverity[] = [
   "CRITICAL",
 ];
 
+const FILTER_KEYS = [
+  "from",
+  "to",
+  "severities",
+  "actorId",
+  "eventType",
+  "entityType",
+  "entityId",
+  "page",
+] as const;
+
 interface AuditLogClientProps {
   slug: string;
   initialEvents: AuditEventsPage;
-  metadata: AuditEventTypeMetadata[];
   initialFilter: AuditEventFilter;
-  pageSize: number;
 }
 
 function isoDateInputValue(iso: string | undefined): string {
@@ -55,12 +69,52 @@ function isoDateInputValue(iso: string | undefined): string {
   return iso.length >= 10 ? iso.slice(0, 10) : iso;
 }
 
+interface FilterTextInputProps {
+  id: string;
+  label: string;
+  placeholder?: string;
+  initialValue: string;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  onCommit: (value: string) => void;
+}
+
+function FilterTextInput({
+  id,
+  label,
+  placeholder,
+  initialValue,
+  inputRef,
+  onCommit,
+}: FilterTextInputProps) {
+  return (
+    <div className="space-y-1">
+      <label
+        htmlFor={id}
+        className="text-xs font-medium text-slate-700 dark:text-slate-300"
+      >
+        {label}
+      </label>
+      <Input
+        id={id}
+        ref={inputRef}
+        type="text"
+        placeholder={placeholder}
+        defaultValue={initialValue}
+        onBlur={(e) => {
+          const v = e.target.value.trim();
+          if (v !== initialValue) {
+            onCommit(v);
+          }
+        }}
+      />
+    </div>
+  );
+}
+
 export function AuditLogClient({
   slug,
   initialEvents,
-  metadata: _metadata,
   initialFilter,
-  pageSize,
 }: AuditLogClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -72,16 +126,69 @@ export function AuditLogClient({
   const currentPage = page.number;
   const totalPages = page.totalPages;
 
+  // Refs for the text inputs so that filter actions which fire WITHOUT
+  // blurring an in-progress input first (e.g. clicking a severity chip,
+  // clicking "Clear filters") can flush the typed value into the URL.
+  const actorIdRef = useRef<HTMLInputElement | null>(null);
+  const eventTypeRef = useRef<HTMLInputElement | null>(null);
+  const entityTypeRef = useRef<HTMLInputElement | null>(null);
+  const entityIdRef = useRef<HTMLInputElement | null>(null);
+
+  const buildPath = useCallback(
+    (qs: string) =>
+      `/org/${slug}/settings/audit-log${qs ? `?${qs}` : ""}`,
+    [slug],
+  );
+
+  // Read the latest searchParams inside the call rather than capturing it in
+  // closure — this avoids concurrent updates clobbering each other when the
+  // user fires multiple filter changes back-to-back inside a transition.
+  const searchParamsRef = useRef(searchParams);
+  useEffect(() => {
+    searchParamsRef.current = searchParams;
+  }, [searchParams]);
+
   const updateUrl = useCallback(
     (mutator: (params: URLSearchParams) => void) => {
-      const params = new URLSearchParams(searchParams?.toString() ?? "");
+      const latest = searchParamsRef.current;
+      const params = new URLSearchParams(latest?.toString() ?? "");
       mutator(params);
       const qs = params.toString();
       startTransition(() => {
-        router.push(qs ? `?${qs}` : "?", { scroll: false });
+        router.push(buildPath(qs), { scroll: false });
       });
     },
-    [router, searchParams],
+    [router, buildPath],
+  );
+
+  // Flush any pending in-progress text input into the URLSearchParams before
+  // applying further mutations. Called by handlers that aren't already a blur
+  // on a text input (severity toggle, clear, pagination).
+  const flushPendingInputs = useCallback(
+    (params: URLSearchParams) => {
+      const flush = (
+        key: string,
+        ref: React.RefObject<HTMLInputElement | null>,
+        prev: string | undefined,
+      ) => {
+        const node = ref.current;
+        if (!node) return;
+        const v = node.value.trim();
+        if (v === (prev ?? "")) return;
+        if (v) params.set(key, v);
+        else params.delete(key);
+      };
+      flush("actorId", actorIdRef, initialFilter.actorId);
+      flush("eventType", eventTypeRef, initialFilter.eventType);
+      flush("entityType", entityTypeRef, initialFilter.entityType);
+      flush("entityId", entityIdRef, initialFilter.entityId);
+    },
+    [
+      initialFilter.actorId,
+      initialFilter.eventType,
+      initialFilter.entityType,
+      initialFilter.entityId,
+    ],
   );
 
   const setParam = useCallback(
@@ -108,19 +215,28 @@ export function AuditLogClient({
         current.add(sev);
       }
       const arr = ALL_SEVERITIES.filter((s) => current.has(s));
-      setParam("severities", arr.length > 0 ? arr.join(",") : undefined);
+      updateUrl((params) => {
+        flushPendingInputs(params);
+        if (arr.length > 0) {
+          params.set("severities", arr.join(","));
+        } else {
+          params.delete("severities");
+        }
+        params.delete("page");
+      });
     },
-    [initialFilter.severities, setParam],
+    [initialFilter.severities, updateUrl, flushPendingInputs],
   );
 
   const goToPage = useCallback(
     (next: number) => {
       updateUrl((params) => {
+        flushPendingInputs(params);
         if (next <= 0) params.delete("page");
         else params.set("page", String(next));
       });
     },
-    [updateUrl],
+    [updateUrl, flushPendingInputs],
   );
 
   const toggleRow = useCallback((id: string) => {
@@ -132,11 +248,18 @@ export function AuditLogClient({
     });
   }, []);
 
+  // Clear stale expanded ids when the page (or filter set) changes — the
+  // event ids on the new page are different. Deps only change on server
+  // refresh, so this can't cause a render loop.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- Resets ephemeral UI selection on page change; not a render loop.
+    setExpanded(new Set());
+  }, [currentPage]);
+
   const clearFilters = useCallback(() => {
     updateUrl((params) => {
-      ["from", "to", "severities", "actorId", "eventType", "entityType", "entityId", "page"].forEach(
-        (k) => params.delete(k),
-      );
+      // Don't flush pending inputs — the user explicitly asked to clear.
+      FILTER_KEYS.forEach((k) => params.delete(k));
     });
   }, [updateUrl]);
 
@@ -159,20 +282,6 @@ export function AuditLogClient({
     [initialFilter.severities],
   );
 
-  const previousHref = (() => {
-    const params = new URLSearchParams(searchParams?.toString() ?? "");
-    if (currentPage - 1 <= 0) params.delete("page");
-    else params.set("page", String(currentPage - 1));
-    const qs = params.toString();
-    return qs ? `?${qs}` : `/org/${slug}/settings/audit-log`;
-  })();
-
-  const nextHref = (() => {
-    const params = new URLSearchParams(searchParams?.toString() ?? "");
-    params.set("page", String(currentPage + 1));
-    return `?${params.toString()}`;
-  })();
-
   return (
     <div className="space-y-6">
       <Card>
@@ -188,6 +297,8 @@ export function AuditLogClient({
               >
                 From
               </label>
+              {/* UTC-day semantics: we map the picker's local YYYY-MM-DD to
+                  the start of that UTC day (00:00:00.000Z). */}
               <Input
                 id="audit-filter-from"
                 type="date"
@@ -196,7 +307,7 @@ export function AuditLogClient({
                   setParam(
                     "from",
                     e.target.value
-                      ? new Date(e.target.value + "T00:00:00Z").toISOString()
+                      ? new Date(e.target.value + "T00:00:00.000Z").toISOString()
                       : undefined,
                   )
                 }
@@ -209,6 +320,9 @@ export function AuditLogClient({
               >
                 To
               </label>
+              {/* UTC-day semantics: pin the upper bound to the very last
+                  millisecond of the chosen UTC day so events that occur in
+                  the final second of the day are not dropped. */}
               <Input
                 id="audit-filter-to"
                 type="date"
@@ -217,92 +331,44 @@ export function AuditLogClient({
                   setParam(
                     "to",
                     e.target.value
-                      ? new Date(e.target.value + "T23:59:59Z").toISOString()
+                      ? new Date(e.target.value + "T23:59:59.999Z").toISOString()
                       : undefined,
                   )
                 }
               />
             </div>
-            <div className="space-y-1">
-              <label
-                htmlFor="audit-filter-actor"
-                className="text-xs font-medium text-slate-700 dark:text-slate-300"
-              >
-                Actor ID
-              </label>
-              <Input
-                id="audit-filter-actor"
-                type="text"
-                placeholder="UUID"
-                defaultValue={initialFilter.actorId ?? ""}
-                onBlur={(e) => {
-                  const v = e.target.value.trim();
-                  if (v !== (initialFilter.actorId ?? "")) {
-                    setParam("actorId", v || undefined);
-                  }
-                }}
-              />
-            </div>
-            <div className="space-y-1">
-              <label
-                htmlFor="audit-filter-event-type"
-                className="text-xs font-medium text-slate-700 dark:text-slate-300"
-              >
-                Event type
-              </label>
-              <Input
-                id="audit-filter-event-type"
-                type="text"
-                placeholder="e.g. security.login.failure"
-                defaultValue={initialFilter.eventType ?? ""}
-                onBlur={(e) => {
-                  const v = e.target.value.trim();
-                  if (v !== (initialFilter.eventType ?? "")) {
-                    setParam("eventType", v || undefined);
-                  }
-                }}
-              />
-            </div>
-            <div className="space-y-1">
-              <label
-                htmlFor="audit-filter-entity-type"
-                className="text-xs font-medium text-slate-700 dark:text-slate-300"
-              >
-                Entity type
-              </label>
-              <Input
-                id="audit-filter-entity-type"
-                type="text"
-                placeholder="e.g. customer"
-                defaultValue={initialFilter.entityType ?? ""}
-                onBlur={(e) => {
-                  const v = e.target.value.trim();
-                  if (v !== (initialFilter.entityType ?? "")) {
-                    setParam("entityType", v || undefined);
-                  }
-                }}
-              />
-            </div>
-            <div className="space-y-1">
-              <label
-                htmlFor="audit-filter-entity-id"
-                className="text-xs font-medium text-slate-700 dark:text-slate-300"
-              >
-                Entity ID
-              </label>
-              <Input
-                id="audit-filter-entity-id"
-                type="text"
-                placeholder="UUID"
-                defaultValue={initialFilter.entityId ?? ""}
-                onBlur={(e) => {
-                  const v = e.target.value.trim();
-                  if (v !== (initialFilter.entityId ?? "")) {
-                    setParam("entityId", v || undefined);
-                  }
-                }}
-              />
-            </div>
+            <FilterTextInput
+              id="audit-filter-actor"
+              label="Actor ID"
+              placeholder="UUID"
+              initialValue={initialFilter.actorId ?? ""}
+              inputRef={actorIdRef}
+              onCommit={(v) => setParam("actorId", v || undefined)}
+            />
+            <FilterTextInput
+              id="audit-filter-event-type"
+              label="Event type"
+              placeholder="e.g. security.login.failure"
+              initialValue={initialFilter.eventType ?? ""}
+              inputRef={eventTypeRef}
+              onCommit={(v) => setParam("eventType", v || undefined)}
+            />
+            <FilterTextInput
+              id="audit-filter-entity-type"
+              label="Entity type"
+              placeholder="e.g. customer"
+              initialValue={initialFilter.entityType ?? ""}
+              inputRef={entityTypeRef}
+              onCommit={(v) => setParam("entityType", v || undefined)}
+            />
+            <FilterTextInput
+              id="audit-filter-entity-id"
+              label="Entity ID"
+              placeholder="UUID"
+              initialValue={initialFilter.entityId ?? ""}
+              inputRef={entityIdRef}
+              onCommit={(v) => setParam("entityId", v || undefined)}
+            />
           </div>
 
           <div className="mt-4">
@@ -418,45 +484,34 @@ export function AuditLogClient({
           )}
         </div>
         <div className="flex items-center gap-2">
-          {currentPage > 0 ? (
-            <Link
-              href={previousHref}
-              onClick={(e) => {
-                e.preventDefault();
-                goToPage(currentPage - 1);
-              }}
-              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-            >
-              Previous
-            </Link>
-          ) : (
-            <span className="rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-400 dark:border-slate-700 dark:bg-slate-800">
-              Previous
-            </span>
-          )}
-          {currentPage + 1 < totalPages ? (
-            <Link
-              href={nextHref}
-              onClick={(e) => {
-                e.preventDefault();
-                goToPage(currentPage + 1);
-              }}
-              className="rounded-md border border-slate-200 bg-white px-3 py-1.5 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-            >
-              Next
-            </Link>
-          ) : (
-            <span className="rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-400 dark:border-slate-700 dark:bg-slate-800">
-              Next
-            </span>
-          )}
+          <button
+            type="button"
+            disabled={currentPage <= 0}
+            onClick={() => goToPage(currentPage - 1)}
+            className={cn(
+              "rounded-md border px-3 py-1.5",
+              currentPage > 0
+                ? "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                : "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800",
+            )}
+          >
+            Previous
+          </button>
+          <button
+            type="button"
+            disabled={currentPage + 1 >= totalPages}
+            onClick={() => goToPage(currentPage + 1)}
+            className={cn(
+              "rounded-md border px-3 py-1.5",
+              currentPage + 1 < totalPages
+                ? "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+                : "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800",
+            )}
+          >
+            Next
+          </button>
         </div>
       </nav>
-
-      {/* Hidden default page-size hint to avoid lint dead-code on prop */}
-      <span className="hidden" data-testid="audit-page-size">
-        {pageSize}
-      </span>
     </div>
   );
 }

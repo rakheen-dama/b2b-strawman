@@ -8,6 +8,13 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
+/**
+ * Prefix used by the backend (`AuditService.resolveActorDisplay`) when the
+ * acting member has been deleted/anonymised. We mirror the literal here for
+ * strikethrough styling — keep in sync with the backend resolver.
+ */
+export const FORMER_MEMBER_PREFIX = "Former member";
+
 export interface ActorDisplayProps {
   actorDisplayName: string;
   actorId: string | null;
@@ -23,7 +30,7 @@ export function ActorDisplay({
   source,
   ipAddress,
 }: ActorDisplayProps) {
-  const isFormer = actorDisplayName.startsWith("Former member");
+  const isFormer = actorDisplayName.startsWith(FORMER_MEMBER_PREFIX);
   const rows: Array<[string, string]> = [];
   if (actorId) rows.push(["Actor ID", actorId]);
   if (actorType) rows.push(["Type", actorType]);

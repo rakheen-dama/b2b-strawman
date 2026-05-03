@@ -1,6 +1,12 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { cleanup, render, screen, fireEvent } from "@testing-library/react";
+import {
+  cleanup,
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+} from "@testing-library/react";
 
 vi.mock("server-only", () => ({}));
 
@@ -50,13 +56,11 @@ vi.mock("next/link", () => ({
 import AuditLogPage from "./page";
 import {
   listAuditEvents,
-  getAuditMetadata,
   type AuditEventResponse,
 } from "@/lib/api/audit-events";
 import { ApiError } from "@/lib/api/client";
 
 const mockListAuditEvents = listAuditEvents as ReturnType<typeof vi.fn>;
-const mockGetAuditMetadata = getAuditMetadata as ReturnType<typeof vi.fn>;
 
 function makeEvent(
   overrides: Partial<AuditEventResponse> = {},
@@ -92,8 +96,6 @@ afterEach(() => {
 describe("AuditLogPage (server shell)", () => {
   beforeEach(() => {
     mockListAuditEvents.mockReset();
-    mockGetAuditMetadata.mockReset();
-    mockGetAuditMetadata.mockResolvedValue([]);
   });
 
   it("passes initial filter from search params to the API", async () => {
@@ -257,9 +259,10 @@ describe("AuditLogPage (server shell)", () => {
     const criticalToggle = screen.getByTestId("severity-toggle-CRITICAL");
     fireEvent.click(criticalToggle);
 
-    expect(pushMock).toHaveBeenCalled();
+    await waitFor(() => expect(pushMock).toHaveBeenCalled());
     const urlPushed = pushMock.mock.calls[0]?.[0] as string;
     expect(urlPushed).toContain("severities=CRITICAL");
+    expect(urlPushed).toContain("/org/acme/settings/audit-log");
   });
 
   it("typing an actor ID and blurring builds a URL with actorId + entityType combined", async () => {
@@ -281,9 +284,10 @@ describe("AuditLogPage (server shell)", () => {
     fireEvent.change(actorInput, { target: { value: "actor-xyz" } });
     fireEvent.blur(actorInput);
 
-    expect(pushMock).toHaveBeenCalled();
+    await waitFor(() => expect(pushMock).toHaveBeenCalled());
     const urlPushed = pushMock.mock.calls[0]?.[0] as string;
     expect(urlPushed).toContain("actorId=actor-xyz");
     expect(urlPushed).toContain("entityType=customer");
+    expect(urlPushed).toContain("/org/acme/settings/audit-log");
   });
 });

@@ -3,10 +3,8 @@ import { ChevronLeft } from "lucide-react";
 import { ApiError } from "@/lib/api/client";
 import {
   listAuditEvents,
-  getAuditMetadata,
   type AuditEventFilter,
   type AuditSeverity,
-  type AuditEventTypeMetadata,
   type AuditEventsPage,
 } from "@/lib/api/audit-events";
 import { AuditLogClient } from "./audit-log-client";
@@ -74,13 +72,12 @@ export default async function AuditLogPage({
     </Link>
   );
 
+  // Note: getAuditMetadata() is intentionally not fetched here. Epic 506B will
+  // wire it into a metadata-driven event-type select; until then it's dead
+  // weight on the server render.
   let events: AuditEventsPage;
-  let metadata: AuditEventTypeMetadata[] = [];
   try {
-    [events, metadata] = await Promise.all([
-      listAuditEvents(filter),
-      getAuditMetadata().catch(() => [] as AuditEventTypeMetadata[]),
-    ]);
+    events = await listAuditEvents(filter);
   } catch (error) {
     if (error instanceof ApiError && error.status === 403) {
       return (
@@ -117,9 +114,7 @@ export default async function AuditLogPage({
       <AuditLogClient
         slug={slug}
         initialEvents={events}
-        metadata={metadata}
         initialFilter={filter}
-        pageSize={PAGE_SIZE}
       />
     </div>
   );

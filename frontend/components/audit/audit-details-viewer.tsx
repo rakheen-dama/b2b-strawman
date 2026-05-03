@@ -36,13 +36,29 @@ function detectShape(
   return "freeform";
 }
 
+// Defensive caps to prevent adversarial / bloated `details` payloads from
+// freezing the browser. Keep these conservative — the audit details viewer
+// is for at-a-glance inspection, not deep forensics.
+const MAX_DEPTH = 5;
+const MAX_ENTRIES = 100;
+const MAX_STRING_LEN = 2048;
+
 function renderScalar(value: unknown): string {
   if (value === null || value === undefined) return "—";
-  if (typeof value === "string") return value === "" ? '""' : value;
+  if (typeof value === "string") {
+    if (value === "") return '""';
+    return value.length > MAX_STRING_LEN
+      ? value.slice(0, MAX_STRING_LEN) + "…"
+      : value;
+  }
   if (typeof value === "number" || typeof value === "boolean") {
     return String(value);
   }
-  return JSON.stringify(value);
+  const json = JSON.stringify(value);
+  if (json && json.length > MAX_STRING_LEN) {
+    return json.slice(0, MAX_STRING_LEN) + "…";
+  }
+  return json;
 }
 
 interface JsonNodeProps {
@@ -51,7 +67,8 @@ interface JsonNodeProps {
 }
 
 function JsonNode({ value, depth = 0 }: JsonNodeProps) {
-  const [expanded, setExpanded] = useState(depth < 1);
+  // Auto-collapse nodes deeper than MAX_DEPTH; user can still expand them.
+  const [expanded, setExpanded] = useState(depth < 1 && depth < MAX_DEPTH);
 
   if (value === null) {
     return <span className="text-slate-500">null</span>;
@@ -60,21 +77,27 @@ function JsonNode({ value, depth = 0 }: JsonNodeProps) {
     return <span className="text-slate-700 dark:text-slate-300">{renderScalar(value)}</span>;
   }
   const isArray = Array.isArray(value);
-  const entries = isArray
+  const allEntries = isArray
     ? (value as unknown[]).map((v, i) => [String(i), v] as const)
     : Object.entries(value as Record<string, unknown>);
 
-  if (entries.length === 0) {
+  if (allEntries.length === 0) {
     return (
       <span className="text-slate-500">{isArray ? "[]" : "{}"}</span>
     );
   }
+
+  const truncated = allEntries.length > MAX_ENTRIES;
+  const entries = truncated ? allEntries.slice(0, MAX_ENTRIES) : allEntries;
+  const overLimit = depth >= MAX_DEPTH;
 
   return (
     <div className="font-mono text-[11px]">
       <button
         type="button"
         onClick={() => setExpanded((e) => !e)}
+        aria-expanded={expanded}
+        aria-label={expanded ? "Collapse node" : "Expand node"}
         className="inline-flex items-center gap-1 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
       >
         <ChevronRight
@@ -84,7 +107,8 @@ function JsonNode({ value, depth = 0 }: JsonNodeProps) {
           )}
         />
         <span>
-          {isArray ? `Array(${entries.length})` : `Object(${entries.length})`}
+          {isArray ? `Array(${allEntries.length})` : `Object(${allEntries.length})`}
+          {overLimit && !expanded && " · deep"}
         </span>
       </button>
       {expanded && (
@@ -95,6 +119,11 @@ function JsonNode({ value, depth = 0 }: JsonNodeProps) {
               <JsonNode value={v} depth={depth + 1} />
             </li>
           ))}
+          {truncated && (
+            <li className="text-slate-500 italic">
+              …{allEntries.length - MAX_ENTRIES} more
+            </li>
+          )}
         </ul>
       )}
     </div>

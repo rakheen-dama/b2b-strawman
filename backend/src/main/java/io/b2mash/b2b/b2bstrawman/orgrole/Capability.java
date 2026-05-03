@@ -34,7 +34,12 @@ public enum Capability {
   /** Override a failing matter-closure gate (owner-only by default). */
   OVERRIDE_MATTER_CLOSURE,
   /** Generate a client Statement of Account. */
-  GENERATE_STATEMENT_OF_ACCOUNT;
+  GENERATE_STATEMENT_OF_ACCOUNT,
+  /**
+   * Use AI specialist assistants (Phase 70). Owner/admin auto-receive via {@link #ALL_NAMES}; can
+   * also be assigned to custom roles or granted as a member capability override.
+   */
+  AI_ASSISTANT_USE;
 
   /** Capabilities restricted to the owner role — admin does NOT inherit these. */
   public static final Set<String> OWNER_ONLY =

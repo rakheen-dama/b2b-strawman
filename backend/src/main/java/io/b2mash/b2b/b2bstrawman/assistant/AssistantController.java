@@ -1,15 +1,22 @@
 package io.b2mash.b2b.b2bstrawman.assistant;
 
+import io.b2mash.b2b.b2bstrawman.assistant.specialist.SpecialistDtos;
+import io.b2mash.b2b.b2bstrawman.assistant.specialist.SpecialistService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -18,10 +25,13 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 public class AssistantController {
 
   private final AssistantService assistantService;
+  private final SpecialistService specialistService;
   private final ExecutorService virtualThreadExecutor = Executors.newVirtualThreadPerTaskExecutor();
 
-  public AssistantController(AssistantService assistantService) {
+  public AssistantController(
+      AssistantService assistantService, SpecialistService specialistService) {
     this.assistantService = assistantService;
+    this.specialistService = specialistService;
   }
 
   /**
@@ -65,6 +75,41 @@ public class AssistantController {
   public ResponseEntity<Map<String, Object>> confirm(@RequestBody ConfirmRequest request) {
     assistantService.confirm(request.toolCallId(), request.approved());
     return ResponseEntity.ok(Map.of("acknowledged", true));
+  }
+
+  /**
+   * Phase 70: list specialists visible to the current member. Visibility = PRO subscription +
+   * {@code AI_ASSISTANT_USE} capability + (optional) launcher surface filter. Returns an empty list
+   * when the caller isn't entitled — does not throw.
+   */
+  @GetMapping("/specialists")
+  @PreAuthorize("isAuthenticated()")
+  @RequiresCapability("AI_ASSISTANT_USE")
+  public ResponseEntity<List<SpecialistDtos.SpecialistSummary>> listSpecialists(
+      @RequestParam(value = "surface", required = false) String surface) {
+    return ResponseEntity.ok(specialistService.listVisible(surface));
+  }
+
+  /** Phase 70: fetch a single specialist by id. 404 when unknown or hidden from the caller. */
+  @GetMapping("/specialists/{id}")
+  @PreAuthorize("isAuthenticated()")
+  @RequiresCapability("AI_ASSISTANT_USE")
+  public ResponseEntity<SpecialistDtos.SpecialistSummary> getSpecialist(
+      @PathVariable("id") String id) {
+    return ResponseEntity.ok(specialistService.getOne(id));
+  }
+
+  /**
+   * Phase 70: start an ephemeral specialist session. Returns the resolved system-prompt hash and
+   * the capability-narrowed tool subset. PRO-tier gated: STARTER tenants receive 403.
+   */
+  @PostMapping("/specialists/{id}/sessions")
+  @PreAuthorize("isAuthenticated()")
+  @RequiresCapability("AI_ASSISTANT_USE")
+  public ResponseEntity<SpecialistDtos.StartSessionResponse> startSpecialistSession(
+      @PathVariable("id") String id,
+      @RequestBody(required = false) SpecialistDtos.StartSessionRequest request) {
+    return ResponseEntity.ok(specialistService.startSession(id, request));
   }
 
   /** Request body for the confirmation endpoint. Public for Jackson deserialization. */

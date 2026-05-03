@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.assistant.provider.ChatRequest;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.LlmChatProviderRegistry;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.StreamEvent;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.ToolResult;
+import io.b2mash.b2b.b2bstrawman.assistant.specialist.SpecialistChatRequestEnricher;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantToolRegistry;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionStatusCache;
@@ -58,6 +59,7 @@ public class AssistantService {
   private final OrgIntegrationRepository orgIntegrationRepository;
   private final OrganizationRepository organizationRepository;
   private final SubscriptionStatusCache subscriptionStatusCache;
+  private final SpecialistChatRequestEnricher specialistChatRequestEnricher;
   private final ObjectMapper objectMapper;
   private final String systemGuide;
   private final ConcurrentHashMap<String, PendingConfirmation> pendingConfirmations;
@@ -73,6 +75,7 @@ public class AssistantService {
       OrgIntegrationRepository orgIntegrationRepository,
       OrganizationRepository organizationRepository,
       SubscriptionStatusCache subscriptionStatusCache,
+      SpecialistChatRequestEnricher specialistChatRequestEnricher,
       ObjectMapper objectMapper,
       @Value("classpath:assistant/system-guide.md") Resource systemGuideResource) {
     this.providerRegistry = providerRegistry;
@@ -82,6 +85,7 @@ public class AssistantService {
     this.orgIntegrationRepository = orgIntegrationRepository;
     this.organizationRepository = organizationRepository;
     this.subscriptionStatusCache = subscriptionStatusCache;
+    this.specialistChatRequestEnricher = specialistChatRequestEnricher;
     this.objectMapper = objectMapper;
     this.pendingConfirmations = new ConcurrentHashMap<>();
     try {
@@ -136,6 +140,23 @@ public class AssistantService {
       var provider = providerRegistry.get(providerSlug);
       var toolDefs = toolRegistry.getToolDefinitions(RequestScopes.getCapabilities());
       var systemPrompt = assembleSystemPrompt(context.currentPage(), getOrgName());
+
+      // Phase 70 / Epic 511B: when the caller targets a specialist, prepend its system prompt and
+      // narrow the tool list to the intersection of the specialist's declared tools and the
+      // caller's capability-allowed tools. Unknown specialistId surfaces as 404 to the SSE error
+      // channel rather than crashing the stream.
+      if (context.specialistId() != null && !context.specialistId().isBlank()) {
+        try {
+          var enriched =
+              specialistChatRequestEnricher.enrich(systemPrompt, toolDefs, context.specialistId());
+          systemPrompt = enriched.systemPrompt();
+          toolDefs = enriched.toolDefs();
+        } catch (ResourceNotFoundException e) {
+          emitError(
+              emitter, emitterCompleted, "Unknown specialist: " + context.specialistId() + ".");
+          return;
+        }
+      }
 
       // Build initial message list from history + new user message
       var initialMessages = new ArrayList<>(context.history());

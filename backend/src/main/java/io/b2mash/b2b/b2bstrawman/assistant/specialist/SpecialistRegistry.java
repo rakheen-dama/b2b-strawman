@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.springframework.stereotype.Component;
 
 /**
@@ -150,6 +151,26 @@ public class SpecialistRegistry {
     if (caps == null || !caps.contains(CAPABILITY_AI_ASSISTANT_USE)) {
       return List.of();
     }
+    return filterBySurface(surface);
+  }
+
+  /**
+   * Variant of {@link #visibleTo(Member, PlanTier, String)} that consults a pre-resolved capability
+   * set (typically {@code RequestScopes.getCapabilities()}). Used by 511B's HTTP layer where the
+   * effective capabilities have already been computed by {@code MemberFilter}.
+   */
+  public List<Specialist> visibleToCapabilities(
+      Set<String> capabilities, PlanTier tier, String surface) {
+    if (tier != PlanTier.PRO) {
+      return List.of();
+    }
+    if (capabilities == null || !capabilities.contains(CAPABILITY_AI_ASSISTANT_USE)) {
+      return List.of();
+    }
+    return filterBySurface(surface);
+  }
+
+  private List<Specialist> filterBySurface(String surface) {
     return all.stream()
         .filter(
             s ->

@@ -21,7 +21,6 @@ const PILL_SEVERITIES: ReadonlyArray<Exclude<AuditSeverity, "INFO">> = [
 ];
 
 const ROW_WINDOW_MS = 60_000; // ±1 minute around the event timestamp.
-const SENSITIVE_PRESET_LOOKBACK_DAYS = 30;
 
 export interface SensitiveEventsWidgetProps {
   orgSlug: string;
@@ -29,6 +28,13 @@ export interface SensitiveEventsWidgetProps {
   facets: EventTypeFacet[];
   /** Top-5 most recent CRITICAL/WARNING events in the last 7 days. */
   recent: AuditEventResponse[] | null;
+  /**
+   * ISO timestamp for the View-all link's `from` query param. Computed once in
+   * the parent server component so it does not change between SSR and CSR
+   * (which would cause a hydration mismatch on the `<Link href=...>`).
+   * Defaults to "30 days ago" if omitted (kept for legacy callers/tests).
+   */
+  viewAllFromIso?: string;
 }
 
 function aggregateBySeverity(facets: EventTypeFacet[]): Record<AuditSeverity, number> {
@@ -39,13 +45,14 @@ function aggregateBySeverity(facets: EventTypeFacet[]): Record<AuditSeverity, nu
     CRITICAL: 0,
   };
   for (const facet of facets) {
+    // Defensive: ignore unknown severity values (e.g. backend rolls a new
+    // severity before the frontend types are regenerated). Without this guard
+    // a stray severity would create a new key on `acc` and the widget would
+    // render an extra pill or NaN on subsequent reads.
+    if (!(facet.severity in acc)) continue;
     acc[facet.severity] = (acc[facet.severity] ?? 0) + facet.count;
   }
   return acc;
-}
-
-function isoDaysAgo(days: number): string {
-  return new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
 }
 
 function buildRowHref(orgSlug: string, event: AuditEventResponse): string {
@@ -60,22 +67,31 @@ function buildRowHref(orgSlug: string, event: AuditEventResponse): string {
   return `/org/${orgSlug}/settings/audit-log?${sp.toString()}`;
 }
 
-function buildViewAllHref(orgSlug: string): string {
+function buildViewAllHref(orgSlug: string, fromIso: string | undefined): string {
   // Mirrors the `sensitive` preset resolved by components/audit/presets.ts:
-  // last 30 days, severities WARNING+CRITICAL.
-  const sp = new URLSearchParams({
+  // severities WARNING+CRITICAL. The `from` timestamp is supplied by the
+  // parent server component (see `viewAllFromIso` prop) so SSR and CSR agree;
+  // when omitted (legacy callers / tests), fall back to the preset and let
+  // the audit-log page resolve the date range.
+  const params: Record<string, string> = {
     severities: "WARNING,CRITICAL",
-    from: isoDaysAgo(SENSITIVE_PRESET_LOOKBACK_DAYS),
     preset: "sensitive",
-  });
+  };
+  if (fromIso) params.from = fromIso;
+  const sp = new URLSearchParams(params);
   return `/org/${orgSlug}/settings/audit-log?${sp.toString()}`;
 }
 
-function SensitiveEventsWidgetInner({ orgSlug, facets, recent }: SensitiveEventsWidgetProps) {
+function SensitiveEventsWidgetInner({
+  orgSlug,
+  facets,
+  recent,
+  viewAllFromIso,
+}: SensitiveEventsWidgetProps) {
   const router = useRouter();
   const counts = aggregateBySeverity(facets);
   const events = recent ?? [];
-  const viewAllHref = buildViewAllHref(orgSlug);
+  const viewAllHref = buildViewAllHref(orgSlug, viewAllFromIso);
 
   return (
     <Card data-testid="sensitive-events-widget">

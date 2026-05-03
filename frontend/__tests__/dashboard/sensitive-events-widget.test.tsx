@@ -170,6 +170,46 @@ describe("SensitiveEventsWidget", () => {
     expect(link.getAttribute("href")).toContain("preset=sensitive");
   });
 
+  it("uses the parent-supplied viewAllFromIso for the View-all link (no client-side Date.now())", () => {
+    const fixedFrom = "2026-04-03T00:00:00.000Z";
+    render(
+      withCaps(
+        <SensitiveEventsWidget
+          orgSlug="acme"
+          facets={SAMPLE_FACETS}
+          recent={[]}
+          viewAllFromIso={fixedFrom}
+        />
+      )
+    );
+    const link = screen.getByTestId("sensitive-events-view-all") as HTMLAnchorElement;
+    expect(link.getAttribute("href")).toContain(`from=${encodeURIComponent(fixedFrom)}`);
+  });
+
+  it("ignores unknown severity values in facets (defensive aggregation)", () => {
+    const facetsWithUnknown = [
+      ...SAMPLE_FACETS,
+      // Future severity the frontend hasn't been regenerated to know about.
+      {
+        eventType: "future.event",
+        label: "Future event",
+        severity: "BOGUS" as unknown as "CRITICAL",
+        group: "STANDARD",
+        count: 999,
+      },
+    ];
+    render(
+      withCaps(
+        <SensitiveEventsWidget orgSlug="acme" facets={facetsWithUnknown} recent={[]} />
+      )
+    );
+    // Only the three known pills are rendered; counts unchanged from the base case.
+    expect(screen.getByTestId("sensitive-count-CRITICAL").textContent).toContain("1");
+    expect(screen.getByTestId("sensitive-count-WARNING").textContent).toContain("2");
+    expect(screen.getByTestId("sensitive-count-NOTICE").textContent).toContain("7");
+    expect(screen.queryByText("999")).not.toBeInTheDocument();
+  });
+
   it("hides the widget entirely when TEAM_OVERSIGHT capability is missing", () => {
     render(
       withCaps(

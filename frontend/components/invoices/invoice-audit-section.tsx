@@ -3,8 +3,7 @@
 import { AuditTimelineTab } from "@/components/audit/audit-timeline-tab";
 import { useTerminology } from "@/lib/terminology";
 import { auditTabLabel } from "@/lib/terminology-map";
-import { useCapabilities } from "@/lib/capabilities";
-import { CAPABILITIES } from "@/lib/capabilities";
+import { CAPABILITIES, useCapabilities } from "@/lib/capabilities";
 
 /**
  * Audit section appended to the invoice detail page. The invoice detail

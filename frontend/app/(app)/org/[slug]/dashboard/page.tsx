@@ -1,4 +1,5 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
+import { CAPABILITIES } from "@/lib/capabilities";
 import { ApiError, handleApiError } from "@/lib/api";
 import { Loader2 } from "lucide-react";
 import { ProvisioningPendingRefresh } from "./provisioning-pending-refresh";
@@ -102,28 +103,42 @@ export default async function OrgDashboardPage({
     handleApiError(error);
   }
 
-  // Sensitive events (Epic 509A) — last 7 days. Widget self-gates on
-  // TEAM_OVERSIGHT capability; fetches are best-effort and degrade gracefully
-  // (e.g. backend 403 for members without the capability).
+  // Sensitive events (Epic 509A) — last 7 days. Server-side capability gate
+  // (PR #1284 follow-up): the previous version fetched WARNING+CRITICAL audit
+  // events for every viewer and only hid client-side, which leaked Admin-only
+  // events to Members in the same tenant via the RSC payload. We now resolve
+  // TEAM_OVERSIGHT server-side and skip the fetch entirely when absent.
+  const canSeeSensitive =
+    isAdmin || (caps.capabilities ?? []).includes(CAPABILITIES.TEAM_OVERSIGHT);
   const SENSITIVE_LOOKBACK_MS = 7 * 24 * 60 * 60 * 1000;
+  const SENSITIVE_VIEW_ALL_LOOKBACK_DAYS = 30;
+  // Compute the View-all "from" timestamp ONCE in this server component and
+  // pass to the widget — eliminates the SSR/CSR hydration mismatch caused by
+  // calling Date.now() at client-render time inside <Link href=...>.
   const sensitiveTo = new Date();
   const sensitiveFrom = new Date(sensitiveTo.getTime() - SENSITIVE_LOOKBACK_MS);
   const sensitiveFromIso = sensitiveFrom.toISOString();
   const sensitiveToIso = sensitiveTo.toISOString();
-  const [sensitiveFacets, sensitiveRecentPage] = await Promise.all([
-    listFacetEventTypes({ from: sensitiveFromIso, to: sensitiveToIso }).catch(
-      () => [] as EventTypeFacet[]
-    ),
-    listAuditEvents({
-      severities: ["WARNING", "CRITICAL"],
-      from: sensitiveFromIso,
-      to: sensitiveToIso,
-      size: 5,
-    }).catch(() => null),
-  ]);
-  const sensitiveRecent: AuditEventResponse[] | null = sensitiveRecentPage
-    ? sensitiveRecentPage.content
-    : null;
+  const sensitiveViewAllFromIso = new Date(
+    sensitiveTo.getTime() - SENSITIVE_VIEW_ALL_LOOKBACK_DAYS * 24 * 60 * 60 * 1000
+  ).toISOString();
+  let sensitiveFacets: EventTypeFacet[] = [];
+  let sensitiveRecent: AuditEventResponse[] | null = null;
+  if (canSeeSensitive) {
+    const [facets, recentPage] = await Promise.all([
+      listFacetEventTypes({ from: sensitiveFromIso, to: sensitiveToIso }).catch(
+        () => [] as EventTypeFacet[]
+      ),
+      listAuditEvents({
+        severities: ["WARNING", "CRITICAL"],
+        from: sensitiveFromIso,
+        to: sensitiveToIso,
+        size: 5,
+      }).catch(() => null),
+    ]);
+    sensitiveFacets = facets;
+    sensitiveRecent = recentPage ? recentPage.content : null;
+  }
 
   // Capacity data for dashboard widgets
   const monday = getCurrentMonday();
@@ -161,10 +176,17 @@ export default async function OrgDashboardPage({
         </div>
       </div>
 
-      {/* Sensitive events row (Epic 509A) — self-gates on TEAM_OVERSIGHT capability */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <SensitiveEventsWidget orgSlug={slug} facets={sensitiveFacets} recent={sensitiveRecent} />
-      </div>
+      {/* Sensitive events row (Epic 509A) — gated server-side AND client-side. */}
+      {canSeeSensitive && (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          <SensitiveEventsWidget
+            orgSlug={slug}
+            facets={sensitiveFacets}
+            recent={sensitiveRecent}
+            viewAllFromIso={sensitiveViewAllFromIso}
+          />
+        </div>
+      )}
 
       {/* Secondary three-column layout */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">

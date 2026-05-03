@@ -26,12 +26,35 @@ public interface AuditService {
    * Queries audit events matching the given filter, scoped to the current tenant schema. All filter
    * fields are optional -- null means "no filter on this field".
    *
+   * <p><strong>Ordering is fixed</strong> at {@code occurredAt DESC} regardless of any {@link
+   * org.springframework.data.domain.Sort} carried on the supplied {@link Pageable}. Audit-event
+   * reads are inherently chronological (newest first); the severity-pre-flight branch uses a native
+   * SQL query that bakes the ORDER BY into its statement, and the JPQL branch matches it. Caller-
+   * supplied sort directives are intentionally discarded so both branches produce identical row
+   * order. Callers must not rely on alternative sorts.
+   *
    * @param filter query filter with optional entity type, entity ID, actor ID, event type prefix,
    *     and time range
-   * @param pageable pagination and sorting parameters
-   * @return a page of matching audit events ordered by occurredAt DESC
+   * @param pageable pagination parameters; only {@code pageNumber} and {@code pageSize} are
+   *     honoured (sort is discarded — see above)
+   * @return a page of matching audit events ordered by {@code occurredAt DESC}
    */
   Page<AuditEvent> findEvents(AuditEventFilter filter, Pageable pageable);
+
+  /**
+   * Like {@link #findEvents(AuditEventFilter, Pageable)} but enriches each row with its registry-
+   * resolved metadata (label / severity / group) and resolved actor display name in a single batch
+   * lookup (no N+1). Backs HTTP read endpoints that surface the enrichment on every row.
+   *
+   * <p>Same ordering contract as {@link #findEvents(AuditEventFilter, Pageable)} — fixed {@code
+   * occurredAt DESC}, caller {@link org.springframework.data.domain.Sort} is discarded.
+   *
+   * @param filter query filter (same semantics as {@link #findEvents})
+   * @param pageable pagination parameters; sort is discarded
+   * @return a page of enriched events in the same order as the underlying query
+   */
+  Page<AuditEventMetadataResolver.EnrichedAuditEvent> findEventsEnriched(
+      AuditEventFilter filter, Pageable pageable);
 
   /**
    * Counts audit events grouped by event type for the current tenant schema.

@@ -2,20 +2,30 @@ package io.b2mash.b2b.b2bstrawman.audit;
 
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * HTTP read surfaces for the firm-wide audit log. Per architecture §12.3.1 / §12.3.5, all routes
+ * require the {@code TEAM_OVERSIGHT} capability and project read-time enrichment (label / severity
+ * / group / actor display name) onto each row. Enrichment lives in {@link
+ * AuditService#findEventsEnriched}; this controller stays a pure HTTP adapter per Backend
+ * Controller Discipline.
+ */
 @RestController
 public class AuditEventController {
+
+  /** Default lookback when {@code from} is omitted on the facet endpoints. */
+  private static final long DEFAULT_FACET_LOOKBACK_DAYS = 30;
 
   private final AuditService auditService;
   private final AuditEventTypeRegistry auditEventTypeRegistry;
@@ -35,15 +45,15 @@ public class AuditEventController {
       @RequestParam(required = false) String eventType,
       @RequestParam(required = false) Instant from,
       @RequestParam(required = false) Instant to,
+      @RequestParam(required = false) Set<AuditSeverity> severities,
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "50") int size) {
 
-    var filter = new AuditEventFilter(entityType, entityId, actorId, eventType, from, to, null);
-    var pageable =
-        PageRequest.of(page, Math.min(size, 200), Sort.by(Sort.Direction.DESC, "occurredAt"));
-    var events = auditService.findEvents(filter, pageable);
-
-    return ResponseEntity.ok(events.map(AuditEventResponse::from));
+    var filter =
+        new AuditEventFilter(entityType, entityId, actorId, eventType, from, to, severities);
+    var pageable = PageRequest.of(page, Math.min(size, 200));
+    return ResponseEntity.ok(
+        auditService.findEventsEnriched(filter, pageable).map(AuditEventResponse::from));
   }
 
   @GetMapping("/api/audit-events/metadata")
@@ -65,41 +75,46 @@ public class AuditEventController {
       @RequestParam(defaultValue = "50") int size) {
 
     var filter = new AuditEventFilter(entityType, entityId, actorId, eventType, from, to, null);
-    var pageable =
-        PageRequest.of(page, Math.min(size, 200), Sort.by(Sort.Direction.DESC, "occurredAt"));
-    var events = auditService.findEvents(filter, pageable);
-
-    return ResponseEntity.ok(events.map(AuditEventResponse::from));
+    var pageable = PageRequest.of(page, Math.min(size, 200));
+    return ResponseEntity.ok(
+        auditService.findEventsEnriched(filter, pageable).map(AuditEventResponse::from));
   }
 
-  // --- DTO ---
-
-  public record AuditEventResponse(
-      UUID id,
-      String eventType,
-      String entityType,
-      UUID entityId,
-      UUID actorId,
-      String actorType,
-      String source,
-      String ipAddress,
-      String userAgent,
-      Map<String, Object> details,
-      Instant occurredAt) {
-
-    public static AuditEventResponse from(AuditEvent event) {
-      return new AuditEventResponse(
-          event.getId(),
-          event.getEventType(),
-          event.getEntityType(),
-          event.getEntityId(),
-          event.getActorId(),
-          event.getActorType(),
-          event.getSource(),
-          event.getIpAddress(),
-          event.getUserAgent(),
-          event.getDetails(),
-          event.getOccurredAt());
-    }
+  @GetMapping("/api/audit-events/facets/actors")
+  @RequiresCapability("TEAM_OVERSIGHT")
+  public ResponseEntity<List<ActorFacet>> listActorFacets(
+      @RequestParam(required = false) Instant from, @RequestParam(required = false) Instant to) {
+    var range = defaultedRange(from, to);
+    return ResponseEntity.ok(auditService.facets(range.from(), range.to()).actors());
   }
+
+  @GetMapping("/api/audit-events/facets/event-types")
+  @RequiresCapability("TEAM_OVERSIGHT")
+  public ResponseEntity<List<EventTypeFacet>> listEventTypeFacets(
+      @RequestParam(required = false) Instant from, @RequestParam(required = false) Instant to) {
+    var range = defaultedRange(from, to);
+    return ResponseEntity.ok(auditService.facets(range.from(), range.to()).eventTypes());
+  }
+
+  @GetMapping("/api/audit-events/facets/entity-types")
+  @RequiresCapability("TEAM_OVERSIGHT")
+  public ResponseEntity<List<EntityTypeFacet>> listEntityTypeFacets(
+      @RequestParam(required = false) Instant from, @RequestParam(required = false) Instant to) {
+    var range = defaultedRange(from, to);
+    return ResponseEntity.ok(auditService.facets(range.from(), range.to()).entityTypes());
+  }
+
+  /**
+   * Defaults missing range bounds: {@code from} → now − 30d, {@code to} → now. Pure parameter
+   * binding — no business logic.
+   */
+  private static Range defaultedRange(Instant from, Instant to) {
+    var now = Instant.now();
+    var resolvedTo = to != null ? to : now;
+    var resolvedFrom =
+        from != null ? from : now.minus(DEFAULT_FACET_LOOKBACK_DAYS, ChronoUnit.DAYS);
+    return new Range(resolvedFrom, resolvedTo);
+  }
+
+  private record Range(Instant from, Instant to) {}
 }

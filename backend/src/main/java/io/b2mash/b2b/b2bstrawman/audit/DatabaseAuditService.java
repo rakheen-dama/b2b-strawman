@@ -94,6 +94,17 @@ public class DatabaseAuditService implements AuditService {
   @Override
   @Transactional(readOnly = true)
   public Page<AuditEvent> findEvents(AuditEventFilter filter, Pageable pageable) {
+    // Per AuditService.findEvents Javadoc: ordering is fixed at occurredAt DESC across BOTH
+    // branches
+    // (the JPQL query has it in its ORDER BY clause; the native severity-pre-flight query bakes it
+    // into its SQL). Strip caller Sort up-front so both branches receive an identical sort-free
+    // Pageable -- avoids the asymmetry where one branch silently honoured Sort and the other did
+    // not, and prevents the native-query 500 caused by Spring Data appending a JPA property name
+    // ("e.occurredAt") onto the end of a native SQL statement.
+    var sortFreePageable =
+        org.springframework.data.domain.PageRequest.of(
+            pageable.getPageNumber(), pageable.getPageSize());
+
     Set<AuditSeverity> severities = filter.severities();
     // Path 1: no severity filter -- use the existing JPQL query unchanged.
     if (severities == null || severities.isEmpty()) {
@@ -104,7 +115,7 @@ public class DatabaseAuditService implements AuditService {
           filter.eventType(),
           filter.from(),
           filter.to(),
-          pageable);
+          sortFreePageable);
     }
 
     // Path 2: severity pre-flight (architecture §12.3.5).
@@ -195,7 +206,46 @@ public class DatabaseAuditService implements AuditService {
         excludeArr,
         allRegisteredExacts,
         allRegisteredPrefixes,
-        pageable);
+        sortFreePageable);
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  public Page<AuditEventMetadataResolver.EnrichedAuditEvent> findEventsEnriched(
+      AuditEventFilter filter, Pageable pageable) {
+    var rawPage = findEvents(filter, pageable);
+    var rows = rawPage.getContent();
+    if (rows.isEmpty()) {
+      return rawPage.map(e -> enrichOne(e, Map.of()));
+    }
+    // Single bulk member lookup -- N events with K distinct USER actors produce one IN-clause of
+    // size K, not N+1 queries.
+    Set<UUID> actorIds =
+        rows.stream()
+            .map(AuditEvent::getActorId)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet());
+    Map<UUID, String> nameLookup = resolveActorDisplayNames(actorIds);
+    return rawPage.map(e -> enrichOne(e, nameLookup));
+  }
+
+  private AuditEventMetadataResolver.EnrichedAuditEvent enrichOne(
+      AuditEvent event, Map<UUID, String> nameLookup) {
+    var metadata = auditEventTypeRegistry.resolve(event.getEventType());
+    var displayName = resolveDisplay(event.getActorId(), event.getActorType(), nameLookup);
+    return new AuditEventMetadataResolver.EnrichedAuditEvent(event, metadata, displayName);
+  }
+
+  private static String resolveDisplay(
+      UUID actorId, String actorType, Map<UUID, String> nameLookup) {
+    if ("USER".equals(actorType)) {
+      if (actorId == null) {
+        return "System";
+      }
+      var name = nameLookup.get(actorId);
+      return name != null ? name : "Former member (" + actorId + ")";
+    }
+    return staticActorLabel(actorType);
   }
 
   @Override

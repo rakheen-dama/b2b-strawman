@@ -13,6 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -118,7 +119,35 @@ public class DatabaseAuditService implements AuditService {
           sortFreePageable);
     }
 
-    // Path 2: severity pre-flight (architecture §12.3.5).
+    // Path 2: severity pre-flight (architecture §12.3.5) — shared with streamEvents() so the two
+    // paths cannot drift.
+    var preflight = computeSeverityPreflight(severities);
+    if (preflight == null) {
+      // Step E short-circuit: nothing can match.
+      return Page.empty(pageable);
+    }
+
+    return auditEventRepository.findByFilterWithEventTypes(
+        filter.entityType(),
+        filter.entityId(),
+        filter.actorId(),
+        filter.eventType(),
+        filter.from(),
+        filter.to(),
+        preflight.exactTypes(),
+        preflight.prefixPatterns(),
+        preflight.excludeExact(),
+        preflight.allRegisteredExacts(),
+        preflight.allRegisteredPrefixes(),
+        sortFreePageable);
+  }
+
+  /**
+   * Computes the registry-derived severity pre-flight arrays per architecture §12.3.5. Returns
+   * {@code null} when the requested severity set cannot match anything (Step E short-circuit).
+   * Shared between {@link #findEvents} and {@link #streamEvents}.
+   */
+  private SeverityPreflight computeSeverityPreflight(Set<AuditSeverity> severities) {
     // Step A: walk the registry for entries whose severity matches the request.
     var matchingEntries = auditEventTypeRegistry.entriesMatching(severities);
 
@@ -159,9 +188,7 @@ public class DatabaseAuditService implements AuditService {
       }
     }
 
-    // Step D: handle the INFO-fallback branch. Default-fallback rows (eventTypes not in the
-    // registry) resolve to severity=INFO via defaultFor(). When INFO is in the requested set, also
-    // match rows that don't match any registered exact AND don't match any registered prefix.
+    // Step D: INFO fallback for unregistered eventTypes.
     boolean infoRequested = severities.contains(AuditSeverity.INFO);
     String[] allRegisteredExacts = null;
     String[] allRegisteredPrefixes = null;
@@ -176,37 +203,63 @@ public class DatabaseAuditService implements AuditService {
           allExacts.add(et);
         }
       }
-      // Pass empty arrays as Postgres-friendly empty TEXT[] -- the predicate's NOT (= ANY(...))
-      // returns true for any value when the array is empty, which is the behaviour we want when
-      // the registry has no exacts/prefixes of a given kind.
       allRegisteredExacts = allExacts.toArray(new String[0]);
       allRegisteredPrefixes = allPrefixes.toArray(new String[0]);
     }
 
     // Step E: short-circuit when nothing can match.
     if (includeExact.isEmpty() && includePrefixSql.isEmpty() && !infoRequested) {
-      return Page.empty(pageable);
+      return null;
     }
 
-    // Step F: convert sets to nullable arrays and call the new repository method.
+    // Step F: convert sets to nullable arrays.
     String[] exactArr = includeExact.isEmpty() ? null : includeExact.toArray(new String[0]);
     String[] prefixArr =
         includePrefixSql.isEmpty() ? null : includePrefixSql.toArray(new String[0]);
     String[] excludeArr = excludeExact.isEmpty() ? null : excludeExact.toArray(new String[0]);
 
-    return auditEventRepository.findByFilterWithEventTypes(
+    return new SeverityPreflight(
+        exactArr, prefixArr, excludeArr, allRegisteredExacts, allRegisteredPrefixes);
+  }
+
+  /** Internal carrier for the §12.3.5 severity pre-flight arrays. */
+  private record SeverityPreflight(
+      String[] exactTypes,
+      String[] prefixPatterns,
+      String[] excludeExact,
+      String[] allRegisteredExacts,
+      String[] allRegisteredPrefixes) {}
+
+  @Override
+  @Transactional(readOnly = true)
+  public Stream<AuditEvent> streamEvents(AuditEventFilter filter) {
+    Set<AuditSeverity> severities = filter.severities();
+    if (severities == null || severities.isEmpty()) {
+      return auditEventRepository.streamByFilter(
+          filter.entityType(),
+          filter.entityId(),
+          filter.actorId(),
+          filter.eventType(),
+          filter.from(),
+          filter.to());
+    }
+    var preflight = computeSeverityPreflight(severities);
+    if (preflight == null) {
+      // Nothing can match — return an empty stream rather than issuing a query that returns 0 rows.
+      return Stream.empty();
+    }
+    return auditEventRepository.streamByFilterWithEventTypes(
         filter.entityType(),
         filter.entityId(),
         filter.actorId(),
         filter.eventType(),
         filter.from(),
         filter.to(),
-        exactArr,
-        prefixArr,
-        excludeArr,
-        allRegisteredExacts,
-        allRegisteredPrefixes,
-        sortFreePageable);
+        preflight.exactTypes(),
+        preflight.prefixPatterns(),
+        preflight.excludeExact(),
+        preflight.allRegisteredExacts(),
+        preflight.allRegisteredPrefixes());
   }
 
   @Override

@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -107,4 +108,27 @@ public interface AuditService {
    *     data
    */
   FacetSnapshot facets(Instant from, Instant to);
+
+  /**
+   * Streams audit events matching {@code filter} ordered by {@code occurredAt DESC}. Memory stays
+   * bounded — the returned {@link Stream} is backed by a Hibernate scrollable cursor with a small
+   * fetch-size hint so callers can iterate arbitrarily large result sets.
+   *
+   * <p><strong>Caller contract:</strong>
+   *
+   * <ul>
+   *   <li>The caller MUST close the stream (try-with-resources).
+   *   <li>The caller MUST be inside an active read-only transaction so the JDBC cursor stays open
+   *       for the duration of the iteration. Outside a transaction, Hibernate closes the cursor
+   *       eagerly and the stream throws {@link org.hibernate.LazyInitializationException}.
+   * </ul>
+   *
+   * <p>Severity-pre-flight semantics match {@link #findEvents(AuditEventFilter, Pageable)} — the
+   * same registry-derived include/exclude/INFO-fallback computation runs before issuing the
+   * underlying streaming query.
+   *
+   * @param filter query filter (same semantics as {@link #findEvents})
+   * @return open stream of matching audit events ordered by {@code occurredAt DESC}
+   */
+  Stream<AuditEvent> streamEvents(AuditEventFilter filter);
 }

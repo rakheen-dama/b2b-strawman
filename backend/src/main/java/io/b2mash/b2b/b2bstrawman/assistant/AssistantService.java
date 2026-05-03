@@ -4,7 +4,11 @@ import io.b2mash.b2b.b2bstrawman.assistant.provider.ChatMessage;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.ChatRequest;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.LlmChatProviderRegistry;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.StreamEvent;
+import io.b2mash.b2b.b2bstrawman.assistant.provider.ToolDefinition;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.ToolResult;
+import io.b2mash.b2b.b2bstrawman.assistant.specialist.ContextRef;
+import io.b2mash.b2b.b2bstrawman.assistant.specialist.SpecialistRegistry;
+import io.b2mash.b2b.b2bstrawman.assistant.specialist.SystemPromptBuilder;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantToolRegistry;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionStatusCache;
@@ -59,6 +63,8 @@ public class AssistantService {
   private final OrganizationRepository organizationRepository;
   private final SubscriptionStatusCache subscriptionStatusCache;
   private final ObjectMapper objectMapper;
+  private final SpecialistRegistry specialistRegistry;
+  private final SystemPromptBuilder systemPromptBuilder;
   private final String systemGuide;
   private final ConcurrentHashMap<String, PendingConfirmation> pendingConfirmations;
 
@@ -74,6 +80,8 @@ public class AssistantService {
       OrganizationRepository organizationRepository,
       SubscriptionStatusCache subscriptionStatusCache,
       ObjectMapper objectMapper,
+      SpecialistRegistry specialistRegistry,
+      SystemPromptBuilder systemPromptBuilder,
       @Value("classpath:assistant/system-guide.md") Resource systemGuideResource) {
     this.providerRegistry = providerRegistry;
     this.toolRegistry = toolRegistry;
@@ -83,6 +91,8 @@ public class AssistantService {
     this.organizationRepository = organizationRepository;
     this.subscriptionStatusCache = subscriptionStatusCache;
     this.objectMapper = objectMapper;
+    this.specialistRegistry = specialistRegistry;
+    this.systemPromptBuilder = systemPromptBuilder;
     this.pendingConfirmations = new ConcurrentHashMap<>();
     try {
       this.systemGuide = systemGuideResource.getContentAsString(StandardCharsets.UTF_8);
@@ -134,8 +144,22 @@ public class AssistantService {
     try {
       var model = parseModel(integration.get().getConfigJson());
       var provider = providerRegistry.get(providerSlug);
-      var toolDefs = toolRegistry.getToolDefinitions(RequestScopes.getCapabilities());
-      var systemPrompt = assembleSystemPrompt(context.currentPage(), getOrgName());
+      List<ToolDefinition> toolDefs;
+      String systemPrompt;
+      if (context.specialistId() != null && !context.specialistId().isBlank()) {
+        var specialist = specialistRegistry.requireById(context.specialistId());
+        var capabilities = RequestScopes.getCapabilities();
+        var filtered = toolRegistry.filterBy(specialist.toolIds(), capabilities);
+        toolDefs =
+            filtered.stream()
+                .map(t -> new ToolDefinition(t.name(), t.description(), t.inputSchema()))
+                .toList();
+        var ref = new ContextRef(null, null, context.currentPage());
+        systemPrompt = systemPromptBuilder.buildFor(specialist, ref);
+      } else {
+        toolDefs = toolRegistry.getToolDefinitions(RequestScopes.getCapabilities());
+        systemPrompt = assembleSystemPrompt(context.currentPage(), getOrgName());
+      }
 
       // Build initial message list from history + new user message
       var initialMessages = new ArrayList<>(context.history());

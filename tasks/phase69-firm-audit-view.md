@@ -23,7 +23,7 @@ The existing global audit log page at `frontend/app/(app)/org/[slug]/settings/au
 | 502 | Audit Facets API + Severity-Filtered List | Backend | 501 | M | 502A, 502B | **Done** (PRs #1274, #1275) |
 | 503 | Audit Export — CSV Streaming + Reflexive Audit | Backend | 501, 502A | M | 503A | **Done** (PR #1276) |
 | 504 | Audit Export — PDF via Tiptap Pipeline | Backend | 501, 502A, 503A | M | 504A | **Done** (PR #1277) |
-| 505 | DSAR Audit-Trail Folder Integration | Backend | 501 | M | 505A | |
+| 505 | DSAR Audit-Trail Folder Integration | Backend | 501 | M | 505A | **Done** (PR #1278) |
 | 506 | Global Audit Log Page — Shell, Filters, Row Expansion | Frontend | 502B | L | 506A, 506B | |
 | 507 | `<AuditTimeline>` Component + 3 Detail Page Tabs (Customer / Project / Invoice) | Frontend | 502B, 506A | M | 507A | |
 | 508 | `<AuditTimeline>` — Remaining 4 Detail Page Tabs (TrustTx / MatterClosure / Proposal / InfoRequest) | Frontend | 507A | M | 508A | |
@@ -132,7 +132,7 @@ PHASES already complete:
 | 2b | 502 | 502B | Controller wiring: `/facets/actors`, `/facets/event-types`, `/facets/entity-types` endpoints on `AuditEventController`; severity multi-value query param parsing on the existing `/api/audit-events`; integration tests covering all four routes + the capability gate. **Done** (PR #1275) |
 | 2c (parallel after 502A) | 503 | 503A | `AuditCsvExporter` (`StreamingResponseBody`); `GET /api/audit-events/export.csv` endpoint; reflexive `audit.export.generated` emission; integration tests (CSV shape, streaming, reflexive event, capability gate). **Done** (PR #1276) |
 | 2d (parallel after 503A) | 504 | 504A | `AuditPdfExporter` (chunked Tiptap pipeline binding); `audit-export` Tiptap template registration under existing template pack; `GET /api/audit-events/export.pdf` endpoint; 10 000-row pre-flight + 413 ProblemDetail; reflexive `audit.export.generated` emission; integration tests (golden hash, cap, capability gate). **Done** (PR #1277) |
-| 2e (parallel after 501A) | 505 | 505A | `AuditService.findEventsForCustomer(UUID)` streaming method; `DataExportService.buildAuditTrail(customer, zip)` extension writing `audit-trail/events.json` + `events.csv` + `README.txt`; integration tests (folder presence, cross-customer isolation, no breakage of existing Phase 50 pack tests). |
+| 2e (parallel after 501A) | 505 | 505A | `AuditService.findEventsForCustomer(UUID)` streaming method; `DataExportService.buildAuditTrail(customer, zip)` extension writing `audit-trail/events.json` + `events.csv` + `README.txt`; integration tests (folder presence, cross-customer isolation, no breakage of existing Phase 50 pack tests). **Done** (PR #1278) |
 
 ### Stage 3: Global audit log page (after 502B + relevant export endpoints)
 

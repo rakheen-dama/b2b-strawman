@@ -27,7 +27,7 @@ The existing global audit log page at `frontend/app/(app)/org/[slug]/settings/au
 | 506 | Global Audit Log Page — Shell, Filters, Row Expansion | Frontend | 502B | L | 506A, 506B | **Done** (PRs #1279, #1280) |
 | 507 | `<AuditTimeline>` Component + 3 Detail Page Tabs (Customer / Project / Invoice) | Frontend | 502B, 506A | M | 507A | **Done** (PR #1281) |
 | 508 | Matter Closure Override Audit Surface (Backend + Frontend, Scope B′) | Both | 507A | M | 508A, 508B | **Done** (PRs #1282, #1283) |
-| 509 | Sensitive-Events Dashboard Widget | Frontend | 502B, 506B | S | 509A | |
+| 509 | Sensitive-Events Dashboard Widget | Frontend | 502B, 506B | S | 509A | **Done** (PR #1284) |
 | 510 | Admin-POV 30-Day QA Capstone + Screenshots + Gap Report | E2E / Process | 501–509 | L | 510A, 510B | |
 
 Slice count: **14 slices across 10 epics** (re-scoped from 13 on 2026-05-03 — Epic 508 was split into 508A backend + 508B frontend after the original 508A scout discovered both spec-vs-code drift in matter-closure audit emissions and four target detail pages that did not exist in their expected shape; see Phase 70 Backlog at the end of this file). Backend and frontend are always split into separate slices. Severity-foundation work in 501 blocks every read-time enrichment surface (502, 503, 504, 506, 507, 508, 509). Backend export and DSAR work parallelises after 502A. Frontend pages all wait on 502B (the API surface they consume). Epic 509 is the cuttable epic if scope tightens — the audit log page (506) and per-entity timeline (507/508) carry the phase.
@@ -143,7 +143,7 @@ PHASES already complete:
 | 3c (parallel after 506A) | 507 | 507A | `frontend/components/audit/audit-timeline.tsx` reusable component reusing 506A primitives; "Audit" tab added to Customer / Project / Invoice detail pages; capability-gated; terminology key `audit.tab` (legal-za → "Audit Trail"). Frontend tests for render + expansion + empty state. **Done** (PR #1281) |
 | 3d | 508 | 508A | **Backend.** Add `matter.closure.override_used` audit emission in `MatterClosureService.performClose` when override is true (entityType="matter_closure", entityId=closureLogId, details include justification). Existing `matter_closure.closed` emission preserved for portal compatibility. Re-spec rationale: original 508A scout discovered all four target detail pages required new infrastructure AND the demo's CRITICAL event was never being emitted; split into thin BE + focused FE per Scope B′. **Done** (PR #1282) |
 | 3e | 508 | 508B | **Frontend.** Closure History section on project detail consuming the new override events from 508A. Inline `<AuditHistoryDisclosure>` on proposal detail (works against existing emissions). Playwright matter-closure override demo (canonical Phase 69 demo per requirements §6.1 Day 15). Trust Tx + Information Request deferred to Phase 70. **Done** (PR #1283) |
-| 3e (parallel after 502B) | 509 | 509A | `<SensitiveEventsWidget>` on the firm admin dashboard: three count pills (NOTICE / WARNING / CRITICAL last 7 days) + top-5 list of CRITICAL+WARNING + "View all" deep link to Sensitive preset. Capability-gated. |
+| 3e (parallel after 502B) | 509 | 509A | `<SensitiveEventsWidget>` on the firm admin dashboard: three count pills (NOTICE / WARNING / CRITICAL last 7 days) + top-5 list of CRITICAL+WARNING + "View all" deep link to Sensitive preset. Capability-gated. **Done** (PR #1284) |
 
 ### Stage 4: QA capstone
 
@@ -771,7 +771,7 @@ A realistic day-by-day cadence: 501A days 1–3; 502A + 503A + 505A days 3–7 (
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **509A** | 509.1–509.5 | 6 frontend files (1 widget, 1 dashboard wiring, 2 test files, 1 i18n keys block) | `<SensitiveEventsWidget>` placed on the firm admin dashboard. Three count pills. Top-5 list. Deep-link to global audit log Sensitive preset for "View all". Each row click deep-links to the global audit log filtered to that specific event. Capability-gated. Frontend tests for empty state + deep-link URL correctness. |
+| **509A** | 509.1–509.5 | 6 frontend files (1 widget, 1 dashboard wiring, 2 test files, 1 i18n keys block) | `<SensitiveEventsWidget>` placed on the firm admin dashboard. Three count pills. Top-5 list. Deep-link to global audit log Sensitive preset for "View all". Each row click deep-links to the global audit log filtered to that specific event. Capability-gated. Frontend tests for empty state + deep-link URL correctness. **Done** (PR #1284) |
 
 ### Tasks
 

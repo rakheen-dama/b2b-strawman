@@ -73,9 +73,9 @@ class AuditEventTypeRegistryTest {
 
   @Test
   void entriesReturnsFullCatalogueExcludingDefaultFallback() {
-    // §12.3.3 states 17 explicit catalogue entries (the default is synthesised inside resolve()
-    // and must NOT appear in entries()).
-    assertThat(registry.entries()).hasSize(17);
+    // 17 base entries + 7 ai.specialist.* entries (Epic 515A) = 24. Default fallback is
+    // synthesised inside resolve() and must NOT appear in entries().
+    assertThat(registry.entries()).hasSize(24);
     assertThat(registry.entries())
         .extracting(AuditEventTypeMetadata::eventType)
         .doesNotContain("(default fallback)")
@@ -104,8 +104,8 @@ class AuditEventTypeRegistryTest {
 
   @Test
   void entriesMatchingWithEmptyOrNullReturnsAll() {
-    assertThat(registry.entriesMatching(Set.of())).hasSize(17);
-    assertThat(registry.entriesMatching(null)).hasSize(17);
+    assertThat(registry.entriesMatching(Set.of())).hasSize(24);
+    assertThat(registry.entriesMatching(null)).hasSize(24);
   }
 
   @Test

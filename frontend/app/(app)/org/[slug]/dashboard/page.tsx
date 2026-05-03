@@ -163,11 +163,7 @@ export default async function OrgDashboardPage({
 
       {/* Sensitive events row (Epic 509A) — self-gates on TEAM_OVERSIGHT capability */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-        <SensitiveEventsWidget
-          orgSlug={slug}
-          facets={sensitiveFacets}
-          recent={sensitiveRecent}
-        />
+        <SensitiveEventsWidget orgSlug={slug} facets={sensitiveFacets} recent={sensitiveRecent} />
       </div>
 
       {/* Secondary three-column layout */}

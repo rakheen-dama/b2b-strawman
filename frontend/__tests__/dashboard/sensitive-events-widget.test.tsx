@@ -27,10 +27,7 @@ vi.mock("next/link", () => ({
 
 import { SensitiveEventsWidget } from "@/components/dashboard/sensitive-events-widget";
 import { CapabilityProvider } from "@/lib/capabilities";
-import type {
-  AuditEventResponse,
-  EventTypeFacet,
-} from "@/lib/api/audit-events";
+import type { AuditEventResponse, EventTypeFacet } from "@/lib/api/audit-events";
 
 afterEach(() => {
   cleanup();
@@ -41,10 +38,7 @@ beforeEach(() => {
   pushMock.mockReset();
 });
 
-function withCaps(
-  ui: React.ReactNode,
-  { caps = ["TEAM_OVERSIGHT"], isAdmin = false } = {}
-) {
+function withCaps(ui: React.ReactNode, { caps = ["TEAM_OVERSIGHT"], isAdmin = false } = {}) {
   return (
     <CapabilityProvider
       capabilities={caps}
@@ -59,11 +53,41 @@ function withCaps(
 
 const SAMPLE_FACETS: EventTypeFacet[] = [
   // INFO must be ignored even when present.
-  { eventType: "user.session.opened", label: "User logged in", severity: "INFO", group: "SECURITY", count: 99 },
-  { eventType: "task.created", label: "Task created", severity: "NOTICE", group: "STANDARD", count: 4 },
-  { eventType: "matter.note.added", label: "Note added", severity: "NOTICE", group: "STANDARD", count: 3 },
-  { eventType: "trust.transaction.approved", label: "Trust transaction approved", severity: "WARNING", group: "FINANCIAL", count: 2 },
-  { eventType: "matter.closed.override", label: "Matter closure override", severity: "CRITICAL", group: "COMPLIANCE", count: 1 },
+  {
+    eventType: "user.session.opened",
+    label: "User logged in",
+    severity: "INFO",
+    group: "SECURITY",
+    count: 99,
+  },
+  {
+    eventType: "task.created",
+    label: "Task created",
+    severity: "NOTICE",
+    group: "STANDARD",
+    count: 4,
+  },
+  {
+    eventType: "matter.note.added",
+    label: "Note added",
+    severity: "NOTICE",
+    group: "STANDARD",
+    count: 3,
+  },
+  {
+    eventType: "trust.transaction.approved",
+    label: "Trust transaction approved",
+    severity: "WARNING",
+    group: "FINANCIAL",
+    count: 2,
+  },
+  {
+    eventType: "matter.closed.override",
+    label: "Matter closure override",
+    severity: "CRITICAL",
+    group: "COMPLIANCE",
+    count: 1,
+  },
 ];
 
 const SAMPLE_EVENT: AuditEventResponse = {
@@ -115,9 +139,7 @@ describe("SensitiveEventsWidget", () => {
     render(withCaps(<SensitiveEventsWidget orgSlug="acme" facets={[]} recent={[]} />));
 
     expect(screen.getByTestId("sensitive-events-empty")).toBeInTheDocument();
-    expect(
-      screen.getByText("No sensitive events in the last 7 days.")
-    ).toBeInTheDocument();
+    expect(screen.getByText("No sensitive events in the last 7 days.")).toBeInTheDocument();
   });
 
   it("navigates to the per-event deep link on row click (±1m window)", () => {
@@ -141,9 +163,7 @@ describe("SensitiveEventsWidget", () => {
   });
 
   it("renders a 'View all' link with the Sensitive preset filter", () => {
-    render(
-      withCaps(<SensitiveEventsWidget orgSlug="acme" facets={SAMPLE_FACETS} recent={[]} />)
-    );
+    render(withCaps(<SensitiveEventsWidget orgSlug="acme" facets={SAMPLE_FACETS} recent={[]} />));
     const link = screen.getByTestId("sensitive-events-view-all") as HTMLAnchorElement;
     expect(link.getAttribute("href")).toMatch(/^\/org\/acme\/settings\/audit-log\?/);
     expect(link.getAttribute("href")).toContain("severities=WARNING%2CCRITICAL");

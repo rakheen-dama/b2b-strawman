@@ -1,0 +1,22 @@
+package io.b2mash.b2b.b2bstrawman.assistant.specialist;
+
+import java.util.List;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+/** Registers the Intake specialist. Tool subset will land in Epic 513. */
+@Configuration
+public class IntakeSpecialistConfig {
+
+  @Bean
+  public Specialist intakeSpecialist() {
+    return new Specialist(
+        "intake-za",
+        "Intake Specialist",
+        "Help with client onboarding, KYC, and matter intake.",
+        "assistant/specialists/intake-za.md",
+        List.of(),
+        List.of(new LauncherContext("/intake", "intake", "Ask the Intake specialist")),
+        false);
+  }
+}

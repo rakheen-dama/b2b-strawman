@@ -86,6 +86,23 @@ public class AssistantToolRegistry {
   }
 
   /**
+   * Returns the subset of registered tools whose names appear in {@code toolIds} AND whose required
+   * capabilities are satisfied by {@code capabilities}. Tool ids in {@code toolIds} that don't
+   * correspond to a registered tool are silently skipped (specialist tool subsets may reference
+   * tools that haven't shipped yet — Epic 512/513/514).
+   */
+  public List<AssistantTool> filterBy(List<String> toolIds, Set<String> capabilities) {
+    return toolIds.stream()
+        .map(tools::get)
+        .filter(java.util.Objects::nonNull)
+        .filter(
+            tool ->
+                tool.requiredCapabilities().isEmpty()
+                    || capabilities.containsAll(tool.requiredCapabilities()))
+        .toList();
+  }
+
+  /**
    * Returns the tool with the given name without capability checks. Package-private — intended for
    * internal use only (e.g., tests, registry introspection).
    */

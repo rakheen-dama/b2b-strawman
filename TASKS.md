@@ -579,7 +579,7 @@
 | 509 | Sensitive-Events Dashboard Widget | Frontend | 502B, 506B | S | 509A | **Done** (PR #1284) |
 | 510 | Admin-POV 30-Day QA Capstone + Screenshots + Gap Report | E2E/Process | 501–509 | L | 510A, 510B | |
 | **Phase 70 — Specialist AI Assistants** | | | | | | See [tasks/phase70-specialist-ai-assistants.md](tasks/phase70-specialist-ai-assistants.md) |
-| 511 | Specialist Framework — Registry, System Prompts, Capability-Filtered Tool Resolution | Backend | -- | M | 511A, 511B | |
+| 511 | Specialist Framework — Registry, System Prompts, Capability-Filtered Tool Resolution | Backend | -- | M | 511A, 511B | 511A **Done** (PR #1286) |
 | 512 | Specialist Framework — Inline Launcher + `<SpecialistPanel>` Frontend | Frontend | 511B | M | 512A | |
 | 513 | Billing Assistant — System Prompt, `Propose*` Tools, Diff-Review UI | Both | 511, 512A | M | 513A, 513B | |
 | 514 | Intake Assistant — Text Extraction (pdfbox) + Vision Fallback + Per-Field Diff | Both | 511, 512A | L | 514A, 514B, 514C | |

@@ -17,7 +17,7 @@ Multi-vertical: all three specialists work across `legal-za`, `accounting-za`, `
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 511 | Specialist Framework — Registry, System Prompts, Capability-Filtered Tool Resolution | Backend | -- | M | 511A, 511B | |
+| 511 | Specialist Framework — Registry, System Prompts, Capability-Filtered Tool Resolution | Backend | -- | M | 511A, 511B | 511A **Done** (PR #1286) |
 | 512 | Specialist Framework — Inline Launcher + `<SpecialistPanel>` Frontend | Frontend | 511B | M | 512A | |
 | 513 | Billing Assistant — System Prompt, `Propose*` Tools, Diff-Review UI | Both | 511, 512A | M | 513A, 513B | |
 | 514 | Intake Assistant — Text Extraction (pdfbox) + Vision Fallback + Per-Field Diff | Both | 511, 512A | L | 514A, 514B, 514C | |
@@ -162,7 +162,7 @@ PHASES already complete:
 
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
-| 1a | 511 | 511A | `Specialist` record + `LauncherContext` record + `SpecialistRegistry` (in-code Spring `@Component`); `SpecialistSystemPromptLoader` with classpath caching + dev-only reload endpoint (gated behind `local`/`dev` profile); three `.md` prompt files (`billing-za.md`, `intake-za.md`, `inbox-za.md`) with YAML front-matter (`version`, `createdAt`, `specialist`); prompt-linter unit test asserting required SA-context tokens; registry resolution unit tests. No DB, no migration. |
+| 1a | 511 | 511A | `Specialist` record + `LauncherContext` record + `SpecialistRegistry` (in-code Spring `@Component`); `SpecialistSystemPromptLoader` with classpath caching + dev-only reload endpoint (gated behind `local`/`dev` profile); three `.md` prompt files (`billing-za.md`, `intake-za.md`, `inbox-za.md`) with YAML front-matter (`version`, `createdAt`, `specialist`); prompt-linter unit test asserting required SA-context tokens; registry resolution unit tests. No DB, no migration. **Done** (PR #1286) |
 | 1b | 511 | 511B | `/api/assistant/specialists` (visibility-filtered list) + `/api/assistant/specialists/{id}/sessions` (start session) endpoints; `specialistId` parameter wired into existing Phase 52 `/api/assistant/chat`; `SpecialistChatRequestEnricher` resolves system prompt + tool subset + capability filtering via `CapabilityAuthorizationService`; PRO-tier gate via `PlanSyncService`; integration tests (registry visibility per capability, tool-subset resolution, PRO gate, hand-off context). |
 
 ### Stage 2: Specialist panel + launcher (after 511B)
@@ -254,7 +254,7 @@ A realistic day-by-day cadence: 511A days 1–3; 511B days 3–5; 512A days 5–
 
 | Slice | Title | Scope | Files | LoC est | Notes |
 |-------|-------|-------|-------|---------|-------|
-| **511A** | Specialist record + registry + prompt loader + linter | Backend | 9 (4 new types + 3 prompt `.md` files + 2 test classes) | ~600 | New package `backend/.../assistant/specialist/`. `Specialist` record + `LauncherContext` record + `SpecialistRegistry` + `SpecialistSystemPromptLoader` (classpath `.md` resources under `backend/src/main/resources/assistant/specialists/`, cached, YAML front-matter parsed via SnakeYAML — already on classpath). Three prompt files. Prompt-linter unit test asserts each `.md` contains required SA-context tokens (e.g. `billing-za.md` must mention "ZAR" + "SA English" + "LSSA tariff"; `intake-za.md` must mention "RSA ID" + "CIPC" + "POPIA"; `inbox-za.md` must mention "third-person" + "no legal opinion"). Pattern: `audit/AuditEventTypeRegistry.java` for the `@Component` registry shape. ~6 unit tests. |
+| **511A** | Specialist record + registry + prompt loader + linter | Backend | 9 (4 new types + 3 prompt `.md` files + 2 test classes) | ~600 | New package `backend/.../assistant/specialist/`. `Specialist` record + `LauncherContext` record + `SpecialistRegistry` + `SpecialistSystemPromptLoader` (classpath `.md` resources under `backend/src/main/resources/assistant/specialists/`, cached, YAML front-matter parsed via SnakeYAML — already on classpath). Three prompt files. Prompt-linter unit test asserts each `.md` contains required SA-context tokens (e.g. `billing-za.md` must mention "ZAR" + "SA English" + "LSSA tariff"; `intake-za.md` must mention "RSA ID" + "CIPC" + "POPIA"; `inbox-za.md` must mention "third-person" + "no legal opinion"). Pattern: `audit/AuditEventTypeRegistry.java` for the `@Component` registry shape. ~6 unit tests. **Done** (PR #1286) |
 | **511B** | Specialist chat endpoint extension + capability-filtered tool resolution | Backend | 7 (2 new types + 1 controller modification + 1 service modification + 3 test classes) | ~750 | `SpecialistChatRequestEnricher` (new `@Service`) injects system prompt + filters tool subset against `CapabilityAuthorizationService` for the acting member. `AssistantController` gains `GET /api/assistant/specialists` (filtered by PRO + capabilities + at least one launcher visible to the caller's current route — caller passes `?surface=...` optionally) + `POST /api/assistant/specialists/{id}/sessions`. Existing `/api/assistant/chat` gains optional `specialistId` query/body field. PRO gate via `PlanSyncService`. ~7 integration tests: registry visibility per capability, tool-subset narrowing, PRO STARTER tenant sees nothing, hand-off-context preservation across `specialistId` param. |
 
 ### Tasks

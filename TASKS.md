@@ -569,7 +569,7 @@
 | 500 | Client-POV 90-Day QA Capstone + Screenshots + Gap Report | E2E/Process | 494–499 | L | 500A, 500B | **Done** (PRs #1095, #1096) |
 | **Phase 69 — Firm Audit View (Admin Surface)** | | | | | | See [tasks/phase69-firm-audit-view.md](tasks/phase69-firm-audit-view.md) |
 | 501 | Audit Metadata Registry + Severity / Group Foundation | Backend | -- | M | 501A | **Done** (PR #1273) |
-| 502 | Audit Facets API + Severity-Filtered List | Backend | 501 | M | 502A, 502B | |
+| 502 | Audit Facets API + Severity-Filtered List | Backend | 501 | M | 502A, 502B | **Done** (PRs #1274, #1275) |
 | 503 | Audit Export — CSV Streaming + Reflexive Audit | Backend | 501, 502A | M | 503A | |
 | 504 | Audit Export — PDF via Tiptap Pipeline | Backend | 501, 502A, 503A | M | 504A | |
 | 505 | DSAR Audit-Trail Folder Integration | Backend | 501 | M | 505A | |

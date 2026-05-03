@@ -20,7 +20,7 @@ The existing global audit log page at `frontend/app/(app)/org/[slug]/settings/au
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 501 | Audit Metadata Registry + Severity / Group Foundation | Backend | -- | M | 501A | **Done** (PR #1273) |
-| 502 | Audit Facets API + Severity-Filtered List | Backend | 501 | M | 502A, 502B | |
+| 502 | Audit Facets API + Severity-Filtered List | Backend | 501 | M | 502A, 502B | **Done** (PRs #1274, #1275) |
 | 503 | Audit Export — CSV Streaming + Reflexive Audit | Backend | 501, 502A | M | 503A | |
 | 504 | Audit Export — PDF via Tiptap Pipeline | Backend | 501, 502A, 503A | M | 504A | |
 | 505 | DSAR Audit-Trail Folder Integration | Backend | 501 | M | 505A | |
@@ -129,7 +129,7 @@ PHASES already complete:
 | Order | Epic | Slice | Summary |
 |-------|------|-------|---------|
 | 2a | 502 | 502A | `AuditEventFilter.severities` record expansion; severity pre-flight in `AuditService.findEvents` (registry → exact + prefix sets → DB filter); `FacetSnapshot` record + `AuditService.facets()`; repository extension with `findByFilterWithEventTypes` + facet projection queries. Service-layer + repo only. **Done** (PR #1274) |
-| 2b | 502 | 502B | Controller wiring: `/facets/actors`, `/facets/event-types`, `/facets/entity-types` endpoints on `AuditEventController`; severity multi-value query param parsing on the existing `/api/audit-events`; integration tests covering all four routes + the capability gate. |
+| 2b | 502 | 502B | Controller wiring: `/facets/actors`, `/facets/event-types`, `/facets/entity-types` endpoints on `AuditEventController`; severity multi-value query param parsing on the existing `/api/audit-events`; integration tests covering all four routes + the capability gate. **Done** (PR #1275) |
 | 2c (parallel after 502A) | 503 | 503A | `AuditCsvExporter` (`StreamingResponseBody`); `GET /api/audit-events/export.csv` endpoint; reflexive `audit.export.generated` emission; integration tests (CSV shape, streaming, reflexive event, capability gate). |
 | 2d (parallel after 503A) | 504 | 504A | `AuditPdfExporter` (chunked Tiptap pipeline binding); `audit-export` Tiptap template registration under existing template pack; `GET /api/audit-events/export.pdf` endpoint; 10 000-row pre-flight + 413 ProblemDetail; reflexive `audit.export.generated` emission; integration tests (golden hash, cap, capability gate). |
 | 2e (parallel after 501A) | 505 | 505A | `AuditService.findEventsForCustomer(UUID)` streaming method; `DataExportService.buildAuditTrail(customer, zip)` extension writing `audit-trail/events.json` + `events.csv` + `README.txt`; integration tests (folder presence, cross-customer isolation, no breakage of existing Phase 50 pack tests). |
@@ -264,7 +264,7 @@ A realistic day-by-day cadence: 501A days 1–3; 502A + 503A + 505A days 3–7 (
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **502A** | 502.1–502.5 | 7 backend files | `AuditEventFilter.severities` record expansion; severity pre-flight in `AuditService.findEvents` (registry → exact + prefix sets → DB filter); `FacetSnapshot` record; `AuditService.facets(from, to)` method; `AuditEventRepository.findByFilterWithEventTypes` + facet projection queries; service-layer integration tests. No controller changes — wiring lands in 502B. **Done** (PR #1274) |
-| **502B** | 502.6–502.10 | 5 backend files | Controller wiring of three facet endpoints (`/facets/actors`, `/facets/event-types`, `/facets/entity-types`); severity multi-value parsing on `/api/audit-events`; controller integration tests covering all four routes + capability gate + edge cases (empty range, populated range, 500-row actor cap, severity prefix vs exact conflict). |
+| **502B** | 502.6–502.10 | 5 backend files | Controller wiring of three facet endpoints (`/facets/actors`, `/facets/event-types`, `/facets/entity-types`); severity multi-value parsing on `/api/audit-events`; controller integration tests covering all four routes + capability gate + edge cases (empty range, populated range, 500-row actor cap, severity prefix vs exact conflict). **Done** (PR #1275) |
 
 ### Tasks
 

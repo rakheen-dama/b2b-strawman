@@ -20,12 +20,18 @@ import type {
   AuditEventFilter,
   AuditEventResponse,
   AuditEventsPage,
+  AuditEventTypeMetadata,
   AuditSeverity,
 } from "@/lib/api/audit-events";
 import { SeverityPill } from "@/components/audit/severity-pill";
 import { ActorDisplay } from "@/components/audit/actor-display";
 import { EntityCell } from "@/components/audit/entity-cell";
 import { AuditDetailsViewer } from "@/components/audit/audit-details-viewer";
+import {
+  PRESET_OPTIONS,
+  resolvePreset,
+  type PresetName,
+} from "@/components/audit/presets";
 
 const ALL_SEVERITIES: AuditSeverity[] = ["INFO", "NOTICE", "WARNING", "CRITICAL"];
 
@@ -44,6 +50,12 @@ interface AuditLogClientProps {
   slug: string;
   initialEvents: AuditEventsPage;
   initialFilter: AuditEventFilter;
+  /**
+   * Audit-event metadata catalogue. Used by `applyPreset()` to resolve
+   * `group=COMPLIANCE` / `group=SECURITY` to concrete event-type lists.
+   * Defaults to `[]` so existing tests that don't supply metadata still work.
+   */
+  metadata?: AuditEventTypeMetadata[];
 }
 
 function isoDateInputValue(iso: string | undefined): string {
@@ -91,7 +103,12 @@ function FilterTextInput({
   );
 }
 
-export function AuditLogClient({ slug, initialEvents, initialFilter }: AuditLogClientProps) {
+export function AuditLogClient({
+  slug,
+  initialEvents,
+  initialFilter,
+  metadata = [],
+}: AuditLogClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -238,6 +255,31 @@ export function AuditLogClient({ slug, initialEvents, initialFilter }: AuditLogC
     });
   }, [updateUrl]);
 
+  // Epic 506B / 506.9 — preset application. Presets replace (not stack) all
+  // filter keys, then set the preset's deltas. All four are URL mutations only;
+  // no backend round-trip.
+  const applyPreset = useCallback(
+    (preset: PresetName) => {
+      const def = resolvePreset(preset, metadata);
+      updateUrl((params) => {
+        FILTER_KEYS.forEach((k) => params.delete(k));
+        if (def.from) params.set("from", def.from);
+        if (def.severities && def.severities.length > 0) {
+          params.set("severities", def.severities.join(","));
+        }
+        if (def.eventTypes && def.eventTypes.length > 0) {
+          // TODO(506B-followup): the backend list endpoint accepts a single
+          // `eventType` param. For multi-event-type presets (Compliance,
+          // Security, Financial approvals), we narrow to the first match.
+          // Full multi-value support requires a backend change (out of scope
+          // for 506B per CLAUDE.md "one fix per PR").
+          params.set("eventType", def.eventTypes[0]);
+        }
+      });
+    },
+    [updateUrl, metadata]
+  );
+
   const hasActiveFilters = useMemo(
     () =>
       Boolean(
@@ -259,6 +301,42 @@ export function AuditLogClient({ slug, initialEvents, initialFilter }: AuditLogC
 
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Preset</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <label
+            htmlFor="audit-preset-select"
+            className="sr-only"
+          >
+            Filter preset
+          </label>
+          <select
+            id="audit-preset-select"
+            data-testid="audit-preset-select"
+            defaultValue=""
+            className="rounded-md border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
+            onChange={(e) => {
+              const v = e.target.value as PresetName | "";
+              if (v) {
+                applyPreset(v);
+                // Reset the select so picking the same preset again still
+                // fires onChange.
+                e.target.value = "";
+              }
+            }}
+          >
+            <option value="">— Choose a preset —</option>
+            {PRESET_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Filters</CardTitle>

@@ -48,10 +48,15 @@ vi.mock("next/link", () => ({
 }));
 
 import AuditLogPage from "./page";
-import { listAuditEvents, type AuditEventResponse } from "@/lib/api/audit-events";
+import {
+  getAuditMetadata,
+  listAuditEvents,
+  type AuditEventResponse,
+} from "@/lib/api/audit-events";
 import { ApiError } from "@/lib/api/client";
 
 const mockListAuditEvents = listAuditEvents as ReturnType<typeof vi.fn>;
+const mockGetAuditMetadata = getAuditMetadata as ReturnType<typeof vi.fn>;
 
 function makeEvent(overrides: Partial<AuditEventResponse> = {}): AuditEventResponse {
   return {
@@ -85,6 +90,8 @@ afterEach(() => {
 describe("AuditLogPage (server shell)", () => {
   beforeEach(() => {
     mockListAuditEvents.mockReset();
+    mockGetAuditMetadata.mockReset();
+    mockGetAuditMetadata.mockResolvedValue([]);
   });
 
   it("passes initial filter from search params to the API", async () => {
@@ -250,6 +257,53 @@ describe("AuditLogPage (server shell)", () => {
     const urlPushed = pushMock.mock.calls[0]?.[0] as string;
     expect(urlPushed).toContain("severities=CRITICAL");
     expect(urlPushed).toContain("/org/acme/settings/audit-log");
+  });
+
+  it("selecting Sensitive preset pushes URL with severities=WARNING,CRITICAL and from", async () => {
+    mockListAuditEvents.mockResolvedValue({
+      content: [],
+      page: { totalElements: 0, totalPages: 0, size: 50, number: 0 },
+    });
+
+    const page = await AuditLogPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
+    render(page);
+
+    const select = screen.getByTestId("audit-preset-select") as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: "sensitive" } });
+
+    await waitFor(() => expect(pushMock).toHaveBeenCalled());
+    const urlPushed = pushMock.mock.calls[0]?.[0] as string;
+    // URLSearchParams encodes commas as %2C
+    expect(decodeURIComponent(urlPushed)).toContain("severities=WARNING,CRITICAL");
+    expect(urlPushed).toMatch(/from=\d{4}-\d{2}-\d{2}T/);
+    expect(urlPushed).toContain("/org/acme/settings/audit-log");
+  });
+
+  it("selecting Financial approvals preset pushes URL with one of the four event types and from", async () => {
+    mockListAuditEvents.mockResolvedValue({
+      content: [],
+      page: { totalElements: 0, totalPages: 0, size: 50, number: 0 },
+    });
+
+    const page = await AuditLogPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
+    render(page);
+
+    const select = screen.getByTestId("audit-preset-select") as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: "financial-approvals" } });
+
+    await waitFor(() => expect(pushMock).toHaveBeenCalled());
+    const urlPushed = pushMock.mock.calls[0]?.[0] as string;
+    // First financial-approval event-type is sent (single eventType param limit).
+    expect(decodeURIComponent(urlPushed)).toContain(
+      "eventType=trust.transaction.approved"
+    );
+    expect(urlPushed).toMatch(/from=/);
   });
 
   it("typing an actor ID and blurring builds a URL with actorId + entityType combined", async () => {

@@ -25,7 +25,7 @@ Three strategic constraints bound the phase. (1) **No `PlanTier`.** The product 
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 511 | Specialist Framework + Inline Launcher Infrastructure | Both | Phase 52, Phase 41/46 | M | 511A, 511B | 511A **Done** (PR #1290) |
+| 511 | Specialist Framework + Inline Launcher Infrastructure | Both | Phase 52, Phase 41/46 | M | 511A, 511B | **Done** (PRs #1290, #1291) |
 | 512 | Billing Assistant (Polish + Grouping) | Both | 511A, 515A | M | 512A, 512B | |
 | 513 | Intake Assistant + Vision Fallback | Both | 511A, 515A | L | 513A, 513B | |
 | 514 | Inbox Assistant + Activity Window | Both | 511A, 515A | M | 514A, 514B | |
@@ -162,7 +162,7 @@ PHASES already complete:
 
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
-| 2a | **511B** | `<SpecialistLauncherButton>` + `<SpecialistPanel>` wrapping Phase 52 chat tree (`assistant-panel.tsx`, `assistant-message.tsx`, etc.) + hand-off link to generalist + `<CapabilityGate capability="AI_ASSISTANT_USE">` (no `<PlanGate>` — does not exist). Reusable; no per-specialist wiring yet. | 512A, 513A, 514A, 515C |
+| 2a | **511B** | `<SpecialistLauncherButton>` + `<SpecialistPanel>` wrapping Phase 52 chat tree (`assistant-panel.tsx`, `assistant-message.tsx`, etc.) + hand-off link to generalist + `<CapabilityGate capability="AI_ASSISTANT_USE">` (no `<PlanGate>` — does not exist). Reusable; no per-specialist wiring yet. **Done** (PR #1291) | 512A, 513A, 514A, 515C |
 | 2b | **512A** | Backend Billing specialist registration + `billing-za.md` + `ProposeTimeEntryPolish` + `ProposeInvoiceLineGrouping` write tools (record proposals into `AiSpecialistInvocation`, do NOT mutate entities) + `BillingPolishPayload` + `BillingGroupingPayload` records + per-payload appliers + prompt-linter assertions. Capability filter ensures `INVOICE_EDIT`-less members never see the propose-tools. | 511B, 513A, 514A, 515C |
 | 2c | **513A** | Backend Intake specialist registration + `intake-za.md` (RSA ID / CIPC / VAT / POPIA §26 / matrimonial / trust + prompt-injection guard) + three new tools (`ListDocumentsForContext`, `ExtractTextFromDocument`, `ProposeCustomerFieldExtraction`) + `pdfbox` text extraction + `VisionContentBlock` extension to `AnthropicLlmProvider` (32MB / 100-page guard, `intakeVisionMaxPages` enforcement) + `[POSSIBLE_INJECTION_DETECTED]` flag plumbed through `IntakeExtractionPayload.validationFlags` + applier delegating to `CustomerService.applyExtractedFields`. | 511B, 512A, 514A, 515C |
 | 2d | **514A** | Backend Inbox specialist registration + `inbox-za.md` (terminology-aware, factual-not-advisory) + two new tools (`GetMatterActivityWindow` with vertical-conditional Phase 60 trust sources per arch §3.11, `PostInboxSummary` with REVIEW/DIRECT discrimination) + `InboxSummaryPayload` + `dedupeKey` idempotency for DIRECT-mode replays + applier delegating to `CommentService.create` with "Posted by Inbox Assistant" tag. DIRECT-mode validation guard: only legal for `specialistId=INBOX` + `InboxSummaryPayload` per [ADR-267](../adr/ADR-267-human-approval-default-direct-mode-exception.md). | 511B, 512A, 513A, 515C |
@@ -220,7 +220,7 @@ A realistic day-by-day cadence: 511A days 1–4; 515A days 4–7; 511B + 512A + 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **511A** | 511A.1–511A.8 | ~10 backend files (4 new types + service + controller + chat extension + 3 stub markdowns + reload endpoint + prompt-linter test) | Backend specialist scaffold: `Specialist` record (with `maxToolIterations` default 8 + deferred `directModeAllowedTools` placeholder per ADR-267 hardening note), `LauncherContext` record, `SpecialistRegistry` Spring `@Component`, `SystemPromptBuilder` (classpath loader + YAML front-matter parser + cache), `SpecialistController`, `SpecialistSessionService`, extension to Phase 52 `AssistantController.chat()` for optional `specialistId`, capability-filtered tool subset, three stub specialist registrations, dev-only reload endpoint, prompt-linter integration test. **`PlanTier` / `@RequiresPlan` / `PlanSyncService` / `<PlanGate>` are NOT used** (PR #1286 reverted as #1288). **Done** (PR #1290) |
-| **511B** | 511B.1–511B.5 | ~6 frontend files (2 new components + frontend client + i18n + 1 component test) | `<SpecialistLauncherButton>` + `<SpecialistPanel>` wrapping Phase 52 chat tree + hand-off link to generalist + `<CapabilityGate>` only (no `<PlanGate>`); `frontend/lib/api/assistant-specialists.ts` client; i18n keys; component tests for visibility + pre-seeded message + hand-off. |
+| **511B** | 511B.1–511B.5 | ~6 frontend files (2 new components + frontend client + i18n + 1 component test) | `<SpecialistLauncherButton>` + `<SpecialistPanel>` wrapping Phase 52 chat tree + hand-off link to generalist + `<CapabilityGate>` only (no `<PlanGate>`); `frontend/lib/api/assistant-specialists.ts` client; i18n keys; component tests for visibility + pre-seeded message + hand-off. **Done** (PR #1291) |
 
 ### Tasks
 

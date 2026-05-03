@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useOrgProfile } from "@/lib/org-profile";
 import { useTerminology } from "@/lib/terminology";
 import { auditTabLabel } from "@/lib/terminology-map";
+import { useAuditTabVisible } from "@/components/audit/audit-timeline-tab";
 
 interface CustomerTabsProps {
   projectsPanel: ReactNode;
@@ -96,6 +97,10 @@ export function CustomerTabs({
 
   // Module-gated tabs
   const showTrust = !!trustPanel && isModuleEnabled("trust_accounting");
+  // Capability-gated: members without TEAM_OVERSIGHT must not see the Audit tab
+  // at all — otherwise they click through to an empty pane (PR #1281 follow-up).
+  const auditVisible = useAuditTabVisible();
+  const showAudit = !!auditPanel && auditVisible;
 
   const tabs = useMemo(() => {
     return baseTabs.filter((t) => {
@@ -107,7 +112,7 @@ export function CustomerTabs({
       if (t.id === "generated" && !generatedPanel) return false;
       if (t.id === "financials" && !financialsPanel) return false;
       if (t.id === "trust" && !showTrust) return false;
-      if (t.id === "audit" && !auditPanel) return false;
+      if (t.id === "audit" && !showAudit) return false;
       return true;
     });
   }, [
@@ -120,7 +125,7 @@ export function CustomerTabs({
     financialsPanel,
     generatedPanel,
     showTrust,
-    auditPanel,
+    showAudit,
   ]);
 
   // Validate activeTab is in the rendered tabs; fall back to "projects" if not
@@ -200,7 +205,7 @@ export function CustomerTabs({
           {trustPanel}
         </TabsPrimitive.Content>
       )}
-      {auditPanel && (
+      {showAudit && (
         <TabsPrimitive.Content value="audit" className="pt-6 outline-none">
           {auditPanel}
         </TabsPrimitive.Content>

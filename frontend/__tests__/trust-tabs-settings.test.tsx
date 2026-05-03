@@ -4,6 +4,20 @@ import { cleanup, render, screen } from "@testing-library/react";
 
 // --- Mocks (before component imports) ---
 
+// CustomerTabs/ProjectTabs now import useAuditTabVisible from
+// @/components/audit/audit-timeline-tab, which transitively pulls a
+// `server-only` module via the audit data layer. Stub it for jsdom.
+vi.mock("server-only", () => ({}));
+vi.mock("@/lib/actions/audit-events", () => ({
+  fetchEntityAuditPage: vi.fn(),
+}));
+// useAuditTabVisible reads from CapabilityProvider; this test doesn't
+// exercise the audit gate, so stub the hook to a deterministic value.
+vi.mock("@/components/audit/audit-timeline-tab", () => ({
+  AuditTimelineTab: () => null,
+  useAuditTabVisible: () => false,
+}));
+
 vi.mock("swr", () => ({
   default: vi.fn(),
   useSWRConfig: () => ({ mutate: vi.fn() }),

@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -274,7 +275,10 @@ public class MatterClosureService {
               .details(
                   Map.of(
                       "project_id", projectId.toString(),
-                      "justification", req.overrideJustification(),
+                      // Defensive: validateOverrideJustification() above ensures non-null in the
+                      // override path, but Map.of() forbids nulls — guard so a future validator
+                      // weakening can't trigger an NPE during audit emission.
+                      "justification", Objects.requireNonNullElse(req.overrideJustification(), ""),
                       "reason", req.reason().name()))
               .build());
     }

@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { useOrgProfile } from "@/lib/org-profile";
 import { useTerminology } from "@/lib/terminology";
 import { auditTabLabel } from "@/lib/terminology-map";
+import { useAuditTabVisible } from "@/components/audit/audit-timeline-tab";
 
 interface ProjectTabsProps {
   overviewPanel: ReactNode;
@@ -155,6 +156,10 @@ export function ProjectTabs({
   // Statements of Account are co-gated with the disbursements module per ADR-250
   // (there is no separate statement_of_account module).
   const showStatements = !!statementsPanel && isModuleEnabled("disbursements");
+  // Capability-gated: members without TEAM_OVERSIGHT must not see the Audit tab
+  // at all — otherwise they click through to an empty pane (PR #1281 follow-up).
+  const auditVisible = useAuditTabVisible();
+  const showAudit = !!auditPanel && auditVisible;
 
   const tabs = useMemo(() => {
     let filtered = baseTabs;
@@ -170,7 +175,7 @@ export function ProjectTabs({
     if (!showTrust) filtered = filtered.filter((t) => t.id !== "trust");
     if (!showDisbursements) filtered = filtered.filter((t) => t.id !== "disbursements");
     if (!showStatements) filtered = filtered.filter((t) => t.id !== "statements");
-    if (!auditPanel) filtered = filtered.filter((t) => t.id !== "audit");
+    if (!showAudit) filtered = filtered.filter((t) => t.id !== "audit");
     // Dedupe: when the legal-specific Disbursements tab is shown AND the
     // generic Expenses tab is present, their labels collide in legal-za
     // (terminology maps "Expenses" → "Disbursements"). Prefer the legal
@@ -191,7 +196,7 @@ export function ProjectTabs({
     showTrust,
     showDisbursements,
     showStatements,
-    auditPanel,
+    showAudit,
   ]);
 
   // Validate activeTab is in the rendered tabs; fall back to "overview" if not
@@ -311,7 +316,7 @@ export function ProjectTabs({
       <TabsPrimitive.Content value="activity" className="pt-6 outline-none">
         {activityPanel}
       </TabsPrimitive.Content>
-      {auditPanel && (
+      {showAudit && (
         <TabsPrimitive.Content value="audit" className="pt-6 outline-none">
           {auditPanel}
         </TabsPrimitive.Content>

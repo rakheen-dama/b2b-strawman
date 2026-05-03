@@ -261,6 +261,24 @@ public class MatterClosureService {
                     "closure_log_id", savedLog.getId().toString()))
             .build());
 
+    // 5b. Additive override-used emission (Epic 508A) — keyed on the closure log row, dot-delimited
+    //     event type so it resolves to CRITICAL/COMPLIANCE via AuditEventTypeRegistry (501A).
+    //     The existing matter_closure.closed event above is preserved unchanged for portal
+    //     compatibility (PortalActivityEventTypes whitelist + ~11 dependent tests).
+    if (req.override()) {
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("matter.closure.override_used")
+              .entityType("matter_closure")
+              .entityId(savedLog.getId())
+              .details(
+                  Map.of(
+                      "project_id", projectId.toString(),
+                      "justification", req.overrideJustification(),
+                      "reason", req.reason().name()))
+              .build());
+    }
+
     // 6. Publish domain event. Listeners run AFTER_COMMIT (see
     //    MatterClosureNotificationHandler) so subscribers never see closes that rolled back.
     eventPublisher.publishEvent(

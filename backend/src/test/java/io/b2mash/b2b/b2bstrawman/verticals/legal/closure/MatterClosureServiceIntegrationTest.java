@@ -5,6 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
@@ -37,6 +40,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.context.ActiveProfiles;
@@ -76,6 +80,7 @@ class MatterClosureServiceIntegrationTest {
   @Autowired private GeneratedDocumentRepository generatedDocumentRepository;
   @Autowired private DocumentRepository documentRepository;
   @Autowired private RetentionPolicyRepository retentionPolicyRepository;
+  @Autowired private AuditService auditService;
 
   private String tenantSchema;
   private UUID memberId;
@@ -575,6 +580,145 @@ class MatterClosureServiceIntegrationTest {
                   assertThat(matterPolicies)
                       .as("Idempotent — second close must not insert a duplicate MATTER policy")
                       .isEqualTo(1);
+                }));
+  }
+
+  // ==========================================================================
+  // 508A.3 — Override-used audit emission
+  // ==========================================================================
+
+  @Test
+  void close_withOverrideTrue_emitsBothClosedAndOverrideUsedAuditEvents() {
+    UUID projectId = createProject("508A.3 Dual-Emission Matter");
+
+    var response =
+        runInTenantReturning(
+            () ->
+                matterClosureService.close(
+                    projectId,
+                    new ClosureRequest(
+                        ClosureReason.CLIENT_TERMINATED,
+                        "note",
+                        false,
+                        false,
+                        true,
+                        VALID_JUSTIFICATION),
+                    memberId));
+
+    UUID closureLogId = response.closureLogId();
+    assertThat(closureLogId).isNotNull();
+
+    runInTenantAsOwner(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  // (a) Existing matter_closure.closed — keyed on project.
+                  var closedPage =
+                      auditService.findEvents(
+                          new AuditEventFilter(
+                              "project",
+                              projectId,
+                              null,
+                              "matter_closure.closed",
+                              null,
+                              null,
+                              null),
+                          PageRequest.of(0, 10));
+                  assertThat(closedPage.getContent())
+                      .as("matter_closure.closed event should be emitted exactly once")
+                      .hasSize(1);
+                  AuditEvent closedEvent = closedPage.getContent().get(0);
+                  assertThat(closedEvent.getEntityType()).isEqualTo("project");
+                  assertThat(closedEvent.getEntityId()).isEqualTo(projectId);
+                  assertThat(closedEvent.getDetails()).containsEntry("override_used", true);
+
+                  // (b) New matter.closure.override_used — keyed on the closure log row.
+                  var overridePage =
+                      auditService.findEvents(
+                          new AuditEventFilter(
+                              "matter_closure",
+                              closureLogId,
+                              null,
+                              "matter.closure.override_used",
+                              null,
+                              null,
+                              null),
+                          PageRequest.of(0, 10));
+                  assertThat(overridePage.getContent())
+                      .as("matter.closure.override_used should be emitted on override path")
+                      .hasSize(1);
+                  AuditEvent overrideEvent = overridePage.getContent().get(0);
+                  assertThat(overrideEvent.getEventType())
+                      .isEqualTo("matter.closure.override_used");
+                  assertThat(overrideEvent.getEntityType()).isEqualTo("matter_closure");
+                  assertThat(overrideEvent.getEntityId()).isEqualTo(closureLogId);
+                  assertThat(overrideEvent.getDetails())
+                      .containsEntry("project_id", projectId.toString())
+                      .containsEntry("justification", VALID_JUSTIFICATION)
+                      .containsEntry("reason", ClosureReason.CLIENT_TERMINATED.name());
+                }));
+  }
+
+  @Test
+  void close_overrideEmission_isScopedToOverridePath_andNotDuplicatedAcrossClosures() {
+    // Two separate closures on two different projects — both via override path. Each must emit
+    // exactly ONE matter.closure.override_used row keyed on its own closure log id. This proves
+    // the new emission is per-closure (not duplicated, not leaked across rows).
+    UUID projectIdA = createProject("508A.3 Override Scope A");
+    UUID projectIdB = createProject("508A.3 Override Scope B");
+
+    var responseA =
+        runInTenantReturning(
+            () ->
+                matterClosureService.close(
+                    projectIdA,
+                    new ClosureRequest(
+                        ClosureReason.CONCLUDED, null, false, false, true, VALID_JUSTIFICATION),
+                    memberId));
+    var responseB =
+        runInTenantReturning(
+            () ->
+                matterClosureService.close(
+                    projectIdB,
+                    new ClosureRequest(
+                        ClosureReason.CONCLUDED, null, false, false, true, VALID_JUSTIFICATION),
+                    memberId));
+
+    UUID closureLogIdA = responseA.closureLogId();
+    UUID closureLogIdB = responseB.closureLogId();
+    assertThat(closureLogIdA).isNotNull().isNotEqualTo(closureLogIdB);
+
+    runInTenantAsOwner(
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var pageA =
+                      auditService.findEvents(
+                          new AuditEventFilter(
+                              "matter_closure",
+                              closureLogIdA,
+                              null,
+                              "matter.closure.override_used",
+                              null,
+                              null,
+                              null),
+                          PageRequest.of(0, 10));
+                  assertThat(pageA.getContent()).hasSize(1);
+                  assertThat(pageA.getContent().get(0).getEntityId()).isEqualTo(closureLogIdA);
+
+                  var pageB =
+                      auditService.findEvents(
+                          new AuditEventFilter(
+                              "matter_closure",
+                              closureLogIdB,
+                              null,
+                              "matter.closure.override_used",
+                              null,
+                              null,
+                              null),
+                          PageRequest.of(0, 10));
+                  assertThat(pageB.getContent()).hasSize(1);
+                  assertThat(pageB.getContent().get(0).getEntityId()).isEqualTo(closureLogIdB);
                 }));
   }
 

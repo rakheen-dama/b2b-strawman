@@ -1,8 +1,10 @@
 package io.b2mash.b2b.b2bstrawman.datarequest;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.audit.export.AuditCsvExporter;
 import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
@@ -15,9 +17,11 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import java.io.BufferedWriter;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
@@ -27,11 +31,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,6 +61,7 @@ public class DataExportService {
   private final StorageService storageService;
   private final ObjectMapper objectMapper;
   private final AuditService auditService;
+  private final AuditCsvExporter auditCsvExporter;
 
   public DataExportService(
       DataSubjectRequestRepository requestRepository,
@@ -68,7 +75,8 @@ public class DataExportService {
       PortalContactRepository portalContactRepository,
       StorageService storageService,
       ObjectMapper objectMapper,
-      AuditService auditService) {
+      AuditService auditService,
+      AuditCsvExporter auditCsvExporter) {
     this.requestRepository = requestRepository;
     this.customerRepository = customerRepository;
     this.customerProjectRepository = customerProjectRepository;
@@ -81,6 +89,7 @@ public class DataExportService {
     this.storageService = storageService;
     this.objectMapper = objectMapper;
     this.auditService = auditService;
+    this.auditCsvExporter = auditCsvExporter;
   }
 
   // Export DTO records — prevent raw JPA entity serialization
@@ -503,6 +512,10 @@ public class DataExportService {
               customerId.toString());
       writeZipEntry(zos, prefix + "export-metadata.json", metadata);
 
+      // Epic 505A — DSAR audit trail (unsanitised per ADR-262 / POPIA §23). Inserted last so
+      // existing Phase 50 entries don't shift, preserving backwards compatibility.
+      buildAuditTrail(customerId, prefix, zos);
+
       zos.finish();
       return baos.toByteArray();
     } catch (IOException e) {
@@ -510,6 +523,69 @@ public class DataExportService {
           "Export generation failed",
           "Failed to generate structured export ZIP for customer " + customerId);
     }
+  }
+
+  /**
+   * Writes the {@code audit-trail/} folder of the DSAR pack — three siblings:
+   *
+   * <ul>
+   *   <li>{@code audit-trail/events.json} — streaming JSON array of every audit event related to
+   *       the customer (raw, unsanitised — includes internal {@code details} JSON).
+   *   <li>{@code audit-trail/events.csv} — RFC 4180 CSV with the same column shape as Epic 503A's
+   *       firm-wide CSV export (reuses {@link AuditCsvExporter}).
+   *   <li>{@code audit-trail/README.txt} — static plain-text explainer (POPIA §23 reference).
+   * </ul>
+   *
+   * <p>Per ADR-262 the export is unsanitised — case-specific redactions are handled at the DSAR
+   * fulfilment review stage, not as automatic policy. The caller is already inside an active
+   * {@code @Transactional} method ({@link #exportCustomerData}), so the customer-scoped audit
+   * stream's Hibernate cursor stays open across iteration.
+   */
+  private void buildAuditTrail(UUID customerId, String prefix, ZipOutputStream zos)
+      throws IOException {
+    // events.json — streaming JSON array. We do NOT close the writer (closing would close zos).
+    zos.putNextEntry(new ZipEntry(prefix + "audit-trail/events.json"));
+    try (Stream<AuditEvent> stream = auditService.findEventsForCustomer(customerId)) {
+      var writer = new BufferedWriter(new OutputStreamWriter(zos, StandardCharsets.UTF_8));
+      writer.write("[");
+      boolean first = true;
+      var it = stream.iterator();
+      while (it.hasNext()) {
+        AuditEvent event = it.next();
+        try {
+          String payload = objectMapper.writeValueAsString(event);
+          // Only emit the comma after we know the payload serialised successfully — otherwise a
+          // failure on event #1 followed by success on event #2 would produce "[,<event2>]" which
+          // is invalid JSON. Flip `first` only on a successful write.
+          if (!first) {
+            writer.write(",");
+          }
+          writer.write(payload);
+          first = false;
+        } catch (JacksonException e) {
+          // Defensive: a single bad row shouldn't abort the export. Skip silently — neither the
+          // comma nor `first` is mutated, so the surrounding JSON array stays well-formed.
+          log.warn("Skipping audit event during DSAR JSON serialisation", e);
+        }
+      }
+      writer.write("]");
+      writer.flush();
+    }
+    zos.closeEntry();
+
+    // events.csv — reuse the Epic 503A exporter against the customer-scoped stream.
+    zos.putNextEntry(new ZipEntry(prefix + "audit-trail/events.csv"));
+    try (Stream<AuditEvent> stream = auditService.findEventsForCustomer(customerId)) {
+      auditCsvExporter.writeCsv(stream, zos);
+    }
+    zos.closeEntry();
+
+    // README.txt — static classpath resource.
+    zos.putNextEntry(new ZipEntry(prefix + "audit-trail/README.txt"));
+    try (var in = new ClassPathResource("audit/dsar-audit-trail-readme.txt").getInputStream()) {
+      in.transferTo(zos);
+    }
+    zos.closeEntry();
   }
 
   private void writeZipEntry(ZipOutputStream zos, String name, Object content) throws IOException {

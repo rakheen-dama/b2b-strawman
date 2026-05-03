@@ -29,4 +29,11 @@ public interface AcceptanceRequestRepository extends JpaRepository<AcceptanceReq
    */
   long countByCustomerIdAndStatusIn(
       UUID customerId, java.util.Collection<AcceptanceStatus> statuses);
+
+  /**
+   * Returns every acceptance request for the customer regardless of status. Used by DSAR audit
+   * trail collection (Epic 505A) to resolve child-entity IDs for the customer-scoped audit-event
+   * query.
+   */
+  List<AcceptanceRequest> findByCustomerId(UUID customerId);
 }

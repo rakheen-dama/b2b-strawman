@@ -1,7 +1,21 @@
 package io.b2mash.b2b.b2bstrawman.audit;
 
+import io.b2mash.b2b.b2bstrawman.acceptance.AcceptanceRequest;
+import io.b2mash.b2b.b2bstrawman.acceptance.AcceptanceRequestRepository;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
+import io.b2mash.b2b.b2bstrawman.document.Document;
+import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
+import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequest;
+import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import io.b2mash.b2b.b2bstrawman.proposal.Proposal;
+import io.b2mash.b2b.b2bstrawman.proposal.ProposalRepository;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransaction;
+import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.transaction.TrustTransactionRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,14 +52,35 @@ public class DatabaseAuditService implements AuditService {
   private final AuditEventRepository auditEventRepository;
   private final MemberRepository memberRepository;
   private final AuditEventTypeRegistry auditEventTypeRegistry;
+  private final CustomerProjectRepository customerProjectRepository;
+  private final InvoiceRepository invoiceRepository;
+  private final DocumentRepository documentRepository;
+  private final ProposalRepository proposalRepository;
+  private final InformationRequestRepository informationRequestRepository;
+  private final TrustTransactionRepository trustTransactionRepository;
+  private final AcceptanceRequestRepository acceptanceRequestRepository;
 
   public DatabaseAuditService(
       AuditEventRepository auditEventRepository,
       MemberRepository memberRepository,
-      AuditEventTypeRegistry auditEventTypeRegistry) {
+      AuditEventTypeRegistry auditEventTypeRegistry,
+      CustomerProjectRepository customerProjectRepository,
+      InvoiceRepository invoiceRepository,
+      DocumentRepository documentRepository,
+      ProposalRepository proposalRepository,
+      InformationRequestRepository informationRequestRepository,
+      TrustTransactionRepository trustTransactionRepository,
+      AcceptanceRequestRepository acceptanceRequestRepository) {
     this.auditEventRepository = auditEventRepository;
     this.memberRepository = memberRepository;
     this.auditEventTypeRegistry = auditEventTypeRegistry;
+    this.customerProjectRepository = customerProjectRepository;
+    this.invoiceRepository = invoiceRepository;
+    this.documentRepository = documentRepository;
+    this.proposalRepository = proposalRepository;
+    this.informationRequestRepository = informationRequestRepository;
+    this.trustTransactionRepository = trustTransactionRepository;
+    this.acceptanceRequestRepository = acceptanceRequestRepository;
   }
 
   @Override
@@ -260,6 +295,67 @@ public class DatabaseAuditService implements AuditService {
         preflight.excludeExact(),
         preflight.allRegisteredExacts(),
         preflight.allRegisteredPrefixes());
+  }
+
+  @Override
+  @Transactional(readOnly = true)
+  // TODO(epic-505 follow-up): extract a CustomerChildEntityResolver in datarequest/ to remove
+  // audit→domain coupling — tracked for a future cleanup epic. Today this method directly depends
+  // on seven domain repositories (incl. legal vertical), which is a layering inversion the brief
+  // explicitly authorised but the architecture reviewer flagged as a follow-up cleanup.
+  public Stream<AuditEvent> findEventsForCustomer(UUID customerId) {
+    // Resolve every child-entity ID owned by the customer. Each list is read in a separate query
+    // (these are simple PK-fetches by indexed customerId column; no N+1 because we collect ID lists
+    // up-front and pass a single TEXT[] / UUID[] pair into the streaming audit query).
+    var projectIds =
+        customerProjectRepository.findByCustomerId(customerId).stream()
+            .map(CustomerProject::getProjectId)
+            .toList();
+    var invoiceIds =
+        invoiceRepository.findByCustomerId(customerId).stream().map(Invoice::getId).toList();
+    var documentIds =
+        documentRepository.findByCustomerId(customerId).stream().map(Document::getId).toList();
+    var proposalIds =
+        proposalRepository.findByCustomerId(customerId, Pageable.unpaged()).stream()
+            .map(Proposal::getId)
+            .toList();
+    var informationRequestIds =
+        informationRequestRepository.findByCustomerId(customerId).stream()
+            .map(InformationRequest::getId)
+            .toList();
+    var trustTransactionIds =
+        trustTransactionRepository.findByCustomerId(customerId).stream()
+            .map(TrustTransaction::getId)
+            .toList();
+    var acceptanceRequestIds =
+        acceptanceRequestRepository.findByCustomerId(customerId).stream()
+            .map(AcceptanceRequest::getId)
+            .toList();
+
+    String[] childTypes = {
+      "project",
+      "invoice",
+      "proposal",
+      "information_request",
+      "document",
+      "trust_transaction",
+      "acceptance_request"
+    };
+    UUID[] childIds =
+        Stream.of(
+                projectIds,
+                invoiceIds,
+                proposalIds,
+                informationRequestIds,
+                documentIds,
+                trustTransactionIds,
+                acceptanceRequestIds)
+            .flatMap(List::stream)
+            .filter(Objects::nonNull)
+            .distinct()
+            .toArray(UUID[]::new);
+
+    return auditEventRepository.streamForCustomer(customerId, childTypes, childIds);
   }
 
   @Override

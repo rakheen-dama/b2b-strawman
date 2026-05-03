@@ -503,4 +503,47 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
       @Param("excludeExact") String[] excludeExact,
       @Param("allRegisteredExacts") String[] allRegisteredExacts,
       @Param("allRegisteredPrefixes") String[] allRegisteredPrefixes);
+
+  // --- Epic 505A — DSAR customer-scoped audit-trail streaming query ---
+
+  /**
+   * Streams audit events related to a customer for DSAR export (Epic 505A). Three OR-branches per
+   * architecture §12.6.2:
+   *
+   * <ul>
+   *   <li>(a) {@code entity_type='customer'} AND {@code entity_id=customerId}
+   *   <li>(b) {@code entity_type IN child types} AND {@code entity_id = ANY(childIds)}
+   *   <li>(c) {@code details->>'customerId' = customerIdText} (best-effort, no dedicated index)
+   * </ul>
+   *
+   * <p>Caller MUST iterate inside a read-only transaction and close the stream. Empty {@code
+   * childIds}/{@code childTypes} arrays are valid — branch (b) will simply match nothing, but
+   * branches (a) and (c) still apply.
+   */
+  @QueryHints(@QueryHint(name = HibernateHints.HINT_FETCH_SIZE, value = "100"))
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT * FROM audit_events e
+          WHERE (e.entity_type = 'customer' AND e.entity_id = CAST(:customerId AS UUID))
+             OR (
+                  CAST(:childTypes AS TEXT[]) IS NOT NULL
+                  AND CAST(:childIds AS UUID[]) IS NOT NULL
+                  AND e.entity_type = ANY(CAST(:childTypes AS TEXT[]))
+                  AND e.entity_id = ANY(CAST(:childIds AS UUID[]))
+                )
+             -- Branch (c): best-effort scan of details->>'customerId'. There is no dedicated
+             -- expression index for this column, so this clause falls back to a sequential
+             -- scan within the partition pre-filtered by tenant search_path. Acceptable for
+             -- DSAR exports, which are infrequent and admin-initiated. If volume grows,
+             -- consider adding `CREATE INDEX idx_audit_details_customer_id
+             -- ON audit_events ((details->>'customerId'))`.
+             OR ((e.details->>'customerId') = CAST(:customerId AS TEXT))
+          ORDER BY e.occurred_at DESC
+          """)
+  Stream<AuditEvent> streamForCustomer(
+      @Param("customerId") UUID customerId,
+      @Param("childTypes") String[] childTypes,
+      @Param("childIds") UUID[] childIds);
 }

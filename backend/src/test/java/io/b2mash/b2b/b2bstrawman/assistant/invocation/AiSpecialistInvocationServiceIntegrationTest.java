@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.applier.OutputApplier;
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.payload.BillingPolishPayload;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
@@ -25,7 +26,9 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
 import org.springframework.test.web.servlet.MockMvc;
@@ -48,9 +51,10 @@ class AiSpecialistInvocationServiceIntegrationTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private AiSpecialistInvocationService service;
-  @Autowired private AiSpecialistInvocationRepository repository;
+  @MockitoSpyBean private AiSpecialistInvocationRepository repository;
   @Autowired private FakeBillingPolishApplier fakeApplier;
   @Autowired private ApplicationEvents events;
+  @Autowired private JdbcTemplate jdbc;
 
   private String tenantSchema;
   private UUID ownerMemberId;
@@ -148,24 +152,18 @@ class AiSpecialistInvocationServiceIntegrationTest {
   }
 
   @Test
-  void approveOptimisticLockingFailure_throws409() {
+  void approveAfterExternalRejection_failsRequireStatusGuard() {
+    // Renamed: this test only proves that the requireStatus(...) guard fires when the row was
+    // externally transitioned to REJECTED. It does NOT exercise the optimistic-lock path; that
+    // is covered by serviceTranslatesOptimisticLockToResourceConflict() below.
     fakeApplier.reset();
     UUID id = seedPendingInvocation(ownerMemberId);
 
-    // Stale-write simulation: load, mutate version externally via repository, then attempt approve.
     runAsOwner(
         () -> {
-          var inv1 = repository.findById(id).orElseThrow();
-          // Force a version bump on the persistent row so our subsequent approve sees a stale
-          // entity.
-          var inv2 = repository.findById(id).orElseThrow();
-          inv2.markRejected(ownerMemberId, "external rejection");
-          repository.save(inv2);
-          // Now attempt to approve using the stale inv1's identity — service reloads, finds
-          // REJECTED status, and the requireStatus guard blocks it with InvalidStateException.
-          // We test the optimistic-locking pathway separately by approving twice in sequence on
-          // a freshly-pending invocation across two transactions, but the requireStatus guard is
-          // the equivalent guarantee for sequential races.
+          var current = repository.findById(id).orElseThrow();
+          current.markRejected(ownerMemberId, "external rejection");
+          repository.save(current);
           assertThatThrownBy(() -> service.approve(id, null))
               .isInstanceOf(InvalidStateException.class);
         });
@@ -285,6 +283,14 @@ class AiSpecialistInvocationServiceIntegrationTest {
           assertThat(aOutcome.status()).isEqualTo(InvocationStatus.APPROVED);
           assertThat(aOutcome.error()).isNull();
           assertThat(bOutcome.error()).isNotNull();
+
+          // Brief contract: a failure on one id MUST NOT roll back successful siblings. Verify
+          // the valid approval was actually committed to the database (not just reported in
+          // outcomes).
+          var aStored = repository.findById(ids[0]).orElseThrow();
+          assertThat(aStored.getStatus()).isEqualTo(InvocationStatus.APPROVED);
+          var bStored = repository.findById(ids[1]).orElseThrow();
+          assertThat(bStored.getStatus()).isEqualTo(InvocationStatus.RUNNING);
         });
   }
 
@@ -315,6 +321,42 @@ class AiSpecialistInvocationServiceIntegrationTest {
             assertThatThrownBy(() -> service.approve(holder[0], null))
                 .isInstanceOf(InvalidStateException.class)
                 .hasMessageContaining("No applier registered"));
+  }
+
+  @Test
+  void findByIdCrossActorWithoutOversight_throws403() {
+    // Brief §515A.6: cross-actor read without TEAM_OVERSIGHT must yield 403, not 404.
+    UUID id = seedPendingInvocation(ownerMemberId);
+    runAsMember(
+        Set.of("AI_ASSISTANT_USE"),
+        () ->
+            assertThatThrownBy(() -> service.findById(id)).isInstanceOf(ForbiddenException.class));
+  }
+
+  @Test
+  void findByFilterWithCrossActorIdWithoutOversight_throws403() {
+    runAsMember(
+        Set.of("AI_ASSISTANT_USE"),
+        () -> {
+          var filter =
+              new AiSpecialistInvocationService.InvocationFilter(
+                  null, null, null, null, null, null, ownerMemberId);
+          assertThatThrownBy(
+                  () ->
+                      service.findByFilter(
+                          filter, org.springframework.data.domain.PageRequest.of(0, 10)))
+              .isInstanceOf(ForbiddenException.class);
+        });
+  }
+
+  @Test
+  void rejectWithBlankReason_throws400() {
+    UUID id = seedPendingInvocation(ownerMemberId);
+    runAsOwner(
+        () ->
+            assertThatThrownBy(() -> service.reject(id, "  "))
+                .isInstanceOf(InvalidStateException.class)
+                .hasMessageContaining("rejectReason"));
   }
 
   @Test
@@ -374,24 +416,26 @@ class AiSpecialistInvocationServiceIntegrationTest {
   }
 
   @Test
-  void serviceWraps409OnLockFailure() {
-    // Sanity: ResourceConflictException is the wire-level translation. We exercise it via an
-    // explicit injection: simulate a stale entity by manually bumping version twice.
-    UUID id = seedPendingInvocation(ownerMemberId);
+  void serviceTranslatesOptimisticLockToResourceConflict() {
+    // True service-level optimistic-lock test: stub the repository spy to throw
+    // ObjectOptimisticLockingFailureException on saveAndFlush. The service must translate it
+    // to ResourceConflictException (→ 409 wire mapping).
     fakeApplier.reset();
+    UUID id = seedPendingInvocation(ownerMemberId);
 
     runAsOwner(
         () -> {
-          var stale = repository.findById(id).orElseThrow();
-          // First, bump version externally.
-          var current = repository.findById(id).orElseThrow();
-          current.markRejected(ownerMemberId, "x");
-          repository.saveAndFlush(current);
-          // Now stale has version N, but DB has N+1. Approve uses requireStatus guard which now
-          // sees REJECTED and throws InvalidStateException — the lock-wrap path is exercised
-          // separately above; here we confirm the conflict behaviour upstream.
-          assertThatThrownBy(() -> service.approve(stale.getId(), null))
-              .isInstanceOfAny(InvalidStateException.class, ResourceConflictException.class);
+          org.mockito.Mockito.doThrow(
+                  new org.springframework.orm.ObjectOptimisticLockingFailureException(
+                      AiSpecialistInvocation.class, id))
+              .when(repository)
+              .saveAndFlush(org.mockito.ArgumentMatchers.any(AiSpecialistInvocation.class));
+          try {
+            assertThatThrownBy(() -> service.approve(id, null))
+                .isInstanceOf(ResourceConflictException.class);
+          } finally {
+            org.mockito.Mockito.reset(repository);
+          }
         });
   }
 

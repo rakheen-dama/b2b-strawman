@@ -25,14 +25,19 @@ public class OutputApplierRegistry {
         appliers.stream().collect(Collectors.toUnmodifiableMap(OutputApplier::payloadType, a -> a));
   }
 
-  @SuppressWarnings({"unchecked", "rawtypes"})
-  public OutputApplier forPayload(OutputPayload payload) {
+  /**
+   * Returns the applier matching the runtime type of {@code payload}. The unchecked cast is safe
+   * because registry construction guarantees the bean for {@code payload.getClass()} declares
+   * {@code payloadType() == payload.getClass()}.
+   */
+  @SuppressWarnings("unchecked")
+  public <T extends OutputPayload> OutputApplier<T> forPayload(T payload) {
     var applier = byType.get(payload.getClass());
     if (applier == null) {
       throw new InvalidStateException(
           "No applier registered",
           "No OutputApplier registered for payload type: " + payload.getClass().getSimpleName());
     }
-    return applier;
+    return (OutputApplier<T>) applier;
   }
 }

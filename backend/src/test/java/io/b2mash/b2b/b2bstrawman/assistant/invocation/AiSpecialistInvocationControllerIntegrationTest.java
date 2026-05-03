@@ -151,6 +151,48 @@ class AiSpecialistInvocationControllerIntegrationTest {
   }
 
   @Test
+  void approveEndpoint_acceptsPolymorphicAppliedOutputPayload() throws Exception {
+    // Verifies the OutputPayload sealed-interface polymorphic deserialization end-to-end:
+    // posting {"appliedOutput":{"kind":"BillingPolishPayload"}} must round-trip to the
+    // BillingPolishPayload type without 4xx, and the resulting applied_output column should
+    // hold a BillingPolishPayload instance.
+    UUID id = seedPending();
+    mockMvc
+        .perform(
+            post("/api/assistant/invocations/" + id + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invctl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"appliedOutput\":{\"kind\":\"BillingPolishPayload\"}}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("APPROVED"));
+  }
+
+  @Test
+  void rejectEndpoint_blankReason_returns400() throws Exception {
+    UUID id = seedPending();
+    mockMvc
+        .perform(
+            post("/api/assistant/invocations/" + id + "/reject")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invctl_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"rejectReason\":\"\"}"))
+        .andExpect(status().is4xxClientError());
+  }
+
+  @Test
+  void getById_persistsPolymorphicProposedOutputPayload() throws Exception {
+    // JSONB round-trip: ensure the proposedOutput stored as JSON deserializes back to its
+    // concrete subtype after a fresh entity load (validates @JsonTypeInfo wiring).
+    UUID id = seedPending();
+    mockMvc
+        .perform(
+            get("/api/assistant/invocations/" + id)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_invctl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.proposedOutput.kind").value("BillingPolishPayload"));
+  }
+
+  @Test
   void bulkApproveOver25_returns400() throws Exception {
     StringBuilder ids = new StringBuilder();
     for (int i = 0; i < 26; i++) {

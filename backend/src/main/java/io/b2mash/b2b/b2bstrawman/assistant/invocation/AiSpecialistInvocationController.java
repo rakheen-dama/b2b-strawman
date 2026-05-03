@@ -5,6 +5,8 @@ import io.b2mash.b2b.b2bstrawman.assistant.invocation.AiSpecialistInvocationServ
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.AiSpecialistInvocationService.InvocationFilter;
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.payload.OutputPayload;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -69,8 +71,9 @@ public class AiSpecialistInvocationController {
 
   @PostMapping("/{id}/reject")
   @RequiresCapability("AI_ASSISTANT_USE")
-  public ResponseEntity<Void> reject(@PathVariable UUID id, @RequestBody RejectRequest body) {
-    service.reject(id, body == null ? null : body.rejectReason());
+  public ResponseEntity<Void> reject(
+      @PathVariable UUID id, @RequestBody @Valid RejectRequest body) {
+    service.reject(id, body.rejectReason());
     return ResponseEntity.noContent().build();
   }
 
@@ -91,7 +94,7 @@ public class AiSpecialistInvocationController {
 
   public record ApproveRequest(OutputPayload appliedOutput) {}
 
-  public record RejectRequest(String rejectReason) {}
+  public record RejectRequest(@NotBlank String rejectReason) {}
 
   public record BulkApproveRequest(List<UUID> ids) {}
 

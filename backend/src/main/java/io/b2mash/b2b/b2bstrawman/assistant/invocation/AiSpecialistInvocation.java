@@ -165,6 +165,10 @@ public class AiSpecialistInvocation {
     }
     this.status = InvocationStatus.RUNNING;
     this.errorMessage = null;
+    // Clear any stale outputs from the failed attempt so a retry starts clean and cannot
+    // approve previously-generated proposals.
+    this.proposedOutput = null;
+    this.appliedOutput = null;
   }
 
   public UUID getId() {

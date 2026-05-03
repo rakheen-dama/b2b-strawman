@@ -39,6 +39,9 @@ CREATE TABLE IF NOT EXISTS ai_llm_calls (
     created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
+CREATE INDEX IF NOT EXISTS idx_ai_llm_calls_invocation
+    ON ai_llm_calls (invocation_id);
+
 CREATE INDEX IF NOT EXISTS idx_invocation_status_created
     ON ai_specialist_invocations (status, created_at DESC);
 

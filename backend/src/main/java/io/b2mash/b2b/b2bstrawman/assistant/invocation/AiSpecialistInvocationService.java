@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.assistant.invocation.applier.OutputApplierRegis
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.payload.OutputPayload;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
@@ -18,12 +19,15 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
@@ -47,18 +51,21 @@ public class AiSpecialistInvocationService {
   private final CapabilityAuthorizationService capabilityAuthorizationService;
   private final AuditService auditService;
   private final ApplicationEventPublisher applicationEventPublisher;
+  private final AiSpecialistInvocationService selfProxy;
 
   public AiSpecialistInvocationService(
       AiSpecialistInvocationRepository repository,
       OutputApplierRegistry outputApplierRegistry,
       CapabilityAuthorizationService capabilityAuthorizationService,
       AuditService auditService,
-      ApplicationEventPublisher applicationEventPublisher) {
+      ApplicationEventPublisher applicationEventPublisher,
+      @Lazy @Autowired AiSpecialistInvocationService selfProxy) {
     this.repository = repository;
     this.outputApplierRegistry = outputApplierRegistry;
     this.capabilityAuthorizationService = capabilityAuthorizationService;
     this.auditService = auditService;
     this.applicationEventPublisher = applicationEventPublisher;
+    this.selfProxy = selfProxy;
   }
 
   // ------------------------- write entry points -------------------------
@@ -112,7 +119,6 @@ public class AiSpecialistInvocationService {
       throw new InvalidStateException(
           "Missing payload", "Invocation has no proposed output and no edited payload supplied");
     }
-    @SuppressWarnings({"rawtypes", "unchecked"})
     var applier = outputApplierRegistry.forPayload(toApply);
     applier.apply(toApply, callerId);
     inv.markApproved(callerId, toApply);
@@ -127,13 +133,27 @@ public class AiSpecialistInvocationService {
                     "specialistId", inv.getSpecialistId(),
                     "invocationId", inv.getId().toString()))
             .build());
-    applicationEventPublisher.publishEvent(new AiInvocationApprovedEvent(inv));
+    applicationEventPublisher.publishEvent(AiInvocationApprovedEvent.of(inv));
     return new ApproveResult(inv.getId(), inv.getStatus(), inv.getReviewedAt());
+  }
+
+  /**
+   * REQUIRES_NEW variant of {@link #approve} used by {@link #bulkApprove}. Each id runs in its own
+   * physical transaction so a failure on one id does not poison the outer transaction (which would
+   * otherwise be marked rollback-only and lose siblings whose outcomes say APPROVED).
+   */
+  @Transactional(propagation = Propagation.REQUIRES_NEW)
+  public ApproveResult approveInNewTransaction(UUID id, OutputPayload edited) {
+    return approve(id, edited);
   }
 
   @Transactional
   public void reject(UUID id, String rejectReason) {
     capabilityAuthorizationService.requireCapability(CAP_AI);
+    if (rejectReason == null || rejectReason.isBlank()) {
+      throw new InvalidStateException(
+          "Missing reject reason", "rejectReason is required and must not be blank");
+    }
     var inv = loadOrThrow(id);
     inv.requireStatus(InvocationStatus.PENDING_APPROVAL);
     UUID callerId = RequestScopes.requireMemberId();
@@ -151,9 +171,9 @@ public class AiSpecialistInvocationService {
                 Map.of(
                     "specialistId", inv.getSpecialistId(),
                     "invocationId", inv.getId().toString(),
-                    "reason", rejectReason == null ? "" : rejectReason))
+                    "reason", rejectReason))
             .build());
-    applicationEventPublisher.publishEvent(new AiInvocationRejectedEvent(inv, rejectReason));
+    applicationEventPublisher.publishEvent(AiInvocationRejectedEvent.of(inv, rejectReason));
   }
 
   @Transactional
@@ -168,7 +188,16 @@ public class AiSpecialistInvocationService {
     saveWithLockGuard(inv);
   }
 
-  @Transactional
+  /**
+   * Bulk-approve up to {@link #BULK_APPROVE_MAX} invocations of the same specialist. Each id runs
+   * in its own physical transaction (via {@link #approveInNewTransaction}) so a failure on one id
+   * does not roll back successful siblings — per the brief contract.
+   *
+   * <p>NOTE: deliberately not annotated {@code @Transactional} at the bulk level. If the outer call
+   * carried a transaction, an inner approve() failure would mark it rollback-only and Spring would
+   * throw {@code UnexpectedRollbackException} at commit, undoing the siblings whose outcomes
+   * recorded APPROVED.
+   */
   public BulkApproveResult bulkApprove(List<UUID> ids) {
     capabilityAuthorizationService.requireCapability(CAP_AI);
     if (ids == null || ids.isEmpty()) {
@@ -195,7 +224,7 @@ public class AiSpecialistInvocationService {
     var outcomes = new ArrayList<BulkApproveOutcome>(loaded.size());
     for (var inv : loaded) {
       try {
-        var result = approve(inv.getId(), null);
+        var result = selfProxy.approveInNewTransaction(inv.getId(), null);
         outcomes.add(new BulkApproveOutcome(inv.getId(), result.status(), null));
       } catch (RuntimeException ex) {
         outcomes.add(new BulkApproveOutcome(inv.getId(), inv.getStatus(), ex.getMessage()));
@@ -213,9 +242,10 @@ public class AiSpecialistInvocationService {
     UUID callerId = RequestScopes.requireMemberId();
     if (!Objects.equals(inv.getActorId(), callerId)
         && !capabilityAuthorizationService.hasCapability(CAP_OVERSIGHT)) {
-      // Cross-actor visibility requires TEAM_OVERSIGHT; treat as not-found to avoid leaking
-      // the existence of other members' invocations.
-      throw new ResourceNotFoundException("AiSpecialistInvocation", id);
+      // Brief §515A.6 specifies 403 for cross-actor access without TEAM_OVERSIGHT.
+      throw new ForbiddenException(
+          "Cross-actor access denied",
+          "Viewing another member's invocation requires TEAM_OVERSIGHT");
     }
     return inv;
   }
@@ -225,17 +255,28 @@ public class AiSpecialistInvocationService {
     capabilityAuthorizationService.requireCapability(CAP_AI);
     UUID callerId = RequestScopes.requireMemberId();
     boolean hasOversight = capabilityAuthorizationService.hasCapability(CAP_OVERSIGHT);
-    InvocationFilter scoped =
-        hasOversight
-            ? filter
-            : new InvocationFilter(
-                filter.status(),
-                filter.specialistId(),
-                filter.from(),
-                filter.to(),
-                filter.contextEntityType(),
-                filter.contextEntityId(),
-                callerId);
+    InvocationFilter scoped;
+    if (hasOversight) {
+      scoped = filter;
+    } else {
+      // Without TEAM_OVERSIGHT, a caller may only query their own invocations. Reject an
+      // explicit filter for someone else rather than silently rewriting it (which would
+      // otherwise hide the access denial behind an empty result page).
+      if (filter.actorId() != null && !filter.actorId().equals(callerId)) {
+        throw new ForbiddenException(
+            "Cross-actor filter denied",
+            "Filtering by another member's actorId requires TEAM_OVERSIGHT");
+      }
+      scoped =
+          new InvocationFilter(
+              filter.status(),
+              filter.specialistId(),
+              filter.from(),
+              filter.to(),
+              filter.contextEntityType(),
+              filter.contextEntityId(),
+              callerId);
+    }
     return repository.findAll(buildSpec(scoped), pageable);
   }
 
@@ -249,7 +290,10 @@ public class AiSpecialistInvocationService {
 
   private void saveWithLockGuard(AiSpecialistInvocation inv) {
     try {
-      repository.save(inv);
+      // saveAndFlush forces immediate version check; otherwise Hibernate may defer the
+      // optimistic-lock failure to commit time, where it escapes this try/catch and surfaces
+      // as a 500 instead of the intended 409 ResourceConflictException.
+      repository.saveAndFlush(inv);
     } catch (ObjectOptimisticLockingFailureException ole) {
       throw new ResourceConflictException(
           "Invocation already updated",

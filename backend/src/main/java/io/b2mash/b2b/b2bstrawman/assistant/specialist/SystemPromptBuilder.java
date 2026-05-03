@@ -118,7 +118,7 @@ public class SystemPromptBuilder {
           .findByClerkOrgId(RequestScopes.requireOrgId())
           .map(o -> o.getName())
           .orElse("Unknown");
-    } catch (RuntimeException e) {
+    } catch (IllegalStateException e) {
       // RequestScopes unbound (e.g. during static prompt validation) — return placeholder.
       return "Unknown";
     }
@@ -130,7 +130,8 @@ public class SystemPromptBuilder {
           .findForCurrentTenant()
           .map(s -> s.getTerminologyNamespace())
           .orElse(null);
-    } catch (RuntimeException e) {
+    } catch (IllegalStateException e) {
+      // RequestScopes unbound (e.g. during static prompt validation) — return null.
       return null;
     }
   }

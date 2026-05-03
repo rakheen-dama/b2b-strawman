@@ -66,10 +66,13 @@ public class SpecialistRegistry {
    * <ol>
    *   <li>the caller has the {@code AI_ASSISTANT_USE} capability, AND
    *   <li>the route matches at least one of the specialist's launcher routes (or {@code route} is
-   *       null/blank — list all in that case), AND
-   *   <li>the specialist exposes at least one tool the caller is permitted to use, OR the
-   *       specialist declares no tool requirements.
+   *       null/blank — list all in that case).
    * </ol>
+   *
+   * <p>Note: tool-availability filtering is deferred to 512A. In 511A specialists declare empty
+   * stub tool lists, so a third filter would be a no-op. Once specialists carry real tool ids, an
+   * additional filter (visible iff the caller is permitted to use at least one declared tool, or
+   * the specialist declares none) will be added here.
    */
   public List<Specialist> visibleTo(Set<String> capabilities, String route) {
     if (capabilities == null || !capabilities.contains(CAPABILITY_AI_ASSISTANT_USE)) {

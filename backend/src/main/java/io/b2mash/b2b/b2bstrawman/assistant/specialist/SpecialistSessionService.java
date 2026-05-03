@@ -42,8 +42,7 @@ public class SpecialistSessionService {
         assistantToolRegistry.filterBy(specialist.toolIds(), capabilities).stream()
             .map(AssistantTool::name)
             .toList();
-    // Build prompt to compute hash; the actual prompt is reassembled at /chat time.
-    systemPromptBuilder.buildFor(specialist, ref);
+    // Hash only the static specialist body — full prompt assembly happens at /chat time.
     var promptHash = systemPromptBuilder.bodyHash(specialistId);
     var sessionId = UUID.randomUUID();
     var greeting =

@@ -16,6 +16,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -27,8 +28,11 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.MethodOrderer.OrderAnnotation;
+import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestMethodOrder;
 import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -52,6 +56,7 @@ import tools.jackson.databind.ObjectMapper;
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(OrderAnnotation.class)
 class DataExportServiceAuditTrailIntegrationTest {
 
   private static final String ORG_ID = "org_dsr_audit_trail_test";
@@ -102,6 +107,7 @@ class DataExportServiceAuditTrailIntegrationTest {
   }
 
   @Test
+  @Order(1)
   void exportCustomerData_includesAuditTrailFolder_withParsableContents() throws Exception {
     // Seed two audit events directly on the subject's customer entity. The DSAR audit-trail
     // streaming query picks these up via branch (a) entity_type='customer' AND entity_id=...
@@ -148,17 +154,19 @@ class DataExportServiceAuditTrailIntegrationTest {
         .contains("customer.updated", "customer.activated");
 
     // events.csv row count (excluding header) matches events.json length
-    String csv = new String(entries.get(prefix + "audit-trail/events.csv"));
+    String csv = new String(entries.get(prefix + "audit-trail/events.csv"), StandardCharsets.UTF_8);
     long csvDataRows = csv.lines().count() - 1 /* header */;
     // CSV may have CRLF line endings; lines() splits on either, so this works for both.
     assertThat(csvDataRows).isEqualTo(events.size());
 
     // README mentions POPIA
-    String readme = new String(entries.get(prefix + "audit-trail/README.txt"));
+    String readme =
+        new String(entries.get(prefix + "audit-trail/README.txt"), StandardCharsets.UTF_8);
     assertThat(readme).contains("POPIA");
   }
 
   @Test
+  @Order(2)
   void exportCustomerData_excludesEventsForUnrelatedCustomer() throws Exception {
     // Seed an event on the OTHER customer that must NOT appear in the subject's audit trail.
     String unrelatedMarker = "unrelated-event-marker-" + UUID.randomUUID();
@@ -190,8 +198,9 @@ class DataExportServiceAuditTrailIntegrationTest {
 
     var entries = exportAndReadZip(subjectCustomerId);
     String prefix = "customer-export-" + subjectCustomerId + "/";
-    String json = new String(entries.get(prefix + "audit-trail/events.json"));
-    String csv = new String(entries.get(prefix + "audit-trail/events.csv"));
+    String json =
+        new String(entries.get(prefix + "audit-trail/events.json"), StandardCharsets.UTF_8);
+    String csv = new String(entries.get(prefix + "audit-trail/events.csv"), StandardCharsets.UTF_8);
 
     // The unrelated-customer event's marker must not appear anywhere in the subject's pack
     assertThat(json).doesNotContain(unrelatedMarker);
@@ -201,6 +210,7 @@ class DataExportServiceAuditTrailIntegrationTest {
   }
 
   @Test
+  @Order(3)
   void exportCustomerData_phase50PackContents_remainPresent() throws Exception {
     var entries = exportAndReadZip(subjectCustomerId);
     String prefix = "customer-export-" + subjectCustomerId + "/";

@@ -551,15 +551,20 @@ public class DataExportService {
       boolean first = true;
       var it = stream.iterator();
       while (it.hasNext()) {
-        if (!first) {
-          writer.write(",");
-        }
-        first = false;
+        AuditEvent event = it.next();
         try {
-          writer.write(objectMapper.writeValueAsString(it.next()));
+          String payload = objectMapper.writeValueAsString(event);
+          // Only emit the comma after we know the payload serialised successfully — otherwise a
+          // failure on event #1 followed by success on event #2 would produce "[,<event2>]" which
+          // is invalid JSON. Flip `first` only on a successful write.
+          if (!first) {
+            writer.write(",");
+          }
+          writer.write(payload);
+          first = false;
         } catch (JacksonException e) {
-          // Defensive: a single bad row shouldn't abort the export. Skip it but keep the comma
-          // discipline so the JSON parses.
+          // Defensive: a single bad row shouldn't abort the export. Skip silently — neither the
+          // comma nor `first` is mutated, so the surrounding JSON array stays well-formed.
           log.warn("Skipping audit event during DSAR JSON serialisation", e);
         }
       }

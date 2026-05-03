@@ -299,6 +299,10 @@ public class DatabaseAuditService implements AuditService {
 
   @Override
   @Transactional(readOnly = true)
+  // TODO(epic-505 follow-up): extract a CustomerChildEntityResolver in datarequest/ to remove
+  // audit→domain coupling — tracked for a future cleanup epic. Today this method directly depends
+  // on seven domain repositories (incl. legal vertical), which is a layering inversion the brief
+  // explicitly authorised but the architecture reviewer flagged as a follow-up cleanup.
   public Stream<AuditEvent> findEventsForCustomer(UUID customerId) {
     // Resolve every child-entity ID owned by the customer. Each list is read in a separate query
     // (these are simple PK-fetches by indexed customerId column; no N+1 because we collect ID lists

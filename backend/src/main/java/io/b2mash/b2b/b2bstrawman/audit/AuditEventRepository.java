@@ -533,6 +533,12 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
                   AND e.entity_type = ANY(CAST(:childTypes AS TEXT[]))
                   AND e.entity_id = ANY(CAST(:childIds AS UUID[]))
                 )
+             -- Branch (c): best-effort scan of details->>'customerId'. There is no dedicated
+             -- expression index for this column, so this clause falls back to a sequential
+             -- scan within the partition pre-filtered by tenant search_path. Acceptable for
+             -- DSAR exports, which are infrequent and admin-initiated. If volume grows,
+             -- consider adding `CREATE INDEX idx_audit_details_customer_id
+             -- ON audit_events ((details->>'customerId'))`.
              OR ((e.details->>'customerId') = CAST(:customerId AS TEXT))
           ORDER BY e.occurred_at DESC
           """)

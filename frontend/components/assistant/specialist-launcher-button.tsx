@@ -4,11 +4,7 @@ import { useState, useCallback } from "react";
 import { Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RequiresCapability, CAPABILITIES } from "@/lib/capabilities";
-import {
-  startSession,
-  type SessionHandle,
-  type ContextRef,
-} from "@/lib/api/assistant-specialists";
+import { startSession, type SessionHandle, type ContextRef } from "@/lib/api/assistant-specialists";
 import { SPECIALIST_STRINGS } from "@/components/assistant/specialist-strings";
 import { SpecialistPanel } from "@/components/assistant/specialist-panel";
 
@@ -41,8 +37,7 @@ function LauncherInner({
     try {
       const fullContextRef: ContextRef = {
         ...contextRef,
-        currentPage:
-          typeof window !== "undefined" ? window.location.pathname : undefined,
+        currentPage: typeof window !== "undefined" ? window.location.pathname : undefined,
       };
       const handle = await startSession(specialistId, {
         contextRef: fullContextRef,

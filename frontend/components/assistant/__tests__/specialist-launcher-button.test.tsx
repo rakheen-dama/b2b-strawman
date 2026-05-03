@@ -81,9 +81,7 @@ describe("SpecialistLauncherButton", () => {
       surface: "INVOICE_DRAFT_TOOLBAR",
     });
 
-    await waitFor(() =>
-      expect(screen.getByTestId("specialist-panel-mock")).toBeInTheDocument()
-    );
+    await waitFor(() => expect(screen.getByTestId("specialist-panel-mock")).toBeInTheDocument());
   });
 
   it("surfaces an error message when startSession rejects", async () => {
@@ -105,9 +103,7 @@ describe("SpecialistLauncherButton", () => {
     await user.click(trigger);
 
     await waitFor(() =>
-      expect(screen.getByRole("alert")).toHaveTextContent(
-        /could not start specialist session/i
-      )
+      expect(screen.getByRole("alert")).toHaveTextContent(/could not start specialist session/i)
     );
   });
 });

@@ -57,9 +57,7 @@ export interface StartSessionRequest {
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 const API_BASE =
-  AUTH_MODE === "keycloak"
-    ? ""
-    : process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+  AUTH_MODE === "keycloak" ? "" : process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
 
 function getAuthHeaders(): Record<string, string> {
   const headers: Record<string, string> = {
@@ -119,21 +117,15 @@ export async function listSpecialists(route?: string): Promise<SpecialistSummary
 }
 
 export async function getSpecialist(id: string): Promise<SpecialistDetail> {
-  const res = await fetch(
-    `${API_BASE}/api/assistant/specialists/${encodeURIComponent(id)}`,
-    {
-      method: "GET",
-      headers: getAuthHeaders(),
-      credentials: credentialsMode(),
-    }
-  );
+  const res = await fetch(`${API_BASE}/api/assistant/specialists/${encodeURIComponent(id)}`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+    credentials: credentialsMode(),
+  });
   return handleJson<SpecialistDetail>(res);
 }
 
-export async function startSession(
-  id: string,
-  body: StartSessionRequest
-): Promise<SessionHandle> {
+export async function startSession(id: string, body: StartSessionRequest): Promise<SessionHandle> {
   const res = await fetch(
     `${API_BASE}/api/assistant/specialists/${encodeURIComponent(id)}/sessions`,
     {

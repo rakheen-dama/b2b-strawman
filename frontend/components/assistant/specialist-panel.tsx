@@ -1,12 +1,6 @@
 "use client";
 
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type KeyboardEvent,
-} from "react";
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { Sparkles, Send, Square } from "lucide-react";
 import {
   Sheet,
@@ -87,14 +81,8 @@ export function SpecialistPanel({
   // (see `handleHandOff`) so downstream panels/analytics can pick it up.
 
   const generalist = useOptionalAssistant();
-  const {
-    messages,
-    isStreaming,
-    tokenUsage,
-    sendMessage,
-    stopStreaming,
-    confirmToolCall,
-  } = useAssistantChat({ specialistId: sessionHandle.specialistId });
+  const { messages, isStreaming, tokenUsage, sendMessage, stopStreaming, confirmToolCall } =
+    useAssistantChat({ specialistId: sessionHandle.specialistId });
 
   const [input, setInput] = useState("");
   const seededRef = useRef(false);
@@ -201,10 +189,7 @@ export function SpecialistPanel({
           </div>
           <div className="flex items-center gap-2">
             {(tokenUsage.input > 0 || tokenUsage.output > 0) && (
-              <TokenUsageBadge
-                inputTokens={tokenUsage.input}
-                outputTokens={tokenUsage.output}
-              />
+              <TokenUsageBadge inputTokens={tokenUsage.input} outputTokens={tokenUsage.output} />
             )}
             <Button
               variant="ghost"
@@ -217,9 +202,7 @@ export function SpecialistPanel({
           </div>
         </SheetHeader>
 
-        <SheetDescription className="sr-only">
-          {SPECIALIST_STRINGS.poweredByAi}
-        </SheetDescription>
+        <SheetDescription className="sr-only">{SPECIALIST_STRINGS.poweredByAi}</SheetDescription>
 
         <div className="flex-1 overflow-y-auto px-1 py-3">
           <div className="flex flex-col gap-2">
@@ -247,20 +230,14 @@ export function SpecialistPanel({
               if (msg.role === "tool_use") {
                 if (msg.requiresConfirmation) {
                   return (
-                    <ConfirmationCard
-                      key={msg.id}
-                      message={msg}
-                      onConfirm={confirmToolCall}
-                    />
+                    <ConfirmationCard key={msg.id} message={msg} onConfirm={confirmToolCall} />
                   );
                 }
                 return (
                   <ToolUseCard
                     key={msg.id}
                     message={msg}
-                    isLoading={
-                      msg.toolCallId ? !toolResultIds.has(msg.toolCallId) : false
-                    }
+                    isLoading={msg.toolCallId ? !toolResultIds.has(msg.toolCallId) : false}
                   />
                 );
               }

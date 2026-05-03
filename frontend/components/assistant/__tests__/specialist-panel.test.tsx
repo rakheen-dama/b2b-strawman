@@ -26,10 +26,7 @@ vi.mock("@/hooks/use-assistant-chat", () => ({
   useAssistantChat: (args: unknown) => useAssistantChatMock(args as never),
 }));
 
-import {
-  SpecialistPanel,
-  buildHandOffSummary,
-} from "@/components/assistant/specialist-panel";
+import { SpecialistPanel, buildHandOffSummary } from "@/components/assistant/specialist-panel";
 import type { SessionHandle } from "@/lib/api/assistant-specialists";
 
 const baseHandle: SessionHandle = {
@@ -134,9 +131,7 @@ describe("SpecialistPanel", () => {
 describe("buildHandOffSummary", () => {
   it("truncates transcripts longer than 500 chars", () => {
     const longContent = "x".repeat(2000);
-    const summary = buildHandOffSummary([
-      { id: "1", role: "user", content: longContent },
-    ]);
+    const summary = buildHandOffSummary([{ id: "1", role: "user", content: longContent }]);
     expect(summary.length).toBe(500);
   });
 

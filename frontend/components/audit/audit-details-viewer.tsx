@@ -6,9 +6,7 @@ import { cn } from "@/lib/utils";
 
 type DeltaShape = "field-from-to" | "before-after" | "freeform";
 
-function detectShape(
-  details: Record<string, unknown> | null,
-): DeltaShape {
+function detectShape(details: Record<string, unknown> | null): DeltaShape {
   if (!details || Object.keys(details).length === 0) return "freeform";
   const before = (details as Record<string, unknown>).before;
   const after = (details as Record<string, unknown>).after;
@@ -26,11 +24,7 @@ function detectShape(
   const allFromTo =
     values.length > 0 &&
     values.every(
-      (v) =>
-        v !== null &&
-        typeof v === "object" &&
-        "from" in (v as object) &&
-        "to" in (v as object),
+      (v) => v !== null && typeof v === "object" && "from" in (v as object) && "to" in (v as object)
     );
   if (allFromTo) return "field-from-to";
   return "freeform";
@@ -47,9 +41,7 @@ function renderScalar(value: unknown): string {
   if (value === null || value === undefined) return "—";
   if (typeof value === "string") {
     if (value === "") return '""';
-    return value.length > MAX_STRING_LEN
-      ? value.slice(0, MAX_STRING_LEN) + "…"
-      : value;
+    return value.length > MAX_STRING_LEN ? value.slice(0, MAX_STRING_LEN) + "…" : value;
   }
   if (typeof value === "number" || typeof value === "boolean") {
     return String(value);
@@ -82,9 +74,7 @@ function JsonNode({ value, depth = 0 }: JsonNodeProps) {
     : Object.entries(value as Record<string, unknown>);
 
   if (allEntries.length === 0) {
-    return (
-      <span className="text-slate-500">{isArray ? "[]" : "{}"}</span>
-    );
+    return <span className="text-slate-500">{isArray ? "[]" : "{}"}</span>;
   }
 
   const truncated = allEntries.length > MAX_ENTRIES;
@@ -100,19 +90,14 @@ function JsonNode({ value, depth = 0 }: JsonNodeProps) {
         aria-label={expanded ? "Collapse node" : "Expand node"}
         className="inline-flex items-center gap-1 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
       >
-        <ChevronRight
-          className={cn(
-            "size-3 transition-transform",
-            expanded && "rotate-90",
-          )}
-        />
+        <ChevronRight className={cn("size-3 transition-transform", expanded && "rotate-90")} />
         <span>
           {isArray ? `Array(${allEntries.length})` : `Object(${allEntries.length})`}
           {overLimit && !expanded && " · deep"}
         </span>
       </button>
       {expanded && (
-        <ul className="ml-4 mt-1 space-y-0.5 border-l border-slate-200 pl-2 dark:border-slate-700">
+        <ul className="mt-1 ml-4 space-y-0.5 border-l border-slate-200 pl-2 dark:border-slate-700">
           {entries.map(([key, v]) => (
             <li key={key} className="flex gap-2">
               <span className="text-teal-700 dark:text-teal-400">{key}:</span>
@@ -120,9 +105,7 @@ function JsonNode({ value, depth = 0 }: JsonNodeProps) {
             </li>
           ))}
           {truncated && (
-            <li className="text-slate-500 italic">
-              …{allEntries.length - MAX_ENTRIES} more
-            </li>
+            <li className="text-slate-500 italic">…{allEntries.length - MAX_ENTRIES} more</li>
           )}
         </ul>
       )}
@@ -179,9 +162,7 @@ export function AuditDetailsViewer({ details }: AuditDetailsViewerProps) {
         </div>
         {Object.entries(details).map(([field, value]) => {
           const v = value as { from: unknown; to: unknown };
-          return (
-            <DiffRow key={field} field={field} from={v.from} to={v.to} />
-          );
+          return <DiffRow key={field} field={field} from={v.from} to={v.to} />;
         })}
       </div>
     );
@@ -199,12 +180,7 @@ export function AuditDetailsViewer({ details }: AuditDetailsViewerProps) {
           <span>After</span>
         </div>
         {changedFields.map((field) => (
-          <DiffRow
-            key={field}
-            field={field}
-            from={before?.[field]}
-            to={after?.[field]}
-          />
+          <DiffRow key={field} field={field} from={before?.[field]} to={after?.[field]} />
         ))}
       </div>
     );

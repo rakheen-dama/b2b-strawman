@@ -16,7 +16,7 @@ describe("<ActorDisplay>", () => {
         actorType="USER"
         source="API"
         ipAddress="10.0.0.1"
-      />,
+      />
     );
     const node = screen.getByTestId("actor-display");
     expect(node).toHaveTextContent("Alice Smith");
@@ -31,7 +31,7 @@ describe("<ActorDisplay>", () => {
         actorType="USER"
         source={null}
         ipAddress={null}
-      />,
+      />
     );
     const node = screen.getByTestId("actor-display");
     expect(node.className).toContain("line-through");
@@ -48,7 +48,7 @@ describe("<ActorDisplay>", () => {
         actorType={null}
         source={null}
         ipAddress={null}
-      />,
+      />
     );
     expect(screen.getByTestId("actor-display")).toHaveTextContent("System");
   });

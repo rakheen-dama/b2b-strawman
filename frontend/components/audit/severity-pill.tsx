@@ -19,11 +19,7 @@ export interface SeverityPillProps {
   className?: string;
 }
 
-export function SeverityPill({
-  severity,
-  size = "md",
-  className,
-}: SeverityPillProps) {
+export function SeverityPill({ severity, size = "md", className }: SeverityPillProps) {
   return (
     <span
       data-testid="severity-pill"
@@ -32,7 +28,7 @@ export function SeverityPill({
         "inline-flex items-center rounded-full font-medium",
         SIZE_CLASSES[size],
         SEVERITY_CLASSES[severity],
-        className,
+        className
       )}
     >
       {severity}

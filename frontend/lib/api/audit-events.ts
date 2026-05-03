@@ -5,12 +5,7 @@ import { api } from "./client";
 // === Enums ===
 
 export type AuditSeverity = "INFO" | "NOTICE" | "WARNING" | "CRITICAL";
-export type AuditEventGroup =
-  | "SECURITY"
-  | "COMPLIANCE"
-  | "FINANCIAL"
-  | "DATA"
-  | "STANDARD";
+export type AuditEventGroup = "SECURITY" | "COMPLIANCE" | "FINANCIAL" | "DATA" | "STANDARD";
 
 // === Response DTO ===
 
@@ -103,9 +98,7 @@ function buildAuditEventQuery(params?: AuditEventFilter): URLSearchParams {
 
 // === API Functions ===
 
-export async function listAuditEvents(
-  params?: AuditEventFilter,
-): Promise<AuditEventsPage> {
+export async function listAuditEvents(params?: AuditEventFilter): Promise<AuditEventsPage> {
   const sp = buildAuditEventQuery(params);
   return api.get<AuditEventsPage>(`/api/audit-events?${sp.toString()}`);
 }
@@ -126,9 +119,7 @@ export async function listFacetActors(params?: {
   from?: string;
   to?: string;
 }): Promise<ActorFacet[]> {
-  return api.get<ActorFacet[]>(
-    `/api/audit-events/facets/actors${buildFacetQuery(params)}`,
-  );
+  return api.get<ActorFacet[]>(`/api/audit-events/facets/actors${buildFacetQuery(params)}`);
 }
 
 export async function listFacetEventTypes(params?: {
@@ -136,7 +127,7 @@ export async function listFacetEventTypes(params?: {
   to?: string;
 }): Promise<EventTypeFacet[]> {
   return api.get<EventTypeFacet[]>(
-    `/api/audit-events/facets/event-types${buildFacetQuery(params)}`,
+    `/api/audit-events/facets/event-types${buildFacetQuery(params)}`
   );
 }
 
@@ -145,6 +136,6 @@ export async function listFacetEntityTypes(params?: {
   to?: string;
 }): Promise<EntityTypeFacet[]> {
   return api.get<EntityTypeFacet[]>(
-    `/api/audit-events/facets/entity-types${buildFacetQuery(params)}`,
+    `/api/audit-events/facets/entity-types${buildFacetQuery(params)}`
   );
 }

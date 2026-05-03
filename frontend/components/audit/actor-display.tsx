@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 /**
@@ -45,7 +40,7 @@ export function ActorDisplay({
             data-testid="actor-display"
             className={cn(
               "inline-block cursor-help text-xs",
-              isFormer && "text-slate-500 line-through",
+              isFormer && "text-slate-500 line-through"
             )}
           >
             {actorDisplayName}

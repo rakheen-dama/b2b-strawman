@@ -1,21 +1,9 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  useTransition,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -39,12 +27,7 @@ import { ActorDisplay } from "@/components/audit/actor-display";
 import { EntityCell } from "@/components/audit/entity-cell";
 import { AuditDetailsViewer } from "@/components/audit/audit-details-viewer";
 
-const ALL_SEVERITIES: AuditSeverity[] = [
-  "INFO",
-  "NOTICE",
-  "WARNING",
-  "CRITICAL",
-];
+const ALL_SEVERITIES: AuditSeverity[] = ["INFO", "NOTICE", "WARNING", "CRITICAL"];
 
 const FILTER_KEYS = [
   "from",
@@ -88,10 +71,7 @@ function FilterTextInput({
 }: FilterTextInputProps) {
   return (
     <div className="space-y-1">
-      <label
-        htmlFor={id}
-        className="text-xs font-medium text-slate-700 dark:text-slate-300"
-      >
+      <label htmlFor={id} className="text-xs font-medium text-slate-700 dark:text-slate-300">
         {label}
       </label>
       <Input
@@ -111,11 +91,7 @@ function FilterTextInput({
   );
 }
 
-export function AuditLogClient({
-  slug,
-  initialEvents,
-  initialFilter,
-}: AuditLogClientProps) {
+export function AuditLogClient({ slug, initialEvents, initialFilter }: AuditLogClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -135,9 +111,8 @@ export function AuditLogClient({
   const entityIdRef = useRef<HTMLInputElement | null>(null);
 
   const buildPath = useCallback(
-    (qs: string) =>
-      `/org/${slug}/settings/audit-log${qs ? `?${qs}` : ""}`,
-    [slug],
+    (qs: string) => `/org/${slug}/settings/audit-log${qs ? `?${qs}` : ""}`,
+    [slug]
   );
 
   // Read the latest searchParams inside the call rather than capturing it in
@@ -158,7 +133,7 @@ export function AuditLogClient({
         router.push(buildPath(qs), { scroll: false });
       });
     },
-    [router, buildPath],
+    [router, buildPath]
   );
 
   // Flush any pending in-progress text input into the URLSearchParams before
@@ -169,7 +144,7 @@ export function AuditLogClient({
       const flush = (
         key: string,
         ref: React.RefObject<HTMLInputElement | null>,
-        prev: string | undefined,
+        prev: string | undefined
       ) => {
         const node = ref.current;
         if (!node) return;
@@ -188,7 +163,7 @@ export function AuditLogClient({
       initialFilter.eventType,
       initialFilter.entityType,
       initialFilter.entityId,
-    ],
+    ]
   );
 
   const setParam = useCallback(
@@ -203,7 +178,7 @@ export function AuditLogClient({
         params.delete("page");
       });
     },
-    [updateUrl],
+    [updateUrl]
   );
 
   const toggleSeverity = useCallback(
@@ -225,7 +200,7 @@ export function AuditLogClient({
         params.delete("page");
       });
     },
-    [initialFilter.severities, updateUrl, flushPendingInputs],
+    [initialFilter.severities, updateUrl, flushPendingInputs]
   );
 
   const goToPage = useCallback(
@@ -236,7 +211,7 @@ export function AuditLogClient({
         else params.set("page", String(next));
       });
     },
-    [updateUrl, flushPendingInputs],
+    [updateUrl, flushPendingInputs]
   );
 
   const toggleRow = useCallback((id: string) => {
@@ -267,19 +242,19 @@ export function AuditLogClient({
     () =>
       Boolean(
         initialFilter.from ||
-          initialFilter.to ||
-          (initialFilter.severities && initialFilter.severities.length > 0) ||
-          initialFilter.actorId ||
-          initialFilter.eventType ||
-          initialFilter.entityType ||
-          initialFilter.entityId,
+        initialFilter.to ||
+        (initialFilter.severities && initialFilter.severities.length > 0) ||
+        initialFilter.actorId ||
+        initialFilter.eventType ||
+        initialFilter.entityType ||
+        initialFilter.entityId
       ),
-    [initialFilter],
+    [initialFilter]
   );
 
   const selectedSeverities = useMemo(
     () => new Set(initialFilter.severities ?? []),
-    [initialFilter.severities],
+    [initialFilter.severities]
   );
 
   return (
@@ -308,7 +283,7 @@ export function AuditLogClient({
                     "from",
                     e.target.value
                       ? new Date(e.target.value + "T00:00:00.000Z").toISOString()
-                      : undefined,
+                      : undefined
                   )
                 }
               />
@@ -332,7 +307,7 @@ export function AuditLogClient({
                     "to",
                     e.target.value
                       ? new Date(e.target.value + "T23:59:59.999Z").toISOString()
-                      : undefined,
+                      : undefined
                   )
                 }
               />
@@ -372,14 +347,8 @@ export function AuditLogClient({
           </div>
 
           <div className="mt-4">
-            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">
-              Severity
-            </span>
-            <div
-              className="mt-2 flex flex-wrap gap-2"
-              role="group"
-              aria-label="Severity filter"
-            >
+            <span className="text-xs font-medium text-slate-700 dark:text-slate-300">Severity</span>
+            <div className="mt-2 flex flex-wrap gap-2" role="group" aria-label="Severity filter">
               {ALL_SEVERITIES.map((sev) => {
                 const active = selectedSeverities.has(sev);
                 return (
@@ -393,7 +362,7 @@ export function AuditLogClient({
                       "rounded-full border px-3 py-1 text-xs transition",
                       active
                         ? "border-teal-600 bg-teal-50 text-teal-700 dark:bg-teal-950 dark:text-teal-300"
-                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400",
+                        : "border-slate-200 bg-white text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400"
                     )}
                   >
                     {sev}
@@ -426,9 +395,7 @@ export function AuditLogClient({
             <span className="ml-2 font-mono text-xs font-normal text-slate-500">
               {page.totalElements.toLocaleString()} total
             </span>
-            {isPending && (
-              <span className="ml-2 text-xs text-slate-400">Loading…</span>
-            )}
+            {isPending && <span className="ml-2 text-xs text-slate-400">Loading…</span>}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -476,8 +443,7 @@ export function AuditLogClient({
         <div className="text-slate-500">
           {totalPages > 0 ? (
             <>
-              Page <span className="font-medium">{currentPage + 1}</span> of{" "}
-              {totalPages}
+              Page <span className="font-medium">{currentPage + 1}</span> of {totalPages}
             </>
           ) : (
             <>No events</>
@@ -492,7 +458,7 @@ export function AuditLogClient({
               "rounded-md border px-3 py-1.5",
               currentPage > 0
                 ? "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-                : "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800",
+                : "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800"
             )}
           >
             Previous
@@ -505,7 +471,7 @@ export function AuditLogClient({
               "rounded-md border px-3 py-1.5",
               currentPage + 1 < totalPages
                 ? "border-slate-200 bg-white text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
-                : "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800",
+                : "cursor-not-allowed border-slate-200 bg-slate-50 text-slate-400 dark:border-slate-700 dark:bg-slate-800"
             )}
           >
             Next
@@ -536,11 +502,7 @@ function Row({ event, slug, expanded, onToggle }: RowProps) {
             data-testid={`audit-row-toggle-${event.id}`}
             className="text-slate-500 hover:text-slate-700 dark:hover:text-slate-300"
           >
-            {expanded ? (
-              <ChevronDown className="size-4" />
-            ) : (
-              <ChevronRight className="size-4" />
-            )}
+            {expanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
           </button>
         </TableCell>
         <TableCell className="font-mono text-xs whitespace-nowrap text-slate-700 dark:text-slate-300">
@@ -550,12 +512,8 @@ function Row({ event, slug, expanded, onToggle }: RowProps) {
           <SeverityPill severity={event.severity} />
         </TableCell>
         <TableCell className="text-xs">
-          <div className="font-medium text-slate-900 dark:text-slate-100">
-            {event.label}
-          </div>
-          <div className="font-mono text-[10px] text-slate-500">
-            {event.eventType}
-          </div>
+          <div className="font-medium text-slate-900 dark:text-slate-100">{event.label}</div>
+          <div className="font-mono text-[10px] text-slate-500">{event.eventType}</div>
         </TableCell>
         <TableCell>
           <ActorDisplay
@@ -567,11 +525,7 @@ function Row({ event, slug, expanded, onToggle }: RowProps) {
           />
         </TableCell>
         <TableCell>
-          <EntityCell
-            entityType={event.entityType}
-            entityId={event.entityId}
-            slug={slug}
-          />
+          <EntityCell entityType={event.entityType} entityId={event.entityId} slug={slug} />
         </TableCell>
       </TableRow>
       {expanded && (

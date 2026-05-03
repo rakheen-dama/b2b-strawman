@@ -1,12 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import {
-  cleanup,
-  render,
-  screen,
-  fireEvent,
-  waitFor,
-} from "@testing-library/react";
+import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
 
 vi.mock("server-only", () => ({}));
 
@@ -54,17 +48,12 @@ vi.mock("next/link", () => ({
 }));
 
 import AuditLogPage from "./page";
-import {
-  listAuditEvents,
-  type AuditEventResponse,
-} from "@/lib/api/audit-events";
+import { listAuditEvents, type AuditEventResponse } from "@/lib/api/audit-events";
 import { ApiError } from "@/lib/api/client";
 
 const mockListAuditEvents = listAuditEvents as ReturnType<typeof vi.fn>;
 
-function makeEvent(
-  overrides: Partial<AuditEventResponse> = {},
-): AuditEventResponse {
+function makeEvent(overrides: Partial<AuditEventResponse> = {}): AuditEventResponse {
   return {
     id: `evt-${Math.random().toString(36).slice(2, 8)}`,
     eventType: "customer.created",
@@ -121,11 +110,9 @@ describe("AuditLogPage (server shell)", () => {
         severities: ["CRITICAL", "WARNING"],
         actorId: "actor-xyz",
         entityType: "customer",
-      }),
+      })
     );
-    expect(
-      screen.getByRole("heading", { name: "Audit log" }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Audit log" })).toBeInTheDocument();
     expect(screen.getByText("Event A")).toBeInTheDocument();
   });
 
@@ -135,7 +122,7 @@ describe("AuditLogPage (server shell)", () => {
         type: "about:blank",
         title: "Forbidden",
         status: 403,
-      }),
+      })
     );
 
     const page = await AuditLogPage({
@@ -216,7 +203,7 @@ describe("AuditLogPage (server shell)", () => {
     const link = screen.getByTestId("entity-cell-link");
     expect(link).toHaveAttribute(
       "href",
-      "/org/acme/customers/abcdef12-3456-7890-abcd-ef1234567890",
+      "/org/acme/customers/abcdef12-3456-7890-abcd-ef1234567890"
     );
     expect(link.getAttribute("data-entity-type")).toBe("customer");
   });
@@ -266,9 +253,7 @@ describe("AuditLogPage (server shell)", () => {
   });
 
   it("typing an actor ID and blurring builds a URL with actorId + entityType combined", async () => {
-    useSearchParamsMock.mockReturnValue(
-      new URLSearchParams("entityType=customer"),
-    );
+    useSearchParamsMock.mockReturnValue(new URLSearchParams("entityType=customer"));
     mockListAuditEvents.mockResolvedValue({
       content: [],
       page: { totalElements: 0, totalPages: 0, size: 50, number: 0 },

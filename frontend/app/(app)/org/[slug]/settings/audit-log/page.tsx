@@ -35,7 +35,7 @@ function parseFilter(sp: SearchParams): AuditEventFilter {
         .split(",")
         .map((s) => s.trim().toUpperCase())
         .filter((s): s is AuditSeverity =>
-          VALID_SEVERITIES.has(s as AuditSeverity),
+          VALID_SEVERITIES.has(s as AuditSeverity)
         ) as AuditSeverity[])
     : undefined;
   return {
@@ -83,13 +83,10 @@ export default async function AuditLogPage({
       return (
         <div className="space-y-8">
           {backLink}
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-            Audit log
-          </h1>
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Audit log</h1>
           <p className="text-slate-600 dark:text-slate-400">
             Not authorised. The audit log is only visible to members with the{" "}
-            <code className="font-mono text-xs">TEAM_OVERSIGHT</code>{" "}
-            capability.
+            <code className="font-mono text-xs">TEAM_OVERSIGHT</code> capability.
           </p>
         </div>
       );
@@ -102,20 +99,14 @@ export default async function AuditLogPage({
       {backLink}
 
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          Audit log
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Audit log</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Read-only feed of audit events. Filter by date range, severity, actor,
-          event type, or entity.
+          Read-only feed of audit events. Filter by date range, severity, actor, event type, or
+          entity.
         </p>
       </div>
 
-      <AuditLogClient
-        slug={slug}
-        initialEvents={events}
-        initialFilter={filter}
-      />
+      <AuditLogClient slug={slug} initialEvents={events} initialFilter={filter} />
     </div>
   );
 }

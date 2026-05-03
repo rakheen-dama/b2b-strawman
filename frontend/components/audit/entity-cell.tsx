@@ -71,8 +71,7 @@ export function EntityCell({ entityType, entityId, slug }: EntityCellProps) {
       data-entity-type={entityType}
       className="text-xs text-teal-600 hover:text-teal-700 hover:underline dark:text-teal-400"
     >
-      {entityType}{" "}
-      <span className="font-mono text-slate-500">{shortId(entityId)}</span>
+      {entityType} <span className="font-mono text-slate-500">{shortId(entityId)}</span>
     </Link>
   );
 }

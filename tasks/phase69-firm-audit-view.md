@@ -25,7 +25,7 @@ The existing global audit log page at `frontend/app/(app)/org/[slug]/settings/au
 | 504 | Audit Export — PDF via Tiptap Pipeline | Backend | 501, 502A, 503A | M | 504A | **Done** (PR #1277) |
 | 505 | DSAR Audit-Trail Folder Integration | Backend | 501 | M | 505A | **Done** (PR #1278) |
 | 506 | Global Audit Log Page — Shell, Filters, Row Expansion | Frontend | 502B | L | 506A, 506B | **Done** (PRs #1279, #1280) |
-| 507 | `<AuditTimeline>` Component + 3 Detail Page Tabs (Customer / Project / Invoice) | Frontend | 502B, 506A | M | 507A | |
+| 507 | `<AuditTimeline>` Component + 3 Detail Page Tabs (Customer / Project / Invoice) | Frontend | 502B, 506A | M | 507A | **Done** (PR #1281) |
 | 508 | `<AuditTimeline>` — Remaining 4 Detail Page Tabs (TrustTx / MatterClosure / Proposal / InfoRequest) | Frontend | 507A | M | 508A | |
 | 509 | Sensitive-Events Dashboard Widget | Frontend | 502B, 506B | S | 509A | |
 | 510 | Admin-POV 30-Day QA Capstone + Screenshots + Gap Report | E2E / Process | 501–509 | L | 510A, 510B | |
@@ -140,7 +140,7 @@ PHASES already complete:
 |-------|------|-------|---------|
 | 3a | 506 | 506A | **Done** (PR #1279) — `app/(app)/org/[slug]/settings/audit-log/page.tsx` rebuilt: filter UI (date range / severity / actor / event type / entity type), URL query string state, paginated rows, row expansion. Shared primitives created: `<SeverityPill>`, `<AuditDetailsViewer>` (diff + JSON tree), `<ActorDisplay>`, entity-cell deep-link helper. `frontend/lib/api/audit-events.ts` extended with the six new endpoints. Frontend tests for filter mapping + row expansion. |
 | 3b (parallel) | 506 | 506B | **Done** (PR #1280) — Filter presets (Sensitive / Compliance / Security / Financial approvals) with fail-closed sentinel + banner for multi-eventType groups; export dropdown wired to `/export.csv` + `/export.pdf` via server actions; PDF cap pre-check (debounced count fetch, 30s timeout); Playwright smoke spec. |
-| 3c (parallel after 506A) | 507 | 507A | `frontend/components/audit/audit-timeline.tsx` reusable component reusing 506A primitives; "Audit" tab added to Customer / Project / Invoice detail pages; capability-gated; terminology key `audit.tab` (legal-za → "Audit Trail"). Frontend tests for render + expansion + empty state. |
+| 3c (parallel after 506A) | 507 | 507A | `frontend/components/audit/audit-timeline.tsx` reusable component reusing 506A primitives; "Audit" tab added to Customer / Project / Invoice detail pages; capability-gated; terminology key `audit.tab` (legal-za → "Audit Trail"). Frontend tests for render + expansion + empty state. **Done** (PR #1281) |
 | 3d | 508 | 508A | "Audit" tab dropped into TrustTransaction / Matter Closure / Proposal / Information Request detail pages reusing 507A's `<AuditTimeline>`. Playwright smoke for the matter-closure detail page asserting the override event with justification visible on expand. |
 | 3e (parallel after 502B) | 509 | 509A | `<SensitiveEventsWidget>` on the firm admin dashboard: three count pills (NOTICE / WARNING / CRITICAL last 7 days) + top-5 list of CRITICAL+WARNING + "View all" deep link to Sensitive preset. Capability-gated. |
 
@@ -610,7 +610,7 @@ A realistic day-by-day cadence: 501A days 1–3; 502A + 503A + 505A days 3–7 (
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **507A** | 507.1–507.7 | 9 frontend files (1 component, 1 row primitive, 3 detail-page tab integrations, 1 i18n key, 2 test files, 1 component-tab wrapper) | `<AuditTimeline>` component reusing 506A primitives; rendered as a vertical timeline (one node per event) with chronological top→bottom ordering and click-to-expand details. "Audit" tab integrated into Customer Detail / Project Detail / Invoice Detail pages. Capability-gated. Terminology key `audit.tab` ("Audit" default, "Audit Trail" for legal-za). Frontend tests + `<AuditTimelineTab>` wrapper for the capability gate. |
+| **507A** | 507.1–507.7 | 9 frontend files (1 component, 1 row primitive, 3 detail-page tab integrations, 1 i18n key, 2 test files, 1 component-tab wrapper) | `<AuditTimeline>` component reusing 506A primitives; rendered as a vertical timeline (one node per event) with chronological top→bottom ordering and click-to-expand details. "Audit" tab integrated into Customer Detail / Project Detail / Invoice Detail pages. Capability-gated. Terminology key `audit.tab` ("Audit" default, "Audit Trail" for legal-za). Frontend tests + `<AuditTimelineTab>` wrapper for the capability gate. **Done** (PR #1281) |
 
 ### Tasks
 

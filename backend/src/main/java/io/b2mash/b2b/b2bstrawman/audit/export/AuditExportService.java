@@ -10,7 +10,6 @@ import java.io.UncheckedIOException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -67,24 +66,25 @@ public class AuditExportService {
    * identity.
    */
   public ResponseEntity<StreamingResponseBody> streamCsv(AuditEventFilter filter) {
-    String filename = buildFilename(filter);
     String tenantId = RequestScopes.TENANT_ID.isBound() ? RequestScopes.TENANT_ID.get() : null;
     String orgId = RequestScopes.getOrgIdOrNull();
     UUID memberId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
 
+    // Defence-in-depth: validate tenant/member bindings BEFORE we commit response headers and
+    // start streaming. If unbound, throw synchronously so Spring's global handler returns 500
+    // instead of leaving the client with a half-written CSV and a 200 status. In practice the
+    // @RequiresCapability check on the controller blocks unauthenticated callers, but we defend
+    // here too so an unscoped invocation never silently succeeds with a partial body.
+    if (tenantId == null || memberId == null) {
+      throw new IllegalStateException(
+          "Audit export requires a bound tenant and member; refusing to stream unscoped.");
+    }
+
+    String filename = buildFilename(filter);
     StreamingResponseBody body =
         outputStream -> {
           Runnable task = () -> writeAndEmit(filter, outputStream);
-          if (tenantId != null && memberId != null) {
-            RequestScopes.runForTenantWithMember(tenantId, orgId, memberId, task);
-          } else if (tenantId != null) {
-            RequestScopes.runForTenant(tenantId, orgId, task);
-          } else {
-            // No tenant bound at controller time — let the task run unscoped; the underlying
-            // query will fail loudly and the global handler converts to 500. Don't silently fall
-            // back to the public schema.
-            task.run();
-          }
+          RequestScopes.runForTenantWithMember(tenantId, orgId, memberId, task);
         };
     return ResponseEntity.ok()
         .contentType(MediaType.parseMediaType("text/csv; charset=utf-8"))
@@ -116,14 +116,26 @@ public class AuditExportService {
   }
 
   static String buildFilename(AuditEventFilter filter) {
-    String tenantSlug = RequestScopes.getOrgIdOrNull();
-    if (tenantSlug == null || tenantSlug.isBlank()) {
-      tenantSlug = FILENAME_FALLBACK_TENANT;
-    }
+    String rawSlug = RequestScopes.getOrgIdOrNull();
+    String tenantSlug = sanitiseSlugForFilename(rawSlug);
     String fromDate =
         filter.from() != null ? formatDate(filter.from()) : FILENAME_FALLBACK_DATE_FROM;
     String toDate = filter.to() != null ? formatDate(filter.to()) : todayUtc();
     return "audit-events-" + tenantSlug + "-" + fromDate + "-" + toDate + ".csv";
+  }
+
+  /**
+   * Strips any character outside {@code [A-Za-z0-9_-]} from the org slug before it is interpolated
+   * into the {@code Content-Disposition} header. This blocks CR/LF/quote injection (a malicious
+   * slug could otherwise terminate the header and inject new ones) and keeps the filename
+   * filesystem-safe for the downloading client.
+   */
+  private static String sanitiseSlugForFilename(String slug) {
+    if (slug == null || slug.isBlank()) {
+      return FILENAME_FALLBACK_TENANT;
+    }
+    String cleaned = slug.replaceAll("[^A-Za-z0-9_-]", "");
+    return cleaned.isEmpty() ? FILENAME_FALLBACK_TENANT : cleaned;
   }
 
   private static String formatDate(Instant instant) {
@@ -152,7 +164,7 @@ public class AuditExportService {
       out.put(
           "severities", severities.stream().map(Enum::name).sorted().collect(Collectors.toList()));
     }
-    return new HashMap<>(out);
+    return out;
   }
 
   private static void putIfNotNull(Map<String, Object> map, String key, Object value) {

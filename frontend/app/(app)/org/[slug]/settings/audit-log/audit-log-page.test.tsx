@@ -1,11 +1,50 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
 
 vi.mock("server-only", () => ({}));
 
 vi.mock("@/lib/api/audit-events", () => ({
   listAuditEvents: vi.fn(),
+  getAuditMetadata: vi.fn(),
+  listFacetActors: vi.fn(),
+  listFacetEventTypes: vi.fn(),
+  listFacetEntityTypes: vi.fn(),
+}));
+
+const pushMock = vi.fn();
+const useSearchParamsMock = vi.fn(() => new URLSearchParams());
+
+vi.mock("next/navigation", () => ({
+  notFound: () => {
+    throw new Error("NEXT_NOT_FOUND");
+  },
+  useRouter: () => ({
+    push: pushMock,
+    refresh: vi.fn(),
+    replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    prefetch: vi.fn(),
+  }),
+  usePathname: () => "/org/acme/settings/audit-log",
+  useSearchParams: () => useSearchParamsMock(),
+}));
+
+vi.mock("next/link", () => ({
+  default: ({
+    children,
+    href,
+    ...props
+  }: {
+    children: React.ReactNode;
+    href: string;
+    [k: string]: unknown;
+  }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 import AuditLogPage from "./page";
@@ -17,16 +56,20 @@ const mockListAuditEvents = listAuditEvents as ReturnType<typeof vi.fn>;
 function makeEvent(overrides: Partial<AuditEventResponse> = {}): AuditEventResponse {
   return {
     id: `evt-${Math.random().toString(36).slice(2, 8)}`,
-    eventType: "PROJECT_CREATED",
-    entityType: "PROJECT",
-    entityId: "proj-123",
+    eventType: "customer.created",
+    entityType: "customer",
+    entityId: "00000000-0000-0000-0000-000000000123",
     actorId: "user-alice",
-    actorType: "MEMBER",
-    source: "WEB",
+    actorType: "USER",
+    source: "API",
     ipAddress: "10.0.0.1",
     userAgent: "Mozilla/5.0",
     details: { name: "Acme matter" },
     occurredAt: "2026-04-25T12:34:56Z",
+    label: "Customer Created",
+    severity: "INFO",
+    group: "STANDARD",
+    actorDisplayName: "Alice Smith",
     ...overrides,
   };
 }
@@ -34,66 +77,52 @@ function makeEvent(overrides: Partial<AuditEventResponse> = {}): AuditEventRespo
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  pushMock.mockClear();
+  useSearchParamsMock.mockReset();
+  useSearchParamsMock.mockReturnValue(new URLSearchParams());
 });
 
-describe("AuditLogPage", () => {
+describe("AuditLogPage (server shell)", () => {
   beforeEach(() => {
     mockListAuditEvents.mockReset();
   });
 
-  it("renders 50 rows from the paginated API response", async () => {
-    const events: AuditEventResponse[] = Array.from({ length: 50 }, (_, i) =>
-      makeEvent({ id: `evt-${i}`, eventType: `EVENT_${i}` })
+  it("passes initial filter from search params to the API", async () => {
+    mockListAuditEvents.mockResolvedValue({
+      content: [makeEvent({ id: "evt-a", label: "Event A" })],
+      page: { totalElements: 1, totalPages: 1, size: 50, number: 0 },
+    });
+
+    const page = await AuditLogPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({
+        severities: "CRITICAL,WARNING",
+        actorId: "actor-xyz",
+        entityType: "customer",
+      }),
+    });
+    render(page);
+
+    expect(mockListAuditEvents).toHaveBeenCalledWith(
+      expect.objectContaining({
+        page: 0,
+        size: 50,
+        severities: ["CRITICAL", "WARNING"],
+        actorId: "actor-xyz",
+        entityType: "customer",
+      })
     );
-    mockListAuditEvents.mockResolvedValue({
-      content: events,
-      page: { totalElements: 120, totalPages: 3, size: 50, number: 0 },
-    });
-
-    const page = await AuditLogPage({
-      params: Promise.resolve({ slug: "acme" }),
-      searchParams: Promise.resolve({}),
-    });
-    render(page);
-
-    expect(mockListAuditEvents).toHaveBeenCalledWith({ page: 0, size: 50 });
     expect(screen.getByRole("heading", { name: "Audit log" })).toBeInTheDocument();
-    expect(screen.getByText("EVENT_0")).toBeInTheDocument();
-    expect(screen.getByText("EVENT_49")).toBeInTheDocument();
-    // 50 data rows + 1 header row
-    expect(screen.getAllByRole("row")).toHaveLength(51);
-    // Total counter visible
-    expect(screen.getByText(/120 total/)).toBeInTheDocument();
-    // First page has no Previous link, but has a Next link
-    const nextLink = screen.getByRole("link", { name: "Next" });
-    expect(nextLink).toHaveAttribute("href", "/org/acme/settings/audit-log?page=1");
-    expect(screen.queryByRole("link", { name: "Previous" })).not.toBeInTheDocument();
-  });
-
-  it("advances to the requested page via search params", async () => {
-    mockListAuditEvents.mockResolvedValue({
-      content: [makeEvent({ id: "evt-mid", eventType: "MID_PAGE_EVT" })],
-      page: { totalElements: 120, totalPages: 3, size: 50, number: 1 },
-    });
-
-    const page = await AuditLogPage({
-      params: Promise.resolve({ slug: "acme" }),
-      searchParams: Promise.resolve({ page: "1" }),
-    });
-    render(page);
-
-    expect(mockListAuditEvents).toHaveBeenCalledWith({ page: 1, size: 50 });
-    // Both Previous and Next links exist on a middle page
-    const previousLink = screen.getByRole("link", { name: "Previous" });
-    expect(previousLink).toHaveAttribute("href", "/org/acme/settings/audit-log?page=0");
-    const nextLink = screen.getByRole("link", { name: "Next" });
-    expect(nextLink).toHaveAttribute("href", "/org/acme/settings/audit-log?page=2");
-    expect(screen.getByText(/Page/)).toBeInTheDocument();
+    expect(screen.getByText("Event A")).toBeInTheDocument();
   });
 
   it("shows 'Not authorised' copy when the API returns 403", async () => {
     mockListAuditEvents.mockRejectedValue(
-      new ApiError(403, "Forbidden", { type: "about:blank", title: "Forbidden", status: 403 })
+      new ApiError(403, "Forbidden", {
+        type: "about:blank",
+        title: "Forbidden",
+        status: 403,
+      })
     );
 
     const page = await AuditLogPage({
@@ -104,11 +133,9 @@ describe("AuditLogPage", () => {
 
     expect(screen.getByText(/Not authorised/)).toBeInTheDocument();
     expect(screen.getByText(/TEAM_OVERSIGHT/)).toBeInTheDocument();
-    // Table header should not render in the 403 branch
-    expect(screen.queryByText("Occurred At")).not.toBeInTheDocument();
   });
 
-  it("renders empty state when the API returns no events", async () => {
+  it("renders the empty-state copy when there are no events and no filters", async () => {
     mockListAuditEvents.mockResolvedValue({
       content: [],
       page: { totalElements: 0, totalPages: 0, size: 50, number: 0 },
@@ -120,13 +147,19 @@ describe("AuditLogPage", () => {
     });
     render(page);
 
-    expect(screen.getByText("No audit events recorded yet.")).toBeInTheDocument();
-    expect(screen.getByText("No events")).toBeInTheDocument();
+    expect(screen.getByText(/audit log is empty/i)).toBeInTheDocument();
   });
 
-  it("collapses details JSON behind a <details> summary", async () => {
+  it("renders the row collapsed by default and toggles AuditDetailsViewer on expand", async () => {
     mockListAuditEvents.mockResolvedValue({
-      content: [makeEvent({ details: { name: "Acme matter", actorRole: "owner" } })],
+      content: [
+        makeEvent({
+          id: "evt-1",
+          details: {
+            name: { from: "Old", to: "New" },
+          },
+        }),
+      ],
       page: { totalElements: 1, totalPages: 1, size: 50, number: 0 },
     });
 
@@ -134,11 +167,112 @@ describe("AuditLogPage", () => {
       params: Promise.resolve({ slug: "acme" }),
       searchParams: Promise.resolve({}),
     });
-    const { container } = render(page);
+    render(page);
 
-    const detailsEl = container.querySelector("details");
-    expect(detailsEl).not.toBeNull();
-    expect(detailsEl?.tagName.toLowerCase()).toBe("details");
-    expect(detailsEl?.textContent).toContain("Acme matter");
+    expect(screen.queryByTestId("audit-details-diff")).not.toBeInTheDocument();
+
+    const toggle = screen.getByTestId("audit-row-toggle-evt-1");
+    fireEvent.click(toggle);
+
+    expect(screen.getByTestId("audit-details-diff")).toBeInTheDocument();
+    expect(screen.getByText("Old")).toBeInTheDocument();
+    expect(screen.getByText("New")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTestId("audit-row-toggle-evt-1"));
+    expect(screen.queryByTestId("audit-details-diff")).not.toBeInTheDocument();
+  });
+
+  it("renders entity cell as a deep-link for entityType=customer", async () => {
+    mockListAuditEvents.mockResolvedValue({
+      content: [
+        makeEvent({
+          id: "evt-cust",
+          entityType: "customer",
+          entityId: "abcdef12-3456-7890-abcd-ef1234567890",
+        }),
+      ],
+      page: { totalElements: 1, totalPages: 1, size: 50, number: 0 },
+    });
+
+    const page = await AuditLogPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
+    render(page);
+
+    const link = screen.getByTestId("entity-cell-link");
+    expect(link).toHaveAttribute(
+      "href",
+      "/org/acme/customers/abcdef12-3456-7890-abcd-ef1234567890"
+    );
+    expect(link.getAttribute("data-entity-type")).toBe("customer");
+  });
+
+  it("renders entity cell as literal label for unknown entityType=task", async () => {
+    mockListAuditEvents.mockResolvedValue({
+      content: [
+        makeEvent({
+          id: "evt-task",
+          entityType: "task",
+          entityId: "11111111-2222-3333-4444-555555555555",
+        }),
+      ],
+      page: { totalElements: 1, totalPages: 1, size: 50, number: 0 },
+    });
+
+    const page = await AuditLogPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
+    render(page);
+
+    const literal = screen.getByTestId("entity-cell-literal");
+    expect(literal).toHaveTextContent("task:11111111");
+    expect(screen.queryByTestId("entity-cell-link")).not.toBeInTheDocument();
+  });
+
+  it("toggling a severity chip pushes a URL with the severities param", async () => {
+    mockListAuditEvents.mockResolvedValue({
+      content: [],
+      page: { totalElements: 0, totalPages: 0, size: 50, number: 0 },
+    });
+
+    const page = await AuditLogPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
+    render(page);
+
+    const criticalToggle = screen.getByTestId("severity-toggle-CRITICAL");
+    fireEvent.click(criticalToggle);
+
+    await waitFor(() => expect(pushMock).toHaveBeenCalled());
+    const urlPushed = pushMock.mock.calls[0]?.[0] as string;
+    expect(urlPushed).toContain("severities=CRITICAL");
+    expect(urlPushed).toContain("/org/acme/settings/audit-log");
+  });
+
+  it("typing an actor ID and blurring builds a URL with actorId + entityType combined", async () => {
+    useSearchParamsMock.mockReturnValue(new URLSearchParams("entityType=customer"));
+    mockListAuditEvents.mockResolvedValue({
+      content: [],
+      page: { totalElements: 0, totalPages: 0, size: 50, number: 0 },
+    });
+
+    const page = await AuditLogPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({ entityType: "customer" }),
+    });
+    render(page);
+
+    const actorInput = screen.getByLabelText("Actor ID") as HTMLInputElement;
+    fireEvent.change(actorInput, { target: { value: "actor-xyz" } });
+    fireEvent.blur(actorInput);
+
+    await waitFor(() => expect(pushMock).toHaveBeenCalled());
+    const urlPushed = pushMock.mock.calls[0]?.[0] as string;
+    expect(urlPushed).toContain("actorId=actor-xyz");
+    expect(urlPushed).toContain("entityType=customer");
+    expect(urlPushed).toContain("/org/acme/settings/audit-log");
   });
 });

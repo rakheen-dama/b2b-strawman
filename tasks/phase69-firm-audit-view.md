@@ -26,11 +26,11 @@ The existing global audit log page at `frontend/app/(app)/org/[slug]/settings/au
 | 505 | DSAR Audit-Trail Folder Integration | Backend | 501 | M | 505A | **Done** (PR #1278) |
 | 506 | Global Audit Log Page — Shell, Filters, Row Expansion | Frontend | 502B | L | 506A, 506B | **Done** (PRs #1279, #1280) |
 | 507 | `<AuditTimeline>` Component + 3 Detail Page Tabs (Customer / Project / Invoice) | Frontend | 502B, 506A | M | 507A | **Done** (PR #1281) |
-| 508 | `<AuditTimeline>` — Remaining 4 Detail Page Tabs (TrustTx / MatterClosure / Proposal / InfoRequest) | Frontend | 507A | M | 508A | |
+| 508 | Matter Closure Override Audit Surface (Backend + Frontend, Scope B′) | Both | 507A | M | 508A, 508B | |
 | 509 | Sensitive-Events Dashboard Widget | Frontend | 502B, 506B | S | 509A | |
 | 510 | Admin-POV 30-Day QA Capstone + Screenshots + Gap Report | E2E / Process | 501–509 | L | 510A, 510B | |
 
-Slice count: **12 slices across 10 epics**. Backend and frontend are always split into separate slices. Severity-foundation work in 501 blocks every read-time enrichment surface (502, 503, 504, 506, 507, 508, 509). Backend export and DSAR work parallelises after 502A. Frontend pages all wait on 502B (the API surface they consume). Epic 509 is the cuttable epic if scope tightens — the audit log page (506) and per-entity timeline (507/508) carry the phase.
+Slice count: **14 slices across 10 epics** (re-scoped from 13 on 2026-05-03 — Epic 508 was split into 508A backend + 508B frontend after the original 508A scout discovered both spec-vs-code drift in matter-closure audit emissions and four target detail pages that did not exist in their expected shape; see Phase 70 Backlog at the end of this file). Backend and frontend are always split into separate slices. Severity-foundation work in 501 blocks every read-time enrichment surface (502, 503, 504, 506, 507, 508, 509). Backend export and DSAR work parallelises after 502A. Frontend pages all wait on 502B (the API surface they consume). Epic 509 is the cuttable epic if scope tightens — the audit log page (506) and per-entity timeline (507/508) carry the phase.
 
 ---
 
@@ -111,7 +111,7 @@ PHASES already complete:
 - After **501A** merges, **502A**, **503A**, **504A**, **505A** can run in parallel — distinct sub-domains within the audit package, no contention.
 - **502B** must follow 502A because controller wiring depends on the service-layer methods. Most frontend work is gated on 502B (the frontend consumes the controller surface, not the service).
 - **506A** and **506B** sequence within Epic 506 — shell + filters first, then presets + export + Playwright. **509A** can run in parallel with 506B because it depends only on 502B's `severities` filter and the deep-link URL format which is fixed in 506A.
-- **507A** depends on **506A** for the shared primitives (`<SeverityPill>`, `<AuditDetailsViewer>`, `<ActorDisplay>`, `auditEventsClient`). **508A** depends on **507A** to keep tab-integration patterns consistent across all seven entities.
+- **507A** depends on **506A** for the shared primitives (`<SeverityPill>`, `<AuditDetailsViewer>`, `<ActorDisplay>`, `auditEventsClient`). **508A** (backend) is independent; **508B** (frontend) depends on 507A for `<AuditTimelineTab>` and on 508A for the new `matter.closure.override_used` event the demo asserts on.
 - **510A** scaffolds the admin lifecycle script while 506/507/508/509 run; **510B** blocks on everything green.
 
 ---
@@ -141,7 +141,8 @@ PHASES already complete:
 | 3a | 506 | 506A | **Done** (PR #1279) — `app/(app)/org/[slug]/settings/audit-log/page.tsx` rebuilt: filter UI (date range / severity / actor / event type / entity type), URL query string state, paginated rows, row expansion. Shared primitives created: `<SeverityPill>`, `<AuditDetailsViewer>` (diff + JSON tree), `<ActorDisplay>`, entity-cell deep-link helper. `frontend/lib/api/audit-events.ts` extended with the six new endpoints. Frontend tests for filter mapping + row expansion. |
 | 3b (parallel) | 506 | 506B | **Done** (PR #1280) — Filter presets (Sensitive / Compliance / Security / Financial approvals) with fail-closed sentinel + banner for multi-eventType groups; export dropdown wired to `/export.csv` + `/export.pdf` via server actions; PDF cap pre-check (debounced count fetch, 30s timeout); Playwright smoke spec. |
 | 3c (parallel after 506A) | 507 | 507A | `frontend/components/audit/audit-timeline.tsx` reusable component reusing 506A primitives; "Audit" tab added to Customer / Project / Invoice detail pages; capability-gated; terminology key `audit.tab` (legal-za → "Audit Trail"). Frontend tests for render + expansion + empty state. **Done** (PR #1281) |
-| 3d | 508 | 508A | "Audit" tab dropped into TrustTransaction / Matter Closure / Proposal / Information Request detail pages reusing 507A's `<AuditTimeline>`. Playwright smoke for the matter-closure detail page asserting the override event with justification visible on expand. |
+| 3d | 508 | 508A | **Backend.** Add `matter.closure.override_used` audit emission in `MatterClosureService.performClose` when override is true (entityType="matter_closure", entityId=closureLogId, details include justification). Existing `matter_closure.closed` emission preserved for portal compatibility. Re-spec rationale: original 508A scout discovered all four target detail pages required new infrastructure AND the demo's CRITICAL event was never being emitted; split into thin BE + focused FE per Scope B′. |
+| 3e | 508 | 508B | **Frontend.** Closure History section on project detail consuming the new override events from 508A. Inline `<AuditHistoryDisclosure>` on proposal detail (works against existing emissions). Playwright matter-closure override demo (canonical Phase 69 demo per requirements §6.1 Day 15). Trust Tx + Information Request deferred to Phase 70. |
 | 3e (parallel after 502B) | 509 | 509A | `<SensitiveEventsWidget>` on the firm admin dashboard: three count pills (NOTICE / WARNING / CRITICAL last 7 days) + top-5 list of CRITICAL+WARNING + "View all" deep link to Sensitive preset. Capability-gated. |
 
 ### Stage 4: QA capstone
@@ -159,7 +160,7 @@ Stage 2: [502A] -> [502B]
          [502A] // [503A] // [505A]                      <- backend domains parallel
                   [504A]    (after 503A wires reflexive)
 Stage 3: [506A] -> [506B]
-         [506A] -> [507A] -> [508A]
+         [506A] -> [507A] -> [508A (BE)] -> [508B (FE)]
                    [509A]   (parallel with 507/508)
 Stage 4: [510A] -> [510B]
 ```
@@ -402,7 +403,7 @@ A realistic day-by-day cadence: 501A days 1–3; 502A + 503A + 505A days 3–7 (
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **504A** | 504.1–504.6 | 7 backend files (1 exporter, 1 Tiptap template JSON, 1 controller method, 1 cap-check + 413 problem, 1 reflexive emission, 1 integration test class) | `AuditPdfExporter` binds the existing Tiptap pipeline to a new `audit-export.tiptap.json` template under `backend/src/main/resources/templates/`. `GET /api/audit-events/export.pdf` controller method. 10k-row pre-flight via `auditService.countEvents(filter)` returning 413 ProblemDetail when over cap. Reflexive `audit.export.generated` emission with `details.format="PDF"`. Integration tests including golden-hash baseline. |
+| **504A** | 504.1–504.6 | 7 backend files (1 exporter, 1 Tiptap template JSON, 1 controller method, 1 cap-check + 413 problem, 1 reflexive emission, 1 integration test class) | `AuditPdfExporter` binds the existing Tiptap pipeline to a new `audit-export.tiptap.json` template under `backend/src/main/resources/templates/`. `GET /api/audit-events/export.pdf` controller method. 10k-row pre-flight via `auditService.countEvents(filter)` returning 413 ProblemDetail when over cap. Reflexive `audit.export.generated` emission with `details.format="PDF"`. Integration tests including golden-hash baseline. **Done** (PR #1277) |
 
 ### Tasks
 
@@ -467,7 +468,7 @@ A realistic day-by-day cadence: 501A days 1–3; 502A + 503A + 505A days 3–7 (
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **505A** | 505.1–505.5 | 7 backend files (1 service method, 1 builder method, 1 README, 1 helper, 2 test files, 1 modified existing service) | `AuditService.findEventsForCustomer(UUID)` streams the customer-scoped event set per architecture §12.6.2 (entityType=customer, child entities, JSONB-path `details.customerId` reference). `DataExportService.buildAuditTrail(customer, zip)` writes the three files to the existing pack ZIP. Static `README.txt` resource. Integration tests covering folder presence, cross-customer isolation, and Phase 50 backwards-compatibility. |
+| **505A** | 505.1–505.5 | 7 backend files (1 service method, 1 builder method, 1 README, 1 helper, 2 test files, 1 modified existing service) | `AuditService.findEventsForCustomer(UUID)` streams the customer-scoped event set per architecture §12.6.2 (entityType=customer, child entities, JSONB-path `details.customerId` reference). `DataExportService.buildAuditTrail(customer, zip)` writes the three files to the existing pack ZIP. Static `README.txt` resource. Integration tests covering folder presence, cross-customer isolation, and Phase 50 backwards-compatibility. **Done** (PR #1278) |
 
 ### Tasks
 
@@ -662,63 +663,95 @@ A realistic day-by-day cadence: 501A days 1–3; 502A + 503A + 505A days 3–7 (
 
 ---
 
-## Epic 508: `<AuditTimeline>` — Trust Transaction / Matter Closure / Proposal / Information Request Detail Tabs
+## Epic 508: Matter Closure Override Audit Surface (Backend + Frontend, Scope B′)
 
-**Goal**: Drop `<AuditTimeline>` into the four remaining detail pages from 507. These are the legally-sensitive entities where compliance officers most need a history surface — matter-closure overrides, trust-transaction approvals, proposal lifecycle changes, information-request fulfilment. Identical wiring shape to 507; the only delta is the four entity types and the route paths. Includes a Playwright smoke spec verifying that the matter-closure override event renders with its `details.justification` visible on expand (the canonical compliance-question demo).
+**Goal**: Ship the Phase 69 load-bearing compliance demo — "who approved closure of Matter 0042 and why?" — by surfacing the matter-closure override event with full justification visible on the project detail page. Add a low-cost inline audit-history disclosure on the proposal detail page as a no-IA-cost extra. Defer the Trust Transaction and Information Request entity surfaces to Phase 70 (each requires prerequisite work that exceeds an audit-only phase's scope — see "Phase 70 Backlog" at the end of this file).
 
-**References**: Requirements §3.2 (rows 4–7); architecture §12.5.2.
+**Re-spec history**: The original 508A scout (executed during the autonomous run on 2026-05-03) discovered that all four target detail pages required new infrastructure (new Trust Tx route, no Matter Closure detail surface at all, no tab strip on Proposal or IR), and that the backend events the demo asserts on do not exist in their expected shape (`matter_closure.closed` underscore vs. registry's `matter.closure.*` dot; `entityType="project"` vs. spec's `"matter_closure"`; no `matter.closure.override_used` event ever emitted). The scout correctly hit STOP-AND-RE-SPEC per CLAUDE.md §7. After product / architecture / plan re-scoping, the epic was split into a thin backend slice (the missing override emission) and a focused frontend slice (closure history surface + proposal disclosure).
 
-**Dependencies**: 507A (component shape + capability gate convention).
+**References**: Requirements §3.2 (rows 4 + 6); architecture §12.5.2; ADR-259 (read-only on existing surfaces); ADR-261 (registry-derived severity).
 
-**Scope**: Frontend
+**Dependencies**:
+- 508A (backend) → 507A's audit-timeline component (consumed by frontend slice).
+- 508B (frontend) → 508A backend (the override event must exist in `audit_events` before the timeline can render it as CRITICAL).
 
-**Estimated Effort**: M
+**Scope**: Both (split into backend-then-frontend slices)
+
+**Estimated Effort**: 508A — S; 508B — M.
 
 ### Slices
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **508A** | 508.1–508.6 | 8 frontend files (4 detail-page tab integrations + 1 Playwright spec + tab-component files where required) | "Audit" tab integrated into Trust Transaction / Matter Closure / Proposal / Information Request detail pages. Same wiring as 507 — `<AuditTimelineTab entityType="..." entityId={...} />`. Playwright smoke for matter-closure-detail audit tab demonstrating override-with-justification visible. Frontend tests for each tab integration (each test verifying the tab renders and entityType is passed correctly). |
+| **508A** | 508A.1–508A.4 | 3 backend files | Add `matter.closure.override_used` audit emission in `MatterClosureService.performClose` when `req.override()` is true. Uses `entityType="matter_closure"` + `entityId=closureLogId` (the closure log entry id, NOT the project id) to match the spec's entity-keying decision. Existing `matter_closure.closed` emission is preserved unchanged for portal compatibility (PortalActivityEventTypes whitelist + 11 dependent tests stay untouched). Verify registry resolves the new event to CRITICAL/COMPLIANCE. |
+| **508B** | 508B.1–508B.6 | 6 frontend files | Closure History section appended to project detail (renders `ClosureLogEntry[]` from existing `listClosureLog` API; for entries with `overrideUsed=true`, embeds `<AuditTimelineTab entityType="matter_closure" entityId={entry.id} />` to surface the CRITICAL override event from 508A). Shared `<AuditHistoryDisclosure>` primitive. Inline audit disclosure section appended to proposal detail (works against existing `entityType="proposal"` emissions — no backend change needed). Playwright matter-closure override demo + component test. |
 
-### Tasks
+### Tasks — 508A (Backend)
 
 | ID | Task | Files Touched | Tests | Pattern Reference | Notes |
 |----|------|---------------|-------|-------------------|-------|
-| 508.1 | Add "Audit" tab to Trust Transaction Detail | `frontend/app/(app)/org/[slug]/trust-accounting/transactions/[id]/page.tsx` | 508.6 | 507.5 | `entityType="trust_transaction"`. Trust transaction detail page is single-page; audit tab added inline at the end of the existing tab strip. |
-| 508.2 | Add "Audit" tab to Matter Closure Detail | `frontend/app/(app)/org/[slug]/projects/[id]/(tabs)/closure.tsx` (verify path — Phase 67's matter closure may live as a tab on the project detail or as a standalone `closure/page.tsx`; builder reads first) | 508.6 | 507.4 (project tabs pattern) | `entityType="matter_closure"`. If matter closure is already a tab inside the project detail's `(tabs)/` group, the audit tab here is for the *closure entity history* (filter by `entityType=matter_closure` AND `entityId={closureId}`), not the project. May render as a sub-tab within the closure detail panel. Builder confirms existing UX shape before wiring. |
-| 508.3 | Add "Audit" tab to Proposal Detail | `frontend/app/(app)/org/[slug]/proposals/[id]/page.tsx` | 508.6 | 507.5 | `entityType="proposal"`. Add at end of existing tab strip. |
-| 508.4 | Add "Audit" tab to Information Request Detail | `frontend/app/(app)/org/[slug]/information-requests/[id]/page.tsx` | 508.6 | 507.5 | `entityType="information_request"`. Add at end of existing tab strip. |
-| 508.5 | Playwright smoke — matter closure override visibility | `frontend/e2e/tests/audit-log/matter-closure-audit-tab.spec.ts` | new spec | 506.12 + existing matter-closure E2E setup | Setup: seed a matter closure with `override_used=true` + `justification="Client returned funds — trust account zero"`. Login as admin → navigate to project detail → matter-closure section → expand → click Audit tab → assert the override event row is visible with severity = CRITICAL → click to expand → assert `details.justification` text is visible. This is the canonical Phase 69 demo per requirements §6.1 Day 15. |
-| 508.6 | Frontend tests for each integration | `frontend/app/(app)/org/[slug]/trust-accounting/transactions/[id]/__tests__/audit-tab.test.tsx`, `frontend/app/(app)/org/[slug]/proposals/[id]/__tests__/audit-tab.test.tsx`, `frontend/app/(app)/org/[slug]/information-requests/[id]/__tests__/audit-tab.test.tsx` (matter closure covered by 508.5 Playwright) | ~3 | 507.7 | Each: tab strip renders the Audit tab when caller has `TEAM_OVERSIGHT`; tab is hidden when capability missing; `<AuditTimelineTab>` receives correct `entityType` + `entityId`. `afterEach(() => cleanup())`. |
+| 508A.1 | Emit `matter.closure.override_used` when override is true | `backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/legal/closure/MatterClosureService.java` | 508A.3 | existing `matter_closure.closed` emission ~line 252 | In `performClose`, after the existing `auditService.log(...)` for `matter_closure.closed`, add an `if (req.override()) { auditService.log(...) }` block emitting `eventType="matter.closure.override_used"` (DOT — matches registry, resolves to CRITICAL/COMPLIANCE), `entityType="matter_closure"`, `entityId=savedLog.getId()`, `details=Map.of("project_id", projectId.toString(), "justification", req.overrideJustification(), "reason", req.reason().name())`. Do NOT modify the existing `matter_closure.closed` emission — portal coupling (`PortalActivityEventTypes`, `PortalActivityEventResponse` label mapping, 11 dependent tests) requires the underscore eventType + project entityType to stay. |
+| 508A.2 | (No file — design constraint) Verify registry already classifies the new event correctly | n/a | reuse existing `AuditEventTypeRegistryTest` | n/a | The registry's `matter.closure.override_used` entry (CRITICAL/COMPLIANCE) and `matter.closure.*` prefix (NOTICE/COMPLIANCE) are already in `AuditEventTypeRegistry.java` from 501A. No registry change needed. Confirm via the existing `AuditEventTypeRegistryTest.exactMatchWinsOverPrefix` test which already asserts CRITICAL resolution for `matter.closure.override_used`. |
+| 508A.3 | `MatterClosureServiceIntegrationTest` — assert dual-emission on override path | `backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/closure/MatterClosureServiceIntegrationTest.java` | self | existing close tests in the same file | New test: close a matter with `override=true` + a justification string. Assert TWO audit events were emitted: (a) the existing `matter_closure.closed` (entityType="project", entityId=projectId, details.override_used=true), AND (b) the new `matter.closure.override_used` (entityType="matter_closure", entityId=savedLog.getId(), details.justification matches input, details.project_id=projectId.toString()). Second new test: close WITHOUT override — assert ONLY the `matter_closure.closed` event is emitted (no override emission). Use the existing test scaffolding in this file. |
+| 508A.4 | (Optional) `AuditTenantIsolationTest` extension — assert override event respects tenant search_path | `backend/src/test/java/io/b2mash/b2b/b2bstrawman/audit/AuditTenantIsolationTest.java` | self | existing `severityFilteredFindEventsIsolatedAcrossTenants` (added in 502A re-review) | Add one test: in two tenant schemas, close a matter with override; assert each tenant's `findEvents(severities=Set.of(CRITICAL))` only returns its own override event. Skip if the existing tests already cover this generically — the search_path mechanism is the same. |
 
-### Key Files
+### Tasks — 508B (Frontend)
 
-**Create:**
-- `frontend/e2e/tests/audit-log/matter-closure-audit-tab.spec.ts`
-- `frontend/app/(app)/org/[slug]/trust-accounting/transactions/[id]/__tests__/audit-tab.test.tsx`
-- `frontend/app/(app)/org/[slug]/proposals/[id]/__tests__/audit-tab.test.tsx`
-- `frontend/app/(app)/org/[slug]/information-requests/[id]/__tests__/audit-tab.test.tsx`
+| ID | Task | Files Touched | Tests | Pattern Reference | Notes |
+|----|------|---------------|-------|-------------------|-------|
+| 508B.1 | Create shared `<AuditHistoryDisclosure>` primitive | `frontend/components/audit/audit-history-disclosure.tsx` (new client component) | 508B.6 | 506A's audit primitives + 507A's `<AuditTimelineTab>` capability gating | Capability-gated (`useAuditTabVisible`) — renders nothing without `TEAM_OVERSIGHT`. When granted, renders a Card with a Disclosure/Collapsible toggle that LAZILY mounts `<AuditTimelineTab entityType entityId/>` only after first expand (avoids unnecessary fetches). Props: `entityType: string`, `entityId: string`, `title?: string` (default "Audit history"). `data-testid="audit-history-disclosure"`. Used by both the Closure History section and the proposal page. |
+| 508B.2 | Create `<ClosureHistorySection>` for project detail | `frontend/components/projects/closure-history-section.tsx` (new client component) | covered by 508B.5 Playwright + 508B.6 disclosure test | `frontend/lib/api/matter-closure.ts` `listClosureLog` (existing from Phase 67) | Fetches `listClosureLog(projectId)` via SWR. Renders one row per `ClosureLogEntry`: closedAt, reason, actor, an `Override used` badge when `entry.overrideUsed`. For each entry, embeds `<AuditTimelineTab entityType="matter_closure" entityId={entry.id} />` inside a per-row collapsible. Non-override entries' timelines will be empty (no `matter.closure.override_used` event for them) — that's expected; render an "No override events for this closure" empty-state row. `data-testid="matter-closure-section"`, per-row `data-testid="closure-row-{id}"` and `data-testid="closure-audit-toggle-{id}"`. |
+| 508B.3 | Wire `<ClosureHistorySection>` into project detail page | `frontend/app/(app)/org/[slug]/projects/[id]/page.tsx` (modify) | covered by 508B.5 Playwright | existing tab/section composition on the project detail page | Render `<ClosureHistorySection projectId={id} />` only when project status is `CLOSED` (or always — builder decides based on whether the section provides value for non-closed projects too; closed-only is the safer minimum). Place after existing project body content. |
+| 508B.4 | Append inline audit disclosure to proposal detail | `frontend/app/(app)/org/[slug]/proposals/[id]/page.tsx` (modify) | 508B.6 disclosure test exercises the primitive | the `<AuditHistoryDisclosure>` from 508B.1 | One import + one JSX element below the existing Card: `<AuditHistoryDisclosure entityType="proposal" entityId={id} />`. Existing `entityType="proposal"` audit emissions from `ProposalOrchestrationService` will populate the timeline — no backend work needed. |
+| 508B.5 | Playwright matter-closure override demo (load-bearing) | `frontend/e2e/tests/audit-log/matter-closure-audit-tab.spec.ts` (new) | self | 506A + 507A Playwright patterns | **Mandatory — the canonical Phase 69 demo per requirements §6.1 Day 15.** Setup: seed a closed matter with `override=true` + `justification="Client returned funds — trust account zero"`. Login as admin → navigate to project detail → locate `[data-testid="matter-closure-section"]` → expand the override row's audit toggle → assert the audit timeline contains a row with severity=CRITICAL → click the row to expand → assert `details.justification` text is visible. This spec is the contract that 508A backend + 508B frontend together must satisfy. |
+| 508B.6 | Component test for `<AuditHistoryDisclosure>` | `frontend/components/audit/__tests__/audit-history-disclosure.test.tsx` (new) | self | 506A primitive tests | Vitest: (a) renders nothing without `TEAM_OVERSIGHT`; (b) renders trigger when granted; (c) audit timeline is NOT mounted before first expand (assert no fetch via mock); (d) correct entityType/entityId passed when expanded. `afterEach(() => cleanup())`. |
+
+### Key Files — 508A
 
 **Modify:**
-- `frontend/app/(app)/org/[slug]/trust-accounting/transactions/[id]/page.tsx`
-- `frontend/app/(app)/org/[slug]/projects/[id]/(tabs)/closure.tsx` (or wherever matter closure lives — verify first)
-- `frontend/app/(app)/org/[slug]/proposals/[id]/page.tsx`
-- `frontend/app/(app)/org/[slug]/information-requests/[id]/page.tsx`
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/legal/closure/MatterClosureService.java` — add the override-event emission inside `performClose`'s override branch
+- `backend/src/test/java/io/b2mash/b2b/b2bstrawman/verticals/legal/closure/MatterClosureServiceIntegrationTest.java` — add dual-emission tests
+- (optional) `backend/src/test/java/io/b2mash/b2b/b2bstrawman/audit/AuditTenantIsolationTest.java` — add isolation test for the override path
 
 **Read for context:**
-- `frontend/components/audit/audit-timeline-tab.tsx` (507A) — composition contract
-- Each of the four detail pages to identify the exact tab strip shape
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/verticals/legal/closure/MatterClosureLog.java` (entity shape — `getId()` is the closure log entry id used as `entityId`)
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/audit/AuditEventTypeRegistry.java` (verify `matter.closure.override_used` is registered as CRITICAL/COMPLIANCE)
+- `backend/src/main/java/io/b2mash/b2b/b2bstrawman/audit/AuditEventBuilder.java` (builder API)
+
+### Key Files — 508B
+
+**Create:**
+- `frontend/components/audit/audit-history-disclosure.tsx`
+- `frontend/components/projects/closure-history-section.tsx`
+- `frontend/components/audit/__tests__/audit-history-disclosure.test.tsx`
+- `frontend/e2e/tests/audit-log/matter-closure-audit-tab.spec.ts`
+
+**Modify:**
+- `frontend/app/(app)/org/[slug]/projects/[id]/page.tsx` — wire `<ClosureHistorySection>`
+- `frontend/app/(app)/org/[slug]/proposals/[id]/page.tsx` — append `<AuditHistoryDisclosure>`
+
+**Read for context:**
+- `frontend/components/audit/audit-timeline-tab.tsx` (507A) — capability-gated wrapper consumed here
+- `frontend/components/audit/audit-timeline.tsx` (507A) — the actual timeline
+- `frontend/lib/api/matter-closure.ts` — `listClosureLog` API + `ClosureLogEntry` shape
+- 507A's existing detail-page integrations (e.g. `frontend/app/(app)/org/[slug]/customers/[id]/audit-tab.tsx`) for the wiring pattern
 
 ### Architecture Decisions
 
-- **Same wiring as 507** — no per-entity customisation. The `<AuditTimeline>` is uniform.
-- **Matter closure entity scoping** — the audit tab on the closure detail filters by `entityType=matter_closure AND entityId={closureId}`, not by `entityType=project AND entityId={projectId}`. The override event is keyed to the closure entity, not the project.
-- **Playwright smoke is load-bearing** — it's the demo for the "who approved closure of Matter 0042 and why?" question (requirements §0).
+- **Backend-then-frontend split** — 508B's Playwright demo asserts on a CRITICAL audit event that does not exist in production today. 508A backend must land first to emit it. Auto-merge on 508A unblocks 508B.
+- **Preserve existing `matter_closure.closed` emission** — renaming to `matter.closure.closed` (dot-delimited) would propagate through `PortalActivityEventTypes`, `PortalActivityEventResponse`, and 11 backend tests. Out of scope for an audit-view phase per ADR-259. The new override-specific event is purely additive.
+- **Closure entity keying** — the new override event is keyed `entityType="matter_closure"` + `entityId=closureLogId`. This matches the architecture spec's intent (each closure is its own audit subject) without disturbing the existing project-keyed close/reopen events that other consumers rely on.
+- **Inline disclosure over tab strip** — Proposal detail uses an appended `<AuditHistoryDisclosure>` section rather than a new tab strip. Introducing tabs on a single-Card page would invent IA scope (what's the *other* tab?) outside the audit-only phase mandate.
+- **Information Request and Trust Transaction deferred** — see Phase 70 Backlog at the end of this file. Each requires prerequisite work (IR lifecycle audit instrumentation; Trust Tx detail-page epic) that exceeds 508's scope.
+- **Playwright smoke is load-bearing** — the matter-closure override demo answers the canonical Phase 69 compliance question (requirements §0). It is the contract both 508A and 508B must satisfy.
 
 ### Non-scope
 
-- No new component work — all primitives shipped in 506A and 507A.
-- No matter-closure UI changes — only the audit tab is added.
+- No rename of existing `matter_closure.closed` / `matter_closure.reopened` event types (preserves portal coupling).
+- No Information Request audit surface (deferred — see Phase 70 Backlog).
+- No Trust Transaction audit surface (deferred — see Phase 70 Backlog).
+- No new tab-strip primitive on Proposal or Information Request pages.
+- No backend rename to align eventType naming with the registry's dot convention beyond the single new emission.
 
 ---
 
@@ -883,7 +916,7 @@ Every new endpoint (`/metadata`, `/facets/*`, `/export.csv`, `/export.pdf`, the 
 | `<AuditDetailsViewer>` JSON tree bundle bloat | Hand-rolled component; no Monaco/CodeMirror per architecture §12.4.5. Verified at PR review with bundle-size diff. |
 | DSAR pack tests fail because Phase 50 test fixtures change shape | Tests scoped to "audit-trail/ folder is present and contains the expected three files"; existing assertions about other folders remain unchanged. Backwards-compat asserted explicitly in 505.5. |
 | Frontend audit-log placeholder existing tests block the rewrite | `audit-log-page.test.tsx` exists and tests the placeholder shape; 506.6 rewrites the page so the existing test must be updated/replaced with the new test surface. |
-| Per-entity tab integrations require reading 7 different page files for context | Mitigation: 507A handles 3 entities and establishes the wiring shape; 508A reuses the shape for the remaining 4. Each slice's context-reading stays under 15 files. |
+| Per-entity tab integrations require reading multiple page files for context | Mitigation: 507A handles 3 entities and establishes the wiring shape. 508 was re-scoped after the original spec (4 more entities) hit STOP-AND-RE-SPEC: 508A is now a thin backend slice (1 method), 508B is a focused frontend slice (closure history surface + proposal disclosure). Trust Tx and Information Request deferred to Phase 70 — see backlog. |
 
 ### Critical Files for Implementation
 
@@ -893,4 +926,42 @@ The five files most critical for the foundation (Epic 501) and most likely to ri
 - `/Users/rakheendama/Projects/2026/b2b-strawman/backend/src/main/java/io/b2mash/b2b/b2bstrawman/audit/AuditEventController.java` (existing, modified across 501/502/503/504) — adds `/metadata`, `/facets/*`, `/export.csv`, `/export.pdf` plus severity param and per-row enrichment. Backend Controller Discipline forces every change to stay one-line.
 - `/Users/rakheendama/Projects/2026/b2b-strawman/backend/src/main/java/io/b2mash/b2b/b2bstrawman/audit/DatabaseAuditService.java` (existing, modified across 501/502/503/504/505) — implements the registry pre-flight, facet snapshot, streaming queries, customer-scoped query, and actor display resolution.
 - `/Users/rakheendama/Projects/2026/b2b-strawman/frontend/app/(app)/org/[slug]/settings/audit-log/page.tsx` (existing placeholder, fully rewritten in 506.6) — the global audit log page; fans out shared primitives into `frontend/components/audit/`.
-- `/Users/rakheendama/Projects/2026/b2b-strawman/frontend/components/audit/audit-timeline.tsx` (NEW in 507.1) — the reusable per-entity timeline; reused unchanged across all seven entity detail pages in 507A + 508A.
+- `/Users/rakheendama/Projects/2026/b2b-strawman/frontend/components/audit/audit-timeline.tsx` (NEW in 507.1) — the reusable per-entity timeline; reused in 507A's three entity detail pages and 508B's closure history section + proposal disclosure.
+
+---
+
+## Phase 70 Backlog (Surfaced During Phase 69 Execution)
+
+Items deferred from Phase 69 because their prerequisites exceeded an audit-view-only phase's scope (per ADR-259 read-only-on-existing-surfaces and CLAUDE.md §7 scope discipline). All three were surfaced during the autonomous run on **2026-05-03** when 508A's scout discovered that the original spec assumed surfaces and backend events that did not exist.
+
+### 70-A. Information Request Lifecycle Audit Instrumentation (Backend, prerequisite for IR audit surface)
+
+**Why deferred from Phase 69**: The Information Request domain has zero audit emissions for the request lifecycle itself. Existing audit calls in `informationrequest/` only cover the admin-facing `RequestTemplate` entity (`eventType="REQUEST_TEMPLATE_CREATED"` etc., `entityType="RequestTemplate"`). The actual `InformationRequest` entity emits nothing on `created` / `sent` / `item_rejected` / `item_fulfilled` / `cancelled` transitions. Filtering the audit timeline by `entityType="information_request"` returns empty rows. Adding the audit surface in 508 would have shipped a UI that always showed "no events".
+
+**Scope (proposed)**: Instrument `InformationRequestService` (and reminder/scheduler paths) to emit audit events on every lifecycle transition with `entityType="information_request"` + `entityId={request.id}`. Decide whether to use dot-delimited `information_request.created` etc. (matches registry conventions and would need new registry entries) or stick with the existing UPPER_SNAKE convention used by `RequestTemplate*` events. Add a registry entry `information_request.*` → INFO/STANDARD by default; per-event severities only where compliance-relevant (e.g. `information_request.cancelled` could be NOTICE).
+
+**Estimated effort**: S–M backend slice. After this lands, a follow-up XS frontend slice can add the IR audit disclosure section using the same `<AuditHistoryDisclosure>` primitive shipped in 508B (one import, one JSX element appended inside `RequestDetailClient`).
+
+### 70-B. Trust Transaction Detail Page (Frontend epic — non-audit-led)
+
+**Why deferred from Phase 69**: There is no `transactions/[id]/page.tsx` route at all — only a list view. Adding an audit surface required EITHER inventing an entire detail page (out of scope for an audit phase) OR retrofitting a Sheet/drawer into the list page (acceptable but trust-transaction detail is a long-standing UX gap that deserves its own product brief covering counterparty display, ledger refs, reversal lineage, approval chain — not just audit).
+
+**Scope (proposed)**: New detail route at `frontend/app/(app)/org/[slug]/trust-accounting/transactions/[id]/page.tsx` with an Overview + Audit tab strip, plus making `tx.reference` a row link in the list page. May need a backend single-transaction GET endpoint (`/api/trust-transactions/{id}`) — verify before scoping. Audit tab uses existing `<AuditTimelineTab entityType="trust_transaction" entityId={tx.id} />` against the existing `entityType="trust_transaction"` audit emissions (assumed present — verify).
+
+**Estimated effort**: M frontend epic, possibly + S backend if the single-transaction GET doesn't exist yet. Must be specced as a Trust Transaction *feature* epic, not an audit-tab integration.
+
+### 70-C. `<AuditDrawer>` Generic Primitive (Frontend, leverage opportunity)
+
+**Why deferred from Phase 69**: 508A's product agent flagged this as a leverage opportunity rather than a gap — the right pattern for entities that lack detail-page tab strips is a slide-over `<AuditDrawer>` triggered by a header "View audit trail" button, not a per-page tab/section integration. This pattern would generalise across Proposal, Information Request (after 70-A lands), Invoice, Expense, TimeEntry, and any future entity that doesn't justify a dedicated audit tab.
+
+**Scope (proposed)**: One reusable `<AuditDrawer entityType entityId>` component wrapping `<Sheet>` + `<AuditTimelineTab>`, capability-gated. Standard trigger pattern (header button) documented in `frontend/components/audit/README.md`. Drop-in for any entity without changes to layout shape.
+
+**Estimated effort**: S — one component + one trigger pattern + documentation. After this lands, retrofitting onto existing entities (Proposal, IR-once-instrumented, etc.) is XS per entity.
+
+### 70-D. Standardise Matter Closure Event Type Naming (Backend, deferred refactor)
+
+**Why deferred from Phase 69**: The existing `matter_closure.closed` and `matter_closure.reopened` event types use underscore-delimited naming (predates the registry's dot convention). Renaming to `matter.closure.closed` / `matter.closure.reopened` would propagate through `PortalActivityEventTypes`, `PortalActivityEventResponse` label mapping, and 11 dependent backend tests. The registry's `matter.closure.*` prefix entry exists but never matches the actual emissions today. Out of scope for an audit-view phase per ADR-259.
+
+**Scope (proposed)**: Coordinated rename across emission sites + portal whitelist + portal label mapping + dependent tests. May want to introduce a deprecation alias mechanism in `AuditEventTypeRegistry` to handle historical rows during the transition (or accept that historical `matter_closure.closed` rows resolve to INFO/STANDARD until they age out — depends on retention policy).
+
+**Estimated effort**: S backend refactor. Not user-visible. Resolves a registry-vs-emitter inconsistency surfaced during 508A scout.

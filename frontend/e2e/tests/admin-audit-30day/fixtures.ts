@@ -248,10 +248,9 @@ export async function seedDay10TrustApproval(
     }
     const tx = (await postRes.json()) as { id: string };
 
-    const approveRes = await ctx.post(
-      `${API_BASE}/api/trust-transactions/${tx.id}/approve`,
-      { data: {} }
-    );
+    const approveRes = await ctx.post(`${API_BASE}/api/trust-transactions/${tx.id}/approve`, {
+      data: {},
+    });
     return {
       trustTransactionId: tx.id,
       approved: approveRes.ok(),
@@ -447,9 +446,7 @@ export async function seedDay25Dsar(
       },
     });
     if (!res.ok()) {
-      throw new Error(
-        `seedDay25: DSAR submission failed (${res.status()}): ${await res.text()}`
-      );
+      throw new Error(`seedDay25: DSAR submission failed (${res.status()}): ${await res.text()}`);
     }
     const body = (await res.json()) as { id: string; packDownloadUrl?: string };
     return { dsarRequestId: body.id, packDownloadUrl: body.packDownloadUrl };

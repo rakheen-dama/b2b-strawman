@@ -10,11 +10,7 @@ import { Button } from "@/components/ui/button";
 import { RelativeDate } from "@/components/ui/relative-date";
 import { SeverityPill } from "@/components/audit/severity-pill";
 import { CAPABILITIES, RequiresCapability } from "@/lib/capabilities";
-import type {
-  AuditEventResponse,
-  AuditSeverity,
-  EventTypeFacet,
-} from "@/lib/api/audit-events";
+import type { AuditEventResponse, AuditSeverity, EventTypeFacet } from "@/lib/api/audit-events";
 
 // Severities surfaced as count pills. INFO is intentionally excluded
 // (architecture §12.7.1).
@@ -105,10 +101,7 @@ function SensitiveEventsWidgetInner({ orgSlug, facets, recent }: SensitiveEvents
         </div>
 
         {events.length === 0 ? (
-          <p
-            className="text-xs text-slate-500 italic"
-            data-testid="sensitive-events-empty"
-          >
+          <p className="text-xs text-slate-500 italic" data-testid="sensitive-events-empty">
             No sensitive events in the last 7 days.
           </p>
         ) : (
@@ -147,12 +140,7 @@ function SensitiveEventsWidgetInner({ orgSlug, facets, recent }: SensitiveEvents
         )}
       </CardContent>
       <CardFooter className="pt-0">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 text-xs text-slate-500"
-          asChild
-        >
+        <Button variant="ghost" size="sm" className="h-7 text-xs text-slate-500" asChild>
           <Link href={viewAllHref} data-testid="sensitive-events-view-all">
             View all &rarr;
           </Link>

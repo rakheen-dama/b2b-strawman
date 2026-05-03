@@ -26,10 +26,11 @@ test.describe("Audit Log — Smoke (Epic 506B)", () => {
       page.locator("h1").filter({ hasText: /Audit log/i })
     ).toBeVisible({ timeout: 10_000 });
 
-    // Apply Sensitive preset
+    // Apply Sensitive preset (Shadcn / Radix select — click trigger then option).
     const presetSelect = page.getByTestId("audit-preset-select");
     await expect(presetSelect).toBeVisible();
-    await presetSelect.selectOption("sensitive");
+    await presetSelect.click();
+    await page.getByRole("option", { name: /Sensitive/i }).click();
 
     // Wait for the URL to reflect the preset (severities param is the canonical signal).
     await page.waitForURL(/severities=/);
@@ -39,7 +40,14 @@ test.describe("Audit Log — Smoke (Epic 506B)", () => {
     // events requires the seed to include at least one CRITICAL or WARNING
     // event in the last 30 days. If the seed is empty, the test falls back
     // to asserting the empty-state copy.
-    const rowCount = await page.locator('[data-testid^="audit-row-"]').count();
+    // Tighten the locator so it matches event TableRow only (not the toggle
+    // button or the details TableRow, which both also live under
+    // data-testid^="audit-row-").
+    const rowCount = await page
+      .locator(
+        '[data-testid^="audit-row-"]:not([data-testid^="audit-row-toggle-"]):not([data-testid^="audit-row-details-"])'
+      )
+      .count();
     if (rowCount === 0) {
       await expect(page.locator("body")).toContainText(/No audit events/i);
       test.info().annotations.push({

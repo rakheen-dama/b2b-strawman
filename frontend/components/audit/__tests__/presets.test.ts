@@ -29,11 +29,20 @@ describe("PRESET_OPTIONS", () => {
 });
 
 describe("resolvePreset", () => {
-  it("Sensitive: severities=WARNING,CRITICAL and from = 30 days ago", () => {
+  it("Sensitive: severities=WARNING,CRITICAL and from = 30 days ago, not a group preset", () => {
     const r = resolvePreset("sensitive", METADATA, NOW);
     expect(r.severities).toEqual(["WARNING", "CRITICAL"]);
     expect(r.from).toBe("2026-04-03T12:00:00.000Z");
     expect(r.eventTypes).toBeUndefined();
+    expect(r.isGroupPreset).toBeUndefined();
+  });
+
+  it("group presets (Compliance/Security/Financial) are flagged as group presets", () => {
+    expect(resolvePreset("compliance", METADATA, NOW).isGroupPreset).toBe(true);
+    expect(resolvePreset("security", METADATA, NOW).isGroupPreset).toBe(true);
+    expect(
+      resolvePreset("financial-approvals", METADATA, NOW).isGroupPreset
+    ).toBe(true);
   });
 
   it("Compliance: from = 90 days ago, eventTypes from group=COMPLIANCE", () => {

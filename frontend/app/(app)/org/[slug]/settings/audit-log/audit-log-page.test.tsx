@@ -1,6 +1,7 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { cleanup, render, screen, fireEvent, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 
 vi.mock("server-only", () => ({}));
 
@@ -271,8 +272,9 @@ describe("AuditLogPage (server shell)", () => {
     });
     render(page);
 
-    const select = screen.getByTestId("audit-preset-select") as HTMLSelectElement;
-    fireEvent.change(select, { target: { value: "sensitive" } });
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId("audit-preset-select"));
+    await user.click(await screen.findByRole("option", { name: /Sensitive/i }));
 
     await waitFor(() => expect(pushMock).toHaveBeenCalled());
     const urlPushed = pushMock.mock.calls[0]?.[0] as string;
@@ -280,9 +282,14 @@ describe("AuditLogPage (server shell)", () => {
     expect(decodeURIComponent(urlPushed)).toContain("severities=WARNING,CRITICAL");
     expect(urlPushed).toMatch(/from=\d{4}-\d{2}-\d{2}T/);
     expect(urlPushed).toContain("/org/acme/settings/audit-log");
+    // Sensitive is severity-only — no eventType sentinel and no banner.
+    expect(urlPushed).not.toContain("eventType=");
+    expect(
+      screen.queryByTestId("audit-preset-multi-event-banner")
+    ).not.toBeInTheDocument();
   });
 
-  it("selecting Financial approvals preset pushes URL with one of the four event types and from", async () => {
+  it("selecting Financial approvals preset uses multi-event sentinel and shows banner", async () => {
     mockListAuditEvents.mockResolvedValue({
       content: [],
       page: { totalElements: 0, totalPages: 0, size: 50, number: 0 },
@@ -294,16 +301,49 @@ describe("AuditLogPage (server shell)", () => {
     });
     render(page);
 
-    const select = screen.getByTestId("audit-preset-select") as HTMLSelectElement;
-    fireEvent.change(select, { target: { value: "financial-approvals" } });
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId("audit-preset-select"));
+    await user.click(
+      await screen.findByRole("option", { name: /Financial approvals/i })
+    );
 
     await waitFor(() => expect(pushMock).toHaveBeenCalled());
     const urlPushed = pushMock.mock.calls[0]?.[0] as string;
-    // First financial-approval event-type is sent (single eventType param limit).
-    expect(decodeURIComponent(urlPushed)).toContain(
-      "eventType=trust.transaction.approved"
-    );
+    // Fail-closed: sentinel goes on the URL so the result set is empty
+    // (the user is not misled into thinking the first event-type is the
+    // whole preset).
+    expect(decodeURIComponent(urlPushed)).toContain("eventType=__multi__");
     expect(urlPushed).toMatch(/from=/);
+
+    // Banner names the resolved event types.
+    const banner = await screen.findByTestId("audit-preset-multi-event-banner");
+    expect(banner).toHaveTextContent("trust.transaction.approved");
+    expect(banner).toHaveTextContent("invoice.sent");
+  });
+
+  it("selecting a group preset with empty metadata still uses sentinel + shows fallback banner", async () => {
+    mockGetAuditMetadata.mockResolvedValue([]);
+    mockListAuditEvents.mockResolvedValue({
+      content: [],
+      page: { totalElements: 0, totalPages: 0, size: 50, number: 0 },
+    });
+
+    const page = await AuditLogPage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
+    render(page);
+
+    const user = userEvent.setup();
+    await user.click(screen.getByTestId("audit-preset-select"));
+    await user.click(await screen.findByRole("option", { name: /Compliance/i }));
+
+    await waitFor(() => expect(pushMock).toHaveBeenCalled());
+    const urlPushed = pushMock.mock.calls[0]?.[0] as string;
+    // Even with zero matching metadata entries, the group preset is fail-closed.
+    expect(decodeURIComponent(urlPushed)).toContain("eventType=__multi__");
+    const banner = await screen.findByTestId("audit-preset-multi-event-banner");
+    expect(banner).toHaveTextContent(/metadata unavailable/i);
   });
 
   it("typing an actor ID and blurring builds a URL with actorId + entityType combined", async () => {

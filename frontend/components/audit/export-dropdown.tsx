@@ -10,12 +10,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
   countAuditEventsAction,
   exportAuditCsvAction,
   exportAuditPdfAction,
@@ -40,6 +34,10 @@ export function ExportDropdown({ filter }: ExportDropdownProps) {
   const filterKey = JSON.stringify(filter);
   useEffect(() => {
     let cancelled = false;
+    // Filter changed → drop any prior export error so the user isn't shown
+    // a stale message that no longer applies to the new filter set.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- bounded by filterKey change; clearing stale error is the desired side-effect.
+    setError(null);
     const handle = setTimeout(async () => {
       try {
         const res = await countAuditEventsAction(filter);
@@ -58,8 +56,8 @@ export function ExportDropdown({ filter }: ExportDropdownProps) {
   }, [filterKey]);
 
   const pdfDisabled = count !== null && count > PDF_CAP;
-  const pdfTooltip = pdfDisabled
-    ? `Narrow the date range — PDF export limited to ${PDF_CAP.toLocaleString()} events.`
+  const pdfHelp = pdfDisabled
+    ? `PDF export limited to ${PDF_CAP.toLocaleString()} events — narrow the date range.`
     : null;
 
   function downloadBlob(blob: Blob, filename: string) {
@@ -115,82 +113,72 @@ export function ExportDropdown({ filter }: ExportDropdownProps) {
   }
 
   return (
-    <TooltipProvider>
-      <div className="inline-flex items-center gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={busy !== null}
-              data-testid="export-dropdown-trigger"
-            >
-              {busy ? (
-                <Loader2 className="mr-1.5 size-4 animate-spin" />
-              ) : (
-                <Download className="mr-1.5 size-4" />
-              )}
-              Export
-              <ChevronDown className="ml-1.5 size-3" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem
-              data-testid="export-dropdown-csv"
-              disabled={busy !== null}
-              onSelect={(e) => {
-                e.preventDefault();
-                void handleCsv();
-              }}
-            >
-              {busy === "csv" ? (
-                <Loader2 className="mr-1.5 size-4 animate-spin" />
-              ) : (
-                <FileText className="mr-1.5 size-4" />
-              )}
-              Download CSV
-            </DropdownMenuItem>
-            {pdfDisabled ? (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="block">
-                    <DropdownMenuItem
-                      data-testid="export-dropdown-pdf"
-                      disabled
-                      onSelect={(e) => e.preventDefault()}
-                    >
-                      <FileText className="mr-1.5 size-4" />
-                      Download PDF
-                    </DropdownMenuItem>
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>{pdfTooltip}</TooltipContent>
-              </Tooltip>
+    <div className="inline-flex items-center gap-2">
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={busy !== null}
+            data-testid="export-dropdown-trigger"
+          >
+            {busy ? (
+              <Loader2 className="mr-1.5 size-4 animate-spin" />
             ) : (
-              <DropdownMenuItem
-                data-testid="export-dropdown-pdf"
-                disabled={busy !== null}
-                onSelect={(e) => {
-                  e.preventDefault();
-                  void handlePdf();
-                }}
-              >
-                {busy === "pdf" ? (
-                  <Loader2 className="mr-1.5 size-4 animate-spin" />
-                ) : (
-                  <FileText className="mr-1.5 size-4" />
-                )}
-                Download PDF
-              </DropdownMenuItem>
+              <Download className="mr-1.5 size-4" />
             )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-        {error && (
-          <span className="text-xs text-red-600" role="alert">
-            {error}
-          </span>
-        )}
-      </div>
-    </TooltipProvider>
+            Export
+            <ChevronDown className="ml-1.5 size-3" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem
+            data-testid="export-dropdown-csv"
+            disabled={busy !== null}
+            onSelect={(e) => {
+              e.preventDefault();
+              void handleCsv();
+            }}
+          >
+            {busy === "csv" ? (
+              <Loader2 className="mr-1.5 size-4 animate-spin" />
+            ) : (
+              <FileText className="mr-1.5 size-4" />
+            )}
+            Download CSV
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            data-testid="export-dropdown-pdf"
+            disabled={pdfDisabled || busy !== null}
+            aria-disabled={pdfDisabled || busy !== null}
+            onSelect={(e) => {
+              e.preventDefault();
+              if (pdfDisabled) return;
+              void handlePdf();
+            }}
+          >
+            {busy === "pdf" ? (
+              <Loader2 className="mr-1.5 size-4 animate-spin" />
+            ) : (
+              <FileText className="mr-1.5 size-4" />
+            )}
+            Download PDF
+          </DropdownMenuItem>
+          {pdfHelp && (
+            <p
+              data-testid="export-dropdown-pdf-help"
+              className="px-2 pt-1 pb-1 text-[11px] text-muted-foreground"
+            >
+              {pdfHelp}
+            </p>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {error && (
+        <span className="text-xs text-red-600" role="alert">
+          {error}
+        </span>
+      )}
+    </div>
   );
 }

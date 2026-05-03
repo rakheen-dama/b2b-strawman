@@ -41,15 +41,36 @@ const FINANCIAL_APPROVAL_EVENTS = [
   "invoice.voided",
 ];
 
+/**
+ * Sentinel `eventType` value used when a preset resolves to multiple event
+ * types. The backend list endpoint currently accepts a single `eventType`
+ * query param only; rather than silently narrowing to the first match (which
+ * would mislead the user into thinking they're viewing all preset events),
+ * the client sets `eventType` to this impossible value so the result set is
+ * empty, and renders a visible banner explaining the situation. Removed once
+ * the backend supports multi-value filtering.
+ *
+ * TODO(506B-followup): replace with proper multi-eventType backend filter.
+ */
+export const MULTI_EVENT_SENTINEL = "__multi__";
+
 export interface ResolvedPreset {
   from?: string;
   severities?: AuditSeverity[];
   /**
-   * Multi-event-type list. Note: the backend list endpoint currently accepts a
-   * single `eventType` query param only — the client narrows to the first
-   * member when applying the preset. See TODO in audit-log-client.tsx.
+   * Multi-event-type list resolved from metadata or static config. When this
+   * has length >= 2, the client uses {@link MULTI_EVENT_SENTINEL} for the
+   * `eventType` URL param and surfaces a banner. When length === 1, the single
+   * event type is used directly. Length 0 means metadata was unavailable / no
+   * matches — also surfaced via the banner (fail-closed).
    */
   eventTypes?: string[];
+  /**
+   * True when this preset *expects* event-type filtering (Compliance,
+   * Security, Financial approvals) but cannot be applied as a single filter.
+   * Used by the client to decide whether to show the multi-event banner.
+   */
+  isGroupPreset?: boolean;
 }
 
 export function resolvePreset(
@@ -69,6 +90,7 @@ export function resolvePreset(
         eventTypes: metadata
           .filter((m) => m.group === "COMPLIANCE")
           .map((m) => m.eventType),
+        isGroupPreset: true,
       };
     case "security":
       return {
@@ -76,11 +98,13 @@ export function resolvePreset(
         eventTypes: metadata
           .filter((m) => m.group === "SECURITY")
           .map((m) => m.eventType),
+        isGroupPreset: true,
       };
     case "financial-approvals":
       return {
         from: isoDaysAgo(now, 30),
         eventTypes: [...FINANCIAL_APPROVAL_EVENTS],
+        isGroupPreset: true,
       };
   }
 }

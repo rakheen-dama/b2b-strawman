@@ -22,12 +22,17 @@ const mockCsv = exportAuditCsvAction as unknown as ReturnType<typeof vi.fn>;
 const mockPdf = exportAuditPdfAction as unknown as ReturnType<typeof vi.fn>;
 const mockCount = countAuditEventsAction as unknown as ReturnType<typeof vi.fn>;
 
-afterEach(() => {
-  cleanup();
-  vi.clearAllMocks();
-});
+// Capture originals so they can be restored after each test — preventing
+// cross-test leakage of these prototype/global stubs.
+let originalCreateObjectURL: typeof URL.createObjectURL | undefined;
+let originalRevokeObjectURL: typeof URL.revokeObjectURL | undefined;
+let originalAnchorClick: HTMLAnchorElement["click"] | undefined;
 
 beforeEach(() => {
+  originalCreateObjectURL = global.URL.createObjectURL;
+  originalRevokeObjectURL = global.URL.revokeObjectURL;
+  originalAnchorClick = HTMLAnchorElement.prototype.click;
+
   // happy-dom doesn't ship URL.createObjectURL — stub.
   global.URL.createObjectURL = vi.fn(() => "blob:mock");
   global.URL.revokeObjectURL = vi.fn();
@@ -35,6 +40,20 @@ beforeEach(() => {
   // Stub anchor.click() so the test doesn't trigger navigation.
   const anchorProto = HTMLAnchorElement.prototype as unknown as { click: () => void };
   anchorProto.click = vi.fn();
+});
+
+afterEach(() => {
+  cleanup();
+  vi.clearAllMocks();
+  if (originalCreateObjectURL) {
+    global.URL.createObjectURL = originalCreateObjectURL;
+  }
+  if (originalRevokeObjectURL) {
+    global.URL.revokeObjectURL = originalRevokeObjectURL;
+  }
+  if (originalAnchorClick) {
+    HTMLAnchorElement.prototype.click = originalAnchorClick;
+  }
 });
 
 async function openMenu(user: ReturnType<typeof userEvent.setup>) {

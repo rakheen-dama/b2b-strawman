@@ -1,6 +1,28 @@
 import "server-only";
 
 import { API_BASE, ApiError, api, getAuthFetchOptions } from "./client";
+import type { ProblemDetail } from "@/lib/types/common";
+
+const EXPORT_TIMEOUT_MS = 30_000;
+
+/**
+ * fetch wrapper that aborts after EXPORT_TIMEOUT_MS. Used by the export
+ * helpers because the upstream PDF/CSV endpoints can otherwise hang
+ * indefinitely on a stalled stream.
+ */
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit & { timeoutMs?: number } = {}
+): Promise<Response> {
+  const { timeoutMs = EXPORT_TIMEOUT_MS, ...rest } = init;
+  const controller = new AbortController();
+  const handle = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...rest, signal: controller.signal });
+  } finally {
+    clearTimeout(handle);
+  }
+}
 
 // === Enums ===
 
@@ -167,7 +189,7 @@ function buildExportQuery(filter: AuditEventFilter): URLSearchParams {
 export async function exportAuditCsv(filter: AuditEventFilter): Promise<string> {
   const qs = buildExportQuery(filter);
   const auth = await getAuthFetchOptions("GET");
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `${API_BASE}/api/audit-events/export.csv?${qs.toString()}`,
     {
       headers: auth.headers,
@@ -188,7 +210,7 @@ export async function exportAuditCsv(filter: AuditEventFilter): Promise<string> 
 export async function exportAuditPdf(filter: AuditEventFilter): Promise<string> {
   const qs = buildExportQuery(filter);
   const auth = await getAuthFetchOptions("GET");
-  const response = await fetch(
+  const response = await fetchWithTimeout(
     `${API_BASE}/api/audit-events/export.pdf?${qs.toString()}`,
     {
       headers: auth.headers,
@@ -196,15 +218,20 @@ export async function exportAuditPdf(filter: AuditEventFilter): Promise<string> 
     }
   );
   if (!response.ok) {
-    let detail: Record<string, unknown> | undefined;
+    let detail: ProblemDetail | undefined;
     try {
-      detail = await response.json();
+      const parsed = (await response.json()) as unknown;
+      // RFC 9457 ProblemDetail body — guard the shape before forwarding.
+      if (parsed && typeof parsed === "object") {
+        detail = parsed as ProblemDetail;
+      }
     } catch {
       // body wasn't JSON — fall through with status text only
     }
     const message =
-      (detail?.detail as string | undefined) ?? `Export failed: ${response.statusText}`;
-    throw new ApiError(response.status, message, detail as never);
+      (typeof detail?.detail === "string" && detail.detail) ||
+      `Export failed: ${response.statusText}`;
+    throw new ApiError(response.status, message, detail);
   }
   const buffer = await response.arrayBuffer();
   return Buffer.from(buffer).toString("base64");

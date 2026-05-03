@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,7 +17,9 @@ import org.springframework.web.bind.annotation.RestController;
 /**
  * HTTP read surfaces for the firm-wide audit log. Per architecture §12.3.1 / §12.3.5, all routes
  * require the {@code TEAM_OVERSIGHT} capability and project read-time enrichment (label / severity
- * / group / actor display name) onto each row via {@link AuditEventMetadataResolver}.
+ * / group / actor display name) onto each row. Enrichment lives in {@link
+ * AuditService#findEventsEnriched}; this controller stays a pure HTTP adapter per Backend
+ * Controller Discipline.
  */
 @RestController
 public class AuditEventController {
@@ -28,15 +29,11 @@ public class AuditEventController {
 
   private final AuditService auditService;
   private final AuditEventTypeRegistry auditEventTypeRegistry;
-  private final AuditEventMetadataResolver auditEventMetadataResolver;
 
   public AuditEventController(
-      AuditService auditService,
-      AuditEventTypeRegistry auditEventTypeRegistry,
-      AuditEventMetadataResolver auditEventMetadataResolver) {
+      AuditService auditService, AuditEventTypeRegistry auditEventTypeRegistry) {
     this.auditService = auditService;
     this.auditEventTypeRegistry = auditEventTypeRegistry;
-    this.auditEventMetadataResolver = auditEventMetadataResolver;
   }
 
   @GetMapping("/api/audit-events")
@@ -54,9 +51,9 @@ public class AuditEventController {
 
     var filter =
         new AuditEventFilter(entityType, entityId, actorId, eventType, from, to, severities);
-    var pageable =
-        PageRequest.of(page, Math.min(size, 200), Sort.by(Sort.Direction.DESC, "occurredAt"));
-    return ResponseEntity.ok(enrichedPage(auditService.findEvents(filter, pageable)));
+    var pageable = PageRequest.of(page, Math.min(size, 200));
+    return ResponseEntity.ok(
+        auditService.findEventsEnriched(filter, pageable).map(AuditEventResponse::from));
   }
 
   @GetMapping("/api/audit-events/metadata")
@@ -78,9 +75,9 @@ public class AuditEventController {
       @RequestParam(defaultValue = "50") int size) {
 
     var filter = new AuditEventFilter(entityType, entityId, actorId, eventType, from, to, null);
-    var pageable =
-        PageRequest.of(page, Math.min(size, 200), Sort.by(Sort.Direction.DESC, "occurredAt"));
-    return ResponseEntity.ok(enrichedPage(auditService.findEvents(filter, pageable)));
+    var pageable = PageRequest.of(page, Math.min(size, 200));
+    return ResponseEntity.ok(
+        auditService.findEventsEnriched(filter, pageable).map(AuditEventResponse::from));
   }
 
   @GetMapping("/api/audit-events/facets/actors")
@@ -105,20 +102,6 @@ public class AuditEventController {
       @RequestParam(required = false) Instant from, @RequestParam(required = false) Instant to) {
     var range = defaultedRange(from, to);
     return ResponseEntity.ok(auditService.facets(range.from(), range.to()).entityTypes());
-  }
-
-  /**
-   * Enriches a page of raw audit events into response DTOs in a single batch (one member-name
-   * lookup, no N+1). Pure HTTP-shape transformation per Backend Controller Discipline.
-   */
-  private Page<AuditEventResponse> enrichedPage(Page<AuditEvent> events) {
-    var enriched = auditEventMetadataResolver.enrich(events.getContent());
-    var byId =
-        enriched.stream()
-            .collect(
-                java.util.stream.Collectors.toMap(
-                    e -> e.event().getId(), java.util.function.Function.identity()));
-    return events.map(e -> AuditEventResponse.from(byId.get(e.getId())));
   }
 
   /**

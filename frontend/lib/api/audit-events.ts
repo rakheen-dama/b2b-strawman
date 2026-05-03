@@ -125,6 +125,37 @@ export async function listAuditEvents(params?: AuditEventFilter): Promise<AuditE
   return api.get<AuditEventsPage>(`/api/audit-events?${sp.toString()}`);
 }
 
+/**
+ * Per-entity audit event listing (Epic 507). Wraps the
+ * `GET /api/audit-events/{entityType}/{entityId}` endpoint, which is gated
+ * server-side by the `TEAM_OVERSIGHT` capability.
+ *
+ * Default page size is 20 (compact tabbed timeline).
+ */
+export async function listAuditEventsByEntity(
+  entityType: string,
+  entityId: string,
+  params?: {
+    page?: number;
+    size?: number;
+    from?: string;
+    to?: string;
+    actorId?: string;
+    eventType?: string;
+  }
+): Promise<AuditEventsPage> {
+  const sp = new URLSearchParams();
+  sp.set("page", String(params?.page ?? 0));
+  sp.set("size", String(params?.size ?? 20));
+  if (params?.from) sp.set("from", params.from);
+  if (params?.to) sp.set("to", params.to);
+  if (params?.actorId) sp.set("actorId", params.actorId);
+  if (params?.eventType) sp.set("eventType", params.eventType);
+  return api.get<AuditEventsPage>(
+    `/api/audit-events/${encodeURIComponent(entityType)}/${encodeURIComponent(entityId)}?${sp.toString()}`
+  );
+}
+
 export async function getAuditMetadata(): Promise<AuditEventTypeMetadata[]> {
   return api.get<AuditEventTypeMetadata[]>("/api/audit-events/metadata");
 }

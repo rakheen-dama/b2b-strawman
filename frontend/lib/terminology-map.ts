@@ -88,5 +88,16 @@ export const TERMINOLOGY: Record<string, Record<string, string>> = {
     "Offboard Customer": "Offboard Client",
     "project.namePlaceholder": "e.g. Dlamini v Road Accident Fund",
     "project.referencePlaceholder": "e.g. RAF-2026-001",
+    "audit.tab": "Audit Trail",
   },
 };
+
+/**
+ * Resolve the audit tab label, falling back to "Audit" when no terminology
+ * mapping is present. The terminology hook returns the literal key when no
+ * profile maps it — so we substitute a sensible default at the call site.
+ */
+export function auditTabLabel(t: (term: string) => string): string {
+  const v = t("audit.tab");
+  return v === "audit.tab" ? "Audit" : v;
+}

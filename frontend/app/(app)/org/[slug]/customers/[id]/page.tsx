@@ -50,6 +50,7 @@ import { PROMOTED_CUSTOMER_SLUGS } from "@/lib/constants/promoted-field-slugs";
 import { ENTITY_TYPES } from "@/lib/constants/entity-types";
 import { CustomerDocumentsPanel } from "@/components/documents/customer-documents-panel";
 import { CustomerTabs } from "@/components/customers/customer-tabs";
+import { CustomerAuditTab } from "./audit-tab";
 import { CustomerRatesTab } from "@/components/rates/customer-rates-tab";
 import { CustomerFinancialsTab } from "@/components/profitability/customer-financials-tab";
 import { CustomerInvoicesTab } from "@/components/customers/customer-invoices-tab";
@@ -881,6 +882,7 @@ export default async function CustomerDetailPage({
           ) : undefined
         }
         trustPanel={<TrustBalanceCard customerId={id} slug={slug} showQuickActions={isAdmin} />}
+        auditPanel={<CustomerAuditTab customerId={id} />}
         onboardingPanel={
           showOnboardingTab ? (
             <ChecklistInstancePanel

@@ -20,6 +20,7 @@ import type {
 import { InvoiceDetailClient } from "@/components/invoices/invoice-detail-client";
 import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
+import { InvoiceAuditSection } from "@/components/invoices/invoice-audit-section";
 import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
 import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
 import { PROMOTED_INVOICE_SLUGS } from "@/lib/constants/promoted-field-slugs";
@@ -164,6 +165,9 @@ export default async function InvoiceDetailPage({
           customerId={invoice!.customerId}
         />
       </div>
+
+      {/* Audit Trail (Epic 507A) — capability-gated client-side */}
+      <InvoiceAuditSection invoiceId={id} />
     </div>
   );
 }

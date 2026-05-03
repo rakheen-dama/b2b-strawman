@@ -45,6 +45,7 @@ import { TimeSummaryPanel } from "@/components/projects/time-summary-panel";
 import { ActivityFeed } from "@/components/activity/activity-feed";
 import { ProjectCustomersPanel } from "@/components/projects/project-customers-panel";
 import { ProjectTabs } from "@/components/projects/project-tabs";
+import { ProjectAuditTab } from "@/components/projects/project-audit-tab";
 import { ProjectRatesTab } from "@/components/rates/project-rates-tab";
 import { BudgetPanel } from "@/components/budget/budget-panel";
 import { ProjectFinancialsTab } from "@/components/profitability/project-financials-tab";
@@ -934,6 +935,7 @@ export default async function ProjectDetailPage({
           ) : undefined
         }
         activityPanel={<ActivityFeed projectId={id} orgSlug={slug} />}
+        auditPanel={<ProjectAuditTab projectId={id} />}
       />
     </div>
   );

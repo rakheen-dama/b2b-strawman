@@ -7,6 +7,7 @@ import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
 import { useOrgProfile } from "@/lib/org-profile";
 import { useTerminology } from "@/lib/terminology";
+import { auditTabLabel } from "@/lib/terminology-map";
 
 interface ProjectTabsProps {
   overviewPanel: ReactNode;
@@ -29,6 +30,7 @@ interface ProjectTabsProps {
   trustPanel?: ReactNode;
   disbursementsPanel?: ReactNode;
   statementsPanel?: ReactNode;
+  auditPanel?: ReactNode;
 }
 
 type TabId =
@@ -51,7 +53,8 @@ type TabId =
   | "adverse-parties"
   | "trust"
   | "disbursements"
-  | "statements";
+  | "statements"
+  | "audit";
 
 interface TabDef {
   id: TabId;
@@ -83,6 +86,7 @@ function buildBaseTabs(t: (term: string) => string): TabDef[] {
     { id: "disbursements", label: "Disbursements" },
     { id: "statements", label: "Statements" },
     { id: "activity", label: "Activity" },
+    { id: "audit", label: auditTabLabel(t) },
   ];
 }
 
@@ -107,6 +111,7 @@ const validTabIds = new Set<string>([
   "trust",
   "disbursements",
   "statements",
+  "audit",
 ]);
 
 export function ProjectTabs({
@@ -130,6 +135,7 @@ export function ProjectTabs({
   trustPanel,
   disbursementsPanel,
   statementsPanel,
+  auditPanel,
 }: ProjectTabsProps) {
   const searchParams = useSearchParams();
   const tabParam = searchParams.get("tab");
@@ -164,6 +170,7 @@ export function ProjectTabs({
     if (!showTrust) filtered = filtered.filter((t) => t.id !== "trust");
     if (!showDisbursements) filtered = filtered.filter((t) => t.id !== "disbursements");
     if (!showStatements) filtered = filtered.filter((t) => t.id !== "statements");
+    if (!auditPanel) filtered = filtered.filter((t) => t.id !== "audit");
     // Dedupe: when the legal-specific Disbursements tab is shown AND the
     // generic Expenses tab is present, their labels collide in legal-za
     // (terminology maps "Expenses" → "Disbursements"). Prefer the legal
@@ -184,6 +191,7 @@ export function ProjectTabs({
     showTrust,
     showDisbursements,
     showStatements,
+    auditPanel,
   ]);
 
   // Validate activeTab is in the rendered tabs; fall back to "overview" if not
@@ -303,6 +311,11 @@ export function ProjectTabs({
       <TabsPrimitive.Content value="activity" className="pt-6 outline-none">
         {activityPanel}
       </TabsPrimitive.Content>
+      {auditPanel && (
+        <TabsPrimitive.Content value="audit" className="pt-6 outline-none">
+          {auditPanel}
+        </TabsPrimitive.Content>
+      )}
     </TabsPrimitive.Root>
   );
 }

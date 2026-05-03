@@ -6,6 +6,7 @@ import { api, handleApiError } from "@/lib/api";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProposalDetailActions } from "@/components/proposals/proposal-detail-actions";
+import { AuditHistoryDisclosure } from "@/components/audit/audit-history-disclosure";
 import { formatDate, formatCurrencySafe, formatProposalExpiresAt } from "@/lib/format";
 import type { ProposalResponse, ProposalStatus } from "@/lib/types/proposal";
 
@@ -223,6 +224,10 @@ export default async function ProposalDetailPage({
           )}
         </CardContent>
       </Card>
+
+      {/* Epic 508B: capability-gated audit-history disclosure. Lazy-mounts
+          the audit timeline only after first expand. */}
+      <AuditHistoryDisclosure entityType="proposal" entityId={id} />
     </div>
   );
 }

@@ -46,6 +46,7 @@ import { ActivityFeed } from "@/components/activity/activity-feed";
 import { ProjectCustomersPanel } from "@/components/projects/project-customers-panel";
 import { ProjectTabs } from "@/components/projects/project-tabs";
 import { ProjectAuditTab } from "@/components/projects/project-audit-tab";
+import { ClosureHistorySection } from "@/components/projects/closure-history-section";
 import { ProjectRatesTab } from "@/components/rates/project-rates-tab";
 import { BudgetPanel } from "@/components/budget/budget-panel";
 import { ProjectFinancialsTab } from "@/components/profitability/project-financials-tab";
@@ -937,6 +938,10 @@ export default async function ProjectDetailPage({
         activityPanel={<ActivityFeed projectId={id} orgSlug={slug} />}
         auditPanel={<ProjectAuditTab projectId={id} />}
       />
+
+      {/* Epic 508B: Closure history (only on CLOSED matters). Per-row audit
+          timelines surface the matter.closure.override_used event from 508A. */}
+      {project.status === "CLOSED" && <ClosureHistorySection projectId={id} />}
     </div>
   );
 }

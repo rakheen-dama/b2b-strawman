@@ -327,13 +327,16 @@ If the brief is genuinely missing critical info, note it in the PR description
 and make your best judgment call.
 ```
 
-## Step 4 — Combined Code Review (Superpowers reviews are the gate; CodeRabbit is best-effort)
+## Step 4 — Combined Code Review (Superpowers reviews are the gate; CodeRabbit is bounded-wait)
 
-The merge gate depends ONLY on the two `superpowers:code-reviewer` subagent reviews dispatched below.
-CodeRabbit may or may not be ready, may or may not return findings — it is collected ONCE, best-effort,
-and treated as supplementary input to the fixer. **Never block on CodeRabbit. Never poll for it.**
-Polling loops on CodeRabbit (especially `until` loops on `pulls/{n}/comments` and `pulls/{n}/reviews`)
-have hung for hours waiting for endpoints CodeRabbit doesn't populate for clean diffs. Do not reintroduce them.
+The merge gate depends on TWO things: (a) the two `superpowers:code-reviewer` subagent reviews
+dispatched below, AND (b) either a real CodeRabbit review OR an explicit `## CodeRabbit: DEFERRED`
+marker in the PR body recording that we waited and CR did not arrive. Both must be reflected in the
+PR body audit trail (Step 4.5) before merge — the merge-gate hook enforces this.
+
+CodeRabbit collection is **bounded-wait, not unbounded poll**: one wait window (≤5 min), then either
+record what CR posted or explicitly defer. Open-ended `until` loops on `pulls/{n}/comments` are forbidden —
+they have hung for hours on clean diffs. Step 4.2 below codifies the bounded pattern.
 
 ### 4.1 — Dispatch two superpowers reviews in parallel (BLOCKING)
 
@@ -447,30 +450,49 @@ Return structured findings:
 Only report issues you're >80% confident about. Include file:line for every finding.
 ```
 
-### 4.2 — Best-effort CodeRabbit collection (one shot, no polling)
+### 4.2 — Bounded CodeRabbit collection (≤5 min wait, then defer)
 
-After both Agent A and Agent B return, do a SINGLE non-blocking check for any CodeRabbit output that
-happens to be ready. If nothing is there, move on — do not retry, do not sleep, do not loop.
+After both Agent A and Agent B return, run a **bounded** wait for CodeRabbit. The pattern is:
+poll every 30s for up to 10 iterations (5 min total wall-clock). Stop on the first iteration where
+CodeRabbit has posted EITHER a real review (in the `reviews` array) OR an inline review comment
+(in `pulls/{n}/comments`). The auto-summary issue comment alone does NOT count — that is just CR
+acknowledging the PR exists, not a review. If the 5-min budget elapses with no real review, mark
+CR as DEFERRED and continue.
 
 ```bash
-# One-shot — read whatever CodeRabbit has posted by now (may be nothing).
-# Check all three places CodeRabbit might post: review comments on the diff, formal reviews,
-# AND issue comments (CodeRabbit's "summary" / "no actionable comments" message lives here).
-gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments \
+PR_NUMBER={PR_NUMBER}
+OWNER_REPO="rakheen-dama/b2b-strawman"  # adjust if needed
+CR_STATE="missing"
+for i in $(seq 1 10); do
+  REVIEWS=$(gh api repos/$OWNER_REPO/pulls/$PR_NUMBER/reviews --jq '[.[] | select(.user.login == "coderabbitai[bot]")] | length' 2>/dev/null || echo 0)
+  INLINE=$(gh api repos/$OWNER_REPO/pulls/$PR_NUMBER/comments --jq '[.[] | select(.user.login == "coderabbitai[bot]")] | length' 2>/dev/null || echo 0)
+  if [ "${REVIEWS:-0}" -gt 0 ] || [ "${INLINE:-0}" -gt 0 ]; then
+    CR_STATE="present"
+    break
+  fi
+  sleep 30
+done
+echo "CR_STATE=$CR_STATE after $i iterations"
+
+# Collect whatever is there (may be empty if DEFERRED)
+gh api repos/$OWNER_REPO/pulls/$PR_NUMBER/comments \
   --jq '.[] | select(.user.login == "coderabbitai[bot]") | "[\(.path):\(.line // .original_line)] \(.body)"' \
-  > /tmp/cr-inline-{PR_NUMBER}.txt 2>/dev/null || true
-gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/reviews \
+  > /tmp/cr-inline-$PR_NUMBER.txt 2>/dev/null || true
+gh api repos/$OWNER_REPO/pulls/$PR_NUMBER/reviews \
   --jq '.[] | select(.user.login == "coderabbitai[bot]") | .body' \
-  > /tmp/cr-reviews-{PR_NUMBER}.txt 2>/dev/null || true
-gh api repos/{owner}/{repo}/issues/{PR_NUMBER}/comments \
+  > /tmp/cr-reviews-$PR_NUMBER.txt 2>/dev/null || true
+gh api repos/$OWNER_REPO/issues/$PR_NUMBER/comments \
   --jq '.[] | select(.user.login == "coderabbitai[bot]") | .body' \
-  > /tmp/cr-summary-{PR_NUMBER}.txt 2>/dev/null || true
+  > /tmp/cr-summary-$PR_NUMBER.txt 2>/dev/null || true
 ```
 
 Read the three files. If any have actionable findings (not just the boilerplate "No actionable
-comments were generated"), include them in the fixer brief as SECONDARY input. If all three are
-empty or just boilerplate, write "CodeRabbit: no actionable findings (or not yet posted — best-effort
-only, not blocking)" and proceed.
+comments were generated" or "Review failed"), include them in the fixer brief as SECONDARY input.
+
+Record the outcome — this string MUST be pasted verbatim into the PR body in Step 4.5:
+- If `CR_STATE=present` and there are actionable findings → `## CodeRabbit: REVIEWED — N findings, addressed in fixer pass`
+- If `CR_STATE=present` and no actionable findings → `## CodeRabbit: REVIEWED — no actionable findings`
+- If `CR_STATE=missing` (5-min budget elapsed) → `## CodeRabbit: DEFERRED — not arrived in 5m wait window; superpowers reviews are the merge gate`
 
 ### 4.3 — Merge findings & dispatch fixer
 
@@ -531,6 +553,54 @@ If Agent A returns Critical or High findings on the second pass, run ONE more fi
 fix cycles total). If findings persist after 2 cycles, note them in the PR description and STOP
 (in auto-merge mode, exit non-zero so the wrapper script knows this slice failed).
 
+### 4.5 — Append review audit trail to PR body (REQUIRED before merge)
+
+The merge-gate hook (`.claude/hooks/pre-pr-merge-gate.sh`) inspects the PR body for proof that
+reviews actually ran. **Without this step, merge will be rejected.** Append a `## Code Review Audit Trail`
+section to the PR body containing:
+- Agent A (bug/quality) **final** verdict block (after fix cycles) — must contain `## Verdict: APPROVE`
+  OR a `## Verdict: REQUEST_CHANGES` paired with an explicit "all Critical/High resolved" line.
+- Agent B (architecture) **final** verdict block — same rule.
+- The CodeRabbit status line from Step 4.2 (`## CodeRabbit: REVIEWED ...` or `## CodeRabbit: DEFERRED ...`).
+
+```bash
+# Build the audit trail block from the saved verdicts and CR status
+cat > /tmp/pr-{PR_NUMBER}-audit.md <<'EOF'
+
+---
+
+## Code Review Audit Trail
+
+### Superpowers — Bug/Quality (Agent A)
+{Paste Agent A's FINAL verdict block verbatim — including the `## Verdict: APPROVE` line and the findings sections.}
+
+### Superpowers — Architecture (Agent B)
+{Paste Agent B's FINAL verdict block verbatim.}
+
+### CodeRabbit
+{The status line from Step 4.2 — one of:
+  ## CodeRabbit: REVIEWED — N findings, addressed in fixer pass
+  ## CodeRabbit: REVIEWED — no actionable findings
+  ## CodeRabbit: DEFERRED — not arrived in 5m wait window; superpowers reviews are the merge gate
+}
+
+### Fix Cycles Run
+{e.g., "1 fix cycle (Agent A flagged 2 High; addressed in commit abc123)" or "0 (clean approve on first pass)"}
+EOF
+
+# Get current PR body, append audit, write back
+gh pr view {PR_NUMBER} --json body --jq .body > /tmp/pr-{PR_NUMBER}-body.md
+cat /tmp/pr-{PR_NUMBER}-audit.md >> /tmp/pr-{PR_NUMBER}-body.md
+gh pr edit {PR_NUMBER} --body-file /tmp/pr-{PR_NUMBER}-body.md
+```
+
+The hook checks the PR body for ALL THREE markers before allowing merge:
+- Two occurrences of `## Verdict: APPROVE` (one per superpowers reviewer)
+- One `## CodeRabbit: REVIEWED` OR `## CodeRabbit: DEFERRED` line
+
+If any marker is missing or malformed, the merge will be denied with a clear reason. Fix the
+audit trail and retry — do NOT bypass the hook.
+
 ## Step 5 — Merge
 
 ### Auto-Merge Mode (prompt contains "auto-merge")
@@ -540,9 +610,12 @@ Merge immediately if ALL of the following are true (after fix cycles):
   Critical and High findings were fixed
 - Build is green (final `./mvnw verify` log shows exit 0)
 - The PR's GitHub merge state is `MERGEABLE` (`gh pr view {n} --json mergeStateStatus`)
+- **Step 4.5 audit trail has been written to the PR body** — the merge-gate hook will reject
+  the merge otherwise. Verify with: `gh pr view {n} --json body --jq .body | grep -c "## Verdict: APPROVE"`
+  must return 2 (or matching "all Critical/High resolved" line), and `grep -E "## CodeRabbit: (REVIEWED|DEFERRED)"` must match once.
 
-CodeRabbit findings, if any, were addressed in the fixer pass — but CodeRabbit's status check
-state is NOT a blocker. Don't wait for it. Don't poll for it.
+CodeRabbit findings, if any, were addressed in Step 4.3. CodeRabbit was given a 5-min wait window
+in Step 4.2; if it did not arrive, the audit trail records `DEFERRED` and merge proceeds.
 
 If any Critical or High finding from EITHER superpowers review remains unresolved after 2 fix
 cycles: **STOP** and report the unresolved issues. Do not merge. Exit with a clear error message

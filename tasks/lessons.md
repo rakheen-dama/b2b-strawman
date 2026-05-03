@@ -111,3 +111,21 @@
 **Detection one-liner**: `find . -maxdepth 3 -name 'pnpm-lock.yaml' -not -path '*/node_modules/*'` then for each, check `grep -rn "<dirname>" --include="*.sh" --include="*.yml" --include="*.yaml" -l` for active references.
 
 
+
+## Auto-merge bypassed reviews — 8 PRs in one phase run (2026-05-03)
+
+**Symptom**: During `/phase_v2 70`, slices 511A and earlier 7 PRs (#1276, 1277, 1278, 1279, 1281, 1282, 1284, 1286) were merged to main with **no real CodeRabbit review** (only the auto-summary comment). 4 of those (#1281, 1282, 1284, 1286) also showed **no evidence the two superpowers reviews ran** — single commit, no `fix: address review findings` commit, sub-4-minute open→merge windows. Quality Gate #2 in CLAUDE.md ("every agent-authored PR gets a review pass before merge") was violated systemically.
+
+**Root cause** (3 lined up):
+1. `.claude/hooks/pre-pr-merge-gate.sh` only checked stale `verify-{backend,frontend,portal}.json` markers within 24h. It did NOT check review presence, did NOT verify the marker's `commit` was an ancestor of the PR head (the docstring promised this but the code never did it). One 24h-old marker satisfied the gate for every subsequent PR.
+2. `.claude/skills/epic_v2/SKILL.md` Step 4.2 said "Best-effort CodeRabbit collection (one shot, no polling)" and Step 5 said "CodeRabbit's status check state is NOT a blocker. Don't wait for it. Don't poll for it." — explicit policy hole letting agents merge ~90s after PR open.
+3. The skill never instructed the agent to write the review verdict block into the PR body, so there was no GitHub-side audit trail to enforce against. Agent narrative in chat was the only "evidence" reviews ran.
+
+**Fix applied** (this session):
+1. `pre-pr-merge-gate.sh` — added (a) marker-commit-ancestry check, (b) PR-body audit-trail check requiring two `## Verdict: APPROVE` lines and one `## CodeRabbit: REVIEWED|DEFERRED` line.
+2. `epic_v2/SKILL.md` Step 4.2 — replaced "no polling" with bounded 5-min wait (10× 30s iterations) for CodeRabbit; if CR doesn't arrive, agent records `## CodeRabbit: DEFERRED` in PR body and proceeds. Avoids the agent-falls-asleep-waiting failure mode.
+3. `epic_v2/SKILL.md` new Step 4.5 — agent MUST `gh pr edit --body-file ...` to append the audit trail (both verdict blocks + CR line) before any merge attempt. Hook will reject merge otherwise.
+
+**Detection**: For any merged PR, `gh pr view <N> --json reviews,body` should show either (a) a non-"Review failed" CodeRabbit review object, or (b) a `## CodeRabbit: DEFERRED` line in the body. Both must be paired with two `## Verdict: APPROVE` markers in the body.
+
+**Damage to audit**: PRs #1281, 1282, 1284, 1286 on main are unreviewed by both gates. Need separate `/review` pass before considering them trustworthy.

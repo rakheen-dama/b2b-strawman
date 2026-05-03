@@ -101,14 +101,52 @@ check_marker() {
   exit_code="$(grep -oE '"exit"\s*:\s*[0-9]+' "$marker" | head -1 | grep -oE '[0-9]+' || echo "1")"
   if [[ "$exit_code" != "0" ]]; then
     stale+=("$label (exit=$exit_code, must be 0)")
+    return
+  fi
+
+  # Verify the marker's commit is an ancestor of the PR head — prevents reusing
+  # a stale marker from an unrelated branch (the docstring at the top promises this).
+  local marker_commit
+  marker_commit="$(grep -oE '"commit"[[:space:]]*:[[:space:]]*"[a-f0-9]+"' "$marker" | head -1 | grep -oE '[a-f0-9]+' | tail -1 || echo "")"
+  if [[ -n "$marker_commit" && -n "$PR_HEAD_SHA" ]]; then
+    # Fetch the PR head locally if we don't have it (best-effort — don't fail on network).
+    git -C "$REPO_ROOT" cat-file -e "$PR_HEAD_SHA" 2>/dev/null || \
+      git -C "$REPO_ROOT" fetch origin "$HEAD_BRANCH" --quiet 2>/dev/null || true
+    if ! git -C "$REPO_ROOT" merge-base --is-ancestor "$marker_commit" "$PR_HEAD_SHA" 2>/dev/null; then
+      stale+=("$label (marker commit $marker_commit is not an ancestor of PR head $PR_HEAD_SHA — marker is from a different branch)")
+    fi
   fi
 }
+
+# Get the PR head SHA for the marker-ancestry check.
+PR_HEAD_SHA="$(gh pr view "$PR_NUM" --json headRefOid -q .headRefOid 2>/dev/null || true)"
 
 if $needs_backend; then check_marker "backend"; fi
 if $needs_frontend; then check_marker "frontend"; fi
 if $needs_portal;  then check_marker "portal"; fi
 
-if (( ${#missing[@]} > 0 || ${#stale[@]} > 0 )); then
+# --- Review audit-trail check (epic_v2 SKILL.md Step 4.5) ---
+# The PR body MUST contain proof that the two superpowers reviews ran AND that
+# CodeRabbit was either reviewed or explicitly deferred. Without this trail the
+# 4-PR review-skip incident (PRs 1281, 1282, 1284, 1286) on 2026-05-03 cannot
+# be detected post-hoc. Block merge if any marker is missing.
+review_missing=()
+PR_BODY="$(gh pr view "$PR_NUM" --json body --jq .body 2>/dev/null || echo "")"
+
+# Two `## Verdict: APPROVE` lines required (one per superpowers reviewer).
+# Alternative: `## Verdict: REQUEST_CHANGES` + a "Critical/High resolved" line is also valid.
+verdict_count="$(printf '%s' "$PR_BODY" | grep -cE '^## Verdict: APPROVE$' || true)"
+resolved_count="$(printf '%s' "$PR_BODY" | grep -cE 'Critical.*High.*(resolved|fixed|addressed)' || true)"
+if (( verdict_count + resolved_count < 2 )); then
+  review_missing+=("two superpowers '## Verdict: APPROVE' markers (or 'Critical/High resolved' equivalents) — found verdict_count=$verdict_count resolved_count=$resolved_count")
+fi
+
+# CodeRabbit marker — either REVIEWED or DEFERRED, written by Step 4.5 of epic_v2.
+if ! printf '%s' "$PR_BODY" | grep -qE '^## CodeRabbit: (REVIEWED|DEFERRED)'; then
+  review_missing+=("'## CodeRabbit: REVIEWED' or '## CodeRabbit: DEFERRED' line in PR body")
+fi
+
+if (( ${#missing[@]} > 0 || ${#stale[@]} > 0 || ${#review_missing[@]} > 0 )); then
   reason="pre-pr-merge-gate (CLAUDE.md §10): merge blocked. "
   if (( ${#missing[@]} > 0 )); then
     reason="${reason}Missing markers: ${missing[*]}. "
@@ -116,7 +154,10 @@ if (( ${#missing[@]} > 0 || ${#stale[@]} > 0 )); then
   if (( ${#stale[@]} > 0 )); then
     reason="${reason}Stale/failed markers: ${stale[*]}. "
   fi
-  reason="${reason}Run the full verify and write the marker before merging. See .claude/markers/README.md."
+  if (( ${#review_missing[@]} > 0 )); then
+    reason="${reason}Missing review audit trail in PR body: ${review_missing[*]}. Run epic_v2 Step 4.5 (gh pr edit --body-file ...) to append the audit trail before merging. "
+  fi
+  reason="${reason}See CLAUDE.md §1-2 and .claude/skills/epic_v2/SKILL.md Step 4.5."
   # JSON-escape the reason
   esc_reason="$(printf '%s' "$reason" | sed 's/\\/\\\\/g; s/"/\\"/g')"
   printf '{"hookSpecificOutput":{"hookEventName":"PreToolUse","permissionDecision":"deny","permissionDecisionReason":"%s"}}\n' "$esc_reason"

@@ -72,11 +72,7 @@ describe("<AuditTimeline>", () => {
       expect(screen.getByTestId("audit-timeline")).toBeInTheDocument();
     });
     const renderedRows = screen.getAllByTestId("audit-timeline-row");
-    expect(renderedRows.map((el) => el.getAttribute("data-event-id"))).toEqual([
-      "e3",
-      "e2",
-      "e1",
-    ]);
+    expect(renderedRows.map((el) => el.getAttribute("data-event-id"))).toEqual(["e3", "e2", "e1"]);
   });
 
   it("expands details viewer when a row is clicked", async () => {

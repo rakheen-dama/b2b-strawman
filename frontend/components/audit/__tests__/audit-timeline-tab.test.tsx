@@ -39,12 +39,7 @@ describe("<AuditTimelineTab>", () => {
 
   it("renders content when TEAM_OVERSIGHT capability is granted", async () => {
     render(
-      <CapabilityProvider
-        capabilities={["TEAM_OVERSIGHT"]}
-        role="Admin"
-        isAdmin
-        isOwner={false}
-      >
+      <CapabilityProvider capabilities={["TEAM_OVERSIGHT"]} role="Admin" isAdmin isOwner={false}>
         <AuditTimelineTab entityType="customer" entityId="cust-tab-visible" />
       </CapabilityProvider>
     );

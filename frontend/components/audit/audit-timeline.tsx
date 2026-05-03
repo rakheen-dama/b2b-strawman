@@ -7,12 +7,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { RelativeDate } from "@/components/ui/relative-date";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { SeverityPill } from "@/components/audit/severity-pill";
 import { ActorDisplay } from "@/components/audit/actor-display";
 import { AuditDetailsViewer } from "@/components/audit/audit-details-viewer";
@@ -105,7 +100,10 @@ export function AuditTimeline({
 
   if (isLoading) {
     return (
-      <div className="py-12 text-center text-sm text-slate-500" data-testid="audit-timeline-loading">
+      <div
+        className="py-12 text-center text-sm text-slate-500"
+        data-testid="audit-timeline-loading"
+      >
         Loading audit events…
       </div>
     );

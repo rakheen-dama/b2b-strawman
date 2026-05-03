@@ -20,12 +20,26 @@ import type {
   AuditEventFilter,
   AuditEventResponse,
   AuditEventsPage,
+  AuditEventTypeMetadata,
   AuditSeverity,
 } from "@/lib/api/audit-events";
 import { SeverityPill } from "@/components/audit/severity-pill";
 import { ActorDisplay } from "@/components/audit/actor-display";
 import { EntityCell } from "@/components/audit/entity-cell";
 import { AuditDetailsViewer } from "@/components/audit/audit-details-viewer";
+import {
+  MULTI_EVENT_SENTINEL,
+  PRESET_OPTIONS,
+  resolvePreset,
+  type PresetName,
+} from "@/components/audit/presets";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const ALL_SEVERITIES: AuditSeverity[] = ["INFO", "NOTICE", "WARNING", "CRITICAL"];
 
@@ -44,6 +58,12 @@ interface AuditLogClientProps {
   slug: string;
   initialEvents: AuditEventsPage;
   initialFilter: AuditEventFilter;
+  /**
+   * Audit-event metadata catalogue. Used by `applyPreset()` to resolve
+   * `group=COMPLIANCE` / `group=SECURITY` to concrete event-type lists.
+   * Defaults to `[]` so existing tests that don't supply metadata still work.
+   */
+  metadata?: AuditEventTypeMetadata[];
 }
 
 function isoDateInputValue(iso: string | undefined): string {
@@ -91,11 +111,28 @@ function FilterTextInput({
   );
 }
 
-export function AuditLogClient({ slug, initialEvents, initialFilter }: AuditLogClientProps) {
+export function AuditLogClient({
+  slug,
+  initialEvents,
+  initialFilter,
+  metadata = [],
+}: AuditLogClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  /**
+   * When a group-preset (Compliance/Security/Financial approvals) is active,
+   * this holds the resolved event-type list so the banner can list them. The
+   * URL param `eventType=__multi__` is the persistence signal — but we keep
+   * the resolved list in component state because it's not encoded in the URL.
+   * Cleared when the user mutates filters in any way that drops the sentinel.
+   */
+  const [multiEventBanner, setMultiEventBanner] = useState<{
+    presetLabel: string;
+    eventTypes: string[];
+    metadataMissing: boolean;
+  } | null>(null);
 
   const events = initialEvents;
   const { content, page } = events;
@@ -231,12 +268,70 @@ export function AuditLogClient({ slug, initialEvents, initialFilter }: AuditLogC
     setExpanded(new Set());
   }, [currentPage]);
 
+  // Drop the multi-event banner if the URL no longer carries the sentinel
+  // (e.g. the user typed a real event-type, hit Clear filters, or applied a
+  // single-eventType preset).
+  useEffect(() => {
+    if (initialFilter.eventType !== MULTI_EVENT_SENTINEL) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- syncs banner with URL param; bounded by initialFilter changes.
+      setMultiEventBanner(null);
+    }
+  }, [initialFilter.eventType]);
+
   const clearFilters = useCallback(() => {
     updateUrl((params) => {
       // Don't flush pending inputs — the user explicitly asked to clear.
       FILTER_KEYS.forEach((k) => params.delete(k));
     });
   }, [updateUrl]);
+
+  // Epic 506B / 506.9 — preset application. Presets replace (not stack) all
+  // filter keys, then set the preset's deltas. All four are URL mutations only;
+  // no backend round-trip.
+  //
+  // Group presets (Compliance, Security, Financial approvals) resolve to
+  // multiple event types but the backend list endpoint only accepts a single
+  // `eventType` param. Rather than silently narrowing to the first match
+  // (which would mislead the user into thinking they're viewing all preset
+  // events), we set `eventType` to a sentinel that yields zero results and
+  // surface a banner listing the resolved event types. Single-eventType
+  // presets (none currently — Sensitive uses severities only) work as normal.
+  // TODO(506B-followup): replace sentinel with a multi-value backend filter.
+  const applyPreset = useCallback(
+    (preset: PresetName) => {
+      const def = resolvePreset(preset, metadata);
+      const presetLabel = PRESET_OPTIONS.find((o) => o.value === preset)?.label ?? preset;
+      const eventTypes = def.eventTypes ?? [];
+      const isGroupPreset = def.isGroupPreset === true;
+
+      updateUrl((params) => {
+        FILTER_KEYS.forEach((k) => params.delete(k));
+        if (def.from) params.set("from", def.from);
+        if (def.severities && def.severities.length > 0) {
+          params.set("severities", def.severities.join(","));
+        }
+        if (isGroupPreset) {
+          // Fail-closed: regardless of how many event types resolved (zero
+          // when metadata is missing/failed, many when present), use the
+          // sentinel so the user never sees a misleadingly narrowed list.
+          params.set("eventType", MULTI_EVENT_SENTINEL);
+        } else if (eventTypes.length === 1) {
+          params.set("eventType", eventTypes[0]);
+        }
+      });
+
+      if (isGroupPreset) {
+        setMultiEventBanner({
+          presetLabel,
+          eventTypes,
+          metadataMissing: eventTypes.length === 0,
+        });
+      } else {
+        setMultiEventBanner(null);
+      }
+    },
+    [updateUrl, metadata]
+  );
 
   const hasActiveFilters = useMemo(
     () =>
@@ -259,6 +354,72 @@ export function AuditLogClient({ slug, initialEvents, initialFilter }: AuditLogC
 
   return (
     <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Preset</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <label htmlFor="audit-preset-select" className="sr-only">
+            Filter preset
+          </label>
+          {/*
+            Shadcn Select keyed by `multiEventBanner` so picking the same
+            preset twice in a row still fires onValueChange (the component
+            unmounts/remounts with a fresh empty value).
+          */}
+          <Select
+            key={multiEventBanner?.presetLabel ?? "no-preset"}
+            value=""
+            onValueChange={(v) => {
+              if (v) applyPreset(v as PresetName);
+            }}
+          >
+            <SelectTrigger
+              id="audit-preset-select"
+              data-testid="audit-preset-select"
+              size="sm"
+              className="w-72"
+            >
+              <SelectValue placeholder="— Choose a preset —" />
+            </SelectTrigger>
+            <SelectContent>
+              {PRESET_OPTIONS.map((opt) => (
+                <SelectItem key={opt.value} value={opt.value}>
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {multiEventBanner && (
+            <div
+              role="status"
+              data-testid="audit-preset-multi-event-banner"
+              className="rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200"
+            >
+              {multiEventBanner.metadataMissing ? (
+                <>
+                  <span className="font-medium">
+                    Preset &ldquo;{multiEventBanner.presetLabel}&rdquo;
+                  </span>{" "}
+                  could not resolve any event types (metadata unavailable). Results temporarily
+                  empty &mdash; backend multi-value filter pending.
+                </>
+              ) : (
+                <>
+                  <span className="font-medium">
+                    Preset &ldquo;{multiEventBanner.presetLabel}&rdquo;
+                  </span>{" "}
+                  filters to {multiEventBanner.eventTypes.length} event{" "}
+                  {multiEventBanner.eventTypes.length === 1 ? "type" : "types"}:{" "}
+                  <span className="font-mono">{multiEventBanner.eventTypes.join(", ")}</span>{" "}
+                  &mdash; backend multi-value filter pending; results temporarily empty.
+                </>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Filters</CardTitle>

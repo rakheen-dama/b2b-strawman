@@ -2,12 +2,15 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { ApiError } from "@/lib/api/client";
 import {
+  getAuditMetadata,
   listAuditEvents,
   type AuditEventFilter,
-  type AuditSeverity,
   type AuditEventsPage,
+  type AuditEventTypeMetadata,
+  type AuditSeverity,
 } from "@/lib/api/audit-events";
 import { AuditLogClient } from "./audit-log-client";
+import { ExportDropdown } from "@/components/audit/export-dropdown";
 
 const PAGE_SIZE = 50;
 const VALID_SEVERITIES: ReadonlySet<AuditSeverity> = new Set([
@@ -72,12 +75,17 @@ export default async function AuditLogPage({
     </Link>
   );
 
-  // Note: getAuditMetadata() is intentionally not fetched here. Epic 506B will
-  // wire it into a metadata-driven event-type select; until then it's dead
-  // weight on the server render.
+  // Epic 506B: fetch metadata server-side so client-side preset resolution can
+  // map `group=COMPLIANCE` / `group=SECURITY` to event-type lists without an
+  // extra round trip. Failures are non-fatal (preset list still renders;
+  // group-based presets just resolve to no event types).
   let events: AuditEventsPage;
+  let metadata: AuditEventTypeMetadata[] = [];
   try {
-    events = await listAuditEvents(filter);
+    [events, metadata] = await Promise.all([
+      listAuditEvents(filter),
+      getAuditMetadata().catch(() => [] as AuditEventTypeMetadata[]),
+    ]);
   } catch (error) {
     if (error instanceof ApiError && error.status === 403) {
       return (
@@ -98,15 +106,23 @@ export default async function AuditLogPage({
     <div className="space-y-8">
       {backLink}
 
-      <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Audit log</h1>
-        <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          Read-only feed of audit events. Filter by date range, severity, actor, event type, or
-          entity.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Audit log</h1>
+          <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
+            Read-only feed of audit events. Filter by date range, severity, actor, event type, or
+            entity.
+          </p>
+        </div>
+        <ExportDropdown filter={filter} />
       </div>
 
-      <AuditLogClient slug={slug} initialEvents={events} initialFilter={filter} />
+      <AuditLogClient
+        slug={slug}
+        initialEvents={events}
+        initialFilter={filter}
+        metadata={metadata}
+      />
     </div>
   );
 }

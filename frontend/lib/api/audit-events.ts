@@ -1,6 +1,28 @@
 import "server-only";
 
-import { api } from "./client";
+import { API_BASE, ApiError, api, getAuthFetchOptions } from "./client";
+import type { ProblemDetail } from "@/lib/types/common";
+
+const EXPORT_TIMEOUT_MS = 30_000;
+
+/**
+ * fetch wrapper that aborts after EXPORT_TIMEOUT_MS. Used by the export
+ * helpers because the upstream PDF/CSV endpoints can otherwise hang
+ * indefinitely on a stalled stream.
+ */
+async function fetchWithTimeout(
+  url: string,
+  init: RequestInit & { timeoutMs?: number } = {}
+): Promise<Response> {
+  const { timeoutMs = EXPORT_TIMEOUT_MS, ...rest } = init;
+  const controller = new AbortController();
+  const handle = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...rest, signal: controller.signal });
+  } finally {
+    clearTimeout(handle);
+  }
+}
 
 // === Enums ===
 
@@ -138,4 +160,79 @@ export async function listFacetEntityTypes(params?: {
   return api.get<EntityTypeFacet[]>(
     `/api/audit-events/facets/entity-types${buildFacetQuery(params)}`
   );
+}
+
+// === Epic 506B: Count + Export helpers ===
+
+/**
+ * Returns the total number of events matching the filter.
+ *
+ * The backend has no `?count=true` route — we re-use the list endpoint with
+ * `size=1` and read `page.totalElements` (Spring `Page<T>` semantics).
+ */
+export async function countAuditEvents(filter: AuditEventFilter): Promise<number> {
+  const page = await listAuditEvents({ ...filter, page: 0, size: 1 });
+  return page.page.totalElements;
+}
+
+function buildExportQuery(filter: AuditEventFilter): URLSearchParams {
+  const sp = buildAuditEventQuery(filter);
+  // export endpoints ignore page/size — strip to keep URL minimal.
+  sp.delete("page");
+  sp.delete("size");
+  return sp;
+}
+
+/**
+ * Streams the audit log as CSV text. No row cap.
+ */
+export async function exportAuditCsv(filter: AuditEventFilter): Promise<string> {
+  const qs = buildExportQuery(filter);
+  const auth = await getAuthFetchOptions("GET");
+  const response = await fetchWithTimeout(
+    `${API_BASE}/api/audit-events/export.csv?${qs.toString()}`,
+    {
+      headers: auth.headers,
+      credentials: auth.credentials,
+    }
+  );
+  if (!response.ok) {
+    throw new ApiError(response.status, `Export failed: ${response.statusText}`);
+  }
+  return response.text();
+}
+
+/**
+ * Streams the audit log as a PDF (returns base64 string for the client to
+ * decode into a Blob). 10000-row cap enforced server-side; over-cap returns
+ * 413 with a ProblemDetail body that includes `rowCount` + `cap`.
+ */
+export async function exportAuditPdf(filter: AuditEventFilter): Promise<string> {
+  const qs = buildExportQuery(filter);
+  const auth = await getAuthFetchOptions("GET");
+  const response = await fetchWithTimeout(
+    `${API_BASE}/api/audit-events/export.pdf?${qs.toString()}`,
+    {
+      headers: auth.headers,
+      credentials: auth.credentials,
+    }
+  );
+  if (!response.ok) {
+    let detail: ProblemDetail | undefined;
+    try {
+      const parsed = (await response.json()) as unknown;
+      // RFC 9457 ProblemDetail body — guard the shape before forwarding.
+      if (parsed && typeof parsed === "object") {
+        detail = parsed as ProblemDetail;
+      }
+    } catch {
+      // body wasn't JSON — fall through with status text only
+    }
+    const message =
+      (typeof detail?.detail === "string" && detail.detail) ||
+      `Export failed: ${response.statusText}`;
+    throw new ApiError(response.status, message, detail);
+  }
+  const buffer = await response.arrayBuffer();
+  return Buffer.from(buffer).toString("base64");
 }

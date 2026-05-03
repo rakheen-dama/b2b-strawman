@@ -327,12 +327,15 @@ If the brief is genuinely missing critical info, note it in the PR description
 and make your best judgment call.
 ```
 
-## Step 4 — Combined Code Review (Internal + CodeRabbit)
+## Step 4 — Combined Code Review (Superpowers reviews are the gate; CodeRabbit is best-effort)
 
-CodeRabbit is the **primary quality gate**. The internal Claude review supplements it.
-Both reviews run in parallel, findings are merged, and a single fixer addresses everything.
+The merge gate depends ONLY on the two `superpowers:code-reviewer` subagent reviews dispatched below.
+CodeRabbit may or may not be ready, may or may not return findings — it is collected ONCE, best-effort,
+and treated as supplementary input to the fixer. **Never block on CodeRabbit. Never poll for it.**
+Polling loops on CodeRabbit (especially `until` loops on `pulls/{n}/comments` and `pulls/{n}/reviews`)
+have hung for hours waiting for endpoints CodeRabbit doesn't populate for clean diffs. Do not reintroduce them.
 
-### 4.1 — Start Internal Review (non-blocking)
+### 4.1 — Dispatch two superpowers reviews in parallel (BLOCKING)
 
 Extract the PR number from the builder's response. Write the diff to a file:
 
@@ -340,16 +343,21 @@ Extract the PR number from the builder's response. Write the diff to a file:
 gh pr diff {PR_NUMBER} > /tmp/pr-{PR_NUMBER}.diff
 ```
 
-Launch a `general-purpose` subagent **in the background** (`run_in_background: true`):
+In a SINGLE message, dispatch BOTH of the following Agent calls in parallel.
+Use `subagent_type: "superpowers:code-reviewer"` for both.
+Do NOT use `run_in_background` — both reviews must complete before the merge step proceeds.
+
+**Agent A — Bug, security, and quality lens**:
 
 ```
-You are reviewing PR #{PR_NUMBER} for the DocTeams multi-tenant SaaS platform.
+You are the BUG / QUALITY reviewer for PR #{PR_NUMBER} on the multi-tenant B2B SaaS platform.
 
 ## Setup
 1. Read the diff: /tmp/pr-{PR_NUMBER}.diff
-2. Read conventions: backend/CLAUDE.md {and/or frontend/CLAUDE.md based on scope}
+2. Read the brief: /Users/rakheendama/Projects/2026/worktree-epic-{ID}/.epic-brief.md
+3. Read conventions: backend/CLAUDE.md and/or frontend/CLAUDE.md based on scope.
 
-## What to Check
+## What to check
 
 ### Critical (blocks merge)
 - **Tenant isolation**: Missing @FilterDef/@Filter on new entities, using findById() instead
@@ -368,10 +376,10 @@ You are reviewing PR #{PR_NUMBER} for the DocTeams multi-tenant SaaS platform.
 ### Medium
 - Dead code, duplicated logic, missing error handling at system boundaries
 
-## Output Format
+## Output format
 Return structured findings:
 
-# Review: PR #{PR_NUMBER}
+# Review: PR #{PR_NUMBER} (Bug/Quality)
 ## Verdict: {APPROVE | REQUEST_CHANGES}
 ## Critical
 - **[file:line]** Issue → Fix: suggestion
@@ -386,76 +394,125 @@ Return structured findings:
 Only report issues you're >80% confident about. Include file:line for every finding.
 ```
 
-### 4.2 — Wait for CodeRabbit (while internal review runs)
+**Agent B — Architecture and design lens**:
 
-Poll for CodeRabbit's review (it typically posts within 1-3 minutes of PR creation).
-This runs concurrently with the internal review above.
+```
+You are the ARCHITECTURE reviewer for PR #{PR_NUMBER} on the multi-tenant B2B SaaS platform.
 
-```bash
-# Poll every 30s for up to 5 minutes
-for i in $(seq 1 10); do
-  CR_COMMENTS=$(gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments \
-    --jq '[.[] | select(.user.login == "coderabbitai[bot]")] | length')
-  CR_REVIEWS=$(gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/reviews \
-    --jq '[.[] | select(.user.login == "coderabbitai[bot]")] | length')
-  if [ "$CR_COMMENTS" -gt 0 ] || [ "$CR_REVIEWS" -gt 0 ]; then
-    echo "CodeRabbit review found: $CR_COMMENTS inline comments, $CR_REVIEWS reviews"
-    break
-  fi
-  echo "Waiting for CodeRabbit... ($i/10)"
-  sleep 30
-done
+## Setup
+1. Read the diff: /tmp/pr-{PR_NUMBER}.diff
+2. Read the brief: /Users/rakheendama/Projects/2026/worktree-epic-{ID}/.epic-brief.md
+3. Read conventions: backend/CLAUDE.md and/or frontend/CLAUDE.md based on scope.
+4. Skim relevant ADRs in architecture/ if the change touches a documented boundary.
+
+## What to check
+
+### Critical (blocks merge)
+- **Layering violations**: Controller calling repository directly, service leaking JPA entities
+  to controller, cross-package reach-throughs that bypass an existing service interface
+- **Boundary breakage**: Multitenancy/audit/security boundary violated (e.g., new code paths
+  that side-step `RequestScopes.runForTenant`, audit events emitted without resolver, security
+  filters bypassed)
+- **ADR contradictions**: Change directly contradicts an existing ADR in architecture/
+  without an ADR amendment
+
+### High (should fix)
+- **Premature abstraction**: New interface with single implementation and no extension seam
+  in the brief; over-parameterized config; speculative generics
+- **Under-abstraction**: Three+ near-identical copies of the same logic introduced in this PR
+- **Convention drift**: New code introduces a pattern that conflicts with an established one
+  in the same package (e.g., new enum style when neighbouring files use a different one)
+- **Missing extension seams** explicitly required by the brief
+
+### Medium
+- Cohesion / responsibility issues (god class, anaemic service)
+- Naming that obscures intent
+- Tests that bind to internals rather than behaviour
+
+## Output format
+Return structured findings:
+
+# Review: PR #{PR_NUMBER} (Architecture)
+## Verdict: {APPROVE | REQUEST_CHANGES}
+## Critical
+- **[file:line]** Issue → Fix: suggestion
+## High
+{same}
+## Medium
+{same}
+## Summary
+- Issues: N critical, N high, N medium
+- {1-2 sentence assessment}
+
+Only report issues you're >80% confident about. Include file:line for every finding.
 ```
 
-If CodeRabbit hasn't posted after 5 minutes, proceed with internal review findings only.
+### 4.2 — Best-effort CodeRabbit collection (one shot, no polling)
 
-### 4.3 — Collect CodeRabbit Findings
+After both Agent A and Agent B return, do a SINGLE non-blocking check for any CodeRabbit output that
+happens to be ready. If nothing is there, move on — do not retry, do not sleep, do not loop.
 
 ```bash
-# Get all CodeRabbit inline comments with file paths, severity, and full body
+# One-shot — read whatever CodeRabbit has posted by now (may be nothing).
+# Check all three places CodeRabbit might post: review comments on the diff, formal reviews,
+# AND issue comments (CodeRabbit's "summary" / "no actionable comments" message lives here).
 gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments \
-  --jq '.[] | select(.user.login == "coderabbitai[bot]") | "[\(.path):\(.line // .original_line)] \(.body)"'
-
-# Also check for a summary review comment (posted as an issue comment, not a review comment)
+  --jq '.[] | select(.user.login == "coderabbitai[bot]") | "[\(.path):\(.line // .original_line)] \(.body)"' \
+  > /tmp/cr-inline-{PR_NUMBER}.txt 2>/dev/null || true
+gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/reviews \
+  --jq '.[] | select(.user.login == "coderabbitai[bot]") | .body' \
+  > /tmp/cr-reviews-{PR_NUMBER}.txt 2>/dev/null || true
 gh api repos/{owner}/{repo}/issues/{PR_NUMBER}/comments \
-  --jq '.[] | select(.user.login == "coderabbitai[bot]") | .body' | head -200
+  --jq '.[] | select(.user.login == "coderabbitai[bot]") | .body' \
+  > /tmp/cr-summary-{PR_NUMBER}.txt 2>/dev/null || true
 ```
 
-### 4.4 — Merge Findings & Dispatch Fixer
+Read the three files. If any have actionable findings (not just the boilerplate "No actionable
+comments were generated"), include them in the fixer brief as SECONDARY input. If all three are
+empty or just boilerplate, write "CodeRabbit: no actionable findings (or not yet posted — best-effort
+only, not blocking)" and proceed.
 
-Wait for the internal review agent to complete. Combine **both** sets of findings into a
-single deduplicated list. If a finding appears in both reviews, keep the more detailed version.
+### 4.3 — Merge findings & dispatch fixer
 
-If ANY findings exist (from either source), dispatch a **blocking** `general-purpose` subagent
-to fix them all in one pass:
+Combine the two superpowers reviews into a single deduplicated list. If the same file:line is
+flagged by both, keep the more detailed wording. Layer in any actionable CodeRabbit findings as
+secondary input.
+
+If NO Critical or High findings exist from either superpowers review (and no actionable CodeRabbit
+findings), skip the fixer and proceed directly to Step 5.
+
+If ANY Critical or High findings exist, dispatch a **blocking** `general-purpose` subagent to fix
+them all in one pass:
 
 ```
 You are fixing code review findings for PR #{PR_NUMBER} in worktree:
   /Users/rakheendama/Projects/2026/worktree-epic-{ID}
 
-## CodeRabbit Findings (PRIMARY — address ALL of these)
-{Paste ALL CodeRabbit inline comments here — file paths, line numbers, full descriptions.
- Include severity labels (Critical 🔴, Major 🟠, Minor 🟡).
- If CodeRabbit posted no comments, write "None".}
+## Superpowers Bug/Quality Findings (PRIMARY — address all Critical and High)
+{Paste Agent A findings. If verdict was APPROVE with no findings, write "None".}
 
-## Internal Review Findings (SECONDARY — address critical and high only)
-{Paste internal review findings here. If verdict was APPROVE with no findings, write "None".}
+## Superpowers Architecture Findings (PRIMARY — address all Critical and High)
+{Paste Agent B findings. If verdict was APPROVE with no findings, write "None".}
+
+## CodeRabbit Findings (SECONDARY, best-effort — address valid issues, mark false positives)
+{Paste any actionable CodeRabbit findings collected in 4.2.
+ If CodeRabbit had nothing actionable or wasn't ready, write "None".}
 
 ## Implementation Brief (for context)
 Read: /Users/rakheendama/Projects/2026/worktree-epic-{ID}/.epic-brief.md
 
 ## Instructions
 1. Read each finding carefully. Verify the issue exists in the current code before fixing.
-2. For CodeRabbit findings: fix ALL valid Critical, Major, and Minor issues.
-   If a finding is a false positive, explain WHY with evidence (e.g., "separate enums in
-   different packages", "already handled by filter X at line Y").
-3. For internal review findings: fix Critical and High issues only.
-4. After fixing, run the appropriate build tier to verify you didn't break anything:
+2. For superpowers Critical/High findings: fix ALL of them. If a finding is a false positive,
+   explain WHY with evidence (file:line proof).
+3. For CodeRabbit findings: fix valid issues; mark false positives with evidence.
+4. Medium findings: fix only if trivially fixable while you're already in the file. Don't expand scope.
+5. After fixing, run the appropriate build tier to verify you didn't break anything:
    - Format: cd /Users/rakheendama/Projects/2026/worktree-epic-{ID}/backend && ./mvnw spotless:apply 2>&1 | tail -3
    - Compile check: ./mvnw compile test-compile -q > /tmp/mvn-fix-{ID}.log 2>&1; echo $?
    - Full verify (once): ./mvnw clean verify -q > /tmp/mvn-fix-{ID}.log 2>&1; echo $?
-5. Commit: git commit -m "fix: address review findings for Epic {ID}"
-6. Push: git push
+6. Commit: git commit -m "fix: address review findings for Epic {ID}"
+7. Push: git push
 
 ## Report Format
 For EACH finding, report one of:
@@ -464,21 +521,31 @@ For EACH finding, report one of:
 - ⚠️ DEFERRED — {why this can't be fixed in this PR, e.g., requires architectural change}
 ```
 
-After the fixer pushes, check once more for new CodeRabbit comments on the fix commit.
-If new findings appear, run ONE more fix cycle (max 2 total to avoid infinite loops).
-If findings persist after 2 fix cycles, note them in the PR description and proceed.
+### 4.4 — Re-review after fix (max 2 cycles)
+
+After the fixer pushes, re-dispatch ONLY Agent A (bug/quality) on the new diff to confirm no
+regressions. Do NOT re-poll CodeRabbit. Do NOT re-dispatch Agent B unless Agent A flags an
+architectural regression.
+
+If Agent A returns Critical or High findings on the second pass, run ONE more fix cycle (max 2
+fix cycles total). If findings persist after 2 cycles, note them in the PR description and STOP
+(in auto-merge mode, exit non-zero so the wrapper script knows this slice failed).
 
 ## Step 5 — Merge
 
 ### Auto-Merge Mode (prompt contains "auto-merge")
 
 Merge immediately if ALL of the following are true (after fix cycles):
-- Internal review verdict is **APPROVE** (or all critical/high findings were fixed)
-- All CodeRabbit Critical and Major findings were fixed or confirmed false positive
-- Build is green
+- Both superpowers reviews (bug/quality AND architecture) returned **APPROVE** OR all their
+  Critical and High findings were fixed
+- Build is green (final `./mvnw verify` log shows exit 0)
+- The PR's GitHub merge state is `MERGEABLE` (`gh pr view {n} --json mergeStateStatus`)
 
-If any Critical or Major finding from **either** review remains unresolved after 2 fix cycles:
-**STOP** and report the unresolved issues. Do not merge. Exit with a clear error message
+CodeRabbit findings, if any, were addressed in the fixer pass — but CodeRabbit's status check
+state is NOT a blocker. Don't wait for it. Don't poll for it.
+
+If any Critical or High finding from EITHER superpowers review remains unresolved after 2 fix
+cycles: **STOP** and report the unresolved issues. Do not merge. Exit with a clear error message
 so the wrapper script knows this slice failed.
 
 ### Manual Mode (no "auto-merge" in prompt)

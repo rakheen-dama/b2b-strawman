@@ -21,6 +21,12 @@ public interface TrustTransactionRepository extends JpaRepository<TrustTransacti
   List<TrustTransaction> findByCustomerIdAndTrustAccountIdOrderByTransactionDateDesc(
       UUID customerId, UUID trustAccountId);
 
+  /**
+   * Returns every trust transaction for the customer regardless of trust account. Used by DSAR
+   * audit-trail collection (Epic 505A) to resolve child-entity IDs.
+   */
+  List<TrustTransaction> findByCustomerId(UUID customerId);
+
   Page<TrustTransaction> findByCustomerIdAndTrustAccountIdOrderByTransactionDateDesc(
       UUID customerId, UUID trustAccountId, Pageable pageable);
 

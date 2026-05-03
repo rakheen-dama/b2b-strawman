@@ -145,4 +145,34 @@ public interface AuditService {
    * @return non-negative total of matching rows
    */
   long countEvents(AuditEventFilter filter);
+
+  /**
+   * Streams every audit event related to the given customer for DSAR export (Epic 505A). Per
+   * architecture §12.6.2 the customer-scope is the union of three branches:
+   *
+   * <ul>
+   *   <li>(a) events whose {@code entity_type='customer'} AND {@code entity_id=customerId}
+   *   <li>(b) events on child entities the customer owns (projects, invoices, proposals,
+   *       information requests, documents, trust transactions, acceptance requests) — resolved by
+   *       the implementation via the corresponding child repositories
+   *   <li>(c) events whose {@code details->>'customerId'} references the customer (best-effort, no
+   *       dedicated index)
+   * </ul>
+   *
+   * <p><strong>Caller contract:</strong>
+   *
+   * <ul>
+   *   <li>The caller MUST close the stream (try-with-resources).
+   *   <li>The caller MUST be inside an active read-only transaction so the JDBC cursor stays open
+   *       for the duration of the iteration.
+   * </ul>
+   *
+   * <p>Per ADR-262 the export is unsanitised — internal {@code details} JSON is included verbatim
+   * because POPIA §23 entitles the data subject to their full record. Sanitisation for the live
+   * portal is a separate concern (Phase 68).
+   *
+   * @param customerId the data subject's customer ID
+   * @return open stream of matching audit events ordered by {@code occurredAt DESC}
+   */
+  Stream<AuditEvent> findEventsForCustomer(UUID customerId);
 }

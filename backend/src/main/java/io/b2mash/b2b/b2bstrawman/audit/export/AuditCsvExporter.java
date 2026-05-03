@@ -57,22 +57,42 @@ public class AuditCsvExporter {
    * @return the number of data rows written
    */
   public long writeCsv(AuditEventFilter filter, OutputStream out) throws IOException {
+    try (Stream<AuditEvent> stream = auditService.streamEvents(filter)) {
+      return writeCsv(stream, out);
+    }
+  }
+
+  /**
+   * Streaming overload that writes CSV rows for a pre-fetched event stream — used by DSAR
+   * audit-trail export (Epic 505A) where the caller has already opened a customer-scoped stream via
+   * {@link AuditService#findEventsForCustomer(UUID)}.
+   *
+   * <p>This overload does NOT close the stream (the caller's try-with-resources owns it) and does
+   * NOT close the {@link OutputStream} (the caller manages the underlying ZipEntry lifecycle). It
+   * does flush the writer after each chunk and at the end so all rows reach the underlying stream
+   * before the caller closes the ZipEntry.
+   *
+   * <p>Caller MUST be inside an active read-only transaction (Hibernate cursor contract).
+   *
+   * @param stream open audit-event stream (caller closes)
+   * @param out target stream (caller closes)
+   * @return the number of data rows written (excluding header)
+   */
+  public long writeCsv(Stream<AuditEvent> stream, OutputStream out) throws IOException {
     var writer = new BufferedWriter(new OutputStreamWriter(out, StandardCharsets.UTF_8));
     long rowCount = 0L;
-    try (Stream<AuditEvent> stream = auditService.streamEvents(filter)) {
-      writer.write(HEADER);
-      writer.write(CRLF);
-      var iterator = stream.iterator();
-      while (iterator.hasNext()) {
-        var enriched = metadataResolver.enrich(iterator.next());
-        writeRow(writer, enriched);
-        rowCount++;
-        if (rowCount % 1024 == 0) {
-          writer.flush();
-        }
+    writer.write(HEADER);
+    writer.write(CRLF);
+    var iterator = stream.iterator();
+    while (iterator.hasNext()) {
+      var enriched = metadataResolver.enrich(iterator.next());
+      writeRow(writer, enriched);
+      rowCount++;
+      if (rowCount % 1024 == 0) {
+        writer.flush();
       }
-      writer.flush();
     }
+    writer.flush();
     return rowCount;
   }
 

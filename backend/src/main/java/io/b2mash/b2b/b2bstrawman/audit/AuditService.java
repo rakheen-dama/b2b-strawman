@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.audit;
 
+import java.time.Instant;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -70,4 +71,17 @@ public interface AuditService {
    * @return non-null display label suitable for UI presentation
    */
   String resolveActorDisplay(UUID actorId, String actorType);
+
+  /**
+   * Returns a single transactional snapshot of three facet aggregations across {@code audit_events}
+   * inside the date range {@code [from, to)}. Per architecture §12.3.1 the snapshot powers all
+   * three controller-level facet endpoints (502B). EventType facets are enriched via {@link
+   * AuditEventTypeRegistry#resolve(String)}; actor facets via the §12.3.4 fallback chain.
+   *
+   * @param from inclusive lower bound (UTC)
+   * @param to exclusive upper bound (UTC)
+   * @return non-null snapshot with three lists; each list may be empty if the range produces no
+   *     data
+   */
+  FacetSnapshot facets(Instant from, Instant to);
 }

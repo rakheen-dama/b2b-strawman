@@ -106,7 +106,7 @@ class AuditTenantIsolationTest {
             () -> {
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter(null, null, null, null, null, null),
+                      new AuditEventFilter(null, null, null, null, null, null, null),
                       PageRequest.of(0, 100));
 
               assertThat(page.getContent()).anyMatch(e -> e.getEntityId().equals(entityIdA));
@@ -119,7 +119,7 @@ class AuditTenantIsolationTest {
             () -> {
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter(null, null, null, null, null, null),
+                      new AuditEventFilter(null, null, null, null, null, null, null),
                       PageRequest.of(0, 100));
 
               assertThat(page.getContent()).anyMatch(e -> e.getEntityId().equals(entityIdB));
@@ -170,7 +170,7 @@ class AuditTenantIsolationTest {
             () -> {
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter(null, null, null, null, null, null),
+                      new AuditEventFilter(null, null, null, null, null, null, null),
                       PageRequest.of(0, 100));
 
               assertThat(page.getContent()).anyMatch(e -> e.getEntityId().equals(entityIdA));
@@ -183,7 +183,7 @@ class AuditTenantIsolationTest {
             () -> {
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter(null, null, null, null, null, null),
+                      new AuditEventFilter(null, null, null, null, null, null, null),
                       PageRequest.of(0, 100));
 
               assertThat(page.getContent()).anyMatch(e -> e.getEntityId().equals(entityIdB));
@@ -213,7 +213,7 @@ class AuditTenantIsolationTest {
               // Use findEvents to verify the event was persisted in the current tenant schema
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter(null, entityId, null, null, null, null),
+                      new AuditEventFilter(null, entityId, null, null, null, null, null),
                       PageRequest.of(0, 1));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -245,7 +245,7 @@ class AuditTenantIsolationTest {
 
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter(null, entityId, null, null, null, null),
+                      new AuditEventFilter(null, entityId, null, null, null, null, null),
                       PageRequest.of(0, 1));
               eventIdRef.set(page.getContent().getFirst().getId());
             });
@@ -287,7 +287,7 @@ class AuditTenantIsolationTest {
 
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter(null, entityId, null, null, null, null),
+                      new AuditEventFilter(null, entityId, null, null, null, null, null),
                       PageRequest.of(0, 1));
               eventIdRef.set(page.getContent().getFirst().getId());
             });

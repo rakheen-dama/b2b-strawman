@@ -47,7 +47,7 @@ public class InternalAuditController {
       throws Exception {
 
     String schema = resolveSchema(orgId);
-    var filter = new AuditEventFilter(entityType, entityId, actorId, eventType, from, to);
+    var filter = new AuditEventFilter(entityType, entityId, actorId, eventType, from, to, null);
     var pageable =
         PageRequest.of(page, Math.min(size, 200), Sort.by(Sort.Direction.DESC, "occurredAt"));
 

@@ -97,7 +97,7 @@ class TaskServiceAuditTest {
             () -> {
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter("task", taskId, null, "task.created", null, null),
+                      new AuditEventFilter("task", taskId, null, "task.created", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -147,7 +147,7 @@ class TaskServiceAuditTest {
             () -> {
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter("task", taskId, null, "task.updated", null, null),
+                      new AuditEventFilter("task", taskId, null, "task.updated", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -200,7 +200,7 @@ class TaskServiceAuditTest {
             () -> {
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter("task", taskId, null, "task.updated", null, null),
+                      new AuditEventFilter("task", taskId, null, "task.updated", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -242,7 +242,7 @@ class TaskServiceAuditTest {
             () -> {
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter("task", taskId, null, "task.deleted", null, null),
+                      new AuditEventFilter("task", taskId, null, "task.deleted", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -281,7 +281,7 @@ class TaskServiceAuditTest {
             () -> {
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter("task", taskId, null, "task.claimed", null, null),
+                      new AuditEventFilter("task", taskId, null, "task.claimed", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -326,7 +326,7 @@ class TaskServiceAuditTest {
             () -> {
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter("task", taskId, null, "task.released", null, null),
+                      new AuditEventFilter("task", taskId, null, "task.released", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -370,7 +370,7 @@ class TaskServiceAuditTest {
             () -> {
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter("task", taskId, null, "task.updated", null, null),
+                      new AuditEventFilter("task", taskId, null, "task.updated", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);

@@ -253,6 +253,7 @@ class TrustFeeTransferReversalCascadeTest {
                               null,
                               "invoice.payment_reversed",
                               null,
+                              null,
                               null),
                           PageRequest.of(0, 10));
                   assertThat(auditPage.getContent())
@@ -388,6 +389,7 @@ class TrustFeeTransferReversalCascadeTest {
                               invoiceIdHolder[0],
                               null,
                               "invoice.payment_partially_reversed",
+                              null,
                               null,
                               null),
                           PageRequest.of(0, 10));

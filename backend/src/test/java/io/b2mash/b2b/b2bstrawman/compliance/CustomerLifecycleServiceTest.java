@@ -186,7 +186,7 @@ class CustomerLifecycleServiceTest {
                 auditService
                     .findEvents(
                         new AuditEventFilter(
-                            "customer", customerId, null, "customer.lifecycle.", null, null),
+                            "customer", customerId, null, "customer.lifecycle.", null, null, null),
                         PageRequest.of(0, 10))
                     .getContent());
 

@@ -334,7 +334,7 @@ public class CustomerLifecycleService {
   @Transactional(readOnly = true)
   public List<AuditEvent> getLifecycleHistory(UUID customerId) {
     var filter =
-        new AuditEventFilter("customer", customerId, null, "customer.lifecycle.", null, null);
+        new AuditEventFilter("customer", customerId, null, "customer.lifecycle.", null, null, null);
     var page = auditService.findEvents(filter, PageRequest.of(0, 100));
     return page.getContent();
   }

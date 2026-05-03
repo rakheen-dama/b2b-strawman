@@ -108,7 +108,7 @@ class TimeEntryServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "time_entry", entryId, null, "time_entry.created", null, null),
+                          "time_entry", entryId, null, "time_entry.created", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -162,7 +162,7 @@ class TimeEntryServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "time_entry", entryId, null, "time_entry.updated", null, null),
+                          "time_entry", entryId, null, "time_entry.updated", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -211,7 +211,7 @@ class TimeEntryServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "time_entry", entryId, null, "time_entry.deleted", null, null),
+                          "time_entry", entryId, null, "time_entry.deleted", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -258,7 +258,7 @@ class TimeEntryServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "time_entry", entryId, null, "time_entry.updated", null, null),
+                          "time_entry", entryId, null, "time_entry.updated", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);

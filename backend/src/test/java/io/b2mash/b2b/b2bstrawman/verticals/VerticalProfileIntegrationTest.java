@@ -126,6 +126,7 @@ class VerticalProfileIntegrationTest {
                           null,
                           "org_settings.vertical_profile_changed",
                           null,
+                          null,
                           null),
                       PageRequest.of(0, 10));
               assertThat(page.getTotalElements()).isGreaterThanOrEqualTo(1);

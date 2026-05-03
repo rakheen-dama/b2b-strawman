@@ -159,6 +159,7 @@ class InvoiceAuditIntegrationTest {
                           null,
                           "invoice.created",
                           null,
+                          null,
                           null),
                       PageRequest.of(0, 10));
 
@@ -193,6 +194,7 @@ class InvoiceAuditIntegrationTest {
                           UUID.fromString(invoiceId),
                           null,
                           "invoice.approved",
+                          null,
                           null,
                           null),
                       PageRequest.of(0, 10));
@@ -234,6 +236,7 @@ class InvoiceAuditIntegrationTest {
                           UUID.fromString(invoiceId),
                           null,
                           "invoice.voided",
+                          null,
                           null,
                           null),
                       PageRequest.of(0, 10));

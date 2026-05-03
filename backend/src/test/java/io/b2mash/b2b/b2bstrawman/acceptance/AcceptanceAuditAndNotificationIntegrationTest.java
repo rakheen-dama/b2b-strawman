@@ -166,7 +166,13 @@ class AcceptanceAuditAndNotificationIntegrationTest {
           var createdPage =
               auditService.findEvents(
                   new AuditEventFilter(
-                      "acceptance_request", requestId, null, "acceptance.created", null, null),
+                      "acceptance_request",
+                      requestId,
+                      null,
+                      "acceptance.created",
+                      null,
+                      null,
+                      null),
                   PageRequest.of(0, 10));
           assertThat(createdPage.getTotalElements()).isGreaterThanOrEqualTo(1);
           var createdEvent = createdPage.getContent().getFirst();
@@ -178,7 +184,7 @@ class AcceptanceAuditAndNotificationIntegrationTest {
           var sentPage =
               auditService.findEvents(
                   new AuditEventFilter(
-                      "acceptance_request", requestId, null, "acceptance.sent", null, null),
+                      "acceptance_request", requestId, null, "acceptance.sent", null, null, null),
                   PageRequest.of(0, 10));
           assertThat(sentPage.getTotalElements()).isGreaterThanOrEqualTo(1);
           var sentEvent = sentPage.getContent().getFirst();
@@ -219,7 +225,13 @@ class AcceptanceAuditAndNotificationIntegrationTest {
           var page =
               auditService.findEvents(
                   new AuditEventFilter(
-                      "acceptance_request", requestId, null, "acceptance.accepted", null, null),
+                      "acceptance_request",
+                      requestId,
+                      null,
+                      "acceptance.accepted",
+                      null,
+                      null,
+                      null),
                   PageRequest.of(0, 10));
           assertThat(page.getTotalElements()).isGreaterThanOrEqualTo(1);
           var event = page.getContent().getFirst();
@@ -248,7 +260,13 @@ class AcceptanceAuditAndNotificationIntegrationTest {
           var page =
               auditService.findEvents(
                   new AuditEventFilter(
-                      "acceptance_request", requestId, null, "acceptance.revoked", null, null),
+                      "acceptance_request",
+                      requestId,
+                      null,
+                      "acceptance.revoked",
+                      null,
+                      null,
+                      null),
                   PageRequest.of(0, 10));
           assertThat(page.getTotalElements()).isGreaterThanOrEqualTo(1);
           var event = page.getContent().getFirst();
@@ -277,7 +295,13 @@ class AcceptanceAuditAndNotificationIntegrationTest {
           var page =
               auditService.findEvents(
                   new AuditEventFilter(
-                      "acceptance_request", requestId, null, "acceptance.reminded", null, null),
+                      "acceptance_request",
+                      requestId,
+                      null,
+                      "acceptance.reminded",
+                      null,
+                      null,
+                      null),
                   PageRequest.of(0, 10));
           assertThat(page.getTotalElements()).isGreaterThanOrEqualTo(1);
           var event = page.getContent().getFirst();

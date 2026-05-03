@@ -93,7 +93,8 @@ class RoleAuditNotificationTest {
             () -> {
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter("org_role", roleId, null, "role.created", null, null),
+                      new AuditEventFilter(
+                          "org_role", roleId, null, "role.created", null, null, null),
                       PageRequest.of(0, 10));
               assertThat(page.getTotalElements()).isEqualTo(1);
               var event = page.getContent().getFirst();
@@ -150,7 +151,8 @@ class RoleAuditNotificationTest {
             () -> {
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter("org_role", roleId, null, "role.updated", null, null),
+                      new AuditEventFilter(
+                          "org_role", roleId, null, "role.updated", null, null, null),
                       PageRequest.of(0, 10));
               assertThat(page.getTotalElements()).isEqualTo(1);
               var event = page.getContent().getFirst();
@@ -202,7 +204,8 @@ class RoleAuditNotificationTest {
             () -> {
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter("org_role", roleId, null, "role.deleted", null, null),
+                      new AuditEventFilter(
+                          "org_role", roleId, null, "role.deleted", null, null, null),
                       PageRequest.of(0, 10));
               assertThat(page.getTotalElements()).isEqualTo(1);
               var event = page.getContent().getFirst();
@@ -259,7 +262,13 @@ class RoleAuditNotificationTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "member", regularMemberId, null, "member.role_changed", before, null),
+                          "member",
+                          regularMemberId,
+                          null,
+                          "member.role_changed",
+                          before,
+                          null,
+                          null),
                       PageRequest.of(0, 10));
               assertThat(page.getTotalElements()).isEqualTo(1);
               var event = page.getContent().getFirst();

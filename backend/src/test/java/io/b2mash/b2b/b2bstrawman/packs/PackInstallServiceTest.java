@@ -248,7 +248,7 @@ class PackInstallServiceTest {
                   var allInstalledEvents =
                       auditService.findEvents(
                           new AuditEventFilter(
-                              "pack_install", null, null, "pack.installed", null, null),
+                              "pack_install", null, null, "pack.installed", null, null, null),
                           PageRequest.of(0, 50));
                   // Filter to only "common" pack events for precise assertion
                   var commonPackEvents =
@@ -262,7 +262,7 @@ class PackInstallServiceTest {
                   var uninstalledEvents =
                       auditService.findEvents(
                           new AuditEventFilter(
-                              "pack_install", null, null, "pack.uninstalled", null, null),
+                              "pack_install", null, null, "pack.uninstalled", null, null, null),
                           PageRequest.of(0, 50));
                   assertThat(uninstalledEvents.getTotalElements()).isEqualTo(1);
                   assertThat(uninstalledEvents.getContent().getFirst().getDetails().get("packId"))

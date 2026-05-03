@@ -2,8 +2,11 @@ package io.b2mash.b2b.b2bstrawman.audit;
 
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
+import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -33,11 +36,15 @@ public class DatabaseAuditService implements AuditService {
 
   private final AuditEventRepository auditEventRepository;
   private final MemberRepository memberRepository;
+  private final AuditEventTypeRegistry auditEventTypeRegistry;
 
   public DatabaseAuditService(
-      AuditEventRepository auditEventRepository, MemberRepository memberRepository) {
+      AuditEventRepository auditEventRepository,
+      MemberRepository memberRepository,
+      AuditEventTypeRegistry auditEventTypeRegistry) {
     this.auditEventRepository = auditEventRepository;
     this.memberRepository = memberRepository;
+    this.auditEventTypeRegistry = auditEventTypeRegistry;
   }
 
   @Override
@@ -87,13 +94,107 @@ public class DatabaseAuditService implements AuditService {
   @Override
   @Transactional(readOnly = true)
   public Page<AuditEvent> findEvents(AuditEventFilter filter, Pageable pageable) {
-    return auditEventRepository.findByFilter(
+    Set<AuditSeverity> severities = filter.severities();
+    // Path 1: no severity filter -- use the existing JPQL query unchanged.
+    if (severities == null || severities.isEmpty()) {
+      return auditEventRepository.findByFilter(
+          filter.entityType(),
+          filter.entityId(),
+          filter.actorId(),
+          filter.eventType(),
+          filter.from(),
+          filter.to(),
+          pageable);
+    }
+
+    // Path 2: severity pre-flight (architecture §12.3.5).
+    // Step A: walk the registry for entries whose severity matches the request.
+    var matchingEntries = auditEventTypeRegistry.entriesMatching(severities);
+
+    // Step B: split into (a) exact strings to include, (b) prefix patterns to include.
+    Set<String> includeExact = new HashSet<>();
+    Set<String> includePrefixSql = new HashSet<>(); // e.g. "matter.closure.%"
+    for (var entry : matchingEntries) {
+      var et = entry.eventType();
+      if (et.endsWith(".*")) {
+        includePrefixSql.add(et.substring(0, et.length() - 2) + ".%");
+      } else {
+        includeExact.add(et);
+      }
+    }
+
+    // Step C: compute the EXCLUSION set. Re-run resolve() per registered exact entry per spec; if
+    // the resolved severity is NOT in the requested set but the eventType would match one of our
+    // prefix patterns, it must be excluded. This handles the matter.closure.override_used
+    // (CRITICAL) vs matter.closure.* (NOTICE) conflict.
+    Set<String> excludeExact = new HashSet<>();
+    for (var entry : auditEventTypeRegistry.entries()) {
+      var et = entry.eventType();
+      if (et.endsWith(".*")) {
+        continue; // only exact entries can be excluded
+      }
+      var resolved = auditEventTypeRegistry.resolve(et); // re-run per spec §12.3.5
+      if (severities.contains(resolved.severity())) {
+        continue; // already included by Step A
+      }
+      // resolved severity is NOT in requested set -- would any prefix pattern catch it?
+      for (var prefixSql : includePrefixSql) {
+        // prefixSql ends in ".%" -- strip the "%" to compare the literal prefix.
+        var literalPrefix = prefixSql.substring(0, prefixSql.length() - 1); // "matter.closure."
+        if (et.startsWith(literalPrefix)) {
+          excludeExact.add(et);
+          break;
+        }
+      }
+    }
+
+    // Step D: handle the INFO-fallback branch. Default-fallback rows (eventTypes not in the
+    // registry) resolve to severity=INFO via defaultFor(). When INFO is in the requested set, also
+    // match rows that don't match any registered exact AND don't match any registered prefix.
+    boolean infoRequested = severities.contains(AuditSeverity.INFO);
+    String[] allRegisteredExacts = null;
+    String[] allRegisteredPrefixes = null;
+    if (infoRequested) {
+      var allExacts = new HashSet<String>();
+      var allPrefixes = new HashSet<String>();
+      for (var entry : auditEventTypeRegistry.entries()) {
+        var et = entry.eventType();
+        if (et.endsWith(".*")) {
+          allPrefixes.add(et.substring(0, et.length() - 2) + ".%");
+        } else {
+          allExacts.add(et);
+        }
+      }
+      // Pass empty arrays as Postgres-friendly empty TEXT[] -- the predicate's NOT (= ANY(...))
+      // returns true for any value when the array is empty, which is the behaviour we want when
+      // the registry has no exacts/prefixes of a given kind.
+      allRegisteredExacts = allExacts.toArray(new String[0]);
+      allRegisteredPrefixes = allPrefixes.toArray(new String[0]);
+    }
+
+    // Step E: short-circuit when nothing can match.
+    if (includeExact.isEmpty() && includePrefixSql.isEmpty() && !infoRequested) {
+      return Page.empty(pageable);
+    }
+
+    // Step F: convert sets to nullable arrays and call the new repository method.
+    String[] exactArr = includeExact.isEmpty() ? null : includeExact.toArray(new String[0]);
+    String[] prefixArr =
+        includePrefixSql.isEmpty() ? null : includePrefixSql.toArray(new String[0]);
+    String[] excludeArr = excludeExact.isEmpty() ? null : excludeExact.toArray(new String[0]);
+
+    return auditEventRepository.findByFilterWithEventTypes(
         filter.entityType(),
         filter.entityId(),
         filter.actorId(),
         filter.eventType(),
         filter.from(),
         filter.to(),
+        exactArr,
+        prefixArr,
+        excludeArr,
+        allRegisteredExacts,
+        allRegisteredPrefixes,
         pageable);
   }
 
@@ -145,6 +246,54 @@ public class DatabaseAuditService implements AuditService {
     return staticActorLabel(actorType);
   }
 
+  @Override
+  @Transactional(readOnly = true)
+  public FacetSnapshot facets(Instant from, Instant to) {
+    var actorRows = auditEventRepository.projectActorFacets(from, to);
+    var eventTypeRows = auditEventRepository.projectEventTypeFacets(from, to);
+    var entityTypeRows = auditEventRepository.projectEntityTypeFacets(from, to);
+
+    // Actor facets — apply the §12.3.4 fallback chain. The query already LEFT-JOINed members so
+    // live members carry an actorName; missing rows come back null and need the "Former member
+    // ({uuid})" fallback. Non-USER actor types use the static label.
+    List<ActorFacet> actors = new ArrayList<>(actorRows.size());
+    for (var row : actorRows) {
+      var actorId = row.getActorId();
+      var actorType = row.getActorType();
+      String displayName;
+      if ("USER".equals(actorType)) {
+        var name = row.getActorName();
+        displayName = (name != null && !name.isBlank()) ? name : "Former member (" + actorId + ")";
+      } else {
+        displayName = staticActorLabel(actorType);
+      }
+      actors.add(new ActorFacet(actorId, displayName, actorType, row.getEventCount()));
+    }
+
+    // EventType facets — enrich each row via the registry resolver.
+    List<EventTypeFacet> eventTypes = new ArrayList<>(eventTypeRows.size());
+    for (var row : eventTypeRows) {
+      var metadata = auditEventTypeRegistry.resolve(row.getEventType());
+      eventTypes.add(
+          new EventTypeFacet(
+              row.getEventType(),
+              metadata.label(),
+              metadata.severity(),
+              metadata.group(),
+              row.getCount()));
+    }
+
+    // EntityType facets — title-case the raw entity_type for the label.
+    List<EntityTypeFacet> entityTypes = new ArrayList<>(entityTypeRows.size());
+    for (var row : entityTypeRows) {
+      entityTypes.add(
+          new EntityTypeFacet(row.getEntityType(), titleCase(row.getEntityType()), row.getCount()));
+    }
+
+    return new FacetSnapshot(
+        List.copyOf(actors), List.copyOf(eventTypes), List.copyOf(entityTypes));
+  }
+
   /**
    * Returns the static display label for non-USER actor types per architecture §12.3.4. Shared with
    * {@link AuditEventMetadataResolver} so the two resolution paths cannot drift. Unknown actor
@@ -158,5 +307,31 @@ public class DatabaseAuditService implements AuditService {
       case "API_KEY" -> "API Key";
       default -> "System";
     };
+  }
+
+  /**
+   * Title-cases a dotted/underscored token for facet display. Mirrors {@link
+   * AuditEventTypeRegistry}'s private titleCase helper -- {@code "task"} ⇒ {@code "Task"}, {@code
+   * "trust_account"} ⇒ {@code "Trust account"}.
+   */
+  private static String titleCase(String s) {
+    if (s == null || s.isEmpty()) {
+      return "";
+    }
+    var parts = s.split("[._]");
+    var out = new StringBuilder();
+    for (int i = 0; i < parts.length; i++) {
+      if (parts[i].isEmpty()) {
+        continue;
+      }
+      if (out.length() > 0) {
+        out.append(' ');
+      }
+      out.append(Character.toUpperCase(parts[i].charAt(0)));
+      if (parts[i].length() > 1) {
+        out.append(parts[i].substring(1));
+      }
+    }
+    return out.toString();
   }
 }

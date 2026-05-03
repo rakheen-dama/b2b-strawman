@@ -95,7 +95,7 @@ class ProposalAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "proposal", proposalId, null, "proposal.created", null, null),
+                          "proposal", proposalId, null, "proposal.created", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -150,7 +150,7 @@ class ProposalAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "proposal", proposalId, null, "proposal.updated", null, null),
+                          "proposal", proposalId, null, "proposal.updated", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -196,7 +196,7 @@ class ProposalAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "proposal", proposalId, null, "proposal.deleted", null, null),
+                          "proposal", proposalId, null, "proposal.deleted", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -226,7 +226,7 @@ class ProposalAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "proposal", proposalUuid, null, "proposal.sent", null, null),
+                          "proposal", proposalUuid, null, "proposal.sent", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);

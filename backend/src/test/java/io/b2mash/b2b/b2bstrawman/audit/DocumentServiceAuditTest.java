@@ -94,7 +94,7 @@ class DocumentServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "document", documentId, null, "document.created", null, null),
+                          "document", documentId, null, "document.created", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -142,7 +142,7 @@ class DocumentServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "document", documentId, null, "document.uploaded", null, null),
+                          "document", documentId, null, "document.uploaded", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -185,7 +185,7 @@ class DocumentServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "document", documentId, null, "document.deleted", null, null),
+                          "document", documentId, null, "document.deleted", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -235,7 +235,7 @@ class DocumentServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "document", documentId, null, "document.accessed", null, null),
+                          "document", documentId, null, "document.accessed", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -284,7 +284,13 @@ class DocumentServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "document", documentId, null, "document.visibility_changed", null, null),
+                          "document",
+                          documentId,
+                          null,
+                          "document.visibility_changed",
+                          null,
+                          null,
+                          null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);

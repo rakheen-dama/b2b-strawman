@@ -301,7 +301,13 @@ class ModuleSettingsIntegrationTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "org_settings", null, null, "org_settings.modules_updated", null, null),
+                          "org_settings",
+                          null,
+                          null,
+                          "org_settings.modules_updated",
+                          null,
+                          null,
+                          null),
                       PageRequest.of(0, 10));
               assertThat(page.getTotalElements()).isGreaterThanOrEqualTo(1);
               var event = page.getContent().getFirst();

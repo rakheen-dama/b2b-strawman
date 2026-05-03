@@ -61,7 +61,7 @@ class AuditServiceIntegrationTest {
 
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter(null, entityId, null, null, null, null),
+                      new AuditEventFilter(null, entityId, null, null, null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -90,7 +90,7 @@ class AuditServiceIntegrationTest {
 
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter(null, entityId, null, null, null, null),
+                      new AuditEventFilter(null, entityId, null, null, null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -125,7 +125,7 @@ class AuditServiceIntegrationTest {
 
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter(null, entityId, null, null, null, null),
+                      new AuditEventFilter(null, entityId, null, null, null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -169,7 +169,7 @@ class AuditServiceIntegrationTest {
 
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter("project", null, null, null, null, null),
+                      new AuditEventFilter("project", null, null, null, null, null, null),
                       PageRequest.of(0, 100));
 
               assertThat(page.getContent())
@@ -212,7 +212,7 @@ class AuditServiceIntegrationTest {
 
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter(null, targetId, null, null, null, null),
+                      new AuditEventFilter(null, targetId, null, null, null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -246,7 +246,7 @@ class AuditServiceIntegrationTest {
 
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter(null, null, actorA, null, null, null),
+                      new AuditEventFilter(null, null, actorA, null, null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getContent()).allMatch(e -> e.getActorId().equals(actorA));
@@ -299,7 +299,7 @@ class AuditServiceIntegrationTest {
               // Prefix "task." should match task.created and task.updated
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter(null, null, null, "task.", null, null),
+                      new AuditEventFilter(null, null, null, "task.", null, null, null),
                       PageRequest.of(0, 100));
 
               assertThat(page.getContent()).allMatch(e -> e.getEventType().startsWith("task."));
@@ -333,7 +333,8 @@ class AuditServiceIntegrationTest {
               // Event occurred just now — should be within the range
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter(null, entityId, null, null, oneHourAgo, oneHourFromNow),
+                      new AuditEventFilter(
+                          null, entityId, null, null, oneHourAgo, oneHourFromNow, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -343,7 +344,7 @@ class AuditServiceIntegrationTest {
               var pastEnd = now.minus(1, ChronoUnit.HOURS);
               var emptyPage =
                   auditService.findEvents(
-                      new AuditEventFilter(null, entityId, null, null, pastOnly, pastEnd),
+                      new AuditEventFilter(null, entityId, null, null, pastOnly, pastEnd, null),
                       PageRequest.of(0, 10));
 
               assertThat(emptyPage.getTotalElements()).isZero();
@@ -375,7 +376,7 @@ class AuditServiceIntegrationTest {
               // Page 0, size 2 — should get 2 events, total 5
               var page0 =
                   auditService.findEvents(
-                      new AuditEventFilter(null, entityId, null, null, null, null),
+                      new AuditEventFilter(null, entityId, null, null, null, null, null),
                       PageRequest.of(0, 2));
 
               assertThat(page0.getContent()).hasSize(2);
@@ -385,7 +386,7 @@ class AuditServiceIntegrationTest {
               // Page 2, size 2 — should get 1 event (remainder)
               var page2 =
                   auditService.findEvents(
-                      new AuditEventFilter(null, entityId, null, null, null, null),
+                      new AuditEventFilter(null, entityId, null, null, null, null, null),
                       PageRequest.of(2, 2));
 
               assertThat(page2.getContent()).hasSize(1);
@@ -423,7 +424,7 @@ class AuditServiceIntegrationTest {
 
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter(null, entityId, null, null, null, null),
+                      new AuditEventFilter(null, entityId, null, null, null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -461,7 +462,7 @@ class AuditServiceIntegrationTest {
 
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter(null, entityId, null, null, null, null),
+                      new AuditEventFilter(null, entityId, null, null, null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);

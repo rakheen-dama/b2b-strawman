@@ -81,7 +81,8 @@ class MemberSyncAuditTest {
             () -> {
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter("member", memberId, null, "member.synced", null, null),
+                      new AuditEventFilter(
+                          "member", memberId, null, "member.synced", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -151,7 +152,7 @@ class MemberSyncAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "member", memberId, null, "member.role_changed", null, null),
+                          "member", memberId, null, "member.role_changed", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isZero();
@@ -212,7 +213,7 @@ class MemberSyncAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "member", memberId, null, "member.role_changed", null, null),
+                          "member", memberId, null, "member.role_changed", null, null, null),
                       PageRequest.of(0, 10));
 
               // No role_changed event should be emitted
@@ -261,7 +262,8 @@ class MemberSyncAuditTest {
             () -> {
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter("member", memberId, null, "member.removed", null, null),
+                      new AuditEventFilter(
+                          "member", memberId, null, "member.removed", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);

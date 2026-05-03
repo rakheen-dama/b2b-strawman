@@ -120,8 +120,49 @@ public class AuditEventTypeRegistry {
             "Duplicate audit event type in registry: " + entry.eventType());
       }
     }
+    validatePrefixSeverityInvariant(entries);
     this.registry = Collections.unmodifiableMap(map);
     this.entriesList = List.copyOf(entries);
+  }
+
+  /**
+   * Enforces that no nested prefix entry (e.g. {@code dataprotection.dsar.*}) carries a different
+   * severity from a parent prefix that would otherwise subsume its match space (e.g. {@code
+   * dataprotection.*}).
+   *
+   * <p>The severity pre-flight in {@link DatabaseAuditService#findEvents} excludes
+   * <em>exact</em>-under-prefix mismatches via Step C, but cannot exclude prefix-under-prefix
+   * mismatches without an exclude-prefix mechanism in the SQL filter. Allowing such a pair would
+   * over-include rows under the child prefix when querying for the parent's severity. Failing
+   * construction prevents the catalogue from being authored into that broken state.
+   */
+  static void validatePrefixSeverityInvariant(List<AuditEventTypeMetadata> entries) {
+    var prefixEntries = entries.stream().filter(e -> e.eventType().endsWith(".*")).toList();
+    for (var parent : prefixEntries) {
+      var parentLiteral = parent.eventType().substring(0, parent.eventType().length() - 2) + ".";
+      for (var child : prefixEntries) {
+        if (child == parent) {
+          continue;
+        }
+        var childLiteral = child.eventType().substring(0, child.eventType().length() - 2) + ".";
+        if (childLiteral.startsWith(parentLiteral)
+            && !childLiteral.equals(parentLiteral)
+            && child.severity() != parent.severity()) {
+          throw new IllegalStateException(
+              "Audit event registry invariant violation: prefix entry '"
+                  + child.eventType()
+                  + "' (severity="
+                  + child.severity()
+                  + ") is nested under '"
+                  + parent.eventType()
+                  + "' (severity="
+                  + parent.severity()
+                  + ") with a different severity. Both must share a severity, or the severity "
+                  + "pre-flight in DatabaseAuditService.findEvents must be extended with an "
+                  + "exclude-prefix mechanism.");
+        }
+      }
+    }
   }
 
   /**

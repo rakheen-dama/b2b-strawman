@@ -114,7 +114,7 @@ class SecurityAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "security", null, null, "security.access_denied", null, null),
+                          "security", null, null, "security.access_denied", null, null, null),
                       PageRequest.of(0, 50));
 
               // Find an event matching this specific path
@@ -159,7 +159,7 @@ class SecurityAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "security", null, null, "security.access_denied", null, null),
+                          "security", null, null, "security.access_denied", null, null, null),
                       PageRequest.of(0, 50));
 
               var matchingEvents =
@@ -258,7 +258,13 @@ class SecurityAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "document", documentId, null, "security.document_accessed", null, null),
+                          "document",
+                          documentId,
+                          null,
+                          "security.document_accessed",
+                          null,
+                          null,
+                          null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -313,7 +319,13 @@ class SecurityAuditTest {
               var secPage =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "document", documentId, null, "security.document_accessed", null, null),
+                          "document",
+                          documentId,
+                          null,
+                          "security.document_accessed",
+                          null,
+                          null,
+                          null),
                       PageRequest.of(0, 10));
 
               assertThat(secPage.getTotalElements()).isZero();
@@ -322,7 +334,7 @@ class SecurityAuditTest {
               var domainPage =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "document", documentId, null, "document.accessed", null, null),
+                          "document", documentId, null, "document.accessed", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(domainPage.getTotalElements()).isEqualTo(1);

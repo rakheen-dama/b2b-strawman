@@ -38,7 +38,7 @@ public class AuditEventController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "50") int size) {
 
-    var filter = new AuditEventFilter(entityType, entityId, actorId, eventType, from, to);
+    var filter = new AuditEventFilter(entityType, entityId, actorId, eventType, from, to, null);
     var pageable =
         PageRequest.of(page, Math.min(size, 200), Sort.by(Sort.Direction.DESC, "occurredAt"));
     var events = auditService.findEvents(filter, pageable);
@@ -64,7 +64,7 @@ public class AuditEventController {
       @RequestParam(defaultValue = "0") int page,
       @RequestParam(defaultValue = "50") int size) {
 
-    var filter = new AuditEventFilter(entityType, entityId, actorId, eventType, from, to);
+    var filter = new AuditEventFilter(entityType, entityId, actorId, eventType, from, to, null);
     var pageable =
         PageRequest.of(page, Math.min(size, 200), Sort.by(Sort.Direction.DESC, "occurredAt"));
     var events = auditService.findEvents(filter, pageable);

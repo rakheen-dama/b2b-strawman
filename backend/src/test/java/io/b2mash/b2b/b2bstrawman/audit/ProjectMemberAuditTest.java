@@ -100,7 +100,7 @@ class ProjectMemberAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "project_member", null, null, "project_member.added", null, null),
+                          "project_member", null, null, "project_member.added", null, null, null),
                       PageRequest.of(0, 100));
 
               // Find the event for this specific project
@@ -165,7 +165,7 @@ class ProjectMemberAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "project_member", null, null, "project_member.removed", null, null),
+                          "project_member", null, null, "project_member.removed", null, null, null),
                       PageRequest.of(0, 100));
 
               var matchingEvents =
@@ -234,7 +234,13 @@ class ProjectMemberAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "project_member", null, null, "project_member.role_changed", null, null),
+                          "project_member",
+                          null,
+                          null,
+                          "project_member.role_changed",
+                          null,
+                          null,
+                          null),
                       PageRequest.of(0, 100));
 
               // Filter to this specific project
@@ -307,7 +313,7 @@ class ProjectMemberAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "project_member", null, null, "project_member.added", null, null),
+                          "project_member", null, null, "project_member.added", null, null, null),
                       PageRequest.of(0, 100));
 
               var matchingEvents =

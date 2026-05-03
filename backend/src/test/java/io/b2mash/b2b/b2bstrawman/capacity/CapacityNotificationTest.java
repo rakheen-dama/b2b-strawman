@@ -303,7 +303,13 @@ class CapacityNotificationTest {
           var page =
               auditService.findEvents(
                   new AuditEventFilter(
-                      "member_capacity", recordId[0], null, "member_capacity.created", null, null),
+                      "member_capacity",
+                      recordId[0],
+                      null,
+                      "member_capacity.created",
+                      null,
+                      null,
+                      null),
                   PageRequest.of(0, 10));
           assertThat(page.getTotalElements()).isEqualTo(1);
           var event = page.getContent().getFirst();
@@ -343,6 +349,7 @@ class CapacityNotificationTest {
                       allocId[0],
                       null,
                       "resource_allocation.created",
+                      null,
                       null,
                       null),
                   PageRequest.of(0, 10));
@@ -386,6 +393,7 @@ class CapacityNotificationTest {
                       null,
                       "resource_allocation.updated",
                       null,
+                      null,
                       null),
                   PageRequest.of(0, 10));
           assertThat(page.getTotalElements()).isEqualTo(1);
@@ -419,7 +427,7 @@ class CapacityNotificationTest {
           var page =
               auditService.findEvents(
                   new AuditEventFilter(
-                      "leave_block", blockId[0], null, "leave_block.deleted", null, null),
+                      "leave_block", blockId[0], null, "leave_block.deleted", null, null, null),
                   PageRequest.of(0, 10));
           assertThat(page.getTotalElements()).isEqualTo(1);
           var event = page.getContent().getFirst();
@@ -459,6 +467,7 @@ class CapacityNotificationTest {
                       allocId[0],
                       null,
                       "resource_allocation.created",
+                      null,
                       null,
                       null),
                   PageRequest.of(0, 10));

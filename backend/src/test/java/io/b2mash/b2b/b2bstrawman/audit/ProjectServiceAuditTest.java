@@ -79,7 +79,7 @@ class ProjectServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "project", projectId, null, "project.created", null, null),
+                          "project", projectId, null, "project.created", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -129,7 +129,7 @@ class ProjectServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "project", projectId, null, "project.updated", null, null),
+                          "project", projectId, null, "project.updated", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -184,7 +184,7 @@ class ProjectServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "project", projectId, null, "project.updated", null, null),
+                          "project", projectId, null, "project.updated", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -225,7 +225,7 @@ class ProjectServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "project", projectId, null, "project.deleted", null, null),
+                          "project", projectId, null, "project.deleted", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -271,7 +271,7 @@ class ProjectServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "project", projectId, null, "project.updated", null, null),
+                          "project", projectId, null, "project.updated", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -304,7 +304,8 @@ class ProjectServiceAuditTest {
               // Query for any project.created events with "should fail" -- there should be none
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter("project", null, null, "project.created", null, null),
+                      new AuditEventFilter(
+                          "project", null, null, "project.created", null, null, null),
                       PageRequest.of(0, 100));
 
               // None of the events should have details containing "should fail"
@@ -336,7 +337,8 @@ class ProjectServiceAuditTest {
             () -> {
               var page =
                   auditService.findEvents(
-                      new AuditEventFilter("project", fakeId, null, "project.updated", null, null),
+                      new AuditEventFilter(
+                          "project", fakeId, null, "project.updated", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isZero();

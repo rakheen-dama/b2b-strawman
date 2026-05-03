@@ -1,7 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.audit;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 
@@ -112,5 +114,60 @@ class AuditEventTypeRegistryTest {
     assertThat(resolved.severity()).isEqualTo(AuditSeverity.INFO);
     assertThat(resolved.group()).isEqualTo(AuditEventGroup.STANDARD);
     assertThat(resolved.label()).isEqualTo("");
+  }
+
+  @Test
+  void productionRegistryPassesPrefixSeverityInvariant() {
+    // The production registry must pass the prefix-severity invariant — instantiating it
+    // already calls the check, but assert explicitly so a regression that only touches the
+    // entries list still fails this test if the catalogue is authored into the broken state.
+    var entries = registry.entries();
+    AuditEventTypeRegistry.validatePrefixSeverityInvariant(entries);
+  }
+
+  @Test
+  void invariantRejectsChildPrefixWithDifferentSeverity() {
+    // Hypothetical bad authoring: dataprotection.dsar.* (NOTICE) sits under dataprotection.*
+    // (WARNING). The pre-flight in DatabaseAuditService.findEvents would over-include the
+    // dataprotection.dsar.X rows when querying for WARNING. The invariant must reject this.
+    var badEntries =
+        List.of(
+            new AuditEventTypeMetadata(
+                "dataprotection.*", "Data Protection", AuditSeverity.WARNING, AuditEventGroup.DATA),
+            new AuditEventTypeMetadata(
+                "dataprotection.dsar.*",
+                "Data Subject Request",
+                AuditSeverity.NOTICE,
+                AuditEventGroup.DATA));
+    assertThatThrownBy(() -> AuditEventTypeRegistry.validatePrefixSeverityInvariant(badEntries))
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("dataprotection.dsar.*")
+        .hasMessageContaining("dataprotection.*");
+  }
+
+  @Test
+  void invariantAllowsSiblingPrefixesWithDifferentSeverities() {
+    // Sibling prefixes (neither nests inside the other) are unrelated and may carry different
+    // severities — only nested-prefix mismatches break the pre-flight.
+    var siblingEntries =
+        List.of(
+            new AuditEventTypeMetadata(
+                "alpha.*", "Alpha", AuditSeverity.WARNING, AuditEventGroup.STANDARD),
+            new AuditEventTypeMetadata(
+                "beta.*", "Beta", AuditSeverity.NOTICE, AuditEventGroup.STANDARD));
+    AuditEventTypeRegistry.validatePrefixSeverityInvariant(siblingEntries);
+  }
+
+  @Test
+  void invariantTreatsLiteralPrefixBoundaries() {
+    // Regression guard: 'data.*' must NOT be considered a parent of 'dataprotection.*' just
+    // because 'dataprotection' starts with 'data'. The invariant compares dot-bounded prefixes.
+    var nonNestedEntries =
+        List.of(
+            new AuditEventTypeMetadata(
+                "data.*", "Data", AuditSeverity.WARNING, AuditEventGroup.DATA),
+            new AuditEventTypeMetadata(
+                "dataprotection.*", "Data Protection", AuditSeverity.NOTICE, AuditEventGroup.DATA));
+    AuditEventTypeRegistry.validatePrefixSeverityInvariant(nonNestedEntries);
   }
 }

@@ -78,7 +78,7 @@ class CustomerServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "customer", customerId, null, "customer.created", null, null),
+                          "customer", customerId, null, "customer.created", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -125,7 +125,7 @@ class CustomerServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "customer", customerId, null, "customer.updated", null, null),
+                          "customer", customerId, null, "customer.updated", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -174,7 +174,7 @@ class CustomerServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "customer", customerId, null, "customer.archived", null, null),
+                          "customer", customerId, null, "customer.archived", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -239,7 +239,7 @@ class CustomerServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "customer", customerId, null, "customer.linked", null, null),
+                          "customer", customerId, null, "customer.linked", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);
@@ -311,7 +311,7 @@ class CustomerServiceAuditTest {
               var page =
                   auditService.findEvents(
                       new AuditEventFilter(
-                          "customer", customerId, null, "customer.unlinked", null, null),
+                          "customer", customerId, null, "customer.unlinked", null, null, null),
                       PageRequest.of(0, 10));
 
               assertThat(page.getTotalElements()).isEqualTo(1);

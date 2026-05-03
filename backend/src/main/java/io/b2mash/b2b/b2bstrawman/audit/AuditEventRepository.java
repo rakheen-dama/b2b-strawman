@@ -275,4 +275,156 @@ public interface AuditEventRepository extends JpaRepository<AuditEvent, UUID> {
       @Param("customerId") UUID customerId,
       @Param("eventTypes") Set<String> eventTypes,
       Pageable pageable);
+
+  // --- Epic 502A — severity-filtered list + facet projections ---
+
+  /**
+   * Variant of {@link #findByFilter} that adds a registry-derived severity restriction. Caller
+   * (DatabaseAuditService) computes the include/exclude eventType sets from the registry pre-flight
+   * and passes them as Postgres TEXT[] arrays for {@code = ANY} / {@code LIKE ANY} filtering.
+   *
+   * <p>Semantics of the eventType predicate (architecture §12.3.5):
+   *
+   * <ul>
+   *   <li>{@code exactTypes} — event_type IN (...)
+   *   <li>{@code prefixPatterns} — event_type LIKE ANY (... pattern array, e.g. {@code
+   *       'matter.closure.%'})
+   *   <li>{@code excludeExact} — exact strings to subtract (handles the prefix-vs-exact severity
+   *       conflict, e.g. {@code matter.closure.override_used} is CRITICAL even though {@code
+   *       matter.closure.*} is NOTICE)
+   *   <li>{@code allRegisteredExacts} / {@code allRegisteredPrefixes} — when non-null, an
+   *       additional OR clause matches event types that are NOT registered in the catalogue
+   *       (severity defaults to INFO via the registry's defaultFor()). Pass non-null only when INFO
+   *       is in the requested severity set.
+   * </ul>
+   *
+   * <p>All array params accept {@code null} to mean "constraint disabled". Pass {@code String[0]}
+   * (empty) only when you want the predicate to match nothing — but callers typically short-circuit
+   * to {@link Page#empty(Pageable)} instead of issuing a query that matches zero rows.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT * FROM audit_events e
+          WHERE (CAST(:entityType AS TEXT) IS NULL OR e.entity_type = CAST(:entityType AS TEXT))
+            AND (CAST(:entityId AS UUID) IS NULL OR e.entity_id = CAST(:entityId AS UUID))
+            AND (CAST(:actorId AS UUID) IS NULL OR e.actor_id = CAST(:actorId AS UUID))
+            AND (CAST(:eventTypePrefix AS TEXT) IS NULL OR e.event_type LIKE CONCAT(CAST(:eventTypePrefix AS TEXT), '%'))
+            AND (CAST(:fromTs AS TIMESTAMPTZ) IS NULL OR e.occurred_at >= CAST(:fromTs AS TIMESTAMPTZ))
+            AND (CAST(:toTs AS TIMESTAMPTZ) IS NULL OR e.occurred_at < CAST(:toTs AS TIMESTAMPTZ))
+            AND (
+              (CAST(:exactTypes AS TEXT[]) IS NOT NULL AND e.event_type = ANY(CAST(:exactTypes AS TEXT[])))
+              OR (CAST(:prefixPatterns AS TEXT[]) IS NOT NULL AND e.event_type LIKE ANY(CAST(:prefixPatterns AS TEXT[])))
+              OR (
+                CAST(:allRegisteredExacts AS TEXT[]) IS NOT NULL
+                AND CAST(:allRegisteredPrefixes AS TEXT[]) IS NOT NULL
+                AND NOT (e.event_type = ANY(CAST(:allRegisteredExacts AS TEXT[])))
+                AND NOT (e.event_type LIKE ANY(CAST(:allRegisteredPrefixes AS TEXT[])))
+              )
+            )
+            AND (CAST(:excludeExact AS TEXT[]) IS NULL OR NOT (e.event_type = ANY(CAST(:excludeExact AS TEXT[]))))
+          ORDER BY e.occurred_at DESC
+          """,
+      countQuery =
+          """
+          SELECT COUNT(*) FROM audit_events e
+          WHERE (CAST(:entityType AS TEXT) IS NULL OR e.entity_type = CAST(:entityType AS TEXT))
+            AND (CAST(:entityId AS UUID) IS NULL OR e.entity_id = CAST(:entityId AS UUID))
+            AND (CAST(:actorId AS UUID) IS NULL OR e.actor_id = CAST(:actorId AS UUID))
+            AND (CAST(:eventTypePrefix AS TEXT) IS NULL OR e.event_type LIKE CONCAT(CAST(:eventTypePrefix AS TEXT), '%'))
+            AND (CAST(:fromTs AS TIMESTAMPTZ) IS NULL OR e.occurred_at >= CAST(:fromTs AS TIMESTAMPTZ))
+            AND (CAST(:toTs AS TIMESTAMPTZ) IS NULL OR e.occurred_at < CAST(:toTs AS TIMESTAMPTZ))
+            AND (
+              (CAST(:exactTypes AS TEXT[]) IS NOT NULL AND e.event_type = ANY(CAST(:exactTypes AS TEXT[])))
+              OR (CAST(:prefixPatterns AS TEXT[]) IS NOT NULL AND e.event_type LIKE ANY(CAST(:prefixPatterns AS TEXT[])))
+              OR (
+                CAST(:allRegisteredExacts AS TEXT[]) IS NOT NULL
+                AND CAST(:allRegisteredPrefixes AS TEXT[]) IS NOT NULL
+                AND NOT (e.event_type = ANY(CAST(:allRegisteredExacts AS TEXT[])))
+                AND NOT (e.event_type LIKE ANY(CAST(:allRegisteredPrefixes AS TEXT[])))
+              )
+            )
+            AND (CAST(:excludeExact AS TEXT[]) IS NULL OR NOT (e.event_type = ANY(CAST(:excludeExact AS TEXT[]))))
+          """)
+  Page<AuditEvent> findByFilterWithEventTypes(
+      @Param("entityType") String entityType,
+      @Param("entityId") UUID entityId,
+      @Param("actorId") UUID actorId,
+      @Param("eventTypePrefix") String eventTypePrefix,
+      @Param("fromTs") Instant from,
+      @Param("toTs") Instant to,
+      @Param("exactTypes") String[] exactTypes,
+      @Param("prefixPatterns") String[] prefixPatterns,
+      @Param("excludeExact") String[] excludeExact,
+      @Param("allRegisteredExacts") String[] allRegisteredExacts,
+      @Param("allRegisteredPrefixes") String[] allRegisteredPrefixes,
+      Pageable pageable);
+
+  /**
+   * Top-500 actor facet aggregates within {@code [from, to)}, LEFT JOINed to {@code members} so the
+   * service can short-circuit the §12.3.4 actor-display fallback for live members. Rows where the
+   * member is missing (deleted) come back with {@code actorName = NULL} -- the service maps these
+   * to {@code "Former member ({uuid})"} per the architecture spec.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT
+            ae.actor_id   AS actorId,
+            m.name        AS actorName,
+            ae.actor_type AS actorType,
+            COUNT(*)      AS eventCount
+          FROM audit_events ae
+          LEFT JOIN members m ON m.id = ae.actor_id
+          WHERE ae.actor_id IS NOT NULL
+            AND ae.occurred_at >= :fromTs
+            AND ae.occurred_at <  :toTs
+          GROUP BY ae.actor_id, m.name, ae.actor_type
+          ORDER BY eventCount DESC
+          LIMIT 500
+          """)
+  List<ActorFacetProjection> projectActorFacets(
+      @Param("fromTs") Instant from, @Param("toTs") Instant to);
+
+  /**
+   * Per-eventType counts within {@code [from, to)}. Service enriches with label/severity/group via
+   * {@link AuditEventTypeRegistry#resolve(String)}.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT
+            ae.event_type AS eventType,
+            COUNT(*)      AS count
+          FROM audit_events ae
+          WHERE ae.occurred_at >= :fromTs
+            AND ae.occurred_at <  :toTs
+          GROUP BY ae.event_type
+          ORDER BY count DESC
+          """)
+  List<EventTypeFacetProjection> projectEventTypeFacets(
+      @Param("fromTs") Instant from, @Param("toTs") Instant to);
+
+  /**
+   * Per-entityType counts within {@code [from, to)}. Service title-cases the {@code entity_type}
+   * for the {@code label} field.
+   */
+  @Query(
+      nativeQuery = true,
+      value =
+          """
+          SELECT
+            ae.entity_type AS entityType,
+            COUNT(*)       AS count
+          FROM audit_events ae
+          WHERE ae.occurred_at >= :fromTs
+            AND ae.occurred_at <  :toTs
+          GROUP BY ae.entity_type
+          ORDER BY count DESC
+          """)
+  List<EntityTypeFacetProjection> projectEntityTypeFacets(
+      @Param("fromTs") Instant from, @Param("toTs") Instant to);
 }

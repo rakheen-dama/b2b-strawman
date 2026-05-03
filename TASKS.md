@@ -579,15 +579,12 @@
 | 509 | Sensitive-Events Dashboard Widget | Frontend | 502B, 506B | S | 509A | **Done** (PR #1284) |
 | 510 | Admin-POV 30-Day QA Capstone + Screenshots + Gap Report | E2E/Process | 501–509 | L | 510A, 510B | |
 | **Phase 70 — Specialist AI Assistants** | | | | | | See [tasks/phase70-specialist-ai-assistants.md](tasks/phase70-specialist-ai-assistants.md) |
-| 511 | Specialist Framework — Registry, System Prompts, Capability-Filtered Tool Resolution | Backend | -- | M | 511A, 511B | |
-| 512 | Specialist Framework — Inline Launcher + `<SpecialistPanel>` Frontend | Frontend | 511B | M | 512A | |
-| 513 | Billing Assistant — System Prompt, `Propose*` Tools, Diff-Review UI | Both | 511, 512A | M | 513A, 513B | |
-| 514 | Intake Assistant — Text Extraction (pdfbox) + Vision Fallback + Per-Field Diff | Both | 511, 512A | L | 514A, 514B, 514C | |
-| 515 | Inbox Assistant — Activity Window Tool + REVIEW/DIRECT Posting + On-Demand UI | Both | 511, 512A | M | 515A, 515B | |
-| 516 | Automation Hook — `AiSpecialistInvocation` Entity + Migration + Executor + `SCHEDULED` Trigger | Backend | 511A, 515A | L | 516A, 516B | |
-| 517 | Automation Hook — Review Queue REST + Bulk Approve + Reaper / Sweeper / Suppression | Backend | 516A | M | 517A | |
-| 518 | Review Queue Frontend + Per-Entity Pending Widget + Pre-Seeded Templates | Frontend | 517A, 513B, 514C, 515B | L | 518A, 518B | |
-| 519 | QA Capstone — SA Admin-POV 30-Day Script + Screenshots + Gap Report | E2E/Process | 511–518 | M | 519A, 519B | |
+| 511 | Specialist Framework + Inline Launcher Infrastructure | Both | Phase 52, Phase 41/46 | M | 511A, 511B | |
+| 512 | Billing Assistant (Polish + Grouping) | Both | 511A, 515A | M | 512A, 512B | |
+| 513 | Intake Assistant + Vision Fallback | Both | 511A, 515A | L | 513A, 513B | |
+| 514 | Inbox Assistant + Activity Window | Both | 511A, 515A | M | 514A, 514B | |
+| 515 | Automation Hook + Invocation Entity + Review Queue | Both | Phase 37 | L | 515A, 515B, 515C | |
+| 516 | QA Capstone — SA Admin POV 30-Day Script | E2E/Process | 511–515 | L | 516A, 516B | |
 
 ---
 

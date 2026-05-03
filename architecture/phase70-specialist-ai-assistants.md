@@ -31,7 +31,7 @@ The automation hook is the second half of the multiplier. Phase 37 gains one new
 | Review queue | — | `AiSpecialistInvocation` table (V120) + REST + UI page at `/settings/automations/ai-queue` + per-entity pending-suggestions widget |
 | Pre-seeded templates | 6 templates (Phase 37) | 4 new AI-specialist templates: polish invoice on send, extract intake fields, weekly matter summary (DIRECT), catch-up summary on reactivation (DIRECT) |
 | Audit | Existing `audit.*` events for Phase 52 confirmations | New event types: `ai.specialist.invoked`, `ai.specialist.approved`, `ai.specialist.rejected`, `ai.specialist.failed`, `ai.specialist.auto_applied` |
-| Plan / capability gating | `AI_ASSISTANT_USE` capability + PRO tier (Phase 52) | Reused unchanged. Review-queue actions gate on `TEAM_OVERSIGHT` (Phase 69 capability). Specialist-specific writes inherit each tool's existing capability requirement (e.g. `INVOICE_EDIT`). |
+| Capability gating | `AI_ASSISTANT_USE` capability (Phase 52) | Reused unchanged — capability is the **sole** authorization mechanism. Plan-tier gating (`PlanTier`, `PlanSyncService`, `<PlanGate>`, `@RequiresPlan`) does not exist in the product (strategic decision 2026-04-11) and must not be reintroduced. Review-queue actions gate on `TEAM_OVERSIGHT` (Phase 69 capability). Specialist-specific writes inherit each tool's existing capability requirement (e.g. `INVOICE_EDIT`). |
 
 ### Out of Scope
 
@@ -438,7 +438,7 @@ Both engineer and product reviewers concurred: the new keys are stored as JSONB 
 
 The primary path. A paralegal on an invoice draft clicks "Polish with AI"; the docked specialist panel opens pre-seeded; the LLM proposes polished descriptions; the human approves per row; the `AiSpecialistInvocation` row records the outcome.
 
-1. **Frontend** — `<SpecialistLauncherButton specialistId="BILLING" surface="INVOICE_DRAFT_TOOLBAR" contextRef={{entityType:"invoice", entityId}} initialPrompt="Polish the time-entry descriptions on this invoice." />`. Button is gated by `<CapabilityGate capability="AI_ASSISTANT_USE">` + `<PlanGate plan="PRO">` and renders only if the specialist's `LauncherContext.surface` matches.
+1. **Frontend** — `<SpecialistLauncherButton specialistId="BILLING" surface="INVOICE_DRAFT_TOOLBAR" contextRef={{entityType:"invoice", entityId}} initialPrompt="Polish the time-entry descriptions on this invoice." />`. Button is gated by `<CapabilityGate capability="AI_ASSISTANT_USE">` only (no `<PlanGate>` — plan tiers were removed) and renders only if the specialist's `LauncherContext.surface` matches.
 2. **Frontend** — On click, calls `POST /api/assistant/specialists/BILLING/sessions` with the `contextRef` + `initialPrompt`. Backend returns `{ sessionId, systemPromptHash, toolIds, displayName }`. The `<SpecialistPanel>` opens, seeds its message tree with the prompt, and starts streaming via the existing Phase 52 `POST /api/assistant/chat` endpoint with the new optional `specialistId` parameter set.
 3. **Backend** — `AssistantSpecialistController.startSession()` (one-line delegate per `backend/CLAUDE.md` controller discipline) → `SpecialistSessionService.start(specialistId, contextRef, initialPrompt)`:
 
@@ -654,7 +654,7 @@ Dev/local profile exposes `POST /internal/assistant/specialists/reload` (gated b
 | Condition | Handling |
 |-----------|----------|
 | AI not enabled (`OrgSettings.aiEnabled=false`) | Specialist launcher button hidden; API endpoints return 403 with explanatory ProblemDetail |
-| STARTER tier | Same — launcher hidden via `<PlanGate>`; API returns 403 |
+| Member lacks `AI_ASSISTANT_USE` capability | Launcher button hidden via `<CapabilityGate>`; API returns 403 |
 | Specialist tool requires capability member lacks | Tool filtered out of the LLM's tool list; LLM cannot attempt it |
 | Vision call fails (Anthropic 5xx / rate-limit / key missing) | `AiSpecialistInvocation.status=FAILED`, `errorMessage` set; review-queue UI shows "Retry" button |
 | Apply fails after approval (entity state changed) | 409 ProblemDetail; invocation stays `PENDING_APPROVAL`; reviewer reads error, retries or rejects |
@@ -701,7 +701,7 @@ All endpoints under `/api/` JWT-authenticated. Capability gates declarative via 
 
 | Method | Path | Description | Auth | Read/Write |
 |--------|------|-------------|------|------------|
-| `GET` | `/api/assistant/specialists` | List specialists visible to caller (PRO + capability + launcher filter). Returns `[{id, displayName, tagline, surfaces:[...]}]` | `AI_ASSISTANT_USE` | Read |
+| `GET` | `/api/assistant/specialists` | List specialists visible to caller (capability + launcher filter). Returns `[{id, displayName, tagline, surfaces:[...]}]` | `AI_ASSISTANT_USE` | Read |
 | `GET` | `/api/assistant/specialists/{id}` | Specialist detail (display name, tagline, tool ids, launchers) | `AI_ASSISTANT_USE` | Read |
 | `POST` | `/api/assistant/specialists/{id}/sessions` | Start a specialist session — returns session handle to be streamed via Phase 52 `/chat` | `AI_ASSISTANT_USE` | Write (creates session) |
 
@@ -981,18 +981,20 @@ The `/settings/automations/ai-queue` review queue surfaces a drawer-by-drawer fl
 
 ## 6 — Capability + Permission Model
 
-| Operation | Required Capability | Plan Tier | Notes |
-|-----------|---------------------|-----------|-------|
-| List / view specialists | `AI_ASSISTANT_USE` | PRO | Phase 52 capability — reused unchanged |
-| Start specialist session | `AI_ASSISTANT_USE` | PRO | |
-| Specialist write tool (e.g. `ProposeTimeEntryPolish`) | `AI_ASSISTANT_USE` to call; payload-specific capability to apply (e.g. `INVOICE_EDIT`) | PRO | Read-only viewers can launch the specialist but cannot apply writes |
-| List own invocations | `AI_ASSISTANT_USE` | PRO | Filtered server-side to caller's `actorId` |
-| List other actors' invocations / cross-actor queue | `AI_ASSISTANT_USE` + `TEAM_OVERSIGHT` | PRO | `TEAM_OVERSIGHT` is the Phase 69 capability used for audit-log access — same surface, same gate |
-| Approve invocation | `AI_ASSISTANT_USE` + payload-specific capability | PRO | Approver may differ from invoker; approver's own capabilities apply at the apply step |
-| Reject invocation | `AI_ASSISTANT_USE` (own) or `+TEAM_OVERSIGHT` (cross-actor) | PRO | |
-| Retry FAILED invocation | `AI_ASSISTANT_USE` (own) or `+TEAM_OVERSIGHT` (cross-actor) | PRO | |
-| Build automation rule with `INVOKE_AI_SPECIALIST` action | `AUTOMATION_RULE_EDIT` (Phase 37) + `AI_ASSISTANT_USE` | PRO | Rule wizard hides the action type if the editor lacks `AI_ASSISTANT_USE` |
-| Enable AI integration (`OrgSettings.aiEnabled`) | `INTEGRATION_EDIT` (Phase 21) | Any | Enabling AI on STARTER has no effect — specialists still hidden by `<PlanGate>` |
+> **No plan-tier gating.** The product has no Starter/Pro tiers — `PlanTier`, `PlanSyncService`, `<PlanGate>`, and `@RequiresPlan` were removed (strategic decision 2026-04-11) and must not be reintroduced. Capability is the sole authorization mechanism for every row below.
+
+| Operation | Required Capability | Notes |
+|-----------|---------------------|-------|
+| List / view specialists | `AI_ASSISTANT_USE` | Phase 52 capability — reused unchanged |
+| Start specialist session | `AI_ASSISTANT_USE` | |
+| Specialist write tool (e.g. `ProposeTimeEntryPolish`) | `AI_ASSISTANT_USE` to call; payload-specific capability to apply (e.g. `INVOICE_EDIT`) | Read-only viewers can launch the specialist but cannot apply writes |
+| List own invocations | `AI_ASSISTANT_USE` | Filtered server-side to caller's `actorId` |
+| List other actors' invocations / cross-actor queue | `AI_ASSISTANT_USE` + `TEAM_OVERSIGHT` | `TEAM_OVERSIGHT` is the Phase 69 capability used for audit-log access — same surface, same gate |
+| Approve invocation | `AI_ASSISTANT_USE` + payload-specific capability | Approver may differ from invoker; approver's own capabilities apply at the apply step |
+| Reject invocation | `AI_ASSISTANT_USE` (own) or `+TEAM_OVERSIGHT` (cross-actor) | |
+| Retry FAILED invocation | `AI_ASSISTANT_USE` (own) or `+TEAM_OVERSIGHT` (cross-actor) | |
+| Build automation rule with `INVOKE_AI_SPECIALIST` action | `AUTOMATION_RULE_EDIT` (Phase 37) + `AI_ASSISTANT_USE` | Rule wizard hides the action type if the editor lacks `AI_ASSISTANT_USE` |
+| Enable AI integration (`OrgSettings.aiEnabled`) | `INTEGRATION_EDIT` (Phase 21) | If AI is disabled tenant-wide, launchers stay hidden and APIs return 403 regardless of capability |
 
 **Specialist-specific tool gating** (resolved by `AssistantToolRegistry.filterBy()` at session start; tools the user lacks capability for are removed from the LLM's toolbox so the LLM cannot attempt them):
 
@@ -1002,9 +1004,9 @@ The `/settings/automations/ai-queue` review queue surfaces a drawer-by-drawer fl
 | Intake | `CUSTOMER_EDIT` for `ProposeCustomerFieldExtraction`. `DOCUMENT_READ` for `ListDocumentsForContext` + `ExtractTextFromDocument`. |
 | Inbox | `COMMENT_CREATE` for `PostInboxSummary` (when `mode=REVIEW` the queue approval step also requires `COMMENT_CREATE` from the approver). |
 
-Frontend rendering uses `<CapabilityGate>` + `<PlanGate>` per Phase 52 / Phase 46 conventions; backend enforcement is via `@RequiresCapability` annotations on the specialist + invocation controllers.
+Frontend rendering uses `<CapabilityGate>` only (no `<PlanGate>` — it does not exist) per Phase 46 conventions; backend enforcement is via `@RequiresCapability` annotations on the specialist + invocation controllers.
 
-**Read-only specialist behaviour (F3).** Members lacking the write capability for a specialist (e.g. `INVOICE_EDIT` for Billing) still see the launcher (when `AI_ASSISTANT_USE` is held), but the resolved tool subset filters out propose/write tools and `SystemPromptBuilder` injects a runtime `[CAPABILITY_NOTICE: write tools unavailable; respond with read-only analysis only]` suffix into the system prompt. STARTER tenants do not see launchers at all (gated by `<PlanGate>`).
+**Read-only specialist behaviour (F3).** Members lacking the write capability for a specialist (e.g. `INVOICE_EDIT` for Billing) still see the launcher (when `AI_ASSISTANT_USE` is held), but the resolved tool subset filters out propose/write tools and `SystemPromptBuilder` injects a runtime `[CAPABILITY_NOTICE: write tools unavailable; respond with read-only analysis only]` suffix into the system prompt. Members without `AI_ASSISTANT_USE` do not see launchers at all (gated by `<CapabilityGate>`).
 
 **POPIA redaction in audit/queue (F8).** When `AiSpecialistInvocation.proposedOutput` or `appliedOutput` payloads contain any `popiaFlaggedFields`, the audit-export pipeline (Phase 69) masks those field values, and the queue-detail UI shows them only to actors with `TEAM_OVERSIGHT` (consistent with cross-actor visibility); members without it see a `[POPIA-RESTRICTED]` placeholder.
 
@@ -1214,7 +1216,7 @@ COMMENT ON TABLE ai_specialist_invocations IS
 
 | File | Change |
 |------|--------|
-| `components/assistant/specialist-launcher-button.tsx` | New shared component — wraps `<CapabilityGate>` + `<PlanGate>` + button |
+| `components/assistant/specialist-launcher-button.tsx` | New shared component — wraps `<CapabilityGate capability="AI_ASSISTANT_USE">` + button (no `<PlanGate>` — does not exist) |
 | `components/assistant/specialist-panel.tsx` | New component — wraps Phase 52 `<AssistantPanel>` with specialist branding + pre-seed |
 | `components/assistant/diff-review/billing-diff.tsx` | Per-row before/after polish diff. Surfaces an LSSA-tariff vocabulary cue on entries the prompt has flagged as tariff-aligned (legal-za vertical only). |
 | `components/assistant/diff-review/intake-field-diff.tsx` | Per-field current-vs-proposed diff with VISION/TEXT badge. Renders any matching `validationFlags` (e.g. RSA ID checksum failed, CIPC malformed, VAT format invalid) AND `popiaFlaggedFields` badges next to the proposed value. |
@@ -1441,7 +1443,7 @@ public class InvokeAiSpecialistActionExecutor implements AutomationActionExecuto
 | Backend integration | `automation/executor/InvokeAiSpecialistActionExecutorTest` | Happy path REVIEW; happy path DIRECT (Inbox only); DIRECT rejection for non-Inbox; variable resolution; failure → ActionResult.failed |
 | Backend integration | `automation/AutomationSchedulerScheduledTriggerTest` | Cron evaluation fires due rules; `last_run_at` updates atomically; missed-run no-flood |
 | Backend integration | `automation/AutomationTemplateSeederPhase70Test` | Four new templates seed correctly per profile |
-| Frontend (Vitest) | `components/assistant/specialist-launcher-button.test.tsx` | Renders for authorised users, hidden for unauth + STARTER |
+| Frontend (Vitest) | `components/assistant/specialist-launcher-button.test.tsx` | Renders for users with `AI_ASSISTANT_USE`; hidden otherwise (no plan-tier branch — tiers do not exist) |
 | Frontend (Vitest) | `components/assistant/specialist-panel.test.tsx` | Pre-seeded message; hand-off-to-generalist link |
 | Frontend (Vitest) | `app/.../ai-queue/page.test.tsx` | Filters; approve + edit; reject; retry; pending-count badge |
 | Frontend (Vitest) | `components/assistant/diff-review/*.test.tsx` | Per-specialist diff renders correctly |
@@ -1457,13 +1459,13 @@ Maps to the requirements doc's Epics A–F. Each slice scoped for `/breakdown` c
 
 ### Epic A — Specialist Framework
 
-**A1 — Backend specialist scaffold.** `Specialist` record (now including `maxToolIterations` and a deferred placeholder for `directModeAllowedTools` per ADR-267 future-hardening note) + `LauncherContext` record + `SpecialistRegistry` + `SystemPromptBuilder` + classpath markdown loader + reload endpoint (dev-only) + `SpecialistController` + `SpecialistSessionService` + extension to Phase 52 `/chat` for `specialistId` parameter + capability-filtered tool-subset resolution + PRO-tier gate. Three placeholder specialist registrations with stub markdown. Includes the `AutomationRule.actorCapabilitiesSnapshot` migration extension on the existing Phase 37 `automation_rules` table — flag as a tenant migration extension; if no spare slot, V120 covers it.
+**A1 — Backend specialist scaffold.** `Specialist` record (now including `maxToolIterations` and a deferred placeholder for `directModeAllowedTools` per ADR-267 future-hardening note) + `LauncherContext` record + `SpecialistRegistry` + `SystemPromptBuilder` + classpath markdown loader + reload endpoint (dev-only) + `SpecialistController` + `SpecialistSessionService` + extension to Phase 52 `/chat` for `specialistId` parameter + capability-filtered tool-subset resolution. **No plan-tier gate** — `PlanTier` / `PlanSyncService` / `@RequiresPlan` do not exist; gating is solely `@RequiresCapability("AI_ASSISTANT_USE")` (Epic 511A PR #1286 was reverted as PR #1288 for reintroducing `PlanTier` — do not repeat). Three placeholder specialist registrations with stub markdown. Includes the `AutomationRule.actorCapabilitiesSnapshot` migration extension on the existing Phase 37 `automation_rules` table — flag as a tenant migration extension; if no spare slot, V120 covers it.
 
 - **Deliverables**: Scaffolding, `GET /api/assistant/specialists`, `POST /api/assistant/specialists/{id}/sessions`, prompt-linter test (initially asserting against stub content).
 - **Dependencies**: Phase 52 chat infrastructure.
-- **Tests**: Registry wiring, capability filter, PRO gate, session handle shape.
+- **Tests**: Registry wiring, capability filter, `AI_ASSISTANT_USE` gate (no plan-tier test — tiers do not exist), session handle shape.
 
-**A2 — Frontend specialist launcher + panel infrastructure.** `<SpecialistLauncherButton>` + `<SpecialistPanel>` wrapping Phase 52 chat tree + hand-off link + capability/plan gating.
+**A2 — Frontend specialist launcher + panel infrastructure.** `<SpecialistLauncherButton>` + `<SpecialistPanel>` wrapping Phase 52 chat tree + hand-off link + `<CapabilityGate>` only (no `<PlanGate>` — does not exist).
 
 - **Deliverables**: Reusable components, no per-specialist wiring yet.
 - **Dependencies**: A1 endpoints.

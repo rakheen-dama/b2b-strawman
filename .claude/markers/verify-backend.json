@@ -1,7 +1,1 @@
-{
-  "commit": "e31fac0a8",
-  "command": "./mvnw clean verify -q",
-  "exit": 0,
-  "ts": "2026-05-03T03:50:25Z",
-  "summary": "Epic 502A review-finding fixes (PR #1274 follow-up commit e31fac0a8). Full ./mvnw clean verify in /Users/rakheendama/Projects/2026/worktree-epic-502A/backend completed exit 0 at 03:50:25 local. Aggregate: 5016 unique tests (5090 testcase elements counting Nested), 0 failures, 0 errors, 26 skipped (matches the pre-existing baseline from PR #1272 — no new test bypasses). Adds: AuditEventTypeRegistry.validatePrefixSeverityInvariant() with 4 unit tests (registry test class went 9 → 13 tests), and AuditTenantIsolationTest.facetsIsolatedAcrossTenants + severityFilteredFindEventsIsolatedAcrossTenants (isolation test class went 6 → 8 tests). Targeted re-runs before the full verify: AuditEventTypeRegistryTest 13/13 green; AuditTenantIsolationTest 8/8 green in 13.9s. Both new isolation tests use UUID-derived event-types and entity-types so they survive PER_CLASS shared-schema reuse and test-ordering pollution from earlier tests in the same class."
-}
+{"commit":"edb2a18251bc035104fc3d9391217352f0b3eec1","command":"./mvnw clean verify -q (in worktree-fix-postaudit/backend)","exit":0,"ts":"2026-05-03T18:28:44Z","summary":"PR #1289 final commit edb2a1825: full ./mvnw clean verify exit 0. 5119 testcases, 0 failures, 0 errors. Includes review-fix commit (try/catch removed in cross-tenant test). Targeted MatterClosureServiceIntegrationTest re-run prior to full verify: 18/18 green."}

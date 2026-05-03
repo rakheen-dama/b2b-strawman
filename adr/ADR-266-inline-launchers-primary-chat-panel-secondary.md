@@ -33,7 +33,7 @@ Phase 70 must decide where its three specialists (Billing, Intake, Inbox) appear
      - The drudgery is at the work. A paralegal on an invoice draft sees "Polish with AI" and clicks once — no panel, no prompt-writing, just a focused tool with a pre-seeded session.
      - The generalist still exists for genuinely unstructured questions ("what does the audit log do?", "show me my profitability for Q1"). The user has a sane fallback.
      - The two surfaces compose: a specialist that hits a question outside its scope can point at the generalist; the generalist that detects a specialist-shaped task can suggest a hand-off.
-     - Capability + plan gating works the same on both surfaces — `<CapabilityGate>` + `<PlanGate>` wrap the launcher button, and the `AssistantTrigger` is already gated.
+     - Capability gating works the same on both surfaces — `<CapabilityGate capability="AI_ASSISTANT_USE">` wraps the launcher button, and the `AssistantTrigger` is already gated. (No plan-tier gating — tiers do not exist in the product.)
    - Cons:
      - Two surface metaphors to maintain. Documentation and onboarding must explain both.
      - Slight UX overlap on entity pages where a specialist exists — both the inline button and the top-bar trigger are visible. Acceptable: they have different framings ("focused, pre-seeded, one task" vs "generalist, open prompt").
@@ -58,7 +58,7 @@ The composability matters in v1+: the requirements doc notes that specialists "m
 
 - Negative:
   - Two AI surfaces in the product. Onboarding tour and docs must explain both. Acceptable: the specialist surfaces are entity-page-local and self-explanatory ("Polish with AI" on an invoice is intuitive); the generalist surface is the one that already exists.
-  - Capability gating must be applied at both surfaces. The `<SpecialistLauncherButton>` wraps in `<CapabilityGate capability="AI_ASSISTANT_USE">` and `<PlanGate plan="PRO">`; the existing `AssistantTrigger` already does the equivalent. Two gates to keep in sync, not one.
+  - Capability gating must be applied at both surfaces. The `<SpecialistLauncherButton>` wraps in `<CapabilityGate capability="AI_ASSISTANT_USE">`; the existing `AssistantTrigger` already does the equivalent. One capability to keep in sync. (Plan-tier gating — `<PlanGate>`, `PlanTier`, `PlanSyncService` — does not exist in the product; strategic decision 2026-04-11.)
 
 - Neutral:
   - Placement decisions per specialist (which surfaces, what `ctaLabel`) are listed in `LauncherContext` records on each `Specialist` (per [ADR-265](ADR-265-specialist-as-prompt-tools-launcher-metadata.md)). The frontend reads launcher metadata from `GET /api/assistant/specialists` and renders only the buttons whose `surface` matches the current page.

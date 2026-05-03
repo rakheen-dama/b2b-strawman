@@ -5,7 +5,7 @@
 Kazi has shipped two systems that Phase 70 will fuse:
 
 - **Phase 37 — Workflow Automations v1** (PRs #555–#568) — a deterministic rule engine. Four entities (`AutomationRule`, `AutomationAction`, `AutomationExecution`, `ActionExecution`), a single `AutomationEventListener` bridging domain events to rule evaluation, six action executors (`CreateTask`, `SendNotification`, `SendEmail`, `UpdateStatus`, `CreateProject`, `AssignMember`), delayed-action scheduler, rule CRUD UI + template gallery + execution log (`frontend/app/(authenticated)/settings/automations/`).
-- **Phase 52 — In-App AI Assistant (BYOAK)** (PRs #802–#812) — a conversational LLM surface. `LlmChatProvider` interface + Anthropic adapter (`backend/.../assistant/provider/`), `AssistantTool` interface + registry (`backend/.../assistant/tool/read/` + `write/`) with 14 read tools (ListProjects, GetProject, ListCustomers, GetCustomer, ListTasks, GetMyTasks, GetTimeSummary, GetUnbilledTime, GetProjectBudget, GetProfitability, ListInvoices, GetInvoice, SearchEntities, GetNavigationHelp) + 8 write tools (CreateProject, UpdateProject, CreateCustomer, UpdateCustomer, CreateTask, UpdateTask, LogTimeEntry, CreateInvoiceDraft). BYOAK via `SecretStore` (Phase 21). PRO-tier gated. Ephemeral sessions (no persistence). Capability-filtered tool visibility via `CapabilityAuthorizationService` (Phase 46). Chat panel UI at `frontend/components/assistant/` fired from the top-bar (Phase 44 command palette + `⌘K`).
+- **Phase 52 — In-App AI Assistant (BYOAK)** (PRs #802–#812) — a conversational LLM surface. `LlmChatProvider` interface + Anthropic adapter (`backend/.../assistant/provider/`), `AssistantTool` interface + registry (`backend/.../assistant/tool/read/` + `write/`) with 14 read tools (ListProjects, GetProject, ListCustomers, GetCustomer, ListTasks, GetMyTasks, GetTimeSummary, GetUnbilledTime, GetProjectBudget, GetProfitability, ListInvoices, GetInvoice, SearchEntities, GetNavigationHelp) + 8 write tools (CreateProject, UpdateProject, CreateCustomer, UpdateCustomer, CreateTask, UpdateTask, LogTimeEntry, CreateInvoiceDraft). BYOAK via `SecretStore` (Phase 21). Capability-gated via `AI_ASSISTANT_USE` (no plan-tier gating — the tier system was removed). Ephemeral sessions (no persistence). Capability-filtered tool visibility via `CapabilityAuthorizationService` (Phase 46). Chat panel UI at `frontend/components/assistant/` fired from the top-bar (Phase 44 command palette + `⌘K`).
 
 These two systems have never spoken to each other. The assistant is a generic chat window that requires the user to go to it and formulate a prompt. The automation engine is deterministic and cannot invoke an LLM. Neither system shows a visible ROI moment on the demo path today.
 
@@ -41,7 +41,7 @@ Turn Phase 52's single generic assistant into three SA-specialised inline in-pro
 - **Specialist = system prompt + tool subset + launcher metadata.** No specialist has its own database rows beyond its registry entry; there is no `Specialist` entity. The registry is Java in-code (`SpecialistRegistry`).
 - **Confirmation-on-write unchanged.** Every write tool a specialist can call uses Phase 52's existing confirmation flow when invoked from chat. When invoked by an automation rule, the equivalent confirmation happens in the review queue (Section 5.3) — the rule itself cannot commit a write without a human approval step.
 - **BYOAK cost model unchanged.** Each tenant provides its own Anthropic API key via Phase 21 `SecretStore`. Specialists (including Claude-vision OCR in Intake) cost the tenant the same per-call as chat does today. No platform-paid AI, no cost metering in this phase.
-- **PRO tier gating unchanged.** Specialists are a PRO feature, same as the chat panel. Members on STARTER tenants see no specialist buttons.
+- **No plan-tier gating.** Per the strategic "No plan-tier subscriptions" decision (memorialised 2026-04-11), there is no Starter/Pro/STARTER/PRO tier in the product — `PlanTier`, `PlanSyncService`, `@RequiresPlan`, and `<PlanGate>` do not exist and must **not** be reintroduced. Specialist visibility is gated **only** by the `AI_ASSISTANT_USE` capability (Phase 41/52) plus the per-tool capabilities resolved via `CapabilityAuthorizationService` (Phase 46). Epic 511A PR #1286 was reverted (PR #1288) for exactly this defect — do not repeat it.
 - **Capability filtering unchanged.** Each specialist's tool set is resolved against the acting member's capabilities via `CapabilityAuthorizationService`. A member without `INVOICE_EDIT` who opens the Billing specialist sees it but cannot commit any write that requires that capability.
 - **Inline placement is primary.** Each specialist launches from a button on its specific page. Phase 52's chat panel stays as the generalist fallback and **may** hand-off to a specialist ("for this, let me hand you over to the Billing Assistant") — not required in v1.
 - **No chat-history persistence.** Specialist sessions are ephemeral, same as Phase 52.
@@ -97,7 +97,7 @@ Each file starts with YAML front-matter (`version`, `createdAt`, `specialist`) f
 
 Extends Phase 52's chat API with specialist-aware endpoints:
 
-- `GET /api/assistant/specialists` — list specialists visible to the caller (filtered by PRO tier + capabilities + launcher matching). Returns `[{ id, displayName, tagline, ctaLabel, surface }]`.
+- `GET /api/assistant/specialists` — list specialists visible to the caller (filtered by `AI_ASSISTANT_USE` capability + per-tool capabilities + launcher matching). Returns `[{ id, displayName, tagline, ctaLabel, surface }]`.
 - `POST /api/assistant/specialists/{specialistId}/sessions` — start a session. Request body: `{ contextRef: { entityType, entityId }, initialPrompt?: string }`. Returns a session handle that is then streamed against via the existing Phase 52 chat streaming endpoint (`POST /api/assistant/chat` with a `specialistId` added to the request). This means one streaming endpoint, two session-start patterns (generalist vs specialist).
 - Phase 52's existing `/api/assistant/chat` gains an optional `specialistId` parameter. When present, the server resolves the specialist's system prompt + tool subset and injects both into the chat request.
 
@@ -124,7 +124,7 @@ The panel renders:
 
 ### 1.5 Tests
 
-- ~5 backend integration tests: registry wiring, tool-subset resolution against capabilities, PRO tier gate, system prompt loading + caching, specialist-scoped `chat` request.
+- ~5 backend integration tests: registry wiring, tool-subset resolution against capabilities, `AI_ASSISTANT_USE` capability gate (no plan-tier gate — tiers do not exist), system prompt loading + caching, specialist-scoped `chat` request.
 - ~3 frontend tests: launcher button renders for authorised users only; specialist panel opens pre-seeded; hand-off to generalist preserves session context.
 
 ---
@@ -488,8 +488,8 @@ Sequence: A must land before B/C/D. B/C/D can go in parallel. E depends on A and
 - Follow all conventions in `frontend/CLAUDE.md` and `backend/CLAUDE.md`.
 - Backend controllers stay one-line delegates (per `backend/CLAUDE.md` Controller Discipline). The new invocation controller + specialist controller conform.
 - Capability gating: all new backend endpoints use `@RequiresCapability`. `AI_ASSISTANT_USE` already exists from Phase 52 — reuse. Review queue actions gate on `TEAM_OVERSIGHT` (reusing Phase 69's capability for consistency with audit surfaces).
-- PRO-tier gating via Phase 2 `PlanSyncService` remains; specialists are not available on STARTER.
-- Frontend gating: `<CapabilityGate>` + `<PlanGate>` on all specialist launchers. Members without capability or tenant on STARTER see no buttons.
+- **No plan-tier gating** — `PlanTier`, `PlanSyncService`, `@RequiresPlan`, and `<PlanGate>` were removed from the product (strategic decision 2026-04-11) and must not be reintroduced. The sole authorization mechanism for specialists is the `AI_ASSISTANT_USE` capability plus the per-tool capabilities resolved by `CapabilityAuthorizationService`.
+- Frontend gating: `<CapabilityGate>` only on all specialist launchers. Members without capability see no buttons. Do **not** add `<PlanGate>`.
 - Code location: backend under `backend/.../assistant/specialist/` + `backend/.../assistant/invocation/` + `backend/.../automation/executor/InvokeAiSpecialistActionExecutor.java`. Frontend under `frontend/components/assistant/specialists/` + `frontend/app/(authenticated)/settings/automations/ai-queue/`.
 - Migrations: one (V108) for `ai_specialist_invocations` table + indexes.
 - Tests: follow `backend/CLAUDE.md` taxonomy. Use `TestcontainersConfiguration` (embedded Postgres). Anthropic API responses mocked via WireMock (same pattern as Phase 387B in Phase 52). Claude-vision responses mocked the same way.

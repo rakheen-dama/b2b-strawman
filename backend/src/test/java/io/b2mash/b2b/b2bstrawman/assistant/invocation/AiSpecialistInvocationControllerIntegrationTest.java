@@ -80,7 +80,8 @@ class AiSpecialistInvocationControllerIntegrationTest {
                       "invoice",
                       UUID.randomUUID(),
                       "v1");
-              service.recordProposal(inv.getId(), new BillingPolishPayload());
+              service.recordProposal(
+                  inv.getId(), new BillingPolishPayload(null, java.util.List.of()));
               service.markPendingApproval(inv.getId());
               holder[0] = inv.getId();
             });
@@ -214,7 +215,12 @@ class AiSpecialistInvocationControllerIntegrationTest {
 
   @TestConfiguration
   static class FakeApplierConfig {
-    @Bean
+    /**
+     * Overrides the production {@code BillingPolishApplier} (registered by 512A's
+     * {@code @Component} scan) with a no-op for controller-level assertions. Bean override is
+     * enabled in {@code application-test.yml}.
+     */
+    @Bean(name = "billingPolishApplier")
     OutputApplier<BillingPolishPayload> fakeBillingPolishApplier() {
       return new OutputApplier<>() {
         @Override

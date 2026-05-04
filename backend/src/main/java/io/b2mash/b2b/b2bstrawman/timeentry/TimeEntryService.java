@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
 import io.b2mash.b2b.b2bstrawman.member.MemberNameResolver;
 import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
@@ -409,6 +410,74 @@ public class TimeEntryService {
             .build());
 
     publishTimeEntryChangedEvent(entry.getId(), task.getProjectId(), "DELETED");
+  }
+
+  /**
+   * Description-only update for a time entry that is attached to a DRAFT invoice. Bypasses the
+   * "billed time entry" guard from {@link #updateTimeEntry} for the narrow case of AI-specialist
+   * polish proposals (see Epic 512A / ADR-267): on approval, the BillingPolishApplier needs to
+   * rewrite description text on time entries that are part of a still-editable draft invoice.
+   *
+   * <p>For any non-DRAFT invoice attachment, this method preserves the post-billing immutability
+   * guarantee by throwing {@link ResourceConflictException}, mirroring {@link #updateTimeEntry}.
+   */
+  @Transactional
+  public TimeEntry updateTimeEntryDescriptionOnDraftInvoice(
+      UUID timeEntryId, String description, ActorContext actor) {
+    if (description == null) {
+      throw new InvalidStateException(
+          "Description required", "Description-only polish requires a non-null description");
+    }
+    var entry =
+        timeEntryRepository
+            .findById(timeEntryId)
+            .orElseThrow(() -> new ResourceNotFoundException("TimeEntry", timeEntryId));
+
+    UUID invoiceId = entry.getInvoiceId();
+    if (invoiceId != null) {
+      var invoice =
+          invoiceRepository
+              .findById(invoiceId)
+              .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+      if (invoice.getStatus() != InvoiceStatus.DRAFT) {
+        throw new ResourceConflictException(
+            "Time entry is billed",
+            "Time entry is part of a non-draft invoice. Void the invoice to unlock.");
+      }
+    }
+
+    requireEditPermission(entry, actor);
+
+    UUID entryTaskId = entry.getTaskId();
+    var task =
+        taskRepository
+            .findById(entryTaskId)
+            .orElseThrow(() -> new ResourceNotFoundException("Task", entryTaskId));
+
+    String oldDescription = entry.getDescription();
+    if (Objects.equals(oldDescription, description)) {
+      return entry;
+    }
+    entry.setDescription(description);
+    entry.setUpdatedAt(Instant.now());
+    entry = timeEntryRepository.save(entry);
+
+    var details = new LinkedHashMap<String, Object>();
+    details.put(
+        "description",
+        Map.of("from", oldDescription != null ? oldDescription : "", "to", description));
+    details.put("title", task.getTitle());
+    details.put("project_id", task.getProjectId().toString());
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("time_entry.description_polished")
+            .entityType("time_entry")
+            .entityId(entry.getId())
+            .details(details)
+            .build());
+
+    publishTimeEntryChangedEvent(entry.getId(), task.getProjectId(), "UPDATED");
+    return entry;
   }
 
   // --- Project time summary aggregation methods (Epic 46A) ---

@@ -171,8 +171,8 @@ class SpecialistRegistryIntegrationTest {
     assertThat(captured.systemPrompt())
         .as("specialist branch must NOT use the generalist DocTeams suffix")
         .doesNotContain("You are the DocTeams assistant");
-    // billing-za declares no tools at this slice, so the LLM should receive an empty tool list.
-    assertThat(captured.tools()).isEmpty();
+    // billing-za declares its tool subset (Epic 512A); ensure tools are wired through.
+    assertThat(captured.tools()).isNotEmpty();
   }
 
   /** 511A.8 test 3: AI_ASSISTANT_USE gate — non-capable caller → 403. */
@@ -216,7 +216,7 @@ class SpecialistRegistryIntegrationTest {
     assertThat(handle.sessionId()).isNotNull();
     assertThat(handle.systemPromptHash()).isNotBlank();
     assertThat(handle.displayName()).isEqualTo("Billing Specialist");
-    assertThat(handle.toolIds()).isEmpty();
+    assertThat(handle.toolIds()).isNotEmpty();
   }
 
   /** 511A.8 test 5: prompt builder loaded all three stubs. */
@@ -225,6 +225,6 @@ class SpecialistRegistryIntegrationTest {
     assertThat(systemPromptBuilder.isLoaded("billing-za")).isTrue();
     assertThat(systemPromptBuilder.isLoaded("intake-za")).isTrue();
     assertThat(systemPromptBuilder.isLoaded("inbox-za")).isTrue();
-    assertThat(systemPromptBuilder.promptVersion("billing-za")).isEqualTo("0");
+    assertThat(systemPromptBuilder.promptVersion("billing-za")).isEqualTo("1.0.0");
   }
 }

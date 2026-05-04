@@ -5,6 +5,10 @@ logging:
     org.springframework: ERROR
 
 spring:
+  main:
+    # Allow @TestConfiguration @Bean(name="...") to override @Component-scanned beans of the
+    # same name in integration tests (e.g. swapping BillingPolishApplier with a fake counter).
+    allow-bean-definition-overriding: true
   scheduling:
     enabled: false
   datasource:

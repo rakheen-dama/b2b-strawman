@@ -252,7 +252,11 @@ for i in "${!SLICES_TO_RUN[@]}"; do
 
   # Check if the slice was marked Done. Re-read the task file since
   # /epic_v2 may have updated it.
-  if grep "$slice" "$TASK_FILE" | grep -q '\*\*Done\*\*'; then
+  # Match the slice's own table row (parser-aligned, see line 104), not any
+  # line that mentions the slice id — dependency/unblock columns on a sibling
+  # Done row caused false positives (e.g. 511B's Done row lists 512A as a
+  # downstream-unblock, falsely marking 512A done before it ever ran).
+  if grep -E "^\| \*\*${slice}\*\*.*\*\*Done\*\*" "$TASK_FILE" >/dev/null; then
     log "Slice ${slice} completed successfully (${SLICE_MINUTES}m)"
   else
     if [[ "$CLAUDE_EXIT" -eq 124 ]]; then

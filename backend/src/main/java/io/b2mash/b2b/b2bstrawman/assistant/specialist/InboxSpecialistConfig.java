@@ -4,7 +4,7 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/** Registers the Inbox specialist. Tool subset will land in Epic 514. */
+/** Registers the Inbox specialist with full tool subset for SA matter activity summaries. */
 @Configuration
 public class InboxSpecialistConfig {
 
@@ -13,10 +13,12 @@ public class InboxSpecialistConfig {
     return new Specialist(
         "inbox-za",
         "Inbox Specialist",
-        "Help with email triage, replies, and document handling.",
+        "Summarise matter activity across comments, events, requests, deadlines, and trust.",
         "assistant/specialists/inbox-za.md",
-        List.of(),
+        List.of("GetMatterActivityWindow", "PostInboxSummary"),
         List.of(new LauncherContext("/inbox", "inbox", "Ask the Inbox specialist")),
-        false);
+        true,
+        8,
+        List.of("PostInboxSummary"));
   }
 }

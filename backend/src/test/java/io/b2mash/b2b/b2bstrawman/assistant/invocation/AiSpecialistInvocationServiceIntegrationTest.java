@@ -295,8 +295,9 @@ class AiSpecialistInvocationServiceIntegrationTest {
   }
 
   @Test
-  void approveWithoutApplierForUnregisteredPayload_throws400() {
+  void approveWithInboxPayload_failsOnMissingProject() {
     UUID[] holder = new UUID[1];
+    UUID randomContextId = UUID.randomUUID();
     runAsOwner(
         () -> {
           var inv =
@@ -305,13 +306,19 @@ class AiSpecialistInvocationServiceIntegrationTest {
                   InvocationSource.MEMBER,
                   ownerMemberId,
                   null,
-                  "customer",
-                  UUID.randomUUID(),
+                  "project",
+                  randomContextId,
                   "v1");
-          // InboxSummaryPayload has no applier registered — service must fail.
+          // InboxSummaryPayload now has a registered applier (InboxSummaryApplier) that
+          // delegates to CommentService — approve should fail because the project doesn't exist.
           service.recordProposal(
               inv.getId(),
-              new io.b2mash.b2b.b2bstrawman.assistant.invocation.payload.InboxSummaryPayload());
+              new io.b2mash.b2b.b2bstrawman.assistant.invocation.payload.InboxSummaryPayload(
+                  randomContextId,
+                  java.time.Instant.now().minusSeconds(3600).toString(),
+                  java.time.Instant.now().toString(),
+                  "Test summary",
+                  java.util.List.of()));
           service.markPendingApproval(inv.getId());
           holder[0] = inv.getId();
         });
@@ -319,8 +326,7 @@ class AiSpecialistInvocationServiceIntegrationTest {
     runAsOwner(
         () ->
             assertThatThrownBy(() -> service.approve(holder[0], null))
-                .isInstanceOf(InvalidStateException.class)
-                .hasMessageContaining("No applier registered"));
+                .isInstanceOf(io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException.class));
   }
 
   @Test

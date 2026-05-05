@@ -21,4 +21,8 @@ public interface AiSpecialistInvocationRepository
   Page<AiSpecialistInvocation> findByActorId(UUID actorId, Pageable pageable);
 
   Page<AiSpecialistInvocation> findByStatus(InvocationStatus status, Pageable pageable);
+
+  /** Dedupe query for DIRECT-mode inbox summaries: find existing auto-applied within an hour. */
+  List<AiSpecialistInvocation> findBySpecialistIdAndContextEntityIdAndStatusAndCreatedAtBetween(
+      String specialistId, UUID contextEntityId, InvocationStatus status, Instant from, Instant to);
 }

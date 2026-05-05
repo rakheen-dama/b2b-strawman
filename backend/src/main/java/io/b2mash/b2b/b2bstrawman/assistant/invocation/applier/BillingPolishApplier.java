@@ -4,7 +4,9 @@ import io.b2mash.b2b.b2bstrawman.assistant.invocation.payload.BillingPolishPaylo
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
+import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
+import java.util.Objects;
 import java.util.UUID;
 import org.springframework.stereotype.Component;
 
@@ -20,9 +22,12 @@ import org.springframework.stereotype.Component;
 public class BillingPolishApplier implements OutputApplier<BillingPolishPayload> {
 
   private final TimeEntryService timeEntryService;
+  private final TimeEntryRepository timeEntryRepository;
 
-  public BillingPolishApplier(TimeEntryService timeEntryService) {
+  public BillingPolishApplier(
+      TimeEntryService timeEntryService, TimeEntryRepository timeEntryRepository) {
     this.timeEntryService = timeEntryService;
+    this.timeEntryRepository = timeEntryRepository;
   }
 
   @Override
@@ -35,6 +40,21 @@ public class BillingPolishApplier implements OutputApplier<BillingPolishPayload>
     var role = RequestScopes.getOrgRole();
     var actor = new ActorContext(actorId, role != null ? role : Roles.ORG_MEMBER);
     for (var edit : payload.edits()) {
+      var entry =
+          timeEntryRepository
+              .findById(edit.timeEntryId())
+              .orElseThrow(
+                  () ->
+                      new IllegalArgumentException("Time entry not found: " + edit.timeEntryId()));
+      if (!Objects.equals(entry.getInvoiceId(), payload.invoiceId())) {
+        throw new IllegalArgumentException(
+            "Time entry "
+                + edit.timeEntryId()
+                + " belongs to invoice "
+                + entry.getInvoiceId()
+                + ", not "
+                + payload.invoiceId());
+      }
       timeEntryService.updateTimeEntryDescription(edit.timeEntryId(), edit.afterText(), actor);
     }
   }

@@ -66,7 +66,7 @@ public class ProposeInvoiceLineGroupingTool implements AssistantTool {
                     "properties",
                     Map.of(
                         "description",
-                        Map.of("type", "string", "maxLength", 500),
+                        Map.of("type", "string", "maxLength", 200),
                         "hours",
                         Map.of("type", "number", "minimum", 0),
                         "sourceTimeEntryIds",
@@ -104,18 +104,23 @@ public class ProposeInvoiceLineGroupingTool implements AssistantTool {
       return Map.of("error", "groups array must not be empty");
     }
 
-    List<LineGroup> groups =
-        rawGroups.stream()
-            .map(
-                m -> {
-                  var desc = (String) m.get("description");
-                  var hours = new BigDecimal(m.get("hours").toString());
-                  var sourceIds =
-                      ((List<String>) m.get("sourceTimeEntryIds"))
-                          .stream().map(UUID::fromString).toList();
-                  return new LineGroup(desc, hours, sourceIds);
-                })
-            .toList();
+    List<LineGroup> groups;
+    try {
+      groups =
+          rawGroups.stream()
+              .map(
+                  m -> {
+                    var desc = (String) m.get("description");
+                    var hours = new BigDecimal(m.get("hours").toString());
+                    var sourceIds =
+                        ((List<String>) m.get("sourceTimeEntryIds"))
+                            .stream().map(UUID::fromString).toList();
+                    return new LineGroup(desc, hours, sourceIds);
+                  })
+              .toList();
+    } catch (IllegalArgumentException e) {
+      return Map.of("error", "Malformed group field: " + e.getMessage());
+    }
 
     var payload = new BillingGroupingPayload(invoiceId, groups);
     var promptVersion = promptBuilder.promptVersion(SPECIALIST_ID);

@@ -100,15 +100,20 @@ public class ProposeTimeEntryPolishTool implements AssistantTool {
       return Map.of("error", "edits array must not be empty");
     }
 
-    List<PolishEdit> edits =
-        rawEdits.stream()
-            .map(
-                m -> {
-                  var teId = UUID.fromString((String) m.get("timeEntryId"));
-                  var polished = (String) m.get("polishedDescription");
-                  return new PolishEdit(teId, null, polished);
-                })
-            .toList();
+    List<PolishEdit> edits;
+    try {
+      edits =
+          rawEdits.stream()
+              .map(
+                  m -> {
+                    var teId = UUID.fromString((String) m.get("timeEntryId"));
+                    var polished = (String) m.get("polishedDescription");
+                    return new PolishEdit(teId, null, polished);
+                  })
+              .toList();
+    } catch (IllegalArgumentException e) {
+      return Map.of("error", "Malformed edit field: " + e.getMessage());
+    }
 
     var payload = new BillingPolishPayload(invoiceId, edits);
     var promptVersion = promptBuilder.promptVersion(SPECIALIST_ID);

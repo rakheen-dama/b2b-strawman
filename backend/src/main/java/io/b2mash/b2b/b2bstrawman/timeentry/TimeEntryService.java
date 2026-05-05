@@ -523,6 +523,10 @@ public class TimeEntryService {
   @Transactional
   public TimeEntry updateTimeEntryDescription(
       UUID timeEntryId, String description, ActorContext actor) {
+    if (description == null || description.isBlank()) {
+      throw new IllegalArgumentException("Description must not be null or blank");
+    }
+
     var entry =
         timeEntryRepository
             .findById(timeEntryId)

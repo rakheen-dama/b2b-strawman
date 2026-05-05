@@ -18,6 +18,16 @@ export const SPECIALIST_STRINGS = {
   inputPlaceholder: "Type a message...",
   sendMessage: "Send message",
   stopStreaming: "Stop streaming",
+  // Billing specialist
+  billingPolishLabel: "Polish with AI",
+  billingGroupingLabel: "Suggest line-item grouping",
+  billingDiffTitle: "Proposed Changes",
+  billingDiffAccept: "Accept",
+  billingDiffReject: "Reject",
+  billingDiffEdit: "Edit",
+  billingDiffApproveAll: "Approve all changes",
+  billingDiffRejectAll: "Reject all changes",
+  billingGroupingTitle: "Proposed Line Groups",
 } as const;
 
 export type SpecialistStringKey = keyof typeof SPECIALIST_STRINGS;

@@ -25,6 +25,8 @@ import { PrerequisiteModal } from "@/components/prerequisite/prerequisite-modal"
 import { useInvoiceGeneration } from "@/components/invoices/use-invoice-generation";
 import { TerminologyText } from "@/components/terminology-text";
 import { cn } from "@/lib/utils";
+import { SpecialistLauncherButton } from "@/components/assistant/specialist-launcher-button";
+import { SPECIALIST_STRINGS } from "@/components/assistant/specialist-strings";
 
 /** Wraps formatCurrency in a try-catch to handle invalid currency codes gracefully. */
 function safeFormatCurrency(amount: number, curr: string): string {
@@ -225,6 +227,15 @@ export function InvoiceGenerationDialog({
                   {safeFormatCurrency(h.runningTotal, h.currency)}
                 </span>
               </div>
+
+              {/* AI grouping suggestion */}
+              <SpecialistLauncherButton
+                specialistId="BILLING"
+                surface="UNBILLED_TIME_DIALOG"
+                contextRef={{ entityType: "customer", entityId: customerId }}
+                initialPrompt="Suggest a line-item grouping for these time entries."
+                ctaLabel={SPECIALIST_STRINGS.billingGroupingLabel}
+              />
 
               {/* Validation Checklist */}
               {h.validationChecks && h.validationChecks.length > 0 && (

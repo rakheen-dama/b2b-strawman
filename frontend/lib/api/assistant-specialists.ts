@@ -104,6 +104,28 @@ async function handleJson<T>(response: Response): Promise<T> {
   return (await response.json()) as T;
 }
 
+// ---- Approve payload types ----
+
+/** Polish specialist — accepted edits to apply to time-entry descriptions. */
+export interface BillingPolishAppliedOutput {
+  kind: "BillingPolishPayload";
+  invoiceId: string;
+  edits: { timeEntryId: string; beforeText: string; afterText: string }[];
+}
+
+/** Grouping specialist — proposed line-item groups. */
+export interface BillingGroupingAppliedOutput {
+  kind: "BillingGroupingPayload";
+  invoiceId: string;
+  groups: { description: string; hours: number; sourceTimeEntryIds: string[] }[];
+}
+
+/**
+ * Discriminated union of all specialist applied-output payloads.
+ * Future specialists (513B, 514B) add their shapes here.
+ */
+export type AppliedOutput = BillingPolishAppliedOutput | BillingGroupingAppliedOutput;
+
 // ---- API ----
 
 export async function listSpecialists(route?: string): Promise<SpecialistSummary[]> {
@@ -136,4 +158,40 @@ export async function startSession(id: string, body: StartSessionRequest): Promi
     }
   );
   return handleJson<SessionHandle>(res);
+}
+
+export async function approveInvocation(
+  invocationId: string,
+  appliedOutput?: AppliedOutput
+): Promise<{ id: string; status: string; appliedAt: string }> {
+  const body = appliedOutput ? { appliedOutput } : {};
+  const res = await fetch(
+    `${API_BASE}/api/assistant/invocations/${encodeURIComponent(invocationId)}/approve`,
+    {
+      method: "POST",
+      headers: getAuthHeaders(),
+      credentials: credentialsMode(),
+      body: JSON.stringify(body),
+    }
+  );
+  return handleJson(res);
+}
+
+export async function rejectInvocation(
+  invocationId: string,
+  rejectReason: string
+): Promise<void> {
+  const res = await fetch(
+    `${API_BASE}/api/assistant/invocations/${encodeURIComponent(invocationId)}/reject`,
+    {
+      method: "POST",
+      headers: getAuthHeaders(),
+      credentials: credentialsMode(),
+      body: JSON.stringify({ rejectReason }),
+    }
+  );
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new SpecialistApiError(res.status, body);
+  }
 }

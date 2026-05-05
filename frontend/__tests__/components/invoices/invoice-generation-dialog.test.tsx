@@ -4,6 +4,9 @@ import userEvent from "@testing-library/user-event";
 import { InvoiceGenerationDialog } from "@/components/invoices/invoice-generation-dialog";
 import type { UnbilledTimeResponse, UnbilledDisbursementEntry } from "@/lib/types";
 
+// Mock specialist launcher (auto-mock from __mocks__/specialist-launcher-button.tsx)
+vi.mock("@/components/assistant/specialist-launcher-button");
+
 const mockFetchUnbilledTime = vi.fn();
 const mockCreateInvoiceDraft = vi.fn();
 const mockValidateInvoiceGeneration = vi.fn();

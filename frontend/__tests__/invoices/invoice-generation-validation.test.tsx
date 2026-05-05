@@ -4,6 +4,9 @@ import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ValidationCheck } from "@/lib/types";
 
+// Mock specialist launcher (auto-mock from __mocks__/specialist-launcher-button.tsx)
+vi.mock("@/components/assistant/specialist-launcher-button");
+
 // Mock server actions
 const mockValidateInvoiceGeneration = vi.fn();
 const mockFetchUnbilledTime = vi.fn();

@@ -7,6 +7,9 @@ import type { InvoiceResponse, PaymentEvent } from "@/lib/types";
 
 vi.mock("server-only", () => ({}));
 
+// Mock specialist launcher (auto-mock from __mocks__/specialist-launcher-button.tsx)
+vi.mock("@/components/assistant/specialist-launcher-button");
+
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({

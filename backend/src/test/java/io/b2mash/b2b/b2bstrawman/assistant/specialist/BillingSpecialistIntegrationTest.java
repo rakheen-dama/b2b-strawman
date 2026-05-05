@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.assistant.invocation.AiSpecialistInvocationServ
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.InvocationStatus;
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.payload.BillingGroupingPayload;
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.payload.BillingPolishPayload;
+import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantToolRegistry;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.write.ProposeInvoiceLineGroupingTool;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.write.ProposeTimeEntryPolishTool;
@@ -49,6 +50,7 @@ class BillingSpecialistIntegrationTest {
   @Autowired private AiSpecialistInvocationRepository invocationRepository;
   @Autowired private ProposeTimeEntryPolishTool polishTool;
   @Autowired private ProposeInvoiceLineGroupingTool groupingTool;
+  @Autowired private AssistantToolRegistry toolRegistry;
 
   private String tenantSchema;
   private UUID memberId;
@@ -157,11 +159,26 @@ class BillingSpecialistIntegrationTest {
 
   @Test
   void capabilityGate_memberWithoutInvoicing_cannotUsePolishTool() {
+    // Verify the tools declare INVOICING as a required capability
     assertThat(polishTool.requiredCapabilities()).contains("INVOICING");
-    // A member without INVOICING capability would be filtered out by the tool registry
-    // before execute() is ever called. The registry's filterBy removes tools whose
-    // requiredCapabilities are not a subset of the member's capabilities.
-    assertThat(polishTool.requiredCapabilities()).isNotEmpty();
     assertThat(groupingTool.requiredCapabilities()).contains("INVOICING");
+
+    // Exercise the actual registry filtering: a member with AI_ASSISTANT_USE but WITHOUT
+    // INVOICING should not see billing tools in the filtered tool list.
+    var billingToolIds =
+        List.of("ProposeTimeEntryPolish", "ProposeInvoiceLineGrouping", "create_invoice_draft");
+    var capsWithoutInvoicing = Set.of("AI_ASSISTANT_USE");
+
+    var filtered = toolRegistry.filterBy(billingToolIds, capsWithoutInvoicing);
+    var filteredNames = filtered.stream().map(t -> t.name()).toList();
+    assertThat(filteredNames).doesNotContain("ProposeTimeEntryPolish");
+    assertThat(filteredNames).doesNotContain("ProposeInvoiceLineGrouping");
+
+    // Verify WITH INVOICING they ARE included
+    var capsWithInvoicing = Set.of("AI_ASSISTANT_USE", "INVOICING");
+    var filteredWithCap = toolRegistry.filterBy(billingToolIds, capsWithInvoicing);
+    var filteredWithCapNames = filteredWithCap.stream().map(t -> t.name()).toList();
+    assertThat(filteredWithCapNames).contains("ProposeTimeEntryPolish");
+    assertThat(filteredWithCapNames).contains("ProposeInvoiceLineGrouping");
   }
 }

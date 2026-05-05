@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.assistant.invocation.applier;
 
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.payload.BillingPolishPayload;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryService;
 import java.util.UUID;
@@ -30,7 +31,8 @@ public class BillingPolishApplier implements OutputApplier<BillingPolishPayload>
 
   @Override
   public void apply(BillingPolishPayload payload, UUID actorId) {
-    var actor = new ActorContext(actorId, Roles.ORG_OWNER);
+    var role = RequestScopes.getOrgRole();
+    var actor = new ActorContext(actorId, role != null ? role : Roles.ORG_MEMBER);
     for (var edit : payload.edits()) {
       timeEntryService.updateTimeEntry(
           edit.timeEntryId(), null, null, null, null, edit.afterText(), actor);

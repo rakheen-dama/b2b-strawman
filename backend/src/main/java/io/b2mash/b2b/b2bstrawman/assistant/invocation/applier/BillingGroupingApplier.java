@@ -27,7 +27,11 @@ public class BillingGroupingApplier implements OutputApplier<BillingGroupingPayl
 
   @Override
   public void apply(BillingGroupingPayload payload, UUID actorId) {
-    // Collect all source time entry IDs across groups for the field-group application
+    // TODO(512A): InvoiceService.setFieldGroups only accepts a flat List<UUID> of time entry IDs.
+    // The per-group structure (description, hours) from BillingGroupingPayload is not yet
+    // propagated — a richer API (e.g. accepting GroupDefinition records) is needed to preserve
+    // the grouping semantics proposed by the specialist. Until then, we apply the flat association
+    // so the invoice at least references the correct time entries.
     var allSourceIds =
         payload.groups().stream().flatMap(g -> g.sourceTimeEntryIds().stream()).toList();
     invoiceService.setFieldGroups(payload.invoiceId(), allSourceIds);

@@ -9,10 +9,7 @@ vi.mock("@/lib/api/assistant-specialists", () => ({
 }));
 
 import { IntakeFieldDiff } from "@/components/assistant/specialists/intake-field-diff";
-import {
-  approveInvocation,
-  rejectInvocation,
-} from "@/lib/api/assistant-specialists";
+import { approveInvocation, rejectInvocation } from "@/lib/api/assistant-specialists";
 
 const approveInvocationMock = approveInvocation as unknown as ReturnType<typeof vi.fn>;
 const rejectInvocationMock = rejectInvocation as unknown as ReturnType<typeof vi.fn>;
@@ -69,9 +66,7 @@ describe("<IntakeFieldDiff> per-field diff accept/reject round-trip", () => {
     expect(rows).toHaveLength(3);
 
     // Reject the id_passport_number row
-    const idRow = rows.find(
-      (r) => r.getAttribute("data-field-slug") === "id_passport_number"
-    )!;
+    const idRow = rows.find((r) => r.getAttribute("data-field-slug") === "id_passport_number")!;
     const rejectBtn = within(idRow).getByLabelText("Reject");
     await user.click(rejectBtn);
 
@@ -93,13 +88,7 @@ describe("<IntakeFieldDiff> per-field diff accept/reject round-trip", () => {
 
 describe("<IntakeFieldDiff> empty state", () => {
   it("renders empty state message when proposedFields is empty", () => {
-    render(
-      <IntakeFieldDiff
-        {...BASE_PROPS}
-        proposedFields={{}}
-        currentFields={{}}
-      />
-    );
+    render(<IntakeFieldDiff {...BASE_PROPS} proposedFields={{}} currentFields={{}} />);
 
     expect(screen.getByText("No documents to extract from")).toBeInTheDocument();
     expect(screen.queryByTestId("diff-row")).not.toBeInTheDocument();

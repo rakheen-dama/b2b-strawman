@@ -5,10 +5,7 @@ import { Check, X, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SPECIALIST_STRINGS } from "@/components/assistant/specialist-strings";
-import {
-  approveInvocation,
-  rejectInvocation,
-} from "@/lib/api/assistant-specialists";
+import { approveInvocation, rejectInvocation } from "@/lib/api/assistant-specialists";
 
 // ---- Types ----
 
@@ -35,9 +32,7 @@ interface RowState {
 // ---- Helpers ----
 
 function formatFieldName(slug: string): string {
-  return slug
-    .replace(/_/g, " ")
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  return slug.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 function toDisplayValue(value: unknown): string {
@@ -89,25 +84,19 @@ export function IntakeFieldDiff({
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
 
-  const setRowDecision = useCallback(
-    (slug: string, decision: RowDecision) => {
-      setRowStates((prev) => ({
-        ...prev,
-        [slug]: { ...prev[slug], decision },
-      }));
-    },
-    []
-  );
+  const setRowDecision = useCallback((slug: string, decision: RowDecision) => {
+    setRowStates((prev) => ({
+      ...prev,
+      [slug]: { ...prev[slug], decision },
+    }));
+  }, []);
 
-  const setRowEditValue = useCallback(
-    (slug: string, value: string) => {
-      setRowStates((prev) => ({
-        ...prev,
-        [slug]: { ...prev[slug], editedValue: value },
-      }));
-    },
-    []
-  );
+  const setRowEditValue = useCallback((slug: string, value: string) => {
+    setRowStates((prev) => ({
+      ...prev,
+      [slug]: { ...prev[slug], editedValue: value },
+    }));
+  }, []);
 
   const handleApproveAll = useCallback(async () => {
     if (inFlight) return;
@@ -173,14 +162,20 @@ export function IntakeFieldDiff({
   // Empty state
   if (fieldSlugs.length === 0) {
     return (
-      <div data-testid="intake-field-diff" className="rounded-lg border border-slate-200 p-4 dark:border-slate-800">
+      <div
+        data-testid="intake-field-diff"
+        className="rounded-lg border border-slate-200 p-4 dark:border-slate-800"
+      >
         <p className="text-sm text-slate-500">{SPECIALIST_STRINGS.intakeEmptyState}</p>
       </div>
     );
   }
 
   return (
-    <div data-testid="intake-field-diff" className="space-y-4 rounded-lg border border-slate-200 p-4 dark:border-slate-800">
+    <div
+      data-testid="intake-field-diff"
+      className="space-y-4 rounded-lg border border-slate-200 p-4 dark:border-slate-800"
+    >
       {/* Header */}
       <div className="flex items-center gap-3">
         <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
@@ -189,7 +184,7 @@ export function IntakeFieldDiff({
         <span
           data-testid="extraction-path-badge"
           className={cn(
-            "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide",
+            "inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase",
             extractionPath === "VISION"
               ? "bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300"
               : "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400"
@@ -254,7 +249,7 @@ export function IntakeFieldDiff({
               {isEditing ? (
                 <textarea
                   data-testid="edit-textarea"
-                  className="rounded border border-teal-300 bg-white px-2 py-1.5 font-mono text-[11px] text-slate-900 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-teal-700 dark:bg-slate-900 dark:text-slate-100"
+                  className="rounded border border-teal-300 bg-white px-2 py-1.5 font-mono text-[11px] text-slate-900 focus:ring-1 focus:ring-teal-500 focus:outline-none dark:border-teal-700 dark:bg-slate-900 dark:text-slate-100"
                   value={state.editedValue}
                   onChange={(e) => setRowEditValue(slug, e.target.value)}
                   rows={2}
@@ -272,7 +267,7 @@ export function IntakeFieldDiff({
                   {isPopia && (
                     <span
                       data-testid="popia-badge"
-                      className="inline-flex items-center rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-amber-700 dark:bg-amber-900/40 dark:text-amber-400"
+                      className="inline-flex items-center rounded-full bg-amber-100 px-1.5 py-0.5 text-[9px] font-semibold tracking-wide text-amber-700 uppercase dark:bg-amber-900/40 dark:text-amber-400"
                     >
                       {SPECIALIST_STRINGS.intakePopiaBadge}
                     </span>
@@ -344,7 +339,7 @@ export function IntakeFieldDiff({
         <div data-testid="reject-form" className="space-y-2">
           <textarea
             data-testid="reject-reason"
-            className="w-full rounded border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            className="w-full rounded border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:ring-1 focus:ring-teal-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
             placeholder="Reason for rejection..."
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}

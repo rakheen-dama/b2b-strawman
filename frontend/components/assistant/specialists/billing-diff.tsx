@@ -5,10 +5,7 @@ import { Check, X, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { SPECIALIST_STRINGS } from "@/components/assistant/specialist-strings";
-import {
-  approveInvocation,
-  rejectInvocation,
-} from "@/lib/api/assistant-specialists";
+import { approveInvocation, rejectInvocation } from "@/lib/api/assistant-specialists";
 
 // ---- Types ----
 
@@ -70,31 +67,25 @@ export function BillingDiff({
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectForm, setShowRejectForm] = useState(false);
 
-  const setRowDecision = useCallback(
-    (timeEntryId: string, decision: RowDecision) => {
-      setRowStates((prev) => ({
-        ...prev,
-        [timeEntryId]: {
-          ...prev[timeEntryId],
-          decision,
-        },
-      }));
-    },
-    []
-  );
+  const setRowDecision = useCallback((timeEntryId: string, decision: RowDecision) => {
+    setRowStates((prev) => ({
+      ...prev,
+      [timeEntryId]: {
+        ...prev[timeEntryId],
+        decision,
+      },
+    }));
+  }, []);
 
-  const setRowEditText = useCallback(
-    (timeEntryId: string, text: string) => {
-      setRowStates((prev) => ({
-        ...prev,
-        [timeEntryId]: {
-          ...prev[timeEntryId],
-          editedText: text,
-        },
-      }));
-    },
-    []
-  );
+  const setRowEditText = useCallback((timeEntryId: string, text: string) => {
+    setRowStates((prev) => ({
+      ...prev,
+      [timeEntryId]: {
+        ...prev[timeEntryId],
+        editedText: text,
+      },
+    }));
+  }, []);
 
   const handleApproveAll = useCallback(async () => {
     if (inFlight) return;
@@ -151,7 +142,10 @@ export function BillingDiff({
   }, [inFlight, invocationId, rejectReason, onRejected]);
 
   return (
-    <div data-testid="billing-diff" className="space-y-4 rounded-lg border border-slate-200 p-4 dark:border-slate-800">
+    <div
+      data-testid="billing-diff"
+      className="space-y-4 rounded-lg border border-slate-200 p-4 dark:border-slate-800"
+    >
       <h3 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
         {isPolish ? SPECIALIST_STRINGS.billingDiffTitle : SPECIALIST_STRINGS.billingGroupingTitle}
       </h3>
@@ -190,7 +184,7 @@ export function BillingDiff({
                 {isEditing ? (
                   <textarea
                     data-testid="edit-textarea"
-                    className="rounded border border-teal-300 bg-white px-2 py-1.5 font-mono text-[11px] text-slate-900 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-teal-700 dark:bg-slate-900 dark:text-slate-100"
+                    className="rounded border border-teal-300 bg-white px-2 py-1.5 font-mono text-[11px] text-slate-900 focus:ring-1 focus:ring-teal-500 focus:outline-none dark:border-teal-700 dark:bg-slate-900 dark:text-slate-100"
                     value={state.editedText}
                     onChange={(e) => setRowEditText(edit.timeEntryId, e.target.value)}
                     rows={2}
@@ -276,7 +270,10 @@ export function BillingDiff({
                   {group.description}
                 </span>
                 <span className="text-xs text-slate-500">
-                  {group.hours}h &middot; {group.sourceTimeEntryIds.length === 1 ? "1 entry" : `${group.sourceTimeEntryIds.length} entries`}
+                  {group.hours}h &middot;{" "}
+                  {group.sourceTimeEntryIds.length === 1
+                    ? "1 entry"
+                    : `${group.sourceTimeEntryIds.length} entries`}
                 </span>
               </div>
             </div>
@@ -296,7 +293,7 @@ export function BillingDiff({
         <div data-testid="reject-form" className="space-y-2">
           <textarea
             data-testid="reject-reason"
-            className="w-full rounded border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
+            className="w-full rounded border border-slate-200 px-3 py-2 text-sm text-slate-900 focus:ring-1 focus:ring-teal-500 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
             placeholder="Reason for rejection..."
             value={rejectReason}
             onChange={(e) => setRejectReason(e.target.value)}

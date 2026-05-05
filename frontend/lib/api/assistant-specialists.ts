@@ -191,10 +191,7 @@ export async function approveInvocation(
   return handleJson(res);
 }
 
-export async function rejectInvocation(
-  invocationId: string,
-  rejectReason: string
-): Promise<void> {
+export async function rejectInvocation(invocationId: string, rejectReason: string): Promise<void> {
   const res = await fetch(
     `${API_BASE}/api/assistant/invocations/${encodeURIComponent(invocationId)}/reject`,
     {

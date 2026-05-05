@@ -108,7 +108,7 @@ class AiSpecialistInvocationServiceIntegrationTest {
                   "invoice",
                   UUID.randomUUID(),
                   "v1");
-          service.recordProposal(inv.getId(), new BillingPolishPayload());
+          service.recordProposal(inv.getId(), new BillingPolishPayload(null, List.of()));
           service.markPendingApproval(inv.getId());
           holder[0] = inv.getId();
         });
@@ -206,7 +206,7 @@ class AiSpecialistInvocationServiceIntegrationTest {
                   "invoice",
                   UUID.randomUUID(),
                   "v1");
-          service.recordProposal(a.getId(), new BillingPolishPayload());
+          service.recordProposal(a.getId(), new BillingPolishPayload(null, List.of()));
           service.markPendingApproval(a.getId());
 
           var b =
@@ -218,7 +218,7 @@ class AiSpecialistInvocationServiceIntegrationTest {
                   "customer",
                   UUID.randomUUID(),
                   "v1");
-          service.recordProposal(b.getId(), new BillingPolishPayload());
+          service.recordProposal(b.getId(), new BillingPolishPayload(null, List.of()));
           service.markPendingApproval(b.getId());
 
           ids[0] = a.getId();
@@ -248,7 +248,7 @@ class AiSpecialistInvocationServiceIntegrationTest {
                   "invoice",
                   UUID.randomUUID(),
                   "v1");
-          service.recordProposal(a.getId(), new BillingPolishPayload());
+          service.recordProposal(a.getId(), new BillingPolishPayload(null, List.of()));
           service.markPendingApproval(a.getId());
 
           // RUNNING (not pending) — bulkApprove should record per-id error for it.
@@ -398,10 +398,10 @@ class AiSpecialistInvocationServiceIntegrationTest {
           var first = repository.findById(id).orElseThrow();
           var second = repository.findById(id).orElseThrow();
 
-          first.markApproved(ownerMemberId, new BillingPolishPayload());
+          first.markApproved(ownerMemberId, new BillingPolishPayload(null, List.of()));
           repository.saveAndFlush(first);
 
-          second.markApproved(ownerMemberId, new BillingPolishPayload());
+          second.markApproved(ownerMemberId, new BillingPolishPayload(null, List.of()));
           assertThatThrownBy(() -> repository.saveAndFlush(second))
               .satisfiesAnyOf(
                   ex ->
@@ -443,7 +443,7 @@ class AiSpecialistInvocationServiceIntegrationTest {
 
   @TestConfiguration
   static class FakeApplierConfig {
-    @Bean
+    @Bean("billingPolishApplier")
     FakeBillingPolishApplier fakeBillingPolishApplier() {
       return new FakeBillingPolishApplier();
     }

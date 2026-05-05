@@ -5,6 +5,8 @@ logging:
     org.springframework: ERROR
 
 spring:
+  main:
+    allow-bean-definition-overriding: true
   scheduling:
     enabled: false
   datasource:

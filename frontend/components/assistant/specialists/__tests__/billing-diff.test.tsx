@@ -232,7 +232,7 @@ describe("<BillingDiff> grouping mode", () => {
     expect(screen.getByText(/4\.5h/)).toBeInTheDocument();
     expect(screen.getByText(/3 entries/)).toBeInTheDocument();
     expect(screen.getByText("Client communication")).toBeInTheDocument();
-    expect(screen.getByText(/1 entries/)).toBeInTheDocument();
+    expect(screen.getByText(/1 entry/)).toBeInTheDocument();
   });
 
   it("approves grouping payload as-is", async () => {

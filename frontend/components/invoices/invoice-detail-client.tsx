@@ -22,6 +22,7 @@ import { AddDisbursementsPicker } from "@/app/(app)/org/[slug]/invoices/[id]/edi
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet, Receipt } from "lucide-react";
 import { SpecialistLauncherButton } from "@/components/assistant/specialist-launcher-button";
+import { SPECIALIST_STRINGS } from "@/components/assistant/specialist-strings";
 import type { InvoiceResponse, PaymentEvent, TaxRateResponse } from "@/lib/types";
 
 interface InvoiceDetailClientProps {
@@ -215,7 +216,7 @@ export function InvoiceDetailClient({
           surface="INVOICE_DRAFT_TOOLBAR"
           contextRef={{ entityType: "invoice", entityId: h.invoice.id }}
           initialPrompt="Polish the time-entry descriptions on this invoice."
-          ctaLabel="Polish with AI"
+          ctaLabel={SPECIALIST_STRINGS.billingPolishLabel}
         />
       )}
 

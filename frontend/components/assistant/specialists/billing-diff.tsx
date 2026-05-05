@@ -213,6 +213,7 @@ export function BillingDiff({
                     type="button"
                     aria-label={SPECIALIST_STRINGS.billingDiffAccept}
                     title={SPECIALIST_STRINGS.billingDiffAccept}
+                    disabled={inFlight}
                     className={cn(
                       "rounded p-1 transition-colors",
                       state?.decision === "accept"
@@ -227,6 +228,7 @@ export function BillingDiff({
                     type="button"
                     aria-label={SPECIALIST_STRINGS.billingDiffReject}
                     title={SPECIALIST_STRINGS.billingDiffReject}
+                    disabled={inFlight}
                     className={cn(
                       "rounded p-1 transition-colors",
                       state?.decision === "reject"
@@ -241,6 +243,7 @@ export function BillingDiff({
                     type="button"
                     aria-label={SPECIALIST_STRINGS.billingDiffEdit}
                     title={SPECIALIST_STRINGS.billingDiffEdit}
+                    disabled={inFlight}
                     className={cn(
                       "rounded p-1 transition-colors",
                       state?.decision === "edit"
@@ -263,7 +266,7 @@ export function BillingDiff({
         <div className="space-y-2">
           {groups.map((group, idx) => (
             <div
-              key={idx}
+              key={group.description}
               data-testid="group-row"
               className="rounded border border-slate-100 p-3 dark:border-slate-800"
             >
@@ -272,7 +275,7 @@ export function BillingDiff({
                   {group.description}
                 </span>
                 <span className="text-xs text-slate-500">
-                  {group.hours}h &middot; {group.sourceTimeEntryIds.length} entries
+                  {group.hours}h &middot; {group.sourceTimeEntryIds.length === 1 ? "1 entry" : `${group.sourceTimeEntryIds.length} entries`}
                 </span>
               </div>
             </div>

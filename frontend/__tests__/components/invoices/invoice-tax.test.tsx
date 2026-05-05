@@ -6,6 +6,11 @@ import { InvoiceDetailClient } from "@/components/invoices/invoice-detail-client
 import { InvoiceLineTable } from "@/components/invoices/invoice-line-table";
 import type { InvoiceResponse, InvoiceLineResponse, TaxRateResponse } from "@/lib/types";
 
+// Mock specialist launcher (avoids deep dependency chain in unit tests)
+vi.mock("@/components/assistant/specialist-launcher-button", () => ({
+  SpecialistLauncherButton: () => null,
+}));
+
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn() }),

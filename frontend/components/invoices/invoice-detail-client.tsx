@@ -21,6 +21,7 @@ import { TariffLineDialog } from "@/components/legal/tariff-line-dialog";
 import { AddDisbursementsPicker } from "@/app/(app)/org/[slug]/invoices/[id]/edit/(components)/add-disbursements-picker";
 import { Button } from "@/components/ui/button";
 import { FileSpreadsheet, Receipt } from "lucide-react";
+import { SpecialistLauncherButton } from "@/components/assistant/specialist-launcher-button";
 import type { InvoiceResponse, PaymentEvent, TaxRateResponse } from "@/lib/types";
 
 interface InvoiceDetailClientProps {
@@ -205,6 +206,17 @@ export function InvoiceDetailClient({
             }}
           />
         </ModuleGate>
+      )}
+
+      {/* AI Polish (billing specialist — DRAFT only) */}
+      {h.isDraft && (
+        <SpecialistLauncherButton
+          specialistId="BILLING"
+          surface="INVOICE_DRAFT_TOOLBAR"
+          contextRef={{ entityType: "invoice", entityId: h.invoice.id }}
+          initialPrompt="Polish the time-entry descriptions on this invoice."
+          ctaLabel="Polish with AI"
+        />
       )}
 
       {/* Add Line Form */}

@@ -137,3 +137,36 @@ export async function startSession(id: string, body: StartSessionRequest): Promi
   );
   return handleJson<SessionHandle>(res);
 }
+
+export async function approveInvocation(
+  invocationId: string,
+  appliedOutput?: unknown
+): Promise<{ id: string; status: string; appliedAt: string }> {
+  const body = appliedOutput ? { appliedOutput } : {};
+  const res = await fetch(
+    `${API_BASE}/api/assistant/invocations/${encodeURIComponent(invocationId)}/approve`,
+    {
+      method: "POST",
+      headers: getAuthHeaders(),
+      credentials: credentialsMode(),
+      body: JSON.stringify(body),
+    }
+  );
+  return handleJson(res);
+}
+
+export async function rejectInvocation(
+  invocationId: string,
+  rejectReason: string
+): Promise<{ id: string; status: string }> {
+  const res = await fetch(
+    `${API_BASE}/api/assistant/invocations/${encodeURIComponent(invocationId)}/reject`,
+    {
+      method: "POST",
+      headers: getAuthHeaders(),
+      credentials: credentialsMode(),
+      body: JSON.stringify({ rejectReason }),
+    }
+  );
+  return handleJson(res);
+}

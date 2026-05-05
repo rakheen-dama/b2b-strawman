@@ -5,6 +5,11 @@ import { InvoiceGenerationDialog } from "@/components/invoices/invoice-generatio
 import { InvoiceLineTable } from "@/components/invoices/invoice-line-table";
 import type { UnbilledTimeResponse, InvoiceLineResponse, ExpenseCategory } from "@/lib/types";
 
+// Mock specialist launcher (avoids deep dependency chain in unit tests)
+vi.mock("@/components/assistant/specialist-launcher-button", () => ({
+  SpecialistLauncherButton: () => null,
+}));
+
 const mockFetchUnbilledTime = vi.fn();
 const mockCreateInvoiceDraft = vi.fn();
 const mockValidateInvoiceGeneration = vi.fn();

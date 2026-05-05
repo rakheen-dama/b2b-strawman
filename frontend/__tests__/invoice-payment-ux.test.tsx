@@ -7,6 +7,11 @@ import type { InvoiceResponse, PaymentEvent } from "@/lib/types";
 
 vi.mock("server-only", () => ({}));
 
+// Mock specialist launcher (avoids deep dependency chain in unit tests)
+vi.mock("@/components/assistant/specialist-launcher-button", () => ({
+  SpecialistLauncherButton: () => null,
+}));
+
 // Mock next/navigation
 vi.mock("next/navigation", () => ({
   useRouter: () => ({

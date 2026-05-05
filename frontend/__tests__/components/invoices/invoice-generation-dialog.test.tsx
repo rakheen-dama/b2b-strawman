@@ -4,6 +4,11 @@ import userEvent from "@testing-library/user-event";
 import { InvoiceGenerationDialog } from "@/components/invoices/invoice-generation-dialog";
 import type { UnbilledTimeResponse, UnbilledDisbursementEntry } from "@/lib/types";
 
+// Mock specialist launcher (avoids deep dependency chain in unit tests)
+vi.mock("@/components/assistant/specialist-launcher-button", () => ({
+  SpecialistLauncherButton: () => null,
+}));
+
 const mockFetchUnbilledTime = vi.fn();
 const mockCreateInvoiceDraft = vi.fn();
 const mockValidateInvoiceGeneration = vi.fn();

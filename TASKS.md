@@ -580,7 +580,7 @@
 | 510 | Admin-POV 30-Day QA Capstone + Screenshots + Gap Report | E2E/Process | 501–509 | L | 510A, 510B | |
 | **Phase 70 — Specialist AI Assistants** | | | | | | See [tasks/phase70-specialist-ai-assistants.md](tasks/phase70-specialist-ai-assistants.md) |
 | 511 | Specialist Framework + Inline Launcher Infrastructure | Both | Phase 52, Phase 41/46 | M | 511A, 511B | **Done** (PRs #1290, #1291) |
-| 512 | Billing Assistant (Polish + Grouping) | Both | 511A, 515A | M | 512A, 512B | |
+| 512 | Billing Assistant (Polish + Grouping) | Both | 511A, 515A | M | 512A, 512B | 512A **Done** (PR #1294) |
 | 513 | Intake Assistant + Vision Fallback | Both | 511A, 515A | L | 513A, 513B | |
 | 514 | Inbox Assistant + Activity Window | Both | 511A, 515A | M | 514A, 514B | |
 | 515 | Automation Hook + Invocation Entity + Review Queue | Both | Phase 37 | L | 515A, 515B, 515C | |

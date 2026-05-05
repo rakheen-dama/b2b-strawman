@@ -89,6 +89,9 @@ public class ProposeCustomerFieldExtractionTool implements AssistantTool {
     }
 
     var contextEntityIdStr = (String) input.get("contextEntityId");
+    if (contextEntityIdStr == null) {
+      return Map.of("error", "contextEntityId is required");
+    }
 
     UUID contextEntityId;
     try {
@@ -103,6 +106,10 @@ public class ProposeCustomerFieldExtractionTool implements AssistantTool {
     }
 
     var extractionPath = (String) input.get("extractionPath");
+    if (extractionPath == null
+        || (!"TEXT".equals(extractionPath) && !"VISION".equals(extractionPath))) {
+      return Map.of("error", "extractionPath must be 'TEXT' or 'VISION', got: " + extractionPath);
+    }
     var popiaFlaggedFields = (List<String>) input.get("popiaFlaggedFields");
     var validationFlags = (List<String>) input.get("validationFlags");
 

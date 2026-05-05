@@ -60,6 +60,9 @@ public class ListDocumentsForContextTool implements AssistantTool {
     var entityType = (String) input.get("entityType");
     var entityIdStr = (String) input.get("entityId");
 
+    if (entityIdStr == null) {
+      return Map.of("error", "entityId is required");
+    }
     UUID entityId;
     try {
       entityId = UUID.fromString(entityIdStr);

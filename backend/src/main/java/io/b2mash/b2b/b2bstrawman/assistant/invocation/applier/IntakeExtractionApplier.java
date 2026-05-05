@@ -69,7 +69,10 @@ public class IntakeExtractionApplier implements OutputApplier<IntakeExtractionPa
   private static String getStringOrDefault(
       java.util.Map<String, Object> fields, String key, String defaultValue) {
     var value = fields.get(key);
-    return value != null ? value.toString() : defaultValue;
+    if (value == null) return defaultValue;
+    if (value instanceof String s) return s;
+    throw new IllegalArgumentException(
+        "Expected String for field '" + key + "', got " + value.getClass().getSimpleName());
   }
 
   private static LocalDate getLocalDateOrDefault(

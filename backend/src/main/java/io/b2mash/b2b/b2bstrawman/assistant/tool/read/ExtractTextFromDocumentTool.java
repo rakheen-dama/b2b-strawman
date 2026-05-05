@@ -82,6 +82,9 @@ public class ExtractTextFromDocumentTool implements AssistantTool {
   @Override
   public Object execute(Map<String, Object> input, TenantToolContext context) {
     var documentIdStr = (String) input.get("documentId");
+    if (documentIdStr == null) {
+      return Map.of("error", "documentId is required");
+    }
     UUID documentId;
     try {
       documentId = UUID.fromString(documentIdStr);

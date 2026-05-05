@@ -27,7 +27,7 @@ Three strategic constraints bound the phase. (1) **No `PlanTier`.** The product 
 |------|------|-------|------|--------|--------|--------|
 | 511 | Specialist Framework + Inline Launcher Infrastructure | Both | Phase 52, Phase 41/46 | M | 511A, 511B | **Done** (PRs #1290, #1291) |
 | 512 | Billing Assistant (Polish + Grouping) | Both | 511A, 515A | M | 512A, 512B | **Done** (PRs #1294, #1295) |
-| 513 | Intake Assistant + Vision Fallback | Both | 511A, 515A | L | 513A, 513B | 513A **Done** (PR #1296) |
+| 513 | Intake Assistant + Vision Fallback | Both | 511A, 515A | L | 513A, 513B | **Done** (PRs #1296, #1297) |
 | 514 | Inbox Assistant + Activity Window | Both | 511A, 515A | M | 514A, 514B | |
 | 515 | Automation Hook + Invocation Entity + Review Queue | Both | Phase 37 | L | 515A, 515B, 515C | |
 | 516 | QA Capstone — SA Admin POV 30-Day Script | E2E / Process | 511–515 | L | 516A, 516B | |
@@ -173,7 +173,7 @@ PHASES already complete:
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
 | 3a | **512B** | Launcher button on invoice-draft toolbar (`INVOICE_DRAFT_TOOLBAR` surface, DRAFT-status only) + Unbilled-Time → Generate-Invoice dialog (`UNBILLED_TIME_DIALOG` surface) + `<BillingDiff>` per-row before/after review UI with per-row accept/reject/edit. **Done** (PR #1295) | 513B, 514B |
-| 3b | **513B** | Launcher button on customer-create dialog (`CUSTOMER_CREATE_DIALOG`) + info-request review (`INFO_REQUEST_REVIEW`) + customer prereq prompt (`CUSTOMER_DETAIL_PREREQ`) + `<IntakeFieldDiff>` per-field current-vs-proposed with VISION/TEXT badge + POPIA §26 flag pill. | 512B, 514B |
+| 3b | **513B** | Launcher button on customer-create dialog (`CUSTOMER_CREATE_DIALOG`) + info-request review (`INFO_REQUEST_REVIEW`) + customer prereq prompt (`CUSTOMER_DETAIL_PREREQ`) + `<IntakeFieldDiff>` per-field current-vs-proposed with VISION/TEXT badge + POPIA §26 flag pill. **Done** (PR #1297) | 512B, 514B |
 | 3c | **514B** | Launcher on matter Activity tab (`MATTER_ACTIVITY_TAB`) + customer detail (`CUSTOMER_DETAIL`) + lookback-window picker (default P7D) + "Posted by Inbox Assistant" tag rendering inside the existing comment list component. | 512B, 513B |
 
 ### Stage 4 — Queue UI + templates
@@ -391,7 +391,7 @@ A realistic day-by-day cadence: 511A days 1–4; 515A days 4–7; 511B + 512A + 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **513A** | 513A.1–513A.7 | ~10 backend files (3 tool classes + prompt + payload + applier + provider extension + 2 integration tests + pdfbox dep) | Backend Intake specialist: full `intake-za.md`; three new tools (`ListDocumentsForContext`, `ExtractTextFromDocument`, `ProposeCustomerFieldExtraction`); `pdfbox` text extraction with structural `hasTextLayer` check; `VisionContentBlock` extension to `AnthropicLlmProvider` (default native PDF; rasterisation reserved as fallback only) with 32MB / 100-page guard + `OrgSettings.aiSettings.intakeVisionMaxPages` enforcement; `[POSSIBLE_INJECTION_DETECTED]` validation flag plumbed; `IntakeExtractionPayload` + applier delegating to `CustomerService.applyExtractedFields`; 5 backend integration tests per requirements §3.6. **Done** (PR #1296) |
-| **513B** | 513B.1–513B.4 | ~6 frontend files (3 launcher placements + 1 diff component + 1 component test + i18n) | Launcher on customer-create dialog + info-request review + customer prereq prompt; `<IntakeFieldDiff>` per-field current-vs-proposed with VISION/TEXT badge + POPIA §26 flag pill; 3 frontend tests per requirements §3.6. |
+| **513B** | 513B.1–513B.4 | ~6 frontend files (3 launcher placements + 1 diff component + 1 component test + i18n) | Launcher on customer-create dialog + info-request review + customer prereq prompt; `<IntakeFieldDiff>` per-field current-vs-proposed with VISION/TEXT badge + POPIA §26 flag pill; 3 frontend tests per requirements §3.6. **Done** (PR #1297) |
 
 ### Tasks
 

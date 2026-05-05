@@ -4,6 +4,8 @@ import io.b2mash.b2b.b2bstrawman.assistant.invocation.payload.IntakeExtractionPa
 import io.b2mash.b2b.b2bstrawman.customer.CustomerService;
 import java.time.LocalDate;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
@@ -12,6 +14,8 @@ import org.springframework.stereotype.Component;
  */
 @Component("intakeExtractionApplier")
 public class IntakeExtractionApplier implements OutputApplier<IntakeExtractionPayload> {
+
+  private static final Logger log = LoggerFactory.getLogger(IntakeExtractionApplier.class);
 
   private final CustomerService customerService;
 
@@ -76,6 +80,8 @@ public class IntakeExtractionApplier implements OutputApplier<IntakeExtractionPa
     try {
       return LocalDate.parse(value.toString());
     } catch (Exception e) {
+      log.warn(
+          "Failed to parse date for field '{}': value='{}' — falling back to default", key, value);
       return defaultValue;
     }
   }

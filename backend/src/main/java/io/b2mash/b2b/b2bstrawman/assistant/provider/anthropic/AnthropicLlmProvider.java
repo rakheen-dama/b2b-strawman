@@ -296,6 +296,12 @@ public class AnthropicLlmProvider implements LlmChatProvider {
       var m = new LinkedHashMap<String, Object>();
       m.put("role", msg.role());
 
+      if (!msg.toolResults().isEmpty() && !msg.visionBlocks().isEmpty()) {
+        throw new IllegalStateException(
+            "ChatMessage cannot have both toolResults and visionBlocks — "
+                + "tool results are from assistant turns, vision blocks from user turns");
+      }
+
       if (!msg.toolResults().isEmpty()) {
         // Tool result message - content is an array of tool_result blocks
         var contentBlocks = new ArrayList<Map<String, Object>>();

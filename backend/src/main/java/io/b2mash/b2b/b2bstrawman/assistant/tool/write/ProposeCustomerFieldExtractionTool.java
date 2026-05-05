@@ -51,7 +51,7 @@ public class ProposeCustomerFieldExtractionTool implements AssistantTool {
         "properties",
         Map.of(
             "contextEntityType",
-            Map.of("type", "string", "enum", List.of("customer", "informationRequest")),
+            Map.of("type", "string", "enum", List.of("customer")),
             "contextEntityId",
             Map.of("type", "string", "format", "uuid"),
             "proposedFields",
@@ -80,6 +80,14 @@ public class ProposeCustomerFieldExtractionTool implements AssistantTool {
   @SuppressWarnings("unchecked")
   public Object execute(Map<String, Object> input, TenantToolContext context) {
     var contextEntityType = (String) input.get("contextEntityType");
+    if (!"customer".equals(contextEntityType)) {
+      return Map.of(
+          "error",
+          "Unsupported contextEntityType: "
+              + contextEntityType
+              + ". Only 'customer' is supported.");
+    }
+
     var contextEntityIdStr = (String) input.get("contextEntityId");
 
     UUID contextEntityId;

@@ -2,8 +2,8 @@ package io.b2mash.b2b.b2bstrawman.assistant.tool.read;
 
 import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantTool;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
-import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
-import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
+import io.b2mash.b2b.b2bstrawman.document.DocumentService;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +18,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * Extracts embedded text from a PDF document using PDFBox. Returns text plus structural flags
- * indicating whether a text layer is present. Documents exceeding 32MB or 100 pages are rejected.
+ * indicating whether a text layer is present. Documents exceeding 32MB or 50 pages are rejected
+ * (hard cap at 100 pages).
  */
 @Component
 public class ExtractTextFromDocumentTool implements AssistantTool {
@@ -31,16 +32,19 @@ public class ExtractTextFromDocumentTool implements AssistantTool {
   /** Hard cap on page count — documents exceeding this are rejected. */
   static final int INTAKE_VISION_HARD_CAP = 100;
 
-  /** Default maximum pages for vision processing. */
+  /** Default maximum pages for vision processing — documents above this threshold are rejected. */
   static final int INTAKE_VISION_MAX_PAGES = 50;
 
-  private final DocumentRepository documentRepository;
-  private final StorageService storageService;
+  /**
+   * Minimum character count for a text layer to be considered sufficient. Documents with fewer
+   * characters than this are treated as not having a usable text layer (vision fallback hint).
+   */
+  static final int INTAKE_VISION_THRESHOLD = 200;
 
-  public ExtractTextFromDocumentTool(
-      DocumentRepository documentRepository, StorageService storageService) {
-    this.documentRepository = documentRepository;
-    this.storageService = storageService;
+  private final DocumentService documentService;
+
+  public ExtractTextFromDocumentTool(DocumentService documentService) {
+    this.documentService = documentService;
   }
 
   @Override
@@ -85,18 +89,17 @@ public class ExtractTextFromDocumentTool implements AssistantTool {
       return Map.of("error", "Invalid documentId format: " + documentIdStr);
     }
 
-    var document = documentRepository.findById(documentId).orElse(null);
-    if (document == null) {
-      return Map.of("error", "Document not found: " + documentId);
-    }
-
-    byte[] bytes;
+    DocumentService.DocumentWithBytes docWithBytes;
     try {
-      bytes = storageService.download(document.getS3Key());
+      docWithBytes = documentService.getDocumentBytes(documentId);
+    } catch (ResourceNotFoundException e) {
+      return Map.of("error", "Document not found: " + documentId);
     } catch (Exception e) {
       log.warn("Failed to download document {}: {}", documentId, e.getMessage());
       return Map.of("error", "Failed to download document");
     }
+
+    byte[] bytes = docWithBytes.bytes();
 
     // Pre-check: document size
     if (bytes.length > MAX_DOCUMENT_SIZE) {
@@ -111,11 +114,22 @@ public class ExtractTextFromDocumentTool implements AssistantTool {
         return Map.of("is_error", true, "errorMessage", "DOCUMENT_TOO_LARGE");
       }
 
+      // Enforce default page threshold for vision processing
+      if (pageCount > INTAKE_VISION_MAX_PAGES) {
+        return Map.of("is_error", true, "errorMessage", "DOCUMENT_TOO_LARGE");
+      }
+
       var stripper = new PDFTextStripper();
       String text = stripper.getText(pdf);
 
-      boolean hasTextLayer = pageCount > 0 && text != null && !text.isBlank();
       int characterCount = text != null ? text.length() : 0;
+      // Text layer is only considered present and sufficient if it exceeds the threshold.
+      // Documents with sparse text (< 200 chars) hint the LLM to use vision fallback.
+      boolean hasTextLayer =
+          pageCount > 0
+              && text != null
+              && !text.isBlank()
+              && characterCount >= INTAKE_VISION_THRESHOLD;
 
       var result = new LinkedHashMap<String, Object>();
       result.put("documentId", documentId.toString());

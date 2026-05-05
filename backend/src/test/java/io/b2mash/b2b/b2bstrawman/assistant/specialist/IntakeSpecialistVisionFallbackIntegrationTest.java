@@ -96,7 +96,15 @@ class IntakeSpecialistVisionFallbackIntegrationTest {
 
   @Test
   void textLayerExtraction_returnsTextAndHasTextLayerTrue() throws Exception {
-    byte[] pdfBytes = createPdfWithText("Test Company (Pty) Ltd\nRegistration: 2019/123456/07");
+    byte[] pdfBytes =
+        createPdfWithText(
+            "Test Company (Pty) Ltd\n"
+                + "Registration Number: 2019/123456/07\n"
+                + "Address: 123 Main Street, Sandton, Johannesburg, Gauteng, 2196\n"
+                + "Contact: John Smith, Director\n"
+                + "Email: john.smith@testcompany.co.za\n"
+                + "Phone: +27 11 234 5678\n"
+                + "Tax Number: 9876543210");
 
     runWithCaps(
         Set.of("AI_ASSISTANT_USE", "CUSTOMER_VIEW"),
@@ -131,7 +139,7 @@ class IntakeSpecialistVisionFallbackIntegrationTest {
           var result = (Map<String, Object>) extractTextTool.execute(input, ctx);
 
           assertThat(result.get("hasTextLayer")).isEqualTo(true);
-          assertThat((int) result.get("characterCount")).isGreaterThan(0);
+          assertThat((int) result.get("characterCount")).isGreaterThanOrEqualTo(200);
           assertThat((String) result.get("text")).contains("Test Company");
           assertThat((String) result.get("text")).contains("2019/123456/07");
         });
@@ -178,6 +186,51 @@ class IntakeSpecialistVisionFallbackIntegrationTest {
   }
 
   @Test
+  void sparseTextLayer_returnsHasTextLayerFalse_visionFallbackHint() throws Exception {
+    // PDF with text below the 200-character threshold — should trigger vision fallback
+    byte[] pdfBytes = createPdfWithText("Short text");
+
+    runWithCaps(
+        Set.of("AI_ASSISTANT_USE", "CUSTOMER_VIEW"),
+        () -> {
+          var customerId = createCustomerInDb("Vision Sparse Customer", "vsparse@test.com");
+          var document =
+              transactionTemplate.execute(
+                  status -> {
+                    var doc =
+                        new Document(
+                            Document.Scope.CUSTOMER,
+                            null,
+                            customerId,
+                            "sparse.pdf",
+                            "application/pdf",
+                            pdfBytes.length,
+                            memberId,
+                            Document.Visibility.INTERNAL);
+                    doc = documentRepository.save(doc);
+                    String s3Key = "test/intake/sparse/" + doc.getId() + ".pdf";
+                    doc.assignS3Key(s3Key);
+                    doc.confirmUpload();
+                    doc = documentRepository.save(doc);
+                    storageService.upload(s3Key, pdfBytes, "application/pdf");
+                    return doc;
+                  });
+
+          var ctx = new TenantToolContext(tenantSchema, memberId, "owner", Set.of("CUSTOMER_VIEW"));
+          var input = Map.<String, Object>of("documentId", document.getId().toString());
+
+          @SuppressWarnings("unchecked")
+          var result = (Map<String, Object>) extractTextTool.execute(input, ctx);
+
+          // Text layer exists but is below the 200-char threshold → hasTextLayer=false
+          // This signals the LLM to trigger the vision fallback path
+          assertThat(result.get("hasTextLayer")).isEqualTo(false);
+          assertThat((int) result.get("characterCount")).isGreaterThan(0);
+          assertThat((int) result.get("characterCount")).isLessThan(200);
+        });
+  }
+
+  @Test
   void visionContentBlock_serializesToDocumentFormat() {
     var base64Data = Base64.getEncoder().encodeToString("fake-pdf-bytes".getBytes());
     var block = new VisionContentBlock("application/pdf", base64Data);
@@ -189,6 +242,47 @@ class IntakeSpecialistVisionFallbackIntegrationTest {
         new ChatMessage("user", "Extract fields from this document", List.of(), List.of(block));
     assertThat(msg.visionBlocks()).hasSize(1);
     assertThat(msg.visionBlocks().getFirst().mediaType()).isEqualTo("application/pdf");
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  void documentExceedingMaxPages_returnsError() throws Exception {
+    byte[] pdfBytes = createMultiPagePdf(51); // Exceeds 50-page default threshold
+
+    runWithCaps(
+        Set.of("AI_ASSISTANT_USE", "CUSTOMER_VIEW"),
+        () -> {
+          var customerId = createCustomerInDb("Vision MedLarge Customer", "vmedlarge@test.com");
+          var document =
+              transactionTemplate.execute(
+                  status -> {
+                    var doc =
+                        new Document(
+                            Document.Scope.CUSTOMER,
+                            null,
+                            customerId,
+                            "medlarge.pdf",
+                            "application/pdf",
+                            pdfBytes.length,
+                            memberId,
+                            Document.Visibility.INTERNAL);
+                    doc = documentRepository.save(doc);
+                    String s3Key = "test/intake/medlarge/" + doc.getId() + ".pdf";
+                    doc.assignS3Key(s3Key);
+                    doc.confirmUpload();
+                    doc = documentRepository.save(doc);
+                    storageService.upload(s3Key, pdfBytes, "application/pdf");
+                    return doc;
+                  });
+
+          var ctx = new TenantToolContext(tenantSchema, memberId, "owner", Set.of("CUSTOMER_VIEW"));
+          var input = Map.<String, Object>of("documentId", document.getId().toString());
+
+          var result = (Map<String, Object>) extractTextTool.execute(input, ctx);
+
+          assertThat(result.get("is_error")).isEqualTo(true);
+          assertThat(result.get("errorMessage")).isEqualTo("DOCUMENT_TOO_LARGE");
+        });
   }
 
   @Test

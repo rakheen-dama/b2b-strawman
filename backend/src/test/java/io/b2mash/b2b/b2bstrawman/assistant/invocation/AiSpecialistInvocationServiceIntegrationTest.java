@@ -308,10 +308,10 @@ class AiSpecialistInvocationServiceIntegrationTest {
                   "customer",
                   UUID.randomUUID(),
                   "v1");
-          // IntakeExtractionPayload has no applier registered in this test — service must fail.
+          // InboxSummaryPayload has no applier registered — service must fail.
           service.recordProposal(
               inv.getId(),
-              new io.b2mash.b2b.b2bstrawman.assistant.invocation.payload.IntakeExtractionPayload());
+              new io.b2mash.b2b.b2bstrawman.assistant.invocation.payload.InboxSummaryPayload());
           service.markPendingApproval(inv.getId());
           holder[0] = inv.getId();
         });

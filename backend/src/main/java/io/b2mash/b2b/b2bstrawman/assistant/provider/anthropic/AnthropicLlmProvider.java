@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.assistant.provider.ModelInfo;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.StreamEvent;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.ToolDefinition;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.ToolResult;
+import io.b2mash.b2b.b2bstrawman.assistant.provider.VisionContentBlock;
 import jakarta.annotation.PreDestroy;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -304,6 +305,21 @@ public class AnthropicLlmProvider implements LlmChatProvider {
           block.put("tool_use_id", tr.toolCallId());
           block.put("content", tr.content());
           contentBlocks.add(block);
+        }
+        m.put("content", contentBlocks);
+      } else if (!msg.visionBlocks().isEmpty()) {
+        // Mixed text + vision content blocks
+        var contentBlocks = new ArrayList<Map<String, Object>>();
+        if (msg.content() != null && !msg.content().isBlank()) {
+          contentBlocks.add(Map.of("type", "text", "text", msg.content()));
+        }
+        for (VisionContentBlock vb : msg.visionBlocks()) {
+          var docBlock = new LinkedHashMap<String, Object>();
+          docBlock.put("type", "document");
+          docBlock.put(
+              "source",
+              Map.of("type", "base64", "media_type", vb.mediaType(), "data", vb.base64Data()));
+          contentBlocks.add(docBlock);
         }
         m.put("content", contentBlocks);
       } else {

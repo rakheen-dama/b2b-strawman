@@ -1,10 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.assistant.specialist;
 
+import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomerWithPrerequisiteFields;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.assistant.invocation.AiSpecialistInvocation;
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.AiSpecialistInvocationRepository;
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.AiSpecialistInvocationService;
+import io.b2mash.b2b.b2bstrawman.assistant.invocation.InvocationSource;
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.InvocationStatus;
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.payload.BillingGroupingPayload;
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.payload.BillingPolishPayload;
@@ -12,10 +15,22 @@ import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantToolRegistry;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.write.ProposeInvoiceLineGroupingTool;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.write.ProposeTimeEntryPolishTool;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceService;
+import io.b2mash.b2b.b2bstrawman.invoice.dto.CreateInvoiceRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.Project;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.task.Task;
+import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntry;
+import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +44,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Integration tests for the Billing specialist's propose tools. Verifies that invocations are
@@ -51,6 +67,13 @@ class BillingSpecialistIntegrationTest {
   @Autowired private ProposeTimeEntryPolishTool polishTool;
   @Autowired private ProposeInvoiceLineGroupingTool groupingTool;
   @Autowired private AssistantToolRegistry toolRegistry;
+  @Autowired private ProjectRepository projectRepository;
+  @Autowired private TaskRepository taskRepository;
+  @Autowired private TimeEntryRepository timeEntryRepository;
+  @Autowired private CustomerRepository customerRepository;
+  @Autowired private CustomerProjectRepository customerProjectRepository;
+  @Autowired private InvoiceService invoiceService;
+  @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
   private UUID memberId;
@@ -155,6 +178,130 @@ class BillingSpecialistIntegrationTest {
           assertThat(payload.groups()).hasSize(1);
           assertThat(payload.groups().getFirst().sourceTimeEntryIds()).containsExactly(te1, te2);
         });
+  }
+
+  @Test
+  void approvePolish_appliesDescriptionUpdate_toBilledTimeEntry() {
+    // This test exercises the CRITICAL apply path: time entries with invoiceId set
+    // (i.e. already on a draft invoice) must have their descriptions updated successfully.
+    // Before the fix, TimeEntryService.updateTimeEntry would throw ResourceConflictException.
+
+    // Holder arrays for IDs that cross transaction boundaries
+    final UUID[] timeEntryIdHolder = new UUID[1];
+    final UUID[] invoiceIdHolder = new UUID[1];
+    final UUID[] invocationIdHolder = new UUID[1];
+
+    // Step 1: Create customer, project, task, time entry, and invoice (in a transaction)
+    runWithCaps(
+        Set.of("AI_ASSISTANT_USE", "INVOICING"),
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var customer =
+                      createActiveCustomerWithPrerequisiteFields(
+                          "Polish Test Customer", "polish_customer@test.com", memberId);
+                  customer = customerRepository.save(customer);
+
+                  var project = new Project("Polish Test Project", "Test", memberId);
+                  project = projectRepository.save(project);
+
+                  customerProjectRepository.save(
+                      new CustomerProject(customer.getId(), project.getId(), memberId));
+
+                  var task =
+                      new Task(
+                          project.getId(),
+                          "Polish Test Task",
+                          "A task",
+                          "MEDIUM",
+                          "TASK",
+                          null,
+                          memberId);
+                  task = taskRepository.save(task);
+
+                  var timeEntry =
+                      new TimeEntry(
+                          task.getId(),
+                          memberId,
+                          LocalDate.now(),
+                          60,
+                          true,
+                          null,
+                          "Attendnce upn clint re: mtter 123");
+                  timeEntry = timeEntryRepository.save(timeEntry);
+                  timeEntryIdHolder[0] = timeEntry.getId();
+
+                  // Create a draft invoice that links this time entry (sets invoiceId on the entry)
+                  var invoiceResponse =
+                      invoiceService.createDraft(
+                          new CreateInvoiceRequest(
+                              customer.getId(),
+                              "USD",
+                              List.of(timeEntry.getId()),
+                              null,
+                              null,
+                              null,
+                              null,
+                              null,
+                              null,
+                              null,
+                              null,
+                              null),
+                          memberId);
+                  invoiceIdHolder[0] = invoiceResponse.id();
+                }));
+
+    // Step 2: Verify the time entry now has an invoiceId (the billed guard condition)
+    runWithCaps(
+        Set.of("AI_ASSISTANT_USE", "INVOICING"),
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var entry = timeEntryRepository.findById(timeEntryIdHolder[0]).orElseThrow();
+                  assertThat(entry.getInvoiceId())
+                      .as("Time entry must be linked to invoice (billed guard condition)")
+                      .isEqualTo(invoiceIdHolder[0]);
+
+                  // Create an invocation in PENDING_APPROVAL state with polish payload
+                  var inv =
+                      new AiSpecialistInvocation(
+                          "billing",
+                          InvocationSource.MEMBER,
+                          memberId,
+                          null,
+                          "invoice",
+                          invoiceIdHolder[0],
+                          "v1");
+                  var payload =
+                      new BillingPolishPayload(
+                          invoiceIdHolder[0],
+                          List.of(
+                              new BillingPolishPayload.PolishEdit(
+                                  timeEntryIdHolder[0],
+                                  "Attendnce upn clint re: mtter 123",
+                                  "Attendance upon client regarding matter 123")));
+                  inv.recordProposal(payload);
+                  inv.markPendingApproval();
+                  inv = invocationRepository.save(inv);
+                  invocationIdHolder[0] = inv.getId();
+                }));
+
+    // Step 3: Approve — this calls the applier which must NOT throw despite invoiceId being set
+    runWithCaps(
+        Set.of("AI_ASSISTANT_USE", "INVOICING"),
+        () ->
+            transactionTemplate.executeWithoutResult(
+                tx -> {
+                  var result = invocationService.approve(invocationIdHolder[0], null);
+                  assertThat(result.status()).isEqualTo(InvocationStatus.APPROVED);
+
+                  // Verify the description was actually updated
+                  var updated = timeEntryRepository.findById(timeEntryIdHolder[0]).orElseThrow();
+                  assertThat(updated.getDescription())
+                      .isEqualTo("Attendance upon client regarding matter 123");
+                  // Verify the invoiceId is still set (not cleared)
+                  assertThat(updated.getInvoiceId()).isEqualTo(invoiceIdHolder[0]);
+                }));
   }
 
   @Test

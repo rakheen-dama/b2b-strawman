@@ -12,8 +12,9 @@ import org.springframework.stereotype.Component;
  * Applies an approved {@link BillingPolishPayload} by updating each time entry's description to the
  * polished text.
  *
- * <p>Delegates to {@link TimeEntryService#updateTimeEntry} with description-only updates (all other
- * fields null). The service's own capability/permission checks apply at apply-time.
+ * <p>Delegates to {@link TimeEntryService#updateTimeEntryDescription} which bypasses the billed
+ * guard since polish operates on draft-invoice time entries (invoiceId is set but descriptions are
+ * safe to update). The service's own permission checks still apply at apply-time.
  */
 @Component("billingPolishApplier")
 public class BillingPolishApplier implements OutputApplier<BillingPolishPayload> {
@@ -34,8 +35,7 @@ public class BillingPolishApplier implements OutputApplier<BillingPolishPayload>
     var role = RequestScopes.getOrgRole();
     var actor = new ActorContext(actorId, role != null ? role : Roles.ORG_MEMBER);
     for (var edit : payload.edits()) {
-      timeEntryService.updateTimeEntry(
-          edit.timeEntryId(), null, null, null, null, edit.afterText(), actor);
+      timeEntryService.updateTimeEntryDescription(edit.timeEntryId(), edit.afterText(), actor);
     }
   }
 }

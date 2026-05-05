@@ -508,6 +508,66 @@ public class TimeEntryService {
     return new ReSnapshotResult(processed, updated, skipped);
   }
 
+  /**
+   * Updates ONLY the description of a time entry, bypassing the billed guard. This is specifically
+   * designed for the AI billing polish workflow where descriptions on draft-invoice time entries
+   * are polished without changing hours, rates, or dates.
+   *
+   * <p>The billed guard in {@link #updateTimeEntry} correctly prevents changes to financial fields
+   * (hours, rate, date) after invoicing — but description polish on drafts is safe and intentional.
+   *
+   * @param timeEntryId the time entry to update
+   * @param description the new polished description
+   * @param actor the actor performing the update (must have edit permission)
+   */
+  @Transactional
+  public TimeEntry updateTimeEntryDescription(
+      UUID timeEntryId, String description, ActorContext actor) {
+    var entry =
+        timeEntryRepository
+            .findById(timeEntryId)
+            .orElseThrow(() -> new ResourceNotFoundException("TimeEntry", timeEntryId));
+
+    requireEditPermission(entry, actor);
+
+    String oldDescription = entry.getDescription();
+    entry.setDescription(description);
+    entry.setUpdatedAt(Instant.now());
+
+    var saved = timeEntryRepository.save(entry);
+    log.info(
+        "Updated time entry description {} by member {} (billing polish)",
+        timeEntryId,
+        actor.memberId());
+
+    var task =
+        taskRepository
+            .findById(saved.getTaskId())
+            .orElseThrow(() -> new ResourceNotFoundException("Task", saved.getTaskId()));
+
+    var details = new LinkedHashMap<String, Object>();
+    if (!Objects.equals(oldDescription, description)) {
+      details.put(
+          "description",
+          Map.of("from", oldDescription != null ? oldDescription : "", "to", description));
+    }
+    details.put("source", "billing_polish");
+    details.put("title", task.getTitle());
+    details.put("project_id", task.getProjectId().toString());
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("time_entry.updated")
+            .entityType("time_entry")
+            .entityId(saved.getId())
+            .details(details)
+            .build());
+
+    publishTimeEntryChangedEvent(saved.getId(), task.getProjectId(), "UPDATED");
+
+    return saved;
+  }
+
   public record CreateTimeEntryResult(TimeEntry entry, String rateWarning) {}
 
   public record ReSnapshotResult(int entriesProcessed, int entriesUpdated, int entriesSkipped) {}

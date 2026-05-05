@@ -444,6 +444,24 @@ public class DocumentService {
     return memberNameResolver.resolveName(memberId);
   }
 
+  /**
+   * Retrieve a document entity and its raw bytes from storage. Used by tools that need to process
+   * document content (e.g., text extraction). Tenant isolation is provided by the schema
+   * search_path; project-scoped documents additionally require project membership.
+   */
+  @Transactional(readOnly = true)
+  public DocumentWithBytes getDocumentBytes(UUID documentId, ActorContext actor) {
+    var document =
+        documentRepository
+            .findById(documentId)
+            .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
+    requireDocumentAccess(document, actor);
+    byte[] bytes = storageService.download(document.getS3Key());
+    return new DocumentWithBytes(document, bytes);
+  }
+
+  public record DocumentWithBytes(Document document, byte[] bytes) {}
+
   public record UploadInitResult(UUID documentId, String presignedUrl, long expiresInSeconds) {}
 
   public record PresignDownloadResult(String url, long expiresInSeconds) {}

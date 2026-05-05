@@ -4,7 +4,7 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/** Registers the Intake specialist. Tool subset will land in Epic 513. */
+/** Registers the Intake specialist with full tool subset for SA legal intake. */
 @Configuration
 public class IntakeSpecialistConfig {
 
@@ -15,8 +15,9 @@ public class IntakeSpecialistConfig {
         "Intake Specialist",
         "Help with client onboarding, KYC, and matter intake.",
         "assistant/specialists/intake-za.md",
-        List.of(),
+        List.of(
+            "ListDocumentsForContext", "ExtractTextFromDocument", "ProposeCustomerFieldExtraction"),
         List.of(new LauncherContext("/intake", "intake", "Ask the Intake specialist")),
-        false);
+        true);
   }
 }

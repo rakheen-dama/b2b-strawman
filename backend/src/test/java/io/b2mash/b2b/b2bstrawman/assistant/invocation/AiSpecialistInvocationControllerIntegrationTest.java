@@ -13,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -80,7 +81,7 @@ class AiSpecialistInvocationControllerIntegrationTest {
                       "invoice",
                       UUID.randomUUID(),
                       "v1");
-              service.recordProposal(inv.getId(), new BillingPolishPayload());
+              service.recordProposal(inv.getId(), new BillingPolishPayload(null, List.of()));
               service.markPendingApproval(inv.getId());
               holder[0] = inv.getId();
             });
@@ -214,7 +215,7 @@ class AiSpecialistInvocationControllerIntegrationTest {
 
   @TestConfiguration
   static class FakeApplierConfig {
-    @Bean
+    @Bean("billingPolishApplier")
     OutputApplier<BillingPolishPayload> fakeBillingPolishApplier() {
       return new OutputApplier<>() {
         @Override

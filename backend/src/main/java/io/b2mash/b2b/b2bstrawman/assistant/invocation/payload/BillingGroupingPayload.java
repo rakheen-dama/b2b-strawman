@@ -1,9 +1,17 @@
 package io.b2mash.b2b.b2bstrawman.assistant.invocation.payload;
 
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.UUID;
+
 /**
- * Stub for the BillingGrouping specialist output payload.
+ * Proposed output for the Billing specialist's invoice line-grouping operation.
  *
- * <p>515A defines this as an empty record so the sealed {@link OutputPayload} interface compiles.
- * Slice 512A replaces this body with the real fields per architecture §2.4.
+ * <p>Each {@link LineGroup} aggregates multiple time entries into a single descriptive line item
+ * for the invoice, rolling up hours across source entries.
  */
-public record BillingGroupingPayload() implements OutputPayload {}
+public record BillingGroupingPayload(UUID invoiceId, List<LineGroup> groups)
+    implements OutputPayload {
+
+  public record LineGroup(String description, BigDecimal hours, List<UUID> sourceTimeEntryIds) {}
+}

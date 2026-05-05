@@ -5,6 +5,10 @@ logging:
     org.springframework: ERROR
 
 spring:
+  main:
+    # Required: AiSpecialistInvocation*IntegrationTest @TestConfiguration classes override
+    # the billingPolishApplier bean by name. Without this flag, Spring refuses the override.
+    allow-bean-definition-overriding: true
   scheduling:
     enabled: false
   datasource:

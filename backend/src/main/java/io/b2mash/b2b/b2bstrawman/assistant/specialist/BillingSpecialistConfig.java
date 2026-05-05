@@ -4,7 +4,7 @@ import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/** Registers the Billing specialist. Tool subset will land in Epic 512. */
+/** Registers the Billing specialist with full tool subset for SA legal billing. */
 @Configuration
 public class BillingSpecialistConfig {
 
@@ -15,8 +15,8 @@ public class BillingSpecialistConfig {
         "Billing Specialist",
         "Help with invoices, statements, and billing questions.",
         "assistant/specialists/billing-za.md",
-        List.of(),
+        List.of("ProposeTimeEntryPolish", "ProposeInvoiceLineGrouping", "create_invoice_draft"),
         List.of(new LauncherContext("/billing", "billing", "Ask the Billing specialist")),
-        false);
+        true);
   }
 }

@@ -120,11 +120,25 @@ export interface BillingGroupingAppliedOutput {
   groups: { description: string; hours: number; sourceTimeEntryIds: string[] }[];
 }
 
+/** Intake specialist — proposed customer field extraction. */
+export interface IntakeExtractionAppliedOutput {
+  kind: "IntakeExtractionPayload";
+  contextEntityType: string;
+  contextEntityId: string;
+  proposedFields: Record<string, unknown>;
+  extractionPath: "TEXT" | "VISION";
+  popiaFlaggedFields: string[];
+  validationFlags: string[];
+}
+
 /**
  * Discriminated union of all specialist applied-output payloads.
- * Future specialists (513B, 514B) add their shapes here.
+ * Future specialists (514B) add their shapes here.
  */
-export type AppliedOutput = BillingPolishAppliedOutput | BillingGroupingAppliedOutput;
+export type AppliedOutput =
+  | BillingPolishAppliedOutput
+  | BillingGroupingAppliedOutput
+  | IntakeExtractionAppliedOutput;
 
 // ---- API ----
 

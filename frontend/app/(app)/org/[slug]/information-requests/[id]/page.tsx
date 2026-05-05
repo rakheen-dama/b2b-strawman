@@ -4,6 +4,8 @@ import { getRequest } from "@/lib/api/information-requests";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { RequestDetailClient } from "@/components/information-requests/request-detail-client";
+import { SpecialistLauncherButton } from "@/components/assistant/specialist-launcher-button";
+import { SPECIALIST_STRINGS } from "@/components/assistant/specialist-strings";
 
 export default async function InformationRequestDetailPage({
   params,
@@ -46,6 +48,16 @@ export default async function InformationRequestDetailPage({
           <ArrowLeft className="mr-1.5 size-4" />
           Back to {request.customerName}
         </Link>
+      </div>
+
+      <div className="flex items-center justify-end">
+        <SpecialistLauncherButton
+          specialistId="INTAKE"
+          surface="INFO_REQUEST_REVIEW"
+          contextRef={{ entityType: "informationRequest", entityId: request.id }}
+          initialPrompt="Extract client-supplied fields from the uploaded documents."
+          ctaLabel={SPECIALIST_STRINGS.intakeInfoRequestLabel}
+        />
       </div>
 
       <RequestDetailClient request={request} slug={slug} />

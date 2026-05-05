@@ -24,6 +24,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Loader2, Plus } from "lucide-react";
+import { SpecialistLauncherButton } from "@/components/assistant/specialist-launcher-button";
+import { SPECIALIST_STRINGS } from "@/components/assistant/specialist-strings";
 import { createCustomer } from "@/app/(app)/org/[slug]/customers/actions";
 import { createMessages } from "@/lib/messages";
 import { scrollToFirstError } from "@/lib/error-handler";
@@ -297,6 +299,13 @@ export function CreateCustomerDialog({ slug }: CreateCustomerDialogProps) {
               ? `Step 1 of 2 — Add a new ${t("customer")} to your organization.`
               : "Step 2 of 2 — Fill in any required intake fields."}
           </DialogDescription>
+          <SpecialistLauncherButton
+            specialistId="INTAKE"
+            surface="CUSTOMER_CREATE_DIALOG"
+            contextRef={{ entityType: "customer", entityId: "new" }}
+            initialPrompt="Extract customer fields from the uploaded documents."
+            ctaLabel={SPECIALIST_STRINGS.intakeExtractLabel}
+          />
         </DialogHeader>
 
         <div className="max-h-[60vh] space-y-4 overflow-y-auto py-2">

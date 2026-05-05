@@ -50,15 +50,17 @@ export default async function InformationRequestDetailPage({
         </Link>
       </div>
 
-      <div className="flex items-center justify-end">
-        <SpecialistLauncherButton
-          specialistId="INTAKE"
-          surface="INFO_REQUEST_REVIEW"
-          contextRef={{ entityType: "informationRequest", entityId: request.id }}
-          initialPrompt="Extract client-supplied fields from the uploaded documents."
-          ctaLabel={SPECIALIST_STRINGS.intakeInfoRequestLabel}
-        />
-      </div>
+      {request.items.some((item) => item.documentId) && (
+        <div className="flex items-center justify-end">
+          <SpecialistLauncherButton
+            specialistId="INTAKE"
+            surface="INFO_REQUEST_REVIEW"
+            contextRef={{ entityType: "informationRequest", entityId: request.id }}
+            initialPrompt="Extract client-supplied fields from the uploaded documents."
+            ctaLabel={SPECIALIST_STRINGS.intakeInfoRequestLabel}
+          />
+        </div>
+      )}
 
       <RequestDetailClient request={request} slug={slug} />
     </div>

@@ -4,6 +4,7 @@ import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantTool;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
 import io.b2mash.b2b.b2bstrawman.document.DocumentService;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,7 +56,7 @@ public class ExtractTextFromDocumentTool implements AssistantTool {
   @Override
   public String description() {
     return "Extract embedded text from a PDF document. Returns text plus structural flags."
-        + " Documents exceeding 32MB or 100 pages are rejected with is_error.";
+        + " Documents exceeding 32MB or 50 pages are rejected with is_error.";
   }
 
   @Override
@@ -92,9 +93,11 @@ public class ExtractTextFromDocumentTool implements AssistantTool {
       return Map.of("error", "Invalid documentId format: " + documentIdStr);
     }
 
+    var actor = new ActorContext(context.memberId(), context.orgRole());
+
     DocumentService.DocumentWithBytes docWithBytes;
     try {
-      docWithBytes = documentService.getDocumentBytes(documentId);
+      docWithBytes = documentService.getDocumentBytes(documentId, actor);
     } catch (ResourceNotFoundException e) {
       return Map.of("error", "Document not found: " + documentId);
     } catch (Exception e) {

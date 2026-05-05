@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.assistant.specialist;
 
-import static io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory.createActiveCustomer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
@@ -8,13 +7,14 @@ import io.b2mash.b2b.b2bstrawman.assistant.provider.ChatMessage;
 import io.b2mash.b2b.b2bstrawman.assistant.provider.VisionContentBlock;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.read.ExtractTextFromDocumentTool;
-import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.io.ByteArrayOutputStream;
 import java.util.Base64;
@@ -52,7 +52,6 @@ class IntakeSpecialistVisionFallbackIntegrationTest {
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private ExtractTextFromDocumentTool extractTextTool;
   @Autowired private DocumentRepository documentRepository;
-  @Autowired private CustomerRepository customerRepository;
   @Autowired private StorageService storageService;
   @Autowired private TransactionTemplate transactionTemplate;
 
@@ -84,14 +83,11 @@ class IntakeSpecialistVisionFallbackIntegrationTest {
         .run(body);
   }
 
-  /** Creates a real customer in the database and returns its ID. */
-  private UUID createCustomerInDb(String name, String email) {
-    return transactionTemplate.execute(
-        status -> {
-          var customer = createActiveCustomer(name, email, memberId);
-          customer = customerRepository.save(customer);
-          return customer.getId();
-        });
+  /** Creates a customer via the API and returns its ID. */
+  private UUID createCustomerViaApi(String name, String email) throws Exception {
+    var jwt = TestJwtFactory.ownerJwt(ORG_ID, "user_intake_vision_owner");
+    String id = TestEntityHelper.createCustomer(mockMvc, jwt, name, email);
+    return UUID.fromString(id);
   }
 
   @Test
@@ -106,10 +102,11 @@ class IntakeSpecialistVisionFallbackIntegrationTest {
                 + "Phone: +27 11 234 5678\n"
                 + "Tax Number: 9876543210");
 
+    var customerId = createCustomerViaApi("Vision Text Customer", "vtext@test.com");
+
     runWithCaps(
         Set.of("AI_ASSISTANT_USE", "CUSTOMER_VIEW"),
         () -> {
-          var customerId = createCustomerInDb("Vision Text Customer", "vtext@test.com");
           var document =
               transactionTemplate.execute(
                   status -> {
@@ -149,10 +146,11 @@ class IntakeSpecialistVisionFallbackIntegrationTest {
   void emptyPdf_returnsHasTextLayerFalse() throws Exception {
     byte[] pdfBytes = createBlankPdf();
 
+    var customerId = createCustomerViaApi("Vision Blank Customer", "vblank@test.com");
+
     runWithCaps(
         Set.of("AI_ASSISTANT_USE", "CUSTOMER_VIEW"),
         () -> {
-          var customerId = createCustomerInDb("Vision Blank Customer", "vblank@test.com");
           var document =
               transactionTemplate.execute(
                   status -> {
@@ -190,10 +188,11 @@ class IntakeSpecialistVisionFallbackIntegrationTest {
     // PDF with text below the 200-character threshold — should trigger vision fallback
     byte[] pdfBytes = createPdfWithText("Short text");
 
+    var customerId = createCustomerViaApi("Vision Sparse Customer", "vsparse@test.com");
+
     runWithCaps(
         Set.of("AI_ASSISTANT_USE", "CUSTOMER_VIEW"),
         () -> {
-          var customerId = createCustomerInDb("Vision Sparse Customer", "vsparse@test.com");
           var document =
               transactionTemplate.execute(
                   status -> {
@@ -249,10 +248,11 @@ class IntakeSpecialistVisionFallbackIntegrationTest {
   void documentExceedingMaxPages_returnsError() throws Exception {
     byte[] pdfBytes = createMultiPagePdf(51); // Exceeds 50-page default threshold
 
+    var customerId = createCustomerViaApi("Vision MedLarge Customer", "vmedlarge@test.com");
+
     runWithCaps(
         Set.of("AI_ASSISTANT_USE", "CUSTOMER_VIEW"),
         () -> {
-          var customerId = createCustomerInDb("Vision MedLarge Customer", "vmedlarge@test.com");
           var document =
               transactionTemplate.execute(
                   status -> {
@@ -290,10 +290,11 @@ class IntakeSpecialistVisionFallbackIntegrationTest {
   void documentExceedingHardCap_returnsError() throws Exception {
     byte[] pdfBytes = createMultiPagePdf(101);
 
+    var customerId = createCustomerViaApi("Vision Large Customer", "vlarge@test.com");
+
     runWithCaps(
         Set.of("AI_ASSISTANT_USE", "CUSTOMER_VIEW"),
         () -> {
-          var customerId = createCustomerInDb("Vision Large Customer", "vlarge@test.com");
           var document =
               transactionTemplate.execute(
                   status -> {

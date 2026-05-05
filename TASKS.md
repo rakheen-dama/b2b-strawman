@@ -581,7 +581,7 @@
 | **Phase 70 — Specialist AI Assistants** | | | | | | See [tasks/phase70-specialist-ai-assistants.md](tasks/phase70-specialist-ai-assistants.md) |
 | 511 | Specialist Framework + Inline Launcher Infrastructure | Both | Phase 52, Phase 41/46 | M | 511A, 511B | **Done** (PRs #1290, #1291) |
 | 512 | Billing Assistant (Polish + Grouping) | Both | 511A, 515A | M | 512A, 512B | **Done** (PRs #1294, #1295) |
-| 513 | Intake Assistant + Vision Fallback | Both | 511A, 515A | L | 513A, 513B | |
+| 513 | Intake Assistant + Vision Fallback | Both | 511A, 515A | L | 513A, 513B | 513A **Done** (PR #1296) |
 | 514 | Inbox Assistant + Activity Window | Both | 511A, 515A | M | 514A, 514B | |
 | 515 | Automation Hook + Invocation Entity + Review Queue | Both | Phase 37 | L | 515A, 515B, 515C | |
 | 516 | QA Capstone — SA Admin POV 30-Day Script | E2E/Process | 511–515 | L | 516A, 516B | |

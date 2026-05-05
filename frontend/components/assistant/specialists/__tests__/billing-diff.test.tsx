@@ -92,10 +92,12 @@ describe("<BillingDiff> polish mode", () => {
       edits: [
         {
           timeEntryId: "te-1",
+          beforeText: "call w/ J re property",
           afterText: "Telephone consultation with client regarding property transfer",
         },
         {
           timeEntryId: "te-2",
+          beforeText: "draft letter",
           afterText: "Drafted formal correspondence to opposing counsel",
         },
       ],
@@ -132,6 +134,7 @@ describe("<BillingDiff> polish mode", () => {
     const calledPayload = approveInvocationMock.mock.calls[0][1];
     expect(calledPayload.edits).toHaveLength(1);
     expect(calledPayload.edits[0].timeEntryId).toBe("te-2");
+    expect(calledPayload.edits[0].beforeText).toBe("draft letter");
   });
 
   it("uses edited text when a row is in edit mode", async () => {
@@ -172,10 +175,7 @@ describe("<BillingDiff> polish mode", () => {
   it("calls rejectInvocation with reason on reject", async () => {
     const user = userEvent.setup();
     const onRejected = vi.fn();
-    rejectInvocationMock.mockResolvedValueOnce({
-      id: "inv-1",
-      status: "REJECTED",
-    });
+    rejectInvocationMock.mockResolvedValueOnce(undefined);
 
     render(
       <BillingDiff

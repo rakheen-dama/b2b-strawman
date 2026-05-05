@@ -107,6 +107,7 @@ export function BillingDiff({
           .filter((e) => rowStates[e.timeEntryId]?.decision !== "reject")
           .map((e) => ({
             timeEntryId: e.timeEntryId,
+            beforeText: e.beforeText,
             afterText: rowStates[e.timeEntryId]?.editedText ?? e.afterText,
           }));
 

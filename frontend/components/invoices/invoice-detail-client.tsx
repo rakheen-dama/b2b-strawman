@@ -209,8 +209,8 @@ export function InvoiceDetailClient({
         </ModuleGate>
       )}
 
-      {/* AI Polish (billing specialist — DRAFT only) */}
-      {h.isDraft && (
+      {/* AI Polish (billing specialist — DRAFT only, admin-gated) */}
+      {h.isDraft && isAdmin && (
         <SpecialistLauncherButton
           specialistId="BILLING"
           surface="INVOICE_DRAFT_TOOLBAR"

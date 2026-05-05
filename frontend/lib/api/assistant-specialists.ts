@@ -110,7 +110,7 @@ async function handleJson<T>(response: Response): Promise<T> {
 export interface BillingPolishAppliedOutput {
   kind: "BillingPolishPayload";
   invoiceId: string;
-  edits: { timeEntryId: string; afterText: string }[];
+  edits: { timeEntryId: string; beforeText: string; afterText: string }[];
 }
 
 /** Grouping specialist — proposed line-item groups. */
@@ -180,7 +180,7 @@ export async function approveInvocation(
 export async function rejectInvocation(
   invocationId: string,
   rejectReason: string
-): Promise<{ id: string; status: string }> {
+): Promise<void> {
   const res = await fetch(
     `${API_BASE}/api/assistant/invocations/${encodeURIComponent(invocationId)}/reject`,
     {
@@ -190,5 +190,8 @@ export async function rejectInvocation(
       body: JSON.stringify({ rejectReason }),
     }
   );
-  return handleJson(res);
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new SpecialistApiError(res.status, body);
+  }
 }

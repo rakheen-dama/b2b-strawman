@@ -28,6 +28,22 @@ export const SPECIALIST_STRINGS = {
   billingDiffApproveAll: "Approve all changes",
   billingDiffRejectAll: "Reject all changes",
   billingGroupingTitle: "Proposed Line Groups",
+  // Intake specialist
+  intakeExtractLabel: "Extract from uploaded documents",
+  intakeInfoRequestLabel: "Extract client-supplied fields",
+  intakePrereqLabel: "Fill in from uploads",
+  intakeDiffTitle: "Proposed Field Extractions",
+  intakeDiffAccept: "Accept",
+  intakeDiffReject: "Reject",
+  intakeDiffEdit: "Edit",
+  intakeDiffApproveAll: "Approve all fields",
+  intakeDiffRejectAll: "Reject all fields",
+  intakeVisionBadge: "VISION",
+  intakeTextBadge: "TEXT",
+  intakePopiaBadge: "POPIA",
+  intakeInjectionWarning: "This document may contain instructions for the AI — review carefully",
+  intakeRsaIdChecksumWarning: "RSA ID checksum invalid",
+  intakeEmptyState: "No documents to extract from",
 } as const;
 
 export type SpecialistStringKey = keyof typeof SPECIALIST_STRINGS;

@@ -59,6 +59,8 @@ import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSel
 import { TagInput } from "@/components/tags/TagInput";
 import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
+import { SpecialistLauncherButton } from "@/components/assistant/specialist-launcher-button";
+import { SPECIALIST_STRINGS } from "@/components/assistant/specialist-strings";
 import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBadge";
 import { LifecycleTransitionDropdown } from "@/components/compliance/LifecycleTransitionDropdown";
 import { ChecklistInstancePanel } from "@/components/compliance/ChecklistInstancePanel";
@@ -528,6 +530,15 @@ export default async function CustomerDetailPage({
 
         {isAdmin && (
           <div id="lifecycle-transition" className="flex shrink-0 gap-2">
+            {activationBlockers.length > 0 && (
+              <SpecialistLauncherButton
+                specialistId="INTAKE"
+                surface="CUSTOMER_DETAIL_PREREQ"
+                contextRef={{ entityType: "customer", entityId: id }}
+                initialPrompt="Fill in missing customer fields from uploaded documents."
+                ctaLabel={SPECIALIST_STRINGS.intakePrereqLabel}
+              />
+            )}
             {customer.status === "ACTIVE" &&
               customer.lifecycleStatus &&
               customer.lifecycleStatus !== "ANONYMIZED" && (

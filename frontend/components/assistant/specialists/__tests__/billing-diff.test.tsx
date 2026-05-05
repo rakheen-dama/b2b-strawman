@@ -9,10 +9,7 @@ vi.mock("@/lib/api/assistant-specialists", () => ({
 }));
 
 import { BillingDiff } from "@/components/assistant/specialists/billing-diff";
-import {
-  approveInvocation,
-  rejectInvocation,
-} from "@/lib/api/assistant-specialists";
+import { approveInvocation, rejectInvocation } from "@/lib/api/assistant-specialists";
 
 const approveInvocationMock = approveInvocation as unknown as ReturnType<typeof vi.fn>;
 const rejectInvocationMock = rejectInvocation as unknown as ReturnType<typeof vi.fn>;

@@ -21,6 +21,8 @@ vi.mock("@/app/(app)/org/[slug]/customers/intake-actions", () => ({
   fetchIntakeFields: (...args: unknown[]) => mockFetchIntakeFields(...args),
 }));
 
+vi.mock("@/components/assistant/specialist-launcher-button");
+
 function makeGroup(overrides: Partial<IntakeFieldGroup> = {}): IntakeFieldGroup {
   return {
     id: "group-1",

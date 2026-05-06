@@ -268,3 +268,49 @@ export async function listInvocationsClient(params: Record<string, string>): Pro
   });
   return handleJson<InvocationPageClient>(res);
 }
+
+export interface InvocationDetailClient {
+  id: string;
+  specialistId: string;
+  invokedBy: string;
+  actorId: string | null;
+  automationActionExecutionId: string | null;
+  contextEntityType: string;
+  contextEntityId: string;
+  status: string;
+  proposedOutput: Record<string, unknown> | null;
+  appliedOutput: Record<string, unknown> | null;
+  createdAt: string;
+  reviewedAt: string | null;
+  reviewedById: string | null;
+  rejectReason: string | null;
+  errorMessage: string | null;
+  promptVersion: string | null;
+  version: number;
+}
+
+export async function getInvocationClient(id: string): Promise<InvocationDetailClient> {
+  const res = await fetch(
+    `${API_BASE}/api/assistant/invocations/${encodeURIComponent(id)}`,
+    {
+      method: "GET",
+      headers: getAuthHeaders(),
+      credentials: credentialsMode(),
+    }
+  );
+  return handleJson<InvocationDetailClient>(res);
+}
+
+/**
+ * Authenticated SWR fetcher for use in client components.
+ * Uses the same auth headers and credentials mode as all other client API calls.
+ */
+export async function authFetcher<T>(url: string): Promise<T> {
+  const fullUrl = url.startsWith("http") ? url : `${API_BASE}${url}`;
+  const res = await fetch(fullUrl, {
+    method: "GET",
+    headers: getAuthHeaders(),
+    credentials: credentialsMode(),
+  });
+  return handleJson<T>(res);
+}

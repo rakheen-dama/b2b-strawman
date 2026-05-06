@@ -67,7 +67,9 @@ public final class AutomationContext {
       case FIELD_DATE_APPROACHING ->
           buildFieldDateApproaching((FieldDateApproachingEvent) event, context);
       case SCHEDULED -> {
-        // Scheduled triggers use a generic event context
+        // TODO(515C): Scheduled triggers currently produce a context map with no entity data.
+        // When Epic 515C implements scheduled trigger execution, this block must populate
+        // entity fields so templates can resolve {{event.entityId}} and related placeholders.
       }
     }
 

@@ -2,6 +2,7 @@ import React from "react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { SWRConfig } from "swr";
 
 vi.mock("@/lib/api/assistant-specialists", () => ({
   listInvocationsClient: vi.fn(),
@@ -19,6 +20,15 @@ import {
 const mockListInvocations = listInvocationsClient as ReturnType<typeof vi.fn>;
 const mockApprove = approveInvocation as ReturnType<typeof vi.fn>;
 const mockReject = rejectInvocation as ReturnType<typeof vi.fn>;
+
+/** Wrap component in SWRConfig with no cache to avoid cross-test pollution */
+function renderWidget(props: { contextEntityType: string; contextEntityId: string }) {
+  return render(
+    <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0 }}>
+      <PendingSuggestionsWidget {...props} />
+    </SWRConfig>
+  );
+}
 
 afterEach(() => {
   cleanup();
@@ -57,9 +67,7 @@ describe("PendingSuggestionsWidget", () => {
   it("renders nothing when no pending invocations", async () => {
     mockListInvocations.mockResolvedValue(EMPTY_RESPONSE);
 
-    const { container } = render(
-      <PendingSuggestionsWidget contextEntityType="invoice" contextEntityId="inv-entity-001" />
-    );
+    const { container } = renderWidget({ contextEntityType: "invoice", contextEntityId: "inv-entity-001" });
 
     await waitFor(() => {
       expect(container.querySelector("[data-testid='pending-suggestions-widget']")).toBeNull();
@@ -67,9 +75,7 @@ describe("PendingSuggestionsWidget", () => {
   });
 
   it("renders widget with pending invocations", async () => {
-    render(
-      <PendingSuggestionsWidget contextEntityType="invoice" contextEntityId="inv-entity-001" />
-    );
+    renderWidget({ contextEntityType: "invoice", contextEntityId: "inv-entity-001" });
 
     await waitFor(() => {
       expect(screen.getByTestId("pending-suggestions-widget")).toBeDefined();
@@ -80,9 +86,7 @@ describe("PendingSuggestionsWidget", () => {
   });
 
   it("calls listInvocationsClient with correct params", async () => {
-    render(
-      <PendingSuggestionsWidget contextEntityType="customer" contextEntityId="cust-001" />
-    );
+    renderWidget({ contextEntityType: "customer", contextEntityId: "cust-001" });
 
     await waitFor(() => {
       expect(mockListInvocations).toHaveBeenCalledWith({
@@ -97,9 +101,7 @@ describe("PendingSuggestionsWidget", () => {
   it("removes item from list after approve", async () => {
     const user = userEvent.setup();
 
-    render(
-      <PendingSuggestionsWidget contextEntityType="invoice" contextEntityId="inv-entity-001" />
-    );
+    renderWidget({ contextEntityType: "invoice", contextEntityId: "inv-entity-001" });
 
     await waitFor(() => {
       expect(screen.getByTestId("pending-suggestions-widget")).toBeDefined();
@@ -116,9 +118,7 @@ describe("PendingSuggestionsWidget", () => {
   it("removes item from list after reject", async () => {
     const user = userEvent.setup();
 
-    render(
-      <PendingSuggestionsWidget contextEntityType="invoice" contextEntityId="inv-entity-001" />
-    );
+    renderWidget({ contextEntityType: "invoice", contextEntityId: "inv-entity-001" });
 
     await waitFor(() => {
       expect(screen.getByTestId("pending-suggestions-widget")).toBeDefined();

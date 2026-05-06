@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
+import useSWR from "swr";
 import { Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +12,7 @@ import {
   rejectInvocation,
   listInvocationsClient,
   type InvocationListItemClient,
+  type InvocationPageClient,
 } from "@/lib/api/assistant-specialists";
 
 export interface PendingSuggestionsWidgetProps {
@@ -22,51 +24,36 @@ export function PendingSuggestionsWidget({
   contextEntityType,
   contextEntityId,
 }: PendingSuggestionsWidgetProps) {
-  const [invocations, setInvocations] = useState<InvocationListItemClient[]>([]);
-  const [loading, setLoading] = useState(true);
   const [actionInFlight, setActionInFlight] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
+  const swrKey = `pending-suggestions-${contextEntityType}-${contextEntityId}`;
+  const { data, isLoading, mutate } = useSWR<InvocationPageClient>(
+    swrKey,
+    () =>
+      listInvocationsClient({
+        contextEntityType,
+        contextEntityId,
+        status: "PENDING_APPROVAL",
+        size: "10",
+      }),
+    { refreshInterval: 30000 }
+  );
 
-    async function fetchPending() {
-      try {
-        const result = await listInvocationsClient({
-          contextEntityType,
-          contextEntityId,
-          status: "PENDING_APPROVAL",
-          size: "10",
-        });
-        if (!cancelled) {
-          setInvocations(result.content);
-          setLoading(false);
-        }
-      } catch {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      }
-    }
-
-    fetchPending();
-    return () => {
-      cancelled = true;
-    };
-  }, [contextEntityType, contextEntityId]);
+  const invocations: InvocationListItemClient[] = data?.content ?? [];
 
   const handleApprove = useCallback(
     async (id: string) => {
       setActionInFlight(id);
       try {
         await approveInvocation(id);
-        setInvocations((prev) => prev.filter((inv) => inv.id !== id));
+        await mutate();
       } catch {
         // Keep in list on failure
       } finally {
         setActionInFlight(null);
       }
     },
-    []
+    [mutate]
   );
 
   const handleReject = useCallback(
@@ -74,17 +61,17 @@ export function PendingSuggestionsWidget({
       setActionInFlight(id);
       try {
         await rejectInvocation(id, "Rejected from entity detail page");
-        setInvocations((prev) => prev.filter((inv) => inv.id !== id));
+        await mutate();
       } catch {
         // Keep in list on failure
       } finally {
         setActionInFlight(null);
       }
     },
-    []
+    [mutate]
   );
 
-  if (loading) return null;
+  if (isLoading) return null;
   if (invocations.length === 0) return null;
 
   return (

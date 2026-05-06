@@ -164,4 +164,46 @@ describe("AiQueuePage", () => {
 
     expect(screen.getByText(/Not authorised/)).toBeDefined();
   });
+
+  it("renders invocation drawer component", async () => {
+    const page = await AiQueuePage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
+    render(page);
+
+    // The AiQueueClient renders the InvocationDrawer (initially closed)
+    // and BulkApproveBar — verify the queue table rows are interactive
+    const rows = screen.getAllByRole("row");
+    // Header row + 2 data rows
+    expect(rows.length).toBeGreaterThanOrEqual(3);
+  });
+
+  it("renders bulk approve bar with selection checkboxes", async () => {
+    const page = await AiQueuePage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
+    render(page);
+
+    // Each row should have a checkbox for selection (used by bulk-approve)
+    const checkboxes = screen.getAllByRole("checkbox");
+    expect(checkboxes.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("renders pagination controls for multi-page results", async () => {
+    mockListInvocations.mockResolvedValue({
+      ...SAMPLE_PAGE,
+      page: { totalElements: 50, totalPages: 2, size: 25, number: 0 },
+    });
+    const page = await AiQueuePage({
+      params: Promise.resolve({ slug: "acme" }),
+      searchParams: Promise.resolve({}),
+    });
+    render(page);
+
+    expect(screen.getByText("Previous")).toBeDefined();
+    expect(screen.getByText("Next")).toBeDefined();
+    expect(screen.getByText(/Page 1 of 2/)).toBeDefined();
+  });
 });

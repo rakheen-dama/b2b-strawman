@@ -23,6 +23,7 @@ import { AI_QUEUE_STRINGS } from "@/lib/constants/ai-queue-strings";
 import { QueueRow } from "@/components/assistant/queue/queue-row";
 import { BulkApproveBar } from "@/components/assistant/queue/bulk-approve-bar";
 import { InvocationDrawer } from "@/components/assistant/queue/invocation-drawer";
+import { getInvocationClient } from "@/lib/api/assistant-specialists";
 import type { InvocationFilter, InvocationPage, InvocationDetail } from "@/lib/api/ai-invocations";
 
 interface AiQueueClientProps {
@@ -158,18 +159,13 @@ export function AiQueueClient({ slug, initialData, initialFilter }: AiQueueClien
 
   const handleRowClick = useCallback(
     async (id: string) => {
-      // Fetch detail for the drawer
+      // Fetch detail for the drawer using authenticated client
       try {
-        const res = await fetch(`/api/assistant/invocations/${id}`, {
-          credentials: "include",
-        });
-        if (res.ok) {
-          const detail = await res.json();
-          setDrawerInvocation(detail);
-          setDrawerOpen(true);
-        }
+        const detail = await getInvocationClient(id);
+        setDrawerInvocation(detail as InvocationDetail);
+        setDrawerOpen(true);
       } catch {
-        // Silently fail
+        // Silently fail — drawer stays closed
       }
     },
     []

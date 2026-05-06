@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useOrgProfile } from "@/lib/org-profile";
 import { useTerminology } from "@/lib/terminology";
+import { authFetcher } from "@/lib/api/assistant-specialists";
 import { SETTINGS_NAV_GROUPS } from "./settings-nav-groups";
 
 /**
@@ -31,9 +32,7 @@ function PendingCountBadge({ endpoint }: { endpoint: string }) {
   const { data } = useSWR(
     endpoint,
     async (url: string) => {
-      const res = await fetch(url, { credentials: "include" });
-      if (!res.ok) return null;
-      const json = await res.json();
+      const json = await authFetcher<{ page?: { totalElements?: number } }>(url);
       return json?.page?.totalElements ?? 0;
     },
     { refreshInterval: 30000 }

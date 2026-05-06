@@ -15,6 +15,7 @@ const TRIGGER_TYPE_CONFIG: Record<
   INFORMATION_REQUEST_COMPLETED: { label: "Request Completed", variant: "lead" },
   PROPOSAL_SENT: { label: "Proposal Sent", variant: "success" },
   FIELD_DATE_APPROACHING: { label: "Date Approaching", variant: "warning" },
+  SCHEDULED: { label: "Scheduled", variant: "outline" },
 };
 
 interface TriggerTypeBadgeProps {

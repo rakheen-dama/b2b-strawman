@@ -1,0 +1,54 @@
+{
+  "packId": "ai-specialist-common",
+  "version": 1,
+  "templates": [
+    {
+      "slug": "polish-invoice-on-send",
+      "name": "Polish invoice descriptions on send",
+      "description": "Runs the Billing AI specialist to polish time-entry descriptions when an invoice is approved",
+      "category": "ai-specialist",
+      "triggerType": "INVOICE_STATUS_CHANGED",
+      "triggerConfig": { "toStatus": "APPROVED" },
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "INVOKE_AI_SPECIALIST",
+          "actionConfig": {
+            "specialistId": "BILLING",
+            "contextRef": { "entityType": "invoice", "entityId": "{{event.entityId}}" },
+            "initialPrompt": "Polish the time-entry descriptions on this invoice for client readability.",
+            "mode": "REVIEW",
+            "timeoutSeconds": 60
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "slug": "extract-intake-fields",
+      "name": "Extract fields from uploaded intake documents",
+      "description": "Runs the Intake AI specialist to extract customer fields when an information request is completed",
+      "category": "ai-specialist",
+      "triggerType": "INFORMATION_REQUEST_COMPLETED",
+      "triggerConfig": {},
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "INVOKE_AI_SPECIALIST",
+          "actionConfig": {
+            "specialistId": "INTAKE",
+            "contextRef": { "entityType": "customer", "entityId": "{{event.entityId}}" },
+            "initialPrompt": "Extract customer details from the submitted intake documents.",
+            "mode": "REVIEW",
+            "timeoutSeconds": 90
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        }
+      ]
+    }
+  ]
+}

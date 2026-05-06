@@ -436,6 +436,13 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
     requiredModule: "automation_builder",
   },
   {
+    title: "AI Review Queue",
+    description: "Review and approve AI specialist suggestions",
+    href: (slug) => `/org/${slug}/settings/automations/ai-queue`,
+    adminOnly: true,
+    requiredModule: "automation_builder",
+  },
+  {
     title: "Roles & Permissions",
     description: "Define custom roles and manage team permissions.",
     href: (slug) => `/org/${slug}/settings/roles`,

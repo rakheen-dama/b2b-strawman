@@ -66,6 +66,11 @@ public final class AutomationContext {
       case PROPOSAL_SENT -> buildProposalSent((ProposalSentEvent) event, context);
       case FIELD_DATE_APPROACHING ->
           buildFieldDateApproaching((FieldDateApproachingEvent) event, context);
+      case SCHEDULED -> {
+        // TODO(515C): Scheduled triggers currently produce a context map with no entity data.
+        // When Epic 515C implements scheduled trigger execution, this block must populate
+        // entity fields so templates can resolve {{event.entityId}} and related placeholders.
+      }
     }
 
     return context;

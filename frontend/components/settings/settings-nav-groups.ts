@@ -1,3 +1,7 @@
+const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
+const API_BASE =
+  AUTH_MODE === "keycloak" ? "" : process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8080";
+
 export interface SettingsNavItem {
   label: string;
   href: string;
@@ -5,6 +9,8 @@ export interface SettingsNavItem {
   comingSoon?: boolean;
   /** If set, settings item only shows when the org has this module enabled */
   requiredModule?: string;
+  /** If set, a pending-count badge will be rendered next to the label */
+  pendingCountEndpoint?: string;
 }
 
 export interface SettingsNavGroup {
@@ -37,6 +43,13 @@ export const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
         href: "automations",
         adminOnly: true,
         requiredModule: "automation_builder",
+      },
+      {
+        label: "AI Review Queue",
+        href: "automations/ai-queue",
+        adminOnly: true,
+        requiredModule: "automation_builder",
+        pendingCountEndpoint: `${API_BASE}/api/assistant/invocations?status=PENDING_APPROVAL&size=0`,
       },
     ],
   },

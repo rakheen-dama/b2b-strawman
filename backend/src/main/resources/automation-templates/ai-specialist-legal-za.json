@@ -1,0 +1,59 @@
+{
+  "packId": "ai-specialist-legal-za",
+  "version": 1,
+  "verticalProfile": "legal-za",
+  "templates": [
+    {
+      "slug": "weekly-matter-activity-summary",
+      "name": "Weekly matter activity summary",
+      "description": "Generates an inbox summary of matter activity each Monday morning for active matters",
+      "category": "ai-specialist",
+      "triggerType": "SCHEDULED",
+      "triggerConfig": { "cron": "0 0 7 * * MON", "timezone": "Africa/Johannesburg" },
+      "conditions": [
+        { "field": "project.status", "operator": "EQUALS", "value": "ACTIVE" }
+      ],
+      "actions": [
+        {
+          "actionType": "INVOKE_AI_SPECIALIST",
+          "actionConfig": {
+            "specialistId": "INBOX",
+            "contextRef": { "entityType": "project", "entityId": "{{event.entityId}}" },
+            "initialPrompt": "Summarise the past week of activity on this matter.",
+            "lookback": "P7D",
+            "mode": "DIRECT",
+            "timeoutSeconds": 120
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        }
+      ]
+    },
+    {
+      "slug": "matter-reactivation-catchup",
+      "name": "Catch-up summary on matter reactivation",
+      "description": "Generates a 30-day activity summary when a matter transitions from ON_HOLD to ACTIVE",
+      "category": "ai-specialist",
+      "triggerType": "PROJECT_STATUS_CHANGED",
+      "triggerConfig": { "fromStatus": "ON_HOLD", "toStatus": "ACTIVE" },
+      "conditions": [],
+      "actions": [
+        {
+          "actionType": "INVOKE_AI_SPECIALIST",
+          "actionConfig": {
+            "specialistId": "INBOX",
+            "contextRef": { "entityType": "project", "entityId": "{{event.entityId}}" },
+            "initialPrompt": "Provide a catch-up summary of the last 30 days of activity on this matter.",
+            "lookback": "P30D",
+            "mode": "DIRECT",
+            "timeoutSeconds": 120
+          },
+          "delayDuration": null,
+          "delayUnit": null,
+          "sortOrder": 0
+        }
+      ]
+    }
+  ]
+}

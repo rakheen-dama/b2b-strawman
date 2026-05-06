@@ -2,10 +2,13 @@ package io.b2mash.b2b.b2bstrawman.automation;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import java.time.Instant;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.core.type.TypeReference;
@@ -22,6 +25,7 @@ public class AutomationScheduler {
 
   private static final Logger log = LoggerFactory.getLogger(AutomationScheduler.class);
   private static final long POLL_INTERVAL_MS = 900_000; // 15 minutes
+  private static final long CRON_POLL_INTERVAL_MS = 60_000; // 60 seconds
 
   private final TenantScopedRunner tenantScopedRunner;
   private final ActionExecutionRepository actionExecutionRepository;
@@ -29,6 +33,7 @@ public class AutomationScheduler {
   private final AutomationRuleRepository ruleRepository;
   private final AutomationActionRepository actionRepository;
   private final AutomationActionExecutor automationActionExecutor;
+  private final AutomationEventListener automationEventListener;
   private final TransactionTemplate transactionTemplate;
   private final ObjectMapper objectMapper;
 
@@ -39,6 +44,7 @@ public class AutomationScheduler {
       AutomationRuleRepository ruleRepository,
       AutomationActionRepository actionRepository,
       AutomationActionExecutor automationActionExecutor,
+      AutomationEventListener automationEventListener,
       TransactionTemplate transactionTemplate,
       ObjectMapper objectMapper) {
     this.tenantScopedRunner = tenantScopedRunner;
@@ -47,6 +53,7 @@ public class AutomationScheduler {
     this.ruleRepository = ruleRepository;
     this.actionRepository = actionRepository;
     this.automationActionExecutor = automationActionExecutor;
+    this.automationEventListener = automationEventListener;
     this.transactionTemplate = transactionTemplate;
     this.objectMapper = objectMapper;
   }
@@ -62,6 +69,125 @@ public class AutomationScheduler {
     } else {
       log.debug("Automation scheduler completed: 0 delayed actions processed");
     }
+  }
+
+  /**
+   * Cron pass: fires SCHEDULED trigger rules whose next fire time has arrived. Runs every 60s,
+   * per-tenant. Missed-run policy: fire-once-on-resume, no flood-backfill (ADR-271).
+   */
+  @Scheduled(fixedDelay = CRON_POLL_INTERVAL_MS)
+  public void pollScheduledTriggers() {
+    log.debug("Scheduled trigger cron pass started");
+    int[] fired = {0};
+    tenantScopedRunner.forEachTenant((tenantId, orgId) -> fired[0] += processScheduledTenant());
+
+    if (fired[0] > 0) {
+      log.info("Scheduled trigger cron pass completed: {} rules fired", fired[0]);
+    } else {
+      log.debug("Scheduled trigger cron pass completed: 0 rules fired");
+    }
+  }
+
+  private int processScheduledTenant() {
+    // Phase 1: short transaction to evaluate which rules should fire and update lastRunAt.
+    // This prevents holding a long-running transaction open during LLM execution.
+    record DueRule(AutomationRule rule, Instant now) {}
+    List<DueRule> dueRules;
+    {
+      var result =
+          transactionTemplate.execute(
+              tx -> {
+                var rules = ruleRepository.findByEnabledAndTriggerType(true, TriggerType.SCHEDULED);
+                if (rules.isEmpty()) return List.<DueRule>of();
+
+                Instant now = Instant.now();
+                var due = new java.util.ArrayList<DueRule>();
+
+                for (var rule : rules) {
+                  try {
+                    if (shouldFire(rule, now)) {
+                      // Update lastRunAt inside the short tx to prevent re-firing
+                      rule.setLastRunAt(now);
+                      ruleRepository.save(rule);
+                      due.add(new DueRule(rule, now));
+                    }
+                  } catch (Exception e) {
+                    log.error(
+                        "Failed to evaluate scheduled rule {} ({}): {}",
+                        rule.getId(),
+                        rule.getName(),
+                        e.getMessage(),
+                        e);
+                  }
+                }
+                return due;
+              });
+      dueRules = result != null ? result : List.of();
+    }
+
+    // Phase 2: execute each due rule outside the transaction (LLM calls may be long-running)
+    int fired = 0;
+    for (var due : dueRules) {
+      try {
+        fireScheduledRule(due.rule(), due.now());
+        fired++;
+      } catch (Exception e) {
+        log.error(
+            "Failed to fire scheduled rule {} ({}): {}",
+            due.rule().getId(),
+            due.rule().getName(),
+            e.getMessage(),
+            e);
+      }
+    }
+    return fired;
+  }
+
+  private boolean shouldFire(AutomationRule rule, Instant now) {
+    Map<String, Object> triggerConfig = rule.getTriggerConfig();
+    if (triggerConfig == null) return false;
+
+    Object cronObj = triggerConfig.get("cronExpression");
+    if (cronObj == null) return false;
+    String cronExpr = cronObj.toString();
+
+    try {
+      var cron = CronExpression.parse(cronExpr);
+      Instant baseTime = rule.getLastRunAt() != null ? rule.getLastRunAt() : rule.getCreatedAt();
+      // Deliberate UTC-only cron evaluation: all cron expressions are stored and evaluated in UTC.
+      // Per-tenant timezone support is deferred (ADR-271). If added later, the ZoneId should come
+      // from the tenant's configured timezone and be applied here instead of ZoneOffset.UTC.
+      var next = cron.next(baseTime.atZone(java.time.ZoneOffset.UTC).toLocalDateTime());
+      if (next == null) return false;
+      Instant nextFire = next.toInstant(java.time.ZoneOffset.UTC);
+      return !nextFire.isAfter(now);
+    } catch (IllegalArgumentException e) {
+      log.warn(
+          "Invalid cron expression '{}' for rule {} ({}): {}",
+          cronExpr,
+          rule.getId(),
+          rule.getName(),
+          e.getMessage());
+      return false;
+    }
+  }
+
+  private void fireScheduledRule(AutomationRule rule, Instant now) {
+    // Build minimal context for the scheduled execution
+    Map<String, Map<String, Object>> context = new LinkedHashMap<>();
+    context.put(
+        "rule",
+        Map.of(
+            "id", rule.getId().toString(),
+            "name", rule.getName(),
+            "createdBy", rule.getCreatedBy().toString()));
+
+    // lastRunAt was already updated in the short decision-transaction (processScheduledTenant
+    // phase 1) to prevent re-firing. The actual execution happens outside any transaction so
+    // that long-running LLM calls do not hold the connection open.
+    automationEventListener.fireRule(rule, context);
+
+    log.info("Fired scheduled rule {} ({}) at {}", rule.getId(), rule.getName(), now);
   }
 
   private int processTenant() {

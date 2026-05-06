@@ -106,6 +106,13 @@ public class AiSpecialistInvocationService {
   }
 
   @Transactional
+  public void markFailed(UUID invocationId, String errorMessage) {
+    var inv = loadOrThrow(invocationId);
+    inv.markFailed(errorMessage);
+    repository.save(inv);
+  }
+
+  @Transactional
   public ApproveResult approve(UUID id, OutputPayload edited) {
     capabilityAuthorizationService.requireCapability(CAP_AI);
     var inv = loadOrThrow(id);
@@ -257,6 +264,20 @@ public class AiSpecialistInvocationService {
 
     inv.markAutoApplied(payload);
     return repository.save(inv);
+  }
+
+  /**
+   * Applies an output payload to an existing RUNNING invocation and marks it AUTO_APPLIED. Used by
+   * DIRECT-mode automation where the invocation is recorded before the specialist runs (so that the
+   * runner has a real invocation ID for LLM call telemetry).
+   */
+  @Transactional
+  public void autoApply(UUID invocationId, OutputPayload payload) {
+    var inv = loadOrThrow(invocationId);
+    var applier = outputApplierRegistry.forPayload(payload);
+    applier.apply(payload, inv.getActorId());
+    inv.markAutoApplied(payload);
+    repository.save(inv);
   }
 
   // ------------------------- read entry points -------------------------

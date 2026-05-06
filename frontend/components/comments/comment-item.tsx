@@ -1,11 +1,12 @@
 "use client";
 
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Sparkles, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { AvatarCircle } from "@/components/ui/avatar-circle";
 import { EditCommentDialog } from "@/components/comments/edit-comment-dialog";
 import { DeleteCommentDialog } from "@/components/comments/delete-comment-dialog";
 import { RelativeDate } from "@/components/ui/relative-date";
+import { SPECIALIST_STRINGS } from "@/components/assistant/specialist-strings";
 import type { Comment } from "@/lib/actions/comments";
 
 interface CommentItemProps {
@@ -40,6 +41,15 @@ export function CommentItem({
           <span className="text-xs text-slate-500 dark:text-slate-400">
             <RelativeDate iso={comment.createdAt} />
           </span>
+          {comment.attribution === "Inbox Assistant" && (
+            <span
+              data-testid="inbox-assistant-tag"
+              className="inline-flex items-center gap-1 rounded-full bg-teal-50 px-2 py-0.5 text-[10px] font-semibold text-teal-700 dark:bg-teal-900/40 dark:text-teal-300"
+            >
+              <Sparkles className="size-3" />
+              {SPECIALIST_STRINGS.inboxAssistantTag}
+            </span>
+          )}
           {comment.visibility === "SHARED" && <Badge variant="success">Customer visible</Badge>}
         </div>
 

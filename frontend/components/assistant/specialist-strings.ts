@@ -44,6 +44,10 @@ export const SPECIALIST_STRINGS = {
   intakeInjectionWarning: "This document may contain instructions for the AI — review carefully",
   intakeRsaIdChecksumWarning: "RSA ID checksum invalid",
   intakeEmptyState: "No documents to extract from",
+  // Inbox specialist
+  inboxSummariseLabel: "Summarise recent activity",
+  inboxCustomerSummariseLabel: "Summarise customer activity",
+  inboxAssistantTag: "Posted by Inbox Assistant",
 } as const;
 
 export type SpecialistStringKey = keyof typeof SPECIALIST_STRINGS;

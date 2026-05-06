@@ -58,6 +58,8 @@ import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumen
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
 import { CreateProposalDialog } from "@/components/proposals/create-proposal-dialog";
 import { ProjectCommentsSection } from "@/components/projects/project-comments-section";
+import { LookbackPicker } from "@/components/assistant/specialists/lookback-picker";
+import { SPECIALIST_STRINGS } from "@/components/assistant/specialist-strings";
 import { ExpenseList } from "@/components/expenses/expense-list";
 import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";
 import {
@@ -935,7 +937,19 @@ export default async function ProjectDetailPage({
             />
           ) : undefined
         }
-        activityPanel={<ActivityFeed projectId={id} orgSlug={slug} />}
+        activityPanel={
+          <div className="space-y-4">
+            <div className="flex items-center justify-end">
+              <LookbackPicker
+                specialistId="INBOX"
+                surface="MATTER_ACTIVITY_TAB"
+                contextRef={{ entityType: "project", entityId: id }}
+                ctaLabel={SPECIALIST_STRINGS.inboxSummariseLabel}
+              />
+            </div>
+            <ActivityFeed projectId={id} orgSlug={slug} />
+          </div>
+        }
         auditPanel={<ProjectAuditTab projectId={id} />}
       />
 

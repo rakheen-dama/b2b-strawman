@@ -5,7 +5,7 @@ import io.b2mash.b2b.b2bstrawman.activity.ActivityService;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantTool;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
 import io.b2mash.b2b.b2bstrawman.comment.Comment;
-import io.b2mash.b2b.b2bstrawman.comment.CommentRepository;
+import io.b2mash.b2b.b2bstrawman.comment.CommentService;
 import io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.ProjectUpcomingDeadline;
@@ -37,7 +37,7 @@ public class GetMatterActivityWindowTool implements AssistantTool {
   private static final Logger log = LoggerFactory.getLogger(GetMatterActivityWindowTool.class);
   private static final String LEGAL_ZA = "legal-za";
 
-  private final CommentRepository commentRepository;
+  private final CommentService commentService;
   private final ActivityService activityService;
   private final InformationRequestService informationRequestService;
   private final ProjectUpcomingDeadlinesService upcomingDeadlinesService;
@@ -45,13 +45,13 @@ public class GetMatterActivityWindowTool implements AssistantTool {
   private final TrustTransactionRepository trustTransactionRepository;
 
   public GetMatterActivityWindowTool(
-      CommentRepository commentRepository,
+      CommentService commentService,
       ActivityService activityService,
       InformationRequestService informationRequestService,
       ProjectUpcomingDeadlinesService upcomingDeadlinesService,
       OrgSettingsService orgSettingsService,
       TrustTransactionRepository trustTransactionRepository) {
-    this.commentRepository = commentRepository;
+    this.commentService = commentService;
     this.activityService = activityService;
     this.informationRequestService = informationRequestService;
     this.upcomingDeadlinesService = upcomingDeadlinesService;
@@ -129,13 +129,11 @@ public class GetMatterActivityWindowTool implements AssistantTool {
 
     var events = new ArrayList<Map<String, Object>>();
 
-    // 1. Comments
+    // 1. Comments — fetched via CommentService (access-controlled, time-windowed)
     try {
       var pageable = PageRequest.of(0, 50, Sort.by(Sort.Direction.DESC, "createdAt"));
-      var comments =
-          commentRepository.findByTargetAndProject("PROJECT", matterId, matterId, pageable);
+      var comments = commentService.listByProjectAndWindow(matterId, from, pageable, actor);
       for (Comment c : comments) {
-        if (c.getCreatedAt() != null && c.getCreatedAt().isBefore(from)) continue;
         var entry = new LinkedHashMap<String, Object>();
         entry.put("source", "COMMENT");
         entry.put("entityType", "comment");
@@ -167,10 +165,12 @@ public class GetMatterActivityWindowTool implements AssistantTool {
       log.warn("Failed to fetch activity for matter {}: {}", matterId, e.getMessage());
     }
 
-    // 3. Information requests + responses
+    // 3. Information requests + responses (filtered by lookback window)
     try {
       var requests = informationRequestService.listByProject(matterId);
       for (var req : requests) {
+        // Filter by creation date to stay within the lookback window
+        if (req.createdAt() != null && req.createdAt().isBefore(from)) continue;
         var entry = new LinkedHashMap<String, Object>();
         entry.put("source", "INFORMATION_REQUEST");
         entry.put("entityType", "information_request");

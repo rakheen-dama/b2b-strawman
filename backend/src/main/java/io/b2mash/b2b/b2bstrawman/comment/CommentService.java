@@ -64,6 +64,7 @@ public class CommentService {
     this.projectLifecycleGuard = projectLifecycleGuard;
   }
 
+  /** Creates a comment with the default source ("INTERNAL"). Delegates to the 7-arg overload. */
   @Transactional
   public Comment createComment(
       UUID projectId,
@@ -72,88 +73,7 @@ public class CommentService {
       String body,
       String visibility,
       ActorContext actor) {
-    var access = projectAccessService.requireViewAccess(projectId, actor);
-
-    // Check project is not archived
-    projectLifecycleGuard.requireNotReadOnly(projectId);
-
-    // Validate entity type
-    if ("PROJECT".equals(entityType)) {
-      // PROJECT-level comments are only allowed with SHARED visibility (staff replies to portal
-      // thread)
-      String resolvedVis = visibility != null ? visibility : "INTERNAL";
-      if (!"SHARED".equals(resolvedVis)) {
-        throw new InvalidStateException(
-            "Invalid visibility for project comment",
-            "PROJECT-level comments must have SHARED visibility");
-      }
-      if (!entityId.equals(projectId)) {
-        throw new InvalidStateException(
-            "Invalid entity for project comment",
-            "entityId must match projectId for PROJECT-level comments");
-      }
-    } else if (!"TASK".equals(entityType) && !"DOCUMENT".equals(entityType)) {
-      throw new InvalidStateException(
-          "Invalid entity type", "entityType must be TASK, DOCUMENT, or PROJECT");
-    }
-
-    // Verify entity exists and belongs to project (also resolves entity name to avoid duplicate DB
-    // read)
-    String entityName = validateEntityBelongsToProject(entityType, entityId, projectId);
-
-    // SHARED visibility requires canEdit (lead/admin/owner) — except for PROJECT-level comments
-    // which are inherently SHARED (the Client Comments thread is open to all project members)
-    String resolvedVisibility = visibility != null ? visibility : "INTERNAL";
-    if ("SHARED".equals(resolvedVisibility) && !access.canEdit() && !"PROJECT".equals(entityType)) {
-      throw new ForbiddenException(
-          "Cannot create shared comment",
-          "Only leads, admins, and owners can create SHARED comments");
-    }
-
-    var comment =
-        new Comment(entityType, entityId, projectId, actor.memberId(), body, resolvedVisibility);
-    comment = commentRepository.save(comment);
-    log.info(
-        "Created comment {} on {} {} in project {}",
-        comment.getId(),
-        entityType,
-        entityId,
-        projectId);
-    auditService.log(
-        AuditEventBuilder.builder()
-            .eventType("comment.created")
-            .entityType("comment")
-            .entityId(comment.getId())
-            .details(
-                Map.of(
-                    "body", body,
-                    "project_id", projectId.toString(),
-                    "entity_type", entityType,
-                    "entity_id", entityId.toString(),
-                    "entity_name", entityName,
-                    "visibility", resolvedVisibility))
-            .build());
-
-    String actorName = resolveActorName(actor.memberId());
-    String tenantId = RequestScopes.getTenantIdOrNull();
-    String orgId = RequestScopes.getOrgIdOrNull();
-    eventPublisher.publishEvent(
-        new CommentCreatedEvent(
-            "comment.created",
-            "comment",
-            comment.getId(),
-            projectId,
-            actor.memberId(),
-            actorName,
-            tenantId,
-            orgId,
-            Instant.now(),
-            Map.of("body", body),
-            entityType,
-            entityId,
-            resolvedVisibility));
-
-    return comment;
+    return createComment(projectId, entityType, entityId, body, visibility, "INTERNAL", actor);
   }
 
   /**
@@ -430,6 +350,18 @@ public class CommentService {
             Map.of("body", deletedBody),
             entityType,
             entityId));
+  }
+
+  /**
+   * Lists project-level comments created at or after {@code from}, bounded by pageable size.
+   * Enforces project view access.
+   */
+  @Transactional(readOnly = true)
+  public java.util.List<Comment> listByProjectAndWindow(
+      UUID projectId, java.time.Instant from, Pageable pageable, ActorContext actor) {
+    projectAccessService.requireViewAccess(projectId, actor);
+    return commentRepository.findByTargetAndProjectAndCreatedAtAfter(
+        "PROJECT", projectId, projectId, from, pageable);
   }
 
   @Transactional(readOnly = true)

@@ -4,18 +4,13 @@ import io.b2mash.b2b.b2bstrawman.assistant.invocation.AiSpecialistInvocationRepo
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.AiSpecialistInvocationService;
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.InvocationSource;
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.InvocationStatus;
-import io.b2mash.b2b.b2bstrawman.assistant.invocation.applier.OutputApplierRegistry;
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.payload.InboxSummaryPayload;
 import io.b2mash.b2b.b2bstrawman.assistant.invocation.payload.InboxSummaryPayload.SourceRef;
 import io.b2mash.b2b.b2bstrawman.assistant.specialist.SystemPromptBuilder;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.AssistantTool;
 import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,17 +29,14 @@ public class PostInboxSummaryTool implements AssistantTool {
 
   private final AiSpecialistInvocationService invocationService;
   private final AiSpecialistInvocationRepository invocationRepository;
-  private final OutputApplierRegistry applierRegistry;
   private final SystemPromptBuilder promptBuilder;
 
   public PostInboxSummaryTool(
       AiSpecialistInvocationService invocationService,
       AiSpecialistInvocationRepository invocationRepository,
-      OutputApplierRegistry applierRegistry,
       SystemPromptBuilder promptBuilder) {
     this.invocationService = invocationService;
     this.invocationRepository = invocationRepository;
-    this.applierRegistry = applierRegistry;
     this.promptBuilder = promptBuilder;
   }
 
@@ -181,7 +173,11 @@ public class PostInboxSummaryTool implements AssistantTool {
 
   private Map<String, Object> executeDirect(
       UUID matterId, InboxSummaryPayload payload, String promptVersion, TenantToolContext context) {
-    // Dedupe check: same specialist + context entity + same hour
+    // Dedupe check: same specialist + context entity + same hour.
+    // NOTE: This is a best-effort check subject to TOCTOU races — two concurrent requests
+    // for the same matter in the same hour can both pass before either writes. Acceptable
+    // because duplicate summaries are cosmetic (extra comment) not data-corrupting, and the
+    // window is narrow. A pessimistic/advisory lock would add complexity for minimal gain.
     Instant now = Instant.now();
     Instant hourStart = now.truncatedTo(ChronoUnit.HOURS);
     Instant hourEnd = hourStart.plus(1, ChronoUnit.HOURS);
@@ -199,46 +195,21 @@ public class PostInboxSummaryTool implements AssistantTool {
       return result;
     }
 
-    // Record and auto-apply
+    // Record + apply + mark AUTO_APPLIED atomically via the service's transactional method.
+    // This prevents partial state where a comment is posted but the invocation stays RUNNING.
     var inv =
-        invocationService.recordRunning(
+        invocationService.recordAndAutoApply(
             SPECIALIST_ID,
             InvocationSource.MEMBER,
             context.memberId(),
-            null,
             "project",
             matterId,
-            promptVersion);
-
-    // Apply via the applier
-    var applier = applierRegistry.forPayload(payload);
-    applier.apply(payload, context.memberId());
-
-    // Mark as auto-applied
-    var loaded =
-        invocationRepository
-            .findById(inv.getId())
-            .orElseThrow(() -> new IllegalStateException("Invocation not found: " + inv.getId()));
-    loaded.markAutoApplied(payload);
-    invocationRepository.save(loaded);
+            promptVersion,
+            payload);
 
     var result = new LinkedHashMap<String, Object>();
     result.put("invocationId", inv.getId().toString());
     result.put("status", InvocationStatus.AUTO_APPLIED.name());
     return result;
-  }
-
-  /** Compute sha256(specialistId|contextEntityId|truncatedHour) for deduplication reference. */
-  @SuppressWarnings("unused")
-  static String computeDedupeKey(String specialistId, UUID contextEntityId, Instant createdAt) {
-    var input =
-        specialistId + "|" + contextEntityId + "|" + createdAt.truncatedTo(ChronoUnit.HOURS);
-    try {
-      var md = MessageDigest.getInstance("SHA-256");
-      var digest = md.digest(input.getBytes(StandardCharsets.UTF_8));
-      return HexFormat.of().formatHex(digest);
-    } catch (NoSuchAlgorithmException e) {
-      throw new IllegalStateException("SHA-256 not available", e);
-    }
   }
 }

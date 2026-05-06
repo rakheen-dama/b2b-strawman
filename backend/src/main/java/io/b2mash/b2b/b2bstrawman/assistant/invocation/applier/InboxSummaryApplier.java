@@ -43,7 +43,10 @@ public class InboxSummaryApplier implements OutputApplier<InboxSummaryPayload> {
 
     // Post as a SHARED project-level comment with AI_ASSISTANT source.
     // PROJECT-level comments require SHARED visibility per CommentService validation.
-    var actor = new ActorContext(actorId, "owner");
+    // Use the actor's real role from the tool context rather than hardcoding "owner",
+    // which would be a privilege escalation vector.
+    String actorRole = io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes.getOrgRole();
+    var actor = new ActorContext(actorId, actorRole != null ? actorRole : "member");
     commentService.createComment(
         matterId, "PROJECT", matterId, body, "SHARED", COMMENT_SOURCE, actor);
   }

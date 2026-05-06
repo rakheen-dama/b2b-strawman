@@ -33,7 +33,7 @@ export function LookbackPicker({
       <select
         value={lookback}
         onChange={(e) => setLookback(e.target.value)}
-        className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-700 shadow-sm focus:border-teal-500 focus:outline-none focus:ring-1 focus:ring-teal-500 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
+        className="rounded-md border border-slate-300 bg-white px-2 py-1 text-sm text-slate-700 shadow-sm focus:border-teal-500 focus:ring-1 focus:ring-teal-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
         data-testid="lookback-select"
       >
         {LOOKBACK_OPTIONS.map((opt) => (

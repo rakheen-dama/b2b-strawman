@@ -45,10 +45,7 @@ describe("Inbox Assistant attribution tag", () => {
 
   it("renders sparkle pill when attribution is 'Inbox Assistant'", () => {
     render(
-      <CommentItem
-        comment={makeComment({ attribution: "Inbox Assistant" })}
-        {...baseProps}
-      />
+      <CommentItem comment={makeComment({ attribution: "Inbox Assistant" })} {...baseProps} />
     );
 
     const tag = screen.getByTestId("inbox-assistant-tag");
@@ -57,20 +54,13 @@ describe("Inbox Assistant attribution tag", () => {
   });
 
   it("does not render sparkle pill when attribution is null", () => {
-    render(
-      <CommentItem
-        comment={makeComment({ attribution: null })}
-        {...baseProps}
-      />
-    );
+    render(<CommentItem comment={makeComment({ attribution: null })} {...baseProps} />);
 
     expect(screen.queryByTestId("inbox-assistant-tag")).toBeNull();
   });
 
   it("does not render sparkle pill when attribution is absent", () => {
-    render(
-      <CommentItem comment={makeComment()} {...baseProps} />
-    );
+    render(<CommentItem comment={makeComment()} {...baseProps} />);
 
     expect(screen.queryByTestId("inbox-assistant-tag")).toBeNull();
   });

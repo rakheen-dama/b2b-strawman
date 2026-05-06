@@ -66,6 +66,9 @@ public class AutomationRule {
   @Column(name = "content_hash", length = 64)
   private String contentHash;
 
+  @Column(name = "last_run_at")
+  private Instant lastRunAt;
+
   protected AutomationRule() {}
 
   public AutomationRule(
@@ -171,5 +174,13 @@ public class AutomationRule {
 
   public void setContentHash(String contentHash) {
     this.contentHash = contentHash;
+  }
+
+  public Instant getLastRunAt() {
+    return lastRunAt;
+  }
+
+  public void setLastRunAt(Instant lastRunAt) {
+    this.lastRunAt = lastRunAt;
   }
 }

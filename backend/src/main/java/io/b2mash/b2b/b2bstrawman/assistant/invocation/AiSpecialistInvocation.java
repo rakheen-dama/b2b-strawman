@@ -157,6 +157,15 @@ public class AiSpecialistInvocation {
     this.status = InvocationStatus.EXPIRED;
   }
 
+  /**
+   * Nulls the proposed and applied output JSONB for retention-aged rows (POPIA §14 alignment).
+   * Status is preserved as audit shadow.
+   */
+  public void nullOutputsForRetention() {
+    this.proposedOutput = null;
+    this.appliedOutput = null;
+  }
+
   /** FAILED → RUNNING reset for 515C re-enqueue. Clears the previous error message. */
   public void resetToRunning() {
     if (this.status != InvocationStatus.FAILED) {

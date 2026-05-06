@@ -148,6 +148,22 @@ public class AutomationEventListener {
     }
   }
 
+  /**
+   * Fires a rule by creating an execution record and executing its actions. Used by the scheduler
+   * for SCHEDULED trigger rules.
+   */
+  public void fireRule(AutomationRule rule, Map<String, Map<String, Object>> context) {
+    var execution =
+        new AutomationExecution(
+            rule.getId(),
+            "ScheduledTrigger",
+            Map.of("scheduled", true),
+            true,
+            ExecutionStatus.TRIGGERED);
+    executionRepository.save(execution);
+    executeActions(rule, execution, context);
+  }
+
   private void executeActions(
       AutomationRule rule,
       AutomationExecution execution,

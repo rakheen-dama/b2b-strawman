@@ -106,6 +106,13 @@ public class AiSpecialistInvocationService {
   }
 
   @Transactional
+  public void markFailed(UUID invocationId, String errorMessage) {
+    var inv = loadOrThrow(invocationId);
+    inv.markFailed(errorMessage);
+    repository.save(inv);
+  }
+
+  @Transactional
   public ApproveResult approve(UUID id, OutputPayload edited) {
     capabilityAuthorizationService.requireCapability(CAP_AI);
     var inv = loadOrThrow(id);

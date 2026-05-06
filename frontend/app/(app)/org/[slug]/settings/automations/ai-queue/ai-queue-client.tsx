@@ -2,13 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Table,
-  TableBody,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -157,19 +151,16 @@ export function AiQueueClient({ slug, initialData, initialFilter }: AiQueueClien
     });
   }, []);
 
-  const handleRowClick = useCallback(
-    async (id: string) => {
-      // Fetch detail for the drawer using authenticated client
-      try {
-        const detail = await getInvocationClient(id);
-        setDrawerInvocation(detail as InvocationDetail);
-        setDrawerOpen(true);
-      } catch {
-        // Silently fail — drawer stays closed
-      }
-    },
-    []
-  );
+  const handleRowClick = useCallback(async (id: string) => {
+    // Fetch detail for the drawer using authenticated client
+    try {
+      const detail = await getInvocationClient(id);
+      setDrawerInvocation(detail as InvocationDetail);
+      setDrawerOpen(true);
+    } catch {
+      // Silently fail — drawer stays closed
+    }
+  }, []);
 
   const handleActionComplete = useCallback(() => {
     // Refresh the page data
@@ -193,10 +184,7 @@ export function AiQueueClient({ slug, initialData, initialFilter }: AiQueueClien
       <div className="flex flex-wrap items-end gap-3" data-testid="queue-filters">
         <div className="space-y-1">
           <Label className="text-xs">{AI_QUEUE_STRINGS.filter.status}</Label>
-          <Select
-            value={initialFilter.status ?? "__all__"}
-            onValueChange={handleStatusChange}
-          >
+          <Select value={initialFilter.status ?? "__all__"} onValueChange={handleStatusChange}>
             <SelectTrigger className="w-40">
               <SelectValue />
             </SelectTrigger>

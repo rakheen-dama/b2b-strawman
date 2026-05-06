@@ -73,11 +73,7 @@ export function BulkApproveBar({
         {selectedIds.length} selected
       </span>
 
-      <Button
-        size="sm"
-        disabled={!canApprove}
-        onClick={handleBulkApprove}
-      >
+      <Button size="sm" disabled={!canApprove} onClick={handleBulkApprove}>
         <Check className="mr-1 size-4" />
         {AI_QUEUE_STRINGS.bulkApprove.cta(selectedIds.length)}
       </Button>

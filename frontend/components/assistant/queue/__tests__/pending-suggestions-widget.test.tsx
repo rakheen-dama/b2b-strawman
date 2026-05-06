@@ -60,14 +60,21 @@ const EMPTY_RESPONSE = {
 describe("PendingSuggestionsWidget", () => {
   beforeEach(() => {
     mockListInvocations.mockResolvedValue(PENDING_ITEMS);
-    mockApprove.mockResolvedValue({ id: "inv-100", status: "APPROVED", appliedAt: "2026-04-19T08:00:00Z" });
+    mockApprove.mockResolvedValue({
+      id: "inv-100",
+      status: "APPROVED",
+      appliedAt: "2026-04-19T08:00:00Z",
+    });
     mockReject.mockResolvedValue(undefined);
   });
 
   it("renders nothing when no pending invocations", async () => {
     mockListInvocations.mockResolvedValue(EMPTY_RESPONSE);
 
-    const { container } = renderWidget({ contextEntityType: "invoice", contextEntityId: "inv-entity-001" });
+    const { container } = renderWidget({
+      contextEntityType: "invoice",
+      contextEntityId: "inv-entity-001",
+    });
 
     await waitFor(() => {
       expect(container.querySelector("[data-testid='pending-suggestions-widget']")).toBeNull();

@@ -5,12 +5,7 @@ import { X, Check, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { AI_QUEUE_STRINGS } from "@/lib/constants/ai-queue-strings";
 import {
   approveInvocation,
@@ -108,7 +103,9 @@ export function InvocationDrawer({
           {/* Metadata */}
           <div className="grid grid-cols-2 gap-2 text-sm">
             <span className="text-slate-500">Context</span>
-            <span className="capitalize">{invocation.contextEntityType} / {invocation.contextEntityId.slice(0, 8)}...</span>
+            <span className="capitalize">
+              {invocation.contextEntityType} / {invocation.contextEntityId.slice(0, 8)}...
+            </span>
             <span className="text-slate-500">Source</span>
             <span className="capitalize">{invocation.invokedBy.toLowerCase()}</span>
             <span className="text-slate-500">Created</span>
@@ -142,12 +139,7 @@ export function InvocationDrawer({
 
           {isPending && (
             <div className="flex items-center gap-2 border-t pt-4">
-              <Button
-                variant="default"
-                size="sm"
-                disabled={inFlight}
-                onClick={handleApprove}
-              >
+              <Button variant="default" size="sm" disabled={inFlight} onClick={handleApprove}>
                 <Check className="mr-1 size-4" />
                 {AI_QUEUE_STRINGS.drawer.approve}
               </Button>
@@ -209,8 +201,17 @@ function renderDiffViewer(invocation: InvocationDetail) {
         invocationId={invocation.id}
         kind={kind}
         invoiceId={(output.invoiceId as string) ?? ""}
-        edits={(output.edits as Array<{ timeEntryId: string; beforeText: string; afterText: string }>) ?? []}
-        groups={(output.groups as Array<{ description: string; hours: number; sourceTimeEntryIds: string[] }>) ?? []}
+        edits={
+          (output.edits as Array<{ timeEntryId: string; beforeText: string; afterText: string }>) ??
+          []
+        }
+        groups={
+          (output.groups as Array<{
+            description: string;
+            hours: number;
+            sourceTimeEntryIds: string[];
+          }>) ?? []
+        }
       />
     );
   }
@@ -230,10 +231,5 @@ function renderDiffViewer(invocation: InvocationDetail) {
   }
 
   // Inbox or unknown — show preview
-  return (
-    <InboxSummaryPreview
-      invocationId={invocation.id}
-      proposedOutput={output}
-    />
-  );
+  return <InboxSummaryPreview invocationId={invocation.id} proposedOutput={output} />;
 }

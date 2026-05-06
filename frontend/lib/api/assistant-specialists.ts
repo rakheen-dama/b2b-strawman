@@ -259,7 +259,9 @@ export interface InvocationPageClient {
   };
 }
 
-export async function listInvocationsClient(params: Record<string, string>): Promise<InvocationPageClient> {
+export async function listInvocationsClient(
+  params: Record<string, string>
+): Promise<InvocationPageClient> {
   const qs = new URLSearchParams(params).toString();
   const res = await fetch(`${API_BASE}/api/assistant/invocations${qs ? `?${qs}` : ""}`, {
     method: "GET",
@@ -290,14 +292,11 @@ export interface InvocationDetailClient {
 }
 
 export async function getInvocationClient(id: string): Promise<InvocationDetailClient> {
-  const res = await fetch(
-    `${API_BASE}/api/assistant/invocations/${encodeURIComponent(id)}`,
-    {
-      method: "GET",
-      headers: getAuthHeaders(),
-      credentials: credentialsMode(),
-    }
-  );
+  const res = await fetch(`${API_BASE}/api/assistant/invocations/${encodeURIComponent(id)}`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+    credentials: credentialsMode(),
+  });
   return handleJson<InvocationDetailClient>(res);
 }
 

@@ -33,9 +33,8 @@ type SearchParams = {
 
 function parseFilter(sp: SearchParams): InvocationFilter {
   const requestedPage = Math.max(0, parseInt(sp.page ?? "0", 10) || 0);
-  const status = sp.status && VALID_STATUSES.has(sp.status)
-    ? (sp.status as InvocationStatus)
-    : undefined;
+  const status =
+    sp.status && VALID_STATUSES.has(sp.status) ? (sp.status as InvocationStatus) : undefined;
 
   return {
     page: requestedPage,
@@ -96,18 +95,12 @@ export default async function AiQueuePage({
     <div className="space-y-8">
       {backLink}
       <div>
-        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">
-          AI Review Queue
-        </h1>
+        <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">AI Review Queue</h1>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
           Review and approve AI specialist suggestions before they are applied.
         </p>
       </div>
-      <AiQueueClient
-        slug={slug}
-        initialData={invocations}
-        initialFilter={filter}
-      />
+      <AiQueueClient slug={slug} initialData={invocations} initialFilter={filter} />
     </div>
   );
 }

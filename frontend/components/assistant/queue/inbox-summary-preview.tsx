@@ -22,12 +22,12 @@ export function InboxSummaryPreview({ proposedOutput }: InboxSummaryPreviewProps
       </CardHeader>
       <CardContent className="space-y-3">
         {summary && (
-          <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-wrap">
+          <p className="text-sm whitespace-pre-wrap text-slate-700 dark:text-slate-300">
             {summary}
           </p>
         )}
         {highlights.length > 0 && (
-          <ul className="list-disc pl-4 space-y-1">
+          <ul className="list-disc space-y-1 pl-4">
             {highlights.map((h, i) => (
               <li key={i} className="text-sm text-slate-600 dark:text-slate-400">
                 {h}
@@ -36,7 +36,7 @@ export function InboxSummaryPreview({ proposedOutput }: InboxSummaryPreviewProps
           </ul>
         )}
         {!summary && highlights.length === 0 && (
-          <pre className="text-xs text-slate-500 overflow-auto max-h-48 rounded bg-slate-50 p-2 dark:bg-slate-800">
+          <pre className="max-h-48 overflow-auto rounded bg-slate-50 p-2 text-xs text-slate-500 dark:bg-slate-800">
             {JSON.stringify(proposedOutput, null, 2)}
           </pre>
         )}

@@ -20,7 +20,10 @@ export interface QueueRowProps {
   onClick: (id: string) => void;
 }
 
-const STATUS_VARIANT: Record<string, "default" | "success" | "warning" | "destructive" | "outline"> = {
+const STATUS_VARIANT: Record<
+  string,
+  "default" | "success" | "warning" | "destructive" | "outline"
+> = {
   RUNNING: "default",
   PENDING_APPROVAL: "warning",
   APPROVED: "success",
@@ -65,10 +68,8 @@ export function QueueRow({
       </TableCell>
       <TableCell className="font-medium">{specialistLabel}</TableCell>
       <TableCell className="capitalize">{contextEntityType}</TableCell>
-      <TableCell className="text-sm text-slate-500">
-        {contextEntityId.slice(0, 8)}...
-      </TableCell>
-      <TableCell className="text-sm capitalize text-slate-500">{invokedBy.toLowerCase()}</TableCell>
+      <TableCell className="text-sm text-slate-500">{contextEntityId.slice(0, 8)}...</TableCell>
+      <TableCell className="text-sm text-slate-500 capitalize">{invokedBy.toLowerCase()}</TableCell>
       <TableCell className="text-sm text-slate-500">
         {new Date(createdAt).toLocaleString()}
       </TableCell>

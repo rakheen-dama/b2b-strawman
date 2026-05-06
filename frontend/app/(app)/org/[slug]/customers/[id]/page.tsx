@@ -530,6 +530,13 @@ export default async function CustomerDetailPage({
 
         {isAdmin && (
           <div id="lifecycle-transition" className="flex shrink-0 gap-2">
+            <SpecialistLauncherButton
+              specialistId="INBOX"
+              surface="CUSTOMER_DETAIL"
+              contextRef={{ entityType: "customer", entityId: id }}
+              initialPrompt="Summarise recent customer activity."
+              ctaLabel={SPECIALIST_STRINGS.inboxCustomerSummariseLabel}
+            />
             {activationBlockers.length > 0 && (
               <SpecialistLauncherButton
                 specialistId="INTAKE"

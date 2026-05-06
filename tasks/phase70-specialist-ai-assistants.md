@@ -28,7 +28,7 @@ Three strategic constraints bound the phase. (1) **No `PlanTier`.** The product 
 | 511 | Specialist Framework + Inline Launcher Infrastructure | Both | Phase 52, Phase 41/46 | M | 511A, 511B | **Done** (PRs #1290, #1291) |
 | 512 | Billing Assistant (Polish + Grouping) | Both | 511A, 515A | M | 512A, 512B | **Done** (PRs #1294, #1295) |
 | 513 | Intake Assistant + Vision Fallback | Both | 511A, 515A | L | 513A, 513B | **Done** (PRs #1296, #1297) |
-| 514 | Inbox Assistant + Activity Window | Both | 511A, 515A | M | 514A, 514B | 514A **Done** (PR #1298) |
+| 514 | Inbox Assistant + Activity Window | Both | 511A, 515A | M | 514A, 514B | **Done** (PRs #1298, #1299) |
 | 515 | Automation Hook + Invocation Entity + Review Queue | Both | Phase 37 | L | 515A, 515B, 515C | |
 | 516 | QA Capstone — SA Admin POV 30-Day Script | E2E / Process | 511–515 | L | 516A, 516B | |
 
@@ -174,7 +174,7 @@ PHASES already complete:
 |-------|-------|---------|-----------------------|
 | 3a | **512B** | Launcher button on invoice-draft toolbar (`INVOICE_DRAFT_TOOLBAR` surface, DRAFT-status only) + Unbilled-Time → Generate-Invoice dialog (`UNBILLED_TIME_DIALOG` surface) + `<BillingDiff>` per-row before/after review UI with per-row accept/reject/edit. **Done** (PR #1295) | 513B, 514B |
 | 3b | **513B** | Launcher button on customer-create dialog (`CUSTOMER_CREATE_DIALOG`) + info-request review (`INFO_REQUEST_REVIEW`) + customer prereq prompt (`CUSTOMER_DETAIL_PREREQ`) + `<IntakeFieldDiff>` per-field current-vs-proposed with VISION/TEXT badge + POPIA §26 flag pill. **Done** (PR #1297) | 512B, 514B |
-| 3c | **514B** | Launcher on matter Activity tab (`MATTER_ACTIVITY_TAB`) + customer detail (`CUSTOMER_DETAIL`) + lookback-window picker (default P7D) + "Posted by Inbox Assistant" tag rendering inside the existing comment list component. | 512B, 513B |
+| 3c | **514B** | Launcher on matter Activity tab (`MATTER_ACTIVITY_TAB`) + customer detail (`CUSTOMER_DETAIL`) + lookback-window picker (default P7D) + "Posted by Inbox Assistant" tag rendering inside the existing comment list component. **Done** (PR #1299) | 512B, 513B |
 
 ### Stage 4 — Queue UI + templates
 
@@ -475,7 +475,7 @@ A realistic day-by-day cadence: 511A days 1–4; 515A days 4–7; 511B + 512A + 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **514A** | 514A.1–514A.6 | ~7 backend files (2 tool classes + prompt + payload + applier + integration tests) | Backend Inbox specialist: full `inbox-za.md`; two new tools (`GetMatterActivityWindow` with vertical-conditional Phase 60 trust sources, `PostInboxSummary` with REVIEW/DIRECT discrimination); `InboxSummaryPayload`; `dedupeKey = sha256(specialistId|contextEntityId|truncate(createdAt, hour))` for DIRECT-mode replay protection; applier delegating to `CommentService.create` with "Posted by Inbox Assistant" tag; DIRECT-mode validation guard (only legal for `INBOX` + `InboxSummaryPayload` per [ADR-267](../adr/ADR-267-human-approval-default-direct-mode-exception.md)); 4 backend integration tests per requirements §4.6. **Done** (PR #1298) |
-| **514B** | 514B.1–514B.4 | ~5 frontend files (2 launcher placements + lookback picker + comment-tag rendering + component test) | Launcher on matter Activity tab + customer detail; lookback-window picker (default P7D, options P1D / P7D / P30D / P90D); "Posted by Inbox Assistant" tag rendering inside the existing comment list; 2 frontend tests per requirements §4.6. |
+| **514B** | 514B.1–514B.4 | ~5 frontend files (2 launcher placements + lookback picker + comment-tag rendering + component test) | Launcher on matter Activity tab + customer detail; lookback-window picker (default P7D, options P1D / P7D / P30D / P90D); "Posted by Inbox Assistant" tag rendering inside the existing comment list; 2 frontend tests per requirements §4.6. **Done** (PR #1299) |
 
 ### Tasks
 

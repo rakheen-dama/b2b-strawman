@@ -72,9 +72,9 @@ public class InvokeAiSpecialistActionExecutor implements ActionExecutor {
             "Specialist '" + specialist.id() + "' is not automation-capable", null);
       }
 
-      // DIRECT-mode validation guard (ADR-267): only inbox specialist allowed
+      // DIRECT-mode validation guard (ADR-267): only the inbox-za specialist allowed
       String mode = aiConfig.mode() != null ? aiConfig.mode().toUpperCase() : "REVIEW";
-      if ("DIRECT".equals(mode) && !specialist.id().startsWith("inbox")) {
+      if ("DIRECT".equals(mode) && !"inbox-za".equals(specialist.id())) {
         return new ActionFailure(
             "DIRECT mode is only permitted for INBOX specialist (ADR-267)", specialist.id());
       }
@@ -136,6 +136,16 @@ public class InvokeAiSpecialistActionExecutor implements ActionExecutor {
       UUID contextEntityId,
       Map<String, Map<String, Object>> context) {
 
+    // Reject if context cannot be resolved — don't fabricate entity references
+    if (contextEntityType == null || contextEntityId == null) {
+      return new ActionFailure(
+          "Cannot resolve context: entityType="
+              + contextEntityType
+              + ", entityId="
+              + contextEntityId,
+          null);
+    }
+
     // Record RUNNING invocation (actionExecutionId is null — the FK references action_executions,
     // not automation_executions, and we don't have the action execution ID from within the
     // executor)
@@ -145,14 +155,20 @@ public class InvokeAiSpecialistActionExecutor implements ActionExecutor {
             InvocationSource.AUTOMATION,
             actorId,
             null,
-            contextEntityType != null ? contextEntityType : "unknown",
-            contextEntityId != null ? contextEntityId : UUID.randomUUID(),
+            contextEntityType,
+            contextEntityId,
             runner.promptVersion(specialistId));
 
     try {
-      // Run specialist non-interactively
+      // Run specialist non-interactively, passing real invocation ID for telemetry
       OutputPayload output =
-          runner.run(specialistId, contextEntityType, contextEntityId, actorId, context);
+          runner.run(
+              specialistId,
+              contextEntityType,
+              contextEntityId,
+              actorId,
+              invocation.getId(),
+              context);
 
       // Record proposal and mark pending approval
       invocationService.recordProposal(invocation.getId(), output);
@@ -185,21 +201,40 @@ public class InvokeAiSpecialistActionExecutor implements ActionExecutor {
       UUID contextEntityId,
       Map<String, Map<String, Object>> context) {
 
-    try {
-      // Run specialist non-interactively
-      OutputPayload output =
-          runner.run(specialistId, contextEntityType, contextEntityId, actorId, context);
+    // Reject if context cannot be resolved — don't fabricate entity references
+    if (contextEntityType == null || contextEntityId == null) {
+      return new ActionFailure(
+          "Cannot resolve context: entityType="
+              + contextEntityType
+              + ", entityId="
+              + contextEntityId,
+          null);
+    }
 
-      // Atomically record + auto-apply
-      var invocation =
-          invocationService.recordAndAutoApply(
+    // Record RUNNING first so the runner gets a real invocation ID for telemetry
+    var invocation =
+        invocationService.recordRunning(
+            specialistId,
+            InvocationSource.AUTOMATION,
+            actorId,
+            null,
+            contextEntityType,
+            contextEntityId,
+            runner.promptVersion(specialistId));
+
+    try {
+      // Run specialist non-interactively, passing real invocation ID for telemetry
+      OutputPayload output =
+          runner.run(
               specialistId,
-              InvocationSource.AUTOMATION,
+              contextEntityType,
+              contextEntityId,
               actorId,
-              contextEntityType != null ? contextEntityType : "unknown",
-              contextEntityId != null ? contextEntityId : UUID.randomUUID(),
-              runner.promptVersion(specialistId),
-              output);
+              invocation.getId(),
+              context);
+
+      // Auto-apply the output and mark the invocation
+      invocationService.autoApply(invocation.getId(), output);
 
       emitAuditEvent(specialistId, contextEntityType, contextEntityId, invocation.getId());
 
@@ -210,6 +245,7 @@ public class InvokeAiSpecialistActionExecutor implements ActionExecutor {
       return new ActionSuccess(Map.of("invocationId", invocation.getId().toString()));
     } catch (Exception e) {
       log.error("AI specialist {} DIRECT invocation failed: {}", specialistId, e.getMessage(), e);
+      invocationService.markFailed(invocation.getId(), e.getMessage());
       return new ActionFailure(
           "AI specialist DIRECT invocation failed: " + e.getMessage(), e.toString());
     }

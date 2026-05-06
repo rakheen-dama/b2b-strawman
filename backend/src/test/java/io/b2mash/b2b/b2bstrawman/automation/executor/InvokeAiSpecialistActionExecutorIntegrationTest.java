@@ -95,7 +95,12 @@ class InvokeAiSpecialistActionExecutorIntegrationTest {
             null);
     Mockito.when(
             runner.run(
-                Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+                Mockito.anyString(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any()))
         .thenReturn(payload);
     Mockito.when(runner.promptVersion(Mockito.anyString())).thenReturn("v1.0");
 
@@ -176,7 +181,12 @@ class InvokeAiSpecialistActionExecutorIntegrationTest {
             UUID.randomUUID(), "2026-01-01T00:00:00Z", "2026-01-02T00:00:00Z", "Summary", null);
     Mockito.when(
             runner.run(
-                Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+                Mockito.anyString(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any()))
         .thenReturn(payload);
     Mockito.when(runner.promptVersion(Mockito.anyString())).thenReturn("v1.0");
 
@@ -210,7 +220,12 @@ class InvokeAiSpecialistActionExecutorIntegrationTest {
   void failureHandling_marksInvocationFailed() {
     Mockito.when(
             runner.run(
-                Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+                Mockito.anyString(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any()))
         .thenThrow(new IllegalStateException("LLM error"));
     Mockito.when(runner.promptVersion(Mockito.anyString())).thenReturn("v1.0");
 
@@ -246,7 +261,12 @@ class InvokeAiSpecialistActionExecutorIntegrationTest {
             null);
     Mockito.when(
             runner.run(
-                Mockito.anyString(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any()))
+                Mockito.anyString(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any(),
+                Mockito.any()))
         .thenReturn(payload);
     Mockito.when(runner.promptVersion(Mockito.anyString())).thenReturn("v1.0");
     fakeInboxApplier.reset();

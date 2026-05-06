@@ -266,6 +266,20 @@ public class AiSpecialistInvocationService {
     return repository.save(inv);
   }
 
+  /**
+   * Applies an output payload to an existing RUNNING invocation and marks it AUTO_APPLIED. Used by
+   * DIRECT-mode automation where the invocation is recorded before the specialist runs (so that the
+   * runner has a real invocation ID for LLM call telemetry).
+   */
+  @Transactional
+  public void autoApply(UUID invocationId, OutputPayload payload) {
+    var inv = loadOrThrow(invocationId);
+    var applier = outputApplierRegistry.forPayload(payload);
+    applier.apply(payload, inv.getActorId());
+    inv.markAutoApplied(payload);
+    repository.save(inv);
+  }
+
   // ------------------------- read entry points -------------------------
 
   @Transactional(readOnly = true)

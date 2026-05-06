@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.automation;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import java.time.Instant;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,33 +89,58 @@ public class AutomationScheduler {
   }
 
   private int processScheduledTenant() {
-    Integer count =
-        transactionTemplate.execute(
-            tx -> {
-              var rules = ruleRepository.findByEnabledAndTriggerType(true, TriggerType.SCHEDULED);
-              if (rules.isEmpty()) return 0;
+    // Phase 1: short transaction to evaluate which rules should fire and update lastRunAt.
+    // This prevents holding a long-running transaction open during LLM execution.
+    record DueRule(AutomationRule rule, Instant now) {}
+    List<DueRule> dueRules;
+    {
+      var result =
+          transactionTemplate.execute(
+              tx -> {
+                var rules = ruleRepository.findByEnabledAndTriggerType(true, TriggerType.SCHEDULED);
+                if (rules.isEmpty()) return List.<DueRule>of();
 
-              Instant now = Instant.now();
-              int fired = 0;
+                Instant now = Instant.now();
+                var due = new java.util.ArrayList<DueRule>();
 
-              for (var rule : rules) {
-                try {
-                  if (shouldFire(rule, now)) {
-                    fireScheduledRule(rule, now);
-                    fired++;
+                for (var rule : rules) {
+                  try {
+                    if (shouldFire(rule, now)) {
+                      // Update lastRunAt inside the short tx to prevent re-firing
+                      rule.setLastRunAt(now);
+                      ruleRepository.save(rule);
+                      due.add(new DueRule(rule, now));
+                    }
+                  } catch (Exception e) {
+                    log.error(
+                        "Failed to evaluate scheduled rule {} ({}): {}",
+                        rule.getId(),
+                        rule.getName(),
+                        e.getMessage(),
+                        e);
                   }
-                } catch (Exception e) {
-                  log.error(
-                      "Failed to evaluate/fire scheduled rule {} ({}): {}",
-                      rule.getId(),
-                      rule.getName(),
-                      e.getMessage(),
-                      e);
                 }
-              }
-              return fired;
-            });
-    return count != null ? count : 0;
+                return due;
+              });
+      dueRules = result != null ? result : List.of();
+    }
+
+    // Phase 2: execute each due rule outside the transaction (LLM calls may be long-running)
+    int fired = 0;
+    for (var due : dueRules) {
+      try {
+        fireScheduledRule(due.rule(), due.now());
+        fired++;
+      } catch (Exception e) {
+        log.error(
+            "Failed to fire scheduled rule {} ({}): {}",
+            due.rule().getId(),
+            due.rule().getName(),
+            e.getMessage(),
+            e);
+      }
+    }
+    return fired;
   }
 
   private boolean shouldFire(AutomationRule rule, Instant now) {
@@ -128,6 +154,9 @@ public class AutomationScheduler {
     try {
       var cron = CronExpression.parse(cronExpr);
       Instant baseTime = rule.getLastRunAt() != null ? rule.getLastRunAt() : rule.getCreatedAt();
+      // Deliberate UTC-only cron evaluation: all cron expressions are stored and evaluated in UTC.
+      // Per-tenant timezone support is deferred (ADR-271). If added later, the ZoneId should come
+      // from the tenant's configured timezone and be applied here instead of ZoneOffset.UTC.
       var next = cron.next(baseTime.atZone(java.time.ZoneOffset.UTC).toLocalDateTime());
       if (next == null) return false;
       Instant nextFire = next.toInstant(java.time.ZoneOffset.UTC);
@@ -153,11 +182,10 @@ public class AutomationScheduler {
             "name", rule.getName(),
             "createdBy", rule.getCreatedBy().toString()));
 
+    // lastRunAt was already updated in the short decision-transaction (processScheduledTenant
+    // phase 1) to prevent re-firing. The actual execution happens outside any transaction so
+    // that long-running LLM calls do not hold the connection open.
     automationEventListener.fireRule(rule, context);
-
-    // Update lastRunAt atomically
-    rule.setLastRunAt(now);
-    ruleRepository.save(rule);
 
     log.info("Fired scheduled rule {} ({}) at {}", rule.getId(), rule.getName(), now);
   }

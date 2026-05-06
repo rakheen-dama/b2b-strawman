@@ -14,7 +14,6 @@ import io.b2mash.b2b.b2bstrawman.assistant.tool.TenantToolContext;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationGuardService;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationKeys;
-import io.b2mash.b2b.b2bstrawman.integration.OrgIntegration;
 import io.b2mash.b2b.b2bstrawman.integration.OrgIntegrationRepository;
 import io.b2mash.b2b.b2bstrawman.integration.secret.SecretStore;
 import java.util.ArrayList;
@@ -81,6 +80,7 @@ public class NonInteractiveSpecialistRunner {
    * @param contextEntityType the context entity type (e.g. "project")
    * @param contextEntityId the context entity UUID
    * @param actorId the synthetic actor for this automation run
+   * @param invocationId the real invocation ID for LLM call telemetry tracking
    * @param context the automation context for variable resolution
    * @return the OutputPayload proposed by the specialist's tool calls
    * @throws IllegalStateException if the specialist produces no actionable output
@@ -90,6 +90,7 @@ public class NonInteractiveSpecialistRunner {
       String contextEntityType,
       UUID contextEntityId,
       UUID actorId,
+      UUID invocationId,
       Map<String, Map<String, Object>> context) {
 
     integrationGuardService.requireEnabled(IntegrationDomain.AI);
@@ -98,13 +99,16 @@ public class NonInteractiveSpecialistRunner {
 
     // Resolve LLM provider + API key
     var integration = orgIntegrationRepository.findByDomain(IntegrationDomain.AI);
-    var providerSlug = integration.map(OrgIntegration::getProviderSlug).orElse("noop");
+    var resolvedIntegration =
+        integration.orElseThrow(
+            () -> new IllegalStateException("No AI integration configured for this organization"));
+    var providerSlug = resolvedIntegration.getProviderSlug();
     if ("noop".equals(providerSlug)) {
       throw new IllegalStateException("No AI provider configured for this organization");
     }
     var secretKey = IntegrationKeys.aiApiKey(providerSlug);
     String apiKey = secretStore.retrieve(secretKey);
-    String model = parseModel(integration.get().getConfigJson());
+    String model = parseModel(resolvedIntegration.getConfigJson());
     var provider = providerRegistry.get(providerSlug);
 
     // Build tool definitions — use all capabilities for automation
@@ -132,7 +136,6 @@ public class NonInteractiveSpecialistRunner {
     // Multi-turn tool loop bounded by specialist.maxToolIterations
     int maxIterations = specialist.maxToolIterations();
     AtomicReference<OutputPayload> proposedOutput = new AtomicReference<>();
-    UUID invocationId = UUID.randomUUID(); // Used for LLM call tracking
 
     for (int turn = 0; turn < maxIterations; turn++) {
       var request = new ChatRequest(apiKey, model, systemPrompt, List.copyOf(messages), toolDefs);

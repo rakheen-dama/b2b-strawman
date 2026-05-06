@@ -66,6 +66,9 @@ public final class AutomationContext {
       case PROPOSAL_SENT -> buildProposalSent((ProposalSentEvent) event, context);
       case FIELD_DATE_APPROACHING ->
           buildFieldDateApproaching((FieldDateApproachingEvent) event, context);
+      case SCHEDULED -> {
+        // Scheduled triggers use a generic event context
+      }
     }
 
     return context;

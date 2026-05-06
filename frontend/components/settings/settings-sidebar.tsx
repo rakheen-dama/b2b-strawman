@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import Link from "next/link";
+import useSWR from "swr";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { useOrgProfile } from "@/lib/org-profile";
@@ -24,6 +25,25 @@ function translateNavLabel(label: string, t: (term: string) => string): string {
     }
   }
   return t(label);
+}
+
+function PendingCountBadge({ endpoint }: { endpoint: string }) {
+  const { data } = useSWR(
+    endpoint,
+    async (url: string) => {
+      const res = await fetch(url, { credentials: "include" });
+      if (!res.ok) return null;
+      const json = await res.json();
+      return json?.page?.totalElements ?? 0;
+    },
+    { refreshInterval: 30000 }
+  );
+  if (!data || data <= 0) return null;
+  return (
+    <Badge variant="warning" className="ml-auto px-1.5 py-0 text-[10px]">
+      {data > 99 ? "99+" : data}
+    </Badge>
+  );
 }
 
 interface SettingsSidebarProps {
@@ -118,6 +138,9 @@ export function SettingsSidebar({ slug, isAdmin }: SettingsSidebarProps) {
                     )}
                   >
                     {translateNavLabel(item.label, t)}
+                    {item.pendingCountEndpoint && (
+                      <PendingCountBadge endpoint={item.pendingCountEndpoint} />
+                    )}
                   </Link>
                 );
               })}

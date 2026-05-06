@@ -60,6 +60,7 @@ import { CreateProposalDialog } from "@/components/proposals/create-proposal-dia
 import { ProjectCommentsSection } from "@/components/projects/project-comments-section";
 import { LookbackPicker } from "@/components/assistant/specialists/lookback-picker";
 import { SPECIALIST_STRINGS } from "@/components/assistant/specialist-strings";
+import { PendingSuggestionsWidget } from "@/components/assistant/queue/pending-suggestions-widget";
 import { ExpenseList } from "@/components/expenses/expense-list";
 import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";
 import {
@@ -952,6 +953,9 @@ export default async function ProjectDetailPage({
         }
         auditPanel={<ProjectAuditTab projectId={id} />}
       />
+
+      {/* Pending AI Suggestions */}
+      <PendingSuggestionsWidget contextEntityType="project" contextEntityId={id} />
 
       {/* Epic 508B: Closure history (only on CLOSED matters). Per-row audit
           timelines surface the matter.closure.override_used event from 508A. */}

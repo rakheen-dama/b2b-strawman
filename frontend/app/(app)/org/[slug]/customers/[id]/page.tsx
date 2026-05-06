@@ -83,6 +83,7 @@ import { CreateRequestDialog } from "@/components/information-requests/create-re
 import { fetchRetainers, fetchPeriods } from "@/lib/api/retainers";
 import type { RetainerResponse, PeriodSummary } from "@/lib/api/retainers";
 import { CustomerRetainerTab } from "@/components/customers/customer-retainer-tab";
+import { PendingSuggestionsWidget } from "@/components/assistant/queue/pending-suggestions-widget";
 import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { checkPrerequisites } from "@/lib/prerequisites";
 import type { PrerequisiteCheck } from "@/components/prerequisite/types";
@@ -917,6 +918,9 @@ export default async function CustomerDetailPage({
           ) : undefined
         }
       />
+
+      {/* Pending AI Suggestions */}
+      <PendingSuggestionsWidget contextEntityType="customer" contextEntityId={id} />
     </div>
   );
 }

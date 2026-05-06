@@ -206,3 +206,65 @@ export async function rejectInvocation(invocationId: string, rejectReason: strin
     throw new SpecialistApiError(res.status, body);
   }
 }
+
+export async function retryInvocation(invocationId: string): Promise<void> {
+  const res = await fetch(
+    `${API_BASE}/api/assistant/invocations/${encodeURIComponent(invocationId)}/retry`,
+    {
+      method: "POST",
+      headers: getAuthHeaders(),
+      credentials: credentialsMode(),
+    }
+  );
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new SpecialistApiError(res.status, body);
+  }
+}
+
+export interface BulkApproveResult {
+  approved: string[];
+  failed: { id: string; reason: string }[];
+}
+
+export async function bulkApproveInvocations(ids: string[]): Promise<BulkApproveResult> {
+  const res = await fetch(`${API_BASE}/api/assistant/invocations/bulk-approve`, {
+    method: "POST",
+    headers: getAuthHeaders(),
+    credentials: credentialsMode(),
+    body: JSON.stringify({ ids }),
+  });
+  return handleJson<BulkApproveResult>(res);
+}
+
+export interface InvocationListItemClient {
+  id: string;
+  specialistId: string;
+  invokedBy: string;
+  status: string;
+  contextEntityType: string;
+  contextEntityId: string;
+  createdAt: string;
+  proposedOutputSummary: string | null;
+  automationActionExecutionId: string | null;
+}
+
+export interface InvocationPageClient {
+  content: InvocationListItemClient[];
+  page: {
+    totalElements: number;
+    totalPages: number;
+    size: number;
+    number: number;
+  };
+}
+
+export async function listInvocationsClient(params: Record<string, string>): Promise<InvocationPageClient> {
+  const qs = new URLSearchParams(params).toString();
+  const res = await fetch(`${API_BASE}/api/assistant/invocations${qs ? `?${qs}` : ""}`, {
+    method: "GET",
+    headers: getAuthHeaders(),
+    credentials: credentialsMode(),
+  });
+  return handleJson<InvocationPageClient>(res);
+}

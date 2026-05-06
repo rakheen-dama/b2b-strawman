@@ -23,7 +23,8 @@ export type TriggerType =
   | "DOCUMENT_ACCEPTED"
   | "INFORMATION_REQUEST_COMPLETED"
   | "PROPOSAL_SENT"
-  | "FIELD_DATE_APPROACHING";
+  | "FIELD_DATE_APPROACHING"
+  | "SCHEDULED";
 
 export type ExecutionStatus =
   | "TRIGGERED"
@@ -37,7 +38,8 @@ export type ActionType =
   | "SEND_EMAIL"
   | "UPDATE_STATUS"
   | "CREATE_PROJECT"
-  | "ASSIGN_MEMBER";
+  | "ASSIGN_MEMBER"
+  | "INVOKE_AI_SPECIALIST";
 
 export type ActionExecutionStatus = "PENDING" | "COMPLETED" | "FAILED" | "SKIPPED";
 

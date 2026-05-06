@@ -376,6 +376,73 @@ export function ActionForm({
         </div>
       );
 
+    case "INVOKE_AI_SPECIALIST":
+      return (
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label>Specialist</Label>
+            <Select
+              value={(actionConfig.specialistId as string) ?? ""}
+              onValueChange={(v) => updateField("specialistId", v)}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select specialist" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="BILLING">Billing</SelectItem>
+                <SelectItem value="INTAKE">Intake</SelectItem>
+                <SelectItem value="INBOX">Inbox</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="action-ai-context">Context Reference</Label>
+              <VariableInserter
+                triggerType={triggerType}
+                onInsert={(v) =>
+                  updateField(
+                    "contextRef",
+                    insertVariable((actionConfig.contextRef as string) ?? "", v)
+                  )
+                }
+              />
+            </div>
+            <Input
+              id="action-ai-context"
+              value={(actionConfig.contextRef as string) ?? ""}
+              onChange={(e) => updateField("contextRef", e.target.value)}
+              placeholder='e.g. {{event.entityType}}:{{event.entityId}}'
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="action-ai-prompt">Initial Prompt</Label>
+            <Textarea
+              id="action-ai-prompt"
+              value={(actionConfig.initialPrompt as string) ?? ""}
+              onChange={(e) => updateField("initialPrompt", e.target.value)}
+              placeholder="Instructions for the AI specialist"
+              rows={3}
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Mode</Label>
+            <Select
+              value={(actionConfig.mode as string) ?? "REVIEW"}
+              onValueChange={(v) => updateField("mode", v)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="REVIEW">Review (requires approval)</SelectItem>
+                <SelectItem value="DIRECT">Direct (auto-apply)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      );
+
     default:
       return null;
   }

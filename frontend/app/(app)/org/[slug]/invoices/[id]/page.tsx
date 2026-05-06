@@ -27,6 +27,7 @@ import { PROMOTED_INVOICE_SLUGS } from "@/lib/constants/promoted-field-slugs";
 import { TerminologyText } from "@/components/terminology-text";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import { PendingSuggestionsWidget } from "@/components/assistant/queue/pending-suggestions-widget";
 
 export default async function InvoiceDetailPage({
   params,
@@ -165,6 +166,9 @@ export default async function InvoiceDetailPage({
           customerId={invoice!.customerId}
         />
       </div>
+
+      {/* Pending AI Suggestions */}
+      <PendingSuggestionsWidget contextEntityType="invoice" contextEntityId={id} />
 
       {/* Audit Trail (Epic 507A) — capability-gated client-side */}
       <InvoiceAuditSection invoiceId={id} />

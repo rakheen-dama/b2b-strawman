@@ -6,4 +6,5 @@ public sealed interface ActionConfig
         SendEmailActionConfig,
         UpdateStatusActionConfig,
         CreateProjectActionConfig,
-        AssignMemberActionConfig {}
+        AssignMemberActionConfig,
+        InvokeAiSpecialistActionConfig {}

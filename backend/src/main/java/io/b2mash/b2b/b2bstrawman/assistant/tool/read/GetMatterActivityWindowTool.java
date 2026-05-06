@@ -97,7 +97,10 @@ public class GetMatterActivityWindowTool implements AssistantTool {
 
   @Override
   public Object execute(Map<String, Object> input, TenantToolContext context) {
-    var matterIdStr = (String) input.get("matterId");
+    var matterIdRaw = input.get("matterId");
+    if (!(matterIdRaw instanceof String matterIdStr) || matterIdStr.isBlank()) {
+      return Map.of("error", "matterId is required and must be a UUID string");
+    }
     UUID matterId;
     try {
       matterId = UUID.fromString(matterIdStr);

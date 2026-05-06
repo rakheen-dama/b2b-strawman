@@ -99,7 +99,6 @@ public class PostInboxSummaryTool implements AssistantTool {
   }
 
   @Override
-  @SuppressWarnings("unchecked")
   public Object execute(Map<String, Object> input, TenantToolContext context) {
     // Parse inputs
     UUID matterId;
@@ -124,9 +123,14 @@ public class PostInboxSummaryTool implements AssistantTool {
       return Map.of("error", "Invalid lookbackFrom/lookbackTo format: " + e.getMessage());
     }
 
-    var rawSources = (List<Map<String, Object>>) input.get("sources");
+    var rawSourcesObj = input.get("sources");
+    if (!(rawSourcesObj instanceof List<?> rawSourcesList)) {
+      return Map.of("error", "sources must be an array");
+    }
     List<SourceRef> sources;
     try {
+      @SuppressWarnings("unchecked")
+      var rawSources = (List<Map<String, Object>>) (List<?>) rawSourcesList;
       sources =
           rawSources.stream()
               .map(
@@ -140,6 +144,9 @@ public class PostInboxSummaryTool implements AssistantTool {
     }
 
     var mode = (String) input.get("mode");
+    if (!"DIRECT".equals(mode) && !"REVIEW".equals(mode)) {
+      return Map.of("error", "mode must be REVIEW or DIRECT");
+    }
     var payload =
         new InboxSummaryPayload(matterId, lookbackFrom, lookbackTo, summaryMarkdown, sources);
     var promptVersion = promptBuilder.promptVersion(SPECIALIST_ID);

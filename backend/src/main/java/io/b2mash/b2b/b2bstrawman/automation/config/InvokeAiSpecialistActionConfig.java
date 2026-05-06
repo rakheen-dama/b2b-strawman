@@ -6,6 +6,7 @@ public record InvokeAiSpecialistActionConfig(
     String specialistId,
     Map<String, String> contextRef,
     String initialPrompt,
+    String lookback,
     String mode,
     int timeoutSeconds)
     implements ActionConfig {}

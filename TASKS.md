@@ -583,7 +583,7 @@
 | 512 | Billing Assistant (Polish + Grouping) | Both | 511A, 515A | M | 512A, 512B | **Done** (PRs #1294, #1295) |
 | 513 | Intake Assistant + Vision Fallback | Both | 511A, 515A | L | 513A, 513B | **Done** (PRs #1296, #1297) |
 | 514 | Inbox Assistant + Activity Window | Both | 511A, 515A | M | 514A, 514B | **Done** (PRs #1298, #1299) |
-| 515 | Automation Hook + Invocation Entity + Review Queue | Both | Phase 37 | L | 515A, 515B, 515C | |
+| 515 | Automation Hook + Invocation Entity + Review Queue | Both | Phase 37 | L | 515A, 515B, 515C | **Done** (PRs #1292, #1300, #1301) |
 | 516 | QA Capstone — SA Admin POV 30-Day Script | E2E/Process | 511–515 | L | 516A, 516B | |
 
 ---

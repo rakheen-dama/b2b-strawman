@@ -36,6 +36,26 @@ public interface CommentRepository extends JpaRepository<Comment, UUID> {
       """)
   Page<Comment> findProjectLevelComments(@Param("projectId") UUID projectId, Pageable pageable);
 
+  /**
+   * List comments on a specific entity within a project, filtered by creation time window, ordered
+   * by creation time descending.
+   */
+  @Query(
+      """
+      SELECT c FROM Comment c
+      WHERE c.entityType = :entityType
+        AND c.entityId = :entityId
+        AND c.projectId = :projectId
+        AND c.createdAt >= :from
+      ORDER BY c.createdAt DESC
+      """)
+  List<Comment> findByTargetAndProjectAndCreatedAtAfter(
+      @Param("entityType") String entityType,
+      @Param("entityId") UUID entityId,
+      @Param("projectId") UUID projectId,
+      @Param("from") java.time.Instant from,
+      Pageable pageable);
+
   /** Find all distinct commenter member IDs on an entity (for notification fan-out). */
   @Query(
       """

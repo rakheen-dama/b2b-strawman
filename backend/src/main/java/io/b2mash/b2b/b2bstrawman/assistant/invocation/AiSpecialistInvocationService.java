@@ -233,6 +233,32 @@ public class AiSpecialistInvocationService {
     return new BulkApproveResult(outcomes);
   }
 
+  /**
+   * Atomically records a RUNNING invocation, applies the payload via the registered applier, and
+   * marks the invocation AUTO_APPLIED — all within a single transaction. Used by DIRECT-mode tool
+   * execution to prevent partial state (e.g. comment posted but invocation stuck in RUNNING).
+   */
+  @Transactional
+  public AiSpecialistInvocation recordAndAutoApply(
+      String specialistId,
+      InvocationSource source,
+      UUID actorId,
+      String contextEntityType,
+      UUID contextEntityId,
+      String promptVersion,
+      OutputPayload payload) {
+    var inv =
+        new AiSpecialistInvocation(
+            specialistId, source, actorId, null, contextEntityType, contextEntityId, promptVersion);
+    inv = repository.save(inv);
+
+    var applier = outputApplierRegistry.forPayload(payload);
+    applier.apply(payload, actorId);
+
+    inv.markAutoApplied(payload);
+    return repository.save(inv);
+  }
+
   // ------------------------- read entry points -------------------------
 
   @Transactional(readOnly = true)

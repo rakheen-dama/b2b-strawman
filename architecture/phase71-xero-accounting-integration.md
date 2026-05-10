@@ -1,145 +1,155 @@
 # Phase 71 — Xero Accounting Integration (One-Way Sync)
 
-> **Canonical location**: this standalone `architecture/phase71-*.md` file. Per the Phase 70 / Phase 68 convention, `ARCHITECTURE.md` stops at Section 10 (Phase 4) and gets a one-paragraph stub pointer per phase doc. Local section numbers below (`N.1`, `N.2`, …) are an organising device internal to this phase doc — they are NOT claims on `ARCHITECTURE.md` slots. Standalone phase architecture; cross-referenced from `ARCHITECTURE.md` but not merged.
-
-> **Supersedes / extends**: Phase 21 (`integration/` ports + `OrgIntegration` + `SecretStore` + `IntegrationGuardService` + `IntegrationRegistry`) is the immediate predecessor. Phase 71 does not change Phase 21's `AccountingProvider` port shape, the `OrgIntegration` row layout (additively extends `config_json` JSONB only), the Phase 10 invoice lifecycle (`DRAFT → APPROVED → SENT → PAID → VOID`), the Phase 25 `PaymentEvent` shape, or the Phase 60 trust-accounting ledger. It adds the first real `AccountingProvider` adapter (Xero), an OAuth2 connection sibling table, a dedicated sync engine with outbox semantics, a tax-code mapping table, a payment-pull sibling port, and a hard-coded trust-boundary guard.
-
-> **ADRs**: [ADR-272](../adr/ADR-272-xero-only-accounting-adapter-v1.md), [ADR-273](../adr/ADR-273-one-way-accounting-sync-permanent.md), [ADR-274](../adr/ADR-274-dedicated-accounting-sync-service-not-rule-engine.md), [ADR-275](../adr/ADR-275-oauth2-augmentation-org-integration.md), [ADR-276](../adr/ADR-276-trust-accounting-hard-guard-export.md), [ADR-277](../adr/ADR-277-poll-over-webhooks-payment-reconciliation-v1.md), [ADR-278](../adr/ADR-278-idempotent-push-via-external-reference.md), [ADR-279](../adr/ADR-279-sibling-payment-source-port.md)
-
-> **Migration**: Tenant **V121** — three new tenant-scoped tables (`accounting_xero_connection`, `accounting_sync_entry`, `accounting_tax_code_mapping`) plus seed inserts for ZA tax-code defaults. All under `db/migration/tenant/` per [ADR-T001](../adr/ADR-T001-schema-per-tenant-over-row-level-isolation.md). No global migrations. No backfill — all greenfield tables. `OrgIntegration.config_json` (JSONB) is additively extended at the application layer with a Xero-shaped sealed record; no DDL change is needed for that.
+> Merge into ARCHITECTURE.md as **Section 11**.
 
 ---
 
-## N.1 — Overview
+## 11.1 Overview
 
-Phase 21 shipped the integration plumbing — `AccountingProvider` port, `NoOpAccountingProvider` no-op, `OrgIntegration` row-per-(domain, providerSlug), `SecretStore` with AES/GCM encryption, `IntegrationGuardService` for module-level on/off, `IntegrationRegistry` with Caffeine-cached resolution, and the `IntegrationController` REST surface. None of it has ever talked to a real accounting system; all production traffic for the `ACCOUNTING` domain still falls through to `NoOpAccountingProvider`. Phase 10 shipped the invoice lifecycle and Phase 25 shipped the payment-event ledger; together they produce a Kazi-internal AR view that is correct on day one and stale by day two because nothing pushes invoices into the firm's general ledger and nothing pulls payment status back when the bookkeeper marks an invoice paid in Xero.
+Phase 71 delivers the first external accounting integration for Kazi: a tenant-connectable, OAuth2-based **Xero integration** that pushes invoices and customers from Kazi to Xero on approval, pulls payment status from Xero on a schedule, and surfaces sync state in the settings UI. The integration is the primary **commercial unlock** for the accounting-za vertical -- small SA accounting practices cannot adopt a system that does not push invoices into the accountant's general ledger -- and is a quality-of-life unlock for legal-za and consulting-za firms whose bookkeeper already lives in Xero.
 
-Phase 71 lands the first real `AccountingProvider` adapter (Xero), an OAuth2 connection lifecycle on top of `OrgIntegration` + `SecretStore`, a dedicated `AccountingSyncService` with outbox-style retry/back-off/dead-letter semantics ([ADR-274](../adr/ADR-274-dedicated-accounting-sync-service-not-rule-engine.md)), a 15-minute `@Scheduled` payment-poll worker ([ADR-277](../adr/ADR-277-poll-over-webhooks-payment-reconciliation-v1.md)), a tax-code mapping table seeded for SA, a one-time customer importer, and a hard-coded `TrustBoundaryGuard` that fails closed when an invoice would leak Phase 60 trust-accounting state to Xero ([ADR-276](../adr/ADR-276-trust-accounting-hard-guard-export.md)). The sync model is one-way push of invoices/customers and one-way pull of payments — permanent product decision per the founder ([ADR-273](../adr/ADR-273-one-way-accounting-sync-permanent.md)).
+The phase builds on three existing subsystems. Phase 21 (Integration Ports + BYOAK) provides the `IntegrationRegistry`, `OrgIntegration` entity, `SecretStore`, and the `AccountingProvider` port with its `InvoiceSyncRequest`, `CustomerSyncRequest`, and `AccountingSyncResult` contracts. Phase 10 (Invoicing & Billing) provides the `Invoice` entity with its `DRAFT -> APPROVED -> SENT -> PAID` lifecycle and existing domain events (`InvoiceApprovedEvent`, `InvoiceSentEvent`, `InvoicePaidEvent`). Phase 25 (Online Payment Collection) provides the `PaymentEvent` entity that Phase 71 reuses for Xero-originated payments. No new port abstraction is needed for invoice and customer push; one new sibling port (`AccountingPaymentSource`) is added for payment pull per the interface-segregation principle ([ADR-279](../adr/ADR-279-sibling-payment-source-port.md)).
 
-The phase is the first **commercial unlock** for the accounting-za vertical: small SA accounting practices cannot adopt Kazi if it doesn't push to Xero, and small legal-za / consulting-za firms whose bookkeeper lives in Xero get the same QoL win for free. Out of scope: Sage Pastel, QuickBooks, Zoho Books, bidirectional sync, Xero outbound webhooks, time-entry sync, multi-currency push, AI-mediated reconciliation, bulk re-sync tooling, plan-tier reintroduction.
+All sync orchestration is owned by a dedicated `AccountingSyncService` -- not the Phase 37 rule engine ([ADR-274](../adr/ADR-274-dedicated-accounting-sync-service-not-rule-engine.md)). Trust-accounting data (Phase 60/61) is guarded by a fail-closed `TrustBoundaryGuard` that refuses to push any trust-related invoice to Xero, with an auditable explanation ([ADR-276](../adr/ADR-276-trust-accounting-hard-guard-export.md)).
 
 ### What's New
 
-| Area | Phase 21 today | Phase 71 adds |
-|------|----------------|---------------|
-| Accounting adapters | `NoOpAccountingProvider` only | `XeroAccountingProvider` — first real adapter, OAuth2, idempotent push, payment pull |
-| `OrgIntegration` shape | Row per (domain, slug); single `apiKey` per row in `SecretStore` | Additively extended: Xero rows store OAuth tokens via multiple `SecretStore` keys (`accounting:xero:client_id`, `…:client_secret`, `…:access_token`, `…:refresh_token`); a sibling `accounting_xero_connection` row holds non-secret connection metadata ([ADR-275](../adr/ADR-275-oauth2-augmentation-org-integration.md)) |
-| Sync trigger | None | Outbox row written **inside the same transaction as invoice approval / void / send**; AFTER_COMMIT event listener path used for customer updates only |
-| Sync engine | None | Dedicated `AccountingSyncService` + drain worker with retry classification, dead-letter, rate-limit back-pressure, tenant-scoped iteration ([ADR-274](../adr/ADR-274-dedicated-accounting-sync-service-not-rule-engine.md)) |
-| Payment reconciliation | Manual UI only; `PaymentEvent` populated by Stripe/PayFast webhooks | `AccountingPaymentSource` sibling port ([ADR-279](../adr/ADR-279-sibling-payment-source-port.md)) + 15-minute scheduled poll → `PaymentEvent` with `provider_slug="xero"` → `InvoicePaidEvent` |
-| Tax codes | `TaxRate` table per tenant | `accounting_tax_code_mapping` table — Kazi tax mode → external Xero code; ZA defaults pre-seeded |
-| Trust-boundary protection | None | `TrustBoundaryGuard` — three-tier fail-closed Java check; refused pushes get a `BLOCKED_TRUST_BOUNDARY` sync entry + `integration.xero.push_blocked_trust` audit event ([ADR-276](../adr/ADR-276-trust-accounting-hard-guard-export.md)) |
-| Customer import | None | One-shot `POST /api/integrations/xero/import-customers`; subsequent runs blocked until reconnect |
-| Sync observability UI | None | `/settings/integrations/xero` card + `/settings/integrations/xero/sync-log` paginated log + invoice-detail Xero-status chip + customer-detail Xero-contact line |
-| Capability gates | `TEAM_OVERSIGHT` for all integration endpoints | Reuses `TEAM_OVERSIGHT` for connect/disconnect/settings/import/tax-mapping; **introduces** `INTEGRATION_VIEW_SYNC_STATUS` (sync log + retry-from-dead-letter) and `FINANCIAL_RECONCILE` (manual reconcile of drift). **No `INTEGRATION_MANAGE`** — that capability does not exist; the requirements document used a placeholder. |
+| Existing Capability | New Capability |
+|---|---|
+| `AccountingProvider` port with `NoOpAccountingProvider` | `XeroAccountingProvider` — real Xero adapter (push invoices + customers) |
+| `OrgIntegration` + `SecretStore` model API-key credentials only | OAuth2 lifecycle with `AccountingXeroConnection` — refresh-token, token-expiry, Xero-tenant-id |
+| Invoice approved in Kazi sits in Kazi; bookkeeper re-keys into Xero | Automatic push to Xero on `InvoiceApprovedEvent` / `InvoiceSentEvent` |
+| Payment received in Xero never reaches Kazi's AR aging | Scheduled payment pull from Xero — `PaymentEvent` of source `XERO_RECONCILE` |
+| No "did this invoice make it to Xero" UI | Sync log page, invoice status chips, dead-letter retry |
+| No customer import from existing accounting system | One-time customer import from Xero contacts on first connect |
+| No tax code mapping | Editable Kazi-to-Xero tax code mapping with ZA defaults |
 
-### Explicitly Not Changing
+### Scope Boundaries
 
-- **Phase 21 `AccountingProvider` port shape**. The `syncInvoice` / `syncCustomer` / `testConnection` signatures remain. Payment pull is added via a sibling port (`AccountingPaymentSource`) not as a port extension — see [ADR-279](../adr/ADR-279-sibling-payment-source-port.md).
-- **`OrgIntegration` table DDL**. No new columns. OAuth-specific structured config rides in `config_json` (JSONB), and OAuth tokens ride in `SecretStore` under named keys; non-secret connection metadata (xero-tenant-id, scopes, refresh-failure state) lives in the sibling `accounting_xero_connection` table.
-- **Phase 10 invoice lifecycle**. `DRAFT → APPROVED → SENT → PAID → VOID` is unchanged. `Invoice.status` does not gain a Xero-aware enum value. Xero status is a sibling concept surfaced via `accounting_sync_entry` rows, not by mutating `Invoice`.
-- **Phase 25 `PaymentEvent` shape**. Xero-originated payments are written with `provider_slug="xero"` and `payment_destination="OPERATING"`; the existing schema accommodates this without change. The vendor payload lands in `provider_payload` JSONB.
-- **Phase 37 rule engine**. Sync is **not** routed through `ActionExecutor`. There is no `INVOKE_ACCOUNTING_SYNC` action type in v1; rules cannot trigger Xero sync. The dedicated `AccountingSyncService` is the only sync entry point ([ADR-274](../adr/ADR-274-dedicated-accounting-sync-service-not-rule-engine.md)).
-- **Phase 70 `SCHEDULED` automation trigger**. Reused for **nothing** in this phase. The push-drain and payment-poll workers are plain Spring `@Scheduled` methods on `AccountingSyncService`, mirroring `AutomationScheduler`'s `TenantScopedRunner.forEachTenant()` shape but not its rule-engine glue. Documented in [ADR-274](../adr/ADR-274-dedicated-accounting-sync-service-not-rule-engine.md).
-- **`PlanTier`**. Removed from the codebase 2026-04-11 and must not reappear. The stale `tier === "PRO"` block in `frontend/components/integrations/IntegrationCard.tsx` is a known cleanup item and is **not propagated** into Phase 71's new `AccountingIntegrationCard`. See §N.6.
+**In scope**: Xero OAuth2 connect/disconnect/refresh, invoice push, customer push, payment pull (polling), sync queue with retry/dead-letter, trust-accounting guard, tax code mapping, one-time customer import, sync log UI, invoice status chips, capability-gated access control.
+
+**Out of scope**: Sage Pastel / QuickBooks adapters, bidirectional sync, time-entry sync, multi-currency invoices, Xero webhooks, Phase 37 rule action for sync, AI-assisted reconciliation, bulk re-sync tool, Xero file attachments, VAT201 reporting, `PlanTier` reintroduction. See [Section 9 of the requirements](../requirements/claude-code-prompt-phase71.md) for the full exclusion list.
 
 ---
 
-## N.2 — Domain Model
+## 11.2 Domain Model
 
-Three new tenant-scoped tables. All live in `tenant_<hash>` schemas per ADR-T001. No global tables.
+### 11.2.1 `AccountingXeroConnection`
 
-### N.2.1 `accounting_xero_connection`
+Tracks OAuth2 connection metadata for a tenant's Xero org. One row per `OrgIntegration` (unique constraint). Refresh tokens and access tokens live in `SecretStore`, never in this table ([ADR-275](../adr/ADR-275-oauth2-augmentation-org-integration.md)).
 
-Sibling to `OrgIntegration` — one row per Xero connection. Carries non-secret connection metadata. Tokens themselves live in `SecretStore`.
+| Field | Type | Constraints | Notes |
+|---|---|---|---|
+| `id` | `UUID` | PK, auto-generated | |
+| `org_integration_id` | `UUID` | FK to `OrgIntegration.id`, UNIQUE, NOT NULL | One Xero connection per integration config |
+| `xero_tenant_id` | `VARCHAR(50)` | NOT NULL | Xero's UUID for the connected Xero org -- distinct from Kazi tenant |
+| `xero_org_name` | `VARCHAR(255)` | NOT NULL | Display name from Xero |
+| `connected_by_member_id` | `UUID` | NOT NULL | Member who initiated the OAuth flow |
+| `connected_at` | `TIMESTAMPTZ` | NOT NULL | When the connection was established |
+| `last_token_refresh_at` | `TIMESTAMPTZ` | | Last successful token refresh |
+| `access_token_expires_at` | `TIMESTAMPTZ` | NOT NULL | When the current access token expires |
+| `scope` | `VARCHAR(500)` | NOT NULL | Granted OAuth scopes (comma-separated) |
+| `status` | `VARCHAR(20)` | NOT NULL | `CONNECTED`, `REFRESH_FAILED`, `REVOKED` |
+| `last_poll_at` | `TIMESTAMPTZ` | | Last successful payment poll timestamp |
+| `disconnected_at` | `TIMESTAMPTZ` | | Null until disconnected |
+| `created_at` | `TIMESTAMPTZ` | NOT NULL, immutable | |
+| `updated_at` | `TIMESTAMPTZ` | NOT NULL | |
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | UUID PK | |
-| `org_integration_id` | UUID FK → `org_integrations.id`, **unique** | One connection per Xero `OrgIntegration` row |
-| `xero_tenant_id` | varchar(64) | Xero's UUID for the connected Xero org (NOT Kazi tenant id) |
-| `xero_org_name` | varchar(255) | Display only |
-| `connected_by_member_id` | UUID FK → `members.id` | Who completed the OAuth handshake |
-| `connected_at` | timestamptz NOT NULL | |
-| `last_token_refresh_at` | timestamptz | Updated on every successful 401-driven refresh |
-| `access_token_expires_at` | timestamptz | Set from Xero OAuth response `expires_in` |
-| `scope` | text | Comma-separated granted scopes |
-| `status` | varchar(30) NOT NULL | `CONNECTED`, `REFRESH_FAILED`, `REVOKED` |
-| `refresh_failure_count` | int NOT NULL DEFAULT 0 | Three-strike rule — moves to `REFRESH_FAILED` |
-| `last_poll_at` | timestamptz | Cursor for `getInvoicesModifiedSince` |
-| `customer_import_completed_at` | timestamptz | Set by one-shot import endpoint; non-null blocks re-import |
-| `disconnected_at` | timestamptz | Null until disconnected |
-| `created_at`, `updated_at` | timestamptz NOT NULL | |
+**Design decisions**:
+- Separate table rather than extending `OrgIntegration` because the OAuth metadata is Xero-specific and does not apply to API-key-based providers. Adding 10 nullable columns to `OrgIntegration` for one provider would violate single-responsibility. If Sage Pastel lands later, it gets its own connection table.
+- `last_poll_at` lives here rather than on a separate polling config entity because there is exactly one poll cursor per connection and the additional table would be over-normalised for the current requirements.
+- `status` is a string enum rather than a boolean `connected` flag because three distinct states require different UI treatments (connected = green, refresh failed = amber reconnect banner, revoked = red disconnected).
 
-### N.2.2 `accounting_sync_entry`
+### 11.2.2 `AccountingSyncEntry`
 
-The outbox / sync-state row. One per logical sync attempt for an entity (invoice / customer / payment-pull cursor).
+The sync queue and state machine for all outbound pushes and inbound pull records. Each row tracks one sync operation (one invoice push, one customer push, or one payment pull record).
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | UUID PK | |
-| `entity_type` | varchar(20) NOT NULL | `INVOICE`, `CUSTOMER`, `PAYMENT_PULL` |
-| `entity_id` | UUID NOT NULL | **Polymorphic soft reference** (no FK) — Kazi-side `invoices.id` for `INVOICE`, `customers.id` for `CUSTOMER`, `org_integrations.id` for `PAYMENT_PULL`. See note below. |
-| `action` | varchar(16) NOT NULL DEFAULT 'UPSERT' | `UPSERT` (push create-or-update), `VOID` (push void/delete in Xero), `PULL` (payment-poll cursor advance). Determines which adapter method the drain worker calls. |
-| `provider_id` | varchar(20) NOT NULL | `"xero"` |
-| `direction` | varchar(10) NOT NULL | `PUSH`, `PULL` |
-| `state` | varchar(30) NOT NULL | `PENDING`, `IN_FLIGHT`, `COMPLETED`, `FAILED_RETRYING`, `DEAD_LETTER`, `BLOCKED_TRUST_BOUNDARY`, `RECONCILE_DRIFT` |
-| `attempt_count` | int NOT NULL DEFAULT 0 | |
-| `next_attempt_at` | timestamptz | Null when terminal; populated on `PENDING` / `FAILED_RETRYING` |
-| `last_error_code` | varchar(40) | `RATE_LIMITED`, `VALIDATION_FAILED`, `AUTH_EXPIRED`, `TRUST_BOUNDARY`, `MULTI_CURRENCY`, `DRIFT_DETECTED`, `NETWORK`, `SERVER_ERROR` |
-| `last_error_detail` | text | |
-| `external_reference` | varchar(64) | Kazi-side dedup key — `KAZI-INV-{uuid}` / `KAZI-CUST-{uuid}` ([ADR-278](../adr/ADR-278-idempotent-push-via-external-reference.md)) |
-| `external_id` | varchar(64) | Xero-side ID once known |
-| `payload_snapshot` | JSONB | Frozen snapshot of the sync request payload at enqueue time — used by drain worker, audited |
-| `created_at` | timestamptz NOT NULL | |
-| `updated_at` | timestamptz NOT NULL | |
-| `completed_at` | timestamptz | Terminal-state timestamp |
+| Field | Type | Constraints | Notes |
+|---|---|---|---|
+| `id` | `UUID` | PK, auto-generated | |
+| `entity_type` | `VARCHAR(20)` | NOT NULL | `INVOICE`, `CUSTOMER`, `PAYMENT_PULL` |
+| `entity_id` | `UUID` | NOT NULL | References the Kazi invoice / customer / invoice-being-reconciled |
+| `provider_id` | `VARCHAR(20)` | NOT NULL | `"xero"` |
+| `direction` | `VARCHAR(10)` | NOT NULL | `PUSH`, `PULL` |
+| `state` | `VARCHAR(30)` | NOT NULL | See state machine below |
+| `attempt_count` | `INT` | NOT NULL, DEFAULT 0 | |
+| `next_attempt_at` | `TIMESTAMPTZ` | | Null when completed or blocked |
+| `last_error_code` | `VARCHAR(50)` | | Machine-readable error classification |
+| `last_error_detail` | `TEXT` | | Human-readable error message or Xero response body |
+| `external_reference` | `VARCHAR(100)` | | Kazi-side dedup key, e.g. `KAZI-INV-{uuid}` |
+| `external_id` | `VARCHAR(100)` | | Xero-side ID once known |
+| `trigger` | `VARCHAR(30)` | NOT NULL | `EVENT`, `MANUAL_RETRY`, `FORCE_RESYNC` |
+| `created_at` | `TIMESTAMPTZ` | NOT NULL, immutable | |
+| `updated_at` | `TIMESTAMPTZ` | NOT NULL | |
+| `completed_at` | `TIMESTAMPTZ` | | When the sync completed successfully |
 
-Indexes:
+**State machine**:
 
-- `idx_sync_drain` on `(state, next_attempt_at) WHERE entity_type IN ('INVOICE','CUSTOMER')` — primary drain query for the push worker. **Excludes `PAYMENT_PULL`** rows by partial-index predicate so the push worker cannot accidentally pick them up; the payment-poll worker queries those rows by `entity_type='PAYMENT_PULL'` directly (one cursor row per `org_integration_id`).
-- `idx_sync_lookup` on `(entity_type, entity_id, created_at DESC)` — UI "what's the latest sync state of this invoice/customer". Polymorphic by design: callers always include `entity_type` in the predicate, so PAYMENT_PULL rows partition cleanly from invoice/customer rows.
-- `idx_sync_external_ref` on `(external_reference)` — payment-pull match.
+```
+PENDING ──────────────► IN_FLIGHT ──────────► COMPLETED
+                            │
+                            ├──► FAILED_RETRYING ──► (back to IN_FLIGHT on next attempt)
+                            │         │
+                            │         └──► DEAD_LETTER (max retries exceeded)
+                            │
+                            └──► DEAD_LETTER (4xx validation error, no retry)
 
-**Why no FK on `entity_id`**: the column references different tables by row, so a foreign key would force one of three painful options (separate columns per type, three tables, or trigger-enforced polymorphism). The chosen "soft reference + tagged `entity_type`" trades referential-integrity-at-the-database for a simpler model. Orphaned sync rows (e.g. invoice deleted while a sync entry exists) are handled by the drain worker: a `404` lookup of the entity transitions the row to `DEAD_LETTER` with `last_error_code='ENTITY_NOT_FOUND'`. This is rare enough (invoices/customers are soft-deleted, not hard-deleted) to not warrant FK-cascade complexity. Documented as the explicit alternative-to-FK approach.
-
-### N.2.3 `accounting_tax_code_mapping`
-
-Mapping from Kazi-internal tax mode to provider-side tax code. Pre-seeded with ZA defaults; tenant editable via UI.
-
-| Column | Type | Notes |
-|---|---|---|
-| `id` | UUID PK | |
-| `provider_id` | varchar(20) NOT NULL | `"xero"` |
-| `kazi_tax_mode` | varchar(30) NOT NULL | `STANDARD_15`, `ZERO_RATED`, `EXEMPT`, `OUT_OF_SCOPE`, `STANDARD_OTHER` |
-| `external_tax_code` | varchar(40) NOT NULL | Xero code, e.g. `OUTPUT2`, `ZERORATEDOUTPUT` |
-| `display_label` | varchar(120) | Human label from Xero TaxRates API |
-| `is_default` | boolean NOT NULL DEFAULT false | Marks a row as the seeded default |
-| `created_at`, `updated_at` | timestamptz NOT NULL | |
-
-Unique constraint on `(provider_id, kazi_tax_mode)` — exactly one mapping per mode per provider.
-
-### N.2.4 `OrgIntegration.config_json` Extension
-
-The `OrgIntegration` row for `(domain=ACCOUNTING, providerSlug="xero")` carries a Xero-shaped config record in its existing JSONB column. No DDL change. Application-layer Java sealed-interface pattern (consistent with ADR-148):
-
-```java
-public sealed interface AccountingProviderConfig
-    permits NoOpAccountingConfig, XeroAccountingConfig {}
-
-public record XeroAccountingConfig(
-    Duration paymentPollInterval,    // 5/15/30/60 minutes
-    InvoicePushTrigger pushTrigger,  // ON_APPROVED | ON_SENT
-    boolean importCustomersOnConnect // user setting before the one-shot import runs
-) implements AccountingProviderConfig {}
+BLOCKED_TRUST_BOUNDARY (permanent, written directly on enqueue)
+RECONCILE_DRIFT (payment pull: amounts don't match)
 ```
 
-### N.2.5 ER Diagram
+**Error codes**: `RATE_LIMITED`, `VALIDATION_FAILED`, `AUTH_EXPIRED`, `TRUST_BOUNDARY`, `MULTI_CURRENCY`, `DRIFT_DETECTED`, `NETWORK_ERROR`, `SERVER_ERROR`, `UNKNOWN`.
+
+**Design decisions**:
+- Single table for all entity types rather than per-type tables because the sync worker drains a unified queue sorted by `next_attempt_at`, and reporting/UI queries benefit from a single source.
+- `external_reference` is the Kazi-side idempotency key. For invoices it is `KAZI-INV-{invoice.id}`; for customers it is `KAZI-CUST-{customer.id}`. This is written to the Xero record's `Reference` field so re-pushes update rather than duplicate ([ADR-278](../adr/ADR-278-idempotent-push-via-external-reference.md)).
+- `trigger` captures why the entry was created (automated event, manual retry, force resync) for audit trail correlation.
+
+### 11.2.3 `AccountingTaxCodeMapping`
+
+Maps Kazi tax modes to the tenant's chosen Xero tax codes. Pre-seeded with ZA defaults on first connect; editable in the integration settings UI.
+
+| Field | Type | Constraints | Notes |
+|---|---|---|---|
+| `id` | `UUID` | PK, auto-generated | |
+| `provider_id` | `VARCHAR(20)` | NOT NULL | `"xero"` |
+| `kazi_tax_mode` | `VARCHAR(30)` | NOT NULL | `STANDARD_15`, `ZERO_RATED`, `EXEMPT`, `OUT_OF_SCOPE`, `STANDARD_OTHER` |
+| `external_tax_code` | `VARCHAR(50)` | NOT NULL | Xero tax code string (e.g. `OUTPUT2`) |
+| `display_label` | `VARCHAR(100)` | NOT NULL | Human-readable label for UI |
+| `is_default` | `BOOLEAN` | NOT NULL, DEFAULT true | Pre-seeded rows are defaults |
+| `created_at` | `TIMESTAMPTZ` | NOT NULL, immutable | |
+| `updated_at` | `TIMESTAMPTZ` | NOT NULL | |
+
+**Unique constraint**: `(provider_id, kazi_tax_mode)` -- one mapping per Kazi tax mode per provider.
+
+**Design decisions**:
+- `STANDARD_OTHER` accommodates non-ZA tenants or future SA VAT rate changes. The rate percentage is not stored here -- it is the Xero tax code that matters for the push payload.
+- `is_default` differentiates pre-seeded rows from tenant overrides. When the tenant resets to defaults, rows with `is_default = true` are restored.
+
+### 11.2.4 Unchanged Entities
+
+The following existing entities are consumed but not modified by Phase 71:
+
+- **`Invoice`** -- read for push payload construction. The trust flag is stored in `Invoice.customFields` JSONB as key `"is_trust_invoice"` (set by Phase 60 legal vertical flows). No new columns added.
+- **`InvoiceLine`** -- read for line-item mapping. `disbursement_id` linkage checked by trust boundary guard.
+- **`Customer`** -- read for customer push payload construction and import dedup. No new columns added.
+- **`PaymentEvent`** -- new rows written by payment pull with `provider_slug = "xero"` and `payment_destination = "XERO_RECONCILE"`. No schema change needed.
+- **`OrgIntegration`** -- existing row used to link the Xero connection. No schema change needed.
+- **`OrgSecret`** -- existing table used to store Xero access and refresh tokens. No schema change needed.
+
+### 11.2.5 ER Diagram
 
 ```mermaid
 erDiagram
-    org_integrations ||--o| accounting_xero_connection : "1:0..1"
-    org_integrations {
+    OrgIntegration ||--o| AccountingXeroConnection : "has Xero connection"
+    OrgIntegration ||--o{ AccountingTaxCodeMapping : "has tax mappings"
+    Invoice ||--o{ AccountingSyncEntry : "invoice sync status"
+    Invoice ||--o{ InvoiceLine : "has lines"
+    Invoice ||--o{ PaymentEvent : "has payments"
+    Customer ||--o{ AccountingSyncEntry : "customer sync status"
+    Customer ||--o{ Invoice : "invoiced to"
+
+    OrgIntegration {
         uuid id PK
         string domain
         string provider_slug
@@ -147,796 +157,962 @@ erDiagram
         jsonb config_json
         string key_suffix
     }
-    accounting_xero_connection {
+
+    AccountingXeroConnection {
         uuid id PK
-        uuid org_integration_id FK
+        uuid org_integration_id FK "UNIQUE"
         string xero_tenant_id
         string xero_org_name
-        string status
+        uuid connected_by_member_id
+        timestamptz connected_at
+        timestamptz last_token_refresh_at
         timestamptz access_token_expires_at
+        string scope
+        string status "CONNECTED|REFRESH_FAILED|REVOKED"
         timestamptz last_poll_at
-        int refresh_failure_count
+        timestamptz disconnected_at
+        timestamptz created_at
+        timestamptz updated_at
     }
-    invoices ||--o{ accounting_sync_entry : "tracked-via entity_id"
-    customers ||--o{ accounting_sync_entry : "tracked-via entity_id"
-    accounting_sync_entry {
+
+    AccountingSyncEntry {
         uuid id PK
-        string entity_type
+        string entity_type "INVOICE|CUSTOMER|PAYMENT_PULL"
         uuid entity_id
         string provider_id
-        string state
+        string direction "PUSH|PULL"
+        string state "PENDING|IN_FLIGHT|COMPLETED|..."
+        int attempt_count
+        timestamptz next_attempt_at
+        string last_error_code
+        text last_error_detail
         string external_reference
         string external_id
-        jsonb payload_snapshot
-        timestamptz next_attempt_at
-        int attempt_count
+        string trigger
     }
-    invoices ||--o{ payment_events : "1:N"
-    payment_events {
-        uuid id PK
-        uuid invoice_id FK
-        string provider_slug
-        string status
-        decimal amount
-        jsonb provider_payload
-    }
-    accounting_tax_code_mapping {
+
+    AccountingTaxCodeMapping {
         uuid id PK
         string provider_id
         string kazi_tax_mode
         string external_tax_code
+        string display_label
         boolean is_default
     }
-    org_secrets ||--o{ accounting_xero_connection : "tokens-keyed-by-orgIntegrationId"
-    org_secrets {
-        string secret_key PK
-        bytea encrypted_value
-        bytea iv
+
+    Invoice {
+        uuid id PK
+        uuid customer_id FK
+        string invoice_number
+        string status "DRAFT|APPROVED|SENT|PAID|VOID"
+        string currency
+        decimal total
+    }
+
+    InvoiceLine {
+        uuid id PK
+        uuid invoice_id FK
+        uuid disbursement_id
+        string description
+        decimal quantity
+        decimal unit_price
+    }
+
+    Customer {
+        uuid id PK
+        string name
+        string email
+        string lifecycle_status
+    }
+
+    PaymentEvent {
+        uuid id PK
+        uuid invoice_id FK
+        string provider_slug
+        string payment_reference
+        string status
+        decimal amount
     }
 ```
 
 ---
 
-## N.3 — Core Flows and Backend Behaviour
+## 11.3 Core Flows and Backend Behaviour
 
-### N.3.1 OAuth2 Connect Flow
+### 11.3.1 OAuth2 Connection Flow
 
-Three new endpoints, in a dedicated `XeroIntegrationController` (kept separate from generic `IntegrationController` because the OAuth callback shape doesn't fit the generic upsert/set-key surface):
+**Purpose**: Connect a tenant's Kazi org to their Xero org via OAuth2 authorization code flow.
 
-- `GET /api/integrations/xero/connect` → returns `{ authUrl, state }`. The frontend opens `authUrl` in a popup; the user consents on Xero's side.
-- `GET /api/integrations/xero/callback?code=...&state=...` → exchanges the code, persists `accounting_xero_connection`, writes tokens to `SecretStore`, emits audit event `integration.xero.connected`, redirects back to the integration card.
-- `DELETE /api/integrations/xero/connection` → revokes the Xero side, marks row `REVOKED`, emits `integration.xero.disconnected`. Existing sync entries are left as historical record.
-
-State parameter is HMAC-signed with a server-side secret and carries `(memberId, orgId, nonce, ts)` so the callback cannot be CSRF-replayed.
+**Service-layer signatures**:
 
 ```java
-public XeroOAuthService(
-    SecretStore secretStore,
-    AccountingXeroConnectionRepository connections,
-    OrgIntegrationRepository orgIntegrations,
-    AuditService auditService,
-    XeroOAuthHttpClient httpClient,
-    Clock clock) { … }
+// XeroOAuthService
+public record XeroConnectResult(String authorizationUrl, String state) {}
+public record XeroCallbackResult(UUID connectionId, String xeroOrgName) {}
 
-@Transactional
-public ConnectionResult completeAuthorization(String code, OAuthState state) {
-    var tokenResponse = httpClient.exchangeCode(code);
-    var xeroOrg       = httpClient.fetchConnectedOrg(tokenResponse.accessToken());
-    var integration   = orgIntegrations.findByDomainAndSlug(ACCOUNTING, "xero")
-        .orElseGet(() -> orgIntegrations.save(new OrgIntegration(ACCOUNTING, "xero")));
-    integration.enable();
-
-    secretStore.store(xeroKey(integration, "access_token"),  tokenResponse.accessToken());
-    secretStore.store(xeroKey(integration, "refresh_token"), tokenResponse.refreshToken());
-
-    var conn = new AccountingXeroConnection(
-        integration.getId(), xeroOrg.tenantId(), xeroOrg.name(),
-        state.memberId(), clock.instant(),
-        clock.instant().plusSeconds(tokenResponse.expiresIn()),
-        tokenResponse.scope());
-    connections.save(conn);
-
-    auditService.log(AuditEventBuilder.builder()
-        .eventType("integration.xero.connected")
-        .entityType("accounting_xero_connection").entityId(conn.getId())
-        .details(Map.of("xeroTenantId", xeroOrg.tenantId(),
-                        "xeroOrgName",  xeroOrg.name(),
-                        "scope",        tokenResponse.scope()))
-        .build());
-    return new ConnectionResult(conn.getId(), xeroOrg.name());
-}
+XeroConnectResult initiateConnect(UUID memberId);
+XeroCallbackResult handleCallback(String code, String state, UUID memberId);
+void disconnect(UUID memberId);
+void refreshAccessToken(UUID connectionId);
 ```
 
-Capability: `TEAM_OVERSIGHT` (precedent: existing `IntegrationController`).
+**Flow**:
 
-### N.3.2 Token Refresh-on-401, Three-Strike Rule
+1. **Initiate** -- `GET /api/integrations/xero/connect`. `XeroOAuthService.initiateConnect()` generates a PKCE code verifier, builds the Xero authorization URL with `offline_access openid profile email accounting.transactions accounting.contacts` scopes, persists the `state` parameter in a short-lived cache (or `SecretStore` keyed by state), returns `{ authUrl, state }`.
+2. **Callback** -- `GET /api/integrations/xero/callback?code=...&state=...`. `XeroOAuthService.handleCallback()` validates state, exchanges code for tokens via Xero's token endpoint, calls Xero's `/connections` endpoint to retrieve the Xero tenant ID and org name, upserts `OrgIntegration` with `provider_slug = "xero"` and `enabled = true`, creates `AccountingXeroConnection`, stores tokens in `SecretStore` (`{orgIntegrationId}:xero:access`, `{orgIntegrationId}:xero:refresh`), pre-seeds `AccountingTaxCodeMapping` defaults for ZA, emits audit event `integration.xero.connected`.
+3. **Token refresh** -- Automatic and silent in `XeroApiClient` on HTTP 401. `XeroOAuthService.refreshAccessToken()` retrieves the refresh token from `SecretStore`, calls Xero's token endpoint, stores new access and refresh tokens, updates `AccountingXeroConnection.last_token_refresh_at` and `access_token_expires_at`. After three consecutive refresh failures: connection status moves to `REFRESH_FAILED`, audit event `integration.xero.refresh_failed` emitted, outbound sync pauses (entries queue but do not push).
+4. **Disconnect** -- `DELETE /api/integrations/xero/connection`. Revokes the Xero-side refresh token via Xero's revocation endpoint, marks connection `REVOKED`, sets `disconnected_at`, deletes tokens from `SecretStore`, disables `OrgIntegration`, emits audit event `integration.xero.disconnected`. Existing sync entries are left as historical record.
 
-`XeroApiClient` wraps every Xero call:
+**Tenant boundary**: Entire flow runs within the requesting member's tenant context (`RequestScopes.TENANT_ID` bound by `TenantFilter`). The Xero connection is scoped to the tenant schema.
 
-1. Read `accounting:xero:access_token` from `SecretStore`. Attach as `Authorization: Bearer …`.
-2. Attach `Xero-tenant-id: {xero_tenant_id}` from the connection row.
-3. On `401`: call `XeroOAuthService.refreshAccessToken(connectionId)`. If success, retry the request once. If failure, increment `refresh_failure_count`. After three consecutive failures move the connection to `status='REFRESH_FAILED'`, emit `integration.xero.refresh_failed`, and the drain worker pauses sync for that connection (entries queue but do not push).
-4. On `429`: read `Retry-After` header, mark the sync entry `FAILED_RETRYING` with `next_attempt_at = now + retryAfter`, and back-pressure the per-tenant drain.
-5. On `5xx` / network: classify as transient, exponential back-off (1m, 5m, 15m, 1h, 6h), then `DEAD_LETTER`.
-6. On `4xx` (other than 401/429): classify as `VALIDATION_FAILED`, **no retry**, straight to `DEAD_LETTER` so the user sees the validation error.
+**RBAC**: All three endpoints require `@RequiresCapability("INTEGRATION_MANAGE")`.
 
-### N.3.3 Invoice Push Enqueue (In-Transaction Outbox)
+**Error handling**:
+- Invalid/expired state parameter: `InvalidStateException` (400).
+- Xero token exchange failure: `IntegrationConnectionException` (502) with Xero error details.
+- Refresh failure cascade (3 consecutive): connection transitions to `REFRESH_FAILED`, sync pauses, UI surfaces reconnect banner.
 
-This is the **deliberate design choice** that distinguishes invoice push from customer push: the sync-entry row is written **inside the same `@Transactional` block as the invoice state change that triggers the sync**, not lazily by an AFTER_COMMIT event listener.
+### 11.3.2 Invoice Push Flow
 
-Why: AFTER_COMMIT listeners are fire-and-log — if the listener crashes between commit and outbox write, the sync never happens. For invoices, where "did this push reach Xero" is a money-correctness question, the outbox row must commit atomically with the invoice state change. The Phase 10 `InvoiceService.approveInvoice(...)` method gains an explicit call to `AccountingSyncService.enqueueInvoicePush(...)` rather than relying on the `InvoiceApprovedEvent` listener path.
+**Purpose**: Push an approved/sent/voided invoice from Kazi to Xero.
+
+**Service-layer signatures**:
 
 ```java
-@Service
-public class InvoiceService {
-    @Transactional
-    public Invoice approveInvoice(UUID invoiceId, UUID approverId) {
-        var invoice = invoiceRepository.findById(invoiceId).orElseThrow();
-        invoice.approve(invoiceNumberSequence.next(), approverId);
-        invoiceRepository.save(invoice);
+// AccountingSyncService
+void enqueueInvoicePush(UUID invoiceId, SyncTrigger trigger);
 
-        // In-transaction outbox write — see Phase 71 §N.3.3 / ADR-274
-        accountingSyncService.enqueueInvoicePush(
-            invoice.getId(), SyncTrigger.INVOICE_APPROVED);
+// AccountingSyncWorker (internal)
+void drainPendingEntries();
 
-        eventPublisher.publishEvent(new InvoiceApprovedEvent(...)); // Phase 10 unchanged
-        return invoice;
-    }
-}
+// XeroAccountingProvider
+AccountingSyncResult syncInvoice(InvoiceSyncRequest request);
 ```
 
-`AccountingSyncService.enqueueInvoicePush(...)` does:
+**Flow**:
 
-1. Resolve the `OrgIntegration` for `(ACCOUNTING, …)`. If disabled or no Xero connection → no-op (return without enqueueing).
-2. Run `TrustBoundaryGuard.evaluate(invoice)`. If refused → write a sync entry with `state=BLOCKED_TRUST_BOUNDARY`, emit audit event, return. The invoice approval itself does **not** roll back — refusal of Xero export is not a refusal of approval.
-3. Validate currency: if `invoice.currency != orgSettings.defaultCurrency` → write `BLOCKED_TRUST_BOUNDARY`-style entry with `last_error_code=MULTI_CURRENCY`, audit, return.
-4. Compute `external_reference = "KAZI-INV-" + invoice.id`.
-5. Idempotency: if a sync entry already exists for `(INVOICE, invoice.id)` in non-terminal state, **replace its `payload_snapshot` and reset `state=PENDING, next_attempt_at=now, attempt_count=0`** rather than creating a second row. A re-approval after a void should overwrite, not duplicate.
-6. Persist the row in the same transaction.
+1. **Domain event fires** -- `InvoiceApprovedEvent`, `InvoiceSentEvent`, or `InvoiceVoidedEvent` published by `InvoiceTransitionService`.
+2. **Event listener** -- `AccountingSyncEventListener.onInvoiceApproved()` calls `AccountingSyncService.enqueueInvoicePush(invoiceId, SyncTrigger.EVENT)`.
+3. **Trust boundary guard** -- `TrustBoundaryGuard.evaluate(invoice)` runs. If refused: sync entry created with `state = BLOCKED_TRUST_BOUNDARY`, `last_error_code = TRUST_BOUNDARY`, audit event `integration.xero.push_blocked_trust` emitted. No further processing. See Section 11.6 for guard logic.
+4. **Currency check** -- If `invoice.currency` does not match `OrgSettings.currency`, sync entry created with `state = DEAD_LETTER`, `last_error_code = MULTI_CURRENCY`. No retry.
+5. **Enqueue** -- Sync entry created with `state = PENDING`, `next_attempt_at = now`, `external_reference = "KAZI-INV-{invoice.id}"`. Idempotent: if a `PENDING` or `IN_FLIGHT` entry already exists for this `(entity_type=INVOICE, entity_id)`, the enqueue is a no-op (log and return).
+6. **Worker drain** -- `AccountingSyncWorker` (30-second `@Scheduled` poll) queries entries where `state IN ('PENDING', 'FAILED_RETRYING') AND next_attempt_at <= now`, ordered by `next_attempt_at ASC`, limited to 25 per tenant. For each entry:
+   a. Marks `state = IN_FLIGHT`.
+   b. Loads `Invoice` + `InvoiceLine` list + `Customer`.
+   c. Builds `InvoiceSyncRequest` via `XeroInvoicePayloadMapper`.
+   d. Calls `XeroAccountingProvider.syncInvoice(request)`.
+   e. Classifies result:
+      - Success: `state = COMPLETED`, `external_id` set, `completed_at = now`. Audit event `integration.xero.invoice_pushed`.
+      - Rate limited (429): `state = FAILED_RETRYING`, `last_error_code = RATE_LIMITED`, `next_attempt_at` set to `Retry-After` header value. Worker stops draining for this tenant.
+      - Transient error (5xx, network): `state = FAILED_RETRYING`, `attempt_count++`, `next_attempt_at` computed from back-off schedule. If `attempt_count >= 5`: `state = DEAD_LETTER`. Audit event `integration.xero.dead_letter`.
+      - Validation error (4xx): `state = DEAD_LETTER`, `last_error_code = VALIDATION_FAILED`. No retry. Audit event `integration.xero.invoice_push_failed`.
+      - Auth expired (401 after refresh attempt): `state = FAILED_RETRYING`, `last_error_code = AUTH_EXPIRED`. Worker pauses this tenant until connection is re-established.
 
-### N.3.4 Invoice Push Drain Worker
+**Tenant boundary**: The sync worker uses `TenantScopedRunner.forEachTenant()` to iterate active tenants. Each tenant's entries are drained within `RequestScopes.TENANT_ID` binding. Per-tenant exception isolation means one tenant's Xero failures do not block other tenants.
+
+**RBAC**: The automated event-driven path has no RBAC gate (system-initiated). The manual "force resync" path requires `INTEGRATION_VIEW_SYNC_STATUS`.
+
+### 11.3.3 Customer Push Flow
+
+**Purpose**: Push a new or updated customer from Kazi to Xero.
+
+**Service-layer signatures**:
 
 ```java
-@Component
-public class AccountingPushDrainWorker {
-    private static final long POLL_INTERVAL_MS = 30_000;
-    private final TenantScopedRunner tenantRunner;
-    private final TransactionTemplate tx;
-    private final AccountingSyncEntryRepository entries;
-    private final IntegrationRegistry registry;
+// AccountingSyncService
+void enqueueCustomerPush(UUID customerId, SyncTrigger trigger);
 
-    @Scheduled(fixedDelay = POLL_INTERVAL_MS)
-    public void drain() {
-        tenantRunner.forEachTenant((tenantId, orgId) -> drainTenant());
-    }
-
-    private int drainTenant() {
-        return tx.execute(s -> {
-            var due = entries.findDueForDrain(
-                List.of("PENDING", "FAILED_RETRYING"), Instant.now(), 25);
-            for (var entry : due) processOne(entry);
-            return due.size();
-        });
-    }
-    …
-}
+// XeroAccountingProvider
+AccountingSyncResult syncCustomer(CustomerSyncRequest request);
 ```
 
-```sql
-SELECT id, entity_type, entity_id, action, attempt_count, payload_snapshot, external_reference
-FROM accounting_sync_entry
-WHERE state IN ('PENDING','FAILED_RETRYING')
-  AND next_attempt_at <= :now
-  AND provider_id = 'xero'
-  AND entity_type IN ('INVOICE','CUSTOMER')   -- exclude PAYMENT_PULL (owned by poll worker)
-ORDER BY next_attempt_at
-LIMIT 25
-FOR UPDATE SKIP LOCKED;
+**Flow**:
+
+1. **Domain event fires** -- `CustomerCreatedEvent` or `CustomerUpdatedEvent` published by `CustomerService`.
+2. **Event listener** -- `AccountingSyncEventListener.onCustomerCreated()` or `onCustomerUpdated()` calls `AccountingSyncService.enqueueCustomerPush(customerId, SyncTrigger.EVENT)`.
+3. **Connection check** -- If no `CONNECTED` Xero connection exists for this tenant, skip silently (no-op provider fallback).
+4. **Enqueue** -- Sync entry created with `state = PENDING`, `external_reference = "KAZI-CUST-{customer.id}"`. Idempotent: if a pending entry exists, update the entry's `updated_at` to indicate re-enqueue rather than creating a duplicate.
+5. **Worker drain** -- Same unified worker as invoice push. Builds `CustomerSyncRequest` via `XeroContactPayloadMapper`, calls `XeroAccountingProvider.syncCustomer(request)`. Same result classification and retry logic.
+
+**Tenant boundary**: Same as invoice push -- `TenantScopedRunner.forEachTenant()`.
+
+**RBAC**: System-initiated (no gate). No manual customer re-push UI; re-push happens automatically on the next customer update.
+
+### 11.3.4 Payment Pull Flow
+
+**Purpose**: Poll Xero for invoices that moved to `PAID` and create `PaymentEvent` records in Kazi.
+
+**Service-layer signatures**:
+
+```java
+// AccountingSyncService
+PaymentPollSummary pollPaymentsForConnection(UUID connectionId);
+
+// AccountingPaymentSource (new port — ADR-279)
+List<ExternalPaymentEvent> getPaymentsModifiedSince(Instant since);
 ```
 
-Per-tenant batch size 25, mirroring `AutomationScheduler`. `FOR UPDATE SKIP LOCKED` so multiple Spring instances don't fight for the same row. The `entity_type` predicate matches the partial-index condition on `idx_sync_drain` so the query stays index-only.
+**Flow**:
 
-**Action-based dispatch.** The drain worker reads `action` and dispatches to the adapter accordingly:
+1. **Scheduled worker** -- `AccountingPaymentPollWorker` runs every 15 minutes (`@Scheduled(fixedDelay = 900_000)`). Uses `TenantScopedRunner.forEachTenant()` to iterate tenants. For each tenant, loads all `AccountingXeroConnection` rows with `status = CONNECTED`.
+2. **Poll Xero** -- For each connection, calls `XeroAccountingProvider.getPaymentsModifiedSince(connection.lastPollAt)`. Returns a list of `ExternalPaymentEvent` records.
+3. **Match** -- For each `ExternalPaymentEvent`:
+   a. Look up Kazi invoice via `external_reference` on `AccountingSyncEntry` where `external_reference` matches the event's `externalInvoiceReference`. If not found: log as Xero-native invoice, skip.
+   b. If found and Kazi invoice is not yet `PAID`:
+      - **Amount check**: If `|event.amount - invoice.total| > 0.01`: create sync entry with `state = RECONCILE_DRIFT`, `last_error_code = DRIFT_DETECTED`. Audit event `integration.xero.reconcile_drift`. Skip auto-transition.
+      - **Match**: Write `PaymentEvent` with `provider_slug = "xero"`, `payment_reference = event.externalPaymentId`, `payment_destination = "XERO_RECONCILE"`, `amount = event.amount`. Transition invoice to `PAID` via `InvoiceTransitionService.recordPayment()`. Emit `InvoicePaidEvent`. Create sync entry with `state = COMPLETED`, `direction = PULL`. Audit event `integration.xero.payment_reconciled`.
+   c. If found and Kazi invoice is already `PAID`: skip (idempotent; `PaymentEvent` dedup by `(invoice_id, payment_reference)`).
+4. **Update cursor** -- Set `connection.lastPollAt = now` after successful poll.
 
-| `action` | `entity_type` | Adapter call |
+**Tenant boundary**: `TenantScopedRunner.forEachTenant()` with exception isolation per tenant.
+
+**RBAC**: System-initiated (no gate). Manual reconciliation for drift cases requires `FINANCIAL_RECONCILE`.
+
+**Error handling**:
+- Xero API error during poll: log, skip this connection, try again next cycle.
+- Rate limit during poll: honour `Retry-After`, skip remaining connections for this cycle.
+
+### 11.3.5 One-Time Customer Import
+
+**Purpose**: Import existing Xero contacts as Kazi customers on first connection.
+
+**Service-layer signatures**:
+
+```java
+// XeroCustomerImportService
+public record CustomerImportSummary(int created, int skippedDuplicate, int skippedNoEmail, int total) {}
+CustomerImportSummary importCustomersFromXero(UUID connectionId, UUID actorMemberId);
+```
+
+**Flow**:
+
+1. **Initiate** -- `POST /api/integrations/xero/import-customers`. Requires `INTEGRATION_MANAGE`.
+2. **Guard** -- Checks `AccountingXeroConnection.status = CONNECTED`. Checks that import has not already been run (flag stored in `AccountingXeroConnection.config_json` or a dedicated boolean). Returns 409 if already imported.
+3. **Paginate** -- Calls `XeroApiClient.getContacts(page)` in a loop until all pages are consumed. Xero returns contacts in pages of 100.
+4. **Dedup** -- For each Xero contact:
+   a. Skip if no email address (`skippedNoEmail++`).
+   b. Match against existing Kazi customers by email (case-insensitive). If match: `skippedDuplicate++`, set `external_reference` on the existing customer for future push dedup.
+   c. If no match: match by `(name, taxNumber)`. If match: `skippedDuplicate++`, set `external_reference`.
+   d. If no match: create new `Customer` with `lifecycleStatus = PROSPECT`, `external_reference = xeroContactId`, tag `IMPORTED_FROM_XERO`.
+5. **Audit** -- Emit `integration.xero.customers_imported` with summary counts.
+6. **Return** -- `CustomerImportSummary` to the caller.
+
+**Tenant boundary**: Request-scoped (`TenantFilter`).
+
+**RBAC**: `@RequiresCapability("INTEGRATION_MANAGE")`.
+
+### 11.3.6 Trust Boundary Guard
+
+See Section 11.6 for full specification.
+
+### 11.3.7 Retry and Dead-Letter
+
+**Retry policy**: Exponential back-off with fixed offsets.
+
+| Attempt | Delay | Cumulative |
 |---|---|---|
-| `UPSERT` | `INVOICE` | `provider.syncInvoice(...)` — Xero PUT-or-POST keyed on `external_reference` |
-| `VOID` | `INVOICE` | `provider.syncInvoice(...)` with `payload.status = VOIDED` — the adapter inspects status and calls Xero's void endpoint |
-| `UPSERT` | `CUSTOMER` | `provider.syncCustomer(...)` |
+| 1 | 1 minute | 1 minute |
+| 2 | 5 minutes | 6 minutes |
+| 3 | 15 minutes | 21 minutes |
+| 4 | 1 hour | 1 hour 21 minutes |
+| 5 | 6 hours | 7 hours 21 minutes |
 
-`VOID` rows are written by `InvoiceService.voidInvoice` in the same transaction as the status flip (mirror of approve/markSent). The `payload_snapshot` includes the post-void invoice state. `XeroAccountingProvider.syncInvoice` branches on `payload.status` — `VOIDED` → call Xero `POST /Invoices/{id}` with `Status=VOIDED`; otherwise create-or-update. This keeps the port surface minimal (no `voidInvoice` method on `AccountingProvider`) while making the action explicit in the outbox row for auditability.
+After attempt 5: `state = DEAD_LETTER`. The entry is visible in the sync log UI with a manual "Retry" action.
 
-Retry classification:
+**Never-retry conditions** (go straight to `DEAD_LETTER`):
+- HTTP 400-class errors from Xero (validation failures).
+- `MULTI_CURRENCY` -- invoice currency does not match org default.
+- `TRUST_BOUNDARY` -- blocked by trust guard (permanent, not retryable).
 
-| HTTP / cause | Class | Action |
-|---|---|---|
-| 200/201 | success | `state=COMPLETED`, store `external_id` |
-| 401 | auth | refresh; re-enqueue at `now`; on 3rd refresh fail → connection `REFRESH_FAILED` |
-| 429 | rate-limit | `state=FAILED_RETRYING`, `next_attempt_at = now + Retry-After`, do not increment attempt_count |
-| 5xx / network | transient | `state=FAILED_RETRYING`, exponential back-off (1m, 5m, 15m, 1h, 6h); after attempt 5 → `DEAD_LETTER` |
-| 4xx (other) | validation | `state=DEAD_LETTER` immediately, `last_error_code=VALIDATION_FAILED` |
+**Manual retry** (`POST /api/integrations/sync/{entryId}/retry`):
+- Resets `attempt_count = 0`, `state = PENDING`, `next_attempt_at = now`.
+- Requires `INTEGRATION_VIEW_SYNC_STATUS`.
+- Emits audit event `integration.xero.manual_retry`.
 
-### N.3.5 Customer Push Enqueue (Event-Listener Path)
+### 11.3.8 Rate Limit Handling
 
-For customer creates/updates the AFTER_COMMIT event listener path is acceptable, **because customer drift between Kazi and Xero is correctable on the next change** (a stale customer name produces a slightly-wrong contact in Xero, not a money error). The cost-of-loss for a missed customer push is much lower than for a missed invoice push.
+Xero rate limits: 60 calls/minute and 5000 calls/day per tenant connection.
 
-`AccountingSyncEventListener.onCustomerUpdated(...)` filters: only Xero-relevant fields (name, email, address, tax-id) trigger an enqueue; pure metadata edits don't. The listener calls `AccountingSyncService.enqueueCustomerPush(customerId, trigger)` which is a non-transactional outbox-row insert — if it fails, we log and move on; the customer is still correct in Kazi.
+**Strategy**:
 
-### N.3.6 Payment Poll Worker
-
-```java
-@Component
-public class AccountingPaymentPollWorker {
-    private static final long POLL_INTERVAL_MS = 900_000; // 15m base
-    private final TenantScopedRunner tenantRunner;
-    private final TransactionTemplate tx;
-    private final AccountingXeroConnectionRepository connections;
-    private final IntegrationRegistry registry;
-
-    @Scheduled(fixedDelay = POLL_INTERVAL_MS)
-    public void poll() {
-        tenantRunner.forEachTenant((tenantId, orgId) -> pollTenant());
-    }
-
-    private void pollTenant() {
-        var connected = connections.findByStatus("CONNECTED");
-        for (var conn : connected) {
-            if (intervalElapsed(conn)) pollConnection(conn);
-        }
-    }
-    …
-}
-```
-
-For each connection:
-
-1. Resolve the active `AccountingProvider` via `IntegrationRegistry.resolve(ACCOUNTING, AccountingProvider.class)`, then **narrow with `instanceof AccountingPaymentSource`**. The existing registry resolves by `(domain, portInterface)` and casts to `T`; it does not return `Optional` and would throw `ClassCastException` if a second resolve were attempted on the sibling port for an adapter that doesn't implement it. The poll worker therefore always resolves the primary port and runtime-checks for the sibling capability:
-
-   ```java
-   var provider = registry.resolve(IntegrationDomain.ACCOUNTING, AccountingProvider.class);
-   if (!(provider instanceof AccountingPaymentSource pullSource)) {
-       log.debug("Provider {} does not support payment pull; skipping", provider.providerId());
-       return;
-   }
-   var events = pullSource.getPaymentsModifiedSince(connection.lastPollAt().minus(Duration.ofMinutes(5)));
-   ```
-
-   `XeroAccountingProvider` implements both interfaces; `NoOpAccountingProvider` implements only `AccountingProvider` and is silently skipped. Adding a `resolveIfSupports(domain, Class<T>)` helper to `IntegrationRegistry` is an acceptable alternative future cleanup but **not required for Phase 71** — the `instanceof` check is a one-liner per worker and keeps the registry contract unchanged.
-2. Call `getPaymentsModifiedSince(connection.lastPollAt - PT5M)` (5-minute backstop window for clock-skew safety).
-3. For each `ExternalPaymentEvent`:
-   - Look up Kazi invoice by `external_reference`. If not found → log, skip (Xero-native invoice).
-   - Dedup against existing `payment_events` rows by `(invoice_id, provider_slug='xero', external_payment_id)` — JSONB lookup into `provider_payload`.
-   - Amount tolerance: if `|kaziAmount - xeroAmount| > 0.01` → `state=RECONCILE_DRIFT` on the sync entry, audit `integration.xero.reconcile_drift`, no auto-transition.
-   - Else: write a new `PaymentEvent` with `provider_slug='xero'`, `status=PAID`, `payment_destination='OPERATING'`. If invoice is in `SENT` and total now matches, call `invoice.recordPayment(...)`. Phase 10's `InvoicePaidEvent` fires from there.
-4. Update `connection.lastPollAt = now`.
-
-### N.3.7 One-Time Customer Import
-
-`POST /api/integrations/xero/import-customers` — capability `TEAM_OVERSIGHT`, owner-initiated.
-
-1. Reject if `connection.customer_import_completed_at IS NOT NULL`.
-2. Page through Xero contacts (page-size 100, `if-modified-since` not used — full snapshot).
-3. For each contact: dedup against existing Kazi customers by (a) email exact-match (case-insensitive), then (b) tax-id, then (c) name+email-domain. Skip if matched.
-4. Else create a `Customer` in `PROSPECT` with `external_reference="XERO-CONTACT-{xeroContactId}"` and a `IMPORTED_FROM_XERO` tag. The `external_reference` is what lets the next push update-not-create.
-5. On completion set `connection.customer_import_completed_at = now`.
-6. Audit `integration.xero.customers_imported` with `{created, skipped_duplicate, skipped_no_email, total}`.
-
-```sql
-SELECT id FROM customers
-WHERE LOWER(email) = LOWER(:email)
-   OR (tax_id IS NOT NULL AND tax_id = :taxId)
-LIMIT 1;
-```
-
-Re-running requires disconnect + reconnect (which clears the timestamp via a new connection row).
-
-### N.3.8 Manual Reconcile of Drift
-
-`POST /api/invoices/{invoiceId}/reconcile-xero` — capability `FINANCIAL_RECONCILE` (new).
-
-Inputs: target sync-entry id (must be `RECONCILE_DRIFT`), reconcile-as-amount, reason text.
-
-Behaviour: writes a `PaymentEvent` with `provider_slug='xero'`, `payment_reference="MANUAL-RECONCILE-{member}-{ts}"`, transitions invoice to `PAID`, marks sync entry `COMPLETED`, audits `integration.xero.manual_reconcile`. The manual path is the only way out of `RECONCILE_DRIFT` short of voiding and re-issuing.
-
-### N.3.9 Trust-Boundary Guard
-
-`TrustBoundaryGuard` is plain Java, no LLM, no AI. Evaluation order (short-circuits on first refuse):
-
-1. **`Invoice.isTrustInvoice == true`** (Phase 60 legal-za field).
-2. **Any `InvoiceLine.sourceAccount` references a `TrustAccount`** — query: `SELECT 1 FROM invoice_lines il JOIN trust_accounts ta ON il.source_account_id = ta.id WHERE il.invoice_id = :id LIMIT 1`.
-3. **Customer has any non-zero open trust balance** via `TrustLedger.openBalanceFor(customerId)`.
-
-If any tier returns true:
-
-```java
-public TrustBoundaryDecision evaluate(Invoice invoice) {
-    if (Boolean.TRUE.equals(invoice.getIsTrustInvoice())) {
-        return TrustBoundaryDecision.refuse(REASON_TRUST_INVOICE_FLAG);
-    }
-    if (lineRepository.anyLineLinkedToTrustAccount(invoice.getId())) {
-        return TrustBoundaryDecision.refuse(REASON_TRUST_ACCOUNT_LINE);
-    }
-    if (trustLedger.hasOpenBalance(invoice.getCustomerId())) {
-        return TrustBoundaryDecision.refuse(REASON_CUSTOMER_TRUST_BALANCE);
-    }
-    return TrustBoundaryDecision.allow();
-}
-```
-
-Refusal payload (audit event `integration.xero.push_blocked_trust`):
-
-```json
-{
-  "invoiceId": "…",
-  "invoiceNumber": "INV-2026-0042",
-  "reasonCode": "TRUST_ACCOUNT_LINE",
-  "reasonDetail": "Invoice line {lineId} sources from trust account {accountId}",
-  "guardVersion": 1,
-  "evaluatedAt": "2026-…"
-}
-```
-
-The guard cannot be bypassed via UI or API. There is no override capability. The invoice approval still succeeds; only the Xero push is refused. The frontend invoice-detail Xero chip shows a passive "Not pushed — trust-related" label with a link to the audit event.
-
-### N.3.10 Tax-Code Mapping Resolution
-
-```java
-@Service
-public class AccountingTaxCodeMappingService {
-    public String resolveExternal(String providerId, KaziTaxMode mode) {
-        return mappingRepo.findByProviderIdAndKaziTaxMode(providerId, mode)
-            .map(AccountingTaxCodeMapping::getExternalTaxCode)
-            .orElseThrow(() -> new TaxMappingMissingException(providerId, mode));
-    }
-}
-```
-
-Called by `XeroInvoicePayloadMapper` per line item. A missing mapping is a 4xx-class error — the invoice goes straight to `DEAD_LETTER` so the user sees and fixes it; we do not silently substitute `NONE`.
+1. `XeroApiClient` reads `X-Rate-Limit-Remaining` and `Retry-After` response headers on every API call.
+2. When `X-Rate-Limit-Remaining < 5`: `XeroApiClient` throws `XeroRateLimitException` with the `retryAfter` duration.
+3. The sync worker catches `XeroRateLimitException` and:
+   a. Marks the current entry `FAILED_RETRYING` with `last_error_code = RATE_LIMITED` and `next_attempt_at = now + retryAfter`.
+   b. Stops draining entries for this tenant for the remainder of this worker cycle. Other tenants continue.
+4. Daily limit (5000 calls): tracked in-memory per connection via an `AtomicInteger` counter reset at UTC midnight. When the counter reaches 4900: log a warning. When it reaches 5000: pause all sync for this connection until the next UTC day.
 
 ---
 
-## N.4 — API Surface
+## 11.4 API Surface
 
-### N.4.1 OAuth & Connection (capability: `TEAM_OVERSIGHT`)
+### 11.4.1 Xero Connection Management (OAuth2)
 
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/integrations/xero/connect` | Returns `{authUrl, state}` |
-| `GET` | `/api/integrations/xero/callback` | OAuth callback; redirects to settings page |
-| `DELETE` | `/api/integrations/xero/connection` | Revokes Xero side, marks `REVOKED` |
-| `GET` | `/api/integrations/xero/connection` | Returns connection metadata (no secrets) |
+All endpoints on `XeroIntegrationController` under `/api/integrations/xero/`.
 
-`GET /connection` response:
+| Method | Path | Description | Capability | Notes |
+|---|---|---|---|---|
+| `GET` | `/api/integrations/xero/connect` | Initiate OAuth2 flow, return authorization URL | `INTEGRATION_MANAGE` | Returns `{ authUrl, state }` |
+| `GET` | `/api/integrations/xero/callback` | Complete OAuth2 handshake | `INTEGRATION_MANAGE` | Query params: `code`, `state`. Redirects to settings page on success |
+| `GET` | `/api/integrations/xero/connection` | Get current connection status | `INTEGRATION_MANAGE` | Returns connection metadata or 404 |
+| `DELETE` | `/api/integrations/xero/connection` | Disconnect from Xero | `INTEGRATION_MANAGE` | Revokes tokens, marks REVOKED |
 
+**Connect response**:
 ```json
 {
-  "connectionId": "uuid",
-  "xeroOrgName": "Acme (Pty) Ltd",
-  "xeroTenantId": "uuid",
+  "authUrl": "https://login.xero.com/identity/connect/authorize?...",
+  "state": "random-state-token"
+}
+```
+
+**Connection status response**:
+```json
+{
+  "id": "uuid",
+  "xeroOrgName": "Smith & Associates",
   "status": "CONNECTED",
-  "scope": "accounting.transactions accounting.contacts offline_access",
-  "connectedAt": "2026-05-03T10:00:00Z",
-  "lastTokenRefreshAt": "2026-05-03T11:30:00Z",
-  "accessTokenExpiresAt": "2026-05-03T12:00:00Z",
-  "lastPollAt": "2026-05-03T11:45:00Z",
-  "customerImportCompletedAt": null
+  "connectedAt": "2026-05-09T10:30:00Z",
+  "lastTokenRefreshAt": "2026-05-09T14:00:00Z",
+  "accessTokenExpiresAt": "2026-05-09T14:30:00Z",
+  "scope": "openid,profile,accounting.transactions,accounting.contacts",
+  "lastPollAt": "2026-05-09T14:15:00Z"
 }
 ```
 
-### N.4.2 Sync Observability (capability: `INTEGRATION_VIEW_SYNC_STATUS`)
+### 11.4.2 Sync Operations
 
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/integrations/xero/sync-summary` | Counts by state for the integration card |
-| `GET` | `/api/integrations/xero/sync-log` | Paginated list, filterable by `state`, `entityType`, `from`, `to` |
-| `POST` | `/api/integrations/xero/sync/{entryId}/retry` | Reset `attempt_count=0`, `state=PENDING`, `next_attempt_at=now` |
-| `POST` | `/api/integrations/xero/sync/{entryId}/force-resync` | Re-enqueue from current entity state (drops stale `payload_snapshot`) |
+| Method | Path | Description | Capability | Notes |
+|---|---|---|---|---|
+| `POST` | `/api/integrations/sync/{entryId}/retry` | Retry a dead-lettered entry | `INTEGRATION_VIEW_SYNC_STATUS` | Resets attempt count, re-enqueues |
+| `POST` | `/api/integrations/sync/invoice/{invoiceId}/resync` | Force resync an invoice | `INTEGRATION_VIEW_SYNC_STATUS` | Creates new sync entry with `trigger = FORCE_RESYNC` |
 
-`/sync-summary` response:
+### 11.4.3 Sync Status and Log
 
+| Method | Path | Description | Capability | Notes |
+|---|---|---|---|---|
+| `GET` | `/api/integrations/sync/summary` | Sync dashboard counts | `INTEGRATION_VIEW_SYNC_STATUS` | Counts by state, oldest pending |
+| `GET` | `/api/integrations/sync/entries` | Paginated sync log | `INTEGRATION_VIEW_SYNC_STATUS` | Filterable by `state`, `entityType`, `direction` |
+| `GET` | `/api/integrations/sync/entries/{id}` | Single entry detail | `INTEGRATION_VIEW_SYNC_STATUS` | |
+| `GET` | `/api/integrations/sync/invoice/{invoiceId}/status` | Sync status for one invoice | `INTEGRATION_VIEW_SYNC_STATUS` | Returns latest sync entry for this invoice |
+
+**Sync summary response**:
 ```json
 {
   "pending": 3,
   "inFlight": 1,
-  "completedLast24h": 47,
-  "failedRetrying": 2,
+  "completedLast24h": 42,
+  "failedRetrying": 0,
   "deadLetter": 1,
-  "blockedTrustBoundary": 4,
+  "blockedTrustBoundary": 2,
   "reconcileDrift": 0,
-  "oldestPendingAgeSeconds": 120
+  "oldestPendingAt": "2026-05-09T14:10:00Z",
+  "lastCompletedAt": "2026-05-09T14:12:00Z"
 }
 ```
 
-### N.4.3 Tax-Code Mapping (capability: `TEAM_OVERSIGHT`)
-
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/api/integrations/xero/tax-codes` | List mappings + Xero TaxRates dropdown source |
-| `PUT` | `/api/integrations/xero/tax-codes/{kaziTaxMode}` | Update mapping for one mode |
-
+**Sync entry response**:
 ```json
-PUT body: {"externalTaxCode": "OUTPUT2", "displayLabel": "VAT (15%)"}
+{
+  "id": "uuid",
+  "entityType": "INVOICE",
+  "entityId": "uuid",
+  "providerId": "xero",
+  "direction": "PUSH",
+  "state": "COMPLETED",
+  "attemptCount": 1,
+  "externalReference": "KAZI-INV-abc123",
+  "externalId": "xero-invoice-id-456",
+  "lastErrorCode": null,
+  "lastErrorDetail": null,
+  "trigger": "EVENT",
+  "createdAt": "2026-05-09T14:00:00Z",
+  "completedAt": "2026-05-09T14:00:05Z"
+}
 ```
 
-### N.4.4 Manual Reconcile (capability: `FINANCIAL_RECONCILE`)
+### 11.4.4 Customer Import
 
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/api/invoices/{invoiceId}/reconcile-xero` | Manual close of `RECONCILE_DRIFT` |
+| Method | Path | Description | Capability | Notes |
+|---|---|---|---|---|
+| `POST` | `/api/integrations/xero/import-customers` | One-time customer import | `INTEGRATION_MANAGE` | Returns summary; 409 if already run |
 
+**Import response**:
 ```json
-{"syncEntryId": "uuid", "reconcileAsAmount": 1234.56, "reason": "Xero split into two invoices, this matches first"}
+{
+  "created": 45,
+  "skippedDuplicate": 12,
+  "skippedNoEmail": 3,
+  "total": 60
+}
 ```
 
-### N.4.5 One-Time Import (capability: `TEAM_OVERSIGHT`)
+### 11.4.5 Tax Code Mapping
 
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/api/integrations/xero/import-customers` | One-shot customer import; rejects if already run |
+| Method | Path | Description | Capability | Notes |
+|---|---|---|---|---|
+| `GET` | `/api/integrations/xero/tax-mappings` | List current mappings | `INTEGRATION_MANAGE` | Returns all rows |
+| `PUT` | `/api/integrations/xero/tax-mappings/{id}` | Update a mapping | `INTEGRATION_MANAGE` | Updates `external_tax_code` and `display_label` |
+| `POST` | `/api/integrations/xero/tax-mappings/reset` | Reset to defaults | `INTEGRATION_MANAGE` | Restores pre-seeded ZA defaults |
+| `GET` | `/api/integrations/xero/tax-rates` | Fetch available Xero tax rates | `INTEGRATION_MANAGE` | Proxies Xero `TaxRates` API for dropdown population |
 
+### 11.4.6 Settings
+
+| Method | Path | Description | Capability | Notes |
+|---|---|---|---|---|
+| `GET` | `/api/integrations/xero/settings` | Get sync settings | `INTEGRATION_MANAGE` | Poll interval, push trigger |
+| `PUT` | `/api/integrations/xero/settings` | Update sync settings | `INTEGRATION_MANAGE` | |
+
+**Settings request/response**:
 ```json
-Response: {"created": 124, "skippedDuplicate": 18, "skippedNoEmail": 3, "total": 145, "completedAt": "…"}
+{
+  "paymentPollIntervalMinutes": 15,
+  "pushTrigger": "APPROVED",
+  "autoSyncEnabled": true
+}
 ```
+
+### 11.4.7 Manual Reconciliation
+
+| Method | Path | Description | Capability | Notes |
+|---|---|---|---|---|
+| `POST` | `/api/integrations/sync/{entryId}/reconcile` | Manually mark reconcile drift as resolved | `FINANCIAL_RECONCILE` | Closes the drift entry, records decision |
 
 ---
 
-## N.5 — Sequence Diagrams
+## 11.5 Sequence Diagrams
 
-### N.5.1 OAuth2 Connect Happy Path
+### 11.5.1 OAuth2 Connect + Callback
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant FE as Frontend (settings/integrations/xero)
-    participant BE as Backend (XeroIntegrationController)
-    participant Xero as Xero OAuth
-    participant SS as SecretStore
-    participant DB as Tenant DB
+    actor User
+    participant Browser
+    participant NextJS as Next.js
+    participant Spring as Spring Boot
+    participant DB as Postgres
+    participant SecretStore
+    participant Xero as Xero API
 
-    User->>FE: Click "Connect to Xero"
-    FE->>BE: GET /api/integrations/xero/connect
-    BE-->>FE: { authUrl, state }
-    FE->>Xero: window.open(authUrl)
-    User->>Xero: Consent
-    Xero-->>FE: redirect /callback?code&state
-    FE->>BE: GET /api/integrations/xero/callback?code&state
-    BE->>BE: Verify HMAC state
-    BE->>Xero: POST /token (code → tokens)
-    Xero-->>BE: access_token, refresh_token, expires_in, scope
-    BE->>Xero: GET /connections (resolve xero_tenant_id)
-    Xero-->>BE: tenantId, orgName
-    BE->>DB: INSERT accounting_xero_connection
-    BE->>SS: store(accounting:xero:access_token)
-    BE->>SS: store(accounting:xero:refresh_token)
-    BE->>DB: audit integration.xero.connected
-    BE-->>FE: 302 settings/integrations/xero
-    FE-->>User: "Connected to {xeroOrgName}"
+    User->>Browser: Click "Connect to Xero"
+    Browser->>NextJS: GET /settings/integrations/xero
+    NextJS->>Spring: GET /api/integrations/xero/connect
+    Spring->>Spring: Generate state + PKCE verifier
+    Spring->>SecretStore: Store state → verifier mapping
+    Spring-->>NextJS: { authUrl, state }
+    NextJS-->>Browser: Redirect to Xero consent screen
+
+    User->>Xero: Grant consent
+    Xero-->>Browser: Redirect to callback with code + state
+
+    Browser->>Spring: GET /api/integrations/xero/callback?code=...&state=...
+    Spring->>SecretStore: Retrieve verifier for state
+    Spring->>Xero: POST /connect/token (code + verifier)
+    Xero-->>Spring: { access_token, refresh_token, expires_in }
+    Spring->>Xero: GET /connections
+    Xero-->>Spring: { tenantId, tenantName }
+    Spring->>DB: Upsert OrgIntegration (provider=xero, enabled=true)
+    Spring->>DB: Insert AccountingXeroConnection
+    Spring->>SecretStore: Store access_token + refresh_token
+    Spring->>DB: Insert AccountingTaxCodeMapping defaults
+    Spring->>DB: Insert AuditEvent (integration.xero.connected)
+    Spring-->>Browser: Redirect to /settings/integrations/xero?connected=true
+
+    Note over Browser: Connection established, sync active
 ```
 
-### N.5.2 Invoice Push With Rate-Limit Retry
+### 11.5.2 Invoice Push (Event to Xero API)
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant InvSvc as InvoiceService
-    participant Sync as AccountingSyncService
+    actor User
+    participant Spring as Spring Boot
     participant Guard as TrustBoundaryGuard
-    participant DB as Tenant DB
-    participant Worker as PushDrainWorker
-    participant XeroCli as XeroApiClient
+    participant SyncSvc as AccountingSyncService
+    participant DB as Postgres
+    participant Worker as AccountingSyncWorker
+    participant Mapper as XeroInvoicePayloadMapper
+    participant Provider as XeroAccountingProvider
     participant Xero as Xero API
 
-    User->>InvSvc: approveInvoice(id)
-    activate InvSvc
-    InvSvc->>InvSvc: invoice.approve()
-    InvSvc->>Sync: enqueueInvoicePush(id, INVOICE_APPROVED)
-    Sync->>Guard: evaluate(invoice)
-    Guard-->>Sync: ALLOW
-    Sync->>DB: INSERT sync_entry (PENDING)
-    InvSvc-->>User: 200 OK (invoice approved)
-    deactivate InvSvc
-    Note over DB: Same transaction commits
+    User->>Spring: Approve invoice
+    Spring->>Spring: Publish InvoiceApprovedEvent
 
-    Worker->>DB: SELECT … FOR UPDATE SKIP LOCKED
-    DB-->>Worker: [entry]
-    Worker->>DB: UPDATE entry SET state=IN_FLIGHT
-    Worker->>XeroCli: createOrUpdateInvoice(payload, ref)
-    XeroCli->>Xero: POST /Invoices
-    Xero-->>XeroCli: 429 Retry-After: 60
-    XeroCli-->>Worker: RateLimitedException(60s)
-    Worker->>DB: UPDATE entry SET state=FAILED_RETRYING, next_attempt_at=now+60s
-    Note over Worker: 60s later
-    Worker->>XeroCli: retry
-    XeroCli->>Xero: POST /Invoices
-    Xero-->>XeroCli: 200 + InvoiceID
-    XeroCli-->>Worker: success(externalId)
-    Worker->>DB: UPDATE entry SET state=COMPLETED, external_id=…
-    Worker->>DB: audit integration.xero.invoice_pushed
-```
+    Spring->>SyncSvc: enqueueInvoicePush(invoiceId, EVENT)
+    SyncSvc->>DB: Load Invoice + InvoiceLines + Customer
+    SyncSvc->>Guard: evaluate(invoice, lines, customer)
 
-### N.5.3 Payment Poll With Drift Branch
-
-```mermaid
-sequenceDiagram
-    participant Worker as PaymentPollWorker
-    participant Conn as AccountingXeroConnection
-    participant XeroCli as XeroApiClient
-    participant Xero as Xero API
-    participant InvRepo as InvoiceRepository
-    participant DB as Tenant DB
-    participant Inv as Invoice
-
-    Worker->>Conn: forEach status=CONNECTED
-    Worker->>XeroCli: getPaymentsModifiedSince(lastPollAt - PT5M)
-    XeroCli->>Xero: GET /Invoices?statuses=PAID&modifiedAfter=…
-    Xero-->>XeroCli: [paid invoices]
-    XeroCli-->>Worker: List<ExternalPaymentEvent>
-    loop each event
-        Worker->>InvRepo: findByExternalReference(KAZI-INV-…)
-        alt not found
-            Worker->>Worker: log skip (Xero-native invoice)
-        else found and amount matches ±0.01
-            Worker->>DB: INSERT payment_events (provider=xero, source=XERO_RECONCILE)
-            Worker->>Inv: recordPayment(reference)
-            Note over Inv: SENT → PAID, fires InvoicePaidEvent
-            Worker->>DB: audit integration.xero.payment_reconciled
-        else amount drift > 0.01
-            Worker->>DB: UPDATE sync_entry SET state=RECONCILE_DRIFT
-            Worker->>DB: audit integration.xero.reconcile_drift
-            Note over Inv: Invoice stays SENT; UI shows passive notice
-        end
+    alt Trust boundary violated
+        Guard-->>SyncSvc: { allowed=false, reason="Trust invoice" }
+        SyncSvc->>DB: Insert sync entry (BLOCKED_TRUST_BOUNDARY)
+        SyncSvc->>DB: Insert AuditEvent (push_blocked_trust)
+    else Trust boundary clear
+        Guard-->>SyncSvc: { allowed=true }
+        SyncSvc->>DB: Insert sync entry (PENDING, next_attempt_at=now)
     end
-    Worker->>Conn: lastPollAt = now
+
+    Note over Worker: 30-second scheduled poll
+
+    Worker->>DB: SELECT entries WHERE state IN (PENDING, FAILED_RETRYING) AND next_attempt_at <= now
+    Worker->>DB: UPDATE entry SET state = IN_FLIGHT
+    Worker->>DB: Load Invoice + InvoiceLines + Customer
+    Worker->>Mapper: map(invoice, lines, customer, taxMappings)
+    Mapper-->>Worker: InvoiceSyncRequest
+    Worker->>Provider: syncInvoice(request)
+    Provider->>Xero: POST /api.xro/2.0/Invoices
+
+    alt Success (200/201)
+        Xero-->>Provider: { InvoiceID: "xero-id" }
+        Provider-->>Worker: AccountingSyncResult(success=true, externalId)
+        Worker->>DB: UPDATE entry SET state=COMPLETED, external_id, completed_at
+        Worker->>DB: Insert AuditEvent (invoice_pushed)
+    else Rate limited (429)
+        Xero-->>Provider: 429 + Retry-After: 30
+        Provider-->>Worker: XeroRateLimitException(retryAfter=30s)
+        Worker->>DB: UPDATE entry SET state=FAILED_RETRYING, next_attempt_at=now+30s
+        Note over Worker: Stop draining this tenant
+    else Validation error (400)
+        Xero-->>Provider: 400 + error details
+        Provider-->>Worker: AccountingSyncResult(success=false, errorMessage)
+        Worker->>DB: UPDATE entry SET state=DEAD_LETTER, last_error_code=VALIDATION_FAILED
+        Worker->>DB: Insert AuditEvent (invoice_push_failed)
+    else Transient error (5xx)
+        Xero-->>Provider: 500
+        Provider-->>Worker: AccountingSyncResult(success=false, errorMessage)
+        Worker->>DB: UPDATE entry SET state=FAILED_RETRYING, attempt_count++, next_attempt_at=backoff
+        Note over Worker: After 5 attempts → DEAD_LETTER
+    end
 ```
 
-### N.5.4 Trust-Boundary Refusal
+### 11.5.3 Payment Poll (Xero to Kazi)
 
 ```mermaid
 sequenceDiagram
-    participant User
-    participant InvSvc as InvoiceService
-    participant Sync as AccountingSyncService
-    participant Guard as TrustBoundaryGuard
-    participant TrustLedger
-    participant DB as Tenant DB
-    participant FE as Frontend
+    participant Scheduler as @Scheduled (15 min)
+    participant Runner as TenantScopedRunner
+    participant SyncSvc as AccountingSyncService
+    participant Provider as XeroAccountingProvider
+    participant Xero as Xero API
+    participant DB as Postgres
+    participant InvSvc as InvoiceTransitionService
 
-    User->>InvSvc: approveInvoice(id)
-    InvSvc->>InvSvc: invoice.approve()
-    InvSvc->>Sync: enqueueInvoicePush(id)
-    Sync->>Guard: evaluate(invoice)
-    Guard->>Guard: invoice.isTrustInvoice? false
-    Guard->>DB: anyLineLinkedToTrustAccount(invoiceId)?
-    DB-->>Guard: yes (line {x} → trust_account {y})
-    Guard-->>Sync: REFUSE(TRUST_ACCOUNT_LINE, detail)
-    Sync->>DB: INSERT sync_entry (state=BLOCKED_TRUST_BOUNDARY)
-    Sync->>DB: audit integration.xero.push_blocked_trust
-    InvSvc-->>User: 200 OK (invoice approved)
-    Note over InvSvc: Approval succeeds; only Xero push is refused
-    User->>FE: Open invoice detail
-    FE->>FE: Xero chip = "Not pushed — trust-related"
-    FE-->>User: passive notice + audit-log link
+    Scheduler->>Runner: forEachTenant(action)
+
+    loop For each tenant
+        Runner->>Runner: Bind RequestScopes.TENANT_ID
+        Runner->>SyncSvc: pollPaymentsForConnection(connectionId)
+        SyncSvc->>DB: Load AccountingXeroConnection (status=CONNECTED)
+        SyncSvc->>Provider: getPaymentsModifiedSince(lastPollAt)
+        Provider->>Xero: GET /api.xro/2.0/Invoices?where=UpdatedDateUTC>lastPollAt&Statuses=PAID
+        Xero-->>Provider: List of paid invoices with payment details
+        Provider-->>SyncSvc: List<ExternalPaymentEvent>
+
+        loop For each ExternalPaymentEvent
+            SyncSvc->>DB: Find AccountingSyncEntry by external_reference
+            alt No match (Xero-native invoice)
+                Note over SyncSvc: Log and skip
+            else Match found, Kazi invoice not PAID
+                alt Amount mismatch > 0.01
+                    SyncSvc->>DB: Insert sync entry (RECONCILE_DRIFT)
+                    SyncSvc->>DB: Insert AuditEvent (reconcile_drift)
+                else Amount matches
+                    SyncSvc->>DB: Insert PaymentEvent (provider=xero, dest=XERO_RECONCILE)
+                    SyncSvc->>InvSvc: recordPayment(invoiceId, paymentRef)
+                    InvSvc->>DB: UPDATE Invoice SET status=PAID
+                    InvSvc->>InvSvc: Publish InvoicePaidEvent
+                    SyncSvc->>DB: Insert sync entry (COMPLETED, direction=PULL)
+                    SyncSvc->>DB: Insert AuditEvent (payment_reconciled)
+                end
+            else Match found, already PAID
+                Note over SyncSvc: Skip (idempotent)
+            end
+        end
+
+        SyncSvc->>DB: UPDATE connection SET last_poll_at = now
+    end
+```
+
+### 11.5.4 Dead-Letter Retry
+
+```mermaid
+sequenceDiagram
+    actor User
+    participant Browser
+    participant NextJS as Next.js
+    participant Spring as Spring Boot
+    participant DB as Postgres
+    participant Worker as AccountingSyncWorker
+    participant Provider as XeroAccountingProvider
+    participant Xero as Xero API
+
+    User->>Browser: Navigate to sync log, find dead-lettered entry
+    Browser->>NextJS: View sync log page
+    NextJS->>Spring: GET /api/integrations/sync/entries?state=DEAD_LETTER
+    Spring->>DB: Query sync entries
+    Spring-->>NextJS: Paginated dead-letter entries
+    NextJS-->>Browser: Display entries with "Retry" button
+
+    User->>Browser: Click "Retry" on entry
+    Browser->>NextJS: POST /api/integrations/sync/{entryId}/retry
+    NextJS->>Spring: POST /api/integrations/sync/{entryId}/retry
+    Spring->>DB: Load sync entry
+    Spring->>DB: UPDATE entry SET state=PENDING, attempt_count=0, next_attempt_at=now
+    Spring->>DB: Insert AuditEvent (manual_retry)
+    Spring-->>NextJS: 200 OK
+    NextJS-->>Browser: Entry state updated to PENDING
+
+    Note over Worker: Next 30-second poll picks up the entry
+
+    Worker->>DB: SELECT PENDING entries
+    Worker->>DB: UPDATE entry SET state=IN_FLIGHT
+    Worker->>Provider: syncInvoice(request)
+    Provider->>Xero: POST /api.xro/2.0/Invoices
+
+    alt Success
+        Xero-->>Provider: 200 OK
+        Worker->>DB: UPDATE entry SET state=COMPLETED
+        Note over Browser: User sees entry transition to COMPLETED on next page load
+    else Failure again
+        Xero-->>Provider: Error
+        Worker->>DB: UPDATE entry SET state=FAILED_RETRYING or DEAD_LETTER
+        Note over Browser: User can retry again or investigate the error
+    end
 ```
 
 ---
 
-## N.6 — Capability Model & Stale Plan-Tier Cleanup
+## 11.6 Trust Accounting Guard
 
-Three capabilities are involved. **`INTEGRATION_MANAGE` does not exist in the codebase** — the requirements document used a placeholder name. The correct mapping:
+The trust boundary guard is a regulatory safeguard mandated by the Legal Practice Act Section 86. Trust ledgers must not flow to a tenant's operating-account general ledger in Xero. The guard is deterministic Java code -- no LLM, no AI, no human bypass ([ADR-276](../adr/ADR-276-trust-accounting-hard-guard-export.md)).
 
-| Capability | Status | Phase 71 surfaces |
-|---|---|---|
-| `TEAM_OVERSIGHT` | **Existing** (Phase 21 precedent — used by all `IntegrationController` endpoints) | OAuth connect/disconnect, settings, tax-code mapping edit, one-time customer import |
-| `INTEGRATION_VIEW_SYNC_STATUS` | **New** — adds to `Capability` enum, seeded for owner+admin via V121 | Sync log view, retry from dead-letter, force resync |
-| `FINANCIAL_RECONCILE` | **New** — adds to `Capability` enum, seeded for owner+admin via V121 | Manual reconcile of `RECONCILE_DRIFT` |
+### Guard Logic
 
-Endpoint → capability map:
+The guard evaluates three conditions. If **any** condition is true, the push is **refused**.
 
-| Endpoint / Surface | Capability |
-|---|---|
-| `GET /api/integrations/xero/connect` | `TEAM_OVERSIGHT` |
-| `GET /api/integrations/xero/callback` | `TEAM_OVERSIGHT` |
-| `DELETE /api/integrations/xero/connection` | `TEAM_OVERSIGHT` |
-| `GET /api/integrations/xero/connection` | `TEAM_OVERSIGHT` |
-| `GET /api/integrations/xero/sync-summary` | `INTEGRATION_VIEW_SYNC_STATUS` |
-| `GET /api/integrations/xero/sync-log` | `INTEGRATION_VIEW_SYNC_STATUS` |
-| `POST /api/integrations/xero/sync/{id}/retry` | `INTEGRATION_VIEW_SYNC_STATUS` |
-| `POST /api/integrations/xero/sync/{id}/force-resync` | `INTEGRATION_VIEW_SYNC_STATUS` |
-| `GET /api/integrations/xero/tax-codes` | `TEAM_OVERSIGHT` |
-| `PUT /api/integrations/xero/tax-codes/{mode}` | `TEAM_OVERSIGHT` |
-| `POST /api/integrations/xero/import-customers` | `TEAM_OVERSIGHT` |
-| `POST /api/invoices/{id}/reconcile-xero` | `FINANCIAL_RECONCILE` |
-| Invoice-detail Xero chip retry button | `INTEGRATION_VIEW_SYNC_STATUS` |
-| `/settings/integrations/xero` (read) | `TEAM_OVERSIGHT` |
-| `/settings/integrations/xero/sync-log` (page) | `INTEGRATION_VIEW_SYNC_STATUS` |
+| # | Condition | How Checked | Rationale |
+|---|---|---|---|
+| 1 | Invoice is trust-related | `Invoice.customFields` contains `is_trust_invoice = true` (Phase 60 field) | Trust invoices represent client fund movements, not fee billing |
+| 2 | Any line item sourced from a trust account | `InvoiceLine.disbursement_id` IS NOT NULL AND the linked `LegalDisbursement.trust_account_id` IS NOT NULL | Line items drawn from trust accounts are trust money flows |
+| 3 | Customer has active trust balances | `ClientLedgerCard` has any row with non-zero `balance` for `customer_id` | A customer with active trust balances could have trust-commingled billing |
 
-### N.6.1 Stale `IntegrationCard` Plan-Tier Check — Do Not Propagate
+### Fail-Closed Behaviour
 
-The existing `frontend/components/integrations/IntegrationCard.tsx` carries a stale `tier === "PRO"` block left over from when the AI integration was plan-gated. Per the **2026-04-11 strategic decision** to remove plan-tier subscriptions, `PlanTier`, `@RequiresPlan`, and `<PlanGate>` were excised; the dead code in `IntegrationCard` is a known cleanup item.
+- If any trust-related entity lookup fails (database error, missing data): the guard **refuses** the push. Trust boundary violations are worse than missed syncs.
+- If the Phase 60 trust accounting tables do not exist in this tenant's schema (e.g. non-legal vertical): the guard **allows** the push. The check is skipped entirely for tenants that have never provisioned trust accounting.
 
-**Phase 71 introduces a fresh `frontend/components/integrations/AccountingIntegrationCard.tsx`** (mirroring the structure of `PaymentIntegrationCard.tsx` — multi-field config UI with both `SecretStore` keys and `configJson` fields), and **does not reuse the stale generic gate**. `PlanTier` must not be reintroduced. There is no Starter/Pro split, no per-plan cap on push volume, no per-plan poll-frequency throttling. Capability gating is the sole authorization mechanism.
+### Java Pseudocode
+
+```java
+@Service
+public class TrustBoundaryGuard {
+
+    private final LegalDisbursementRepository disbursementRepository;
+    private final ClientLedgerCardRepository clientLedgerCardRepository;
+
+    public TrustBoundaryGuard(
+            LegalDisbursementRepository disbursementRepository,
+            ClientLedgerCardRepository clientLedgerCardRepository) {
+        this.disbursementRepository = disbursementRepository;
+        this.clientLedgerCardRepository = clientLedgerCardRepository;
+    }
+
+    public TrustBoundaryDecision evaluate(Invoice invoice, List<InvoiceLine> lines, Customer customer) {
+        // Condition 1: Invoice-level trust flag
+        Object trustFlag = invoice.getCustomFields().get("is_trust_invoice");
+        if (Boolean.TRUE.equals(trustFlag)) {
+            return TrustBoundaryDecision.refused(
+                "Invoice is flagged as trust-related (is_trust_invoice=true)");
+        }
+
+        // Condition 2: Line items from trust accounts
+        for (InvoiceLine line : lines) {
+            if (line.getDisbursementId() != null) {
+                var disbursement = disbursementRepository.findOneById(line.getDisbursementId());
+                if (disbursement.isPresent() && disbursement.get().getTrustAccountId() != null) {
+                    return TrustBoundaryDecision.refused(
+                        "Line item '%s' is sourced from trust account %s"
+                            .formatted(line.getDescription(), disbursement.get().getTrustAccountId()));
+                }
+            }
+        }
+
+        // Condition 3: Customer has active trust balances (via ClientLedgerCard materialized view)
+        BigDecimal trustBalance = clientLedgerCardRepository
+            .sumNonZeroBalancesForCustomer(customer.getId());
+        if (trustBalance != null && trustBalance.compareTo(BigDecimal.ZERO) != 0) {
+            return TrustBoundaryDecision.refused(
+                "Customer '%s' has active trust balance of %s"
+                    .formatted(customer.getName(), trustBalance));
+        }
+
+        return TrustBoundaryDecision.allowed();
+    }
+}
+
+public record TrustBoundaryDecision(boolean allowed, String reason) {
+    public static TrustBoundaryDecision allowed() {
+        return new TrustBoundaryDecision(true, null);
+    }
+    public static TrustBoundaryDecision refused(String reason) {
+        return new TrustBoundaryDecision(false, reason);
+    }
+}
+```
+
+### Audit Event Structure
+
+When the guard refuses a push, the `AccountingSyncService` emits:
+
+```json
+{
+  "eventType": "integration.xero.push_blocked_trust",
+  "entityType": "INVOICE",
+  "entityId": "invoice-uuid",
+  "actorType": "SYSTEM",
+  "source": "ACCOUNTING_SYNC",
+  "details": {
+    "reason": "Invoice is flagged as trust-related (is_trust_invoice=true)",
+    "invoiceNumber": "INV-001",
+    "customerName": "Smith Trust",
+    "syncEntryId": "sync-entry-uuid"
+  }
+}
+```
+
+### UI Surface
+
+- **Invoice detail page**: Passive notice "Not pushed to Xero -- trust-related invoice" with a link to the audit event. No action button, no bypass.
+- **Sync log**: Entry appears with `state = BLOCKED_TRUST_BOUNDARY` badge. No retry action available.
+- **Integration card**: Blocked count included in the sync summary widget.
 
 ---
 
-## N.7 — Database Migrations
+## 11.7 Database Migrations
 
-**Single migration: `V121__phase71_accounting_xero.sql`** under `backend/src/main/resources/db/migration/tenant/`. No global migrations.
+### V121 — Xero Accounting Integration Tables
+
+All three tables are tenant-scoped (created in each `tenant_*` schema). No global migration needed.
+
+**File**: `backend/src/main/resources/db/migration/tenant/V121__add_xero_accounting_integration_tables.sql`
 
 ```sql
--- =====================================================================
--- Phase 71 — Xero accounting integration
--- =====================================================================
+-- =============================================================================
+-- V121: Xero Accounting Integration Tables
+-- Phase 71 — accounting_xero_connection, accounting_sync_entry, accounting_tax_code_mapping
+-- =============================================================================
 
+-- -----------------------------------------------------------------------------
+-- 1. accounting_xero_connection
+-- Tracks OAuth2 connection metadata for a tenant's Xero org.
+-- One row per OrgIntegration (unique constraint on org_integration_id).
+-- Refresh tokens live in SecretStore (org_secrets table), never here.
+-- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS accounting_xero_connection (
-    id                            UUID PRIMARY KEY,
-    org_integration_id            UUID NOT NULL UNIQUE
-                                   REFERENCES org_integrations(id) ON DELETE CASCADE,
-    xero_tenant_id                VARCHAR(64) NOT NULL,
-    xero_org_name                 VARCHAR(255) NOT NULL,
-    connected_by_member_id        UUID NOT NULL,
-    connected_at                  TIMESTAMPTZ NOT NULL,
-    last_token_refresh_at         TIMESTAMPTZ,
-    access_token_expires_at       TIMESTAMPTZ,
-    scope                         TEXT,
-    status                        VARCHAR(30) NOT NULL DEFAULT 'CONNECTED',
-    refresh_failure_count         INTEGER NOT NULL DEFAULT 0,
-    last_poll_at                  TIMESTAMPTZ,
-    customer_import_completed_at  TIMESTAMPTZ,
-    disconnected_at               TIMESTAMPTZ,
-    created_at                    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at                    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    CONSTRAINT chk_xero_status
-        CHECK (status IN ('CONNECTED','REFRESH_FAILED','REVOKED'))
+    id                      UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    org_integration_id      UUID NOT NULL,
+    xero_tenant_id          VARCHAR(50) NOT NULL,
+    xero_org_name           VARCHAR(255) NOT NULL,
+    connected_by_member_id  UUID NOT NULL,
+    connected_at            TIMESTAMPTZ NOT NULL DEFAULT now(),
+    last_token_refresh_at   TIMESTAMPTZ,
+    access_token_expires_at TIMESTAMPTZ NOT NULL,
+    scope                   VARCHAR(500) NOT NULL,
+    status                  VARCHAR(20) NOT NULL DEFAULT 'CONNECTED',
+    last_poll_at            TIMESTAMPTZ,
+    disconnected_at         TIMESTAMPTZ,
+    created_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at              TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    CONSTRAINT fk_axc_org_integration
+        FOREIGN KEY (org_integration_id) REFERENCES org_integrations(id),
+    CONSTRAINT uq_axc_org_integration
+        UNIQUE (org_integration_id),
+    CONSTRAINT ck_axc_status
+        CHECK (status IN ('CONNECTED', 'REFRESH_FAILED', 'REVOKED'))
 );
 
-CREATE INDEX IF NOT EXISTS idx_xero_conn_status
-    ON accounting_xero_connection(status);
+-- Index: lookup by status for payment poll worker
+CREATE INDEX IF NOT EXISTS idx_axc_status
+    ON accounting_xero_connection (status);
 
--- ---------------------------------------------------------------------
-
+-- -----------------------------------------------------------------------------
+-- 2. accounting_sync_entry
+-- Sync queue and state machine for outbound pushes and inbound pull records.
+-- The sync worker drains entries sorted by (state, next_attempt_at).
+-- The invoice detail page looks up entries by (entity_type, entity_id).
+-- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS accounting_sync_entry (
-    id                  UUID PRIMARY KEY,
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     entity_type         VARCHAR(20) NOT NULL,
     entity_id           UUID NOT NULL,
-    action              VARCHAR(16) NOT NULL DEFAULT 'UPSERT',
     provider_id         VARCHAR(20) NOT NULL,
     direction           VARCHAR(10) NOT NULL,
-    state               VARCHAR(30) NOT NULL,
-    attempt_count       INTEGER NOT NULL DEFAULT 0,
+    state               VARCHAR(30) NOT NULL DEFAULT 'PENDING',
+    attempt_count       INT NOT NULL DEFAULT 0,
     next_attempt_at     TIMESTAMPTZ,
-    last_error_code     VARCHAR(40),
+    last_error_code     VARCHAR(50),
     last_error_detail   TEXT,
-    external_reference  VARCHAR(64),
-    external_id         VARCHAR(64),
-    payload_snapshot    JSONB,
-    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    external_reference  VARCHAR(100),
+    external_id         VARCHAR(100),
+    trigger             VARCHAR(30) NOT NULL DEFAULT 'EVENT',
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
     completed_at        TIMESTAMPTZ,
-    CONSTRAINT chk_sync_entity_type
-        CHECK (entity_type IN ('INVOICE','CUSTOMER','PAYMENT_PULL')),
-    CONSTRAINT chk_sync_action
-        CHECK (action IN ('UPSERT','VOID','PULL')),
-    CONSTRAINT chk_sync_direction
-        CHECK (direction IN ('PUSH','PULL')),
-    CONSTRAINT chk_sync_state
-        CHECK (state IN ('PENDING','IN_FLIGHT','COMPLETED','FAILED_RETRYING',
-                         'DEAD_LETTER','BLOCKED_TRUST_BOUNDARY','RECONCILE_DRIFT'))
+
+    CONSTRAINT ck_ase_entity_type
+        CHECK (entity_type IN ('INVOICE', 'CUSTOMER', 'PAYMENT_PULL')),
+    CONSTRAINT ck_ase_direction
+        CHECK (direction IN ('PUSH', 'PULL')),
+    CONSTRAINT ck_ase_state
+        CHECK (state IN (
+            'PENDING', 'IN_FLIGHT', 'COMPLETED', 'FAILED_RETRYING',
+            'DEAD_LETTER', 'BLOCKED_TRUST_BOUNDARY', 'RECONCILE_DRIFT'
+        )),
+    CONSTRAINT ck_ase_trigger
+        CHECK (trigger IN ('EVENT', 'MANUAL_RETRY', 'FORCE_RESYNC'))
 );
 
--- Drain-query index: push-worker scans (state, next_attempt_at) constantly.
--- Partial WHERE on entity_type EXCLUDES PAYMENT_PULL rows (owned by poll worker).
-CREATE INDEX IF NOT EXISTS idx_sync_drain
-    ON accounting_sync_entry(state, next_attempt_at)
-    WHERE state IN ('PENDING','FAILED_RETRYING')
-      AND entity_type IN ('INVOICE','CUSTOMER');
+-- Index: worker drain query — state + next_attempt_at for efficient polling
+-- The worker queries: WHERE state IN ('PENDING', 'FAILED_RETRYING') AND next_attempt_at <= now
+CREATE INDEX IF NOT EXISTS idx_ase_drain
+    ON accounting_sync_entry (state, next_attempt_at)
+    WHERE state IN ('PENDING', 'FAILED_RETRYING');
 
--- "What's the latest sync state of this invoice?" lookup
-CREATE INDEX IF NOT EXISTS idx_sync_lookup
-    ON accounting_sync_entry(entity_type, entity_id, created_at DESC);
+-- Index: invoice/customer status lookup — "what's the sync status of this invoice?"
+CREATE INDEX IF NOT EXISTS idx_ase_entity_lookup
+    ON accounting_sync_entry (entity_type, entity_id);
 
--- Payment-pull match by external_reference
-CREATE INDEX IF NOT EXISTS idx_sync_external_ref
-    ON accounting_sync_entry(external_reference)
+-- Index: external_reference lookup for payment pull matching
+CREATE INDEX IF NOT EXISTS idx_ase_external_reference
+    ON accounting_sync_entry (external_reference)
     WHERE external_reference IS NOT NULL;
 
--- ---------------------------------------------------------------------
-
+-- -----------------------------------------------------------------------------
+-- 3. accounting_tax_code_mapping
+-- Maps Kazi tax modes to Xero tax codes. Pre-seeded with ZA defaults.
+-- One mapping per (provider_id, kazi_tax_mode) pair.
+-- -----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS accounting_tax_code_mapping (
-    id                   UUID PRIMARY KEY,
-    provider_id          VARCHAR(20) NOT NULL,
-    kazi_tax_mode        VARCHAR(30) NOT NULL,
-    external_tax_code    VARCHAR(40) NOT NULL,
-    display_label        VARCHAR(120),
-    is_default           BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at           TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE (provider_id, kazi_tax_mode)
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    provider_id         VARCHAR(20) NOT NULL,
+    kazi_tax_mode       VARCHAR(30) NOT NULL,
+    external_tax_code   VARCHAR(50) NOT NULL,
+    display_label       VARCHAR(100) NOT NULL,
+    is_default          BOOLEAN NOT NULL DEFAULT true,
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    CONSTRAINT uq_atcm_provider_tax_mode
+        UNIQUE (provider_id, kazi_tax_mode),
+    CONSTRAINT ck_atcm_kazi_tax_mode
+        CHECK (kazi_tax_mode IN (
+            'STANDARD_15', 'ZERO_RATED', 'EXEMPT', 'OUT_OF_SCOPE', 'STANDARD_OTHER'
+        ))
 );
 
--- Pre-seed ZA defaults (idempotent — ON CONFLICT keeps the user override)
+-- -----------------------------------------------------------------------------
+-- 4. Pre-seed ZA tax code defaults
+-- These are inserted on migration but will also be inserted by XeroOAuthService
+-- on first connect if they don't already exist. ON CONFLICT ensures idempotency.
+-- NOTE: STANDARD_OTHER is intentionally NOT pre-seeded — it has no universal ZA default.
+-- Tenants needing it (non-ZA, or future VAT rate changes) configure it manually via UI.
+-- -----------------------------------------------------------------------------
 INSERT INTO accounting_tax_code_mapping
-    (id, provider_id, kazi_tax_mode, external_tax_code, display_label, is_default)
+    (provider_id, kazi_tax_mode, external_tax_code, display_label, is_default)
 VALUES
-    (gen_random_uuid(), 'xero', 'STANDARD_15',  'OUTPUT2',          'VAT (15%)',          TRUE),
-    (gen_random_uuid(), 'xero', 'ZERO_RATED',   'ZERORATEDOUTPUT',  'Zero-Rated Output',  TRUE),
-    (gen_random_uuid(), 'xero', 'EXEMPT',       'EXEMPTOUTPUT',     'Exempt Output',      TRUE),
-    (gen_random_uuid(), 'xero', 'OUT_OF_SCOPE', 'NONE',             'No VAT',             TRUE)
+    ('xero', 'STANDARD_15', 'OUTPUT2', 'Standard Rate (15%)', true),
+    ('xero', 'ZERO_RATED', 'ZERORATEDOUTPUT', 'Zero Rated Output', true),
+    ('xero', 'EXEMPT', 'EXEMPTOUTPUT', 'Exempt Output', true),
+    ('xero', 'OUT_OF_SCOPE', 'NONE', 'No Tax / Out of Scope', true)
 ON CONFLICT (provider_id, kazi_tax_mode) DO NOTHING;
-
--- ---------------------------------------------------------------------
--- Capability seeding — owner + admin
--- ---------------------------------------------------------------------
-
-INSERT INTO org_role_capabilities (org_role_id, capability)
-SELECT id, 'INTEGRATION_VIEW_SYNC_STATUS'
-FROM org_roles
-WHERE slug IN ('owner','admin')
-  AND NOT EXISTS (
-    SELECT 1 FROM org_role_capabilities
-    WHERE org_role_id = org_roles.id AND capability = 'INTEGRATION_VIEW_SYNC_STATUS'
-  );
-
-INSERT INTO org_role_capabilities (org_role_id, capability)
-SELECT id, 'FINANCIAL_RECONCILE'
-FROM org_roles
-WHERE slug IN ('owner','admin')
-  AND NOT EXISTS (
-    SELECT 1 FROM org_role_capabilities
-    WHERE org_role_id = org_roles.id AND capability = 'FINANCIAL_RECONCILE'
-  );
 ```
 
-Index rationale:
+### Index Rationale
 
-- `idx_sync_drain` is the worker's hottest query. Partial-index `WHERE state IN ('PENDING','FAILED_RETRYING')` keeps it small (terminal rows accumulate forever; we don't want them in the index).
-- `idx_sync_lookup` services the invoice-detail page's "current Xero status" widget; `created_at DESC` lets us `LIMIT 1` for the latest entry.
-- `idx_sync_external_ref` services the payment-poll match — partial-index because `PUSH` entries have refs, `PAYMENT_PULL` entries do not.
+| Index | Purpose | Why |
+|---|---|---|
+| `idx_axc_status` | Filter connections by status | Payment poll worker queries `WHERE status = 'CONNECTED'`; avoids full table scan across tenants with many connections (unlikely in v1 but forward-looking) |
+| `idx_ase_drain` | Worker drain query | Partial index on actionable states with `next_attempt_at` ordering -- the hottest query path in the system (every 30 seconds). Partial index excludes completed/blocked entries from the B-tree |
+| `idx_ase_entity_lookup` | Invoice/customer status chip | The invoice detail page queries `WHERE entity_type = 'INVOICE' AND entity_id = ?` to render the Xero status chip. Without this index, every page load scans the full sync log |
+| `idx_ase_external_reference` | Payment pull matching | The payment pull worker matches Xero payment events to Kazi invoices via `external_reference`. Partial index excludes null references |
+| `uq_atcm_provider_tax_mode` | Dedup constraint | Prevents duplicate mappings for the same (provider, tax mode) pair |
 
 ---
 
-## N.8 — Implementation Guidance
+## 11.8 Implementation Guidance
 
-### N.8.1 Backend File Map
+### 11.8.1 Backend Changes
 
-| File | Change |
+| Package / File | Change |
 |---|---|
-| `integration/accounting/xero/XeroAccountingProvider.java` | NEW — implements `AccountingProvider` + `AccountingPaymentSource`; `@IntegrationAdapter(domain=ACCOUNTING, slug="xero")` |
-| `integration/accounting/xero/XeroApiClient.java` | NEW — `RestClient` wrapper, refresh-on-401, rate-limit observance |
-| `integration/accounting/xero/XeroOAuthService.java` | NEW — code exchange, refresh-token rotation, state HMAC |
-| `integration/accounting/xero/XeroOAuthHttpClient.java` | NEW — OAuth-specific HTTP calls (separate from API client to keep refresh atomic) |
-| `integration/accounting/xero/XeroIntegrationController.java` | NEW — connect/callback/disconnect/connection endpoints |
-| `integration/accounting/xero/XeroInvoicePayloadMapper.java` | NEW — `InvoiceSyncRequest` + line items → Xero JSON |
-| `integration/accounting/xero/XeroContactPayloadMapper.java` | NEW — `CustomerSyncRequest` → Xero contact JSON |
-| `integration/accounting/xero/AccountingXeroConnection.java` | NEW — JPA entity |
-| `integration/accounting/xero/AccountingXeroConnectionRepository.java` | NEW — JPA repository |
-| `integration/accounting/xero/XeroAccountingConfig.java` | NEW — sealed `AccountingProviderConfig` permittee record |
-| `integration/accounting/sync/AccountingSyncEntry.java` | NEW — JPA entity |
-| `integration/accounting/sync/AccountingSyncEntryRepository.java` | NEW — JPA repository |
-| `integration/accounting/sync/AccountingSyncService.java` | NEW — `enqueueInvoicePush`, `enqueueCustomerPush`, `pollPaymentsForConnection`, `retryFromDeadLetter` |
-| `integration/accounting/sync/AccountingPushDrainWorker.java` | NEW — `@Scheduled(fixedDelay=30_000)` |
-| `integration/accounting/sync/AccountingPaymentPollWorker.java` | NEW — `@Scheduled(fixedDelay=900_000)` |
-| `integration/accounting/sync/AccountingSyncEventListener.java` | NEW — customer-update only (invoice path is in-transaction) |
-| `integration/accounting/sync/SyncEntryStateMachine.java` | NEW — pure-function state transitions + retry classification |
-| `integration/accounting/sync/AccountingSyncController.java` | NEW — sync-log + summary + retry/force-resync endpoints |
-| `integration/accounting/sync/AccountingTaxCodeMapping.java` | NEW — JPA entity |
-| `integration/accounting/sync/AccountingTaxCodeMappingRepository.java` | NEW |
-| `integration/accounting/sync/AccountingTaxCodeMappingService.java` + `…Controller.java` | NEW |
-| `integration/accounting/sync/TrustBoundaryGuard.java` | NEW — three-tier deterministic guard |
-| `invoice/InvoiceService.java` | EDIT — add `accountingSyncService.enqueueInvoicePush(...)` calls inside `approveInvoice`, `markSent`, `voidInvoice` (in same `@Transactional` block) |
-| `invoice/InvoiceReconcileController.java` | NEW — `POST /api/invoices/{id}/reconcile-xero` |
-| `member/Capability.java` | EDIT — add `INTEGRATION_VIEW_SYNC_STATUS`, `FINANCIAL_RECONCILE` |
-| `db/migration/tenant/V121__phase71_accounting_xero.sql` | NEW |
+| `integration/accounting/xero/XeroAccountingProvider.java` | **New.** `implements AccountingProvider, AccountingPaymentSource`. `@IntegrationAdapter(domain = ACCOUNTING, slug = "xero")`. Delegates to `XeroApiClient` for HTTP, mappers for payload translation |
+| `integration/accounting/xero/XeroApiClient.java` | **New.** Thin `RestClient` wrapper for Xero `api.xro/2.0/` REST surface. Bearer-token attachment, refresh-on-401, `Xero-tenant-id` header, rate-limit observance |
+| `integration/accounting/xero/XeroOAuthService.java` | **New.** OAuth2 flow: authorization URL builder, code-exchange, refresh-token rotation. Stores tokens in `SecretStore` |
+| `integration/accounting/xero/XeroInvoicePayloadMapper.java` | **New.** Pure function: `InvoiceSyncRequest` + tax mappings -> Xero invoice JSON |
+| `integration/accounting/xero/XeroContactPayloadMapper.java` | **New.** Pure function: `CustomerSyncRequest` -> Xero contact JSON |
+| `integration/accounting/xero/XeroIntegrationController.java` | **New.** REST endpoints for connect, callback, disconnect, connection status, settings, tax mappings, customer import |
+| `integration/accounting/xero/XeroRateLimitException.java` | **New.** Carries `retryAfter` Duration |
+| `integration/accounting/xero/XeroConnectionStatus.java` | **New.** Enum: `CONNECTED`, `REFRESH_FAILED`, `REVOKED` |
+| `integration/accounting/xero/AccountingXeroConnection.java` | **New.** JPA entity |
+| `integration/accounting/xero/AccountingXeroConnectionRepository.java` | **New.** JPA repository |
+| `integration/accounting/sync/AccountingSyncEntry.java` | **New.** JPA entity |
+| `integration/accounting/sync/AccountingSyncEntryRepository.java` | **New.** JPA repository with drain query |
+| `integration/accounting/sync/AccountingSyncService.java` | **New.** Core sync orchestration: enqueue, poll, retry, summary |
+| `integration/accounting/sync/AccountingSyncWorker.java` | **New.** `@Scheduled(fixedDelay = 30_000)` worker that drains the sync queue |
+| `integration/accounting/sync/AccountingPaymentPollWorker.java` | **New.** `@Scheduled(fixedDelay = 900_000)` worker for payment pull |
+| `integration/accounting/sync/AccountingSyncEventListener.java` | **New.** Subscribes to invoice + customer domain events, calls `AccountingSyncService.enqueue*` |
+| `integration/accounting/sync/SyncTrigger.java` | **New.** Enum: `EVENT`, `MANUAL_RETRY`, `FORCE_RESYNC` |
+| `integration/accounting/sync/SyncState.java` | **New.** Enum with all state machine states |
+| `integration/accounting/sync/SyncEntityType.java` | **New.** Enum: `INVOICE`, `CUSTOMER`, `PAYMENT_PULL` |
+| `integration/accounting/sync/SyncDirection.java` | **New.** Enum: `PUSH`, `PULL` |
+| `integration/accounting/sync/TrustBoundaryGuard.java` | **New.** Trust-accounting guard (Section 11.6) |
+| `integration/accounting/sync/TrustBoundaryDecision.java` | **New.** Record: `(boolean allowed, String reason)` |
+| `integration/accounting/AccountingPaymentSource.java` | **New.** Sibling port interface for payment pull ([ADR-279](../adr/ADR-279-sibling-payment-source-port.md)) |
+| `integration/accounting/ExternalPaymentEvent.java` | **New.** Record for inbound payment data |
+| `integration/accounting/NoOpAccountingProvider.java` | **Modified.** Add `implements AccountingPaymentSource` with empty-list return |
+| `integration/accounting/AccountingTaxCodeMapping.java` | **New.** JPA entity |
+| `integration/accounting/AccountingTaxCodeMappingRepository.java` | **New.** JPA repository |
+| `integration/accounting/AccountingTaxCodeMappingService.java` | **New.** Service for CRUD + reset-to-defaults |
+| `integration/accounting/xero/XeroCustomerImportService.java` | **New.** One-time customer import logic |
+| `integration/accounting/InvoiceSyncRequest.java` | **Modified.** Add `externalReference` field for idempotency key and `taxMode` per line item |
+| `integration/accounting/LineItem.java` | **Modified.** Add `taxMode` field (string) |
 
-Controllers are thin (one service call, no business logic — per `backend/CLAUDE.md`).
+### 11.8.2 Frontend Changes
 
-### N.8.2 Entity Code Pattern
+| Route / Component | Change |
+|---|---|
+| `frontend/app/(app)/org/[slug]/settings/integrations/xero/page.tsx` | **New.** Xero integration settings page: connection status, sync summary, tax code mapping editor, import button, settings form |
+| `frontend/app/(app)/org/[slug]/settings/integrations/xero/sync-log/page.tsx` | **New.** Paginated sync log with filters and retry actions |
+| `frontend/components/integrations/XeroConnectionCard.tsx` | **New.** Connection status display with connect/disconnect/reconnect actions |
+| `frontend/components/integrations/XeroSyncSummary.tsx` | **New.** Sync summary widget (counts by state, links to filtered log) |
+| `frontend/components/integrations/XeroTaxMappingEditor.tsx` | **New.** Table editor for Kazi-to-Xero tax code mapping |
+| `frontend/components/integrations/XeroCustomerImport.tsx` | **New.** One-time import button with progress and summary display |
+| `frontend/components/integrations/XeroSettingsForm.tsx` | **New.** Poll interval, push trigger configuration |
+| `frontend/components/integrations/SyncLogTable.tsx` | **New.** Reusable table for sync entries with state badges, error display, action menu |
+| `frontend/components/integrations/SyncEntryStateBadge.tsx` | **New.** Badge component for sync entry states |
+| `frontend/components/invoices/XeroStatusChip.tsx` | **New.** Inline status chip for invoice detail page |
+| `frontend/components/customers/XeroContactBadge.tsx` | **New.** Inline badge for customer detail page |
+| `frontend/app/(app)/org/[slug]/settings/integrations/page.tsx` | **Modified.** Add Xero card linking to new settings page |
+| `frontend/app/(app)/org/[slug]/invoices/[id]/page.tsx` | **Modified.** Add `XeroStatusChip` component |
+| `frontend/app/(app)/org/[slug]/customers/[id]/page.tsx` | **Modified.** Add `XeroContactBadge` component |
+| `frontend/lib/api/integrations.ts` | **Modified.** Add API client functions for all Xero endpoints |
+
+### 11.8.3 Entity Code Pattern
+
+The `AccountingSyncEntry` entity follows the standard Kazi pattern. No `@FilterDef`/`@Filter`/`TenantAware` annotations are needed because tenant isolation is handled at the schema level (schema-per-tenant via Hibernate `search_path`). This matches all existing entities in the codebase (`OrgIntegration`, `Invoice`, `Customer`, etc.).
 
 ```java
 package io.b2mash.b2b.b2bstrawman.integration.accounting.sync;
 
-import jakarta.persistence.*;
-import org.hibernate.annotations.JdbcTypeCode;
-import org.hibernate.type.SqlTypes;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -944,7 +1120,8 @@ import java.util.UUID;
 @Table(name = "accounting_sync_entry")
 public class AccountingSyncEntry {
 
-    @Id @GeneratedValue(strategy = GenerationType.UUID)
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     @Enumerated(EnumType.STRING)
@@ -971,21 +1148,21 @@ public class AccountingSyncEntry {
     @Column(name = "next_attempt_at")
     private Instant nextAttemptAt;
 
-    @Column(name = "last_error_code", length = 40)
+    @Column(name = "last_error_code", length = 50)
     private String lastErrorCode;
 
-    @Column(name = "last_error_detail", columnDefinition = "text")
+    @Column(name = "last_error_detail", columnDefinition = "TEXT")
     private String lastErrorDetail;
 
-    @Column(name = "external_reference", length = 64)
+    @Column(name = "external_reference", length = 100)
     private String externalReference;
 
-    @Column(name = "external_id", length = 64)
+    @Column(name = "external_id", length = 100)
     private String externalId;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "payload_snapshot", columnDefinition = "jsonb")
-    private String payloadSnapshot;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "trigger", nullable = false, length = 30)
+    private SyncTrigger trigger;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -998,259 +1175,464 @@ public class AccountingSyncEntry {
 
     protected AccountingSyncEntry() {}
 
-    public AccountingSyncEntry(SyncEntityType type, UUID entityId, String providerId,
-                               SyncDirection direction, String externalReference,
-                               String payloadSnapshot) { … }
+    public AccountingSyncEntry(
+            SyncEntityType entityType,
+            UUID entityId,
+            String providerId,
+            SyncDirection direction,
+            SyncTrigger trigger,
+            String externalReference) {
+        this.entityType = entityType;
+        this.entityId = entityId;
+        this.providerId = providerId;
+        this.direction = direction;
+        this.state = SyncState.PENDING;
+        this.attemptCount = 0;
+        this.nextAttemptAt = Instant.now();
+        this.trigger = trigger;
+        this.externalReference = externalReference;
+    }
 
-    public void markInFlight()           { this.state = SyncState.IN_FLIGHT; this.attemptCount++; }
-    public void markCompleted(String externalId) { … }
-    public void markFailedRetrying(String code, String detail, Instant nextAt) { … }
-    public void markDeadLetter(String code, String detail) { … }
-    public void markBlockedTrust(String reasonCode, String detail) { … }
+    @PrePersist
+    void onPrePersist() {
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
+    }
 
-    @PrePersist void onPrePersist() { this.createdAt = Instant.now(); this.updatedAt = Instant.now(); }
-    @PreUpdate  void onPreUpdate()  { this.updatedAt = Instant.now(); }
-    // … getters …
+    @PreUpdate
+    void onPreUpdate() {
+        this.updatedAt = Instant.now();
+    }
+
+    /** Transition to IN_FLIGHT for worker processing. */
+    public void markInFlight() {
+        this.state = SyncState.IN_FLIGHT;
+        this.nextAttemptAt = null;
+    }
+
+    /** Mark as successfully completed. */
+    public void markCompleted(String externalId) {
+        this.state = SyncState.COMPLETED;
+        this.externalId = externalId;
+        this.completedAt = Instant.now();
+        this.nextAttemptAt = null;
+        this.lastErrorCode = null;
+        this.lastErrorDetail = null;
+    }
+
+    /** Mark as failed with retry scheduled. */
+    public void markFailedRetrying(String errorCode, String errorDetail, Instant nextAttempt) {
+        this.state = SyncState.FAILED_RETRYING;
+        this.attemptCount++;
+        this.lastErrorCode = errorCode;
+        this.lastErrorDetail = errorDetail;
+        this.nextAttemptAt = nextAttempt;
+    }
+
+    /** Move to dead-letter (no further automatic retry). */
+    public void markDeadLetter(String errorCode, String errorDetail) {
+        this.state = SyncState.DEAD_LETTER;
+        this.lastErrorCode = errorCode;
+        this.lastErrorDetail = errorDetail;
+        this.nextAttemptAt = null;
+    }
+
+    /** Mark as blocked by trust boundary guard. Permanent, no retry. */
+    public void markBlockedTrustBoundary(String reason) {
+        this.state = SyncState.BLOCKED_TRUST_BOUNDARY;
+        this.lastErrorCode = "TRUST_BOUNDARY";
+        this.lastErrorDetail = reason;
+        this.nextAttemptAt = null;
+    }
+
+    /** Reset for manual retry from dead-letter. */
+    public void resetForRetry() {
+        this.state = SyncState.PENDING;
+        this.attemptCount = 0;
+        this.nextAttemptAt = Instant.now();
+        this.trigger = SyncTrigger.MANUAL_RETRY;
+    }
+
+    // Getters (no Lombok)
+    public UUID getId() { return id; }
+    public SyncEntityType getEntityType() { return entityType; }
+    public UUID getEntityId() { return entityId; }
+    public String getProviderId() { return providerId; }
+    public SyncDirection getDirection() { return direction; }
+    public SyncState getState() { return state; }
+    public int getAttemptCount() { return attemptCount; }
+    public Instant getNextAttemptAt() { return nextAttemptAt; }
+    public String getLastErrorCode() { return lastErrorCode; }
+    public String getLastErrorDetail() { return lastErrorDetail; }
+    public String getExternalReference() { return externalReference; }
+    public String getExternalId() { return externalId; }
+    public SyncTrigger getTrigger() { return trigger; }
+    public Instant getCreatedAt() { return createdAt; }
+    public Instant getUpdatedAt() { return updatedAt; }
+    public Instant getCompletedAt() { return completedAt; }
 }
 ```
 
-Constructor injection only, no Lombok, semantic exceptions raised in service layer (e.g. `XeroPushBlockedTrustException`, `MultiCurrencyPushNotSupportedException`).
-
-### N.8.3 Repository Pattern (JPQL)
+### 11.8.4 Repository Code Pattern
 
 ```java
-@Repository
+package io.b2mash.b2b.b2bstrawman.integration.accounting.sync;
+
+import java.time.Instant;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 public interface AccountingSyncEntryRepository extends JpaRepository<AccountingSyncEntry, UUID> {
 
-    @Query(value = """
-        SELECT * FROM accounting_sync_entry
-         WHERE state = ANY(:states)
-           AND next_attempt_at <= :now
-           AND provider_id = :provider
-         ORDER BY next_attempt_at
-         LIMIT :limit
-         FOR UPDATE SKIP LOCKED
-        """, nativeQuery = true)
-    List<AccountingSyncEntry> findDueForDrain(
-        @Param("states") String[] states,
-        @Param("now") Instant now,
-        @Param("provider") String provider,
-        @Param("limit") int limit);
+    /** Standard findOneById following Kazi JPQL convention. */
+    @Query("SELECT e FROM AccountingSyncEntry e WHERE e.id = :id")
+    Optional<AccountingSyncEntry> findOneById(@Param("id") UUID id);
 
-    Optional<AccountingSyncEntry> findFirstByEntityTypeAndEntityIdOrderByCreatedAtDesc(
-        SyncEntityType entityType, UUID entityId);
-
+    /** Worker drain query: actionable entries ordered by next_attempt_at. */
     @Query("""
-        SELECT new io.b2mash.b2b.b2bstrawman.integration.accounting.sync.dto.SyncStateCount(
-                   e.state, COUNT(e))
-          FROM AccountingSyncEntry e
-         WHERE e.providerId = :provider
-         GROUP BY e.state
+        SELECT e FROM AccountingSyncEntry e
+        WHERE e.state IN (
+            io.b2mash.b2b.b2bstrawman.integration.accounting.sync.SyncState.PENDING,
+            io.b2mash.b2b.b2bstrawman.integration.accounting.sync.SyncState.FAILED_RETRYING
+        )
+        AND e.nextAttemptAt <= :now
+        ORDER BY e.nextAttemptAt ASC
         """)
-    List<SyncStateCount> countByState(@Param("provider") String provider);
+    List<AccountingSyncEntry> findDrainableEntries(
+            @Param("now") Instant now,
+            Pageable pageable);
+
+    /** Lookup: latest sync entry for an entity (invoice/customer status chip). */
+    @Query("""
+        SELECT e FROM AccountingSyncEntry e
+        WHERE e.entityType = :entityType AND e.entityId = :entityId
+        ORDER BY e.createdAt DESC
+        """)
+    List<AccountingSyncEntry> findByEntity(
+            @Param("entityType") SyncEntityType entityType,
+            @Param("entityId") UUID entityId);
+
+    /** Check for existing pending/in-flight entry (idempotent enqueue guard). */
+    @Query("""
+        SELECT e FROM AccountingSyncEntry e
+        WHERE e.entityType = :entityType
+        AND e.entityId = :entityId
+        AND e.state IN (
+            io.b2mash.b2b.b2bstrawman.integration.accounting.sync.SyncState.PENDING,
+            io.b2mash.b2b.b2bstrawman.integration.accounting.sync.SyncState.IN_FLIGHT
+        )
+        """)
+    Optional<AccountingSyncEntry> findActiveEntryForEntity(
+            @Param("entityType") SyncEntityType entityType,
+            @Param("entityId") UUID entityId);
+
+    /** Match by external_reference for payment pull. */
+    @Query("""
+        SELECT e FROM AccountingSyncEntry e
+        WHERE e.externalReference = :ref
+        AND e.state = io.b2mash.b2b.b2bstrawman.integration.accounting.sync.SyncState.COMPLETED
+        AND e.direction = io.b2mash.b2b.b2bstrawman.integration.accounting.sync.SyncDirection.PUSH
+        ORDER BY e.completedAt DESC
+        """)
+    Optional<AccountingSyncEntry> findCompletedPushByExternalReference(
+            @Param("ref") String externalReference);
+
+    /** Paginated sync log with state filter. */
+    @Query("""
+        SELECT e FROM AccountingSyncEntry e
+        WHERE (:state IS NULL OR e.state = :state)
+        AND (:entityType IS NULL OR e.entityType = :entityType)
+        ORDER BY e.createdAt DESC
+        """)
+    Page<AccountingSyncEntry> findFiltered(
+            @Param("state") SyncState state,
+            @Param("entityType") SyncEntityType entityType,
+            Pageable pageable);
+
+    /** Summary counts by state. */
+    @Query("""
+        SELECT e.state, COUNT(e) FROM AccountingSyncEntry e
+        GROUP BY e.state
+        """)
+    List<Object[]> countByState();
 }
 ```
 
-`FOR UPDATE SKIP LOCKED` on the drain query is mandatory for safe horizontal scaling.
+### 11.8.5 Testing Strategy
 
-### N.8.4 Worker Pattern (mirror `AutomationScheduler`)
+| Test Class | Scope | What It Verifies |
+|---|---|---|
+| `AccountingSyncServiceTest` | Service (Spring context) | Enqueue logic, idempotent re-enqueue, trust guard integration, currency check, state transitions |
+| `AccountingSyncWorkerTest` | Service | Drain logic, retry back-off calculation, dead-letter after max attempts, per-tenant isolation |
+| `AccountingPaymentPollWorkerTest` | Service | Payment pull matching, amount drift detection, PaymentEvent creation, invoice transition |
+| `TrustBoundaryGuardTest` | Service | All three guard conditions, fail-closed on missing data, skip for non-legal tenants |
+| `XeroInvoicePayloadMapperTest` | Unit | Invoice + lines + tax mapping -> Xero JSON shape |
+| `XeroContactPayloadMapperTest` | Unit | Customer -> Xero contact JSON shape |
+| `XeroOAuthServiceTest` | Service | Token exchange (mocked Xero), token refresh, refresh failure cascade, disconnect cleanup |
+| `XeroIntegrationControllerIntegrationTest` | HTTP (MockMvc) | Connect, callback, disconnect, connection status endpoints; RBAC gate verification |
+| `AccountingSyncControllerIntegrationTest` | HTTP (MockMvc) | Sync log pagination, retry, force resync, summary endpoints |
+| `XeroCustomerImportServiceTest` | Service | Pagination, dedup by email, dedup by name+tax, skip-no-email, import guard (one-time only) |
+| `AccountingTaxCodeMappingServiceTest` | Service | CRUD, reset-to-defaults, ZA pre-seeded values |
+| `XeroAccountingProviderTest` | Service | `syncInvoice`, `syncCustomer`, `getPaymentsModifiedSince` with `@MockitoBean` on `XeroApiClient` |
+
+**Testing conventions**:
+- `XeroApiClient` is mocked with `@MockitoBean` in all tests -- no WireMock, no fake HTTP server.
+- All tests use embedded Postgres (`@Import(TestcontainersConfiguration.class)`).
+- No Testcontainers Docker containers.
+- `@ActiveProfiles("test")` only.
+
+---
+
+## 11.9 Permission Model Summary
+
+### Capabilities
+
+| Capability | Purpose | Default Roles |
+|---|---|---|
+| `INTEGRATION_MANAGE` | **Existing.** Connect/disconnect Xero, update settings, manage tax mappings, import customers | `owner`, `admin` |
+| `INTEGRATION_VIEW_SYNC_STATUS` | **New.** View sync log, view sync summary, retry dead-lettered entries, force resync | `owner`, `admin` |
+| `FINANCIAL_RECONCILE` | **New.** Manually resolve reconciliation drift (mark Kazi invoice paid when auto-match fails) | `owner` |
+
+### Access Control per Operation
+
+| Operation | Capability | Notes |
+|---|---|---|
+| Connect to Xero | `INTEGRATION_MANAGE` | |
+| Disconnect from Xero | `INTEGRATION_MANAGE` | Confirmation dialog in UI |
+| View connection status | `INTEGRATION_MANAGE` | |
+| Update sync settings | `INTEGRATION_MANAGE` | Poll interval, push trigger |
+| Edit tax code mappings | `INTEGRATION_MANAGE` | |
+| Import customers from Xero | `INTEGRATION_MANAGE` | One-time only |
+| View sync log | `INTEGRATION_VIEW_SYNC_STATUS` | |
+| View sync summary | `INTEGRATION_VIEW_SYNC_STATUS` | |
+| Retry dead-lettered entry | `INTEGRATION_VIEW_SYNC_STATUS` | |
+| Force resync an invoice | `INTEGRATION_VIEW_SYNC_STATUS` | |
+| Manually reconcile drift | `FINANCIAL_RECONCILE` | Owner-only by default |
+
+### Capability Seeding
+
+New capabilities are seeded via the existing Phase 41/46 capability seeding pattern. Added to the role defaults in the seeder so new orgs get them automatically:
 
 ```java
-@Component
-public class AccountingPushDrainWorker {
-
-    private static final Logger log = LoggerFactory.getLogger(AccountingPushDrainWorker.class);
-    private static final long POLL_INTERVAL_MS = 30_000;
-    private static final int  BATCH_SIZE       = 25;
-
-    private final TenantScopedRunner tenantRunner;
-    private final TransactionTemplate tx;
-    private final AccountingSyncEntryRepository entries;
-    private final IntegrationRegistry registry;
-    private final SyncEntryStateMachine stateMachine;
-
-    public AccountingPushDrainWorker(/* ctor injection */) { … }
-
-    @Scheduled(fixedDelay = POLL_INTERVAL_MS)
-    public void drain() {
-        int[] processed = {0};
-        tenantRunner.forEachTenant((tenantId, orgId) -> processed[0] += drainTenant());
-        if (processed[0] > 0) log.info("Drain processed {} sync entries", processed[0]);
-    }
-
-    private int drainTenant() {
-        Integer n = tx.execute(s -> {
-            var due = entries.findDueForDrain(
-                new String[]{"PENDING","FAILED_RETRYING"}, Instant.now(), "xero", BATCH_SIZE);
-            for (var entry : due) processOne(entry);
-            return due.size();
-        });
-        return n != null ? n : 0;
-    }
-    …
-}
+// In capability seeder (existing pattern)
+seedCapability("INTEGRATION_VIEW_SYNC_STATUS", "View accounting sync status and retry failed entries",
+    Set.of("owner", "admin"));
+seedCapability("FINANCIAL_RECONCILE", "Manually reconcile payment discrepancies",
+    Set.of("owner"));
 ```
 
-### N.8.5 Testing Strategy
+---
 
-| Layer | Approach |
-|---|---|
-| Unit | `XeroInvoicePayloadMapper`, `XeroContactPayloadMapper`, `SyncEntryStateMachine`, `TrustBoundaryGuard` — pure-function tests |
-| Service-level integration | `AccountingSyncService` against embedded Postgres + `@MockitoBean XeroApiClient`; assert outbox row written in same tx as invoice approval |
-| Worker integration | `AccountingPushDrainWorker.drainTenant()` against embedded Postgres + mock `XeroApiClient`; cases: 200, 401-then-refresh, 429, 5xx-retry, 4xx-dead-letter |
-| OAuth flow | `XeroOAuthService` against `@MockitoBean XeroOAuthHttpClient`; assert state HMAC, token storage, connection row |
-| Trust guard | Hand-rolled fixtures: trust-flag invoice, trust-account-line invoice, trust-balance customer; assert refusal + audit payload |
-| Controller | Standard `@WebMvcTest` slice + `@MockitoBean` services; assert capability gates + JSON shape |
-| End-to-end browser | Manual / Playwright after merge of slice 71J — connect button → callback redirect → sync log appears |
+## 11.10 Capability Slices
 
-**No Testcontainers, no WireMock dependency.** The `XeroApiClient` interface is mocked at its boundary using `@MockitoBean`. If a slice genuinely needs HTTP-level fidelity, a hand-rolled `FakeXeroHttpServer` test fixture (e.g. `MockRestServiceServer` from Spring Test) is acceptable inside a `@TestConfiguration`.
+### Slice A: Migration + Entities + Repositories
+
+**Scope**: Backend only
+**Dependencies**: None (base slice)
+**Key deliverables**:
+- `V121__add_xero_accounting_integration_tables.sql`
+- `AccountingXeroConnection` entity + repository
+- `AccountingSyncEntry` entity + repository (including drain query)
+- `AccountingTaxCodeMapping` entity + repository
+- `SyncState`, `SyncDirection`, `SyncEntityType`, `SyncTrigger` enums
+- `AccountingPaymentSource` interface + `ExternalPaymentEvent` record
+- Modified `NoOpAccountingProvider` to implement `AccountingPaymentSource`
+- Modified `InvoiceSyncRequest` + `LineItem` to add `externalReference` and `taxMode`
+- Capability seeding for `INTEGRATION_VIEW_SYNC_STATUS` and `FINANCIAL_RECONCILE`
+
+**Test expectations**: Entity persistence tests, repository query tests, migration runs clean
+**Estimated LOC**: ~600
+
+### Slice B: AccountingSyncService + Worker + Event Listeners
+
+**Scope**: Backend only
+**Dependencies**: Slice A
+**Key deliverables**:
+- `AccountingSyncService` -- enqueue, retry, summary, poll orchestration
+- `AccountingSyncWorker` -- `@Scheduled` drain worker with retry back-off
+- `AccountingPaymentPollWorker` -- `@Scheduled` payment pull worker (skeleton: scheduler, tenant loop, cursor update — wired to `NoOpAccountingProvider` until Slice F completes the real adapter binding)
+- `AccountingSyncEventListener` -- subscribes to invoice + customer domain events
+- `TrustBoundaryDecision` record
+
+**Test expectations**: Enqueue idempotency, state transitions, back-off schedule, dead-letter after 5 attempts, event listener wiring
+**Estimated LOC**: ~700
+
+### Slice C: XeroApiClient + XeroOAuthService
+
+**Scope**: Backend only
+**Dependencies**: Slice A (uses `AccountingXeroConnection`, `SecretStore`)
+**Key deliverables**:
+- `XeroApiClient` -- `RestClient` wrapper with bearer-token, refresh-on-401, rate-limit headers, `Xero-tenant-id` header
+- `XeroOAuthService` -- authorization URL builder, code-exchange, refresh-token rotation, disconnect
+- `XeroRateLimitException`
+- `XeroConnectionStatus` enum
+
+**Test expectations**: Token exchange (mocked), refresh cycle, refresh failure cascade, rate limit header parsing
+**Estimated LOC**: ~500
+
+### Slice D: XeroAccountingProvider Adapter + Mappers
+
+**Scope**: Backend only
+**Dependencies**: Slice A, Slice C
+**Key deliverables**:
+- `XeroAccountingProvider` -- `implements AccountingProvider, AccountingPaymentSource`
+- `XeroInvoicePayloadMapper`
+- `XeroContactPayloadMapper`
+- `AccountingTaxCodeMappingService`
+
+**Test expectations**: Invoice mapping accuracy, contact mapping, tax code resolution, `getPaymentsModifiedSince` mapping
+**Estimated LOC**: ~500
+
+### Slice E: Trust Boundary Guard
+
+**Scope**: Backend only
+**Dependencies**: Slice B (integrates with `AccountingSyncService.enqueueInvoicePush`)
+**Key deliverables**:
+- `TrustBoundaryGuard` service
+- Integration with `AccountingSyncService.enqueueInvoicePush`
+- Audit event emission for blocked pushes
+
+**Test expectations**: All three guard conditions, fail-closed on DB error, skip for non-legal tenants, audit event emitted
+**Estimated LOC**: ~250
+
+### Slice F: Payment Pull (AccountingPaymentSource + Poll Worker Completion)
+
+**Scope**: Backend only
+**Dependencies**: Slice B, Slice D
+**Key deliverables**:
+- Complete `AccountingPaymentPollWorker` body — wire to `XeroAccountingProvider.getPaymentsModifiedSince` (Slice B delivers the skeleton; this slice wires the real adapter)
+- Payment matching logic in `AccountingSyncService.pollPaymentsForConnection`
+- `PaymentEvent` creation with `provider_slug = "xero"`
+- Invoice transition to `PAID` via `InvoiceTransitionService`
+- Amount drift detection and `RECONCILE_DRIFT` state
+
+**Test expectations**: Happy-path payment match, drift detection, idempotent re-poll, Xero-native invoice skip
+**Estimated LOC**: ~350
+
+### Slice G: One-Time Customer Import
+
+**Scope**: Backend only
+**Dependencies**: Slice C, Slice D
+**Key deliverables**:
+- `XeroCustomerImportService`
+- Pagination of Xero contacts
+- Dedup logic (email, then name+taxNumber)
+- One-time guard (import already run check)
+- Customer creation with `PROSPECT` status and `external_reference`
+
+**Test expectations**: Pagination handling, dedup scenarios, one-time guard, import summary counts
+**Estimated LOC**: ~300
+
+### Slice H: Frontend -- Connection Management + Settings
+
+**Scope**: Frontend + backend controller
+**Dependencies**: Slice C (OAuth service), Slice D (tax mapping service)
+**Key deliverables**:
+- `XeroIntegrationController` (all REST endpoints from Section 11.4)
+- `frontend/app/(app)/org/[slug]/settings/integrations/xero/page.tsx`
+- `XeroConnectionCard.tsx`
+- `XeroTaxMappingEditor.tsx`
+- `XeroCustomerImport.tsx`
+- `XeroSettingsForm.tsx`
+- Modified integrations settings page to link to Xero sub-page
+- API client functions in `frontend/lib/api/integrations.ts`
+
+**Test expectations**: Controller RBAC gates, frontend renders connection states, settings form submission
+**Estimated LOC**: ~800
+
+### Slice I: Frontend -- Sync Log + Invoice/Customer Status Chips
+
+**Scope**: Frontend + backend controller
+**Dependencies**: Slice B (sync service), Slice H (settings page)
+**Key deliverables**:
+- `frontend/app/(app)/org/[slug]/settings/integrations/xero/sync-log/page.tsx`
+- `SyncLogTable.tsx`
+- `SyncEntryStateBadge.tsx`
+- `XeroSyncSummary.tsx`
+- `XeroStatusChip.tsx` (invoice detail page)
+- `XeroContactBadge.tsx` (customer detail page)
+- Sync summary and log controller endpoints
+- Modified invoice detail page
+- Modified customer detail page
+
+**Test expectations**: Sync log pagination and filtering, state badges render correctly, retry action works, invoice chip shows correct state
+**Estimated LOC**: ~600
 
 ---
 
-## N.9 — Permission Model Summary
+## 11.11 ADR Index
 
-| Surface | Capability | Plan-tier? |
+| ADR | Title | Key Decision |
 |---|---|---|
-| `/api/integrations/xero/*` (connect/disconnect/settings/import) | `TEAM_OVERSIGHT` | **None — no plan-tier gating** |
-| `/api/integrations/xero/sync-*`, retry, force-resync | `INTEGRATION_VIEW_SYNC_STATUS` (new) | None |
-| `/api/invoices/{id}/reconcile-xero` | `FINANCIAL_RECONCILE` (new) | None |
-| `/settings/integrations/xero` (frontend page) | `TEAM_OVERSIGHT` (read) | None |
-| `/settings/integrations/xero/sync-log` (frontend page) | `INTEGRATION_VIEW_SYNC_STATUS` | None |
-| Invoice-detail Xero chip retry button | `INTEGRATION_VIEW_SYNC_STATUS` | None |
-
-`PlanTier`, `@RequiresPlan`, `<PlanGate>` are **forbidden** in this phase per the 2026-04-11 strategic decision.
-
----
-
-## N.10 — Capability Slices
-
-Sized at 6–10 files / ~800 LOC per slice. Designed for `/breakdown` skill consumption.
-
-### 71A — Migration + entities + repositories + capability seeding
-
-- **Scope**: backend.
-- **Deliverables**: `V121__phase71_accounting_xero.sql`, `AccountingSyncEntry`, `AccountingXeroConnection`, `AccountingTaxCodeMapping` entities + repositories + enums (`SyncState`, `SyncEntityType`, `SyncDirection`); add `INTEGRATION_VIEW_SYNC_STATUS` and `FINANCIAL_RECONCILE` to `Capability` enum.
-- **Dependencies**: none.
-- **Tests**: migration round-trip on embedded Postgres; capability enum membership; repo method signatures.
-
-### 71B — `XeroApiClient` + OAuth + connection CRUD
-
-- **Scope**: backend.
-- **Deliverables**: `XeroApiClient`, `XeroOAuthService`, `XeroOAuthHttpClient`, state HMAC, `XeroIntegrationController` (connect/callback/disconnect/connection endpoints), token persistence in `SecretStore` under named keys.
-- **Dependencies**: 71A.
-- **Tests**: OAuth state HMAC; mock-based code-exchange; refresh-on-401 with three-strike rule; controller capability gates.
-
-### 71C — `XeroAccountingProvider` adapter + payload mappers + tax-code mapping
-
-- **Scope**: backend.
-- **Deliverables**: `XeroAccountingProvider implements AccountingProvider`, `XeroInvoicePayloadMapper`, `XeroContactPayloadMapper`, `AccountingTaxCodeMappingService` + controller, `XeroAccountingConfig` sealed-record, registration via `@IntegrationAdapter`.
-- **Dependencies**: 71A, 71B.
-- **Tests**: payload mapper unit tests (line items, tax codes, currency, addresses); adapter testConnection happy path.
-
-### 71D — `AccountingPaymentSource` sibling port + Xero impl + `PaymentEvent` writer
-
-- **Scope**: backend.
-- **Deliverables**: `AccountingPaymentSource` interface + `ExternalPaymentEvent` record, `XeroAccountingProvider implements AccountingPaymentSource`, payment-event writer (with dedup via `provider_payload` JSONB).
-- **Dependencies**: 71A, 71B, 71C.
-- **Tests**: `getPaymentsModifiedSince` mapper; payment-event dedup logic.
-
-### 71E — `AccountingSyncService` + outbox writer + push-drain worker
-
-- **Scope**: backend.
-- **Deliverables**: `AccountingSyncService.enqueueInvoicePush/enqueueCustomerPush`, outbox-in-transaction wiring into `InvoiceService` (approve/markSent/voidInvoice), `AccountingPushDrainWorker` (`@Scheduled(30_000)`), `SyncEntryStateMachine` retry classification, `AccountingSyncEventListener` for customer-update path.
-- **Dependencies**: 71A, 71B, 71C.
-- **Tests**: in-transaction outbox write semantics; drain happy path; retry classification (200/401/429/5xx/4xx); dead-letter at attempt 5.
-
-### 71F — Payment-poll worker + drift detection
-
-- **Scope**: backend.
-- **Deliverables**: `AccountingPaymentPollWorker` (`@Scheduled(900_000)`), `AccountingSyncService.pollPaymentsForConnection`, drift detection (`> 0.01` tolerance), `RECONCILE_DRIFT` state writes, audit events.
-- **Dependencies**: 71A, 71D.
-- **Tests**: poll cursor advance; match-and-write happy path; drift branch; clock-skew backstop window.
-
-### 71G — `TrustBoundaryGuard` + invoice-approval integration
-
-- **Scope**: backend.
-- **Deliverables**: `TrustBoundaryGuard` three-tier evaluator, `BLOCKED_TRUST_BOUNDARY` sync-entry writes, `integration.xero.push_blocked_trust` audit event, integration into `AccountingSyncService.enqueueInvoicePush`.
-- **Dependencies**: 71E, requires Phase 60 trust-accounting entities.
-- **Tests**: each of the three refusal paths; allow path; audit payload shape.
-
-### 71H — Manual reconcile + retry/force-resync endpoints
-
-- **Scope**: backend.
-- **Deliverables**: `POST /api/invoices/{id}/reconcile-xero` (capability `FINANCIAL_RECONCILE`), `POST /api/integrations/xero/sync/{id}/retry` and `…/force-resync` (capability `INTEGRATION_VIEW_SYNC_STATUS`), `AccountingSyncController` with sync-summary and sync-log endpoints.
-- **Dependencies**: 71E, 71F.
-- **Tests**: capability gates; manual reconcile transitions invoice + writes payment event; retry resets attempt count.
-
-### 71I — One-time customer import endpoint
-
-- **Scope**: backend.
-- **Deliverables**: `POST /api/integrations/xero/import-customers`, paginated Xero contacts pull, dedup logic (email → tax-id → name+email-domain), one-shot guard via `customer_import_completed_at`.
-- **Dependencies**: 71B, 71C.
-- **Tests**: dedup matrix; one-shot block on second invocation; audit payload.
-
-### 71J — Frontend integration card, sync-log page, invoice chip, tax-mapping UI
-
-- **Scope**: frontend.
-- **Deliverables**: `frontend/components/integrations/AccountingIntegrationCard.tsx` (no plan-tier gate), `/settings/integrations/xero/page.tsx`, `/settings/integrations/xero/sync-log/page.tsx`, invoice-detail Xero status chip + retry action, customer-detail Xero contact line, tax-code mapping table editor.
-- **Dependencies**: 71B, 71E, 71F, 71H.
-- **Tests**: Vitest component tests + Playwright happy-path connect flow; capability-driven visibility tests.
-
-Total: 10 slices. Roughly 14–18 PRs depending on per-slice split during implementation.
+| [ADR-272](../adr/ADR-272-xero-only-accounting-adapter-v1.md) | Xero-only adapter for accounting integration v1 | Ship Xero only; Sage Pastel deferred. API maturity, SA SME market share, OAuth2 standardisation |
+| [ADR-273](../adr/ADR-273-one-way-accounting-sync-permanent.md) | One-way sync model (push invoices/customers, pull payments) | Permanent product decision. No bidirectional sync, no conflict resolution |
+| [ADR-274](../adr/ADR-274-dedicated-accounting-sync-service-not-rule-engine.md) | Dedicated AccountingSyncService instead of Phase 37 rule action | Retry/idempotency/rate-limit semantics don't fit the rule executor |
+| [ADR-275](../adr/ADR-275-oauth2-augmentation-org-integration.md) | OAuth2 augmentation of OrgIntegration + SecretStore | New `accounting_xero_connection` table; refresh tokens in SecretStore |
+| [ADR-276](../adr/ADR-276-trust-accounting-hard-guard-export.md) | Trust-accounting hard guard against accounting export | Section 86 regulatory boundary; fail-closed; audit-only refusal; no bypass |
+| [ADR-277](../adr/ADR-277-poll-over-webhooks-payment-reconciliation-v1.md) | Polling over webhooks for inbound payment reconciliation in v1 | Webhook reliability concerns, public-endpoint config burden; 15-minute SLO acceptable |
+| [ADR-278](../adr/ADR-278-idempotent-push-via-external-reference.md) | Idempotent push via Kazi-side external_reference + Xero Reference field | Kazi-side dedup key prevents duplicate invoices in Xero |
+| [ADR-279](../adr/ADR-279-sibling-payment-source-port.md) | Sibling AccountingPaymentSource port instead of overloading AccountingProvider | Interface segregation; payment pull is a distinct concern from push |
 
 ---
 
-## N.11 — ADR Index
+## 11.12 Notification and Audit Integration
 
-| ADR | Title | Phase 71 use |
+### Audit Event Catalogue
+
+All audit events use `actorType = "SYSTEM"` and `source = "ACCOUNTING_SYNC"` unless initiated by a member action.
+
+| Event Type | Entity Type | When Emitted | Actor | Key Details Fields |
+|---|---|---|---|---|
+| `integration.xero.connected` | `ORG_INTEGRATION` | OAuth2 callback completes | MEMBER | `xeroOrgName`, `xeroTenantId`, `scopes` |
+| `integration.xero.disconnected` | `ORG_INTEGRATION` | Member disconnects Xero | MEMBER | `xeroOrgName`, `reason` |
+| `integration.xero.refresh_failed` | `ORG_INTEGRATION` | 3 consecutive token refresh failures | SYSTEM | `failureCount`, `lastError` |
+| `integration.xero.invoice_pushed` | `INVOICE` | Invoice successfully pushed to Xero | SYSTEM | `invoiceNumber`, `externalId`, `attemptCount` |
+| `integration.xero.invoice_push_failed` | `INVOICE` | Invoice push failed (4xx, straight to dead-letter) | SYSTEM | `invoiceNumber`, `errorCode`, `errorDetail` |
+| `integration.xero.customer_pushed` | `CUSTOMER` | Customer successfully pushed to Xero | SYSTEM | `customerName`, `externalId` |
+| `integration.xero.payment_reconciled` | `INVOICE` | Payment pulled from Xero, invoice marked PAID | SYSTEM | `invoiceNumber`, `amount`, `xeroPaymentId` |
+| `integration.xero.push_blocked_trust` | `INVOICE` | Trust boundary guard refused push | SYSTEM | `invoiceNumber`, `customerName`, `reason` |
+| `integration.xero.reconcile_drift` | `INVOICE` | Payment amount mismatch detected | SYSTEM | `invoiceNumber`, `kaziAmount`, `xeroAmount`, `xeroPaymentId` |
+| `integration.xero.dead_letter` | `INVOICE` or `CUSTOMER` | Sync entry moved to dead-letter after max retries | SYSTEM | `entityType`, `errorCode`, `attemptCount` |
+| `integration.xero.manual_retry` | `INVOICE` or `CUSTOMER` | Member manually retried a dead-lettered entry | MEMBER | `syncEntryId`, `previousErrorCode` |
+| `integration.xero.customers_imported` | `ORG_INTEGRATION` | One-time customer import completed | MEMBER | `created`, `skippedDuplicate`, `skippedNoEmail`, `total` |
+
+### Notification Rules
+
+Notifications integrate with the existing Phase 6.5 notification system.
+
+| Event | Notification | Default Recipients | Default State |
+|---|---|---|---|
+| `xero.refresh_failed` | "Xero connection requires reconnection" | Members with `INTEGRATION_MANAGE` capability | **Default-on** for `owner` role |
+| `xero.dead_letter` | "Xero sync entry requires attention" (daily digest) | Members with `INTEGRATION_VIEW_SYNC_STATUS` capability | **Default-on** for `owner` role |
+| `xero.invoice_pushed` | "Invoice {number} synced to Xero" | Members with `INTEGRATION_VIEW_SYNC_STATUS` capability | **Default-off** (too noisy for most users) |
+| `xero.payment_reconciled` | "Payment received for invoice {number} via Xero" | Members with `INTEGRATION_VIEW_SYNC_STATUS` capability | **Default-off** (too noisy for most users) |
+
+Notification preferences are opt-in per member via the existing notification settings UI. The `xero.dead_letter` notification uses a daily digest to avoid noise from batch failures.
+
+### Domain Events Emitted
+
+These are Spring application events published after the database transaction commits (using `@TransactionalEventListener(phase = AFTER_COMMIT)`):
+
+| Domain Event | When Published | Consumed By |
 |---|---|---|
-| [ADR-272](../adr/ADR-272-xero-only-accounting-adapter-v1.md) | Xero-only accounting adapter for v1 | NEW — scope decision |
-| [ADR-273](../adr/ADR-273-one-way-accounting-sync-permanent.md) | One-way accounting sync (push/pull, no merge) | NEW — permanent product decision |
-| [ADR-274](../adr/ADR-274-dedicated-accounting-sync-service-not-rule-engine.md) | Dedicated `AccountingSyncService`, not Phase 37 rule engine | NEW — outbox write inside the same transaction |
-| [ADR-275](../adr/ADR-275-oauth2-augmentation-org-integration.md) | OAuth2 augmentation via sibling table + `SecretStore` | NEW — `accounting_xero_connection` |
-| [ADR-276](../adr/ADR-276-trust-accounting-hard-guard-export.md) | Trust-accounting hard guard against accounting export | NEW — fail-closed Java guard |
-| [ADR-277](../adr/ADR-277-poll-over-webhooks-payment-reconciliation-v1.md) | Polling over webhooks for v1 | NEW — 15-minute scheduled poll |
-| [ADR-278](../adr/ADR-278-idempotent-push-via-external-reference.md) | Idempotent push via Kazi `external_reference` + Xero `Reference` | NEW — dedup contract |
-| [ADR-279](../adr/ADR-279-sibling-payment-source-port.md) | Sibling `AccountingPaymentSource` port | NEW — interface segregation |
-| [ADR-201](../adr/ADR-201-integration-guard-service.md) | `IntegrationGuardService` | Reused — module-level on/off |
-| [ADR-T001](../adr/ADR-T001-schema-per-tenant-over-row-level-isolation.md) | Schema-per-tenant | Reused — all V121 tables tenant-scoped |
-| [ADR-148](../adr/ADR-148-jsonb-sealed-class-config.md) | JSONB + sealed-class config | Reused — `AccountingProviderConfig` permittees |
-| [ADR-271](../adr/ADR-271-scheduled-trigger-extension.md) | Phase 70 `SCHEDULED` automation trigger | **Disclaimed non-reuse** — Phase 71 uses plain `@Scheduled` workers, not the rule-engine `SCHEDULED` trigger |
+| `XeroConnectionEstablishedEvent` | OAuth2 callback completes, connection persisted | NotificationEventHandler, AuditEventHandler |
+| `XeroConnectionRevokedEvent` | Member disconnects, connection marked REVOKED | NotificationEventHandler, AuditEventHandler |
+| `XeroSyncEntryCompletedEvent` | Sync entry transitions to COMPLETED | NotificationEventHandler (if opted-in) |
+| `XeroSyncEntryDeadLetteredEvent` | Sync entry moves to DEAD_LETTER | NotificationEventHandler (daily digest) |
+| `XeroPaymentReconciledEvent` | Payment pulled from Xero, invoice transitioned to PAID | NotificationEventHandler (if opted-in), Dashboard aggregation |
 
----
+### Domain Events Consumed
 
-## N.12 — Out of Scope (Explicit)
-
-Mirrors requirements §9 verbatim. To keep the phase tractable:
-
-- **Sage Pastel adapter.** Phase 72+.
-- **QuickBooks / Zoho Books / Wave adapters.** Indefinite.
-- **Bidirectional customer sync.** Permanent decision.
-- **Bidirectional invoice sync** (invoices created in Xero appearing in Kazi). Permanent decision.
-- **Time-entry → Xero billable expense sync.** Permanent — time stays in Kazi.
-- **Multi-currency invoice push.** Refused with clear error in v1.
-- **Automatic split/merge when Xero side restructures the invoice.** Drift surfaced for manual handling.
-- **Xero outbound webhooks.** Polling sufficient for v1; revisit Phase 72+.
-- **Phase 37 rule action `INVOKE_ACCOUNTING_SYNC`.** Not in v1.
-- **AI-assisted reconciliation** (Compliance Assistant matching ambiguous payments). Phase 72+.
-- **Per-tenant rate-limit reporting / cost dashboards.** Out of scope.
-- **Xero file attachments** (PDF push). Deferred.
-- **VAT201-style reporting from Kazi.** Out — accountant's job in Xero.
-- **Bulk re-sync tool.** Deferred; per-invoice "force resync" is sufficient.
-- **`PlanTier` reintroduction** in any form.
-
----
-
-## N.13 — Open Questions / Assumptions
-
-1. **Xero `Reference` field is the safe idempotency vehicle** — assumption to confirm during 71B implementation by running the Xero sandbox: pushing a second invoice with the same `Reference` either updates the prior invoice or creates a duplicate? If the field is not unique-by-default we may need to switch to PUT-by-`InvoiceID` semantics by storing `external_id` from the first push and re-using it on subsequent updates. [ADR-278](../adr/ADR-278-idempotent-push-via-external-reference.md) frames the contract; the spike during 71B confirms it.
-2. **`Invoice.isTrustInvoice` exists per Phase 60** — assumed; verify in slice 71G that the field is in fact present on the `Invoice` entity. If absent, derive trust-ness from line-source-account linkage alone (still safe — that's tier 2 of the guard).
-2a. **`InvoiceLine.source_account_id` column exists and references a trust-account-bearing entity** — assumed for tier 2 of the guard SQL (`il.source_account_id = ta.id`). The Phase 10 `InvoiceLine` schema documented in `.arch-context.md` lists `time_entry_id`, `expense_id`, `disbursement_id`, `tariff_item_id`, `line_source` — but **does not show a `source_account_id` column**. Slice 71G must verify before relying on the documented SQL. Two fallback paths if absent:
-    - **(a)** derive trust-ness via `disbursement_id → disbursements.trust_account_id` (Phase 60 disbursement linkage), or
-    - **(b)** carry a `is_trust_line` boolean on `InvoiceLine` populated at line creation by Phase 60 services.
-    Either fallback keeps tier 2 of the guard auditable; pick during 71G after reading the live schema. If neither linkage exists, tier 2 collapses into tier 1 (`Invoice.isTrustInvoice`) and tier 3 (open trust balance on the customer) — still safe but less defence-in-depth. **This is the highest-risk assumption in the phase; address it before writing the guard SQL.**
-3. **`TrustLedger.openBalanceFor(customerId)` exists or has equivalent surface** — assumed; verify in 71G. The query is "any non-zero open balance for this customer's trust ledger" — if no convenience method exists, write one in 71G.
-4. **`OrgIntegration.config_json` extension does not require a migration** — confirmed: the column is JSONB and any sealed-record shape is accepted at the application layer. If reflection-based config validation discovers a need for a discriminator field, that's a post-71A change handled in 71C.
-5. **Backstop window of 5 minutes on `getPaymentsModifiedSince`** — assumed sufficient for clock-skew between Kazi and Xero. If the Xero sandbox shows skew > 5 minutes during 71F, widen to 15 minutes.
-6. **`refresh_failure_count` three-strike threshold** — chosen by analogy with similar OAuth integrations; tunable post-launch if real traffic shows spurious refresh failures.
-7. **No portal-side surfacing of Xero status** — by design in v1; clients of the firm don't see Xero data. Confirm during slice 71J that the customer portal's invoice view does not need a Xero chip.
+| Domain Event | Source | Handler |
+|---|---|---|
+| `InvoiceApprovedEvent` | `InvoiceTransitionService` | `AccountingSyncEventListener.onInvoiceApproved()` |
+| `InvoiceSentEvent` | `InvoiceTransitionService` | `AccountingSyncEventListener.onInvoiceSent()` |
+| `InvoiceVoidedEvent` | `InvoiceTransitionService` | `AccountingSyncEventListener.onInvoiceVoided()` |
+| `CustomerCreatedEvent` | `CustomerService` | `AccountingSyncEventListener.onCustomerCreated()` |
+| `CustomerUpdatedEvent` | `CustomerService` | `AccountingSyncEventListener.onCustomerUpdated()` |

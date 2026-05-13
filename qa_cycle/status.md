@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 8 — COMPLETE (11/11 PASS, 0 blockers, 0 new gaps)
-- **Next checkpoint**: Day 10 (Firm verifies proposal acceptance, deposits trust funds)
+- **Day**: 10 — COMPLETE (9/9 PASS, 0 blockers, 1 new gap OBS-1002 HIGH)
+- **Next checkpoint**: Day 11 (Sipho sees trust balance on portal)
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002 all healthy)
@@ -44,6 +44,7 @@ For each day-N walk in this cycle:
 | OBS-202 | KYC adapter not wired — no "Run KYC Verification" button on client detail | exempt | Product | OPEN-EXEMPT | 2 | User mandate permits KYC as unwired gap |
 | OBS-203 | `/api/assistant/invocations` returns 404 on client detail page loads | nit | Dev | OPEN | 2 | Non-critical AI assistant feature; 3 occurrences per page load |
 | OBS-304 | Activity feed reads "sent to Bob Ndlovu" instead of portal contact name on info request send | nit | Dev | OPEN | 3 | Cosmetic — activity log references actor not recipient |
+| OBS-1002 | Trust deposit Record Deposit dialog combobox non-functional on standalone Transactions page | HIGH | Dev | OPEN | 10 | Triple Slot composition (PopoverTrigger > FormControl > Button) breaks Radix Popover. Workaround: use matter Trust tab. Also affects Record Payment / Refund dialogs. |
 
 ## Log
 
@@ -58,3 +59,4 @@ For each day-N walk in this cycle:
 | 1 | QA | Day 5 walk: Bob reviews FICA submission (per-item accept x3, envelope completes) | 8/8 PASS, 0 blockers, 0 new gaps, OBS-501+OBS-502 verified |
 | 1 | QA | Day 7 walk: Thandi drafts + sends proposal (engagement letter) for Dlamini v RAF | 11/11 PASS, 0 blockers, 0 new gaps; OBS-702/703 fixes confirmed; OBS-704 hydration mismatch pre-existing |
 | 1 | QA | Day 8 walk: Sipho reviews + accepts proposal PROP-0001 on portal | 11/11 PASS, 0 blockers, 0 new gaps |
+| 1 | QA | Day 10 walk: Firm verifies proposal acceptance, deposits R 50,000 trust funds | 9/9 PASS (via matter Trust tab workaround), 0 blockers, 1 new gap (OBS-1002 HIGH — broken combobox on standalone transactions page) |

@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
 import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
+import io.b2mash.b2b.b2bstrawman.integration.payment.MockPaymentIntegrationSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
@@ -77,6 +78,7 @@ public class TenantProvisioningService {
   private final SchedulePackSeeder schedulePackSeeder;
   private final LegalTariffSeeder legalTariffSeeder;
   private final VerticalProfileReconciliationSeeder verticalProfileReconciliationSeeder;
+  private final MockPaymentIntegrationSeeder mockPaymentIntegrationSeeder;
   private final TenantTransactionHelper tenantTransactionHelper;
   private final OrgSettingsRepository orgSettingsRepository;
   private final VerticalProfileRegistry verticalProfileRegistry;
@@ -98,6 +100,7 @@ public class TenantProvisioningService {
       SchedulePackSeeder schedulePackSeeder,
       LegalTariffSeeder legalTariffSeeder,
       VerticalProfileReconciliationSeeder verticalProfileReconciliationSeeder,
+      MockPaymentIntegrationSeeder mockPaymentIntegrationSeeder,
       TenantTransactionHelper tenantTransactionHelper,
       OrgSettingsRepository orgSettingsRepository,
       VerticalProfileRegistry verticalProfileRegistry) {
@@ -117,6 +120,7 @@ public class TenantProvisioningService {
     this.schedulePackSeeder = schedulePackSeeder;
     this.legalTariffSeeder = legalTariffSeeder;
     this.verticalProfileReconciliationSeeder = verticalProfileReconciliationSeeder;
+    this.mockPaymentIntegrationSeeder = mockPaymentIntegrationSeeder;
     this.tenantTransactionHelper = tenantTransactionHelper;
     this.orgSettingsRepository = orgSettingsRepository;
     this.verticalProfileRegistry = verticalProfileRegistry;
@@ -187,6 +191,9 @@ public class TenantProvisioningService {
       // GAP-L-44 + GAP-L-27 — apply profile enabled_modules and taxDefaults to the fresh tenant
       // so the first user never sees a bare "Standard" rate or missing vertical modules.
       verticalProfileReconciliationSeeder.reconcile(schemaName, clerkOrgId);
+      // OBS-3001 — seed dev-only mock PSP adapter for legal-za tenants (symmetric with
+      // PackReconciliationRunner). No-op in prod profile or non-legal-za verticals.
+      mockPaymentIntegrationSeeder.seedForTenant(schemaName, clerkOrgId);
       subscriptionService.createSubscription(org.getId());
       createMapping(clerkOrgId, schemaName);
 

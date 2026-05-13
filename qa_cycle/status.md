@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 0 — COMPLETE (32/32 PASS, 0 gaps)
-- **Next checkpoint**: Day 1 (Firm onboarding polish)
+- **Day**: 1 — COMPLETE (10/10 PASS, 0 gaps)
+- **Next checkpoint**: Day 2 (Onboard Sipho as client, run conflict check + KYC)
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002 all healthy)
@@ -49,3 +49,4 @@ For each day-N walk in this cycle:
 |-------|-------|--------|--------|
 | 0 | Infra | Clean slate setup: volumes wiped, KC bootstrapped, all services started | Stack running |
 | 1 | QA | Day 0 walk: Onboarding (access-request, OTP, approval, KC registration, team invites) | 32/32 PASS, 0 gaps |
+| 1 | QA | Day 1 walk: Firm onboarding polish (branding, tariffs, trust account) | 10/10 PASS, 0 gaps |

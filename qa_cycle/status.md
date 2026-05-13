@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 28 — COMPLETE (all checkpoints PASS, 0 blockers, 0 new gaps)
-- **Next checkpoint**: Day 30
+- **Day**: 30 — PARTIAL (fee note detail verified, payment flow blocked by OBS-3001)
+- **Next checkpoint**: Day 30 retest after OBS-3001 fix
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002 all healthy)
@@ -45,6 +45,7 @@ For each day-N walk in this cycle:
 | OBS-203 | `/api/assistant/invocations` returns 404 on client detail page loads | nit | Dev | OPEN | 2 | Non-critical AI assistant feature; 3 occurrences per page load |
 | OBS-304 | Activity feed reads "sent to Bob Ndlovu" instead of portal contact name on info request send | nit | Dev | OPEN | 3 | Cosmetic — activity log references actor not recipient |
 | OBS-1002 | Trust deposit Record Deposit dialog combobox non-functional on standalone Transactions page | HIGH | Dev | OPEN | 10 | Triple Slot composition (PopoverTrigger > FormControl > Button) breaks Radix Popover. Workaround: use matter Trust tab. Also affects Record Payment / Refund dialogs. |
+| OBS-3001 | Mock payment integration not seeded during tenant provisioning — portal shows "Contact firm" instead of Pay Now | HIGH | Dev | OPEN | 30 | `TenantProvisioningService` does not call `MockPaymentIntegrationSeeder.seedForTenant()`. `PackReconciliationRunner` only runs at startup before tenant exists. No `paymentUrl` on invoice. |
 
 ## Log
 
@@ -65,3 +66,4 @@ For each day-N walk in this cycle:
 | 1 | QA | Day 15 walk: BLOCKER-severity isolation check — Sipho cannot see Moroka's data | 22/22 PASS, 0 blockers, 0 new gaps; list views, direct-URL probes, API probes, email inspection all clean |
 | 1 | QA | Day 21 walk: Time entries (2x, non-tariff path), sheriff disbursement, pre-trial court date | 12/12 PASS, 0 blockers, 0 new gaps; 4h logged (2h30m + 1h30m), R 1,250 disbursement, court date 2026-05-28 |
 | 1 | QA | Day 28 walk: Bulk billing fee note generation (disbursement approval, Sipho activation, wizard, approve, send) | 3/3 PASS, 0 blockers, 0 new gaps; INV-0001 R 1,437.50 (2 TIME + 1 EXPENSE line), email to sipho.portal@example.com |
+| 1 | QA | Day 30 walk: Sipho views fee note on portal, payment flow blocked | PARTIAL — fee note detail PASS (3 lines, R 1,437.50, terminology correct), payment BLOCKED (OBS-3001: mock PSP not seeded), isolation PASS |

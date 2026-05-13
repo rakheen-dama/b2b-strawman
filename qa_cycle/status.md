@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 11 — COMPLETE (8/8 PASS, 0 blockers, 0 new gaps)
-- **Next checkpoint**: Day 14 (Firm onboards Moroka Family Trust — isolation setup)
+- **Day**: 14 — COMPLETE (11/11 PASS, 0 blockers, 0 new gaps)
+- **Next checkpoint**: Day 15 (Isolation check — Sipho cannot see Moroka's data)
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002 all healthy)
@@ -61,3 +61,4 @@ For each day-N walk in this cycle:
 | 1 | QA | Day 8 walk: Sipho reviews + accepts proposal PROP-0001 on portal | 11/11 PASS, 0 blockers, 0 new gaps |
 | 1 | QA | Day 10 walk: Firm verifies proposal acceptance, deposits R 50,000 trust funds | 9/9 PASS (via matter Trust tab workaround), 0 blockers, 1 new gap (OBS-1002 HIGH — broken combobox on standalone transactions page) |
 | 1 | QA | Day 11 walk: Sipho sees trust balance on portal | 8/8 PASS, 0 blockers, 0 new gaps; OBS-1101 (prev cycle) verified fixed |
+| 1 | QA | Day 14 walk: Firm onboards Moroka Family Trust (isolation setup) | 11/11 PASS, 0 blockers, 0 new gaps; Moroka client + matter + info request + document + R 25k trust deposit seeded |

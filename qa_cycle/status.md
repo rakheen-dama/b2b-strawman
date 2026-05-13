@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 2 — COMPLETE (7/10 PASS, 3 SKIPPED/N/A — KYC not wired, legitimate per mandate)
-- **Next checkpoint**: Day 3 (Create RAF matter, send FICA info request)
+- **Day**: 3 — COMPLETE (14/14 PASS, 0 blockers, 1 new nit OBS-304)
+- **Next checkpoint**: Day 4 (Sipho first portal login, upload FICA documents)
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002 all healthy)
@@ -43,6 +43,7 @@ For each day-N walk in this cycle:
 |--------|---------|----------|-------|--------|-----|-------|
 | OBS-202 | KYC adapter not wired — no "Run KYC Verification" button on client detail | exempt | Product | OPEN-EXEMPT | 2 | User mandate permits KYC as unwired gap |
 | OBS-203 | `/api/assistant/invocations` returns 404 on client detail page loads | nit | Dev | OPEN | 2 | Non-critical AI assistant feature; 3 occurrences per page load |
+| OBS-304 | Activity feed reads "sent to Bob Ndlovu" instead of portal contact name on info request send | nit | Dev | OPEN | 3 | Cosmetic — activity log references actor not recipient |
 
 ## Log
 
@@ -52,3 +53,4 @@ For each day-N walk in this cycle:
 | 1 | QA | Day 0 walk: Onboarding (access-request, OTP, approval, KC registration, team invites) | 32/32 PASS, 0 gaps |
 | 1 | QA | Day 1 walk: Firm onboarding polish (branding, tariffs, trust account) | 10/10 PASS, 0 gaps |
 | 1 | QA | Day 2 walk: Onboard Sipho as client, conflict check + KYC | 7/10 PASS, 3 SKIPPED (KYC exempt), 2 gaps (OBS-202 exempt, OBS-203 nit) |
+| 1 | QA | Day 3 walk: Create RAF matter (RAF-2026-001), send FICA info request (REQ-0001) | 14/14 PASS, 0 blockers, 1 new nit (OBS-304) |

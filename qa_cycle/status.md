@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 1 — COMPLETE (10/10 PASS, 0 gaps)
-- **Next checkpoint**: Day 2 (Onboard Sipho as client, run conflict check + KYC)
+- **Day**: 2 — COMPLETE (7/10 PASS, 3 SKIPPED/N/A — KYC not wired, legitimate per mandate)
+- **Next checkpoint**: Day 3 (Create RAF matter, send FICA info request)
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002 all healthy)
@@ -41,7 +41,8 @@ For each day-N walk in this cycle:
 
 | Gap ID | Summary | Severity | Owner | Status | Day | Notes |
 |--------|---------|----------|-------|--------|-----|-------|
-| — | — | — | — | — | — | — |
+| OBS-202 | KYC adapter not wired — no "Run KYC Verification" button on client detail | exempt | Product | OPEN-EXEMPT | 2 | User mandate permits KYC as unwired gap |
+| OBS-203 | `/api/assistant/invocations` returns 404 on client detail page loads | nit | Dev | OPEN | 2 | Non-critical AI assistant feature; 3 occurrences per page load |
 
 ## Log
 
@@ -50,3 +51,4 @@ For each day-N walk in this cycle:
 | 0 | Infra | Clean slate setup: volumes wiped, KC bootstrapped, all services started | Stack running |
 | 1 | QA | Day 0 walk: Onboarding (access-request, OTP, approval, KC registration, team invites) | 32/32 PASS, 0 gaps |
 | 1 | QA | Day 1 walk: Firm onboarding polish (branding, tariffs, trust account) | 10/10 PASS, 0 gaps |
+| 1 | QA | Day 2 walk: Onboard Sipho as client, conflict check + KYC | 7/10 PASS, 3 SKIPPED (KYC exempt), 2 gaps (OBS-202 exempt, OBS-203 nit) |

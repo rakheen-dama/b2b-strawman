@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 7 — COMPLETE (11/11 PASS, 0 blockers, 0 new gaps; OBS-704 hydration mismatch pre-existing nit still open)
-- **Next checkpoint**: Day 8 (Sipho reviews + accepts proposal on portal)
+- **Day**: 8 — COMPLETE (11/11 PASS, 0 blockers, 0 new gaps)
+- **Next checkpoint**: Day 10 (Firm verifies proposal acceptance, deposits trust funds)
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002 all healthy)
@@ -57,3 +57,4 @@ For each day-N walk in this cycle:
 | 1 | QA | Day 4 walk: Sipho first portal login (magic-link), upload FICA documents (3/3) | 14/14 PASS, 0 blockers, 0 new gaps |
 | 1 | QA | Day 5 walk: Bob reviews FICA submission (per-item accept x3, envelope completes) | 8/8 PASS, 0 blockers, 0 new gaps, OBS-501+OBS-502 verified |
 | 1 | QA | Day 7 walk: Thandi drafts + sends proposal (engagement letter) for Dlamini v RAF | 11/11 PASS, 0 blockers, 0 new gaps; OBS-702/703 fixes confirmed; OBS-704 hydration mismatch pre-existing |
+| 1 | QA | Day 8 walk: Sipho reviews + accepts proposal PROP-0001 on portal | 11/11 PASS, 0 blockers, 0 new gaps |

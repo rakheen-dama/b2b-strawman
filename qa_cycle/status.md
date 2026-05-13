@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 4 — COMPLETE (14/14 PASS, 0 blockers, 0 new gaps)
-- **Next checkpoint**: Day 5 (Firm reviews FICA submission as Bob)
+- **Day**: 5 — COMPLETE (8/8 PASS, 0 blockers, 0 new gaps, OBS-501 + OBS-502 fixes verified)
+- **Next checkpoint**: Day 7 (Firm drafts + sends proposal as Thandi)
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002 all healthy)
@@ -55,3 +55,4 @@ For each day-N walk in this cycle:
 | 1 | QA | Day 2 walk: Onboard Sipho as client, conflict check + KYC | 7/10 PASS, 3 SKIPPED (KYC exempt), 2 gaps (OBS-202 exempt, OBS-203 nit) |
 | 1 | QA | Day 3 walk: Create RAF matter (RAF-2026-001), send FICA info request (REQ-0001) | 14/14 PASS, 0 blockers, 1 new nit (OBS-304) |
 | 1 | QA | Day 4 walk: Sipho first portal login (magic-link), upload FICA documents (3/3) | 14/14 PASS, 0 blockers, 0 new gaps |
+| 1 | QA | Day 5 walk: Bob reviews FICA submission (per-item accept x3, envelope completes) | 8/8 PASS, 0 blockers, 0 new gaps, OBS-501+OBS-502 verified |

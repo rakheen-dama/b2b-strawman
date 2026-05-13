@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 15 — COMPLETE (22/22 PASS, 0 blockers, 0 new gaps)
-- **Next checkpoint**: Day 21
+- **Day**: 21 — COMPLETE (12/12 PASS, 0 blockers, 0 new gaps)
+- **Next checkpoint**: Day 28
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002 all healthy)
@@ -63,3 +63,4 @@ For each day-N walk in this cycle:
 | 1 | QA | Day 11 walk: Sipho sees trust balance on portal | 8/8 PASS, 0 blockers, 0 new gaps; OBS-1101 (prev cycle) verified fixed |
 | 1 | QA | Day 14 walk: Firm onboards Moroka Family Trust (isolation setup) | 11/11 PASS, 0 blockers, 0 new gaps; Moroka client + matter + info request + document + R 25k trust deposit seeded |
 | 1 | QA | Day 15 walk: BLOCKER-severity isolation check — Sipho cannot see Moroka's data | 22/22 PASS, 0 blockers, 0 new gaps; list views, direct-URL probes, API probes, email inspection all clean |
+| 1 | QA | Day 21 walk: Time entries (2x, non-tariff path), sheriff disbursement, pre-trial court date | 12/12 PASS, 0 blockers, 0 new gaps; 4h logged (2h30m + 1h30m), R 1,250 disbursement, court date 2026-05-28 |

@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 85 — COMPLETE (closure docs verified, retention clock present, audit log filters PASS for both firm users and portal contacts, 88 org-level audit events spanning full lifecycle — no new gaps)
-- **Next checkpoint**: Day 88
+- **Day**: 88 — COMPLETE (firm activity feed 42 events spanning full lifecycle, portal activity 13+13 events across two tabs, narrative coherence PASS — no new gaps)
+- **Next checkpoint**: Day 90
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002 all healthy)
@@ -78,3 +78,4 @@ For each day-N walk in this cycle:
 | 2 | QA | Day 61 walk: Sipho downloads SoA from portal | 9/9 PASS (61.1 PARTIAL — OBS-6001 SoA email missing, closure letter email used as alternate path; 61.2–61.9 all PASS). SoA 5100 bytes, MD5 `0245a6e4a6f9c9363bcca194d80feca4`, byte-identical to firm-side. Closure letter also downloadable. Firm-side audit trail shows 2x `portal.document.downloaded` events for Sipho. Portal console clean (0 errors). |
 | 2 | QA | Day 75 walk: Weekly digest + late-cycle isolation spot-check | 9/9 PASS (75.2 PARTIAL — digest scope is fee-note + trust only, not full activity replay; scenario amend, same as prior cycle). Digest triggered via internal endpoint (2 sent, 0 errors). Sipho digest: INV-0001 PAID + 3 trust txns, 0 Moroka refs. Moroka digest: 1 info request + 1 trust txn, 0 Sipho refs. Activity trail: both tabs clean. Isolation holds on /home, /trust, /projects, /activity. Portal console 0 errors. No new gaps. |
 | 2 | QA | Day 85 walk: Firm final closure paperwork — audit log completeness | 4/4 PASS (85.3 PARTIAL — retention clock present but end_date uncomputable due to unconfigured firm retention period). Closure letter + SoA confirmed in Documents tab (1.6 KB + 5.0 KB). No thank-you template needed. Activity tab actor filter offers Sipho Dlamini (portal) alongside firm users; 13 portal events visible when filtered. Org-level audit log: 88 events, 2 pages. Portal Contact events (downloads, uploads, payment) all recorded. No new gaps. |
+| 2 | QA | Day 88 walk: Activity feed wow moment (firm + portal side-by-side) | 6/6 PASS, 0 blockers, 0 new gaps. Firm: 42 events across full lifecycle (Day 3–85). Portal: 13 "Your actions" + 13 "Firm actions". Narrative coherence PASS — every portal write-action has firm counterpart, every client-visible firm event has portal counterpart. Screenshots captured. Portal console 0 errors. |

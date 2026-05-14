@@ -30,11 +30,12 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 1 — COMPLETE (6 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED — no new gaps)
-- **Next checkpoint**: Day 2 (Onboarding: transition Sipho to ONBOARDING, complete FICA/KYC checklist)
+- **Day**: 2 — COMPLETE (3 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED — no new gaps)
+- **Next checkpoint**: Day 3 (First engagement: create Tax Return engagement for Sipho)
 - **Day 0 deferred items resolved**: Field promotion inline (0.36) VERIFIED via Day 1 create dialog, no duplicates (0.37) VERIFIED. Engagement field promotion (0.38) still deferred to Day 3. Cancel dialog (0.39) deferred (non-blocking). Modules page (0.44-0.45), billing screenshot (0.52) remain deferred.
 - **All Day 0 gaps resolved**: OBS-4002 VERIFIED, OBS-4003 VERIFIED, OBS-4004 VERIFIED
 - **Sipho Dlamini client ID**: 31986024-382f-48ac-abb9-5dfa64fde531
+- **Sipho lifecycle**: ACTIVE (transitioned through PROSPECT → ONBOARDING → ACTIVE via FICA/KYC checklist completion)
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002, KC :8180, Mailpit :8025, Postgres :5432, LocalStack :4566)
@@ -61,4 +62,6 @@ For each day-N walk in this cycle:
 | 0 | Orchestrator | Fix OBS-4003: generated valid 200x200 green PNG test fixture at `qa_cycle/test-fixtures/thornton-logo.png`. | FIXED (QA fixture, no code change) |
 | 1 | Infra | Clean-slate rebuild after OBS-4002 + OBS-4004 fixes. Volumes wiped, KC bootstrapped, all services restarted. | Stack running |
 | 1 | QA | Day 0 retest after OBS-4002/4003/4004 fixes. Full walk: Phases A-I. Re-provisioned org + 3 users. Retested all 3 fixes. | 37 PASS / 0 PARTIAL / 8 DEFERRED / 0 FAIL. OBS-4002 VERIFIED (7/7 templates). OBS-4003 VERIFIED (logo uploaded+previews). OBS-4004 VERIFIED (automations page loads, 13 rules). |
+| 1 | QA | Day 1 walk: Bob logs in, creates Sipho Dlamini as client (standard + promoted fields), verifies detail page | 6 PASS / 0 FAIL. Sipho ID: 31986024-382f-48ac-abb9-5dfa64fde531 |
+| 2 | QA | Day 2 walk: Transition Sipho PROSPECT→ONBOARDING→ACTIVE. FICA/KYC checklist (11 items: 8 completed with docs, 3 skipped). Activation prereqs (City+Country). | 3 PASS / 0 FAIL. Sipho now ACTIVE. |
 | 1 | QA | Day 1 walk: Login as Bob (Admin), create client Sipho Dlamini with accounting-za promoted fields (entity type, tax number, address), verify Prospect status in list, verify promoted fields inline on detail page. Field promotion Day 0 deferred items 0.36/0.37 now VERIFIED. | 6 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. |

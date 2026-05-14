@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 60 — COMPLETE (matter closure happy-path PASS, SoA + closure letter PDFs generated, closure email delivered, SoA email NOT delivered — OBS-6001 LOW)
-- **Next checkpoint**: Day 61
+- **Day**: 61 — COMPLETE (SoA download PASS, closure letter download PASS, byte-parity PASS, firm-side audit trail PASS — OBS-6001 SoA email still OPEN LOW)
+- **Next checkpoint**: Day 75
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002 all healthy)
@@ -75,3 +75,4 @@ For each day-N walk in this cycle:
 | 2 | QA | Day 45 walk: Second info request + trust top-up deposit | 5/5 PASS, 0 blockers, 0 new gaps. REQ-0003 sent (2 items), R 20k deposit recorded. Trust: Sipho R 70k / Moroka R 25k isolated. Scenario amendment note: R 71k → R 70k (no OBS-1101 carry-over in clean-slate cycle). |
 | 2 | QA | Day 46 walk: Sipho uploads docs to REQ-0003, trust re-check, isolation spot-check | 7/7 PASS, 0 blockers, 0 new gaps. 2/2 items submitted (hospital discharge + ortho report), envelope IN_PROGRESS. Trust R 70k confirmed (2 deposits). Isolation clean on /trust, /projects, /home. Pending counter 1→0. |
 | 2 | QA | Day 60 walk: Matter closure happy-path (prep + execution) | 3/3 PASS (closure PASS, SoA PDF PASS, closure email PARTIAL). All 9 closure gates green. Active → Closed (Concluded). Closure letter + SoA PDFs generated (1.6 KB + 5.0 KB). Trust R 70k → R 0 (payment approved by Thandi). Closure letter email delivered. SoA email NOT delivered (OBS-6001 LOW). No INV-0002 needed. |
+| 2 | QA | Day 61 walk: Sipho downloads SoA from portal | 9/9 PASS (61.1 PARTIAL — OBS-6001 SoA email missing, closure letter email used as alternate path; 61.2–61.9 all PASS). SoA 5100 bytes, MD5 `0245a6e4a6f9c9363bcca194d80feca4`, byte-identical to firm-side. Closure letter also downloadable. Firm-side audit trail shows 2x `portal.document.downloaded` events for Sipho. Portal console clean (0 errors). |

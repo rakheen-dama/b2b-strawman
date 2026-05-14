@@ -30,12 +30,13 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 2 — COMPLETE (3 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED — no new gaps)
-- **Next checkpoint**: Day 3 (First engagement: create Tax Return engagement for Sipho)
-- **Day 0 deferred items resolved**: Field promotion inline (0.36) VERIFIED via Day 1 create dialog, no duplicates (0.37) VERIFIED. Engagement field promotion (0.38) still deferred to Day 3. Cancel dialog (0.39) deferred (non-blocking). Modules page (0.44-0.45), billing screenshot (0.52) remain deferred.
+- **Day**: 3 — COMPLETE (6 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED — no new gaps)
+- **Next checkpoint**: Day 4 (Carol logs 1.0 hours on Sipho engagement + Kgosi Holdings client creation)
+- **Day 0 deferred items resolved**: Field promotion inline (0.36) VERIFIED via Day 1 create dialog, no duplicates (0.37) VERIFIED. Engagement field promotion (0.38) VERIFIED via Day 3 New Engagement dialog. Cancel dialog (0.39) deferred (non-blocking). Modules page (0.44-0.45), billing screenshot (0.52) remain deferred.
 - **All Day 0 gaps resolved**: OBS-4002 VERIFIED, OBS-4003 VERIFIED, OBS-4004 VERIFIED
 - **Sipho Dlamini client ID**: 31986024-382f-48ac-abb9-5dfa64fde531
 - **Sipho lifecycle**: ACTIVE (transitioned through PROSPECT → ONBOARDING → ACTIVE via FICA/KYC checklist completion)
+- **Sipho Tax Return engagement ID**: 583ee45e-40b5-4846-9082-92f69f0f5f17 (Tax Return — Individual ITR12, Ref: TR-2026-0001, Type: TAX_RETURN, 7 tasks, Carol assigned to 4)
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002, KC :8180, Mailpit :8025, Postgres :5432, LocalStack :4566)
@@ -65,3 +66,4 @@ For each day-N walk in this cycle:
 | 1 | QA | Day 1 walk: Bob logs in, creates Sipho Dlamini as client (standard + promoted fields), verifies detail page | 6 PASS / 0 FAIL. Sipho ID: 31986024-382f-48ac-abb9-5dfa64fde531 |
 | 2 | QA | Day 2 walk: Transition Sipho PROSPECT→ONBOARDING→ACTIVE. FICA/KYC checklist (11 items: 8 completed with docs, 3 skipped). Activation prereqs (City+Country). | 3 PASS / 0 FAIL. Sipho now ACTIVE. |
 | 1 | QA | Day 1 walk: Login as Bob (Admin), create client Sipho Dlamini with accounting-za promoted fields (entity type, tax number, address), verify Prospect status in list, verify promoted fields inline on detail page. Field promotion Day 0 deferred items 0.36/0.37 now VERIFIED. | 6 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. |
+| 3 | QA | Day 3 walk: Create "Sipho Dlamini — 2025/26 Tax Return" engagement from Tax Return — Individual (ITR12) template. 7 tasks instantiated. Added Carol as member, assigned 4 initial tasks. Field promotion (0.38) VERIFIED. | 6 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. Engagement ID: 583ee45e-40b5-4846-9082-92f69f0f5f17 |

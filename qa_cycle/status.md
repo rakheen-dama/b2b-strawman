@@ -45,7 +45,7 @@ For each day-N walk in this cycle:
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002, KC :8180, Mailpit :8025, Postgres :5432, LocalStack :4566)
-- NEEDS_REBUILD: true
+- NEEDS_REBUILD: false
 
 ## Tracker
 

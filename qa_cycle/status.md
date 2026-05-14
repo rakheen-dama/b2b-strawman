@@ -45,7 +45,7 @@ For each day-N walk in this cycle:
 | OBS-203 | `/api/assistant/invocations` returns 404 on client detail page loads | nit | Dev | OPEN | 2 | Non-critical AI assistant feature; 3 occurrences per page load |
 | OBS-304 | Activity feed reads "sent to Bob Ndlovu" instead of portal contact name on info request send | nit | Dev | OPEN | 3 | Cosmetic — activity log references actor not recipient |
 | OBS-1002 | Trust deposit Record Deposit dialog combobox non-functional on standalone Transactions page | HIGH | Dev | OPEN | 10 | Triple Slot composition (PopoverTrigger > FormControl > Button) breaks Radix Popover. Workaround: use matter Trust tab. Also affects Record Payment / Refund dialogs. |
-| OBS-3001 | Mock payment integration not seeded during tenant provisioning — portal shows "Contact firm" instead of Pay Now | HIGH | Dev | SPEC_READY | 30 | `TenantProvisioningService` does not call `MockPaymentIntegrationSeeder.seedForTenant()`. Fix spec: `qa_cycle/fix-specs/OBS-3001.md`. |
+| OBS-3001 | Mock payment integration not seeded during tenant provisioning — portal shows "Contact firm" instead of Pay Now | HIGH | Dev | FIXED | 30 | `TenantProvisioningService` now calls `MockPaymentIntegrationSeeder.seedForTenant()`. PR #1302 merged. Full verify: 5209 tests, 0 failures. |
 
 ## Log
 
@@ -68,3 +68,4 @@ For each day-N walk in this cycle:
 | 1 | QA | Day 28 walk: Bulk billing fee note generation (disbursement approval, Sipho activation, wizard, approve, send) | 3/3 PASS, 0 blockers, 0 new gaps; INV-0001 R 1,437.50 (2 TIME + 1 EXPENSE line), email to sipho.portal@example.com |
 | 1 | QA | Day 30 walk: Sipho views fee note on portal, payment flow blocked | PARTIAL — fee note detail PASS (3 lines, R 1,437.50, terminology correct), payment BLOCKED (OBS-3001: mock PSP not seeded), isolation PASS |
 | 1 | Product | Triage OBS-3001: SPEC_READY (HIGH, blocker for Day 30 payment) | Root cause confirmed: `TenantProvisioningService` missing `MockPaymentIntegrationSeeder` injection+call. Fix spec written to `qa_cycle/fix-specs/OBS-3001.md`. Effort: S. |
+| 1 | Dev | Fix OBS-3001: inject MockPaymentIntegrationSeeder into TenantProvisioningService | PR #1302 merged (squash). Full verify: 5209 tests, 0 failures, 0 errors. 2 files changed, 9 insertions. |

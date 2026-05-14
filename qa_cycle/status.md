@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 46 — COMPLETE (all checkpoints PASS, REQ-0003 2/2 items submitted, trust R 70,000 confirmed, isolation holds, pending counter dropped to 0)
-- **Next checkpoint**: Day 60
+- **Day**: 60 — COMPLETE (matter closure happy-path PASS, SoA + closure letter PDFs generated, closure email delivered, SoA email NOT delivered — OBS-6001 LOW)
+- **Next checkpoint**: Day 61
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002 all healthy)
@@ -47,6 +47,7 @@ For each day-N walk in this cycle:
 | OBS-1002 | Trust deposit Record Deposit dialog combobox non-functional on standalone Transactions page | HIGH | Dev | OPEN | 10 | Triple Slot composition (PopoverTrigger > FormControl > Button) breaks Radix Popover. Workaround: use matter Trust tab. Also affects Record Payment / Refund dialogs. |
 | OBS-3001 | Mock payment integration not seeded during tenant provisioning — portal shows "Contact firm" instead of Pay Now | HIGH | Dev | VERIFIED | 30 | `TenantProvisioningService` now calls `MockPaymentIntegrationSeeder.seedForTenant()`. PR #1302 merged. Full verify: 5209 tests, 0 failures. QA retest: payment flow end-to-end PASS (mock PSP checkout, webhook, PAID status on both portal and firm side). |
 | OBS-3002 | `InvoiceTransitionService.refreshPaymentLink()` does not publish `InvoiceSyncEvent` — portal read model stale after payment link refresh | LOW | Dev | OPEN | 30 | Non-blocking; workaround available (manual DB sync). All other invoice transitions publish sync events. |
+| OBS-6001 | Statement of Account document-ready email not sent to portal contact after matter closure | LOW | Dev | OPEN | 60 | Closure letter email works (OBS-2106 partial fix). SoA email missing. Sipho can still access SoA via portal Documents tab. |
 
 ## Log
 
@@ -73,3 +74,4 @@ For each day-N walk in this cycle:
 | 2 | QA | Day 30 retest: payment flow after OBS-3001 fix | ALL PASS — Pay Now visible, mock PSP checkout completed, PAID status on portal + firm. OBS-3001 VERIFIED. New nit: OBS-3002 (refreshPaymentLink missing InvoiceSyncEvent). |
 | 2 | QA | Day 45 walk: Second info request + trust top-up deposit | 5/5 PASS, 0 blockers, 0 new gaps. REQ-0003 sent (2 items), R 20k deposit recorded. Trust: Sipho R 70k / Moroka R 25k isolated. Scenario amendment note: R 71k → R 70k (no OBS-1101 carry-over in clean-slate cycle). |
 | 2 | QA | Day 46 walk: Sipho uploads docs to REQ-0003, trust re-check, isolation spot-check | 7/7 PASS, 0 blockers, 0 new gaps. 2/2 items submitted (hospital discharge + ortho report), envelope IN_PROGRESS. Trust R 70k confirmed (2 deposits). Isolation clean on /trust, /projects, /home. Pending counter 1→0. |
+| 2 | QA | Day 60 walk: Matter closure happy-path (prep + execution) | 3/3 PASS (closure PASS, SoA PDF PASS, closure email PARTIAL). All 9 closure gates green. Active → Closed (Concluded). Closure letter + SoA PDFs generated (1.6 KB + 5.0 KB). Trust R 70k → R 0 (payment approved by Thandi). Closure letter email delivered. SoA email NOT delivered (OBS-6001 LOW). No INV-0002 needed. |

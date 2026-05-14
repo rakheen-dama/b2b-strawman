@@ -36,7 +36,7 @@ For each day-N walk in this cycle:
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002, KC :8180, Mailpit :8025, Postgres :5432, LocalStack :4566)
-- NEEDS_REBUILD: true (OBS-4002 + OBS-4004 merged — backend restart + clean-slate re-provision needed for QA retest)
+- NEEDS_REBUILD: false
 
 ## Tracker
 
@@ -57,3 +57,4 @@ For each day-N walk in this cycle:
 | 0 | Dev | Fix OBS-4004: add `automation_builder` to accounting-za enabledModules. Updated vertical profile JSON + 2 test assertions. | PR #1304 merged. Full verify: 5209 tests, 0 failures. |
 | 0 | Dev | Fix OBS-4002: add Payroll (Monthly) + Annual Trust Financial Statements templates to accounting-za project template pack. 7 templates total (was 5). | PR #1305 merged. Full verify: 5209 tests, 0 failures. |
 | 0 | Orchestrator | Fix OBS-4003: generated valid 200x200 green PNG test fixture at `qa_cycle/test-fixtures/thornton-logo.png`. | FIXED (QA fixture, no code change) |
+| 1 | Infra | Clean-slate rebuild after OBS-4002 + OBS-4004 fixes. Volumes wiped, KC bootstrapped, all services restarted. | Stack running |

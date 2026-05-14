@@ -296,6 +296,7 @@ class TenantProvisioningServiceTest {
 
     verify(ratePackSeeder).seedPacksForTenant(anyString(), eq("org_acct"));
     verify(schedulePackSeeder).seedPacksForTenant(anyString(), eq("org_acct"));
+    verify(mockPaymentIntegrationSeeder).seedForTenant(anyString(), eq("org_acct"));
   }
 
   @Test
@@ -322,6 +323,7 @@ class TenantProvisioningServiceTest {
     // handles profile mismatch internally (no-op if no matching pack)
     verify(ratePackSeeder).seedPacksForTenant(anyString(), eq("org_no_profile"));
     verify(schedulePackSeeder).seedPacksForTenant(anyString(), eq("org_no_profile"));
+    verify(mockPaymentIntegrationSeeder).seedForTenant(anyString(), eq("org_no_profile"));
   }
 
   @Test

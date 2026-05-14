@@ -42,7 +42,7 @@ For each day-N walk in this cycle:
 | Gap ID | Summary | Severity | Owner | Status | Day | Notes |
 |--------|---------|----------|-------|--------|-----|-------|
 | OBS-202 | KYC adapter not wired — no "Run KYC Verification" button on client detail | exempt | Product | OPEN-EXEMPT | 2 | User mandate permits KYC as unwired gap |
-| OBS-203 | `/api/assistant/invocations` returns 404 on client detail page loads | nit | Dev | OPEN | 2 | Non-critical AI assistant feature; 3 occurrences per page load |
+| OBS-203 | `/api/assistant/invocations` returns 404 on client detail page loads | nit | Dev | DEFERRED | 2 | AI assistant feature not yet implemented; endpoint not proxied. No functional impact — cosmetic console noise only. |
 | OBS-304 | Activity feed reads "sent to Bob Ndlovu" instead of portal contact name on info request send | nit | Dev | OPEN | 3 | Cosmetic — activity log references actor not recipient |
 | OBS-1002 | Trust deposit Record Deposit dialog combobox non-functional on standalone Transactions page | HIGH | Dev | OPEN | 10 | Triple Slot composition (PopoverTrigger > FormControl > Button) breaks Radix Popover. Workaround: use matter Trust tab. Also affects Record Payment / Refund dialogs. |
 | OBS-3001 | Mock payment integration not seeded during tenant provisioning — portal shows "Contact firm" instead of Pay Now | HIGH | Dev | VERIFIED | 30 | `TenantProvisioningService` now calls `MockPaymentIntegrationSeeder.seedForTenant()`. PR #1302 merged. Full verify: 5209 tests, 0 failures. QA retest: payment flow end-to-end PASS (mock PSP checkout, webhook, PAID status on both portal and firm side). |

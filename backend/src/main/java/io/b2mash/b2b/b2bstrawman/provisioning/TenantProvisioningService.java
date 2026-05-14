@@ -191,8 +191,9 @@ public class TenantProvisioningService {
       // GAP-L-44 + GAP-L-27 — apply profile enabled_modules and taxDefaults to the fresh tenant
       // so the first user never sees a bare "Standard" rate or missing vertical modules.
       verticalProfileReconciliationSeeder.reconcile(schemaName, clerkOrgId);
-      // OBS-3001 — seed dev-only mock PSP adapter for legal-za tenants (symmetric with
-      // PackReconciliationRunner). No-op in prod profile or non-legal-za verticals.
+      // OBS-3001 — seed dev-only mock PSP adapter (symmetric with PackReconciliationRunner).
+      // Must run after setVerticalProfile so orgSettings.verticalProfile is readable.
+      // No-op in prod profile or non-legal-za verticals.
       mockPaymentIntegrationSeeder.seedForTenant(schemaName, clerkOrgId);
       subscriptionService.createSubscription(org.getId());
       createMapping(clerkOrgId, schemaName);

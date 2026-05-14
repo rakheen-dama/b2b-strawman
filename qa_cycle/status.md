@@ -43,7 +43,7 @@ For each day-N walk in this cycle:
 | Gap ID | Summary | Severity | Owner | Status | Day | Notes |
 |--------|---------|----------|-------|--------|-----|-------|
 | OBS-4001 | Approve button on access-requests requires JS-level click to surface confirmation dialog | LOW | QA | WONT_FIX | 0 | Playwright automation quirk, not a product bug. Dialog works correctly for real users. QA agent should use `{ force: true }` or `evaluate` click. |
-| OBS-4002 | Missing engagement templates: Payroll (monthly) and Trust AFS not in accounting-za pack | MEDIUM | Dev | SPEC_READY | 0 | Escalated LOW->MEDIUM: Trust AFS template needed at Day 16 (Moroka Family Trust). Fix spec: add 2 templates to accounting-za.json. See `qa_cycle/fix-specs/OBS-4002.md`. |
+| OBS-4002 | Missing engagement templates: Payroll (monthly) and Trust AFS not in accounting-za pack | MEDIUM | Dev | FIXED | 0 | Added Payroll (Monthly) + Annual Trust Financial Statements templates to accounting-za.json. PR #1305 merged. Full verify: 5209 tests, 0 failures. |
 | OBS-4003 | Logo upload not tested -- no test logo file available | INFO | QA | SPEC_READY | 0 | Existing fixture at qa_cycle/test-fixtures/ is 75 bytes (invalid). Fix: generate a valid 200x200 green PNG. See `qa_cycle/fix-specs/OBS-4003.md`. |
 | OBS-4004 | Automations page not found in settings navigation | MEDIUM | Dev | FIXED | 0 | Root cause: `automation_builder` not in accounting-za enabledModules. Fix: added to vertical profile JSON. PR #1304 merged. Full verify: 5209 tests, 0 failures. |
 
@@ -55,3 +55,4 @@ For each day-N walk in this cycle:
 | 0 | QA | Day 0 full walk: Phase A (access request + OTP), Phase B (admin approval), Phase C (KC registration), Phase D (team invites), Phase E (settings/rates/tax), Phase F (custom fields), Phase G (templates), Phase H (progressive disclosure), Phase I (billing) | 37 PASS / 1 PARTIAL / 10 DEFERRED / 0 FAIL |
 | 0 | Product | Triage OBS-4001 through OBS-4004. OBS-4001: WONT_FIX (Playwright quirk). OBS-4002: escalated to MEDIUM + SPEC_READY (Trust AFS blocks Day 16). OBS-4003: SPEC_READY (fixture generation). OBS-4004: SPEC_READY (profile config fix). | 1 WONT_FIX, 3 SPEC_READY |
 | 0 | Dev | Fix OBS-4004: add `automation_builder` to accounting-za enabledModules. Updated vertical profile JSON + 2 test assertions. | PR #1304 merged. Full verify: 5209 tests, 0 failures. |
+| 0 | Dev | Fix OBS-4002: add Payroll (Monthly) + Annual Trust Financial Statements templates to accounting-za project template pack. 7 templates total (was 5). | PR #1305 merged. Full verify: 5209 tests, 0 failures. |

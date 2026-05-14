@@ -1,113 +1,129 @@
-# Day 4 — Sipho first portal login + FICA upload
+# Day 4 Checkpoint Results — Accounting ZA 90-Day Lifecycle (Keycloak)
 
-**Stack**: dev/Keycloak — frontend :3000, backend :8080, gateway :8443, portal :3002, KC :8180, Mailpit :8025
-**Date**: 2026-05-13
-**Actor**: Sipho Dlamini (portal contact) on portal `:3002`
-**Branch**: `bugfix_cycle_2026-05-13` (cycle 1)
+**Date**: 2026-05-14
+**Branch**: `bugfix_cycle_2026-05-14`
+**QA Driver**: Playwright MCP against Keycloak dev stack
+**Stack**: backend :8080, gateway :8443, frontend :3000, portal :3002, keycloak :8180, mailpit :8025
+**Actors**: Carol Mokoena (Member), Thandi Thornton (Owner)
+**Status**: **DAY 4 COMPLETE** -- 8 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED
 
----
+## Summary
 
-## Day 4 step-by-step (portal context)
+All Day 4 checkpoints passed. Two scenarios were executed:
 
-Context swap: navigated directly to magic-link URL on `http://localhost:3002` (Sipho unauthenticated — fresh portal session).
+1. **Carol logs 1.0 hours** on Sipho Dlamini's tax return engagement ("Document collection -- client portal") against the "Collect IRP5/IT3(a) certificates" task. Time entry recorded at Carol's billing rate of R 450,00/hr.
 
-### Phase A — Magic-link landing
-
-#### 4.1 Open Mailpit, locate FICA magic-link email
-- **PASS** — Mailpit message `CJsf6oPciWqSqzH4EsN6xb` retrieved via `curl http://localhost:8025/api/v1/message/<id>`. Subject: `Information request REQ-0001 from Mathebula & Partners`. To: `sipho.portal@example.com`. Body contains `View Request` button → `http://localhost:3002/auth/exchange?token=26sbOhJ-bVL1kcKGKBk5Ez-H7Rv7mMuw3EoRJG9GWmU&orgId=mathebula-partners`. Header bar uses navy `#1B3358` brand colour + S3 logo URL — branding leaks into email correctly.
-
-#### 4.2 Click magic-link → token exchange
-- **PASS** — Navigated to magic-link URL `http://localhost:3002/auth/exchange?token=26sbOhJ-bVL1kcKGKBk5Ez-H7Rv7mMuw3EoRJG9GWmU&orgId=mathebula-partners`. Token exchange succeeded — `POST /portal/auth/exchange` fired and redirected to `/projects` (portal home). No Keycloak form appeared at any point. Zero errors during exchange (only `favicon.ico` 404 — known dev-mode gap).
-
-#### 4.3 Token exchange completes → redirect to home
-- **PASS** — Landing was `/projects` showing "Your Projects" with "Dlamini v Road Accident Fund" listed. Manual navigation to `/home` also succeeds.
-
-#### 4.4 `/home` shows pending info request with matter context
-- **PASS** — `/home` renders "Pending info requests" KPI card with count = `1` linking to `/requests`. Per OBS-401 scenario amendment from previous cycle: portal surfaces matter name (not template title "FICA Onboarding Pack") as the request label — this is the accepted behavior. Due date not shown inline on home card but the pending count is correct.
-
-#### 4.5 Header / sidebar shows Mathebula firm branding
-- **PASS** — Portal banner shows "Mathebula & Partners logo" (alt text). Sidebar header reads "Portal". Legal-za terminology applied in navigation: Home, Matters, Trust, Deadlines, Fee Notes, Proposals, Requests, Activity. No firm-vertical leakage.
-
-#### 4.6 User identity = Sipho Dlamini
-- **PASS** — Top-right user menu reads `Sipho Dlamini`.
-
-#### 4.7 Screenshot of portal home
-- **DONE** — `day-04-portal-home-first-login.png`
-
-### Phase B — FICA upload
-
-#### 4.8 Click into FICA Onboarding Pack → detail renders
-- **PASS** — Navigated via Home → Pending info requests → `/requests` → clicked `REQ-0001` → landed on `/requests/ac2abebd-b08c-4594-b6ff-88717bb4dbc2`. Heading: `REQ-0001 / Dlamini v Road Accident Fund / 0/3 submitted • status SENT`. Matter context (project name + request number) rendered at top with per-item upload list below.
-
-#### 4.9 Three upload slots labelled correctly
-- **PASS** — Three list items rendered:
-  1. **ID copy** (required) — `Certified copy of the client's South African ID document or passport bio page. Must be certified by a Commissioner of Oaths, SAPS, or other accepted certifier within the last 3 months. Accepts: PDF, JPG, PNG`
-  2. **Proof of residence (≤ 3 months)** (required) — `Recent utility bill, municipal rates account, bank statement, or similar document confirming the client's residential address. Document date must be within the last 3 months. Accepts: PDF, JPG, PNG`
-  3. **Bank statement (≤ 3 months)** (required) — `Most recent bank statement evidencing the client's source of funds. Statement must be dated within the last 3 months and show the client's name, account number, and at least one transaction. Accepts: PDF`
-
-  Labels match the FICA Onboarding Pack template metadata + acceptable file types are surfaced.
-
-#### 4.10 Upload PDF to each slot
-- **PASS** — All three uploads completed via file chooser → `browser_file_upload`:
-  - Slot 1 (ID copy): `qa_cycle/fixtures/fica-id.pdf`
-  - Slot 2 (Proof of residence): `qa_cycle/fixtures/fica-address.pdf`
-  - Slot 3 (Bank statement): `qa_cycle/fixtures/fica-bank.pdf`
-
-  Each slot transitioned: file selected → Upload-and-submit button enabled → click → `Submitted — status: SUBMITTED` text appears. Submission counter advanced 0/3 → 1/3 → 2/3 → 3/3.
-
-#### 4.11 (OBS-402 amend: removed)
-- **N/A** — Per scenario amendment, the portal does not surface a request-level cover-message textarea. Per-item context is set by the firm when sending and rendered as the item's description. This is accepted behavior.
-
-#### 4.12 Submit each FICA item via per-item Upload and submit
-- **PASS** — Each item submitted individually via "Upload and submit" button. State transitions observed:
-  - After item 1: `1/3 submitted • status IN_PROGRESS`
-  - After item 2: `2/3 submitted • status IN_PROGRESS`
-  - After item 3: `3/3 submitted • status IN_PROGRESS`
-  
-  Per OBS-403 scenario amendment: envelope stays `IN_PROGRESS` (not auto-`SUBMITTED`). Envelope will transition to `Completed` on firm-side "Mark as Reviewed" in Day 5. State machine: `Sent → IN_PROGRESS` (3/3 submitted) → `Completed` (firm review). Correct behavior.
-
-#### 4.13 `/home` pending count drops to 0
-- **PASS** — Returned to `/home`. "Pending info requests" KPI now reads `0`. The home view filters on items still awaiting client action — correct user-facing semantic. Confirms the upload flow is functionally complete from the portal user's POV.
-
-#### 4.14 Screenshot
-- **DONE** — `day-04-fica-submitted.png` (3/3 SUBMITTED)
+2. **Thandi creates Kgosi Holdings (Pty) Ltd** as a new company client with all accounting-za promoted fields inline (entity type, registration number, VAT number, financial year end, registered address, primary contact details). Screenshot captured as the "Company client wow moment" (Day 4 demo wow). Onboarding completed via FICA KYC checklist (8/8 required items completed with documents linked, 3 optional items skipped). System auto-transitioned Kgosi to ACTIVE after checklist completion (City and Country were already populated during creation).
 
 ---
 
-## Day-end checkpoints
+## Checkpoint Results
 
-| Check | Result |
-|-------|--------|
-| Magic-link login succeeded — no Keycloak form appeared at any step | **PASS** — Portal magic-link path is `http://localhost:3002/auth/exchange?token=...&orgId=...` → `POST /portal/auth/exchange` → redirect to `/projects`. No Keycloak URL or form appeared. Token from Day 3 email was still valid (same backend session, no restart). |
-| Uploads stored (firm side will verify on Day 5) | **DEFERRED to Day 5** — three SUBMITTED states recorded portal-side; firm-side download verification is Day 5.3. |
-| Info-request state machine progressed: per-item Pending → Submitted, envelope Sent → IN_PROGRESS | **PASS** — Item state transitions confirmed inline (`Submitted — status: SUBMITTED` for all 3). Envelope state Sent → IN_PROGRESS (does not auto-advance to Submitted — correct per OBS-403 amendment). |
-| No firm-side terminology leaks on portal | **PASS** — Sidebar uses legal-za terms (Matters, Fee Notes, Trust, Deadlines, Proposals, Requests, Activity). No "Project"/"Customer"/"Invoice" display-copy leaks. |
-| Brand check: portal footer reads "Powered by Kazi" | **PASS** — Footer reads "Powered by Kazi" (not "DocTeams"). OBS-404 fix from previous cycle verified. |
-
----
-
-## Console / Network
-
-Total console errors during Day 4 portal session: **0 new portal-side errors**.
-
-Errors present in full session log (from `all: true`):
-1. `GET /favicon.ico → 404` on :3002 and :8180 — known dev-mode asset gap, not a regression.
-2. Multiple `GET /api/assistant/invocations → 404` on :3000 — these are firm-side errors from a previous browser tab (OBS-203 nit from Day 2). They are NOT portal-side errors.
-
-Zero `5xx` from backend during the upload sequence. Three successful FICA uploads = three successful round-trips.
+| ID | Checkpoint | Result | Evidence |
+|----|-----------|--------|----------|
+| 4.1 | Carol logs 1.0 hours: "Document collection -- client portal" | **PASS** | Logged in as Carol Mokoena (carol@thornton-test.local / SecureP@ss3). Navigated to Sipho Dlamini engagement (583ee45e-40b5-4846-9082-92f69f0f5f17). Tasks tab: 7 tasks visible, Carol assigned to 4. Clicked "Log Time" on "Collect IRP5/IT3(a) certificates" task. Dialog: Duration=1h 0m, Date=2026-05-14, Description="Document collection -- client portal", Billable=checked, Rate=R 450,00/hr. Total: 1h x R 450,00 = R 450,00. Submitted. Time tab confirms: Total=1h, Billable=1h, Entries=1, Task="Collect IRP5/IT3(a) certificates". Screenshot: `qa_cycle/evidence/day-04/carol-time-entry-1h.png` |
+| 4.2 | Navigate to Clients > New Client | **PASS** | Signed out Carol, logged in as Thandi Thornton (thandi@thornton-test.local / SecureP@ss1). Navigated to /org/thornton-associates/customers. Clients list shows 1 client (Sipho Dlamini, Active). Clicked "New Client" -- "Create Client" dialog opened (Step 1 of 2). |
+| 4.3 | Fill standard: Name = Kgosi Holdings (Pty) Ltd, Email, Phone | **PASS** | Filled Name="Kgosi Holdings (Pty) Ltd", Type=Company, Email="finance@kgosi-holdings.co.za", Phone="+27-11-555-0301". |
+| 4.4 | Fill promoted fields (all inline) | **PASS** | All promoted fields rendered inline in Step 1 dialog (NOT in a sidebar). Filled: Entity Type="Pty Ltd (Private Company)", Registration Number="2018/123456/07", Tax Number (VAT)="4123456789", Financial Year End="2026-02-28", Address="Suite 402, Kgosi Towers, 15 Biermann Ave, Rosebank, 2196", City="Johannesburg", Postal Code="2196", Country="South Africa (ZA)", Contact Name="Lerato Khumalo", Contact Email="lerato@kgosi-holdings.co.za", Contact Phone="+27-82-555-0302". Step 2: SA Accounting custom fields -- SARS Tax Reference="4123456789", FICA Verified="Not Started". |
+| 4.5 | Screenshot: New Client dialog with all promoted fields | **PASS** | Screenshot captured before saving: `qa_cycle/evidence/day-04/new-client-kgosi-promoted-fields.png` (dialog screenshot), `qa_cycle/evidence/day-04/new-client-kgosi-fullpage.png` (full page). All accounting-za promoted fields visible inline in the dialog: Entity Type dropdown, Registration Number, Tax Number/VAT, Financial Year End, Address fields, Contact fields, Business Details. |
+| 4.6 | Save > client appears | **PASS** | Clicked Next > Create Client. Redirected to Kgosi detail page at /customers/90d93d67-b462-4fe9-9732-656af5ab889e. Navigated to clients list: 2 clients shown -- Sipho Dlamini (Active) and Kgosi Holdings (Pty) Ltd (initially Prospect). |
+| 4.7 | Open detail > verify all promoted fields render inline | **PASS** | Detail page renders all promoted fields inline (NOT in sidebar): (1) Address: Suite 402, Kgosi Towers, 15 Biermann Ave, Rosebank, 2196 / Johannesburg, 2196 / ZA. (2) Primary Contact: Lerato Khumalo, lerato@kgosi-holdings.co.za, +27-82-555-0302. (3) Business Details: Registration Number=2018/123456/07, Tax Number=4123456789, Entity Type=Pty Ltd (Private Company), Financial Year End=Feb 28, 2026. (4) SA Accounting -- Client Details: SARS Tax Reference=4123456789, FICA Verified=Not Started. Screenshot: `qa_cycle/evidence/day-04/kgosi-detail-promoted-fields.png` |
+| 4.8 | Complete onboarding checklist > ACTIVE | **PASS** | Transitioned Kgosi to ONBOARDING via Change Status > Start Onboarding. FICA KYC -- SA Accounting checklist auto-created with 11 items (8 required). Uploaded 8 FICA documents to Documents tab (certified ID, proof of residence, company registration, tax clearance, bank confirmation, beneficial ownership, letters of authority, trust deed). Completed all 8 required checklist items by linking corresponding documents. Skipped 3 optional items (Proof of Business Address, Resolution/Mandate, Source of Funds Declaration). Final progress: 8/11 completed (8/8 required). System auto-transitioned Kgosi from ONBOARDING to ACTIVE (City and Country were already populated). Header badges: "Active / Active". Screenshots: `qa_cycle/evidence/day-04/kgosi-active-status.png`, `qa_cycle/evidence/day-04/clients-list-two-active.png` |
 
 ---
 
-## Gaps filed Day 4
+## Client Detail: Kgosi Holdings (Pty) Ltd
 
-No new gaps filed. All previously filed Day 4 gaps from the prior cycle have been addressed:
-- **OBS-401** — scenario amended (portal uses matter name as request label, not template title)
-- **OBS-402** — scenario amended (removed; no request-level notes textarea)
-- **OBS-403** — scenario amended (envelope stays IN_PROGRESS until firm Mark-as-Reviewed)
-- **OBS-404** — VERIFIED (footer now reads "Powered by Kazi")
+| Field | Value |
+|-------|-------|
+| Client ID | 90d93d67-b462-4fe9-9732-656af5ab889e |
+| Name | Kgosi Holdings (Pty) Ltd |
+| Type | Company |
+| Email | finance@kgosi-holdings.co.za |
+| Phone | +27-11-555-0301 |
+| Lifecycle | Active |
+| Status | Active |
+| Entity Type | Pty Ltd (Private Company) |
+| Registration Number | 2018/123456/07 |
+| Tax Number (VAT) | 4123456789 |
+| Financial Year End | Feb 28, 2026 |
+| Address | Suite 402, Kgosi Towers, 15 Biermann Ave, Rosebank, 2196 |
+| City | Johannesburg |
+| Postal Code | 2196 |
+| Country | ZA |
+| Primary Contact | Lerato Khumalo |
+| Contact Email | lerato@kgosi-holdings.co.za |
+| Contact Phone | +27-82-555-0302 |
+| SARS Tax Reference | 4123456789 |
+| FICA Verified | Not Started (completed in checklist, field not auto-updated) |
+
+## Time Entry: Carol on Sipho Engagement
+
+| Field | Value |
+|-------|-------|
+| Engagement | Sipho Dlamini -- 2025/26 Tax Return (583ee45e-40b5-4846-9082-92f69f0f5f17) |
+| Task | Collect IRP5/IT3(a) certificates |
+| Duration | 1.0 hours |
+| Description | Document collection -- client portal |
+| Billable | Yes |
+| Rate | R 450,00/hr (Carol's member default) |
+| Amount | R 450,00 |
+| Date | 2026-05-14 |
+| Logged by | Carol Mokoena |
+
+## FICA KYC Checklist: Kgosi Holdings
+
+| # | Item | Status | Required | Document Linked |
+|---|------|--------|----------|----------------|
+| 1 | Certified ID Copy | Completed | Yes | certified-id-kgosi.txt |
+| 2 | Proof of Residence | Completed | Yes | proof-of-residence-kgosi.txt |
+| 3 | Company Registration (CM29/CoR14.3) | Completed | Yes | company-registration-kgosi.txt |
+| 4 | Tax Clearance Certificate | Completed | Yes | tax-clearance-kgosi.txt |
+| 5 | Bank Confirmation Letter | Completed | Yes | bank-confirmation-kgosi.txt |
+| 6 | Proof of Business Address | Skipped | No | -- |
+| 7 | Resolution / Mandate | Skipped | No | -- |
+| 8 | Beneficial Ownership Declaration | Completed | Yes | beneficial-ownership-kgosi.txt |
+| 9 | Source of Funds Declaration | Skipped | No | -- |
+| 10 | Letters of Authority (Master's Office) | Completed | Yes | letters-of-authority-kgosi.txt |
+| 11 | Trust Deed (Certified Copy) | Completed | Yes | trust-deed-kgosi.txt |
 
 ---
 
-## Verdict
+## Console Errors
 
-**Day 4 → COMPLETE. 14/14 PASS, 0 blockers, 0 new gaps.** Ready to advance to Day 5 (firm reviews FICA submission as Bob).
+| Category | Count | Severity | Details |
+|----------|-------|----------|---------|
+| 404 /api/assistant/invocations | ~7 | LOW | AI assistant API not implemented. Falls back gracefully. Pre-existing. |
+| WebSocket HMR | ~1 | INFO | Dev-only hot module replacement. Not a product issue. |
+
+**No new product-level console errors introduced by Day 4 operations.** All errors are pre-existing dev-mode issues noted during Day 0/1/2/3.
+
+---
+
+## Observations
+
+1. **Time logging from task list**: The "Log Time" button is available directly from the task table row in the engagement Tasks tab. The dialog pre-fills the date, shows the member's billing rate (R 450,00/hr for Carol), and calculates the total (1h x R 450,00 = R 450,00). Billable is checked by default.
+
+2. **Company client promoted fields**: All accounting-za promoted fields for a company client render inline in the Step 1 create dialog: Name, Type (Individual/Company/Trust), Email, Phone, Tax Number, Address (multi-field section), Contact (name/email/phone), Business Details (Registration Number, Entity Type dropdown, Financial Year End). Step 2 shows SA Accounting custom fields (SARS Tax Reference, FICA Verified). No fields were hidden in a sidebar or "Other Fields" section.
+
+3. **Auto-activation after checklist**: When City and Country are already populated during creation, completing the FICA/KYC checklist auto-transitions the client from ONBOARDING to ACTIVE without requiring a manual "Activate" click. This is the same behavior observed in Day 2 with Sipho (except Sipho needed City/Country added post-creation because they were empty).
+
+4. **Checklist document linking**: Each checklist item with a document requirement shows "Select a document..." dropdown when "Mark Complete" is clicked. Documents must be uploaded to the Documents tab first, then linked from the checklist. After selection, clicking "Confirm" marks the item as completed with the linked document.
+
+5. **SA Accounting -- Trust Details auto-assigned**: The Trust Details field group was auto-assigned to Kgosi Holdings even though it's a Pty Ltd company (not a trust). This is because the accounting-za vertical profile assigns both client detail groups by default. Non-blocking observation -- the fields are collapsed and don't interfere with the company workflow.
+
+---
+
+## Evidence Files
+
+- `qa_cycle/evidence/day-04/carol-time-entry-1h.png` -- Time tab showing Carol's 1h entry on Sipho engagement
+- `qa_cycle/evidence/day-04/new-client-kgosi-promoted-fields.png` -- New Client dialog with all promoted fields filled (wow moment screenshot)
+- `qa_cycle/evidence/day-04/new-client-kgosi-fullpage.png` -- Full page screenshot of New Client dialog
+- `qa_cycle/evidence/day-04/kgosi-detail-promoted-fields.png` -- Kgosi detail page with all promoted fields inline
+- `qa_cycle/evidence/day-04/kgosi-active-status.png` -- Kgosi detail page showing Active/Active status after onboarding
+- `qa_cycle/evidence/day-04/clients-list-two-active.png` -- Clients list showing 2 active clients (Sipho + Kgosi)
+
+---
+
+**Day 4 Result: 8 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED**
+**No new gaps filed.**

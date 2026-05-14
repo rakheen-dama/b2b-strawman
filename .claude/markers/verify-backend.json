@@ -1,1 +1,1 @@
-{"commit":"edb2a18251bc035104fc3d9391217352f0b3eec1","command":"./mvnw clean verify -q (in worktree-fix-postaudit/backend)","exit":0,"ts":"2026-05-03T18:28:44Z","summary":"PR #1289 final commit edb2a1825: full ./mvnw clean verify exit 0. 5119 testcases, 0 failures, 0 errors. Includes review-fix commit (try/catch removed in cross-tenant test). Targeted MatterClosureServiceIntegrationTest re-run prior to full verify: 18/18 green."}
+{"commit":"57d836b79","command":"./mvnw verify","exit":0,"ts":"2026-05-14T19:57:16Z","summary":"5209 tests, 0 failures, 0 errors, 26 skipped"}

@@ -30,16 +30,17 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 5 — COMPLETE (5 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED — no new gaps)
-- **Next checkpoint**: Day 6 (Bob reviews uploaded docs + comments on Sipho engagement, Kgosi Year-End Pack engagement creation — wow moment)
+- **Day**: 6 — COMPLETE (10 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED — no new gaps)
+- **Next checkpoint**: Day 7 (Carol logs 1.5h on Sipho "Drafted tax return in eFiling", Thandi logs 2.0h on year-end pack "Initial planning meeting + scope confirmation")
 - **Day 0 deferred items resolved**: Field promotion inline (0.36) VERIFIED via Day 1 create dialog, no duplicates (0.37) VERIFIED. Engagement field promotion (0.38) VERIFIED via Day 3 New Engagement dialog. Cancel dialog (0.39) deferred (non-blocking). Modules page (0.44-0.45), billing screenshot (0.52) remain deferred.
 - **All Day 0 gaps resolved**: OBS-4002 VERIFIED, OBS-4003 VERIFIED, OBS-4004 VERIFIED
 - **Sipho Dlamini client ID**: 31986024-382f-48ac-abb9-5dfa64fde531
 - **Sipho lifecycle**: ACTIVE (transitioned through PROSPECT → ONBOARDING → ACTIVE via FICA/KYC checklist completion)
-- **Sipho Tax Return engagement ID**: 583ee45e-40b5-4846-9082-92f69f0f5f17 (Tax Return — Individual ITR12, Ref: TR-2026-0001, Type: TAX_RETURN, 7 tasks, Carol assigned to 4, 1.0h logged by Carol, 2 IT3a docs uploaded by Carol)
+- **Sipho Tax Return engagement ID**: 583ee45e-40b5-4846-9082-92f69f0f5f17 (Tax Return — Individual ITR12, Ref: TR-2026-0001, Type: TAX_RETURN, 7 tasks, Carol assigned to 4, 1.0h logged by Carol, 2 IT3a docs uploaded by Carol, 1 document comment by Bob)
 - **Kgosi Holdings client ID**: 90d93d67-b462-4fe9-9732-656af5ab889e
 - **Kgosi lifecycle**: ACTIVE (transitioned through PROSPECT → ONBOARDING → ACTIVE via FICA/KYC checklist completion, 8/8 required items, 3 skipped)
 - **Kgosi Monthly Bookkeeping engagement ID**: a32c67d5-8e09-47b9-82ec-f0e82fa94ec4 (Monthly Bookkeeping, Ref: BK-2026-03-0001, Type: BOOKKEEPING, 6 tasks, all unassigned)
+- **Kgosi Year-End Pack engagement ID**: 388d5104-7789-4ad6-bb6c-6d045e9663f3 (Year-End Pack / Annual Financial Statements, 7 tasks: request TB, review TB & journals, draft AFS, director approval, CIPC filing, tax computation, final archiving)
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002, KC :8180, Mailpit :8025, Postgres :5432, LocalStack :4566)
@@ -72,3 +73,4 @@ For each day-N walk in this cycle:
 | 3 | QA | Day 3 walk: Create "Sipho Dlamini — 2025/26 Tax Return" engagement from Tax Return — Individual (ITR12) template. 7 tasks instantiated. Added Carol as member, assigned 4 initial tasks. Field promotion (0.38) VERIFIED. | 6 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. Engagement ID: 583ee45e-40b5-4846-9082-92f69f0f5f17 |
 | 4 | QA | Day 4 walk: Carol logs 1.0h on Sipho engagement ("Document collection -- client portal"). Thandi creates Kgosi Holdings (Pty) Ltd with all accounting-za promoted fields inline (wow moment screenshot). Onboarding completed: FICA/KYC 8/8 required, 3 skipped. Auto-activated. | 8 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. Kgosi ID: 90d93d67-b462-4fe9-9732-656af5ab889e |
 | 5 | QA | Day 5 walk: Carol uploads 2 IT3a PDFs (employer + investment certificates) to Sipho engagement Documents tab. Thandi creates Kgosi Holdings Monthly Bookkeeping engagement from template (6 tasks: bank recon, creditors recon, debtors recon, VAT calc, mgmt accounts, month-end close). | 5 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. Kgosi Bookkeeping ID: a32c67d5-8e09-47b9-82ec-f0e82fa94ec4 |
+| 6 | QA | Day 6 walk: Bob reviews uploaded IT3a docs on Sipho engagement, adds document-level comment "@Carol Need proof of retirement annuity contribution" (Internal only). Thandi creates Kgosi Holdings Year-End Pack engagement from template (7 tasks: request TB, review TB & journals, draft AFS, director approval, CIPC filing, tax computation, final archiving). Wow moment screenshot captured. | 10 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. Year-End Pack ID: 388d5104-7789-4ad6-bb6c-6d045e9663f3 |

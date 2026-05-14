@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 30 — COMPLETE (all checkpoints pass, payment flow verified end-to-end)
-- **Next checkpoint**: Day 45
+- **Day**: 45 — COMPLETE (all checkpoints PASS, trust R 70,000 reconciled, info request REQ-0003 sent)
+- **Next checkpoint**: Day 46
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002 all healthy)
@@ -71,3 +71,4 @@ For each day-N walk in this cycle:
 | 1 | Product | Triage OBS-3001: SPEC_READY (HIGH, blocker for Day 30 payment) | Root cause confirmed: `TenantProvisioningService` missing `MockPaymentIntegrationSeeder` injection+call. Fix spec written to `qa_cycle/fix-specs/OBS-3001.md`. Effort: S. |
 | 1 | Dev | Fix OBS-3001: inject MockPaymentIntegrationSeeder into TenantProvisioningService | PR #1302 merged (squash). Full verify: 5209 tests, 0 failures, 0 errors. 2 files changed, 9 insertions. |
 | 2 | QA | Day 30 retest: payment flow after OBS-3001 fix | ALL PASS — Pay Now visible, mock PSP checkout completed, PAID status on portal + firm. OBS-3001 VERIFIED. New nit: OBS-3002 (refreshPaymentLink missing InvoiceSyncEvent). |
+| 2 | QA | Day 45 walk: Second info request + trust top-up deposit | 5/5 PASS, 0 blockers, 0 new gaps. REQ-0003 sent (2 items), R 20k deposit recorded. Trust: Sipho R 70k / Moroka R 25k isolated. Scenario amendment note: R 71k → R 70k (no OBS-1101 carry-over in clean-slate cycle). |

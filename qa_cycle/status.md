@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 12 — COMPLETE (1 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED — 1 new LOW gap: OBS-4005)
-- **Next checkpoint**: Day 13 (Bob acknowledges with comment + 1.0 hour log: "FS structure review")
+- **Day**: 13 — COMPLETE (10 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED — 0 new gaps, OBS-4005 VERIFIED)
+- **Next checkpoint**: Day 14 (Budget tab on year-end pack: set budget to 40 hours, R60,000 → verify burn tracking)
 - **Day 0 deferred items resolved**: Field promotion inline (0.36) VERIFIED via Day 1 create dialog, no duplicates (0.37) VERIFIED. Engagement field promotion (0.38) VERIFIED via Day 3 New Engagement dialog. Cancel dialog (0.39) deferred (non-blocking). Modules page (0.44-0.45), billing screenshot (0.52) remain deferred.
 - **All Day 0 gaps resolved**: OBS-4002 VERIFIED, OBS-4003 VERIFIED, OBS-4004 VERIFIED
 - **Sipho Dlamini client ID**: 31986024-382f-48ac-abb9-5dfa64fde531
@@ -40,8 +40,8 @@ For each day-N walk in this cycle:
 - **Kgosi Holdings client ID**: 90d93d67-b462-4fe9-9732-656af5ab889e
 - **Kgosi lifecycle**: ACTIVE (transitioned through PROSPECT → ONBOARDING → ACTIVE via FICA/KYC checklist completion, 8/8 required items, 3 skipped)
 - **Kgosi Monthly Bookkeeping engagement ID**: a32c67d5-8e09-47b9-82ec-f0e82fa94ec4 (Monthly Bookkeeping, Ref: BK-2026-03-0001, Type: BOOKKEEPING, 6 tasks, Carol added as member Day 9, 5.0h logged (3.0h Bob Day 8 "Bank reconciliation" + 2.0h Carol Day 9 "Debtors recon"), R 3,450 unbilled, 2 bank statement docs uploaded by Bob Day 10)
-- **Kgosi Year-End Pack engagement ID**: 388d5104-7789-4ad6-bb6c-6d045e9663f3 (Year-End Pack / Annual Financial Statements, 7 tasks, 2.0h logged by Thandi Day 7 on "Request & receive trial balance", 1 comment by Thandi Day 12 "@Bob Need FS draft by day 30")
-- **Total hours this month**: 9.5h (Sipho 2.5h + Bookkeeping 5.0h + Year-End Pack 2.0h)
+- **Kgosi Year-End Pack engagement ID**: 388d5104-7789-4ad6-bb6c-6d045e9663f3 (Year-End Pack / Annual Financial Statements, 7 tasks, 3.0h logged (2.0h Thandi Day 7 "Request & receive trial balance" + 1.0h Bob Day 13 "FS structure review" on Draft AFS task), 2 comments: Thandi Day 12 "@Bob Need FS draft by day 30" + Bob Day 13 acknowledgment, R 3,850 unbilled)
+- **Total hours this month**: 10.5h (Sipho 2.5h + Bookkeeping 5.0h + Year-End Pack 3.0h)
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002, KC :8180, Mailpit :8025, Postgres :5432, LocalStack :4566)
@@ -55,7 +55,7 @@ For each day-N walk in this cycle:
 | OBS-4002 | Missing engagement templates: Payroll (monthly) and Trust AFS not in accounting-za pack | MEDIUM | Dev | VERIFIED | 0 | Added Payroll (Monthly) + Annual Trust Financial Statements templates to accounting-za.json. PR #1305 merged. Full verify: 5209 tests, 0 failures. Retest: 7/7 templates present on clean-slate stack. |
 | OBS-4003 | Logo upload not tested -- no test logo file available | INFO | QA | VERIFIED | 0 | Valid 200x200 green (#1B5E20) PNG created at `qa_cycle/test-fixtures/thornton-logo.png` (763 bytes). Retest: uploaded via UI, preview renders (blob + S3 sidebar logo). |
 | OBS-4004 | Automations page not found in settings navigation | MEDIUM | Dev | VERIFIED | 0 | Root cause: `automation_builder` not in accounting-za enabledModules. Fix: added to vertical profile JSON. PR #1304 merged. Full verify: 5209 tests, 0 failures. Retest: Automations link in settings nav, 13 rules including 4 accounting-specific. |
-| OBS-4005 | Activity event message shows literal "project" instead of engagement name | LOW | Dev | FIXED | 12 | Root cause: `CommentService.validateEntityBelongsToProject()` returns literal "project" instead of project name; `PortalCommentService` omits `entity_name` from audit details. Fix: inject ProjectRepository, look up name. PR #1306 merged. Full verify: 5210 tests, 0 failures. |
+| OBS-4005 | Activity event message shows literal "project" instead of engagement name | LOW | Dev | VERIFIED | 12 | Root cause: `CommentService.validateEntityBelongsToProject()` returns literal "project" instead of project name; `PortalCommentService` omits `entity_name` from audit details. Fix: inject ProjectRepository, look up name. PR #1306 merged. Full verify: 5210 tests, 0 failures. Retest Day 13: Bob's new comment activity shows "Kgosi Holdings — FY2025/26 Year-End Pack" (not "project"). |
 
 ## Log
 
@@ -83,3 +83,5 @@ For each day-N walk in this cycle:
 | 12 | QA | Day 12 walk: Logged in as Thandi. Navigated to Kgosi Year-End Pack engagement. Posted comment "@Bob Need FS draft by day 30" via Client Comments tab. Verified comment visible with correct author/timestamp. Verified activity event in Activity tab. | 1 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. 1 new LOW gap: OBS-4005 (activity message cosmetic). |
 | 12 | Product | Triage OBS-4005: SPEC_READY. Root cause confirmed in `CommentService.validateEntityBelongsToProject()` (returns literal "project") and `PortalCommentService` (omits `entity_name` from audit details). Quick fix: inject ProjectRepository, look up name. Fix spec written. | OBS-4005 -> SPEC_READY |
 | 12 | Dev | Fix OBS-4005: inject ProjectRepository into CommentService and PortalCommentService. Resolve actual project name instead of literal "project". Add entity_name to PortalCommentService audit details. Regression test added. | PR #1306 merged. Full verify: 5210 tests, 0 failures. OBS-4005 -> FIXED. NEEDS_REBUILD: true. |
+| 13 | QA | OBS-4005 verification: logged in as Bob, posted comment on Year-End Pack, checked Activity tab. New event: "Bob Ndlovu commented on project 'Kgosi Holdings — FY2025/26 Year-End Pack'" — actual name, not "project". | OBS-4005 -> VERIFIED. |
+| 13 | QA | Day 13 walk: Bob posts acknowledgment comment on Year-End Pack Client Comments ("Acknowledged @Thandi — will have FS structure draft ready. Starting review today."). Bob logs 1.0h on "Draft annual financial statements" task ("FS structure review", R 850/hr). Time tab: 3h total, 2 contributors. Dashboard: 10.5h monthly. | 10 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. Year-End Pack total: 3.0h. Monthly hours: 10.5h. |

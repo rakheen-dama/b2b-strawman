@@ -45,7 +45,7 @@ For each day-N walk in this cycle:
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002, KC :8180, Mailpit :8025, Postgres :5432, LocalStack :4566)
-- NEEDS_REBUILD: false
+- NEEDS_REBUILD: true
 
 ## Tracker
 
@@ -55,7 +55,7 @@ For each day-N walk in this cycle:
 | OBS-4002 | Missing engagement templates: Payroll (monthly) and Trust AFS not in accounting-za pack | MEDIUM | Dev | VERIFIED | 0 | Added Payroll (Monthly) + Annual Trust Financial Statements templates to accounting-za.json. PR #1305 merged. Full verify: 5209 tests, 0 failures. Retest: 7/7 templates present on clean-slate stack. |
 | OBS-4003 | Logo upload not tested -- no test logo file available | INFO | QA | VERIFIED | 0 | Valid 200x200 green (#1B5E20) PNG created at `qa_cycle/test-fixtures/thornton-logo.png` (763 bytes). Retest: uploaded via UI, preview renders (blob + S3 sidebar logo). |
 | OBS-4004 | Automations page not found in settings navigation | MEDIUM | Dev | VERIFIED | 0 | Root cause: `automation_builder` not in accounting-za enabledModules. Fix: added to vertical profile JSON. PR #1304 merged. Full verify: 5209 tests, 0 failures. Retest: Automations link in settings nav, 13 rules including 4 accounting-specific. |
-| OBS-4005 | Activity event message shows literal "project" instead of engagement name | LOW | Dev | SPEC_READY | 12 | Root cause: `CommentService.validateEntityBelongsToProject()` returns literal "project" instead of project name; `PortalCommentService` omits `entity_name` from audit details. Fix spec: `qa_cycle/fix-specs/OBS-4005.md`. |
+| OBS-4005 | Activity event message shows literal "project" instead of engagement name | LOW | Dev | FIXED | 12 | Root cause: `CommentService.validateEntityBelongsToProject()` returns literal "project" instead of project name; `PortalCommentService` omits `entity_name` from audit details. Fix: inject ProjectRepository, look up name. PR #1306 merged. Full verify: 5210 tests, 0 failures. |
 
 ## Log
 
@@ -82,3 +82,4 @@ For each day-N walk in this cycle:
 | 10 | QA | Day 10 walk: Bob uploads 2 bank statement PDFs (Mar + Feb 2026) to Kgosi Monthly Bookkeeping engagement Documents tab. Verified upload, S3 storage, download via presigned URL, activity log events, document count update (0 -> 2), and persistence after tab switch. | 1 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. Bookkeeping docs: 2. |
 | 12 | QA | Day 12 walk: Logged in as Thandi. Navigated to Kgosi Year-End Pack engagement. Posted comment "@Bob Need FS draft by day 30" via Client Comments tab. Verified comment visible with correct author/timestamp. Verified activity event in Activity tab. | 1 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. 1 new LOW gap: OBS-4005 (activity message cosmetic). |
 | 12 | Product | Triage OBS-4005: SPEC_READY. Root cause confirmed in `CommentService.validateEntityBelongsToProject()` (returns literal "project") and `PortalCommentService` (omits `entity_name` from audit details). Quick fix: inject ProjectRepository, look up name. Fix spec written. | OBS-4005 -> SPEC_READY |
+| 12 | Dev | Fix OBS-4005: inject ProjectRepository into CommentService and PortalCommentService. Resolve actual project name instead of literal "project". Add entity_name to PortalCommentService audit details. Regression test added. | PR #1306 merged. Full verify: 5210 tests, 0 failures. OBS-4005 -> FIXED. NEEDS_REBUILD: true. |

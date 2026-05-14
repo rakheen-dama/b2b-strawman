@@ -36,7 +36,7 @@ For each day-N walk in this cycle:
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002, KC :8180, Mailpit :8025, Postgres :5432, LocalStack :4566)
-- NEEDS_REBUILD: true (after OBS-4002 + OBS-4004 fixes land, backend must restart and tenant must be re-provisioned from clean slate)
+- NEEDS_REBUILD: true (OBS-4002 + OBS-4004 merged — backend restart + clean-slate re-provision needed for QA retest)
 
 ## Tracker
 
@@ -44,7 +44,7 @@ For each day-N walk in this cycle:
 |--------|---------|----------|-------|--------|-----|-------|
 | OBS-4001 | Approve button on access-requests requires JS-level click to surface confirmation dialog | LOW | QA | WONT_FIX | 0 | Playwright automation quirk, not a product bug. Dialog works correctly for real users. QA agent should use `{ force: true }` or `evaluate` click. |
 | OBS-4002 | Missing engagement templates: Payroll (monthly) and Trust AFS not in accounting-za pack | MEDIUM | Dev | FIXED | 0 | Added Payroll (Monthly) + Annual Trust Financial Statements templates to accounting-za.json. PR #1305 merged. Full verify: 5209 tests, 0 failures. |
-| OBS-4003 | Logo upload not tested -- no test logo file available | INFO | QA | SPEC_READY | 0 | Existing fixture at qa_cycle/test-fixtures/ is 75 bytes (invalid). Fix: generate a valid 200x200 green PNG. See `qa_cycle/fix-specs/OBS-4003.md`. |
+| OBS-4003 | Logo upload not tested -- no test logo file available | INFO | QA | FIXED | 0 | Valid 200x200 green (#1B5E20) PNG created at `qa_cycle/test-fixtures/thornton-logo.png` (763 bytes). QA can use for logo upload checkpoint. |
 | OBS-4004 | Automations page not found in settings navigation | MEDIUM | Dev | FIXED | 0 | Root cause: `automation_builder` not in accounting-za enabledModules. Fix: added to vertical profile JSON. PR #1304 merged. Full verify: 5209 tests, 0 failures. |
 
 ## Log
@@ -56,3 +56,4 @@ For each day-N walk in this cycle:
 | 0 | Product | Triage OBS-4001 through OBS-4004. OBS-4001: WONT_FIX (Playwright quirk). OBS-4002: escalated to MEDIUM + SPEC_READY (Trust AFS blocks Day 16). OBS-4003: SPEC_READY (fixture generation). OBS-4004: SPEC_READY (profile config fix). | 1 WONT_FIX, 3 SPEC_READY |
 | 0 | Dev | Fix OBS-4004: add `automation_builder` to accounting-za enabledModules. Updated vertical profile JSON + 2 test assertions. | PR #1304 merged. Full verify: 5209 tests, 0 failures. |
 | 0 | Dev | Fix OBS-4002: add Payroll (Monthly) + Annual Trust Financial Statements templates to accounting-za project template pack. 7 templates total (was 5). | PR #1305 merged. Full verify: 5209 tests, 0 failures. |
+| 0 | Orchestrator | Fix OBS-4003: generated valid 200x200 green PNG test fixture at `qa_cycle/test-fixtures/thornton-logo.png`. | FIXED (QA fixture, no code change) |

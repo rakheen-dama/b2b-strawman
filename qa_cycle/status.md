@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 75 — COMPLETE (digest isolation PASS, activity trail PASS, late-cycle isolation spot-check PASS on /home /trust /projects /activity — no new gaps)
-- **Next checkpoint**: Day 85
+- **Day**: 85 — COMPLETE (closure docs verified, retention clock present, audit log filters PASS for both firm users and portal contacts, 88 org-level audit events spanning full lifecycle — no new gaps)
+- **Next checkpoint**: Day 88
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002 all healthy)
@@ -77,3 +77,4 @@ For each day-N walk in this cycle:
 | 2 | QA | Day 60 walk: Matter closure happy-path (prep + execution) | 3/3 PASS (closure PASS, SoA PDF PASS, closure email PARTIAL). All 9 closure gates green. Active → Closed (Concluded). Closure letter + SoA PDFs generated (1.6 KB + 5.0 KB). Trust R 70k → R 0 (payment approved by Thandi). Closure letter email delivered. SoA email NOT delivered (OBS-6001 LOW). No INV-0002 needed. |
 | 2 | QA | Day 61 walk: Sipho downloads SoA from portal | 9/9 PASS (61.1 PARTIAL — OBS-6001 SoA email missing, closure letter email used as alternate path; 61.2–61.9 all PASS). SoA 5100 bytes, MD5 `0245a6e4a6f9c9363bcca194d80feca4`, byte-identical to firm-side. Closure letter also downloadable. Firm-side audit trail shows 2x `portal.document.downloaded` events for Sipho. Portal console clean (0 errors). |
 | 2 | QA | Day 75 walk: Weekly digest + late-cycle isolation spot-check | 9/9 PASS (75.2 PARTIAL — digest scope is fee-note + trust only, not full activity replay; scenario amend, same as prior cycle). Digest triggered via internal endpoint (2 sent, 0 errors). Sipho digest: INV-0001 PAID + 3 trust txns, 0 Moroka refs. Moroka digest: 1 info request + 1 trust txn, 0 Sipho refs. Activity trail: both tabs clean. Isolation holds on /home, /trust, /projects, /activity. Portal console 0 errors. No new gaps. |
+| 2 | QA | Day 85 walk: Firm final closure paperwork — audit log completeness | 4/4 PASS (85.3 PARTIAL — retention clock present but end_date uncomputable due to unconfigured firm retention period). Closure letter + SoA confirmed in Documents tab (1.6 KB + 5.0 KB). No thank-you template needed. Activity tab actor filter offers Sipho Dlamini (portal) alongside firm users; 13 portal events visible when filtered. Org-level audit log: 88 events, 2 pages. Portal Contact events (downloads, uploads, payment) all recorded. No new gaps. |

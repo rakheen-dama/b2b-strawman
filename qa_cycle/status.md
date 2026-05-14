@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 88 — COMPLETE (firm activity feed 42 events spanning full lifecycle, portal activity 13+13 events across two tabs, narrative coherence PASS — no new gaps)
-- **Next checkpoint**: Day 90
+- **Day**: 90 — COMPLETE (all exit gates green; firm terminology PASS, legal modules PASS, no tier UI PASS, mailpit 43 emails 0 bounces, portal all routes 200 zero JS errors, isolation BLOCKER PASS, trust reconciliation R 0 PASS, INV-0001 PAID PASS, RAF-2026-001 CLOSED with docs PASS, audit trail 13+13 events PASS)
+- **Next checkpoint**: ALL_DAYS_COMPLETE
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002 all healthy)
@@ -79,3 +79,4 @@ For each day-N walk in this cycle:
 | 2 | QA | Day 75 walk: Weekly digest + late-cycle isolation spot-check | 9/9 PASS (75.2 PARTIAL — digest scope is fee-note + trust only, not full activity replay; scenario amend, same as prior cycle). Digest triggered via internal endpoint (2 sent, 0 errors). Sipho digest: INV-0001 PAID + 3 trust txns, 0 Moroka refs. Moroka digest: 1 info request + 1 trust txn, 0 Sipho refs. Activity trail: both tabs clean. Isolation holds on /home, /trust, /projects, /activity. Portal console 0 errors. No new gaps. |
 | 2 | QA | Day 85 walk: Firm final closure paperwork — audit log completeness | 4/4 PASS (85.3 PARTIAL — retention clock present but end_date uncomputable due to unconfigured firm retention period). Closure letter + SoA confirmed in Documents tab (1.6 KB + 5.0 KB). No thank-you template needed. Activity tab actor filter offers Sipho Dlamini (portal) alongside firm users; 13 portal events visible when filtered. Org-level audit log: 88 events, 2 pages. Portal Contact events (downloads, uploads, payment) all recorded. No new gaps. |
 | 2 | QA | Day 88 walk: Activity feed wow moment (firm + portal side-by-side) | 6/6 PASS, 0 blockers, 0 new gaps. Firm: 42 events across full lifecycle (Day 3–85). Portal: 13 "Your actions" + 13 "Firm actions". Narrative coherence PASS — every portal write-action has firm counterpart, every client-visible firm event has portal counterpart. Screenshots captured. Portal console 0 errors. |
+| 2 | QA | Day 90 walk: Final regression + exit sweep | ALL_DAYS_COMPLETE. Firm-side: terminology PASS (Matters/Clients/Fee Notes, zero Project/Customer/Invoice leaks), legal modules PASS (5 modules), no tier UI PASS, mailpit 43 emails 0 bounces. Portal-side: all routes 200 zero JS errors, isolation BLOCKER PASS (frontend + API probes all 404 for Moroka IDs), trust R 0 reconciles (3 deposits + 1 payment), INV-0001 PAID, RAF-2026-001 CLOSED with closure letter 1.6 KB + SoA 5.0 KB, audit trail 13+13 events. One cosmetic note: portal `/projects` heading says "Your Projects" (should be "Your Matters"). No new gaps. |

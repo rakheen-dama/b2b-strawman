@@ -25,7 +25,7 @@
 ## Step-by-step
 
 ### Checkpoint 1.1 — Branding upload + save (PASS)
-- Signed out Carol (leftover from Day 0 session), re-authenticated as Thandi via Keycloak (`thandi@mathebula-test.local` / `SecureP@ss1`).
+- Signed out Carol (leftover from Day 0 session), re-authenticated as Thandi via Keycloak (`thandi@mathebula-test.local` / `<redacted>`).
 - Navigated to `/org/mathebula-partners/settings/general` → Branding card.
 - Uploaded `qa_cycle/test-fixtures/mathebula-logo.png` via the "Upload Logo" button.
 - Set Brand Color text input to `#1B3358` (color picker synced to `#1b3358`).
@@ -81,7 +81,7 @@
 
 ### Day 1 closing checkpoint — Branding persists across logout/login (PASS)
 - Signed out via user menu → Sign out.
-- Re-authenticated through Keycloak (`thandi@mathebula-test.local` / `SecureP@ss1`).
+- Re-authenticated through Keycloak (`thandi@mathebula-test.local` / `<redacted>`).
 - Dashboard shows logo in sidebar (`img[alt="Mathebula & Partners logo"]`); document root `--brand-color: #1B3358`.
 - Evidence: `qa_cycle/evidence/day-01/1-checkpoints-branding-persists.png`.
 

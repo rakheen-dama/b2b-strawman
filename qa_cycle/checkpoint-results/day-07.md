@@ -11,7 +11,7 @@
 
 - Stack health verified: all 4 services UP (backend :8080, gateway :8443, frontend :3000, portal :3002).
 - Mailpit: 10 messages from Days 0-5 present at start.
-- Logged in as Thandi Mathebula (`thandi@mathebula-test.local` / `SecureP@ss1`) via Keycloak OIDC redirect. Landed on `/org/mathebula-partners/dashboard`. Zero console errors on dashboard.
+- Logged in as Thandi Mathebula (`thandi@mathebula-test.local` / `<redacted>`) via Keycloak OIDC redirect. Landed on `/org/mathebula-partners/dashboard`. Zero console errors on dashboard.
 
 ---
 

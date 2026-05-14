@@ -40,7 +40,7 @@
 |----|-----------|--------|----------|
 | 0.18 | Open Keycloak invitation link | PASS | Navigated through accept-invite flow, reached Keycloak registration page |
 | 0.19 | Registration page loads with org pre-bound | PASS | Heading: "Create an account to join the Mathebula & Partners organization", email pre-filled |
-| 0.20 | Fill registration form | PASS | First Name=Thandi, Last Name=Mathebula, Password=SecureP@ss1 |
+| 0.20 | Fill registration form | PASS | First Name=Thandi, Last Name=Mathebula, Password=<redacted> |
 | 0.21 | Submit -> redirected to dashboard | PASS | Landed at `/org/mathebula-partners/dashboard` |
 | 0.22 | Sidebar shows org name + user name | PASS | org="Mathebula & Partners", user="Thandi Mathebula" |
 | 0.23 | Legal terminology active | PASS | Matters (not Projects), Clients (not Customers), Fee Notes (not Invoices), Engagement Letters (not Proposals), Mandates (not Retainers) |
@@ -56,8 +56,8 @@
 | 0.28 | Invite Bob as Admin | PASS | "Invitation sent to bob@mathebula-test.local", count: "2 members (1 pending)" |
 | 0.29 | Invite Carol as Member | PASS | Carol invited with Member role |
 | 0.30 | Two Keycloak invitation emails arrived | PASS | Bob: `CoJ9q2keX7TWww4q9iMvDq`, Carol: `EXL52f2DsaDVumnVeTRfaR` |
-| 0.31 | Bob registers and reaches dashboard | PASS | Keycloak registration (Bob/Ndlovu/SecureP@ss2), landed at `/org/mathebula-partners/dashboard` |
-| 0.32 | Carol registers and reaches dashboard | PASS | Keycloak registration (Carol/Mokoena/SecureP@ss3), landed at `/org/mathebula-partners/dashboard` |
+| 0.31 | Bob registers and reaches dashboard | PASS | Keycloak registration (Bob/Ndlovu/<redacted>), landed at `/org/mathebula-partners/dashboard` |
+| 0.32 | Carol registers and reaches dashboard | PASS | Keycloak registration (Carol/Mokoena/<redacted>), landed at `/org/mathebula-partners/dashboard` |
 
 ## Day 0 Summary Checkpoints
 

@@ -1,7 +1,7 @@
 # Day 28 — Firm generates first fee note (bulk billing)  `[FIRM]`
 
 **Date**: 2026-05-14 (cycle 1, branch `bugfix_cycle_2026-05-13`)
-**Actor**: Thandi Mathebula (Owner, `thandi@mathebula-test.local` / `SecureP@ss1`)
+**Actor**: Thandi Mathebula (Owner, `thandi@mathebula-test.local` / `<redacted>`)
 **Stack**: Keycloak dev stack (frontend `:3000`, gateway `:8443`, backend `:8080`, KC `:8180`).
 **Result**: PASS — All 3 checkpoints pass. Fee note INV-0001 generated, approved, sent via email.
 
@@ -10,7 +10,7 @@
 ## Pre-flight
 
 - Stack health: backend 8080 healthy (200), gateway 8443 healthy (200), frontend 3000 healthy (200).
-- User-swap Bob → Thandi via in-app user-menu Sign Out → KC realm logout → Sign In as Thandi (`thandi@mathebula-test.local` / `SecureP@ss1`). Sidebar avatar `TM` confirms swap.
+- User-swap Bob → Thandi via in-app user-menu Sign Out → KC realm logout → Sign In as Thandi (`thandi@mathebula-test.local` / `<redacted>`). Sidebar avatar `TM` confirms swap.
 - Day 21 completed: 2 time entries on RAF-2026-001 (4h total, all billable, no rate card → R 0,00 billable value) + 1 disbursement (R 1,250 base / R 1,437.50 incl VAT) on Sipho's matter.
 
 ## Pre-condition — Approve sheriff disbursement + Activate Sipho

@@ -4,7 +4,7 @@
 **Branch**: `bugfix_cycle_2026-05-13`
 **QA Driver**: Playwright MCP against Keycloak dev stack
 **Stack**: backend :8080, gateway :8443, frontend :3000, keycloak :8180, mailpit :8025
-**Actor**: Bob Ndlovu (Admin) — `bob@mathebula-test.local` / `SecureP@ss2`
+**Actor**: Bob Ndlovu (Admin) — `bob@mathebula-test.local` / `<redacted>`
 
 ---
 
@@ -31,7 +31,7 @@
 
 - Signed out Thandi from user menu -> Sign out.
 - Navigated to `http://localhost:3000/dashboard` -> redirected to Keycloak login.
-- Filled email `bob@mathebula-test.local`, then password `SecureP@ss2`.
+- Filled email `bob@mathebula-test.local`, then password `<redacted>`.
 - Clicked Sign In -> redirected to `/org/mathebula-partners/dashboard`.
 - Verified sidebar shows **Bob Ndlovu** / `bob@mathebula-test.local`.
 - Console: 0 errors.
@@ -60,7 +60,7 @@
 ### 2.3 Fill form (PASS)
 
 - **Step 1**: Name = "Sipho Dlamini", Type = Individual (default), Email = `sipho.portal@example.com`, Phone = `+27 82 555 0101`, Address Line 1 = `12 Loveday St`, City = `Johannesburg`, Postal Code = `2001`, Country = `South Africa (ZA)`.
-- **Step 2**: ID / Passport Number = `8501015800088`.
+- **Step 2**: ID / Passport Number = `<redacted-id>`.
 - All fields accepted input without validation errors.
 
 ### 2.4 Submit -> client created, redirected to client detail (PASS)
@@ -69,9 +69,9 @@
 - Dialog closed. Redirected to `/org/mathebula-partners/customers/334bf98f-9f02-4d2f-9ee8-80bbed65ea5b`.
 - Client detail page shows:
   - Header: **Sipho Dlamini** with [Active] [Prospect] badges
-  - Contact: `sipho.portal@example.com` / `+27 82 555 0101` / `8501015800088` / Created May 13, 2026 / 0 matters
+  - Contact: `sipho.portal@example.com` / `+27 82 555 0101` / `<redacted-id>` / Created May 13, 2026 / 0 matters
   - Address: 12 Loveday St / Johannesburg, 2001 / ZA
-  - Field Groups: "SA Legal — Client Details" with ID/Passport = `8501015800088`
+  - Field Groups: "SA Legal — Client Details" with ID/Passport = `<redacted-id>`
   - Trust Balance: R 0,00 (No Funds)
   - Client Readiness: 67% (Projects linked: needs setup, no onboarding checklist, no required fields)
   - Document Templates: Power of Attorney, Letter of Demand, Client Trust Statement, Trust Receipt
@@ -82,8 +82,8 @@
 ### 2.5-2.7 Conflict Check CLEAR (PASS)
 
 - Clicked **Run Conflict Check** on client detail header.
-- Redirected to `/org/mathebula-partners/conflict-check?customerId=334bf98f-...&checkedName=Sipho+Dlamini&checkedIdNumber=8501015800088`.
-- Form pre-populated: Name to Check = `Sipho Dlamini`, ID Number = `8501015800088`, Check Type = `New Client`, Client = `Sipho Dlamini`.
+- Redirected to `/org/mathebula-partners/conflict-check?customerId=334bf98f-...&checkedName=Sipho+Dlamini&checkedIdNumber=<redacted-id>`.
+- Form pre-populated: Name to Check = `Sipho Dlamini`, ID Number = `<redacted-id>`, Check Type = `New Client`, Client = `Sipho Dlamini`.
 - Clicked **Run Conflict Check** button.
 - Result card rendered immediately:
   - Green tick icon + heading **"No Conflict"**
@@ -140,7 +140,7 @@
 
 | Entity | ID | Details |
 |---|---|---|
-| Client (Sipho Dlamini) | `334bf98f-9f02-4d2f-9ee8-80bbed65ea5b` | INDIVIDUAL, `sipho.portal@example.com`, SA-ID `8501015800088`, Prospect |
+| Client (Sipho Dlamini) | `334bf98f-9f02-4d2f-9ee8-80bbed65ea5b` | INDIVIDUAL, `sipho.portal@example.com`, SA-ID `<redacted-id>`, Prospect |
 | Conflict Check #1 | (auto) | No Conflict, checked at 13/05/2026 23:36:23 |
 
 ---

@@ -1,7 +1,7 @@
 # Day 21 — Firm logs time, adds disbursement, creates court date  `[FIRM]`
 
 **Date**: 2026-05-14
-**Actor**: Bob Ndlovu (Admin, `bob@mathebula-test.local` / `SecureP@ss2`)
+**Actor**: Bob Ndlovu (Admin, `bob@mathebula-test.local` / `<redacted>`)
 **Stack**: Keycloak dev stack (frontend `:3000`, gateway `:8443`, backend `:8080`, KC `:8180`)
 **Cycle**: 1 (branch `bugfix_cycle_2026-05-13`)
 **Result**: COMPLETE — All 3 phases PASS.
@@ -12,7 +12,7 @@
 
 - Stack health: backend 200, frontend 200 (verified via curl).
 - Signed out of Thandi via in-app user-menu > Sign out > KC realm logout completed.
-- Logged in as Bob via Keycloak (`bob@mathebula-test.local` / `SecureP@ss2`) > landed on `/org/mathebula-partners/dashboard` with sidebar avatar `BN` confirming user swap.
+- Logged in as Bob via Keycloak (`bob@mathebula-test.local` / `<redacted>`) > landed on `/org/mathebula-partners/dashboard` with sidebar avatar `BN` confirming user swap.
 - Navigated to matter RAF-2026-001 "Dlamini v Road Accident Fund" (id `c90832a4-c993-4eaa-9ea7-404a259b0e29`, status Active).
 
 ## Phase A — Time entry (non-tariff free-text path) — PASS

@@ -28,7 +28,8 @@ class VerticalProfileRegistryTest {
     assertThat(p.name()).isEqualTo("South African Accounting Firm");
     assertThat(p.description()).startsWith("Complete configuration for");
     assertThat(p.currency()).isEqualTo("ZAR");
-    assertThat(p.enabledModules()).containsExactlyInAnyOrder("deadlines", "information_requests");
+    assertThat(p.enabledModules())
+        .containsExactlyInAnyOrder("deadlines", "information_requests", "automation_builder");
     assertThat(p.terminologyNamespace()).isEqualTo("en-ZA-accounting");
     assertThat(p.packs()).containsKey("field");
   }
@@ -88,13 +89,14 @@ class VerticalProfileRegistryTest {
   }
 
   @Test
-  void accountingZaProfileOnlyEnablesDeadlinesModule() {
-    // Epic 497A added the portal deadline feature; it is enabled for accounting-za. GAP-P-01
-    // also enables information_requests. The regression guard still holds for every OTHER
-    // module — none of the GAP-C-04/C-07 modules may leak into accounting-za.
+  void accountingZaProfileEnablesExpectedModules() {
+    // OBS-4004: automation_builder must be enabled because accounting-za seeds automation
+    // packs (automation-accounting-za) — the UI to manage those rules requires this module.
+    // Regression guard still holds: legal-only modules (trust_accounting, court_calendar etc.)
+    // must NOT leak into accounting-za.
     var profile = registry.getProfile("accounting-za").orElseThrow();
     assertThat(profile.enabledModules())
-        .containsExactlyInAnyOrder("deadlines", "information_requests");
+        .containsExactlyInAnyOrder("deadlines", "information_requests", "automation_builder");
   }
 
   @Test

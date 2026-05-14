@@ -1,151 +1,79 @@
-# Day 8 — Sipho reviews + accepts proposal on portal
+# Day 8 Checkpoint Results — Accounting ZA 90-Day Lifecycle (Keycloak)
 
-**Date**: 2026-05-14
-**Branch**: `bugfix_cycle_2026-05-13`
-**Cycle**: 1
-**Stack**: Keycloak dev (frontend `:3000`, backend `:8080`, gateway `:8443`, portal `:3002`, mailpit `:8025`)
+**Date**: 2026-05-15
+**Branch**: `bugfix_cycle_2026-05-14`
+**Stack**: Keycloak dev stack (frontend :3000, backend :8080, gateway :8443, KC :8180)
+**Agent**: QA Agent (Opus 4.6)
+**Actor**: Bob Ndlovu (Admin) — bob@thornton-test.local
 
-## Pre-flight
+---
 
-- Portal healthy: `curl http://localhost:3002/` returns 307 (redirect to login — expected for unauthenticated).
-- Backend healthy: `curl http://localhost:8080/actuator/health` returns 200.
-- Mailpit holds 13 messages for `sipho.portal@example.com`, including proposal email `7e8fTjRj72rVtkL39j5L73` with subject "Mathebula & Partners: New proposal PROP-0001 for your review".
+## Scenario
 
-## Portal Authentication
+**Day 8 (checkpoint 8.1)**: Bob logs 3.0 hours on Kgosi Monthly Bookkeeping engagement with description "Mar bank recon + creditors".
 
-- Day 4 magic-link session had expired. Re-requested via portal `/login` page.
-- Entered `sipho.portal@example.com` → clicked Send Magic Link → used dev-mode shortcut link → redirected to `/projects`.
-- Sipho Dlamini identity confirmed in user menu. Mathebula & Partners branding (logo + "Portal" sidebar) rendered correctly.
+---
 
-## Checkpoint Results
+## Pre-conditions Verified
 
-### 8.1 — Email link lands on portal proposal detail
+| Check | Result | Evidence |
+|-------|--------|----------|
+| Logged out previous user (Thandi) | **PASS** | Clicked User menu > Sign out. Redirected to landing page. |
+| Logged in as Bob via Keycloak | **PASS** | KC login: bob@thornton-test.local / SecureP@ss2. Redirected to /org/thornton-associates/dashboard. Sidebar shows "Bob Ndlovu" / "bob@thornton-test.local". |
+| Kgosi Monthly Bookkeeping engagement accessible | **PASS** | Navigated to engagement ID a32c67d5-8e09-47b9-82ec-f0e82fa94ec4. Title: "Kgosi Holdings -- Monthly Bookkeeping (Mar 2026)", Status: Active, Ref: BK-2026-03-0001, Type: BOOKKEEPING, 6 tasks all Open/Unassigned, 0h logged prior. |
 
-- Mailpit email ID `7e8fTjRj72rVtkL39j5L73`, subject "Mathebula & Partners: New proposal PROP-0001 for your review".
-- Email body contains CTA link: `http://localhost:3002/proposals/d7481b7a-8878-43ee-928c-2845bf8bffd0`.
-- Navigated to that URL (already authenticated from magic-link re-auth above).
-- Proposal detail page rendered with Sipho's identity, Mathebula branding, and correct proposal content.
-- **Result: PASS**
+---
 
-### 8.2 — Proposal detail page renders
+## Day 8 Checkpoints
 
-Page renders with:
-- Title: "Engagement Letter — Litigation (Dlamini v RAF)" with `SENT` badge
-- Reference: PROP-0001
-- Sent: 14 May 2026
-- Expires: 21 May 2026
-- **Fee Details** section: Fee Model = Hourly Rate
-- **Proposal Details** section: auto-seeded body via `ProposalContentSeeder.buildDefaultContent`:
-  - "Dear Sipho Dlamini,"
-  - "Fee Arrangement" heading
-  - "Fees will be charged on an hourly basis."
-  - "Rate: R 2,500/hr (LSSA tariff High Court Party-and-Party 2024/2025) — 30h Bob Ndlovu (attorney) + 5h Thandi Mathebula (senior partner) ~ R 87,500.00 estimate."
-  - Expiry date: 2026-05-21
-  - Standard terms and conditions notice
-- **Your Response** section: Accept Proposal + Decline buttons present
-- **Not present**: structured fee estimate breakdown with tariff lines + VAT 15% line (per OBS-701 WONT_FIX, proposal is a thin lifecycle wrapper)
-- **Result: PASS** (with expected absence per OBS-701 amendment)
+| ID | Checkpoint | Result | Evidence |
+|----|-----------|--------|----------|
+| 8.1a | Navigate to Kgosi Monthly Bookkeeping engagement | **PASS** | Engagement page loaded at `/org/thornton-associates/projects/a32c67d5-8e09-47b9-82ec-f0e82fa94ec4`. 6 tasks visible: Bank reconciliation, Creditors reconciliation, Debtors reconciliation, VAT calculation & reconciliation, Management accounts preparation, Month-end close & review. All Open, all Unassigned. |
+| 8.1b | Open Log Time dialog on Bank reconciliation task | **PASS** | Clicked "Log Time" button on Bank reconciliation row in Tasks tab. Dialog opened: "Log Time -- Record time spent on this task." Fields: Duration (h/m), Date, Description, Billable checkbox. |
+| 8.1c | Fill time entry: 3h, "Mar bank recon + creditors", billable | **PASS** | Filled: Duration = 3h 0m, Date = 2026-05-15, Description = "Mar bank recon + creditors", Billable = checked. Billing rate displayed: R 850.00/hr (Bob's admin rate). Calculated total: 3h x R 850.00 = R 2,550.00. |
+| 8.1d | Submit time entry | **PASS** | Clicked "Log Time" button. Dialog closed. No error toast. |
+| 8.1e | Verify time entry on Time tab | **PASS** | Time tab shows: Total Time = 3h, Billable = 3h, Non-billable = 0m, Contributors = 1, Entries = 1. By Task: Bank reconciliation = 3h (1 entry). By Member: Bob Ndlovu = 3h billable, 0m non-billable. |
+| 8.1f | Verify engagement overview updated | **PASS** | Overview tab: Hours = 3.0h (was 0h). Revenue margin = 58.8%. Recent Activity: "Bob Ndlovu logged 3h on task 'Bank reconciliation'" (1 minute ago). Time Breakdown chart: Bob Ndlovu = 3.0h. Team: Bob Ndlovu - 3.0h. Unbilled Time: R 2,550.00 across 3.0 hours. |
+| 8.1g | Verify dashboard hours updated | **PASS** | Dashboard: Hours This Month = 7.5h (was 4.5h, +3.0h from Bob's entry). Bookkeeping engagement row: 3.0h (was 0h). Active Engagements = 3 (unchanged). |
 
-### 8.3 — Fee estimate with ZAR + VAT
+---
 
-- Fee estimate does NOT render as structured tariff lines with ZAR totals + VAT 15%.
-- The rate note text mentions "R 2,500/hr" and "R 87,500.00 estimate" inline in the proposal body.
-- This is consistent with OBS-701 WONT_FIX — the proposal authoring surface has no fee-estimate line-item builder.
-- **Result: PASS** (expected absence per scenario amendment)
+## Summary
 
-### 8.4 — Screenshot
+| Total | PASS | FAIL | PARTIAL | DEFERRED |
+|-------|------|------|---------|----------|
+| 7 | 7 | 0 | 0 | 0 |
 
-- Captured as `day-08-proposal-review.png`.
-- **Result: PASS**
+**Day 8 Result: ALL PASS (7/7)**
 
-### 8.5 — Click Accept
+No new gaps identified. Time entry workflow works correctly for all checkpoints:
+- Log Time dialog opens from task row action button
+- Duration, description, date, and billable fields all functional
+- Billing rate correctly reflects Bob's admin rate (R 850.00/hr)
+- Revenue calculation correct (3h x R 850.00 = R 2,550.00)
+- Time tab, Overview tab, and Dashboard all reflect the new entry
+- Unbilled time widget shows accurate R 2,550.00 total
 
-- Clicked **Accept Proposal** button.
-- No separate confirmation dialog appeared — acceptance was immediate (inline confirm pattern).
-- **Result: PASS**
+## Evidence Files
 
-### 8.6 — Accept/token route
+- `qa_cycle/evidence/day-08-bob-time-entry-overview.png` — Engagement overview with 3.0h logged and activity feed
+- `qa_cycle/evidence/day-08-bob-time-entry-time-tab.png` — Time tab showing By Task and By Member breakdowns
 
-- No `/accept/[token]` route was involved. The in-page Accept button submitted directly via the portal API.
-- **Result: PASS** (scenario says "or inline confirm")
+## Console Errors
 
-### 8.7 — Acceptance confirmation
+- 1 transient console error on engagement page load (non-blocking, page renders correctly). Consistent with prior days' observations of SSR hydration timing.
 
-- Status badge transitioned **SENT -> ACCEPTED**.
-- Confirmation banner rendered: "Thank you for accepting this proposal. Your project has been set up." with checkmark icon.
-- Accept/Decline buttons removed from the page post-acceptance.
-- Console clean: 0 JavaScript errors throughout the transition.
-- **Result: PASS**
+## Cumulative State After Day 8
 
-### 8.8 — Screenshot (accepted state)
-
-- Captured as `day-08-proposal-accepted.png`.
-- **Result: PASS**
-
-### 8.9 — `/home` no longer shows pending proposal
-
-- Navigated to `http://localhost:3002/home`.
-- Home page tiles: Pending info requests (0), Upcoming deadlines (0, Next 14 days), Recent fee notes (No fee notes yet), Last trust movement (No recent activity).
-- No "Pending proposals" tile exists on the portal `/home` in the current product design — proposals are surfaced only via `/proposals` and email CTA.
-- Accepted proposal is not misclassified as pending anywhere.
-- **Result: PASS**
-
-### 8.10 — `/proposals` list shows accepted badge
-
-- Navigated to `http://localhost:3002/proposals`.
-- Table shows single row: PROP-0001, "Engagement Letter — Litigation (Dlamini v RAF)", status **ACCEPTED**, sent 14 May 2026.
-- No "Awaiting Your Response" / "Past" tab split visible (only one proposal exists in this cycle).
-- **Result: PASS**
-
-### Double-accept protection
-
-- Re-navigated to `/proposals/d7481b7a-8878-43ee-928c-2845bf8bffd0` after accepting.
-- Page renders with ACCEPTED badge, message "This proposal has been accepted." — no Accept/Decline buttons.
-- No double-accept pathway exists.
-- **Result: PASS**
-
-### Console errors
-
-- Session-wide console error check: 2 entries, both non-functional:
-  1. `favicon.ico` 404 — cosmetic (no favicon configured for portal)
-  2. `/portal/auth/exchange` 401 — from the expired token attempt at session start (before re-auth)
-- Zero JavaScript errors during the Day 8 flow (proposal view, accept, home, proposals list).
-- **Result: PASS** (no functional console errors)
-
-## Day 8 Summary
-
-| # | Checkpoint | Result | Evidence |
-|---|---|---|---|
-| 8.1 | Proposal accessible via email link | PASS | Email link resolves to `/proposals/d7481b7a-...`, page renders after magic-link re-auth |
-| 8.2 | Detail page renders scope, fee, expiry, buttons | PASS | Title, PROP-0001, SENT badge, fee model, proposal body, Accept/Decline |
-| 8.3 | ZAR + VAT line items | PASS (expected absence) | OBS-701 WONT_FIX — no structured fee breakdown |
-| 8.4 | Screenshot | PASS | `day-08-proposal-review.png` |
-| 8.5-8.7 | Accept flow | PASS | SENT -> ACCEPTED, confirmation banner, buttons removed |
-| 8.8 | Screenshot (accepted) | PASS | `day-08-proposal-accepted.png` |
-| 8.9 | `/home` not pending | PASS | No pending-proposals tile by design |
-| 8.10 | `/proposals` list | PASS | ACCEPTED badge in table |
-| - | No double-accept bug | PASS | Re-load shows ACCEPTED, no Accept button |
-| - | Terminology | PASS | "proposal" used consistently throughout portal |
-| - | Console errors | PASS | Zero functional JS errors |
-
-## Day 8 Day-End Checkpoints
-
-| # | Checkpoint | Result |
-|---|---|---|
-| 1 | Proposal accessible via email link without re-authentication (magic-link session valid OR transparent re-exchange) | PASS — session expired, re-authed via dev-mode magic-link, then proposal URL rendered correctly |
-| 2 | Acceptance recorded (firm will verify on Day 10) | PASS — ACCEPTED badge + confirmation banner |
-| 3 | No double-accept bug: clicking Accept again shows already-accepted state | PASS — re-load shows "This proposal has been accepted." with no action buttons |
-| 4 | Terminology consistent: portal copy reads "proposal" throughout | PASS — heading, sidebar, section titles all use "proposal" |
+- **Sipho Dlamini engagement**: 2.5h total (1.0h Carol Day 4 + 1.5h Carol Day 7)
+- **Kgosi Monthly Bookkeeping**: 3.0h total (3.0h Bob Day 8) — R 2,550.00 unbilled
+- **Kgosi Year-End Pack**: 2.0h total (2.0h Thandi Day 7)
+- **Total hours this month**: 7.5h across all engagements
 
 ## New Gaps Filed
 
-**None.** All checkpoints passed. The expected OBS-701 absence (no structured fee-estimate breakdown) is already documented and triaged as WONT_FIX with the scenario amended.
-
-## Entities Touched
-
-- PROP-0001 (id `d7481b7a-8878-43ee-928c-2845bf8bffd0`, **status: ACCEPTED** by Sipho Dlamini at ~22:16 UTC 2026-05-13)
-- Mailpit: fresh magic-link issued during Day 8 portal re-auth (dev-mode shortcut)
+**None.**
 
 ## QA Position
 
-**Day 8 — COMPLETE.** 11/11 checkpoints PASS, 0 blockers, 0 new gaps. Ready to dispatch **Day 10** (Firm verifies proposal acceptance, deposits trust funds — Thandi on firm `:3000`).
+**Day 8 — COMPLETE.** 7/7 checkpoints PASS, 0 blockers, 0 new gaps. Ready to advance to Day 9 (Carol logs 2.0h on bookkeeping "Debtors recon").

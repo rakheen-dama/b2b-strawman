@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 7 — COMPLETE (4 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED — no new gaps)
-- **Next checkpoint**: Day 8 (Bob logs 3.0h on bookkeeping "Mar bank recon + creditors")
+- **Day**: 8 — COMPLETE (7 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED — no new gaps)
+- **Next checkpoint**: Day 9 (Carol logs 2.0h on bookkeeping "Debtors recon")
 - **Day 0 deferred items resolved**: Field promotion inline (0.36) VERIFIED via Day 1 create dialog, no duplicates (0.37) VERIFIED. Engagement field promotion (0.38) VERIFIED via Day 3 New Engagement dialog. Cancel dialog (0.39) deferred (non-blocking). Modules page (0.44-0.45), billing screenshot (0.52) remain deferred.
 - **All Day 0 gaps resolved**: OBS-4002 VERIFIED, OBS-4003 VERIFIED, OBS-4004 VERIFIED
 - **Sipho Dlamini client ID**: 31986024-382f-48ac-abb9-5dfa64fde531
@@ -39,8 +39,9 @@ For each day-N walk in this cycle:
 - **Sipho Tax Return engagement ID**: 583ee45e-40b5-4846-9082-92f69f0f5f17 (Tax Return — Individual ITR12, Ref: TR-2026-0001, Type: TAX_RETURN, 7 tasks, Carol assigned to 4, 2.5h logged total (1.0h Carol Day 4 + 1.5h Carol Day 7), 2 IT3a docs uploaded by Carol, 1 document comment by Bob)
 - **Kgosi Holdings client ID**: 90d93d67-b462-4fe9-9732-656af5ab889e
 - **Kgosi lifecycle**: ACTIVE (transitioned through PROSPECT → ONBOARDING → ACTIVE via FICA/KYC checklist completion, 8/8 required items, 3 skipped)
-- **Kgosi Monthly Bookkeeping engagement ID**: a32c67d5-8e09-47b9-82ec-f0e82fa94ec4 (Monthly Bookkeeping, Ref: BK-2026-03-0001, Type: BOOKKEEPING, 6 tasks, all unassigned)
+- **Kgosi Monthly Bookkeeping engagement ID**: a32c67d5-8e09-47b9-82ec-f0e82fa94ec4 (Monthly Bookkeeping, Ref: BK-2026-03-0001, Type: BOOKKEEPING, 6 tasks, all unassigned, 3.0h logged by Bob Day 8 on "Bank reconciliation", R 2,550 unbilled)
 - **Kgosi Year-End Pack engagement ID**: 388d5104-7789-4ad6-bb6c-6d045e9663f3 (Year-End Pack / Annual Financial Statements, 7 tasks, 2.0h logged by Thandi Day 7 on "Request & receive trial balance")
+- **Total hours this month**: 7.5h (Sipho 2.5h + Bookkeeping 3.0h + Year-End Pack 2.0h)
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002, KC :8180, Mailpit :8025, Postgres :5432, LocalStack :4566)
@@ -75,3 +76,4 @@ For each day-N walk in this cycle:
 | 5 | QA | Day 5 walk: Carol uploads 2 IT3a PDFs (employer + investment certificates) to Sipho engagement Documents tab. Thandi creates Kgosi Holdings Monthly Bookkeeping engagement from template (6 tasks: bank recon, creditors recon, debtors recon, VAT calc, mgmt accounts, month-end close). | 5 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. Kgosi Bookkeeping ID: a32c67d5-8e09-47b9-82ec-f0e82fa94ec4 |
 | 6 | QA | Day 6 walk: Bob reviews uploaded IT3a docs on Sipho engagement, adds document-level comment "@Carol Need proof of retirement annuity contribution" (Internal only). Thandi creates Kgosi Holdings Year-End Pack engagement from template (7 tasks: request TB, review TB & journals, draft AFS, director approval, CIPC filing, tax computation, final archiving). Wow moment screenshot captured. | 10 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. Year-End Pack ID: 388d5104-7789-4ad6-bb6c-6d045e9663f3 |
 | 7 | QA | Day 7 walk: Carol logs 1.5h on Sipho engagement ("Drafted tax return in eFiling") against Prepare ITR12 task (R 450/hr = R 675). Thandi logs 2.0h on Kgosi Year-End Pack ("Initial planning meeting + scope confirmation") against Request & receive trial balance task (R 1500/hr = R 3000). | 4 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. Sipho total: 2.5h. Year-End Pack total: 2.0h. |
+| 8 | QA | Day 8 walk: Bob logs 3.0h on Kgosi Monthly Bookkeeping ("Mar bank recon + creditors") against Bank reconciliation task (R 850/hr = R 2,550). Verified Time tab, Overview, and Dashboard all reflect entry. | 7 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. Bookkeeping total: 3.0h. Monthly hours: 7.5h. |

@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 30 — PARTIAL (fee note detail verified, payment flow blocked by OBS-3001)
-- **Next checkpoint**: Day 30 retest after OBS-3001 fix
+- **Day**: 30 — COMPLETE (all checkpoints pass, payment flow verified end-to-end)
+- **Next checkpoint**: Day 45
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002 all healthy)
@@ -45,7 +45,8 @@ For each day-N walk in this cycle:
 | OBS-203 | `/api/assistant/invocations` returns 404 on client detail page loads | nit | Dev | OPEN | 2 | Non-critical AI assistant feature; 3 occurrences per page load |
 | OBS-304 | Activity feed reads "sent to Bob Ndlovu" instead of portal contact name on info request send | nit | Dev | OPEN | 3 | Cosmetic — activity log references actor not recipient |
 | OBS-1002 | Trust deposit Record Deposit dialog combobox non-functional on standalone Transactions page | HIGH | Dev | OPEN | 10 | Triple Slot composition (PopoverTrigger > FormControl > Button) breaks Radix Popover. Workaround: use matter Trust tab. Also affects Record Payment / Refund dialogs. |
-| OBS-3001 | Mock payment integration not seeded during tenant provisioning — portal shows "Contact firm" instead of Pay Now | HIGH | Dev | FIXED | 30 | `TenantProvisioningService` now calls `MockPaymentIntegrationSeeder.seedForTenant()`. PR #1302 merged. Full verify: 5209 tests, 0 failures. |
+| OBS-3001 | Mock payment integration not seeded during tenant provisioning — portal shows "Contact firm" instead of Pay Now | HIGH | Dev | VERIFIED | 30 | `TenantProvisioningService` now calls `MockPaymentIntegrationSeeder.seedForTenant()`. PR #1302 merged. Full verify: 5209 tests, 0 failures. QA retest: payment flow end-to-end PASS (mock PSP checkout, webhook, PAID status on both portal and firm side). |
+| OBS-3002 | `InvoiceTransitionService.refreshPaymentLink()` does not publish `InvoiceSyncEvent` — portal read model stale after payment link refresh | LOW | Dev | OPEN | 30 | Non-blocking; workaround available (manual DB sync). All other invoice transitions publish sync events. |
 
 ## Log
 
@@ -69,3 +70,4 @@ For each day-N walk in this cycle:
 | 1 | QA | Day 30 walk: Sipho views fee note on portal, payment flow blocked | PARTIAL — fee note detail PASS (3 lines, R 1,437.50, terminology correct), payment BLOCKED (OBS-3001: mock PSP not seeded), isolation PASS |
 | 1 | Product | Triage OBS-3001: SPEC_READY (HIGH, blocker for Day 30 payment) | Root cause confirmed: `TenantProvisioningService` missing `MockPaymentIntegrationSeeder` injection+call. Fix spec written to `qa_cycle/fix-specs/OBS-3001.md`. Effort: S. |
 | 1 | Dev | Fix OBS-3001: inject MockPaymentIntegrationSeeder into TenantProvisioningService | PR #1302 merged (squash). Full verify: 5209 tests, 0 failures, 0 errors. 2 files changed, 9 insertions. |
+| 2 | QA | Day 30 retest: payment flow after OBS-3001 fix | ALL PASS — Pay Now visible, mock PSP checkout completed, PAID status on portal + firm. OBS-3001 VERIFIED. New nit: OBS-3002 (refreshPaymentLink missing InvoiceSyncEvent). |

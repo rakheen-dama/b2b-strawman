@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 13 — COMPLETE (10 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED — 0 new gaps, OBS-4005 VERIFIED)
-- **Next checkpoint**: Day 14 (Budget tab on year-end pack: set budget to 40 hours, R60,000 → verify burn tracking)
+- **Day**: 14 — COMPLETE (14 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED — 0 new gaps)
+- **Next checkpoint**: Day 15 (Trust client onboarding: create Moroka Family Trust, verify trust-specific custom fields)
 - **Day 0 deferred items resolved**: Field promotion inline (0.36) VERIFIED via Day 1 create dialog, no duplicates (0.37) VERIFIED. Engagement field promotion (0.38) VERIFIED via Day 3 New Engagement dialog. Cancel dialog (0.39) deferred (non-blocking). Modules page (0.44-0.45), billing screenshot (0.52) remain deferred.
 - **All Day 0 gaps resolved**: OBS-4002 VERIFIED, OBS-4003 VERIFIED, OBS-4004 VERIFIED
 - **Sipho Dlamini client ID**: 31986024-382f-48ac-abb9-5dfa64fde531
@@ -40,7 +40,7 @@ For each day-N walk in this cycle:
 - **Kgosi Holdings client ID**: 90d93d67-b462-4fe9-9732-656af5ab889e
 - **Kgosi lifecycle**: ACTIVE (transitioned through PROSPECT → ONBOARDING → ACTIVE via FICA/KYC checklist completion, 8/8 required items, 3 skipped)
 - **Kgosi Monthly Bookkeeping engagement ID**: a32c67d5-8e09-47b9-82ec-f0e82fa94ec4 (Monthly Bookkeeping, Ref: BK-2026-03-0001, Type: BOOKKEEPING, 6 tasks, Carol added as member Day 9, 5.0h logged (3.0h Bob Day 8 "Bank reconciliation" + 2.0h Carol Day 9 "Debtors recon"), R 3,450 unbilled, 2 bank statement docs uploaded by Bob Day 10)
-- **Kgosi Year-End Pack engagement ID**: 388d5104-7789-4ad6-bb6c-6d045e9663f3 (Year-End Pack / Annual Financial Statements, 7 tasks, 3.0h logged (2.0h Thandi Day 7 "Request & receive trial balance" + 1.0h Bob Day 13 "FS structure review" on Draft AFS task), 2 comments: Thandi Day 12 "@Bob Need FS draft by day 30" + Bob Day 13 acknowledgment, R 3,850 unbilled)
+- **Kgosi Year-End Pack engagement ID**: 388d5104-7789-4ad6-bb6c-6d045e9663f3 (Year-End Pack / Annual Financial Statements, 7 tasks, 3.0h logged (2.0h Thandi Day 7 "Request & receive trial balance" + 1.0h Bob Day 13 "FS structure review" on Draft AFS task), 2 comments: Thandi Day 12 "@Bob Need FS draft by day 30" + Bob Day 13 acknowledgment, R 3,850 unbilled, **Budget configured Day 14: 40h / R60,000 / 80% alert threshold / 8% hours used / 6% amount used**)
 - **Total hours this month**: 10.5h (Sipho 2.5h + Bookkeeping 5.0h + Year-End Pack 3.0h)
 
 ## Stack State
@@ -85,3 +85,4 @@ For each day-N walk in this cycle:
 | 12 | Dev | Fix OBS-4005: inject ProjectRepository into CommentService and PortalCommentService. Resolve actual project name instead of literal "project". Add entity_name to PortalCommentService audit details. Regression test added. | PR #1306 merged. Full verify: 5210 tests, 0 failures. OBS-4005 -> FIXED. NEEDS_REBUILD: true. |
 | 13 | QA | OBS-4005 verification: logged in as Bob, posted comment on Year-End Pack, checked Activity tab. New event: "Bob Ndlovu commented on project 'Kgosi Holdings — FY2025/26 Year-End Pack'" — actual name, not "project". | OBS-4005 -> VERIFIED. |
 | 13 | QA | Day 13 walk: Bob posts acknowledgment comment on Year-End Pack Client Comments ("Acknowledged @Thandi — will have FS structure draft ready. Starting review today."). Bob logs 1.0h on "Draft annual financial statements" task ("FS structure review", R 850/hr). Time tab: 3h total, 2 contributors. Dashboard: 10.5h monthly. | 10 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. Year-End Pack total: 3.0h. Monthly hours: 10.5h. |
+| 14 | QA | Day 14 walk: Budget tab on Year-End Pack. Configured budget: 40h / R60,000 / ZAR / 80% alert threshold. Verified burn tracking: Hours 3h/40h (8%), Amount R3,850/R60,000 (6%), status "On Track". Overview reflects "8% used", setup steps 4/5. Activity: "budget.created" event logged. Dashboard: 3 engagements on track, 0 at risk. | 14 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. |

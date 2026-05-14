@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.customerbackend.repository.PortalReadModelRepos
 import io.b2mash.b2b.b2bstrawman.event.CommentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -31,18 +32,21 @@ public class PortalCommentService {
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final PortalContactRepository portalContactRepository;
+  private final ProjectRepository projectRepository;
 
   public PortalCommentService(
       CommentRepository commentRepository,
       PortalReadModelRepository readModelRepository,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
-      PortalContactRepository portalContactRepository) {
+      PortalContactRepository portalContactRepository,
+      ProjectRepository projectRepository) {
     this.commentRepository = commentRepository;
     this.readModelRepository = readModelRepository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.portalContactRepository = portalContactRepository;
+    this.projectRepository = projectRepository;
   }
 
   /**
@@ -62,6 +66,10 @@ public class PortalCommentService {
     readModelRepository.upsertPortalComment(
         comment.getId(), orgId, projectId, authorName, content, comment.getCreatedAt());
 
+    // Resolve project name for activity feed
+    String projectName =
+        projectRepository.findById(projectId).map(p -> p.getName()).orElse("project");
+
     // Audit event
     auditService.log(
         AuditEventBuilder.builder()
@@ -72,21 +80,15 @@ public class PortalCommentService {
             .actorType("PORTAL_CONTACT")
             .source("PORTAL")
             .details(
-                Map.of(
-                    "body",
-                    content,
-                    "project_id",
-                    projectId.toString(),
-                    "entity_type",
-                    "PROJECT",
-                    "entity_id",
-                    projectId.toString(),
-                    "visibility",
-                    "SHARED",
-                    "source",
-                    "PORTAL",
-                    "actor_name",
-                    authorName))
+                Map.ofEntries(
+                    Map.entry("body", content),
+                    Map.entry("project_id", projectId.toString()),
+                    Map.entry("entity_type", "PROJECT"),
+                    Map.entry("entity_id", projectId.toString()),
+                    Map.entry("entity_name", projectName),
+                    Map.entry("visibility", "SHARED"),
+                    Map.entry("source", "PORTAL"),
+                    Map.entry("actor_name", authorName)))
             .build());
 
     // Publish domain event for notifications

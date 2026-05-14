@@ -170,6 +170,22 @@ class ActivityMessageFormatterTest {
   }
 
   @Test
+  void commentCreatedOnProjectWithEntityNameProducesCorrectMessage() {
+    var event =
+        createEvent(
+            "comment.created",
+            "comment",
+            Map.of(
+                "entity_type", "PROJECT",
+                "entity_name", "Kgosi Holdings -- FY2025/26 Year-End Pack",
+                "body", "@Bob Need FS draft by day 30"));
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    assertThat(item.message())
+        .isEqualTo("Alice commented on project \"Kgosi Holdings -- FY2025/26 Year-End Pack\"");
+    assertThat(item.message()).doesNotContain("'project'");
+  }
+
+  @Test
   void commentCreatedWithoutEntityNameFallsBackToEntityType() {
     var event =
         createEvent(

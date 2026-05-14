@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectLifecycleGuard;
+import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import java.time.Instant;
@@ -37,6 +38,7 @@ public class CommentService {
   private final ProjectAccessService projectAccessService;
   private final TaskRepository taskRepository;
   private final DocumentRepository documentRepository;
+  private final ProjectRepository projectRepository;
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final MemberNameResolver memberNameResolver;
@@ -48,6 +50,7 @@ public class CommentService {
       ProjectAccessService projectAccessService,
       TaskRepository taskRepository,
       DocumentRepository documentRepository,
+      ProjectRepository projectRepository,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       MemberNameResolver memberNameResolver,
@@ -57,6 +60,7 @@ public class CommentService {
     this.projectAccessService = projectAccessService;
     this.taskRepository = taskRepository;
     this.documentRepository = documentRepository;
+    this.projectRepository = projectRepository;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.memberNameResolver = memberNameResolver;
@@ -386,7 +390,7 @@ public class CommentService {
    */
   private String validateEntityBelongsToProject(String entityType, UUID entityId, UUID projectId) {
     if ("PROJECT".equals(entityType)) {
-      return "project";
+      return projectRepository.findById(projectId).map(p -> p.getName()).orElse("project");
     }
     if ("TASK".equals(entityType)) {
       var task =

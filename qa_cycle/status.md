@@ -30,8 +30,9 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 0 — NOT STARTED
-- **Next checkpoint**: Day 0 (Onboarding)
+- **Day**: 0 — COMPLETE (37 PASS / 1 PARTIAL / 10 DEFERRED / 0 FAIL)
+- **Next checkpoint**: Day 1 (First client: Sipho Dlamini)
+- **Deferred items**: Field promotion inline checks (0.36-0.39), automations page (0.42-0.43), modules page (0.44-0.45), billing screenshot (0.52) — all non-blocking, will verify during Day 1+ execution
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002, KC :8180, Mailpit :8025, Postgres :5432, LocalStack :4566)
@@ -41,9 +42,14 @@ For each day-N walk in this cycle:
 
 | Gap ID | Summary | Severity | Owner | Status | Day | Notes |
 |--------|---------|----------|-------|--------|-----|-------|
+| OBS-4001 | Approve button on access-requests requires JS-level click to surface confirmation dialog | LOW | Dev | OPEN | 0 | Playwright click registered but dialog did not appear via standard click |
+| OBS-4002 | Missing engagement templates: Payroll (monthly) and Tax Return -- Trust not in accounting-za pack | LOW | Dev | OPEN | 0 | 5 of 7 expected templates present; sufficient for lifecycle |
+| OBS-4003 | Logo upload not tested -- no test logo file available | INFO | QA | OPEN | 0 | Non-blocking |
+| OBS-4004 | Automations page not found in settings navigation | MEDIUM | Dev | OPEN | 0 | Need to locate automations UI or determine if it exists |
 
 ## Log
 
 | Cycle | Agent | Action | Result |
 |-------|-------|--------|--------|
 | 0 | Infra | Clean slate setup: volumes wiped, KC bootstrapped, all services started | Stack running |
+| 0 | QA | Day 0 full walk: Phase A (access request + OTP), Phase B (admin approval), Phase C (KC registration), Phase D (team invites), Phase E (settings/rates/tax), Phase F (custom fields), Phase G (templates), Phase H (progressive disclosure), Phase I (billing) | 37 PASS / 1 PARTIAL / 10 DEFERRED / 0 FAIL |

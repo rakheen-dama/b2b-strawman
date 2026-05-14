@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 45 — COMPLETE (all checkpoints PASS, trust R 70,000 reconciled, info request REQ-0003 sent)
-- **Next checkpoint**: Day 46
+- **Day**: 46 — COMPLETE (all checkpoints PASS, REQ-0003 2/2 items submitted, trust R 70,000 confirmed, isolation holds, pending counter dropped to 0)
+- **Next checkpoint**: Day 60
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002 all healthy)
@@ -72,3 +72,4 @@ For each day-N walk in this cycle:
 | 1 | Dev | Fix OBS-3001: inject MockPaymentIntegrationSeeder into TenantProvisioningService | PR #1302 merged (squash). Full verify: 5209 tests, 0 failures, 0 errors. 2 files changed, 9 insertions. |
 | 2 | QA | Day 30 retest: payment flow after OBS-3001 fix | ALL PASS — Pay Now visible, mock PSP checkout completed, PAID status on portal + firm. OBS-3001 VERIFIED. New nit: OBS-3002 (refreshPaymentLink missing InvoiceSyncEvent). |
 | 2 | QA | Day 45 walk: Second info request + trust top-up deposit | 5/5 PASS, 0 blockers, 0 new gaps. REQ-0003 sent (2 items), R 20k deposit recorded. Trust: Sipho R 70k / Moroka R 25k isolated. Scenario amendment note: R 71k → R 70k (no OBS-1101 carry-over in clean-slate cycle). |
+| 2 | QA | Day 46 walk: Sipho uploads docs to REQ-0003, trust re-check, isolation spot-check | 7/7 PASS, 0 blockers, 0 new gaps. 2/2 items submitted (hospital discharge + ortho report), envelope IN_PROGRESS. Trust R 70k confirmed (2 deposits). Isolation clean on /trust, /projects, /home. Pending counter 1→0. |

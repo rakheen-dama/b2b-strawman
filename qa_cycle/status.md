@@ -30,9 +30,10 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 0 — COMPLETE (37 PASS / 1 PARTIAL / 10 DEFERRED / 0 FAIL)
+- **Day**: 0 — VERIFIED (37 PASS / 0 PARTIAL / 8 DEFERRED / 0 FAIL — retest after fixes)
 - **Next checkpoint**: Day 1 (First client: Sipho Dlamini)
-- **Deferred items**: Field promotion inline checks (0.36-0.39), automations page (0.42-0.43), modules page (0.44-0.45), billing screenshot (0.52) — all non-blocking, will verify during Day 1+ execution
+- **Deferred items**: Field promotion inline checks (0.36-0.39), modules page (0.44-0.45), billing screenshot (0.52) — all non-blocking, will verify during Day 1+ execution
+- **All Day 0 gaps resolved**: OBS-4002 VERIFIED, OBS-4003 VERIFIED, OBS-4004 VERIFIED
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002, KC :8180, Mailpit :8025, Postgres :5432, LocalStack :4566)
@@ -43,9 +44,9 @@ For each day-N walk in this cycle:
 | Gap ID | Summary | Severity | Owner | Status | Day | Notes |
 |--------|---------|----------|-------|--------|-----|-------|
 | OBS-4001 | Approve button on access-requests requires JS-level click to surface confirmation dialog | LOW | QA | WONT_FIX | 0 | Playwright automation quirk, not a product bug. Dialog works correctly for real users. QA agent should use `{ force: true }` or `evaluate` click. |
-| OBS-4002 | Missing engagement templates: Payroll (monthly) and Trust AFS not in accounting-za pack | MEDIUM | Dev | FIXED | 0 | Added Payroll (Monthly) + Annual Trust Financial Statements templates to accounting-za.json. PR #1305 merged. Full verify: 5209 tests, 0 failures. |
-| OBS-4003 | Logo upload not tested -- no test logo file available | INFO | QA | FIXED | 0 | Valid 200x200 green (#1B5E20) PNG created at `qa_cycle/test-fixtures/thornton-logo.png` (763 bytes). QA can use for logo upload checkpoint. |
-| OBS-4004 | Automations page not found in settings navigation | MEDIUM | Dev | FIXED | 0 | Root cause: `automation_builder` not in accounting-za enabledModules. Fix: added to vertical profile JSON. PR #1304 merged. Full verify: 5209 tests, 0 failures. |
+| OBS-4002 | Missing engagement templates: Payroll (monthly) and Trust AFS not in accounting-za pack | MEDIUM | Dev | VERIFIED | 0 | Added Payroll (Monthly) + Annual Trust Financial Statements templates to accounting-za.json. PR #1305 merged. Full verify: 5209 tests, 0 failures. Retest: 7/7 templates present on clean-slate stack. |
+| OBS-4003 | Logo upload not tested -- no test logo file available | INFO | QA | VERIFIED | 0 | Valid 200x200 green (#1B5E20) PNG created at `qa_cycle/test-fixtures/thornton-logo.png` (763 bytes). Retest: uploaded via UI, preview renders (blob + S3 sidebar logo). |
+| OBS-4004 | Automations page not found in settings navigation | MEDIUM | Dev | VERIFIED | 0 | Root cause: `automation_builder` not in accounting-za enabledModules. Fix: added to vertical profile JSON. PR #1304 merged. Full verify: 5209 tests, 0 failures. Retest: Automations link in settings nav, 13 rules including 4 accounting-specific. |
 
 ## Log
 
@@ -58,3 +59,4 @@ For each day-N walk in this cycle:
 | 0 | Dev | Fix OBS-4002: add Payroll (Monthly) + Annual Trust Financial Statements templates to accounting-za project template pack. 7 templates total (was 5). | PR #1305 merged. Full verify: 5209 tests, 0 failures. |
 | 0 | Orchestrator | Fix OBS-4003: generated valid 200x200 green PNG test fixture at `qa_cycle/test-fixtures/thornton-logo.png`. | FIXED (QA fixture, no code change) |
 | 1 | Infra | Clean-slate rebuild after OBS-4002 + OBS-4004 fixes. Volumes wiped, KC bootstrapped, all services restarted. | Stack running |
+| 1 | QA | Day 0 retest after OBS-4002/4003/4004 fixes. Full walk: Phases A-I. Re-provisioned org + 3 users. Retested all 3 fixes. | 37 PASS / 0 PARTIAL / 8 DEFERRED / 0 FAIL. OBS-4002 VERIFIED (7/7 templates). OBS-4003 VERIFIED (logo uploaded+previews). OBS-4004 VERIFIED (automations page loads, 13 rules). |

@@ -1,7 +1,7 @@
 # Day 28 — Retry (cycle 15) — Bulk Billing Fee Note
 
 **Date**: 2026-04-30 (cycle 15, post OBS-2102 fix)
-**Actor**: Thandi Mathebula (Owner, `thandi@mathebula-test.local` / `SecureP@ss1`)
+**Actor**: Thandi Mathebula (Owner, `thandi@mathebula-test.local` / `<redacted>`)
 **Stack**: Keycloak dev stack (frontend `:3000`, gateway `:8443`, backend `:8080`, KC `:8180`).
 **Result**: BLOCKED — gap **OBS-2104** filed; OBS-2102 verified PARTIAL_PASS.
 

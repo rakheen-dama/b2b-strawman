@@ -12,7 +12,7 @@ PR #1242 / squash `f0845762` refactor (dialog owns trigger button — no Slot, n
 
 | Customer | Edit click | Archive click | Status |
 |----------|-----------|---------------|--------|
-| Sipho Dlamini (Active/Active/INDIVIDUAL) | Dialog opens — heading "Edit Customer" — form populated (Name=Sipho Dlamini, Type=Individual disabled, Email=sipho.portal@example.com, Phone=+27 82 555 0101, ID=8501015800088, Address=12 Loveday St) | AlertDialog opens — heading "Archive Customer" — body "Archive Sipho Dlamini? Their project links will be preserved but they will be hidden from active customer lists." | PASS |
+| Sipho Dlamini (Active/Active/INDIVIDUAL) | Dialog opens — heading "Edit Customer" — form populated (Name=Sipho Dlamini, Type=Individual disabled, Email=sipho.portal@example.com, Phone=+27 82 555 0101, ID=<redacted-id>, Address=12 Loveday St) | AlertDialog opens — heading "Archive Customer" — body "Archive Sipho Dlamini? Their project links will be preserved but they will be hidden from active customer lists." | PASS |
 | Moroka Family Trust (Active/Prospect/TRUST) | Dialog opens — heading "Edit Customer" — form populated (Name=Moroka Family Trust, Type=Trust disabled, Email=moroka.portal@example.com, Phone=+27 11 555 0102, Address=45 Helen Joseph St, Gauteng) | AlertDialog opens — heading "Archive Customer" — body "Archive Moroka Family Trust? Their project links will be preserved but they will be hidden from active customer lists." | PASS |
 
 Both buttons render side-by-side in the action row on both customers. Click handlers fire correctly on BOTH dialogs on BOTH customers — no polarity stripping, no missing onClick. The structural refactor (dialog component owns the `<Button>`, exposes `triggerLabel`/`triggerVariant`/`triggerSize`/`triggerClassName`/`triggerIcon` props) eliminates BOTH the original Radix Slot adjacency collision (OBS-2103) AND the lazy/RSC cloneElement onClick-strip (OBS-2103b) in one structural change. Console clean (0 errors, 0 warnings on customer detail page navigation).
@@ -46,7 +46,7 @@ Evidence: `qa_cycle/evidence/day-45-retry/obs-2104c2-cherrypick-clean-console.pn
 
 **Result: PASS — Day 45 COMPLETE.**
 
-**Actor switch**: Signed out as Thandi → signed in as Bob Ndlovu (`bob@mathebula-test.local` / `SecureP@ss2`) via Keycloak realm `docteams` (BFF gateway `:8443/oauth2/authorization/keycloak`). User menu shows "BN" / "Bob Ndlovu" / `bob@mathebula-test.local`.
+**Actor switch**: Signed out as Thandi → signed in as Bob Ndlovu (`bob@mathebula-test.local` / `<redacted>`) via Keycloak realm `docteams` (BFF gateway `:8443/oauth2/authorization/keycloak`). User menu shows "BN" / "Bob Ndlovu" / `bob@mathebula-test.local`.
 
 ### Day 45.1 — Second info request: PASS
 

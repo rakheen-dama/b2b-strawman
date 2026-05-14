@@ -1,0 +1,222 @@
+24 hours
+7 days
+30 days
+90 days
+Summarise recent activity
+All
+Tasks
+Documents
+Comments
+Members
+Time
+All actors
+SD
+
+Sipho Dlamini performed portal.document.downloaded on document
+
+24 minutes ago
+SD
+
+Sipho Dlamini performed portal.document.downloaded on document
+
+25 minutes ago
+TM
+
+Thandi Mathebula performed statement.generated on generated_document
+
+9 hours ago
+TM
+
+Thandi Mathebula generated document "matter-closure-letter-dlamini-v-road-accident-fund-2026-05-14.pdf" from template "Matter Closure Letter"
+
+9 hours ago
+BN
+
+REQ-0003 completed — all items accepted
+
+9 hours ago
+BN
+
+Bob Ndlovu accepted "Orthopaedic specialist report" for REQ-0003
+
+9 hours ago
+BN
+
+Bob Ndlovu accepted "Hospital discharge summary" for REQ-0003
+
+9 hours ago
+BN
+
+Bob Ndlovu changed task "Initial RAF claim assessment & instructions" status to CANCELLED
+
+9 hours ago
+BN
+
+Bob Ndlovu changed task "File RAF1 claim form + supporting documents (within 3-year prescription)" status to CANCELLED
+
+9 hours ago
+BN
+
+Bob Ndlovu changed task "Statutory medical reports & assessments" status to CANCELLED
+
+9 hours ago
+BN
+
+Bob Ndlovu changed task "Insurer correspondence -- RAF tariff schedule" status to CANCELLED
+
+9 hours ago
+BN
+
+Bob Ndlovu changed task "Settlement negotiation with RAF" status to CANCELLED
+
+9 hours ago
+BN
+
+Bob Ndlovu changed task "Court action if no settlement (Section 24 RAF Act)" status to CANCELLED
+
+9 hours ago
+BN
+
+Bob Ndlovu changed task "Trial / hearing attendance" status to CANCELLED
+
+9 hours ago
+BN
+
+Bob Ndlovu changed task "Settlement / judgment payout & costs" status to CANCELLED
+
+9 hours ago
+BN
+
+Bob Ndlovu changed task "Prescription monitoring (3-year claim, 5-year for damages)" status to CANCELLED
+
+9 hours ago
+SD
+
+Sipho Dlamini performed portal.request_item.submitted on request_item
+
+10 hours ago
+SD
+
+Sipho Dlamini performed portal.document.upload_initiated on document
+
+10 hours ago
+SD
+
+Sipho Dlamini performed portal.request_item.submitted on request_item
+
+12 hours ago
+SD
+
+Sipho Dlamini performed portal.document.upload_initiated on document
+
+12 hours ago
+BN
+
+Information request REQ-0003 sent to Bob Ndlovu
+
+12 hours ago
+BN
+
+Bob Ndlovu created information request REQ-0003
+
+12 hours ago
+SD
+
+Sipho Dlamini performed portal.invoice.paid on invoice
+
+13 hours ago
+TM
+
+Thandi Mathebula performed disbursement.billed on legal_disbursement
+
+14 hours ago
+TM
+
+Thandi Mathebula performed disbursement.approved on legal_disbursement
+
+14 hours ago
+TM
+
+Thandi Mathebula performed disbursement.submitted on legal_disbursement
+
+14 hours ago
+BN
+
+Bob Ndlovu performed court_date.created on court_date
+
+14 hours ago
+BN
+
+Bob Ndlovu performed disbursement.created on legal_disbursement
+
+14 hours ago
+BN
+
+Bob Ndlovu logged 1h 30m on task "File RAF1 claim form + supporting documents (within 3-year prescription)"
+
+14 hours ago
+BN
+
+Bob Ndlovu logged 2h 30m on task "Initial RAF claim assessment & instructions"
+
+14 hours ago
+BN
+
+REQ-0001 completed — all items accepted
+
+15 hours ago
+BN
+
+Bob Ndlovu accepted "Bank statement (≤ 3 months)" for REQ-0001
+
+15 hours ago
+BN
+
+Bob Ndlovu accepted "Proof of residence (≤ 3 months)" for REQ-0001
+
+15 hours ago
+BN
+
+Bob Ndlovu accepted "ID copy" for REQ-0001
+
+15 hours ago
+SD
+
+Sipho Dlamini performed portal.request_item.submitted on request_item
+
+15 hours ago
+SD
+
+Sipho Dlamini performed portal.document.upload_initiated on document
+
+15 hours ago
+SD
+
+Sipho Dlamini performed portal.request_item.submitted on request_item
+
+15 hours ago
+SD
+
+Sipho Dlamini performed portal.document.upload_initiated on document
+
+15 hours ago
+SD
+
+Sipho Dlamini performed portal.request_item.submitted on request_item
+
+15 hours ago
+SD
+
+Sipho Dlamini performed portal.document.upload_initiated on document
+
+15 hours ago
+BN
+
+Information request REQ-0001 sent to Bob Ndlovu
+
+15 hours ago
+BN
+
+Bob Ndlovu created information request REQ-0001
+
+15 hours ago

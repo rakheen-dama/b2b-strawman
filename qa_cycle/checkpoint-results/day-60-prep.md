@@ -80,7 +80,7 @@ Submit → dialog closes → record created in `AWAITING APPROVAL` status (R 71,
 
 Bob attempted to approve via `/trust-accounting/transactions?status=AWAITING_APPROVAL` → got toast `Insufficient permissions for this operation` (Admin role lacks trust-payment-approval capability — owner-only per Section 86 dual-control conventions).
 
-**Switched session**: signed out Bob → KC sign-in as Thandi (`thandi@mathebula-test.local` / `SecureP@ss1`) → user menu shows TM. Returned to `/trust-accounting/transactions?status=AWAITING_APPROVAL` → TPM/2026/001 row → click `Approve` → status `APPROVED`, row now shows `Reverse` button.
+**Switched session**: signed out Bob → KC sign-in as Thandi (`thandi@mathebula-test.local` / `<redacted>`) → user menu shows TM. Returned to `/trust-accounting/transactions?status=AWAITING_APPROVAL` → TPM/2026/001 row → click `Approve` → status `APPROVED`, row now shows `Reverse` button.
 
 Reload matter Trust tab:
 - **Funds Held**: R 0,00 (No Funds)

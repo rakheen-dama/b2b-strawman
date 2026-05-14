@@ -18,6 +18,7 @@ import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
 import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
+import io.b2mash.b2b.b2bstrawman.integration.payment.MockPaymentIntegrationSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
@@ -74,6 +75,7 @@ class TenantProvisioningServiceTest {
   private io.b2mash.b2b.b2bstrawman.verticals.VerticalProfileReconciliationSeeder
       verticalProfileReconciliationSeeder;
 
+  @Mock private MockPaymentIntegrationSeeder mockPaymentIntegrationSeeder;
   @Mock private TenantTransactionHelper tenantTransactionHelper;
   @Mock private OrgSettingsRepository orgSettingsRepository;
   @Mock private VerticalProfileRegistry verticalProfileRegistry;
@@ -294,6 +296,7 @@ class TenantProvisioningServiceTest {
 
     verify(ratePackSeeder).seedPacksForTenant(anyString(), eq("org_acct"));
     verify(schedulePackSeeder).seedPacksForTenant(anyString(), eq("org_acct"));
+    verify(mockPaymentIntegrationSeeder).seedForTenant(anyString(), eq("org_acct"));
   }
 
   @Test
@@ -320,6 +323,7 @@ class TenantProvisioningServiceTest {
     // handles profile mismatch internally (no-op if no matching pack)
     verify(ratePackSeeder).seedPacksForTenant(anyString(), eq("org_no_profile"));
     verify(schedulePackSeeder).seedPacksForTenant(anyString(), eq("org_no_profile"));
+    verify(mockPaymentIntegrationSeeder).seedForTenant(anyString(), eq("org_no_profile"));
   }
 
   @Test

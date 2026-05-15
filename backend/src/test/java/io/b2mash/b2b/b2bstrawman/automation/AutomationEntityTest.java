@@ -414,6 +414,12 @@ class AutomationEntityTest {
     assertThat(budgetConfig).isInstanceOf(BudgetThresholdTriggerConfig.class);
     assertThat(((BudgetThresholdTriggerConfig) budgetConfig).thresholdPercent()).isEqualTo(90);
 
+    // BudgetThresholdTriggerConfig with empty map (null thresholdPercent — catch-all)
+    var budgetCatchAll =
+        configDeserializer.deserializeTriggerConfig(TriggerType.BUDGET_THRESHOLD_REACHED, Map.of());
+    assertThat(budgetCatchAll).isInstanceOf(BudgetThresholdTriggerConfig.class);
+    assertThat(((BudgetThresholdTriggerConfig) budgetCatchAll).thresholdPercent()).isNull();
+
     // EmptyTriggerConfig
     var emptyConfig =
         configDeserializer.deserializeTriggerConfig(TriggerType.TIME_ENTRY_CREATED, Map.of());

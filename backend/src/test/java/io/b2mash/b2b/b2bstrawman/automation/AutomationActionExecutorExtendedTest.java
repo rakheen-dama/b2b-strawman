@@ -19,6 +19,7 @@ import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplate;
 import io.b2mash.b2b.b2bstrawman.projecttemplate.ProjectTemplateRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.task.Task;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskStatus;
@@ -114,8 +115,9 @@ class AutomationActionExecutorExtendedTest {
               projectRepository.save(project);
               projectId = project.getId();
 
-              // Add actor member to project as LEAD
-              var pm = new ProjectMember(projectId, actorMemberId, "LEAD", actorMemberId);
+              // Add actor member to project as lead (using Roles constant, matching production)
+              var pm =
+                  new ProjectMember(projectId, actorMemberId, Roles.PROJECT_LEAD, actorMemberId);
               projectMemberRepository.save(pm);
 
               // Create a task in OPEN status

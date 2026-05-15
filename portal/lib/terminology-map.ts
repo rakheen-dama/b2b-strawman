@@ -20,6 +20,8 @@ export const TERMINOLOGY: Record<string, Record<string, string>> = {
     Projects: "Engagements",
     project: "engagement",
     projects: "engagements",
+    Matters: "Engagements",
+    matters: "engagements",
     Customer: "Client",
     Customers: "Clients",
     customer: "client",

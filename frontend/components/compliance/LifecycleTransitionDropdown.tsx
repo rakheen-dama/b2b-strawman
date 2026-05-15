@@ -64,6 +64,7 @@ export function LifecycleTransitionDropdown({
 }: LifecycleTransitionDropdownProps) {
   const [pendingTarget, setPendingTarget] = useState<LifecycleStatus | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [checkingPrereqs, setCheckingPrereqs] = useState(false);
 
   // PrerequisiteModal state
@@ -78,6 +79,7 @@ export function LifecycleTransitionDropdown({
 
   async function handleSelect(target: LifecycleStatus) {
     setPendingTarget(target);
+    setDropdownOpen(false);
 
     if (requiresPrerequisiteCheck(currentStatus, target)) {
       // Run prerequisite check before showing dialog
@@ -125,7 +127,7 @@ export function LifecycleTransitionDropdown({
 
   return (
     <>
-      <DropdownMenu>
+      <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" size="sm" disabled={checkingPrereqs}>
             {checkingPrereqs ? (
@@ -150,6 +152,7 @@ export function LifecycleTransitionDropdown({
                 {isDestructive && prevIsNot && <DropdownMenuSeparator />}
                 <DropdownMenuItem
                   variant={isDestructive ? "destructive" : "default"}
+                  onSelect={(e) => e.preventDefault()}
                   onClick={() => handleSelect(target)}
                 >
                   {getTransitionLabel(currentStatus, target)}

@@ -747,6 +747,25 @@ export default async function CustomerDetailPage({
         fieldDefinitions={customerFieldDefs}
         fieldGroups={customerFieldGroups}
         groupMembers={customerGroupMembers}
+        promotedFieldValues={(() => {
+          // Inject promoted field slug values so that visibility conditions
+          // referencing promoted slugs (e.g. acct_entity_type → TRUST) can
+          // be evaluated correctly. See OBS-4006.
+          const pv: Record<string, unknown> = {};
+          if (customer.entityType) {
+            pv["acct_entity_type"] = customer.entityType;
+            pv["client_type"] = customer.entityType;
+          }
+          if (customer.taxNumber) {
+            pv["tax_number"] = customer.taxNumber;
+            pv["vat_number"] = customer.taxNumber;
+          }
+          if (customer.registrationNumber) {
+            pv["acct_company_registration_number"] = customer.registrationNumber;
+            pv["registration_number"] = customer.registrationNumber;
+          }
+          return pv;
+        })()}
       />
 
       {/* Tags */}

@@ -17,6 +17,7 @@ import io.b2mash.b2b.b2bstrawman.orgrole.OrgRoleRepository;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
 import java.time.Instant;
@@ -94,8 +95,9 @@ class AutomationActionExecutorTest {
               projectRepository.save(project);
               projectId = project.getId();
 
-              // Add member to project as LEAD
-              var pm = new ProjectMember(projectId, actorMemberId, "LEAD", actorMemberId);
+              // Add member to project as lead (using Roles constant, matching production)
+              var pm =
+                  new ProjectMember(projectId, actorMemberId, Roles.PROJECT_LEAD, actorMemberId);
               projectMemberRepository.save(pm);
             });
   }
@@ -447,6 +449,110 @@ class AutomationActionExecutorTest {
               assertThat(executions.getFirst().getStatus())
                   .isEqualTo(ExecutionStatus.ACTIONS_FAILED);
               assertThat(executions.getFirst().getErrorMessage()).isNotNull();
+            });
+  }
+
+  @Test
+  void sendNotificationAction_projectOwner_resolvesToLeadWhenLeadExists() {
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              // actorMemberId is already a lead on projectId (set up in @BeforeAll)
+              var rule = createRule("PROJECT_OWNER lead rule", TriggerType.TASK_STATUS_CHANGED);
+              ruleRepository.save(rule);
+
+              var action =
+                  new AutomationAction(
+                      rule.getId(),
+                      1,
+                      ActionType.SEND_NOTIFICATION,
+                      Map.of(
+                          "recipientType",
+                          "PROJECT_OWNER",
+                          "title",
+                          "Budget alert: {{project.name}}",
+                          "message",
+                          "Budget threshold reached"),
+                      null,
+                      null);
+              actionRepository.save(action);
+
+              long notifCountBefore = notificationRepository.count();
+              var context = buildTaskContext();
+              UUID executionId = createExecution(rule.getId());
+              var result = automationActionExecutor.execute(action, executionId, context);
+
+              assertThat(result).isInstanceOf(ActionSuccess.class);
+              var success = (ActionSuccess) result;
+              assertThat(success.resultData().get("notificationsSent")).isEqualTo(1);
+              assertThat(notificationRepository.count()).isEqualTo(notifCountBefore + 1);
+            });
+  }
+
+  @Test
+  void sendNotificationAction_projectOwner_fallsBackToOrgAdminsWhenNoLead() {
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              // Create a new project with no lead
+              var noLeadProject = new Project("No-Lead Project", null, actorMemberId);
+              projectRepository.save(noLeadProject);
+
+              var rule = createRule("PROJECT_OWNER fallback rule", TriggerType.TASK_STATUS_CHANGED);
+              ruleRepository.save(rule);
+
+              var action =
+                  new AutomationAction(
+                      rule.getId(),
+                      1,
+                      ActionType.SEND_NOTIFICATION,
+                      Map.of(
+                          "recipientType",
+                          "PROJECT_OWNER",
+                          "title",
+                          "Budget alert: {{project.name}}",
+                          "message",
+                          "Budget threshold reached — no lead, fallback to org admins"),
+                      null,
+                      null);
+              actionRepository.save(action);
+
+              // Build context pointing to the no-lead project
+              var context = new LinkedHashMap<String, Map<String, Object>>();
+              var task = new LinkedHashMap<String, Object>();
+              task.put("id", UUID.randomUUID().toString());
+              task.put("name", "No Lead Task");
+              task.put("status", "DONE");
+              task.put("projectId", noLeadProject.getId().toString());
+              context.put("task", task);
+
+              var project = new LinkedHashMap<String, Object>();
+              project.put("id", noLeadProject.getId().toString());
+              project.put("name", "No-Lead Project");
+              context.put("project", project);
+
+              var actor = new LinkedHashMap<String, Object>();
+              actor.put("id", actorMemberId.toString());
+              actor.put("name", ACTOR_NAME);
+              context.put("actor", actor);
+
+              var ruleCtx = new LinkedHashMap<String, Object>();
+              ruleCtx.put("id", UUID.randomUUID().toString());
+              ruleCtx.put("name", "Test Rule");
+              context.put("rule", ruleCtx);
+
+              long notifCountBefore = notificationRepository.count();
+              UUID executionId = createExecution(rule.getId());
+              var result = automationActionExecutor.execute(action, executionId, context);
+
+              // Should succeed via fallback to org admins/owners (actorMember is owner)
+              assertThat(result).isInstanceOf(ActionSuccess.class);
+              var success = (ActionSuccess) result;
+              int sent = (int) success.resultData().get("notificationsSent");
+              assertThat(sent).isGreaterThanOrEqualTo(1);
+              assertThat(notificationRepository.count()).isGreaterThan(notifCountBefore);
             });
   }
 

@@ -10,6 +10,7 @@ import { ProposalStatusBadge } from "@/components/proposal-status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { StickyActionBar } from "@/components/ui/sticky-action-bar";
+import { useTerminology } from "@/lib/terminology";
 import type {
   PortalProposalDetail,
   PortalAcceptResponse,
@@ -27,14 +28,14 @@ function PageSkeleton() {
   );
 }
 
-function feeModelLabel(feeModel: string): string {
+function feeModelLabel(feeModel: string, t: (term: string) => string): string {
   switch (feeModel) {
     case "FIXED":
       return "Fixed Fee";
     case "HOURLY":
       return "Hourly Rate";
     case "RETAINER":
-      return "Retainer";
+      return t("Retainer");
     case "MILESTONE":
       return "Milestone-Based";
     default:
@@ -47,6 +48,7 @@ export default function ProposalDetailPage() {
   const proposalId = Array.isArray(params.id)
     ? params.id[0]
     : (params.id ?? "");
+  const { t } = useTerminology();
 
   const [proposal, setProposal] = useState<PortalProposalDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -161,7 +163,7 @@ export default function ProposalDetailPage() {
         className="inline-flex min-h-11 items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
       >
         <ArrowLeft className="size-4" />
-        Back to proposals
+        Back to {t("proposals")}
       </Link>
 
       {/* Header */}
@@ -216,7 +218,7 @@ export default function ProposalDetailPage() {
         <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4">
           <CheckCircle className="size-5 text-green-600" />
           <p className="text-sm font-medium text-green-700">
-            This proposal has been accepted.
+            This {t("proposal")} has been accepted.
           </p>
         </div>
       )}
@@ -224,7 +226,7 @@ export default function ProposalDetailPage() {
         <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
           <XCircle className="size-5 text-slate-500" />
           <p className="text-sm font-medium text-slate-600">
-            This proposal was declined.
+            This {t("proposal")} was declined.
           </p>
         </div>
       )}
@@ -232,7 +234,7 @@ export default function ProposalDetailPage() {
         <div className="flex items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 p-4">
           <Clock className="size-5 text-amber-600" />
           <p className="text-sm font-medium text-amber-700">
-            This proposal has expired.
+            This {t("proposal")} has expired.
           </p>
         </div>
       )}
@@ -247,7 +249,7 @@ export default function ProposalDetailPage() {
             <div>
               <span className="font-medium text-slate-500">Fee Model</span>
               <p className="mt-1 text-slate-900">
-                {feeModelLabel(proposal.feeModel)}
+                {feeModelLabel(proposal.feeModel, t)}
               </p>
             </div>
             {proposal.feeAmount != null && proposal.feeCurrency && (
@@ -266,7 +268,7 @@ export default function ProposalDetailPage() {
       {proposal.contentHtml && (
         <section>
           <h2 className="font-display mb-3 text-lg font-semibold text-slate-900">
-            Proposal Details
+            {t("Proposal")} Details
           </h2>
           <div
             className="prose prose-sm prose-slate max-w-none rounded-lg border border-slate-200 bg-white p-6"
@@ -282,7 +284,7 @@ export default function ProposalDetailPage() {
             Your Response
           </h2>
           <p className="mb-4 text-sm text-slate-600">
-            Please review the proposal above and accept or decline.
+            Please review the {t("proposal")} above and accept or decline.
           </p>
 
           {!showDeclineForm ? (
@@ -292,7 +294,7 @@ export default function ProposalDetailPage() {
                 disabled={isAccepting}
                 className="min-h-11 bg-teal-600 text-white hover:bg-teal-700 md:min-h-9"
               >
-                {isAccepting ? "Accepting..." : "Accept Proposal"}
+                {isAccepting ? "Accepting..." : `Accept ${t("Proposal")}`}
               </Button>
               <Button
                 variant="outline"

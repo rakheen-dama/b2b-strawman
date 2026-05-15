@@ -64,6 +64,7 @@ vi.mock("@/hooks/use-branding", () => ({
 }));
 
 import ProjectsPage from "@/app/(authenticated)/projects/page";
+import { TerminologyProvider } from "@/lib/terminology";
 
 describe("ProjectsPage", () => {
   beforeEach(() => {
@@ -189,6 +190,42 @@ describe("ProjectsPage", () => {
       expect(screen.queryByText("Active Matter")).not.toBeInTheDocument();
       expect(screen.getByText("Closed Matter")).toBeInTheDocument();
       expect(screen.getByText("Completed Matter")).toBeInTheDocument();
+    });
+  });
+});
+
+describe("ProjectsPage terminology (accounting-za)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("renders 'Your Engagements' heading for accounting-za", async () => {
+    mockPortalGet.mockResolvedValue([]);
+
+    render(
+      <TerminologyProvider verticalProfile="accounting-za">
+        <ProjectsPage />
+      </TerminologyProvider>,
+    );
+
+    expect(screen.getByText("Your Engagements")).toBeInTheDocument();
+  });
+
+  it("renders 'No engagements yet' empty state for accounting-za", async () => {
+    mockPortalGet.mockResolvedValue([]);
+
+    render(
+      <TerminologyProvider verticalProfile="accounting-za">
+        <ProjectsPage />
+      </TerminologyProvider>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText("No engagements yet")).toBeInTheDocument();
     });
   });
 });

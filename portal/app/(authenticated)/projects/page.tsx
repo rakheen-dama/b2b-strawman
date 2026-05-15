@@ -8,6 +8,7 @@ import { ProjectCard } from "@/components/project-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PendingAcceptancesList } from "@/components/pending-acceptances-list";
 import { cn } from "@/lib/utils";
+import { useTerminology } from "@/lib/terminology";
 import type { PortalProject } from "@/lib/types";
 
 type ProjectFilter = "all" | "active" | "past";
@@ -36,6 +37,7 @@ function ProjectSkeleton() {
 
 export default function ProjectsPage() {
   const { orgName } = useBranding();
+  const { t } = useTerminology();
   const [projects, setProjects] = useState<PortalProject[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -75,13 +77,13 @@ export default function ProjectsPage() {
       <PendingAcceptancesList />
 
       <h1 className="font-display mb-6 text-2xl font-semibold text-slate-900">
-        Your Projects
+        Your {t("Projects")}
       </h1>
 
       {!isLoading && !error && projects.length > 0 && (
         <div
           role="tablist"
-          aria-label="Filter projects"
+          aria-label={`Filter ${t("projects")}`}
           className="mb-4 inline-flex rounded-md border border-slate-200 bg-slate-50 p-1"
         >
           {FILTER_OPTIONS.map((option) => {
@@ -131,9 +133,9 @@ export default function ProjectsPage() {
       {!isLoading && !error && projects.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <FolderOpen className="mb-4 size-12 text-slate-300" />
-          <p className="text-lg font-medium text-slate-600">No projects yet</p>
+          <p className="text-lg font-medium text-slate-600">No {t("projects")} yet</p>
           <p className="mt-1 text-sm text-slate-500">
-            Your {orgName} team will share projects with you here.
+            Your {orgName} team will share {t("projects")} with you here.
           </p>
         </div>
       )}
@@ -144,9 +146,9 @@ export default function ProjectsPage() {
         visibleProjects.length === 0 && (
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <FolderOpen className="mb-4 size-12 text-slate-300" />
-            <p className="text-lg font-medium text-slate-600">No projects</p>
+            <p className="text-lg font-medium text-slate-600">No {t("projects")}</p>
             <p className="mt-1 text-sm text-slate-500">
-              Try a different filter to see more projects.
+              Try a different filter to see more {t("projects")}.
             </p>
           </div>
         )}

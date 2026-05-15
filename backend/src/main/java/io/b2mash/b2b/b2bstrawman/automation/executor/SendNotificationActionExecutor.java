@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.automation.config.SendNotificationActionConfig;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
+import io.b2mash.b2b.b2bstrawman.security.Roles;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -100,8 +101,15 @@ public class SendNotificationActionExecutor implements ActionExecutor {
         if (projectId == null) {
           yield List.of();
         }
-        var leads = projectMemberRepository.findByProjectIdAndProjectRole(projectId, "LEAD");
-        yield leads.isEmpty() ? List.of() : List.of(leads.getFirst().getMemberId());
+        var leads =
+            projectMemberRepository.findByProjectIdAndProjectRole(projectId, Roles.PROJECT_LEAD);
+        if (!leads.isEmpty()) {
+          yield List.of(leads.getFirst().getMemberId());
+        }
+        // Fallback: org admins/owners (mirrors NotificationService.handleBudgetThreshold)
+        yield memberRepository.findByRoleSlugsIn(List.of("admin", "owner")).stream()
+            .map(m -> m.getId())
+            .toList();
       }
       case "PROJECT_MEMBERS" -> {
         UUID projectId = resolveProjectId(context);

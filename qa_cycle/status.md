@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 16 — COMPLETE (4 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED — 0 new gaps, OBS-4006 VERIFIED)
-- **Next checkpoint**: Day 17
+- **Day**: 28 — COMPLETE (Days 19-28 all executed)
+- **Next checkpoint**: Day 30 (automation trigger check: year-end pack budget ~70%)
 - **Day 0 deferred items resolved**: Field promotion inline (0.36) VERIFIED via Day 1 create dialog, no duplicates (0.37) VERIFIED. Engagement field promotion (0.38) VERIFIED via Day 3 New Engagement dialog. Cancel dialog (0.39) deferred (non-blocking). Modules page (0.44-0.45), billing screenshot (0.52) remain deferred.
 - **All Day 0 gaps resolved**: OBS-4002 VERIFIED, OBS-4003 VERIFIED, OBS-4004 VERIFIED
 - **Sipho Dlamini client ID**: 31986024-382f-48ac-abb9-5dfa64fde531
@@ -39,13 +39,13 @@ For each day-N walk in this cycle:
 - **Sipho Tax Return engagement ID**: 583ee45e-40b5-4846-9082-92f69f0f5f17 (Tax Return — Individual ITR12, Ref: TR-2026-0001, Type: TAX_RETURN, 7 tasks, Carol assigned to 4, 2.5h logged total (1.0h Carol Day 4 + 1.5h Carol Day 7), 2 IT3a docs uploaded by Carol, 1 document comment by Bob)
 - **Kgosi Holdings client ID**: 90d93d67-b462-4fe9-9732-656af5ab889e
 - **Kgosi lifecycle**: ACTIVE (transitioned through PROSPECT → ONBOARDING → ACTIVE via FICA/KYC checklist completion, 8/8 required items, 3 skipped)
-- **Kgosi Monthly Bookkeeping engagement ID**: a32c67d5-8e09-47b9-82ec-f0e82fa94ec4 (Monthly Bookkeeping, Ref: BK-2026-03-0001, Type: BOOKKEEPING, 6 tasks, Carol added as member Day 9, 5.0h logged (3.0h Bob Day 8 "Bank reconciliation" + 2.0h Carol Day 9 "Debtors recon"), R 3,450 unbilled, 2 bank statement docs uploaded by Bob Day 10)
-- **Kgosi Year-End Pack engagement ID**: 388d5104-7789-4ad6-bb6c-6d045e9663f3 (Year-End Pack / Annual Financial Statements, 7 tasks, 3.0h logged (2.0h Thandi Day 7 "Request & receive trial balance" + 1.0h Bob Day 13 "FS structure review" on Draft AFS task), 2 comments: Thandi Day 12 "@Bob Need FS draft by day 30" + Bob Day 13 acknowledgment, R 3,850 unbilled, **Budget configured Day 14: 40h / R60,000 / 80% alert threshold / 8% hours used / 6% amount used**)
+- **Kgosi Monthly Bookkeeping engagement ID**: a32c67d5-8e09-47b9-82ec-f0e82fa94ec4 (Monthly Bookkeeping, Ref: BK-2026-03-0001, Type: BOOKKEEPING, 6 tasks (1 Done: Bank recon Day 24), Carol added as member Day 9, 7.5h logged (3.0h Bob Day 8 + 2.0h Carol Day 9 + 1.5h Bob Day 22 "Creditors April" + 1.0h Bob Day 22 "VAT March"), 2 bank statement docs uploaded by Bob Day 10)
+- **Kgosi Year-End Pack engagement ID**: 388d5104-7789-4ad6-bb6c-6d045e9663f3 (Year-End Pack / Annual Financial Statements, 7 tasks, 5.0h logged (2.0h Thandi Day 7 + 1.0h Bob Day 13 + 2.0h Bob Day 22 "AFS draft"), 2 comments: Thandi Day 12 + Bob Day 13, 2 docs uploaded Day 28 (trial balance WP + AFS notes WP), **Budget configured Day 14: 40h / R60,000 / 80% alert threshold / 13% hours used**)
 - **Moroka Family Trust client ID**: 64f79e3d-46b0-4d4b-b9cc-53d1c3968231
 - **Moroka lifecycle**: ACTIVE (created as PROSPECT, transitioned through ONBOARDING → ACTIVE via FICA/KYC checklist completion, 8/8 required items with docs, 3 skipped)
 - **Moroka trust fields**: OBS-4006 VERIFIED. Trust fields now render: Trust Registration Number = "IT 2345/2020", Trust Deed Date = "2020-03-15", Trust Type = "Inter Vivos (Living Trust)", Names of Trustees = "Sipho Moroka, Lerato Moroka, Thabo Moroka". Required Fields: 5/5.
-- **Moroka Trust AFS engagement ID**: 0a39ccb1-070d-4078-9240-4a4fab254017 (Annual Trust Financial Statements, Ref: TAFS-2026-0001, 7 tasks, 2 members: Thandi (lead, 6 tasks) + Bob (1 task: IT3(t) certificate generation), 0h logged)
-- **Total hours this month**: 10.5h (Sipho 2.5h + Bookkeeping 5.0h + Year-End Pack 3.0h)
+- **Moroka Trust AFS engagement ID**: 0a39ccb1-070d-4078-9240-4a4fab254017 (Annual Trust Financial Statements, Ref: TAFS-2026-0001, 7 tasks, 2 members: Thandi (lead, 6 tasks) + Bob (1 task: IT3(t) certificate generation), 6.5h logged (2.5h Thandi Day 17 + 4.0h Bob Day 19), 2 docs uploaded Day 21 (trust deed WP + distribution schedule WP), 1 client comment by Bob Day 26)
+- **Total hours this month**: 21.5h (Sipho 2.5h + Bookkeeping 7.5h + Year-End Pack 5.0h + Trust AFS 6.5h)
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002, KC :8180, Mailpit :8025, Postgres :5432, LocalStack :4566)
@@ -95,3 +95,10 @@ For each day-N walk in this cycle:
 | 15 | Dev | Fix OBS-4006: added `promotedFieldValues` prop to `CustomFieldSection`, merged into effectiveValues for visibility evaluation only. Customer detail page builds promoted values map from entityType/taxNumber/registrationNumber. 5 test cases added. | PR #1308 merged. Frontend verify: 360 test files, 2247 tests passed. OBS-4006 -> FIXED. |
 | 16 | QA | OBS-4006 verification: Moroka Trust detail page — all 6 trust fields render (3 required, 3 optional). Filled Trust Reg Number, Deed Date, Trust Type, Trustees. Saved + reloaded = persisted. Kgosi Holdings (PTY_LTD) — trust fields correctly hidden. | OBS-4006 -> VERIFIED. 4 verification steps all PASS. |
 | 16 | QA | Day 16 walk: Created "Moroka Family Trust — FY2025/26 Annual Trust AFS" engagement from "Annual Trust Financial Statements" template. 7 tasks instantiated (trust deed review, beneficiary distribution schedule, IT3(t) cert gen, draft AFS, ITR12T prep, trustee sign-off, SARS eFiling). Added Bob as member. Assigned IT3(t) cert gen to Bob, 6 remaining to Thandi. | 4 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. Engagement ID: `0a39ccb1-070d-4078-9240-4a4fab254017`. |
+| 17 | QA | Day 17 walk: Thandi logs 2.5h on Trust deed review task ("Trust deed review + prior year comparison", R 1,500/hr = R 3,750). Time tab: 2h 30m total, 1 contributor, 1 entry. | 1 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. Trust AFS total: 2.5h. Monthly hours: 13.0h. |
+| 19 | QA | Day 19 walk (resumed via Playwright MCP): Verified Bob's 4.0h time entry on Trust AFS IT3(t) task. Time tab: 6h 30m total, 2 contributors (Bob 4.0h + Thandi 2.5h). Dashboard: 17.0h monthly. | 1 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. Trust AFS total: 6.5h. Monthly hours: 17.0h. |
+| 21 | QA | Day 21 walk: Bob uploads 2 working papers to Trust AFS engagement (trust-deed-review-wp.pdf + distribution-schedule-wp.pdf). Documents tab: 2 files, status Uploaded. Activity confirms upload events. | 1 PASS / 0 FAIL. Trust AFS docs: 2. |
+| 22 | QA | Day 22 walk: Bob logs 3 time entries: 1.5h on Bookkeeping Creditors recon, 1.0h on Bookkeeping VAT recon, 2.0h on Year-End Pack AFS draft. Dashboard: 21.5h monthly (17.0h + 4.5h). | 1 PASS / 0 FAIL. Bookkeeping: 7.5h. Year-End Pack: 5.0h. |
+| 24 | QA | Day 24 walk: Bob marks Bookkeeping "Bank reconciliation" task as DONE (Open -> In Progress -> Done). Completed by Bob Ndlovu on May 15, 2026. | 1 PASS / 0 FAIL. Bookkeeping tasks: 1/6 Done. |
+| 26 | QA | Day 26 walk: Bob posts @Carol comment on Trust AFS Client Comments. Carol login: cannot access engagement (not a member). Carol notifications: no @mention notification. Scenario gap — Carol needs membership to respond. | 1 PASS / 1 PARTIAL. Comment posted, Carol response blocked by access control. |
+| 28 | QA | Day 28 walk: Bob uploads 2 working papers to Year-End Pack (trial-balance-wp.pdf + afs-notes-wp.pdf). Documents tab: 2 files, status Uploaded. | 1 PASS / 0 FAIL. Year-End Pack docs: 2. |

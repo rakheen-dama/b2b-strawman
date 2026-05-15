@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 32 — OBS-4009 FIXED, awaiting verification
-- **Next checkpoint**: Verify OBS-4009 (lifecycle transition), then continue Day 32 onboarding + VAT Return engagement
+- **Day**: 32 — OBS-4009 VERIFIED
+- **Next checkpoint**: Continue Day 32 onboarding (Mathole Engineering FICA/KYC) + VAT Return engagement creation
 - **Day 0 deferred items resolved**: Field promotion inline (0.36) VERIFIED via Day 1 create dialog, no duplicates (0.37) VERIFIED. Engagement field promotion (0.38) VERIFIED via Day 3 New Engagement dialog. Cancel dialog (0.39) deferred (non-blocking). Modules page (0.44-0.45), billing screenshot (0.52) remain deferred.
 - **All Day 0 gaps resolved**: OBS-4002 VERIFIED, OBS-4003 VERIFIED, OBS-4004 VERIFIED
 - **Sipho Dlamini client ID**: 31986024-382f-48ac-abb9-5dfa64fde531
@@ -64,7 +64,7 @@ For each day-N walk in this cycle:
 | OBS-4006 | Trust-specific custom fields not rendering on client detail page | MEDIUM | Dev | VERIFIED | 15 | Root cause: `acct_entity_type` promoted from customFields JSONB to first-class `Customer.entityType` column — visibility condition lookup returned undefined. Fix: `CustomFieldSection` now accepts `promotedFieldValues` prop, merges into effective values for visibility evaluation only. PR #1308 merged. Frontend verify: 360 test files, 2247 tests passed. Retest Day 16: all 6 trust fields render on Moroka Trust, values saved + persist, hidden on PTY_LTD client (Kgosi). |
 | OBS-4007 | Budget Alert automation SEND_NOTIFICATION fails: no PROJECT_OWNER recipients | LOW | Dev | OPEN | 30 | Automation rule targets PROJECT_OWNER but engagement has 0 assigned members with that role. BudgetCheckService direct notification to org owner succeeds (Thandi gets alert). Non-blocking — user still receives notification via fallback path. |
 | OBS-4008 | Budget Alert Escalation rule fails: Jackson null thresholdPercent deserialization | LOW | Dev | OPEN | 30 | `BudgetThresholdTriggerConfig["thresholdPercent"]` is null. Jackson cannot map null to primitive `int`. Fix: make field `Integer` or ensure seeder populates threshold. Non-blocking. |
-| OBS-4009 | "Start Onboarding" lifecycle transition does not execute via Change Status dropdown | HIGH | Dev | FIXED | 32 | Radix DropdownMenu + AlertDialog dismissal race. Fix: `onSelect={(e) => e.preventDefault()}` + controlled dropdown state. PR #1309 merged. Frontend verify: 360 test files, 2247 tests passed. |
+| OBS-4009 | "Start Onboarding" lifecycle transition does not execute via Change Status dropdown | HIGH | Dev | VERIFIED | 32 | Radix DropdownMenu + AlertDialog dismissal race. Fix: `onSelect={(e) => e.preventDefault()}` + controlled dropdown state. PR #1309 merged. Frontend verify: 360 test files, 2247 tests passed. Retest: created QA Test Prospect client, Change Status dropdown opened, Start Onboarding menu item appeared, confirmation dialog rendered, transition executed — status changed from PROSPECT to ONBOARDING with checklist auto-created. |
 
 ## Log
 
@@ -110,3 +110,4 @@ For each day-N walk in this cycle:
 | 32 | QA | Day 32 walk: Created Mathole Engineering (Pty) Ltd client (ID: 29b90b29). Client creation PASS. Lifecycle transition "Start Onboarding" fails — Server Action returns 200 but no backend API call issued. Client stuck at PROSPECT. | 3 PASS / 0 PARTIAL / 1 FAIL / 2 BLOCKED. 1 new HIGH gap: OBS-4009. |
 | 32 | Product | Triage OBS-4009: SPEC_READY. Root cause: Radix DropdownMenu + AlertDialog dismissal race in LifecycleTransitionDropdown.tsx. Pattern already fixed in 3 other components with `onSelect={(e) => e.preventDefault()}`. Frontend-only fix. | OBS-4009 -> SPEC_READY |
 | 32 | Dev | Fix OBS-4009: added controlled dropdown state + `onSelect` preventDefault + explicit close before dialog open. Single file change. | PR #1309 merged. Frontend verify: 360 test files, 2247 tests. OBS-4009 -> FIXED. |
+| 32 | QA | OBS-4009 verification: Created "QA Test Prospect" client (PROSPECT status). Clicked Change Status dropdown — menu opened successfully (no Radix race). Selected "Start Onboarding" — confirmation dialog rendered. Clicked Confirm — client transitioned from PROSPECT to ONBOARDING. Onboarding checklist auto-created (0/8). Onboarding tab appeared. | OBS-4009 -> VERIFIED. Full lifecycle transition flow working end-to-end. |

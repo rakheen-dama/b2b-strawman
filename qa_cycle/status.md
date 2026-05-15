@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 32 — OBS-4009 VERIFIED
-- **Next checkpoint**: Continue Day 32 onboarding (Mathole Engineering FICA/KYC) + VAT Return engagement creation
+- **Day**: 36 — First invoice created (Kgosi Bookkeeping)
+- **Next checkpoint**: Day 38 — Approve invoice + generate PDF
 - **Day 0 deferred items resolved**: Field promotion inline (0.36) VERIFIED via Day 1 create dialog, no duplicates (0.37) VERIFIED. Engagement field promotion (0.38) VERIFIED via Day 3 New Engagement dialog. Cancel dialog (0.39) deferred (non-blocking). Modules page (0.44-0.45), billing screenshot (0.52) remain deferred.
 - **All Day 0 gaps resolved**: OBS-4002 VERIFIED, OBS-4003 VERIFIED, OBS-4004 VERIFIED
 - **Sipho Dlamini client ID**: 31986024-382f-48ac-abb9-5dfa64fde531
@@ -45,8 +45,10 @@ For each day-N walk in this cycle:
 - **Moroka lifecycle**: ACTIVE (created as PROSPECT, transitioned through ONBOARDING → ACTIVE via FICA/KYC checklist completion, 8/8 required items with docs, 3 skipped)
 - **Moroka trust fields**: OBS-4006 VERIFIED. Trust fields now render: Trust Registration Number = "IT 2345/2020", Trust Deed Date = "2020-03-15", Trust Type = "Inter Vivos (Living Trust)", Names of Trustees = "Sipho Moroka, Lerato Moroka, Thabo Moroka". Required Fields: 5/5.
 - **Moroka Trust AFS engagement ID**: 0a39ccb1-070d-4078-9240-4a4fab254017 (Annual Trust Financial Statements, Ref: TAFS-2026-0001, 7 tasks, 2 members: Thandi (lead, 6 tasks) + Bob (1 task: IT3(t) certificate generation), 6.5h logged (2.5h Thandi Day 17 + 4.0h Bob Day 19), 2 docs uploaded Day 21 (trust deed WP + distribution schedule WP), 1 client comment by Bob Day 26)
-- **Mathole Engineering client ID**: 29b90b29-9a51-4e73-9157-b2d3622ed29b (created Day 32, stuck at PROSPECT — OBS-4009)
+- **Mathole Engineering client ID**: 29b90b29-9a51-4e73-9157-b2d3622ed29b (ACTIVE, all promoted fields, onboarding complete)
+- **Mathole VAT Return engagement ID**: 302efdce-eb9c-4e5d-8487-4b8558b47faa (VAT Return (bi-monthly), Ref: VR-2026-05-0001, Type: VAT_RETURN, 5 tasks, 3 assigned to Thandi, 0h logged)
 - **Total hours this month**: 49.5h (Sipho 2.5h + Bookkeeping 7.5h + Year-End Pack 33.0h + Trust AFS 6.5h)
+- **First invoice**: Kgosi Bookkeeping DRAFT, ID: b6ba784c-d189-4cb1-8651-d7e84b34f610, 4 line items, Subtotal R 5,575.00, VAT R 836.25, Total R 6,411.25
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002, KC :8180, Mailpit :8025, Postgres :5432, LocalStack :4566)
@@ -111,3 +113,6 @@ For each day-N walk in this cycle:
 | 32 | Product | Triage OBS-4009: SPEC_READY. Root cause: Radix DropdownMenu + AlertDialog dismissal race in LifecycleTransitionDropdown.tsx. Pattern already fixed in 3 other components with `onSelect={(e) => e.preventDefault()}`. Frontend-only fix. | OBS-4009 -> SPEC_READY |
 | 32 | Dev | Fix OBS-4009: added controlled dropdown state + `onSelect` preventDefault + explicit close before dialog open. Single file change. | PR #1309 merged. Frontend verify: 360 test files, 2247 tests. OBS-4009 -> FIXED. |
 | 32 | QA | OBS-4009 verification: Created "QA Test Prospect" client (PROSPECT status). Clicked Change Status dropdown — menu opened successfully (no Radix race). Selected "Start Onboarding" — confirmation dialog rendered. Clicked Confirm — client transitioned from PROSPECT to ONBOARDING. Onboarding checklist auto-created (0/8). Onboarding tab appeared. | OBS-4009 -> VERIFIED. Full lifecycle transition flow working end-to-end. |
+| 32 | QA | Day 32 completion verification: Mathole Engineering confirmed ACTIVE with all promoted fields. VAT Return engagement (ID: 302efdce) confirmed with 5 template-instantiated tasks (Collect invoices, VAT recon, Prepare VAT201, SARS eFiling, Payment instruction). Ref: VR-2026-05-0001. Dashboard shows 5 active engagements. | 5 PASS / 0 FAIL. Day 32 complete. |
+| 34 | QA | Day 34 walk: Profitability wow moment. Finance > Profitability page loaded. Team Utilization: Bob 40.5h (100%), Carol 4.5h (100%), Thandi 4.5h (100%). Engagement Profitability: 4 engagements with ZAR revenue/cost/margin (Kgosi YEP R29,350 58.6%, Moroka AFS R7,150 57.7%, Kgosi BK R5,575 59.0%, Sipho TR R1,125 60.0%). Customer Profitability: 3 customers with expandable drill-down. Date range filters, sortable columns, Include Projections toggle. Screenshot: day-34-profitability-dashboard.png. | 8 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. |
+| 36 | QA | Day 36 walk: First invoice for Kgosi Monthly Bookkeeping. New Invoice dialog > Fetch Unbilled Time > 11 items across 2 engagements. Deselected Year-End Pack (7 items). Selected Bookkeeping only (4 items, R 5,575). Pre-gen checks: 3 pass, 1 warning. Created draft. Invoice ID: b6ba784c. 4 line items with date/member/description/hours/rate/amount. VAT 15% correct (R 836.25). Total: R 6,411.25. Promoted invoice slugs (PO Number, Tax Type, Billing Period Start/End) render inline. | 6 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. |

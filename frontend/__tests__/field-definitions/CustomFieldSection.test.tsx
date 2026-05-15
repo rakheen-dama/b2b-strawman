@@ -443,6 +443,134 @@ describe("CustomFieldSection", () => {
     });
   });
 
+  describe("promoted field visibility (OBS-4006)", () => {
+    // Simulates the trust-detail scenario: the controlling field
+    // "acct_entity_type" was promoted from customFields to a first-class
+    // Customer.entityType column. The dependent fields use a visibility
+    // condition { dependsOnSlug: "acct_entity_type", operator: "eq", value: "TRUST" }.
+    // The fix passes promoted values via promotedFieldValues so the condition
+    // can be evaluated even though the slug is absent from customFields.
+
+    const trustField = makeFieldDef({
+      id: "fd-trust-reg",
+      name: "Trust Registration Number",
+      slug: "trust_registration_number",
+      fieldType: "TEXT",
+      visibilityCondition: {
+        dependsOnSlug: "acct_entity_type",
+        operator: "eq",
+        value: "TRUST",
+      },
+    });
+
+    const promotedGroup: FieldGroupResponse = {
+      id: "grp-trust",
+      entityType: "PROJECT",
+      name: "Trust Details",
+      slug: "trust_details",
+      description: null,
+      packId: null,
+      sortOrder: 0,
+      active: true,
+      autoApply: false,
+      dependsOn: null,
+      createdAt: "2025-01-01T00:00:00Z",
+      updatedAt: "2025-01-01T00:00:00Z",
+    };
+
+    const promotedMembers: FieldGroupMemberResponse[] = [
+      {
+        id: "gm-trust-0",
+        fieldGroupId: "grp-trust",
+        fieldDefinitionId: "fd-trust-reg",
+        sortOrder: 0,
+      },
+    ];
+
+    const promotedProps = {
+      ...defaultProps,
+      fieldDefinitions: [trustField],
+      fieldGroups: [promotedGroup],
+      groupMembers: { "grp-trust": promotedMembers },
+      appliedFieldGroups: ["grp-trust"],
+      customFields: {}, // acct_entity_type NOT in customFields (promoted away)
+    };
+
+    it("shows dependent field when promoted value satisfies visibility condition", () => {
+      render(
+        <CustomFieldSection
+          {...promotedProps}
+          promotedFieldValues={{ acct_entity_type: "TRUST" }}
+        />
+      );
+
+      expect(screen.getByLabelText(/Trust Registration Number/)).toBeInTheDocument();
+    });
+
+    it("hides dependent field when promoted value does not match", () => {
+      render(
+        <CustomFieldSection
+          {...promotedProps}
+          promotedFieldValues={{ acct_entity_type: "PTY_LTD" }}
+        />
+      );
+
+      expect(screen.queryByLabelText(/Trust Registration Number/)).not.toBeInTheDocument();
+    });
+
+    it("hides dependent field when no promoted values provided", () => {
+      render(<CustomFieldSection {...promotedProps} />);
+
+      expect(screen.queryByLabelText(/Trust Registration Number/)).not.toBeInTheDocument();
+    });
+
+    it("customFields override promoted values for visibility evaluation", () => {
+      // If somehow both are present, customFields takes precedence
+      render(
+        <CustomFieldSection
+          {...promotedProps}
+          customFields={{ acct_entity_type: "PTY_LTD" }}
+          promotedFieldValues={{ acct_entity_type: "TRUST" }}
+        />
+      );
+
+      // customFields value "PTY_LTD" overrides promoted "TRUST" → field hidden
+      expect(screen.queryByLabelText(/Trust Registration Number/)).not.toBeInTheDocument();
+    });
+
+    it("does not include promoted values in save payload", async () => {
+      const user = userEvent.setup();
+      mockUpdateEntityCustomFields.mockResolvedValue({ success: true });
+
+      render(
+        <CustomFieldSection
+          {...promotedProps}
+          editable={true}
+          promotedFieldValues={{ acct_entity_type: "TRUST" }}
+        />
+      );
+
+      // The trust field is visible thanks to promotedFieldValues
+      const input = screen.getByLabelText(/Trust Registration Number/);
+      await user.type(input, "IT12345");
+
+      await user.click(screen.getByRole("button", { name: /Save Custom Fields/i }));
+
+      await waitFor(() => {
+        expect(mockUpdateEntityCustomFields).toHaveBeenCalledWith(
+          "acme",
+          "PROJECT",
+          "proj-1",
+          expect.objectContaining({ trust_registration_number: "IT12345" })
+        );
+      });
+
+      // The promoted slug must NOT appear in the saved payload
+      const savedValues = mockUpdateEntityCustomFields.mock.calls[0][3];
+      expect(savedValues).not.toHaveProperty("acct_entity_type");
+    });
+  });
+
   describe("DATE min/max validation", () => {
     const dateField = makeFieldDef({
       id: "fd-date-val",

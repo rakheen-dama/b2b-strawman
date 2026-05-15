@@ -26,6 +26,10 @@ interface CustomFieldSectionProps {
   fieldDefinitions: FieldDefinitionResponse[];
   fieldGroups: FieldGroupResponse[];
   groupMembers: Record<string, FieldGroupMemberResponse[]>;
+  /** Promoted field values injected for visibility condition evaluation only.
+   *  These are NOT saved back — they bridge the gap where a slug was promoted
+   *  from customFields JSONB to a first-class entity column. */
+  promotedFieldValues?: Record<string, unknown>;
 }
 
 interface FieldWithGroup {
@@ -438,12 +442,19 @@ export function CustomFieldSection({
   fieldDefinitions,
   fieldGroups,
   groupMembers,
+  promotedFieldValues,
 }: CustomFieldSectionProps) {
   const [values, setValues] = useState<Record<string, unknown>>(initialCustomFields ?? {});
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Merge promoted field values (base) with custom field values (override)
+  // for visibility condition evaluation. Promoted values serve as a fallback
+  // for slugs that have been promoted from customFields JSONB to first-class
+  // entity columns (e.g. acct_entity_type → Customer.entityType).
+  const effectiveValues = { ...promotedFieldValues, ...values };
 
   // Reset values when initial data changes (e.g., after revalidation)
   useEffect(() => {
@@ -476,7 +487,7 @@ export function CustomFieldSection({
     for (const [, fields] of fieldsByGroup) {
       for (const { definition } of fields) {
         // Skip validation for hidden fields
-        if (!isFieldVisible(definition, values)) continue;
+        if (!isFieldVisible(definition, effectiveValues)) continue;
         const error = validateField(definition, values[definition.slug]);
         if (error) {
           newErrors[definition.slug] = error;
@@ -538,7 +549,7 @@ export function CustomFieldSection({
             <CardContent>
               <div className="grid gap-4 sm:grid-cols-2">
                 {fields
-                  .filter(({ definition }) => isFieldVisible(definition, values))
+                  .filter(({ definition }) => isFieldVisible(definition, effectiveValues))
                   .map(({ definition }) => (
                     <div key={definition.slug} className="space-y-1.5">
                       <Label htmlFor={`cf-${definition.slug}`} className="text-sm">

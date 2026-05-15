@@ -1,135 +1,103 @@
-# Day 3 — Create RAF matter, send FICA info request
+# Day 3 Checkpoint Results — Accounting ZA 90-Day Lifecycle (Keycloak)
 
-**Stack**: dev/Keycloak — frontend :3000, backend :8080, gateway :8443, KC :8180, Mailpit :8025
-**Date**: 2026-05-13
-**Cycle**: bugfix_cycle_2026-05-13 (cycle 1)
-**Actor**: Bob Ndlovu (`bob@mathebula-test.local`, Admin) — confirmed via sidebar user pill
-**Scenario**: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md` — Day 3
+**Date**: 2026-05-14
+**Branch**: `bugfix_cycle_2026-05-14`
+**QA Driver**: Playwright MCP against Keycloak dev stack
+**Stack**: backend :8080, gateway :8443, frontend :3000, portal :3002, keycloak :8180, mailpit :8025
+**Actor**: Bob Ndlovu (Admin) -- `bob@thornton-test.local`
+**Status**: **DAY 3 COMPLETE** -- 6 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED
 
----
+## Summary
 
-## Step-by-step checkpoints
+All Day 3 checkpoints passed. Engagement "Sipho Dlamini -- 2025/26 Tax Return" was created from the "Tax Return -- Individual (ITR12)" template with 7 pre-populated tasks. The engagement was linked to client Sipho Dlamini with reference TR-2026-0001 and type TAX_RETURN. Carol Mokoena was added as a member and assigned 4 initial data-collection tasks (Collect IRP5/IT3(a) certificates, Medical aid & retirement fund certificates, Rental income schedule, Prepare ITR12).
 
-### 3.1 — Sipho's client detail -> click + New Matter
-- **PASS** — On `/customers/334bf98f-9f02-4d2f-9ee8-80bbed65ea5b` Matters tab, clicked "New Matter" link. Navigated to `/projects?new=1&customerId=334bf98f-9f02-4d2f-9ee8-80bbed65ea5b`. The `?new=1` query auto-opens the New-from-Template dialog.
-
-### 3.2 — Dialog uses legal-specific matter-type template selector
-- **PASS** — Dialog title "New from Template — Select Template". Templates listed: **Collections (Debt Recovery) 9 tasks, Commercial (Corporate & Contract) 9 tasks, Deceased Estate Administration 9 tasks, Litigation (Personal Injury / General) 9 tasks, Litigation (Road Accident Fund -- RAF) 9 tasks, Property Transfer (Conveyancing) 12 tasks**. Six legal-vertical templates confirmed.
-- Selected: **Litigation (Road Accident Fund -- RAF)** — 9 tasks.
-
-### 3.3 — Fill matter form
-- **PASS** — Configure step showed:
-  - Matter name: Changed from template default "Sipho Dlamini - RAF Claim" to **Dlamini v Road Accident Fund**
-  - Description: Trimmed from template's 273-char default to fit 255-char backend limit (OBS-301 from prior cycle still present — template prefills 273 chars but backend `@Size(max=255)` rejects it)
-  - Client: **Sipho Dlamini** (auto-pre-selected from `?customerId` deep-link)
-  - Matter lead: **Bob Ndlovu** (selected from dropdown)
-  - Reference Number: **RAF-2026-001**
-  - Note: No "Court" or "Case Number" inputs at intake — these are promoted fields rendered inline on the matter detail Overview (per checkpoint 3.6).
-
-### 3.4 — Submit -> matter created, redirected to matter detail
-- **PASS** — POST succeeded on first attempt (description was manually trimmed). Redirected to `/projects/c90832a4-c993-4eaa-9ea7-404a259b0e29`. Matter shows:
-  - Title: "Dlamini v Road Accident Fund"
-  - Status: Active
-  - Client: Sipho Dlamini (linked)
-  - Ref: RAF-2026-001
-  - Created May 13, 2026 · 0 documents · 1 member · 9 tasks
-
-### 3.5 — Matter sidebar tabs
-- **PASS** — Actual tabs (left -> right): **Overview, Documents, Members, Clients, Tasks, Time, Fee Estimate, Financials, Staffing, Rates, Generated Docs, Requests, Client Comments, Court Dates, Adverse Parties, Trust, Disbursements, Statements, Activity, Audit Trail**.
-- Scenario expected set is present. Note: "Expenses" tab from scenario not present as a separate tab (covered by "Disbursements"). "Audit Trail" tab present in addition to "Activity" tab (scenario says no per-matter "Audit" tab, but product has both). Minor scenario-drift, not a code bug — OBS-302 from prior cycle applies.
-
-### 3.6 — Promoted fields render inline, NOT duplicated
-- **PASS** — Two field-group cards: **SA Legal — Matter Details** (Case Number, Court, Opposing Party, Opposing Attorney, Advocate, Date of Instruction, Estimated Value) and **Project Info** (Category). All fields render inline with their group header. No separate generic "Custom Fields" section duplicating them.
-
-### 3.7 — Navigate to Requests tab -> + New Info Request
-- **PASS** — Requests tab opened, empty state "No information requests yet" with "New Request" button. Clicked -> "Create Information Request" dialog opened.
-
-### 3.8 — Select template: FICA Onboarding Pack
-- **PASS** — Template dropdown listed 8 templates: Ad-hoc, Tax Return Supporting Docs (5), Monthly Bookkeeping (4), Liquidation and Distribution Account Pack (5), **FICA Onboarding Pack (3 items)**, Conveyancing Intake (SA) (7), Company Registration (4), Annual Audit Document Pack (5). Selected FICA Onboarding Pack.
-
-### 3.9 — Addressee = Sipho Dlamini
-- **PASS** — Portal Contact dropdown auto-populated with **Sipho Dlamini (sipho.portal@example.com)** from client record. Single option (auto-provisioned portal contact from Day 2).
-
-### 3.10 — Request items pre-filled from template
-- **PASS (inferred)** — Dialog footer shows "Template items: 3" matching FICA Onboarding Pack's 3 items (ID copy, Proof of residence, Bank statement). Individual items are not surfaced inline in the create dialog — they render after creation.
-
-### 3.11 — Due date = Day 10 (7 days from today, 2026-05-20)
-- **PASS** — Due Date field set to `2026-05-20`. Reminder Interval = 5 days (default).
-
-### 3.12 — Click Send -> info request status = Sent
-- **PASS** — Send Now clicked -> dialog closed, request **REQ-0001** created in Requests tab table:
-  - Request: REQ-0001 — Dlamini v Road Accident Fund
-  - Contact: Sipho Dlamini
-  - Status: **Sent** (teal badge)
-  - Progress: 0/3 accepted
-  - Sent: May 13, 2026
-  - Request ID: `ac2abebd-b08c-4594-b6ff-88717bb4dbc2`
-
-### 3.13 — Portal contact created/linked
-- **PASS** — Portal contact `sipho.portal@example.com` was auto-provisioned at customer creation on Day 2 (by `PortalContactAutoProvisioner`). The Requests tab row Contact column shows "Sipho Dlamini" confirming the linkage.
-
-### 3.14 — Mailpit magic-link email
-- **PASS** — Mailpit message `CJsf6oPciWqSqzH4EsN6xb`:
-  - From: `noreply@docteams.app`
-  - To: `sipho.portal@example.com`
-  - Subject: **"Information request REQ-0001 from Mathebula & Partners"**
-  - Body: "Hi Sipho Dlamini" / "3 item(s) that require your attention" / "View Request" button
-  - Magic link URL: `http://localhost:3002/auth/exchange?token=26sbOhJ-bVL1kcKGKBk5Ez-H7Rv7mMuw3EoRJG9GWmU&orgId=mathebula-partners`
-- Note: scenario 3.14 expected subject phrases "sign in" / "action required" / "your portal" — actual is "Information request REQ-0001 from Mathebula & Partners" with "View Request" CTA. Functionally correct (magic-link to portal).
+Additionally, deferred checkpoint 0.38 (engagement field promotion) is now VERIFIED -- the "New from Template -- Configure" dialog renders Reference Number and Work Type as native inline inputs.
 
 ---
 
-## Day 3 day-end checkpoints
+## Checkpoint Results
 
-| # | Check | Result |
-|---|-------|--------|
-| A | Matter created with reference format RAF-YYYY-NNN | **PASS** — RAF-2026-001 |
-| B | Matter-type template instantiated — phase sections present, LSSA tariff linked | **PARTIAL** — 9 RAF-specific tasks instantiated from template. LSSA tariff NOT auto-linked at matter creation — fee estimate is empty until proposal flow on Day 7. Not blocking. |
-| C | Promoted matter fields render inline, not duplicated | **PASS** — see 3.6 |
-| D | FICA info request dispatched, magic-link email sent | **PASS** — REQ-0001 status Sent, Mailpit email with portal exchange link delivered |
-
----
-
-## FICA Status Card verification (bonus)
-
-The matter Overview tab now shows a **FICA Status Card** reading:
-- Status: **In Progress**
-- "Awaiting client response and firm-side review."
-- "View request" link: `/org/mathebula-partners/information-requests/ac2abebd-b08c-4594-b6ff-88717bb4dbc2` (correct canonical route)
-
-**Recent Activity** section shows:
-- "Information request REQ-0001 sent to Bob Ndlovu" (minor display issue — should reference Sipho Dlamini, not the logged-in user who sent it; noted as OBS-304)
-- "Bob Ndlovu created information request REQ-0001"
+| ID | Checkpoint | Result | Evidence |
+|----|-----------|--------|----------|
+| 3.1 | On Sipho detail, click New Engagement | **PASS** | Navigated to Sipho Dlamini detail page (/customers/31986024-382f-48ac-abb9-5dfa64fde531). Clicked "New Engagement" link in the Engagements tab. Redirected to /projects?new=1&customerId=31986024-382f-48ac-abb9-5dfa64fde531. "New from Template -- Select Template" dialog opened automatically with 7 accounting-za templates listed. |
+| 3.2 | Select template: Tax Return -- Individual | **PASS** | Selected "Tax Return -- Individual (ITR12)" from the template list (7 tasks). Clicked Next. "New from Template -- Configure" dialog opened with pre-filled engagement name "Sipho Dlamini - ITR12 2026", description "Individual income tax return preparation and SARS eFiling submission.", and Client = Sipho Dlamini (pre-linked from customer context). |
+| 3.3 | Fill: Name, engagement_type, reference_number | **PASS** | Updated engagement name to "Sipho Dlamini -- 2025/26 Tax Return". Filled Reference Number = "TR-2026-0001". Filled Work Type = "TAX_RETURN". Left Engagement lead as Unassigned. Screenshot: `qa_cycle/evidence/day-03/new-engagement-from-template-configure.png` |
+| 3.4 | Save -> engagement created with pre-populated tasks | **PASS** | Clicked "Create Engagement". Redirected to engagement detail page at /projects/583ee45e-40b5-4846-9082-92f69f0f5f17. Header shows: "Sipho Dlamini -- 2025/26 Tax Return", Active status, Ref: TR-2026-0001, Type: TAX_RETURN, Client: Sipho Dlamini, 7 tasks. SA Accounting -- Engagement Details custom field group auto-assigned with fields: Tax Year, SARS Submission Deadline, Assigned Reviewer, Complexity. |
+| 3.5 | Verify tasks present (IT3a, medical aid, rental, SARS eFiling, review, submit) | **PASS** | Tasks tab shows 7 tasks, all Medium priority, all Open status: (1) Review assessment & sign-off, (2) SARS eFiling submission, (3) Prepare ITR12, (4) Capital gains schedule, (5) Rental income schedule, (6) Medical aid & retirement fund certificates, (7) Collect IRP5/IT3(a) certificates. All expected task types present. Screenshot: `qa_cycle/evidence/day-03/engagement-tasks-list.png` |
+| 3.6 | Assign initial tasks to Carol | **PASS** | Added Carol Mokoena as engagement member via Members tab > Add Member. Returned to Tasks tab and assigned Carol to 4 initial tasks via task detail dialog assignee combobox: (1) Collect IRP5/IT3(a) certificates, (2) Medical aid & retirement fund certificates, (3) Rental income schedule, (4) Prepare ITR12. Remaining 3 tasks (Review assessment & sign-off, SARS eFiling submission, Capital gains schedule) left Unassigned for senior review. Screenshot: `qa_cycle/evidence/day-03/tasks-assigned-to-carol.png` |
 
 ---
 
-## Gaps / Observations
+## Day 0 Deferred Item Now Verified
 
-### OBS-301 (carry-forward) — Frontend allows matter description up to 2000 chars; backend rejects >255
-- **Status**: Still present. Template prefills 273 chars; backend `@Size(max=255)` rejects. Workaround: manually trim description. Not blocking when trimmed.
-
-### OBS-302 (carry-forward) — Matter sidebar tab labels drift from scenario
-- **Status**: Still present. "Audit Trail" tab exists alongside "Activity" tab. Scenario expected no "Audit" tab at matter level. Minor scenario-drift.
-
-### OBS-304 (new, nit) — Activity feed reads "sent to Bob Ndlovu" instead of portal contact name
-- **Where**: Matter Overview > Recent Activity > "Information request REQ-0001 sent to Bob Ndlovu"
-- **Expected**: "Information request REQ-0001 sent to Sipho Dlamini" (the portal contact addressee)
-- **Impact**: Cosmetic — activity log references the actor who created/sent the request rather than the recipient. Non-blocking.
+| Day 0 ID | Checkpoint | Day 3 Result | Evidence |
+|-----------|-----------|--------------|----------|
+| 0.38 | Field promotion checkpoint (engagement): inline inputs | **VERIFIED** | The "New from Template -- Configure" dialog renders Reference Number and Work Type as native inline inputs in the configure step. These correspond to the promoted engagement field slugs (`reference_number` and `work_type`/engagement type). The SA Accounting -- Engagement Details custom field group (Tax Year, SARS Submission Deadline, Assigned Reviewer, Complexity) is auto-assigned on the engagement detail page. |
 
 ---
 
-## Console / Logs
+## Engagement Detail
 
-- Browser console: **0 new errors** — all errors are pre-existing OBS-203 (`/api/assistant/invocations` 404, 7 occurrences across client + matter detail pages).
-- No hydration mismatches, no JS exceptions.
+| Field | Value |
+|-------|-------|
+| Engagement ID | 583ee45e-40b5-4846-9082-92f69f0f5f17 |
+| Name | Sipho Dlamini -- 2025/26 Tax Return |
+| Template | Tax Return -- Individual (ITR12) |
+| Client | Sipho Dlamini (31986024-382f-48ac-abb9-5dfa64fde531) |
+| Reference | TR-2026-0001 |
+| Type | TAX_RETURN |
+| Status | Active |
+| Tasks | 7 (0 complete, 7 open) |
+| Members | 1 (Carol Mokoena) |
+
+## Task Assignments
+
+| Task | Assignee | Priority | Status |
+|------|----------|----------|--------|
+| Collect IRP5/IT3(a) certificates | Carol Mokoena | Medium | Open |
+| Medical aid & retirement fund certificates | Carol Mokoena | Medium | Open |
+| Rental income schedule | Carol Mokoena | Medium | Open |
+| Prepare ITR12 | Carol Mokoena | Medium | Open |
+| Capital gains schedule | Unassigned | Medium | Open |
+| Review assessment & sign-off | Unassigned | Medium | Open |
+| SARS eFiling submission | Unassigned | Medium | Open |
 
 ---
 
-## Day 3 Status: **COMPLETE — ready for Day 4**
+## Console Errors
 
-All 14 checkpoints + 4 day-end checks executed. 0 blockers, 0 new bugs. 2 carry-forward observations (OBS-301, OBS-302), 1 new cosmetic nit (OBS-304). RAF-2026-001 matter created with template tasks; FICA info request REQ-0001 dispatched to portal with magic-link email.
+| Category | Count | Severity | Details |
+|----------|-------|----------|---------|
+| 404 /api/assistant/invocations | 7 | LOW | AI assistant API not implemented. Falls back gracefully. Pre-existing. |
+| WebSocket HMR | ~1 | INFO | Dev-only hot module replacement. Not a product issue. |
 
-**New entities created (Day 3)**:
-- Matter: **RAF-2026-001 — Dlamini v Road Accident Fund** (id `c90832a4-c993-4eaa-9ea7-404a259b0e29`, ACTIVE, lead = Bob Ndlovu, customer = Sipho Dlamini, 9 RAF tasks instantiated)
-- Info Request: **REQ-0001** (id `ac2abebd-b08c-4594-b6ff-88717bb4dbc2`, FICA Onboarding Pack template, due 2026-05-20, status Sent, addressed to portal contact Sipho Dlamini)
-- Mailpit message: `CJsf6oPciWqSqzH4EsN6xb` (magic-link email for Day 4 portal flow)
+**No new product-level console errors introduced by Day 3 operations.** All errors are pre-existing dev-mode issues noted during Day 0/1/2.
+
+---
+
+## Observations
+
+1. **Template-driven engagement creation**: The "New from Template" flow is a two-step wizard: (1) select template from a searchable combobox, (2) configure engagement details. The template pre-fills the engagement name (pattern: "{client} - {template code} {year}"), description, and auto-links the client when launched from a client detail page.
+
+2. **Task instantiation**: All 7 tasks from the "Tax Return -- Individual (ITR12)" template were correctly instantiated with meaningful names, descriptions, and Medium priority. The tasks cover the full tax return workflow: document collection, schedule preparation, ITR12 drafting, review, and submission.
+
+3. **Member-gated task assignment**: Task assignees can only be selected from engagement members, not all org members. This required first adding Carol as an engagement member via the Members tab before she could be assigned to tasks. This is correct behavior -- it prevents assigning tasks to people who are not part of the engagement.
+
+4. **Custom field groups auto-assigned**: The "SA Accounting -- Engagement Details" custom field group was automatically assigned to the engagement based on the accounting-za vertical profile. Fields include Tax Year, SARS Submission Deadline, Assigned Reviewer, and Complexity -- all relevant for tax return engagements.
+
+5. **Engagement lead vs task assignee**: The Engagement lead field was left as "Unassigned" during creation. This is separate from individual task assignments. The scenario does not specify an engagement lead for Day 3.
+
+6. **Work Type field maps to engagement_type**: The "Configure" dialog has a "Work Type" text field (not a dropdown) where we entered "TAX_RETURN". On the engagement detail page, this renders as "Type TAX_RETURN" in the header. The scenario expected an `engagement_type` promoted slug -- the UI uses "Work Type" as the label, which is functionally equivalent.
+
+---
+
+## Evidence Files
+
+- `qa_cycle/evidence/day-03/new-engagement-from-template-configure.png` -- New from Template configure dialog with all fields filled
+- `qa_cycle/evidence/day-03/engagement-tasks-list.png` -- Full-page screenshot of engagement detail with 7 tasks listed
+- `qa_cycle/evidence/day-03/tasks-assigned-to-carol.png` -- Full-page screenshot showing 4 tasks assigned to Carol Mokoena
+
+---
+
+**Day 3 Result: 6 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED**
+**No new gaps filed.**

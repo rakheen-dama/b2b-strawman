@@ -126,6 +126,55 @@
       ]
     },
     {
+      "name": "Payroll (Monthly)",
+      "namePattern": "{customer} - Payroll {month}",
+      "description": "Monthly payroll processing including salary calculations, statutory deductions, EMP201 submission, and payslip generation.",
+      "billableDefault": true,
+      "matterType": "PAYROLL",
+      "tasks": [
+        {
+          "name": "Collect payroll inputs",
+          "description": "Gather timesheets, leave records, commission slips, and any salary changes from the client",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 1.0
+        },
+        {
+          "name": "Process payroll calculations",
+          "description": "Calculate gross pay, PAYE, UIF, SDL, and other statutory deductions",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "Generate payslips",
+          "description": "Produce payslips for all employees and distribute to client for review",
+          "priority": "MEDIUM",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 1.0
+        },
+        {
+          "name": "EMP201 submission",
+          "description": "Prepare and submit monthly EMP201 return to SARS via eFiling",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 0.5
+        },
+        {
+          "name": "Payment file preparation",
+          "description": "Generate bank payment file for net salaries and third-party payments",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 0.5
+        }
+      ]
+    },
+    {
       "name": "Tax Return — Individual (ITR12)",
       "namePattern": "{customer} - ITR12 {year}",
       "description": "Individual income tax return preparation and SARS eFiling submission.",
@@ -249,6 +298,71 @@
           "name": "Director sign-off & archive",
           "description": "Obtain director approval, archive tax file",
           "priority": "LOW",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 0.5
+        }
+      ]
+    },
+    {
+      "name": "Annual Trust Financial Statements",
+      "namePattern": "{customer} - Trust AFS {year}",
+      "description": "Annual financial statements and tax return for a trust entity. Covers trust deed review, distribution schedules, IT3(t) generation, and AFS preparation.",
+      "billableDefault": true,
+      "matterType": "TRUST_AFS",
+      "tasks": [
+        {
+          "name": "Trust deed review",
+          "description": "Review trust deed for distribution clauses, vesting conditions, and compliance requirements",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "Beneficiary distribution schedule",
+          "description": "Prepare schedule of income and capital distributions to beneficiaries",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 2.5
+        },
+        {
+          "name": "IT3(t) certificate generation",
+          "description": "Generate IT3(t) tax certificates for each beneficiary who received distributions",
+          "priority": "HIGH",
+          "assigneeRole": "ANY_MEMBER",
+          "billable": true,
+          "estimatedHours": 1.5
+        },
+        {
+          "name": "Draft annual financial statements",
+          "description": "Prepare trust AFS including statement of financial position, income statement, and trust-specific disclosures",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 5.0
+        },
+        {
+          "name": "ITR12T preparation",
+          "description": "Prepare the trust income tax return (ITR12T) with all schedules",
+          "priority": "HIGH",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 2.0
+        },
+        {
+          "name": "Trustee sign-off",
+          "description": "Submit draft AFS and returns to trustees for review and approval",
+          "priority": "MEDIUM",
+          "assigneeRole": "PROJECT_LEAD",
+          "billable": true,
+          "estimatedHours": 1.0
+        },
+        {
+          "name": "SARS eFiling submission & archive",
+          "description": "Submit ITR12T via SARS eFiling, confirm receipt, and archive trust file",
+          "priority": "HIGH",
           "assigneeRole": "PROJECT_LEAD",
           "billable": true,
           "estimatedHours": 0.5

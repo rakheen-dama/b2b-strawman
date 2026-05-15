@@ -1,190 +1,111 @@
-# Day 7 — Firm drafts + sends proposal (engagement letter) — Checkpoint Results
+# Day 7 Checkpoint Results — Accounting ZA 90-Day Lifecycle (Keycloak)
 
-**Date**: 2026-05-14
-**QA Agent**: cycle 1 (branch `bugfix_cycle_2026-05-13`)
-**Branch**: `bugfix_cycle_2026-05-13`
-**Stack**: Keycloak dev (firm `:3000`, portal `:3002`, backend `:8080`, gateway `:8443`, KC `:8180`, Mailpit `:8025`)
+**Date**: 2026-05-15
+**Branch**: `bugfix_cycle_2026-05-14`
+**Stack**: Keycloak dev stack (frontend :3000, backend :8080, gateway :8443, KC :8180, Mailpit :8025)
+**Agent**: QA Agent (Opus 4.6)
+**Status**: **DAY 7 COMPLETE** -- 4 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED
 
----
+## Summary
 
-## Pre-flight
+All Day 7 checkpoints passed. Two time-logging scenarios were executed:
 
-- Stack health verified: all 4 services UP (backend :8080, gateway :8443, frontend :3000, portal :3002).
-- Mailpit: 10 messages from Days 0-5 present at start.
-- Logged in as Thandi Mathebula (`thandi@mathebula-test.local` / `<redacted>`) via Keycloak OIDC redirect. Landed on `/org/mathebula-partners/dashboard`. Zero console errors on dashboard.
+1. **Carol logs 1.5 hours** on Sipho Dlamini's tax return engagement ("Drafted tax return in eFiling") against the "Prepare ITR12" task. Time entry recorded at Carol's billing rate of R 450,00/hr. Total: R 675,00. Sipho engagement now has 2.5h total (1.0h from Day 4 + 1.5h from Day 7).
 
----
-
-## Checkpoint Execution
-
-### 7.1 — Navigate to matter RAF-2026-001, click + New Engagement Letter
-
-- Navigated to `/org/mathebula-partners/projects/c90832a4-c993-4eaa-9ea7-404a259b0e29`.
-- Matter detail renders: "Dlamini v Road Accident Fund", status **Active**, ref `RAF-2026-001`.
-- Action bar shows **"New Engagement Letter"** button (legal-za terminology mapping: Proposal -> Engagement Letter).
-- Clicked "New Engagement Letter" -> dialog opened.
-- Console errors on matter page: 2x OBS-203 (`/api/assistant/invocations` 404) -- known pre-existing nit.
-
-**Result: PASS**
-
-### 7.2 — Dialog opens with Client pre-filled = Sipho Dlamini (disabled)
-
-- Dialog title: "New Engagement Letter"
-- Client combobox: **Sipho Dlamini** (disabled, pre-filled from matter context).
-- Fields visible: Title, Client (disabled), Fee Model (combobox), Hourly Rate Note (optional), Expiry Date (optional).
-- No template-picker (OBS-701 WONT_FIX from previous cycle -- proposal authoring is a thin lifecycle wrapper, not a document-builder).
-
-**Result: PASS**
-
-### 7.3 — Set Title
-
-- Filled Title = "Engagement Letter -- Litigation (Dlamini v RAF)".
-
-**Result: PASS**
-
-### 7.4 — Fee Model = Hourly, set Hourly Rate Note
-
-- Fee Model defaulted to **Hourly** (legal-za default for engagement letters). Correct.
-- Filled Hourly Rate Note = "R 2,500/hr (LSSA tariff High Court Party-and-Party 2024/2025) -- 30h Bob Ndlovu (attorney) + 5h Thandi Mathebula (senior partner) ~ R 87,500.00 estimate."
-
-**Result: PASS**
-
-### 7.5 — Set Expiry Date = Day 17 (7-day acceptance window)
-
-- Set Expiry Date = `2026-05-21` (7 days from today).
-- HTML date input accepted ISO format.
-
-**Result: PASS**
-
-### 7.6 — Click Create Proposal -> redirected to detail page
-
-- Clicked "Create Proposal" -> redirected to `/org/mathebula-partners/proposals/d7481b7a-8878-43ee-928c-2845bf8bffd0`.
-- Status badge = **Draft**.
-- Reference = **PROP-0001**.
-- Proposal Details rendered:
-  - Fee Model: Hourly
-  - Hourly Rate: full breakdown text
-  - Created: May 14, 2026
-  - Expires: **May 21, 2026** (matches input 2026-05-21 -- no +1 day tz drift; OBS-702 fix confirmed)
-
-**Result: PASS**
-
-### 7.7 — Click Send Proposal -> select recipient -> Send
-
-- Clicked "Send Proposal" button on detail page -> "Send Proposal" sub-dialog opened.
-- Recipient combobox: "Select a contact" placeholder -> expanded -> single option: `Sipho Dlamini (sipho.portal@example.com)`.
-- Selected Sipho -> clicked **Send**.
-
-**Result: PASS**
-
-### 7.8 — Proposal status transitions to Sent
-
-- Detail page header shows status badge **Sent**.
-- "Sent: May 14, 2026" field now appears in Proposal Details.
-- Action button changed from "Send Proposal" to **Withdraw**.
-
-**Result: PASS**
-
-### 7.9 — Backend log confirms send + portal sync + email
-
-Backend logs confirmed:
-1. `Created proposal d7481b7a-8878-43ee-928c-2845bf8bffd0 (PROP-0001) for customer 334bf98f-9f02-4d2f-9ee8-80bbed65ea5b`
-2. `Sent proposal d7481b7a-8878-43ee-928c-2845bf8bffd0 to contact 7f429963-c841-4c75-96cb-73b26dbe7d43`
-3. `Portal sync completed for proposal PROP-0001 after commit`
-4. `Portal notification sent template=portal-new-proposal contact=7f429963-c841-4c75-96cb-73b26dbe7d43 to=sipho.portal@example.com`
-
-**Result: PASS**
-
-### 7.10 — Mailpit: proposal email arrives at sipho.portal@example.com
-
-- Mailpit total messages: 11 (was 10 before send).
-- Newest message:
-  - Subject: `Mathebula & Partners: New proposal PROP-0001 for your review`
-  - From: `noreply@docteams.app`
-  - To: `sipho.portal@example.com`
-  - Created: `2026-05-13T22:08:08.316Z`
-  - HTML body contains portal proposal link: `http://localhost:3002/proposals/d7481b7a-8878-43ee-928c-2845bf8bffd0` (correct portal URL with proposal UUID).
-- OBS-703 fix confirmed: email IS dispatched on Send.
-
-**Result: PASS**
-
-### 7.11 — Portal /proposals index shows PROP-0001 for Sipho
-
-- Context swap: authenticated as Sipho on portal `:3002` via magic-link exchange.
-- Navigated to `/proposals`.
-- "Awaiting Your Response" section renders table with one row:
-  - `PROP-0001 | Engagement Letter -- Litigation (Dlamini v RAF) | SENT | 14 May 2026 | - | View`
-  - Link to `/proposals/d7481b7a-8878-43ee-928c-2845bf8bffd0`.
-- Footer: "Powered by Kazi" (correct branding, no "DocTeams" leak).
-- Zero console errors on portal `/proposals` page.
-
-**Result: PASS**
+2. **Thandi logs 2.0 hours** on Kgosi Holdings Year-End Pack engagement ("Initial planning meeting + scope confirmation") against the "Request & receive trial balance" task. Time entry recorded at Thandi's Owner billing rate of R 1 500,00/hr. Total: R 3 000,00. Year-End Pack engagement now has 2.0h total.
 
 ---
 
-## Day 7 Checkpoint Summary
+## Checkpoint Results
+
+### 7.1 — Carol logs 1.5 hours on Sipho engagement
+
+**Actor**: Carol Mokoena (Member, carol@thornton-test.local)
 
 | ID | Checkpoint | Result | Evidence |
 |----|-----------|--------|----------|
-| 7.1 | Navigate to matter, click + New Engagement Letter | **PASS** | Dialog opened; legal-za terminology correct |
-| 7.2 | Client pre-filled = Sipho Dlamini (disabled) | **PASS** | Combobox disabled, value = Sipho Dlamini |
-| 7.3 | Title set | **PASS** | "Engagement Letter -- Litigation (Dlamini v RAF)" |
-| 7.4 | Fee Model = Hourly, Rate Note filled | **PASS** | Hourly default; rate breakdown in note field |
-| 7.5 | Expiry Date set | **PASS** | 2026-05-21 (7 days) |
-| 7.6 | Create Proposal -> Draft, PROP-0001 | **PASS** | Status = Draft, ref = PROP-0001, expiry renders correctly (no tz drift) |
-| 7.7 | Send Proposal -> select Sipho -> Send | **PASS** | Recipient combobox lists Sipho, Send clicked |
-| 7.8 | Status = Sent, Withdraw button | **PASS** | Badge = Sent, Sent date field, Withdraw button |
-| 7.9 | Backend logs confirm send + sync + email | **PASS** | 4 log lines confirmed |
-| 7.10 | Mailpit email to Sipho with portal link | **PASS** | Subject + body + link verified |
-| 7.11 | Portal /proposals shows PROP-0001 (SENT) | **PASS** | "Awaiting Your Response" table, correct link |
+| 7.1a | Login as Carol via Keycloak | **PASS** | Cleared browser cookies + KC session. KC login: carol@thornton-test.local / [REDACTED]. Redirected to /org/thornton-associates/dashboard. Sidebar confirms: "CM" initials, "Carol Mokoena", "carol@thornton-test.local". |
+| 7.1b | Navigate to Sipho engagement, Tasks tab | **PASS** | URL: /org/thornton-associates/projects/583ee45e-40b5-4846-9082-92f69f0f5f17. Title: "Sipho Dlamini -- 2025/26 Tax Return", Status: Active, 7 tasks. Carol assigned to 4 tasks. Clicked "Log Time" on "Prepare ITR12" task (most relevant for eFiling work). |
+| 7.1c | Log 1.5 hours with description "Drafted tax return in eFiling" | **PASS** | Log Time dialog: Duration=1h 30m, Date=2026-05-15, Description="Drafted tax return in eFiling", Billable=checked, Rate=R 450,00/hr. Total: 1h 30m x R 450,00 = R 675,00. Submitted successfully. Screenshot: `qa_cycle/evidence/day-07/carol-log-time-dialog-1h30m.png` |
+| 7.1d | Verify time entry recorded on Time tab | **PASS** | Time tab confirms: Total=2h 30m, Billable=2h 30m, Entries=2, Contributors=1. By Task: Prepare ITR12 (1h 30m, 1 entry) + Collect IRP5/IT3(a) certificates (1h, 1 entry from Day 4). Screenshot: `qa_cycle/evidence/day-07/carol-time-tab-2h30m.png` |
 
-**Overall: 11/11 PASS, 0 blockers, 0 new gaps**
+### 7.2 — Thandi logs 2.0 hours on Kgosi Year-End Pack
 
----
+**Actor**: Thandi Thornton (Owner, thandi@thornton-test.local)
 
-## Day 7 Scenario Checkpoint Summary
-
-| Checkpoint | Result | Notes |
-|------------|--------|-------|
-| Proposal lifecycle: Draft -> Sent succeeds end-to-end | **PASS** | Created, sent, portal sync, email all working |
-| Portal email dispatched (OBS-703) -- subject + body verified, link reaches /proposals/{id} | **PASS** | OBS-703 fix confirmed working |
-| Portal /proposals projection shows PROP-0001 (firm->portal sync) | **PASS** | Sipho sees PROP-0001 in "Awaiting Your Response" |
-| Frontend console clean (no hydration mismatch on /proposals index -- OBS-704) | **FAIL** | OBS-704 still present -- see below |
-| Expiry date renders consistently with date input (no +1-day tz drift -- OBS-702) | **PASS** | Input 2026-05-21, rendered "May 21, 2026" -- no drift |
+| ID | Checkpoint | Result | Evidence |
+|----|-----------|--------|----------|
+| 7.2a | Login as Thandi via Keycloak | **PASS** | Cleared browser cookies + KC session. KC login: thandi@thornton-test.local / [REDACTED]. Redirected to /org/thornton-associates/dashboard. Sidebar confirms: "TT" initials, "Thandi Thornton", "thandi@thornton-test.local". |
+| 7.2b | Navigate to Kgosi Year-End Pack engagement, Tasks tab | **PASS** | URL: /org/thornton-associates/projects/388d5104-7789-4ad6-bb6c-6d045e9663f3. Title: "Kgosi Holdings -- FY2025/26 Year-End Pack", Status: Active, 7 tasks (all Open, Unassigned). Clicked "Log Time" on "Request & receive trial balance" task. |
+| 7.2c | Log 2.0 hours with description "Initial planning meeting + scope confirmation" | **PASS** | Log Time dialog: Duration=2h 0m, Date=2026-05-15, Description="Initial planning meeting + scope confirmation", Billable=checked, Rate=R 1 500,00/hr. Total: 2h x R 1 500,00 = R 3 000,00. Submitted successfully. Screenshot: `qa_cycle/evidence/day-07/thandi-log-time-dialog-2h.png` |
+| 7.2d | Verify time entry recorded on Time tab | **PASS** | Time tab confirms: Total=2h, Billable=2h, Non-billable=0m, Entries=1, Contributors=1. By Task: Request & receive trial balance (2h, 1 entry). By Member: Thandi Thornton (2h billable). Screenshot: `qa_cycle/evidence/day-07/thandi-time-tab-2h-yearend.png` |
 
 ---
 
-## OBS-704 — Hydration mismatch on /proposals index (still present)
+## Time Entry Details
 
-Navigated to `/org/mathebula-partners/proposals` (firm-side Engagement Letters page). Console fires:
+### Carol's Time Entry on Sipho Engagement
 
-```
-Error: Hydration failed because the server rendered HTML didn't match the client.
-...
-<DialogTrigger asChild={true}>
-  <DialogTrigger data-slot="dialog-tri..." asChild={true}>
-    <Primitive.button ...>
-      <Primitive.button.Slot ...>
-        <Primitive.button.SlotClone ...>
-+         <button data-slot="button" ... aria-controls="radix-_R_4clritrqiqbn5rknelb_" ...>
-```
+| Field | Value |
+|-------|-------|
+| Engagement | Sipho Dlamini -- 2025/26 Tax Return (583ee45e-40b5-4846-9082-92f69f0f5f17) |
+| Task | Prepare ITR12 |
+| Duration | 1.5 hours (1h 30m) |
+| Description | Drafted tax return in eFiling |
+| Billable | Yes |
+| Rate | R 450,00/hr (Carol's member default) |
+| Amount | R 675,00 |
+| Date | 2026-05-15 |
+| Logged by | Carol Mokoena |
+| **Engagement total after Day 7** | **2.5h** (2 entries: 1.0h Day 4 + 1.5h Day 7) |
 
-Same root cause as previous cycle: `CreateProposalDialog` `DialogTrigger asChild` button generates a client-side `aria-controls` Radix ID that diverges from SSR output. Page still functions correctly but violates "frontend must run clean" mandate.
+### Thandi's Time Entry on Kgosi Year-End Pack
 
-**Status**: OPEN (non-blocking nit, does not cascade to Day 8)
+| Field | Value |
+|-------|-------|
+| Engagement | Kgosi Holdings -- FY2025/26 Year-End Pack (388d5104-7789-4ad6-bb6c-6d045e9663f3) |
+| Task | Request & receive trial balance |
+| Duration | 2.0 hours (2h 0m) |
+| Description | Initial planning meeting + scope confirmation |
+| Billable | Yes |
+| Rate | R 1 500,00/hr (Thandi's Owner default) |
+| Amount | R 3 000,00 |
+| Date | 2026-05-15 |
+| Logged by | Thandi Thornton |
+| **Engagement total after Day 7** | **2.0h** (1 entry) |
 
 ---
 
-## Console Error Summary
+## Console Errors
 
-- Matter detail page: 2x OBS-203 (`/api/assistant/invocations` 404) -- known pre-existing nit
-- Proposal detail page (Draft + Sent): 0 new errors (same OBS-203 from matter navigation carried over)
-- Firm proposals index: 1x OBS-704 hydration mismatch -- pre-existing
-- Portal `/proposals`: 0 errors
-- Portal exchange/auth: 0 errors
+| Category | Count | Severity | Details |
+|----------|-------|----------|---------|
+| 404 /api/assistant/invocations | ~3 | LOW | AI assistant API not implemented. Falls back gracefully. Pre-existing. |
+
+**No new product-level console errors introduced by Day 7 operations.**
 
 ---
 
-## Entities Created
+## Observations
 
-- Proposal PROP-0001 (id `d7481b7a-8878-43ee-928c-2845bf8bffd0`, status SENT, matter RAF-2026-001, client Sipho Dlamini)
+1. **Time logging from task row**: The "Log Time" button is directly accessible from each task row in the Tasks tab, consistent with Day 4 behavior. The dialog pre-fills date, shows the member's billing rate, and calculates the total automatically.
+
+2. **Rate differentiation by role**: Carol's Member rate (R 450,00/hr) and Thandi's Owner rate (R 1 500,00/hr) are correctly applied as pre-seeded from the accounting-za vertical profile rate cards. No manual rate override needed.
+
+3. **Member role visibility**: Carol (Member role) has a reduced tab set on the engagement detail page (no Financials, Rates, or Audit tabs). Thandi (Owner role) sees the full tab set. Role-based UI scoping is working correctly.
+
+4. **Keycloak session management**: Logging out required clearing browser cookies (via Playwright context.clearCookies()) and KC session logout. The gateway's CSRF-protected logout form was not directly submittable via JS evaluate; clearing cookies + KC logout was the reliable approach.
+
+---
+
+## Evidence Files
+
+- `qa_cycle/evidence/day-07/carol-log-time-dialog-1h30m.png` -- Log Time dialog with 1h 30m, "Drafted tax return in eFiling", R 450,00/hr
+- `qa_cycle/evidence/day-07/carol-time-tab-2h30m.png` -- Time tab showing 2.5h total (2 entries) on Sipho engagement
+- `qa_cycle/evidence/day-07/thandi-log-time-dialog-2h.png` -- Log Time dialog with 2h 0m, "Initial planning meeting + scope confirmation", R 1 500,00/hr
+- `qa_cycle/evidence/day-07/thandi-time-tab-2h-yearend.png` -- Time tab showing 2h total (1 entry) on Kgosi Year-End Pack
+
+---
+
+**Day 7 Result: 4 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED**
+**No new gaps filed.**

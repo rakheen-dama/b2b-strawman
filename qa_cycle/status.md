@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 14 — COMPLETE (14 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED — 0 new gaps)
-- **Next checkpoint**: Day 15 (Trust client onboarding: create Moroka Family Trust, verify trust-specific custom fields)
+- **Day**: 15 — COMPLETE (2 PASS / 1 FAIL / 1 PARTIAL / 0 DEFERRED — 1 new gap: OBS-4006)
+- **Next checkpoint**: Triage OBS-4006 (trust fields visibility condition), then Day 16
 - **Day 0 deferred items resolved**: Field promotion inline (0.36) VERIFIED via Day 1 create dialog, no duplicates (0.37) VERIFIED. Engagement field promotion (0.38) VERIFIED via Day 3 New Engagement dialog. Cancel dialog (0.39) deferred (non-blocking). Modules page (0.44-0.45), billing screenshot (0.52) remain deferred.
 - **All Day 0 gaps resolved**: OBS-4002 VERIFIED, OBS-4003 VERIFIED, OBS-4004 VERIFIED
 - **Sipho Dlamini client ID**: 31986024-382f-48ac-abb9-5dfa64fde531
@@ -41,6 +41,9 @@ For each day-N walk in this cycle:
 - **Kgosi lifecycle**: ACTIVE (transitioned through PROSPECT → ONBOARDING → ACTIVE via FICA/KYC checklist completion, 8/8 required items, 3 skipped)
 - **Kgosi Monthly Bookkeeping engagement ID**: a32c67d5-8e09-47b9-82ec-f0e82fa94ec4 (Monthly Bookkeeping, Ref: BK-2026-03-0001, Type: BOOKKEEPING, 6 tasks, Carol added as member Day 9, 5.0h logged (3.0h Bob Day 8 "Bank reconciliation" + 2.0h Carol Day 9 "Debtors recon"), R 3,450 unbilled, 2 bank statement docs uploaded by Bob Day 10)
 - **Kgosi Year-End Pack engagement ID**: 388d5104-7789-4ad6-bb6c-6d045e9663f3 (Year-End Pack / Annual Financial Statements, 7 tasks, 3.0h logged (2.0h Thandi Day 7 "Request & receive trial balance" + 1.0h Bob Day 13 "FS structure review" on Draft AFS task), 2 comments: Thandi Day 12 "@Bob Need FS draft by day 30" + Bob Day 13 acknowledgment, R 3,850 unbilled, **Budget configured Day 14: 40h / R60,000 / 80% alert threshold / 8% hours used / 6% amount used**)
+- **Moroka Family Trust client ID**: 64f79e3d-46b0-4d4b-b9cc-53d1c3968231
+- **Moroka lifecycle**: ACTIVE (created as PROSPECT, transitioned through ONBOARDING → ACTIVE via FICA/KYC checklist completion, 8/8 required items with docs, 3 skipped)
+- **Moroka trust fields**: OBS-4006 — "SA Accounting — Trust Details" section renders empty. 6 trust-specific fields defined with `visibilityCondition` on `acct_entity_type=TRUST` but frontend does not evaluate conditions. Required fields (Trust Registration Number, Trust Deed Date, Trust Type) cannot be filled via UI.
 - **Total hours this month**: 10.5h (Sipho 2.5h + Bookkeeping 5.0h + Year-End Pack 3.0h)
 
 ## Stack State
@@ -56,6 +59,7 @@ For each day-N walk in this cycle:
 | OBS-4003 | Logo upload not tested -- no test logo file available | INFO | QA | VERIFIED | 0 | Valid 200x200 green (#1B5E20) PNG created at `qa_cycle/test-fixtures/thornton-logo.png` (763 bytes). Retest: uploaded via UI, preview renders (blob + S3 sidebar logo). |
 | OBS-4004 | Automations page not found in settings navigation | MEDIUM | Dev | VERIFIED | 0 | Root cause: `automation_builder` not in accounting-za enabledModules. Fix: added to vertical profile JSON. PR #1304 merged. Full verify: 5209 tests, 0 failures. Retest: Automations link in settings nav, 13 rules including 4 accounting-specific. |
 | OBS-4005 | Activity event message shows literal "project" instead of engagement name | LOW | Dev | VERIFIED | 12 | Root cause: `CommentService.validateEntityBelongsToProject()` returns literal "project" instead of project name; `PortalCommentService` omits `entity_name` from audit details. Fix: inject ProjectRepository, look up name. PR #1306 merged. Full verify: 5210 tests, 0 failures. Retest Day 13: Bob's new comment activity shows "Kgosi Holdings — FY2025/26 Year-End Pack" (not "project"). |
+| OBS-4006 | Trust-specific custom fields not rendering on client detail page | MEDIUM | Dev | NEW | 15 | "SA Accounting — Trust Details" field group assigned and contains 6 fields with `visibilityCondition` on `acct_entity_type=TRUST`. Entity type is TRUST. Section header renders but fields do not appear. Frontend does not evaluate visibility conditions from field pack definitions. Blocks trust-specific required fields (Trust Registration Number, Trust Deed Date, Trust Type). Evidence: `day-15/moroka-active-trust-fields-empty.png`. |
 
 ## Log
 
@@ -86,3 +90,4 @@ For each day-N walk in this cycle:
 | 13 | QA | OBS-4005 verification: logged in as Bob, posted comment on Year-End Pack, checked Activity tab. New event: "Bob Ndlovu commented on project 'Kgosi Holdings — FY2025/26 Year-End Pack'" — actual name, not "project". | OBS-4005 -> VERIFIED. |
 | 13 | QA | Day 13 walk: Bob posts acknowledgment comment on Year-End Pack Client Comments ("Acknowledged @Thandi — will have FS structure draft ready. Starting review today."). Bob logs 1.0h on "Draft annual financial statements" task ("FS structure review", R 850/hr). Time tab: 3h total, 2 contributors. Dashboard: 10.5h monthly. | 10 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. Year-End Pack total: 3.0h. Monthly hours: 10.5h. |
 | 14 | QA | Day 14 walk: Budget tab on Year-End Pack. Configured budget: 40h / R60,000 / ZAR / 80% alert threshold. Verified burn tracking: Hours 3h/40h (8%), Amount R3,850/R60,000 (6%), status "On Track". Overview reflects "8% used", setup steps 4/5. Activity: "budget.created" event logged. Dashboard: 3 engagements on track, 0 at risk. | 14 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. |
+| 15 | QA | Day 15 walk (resumed after prior agent crash): Verified Moroka Family Trust client created by previous agent (ONBOARDING, Entity Type=Trust, ID `64f79e3d-...`). Verified "SA Accounting — Trust Details" field group assigned but **fields not rendering** (OBS-4006). Completed remaining FICA/KYC: 3 required items with doc attachments (Beneficial Ownership, Letters of Authority, Trust Deed) + 3 optional items skipped. Checklist: 8/11 completed (8/8 required) = Completed. Client auto-activated to ACTIVE. | 2 PASS / 1 FAIL / 1 PARTIAL / 0 DEFERRED. 1 new MEDIUM gap: OBS-4006 (trust fields visibility condition). Moroka ID: `64f79e3d-46b0-4d4b-b9cc-53d1c3968231`. |

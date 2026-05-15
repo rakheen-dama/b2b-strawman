@@ -1,0 +1,1 @@
+QA test fixture: bank-confirmation for Moroka Family Trust

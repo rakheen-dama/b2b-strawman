@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 80 — Reports & utilization verified (4 PASS)
-- **Next checkpoint**: Day 85 — Engagement closure / offboarding
+- **Day**: 85 — Audit log sweep verified (3 PASS)
+- **Next checkpoint**: Day 87 — Automation wow moment
 - **Day 0 deferred items resolved**: Field promotion inline (0.36) VERIFIED via Day 1 create dialog, no duplicates (0.37) VERIFIED. Engagement field promotion (0.38) VERIFIED via Day 3 New Engagement dialog. Cancel dialog (0.39) deferred (non-blocking). Modules page (0.44-0.45), billing screenshot (0.52) remain deferred.
 - **All Day 0 gaps resolved**: OBS-4002 VERIFIED, OBS-4003 VERIFIED, OBS-4004 VERIFIED
 - **Sipho Dlamini client ID**: 31986024-382f-48ac-abb9-5dfa64fde531
@@ -133,3 +133,4 @@ For each day-N walk in this cycle:
 | 65 | QA | OBS-4010 verification: Portal magic link for Kgosi Holdings. Sidebar: "Engagements" (not "Matters"). Heading: "Your Engagements" (not "Your Projects"). Breadcrumb: "Back to engagements" (not "Back to projects"). Screenshot: `qa_cycle/evidence/obs-4010-verified-terminology.png`. | OBS-4010 -> VERIFIED. |
 | 68 | QA | Day 68 walk: VAT Return engagement workflow on Mathole Engineering. All 5 template tasks worked through: Collect invoices (Done), VAT reconciliation (Done), Prepare VAT201 (Done), SARS eFiling submission (Done), Payment instruction (Done). Task Completion Chain automation fired for each, creating 4 follow-up tasks. Overview: 4/9 tasks complete. Time: 3.5h total (Thandi). | 1 PASS / 0 FAIL. No new gaps. |
 | 72 | QA | Day 72 walk: Sipho Tax Return engagement marked COMPLETED. Cancelled 7 remaining open tasks (automation follow-ups). Two-step completion: first attempt blocked by open tasks, second triggered Unbilled Time Warning (R 1,125 / 2.5h), clicked "Complete Anyway". Status: Active → Completed. | 1 PASS / 0 FAIL. No new gaps. |
+| 85 | QA | Day 85 walk: Audit log sweep. Navigated to Settings > Audit Log — 270 total events across 6 pages. Filtered by entityType=project: 6 engagement events (5 created_from_template + 1 completed), all IDs match known engagements. 5/6 by Thandi. Filtered by eventType=invoice.created: 5 invoice creation events matching all 5 invoices (INV-0001 through INV-0005), all by Thandi, all IDs match status.md records. | 3 PASS / 0 FAIL. No new gaps. |

@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 58 — Second Kgosi invoice cycle (Year-End Pack, INV-0003 SENT)
-- **Next checkpoint**: Day 61 — Create third bookkeeping invoice (May cycle)
+- **Day**: 61 — Third bookkeeping invoice (May cycle, INV-0005 SENT)
+- **Next checkpoint**: Day 65 — Portal: generate magic link for Kgosi Holdings primary contact
 - **Day 0 deferred items resolved**: Field promotion inline (0.36) VERIFIED via Day 1 create dialog, no duplicates (0.37) VERIFIED. Engagement field promotion (0.38) VERIFIED via Day 3 New Engagement dialog. Cancel dialog (0.39) deferred (non-blocking). Modules page (0.44-0.45), billing screenshot (0.52) remain deferred.
 - **All Day 0 gaps resolved**: OBS-4002 VERIFIED, OBS-4003 VERIFIED, OBS-4004 VERIFIED
 - **Sipho Dlamini client ID**: 31986024-382f-48ac-abb9-5dfa64fde531
@@ -39,7 +39,7 @@ For each day-N walk in this cycle:
 - **Sipho Tax Return engagement ID**: 583ee45e-40b5-4846-9082-92f69f0f5f17 (Tax Return — Individual ITR12, Ref: TR-2026-0001, Type: TAX_RETURN, 7 tasks, Carol assigned to 4, 2.5h logged total (1.0h Carol Day 4 + 1.5h Carol Day 7), 2 IT3a docs uploaded by Carol, 1 document comment by Bob)
 - **Kgosi Holdings client ID**: 90d93d67-b462-4fe9-9732-656af5ab889e
 - **Kgosi lifecycle**: ACTIVE (transitioned through PROSPECT → ONBOARDING → ACTIVE via FICA/KYC checklist completion, 8/8 required items, 3 skipped)
-- **Kgosi Monthly Bookkeeping engagement ID**: a32c67d5-8e09-47b9-82ec-f0e82fa94ec4 (Monthly Bookkeeping, Ref: BK-2026-03-0001, Type: BOOKKEEPING, 6 tasks (1 Done: Bank recon Day 24), Carol added as member Day 9, 7.5h logged (3.0h Bob Day 8 + 2.0h Carol Day 9 + 1.5h Bob Day 22 "Creditors April" + 1.0h Bob Day 22 "VAT March"), 2 bank statement docs uploaded by Bob Day 10)
+- **Kgosi Monthly Bookkeeping engagement ID**: a32c67d5-8e09-47b9-82ec-f0e82fa94ec4 (Monthly Bookkeeping, Ref: BK-2026-03-0001, Type: BOOKKEEPING, 7 tasks (1 Done: Bank recon Day 24), Carol added as member Day 9, 14.5h logged (3.0h Bob Day 8 + 2.0h Carol Day 9 + 1.5h Bob Day 22 "Creditors April" + 1.0h Bob Day 22 "VAT March" + 1.5h Thandi "Mgmt accounts" + 2.0h Thandi "Creditors recon" + 2.0h Thandi Day 61 "May month-end close" + 1.5h Thandi Day 61 "May debtors recon"), 2 bank statement docs uploaded by Bob Day 10)
 - **Kgosi Year-End Pack engagement ID**: 388d5104-7789-4ad6-bb6c-6d045e9663f3 (Year-End Pack / Annual Financial Statements, 7 tasks, 5.0h logged (2.0h Thandi Day 7 + 1.0h Bob Day 13 + 2.0h Bob Day 22 "AFS draft"), 2 comments: Thandi Day 12 + Bob Day 13, 2 docs uploaded Day 28 (trial balance WP + AFS notes WP), **Budget configured Day 14: 40h / R60,000 / 80% alert threshold / 13% hours used**)
 - **Moroka Family Trust client ID**: 64f79e3d-46b0-4d4b-b9cc-53d1c3968231
 - **Moroka lifecycle**: ACTIVE (created as PROSPECT, transitioned through ONBOARDING → ACTIVE via FICA/KYC checklist completion, 8/8 required items with docs, 3 skipped)
@@ -47,11 +47,13 @@ For each day-N walk in this cycle:
 - **Moroka Trust AFS engagement ID**: 0a39ccb1-070d-4078-9240-4a4fab254017 (Annual Trust Financial Statements, Ref: TAFS-2026-0001, 7 tasks, 2 members: Thandi (lead, 6 tasks) + Bob (1 task: IT3(t) certificate generation), 6.5h logged (2.5h Thandi Day 17 + 4.0h Bob Day 19), 2 docs uploaded Day 21 (trust deed WP + distribution schedule WP), 1 client comment by Bob Day 26)
 - **Mathole Engineering client ID**: 29b90b29-9a51-4e73-9157-b2d3622ed29b (ACTIVE, all promoted fields, onboarding complete)
 - **Mathole VAT Return engagement ID**: 302efdce-eb9c-4e5d-8487-4b8558b47faa (VAT Return (bi-monthly), Ref: VR-2026-05-0001, Type: VAT_RETURN, 5 tasks, 3 assigned to Thandi, 0h logged)
-- **Total hours this month**: 49.5h (Sipho 2.5h + Bookkeeping 7.5h + Year-End Pack 33.0h + Trust AFS 6.5h)
+- **Total hours this month**: 53.0h (Sipho 2.5h + Bookkeeping 14.5h + Year-End Pack 33.0h + Trust AFS 6.5h + Mathole VAT 3.5h — note: dashboard shows 56.5h, includes Mathole entries)
 - **First invoice**: Kgosi Bookkeeping **PAID** (INV-0001), ID: b6ba784c-d189-4cb1-8651-d7e84b34f610, 4 line items, Subtotal R 5,575.00, VAT R 836.25, Total R 6,411.25, Issued May 15 2026, SA Tax Invoice PDF generated (3.2 KB), Payment: EFT-2026-05-15-KGOSI, R 6,411.25, Completed May 15 2026
 - **Second invoice**: Sipho Tax Return **PAID** (INV-0002), ID: 9dca277d-d636-44ab-89dd-fcd02aaca957, 1 fixed-fee line item ("Tax Return preparation — 2025/26 ITR12 (fixed fee)"), Subtotal R 2,500.00, VAT R 375.00, Total R 2,875.00, Issued May 15 2026, SA Tax Invoice PDF generated (2.6 KB), Payment: EFT-2026-05-15-SIPHO, R 2,875.00, Completed May 15 2026
 - **Third invoice**: Kgosi Year-End Pack **SENT** (INV-0003), ID: 079e7cb4-d635-49e5-b09c-9cafc1bc5e6f, 7 line items (all Year-End Pack), Subtotal R 29,350.00, VAT R 4,402.50, Total R 33,752.50, Issued May 15 2026
-- **Invoices total**: Paid R 9,286.25 (INV-0001 + INV-0002), Outstanding R 33,752.50 (INV-0003)
+- **Fourth invoice**: Kgosi Bookkeeping **SENT** (INV-0004), ID: 771c5e27-6b35-4deb-8b96-cc499f34b460, 2 line items (Bookkeeping — April cycle: mgmt accounts 1.5h + creditors recon 2h), Subtotal R 5,250.00, VAT R 787.50, Total R 6,037.50, Issued May 15 2026
+- **Fifth invoice**: Kgosi Bookkeeping **SENT** (INV-0005), ID: c889d1a8-df16-4cf1-9fa5-2699c83f8dcf, 2 line items (Bookkeeping — May cycle: month-end close 2h + debtors recon 1.5h), Subtotal R 5,250.00, VAT R 787.50, Total R 6,037.50, Issued May 15 2026
+- **Invoices total**: Paid R 9,286.25 (INV-0001 + INV-0002), Outstanding R 45,827.50 (INV-0003 + INV-0004 + INV-0005)
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002, KC :8180, Mailpit :8025, Postgres :5432, LocalStack :4566)
@@ -125,3 +127,4 @@ For each day-N walk in this cycle:
 | 50 | QA | Day 50 walk: Record payment on Kgosi bookkeeping invoice INV-0001. Clicked Record Payment, entered reference "EFT-2026-05-15-KGOSI", confirmed. Status: Sent → Paid. Payment History: Completed, Manual, R 6,411.25, May 15 2026. Audit event recorded. Invoices list: Outstanding R 2,875 (from R 9,286.25), Paid This Month R 6,411.25. | 2 PASS / 0 FAIL. No new gaps. |
 | 55 | QA | Day 55 walk: Record payment on Sipho tax return invoice INV-0002. Clicked Record Payment, entered reference "EFT-2026-05-15-SIPHO", confirmed. Status: Sent → Paid. Payment History: Completed, Manual, R 2,875.00, May 15 2026. Invoices list: Outstanding R 0.00, Paid This Month R 9,286.25. Both invoices now Paid. | 1 PASS / 0 FAIL. No new gaps. |
 | 58 | QA | Day 58 walk: Second Kgosi invoice cycle (Year-End Pack). New Invoice > Kgosi Holdings > Fetch Unbilled Time > 7 items from Year-End Pack (33h, R 29,350). All selected. Created draft (R 33,752.50 incl VAT). Approved: INV-0003 assigned, May 15 2026. Sent with owner override. 7 line items: CIPC filing 4h, AFS draft 1+2+8h, tax computation 8h, TB review 8h, TB request 2h. Subtotal R 29,350, VAT R 4,402.50, Total R 33,752.50. | 1 PASS / 0 FAIL. No new gaps. |
+| 61 | QA | Day 61 walk: Third bookkeeping invoice (May cycle). Logged 2 new May time entries on Bookkeeping engagement (2.0h month-end close + 1.5h debtors recon = 3.5h at R 1,500/hr). New Invoice > Kgosi Holdings > Fetch Unbilled Time > 2 items (R 5,250). Created draft. Approved: INV-0005 assigned, May 15 2026. Sent with owner override. 2 line items: month-end close R 3,000 + debtors recon R 2,250. Subtotal R 5,250, VAT R 787.50, Total R 6,037.50. | 1 PASS / 0 FAIL. No new gaps. |

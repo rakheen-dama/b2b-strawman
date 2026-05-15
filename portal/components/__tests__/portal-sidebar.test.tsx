@@ -66,6 +66,7 @@ import {
   PortalSidebar,
   PortalSidebarMobile,
 } from "@/components/portal-sidebar";
+import { TerminologyProvider } from "@/lib/terminology";
 
 describe("PortalSidebar (desktop)", () => {
   beforeEach(() => {
@@ -110,6 +111,35 @@ describe("PortalSidebar (desktop)", () => {
     expect(
       screen.getByRole("button", { name: /logout/i }),
     ).toBeInTheDocument();
+  });
+});
+
+describe("PortalSidebar terminology (accounting-za)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+  afterEach(() => {
+    cleanup();
+  });
+
+  it("renders 'Engagements' instead of 'Matters' for accounting-za", () => {
+    render(
+      <TerminologyProvider verticalProfile="accounting-za">
+        <PortalSidebar />
+      </TerminologyProvider>,
+    );
+    expect(screen.getByText("Engagements")).toBeInTheDocument();
+    expect(screen.queryByText("Matters")).not.toBeInTheDocument();
+  });
+
+  it("renders 'Engagement Letters' instead of 'Proposals' for accounting-za", () => {
+    render(
+      <TerminologyProvider verticalProfile="accounting-za">
+        <PortalSidebar />
+      </TerminologyProvider>,
+    );
+    expect(screen.getByText("Engagement Letters")).toBeInTheDocument();
+    expect(screen.queryByText("Proposals")).not.toBeInTheDocument();
   });
 });
 

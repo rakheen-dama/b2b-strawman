@@ -11,6 +11,7 @@ import { DocumentList } from "@/components/document-list";
 import { CommentSection } from "@/components/comment-section";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTerminology } from "@/lib/terminology";
 import type {
   PortalProjectDetail,
   PortalTask,
@@ -45,6 +46,7 @@ function PageSkeleton() {
 export default function ProjectDetailPage() {
   const params = useParams();
   const projectId = params.id as string;
+  const { t } = useTerminology();
 
   const [data, setData] = useState<ProjectData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -115,10 +117,10 @@ export default function ProjectDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
         <p className="text-lg font-medium text-slate-600">
-          {error ?? "Project not found"}
+          {error ?? `${t("Project")} not found`}
         </p>
         <p className="mt-1 text-sm text-slate-500">
-          This project may have been removed, you may not have access, or the
+          This {t("project")} may have been removed, you may not have access, or the
           request failed. Please try again.
         </p>
         <div className="mt-6 flex flex-col items-center gap-3 sm:flex-row">
@@ -133,7 +135,7 @@ export default function ProjectDetailPage() {
             href="/projects"
             className="inline-flex min-h-11 items-center text-sm text-teal-600 hover:underline"
           >
-            Back to projects
+            Back to {t("projects")}
           </Link>
         </div>
       </div>
@@ -152,7 +154,7 @@ export default function ProjectDetailPage() {
         className="inline-flex min-h-11 items-center gap-1.5 text-sm text-slate-500 hover:text-slate-700"
       >
         <ArrowLeft className="size-4" />
-        Back to projects
+        Back to {t("projects")}
       </Link>
 
       {/* Header */}
@@ -172,7 +174,7 @@ export default function ProjectDetailPage() {
       {summary.totalHours > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Project Summary</CardTitle>
+            <CardTitle className="text-base">{t("Project")} Summary</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-4 md:flex-row md:gap-8">

@@ -1,7 +1,1 @@
-{
-  "commit": "2acba1c080a8e39887271b67799110268fcad1cd",
-  "command": "pnpm --dir portal lint && NODE_OPTIONS='' pnpm --dir portal build && pnpm --dir portal test",
-  "exit": 0,
-  "ts": "2026-05-02T16:38:42Z",
-  "summary": "Brand walker extension PR #1268: portal lint (0 errors, 6 pre-existing warnings), build (succeeds, all routes prerendered), test (187/187 across 42 files, full vitest). Plant-and-revert verified on hooks/use-branding.ts + middleware.ts."
-}
+{"commit":"742c6d2fa","command":"pnpm run lint && pnpm run build && pnpm test","exit":0,"ts":"2026-05-15T17:00:49Z","summary":"42 test files, 191 tests passed, 0 errors, 6 pre-existing warnings"}

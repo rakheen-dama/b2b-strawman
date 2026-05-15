@@ -7,6 +7,7 @@ import { portalGet } from "@/lib/api-client";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { ProposalStatusBadge } from "@/components/proposal-status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useTerminology } from "@/lib/terminology";
 import type { PortalProposal } from "@/lib/types";
 
 function TableSkeleton() {
@@ -20,6 +21,7 @@ function TableSkeleton() {
 }
 
 export default function ProposalsPage() {
+  const { t } = useTerminology();
   const [proposals, setProposals] = useState<PortalProposal[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +55,7 @@ export default function ProposalsPage() {
   return (
     <div>
       <h1 className="font-display mb-6 text-2xl font-semibold text-slate-900">
-        Proposals
+        {t("Proposals")}
       </h1>
 
       {isLoading && <TableSkeleton />}
@@ -75,7 +77,7 @@ export default function ProposalsPage() {
         <div className="flex flex-col items-center justify-center py-16 text-center">
           <FileText className="mb-4 size-12 text-slate-300" />
           <p className="text-lg font-medium text-slate-600">
-            No proposals yet.
+            No {t("proposals")} yet.
           </p>
         </div>
       )}
@@ -93,7 +95,7 @@ export default function ProposalsPage() {
         <section>
           {actionable.length > 0 && (
             <h2 className="font-display mb-3 text-lg font-semibold text-slate-900">
-              Past Proposals
+              Past {t("Proposals")}
             </h2>
           )}
           <ProposalList proposals={past} variant="past" />
@@ -110,6 +112,7 @@ function ProposalList({
   proposals: PortalProposal[];
   variant: "actionable" | "past";
 }) {
+  const { t } = useTerminology();
   return (
     <>
       {/* Mobile: Card layout */}
@@ -163,11 +166,11 @@ function ProposalList({
         data-testid={`proposals-${variant}-desktop`}
         className="hidden overflow-x-auto rounded-lg border border-slate-200 md:block"
       >
-        <table className="w-full text-sm" aria-label="Proposal list">
+        <table className="w-full text-sm" aria-label={`${t("Proposal")} list`}>
           <thead>
             <tr className="border-b border-slate-200 bg-slate-50">
               <th className="px-4 py-3 text-left font-medium text-slate-600">
-                Proposal #
+                {t("Proposal")} #
               </th>
               <th className="px-4 py-3 text-left font-medium text-slate-600">
                 Title

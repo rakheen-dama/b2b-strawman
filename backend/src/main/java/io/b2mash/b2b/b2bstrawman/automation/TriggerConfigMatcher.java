@@ -98,6 +98,10 @@ public class TriggerConfigMatcher {
     if (consumedPctObj == null) {
       return false;
     }
+    // null threshold = catch-all (match any budget event)
+    if (config.thresholdPercent() == null) {
+      return true;
+    }
     double consumedPct =
         consumedPctObj instanceof Number n
             ? n.doubleValue()

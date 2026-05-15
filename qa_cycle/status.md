@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 48 — Invoice PDF wow moment verified (Kgosi bookkeeping SA Tax Invoice)
-- **Next checkpoint**: Day 50 — Record payment received on Kgosi invoice (full amount, EFT)
+- **Day**: 58 — Second Kgosi invoice cycle (Year-End Pack, INV-0003 SENT)
+- **Next checkpoint**: Day 61 — Create third bookkeeping invoice (May cycle)
 - **Day 0 deferred items resolved**: Field promotion inline (0.36) VERIFIED via Day 1 create dialog, no duplicates (0.37) VERIFIED. Engagement field promotion (0.38) VERIFIED via Day 3 New Engagement dialog. Cancel dialog (0.39) deferred (non-blocking). Modules page (0.44-0.45), billing screenshot (0.52) remain deferred.
 - **All Day 0 gaps resolved**: OBS-4002 VERIFIED, OBS-4003 VERIFIED, OBS-4004 VERIFIED
 - **Sipho Dlamini client ID**: 31986024-382f-48ac-abb9-5dfa64fde531
@@ -48,8 +48,10 @@ For each day-N walk in this cycle:
 - **Mathole Engineering client ID**: 29b90b29-9a51-4e73-9157-b2d3622ed29b (ACTIVE, all promoted fields, onboarding complete)
 - **Mathole VAT Return engagement ID**: 302efdce-eb9c-4e5d-8487-4b8558b47faa (VAT Return (bi-monthly), Ref: VR-2026-05-0001, Type: VAT_RETURN, 5 tasks, 3 assigned to Thandi, 0h logged)
 - **Total hours this month**: 49.5h (Sipho 2.5h + Bookkeeping 7.5h + Year-End Pack 33.0h + Trust AFS 6.5h)
-- **First invoice**: Kgosi Bookkeeping **SENT** (INV-0001), ID: b6ba784c-d189-4cb1-8651-d7e84b34f610, 4 line items, Subtotal R 5,575.00, VAT R 836.25, Total R 6,411.25, Issued May 15 2026, SA Tax Invoice PDF generated (3.2 KB, saved to documents)
-- **Second invoice**: Sipho Tax Return **SENT** (INV-0002), ID: 9dca277d-d636-44ab-89dd-fcd02aaca957, 1 fixed-fee line item ("Tax Return preparation — 2025/26 ITR12 (fixed fee)"), Subtotal R 2,500.00, VAT R 375.00, Total R 2,875.00, Issued May 15 2026, SA Tax Invoice PDF generated (2.6 KB, saved to documents)
+- **First invoice**: Kgosi Bookkeeping **PAID** (INV-0001), ID: b6ba784c-d189-4cb1-8651-d7e84b34f610, 4 line items, Subtotal R 5,575.00, VAT R 836.25, Total R 6,411.25, Issued May 15 2026, SA Tax Invoice PDF generated (3.2 KB), Payment: EFT-2026-05-15-KGOSI, R 6,411.25, Completed May 15 2026
+- **Second invoice**: Sipho Tax Return **PAID** (INV-0002), ID: 9dca277d-d636-44ab-89dd-fcd02aaca957, 1 fixed-fee line item ("Tax Return preparation — 2025/26 ITR12 (fixed fee)"), Subtotal R 2,500.00, VAT R 375.00, Total R 2,875.00, Issued May 15 2026, SA Tax Invoice PDF generated (2.6 KB), Payment: EFT-2026-05-15-SIPHO, R 2,875.00, Completed May 15 2026
+- **Third invoice**: Kgosi Year-End Pack **SENT** (INV-0003), ID: 079e7cb4-d635-49e5-b09c-9cafc1bc5e6f, 7 line items (all Year-End Pack), Subtotal R 29,350.00, VAT R 4,402.50, Total R 33,752.50, Issued May 15 2026
+- **Invoices total**: Paid R 9,286.25 (INV-0001 + INV-0002), Outstanding R 33,752.50 (INV-0003)
 
 ## Stack State
 - Dev Stack: **Running** (backend :8080, gateway :8443, frontend :3000, portal :3002, KC :8180, Mailpit :8025, Postgres :5432, LocalStack :4566)
@@ -120,3 +122,6 @@ For each day-N walk in this cycle:
 | 38 | QA | Day 38 walk: Invoice approve + send + PDF generation. Approved draft (INV-0001 assigned, issue date May 15 2026). Sent invoice (owner override for missing due date/payment terms). Generated SA Tax Invoice PDF (3.2 KB). PDF content verified: Thornton & Associates letterhead, Kgosi Holdings client details with VAT number, 4 line items with per-line VAT, Amount Summary (Subtotal R5,575, VAT 15% R836.25, Total R6,411.25), Banking Details section, SA tax compliance note (s.20 VAT Act). Document saved to invoice. | 17 PASS / 1 PARTIAL / 0 FAIL / 0 DEFERRED. No new gaps. |
 | 45 | QA | Day 45 walk: Second invoice — Sipho tax return fixed fee. Created invoice via New Invoice > Fetch Unbilled Time > deleted 2 time-based line items > added manual fixed-fee line item (R 2,500). Approved: INV-0002, May 15 2026. Sent: owner override (2/5 required fields). Generated SA Tax Invoice PDF (2.6 KB): Thornton & Associates → Sipho Dlamini, 1 line item R2,500, VAT R375, Total R2,875. Saved to documents. | 3 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. |
 | 48 | QA | Day 48 walk: Invoice PDF wow moment. Opened INV-0001 (Kgosi Bookkeeping) detail page. SA Tax Invoice document previewed via Generate Document > SA Tax Invoice modal. Verified: TAX INVOICE header, From: Thornton & Associates, Client VAT 4123456789, INV-0001, 15 May 2026, 4 line items with Unit Price (excl. VAT) + VAT + Total (incl. VAT) columns, Amount Summary (Subtotal R5,575, VAT 15% R836.25, Total R6,411.25), Banking Details section, SA tax compliance note (s.20 VAT Act 89 of 1991). Screenshots: 3 evidence files in day-48/. | 3 PASS / 0 FAIL / 0 PARTIAL / 0 DEFERRED. No new gaps. |
+| 50 | QA | Day 50 walk: Record payment on Kgosi bookkeeping invoice INV-0001. Clicked Record Payment, entered reference "EFT-2026-05-15-KGOSI", confirmed. Status: Sent → Paid. Payment History: Completed, Manual, R 6,411.25, May 15 2026. Audit event recorded. Invoices list: Outstanding R 2,875 (from R 9,286.25), Paid This Month R 6,411.25. | 2 PASS / 0 FAIL. No new gaps. |
+| 55 | QA | Day 55 walk: Record payment on Sipho tax return invoice INV-0002. Clicked Record Payment, entered reference "EFT-2026-05-15-SIPHO", confirmed. Status: Sent → Paid. Payment History: Completed, Manual, R 2,875.00, May 15 2026. Invoices list: Outstanding R 0.00, Paid This Month R 9,286.25. Both invoices now Paid. | 1 PASS / 0 FAIL. No new gaps. |
+| 58 | QA | Day 58 walk: Second Kgosi invoice cycle (Year-End Pack). New Invoice > Kgosi Holdings > Fetch Unbilled Time > 7 items from Year-End Pack (33h, R 29,350). All selected. Created draft (R 33,752.50 incl VAT). Approved: INV-0003 assigned, May 15 2026. Sent with owner override. 7 line items: CIPC filing 4h, AFS draft 1+2+8h, tax computation 8h, TB review 8h, TB request 2h. Subtotal R 29,350, VAT R 4,402.50, Total R 33,752.50. | 1 PASS / 0 FAIL. No new gaps. |

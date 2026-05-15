@@ -30,8 +30,8 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 85 — Audit log sweep verified (3 PASS)
-- **Next checkpoint**: Day 87 — Automation wow moment
+- **Day**: 87 — Automation wow moment verified (3 PASS)
+- **Next checkpoint**: Day 90 — Final regression sweep
 - **Day 0 deferred items resolved**: Field promotion inline (0.36) VERIFIED via Day 1 create dialog, no duplicates (0.37) VERIFIED. Engagement field promotion (0.38) VERIFIED via Day 3 New Engagement dialog. Cancel dialog (0.39) deferred (non-blocking). Modules page (0.44-0.45), billing screenshot (0.52) remain deferred.
 - **All Day 0 gaps resolved**: OBS-4002 VERIFIED, OBS-4003 VERIFIED, OBS-4004 VERIFIED
 - **Sipho Dlamini client ID**: 31986024-382f-48ac-abb9-5dfa64fde531
@@ -44,10 +44,10 @@ For each day-N walk in this cycle:
 - **Moroka Family Trust client ID**: 64f79e3d-46b0-4d4b-b9cc-53d1c3968231
 - **Moroka lifecycle**: ACTIVE (created as PROSPECT, transitioned through ONBOARDING → ACTIVE via FICA/KYC checklist completion, 8/8 required items with docs, 3 skipped)
 - **Moroka trust fields**: OBS-4006 VERIFIED. Trust fields now render: Trust Registration Number = "IT 2345/2020", Trust Deed Date = "2020-03-15", Trust Type = "Inter Vivos (Living Trust)", Names of Trustees = "Sipho Moroka, Lerato Moroka, Thabo Moroka". Required Fields: 5/5.
-- **Moroka Trust AFS engagement ID**: 0a39ccb1-070d-4078-9240-4a4fab254017 (Annual Trust Financial Statements, Ref: TAFS-2026-0001, 7 tasks, 2 members: Thandi (lead, 6 tasks) + Bob (1 task: IT3(t) certificate generation), 6.5h logged (2.5h Thandi Day 17 + 4.0h Bob Day 19), 2 docs uploaded Day 21 (trust deed WP + distribution schedule WP), 1 client comment by Bob Day 26)
+- **Moroka Trust AFS engagement ID**: 0a39ccb1-070d-4078-9240-4a4fab254017 (Annual Trust Financial Statements, Ref: TAFS-2026-0001, 7 tasks, 2 members: Thandi (lead, 6 tasks) + Bob (1 task: IT3(t) certificate generation), 7.5h logged (2.5h Thandi Day 17 + 4.0h Bob Day 19 + 1.0h Thandi Day 87 "AFS draft review"), 2 docs uploaded Day 21 (trust deed WP + distribution schedule WP), 1 client comment by Bob Day 26, **Budget configured Day 87: 8h / R10,000 / 80% alert threshold / 94% hours used / At Risk**)
 - **Mathole Engineering client ID**: 29b90b29-9a51-4e73-9157-b2d3622ed29b (ACTIVE, all promoted fields, onboarding complete)
 - **Mathole VAT Return engagement ID**: 302efdce-eb9c-4e5d-8487-4b8558b47faa (VAT Return (bi-monthly), Ref: VR-2026-05-0001, Type: VAT_RETURN, 5 original tasks all DONE Day 68 + 4 follow-up tasks from automation, 3 assigned to Thandi, 3.5h logged, workflow complete)
-- **Total hours this month**: 53.0h (Sipho 2.5h + Bookkeeping 14.5h + Year-End Pack 33.0h + Trust AFS 6.5h + Mathole VAT 3.5h — note: dashboard shows 56.5h, includes Mathole entries)
+- **Total hours this month**: 54.0h (Sipho 2.5h + Bookkeeping 14.5h + Year-End Pack 33.0h + Trust AFS 7.5h + Mathole VAT 3.5h — note: dashboard shows 61.0h, includes Mathole entries + Day 87 time)
 - **First invoice**: Kgosi Bookkeeping **PAID** (INV-0001), ID: b6ba784c-d189-4cb1-8651-d7e84b34f610, 4 line items, Subtotal R 5,575.00, VAT R 836.25, Total R 6,411.25, Issued May 15 2026, SA Tax Invoice PDF generated (3.2 KB), Payment: EFT-2026-05-15-KGOSI, R 6,411.25, Completed May 15 2026
 - **Second invoice**: Sipho Tax Return **PAID** (INV-0002), ID: 9dca277d-d636-44ab-89dd-fcd02aaca957, 1 fixed-fee line item ("Tax Return preparation — 2025/26 ITR12 (fixed fee)"), Subtotal R 2,500.00, VAT R 375.00, Total R 2,875.00, Issued May 15 2026, SA Tax Invoice PDF generated (2.6 KB), Payment: EFT-2026-05-15-SIPHO, R 2,875.00, Completed May 15 2026
 - **Third invoice**: Kgosi Year-End Pack **SENT** (INV-0003), ID: 079e7cb4-d635-49e5-b09c-9cafc1bc5e6f, 7 line items (all Year-End Pack), Subtotal R 29,350.00, VAT R 4,402.50, Total R 33,752.50, Issued May 15 2026
@@ -134,3 +134,4 @@ For each day-N walk in this cycle:
 | 68 | QA | Day 68 walk: VAT Return engagement workflow on Mathole Engineering. All 5 template tasks worked through: Collect invoices (Done), VAT reconciliation (Done), Prepare VAT201 (Done), SARS eFiling submission (Done), Payment instruction (Done). Task Completion Chain automation fired for each, creating 4 follow-up tasks. Overview: 4/9 tasks complete. Time: 3.5h total (Thandi). | 1 PASS / 0 FAIL. No new gaps. |
 | 72 | QA | Day 72 walk: Sipho Tax Return engagement marked COMPLETED. Cancelled 7 remaining open tasks (automation follow-ups). Two-step completion: first attempt blocked by open tasks, second triggered Unbilled Time Warning (R 1,125 / 2.5h), clicked "Complete Anyway". Status: Active → Completed. | 1 PASS / 0 FAIL. No new gaps. |
 | 85 | QA | Day 85 walk: Audit log sweep. Navigated to Settings > Audit Log — 270 total events across 6 pages. Filtered by entityType=project: 6 engagement events (5 created_from_template + 1 completed), all IDs match known engagements. 5/6 by Thandi. Filtered by eventType=invoice.created: 5 invoice creation events matching all 5 invoices (INV-0001 through INV-0005), all by Thandi, all IDs match status.md records. | 3 PASS / 0 FAIL. No new gaps. |
+| 87 | QA | Day 87 walk: Automation wow moment. Configured budget on Moroka Trust AFS (8h / R10,000 / 80% alert). Logged 1.0h on "Draft annual financial statements" task (Thandi, R1,500/hr). Budget: 7h 30m/8h = 94% hours, R8,650/R10,000 = 87% amount, both At Risk. Budget alert automation fired — notification "Budget alert: Moroka Family Trust — FY2025/26 Annual Trust AFS at 80%" appeared in Thandi's bell (15 unread, up from 14). Full notifications page confirmed. Screenshots: 2 evidence files in day-87/. | 3 PASS / 0 FAIL. No new gaps. |

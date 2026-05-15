@@ -15,7 +15,7 @@
 | 0.2 | Click "Request Access" -> /request-access | **PASS** | Page loaded with form: Work Email, Full Name, Organisation Name, Country (dropdown), Industry (dropdown). |
 | 0.3 | Fill form: thandi@thornton-test.local, Thandi Thornton, Thornton & Associates, South Africa, Accounting | **PASS** | All fields filled, dropdowns selected correctly. |
 | 0.4 | Submit -> OTP step appears | **PASS** | "Check Your Email" card with verification code input. "Enter the verification code sent to thandi@thornton-test.local". Timer: 10 min. |
-| 0.5 | Retrieve OTP from Mailpit | **PASS** | Email subject: "Your Kazi verification code". OTP: 637396. Mailpit API: `GET /api/v1/messages`. |
+| 0.5 | Retrieve OTP from Mailpit | **PASS** | Email subject: "Your Kazi verification code". OTP: [REDACTED]. Mailpit API: `GET /api/v1/messages`. |
 | 0.6 | Enter OTP -> success confirmation | **PASS** | "Request Submitted" card: "Your access request has been submitted for review." |
 
 ## Phase B: Platform Admin Approval
@@ -35,7 +35,7 @@
 | ID | Checkpoint | Result | Evidence |
 |----|-----------|--------|----------|
 | 0.14 | Open Keycloak invitation link | **PASS** | Navigated through accept-invite flow, KC logout, then KC registration page. Heading: "Create an account to join the Thornton & Associates organization". Email pre-filled: thandi@thornton-test.local. |
-| 0.15 | Register: Thandi, Thornton, SecureP@ss1 | **PASS** | Filled First Name=Thandi, Last Name=Thornton, Password=SecureP@ss1. Clicked Register. |
+| 0.15 | Register: Thandi, Thornton, [REDACTED] | **PASS** | Filled First Name=Thandi, Last Name=Thornton, Password=[REDACTED]. Clicked Register. |
 | 0.16 | Redirected to /org/thornton-associates/dashboard | **PASS** | URL: http://localhost:3000/org/thornton-associates/dashboard |
 | 0.17 | Sidebar shows org name "Thornton & Associates" | **PASS** | Sidebar displays "Thornton & Associates" as org name. |
 | 0.18 | Sidebar shows Engagements (not Projects), Clients (not Customers) | **PASS** | Sidebar: "Engagements" section with "Engagements" and "Recurring Schedules" links. "Clients" section. Dashboard: "Active Engagements", "Engagement Health". No "Projects" or "Customers" labels. |
@@ -49,7 +49,7 @@
 | 0.21 | Verify Thandi is Owner. No tier gate on invite | **PASS** | Thandi listed as "Owner". Invite form directly accessible with Email + Role + "Send Invite" button. NO "Upgrade to Pro" or tier gate. |
 | 0.22 | Invite bob@thornton-test.local as Admin | **PASS** | Filled email, selected Admin role, clicked Send Invite. Confirmation: "Invitation sent to bob@thornton-test.local." Shows "2 members (1 pending)". |
 | 0.23 | Invite carol@thornton-test.local as Member | **PASS** | Filled email, kept Member role, clicked Send Invite. Confirmation: "Invitation sent to carol@thornton-test.local." Shows "3 members (2 pending)". |
-| 0.24 | Bob and Carol register via invite links | **PASS** | Bob: Opened invite from Mailpit -> KC registration -> Filled Bob/Ndlovu/SecureP@ss2 -> Redirected to dashboard. Carol: Same flow -> Filled Carol/Mokoena/SecureP@ss3 -> Redirected to dashboard. Both users created in Keycloak. |
+| 0.24 | Bob and Carol register via invite links | **PASS** | Bob: Opened invite from Mailpit -> KC registration -> Filled Bob/Ndlovu/[REDACTED] -> Redirected to dashboard. Carol: Same flow -> Filled Carol/Mokoena/[REDACTED] -> Redirected to dashboard. Both users created in Keycloak. |
 
 ### Phase A-D Summary Checkpoints
 
@@ -126,7 +126,7 @@
 | VAT 15% configured | **PASS** |
 | accounting-za-customer, accounting-za-project field packs + trust variant | **PASS** |
 | Field promotion verified: inline, no duplicates | **DEFERRED** (will verify during Day 1 client creation) |
-| Accounting templates + automation pack loaded | **PASS** (5/7 expected templates present; automations deferred) |
+| Accounting templates + automation pack loaded | **PARTIAL** (5/7 expected templates present; automations deferred) |
 | Progressive disclosure verified: NO legal modules, no terminology leaks | **PASS** |
 | Tier removal verified: flat billing, no upgrade UI | **PASS** |
 

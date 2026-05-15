@@ -13,7 +13,7 @@
 - Frontend :3000 healthy (200).
 - Backend :8080 healthy (`{"status":"UP"}`).
 - Previous session was Bob Ndlovu -- signed out via User menu > Sign out.
-- Authenticated as Thandi via Keycloak (thandi@thornton-test.local / SecureP@ss1).
+- Authenticated as Thandi via Keycloak (thandi@thornton-test.local / [REDACTED]).
 - Confirmed user identity: sidebar shows "Thandi Thornton / thandi@thornton-test.local".
 
 ---

@@ -12,7 +12,7 @@
 
 - Logged out Carol Mokoena (previous session) via User Menu > Sign out.
 - Navigated to `http://localhost:3000/dashboard` -> KC redirect to Keycloak login.
-- Authenticated as `bob@thornton-test.local` / `SecureP@ss2`.
+- Authenticated as `bob@thornton-test.local` / `[REDACTED]`.
 - Redirected to `/org/thornton-associates/dashboard`. Sidebar confirms "Bob Ndlovu" / `bob@thornton-test.local`.
 - Dashboard shows: 3 Active Engagements, 9.5h Hours This Month, 0 Overdue Tasks.
 
@@ -22,7 +22,7 @@
 
 | Step | Action | Result | Evidence |
 |------|--------|--------|----------|
-| 10.1a | Login as Bob (Admin) | **PASS** | KC login: bob@thornton-test.local / SecureP@ss2. Redirected to `/org/thornton-associates/dashboard`. Sidebar: "Bob Ndlovu". |
+| 10.1a | Login as Bob (Admin) | **PASS** | KC login: bob@thornton-test.local / [REDACTED]. Redirected to `/org/thornton-associates/dashboard`. Sidebar: "Bob Ndlovu". |
 | 10.1b | Navigate to Engagements list | **PASS** | `/org/thornton-associates/projects` loaded. 3 engagements listed: Kgosi Holdings Year-End Pack, Kgosi Holdings Monthly Bookkeeping (Mar 2026), Sipho Dlamini Tax Return. |
 | 10.1c | Open Kgosi Holdings Monthly Bookkeeping engagement | **PASS** | Clicked engagement link. URL: `/org/thornton-associates/projects/a32c67d5-8e09-47b9-82ec-f0e82fa94ec4`. Header: "Kgosi Holdings -- Monthly Bookkeeping (Mar 2026)" / Active. Client: Kgosi Holdings (Pty) Ltd. Ref: BK-2026-03-0001. Type: BOOKKEEPING. Metadata: "0 documents, 1 member, 6 tasks". |
 | 10.1d | Click Documents tab | **PASS** | Documents tab selected. Initial state: "No documents yet" with drag-and-drop upload area. |

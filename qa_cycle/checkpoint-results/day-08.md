@@ -19,7 +19,7 @@
 | Check | Result | Evidence |
 |-------|--------|----------|
 | Logged out previous user (Thandi) | **PASS** | Clicked User menu > Sign out. Redirected to landing page. |
-| Logged in as Bob via Keycloak | **PASS** | KC login: bob@thornton-test.local / SecureP@ss2. Redirected to /org/thornton-associates/dashboard. Sidebar shows "Bob Ndlovu" / "bob@thornton-test.local". |
+| Logged in as Bob via Keycloak | **PASS** | KC login: bob@thornton-test.local / [REDACTED]. Redirected to /org/thornton-associates/dashboard. Sidebar shows "Bob Ndlovu" / "bob@thornton-test.local". |
 | Kgosi Monthly Bookkeeping engagement accessible | **PASS** | Navigated to engagement ID a32c67d5-8e09-47b9-82ec-f0e82fa94ec4. Title: "Kgosi Holdings -- Monthly Bookkeeping (Mar 2026)", Status: Active, Ref: BK-2026-03-0001, Type: BOOKKEEPING, 6 tasks all Open/Unassigned, 0h logged prior. |
 
 ---

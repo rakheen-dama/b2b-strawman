@@ -15,7 +15,7 @@
 
 | ID | Checkpoint | Result | Evidence |
 |----|-----------|--------|----------|
-| 6.1a | Login as Bob via Keycloak | **PASS** | KC login: bob@thornton-test.local / SecureP@ss2. Redirected to /org/thornton-associates/dashboard. BFF /me confirms: userId=a142c550..., email=bob@thornton-test.local, name=Bob Ndlovu. |
+| 6.1a | Login as Bob via Keycloak | **PASS** | KC login: bob@thornton-test.local / [REDACTED]. Redirected to /org/thornton-associates/dashboard. BFF /me confirms: userId=a142c550..., email=bob@thornton-test.local, name=Bob Ndlovu. |
 | 6.1b | Navigate to Sipho engagement detail | **PASS** | URL: /org/thornton-associates/projects/583ee45e-40b5-4846-9082-92f69f0f5f17. Title: "Sipho Dlamini -- 2025/26 Tax Return", Status: Active, 2 documents, 1 member, 7 tasks, 1.0h logged. |
 | 6.1c | Review uploaded docs on Documents tab | **PASS** | Documents tab shows 2 files: (1) `it3a-employer-certificate-2025.pdf` (628 B, Uploaded May 14, 2026), (2) `it3a-investment-certificate-2025.pdf` (633 B, Uploaded May 14, 2026). Both status: "Uploaded". |
 | 6.1d | Bob adds comment with @Carol mention | **PASS** | Expanded document comments for `it3a-employer-certificate-2025.pdf`. Typed: "Need proof of retirement annuity contribution @Carol". Visibility: Internal only. Clicked Post Comment. Comment rendered: Bob Ndlovu / "now" / "Need proof of retirement annuity contribution @Carol". Edit and Delete buttons visible. |

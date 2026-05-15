@@ -20,7 +20,7 @@
 |-------|--------|----------|
 | Logged out previous user (Bob) | **PASS** | Gateway logout POST with CSRF token. Redirected to landing page. |
 | Carol needs engagement membership | **NOTE** | Carol was not a member of the Kgosi Monthly Bookkeeping engagement. The engagement had 0 members (all 6 tasks unassigned). Carol could not access the engagement (404 from API, "Something went wrong" in UI). Bob (Admin) added Carol as a member before the time-logging step. See note below. |
-| Logged in as Carol via Keycloak | **PASS** | KC login: carol@thornton-test.local / SecureP@ss3. Redirected to /org/thornton-associates/dashboard. Sidebar shows "Carol Mokoena" / "carol@thornton-test.local". |
+| Logged in as Carol via Keycloak | **PASS** | KC login: carol@thornton-test.local / [REDACTED]. Redirected to /org/thornton-associates/dashboard. Sidebar shows "Carol Mokoena" / "carol@thornton-test.local". |
 | Kgosi Monthly Bookkeeping engagement accessible | **PASS** | After membership grant: Navigated to engagement ID a32c67d5-8e09-47b9-82ec-f0e82fa94ec4. Title: "Kgosi Holdings -- Monthly Bookkeeping (Mar 2026)", Role badge: Member, Status: Active, Ref: BK-2026-03-0001, Type: BOOKKEEPING, 6 tasks, 1 member (Carol), 3.0h already logged (Bob Day 8). |
 
 ### Prerequisite Note: Carol Added as Engagement Member

@@ -26,7 +26,7 @@
 | 0.2 | Click "Get Started" -> /request-access | **PASS** | Form loaded with Work Email, Full Name, Organisation Name, Country, Industry fields. |
 | 0.3 | Fill form: thandi@thornton-test.local, Thandi Thornton, Thornton & Associates, South Africa, Accounting | **PASS** | All fields filled, dropdowns selected correctly. Submit button enabled. |
 | 0.4 | Submit -> OTP step appears | **PASS** | "Check Your Email" card with verification code input. Timer: 10 min. |
-| 0.5 | Retrieve OTP from Mailpit | **PASS** | Email subject: "Your Kazi verification code". OTP: 251437. Mailpit API search by `to:thandi@thornton-test.local`. |
+| 0.5 | Retrieve OTP from Mailpit | **PASS** | Email subject: "Your Kazi verification code". OTP: [REDACTED]. Mailpit API search by `to:thandi@thornton-test.local`. |
 | 0.6 | Enter OTP -> success confirmation | **PASS** | "Request Submitted" card: "Your access request has been submitted for review." |
 
 ## Phase B: Platform Admin Approval
@@ -34,7 +34,7 @@
 | ID | Checkpoint | Result | Evidence |
 |----|-----------|--------|----------|
 | 0.7 | Open new tab for platform admin | **PASS** | New tab opened via gateway OAuth. |
-| 0.8 | Login as padmin@docteams.local | **PASS** | KC login: padmin@docteams.local / password. Redirected to /platform-admin/access-requests. |
+| 0.8 | Login as padmin@docteams.local | **PASS** | KC login: padmin@docteams.local / [REDACTED]. Redirected to /platform-admin/access-requests. |
 | 0.9 | Navigate to /platform-admin/access-requests | **PASS** | Already there after login. |
 | 0.10 | Verify Thornton & Associates in Pending tab with Industry=Accounting | **PASS** | Row visible: Org=Thornton & Associates, Email=thandi@thornton-test.local, Name=Thandi Thornton, Country=South Africa, Industry=Accounting, Status=PENDING. |
 | 0.11 | Click Approve -> confirm dialog -> status Approved | **PASS** | Confirmation dialog appeared (via JS evaluate click -- OBS-4001 Playwright quirk). Clicked Approve. Pending tab now empty (request processed). |
@@ -46,7 +46,7 @@
 | ID | Checkpoint | Result | Evidence |
 |----|-----------|--------|----------|
 | 0.14 | Open Keycloak invitation link | **PASS** | Accept-invite flow: KC logout -> KC registration page. Heading: "Create an account to join the Thornton & Associates organization". Email pre-filled. |
-| 0.15 | Register: Thandi, Thornton, SecureP@ss1 | **PASS** | Filled First Name=Thandi, Last Name=Thornton, Password=SecureP@ss1. Clicked Register. |
+| 0.15 | Register: Thandi, Thornton, [REDACTED] | **PASS** | Filled First Name=Thandi, Last Name=Thornton, Password=[REDACTED]. Clicked Register. |
 | 0.16 | Redirected to /org/thornton-associates/dashboard | **PASS** | URL: http://localhost:3000/org/thornton-associates/dashboard |
 | 0.17 | Sidebar shows org name "Thornton & Associates" | **PASS** | Sidebar displays "Thornton & Associates" as org name. |
 | 0.18 | Sidebar shows Engagements (not Projects), Clients (not Customers) | **PASS** | Sidebar: "Engagements" section with "Engagements" and "Recurring Schedules" links. "Clients" section. Dashboard: "Active Engagements", "Engagement Health". No "Projects" or "Customers" labels. |
@@ -60,7 +60,7 @@
 | 0.21 | Verify Thandi is Owner. No tier gate on invite | **PASS** | Thandi listed as "Owner". Invite form directly accessible with Email + Role + "Send Invite" button. NO "Upgrade to Pro" or tier gate. |
 | 0.22 | Invite bob@thornton-test.local as Admin | **PASS** | Filled email, selected Admin role, clicked Send Invite. Confirmation: "Invitation sent to bob@thornton-test.local." |
 | 0.23 | Invite carol@thornton-test.local as Member | **PASS** | Filled email, kept Member role, clicked Send Invite. Confirmation: "Invitation sent to carol@thornton-test.local." |
-| 0.24 | Bob and Carol register via invite links | **PASS** | Bob: Opened invite from Mailpit -> KC logout -> KC registration -> Filled Bob/Ndlovu/SecureP@ss2 -> Redirected to dashboard. Carol: Same flow -> Filled Carol/Mokoena/SecureP@ss3 -> Redirected to dashboard. All three Keycloak users created. |
+| 0.24 | Bob and Carol register via invite links | **PASS** | Bob: Opened invite from Mailpit -> KC logout -> KC registration -> Filled Bob/Ndlovu/[REDACTED] -> Redirected to dashboard. Carol: Same flow -> Filled Carol/Mokoena/[REDACTED] -> Redirected to dashboard. All three Keycloak users created. |
 
 ### Phase A-D Summary Checkpoints
 

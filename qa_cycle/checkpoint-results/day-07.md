@@ -24,7 +24,7 @@ All Day 7 checkpoints passed. Two time-logging scenarios were executed:
 
 | ID | Checkpoint | Result | Evidence |
 |----|-----------|--------|----------|
-| 7.1a | Login as Carol via Keycloak | **PASS** | Cleared browser cookies + KC session. KC login: carol@thornton-test.local / SecureP@ss3. Redirected to /org/thornton-associates/dashboard. Sidebar confirms: "CM" initials, "Carol Mokoena", "carol@thornton-test.local". |
+| 7.1a | Login as Carol via Keycloak | **PASS** | Cleared browser cookies + KC session. KC login: carol@thornton-test.local / [REDACTED]. Redirected to /org/thornton-associates/dashboard. Sidebar confirms: "CM" initials, "Carol Mokoena", "carol@thornton-test.local". |
 | 7.1b | Navigate to Sipho engagement, Tasks tab | **PASS** | URL: /org/thornton-associates/projects/583ee45e-40b5-4846-9082-92f69f0f5f17. Title: "Sipho Dlamini -- 2025/26 Tax Return", Status: Active, 7 tasks. Carol assigned to 4 tasks. Clicked "Log Time" on "Prepare ITR12" task (most relevant for eFiling work). |
 | 7.1c | Log 1.5 hours with description "Drafted tax return in eFiling" | **PASS** | Log Time dialog: Duration=1h 30m, Date=2026-05-15, Description="Drafted tax return in eFiling", Billable=checked, Rate=R 450,00/hr. Total: 1h 30m x R 450,00 = R 675,00. Submitted successfully. Screenshot: `qa_cycle/evidence/day-07/carol-log-time-dialog-1h30m.png` |
 | 7.1d | Verify time entry recorded on Time tab | **PASS** | Time tab confirms: Total=2h 30m, Billable=2h 30m, Entries=2, Contributors=1. By Task: Prepare ITR12 (1h 30m, 1 entry) + Collect IRP5/IT3(a) certificates (1h, 1 entry from Day 4). Screenshot: `qa_cycle/evidence/day-07/carol-time-tab-2h30m.png` |
@@ -35,7 +35,7 @@ All Day 7 checkpoints passed. Two time-logging scenarios were executed:
 
 | ID | Checkpoint | Result | Evidence |
 |----|-----------|--------|----------|
-| 7.2a | Login as Thandi via Keycloak | **PASS** | Cleared browser cookies + KC session. KC login: thandi@thornton-test.local / SecureP@ss1. Redirected to /org/thornton-associates/dashboard. Sidebar confirms: "TT" initials, "Thandi Thornton", "thandi@thornton-test.local". |
+| 7.2a | Login as Thandi via Keycloak | **PASS** | Cleared browser cookies + KC session. KC login: thandi@thornton-test.local / [REDACTED]. Redirected to /org/thornton-associates/dashboard. Sidebar confirms: "TT" initials, "Thandi Thornton", "thandi@thornton-test.local". |
 | 7.2b | Navigate to Kgosi Year-End Pack engagement, Tasks tab | **PASS** | URL: /org/thornton-associates/projects/388d5104-7789-4ad6-bb6c-6d045e9663f3. Title: "Kgosi Holdings -- FY2025/26 Year-End Pack", Status: Active, 7 tasks (all Open, Unassigned). Clicked "Log Time" on "Request & receive trial balance" task. |
 | 7.2c | Log 2.0 hours with description "Initial planning meeting + scope confirmation" | **PASS** | Log Time dialog: Duration=2h 0m, Date=2026-05-15, Description="Initial planning meeting + scope confirmation", Billable=checked, Rate=R 1 500,00/hr. Total: 2h x R 1 500,00 = R 3 000,00. Submitted successfully. Screenshot: `qa_cycle/evidence/day-07/thandi-log-time-dialog-2h.png` |
 | 7.2d | Verify time entry recorded on Time tab | **PASS** | Time tab confirms: Total=2h, Billable=2h, Non-billable=0m, Entries=1, Contributors=1. By Task: Request & receive trial balance (2h, 1 entry). By Member: Thandi Thornton (2h billable). Screenshot: `qa_cycle/evidence/day-07/thandi-time-tab-2h-yearend.png` |

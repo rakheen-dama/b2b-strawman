@@ -31,7 +31,7 @@ The fix correctly resolves the project name in newly created activity events. Bo
 
 | ID | Checkpoint | Result | Evidence |
 |----|-----------|--------|----------|
-| 13.1a | Log in as Bob (Admin) | **PASS** | KC login: bob@thornton-test.local / SecureP@ss2. Sidebar confirms BN / Bob Ndlovu. |
+| 13.1a | Log in as Bob (Admin) | **PASS** | KC login: bob@thornton-test.local / [REDACTED]. Sidebar confirms BN / Bob Ndlovu. |
 | 13.1b | Navigate to Kgosi Year-End Pack engagement | **PASS** | URL: /org/thornton-associates/projects/388d5104-7789-4ad6-bb6c-6d045e9663f3. Heading: "Kgosi Holdings -- FY2025/26 Year-End Pack". Status: Active. |
 | 13.1c | Verify Thandi's Day 12 comment visible | **PASS** | Client Comments tab shows: Thandi Thornton (1 hour ago) -- "@Bob Need FS draft by day 30" |
 | 13.1d | Post acknowledgment reply | **PASS** | Typed "Acknowledged @Thandi -- will have FS structure draft ready. Starting review today." in reply box. Clicked Post Reply. Comment appears as "Bob Ndlovu now". |

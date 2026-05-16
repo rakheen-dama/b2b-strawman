@@ -585,6 +585,23 @@
 | 514 | Inbox Assistant + Activity Window | Both | 511A, 515A | M | 514A, 514B | **Done** (PRs #1298, #1299) |
 | 515 | Automation Hook + Invocation Entity + Review Queue | Both | Phase 37 | L | 515A, 515B, 515C | **Done** (PRs #1292, #1300, #1301) |
 | 516 | QA Capstone — SA Admin POV 30-Day Script | E2E/Process | 511–515 | L | 516A, 516B | |
+| **Phase 71 — Xero Accounting Integration (One-Way Sync)** | | | | | | See [tasks/phase71-xero-accounting-integration.md](tasks/phase71-xero-accounting-integration.md) |
+| 517 | Migration + Entities + Repositories + Port Extensions | Backend | -- | L | 517A, 517B | |
+| 518 | AccountingSyncService + Worker + Event Listeners | Backend | 517 | L | 518A, 518B | |
+| 519 | XeroApiClient + XeroOAuthService | Backend | 517A | M | 519A | |
+| 520 | XeroAccountingProvider Adapter + Mappers | Backend | 517A, 519A | M | 520A, 520B | |
+| 521 | Trust Boundary Guard | Backend | 518A | S | 521A | |
+| 522 | Payment Pull (Poll Worker Completion) | Backend | 518A, 520A | M | 522A | |
+| 523 | One-Time Customer Import | Backend | 519A, 520A | S | 523A | |
+| 524 | Frontend — Connection Management + Settings | Both | 519A, 520B | L | 524A, 524B | |
+| 525 | Frontend — Sync Log + Status Chips | Both | 518A, 524A | L | 525A, 525B | |
+| **Phase 72 — AI Foundation + Client Intelligence (FICA & Matter Intake)** | | | | | | See [tasks/phase72-ai-foundation-client-intelligence.md](tasks/phase72-ai-foundation-client-intelligence.md) |
+| 526 | AiProvider Evolution + AnthropicAiProvider | Backend | -- | L | 526A, 526B | 526A **Done** (PR #1313) |
+| 527 | AiFirmProfile Entity + API + Frontend | Both | 526A | L | 527A, 527B | |
+| 528 | AiExecution + AiExecutionGate + Cost Metering | Backend | 527A | L | 528A, 528B | |
+| 529 | Skill Execution Infrastructure + StubAiProvider | Backend | 526A, 528A | M | 529A, 529B | |
+| 530 | FICA Verification Skill (Backend + Frontend) | Both | 529A | L | 530A, 530B | |
+| 531 | Matter Intake Skill (Backend + Frontend) | Both | 529A | L | 531A, 531B | |
 
 
 ---

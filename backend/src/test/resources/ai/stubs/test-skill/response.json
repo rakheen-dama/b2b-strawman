@@ -1,0 +1,13 @@
+{
+  "verification_result": "PASS",
+  "confidence": 0.95,
+  "findings": [
+    {
+      "item": "identity_document",
+      "status": "verified",
+      "notes": "Valid SA ID document"
+    }
+  ],
+  "recommendations": ["No further action required"],
+  "risk_level": "LOW"
+}

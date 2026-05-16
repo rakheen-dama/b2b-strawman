@@ -2,10 +2,12 @@ package io.b2mash.b2b.b2bstrawman;
 
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
 import io.b2mash.b2b.b2bstrawman.testutil.InMemoryStorageService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestAiConfiguration;
 import io.zonky.test.db.postgres.embedded.EmbeddedPostgres;
 import java.io.IOException;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 import org.springframework.test.context.DynamicPropertyRegistrar;
 
@@ -30,6 +32,7 @@ import org.springframework.test.context.DynamicPropertyRegistrar;
  * <p>Only S3PresignedUrlServiceTest needs real S3 — it uses its own LocalStack setup.
  */
 @TestConfiguration(proxyBeanMethods = false)
+@Import(TestAiConfiguration.class)
 public class TestcontainersConfiguration {
 
   // JVM-wide singleton — one postmaster for the entire test run.

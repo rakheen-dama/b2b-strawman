@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.integration.ai.profile;
 
+import io.b2mash.b2b.b2bstrawman.integration.ai.cost.AiCostService;
+import io.b2mash.b2b.b2bstrawman.integration.ai.cost.AiCostSummary;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class AiFirmProfileController {
 
   private final AiFirmProfileService profileService;
+  private final AiCostService costService;
 
-  public AiFirmProfileController(AiFirmProfileService profileService) {
+  public AiFirmProfileController(AiFirmProfileService profileService, AiCostService costService) {
     this.profileService = profileService;
+    this.costService = costService;
   }
 
   @GetMapping("/profile")
@@ -33,5 +37,12 @@ public class AiFirmProfileController {
   public ResponseEntity<AiFirmProfileResponse> updateProfile(
       @Valid @RequestBody UpdateAiFirmProfileRequest request) {
     return ResponseEntity.ok(AiFirmProfileResponse.from(profileService.updateProfile(request)));
+  }
+
+  @GetMapping("/cost-summary")
+  @PreAuthorize("isAuthenticated()")
+  @RequiresCapability("AI_MANAGE")
+  public ResponseEntity<AiCostSummary> getCostSummary() {
+    return ResponseEntity.ok(costService.getCostSummary());
   }
 }

@@ -21,4 +21,6 @@ public interface AiExecutionGateRepository extends JpaRepository<AiExecutionGate
 
   Page<AiExecutionGate> findByStatusAndGateTypeOrderByCreatedAtDesc(
       String status, String gateType, Pageable pageable);
+
+  Page<AiExecutionGate> findByGateTypeOrderByCreatedAtDesc(String gateType, Pageable pageable);
 }

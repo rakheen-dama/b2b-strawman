@@ -11,6 +11,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -54,6 +55,8 @@ public class AiExecutionGate {
   @Column(name = "expires_at", nullable = false)
   private Instant expiresAt;
 
+  @Version private int version;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -80,7 +83,7 @@ public class AiExecutionGate {
           "Invalid gate status", "Gate must be PENDING but was " + this.status);
     }
     if (this.expiresAt != null && Instant.now().isAfter(this.expiresAt)) {
-      throw new IllegalStateException("Gate has expired at " + this.expiresAt);
+      throw new InvalidStateException("Gate expired", "Gate has expired at " + this.expiresAt);
     }
   }
 
@@ -101,7 +104,10 @@ public class AiExecutionGate {
   }
 
   public void expire() {
-    requirePendingStatus();
+    if (!"PENDING".equals(this.status)) {
+      throw new InvalidStateException(
+          "Invalid gate status", "Gate must be PENDING but was " + this.status);
+    }
     this.status = "EXPIRED";
   }
 
@@ -149,5 +155,9 @@ public class AiExecutionGate {
 
   public Instant getCreatedAt() {
     return createdAt;
+  }
+
+  public int getVersion() {
+    return version;
   }
 }

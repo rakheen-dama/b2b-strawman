@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.integration.ai.skill;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
@@ -97,14 +98,21 @@ public class AiSkillExecutionService {
     execution.setInputSummary(request.context().description());
     execution = executionRepository.save(execution);
 
-    // 3. Assemble prompts and invoke AI provider
+    // 3. Validate vision requirement
+    if (request.skill().requiresVision() && !request.hasImages()) {
+      throw new InvalidStateException(
+          "Skill requires images",
+          "Skill '" + request.skill().skillId() + "' requires vision input but no images provided");
+    }
+
+    // 4. Assemble prompts and invoke AI provider
     AiCompletionResponse response;
     long startMs = System.currentTimeMillis();
     try {
       String systemPrompt = request.skill().assembleSystemPrompt(profile);
       String userPrompt = request.skill().assembleUserPrompt(request.context());
 
-      if (request.hasImages()) {
+      if (request.skill().requiresVision() && request.hasImages()) {
         response =
             provider.completeWithVision(
                 new AiVisionRequest(

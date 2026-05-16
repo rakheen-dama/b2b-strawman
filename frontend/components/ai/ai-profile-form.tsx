@@ -521,8 +521,8 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
                       className="pl-7"
                       value={field.value ? Math.round(field.value / 100) : ""}
                       onChange={(e) => {
-                        const rands = e.target.value ? parseInt(e.target.value, 10) : 0;
-                        field.onChange(rands * 100);
+                        const rands = e.target.value ? parseInt(e.target.value, 10) : undefined;
+                        field.onChange(rands !== undefined ? rands * 100 : undefined);
                       }}
                     />
                   </div>

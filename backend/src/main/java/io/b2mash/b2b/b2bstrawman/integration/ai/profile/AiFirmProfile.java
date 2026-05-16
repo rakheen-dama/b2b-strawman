@@ -101,11 +101,13 @@ public class AiFirmProfile {
     this.practiceAreas = practiceAreas != null ? practiceAreas : this.practiceAreas;
     this.jurisdiction = jurisdiction != null ? jurisdiction : this.jurisdiction;
     this.riskCalibration = riskCalibration != null ? riskCalibration : this.riskCalibration;
-    this.houseStyleNotes = houseStyleNotes;
+    this.houseStyleNotes = houseStyleNotes != null ? houseStyleNotes : this.houseStyleNotes;
     this.ficaRequirements = ficaRequirements != null ? ficaRequirements : this.ficaRequirements;
-    this.feeEstimationNotes = feeEstimationNotes;
+    this.feeEstimationNotes =
+        feeEstimationNotes != null ? feeEstimationNotes : this.feeEstimationNotes;
     this.preferredModel = preferredModel != null ? preferredModel : this.preferredModel;
-    this.monthlyBudgetCents = monthlyBudgetCents;
+    this.monthlyBudgetCents =
+        monthlyBudgetCents != null ? monthlyBudgetCents : this.monthlyBudgetCents;
     if (coldStartCompleted != null) {
       this.coldStartCompleted = coldStartCompleted;
     }

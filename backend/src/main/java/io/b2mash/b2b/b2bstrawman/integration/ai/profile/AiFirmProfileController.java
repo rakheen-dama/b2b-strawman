@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.integration.ai.profile;
 
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,7 +31,7 @@ public class AiFirmProfileController {
   @PreAuthorize("isAuthenticated()")
   @RequiresCapability("AI_MANAGE")
   public ResponseEntity<AiFirmProfileResponse> updateProfile(
-      @RequestBody UpdateAiFirmProfileRequest request) {
+      @Valid @RequestBody UpdateAiFirmProfileRequest request) {
     return ResponseEntity.ok(AiFirmProfileResponse.from(profileService.updateProfile(request)));
   }
 }

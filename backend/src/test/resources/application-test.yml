@@ -86,6 +86,14 @@ docteams:
 # Webhook verification key intentionally NOT set here — fail-closed by default.
 # Tests that need webhook access use @DynamicPropertySource to inject a test ECDSA key.
 
+kazi:
+  ai:
+    anthropic:
+      api-base-url: http://localhost:0
+      api-version: "2023-06-01"
+      timeout-seconds: 10
+      max-retries: 2
+
 heykazi:
   billing:
     notify-url: http://localhost:8080/api/webhooks/subscription

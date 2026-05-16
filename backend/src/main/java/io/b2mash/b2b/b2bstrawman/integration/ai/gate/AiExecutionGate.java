@@ -101,7 +101,10 @@ public class AiExecutionGate {
   }
 
   public void expire() {
-    requirePendingStatus();
+    if (!"PENDING".equals(this.status)) {
+      throw new InvalidStateException(
+          "Invalid gate status", "Gate must be PENDING but was " + this.status);
+    }
     this.status = "EXPIRED";
   }
 

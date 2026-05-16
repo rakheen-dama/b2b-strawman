@@ -123,6 +123,22 @@ kazi:
       api-version: "2023-06-01"
       timeout-seconds: 120
       max-retries: 3
+    pricing:
+      claude-sonnet-4-6:
+        input-per-m-token: 3.00
+        output-per-m-token: 15.00
+        cache-read-per-m-token: 0.30
+        cache-creation-per-m-token: 3.75
+      claude-opus-4-6:
+        input-per-m-token: 15.00
+        output-per-m-token: 75.00
+        cache-read-per-m-token: 1.50
+        cache-creation-per-m-token: 18.75
+    exchange-rate:
+      usd-to-zar: 18.50
+    timeout-seconds: 120
+    max-document-size-bytes: 10485760
+    max-total-document-size-bytes: 52428800
 
 heykazi:
   billing:

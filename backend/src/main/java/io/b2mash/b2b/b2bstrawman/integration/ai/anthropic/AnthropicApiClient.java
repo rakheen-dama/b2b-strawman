@@ -166,7 +166,7 @@ public class AnthropicApiClient {
   private AiCompletionResponse executeWithRetry(
       String apiKey, AnthropicMessagesRequest messagesRequest) {
     long startTime = System.currentTimeMillis();
-    int maxAttempts = properties.maxRetries();
+    int maxAttempts = properties.maxRetries() + 1;
 
     for (int attempt = 1; attempt <= maxAttempts; attempt++) {
       try {
@@ -191,6 +191,10 @@ public class AnthropicApiClient {
                           "Anthropic API error: HTTP " + resp.getStatusCode().value());
                     })
                 .body(AnthropicMessagesResponse.class);
+
+        if (response == null) {
+          throw new AnthropicApiException("Anthropic API returned an empty response body");
+        }
 
         long durationMs = System.currentTimeMillis() - startTime;
         return mapResponse(response, durationMs);

@@ -102,7 +102,10 @@ public class AnthropicAiProvider implements AiProvider {
       if (response.content() == null || response.content().isBlank()) {
         return List.of();
       }
-      return List.of(response.content().split(",")).stream().map(String::trim).toList();
+      return List.of(response.content().split(",")).stream()
+          .map(String::trim)
+          .filter(s -> !s.isBlank())
+          .toList();
     } catch (Exception e) {
       log.warn("Anthropic suggestCategories failed", e);
       return List.of();

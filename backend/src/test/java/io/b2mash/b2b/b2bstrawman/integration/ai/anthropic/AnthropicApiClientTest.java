@@ -273,7 +273,7 @@ class AnthropicApiClientTest {
 
     assertThatThrownBy(() -> fastClient.sendCompletion("sk-test-key", request))
         .isInstanceOf(AnthropicApiClient.AnthropicApiException.class)
-        .hasMessageContaining("Rate limit exceeded after 2 attempts");
+        .hasMessageContaining("Rate limit exceeded after 3 attempts");
   }
 
   @Test

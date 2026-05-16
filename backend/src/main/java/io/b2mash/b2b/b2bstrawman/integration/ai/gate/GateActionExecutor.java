@@ -9,6 +9,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class GateActionExecutor {
@@ -25,6 +26,7 @@ public class GateActionExecutor {
     this.conflictCheckService = conflictCheckService;
   }
 
+  @Transactional
   public void execute(AiExecutionGate gate) {
     GateAction action = parseAction(gate.getGateType(), gate.getProposedAction());
     switch (action) {
@@ -50,24 +52,32 @@ public class GateActionExecutor {
 
   @SuppressWarnings("unchecked")
   private GateAction parseAction(String gateType, Map<String, Object> proposedAction) {
-    return switch (gateType) {
-      case "MARK_KYC_COMPLETE" -> {
-        List<String> itemIdStrings = (List<String>) proposedAction.get("checklist_item_ids");
-        List<UUID> itemIds = itemIdStrings.stream().map(UUID::fromString).toList();
-        String notes = (String) proposedAction.get("completion_notes");
-        yield new GateAction.MarkKycCompleteAction(itemIds, notes);
+    try {
+      return switch (gateType) {
+        case "MARK_KYC_COMPLETE" -> {
+          List<String> itemIdStrings = (List<String>) proposedAction.get("checklist_item_ids");
+          List<UUID> itemIds = itemIdStrings.stream().map(UUID::fromString).toList();
+          String notes = (String) proposedAction.get("completion_notes");
+          yield new GateAction.MarkKycCompleteAction(itemIds, notes);
+        }
+        case "SELECT_MATTER_TEMPLATE" -> {
+          UUID templateId = UUID.fromString((String) proposedAction.get("template_id"));
+          String notes = (String) proposedAction.get("customisation_notes");
+          yield new GateAction.SelectMatterTemplateAction(templateId, notes);
+        }
+        case "CONFIRM_CONFLICT_SCREEN" -> {
+          UUID conflictCheckId = UUID.fromString((String) proposedAction.get("conflict_check_id"));
+          String notes = (String) proposedAction.get("clearance_notes");
+          yield new GateAction.ClearConflictAction(conflictCheckId, notes);
+        }
+        default -> throw new IllegalArgumentException("Unknown gate type: " + gateType);
+      };
+    } catch (NullPointerException | ClassCastException | IllegalArgumentException e) {
+      if (e instanceof IllegalArgumentException && e.getMessage().startsWith("Unknown gate type")) {
+        throw e;
       }
-      case "SELECT_MATTER_TEMPLATE" -> {
-        UUID templateId = UUID.fromString((String) proposedAction.get("template_id"));
-        String notes = (String) proposedAction.get("customisation_notes");
-        yield new GateAction.SelectMatterTemplateAction(templateId, notes);
-      }
-      case "CONFIRM_CONFLICT_SCREEN" -> {
-        UUID conflictCheckId = UUID.fromString((String) proposedAction.get("conflict_check_id"));
-        String notes = (String) proposedAction.get("clearance_notes");
-        yield new GateAction.ClearConflictAction(conflictCheckId, notes);
-      }
-      default -> throw new IllegalArgumentException("Unknown gate type: " + gateType);
-    };
+      throw new IllegalStateException(
+          "Invalid gate action data for type " + gateType + ": " + e.getMessage(), e);
+    }
   }
 }

@@ -79,6 +79,9 @@ public class AiExecutionGate {
       throw new InvalidStateException(
           "Invalid gate status", "Gate must be PENDING but was " + this.status);
     }
+    if (this.expiresAt != null && Instant.now().isAfter(this.expiresAt)) {
+      throw new IllegalStateException("Gate has expired at " + this.expiresAt);
+    }
   }
 
   public void approve(UUID reviewerId, String notes) {

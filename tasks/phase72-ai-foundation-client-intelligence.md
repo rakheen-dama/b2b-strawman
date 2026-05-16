@@ -25,7 +25,7 @@ Three strategic constraints: (1) **Anthropic only for v1** -- no OpenAI/Google a
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 526 | AiProvider Evolution + AnthropicAiProvider | Backend | -- | L | 526A, 526B | 526A **Done** (PR #1313) |
+| 526 | AiProvider Evolution + AnthropicAiProvider | Backend | -- | L | 526A, 526B | **Done** — 526A (PR #1313), 526B (PR #1314) |
 | 527 | AiFirmProfile Entity + API + Frontend | Both | 526A | L | 527A, 527B | |
 | 528 | AiExecution + AiExecutionGate + Cost Metering | Backend | 527A | L | 528A, 528B | |
 | 529 | Skill Execution Infrastructure + StubAiProvider | Backend | 526A, 528A | M | 529A, 529B | |
@@ -141,7 +141,7 @@ PHASES already complete:
 | Order | Slice | Summary |
 |-------|-------|---------|
 | 1a | **526A** | Evolve `AiProvider` interface -- add `complete(AiCompletionRequest)` and `completeWithVision(AiVisionRequest)` methods; create `AiCompletionRequest`, `AiVisionRequest`, `AiImageInput`, `AiCompletionResponse` records; extend `NoOpAiProvider` with default implementations of new methods. **Done** (PR #1313) |
-| 1b | **526B** | `AnthropicAiProvider` implementing full `AiProvider` interface; `AnthropicApiClient` using `RestClient` for Anthropic Messages API; `AnthropicProperties` configuration; prompt caching with `cache_control`; rate limit handling; retry-on-429; integration tests with mocked HTTP. |
+| 1b | **526B** | `AnthropicAiProvider` implementing full `AiProvider` interface; `AnthropicApiClient` using `RestClient` for Anthropic Messages API; `AnthropicProperties` configuration; prompt caching with `cache_control`; rate limit handling; retry-on-429; integration tests with mocked HTTP. **Done** (PR #1314) |
 
 ### Stage 2 -- Profile + Execution Entities (sequential within, parallel across)
 
@@ -204,7 +204,7 @@ A realistic day-by-day cadence: 526A days 1-3; 526B days 3-6; 527A days 4-7 (can
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **526A** | 526A.1-526A.6 | ~6 backend files (1 interface modification + 4 new records + 1 provider modification) | Evolve `AiProvider` interface with 2 new methods; create `AiCompletionRequest`, `AiVisionRequest`, `AiImageInput`, `AiCompletionResponse` records; extend `NoOpAiProvider` with default implementations. **Done** (PR #1313) |
-| **526B** | 526B.1-526B.5 | ~6 backend files (1 provider + 1 API client + 1 config properties + 3 test files) | `AnthropicAiProvider` implementing full `AiProvider`; `AnthropicApiClient` using `RestClient`; `AnthropicProperties` config; integration tests with mocked HTTP. |
+| **526B** | 526B.1-526B.5 | ~6 backend files (1 provider + 1 API client + 1 config properties + 3 test files) | `AnthropicAiProvider` implementing full `AiProvider`; `AnthropicApiClient` using `RestClient`; `AnthropicProperties` config; integration tests with mocked HTTP. **Done** (PR #1314) |
 
 ### Tasks
 

@@ -14,6 +14,9 @@ public class NoOpAiProvider implements AiProvider {
 
   private static final Logger log = LoggerFactory.getLogger(NoOpAiProvider.class);
 
+  private static final String NOT_CONFIGURED_ERROR =
+      "{\"error\": \"AI not configured. Connect an Anthropic API key in Settings > AI.\"}";
+
   @Override
   public String providerId() {
     return "noop";
@@ -43,5 +46,24 @@ public class NoOpAiProvider implements AiProvider {
   @Override
   public ConnectionTestResult testConnection() {
     return new ConnectionTestResult(true, "noop", null);
+  }
+
+  @Override
+  public AiCompletionResponse complete(AiCompletionRequest request) {
+    int promptChars =
+        (request == null || request.userPrompt() == null) ? 0 : request.userPrompt().length();
+    log.info("NoOp AI: would complete prompt ({} chars)", promptChars);
+    return noopResponse();
+  }
+
+  @Override
+  public AiCompletionResponse completeWithVision(AiVisionRequest request) {
+    int imageCount = (request == null || request.images() == null) ? 0 : request.images().size();
+    log.info("NoOp AI: would complete vision prompt ({} images)", imageCount);
+    return noopResponse();
+  }
+
+  private AiCompletionResponse noopResponse() {
+    return new AiCompletionResponse(NOT_CONFIGURED_ERROR, "noop", 0, 0, 0, 0, "end_turn", 0L);
   }
 }

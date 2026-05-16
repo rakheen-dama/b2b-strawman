@@ -9,6 +9,8 @@ import java.util.List;
  */
 public interface AiProvider {
 
+  // --- Phase 52 methods (unchanged) ---
+
   /** Provider identifier (e.g., "openai", "anthropic", "noop"). */
   String providerId();
 
@@ -23,4 +25,12 @@ public interface AiProvider {
 
   /** Test connectivity with the configured credentials. */
   ConnectionTestResult testConnection();
+
+  // --- Phase 72 methods (structured completion for AI skills) ---
+
+  /** One-shot structured text completion. */
+  AiCompletionResponse complete(AiCompletionRequest request);
+
+  /** One-shot structured text completion with image inputs. */
+  AiCompletionResponse completeWithVision(AiVisionRequest request);
 }

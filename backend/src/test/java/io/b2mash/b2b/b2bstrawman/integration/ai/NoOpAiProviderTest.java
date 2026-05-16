@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.integration.ai;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class NoOpAiProviderTest {
@@ -51,5 +52,52 @@ class NoOpAiProviderTest {
     assertThat(result.success()).isTrue();
     assertThat(result.providerName()).isEqualTo("noop");
     assertThat(result.errorMessage()).isNull();
+  }
+
+  @Test
+  void complete_returns_error_response_with_noop_model() {
+    var request =
+        new AiCompletionRequest(
+            "You are a helpful assistant.",
+            "Summarize this contract.",
+            "claude-sonnet-4-20250514",
+            4096,
+            0.3,
+            Map.of("skillId", "fica-verification"));
+
+    var result = provider.complete(request);
+
+    assertThat(result.content()).contains("AI not configured");
+    assertThat(result.model()).isEqualTo("noop");
+    assertThat(result.inputTokens()).isZero();
+    assertThat(result.outputTokens()).isZero();
+    assertThat(result.cacheReadInputTokens()).isZero();
+    assertThat(result.cacheCreationInputTokens()).isZero();
+    assertThat(result.stopReason()).isEqualTo("end_turn");
+    assertThat(result.durationMs()).isZero();
+  }
+
+  @Test
+  void completeWithVision_returns_error_response_with_noop_model() {
+    var request =
+        new AiVisionRequest(
+            "You are a document analyzer.",
+            "Extract text from this image.",
+            "claude-sonnet-4-20250514",
+            4096,
+            0.3,
+            Map.of(),
+            List.of(new AiImageInput("image/png", "iVBORw0KGgoAAAANSUhEUg==")));
+
+    var result = provider.completeWithVision(request);
+
+    assertThat(result.content()).contains("AI not configured");
+    assertThat(result.model()).isEqualTo("noop");
+    assertThat(result.inputTokens()).isZero();
+    assertThat(result.outputTokens()).isZero();
+    assertThat(result.cacheReadInputTokens()).isZero();
+    assertThat(result.cacheCreationInputTokens()).isZero();
+    assertThat(result.stopReason()).isEqualTo("end_turn");
+    assertThat(result.durationMs()).isZero();
   }
 }

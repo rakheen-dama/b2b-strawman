@@ -24,6 +24,7 @@ import {
   PiggyBank,
   FileBarChart,
   Layers,
+  Brain,
   type LucideIcon,
 } from "lucide-react";
 import type { CAPABILITIES } from "@/lib/capabilities";
@@ -66,7 +67,7 @@ export interface SettingsItem {
 }
 
 /**
- * Grouped navigation items organized into 5 logical zones.
+ * Grouped navigation items organized into 6 logical zones.
  * This is the source of truth for sidebar navigation structure.
  */
 export const NAV_GROUPS: NavGroup[] = [
@@ -299,6 +300,20 @@ export const NAV_GROUPS: NavGroup[] = [
       },
     ],
   },
+  {
+    id: "ai",
+    label: "AI",
+    defaultExpanded: false,
+    items: [
+      {
+        label: "AI Reviews",
+        href: (slug) => `/org/${slug}/ai/reviews`,
+        icon: Brain,
+        exact: true,
+        requiredCapability: "AI_REVIEW",
+      },
+    ],
+  },
 ];
 
 /**
@@ -481,6 +496,12 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
     title: "Features",
     description: "Enable additional features for your organization",
     href: (slug) => `/org/${slug}/settings/features`,
+    adminOnly: true,
+  },
+  {
+    title: "AI Configuration",
+    description: "Configure AI profile, model preference, and usage budget",
+    href: (slug) => `/org/${slug}/settings/ai`,
     adminOnly: true,
   },
 ];

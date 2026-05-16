@@ -26,7 +26,7 @@ Three strategic constraints: (1) **Anthropic only for v1** -- no OpenAI/Google a
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 526 | AiProvider Evolution + AnthropicAiProvider | Backend | -- | L | 526A, 526B | **Done** — 526A (PR #1313), 526B (PR #1314) |
-| 527 | AiFirmProfile Entity + API + Frontend | Both | 526A | L | 527A, 527B | |
+| 527 | AiFirmProfile Entity + API + Frontend | Both | 526A | L | 527A, 527B | 527A **Done** (PR #1315) |
 | 528 | AiExecution + AiExecutionGate + Cost Metering | Backend | 527A | L | 528A, 528B | |
 | 529 | Skill Execution Infrastructure + StubAiProvider | Backend | 526A, 528A | M | 529A, 529B | |
 | 530 | FICA Verification Skill (Backend + Frontend) | Both | 529A | L | 530A, 530B | |
@@ -147,7 +147,7 @@ PHASES already complete:
 
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
-| 2a | **527A** | V122 migration (ALL 3 tables + indexes + capability seeds); `AiFirmProfile` entity + repo + service + controller; `Capability` enum additions (`AI_MANAGE`, `AI_EXECUTE`, `AI_REVIEW`); profile assembly for system prompts; integration tests. | -- |
+| 2a | **527A** | V122 migration (ALL 3 tables + indexes + capability seeds); `AiFirmProfile` entity + repo + service + controller; `Capability` enum additions (`AI_MANAGE`, `AI_EXECUTE`, `AI_REVIEW`); profile assembly for system prompts; integration tests. **Done** (PR #1315) | -- |
 | 2b | **528A** | `AiExecution` entity + repo (with cost aggregation query); `AiExecutionGate` entity + repo (with drain query for expiry); `GateAction` sealed interface (`MarkKycCompleteAction`, `SelectMatterTemplateAction`, `ClearConflictAction`); `GateActionExecutor`; integration tests. | After 527A |
 | 2c | **528B** | `AiExecutionGateService` (approve/reject/expire with `@Scheduled` expiry worker); `AiExecutionGateController` (AI_REVIEW gated); `AiCostService` (cost calculation, budget check, cost summary); AI pricing + exchange rate config in `application.yml` + `application-test.yml`; integration tests. | After 528A |
 
@@ -282,7 +282,7 @@ A realistic day-by-day cadence: 526A days 1-3; 526B days 3-6; 527A days 4-7 (can
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **527A** | 527A.1-527A.7 | ~10 backend files (1 migration + 1 entity + 1 repo + 1 service + 1 controller + 1 enum modification + 2 DTO records + 2 test files) | V122 migration (all 3 tables + indexes + capability seeds); `AiFirmProfile` entity + repo; `AiFirmProfileService` (CRUD, profile assembly for system prompts); `AiFirmProfileController` (`AI_MANAGE` gated); `Capability` enum additions; integration tests. |
+| **527A** | 527A.1-527A.7 | ~10 backend files (1 migration + 1 entity + 1 repo + 1 service + 1 controller + 1 enum modification + 2 DTO records + 2 test files) | V122 migration (all 3 tables + indexes + capability seeds); `AiFirmProfile` entity + repo; `AiFirmProfileService` (CRUD, profile assembly for system prompts); `AiFirmProfileController` (`AI_MANAGE` gated); `Capability` enum additions; integration tests. **Done** (PR #1315) |
 | **527B** | 527B.1-527B.6 | ~7 frontend files (2 pages + 2 components + 1 schema + 1 API client + 1 nav modification) | `settings/ai/page.tsx`; `components/ai/ai-profile-form.tsx`; `components/ai/ai-cost-summary.tsx`; `lib/schemas/ai-profile.ts`; `lib/api/ai.ts`; `lib/nav-items.ts` modification. |
 
 ### Tasks

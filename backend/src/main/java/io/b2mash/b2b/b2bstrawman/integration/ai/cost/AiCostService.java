@@ -8,12 +8,16 @@ import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfileService;
 import java.time.Instant;
 import java.time.YearMonth;
 import java.time.ZoneOffset;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.stereotype.Service;
 
 @Service
 @EnableConfigurationProperties(AiPricingProperties.class)
 public class AiCostService {
+
+  private static final Logger log = LoggerFactory.getLogger(AiCostService.class);
 
   private final AiExecutionRepository executionRepository;
   private final AiFirmProfileService firmProfileService;
@@ -50,6 +54,10 @@ public class AiCostService {
     if (pricing == null) {
       // Fallback: use sonnet pricing if model not found
       pricing = pricingProperties.pricing().get("claude-sonnet-4-6");
+    }
+    if (pricing == null) {
+      log.warn("No pricing config for model {} or fallback", response.model());
+      return 0L;
     }
     double inputCostUsd =
         response.inputTokens() * pricing.inputPerMToken() / 1_000_000.0

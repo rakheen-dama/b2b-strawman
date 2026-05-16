@@ -155,6 +155,9 @@ public class AiExecutionGateService {
     if (status != null) {
       return gateRepository.findByStatusOrderByCreatedAtDesc(status, pageable);
     }
+    if (gateType != null) {
+      return gateRepository.findByGateTypeOrderByCreatedAtDesc(gateType, pageable);
+    }
     return gateRepository.findAll(pageable);
   }
 

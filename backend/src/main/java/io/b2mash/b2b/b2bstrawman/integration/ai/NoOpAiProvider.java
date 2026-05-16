@@ -44,4 +44,32 @@ public class NoOpAiProvider implements AiProvider {
   public ConnectionTestResult testConnection() {
     return new ConnectionTestResult(true, "noop", null);
   }
+
+  @Override
+  public AiCompletionResponse complete(AiCompletionRequest request) {
+    log.info("NoOp AI: would complete prompt ({} chars)", request.userPrompt().length());
+    return new AiCompletionResponse(
+        "{\"error\": \"AI not configured. Connect an Anthropic API key in Settings > AI.\"}",
+        "noop",
+        0,
+        0,
+        0,
+        0,
+        "end_turn",
+        0L);
+  }
+
+  @Override
+  public AiCompletionResponse completeWithVision(AiVisionRequest request) {
+    log.info("NoOp AI: would complete vision prompt ({} images)", request.images().size());
+    return new AiCompletionResponse(
+        "{\"error\": \"AI not configured. Connect an Anthropic API key in Settings > AI.\"}",
+        "noop",
+        0,
+        0,
+        0,
+        0,
+        "end_turn",
+        0L);
+  }
 }

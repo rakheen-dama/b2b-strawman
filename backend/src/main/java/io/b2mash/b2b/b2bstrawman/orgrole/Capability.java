@@ -37,7 +37,14 @@ public enum Capability {
   GENERATE_STATEMENT_OF_ACCOUNT,
 
   /** Use the AI assistant (specialist or generalist). */
-  AI_ASSISTANT_USE;
+  AI_ASSISTANT_USE,
+
+  /** Manage AI firm profile and configuration settings. */
+  AI_MANAGE,
+  /** Execute AI skills and generate AI content. */
+  AI_EXECUTE,
+  /** Review and approve AI-generated outputs requiring attorney oversight. */
+  AI_REVIEW;
 
   /** Capabilities restricted to the owner role — admin does NOT inherit these. */
   public static final Set<String> OWNER_ONLY =

@@ -116,6 +116,14 @@ app:
 # keycloak.admin.* properties are defined in application-keycloak.yml
 # The KeycloakProvisioningClient bean is only created when that profile is active.
 
+kazi:
+  ai:
+    anthropic:
+      api-base-url: ${ANTHROPIC_API_BASE_URL:https://api.anthropic.com}
+      api-version: "2023-06-01"
+      timeout-seconds: 120
+      max-retries: 3
+
 heykazi:
   billing:
     monthly-price-cents: 49900

@@ -9,4 +9,9 @@ public record AiCompletionRequest(
     String model,
     int maxTokens,
     double temperature,
-    Map<String, String> metadata) {}
+    Map<String, String> metadata) {
+
+  public AiCompletionRequest {
+    metadata = metadata == null ? Map.of() : Map.copyOf(metadata);
+  }
+}

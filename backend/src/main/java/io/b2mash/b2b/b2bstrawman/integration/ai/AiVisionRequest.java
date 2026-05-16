@@ -11,4 +11,10 @@ public record AiVisionRequest(
     int maxTokens,
     double temperature,
     Map<String, String> metadata,
-    List<AiImageInput> images) {}
+    List<AiImageInput> images) {
+
+  public AiVisionRequest {
+    metadata = metadata == null ? Map.of() : Map.copyOf(metadata);
+    images = images == null ? List.of() : List.copyOf(images);
+  }
+}

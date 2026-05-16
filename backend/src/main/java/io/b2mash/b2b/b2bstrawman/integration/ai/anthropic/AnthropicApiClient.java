@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
@@ -32,7 +31,6 @@ public class AnthropicApiClient {
   private final RestClient restClient;
   private final AnthropicProperties properties;
 
-  @Autowired
   public AnthropicApiClient(AnthropicProperties properties) {
     this.properties = properties;
 

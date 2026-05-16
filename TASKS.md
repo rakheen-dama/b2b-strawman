@@ -598,7 +598,7 @@
 | **Phase 72 — AI Foundation + Client Intelligence (FICA & Matter Intake)** | | | | | | See [tasks/phase72-ai-foundation-client-intelligence.md](tasks/phase72-ai-foundation-client-intelligence.md) |
 | 526 | AiProvider Evolution + AnthropicAiProvider | Backend | -- | L | 526A, 526B | **Done** — 526A (PR #1313), 526B (PR #1314) |
 | 527 | AiFirmProfile Entity + API + Frontend | Both | 526A | L | 527A, 527B | 527A **Done** (PR #1315) |
-| 528 | AiExecution + AiExecutionGate + Cost Metering | Backend | 527A | L | 528A, 528B | 528A **Done** (PR #1316) |
+| 528 | AiExecution + AiExecutionGate + Cost Metering | Backend | 527A | L | 528A, 528B | **Done** — 528A (PR #1316), 528B (PR #1317) |
 | 529 | Skill Execution Infrastructure + StubAiProvider | Backend | 526A, 528A | M | 529A, 529B | |
 | 530 | FICA Verification Skill (Backend + Frontend) | Both | 529A | L | 530A, 530B | |
 | 531 | Matter Intake Skill (Backend + Frontend) | Both | 529A | L | 531A, 531B | |

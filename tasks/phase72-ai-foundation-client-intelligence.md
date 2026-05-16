@@ -27,7 +27,7 @@ Three strategic constraints: (1) **Anthropic only for v1** -- no OpenAI/Google a
 |------|------|-------|------|--------|--------|--------|
 | 526 | AiProvider Evolution + AnthropicAiProvider | Backend | -- | L | 526A, 526B | **Done** — 526A (PR #1313), 526B (PR #1314) |
 | 527 | AiFirmProfile Entity + API + Frontend | Both | 526A | L | 527A, 527B | 527A **Done** (PR #1315) |
-| 528 | AiExecution + AiExecutionGate + Cost Metering | Backend | 527A | L | 528A, 528B | 528A **Done** (PR #1316) |
+| 528 | AiExecution + AiExecutionGate + Cost Metering | Backend | 527A | L | 528A, 528B | **Done** — 528A (PR #1316), 528B (PR #1317) |
 | 529 | Skill Execution Infrastructure + StubAiProvider | Backend | 526A, 528A | M | 529A, 529B | |
 | 530 | FICA Verification Skill (Backend + Frontend) | Both | 529A | L | 530A, 530B | |
 | 531 | Matter Intake Skill (Backend + Frontend) | Both | 529A | L | 531A, 531B | |
@@ -149,7 +149,7 @@ PHASES already complete:
 |-------|-------|---------|-----------------------|
 | 2a | **527A** | V122 migration (ALL 3 tables + indexes + capability seeds); `AiFirmProfile` entity + repo + service + controller; `Capability` enum additions (`AI_MANAGE`, `AI_EXECUTE`, `AI_REVIEW`); profile assembly for system prompts; integration tests. **Done** (PR #1315) | -- |
 | 2b | **528A** | `AiExecution` entity + repo (with cost aggregation query); `AiExecutionGate` entity + repo (with drain query for expiry); `GateAction` sealed interface (`MarkKycCompleteAction`, `SelectMatterTemplateAction`, `ClearConflictAction`); `GateActionExecutor`; integration tests. **Done** (PR #1316) | After 527A |
-| 2c | **528B** | `AiExecutionGateService` (approve/reject/expire with `@Scheduled` expiry worker); `AiExecutionGateController` (AI_REVIEW gated); `AiCostService` (cost calculation, budget check, cost summary); AI pricing + exchange rate config in `application.yml` + `application-test.yml`; integration tests. | After 528A |
+| 2c | **528B** | `AiExecutionGateService` (approve/reject/expire with `@Scheduled` expiry worker); `AiExecutionGateController` (AI_REVIEW gated); `AiCostService` (cost calculation, budget check, cost summary); AI pricing + exchange rate config in `application.yml` + `application-test.yml`; integration tests. **Done** (PR #1317) | After 528A |
 
 ### Stage 3 -- Skill Infra + Frontend (parallel after Stage 2)
 
@@ -368,7 +368,7 @@ A realistic day-by-day cadence: 526A days 1-3; 526B days 3-6; 527A days 4-7 (can
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **528A** | 528A.1-528A.6 | ~8 backend files (2 entities + 2 repos + 1 sealed interface + 1 executor + 2 test files) | `AiExecution` entity + repo; `AiExecutionGate` entity + repo; `GateAction` sealed interface with 3 permits; `GateActionExecutor`. **Done** (PR #1316) |
-| **528B** | 528B.1-528B.6 | ~8 backend files (1 service + 1 controller + 1 cost service + 1 config + 2 domain events + 2 test files) | `AiExecutionGateService` (approve/reject/expire); `AiExecutionGateController` (AI_REVIEW gated); `AiCostService` (cost calc + budget check + summary); AI pricing config; cost summary endpoint addition to profile controller; domain events; integration tests. |
+| **528B** | 528B.1-528B.6 | ~8 backend files (1 service + 1 controller + 1 cost service + 1 config + 2 domain events + 2 test files) | `AiExecutionGateService` (approve/reject/expire); `AiExecutionGateController` (AI_REVIEW gated); `AiCostService` (cost calc + budget check + summary); AI pricing config; cost summary endpoint addition to profile controller; domain events; integration tests. **Done** (PR #1317) |
 
 ### Tasks
 

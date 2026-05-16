@@ -2,13 +2,14 @@ package io.b2mash.b2b.b2bstrawman.integration.ai.skill;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
 import io.b2mash.b2b.b2bstrawman.integration.ai.AiCompletionRequest;
 import io.b2mash.b2b.b2bstrawman.integration.ai.AiCompletionResponse;
+import io.b2mash.b2b.b2bstrawman.integration.ai.AiImageInput;
 import io.b2mash.b2b.b2bstrawman.integration.ai.AiProvider;
 import io.b2mash.b2b.b2bstrawman.integration.ai.AiVisionRequest;
-import io.b2mash.b2b.b2bstrawman.integration.ai.NoOpAiProvider;
 import io.b2mash.b2b.b2bstrawman.integration.ai.cost.AiCostService;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecution;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecutionRepository;
@@ -20,6 +21,7 @@ import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -34,7 +36,7 @@ public class AiSkillExecutionService {
   private final AiFirmProfileService firmProfileService;
   private final AiCostService costService;
   private final IntegrationRegistry integrationRegistry;
-  private final AiProvider fallbackProvider;
+  private final Map<String, AiSkill> skillMap;
   private final AiExecutionRepository executionRepository;
   private final AiExecutionGateRepository gateRepository;
   private final NotificationService notificationService;
@@ -45,7 +47,7 @@ public class AiSkillExecutionService {
       AiFirmProfileService firmProfileService,
       AiCostService costService,
       IntegrationRegistry integrationRegistry,
-      AiProvider fallbackProvider,
+      List<AiSkill> skills,
       AiExecutionRepository executionRepository,
       AiExecutionGateRepository gateRepository,
       NotificationService notificationService,
@@ -54,12 +56,26 @@ public class AiSkillExecutionService {
     this.firmProfileService = firmProfileService;
     this.costService = costService;
     this.integrationRegistry = integrationRegistry;
-    this.fallbackProvider = fallbackProvider;
+    this.skillMap = skills.stream().collect(Collectors.toMap(AiSkill::skillId, s -> s));
     this.executionRepository = executionRepository;
     this.gateRepository = gateRepository;
     this.notificationService = notificationService;
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
+  }
+
+  /**
+   * Resolve a skill by ID and execute it. Throws ResourceNotFoundException if the skill ID is
+   * unknown.
+   */
+  @Transactional
+  public SkillExecutionResult executeSkill(
+      String skillId, SkillContext context, UUID invokedBy, List<AiImageInput> images) {
+    AiSkill skill = skillMap.get(skillId);
+    if (skill == null) {
+      throw new ResourceNotFoundException("AiSkill", skillId);
+    }
+    return executeSkill(new SkillExecutionRequest(skill, context, invokedBy, images));
   }
 
   @Transactional
@@ -149,16 +165,11 @@ public class AiSkillExecutionService {
   }
 
   /**
-   * Resolve the AI provider for the current tenant. Uses the IntegrationRegistry to support
-   * per-tenant provider configuration. Falls back to the directly-injected provider if the registry
-   * returns the NoOp adapter (i.e., no tenant-specific AI integration is configured).
+   * Resolve the AI provider for the current tenant. Uses the IntegrationRegistry which returns the
+   * configured provider (e.g. AnthropicAiProvider) or NoOpAiProvider when no integration is set up.
    */
   private AiProvider resolveProvider() {
-    AiProvider resolved = integrationRegistry.resolve(IntegrationDomain.AI, AiProvider.class);
-    if (resolved instanceof NoOpAiProvider) {
-      return fallbackProvider;
-    }
-    return resolved;
+    return integrationRegistry.resolve(IntegrationDomain.AI, AiProvider.class);
   }
 
   private void sendGateNotification(AiExecutionGate gate, UUID invokedBy) {

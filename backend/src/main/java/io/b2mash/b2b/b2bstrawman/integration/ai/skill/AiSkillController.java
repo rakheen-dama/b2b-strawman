@@ -8,7 +8,6 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -21,11 +20,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class AiSkillController {
 
   private final AiSkillExecutionService executionService;
-  private final Map<String, AiSkill> skillMap;
 
-  public AiSkillController(AiSkillExecutionService executionService, List<AiSkill> skills) {
+  public AiSkillController(AiSkillExecutionService executionService) {
     this.executionService = executionService;
-    this.skillMap = skills.stream().collect(Collectors.toMap(AiSkill::skillId, s -> s));
   }
 
   @PostMapping("/fica-verification")
@@ -33,12 +30,16 @@ public class AiSkillController {
   @RequiresCapability("AI_EXECUTE")
   public ResponseEntity<SkillExecutionResponse> executeFicaVerification(
       @RequestBody FicaVerificationRequest request) {
-    return executeSkill(
-        "fica-verification",
-        request.customerId(),
-        "CUSTOMER",
-        "FICA verification for customer " + request.customerId(),
-        Map.of());
+    var context =
+        new SkillContext(
+            request.customerId(),
+            "CUSTOMER",
+            "FICA verification for customer " + request.customerId(),
+            Map.of());
+    SkillExecutionResult result =
+        executionService.executeSkill(
+            "fica-verification", context, RequestScopes.requireMemberId(), List.of());
+    return ResponseEntity.ok(SkillExecutionResponse.from(result.execution(), result.gates()));
   }
 
   @PostMapping("/matter-intake")
@@ -46,28 +47,15 @@ public class AiSkillController {
   @RequiresCapability("AI_EXECUTE")
   public ResponseEntity<SkillExecutionResponse> executeMatterIntake(
       @RequestBody MatterIntakeRequest request) {
-    return executeSkill(
-        "matter-intake",
-        request.customerId(),
-        "CUSTOMER",
-        request.description(),
-        Map.of("description", request.description()));
-  }
-
-  private ResponseEntity<SkillExecutionResponse> executeSkill(
-      String skillId,
-      UUID entityId,
-      String entityType,
-      String description,
-      Map<String, Object> additionalContext) {
-    AiSkill skill = skillMap.get(skillId);
-    if (skill == null) {
-      return ResponseEntity.notFound().build();
-    }
-    UUID invokedBy = RequestScopes.requireMemberId();
-    var context = new SkillContext(entityId, entityType, description, additionalContext);
-    var executionRequest = new SkillExecutionRequest(skill, context, invokedBy, List.of());
-    SkillExecutionResult result = executionService.executeSkill(executionRequest);
+    var context =
+        new SkillContext(
+            request.customerId(),
+            "CUSTOMER",
+            request.description(),
+            Map.of("description", request.description()));
+    SkillExecutionResult result =
+        executionService.executeSkill(
+            "matter-intake", context, RequestScopes.requireMemberId(), List.of());
     return ResponseEntity.ok(SkillExecutionResponse.from(result.execution(), result.gates()));
   }
 

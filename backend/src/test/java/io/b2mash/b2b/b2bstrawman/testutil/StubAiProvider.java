@@ -1,6 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.testutil;
 
 import io.b2mash.b2b.b2bstrawman.integration.ConnectionTestResult;
+import io.b2mash.b2b.b2bstrawman.integration.IntegrationAdapter;
+import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.ai.AiCompletionRequest;
 import io.b2mash.b2b.b2bstrawman.integration.ai.AiCompletionResponse;
 import io.b2mash.b2b.b2bstrawman.integration.ai.AiProvider;
@@ -18,10 +20,12 @@ import org.slf4j.LoggerFactory;
  * Test stub for AiProvider that returns canned responses from test resources. Reads from:
  * test/resources/ai/stubs/{skill-id}/response.json
  *
- * <p>Registered as @Primary via TestAiConfiguration. Injected as the fallback provider into
- * AiSkillExecutionService, which falls back to it when the IntegrationRegistry resolves to the NoOp
- * adapter (no tenant-specific AI integration configured).
+ * <p>Registered via TestAiConfiguration as an IntegrationAdapter with slug "noop", replacing the
+ * production NoOpAiProvider (which is excluded via @Profile("!test")). The IntegrationRegistry
+ * resolves this as the default AI adapter in tests, providing canned responses for AI skill
+ * execution tests.
  */
+@IntegrationAdapter(domain = IntegrationDomain.AI, slug = "noop")
 public class StubAiProvider implements AiProvider {
 
   private static final Logger log = LoggerFactory.getLogger(StubAiProvider.class);

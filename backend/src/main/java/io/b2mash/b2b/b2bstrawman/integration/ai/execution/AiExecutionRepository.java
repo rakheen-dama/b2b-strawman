@@ -22,6 +22,12 @@ public interface AiExecutionRepository extends JpaRepository<AiExecution, UUID> 
   Page<AiExecution> findBySkillIdAndStatusOrderByCreatedAtDesc(
       String skillId, String status, Pageable pageable);
 
+  Page<AiExecution> findBySkillIdOrderByCreatedAtDesc(String skillId, Pageable pageable);
+
+  Page<AiExecution> findByStatusOrderByCreatedAtDesc(String status, Pageable pageable);
+
+  Page<AiExecution> findAllByOrderByCreatedAtDesc(Pageable pageable);
+
   List<AiExecution> findByEntityTypeAndEntityIdOrderByCreatedAtDesc(
       String entityType, UUID entityId);
 }

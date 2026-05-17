@@ -100,6 +100,22 @@ export default async function AiSettingsPage({ params }: { params: Promise<{ slu
         <div className="space-y-6">
           <AiCostSummary costSummary={costSummary} />
 
+          {/* Execution History Card */}
+          <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
+            <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">
+              Execution History
+            </h2>
+            <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">
+              View all AI skill executions, costs, and outcomes.
+            </p>
+            <Link
+              href={`/org/${slug}/settings/ai/history`}
+              className="mt-3 inline-block text-sm font-medium text-teal-600 hover:text-teal-700 dark:text-teal-400 dark:hover:text-teal-300"
+            >
+              View execution history →
+            </Link>
+          </div>
+
           {/* API Key Status Info Card */}
           <div className="rounded-lg border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-950">
             <h2 className="text-lg font-semibold text-slate-950 dark:text-slate-50">

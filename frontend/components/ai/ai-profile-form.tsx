@@ -131,23 +131,29 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
     setSaving(true);
     setMessage(null);
 
-    const submitData = {
-      ...data,
-      houseStyleNotes: data.houseStyleNotes || null,
-      feeEstimationNotes: data.feeEstimationNotes || null,
-      coldStartCompleted: true,
-    };
+    try {
+      const submitData = {
+        ...data,
+        houseStyleNotes: data.houseStyleNotes || null,
+        feeEstimationNotes: data.feeEstimationNotes || null,
+        coldStartCompleted: true,
+      };
 
-    const result = await updateAiProfileAction(slug, submitData);
-    if (result.success) {
-      setMessage("Configuration saved successfully.");
-      setIsError(false);
-      setTimeout(() => setMessage(null), 3000);
-    } else {
-      setMessage(result.error ?? "Failed to save configuration.");
+      const result = await updateAiProfileAction(slug, submitData);
+      if (result.success) {
+        setMessage("Configuration saved successfully.");
+        setIsError(false);
+        setTimeout(() => setMessage(null), 3000);
+      } else {
+        setMessage(result.error ?? "Failed to save configuration.");
+        setIsError(true);
+      }
+    } catch {
+      setMessage("An unexpected error occurred. Please try again.");
       setIsError(true);
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   }
 
   function addPracticeArea(area: string) {
@@ -198,6 +204,7 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
                           <button
                             type="button"
                             onClick={() => removePracticeArea(area)}
+                            aria-label={`Remove ${area}`}
                             className="ml-0.5 rounded-sm hover:bg-teal-100 dark:hover:bg-teal-900"
                           >
                             <X className="size-3.5" />

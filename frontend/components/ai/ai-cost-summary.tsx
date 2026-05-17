@@ -17,7 +17,7 @@ function formatZarCents(cents: number): string {
 
 function formatPeriod(dateStr: string): string {
   const date = new Date(dateStr);
-  return date.toLocaleDateString("en-ZA", { month: "long", year: "numeric" });
+  return date.toLocaleDateString("en-ZA", { month: "long", year: "numeric", timeZone: "UTC" });
 }
 
 export function AiCostSummary({ costSummary }: AiCostSummaryProps) {

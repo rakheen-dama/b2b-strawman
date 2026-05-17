@@ -52,10 +52,16 @@ export default async function AiSettingsPage({
   let profile: AiProfileResponse | null = null;
   let costSummary: AiCostSummaryResponse | null = null;
 
-  try {
-    [profile, costSummary] = await Promise.all([getAiProfile(), getAiCostSummary()]);
-  } catch {
-    // Non-fatal: show empty form for cold start
+  const [profileResult, costResult] = await Promise.allSettled([
+    getAiProfile(),
+    getAiCostSummary(),
+  ]);
+
+  if (profileResult.status === "fulfilled") {
+    profile = profileResult.value;
+  }
+  if (costResult.status === "fulfilled") {
+    costSummary = costResult.value;
   }
 
   const formData = profile

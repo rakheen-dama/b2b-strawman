@@ -79,11 +79,13 @@ public class FicaVerificationSkill implements AiSkill {
     String systemTemplate = loadClasspathResource(SYSTEM_PROMPT_RESOURCE);
     String outputSchema = loadClasspathResource(OUTPUT_SCHEMA_RESOURCE);
     String profileBlock = firmProfileService.assembleProfileBlock();
+    String riskCalibration =
+        profile.getRiskCalibration() != null ? profile.getRiskCalibration() : "MODERATE";
 
     return systemTemplate
         .replace("{firm_profile_block}", profileBlock)
         .replace("{output_schema}", outputSchema)
-        .replace("{risk_calibration}", profile.getRiskCalibration());
+        .replace("{risk_calibration}", riskCalibration);
   }
 
   @Override

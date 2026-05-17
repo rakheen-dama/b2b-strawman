@@ -82,6 +82,34 @@ public class FicaDocumentReader {
         textContent.append("</document>\n");
         continue;
       }
+
+      // Post-download size enforcement (metadata can be stale)
+      if (bytes.length > pricingProperties.maxDocumentSizeBytes()) {
+        log.warn(
+            "Document {} actual size {} exceeds limit (metadata said {})",
+            doc.getFileName(),
+            bytes.length,
+            doc.getSize());
+        textContent
+            .append("<document file=\"")
+            .append(doc.getFileName())
+            .append("\" type=\"")
+            .append(doc.getContentType())
+            .append("\">\n");
+        textContent.append("Skipped: document exceeds maximum size limit.\n");
+        textContent.append("</document>\n");
+        continue;
+      }
+
+      if (totalBytesFetched + bytes.length > pricingProperties.maxTotalDocumentSizeBytes()) {
+        int remaining = documents.size() - i;
+        textContent
+            .append("Remaining ")
+            .append(remaining)
+            .append(" documents were too large to include.\n");
+        break;
+      }
+
       totalBytesFetched += bytes.length;
 
       String contentType = doc.getContentType();

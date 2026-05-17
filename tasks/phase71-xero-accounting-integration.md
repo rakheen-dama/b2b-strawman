@@ -28,7 +28,7 @@ Three strategic constraints bound the phase: (1) **Xero only for v1** -- Sage Pa
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 517 | Migration + Entities + Repositories + Port Extensions | Backend | -- | L | 517A, 517B | |
+| 517 | Migration + Entities + Repositories + Port Extensions | Backend | -- | L | 517A, 517B | Done |
 | 518 | AccountingSyncService + Worker + Event Listeners | Backend | 517 | L | 518A, 518B | |
 | 519 | XeroApiClient + XeroOAuthService | Backend | 517A | M | 519A | |
 | 520 | XeroAccountingProvider Adapter + Mappers | Backend | 517A, 519A | M | 520A, 520B | |
@@ -158,7 +158,7 @@ PHASES already complete:
 | Order | Slice | Summary |
 |-------|-------|---------|
 | 1a | **517A** | V121 migration (3 tables + indexes + ZA tax seed data); `AccountingXeroConnection` entity + repository; `AccountingSyncEntry` entity + repository (with drain query, entity lookup, external reference match); `AccountingTaxCodeMapping` entity + repository; `SyncState`, `SyncDirection`, `SyncEntityType`, `SyncTrigger` enums; `XeroConnectionStatus` enum; `Capability` enum additions (`INTEGRATION_MANAGE`, `INTEGRATION_VIEW_SYNC_STATUS`, `FINANCIAL_RECONCILE`); `InvoiceSyncRequest` modification (add `externalReference`, `customerEmail`); `LineItem` modification (add `taxMode`). **Done** (PR #1325) |
-| 1b | **517B** | `AccountingPaymentSource` port interface; `ExternalPaymentEvent` record; `NoOpAccountingProvider` modification (add `implements AccountingPaymentSource` with empty-list return); `AccountingTaxCodeMappingService` (CRUD + reset-to-defaults); entity persistence tests + repository query tests. |
+| 1b | **517B** | `AccountingPaymentSource` port interface; `ExternalPaymentEvent` record; `NoOpAccountingProvider` modification (add `implements AccountingPaymentSource` with empty-list return); `AccountingTaxCodeMappingService` (CRUD + reset-to-defaults); entity persistence tests + repository query tests. **Done** (PR #1326) |
 
 ### Stage 2 -- Core Services (parallel after 517B)
 
@@ -223,7 +223,7 @@ A realistic day-by-day cadence: 517A days 1-3; 517B days 3-5; 518A + 519A days 5
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **517A** | 517A.1-517A.9 | ~12 backend files (1 migration + 3 entities + 3 repos + 4 enums + 2 modified records + 1 enum modification) | V121 migration with 3 tables + indexes + ZA seed data; `AccountingXeroConnection` entity + repo; `AccountingSyncEntry` entity + repo (with drain query); `AccountingTaxCodeMapping` entity + repo; `SyncState`, `SyncDirection`, `SyncEntityType`, `SyncTrigger` enums; `Capability` enum additions; `InvoiceSyncRequest` + `LineItem` modifications for `externalReference` and `taxMode`. **Done** (PR #1325) |
-| **517B** | 517B.1-517B.5 | ~6 backend files (1 port interface + 1 record + 1 service + 1 provider modification + 2 test files) | `AccountingPaymentSource` port interface; `ExternalPaymentEvent` record; `AccountingTaxCodeMappingService` (CRUD + reset-to-defaults); `NoOpAccountingProvider` modification to implement `AccountingPaymentSource`; entity persistence tests; repository query tests. |
+| **517B** | 517B.1-517B.5 | ~6 backend files (1 port interface + 1 record + 1 service + 1 provider modification + 2 test files) | `AccountingPaymentSource` port interface; `ExternalPaymentEvent` record; `AccountingTaxCodeMappingService` (CRUD + reset-to-defaults); `NoOpAccountingProvider` modification to implement `AccountingPaymentSource`; entity persistence tests; repository query tests. **Done** (PR #1326) |
 
 ### Tasks
 

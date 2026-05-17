@@ -586,7 +586,7 @@
 | 515 | Automation Hook + Invocation Entity + Review Queue | Both | Phase 37 | L | 515A, 515B, 515C | **Done** (PRs #1292, #1300, #1301) |
 | 516 | QA Capstone — SA Admin POV 30-Day Script | E2E/Process | 511–515 | L | 516A, 516B | |
 | **Phase 71 — Xero Accounting Integration (One-Way Sync)** | | | | | | See [tasks/phase71-xero-accounting-integration.md](tasks/phase71-xero-accounting-integration.md) |
-| 517 | Migration + Entities + Repositories + Port Extensions | Backend | -- | L | 517A, 517B | 517A Done (PR #1325) |
+| 517 | Migration + Entities + Repositories + Port Extensions | Backend | -- | L | 517A, 517B | Done (PR #1325, #1326) |
 | 518 | AccountingSyncService + Worker + Event Listeners | Backend | 517 | L | 518A, 518B | |
 | 519 | XeroApiClient + XeroOAuthService | Backend | 517A | M | 519A | |
 | 520 | XeroAccountingProvider Adapter + Mappers | Backend | 517A, 519A | M | 520A, 520B | |

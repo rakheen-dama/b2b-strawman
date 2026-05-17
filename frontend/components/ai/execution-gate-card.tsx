@@ -73,22 +73,26 @@ export function ExecutionGateCard({ gate, onApprove, onReject }: ExecutionGateCa
   function handleApprove() {
     startTransition(async () => {
       const result = await onApprove(gate.id, notes || undefined);
-      if (!result.success) {
+      if (result.success) {
+        setApproveOpen(false);
+        setNotes("");
+        setError(null);
+      } else {
         setError(result.error || "Failed to approve gate.");
       }
-      setApproveOpen(false);
-      setNotes("");
     });
   }
 
   function handleReject() {
     startTransition(async () => {
       const result = await onReject(gate.id, notes || undefined);
-      if (!result.success) {
+      if (result.success) {
+        setRejectOpen(false);
+        setNotes("");
+        setError(null);
+      } else {
         setError(result.error || "Failed to reject gate.");
       }
-      setRejectOpen(false);
-      setNotes("");
     });
   }
 
@@ -163,7 +167,10 @@ export function ExecutionGateCard({ gate, onApprove, onReject }: ExecutionGateCa
         open={approveOpen}
         onOpenChange={(open) => {
           setApproveOpen(open);
-          if (!open) setNotes("");
+          if (!open) {
+            setNotes("");
+            setError(null);
+          }
         }}
       >
         <AlertDialogContent>
@@ -174,6 +181,9 @@ export function ExecutionGateCard({ gate, onApprove, onReject }: ExecutionGateCa
               will proceed with the action once approved.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {error && approveOpen && (
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          )}
           <div className="py-2">
             <Textarea
               placeholder="Optional review notes..."
@@ -184,7 +194,7 @@ export function ExecutionGateCard({ gate, onApprove, onReject }: ExecutionGateCa
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction variant="accent" onClick={handleApprove}>
+            <AlertDialogAction variant="accent" disabled={isPending} onClick={handleApprove}>
               Approve
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -196,7 +206,10 @@ export function ExecutionGateCard({ gate, onApprove, onReject }: ExecutionGateCa
         open={rejectOpen}
         onOpenChange={(open) => {
           setRejectOpen(open);
-          if (!open) setNotes("");
+          if (!open) {
+            setNotes("");
+            setError(null);
+          }
         }}
       >
         <AlertDialogContent>
@@ -207,6 +220,7 @@ export function ExecutionGateCard({ gate, onApprove, onReject }: ExecutionGateCa
               will not proceed with this action.
             </AlertDialogDescription>
           </AlertDialogHeader>
+          {error && rejectOpen && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
           <div className="py-2">
             <Textarea
               placeholder="Optional rejection reason..."
@@ -217,7 +231,7 @@ export function ExecutionGateCard({ gate, onApprove, onReject }: ExecutionGateCa
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={handleReject}>
+            <AlertDialogAction variant="destructive" disabled={isPending} onClick={handleReject}>
               Reject
             </AlertDialogAction>
           </AlertDialogFooter>

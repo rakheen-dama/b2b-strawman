@@ -145,6 +145,7 @@ export function ExecutionHistoryClient({
             <Button
               variant="outline"
               size="icon-sm"
+              aria-label="Previous page"
               disabled={currentPage === 0 || isPending}
               onClick={() => navigate(currentPage - 1)}
             >
@@ -156,6 +157,7 @@ export function ExecutionHistoryClient({
             <Button
               variant="outline"
               size="icon-sm"
+              aria-label="Next page"
               disabled={currentPage >= totalPages - 1 || isPending}
               onClick={() => navigate(currentPage + 1)}
             >

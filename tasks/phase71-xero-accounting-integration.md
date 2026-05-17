@@ -164,7 +164,7 @@ PHASES already complete:
 
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
-| 2a | **518A** | `AccountingSyncService` (enqueue, retry, summary, poll orchestration); `AccountingSyncWorker` (`@Scheduled(fixedDelay = 30_000)` drain worker with retry back-off); `AccountingSyncEventListener` (subscribes to invoice + customer domain events); `TrustBoundaryDecision` record; enqueue idempotency + state transition + back-off schedule + dead-letter tests. | 519A |
+| 2a | **518A** | `AccountingSyncService` (enqueue, retry, summary, poll orchestration); `AccountingSyncWorker` (`@Scheduled(fixedDelay = 30_000)` drain worker with retry back-off); `AccountingSyncEventListener` (subscribes to invoice + customer domain events); `TrustBoundaryDecision` record; enqueue idempotency + state transition + back-off schedule + dead-letter tests. **Done** (PR #1327) | 519A |
 | 2b | **519A** | `XeroApiClient` (`RestClient` wrapper with bearer-token, refresh-on-401, rate-limit headers, `Xero-tenant-id` header); `XeroOAuthService` (authorization URL builder, code-exchange, refresh-token rotation, disconnect); `XeroRateLimitException`; token exchange + refresh cycle + refresh failure cascade tests. | 518A |
 
 ### Stage 3 -- Adapter + Guard (parallel after Stage 2)
@@ -309,7 +309,7 @@ A realistic day-by-day cadence: 517A days 1-3; 517B days 3-5; 518A + 519A days 5
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **518A** | 518A.1-518A.6 | ~8 backend files (1 service + 1 worker + 1 event listener + 1 record + 4 test files) | `AccountingSyncService` (enqueue invoice/customer push, retry from dead-letter, sync summary, poll orchestration); `AccountingSyncWorker` (`@Scheduled(fixedDelay = 30_000)` drain worker with exponential back-off and dead-letter); `AccountingSyncEventListener` (subscribes to `InvoiceApprovedEvent`, `InvoiceSentEvent`, `InvoiceVoidedEvent`, `CustomerCreatedEvent`, `CustomerUpdatedEvent`); `TrustBoundaryDecision` record. |
+| **518A** | 518A.1-518A.6 | ~8 backend files (1 service + 1 worker + 1 event listener + 1 record + 4 test files) | `AccountingSyncService` (enqueue invoice/customer push, retry from dead-letter, sync summary, poll orchestration); `AccountingSyncWorker` (`@Scheduled(fixedDelay = 30_000)` drain worker with exponential back-off and dead-letter); `AccountingSyncEventListener` (subscribes to `InvoiceApprovedEvent`, `InvoiceSentEvent`, `InvoiceVoidedEvent`, `CustomerCreatedEvent`, `CustomerUpdatedEvent`); `TrustBoundaryDecision` record. **Done** (PR #1327) |
 | **518B** | 518B.1-518B.3 | ~4 backend files (1 worker + 1 test file + 2 modifications) | `AccountingPaymentPollWorker` skeleton (`@Scheduled(fixedDelay = 900_000)`); tenant iteration via `TenantScopedRunner.forEachTenant()`; connection status check; cursor update; wired to `NoOpAccountingProvider` until 522A replaces with real adapter. |
 
 ### Tasks

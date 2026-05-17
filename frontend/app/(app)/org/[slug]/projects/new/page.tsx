@@ -28,8 +28,8 @@ export default async function NewProjectPage({
 
   // Fetch capabilities
   const caps = await fetchMyCapabilities();
-  const canExecuteAi = caps.isAdmin || caps.isOwner || caps.capabilities.includes("AI_EXECUTE");
-  const canReviewGates = caps.isAdmin || caps.isOwner || caps.capabilities.includes("AI_REVIEW");
+  const canExecuteAi = caps.capabilities.includes("AI_EXECUTE");
+  const canReviewGates = caps.capabilities.includes("AI_REVIEW");
 
   // Check AI configuration
   let isAiConfigured = false;

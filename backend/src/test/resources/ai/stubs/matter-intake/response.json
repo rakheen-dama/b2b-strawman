@@ -1,0 +1,55 @@
+{
+  "matterClassification": {
+    "recommendedType": "LITIGATION",
+    "confidence": 0.92,
+    "reasoning": "The matter involves a Road Accident Fund (RAF) claim arising from a motor vehicle accident. This is a personal injury/delictual claim falling under civil litigation in South African law. The RAF Act 56 of 1996 governs such claims."
+  },
+  "templateRecommendation": {
+    "templateId": "00000000-0000-0000-0000-000000000099",
+    "templateName": "RAF Litigation Template",
+    "reasoning": "RAF claims follow a structured process: lodging the claim with RAF, obtaining medical reports, quantifying damages, and pursuing either settlement or litigation. The RAF Litigation template includes all required steps.",
+    "customisationNotes": "Add a task for obtaining the accident report from SAPS and a task for RAF4 form submission. Consider adding a milestone for the 3-year prescription deadline."
+  },
+  "requiredDocuments": [
+    {
+      "documentType": "SAPS Accident Report",
+      "reasoning": "Required to establish the circumstances of the accident and identify the negligent party under RAF Act section 17",
+      "priority": "HIGH"
+    },
+    {
+      "documentType": "Medical Reports and Records",
+      "reasoning": "Necessary to quantify the claimant's injuries and establish causation between the accident and injuries sustained",
+      "priority": "HIGH"
+    },
+    {
+      "documentType": "Proof of Loss of Income",
+      "reasoning": "If the claimant is employed, wage slips and employer letters are needed to quantify past and future loss of earnings",
+      "priority": "MEDIUM"
+    }
+  ],
+  "feeEstimate": {
+    "tariffBasis": "LSSA Party-and-Party Scale (High Court)",
+    "estimatedRangeMinCents": 7500000,
+    "estimatedRangeMaxCents": 15000000,
+    "reasoning": "RAF litigation in the High Court typically involves instruction fees, consultation fees, preparation for trial, and day fees. The estimate accounts for settlement negotiations and potential trial. Based on LSSA tariff items for High Court civil matters.",
+    "assumptions": [
+      "Matter will be heard in the High Court based on quantum exceeding Magistrate's Court jurisdiction",
+      "Settlement negotiations may resolve the matter before trial, reducing costs to the lower end",
+      "Medical expert fees and counsel fees are excluded from this attorney tariff estimate"
+    ]
+  },
+  "conflictScreening": {
+    "status": "POTENTIAL_CONFLICT",
+    "matches": [
+      {
+        "existingMatterName": "Nkosi v Road Accident Fund",
+        "customerName": "Thandi Nkosi",
+        "matchType": "RELATED_PARTY",
+        "reasoning": "The firm represents another claimant against the RAF in a matter arising from the same intersection. While not a direct conflict, the matters may involve the same accident and opposing factual narratives."
+      }
+    ]
+  },
+  "riskFlags": [
+    "Prescription deadline approaching — RAF claims prescribe 3 years from date of accident under section 23 of the RAF Act"
+  ]
+}

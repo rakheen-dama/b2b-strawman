@@ -39,7 +39,7 @@ export default async function ExecutionHistoryPage({
     );
   }
 
-  const page = search.page ? parseInt(search.page, 10) : 0;
+  const page = search.page ? Math.max(0, parseInt(search.page, 10) || 0) : 0;
   let executions: AiExecutionListItem[] = [];
   let totalPages = 0;
   let totalElements = 0;

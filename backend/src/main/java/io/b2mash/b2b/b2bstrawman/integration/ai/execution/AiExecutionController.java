@@ -17,10 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/ai/executions")
 public class AiExecutionController {
 
-  private final AiExecutionRepository repository;
+  private final AiExecutionService service;
 
-  public AiExecutionController(AiExecutionRepository repository) {
-    this.repository = repository;
+  public AiExecutionController(AiExecutionService service) {
+    this.service = service;
   }
 
   @GetMapping
@@ -30,27 +30,15 @@ public class AiExecutionController {
       @RequestParam(required = false) String skillId,
       @RequestParam(required = false) String status,
       Pageable pageable) {
-    Page<AiExecution> page;
-    if (skillId != null && status != null) {
-      page = repository.findBySkillIdAndStatusOrderByCreatedAtDesc(skillId, status, pageable);
-    } else if (skillId != null) {
-      page = repository.findBySkillIdOrderByCreatedAtDesc(skillId, pageable);
-    } else if (status != null) {
-      page = repository.findByStatusOrderByCreatedAtDesc(status, pageable);
-    } else {
-      page = repository.findAllByOrderByCreatedAtDesc(pageable);
-    }
-    return ResponseEntity.ok(page.map(ExecutionListResponse::from));
+    return ResponseEntity.ok(
+        service.listExecutions(skillId, status, pageable).map(ExecutionListResponse::from));
   }
 
   @GetMapping("/{id}")
   @PreAuthorize("isAuthenticated()")
   @RequiresCapability("AI_MANAGE")
   public ResponseEntity<ExecutionDetailResponse> getExecution(@PathVariable UUID id) {
-    return repository
-        .findById(id)
-        .map(e -> ResponseEntity.ok(ExecutionDetailResponse.from(e)))
-        .orElse(ResponseEntity.notFound().build());
+    return ResponseEntity.ok(ExecutionDetailResponse.from(service.getExecution(id)));
   }
 
   // ── DTOs ──────────────────────────────────────────────────────────────────────

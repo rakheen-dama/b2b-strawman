@@ -159,7 +159,13 @@ export function ExecutionGateCard({ gate, onApprove, onReject }: ExecutionGateCa
       </CardContent>
 
       {/* Approve Dialog */}
-      <AlertDialog open={approveOpen} onOpenChange={setApproveOpen}>
+      <AlertDialog
+        open={approveOpen}
+        onOpenChange={(open) => {
+          setApproveOpen(open);
+          if (!open) setNotes("");
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Approve Gate Action</AlertDialogTitle>
@@ -177,7 +183,7 @@ export function ExecutionGateCard({ gate, onApprove, onReject }: ExecutionGateCa
             />
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setNotes("")}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction variant="accent" onClick={handleApprove}>
               Approve
             </AlertDialogAction>
@@ -186,7 +192,13 @@ export function ExecutionGateCard({ gate, onApprove, onReject }: ExecutionGateCa
       </AlertDialog>
 
       {/* Reject Dialog */}
-      <AlertDialog open={rejectOpen} onOpenChange={setRejectOpen}>
+      <AlertDialog
+        open={rejectOpen}
+        onOpenChange={(open) => {
+          setRejectOpen(open);
+          if (!open) setNotes("");
+        }}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Reject Gate Action</AlertDialogTitle>
@@ -204,7 +216,7 @@ export function ExecutionGateCard({ gate, onApprove, onReject }: ExecutionGateCa
             />
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setNotes("")}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction variant="destructive" onClick={handleReject}>
               Reject
             </AlertDialogAction>

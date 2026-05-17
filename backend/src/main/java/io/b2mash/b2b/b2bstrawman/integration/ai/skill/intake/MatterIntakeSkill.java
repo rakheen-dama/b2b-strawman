@@ -132,7 +132,11 @@ public class MatterIntakeSkill implements AiSkill {
     // Load active tariff schedule
     List<TariffSchedule> allSchedules = tariffScheduleRepository.findAll();
     TariffSchedule activeSchedule =
-        allSchedules.stream().filter(TariffSchedule::isActive).findFirst().orElse(null);
+        allSchedules.stream()
+            .filter(TariffSchedule::isActive)
+            .sorted(Comparator.comparing(TariffSchedule::getCreatedAt).reversed())
+            .findFirst()
+            .orElse(null);
 
     // Count existing matters for this customer
     long existingMatterCount = projectRepository.countByCustomerId(customerId);

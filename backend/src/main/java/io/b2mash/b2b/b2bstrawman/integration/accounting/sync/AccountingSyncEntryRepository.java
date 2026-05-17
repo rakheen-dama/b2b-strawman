@@ -47,13 +47,14 @@ public interface AccountingSyncEntryRepository extends JpaRepository<AccountingS
       AND e.entityId = :entityId
       AND e.state IN (
           io.b2mash.b2b.b2bstrawman.integration.accounting.sync.SyncState.PENDING,
-          io.b2mash.b2b.b2bstrawman.integration.accounting.sync.SyncState.IN_FLIGHT
+          io.b2mash.b2b.b2bstrawman.integration.accounting.sync.SyncState.IN_FLIGHT,
+          io.b2mash.b2b.b2bstrawman.integration.accounting.sync.SyncState.FAILED_RETRYING
       )
       """)
   Optional<AccountingSyncEntry> findActiveEntryForEntity(
       @Param("entityType") SyncEntityType entityType, @Param("entityId") UUID entityId);
 
-  /** Match by external_reference for payment pull. */
+  /** Match by external_reference for payment pull (most recently completed). */
   @Query(
       """
       SELECT e FROM AccountingSyncEntry e
@@ -61,6 +62,7 @@ public interface AccountingSyncEntryRepository extends JpaRepository<AccountingS
       AND e.state = io.b2mash.b2b.b2bstrawman.integration.accounting.sync.SyncState.COMPLETED
       AND e.direction = io.b2mash.b2b.b2bstrawman.integration.accounting.sync.SyncDirection.PUSH
       ORDER BY e.completedAt DESC
+      FETCH FIRST 1 ROW ONLY
       """)
   Optional<AccountingSyncEntry> findCompletedPushByExternalReference(
       @Param("ref") String externalReference);

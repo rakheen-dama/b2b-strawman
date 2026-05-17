@@ -144,10 +144,17 @@ public class AccountingSyncEntry {
 
   /** Reset for manual retry from dead-letter. */
   public void resetForRetry() {
+    if (this.state != SyncState.DEAD_LETTER) {
+      throw new IllegalStateException("resetForRetry is only valid from DEAD_LETTER");
+    }
     this.state = SyncState.PENDING;
     this.attemptCount = 0;
     this.nextAttemptAt = Instant.now();
     this.trigger = SyncTrigger.MANUAL_RETRY;
+    this.lastErrorCode = null;
+    this.lastErrorDetail = null;
+    this.externalId = null;
+    this.completedAt = null;
   }
 
   public UUID getId() {

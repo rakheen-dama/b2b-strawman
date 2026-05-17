@@ -152,7 +152,15 @@ public class AccountingSyncService {
     xeroConnectionRepository.save(connection);
   }
 
+  /**
+   * Trust boundary guard for sync entries. Currently always permits — 521A will wire real
+   * validation logic (amount thresholds, entity type checks, org-level controls).
+   */
+  public TrustBoundaryDecision checkTrustBoundary(AccountingSyncEntry entry) {
+    return TrustBoundaryDecision.permit();
+  }
+
   private boolean hasConnectedXeroConnection() {
-    return !xeroConnectionRepository.findByStatus(XeroConnectionStatus.CONNECTED).isEmpty();
+    return xeroConnectionRepository.existsByStatus(XeroConnectionStatus.CONNECTED);
   }
 }

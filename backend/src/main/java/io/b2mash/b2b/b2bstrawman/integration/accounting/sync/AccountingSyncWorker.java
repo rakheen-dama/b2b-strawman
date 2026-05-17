@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
+import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -29,6 +30,7 @@ public class AccountingSyncWorker {
 
   private static final int BATCH_SIZE = 25;
   private static final int MAX_ATTEMPTS = 5;
+  private static final Duration RATE_LIMIT_DELAY = Duration.ofSeconds(60);
 
   private static final Duration[] BACKOFF_SCHEDULE = {
     Duration.ofMinutes(1), // attempt 1
@@ -41,6 +43,7 @@ public class AccountingSyncWorker {
   private final TenantScopedRunner tenantScopedRunner;
   private final AccountingSyncEntryRepository syncEntryRepository;
   private final IntegrationRegistry integrationRegistry;
+  private final AccountingSyncService syncService;
   private final ApplicationEventPublisher eventPublisher;
   private final TransactionTemplate transactionTemplate;
 
@@ -48,11 +51,13 @@ public class AccountingSyncWorker {
       TenantScopedRunner tenantScopedRunner,
       AccountingSyncEntryRepository syncEntryRepository,
       IntegrationRegistry integrationRegistry,
+      AccountingSyncService syncService,
       ApplicationEventPublisher eventPublisher,
       TransactionTemplate transactionTemplate) {
     this.tenantScopedRunner = tenantScopedRunner;
     this.syncEntryRepository = syncEntryRepository;
     this.integrationRegistry = integrationRegistry;
+    this.syncService = syncService;
     this.eventPublisher = eventPublisher;
     this.transactionTemplate = transactionTemplate;
   }
@@ -100,6 +105,15 @@ public class AccountingSyncWorker {
       entry.markInFlight();
       syncEntryRepository.save(entry);
 
+      // Trust boundary guard — currently a no-op pass-through; 521A wires real logic
+      TrustBoundaryDecision decision = syncService.checkTrustBoundary(entry);
+      if (!decision.allowed()) {
+        entry.markBlockedTrustBoundary(decision.reason());
+        syncEntryRepository.save(entry);
+        log.warn("Sync entry {} blocked by trust boundary: {}", entry.getId(), decision.reason());
+        return true;
+      }
+
       var provider =
           integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingProvider.class);
 
@@ -124,8 +138,8 @@ public class AccountingSyncWorker {
       String errorMessage = result.errorMessage();
 
       if (isRateLimitError(errorMessage)) {
-        // Rate limit: revert to previous state and stop draining this tenant
-        entry.markFailedRetrying("RATE_LIMIT", errorMessage, computeNextAttempt(1));
+        // Rate limit: revert to PENDING without consuming retry budget
+        entry.markRateLimited(Instant.now().plus(RATE_LIMIT_DELAY));
         syncEntryRepository.save(entry);
         log.warn("Rate limit hit for entry {}; stopping tenant drain", entry.getId());
         return null;
@@ -237,14 +251,16 @@ public class AccountingSyncWorker {
 
   private boolean isRateLimitError(String errorMessage) {
     if (errorMessage == null) return false;
-    String lower = errorMessage.toLowerCase();
+    String lower = errorMessage.toLowerCase(Locale.ROOT);
     return lower.contains("rate") && lower.contains("limit");
   }
 
   private boolean isValidationError(String errorMessage) {
     if (errorMessage == null) return false;
-    String lower = errorMessage.toLowerCase();
-    return lower.contains("validation") || lower.contains("400") || lower.contains("invalid");
+    String lower = errorMessage.toLowerCase(Locale.ROOT);
+    return lower.contains("validation")
+        || lower.contains("status 400")
+        || lower.contains("http 400");
   }
 
   /** Expose backoff schedule for testing. */

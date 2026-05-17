@@ -2,13 +2,13 @@ import { describe, it, expect } from "vitest";
 import { NAV_GROUPS, NAV_ITEMS, UTILITY_ITEMS, SETTINGS_ITEMS } from "../nav-items";
 
 describe("NAV_GROUPS", () => {
-  it("has exactly 5 zones", () => {
-    expect(NAV_GROUPS).toHaveLength(5);
+  it("has exactly 6 zones", () => {
+    expect(NAV_GROUPS).toHaveLength(6);
   });
 
   it("zones are in correct order", () => {
     const ids = NAV_GROUPS.map((g) => g.id);
-    expect(ids).toEqual(["work", "projects", "clients", "finance", "team"]);
+    expect(ids).toEqual(["work", "projects", "clients", "finance", "team", "ai"]);
   });
 
   it("each group has at least one item", () => {
@@ -17,16 +17,18 @@ describe("NAV_GROUPS", () => {
     }
   });
 
-  it("total items across all groups equals 28", () => {
+  it("total items across all groups equals 29", () => {
     const total = NAV_GROUPS.reduce((sum, g) => sum + g.items.length, 0);
-    expect(total).toBe(28);
+    expect(total).toBe(29);
   });
 
-  it("clients and finance zones default to collapsed", () => {
+  it("clients, finance, and ai zones default to collapsed", () => {
     const clients = NAV_GROUPS.find((g) => g.id === "clients");
     const finance = NAV_GROUPS.find((g) => g.id === "finance");
+    const ai = NAV_GROUPS.find((g) => g.id === "ai");
     expect(clients?.defaultExpanded).toBe(false);
     expect(finance?.defaultExpanded).toBe(false);
+    expect(ai?.defaultExpanded).toBe(false);
   });
 
   it("work, projects, and team zones default to expanded", () => {
@@ -73,8 +75,8 @@ describe("NAV_ITEMS (backward compat)", () => {
     expect(NAV_ITEMS).toEqual(expected);
   });
 
-  it("total count is 31 (28 group items + 3 utility items)", () => {
-    expect(NAV_ITEMS).toHaveLength(31);
+  it("total count is 32 (29 group items + 3 utility items)", () => {
+    expect(NAV_ITEMS).toHaveLength(32);
   });
 
   it("includes Notifications and Settings from UTILITY_ITEMS", () => {
@@ -85,8 +87,8 @@ describe("NAV_ITEMS (backward compat)", () => {
 });
 
 describe("SETTINGS_ITEMS", () => {
-  it("has exactly 28 entries", () => {
-    expect(SETTINGS_ITEMS).toHaveLength(28);
+  it("has exactly 29 entries", () => {
+    expect(SETTINGS_ITEMS).toHaveLength(29);
   });
 
   it("all entries have title, description, and href function", () => {
@@ -101,6 +103,7 @@ describe("SETTINGS_ITEMS", () => {
     const adminItems = SETTINGS_ITEMS.filter((i) => i.adminOnly);
     const adminTitles = adminItems.map((i) => i.title).sort();
     expect(adminTitles).toEqual([
+      "AI Configuration",
       "AI Review Queue",
       "Audit log",
       "Automations",

@@ -50,6 +50,9 @@ export type {
 export { kycVerifySchema } from "./kyc";
 export type { KycVerifyFormData } from "./kyc";
 
+export { aiProfileSchema, riskCalibrationEnum, preferredModelEnum } from "./ai-profile";
+export type { AiProfileFormData } from "./ai-profile";
+
 export { closeMatterSchema, closureReasonEnum } from "./matter-closure";
 export type { CloseMatterFormData } from "./matter-closure";
 

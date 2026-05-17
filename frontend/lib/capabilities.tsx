@@ -15,6 +15,9 @@ export const CAPABILITIES = {
   RESOURCE_PLANNING: "RESOURCE_PLANNING",
   VIEW_TRUST: "VIEW_TRUST",
   AI_ASSISTANT_USE: "AI_ASSISTANT_USE",
+  AI_MANAGE: "AI_MANAGE",
+  AI_EXECUTE: "AI_EXECUTE",
+  AI_REVIEW: "AI_REVIEW",
 } as const;
 
 /** Capability metadata — single source of truth for labels, descriptions, and enum values. */
@@ -63,6 +66,21 @@ export const CAPABILITY_META = [
     value: CAPABILITIES.AI_ASSISTANT_USE,
     label: "AI Assistant",
     description: "Use the AI assistant and specialist launchers across the app",
+  },
+  {
+    value: CAPABILITIES.AI_MANAGE,
+    label: "AI Management",
+    description: "Configure AI profile, model preference, and budget settings",
+  },
+  {
+    value: CAPABILITIES.AI_EXECUTE,
+    label: "AI Execute",
+    description: "Invoke AI skills on entities (FICA verification, matter intake)",
+  },
+  {
+    value: CAPABILITIES.AI_REVIEW,
+    label: "AI Review",
+    description: "Review and approve or reject AI-proposed actions",
   },
 ] as const;
 

@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.integration.accounting;
 import io.b2mash.b2b.b2bstrawman.integration.ConnectionTestResult;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationAdapter;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
+import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,7 +12,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @IntegrationAdapter(domain = IntegrationDomain.ACCOUNTING, slug = "noop")
-public class NoOpAccountingProvider implements AccountingProvider {
+public class NoOpAccountingProvider implements AccountingProvider, AccountingPaymentSource {
 
   private static final Logger log = LoggerFactory.getLogger(NoOpAccountingProvider.class);
 
@@ -39,5 +41,10 @@ public class NoOpAccountingProvider implements AccountingProvider {
   @Override
   public ConnectionTestResult testConnection() {
     return new ConnectionTestResult(true, "noop", null);
+  }
+
+  @Override
+  public List<ExternalPaymentEvent> getPaymentsModifiedSince(Instant since) {
+    return List.of();
   }
 }

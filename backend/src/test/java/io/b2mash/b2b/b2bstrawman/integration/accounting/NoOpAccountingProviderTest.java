@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.integration.accounting;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -57,5 +58,12 @@ class NoOpAccountingProviderTest {
     assertThat(result.success()).isTrue();
     assertThat(result.providerName()).isEqualTo("noop");
     assertThat(result.errorMessage()).isNull();
+  }
+
+  @Test
+  void getPaymentsModifiedSince_returns_emptyList() {
+    var result = provider.getPaymentsModifiedSince(Instant.now());
+
+    assertThat(result).isEmpty();
   }
 }

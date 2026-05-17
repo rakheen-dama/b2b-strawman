@@ -97,4 +97,12 @@ public class AccountingTaxCodeMapping {
   public Instant getUpdatedAt() {
     return updatedAt;
   }
+
+  public void setExternalTaxCode(String externalTaxCode) {
+    this.externalTaxCode = externalTaxCode;
+  }
+
+  public void setDisplayLabel(String displayLabel) {
+    this.displayLabel = displayLabel;
+  }
 }

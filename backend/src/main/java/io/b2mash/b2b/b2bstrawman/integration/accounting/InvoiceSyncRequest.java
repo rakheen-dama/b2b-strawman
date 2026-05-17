@@ -10,4 +10,6 @@ public record InvoiceSyncRequest(
     List<LineItem> lineItems,
     String currency,
     LocalDate issueDate,
-    LocalDate dueDate) {}
+    LocalDate dueDate,
+    String externalReference,
+    String customerEmail) {}

@@ -44,14 +44,22 @@ public enum Capability {
   /** Execute AI skills and generate AI content. */
   AI_EXECUTE,
   /** Review and approve AI-generated outputs requiring attorney oversight. */
-  AI_REVIEW;
+  AI_REVIEW,
+
+  /** Manage integration connections (connect/disconnect Xero, etc.). */
+  INTEGRATION_MANAGE,
+  /** View sync status of accounting entries. */
+  INTEGRATION_VIEW_SYNC_STATUS,
+  /** Reconcile financial discrepancies between Kazi and external systems (owner-only). */
+  FINANCIAL_RECONCILE;
 
   /** Capabilities restricted to the owner role — admin does NOT inherit these. */
   public static final Set<String> OWNER_ONLY =
       Set.of(
           MANAGE_COMPLIANCE_DESTRUCTIVE.name(),
           APPROVE_TRUST_PAYMENT.name(),
-          OVERRIDE_MATTER_CLOSURE.name());
+          OVERRIDE_MATTER_CLOSURE.name(),
+          FINANCIAL_RECONCILE.name());
 
   public static final Set<String> ALL_NAMES =
       Arrays.stream(values()).map(Enum::name).collect(Collectors.toUnmodifiableSet());

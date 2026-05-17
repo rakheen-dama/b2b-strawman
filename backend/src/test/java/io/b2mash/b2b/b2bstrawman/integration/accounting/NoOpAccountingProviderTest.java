@@ -22,10 +22,13 @@ class NoOpAccountingProviderTest {
         new InvoiceSyncRequest(
             "INV-001",
             "Acme Corp",
-            List.of(new LineItem("Consulting", BigDecimal.ONE, BigDecimal.TEN, BigDecimal.ZERO)),
+            List.of(
+                new LineItem("Consulting", BigDecimal.ONE, BigDecimal.TEN, BigDecimal.ZERO, null)),
             "ZAR",
             LocalDate.now(),
-            LocalDate.now().plusDays(30));
+            LocalDate.now().plusDays(30),
+            null,
+            null);
 
     var result = provider.syncInvoice(request);
 

@@ -26,7 +26,7 @@ Three strategic constraints: (1) **Anthropic only for v1** -- no OpenAI/Google a
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 526 | AiProvider Evolution + AnthropicAiProvider | Backend | -- | L | 526A, 526B | **Done** — 526A (PR #1313), 526B (PR #1314) |
-| 527 | AiFirmProfile Entity + API + Frontend | Both | 526A | L | 527A, 527B | 527A **Done** (PR #1315) |
+| 527 | AiFirmProfile Entity + API + Frontend | Both | 526A | L | 527A, 527B | **Done** — 527A (PR #1315), 527B (PR #1319) |
 | 528 | AiExecution + AiExecutionGate + Cost Metering | Backend | 527A | L | 528A, 528B | **Done** — 528A (PR #1316), 528B (PR #1317) |
 | 529 | Skill Execution Infrastructure + StubAiProvider | Backend | 526A, 528A | M | 529A, 529B | 529A **Done** (PR #1318) |
 | 530 | FICA Verification Skill (Backend + Frontend) | Both | 529A | L | 530A, 530B | |
@@ -156,7 +156,7 @@ PHASES already complete:
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
 | 3a | **529A** | `AiSkill` interface; `AiSkillExecutionService` (shared orchestration -- pre-flight, invoke, record, create gates, notify, audit); `AiSkillController` (AI_EXECUTE gated); `SkillExecutionRequest` + `SkillContext` records; `StubAiProvider` (`@TestConfiguration @Primary`); canned response test resources; integration tests. **Done** (PR #1318) | 527B, 529B |
-| 3b | **527B** | Frontend -- `settings/ai/page.tsx`; `components/ai/ai-profile-form.tsx` (cold-start wizard + edit); `components/ai/ai-cost-summary.tsx`; `lib/schemas/ai-profile.ts` (Zod); `lib/api/ai.ts` (API client functions for profile + cost summary); `lib/nav-items.ts` modification (add AI settings + AI reviews nav items). | 529A, 529B |
+| 3b | **527B** | Frontend -- `settings/ai/page.tsx`; `components/ai/ai-profile-form.tsx` (cold-start wizard + edit); `components/ai/ai-cost-summary.tsx`; `lib/schemas/ai-profile.ts` (Zod); `lib/api/ai.ts` (API client functions for profile + cost summary); `lib/nav-items.ts` modification (add AI settings + AI reviews nav items). **Done** (PR #1319) | 529A, 529B |
 | 3c | **529B** | Frontend -- `ai/reviews/page.tsx` (pending gates list + history tab); `settings/ai/history/page.tsx` (execution history table); `components/ai/execution-gate-card.tsx` (gate review card with approve/reject); API client functions for gates + executions in `lib/api/ai.ts` (extend). | 529A, 527B |
 
 ### Stage 4 -- Skills Backend (parallel after 529A)
@@ -283,7 +283,7 @@ A realistic day-by-day cadence: 526A days 1-3; 526B days 3-6; 527A days 4-7 (can
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **527A** | 527A.1-527A.7 | ~10 backend files (1 migration + 1 entity + 1 repo + 1 service + 1 controller + 1 enum modification + 2 DTO records + 2 test files) | V122 migration (all 3 tables + indexes + capability seeds); `AiFirmProfile` entity + repo; `AiFirmProfileService` (CRUD, profile assembly for system prompts); `AiFirmProfileController` (`AI_MANAGE` gated); `Capability` enum additions; integration tests. **Done** (PR #1315) |
-| **527B** | 527B.1-527B.6 | ~7 frontend files (2 pages + 2 components + 1 schema + 1 API client + 1 nav modification) | `settings/ai/page.tsx`; `components/ai/ai-profile-form.tsx`; `components/ai/ai-cost-summary.tsx`; `lib/schemas/ai-profile.ts`; `lib/api/ai.ts`; `lib/nav-items.ts` modification. |
+| **527B** | 527B.1-527B.6 | ~7 frontend files (2 pages + 2 components + 1 schema + 1 API client + 1 nav modification) | `settings/ai/page.tsx`; `components/ai/ai-profile-form.tsx`; `components/ai/ai-cost-summary.tsx`; `lib/schemas/ai-profile.ts`; `lib/api/ai.ts`; `lib/nav-items.ts` modification. **Done** (PR #1319) |
 
 ### Tasks
 

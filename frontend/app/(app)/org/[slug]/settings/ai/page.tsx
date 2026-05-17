@@ -18,11 +18,7 @@ const DEFAULT_PROFILE = {
   coldStartCompleted: false,
 };
 
-export default async function AiSettingsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function AiSettingsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const caps = await fetchMyCapabilities();
   const isAdmin = caps.isAdmin || caps.isOwner;

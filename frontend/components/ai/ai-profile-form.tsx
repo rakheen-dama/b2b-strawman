@@ -235,18 +235,18 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
                       </Button>
                     </div>
                     <div className="flex flex-wrap gap-1.5">
-                      {COMMON_PRACTICE_AREAS.filter(
-                        (area) => !field.value.includes(area)
-                      ).map((area) => (
-                        <button
-                          key={area}
-                          type="button"
-                          onClick={() => addPracticeArea(area)}
-                          className="rounded-md border border-slate-200 px-2 py-0.5 text-xs text-slate-600 hover:border-teal-300 hover:text-teal-700 dark:border-slate-700 dark:text-slate-400 dark:hover:border-teal-700 dark:hover:text-teal-300"
-                        >
-                          + {area}
-                        </button>
-                      ))}
+                      {COMMON_PRACTICE_AREAS.filter((area) => !field.value.includes(area)).map(
+                        (area) => (
+                          <button
+                            key={area}
+                            type="button"
+                            onClick={() => addPracticeArea(area)}
+                            className="rounded-md border border-slate-200 px-2 py-0.5 text-xs text-slate-600 hover:border-teal-300 hover:text-teal-700 dark:border-slate-700 dark:text-slate-400 dark:hover:border-teal-700 dark:hover:text-teal-300"
+                          >
+                            + {area}
+                          </button>
+                        )
+                      )}
                     </div>
                   </div>
                 </FormControl>
@@ -517,7 +517,7 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
                 <FormLabel>Budget (ZAR)</FormLabel>
                 <FormControl>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">
+                    <span className="absolute top-1/2 left-3 -translate-y-1/2 text-sm text-slate-500">
                       R
                     </span>
                     <Input

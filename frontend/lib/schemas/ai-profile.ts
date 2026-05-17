@@ -18,11 +18,7 @@ export const aiProfileSchema = z.object({
     .optional(),
   feeEstimationNotes: z.string().max(2000).optional().or(z.literal("")),
   preferredModel: preferredModelEnum,
-  monthlyBudgetCents: z.coerce
-    .number()
-    .int()
-    .min(0, "Budget must be zero or positive")
-    .optional(),
+  monthlyBudgetCents: z.coerce.number().int().min(0, "Budget must be zero or positive").optional(),
   coldStartCompleted: z.boolean().optional(),
 });
 

@@ -170,10 +170,13 @@ class IntegrationRegistryIntegrationTest {
                   "INV-SMOKE-001",
                   "Smoke Test Corp",
                   List.of(
-                      new LineItem("Consulting", BigDecimal.ONE, BigDecimal.TEN, BigDecimal.ZERO)),
+                      new LineItem(
+                          "Consulting", BigDecimal.ONE, BigDecimal.TEN, BigDecimal.ZERO, null)),
                   "ZAR",
                   LocalDate.now(),
-                  LocalDate.now().plusDays(30));
+                  LocalDate.now().plusDays(30),
+                  null,
+                  null);
 
           AccountingSyncResult syncResult = provider.syncInvoice(request);
 

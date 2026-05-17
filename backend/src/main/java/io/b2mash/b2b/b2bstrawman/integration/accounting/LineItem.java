@@ -4,4 +4,8 @@ import java.math.BigDecimal;
 
 /** A single line item within an invoice sync request. */
 public record LineItem(
-    String description, BigDecimal quantity, BigDecimal unitPrice, BigDecimal taxAmount) {}
+    String description,
+    BigDecimal quantity,
+    BigDecimal unitPrice,
+    BigDecimal taxAmount,
+    String taxMode) {}

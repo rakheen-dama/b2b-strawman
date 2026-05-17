@@ -1,0 +1,216 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Check, X, Clock } from "lucide-react";
+import type { AiGateListItem } from "@/lib/api/ai";
+
+interface ExecutionGateCardProps {
+  gate: AiGateListItem;
+  onApprove: (gateId: string, notes?: string) => Promise<{ success: boolean; error?: string }>;
+  onReject: (gateId: string, notes?: string) => Promise<{ success: boolean; error?: string }>;
+}
+
+function getStatusBadgeVariant(status: string) {
+  switch (status) {
+    case "PENDING":
+      return "warning" as const;
+    case "APPROVED":
+      return "success" as const;
+    case "REJECTED":
+      return "destructive" as const;
+    case "EXPIRED":
+      return "neutral" as const;
+    default:
+      return "default" as const;
+  }
+}
+
+function formatGateType(gateType: string): string {
+  return gateType
+    .replace(/_/g, " ")
+    .toLowerCase()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function getTimeRemaining(expiresAt: string): string | null {
+  const now = new Date();
+  const expires = new Date(expiresAt);
+  const diff = expires.getTime() - now.getTime();
+  if (diff <= 0) return null;
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  if (hours > 24) {
+    const days = Math.floor(hours / 24);
+    return `${days}d ${hours % 24}h remaining`;
+  }
+  if (hours > 0) return `${hours}h ${minutes}m remaining`;
+  return `${minutes}m remaining`;
+}
+
+export function ExecutionGateCard({ gate, onApprove, onReject }: ExecutionGateCardProps) {
+  const [approveOpen, setApproveOpen] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const [notes, setNotes] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  const timeRemaining = gate.status === "PENDING" ? getTimeRemaining(gate.expiresAt) : null;
+
+  function handleApprove() {
+    startTransition(async () => {
+      const result = await onApprove(gate.id, notes || undefined);
+      if (!result.success) {
+        setError(result.error || "Failed to approve gate.");
+      }
+      setApproveOpen(false);
+      setNotes("");
+    });
+  }
+
+  function handleReject() {
+    startTransition(async () => {
+      const result = await onReject(gate.id, notes || undefined);
+      if (!result.success) {
+        setError(result.error || "Failed to reject gate.");
+      }
+      setRejectOpen(false);
+      setNotes("");
+    });
+  }
+
+  return (
+    <Card className="border-slate-200 dark:border-slate-800">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between gap-2">
+          <div className="space-y-1">
+            <CardTitle className="text-base font-semibold text-slate-950 dark:text-slate-50">
+              {formatGateType(gate.gateType)}
+            </CardTitle>
+            <p className="font-mono text-xs text-slate-500 dark:text-slate-400">
+              Execution {gate.executionId.slice(0, 8)}...
+            </p>
+          </div>
+          <Badge variant={getStatusBadgeVariant(gate.status)}>{gate.status}</Badge>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {/* AI Reasoning */}
+        <div>
+          <p className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+            {gate.aiReasoning}
+          </p>
+        </div>
+
+        {/* Expiry countdown */}
+        {timeRemaining && (
+          <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400">
+            <Clock className="size-3.5" />
+            <span>{timeRemaining}</span>
+          </div>
+        )}
+
+        {/* Error message */}
+        {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
+
+        {/* Action buttons for PENDING gates */}
+        {gate.status === "PENDING" && (
+          <div className="flex items-center gap-2 pt-1">
+            <Button
+              type="button"
+              variant="accent"
+              size="sm"
+              disabled={isPending}
+              onClick={() => setApproveOpen(true)}
+            >
+              <Check className="size-3.5" />
+              Approve
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              disabled={isPending}
+              onClick={() => setRejectOpen(true)}
+            >
+              <X className="size-3.5" />
+              Reject
+            </Button>
+          </div>
+        )}
+
+        {/* Timestamp */}
+        <p className="font-mono text-xs text-slate-400 tabular-nums dark:text-slate-500">
+          {new Date(gate.createdAt).toLocaleString()}
+        </p>
+      </CardContent>
+
+      {/* Approve Dialog */}
+      <AlertDialog open={approveOpen} onOpenChange={setApproveOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Approve Gate Action</AlertDialogTitle>
+            <AlertDialogDescription>
+              Approve the proposed action for &quot;{formatGateType(gate.gateType)}&quot;? The AI
+              will proceed with the action once approved.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-2">
+            <Textarea
+              placeholder="Optional review notes..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setNotes("")}>Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="accent" onClick={handleApprove}>
+              Approve
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reject Dialog */}
+      <AlertDialog open={rejectOpen} onOpenChange={setRejectOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reject Gate Action</AlertDialogTitle>
+            <AlertDialogDescription>
+              Reject the proposed action for &quot;{formatGateType(gate.gateType)}&quot;? The AI
+              will not proceed with this action.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-2">
+            <Textarea
+              placeholder="Optional rejection reason..."
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setNotes("")}>Cancel</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={handleReject}>
+              Reject
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </Card>
+  );
+}

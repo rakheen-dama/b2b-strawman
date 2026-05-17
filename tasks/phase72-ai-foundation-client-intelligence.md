@@ -28,7 +28,7 @@ Three strategic constraints: (1) **Anthropic only for v1** -- no OpenAI/Google a
 | 526 | AiProvider Evolution + AnthropicAiProvider | Backend | -- | L | 526A, 526B | **Done** — 526A (PR #1313), 526B (PR #1314) |
 | 527 | AiFirmProfile Entity + API + Frontend | Both | 526A | L | 527A, 527B | **Done** — 527A (PR #1315), 527B (PR #1319) |
 | 528 | AiExecution + AiExecutionGate + Cost Metering | Backend | 527A | L | 528A, 528B | **Done** — 528A (PR #1316), 528B (PR #1317) |
-| 529 | Skill Execution Infrastructure + StubAiProvider | Backend | 526A, 528A | M | 529A, 529B | 529A **Done** (PR #1318) |
+| 529 | Skill Execution Infrastructure + StubAiProvider | Backend | 526A, 528A | M | 529A, 529B | **Done** — 529A (PR #1318), 529B (PR #1320) |
 | 530 | FICA Verification Skill (Backend + Frontend) | Both | 529A | L | 530A, 530B | |
 | 531 | Matter Intake Skill (Backend + Frontend) | Both | 529A | L | 531A, 531B | |
 
@@ -157,7 +157,7 @@ PHASES already complete:
 |-------|-------|---------|-----------------------|
 | 3a | **529A** | `AiSkill` interface; `AiSkillExecutionService` (shared orchestration -- pre-flight, invoke, record, create gates, notify, audit); `AiSkillController` (AI_EXECUTE gated); `SkillExecutionRequest` + `SkillContext` records; `StubAiProvider` (`@TestConfiguration @Primary`); canned response test resources; integration tests. **Done** (PR #1318) | 527B, 529B |
 | 3b | **527B** | Frontend -- `settings/ai/page.tsx`; `components/ai/ai-profile-form.tsx` (cold-start wizard + edit); `components/ai/ai-cost-summary.tsx`; `lib/schemas/ai-profile.ts` (Zod); `lib/api/ai.ts` (API client functions for profile + cost summary); `lib/nav-items.ts` modification (add AI settings + AI reviews nav items). **Done** (PR #1319) | 529A, 529B |
-| 3c | **529B** | Frontend -- `ai/reviews/page.tsx` (pending gates list + history tab); `settings/ai/history/page.tsx` (execution history table); `components/ai/execution-gate-card.tsx` (gate review card with approve/reject); API client functions for gates + executions in `lib/api/ai.ts` (extend). | 529A, 527B |
+| 3c | **529B** | Frontend -- `ai/reviews/page.tsx` (pending gates list + history tab); `settings/ai/history/page.tsx` (execution history table); `components/ai/execution-gate-card.tsx` (gate review card with approve/reject); API client functions for gates + executions in `lib/api/ai.ts` (extend). **Done** (PR #1320) | 529A, 527B |
 
 ### Stage 4 -- Skills Backend (parallel after 529A)
 
@@ -454,7 +454,7 @@ A realistic day-by-day cadence: 526A days 1-3; 526B days 3-6; 527A days 4-7 (can
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **529A** | 529A.1-529A.7 | ~9 backend files (1 interface + 1 service + 1 controller + 2 records + 1 stub provider + 1 test config + 2 test files) | `AiSkill` interface; `AiSkillExecutionService`; `AiSkillController`; `SkillExecutionRequest` + `SkillContext` records; `StubAiProvider` (`@TestConfiguration @Primary`); integration tests. **Done** (PR #1318) |
-| **529B** | 529B.1-529B.5 | ~7 frontend files (2 pages + 2 components + 1 API client extension + 1 actions file + 1 layout) | AI reviews page; execution history page; execution gate card component; execution detail components; API client extension; server actions. |
+| **529B** | 529B.1-529B.5 | ~7 frontend files (2 pages + 2 components + 1 API client extension + 1 actions file + 1 layout) | AI reviews page; execution history page; execution gate card component; execution detail components; API client extension; server actions. **Done** (PR #1320) |
 
 ### Tasks
 

@@ -74,15 +74,17 @@ class AiSkillControllerTest {
   }
 
   @Test
-  void ficaVerification_withOwner_returns404_whenSkillNotRegistered() throws Exception {
-    // No AiSkill bean is registered with skillId "fica-verification" in this test context
+  void ficaVerification_withOwner_returnsOk_withFailedExecution_whenCustomerNotFound()
+      throws Exception {
+    // The fica-verification skill is registered; passing a non-existent customer ID
+    // results in a FAILED execution (ResourceNotFoundException caught by the service)
     mockMvc
         .perform(
             post("/api/ai/skills/fica-verification")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_skill_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"customerId\": \"" + UUID.randomUUID() + "\"}"))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isOk());
   }
 
   @Test

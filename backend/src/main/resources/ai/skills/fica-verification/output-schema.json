@@ -1,0 +1,89 @@
+{
+  "type": "object",
+  "required": ["overallAssessment", "riskLevel", "checklistReview", "missingDocuments", "riskFlags", "recommendedActions"],
+  "properties": {
+    "overallAssessment": {
+      "type": "string",
+      "enum": ["COMPLETE", "INCOMPLETE", "NEEDS_REVIEW"],
+      "description": "Overall FICA verification status"
+    },
+    "riskLevel": {
+      "type": "string",
+      "enum": ["LOW", "MEDIUM", "HIGH"],
+      "description": "Client risk level based on document review"
+    },
+    "checklistReview": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["checklistItemId", "itemName", "status", "reasoning"],
+        "properties": {
+          "checklistItemId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID of the checklist item being reviewed"
+          },
+          "itemName": {
+            "type": "string",
+            "description": "Name of the checklist item"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["SATISFIED", "NOT_SATISFIED", "NEEDS_REVIEW"],
+            "description": "Verification status for this item"
+          },
+          "evidenceDocument": {
+            "type": ["string", "null"],
+            "description": "File name of the document providing evidence"
+          },
+          "reasoning": {
+            "type": "string",
+            "description": "AI reasoning for this assessment"
+          },
+          "flags": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "Specific concerns or flags for this item"
+          }
+        }
+      }
+    },
+    "missingDocuments": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "List of document types that are missing"
+    },
+    "riskFlags": {
+      "type": "array",
+      "items": {"type": "string"},
+      "description": "Overall risk flags identified during verification"
+    },
+    "recommendedActions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["action", "items", "reasoning"],
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": ["MARK_ITEMS_COMPLETE", "REQUEST_ADDITIONAL_DOCUMENT"],
+            "description": "Type of recommended action"
+          },
+          "items": {
+            "type": "array",
+            "items": {"type": "string", "format": "uuid"},
+            "description": "Checklist item UUIDs this action applies to"
+          },
+          "reasoning": {
+            "type": "string",
+            "description": "Reasoning for this recommendation"
+          },
+          "documentType": {
+            "type": ["string", "null"],
+            "description": "Required for REQUEST_ADDITIONAL_DOCUMENT — type of document needed"
+          }
+        }
+      }
+    }
+  }
+}

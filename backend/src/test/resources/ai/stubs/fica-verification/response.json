@@ -1,0 +1,51 @@
+{
+  "overallAssessment": "INCOMPLETE",
+  "riskLevel": "MEDIUM",
+  "checklistReview": [
+    {
+      "checklistItemId": "00000000-0000-0000-0000-000000000001",
+      "itemName": "South African ID Document",
+      "status": "SATISFIED",
+      "evidenceDocument": "id-document.pdf",
+      "reasoning": "A valid South African ID document (green ID book) is present. The document shows clear details including ID number, name, and photograph. The document appears to be authentic.",
+      "flags": []
+    },
+    {
+      "checklistItemId": "00000000-0000-0000-0000-000000000002",
+      "itemName": "Proof of Residential Address",
+      "status": "NOT_SATISFIED",
+      "evidenceDocument": null,
+      "reasoning": "No proof of residential address was found among the uploaded documents. A utility bill, bank statement, or municipal rates account not older than 3 months is required.",
+      "flags": ["MISSING_DOCUMENT", "REQUIRED_FOR_FICA"]
+    },
+    {
+      "checklistItemId": "00000000-0000-0000-0000-000000000003",
+      "itemName": "Source of Funds Declaration",
+      "status": "NEEDS_REVIEW",
+      "evidenceDocument": "source-of-funds.pdf",
+      "reasoning": "A source of funds declaration is present but appears to be self-certified without supporting documentation. For a MEDIUM-risk client, additional corroboration may be required.",
+      "flags": ["SELF_CERTIFIED", "ENHANCED_DUE_DILIGENCE_MAY_APPLY"]
+    }
+  ],
+  "missingDocuments": [
+    "Proof of residential address (utility bill, bank statement, or municipal rates account — not older than 3 months)"
+  ],
+  "riskFlags": [
+    "Missing proof of address — a fundamental FICA section 21 requirement",
+    "Source of funds declaration is self-certified without independent corroboration"
+  ],
+  "recommendedActions": [
+    {
+      "action": "MARK_ITEMS_COMPLETE",
+      "items": ["00000000-0000-0000-0000-000000000001"],
+      "reasoning": "The South African ID document satisfies FICA section 21 identity verification requirements. The document is clear, appears authentic, and matches the client record.",
+      "documentType": null
+    },
+    {
+      "action": "REQUEST_ADDITIONAL_DOCUMENT",
+      "items": ["00000000-0000-0000-0000-000000000002"],
+      "reasoning": "Proof of residential address is required under FICA section 21 for address verification. Please request a utility bill, bank statement, or municipal rates account not older than 3 months.",
+      "documentType": "Proof of residential address (utility bill, bank statement, or municipal rates account)"
+    }
+  ]
+}

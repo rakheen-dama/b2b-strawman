@@ -1,0 +1,139 @@
+{
+  "type": "object",
+  "required": ["matterClassification", "templateRecommendation", "requiredDocuments", "feeEstimate", "conflictScreening", "riskFlags"],
+  "properties": {
+    "matterClassification": {
+      "type": "object",
+      "required": ["recommendedType", "confidence", "reasoning"],
+      "properties": {
+        "recommendedType": {
+          "type": "string",
+          "description": "Recommended matter type (e.g. LITIGATION, CONVEYANCING, ESTATES, COMMERCIAL, COLLECTIONS, FAMILY)"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Confidence score for the classification"
+        },
+        "reasoning": {
+          "type": "string",
+          "description": "Explanation for the classification decision"
+        }
+      }
+    },
+    "templateRecommendation": {
+      "type": ["object", "null"],
+      "required": ["templateId", "templateName", "reasoning", "customisationNotes"],
+      "properties": {
+        "templateId": {
+          "type": "string",
+          "format": "uuid",
+          "description": "UUID of the recommended project template"
+        },
+        "templateName": {
+          "type": "string",
+          "description": "Name of the recommended template"
+        },
+        "reasoning": {
+          "type": "string",
+          "description": "Why this template is recommended"
+        },
+        "customisationNotes": {
+          "type": "string",
+          "description": "Suggested customisations to the template for this matter"
+        }
+      }
+    },
+    "requiredDocuments": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["documentType", "reasoning", "priority"],
+        "properties": {
+          "documentType": {
+            "type": "string",
+            "description": "Type of document required"
+          },
+          "reasoning": {
+            "type": "string",
+            "description": "Why this document is needed"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["HIGH", "MEDIUM", "LOW"],
+            "description": "Priority level for obtaining this document"
+          }
+        }
+      }
+    },
+    "feeEstimate": {
+      "type": "object",
+      "required": ["tariffBasis", "estimatedRangeMinCents", "estimatedRangeMaxCents", "reasoning", "assumptions"],
+      "properties": {
+        "tariffBasis": {
+          "type": "string",
+          "description": "Tariff schedule or basis used for the estimate (e.g. LSSA Party-and-Party)"
+        },
+        "estimatedRangeMinCents": {
+          "type": "integer",
+          "description": "Lower bound of fee estimate in cents (ZAR)"
+        },
+        "estimatedRangeMaxCents": {
+          "type": "integer",
+          "description": "Upper bound of fee estimate in cents (ZAR)"
+        },
+        "reasoning": {
+          "type": "string",
+          "description": "Explanation of how the estimate was derived"
+        },
+        "assumptions": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Key assumptions underlying the estimate"
+        }
+      }
+    },
+    "conflictScreening": {
+      "type": "object",
+      "required": ["status", "matches"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["CLEAR", "POTENTIAL_CONFLICT", "CONFLICT_DETECTED"],
+          "description": "Overall conflict screening result"
+        },
+        "matches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["existingMatterName", "customerName", "matchType", "reasoning"],
+            "properties": {
+              "existingMatterName": {
+                "type": "string",
+                "description": "Name of the existing matter that may conflict"
+              },
+              "customerName": {
+                "type": "string",
+                "description": "Customer associated with the existing matter"
+              },
+              "matchType": {
+                "type": "string",
+                "description": "Type of conflict match (e.g. DIRECT_PARTY, RELATED_PARTY, SUBJECT_MATTER)"
+              },
+              "reasoning": {
+                "type": "string",
+                "description": "Explanation of the potential conflict"
+              }
+            }
+          }
+        }
+      }
+    },
+    "riskFlags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "description": "Risk flags or concerns identified during intake assessment"
+    }
+  }
+}

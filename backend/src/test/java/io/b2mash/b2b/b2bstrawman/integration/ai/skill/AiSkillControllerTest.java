@@ -88,17 +88,17 @@ class AiSkillControllerTest {
   }
 
   @Test
-  void matterIntake_withOwner_returns404_whenSkillNotRegistered() throws Exception {
-    // No AiSkill bean is registered with skillId "matter-intake" in this test context
+  void unknownSkill_withOwner_returns404_whenSkillNotRegistered() throws Exception {
+    // No AiSkill bean is registered with skillId "non-existent-skill" in this test context
     mockMvc
         .perform(
-            post("/api/ai/skills/matter-intake")
+            post("/api/ai/skills/non-existent-skill")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_skill_ctrl_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     "{\"customerId\": \""
                         + UUID.randomUUID()
-                        + "\", \"description\": \"New matter intake\"}"))
+                        + "\", \"description\": \"Testing unknown skill\"}"))
         .andExpect(status().isNotFound());
   }
 }

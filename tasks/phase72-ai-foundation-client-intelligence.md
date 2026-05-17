@@ -164,7 +164,7 @@ PHASES already complete:
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
 | 4a | **530A** | `FicaVerificationSkill` implementing `AiSkill`; `FicaVerificationOutput` record; `FicaDocumentReader` (S3 fetch + PDFBox text extraction + vision fallback); `resources/ai/skills/fica-verification/system.txt`; `resources/ai/skills/fica-verification/output-schema.json`; `test/resources/ai/stubs/fica-verification/response.json`; integration test. **Done** (PR #1321) | 531A |
-| 4b | **531A** | `MatterIntakeSkill` implementing `AiSkill`; `MatterIntakeOutput` record; `resources/ai/skills/matter-intake/system.txt`; `resources/ai/skills/matter-intake/output-schema.json`; `test/resources/ai/stubs/matter-intake/response.json`; integration test. | 530A |
+| 4b | **531A** | `MatterIntakeSkill` implementing `AiSkill`; `MatterIntakeOutput` record; `resources/ai/skills/matter-intake/system.txt`; `resources/ai/skills/matter-intake/output-schema.json`; `test/resources/ai/stubs/matter-intake/response.json`; integration test. **Done** (PR #1323) | 530A |
 
 ### Stage 5 -- Skill Frontends (parallel after Stage 4)
 
@@ -617,7 +617,7 @@ A realistic day-by-day cadence: 526A days 1-3; 526B days 3-6; 527A days 4-7 (can
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **531A** | 531A.1-531A.6 | ~8 backend files (1 skill class + 1 output record + 2 resource files + 1 test resource + 2 test files + 1 application config validation) | `MatterIntakeSkill` implementing `AiSkill`; `MatterIntakeOutput` record; system prompt and output schema resources; canned test response; integration test. |
+| **531A** | 531A.1-531A.6 | ~8 backend files (1 skill class + 1 output record + 2 resource files + 1 test resource + 2 test files + 1 application config validation) | `MatterIntakeSkill` implementing `AiSkill`; `MatterIntakeOutput` record; system prompt and output schema resources; canned test response; integration test. **Done** (PR #1323) |
 | **531B** | 531B.1-531B.5 | ~6 frontend files (2 components + 1 page modification + 1 API client extension + 1 actions file + 1 type file) | Matter intake panel; intake result display; project creation page modification; skill invocation server action; API client extension. |
 
 ### Tasks

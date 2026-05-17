@@ -601,7 +601,7 @@
 | 528 | AiExecution + AiExecutionGate + Cost Metering | Backend | 527A | L | 528A, 528B | **Done** — 528A (PR #1316), 528B (PR #1317) |
 | 529 | Skill Execution Infrastructure + StubAiProvider | Backend | 526A, 528A | M | 529A, 529B | **Done** — 529A (PR #1318), 529B (PR #1320) |
 | 530 | FICA Verification Skill (Backend + Frontend) | Both | 529A | L | 530A, 530B | **Done** — 530A (PR #1321), 530B (PR #1322) |
-| 531 | Matter Intake Skill (Backend + Frontend) | Both | 529A | L | 531A, 531B | |
+| 531 | Matter Intake Skill (Backend + Frontend) | Both | 529A | L | 531A, 531B | 531A **Done** (PR #1323) |
 
 
 ---

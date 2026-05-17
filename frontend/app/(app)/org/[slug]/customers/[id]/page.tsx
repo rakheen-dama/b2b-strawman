@@ -88,6 +88,8 @@ import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { checkPrerequisites } from "@/lib/prerequisites";
 import type { PrerequisiteCheck } from "@/components/prerequisite/types";
 import { formatDate, formatCurrencySafe } from "@/lib/format";
+import { FicaVerificationPanel } from "@/components/ai/fica-verification-panel";
+import { getAiProfile } from "@/lib/api/ai";
 import {
   ArrowLeft,
   Pencil,
@@ -386,6 +388,19 @@ export default async function CustomerDetailPage({
     activationPrerequisites && !activationPrerequisites.passed
       ? activationPrerequisites.violations.map((v) => v.message)
       : [];
+
+  // AI FICA panel prerequisites
+  const hasDocuments = customerDocuments.length > 0;
+  const hasPendingChecklistItems = checklistInstances.some((inst) =>
+    (inst.items ?? []).some((item) => item.status === "PENDING")
+  );
+  let isAiConfigured = false;
+  try {
+    const aiProfile = await getAiProfile();
+    isAiConfigured = aiProfile.coldStartCompleted;
+  } catch {
+    // Non-fatal: panel will show disabled state
+  }
 
   // Map customer readiness to setup steps
   const customerSetupSteps: SetupStep[] = customerReadiness
@@ -940,6 +955,17 @@ export default async function CustomerDetailPage({
 
       {/* Pending AI Suggestions */}
       <PendingSuggestionsWidget contextEntityType="customer" contextEntityId={id} />
+
+      {/* FICA AI Verification Panel */}
+      {caps.capabilities.includes("AI_EXECUTE") && customer.lifecycleStatus !== "ANONYMIZED" && (
+        <FicaVerificationPanel
+          customerId={id}
+          slug={slug}
+          hasDocuments={hasDocuments}
+          hasPendingChecklistItems={hasPendingChecklistItems}
+          isAiConfigured={isAiConfigured}
+        />
+      )}
     </div>
   );
 }

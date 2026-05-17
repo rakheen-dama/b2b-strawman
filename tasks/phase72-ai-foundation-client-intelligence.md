@@ -29,7 +29,7 @@ Three strategic constraints: (1) **Anthropic only for v1** -- no OpenAI/Google a
 | 527 | AiFirmProfile Entity + API + Frontend | Both | 526A | L | 527A, 527B | **Done** — 527A (PR #1315), 527B (PR #1319) |
 | 528 | AiExecution + AiExecutionGate + Cost Metering | Backend | 527A | L | 528A, 528B | **Done** — 528A (PR #1316), 528B (PR #1317) |
 | 529 | Skill Execution Infrastructure + StubAiProvider | Backend | 526A, 528A | M | 529A, 529B | **Done** — 529A (PR #1318), 529B (PR #1320) |
-| 530 | FICA Verification Skill (Backend + Frontend) | Both | 529A | L | 530A, 530B | |
+| 530 | FICA Verification Skill (Backend + Frontend) | Both | 529A | L | 530A, 530B | **Done** — 530A (PR #1321), 530B (PR #1322) |
 | 531 | Matter Intake Skill (Backend + Frontend) | Both | 529A | L | 531A, 531B | |
 
 **Slice count: 12** (6 architecture slices expanded to 12 numbered slices to enforce the backend-frontend separation rule and honour the 6-10 files / ~800 LOC slice-sizing budget).
@@ -170,7 +170,7 @@ PHASES already complete:
 
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
-| 5a | **530B** | Frontend -- `components/ai/fica-verification-panel.tsx` (results + risk flags + per-item review); `customers/[id]/page.tsx` modification (add "Verify with AI" button to compliance panel); `components/ai/fica-result-display.tsx` (structured output rendering); API client functions for FICA skill in `lib/api/ai.ts` (extend). | 531B |
+| 5a | **530B** | Frontend -- `components/ai/fica-verification-panel.tsx` (results + risk flags + per-item review); `customers/[id]/page.tsx` modification (add "Verify with AI" button to compliance panel); `components/ai/fica-result-display.tsx` (structured output rendering); API client functions for FICA skill in `lib/api/ai.ts` (extend). **Done** (PR #1322) | 531B |
 | 5b | **531B** | Frontend -- `components/ai/matter-intake-panel.tsx` (recommendations alongside creation form); `projects/new/page.tsx` modification (add "Get AI Recommendations" button); `components/ai/intake-result-display.tsx` (template suggestion + fee estimate + conflict screen); API client functions for intake skill in `lib/api/ai.ts` (extend). | 530B |
 
 ### Timeline
@@ -538,7 +538,7 @@ A realistic day-by-day cadence: 526A days 1-3; 526B days 3-6; 527A days 4-7 (can
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **530A** | 530A.1-530A.7 | ~9 backend files (1 skill class + 1 output record + 1 document reader + 2 resource files + 1 test resource + 2 test files + 1 application config addition) | `FicaVerificationSkill` implementing `AiSkill`; `FicaVerificationOutput` record; `FicaDocumentReader`; system prompt and output schema resources; canned test response; integration test. **Done** (PR #1321) |
-| **530B** | 530B.1-530B.5 | ~6 frontend files (2 components + 1 page modification + 1 API client extension + 1 actions file + 1 type file) | FICA verification panel; FICA result display; customer detail page modification; skill invocation server action; API client extension. |
+| **530B** | 530B.1-530B.5 | ~6 frontend files (2 components + 1 page modification + 1 API client extension + 1 actions file + 1 type file) | FICA verification panel; FICA result display; customer detail page modification; skill invocation server action; API client extension. **Done** (PR #1322) |
 
 ### Tasks
 

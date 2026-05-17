@@ -222,3 +222,75 @@ export async function invokeFicaVerification(
 ): Promise<FicaVerificationResponse> {
   return api.post<FicaVerificationResponse>("/api/ai/skills/fica-verification", { customerId });
 }
+
+// ---- Matter Intake Types ----
+
+export interface MatterClassification {
+  recommendedType: string;
+  confidence: number;
+  reasoning: string;
+}
+
+export interface TemplateRecommendation {
+  templateId: string;
+  templateName: string;
+  reasoning: string;
+  customisationNotes: string | null;
+}
+
+export interface RequiredDocument {
+  documentType: string;
+  reasoning: string;
+  priority: "HIGH" | "MEDIUM" | "LOW";
+}
+
+export interface FeeEstimate {
+  tariffBasis: string;
+  estimatedRangeMinCents: number;
+  estimatedRangeMaxCents: number;
+  reasoning: string;
+  assumptions: string[];
+}
+
+export interface ConflictMatch {
+  existingMatterName: string;
+  customerName: string;
+  matchType: string;
+  reasoning: string;
+}
+
+export interface ConflictScreening {
+  status: "CLEAR" | "POTENTIAL_CONFLICT" | "CONFLICT_DETECTED";
+  matches: ConflictMatch[];
+}
+
+export interface MatterIntakeOutput {
+  matterClassification: MatterClassification;
+  templateRecommendation: TemplateRecommendation | null;
+  requiredDocuments: RequiredDocument[];
+  feeEstimate: FeeEstimate | null;
+  conflictScreening: ConflictScreening;
+  riskFlags: string[];
+}
+
+export interface MatterIntakeResponse {
+  executionId: string;
+  status: "COMPLETED" | "FAILED";
+  output: MatterIntakeOutput | null;
+  gates: AiGateListItem[];
+  costCents: number;
+  model: string;
+  durationMs: number;
+}
+
+// ---- Matter Intake API Function ----
+
+export async function invokeMatterIntake(
+  customerId: string,
+  description: string
+): Promise<MatterIntakeResponse> {
+  return api.post<MatterIntakeResponse>("/api/ai/skills/matter-intake", {
+    customerId,
+    description,
+  });
+}

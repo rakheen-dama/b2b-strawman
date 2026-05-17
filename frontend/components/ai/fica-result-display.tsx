@@ -14,6 +14,8 @@ function getAssessmentBadgeVariant(assessment: FicaVerificationOutput["overallAs
       return "warning" as const;
     case "NEEDS_REVIEW":
       return "destructive" as const;
+    default:
+      return "default" as const;
   }
 }
 
@@ -25,6 +27,8 @@ function getRiskBadgeVariant(risk: FicaVerificationOutput["riskLevel"]) {
       return "warning" as const;
     case "HIGH":
       return "destructive" as const;
+    default:
+      return "default" as const;
   }
 }
 

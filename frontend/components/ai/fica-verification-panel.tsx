@@ -71,11 +71,15 @@ export function FicaVerificationPanel({
   function handleVerify() {
     setState({ phase: "LOADING" });
     startTransition(async () => {
-      const result = await invokeFicaVerificationAction(slug, customerId);
-      if (result.success && result.data) {
-        setState({ phase: "SUCCESS", result: result.data });
-      } else {
-        setState({ phase: "ERROR", message: result.error ?? "Verification failed." });
+      try {
+        const result = await invokeFicaVerificationAction(slug, customerId);
+        if (result.success && result.data) {
+          setState({ phase: "SUCCESS", result: result.data });
+        } else {
+          setState({ phase: "ERROR", message: result.error ?? "Verification failed." });
+        }
+      } catch {
+        setState({ phase: "ERROR", message: "Verification failed unexpectedly. Please try again." });
       }
     });
   }

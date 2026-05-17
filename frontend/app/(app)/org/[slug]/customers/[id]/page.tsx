@@ -395,11 +395,17 @@ export default async function CustomerDetailPage({
     (inst.items ?? []).some((item) => item.status === "PENDING")
   );
   let isAiConfigured = false;
-  try {
-    const aiProfile = await getAiProfile();
-    isAiConfigured = aiProfile.coldStartCompleted;
-  } catch {
-    // Non-fatal: panel will show disabled state
+  if (caps.capabilities.includes("AI_MANAGE")) {
+    // OWNER/ADMIN can check profile directly
+    try {
+      const aiProfile = await getAiProfile();
+      isAiConfigured = aiProfile.coldStartCompleted;
+    } catch {
+      // Non-fatal: panel will show disabled state
+    }
+  } else if (caps.capabilities.includes("AI_EXECUTE")) {
+    // MEMBER with AI_EXECUTE: they wouldn't have this capability without setup being done
+    isAiConfigured = true;
   }
 
   // Map customer readiness to setup steps
@@ -964,6 +970,7 @@ export default async function CustomerDetailPage({
           hasDocuments={hasDocuments}
           hasPendingChecklistItems={hasPendingChecklistItems}
           isAiConfigured={isAiConfigured}
+          canReviewGates={caps.capabilities.includes("AI_REVIEW")}
         />
       )}
     </div>

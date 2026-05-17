@@ -25,6 +25,12 @@ export async function invokeFicaVerificationAction(
   try {
     const result = await invokeFicaVerification(customerId);
     revalidatePath(`/org/${slug}/customers/${customerId}`);
+    if (result.status === "FAILED") {
+      return {
+        success: false,
+        error: "AI verification failed. Check execution history for details.",
+      };
+    }
     return { success: true, data: result };
   } catch (error) {
     if (error instanceof ApiError) {

@@ -65,7 +65,7 @@ export function FicaResultDisplay({ output }: FicaResultDisplayProps) {
             Assessment
           </p>
           <Badge variant={getAssessmentBadgeVariant(output.overallAssessment)}>
-            {output.overallAssessment.replace("_", " ")}
+            {output.overallAssessment.replaceAll("_", " ")}
           </Badge>
         </div>
         <div className="space-y-1">
@@ -111,7 +111,7 @@ export function FicaResultDisplay({ output }: FicaResultDisplayProps) {
                       </td>
                       <td className="py-2 pr-4">
                         <Badge variant={getItemStatusBadgeVariant(item.status)}>
-                          {item.status.replace("_", " ")}
+                          {item.status.replaceAll("_", " ")}
                         </Badge>
                       </td>
                       <td className="py-2 pr-4 font-mono text-xs text-slate-500 dark:text-slate-400">
@@ -182,7 +182,7 @@ export function FicaResultDisplay({ output }: FicaResultDisplayProps) {
           <CardContent>
             <ul className="space-y-3">
               {output.recommendedActions.map((action, i) => (
-                <li key={i} className="space-y-1">
+                <li key={`${action.action}-${i}`} className="space-y-1">
                   <div className="flex items-center gap-2">
                     <Badge variant="neutral">
                       {action.action === "MARK_ITEMS_COMPLETE"

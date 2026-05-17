@@ -24,6 +24,7 @@ interface FicaVerificationPanelProps {
   hasDocuments: boolean;
   hasPendingChecklistItems: boolean;
   isAiConfigured: boolean;
+  canReviewGates: boolean;
 }
 
 type PanelState =
@@ -36,7 +37,7 @@ function formatZarCents(cents: number): string {
   return `R ${(cents / 100).toFixed(2)}`;
 }
 
-function getDisabledReason(props: FicaVerificationPanelProps): string | null {
+function getDisabledReason(props: Pick<FicaVerificationPanelProps, "isAiConfigured" | "hasDocuments" | "hasPendingChecklistItems">): string | null {
   if (!props.isAiConfigured) {
     return "Connect an Anthropic API key in Settings > AI to use this feature.";
   }
@@ -55,13 +56,12 @@ export function FicaVerificationPanel({
   hasDocuments,
   hasPendingChecklistItems,
   isAiConfigured,
+  canReviewGates,
 }: FicaVerificationPanelProps) {
   const [state, setState] = useState<PanelState>({ phase: "IDLE" });
   const [, startTransition] = useTransition();
 
   const disabledReason = getDisabledReason({
-    customerId,
-    slug,
     hasDocuments,
     hasPendingChecklistItems,
     isAiConfigured,
@@ -157,17 +157,18 @@ export function FicaVerificationPanel({
               </Link>
             </div>
 
-            {/* Pending gate cards */}
-            {state.result.gates
-              .filter((gate) => gate.status === "PENDING")
-              .map((gate) => (
-                <ExecutionGateCard
-                  key={gate.id}
-                  gate={gate}
-                  onApprove={(gateId, notes) => approveGateAction(slug, gateId, notes)}
-                  onReject={(gateId, notes) => rejectGateAction(slug, gateId, notes)}
-                />
-              ))}
+            {/* Pending gate cards — only show approve/reject to users with AI_REVIEW */}
+            {canReviewGates &&
+              state.result.gates
+                .filter((gate) => gate.status === "PENDING")
+                .map((gate) => (
+                  <ExecutionGateCard
+                    key={gate.id}
+                    gate={gate}
+                    onApprove={(gateId, notes) => approveGateAction(slug, gateId, notes)}
+                    onReject={(gateId, notes) => rejectGateAction(slug, gateId, notes)}
+                  />
+                ))}
 
             <Button variant="outline" size="sm" onClick={handleReset}>
               Run Again

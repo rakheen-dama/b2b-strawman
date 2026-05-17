@@ -1,26 +1,19 @@
-import { redirect } from "next/navigation";
+import { fetchMyCapabilities } from "@/lib/api/capabilities";
+import { getAiProfile } from "@/lib/api/ai";
+import { api } from "@/lib/api";
+import { getProjectTemplates } from "@/lib/api/templates";
+import type { ProjectTemplateResponse } from "@/lib/api/templates";
+import type { Customer } from "@/lib/types";
+import { NewMatterPageClient } from "./new-matter-page-client";
 
 /**
  * `/org/[slug]/projects/new` route.
  *
- * This page exists purely to disambiguate the literal `new` segment from the
- * sibling `[id]` dynamic segment. Without it, Next.js falls through to
- * `/projects/[id]/page.tsx` with `id = "new"`, which then tries to fetch
- * `/api/projects/new` and crashes with `Parameter 'id' should be of type UUID`.
- *
- * Instead, we redirect to the projects list with `?new=1` so the existing
- * "New from Template" dialog auto-opens, optionally pre-selecting the customer
- * when `customerId` is supplied (used by deep-links such as "New Matter for
- * this client" on customer detail pages).
- *
- * Note: `templateId` is intentionally NOT forwarded. The downstream
- * `/projects` page currently only reads `new` and `customerId` from the query
- * string, so forwarding a template id would be dead weight. Add template
- * pre-selection in a follow-up if product requires it.
- *
- * Spec: qa_cycle/fix-specs/GAP-S3-05.md
+ * Full matter intake page with project creation form alongside the AI intake panel.
+ * Deep-links from "New Matter for this client" on customer detail pages navigate here
+ * with `?customerId=...` to pre-select the customer.
  */
-export default async function NewProjectRedirectPage({
+export default async function NewProjectPage({
   params,
   searchParams,
 }: {
@@ -30,14 +23,46 @@ export default async function NewProjectRedirectPage({
   const { slug } = await params;
   const resolvedSearchParams = await searchParams;
 
-  const query = new URLSearchParams();
-  query.set("new", "1");
+  const initialCustomerId =
+    typeof resolvedSearchParams.customerId === "string" ? resolvedSearchParams.customerId : "";
 
-  const customerId =
-    typeof resolvedSearchParams.customerId === "string" ? resolvedSearchParams.customerId : null;
-  if (customerId) {
-    query.set("customerId", customerId);
+  // Fetch capabilities
+  const caps = await fetchMyCapabilities();
+  const canExecuteAi = caps.capabilities.includes("AI_EXECUTE");
+  const canReviewGates = caps.capabilities.includes("AI_REVIEW");
+
+  // Check AI configuration
+  let isAiConfigured = false;
+  try {
+    const profile = await getAiProfile();
+    isAiConfigured = profile.coldStartCompleted;
+  } catch {
+    // Non-fatal: panel will show "not configured" tooltip
   }
 
-  redirect(`/org/${slug}/projects?${query.toString()}`);
+  // Fetch customers and templates
+  let customers: Customer[] = [];
+  let templates: ProjectTemplateResponse[] = [];
+  try {
+    customers = await api.get<Customer[]>("/api/customers?status=ACTIVE");
+  } catch {
+    // Non-fatal: customer select will be empty
+  }
+  try {
+    templates = await getProjectTemplates();
+  } catch {
+    // Non-fatal: template select will be empty
+  }
+
+  return (
+    <NewMatterPageClient
+      slug={slug}
+      initialCustomerId={initialCustomerId}
+      customers={customers}
+      templates={templates}
+      canExecuteAi={canExecuteAi}
+      canReviewGates={canReviewGates}
+      isAiConfigured={isAiConfigured}
+    />
+  );
 }

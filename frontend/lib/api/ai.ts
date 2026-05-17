@@ -217,6 +217,8 @@ export interface FicaVerificationResponse {
 
 // ---- FICA Verification API Function ----
 
-export async function invokeFicaVerification(customerId: string): Promise<FicaVerificationResponse> {
+export async function invokeFicaVerification(
+  customerId: string
+): Promise<FicaVerificationResponse> {
   return api.post<FicaVerificationResponse>("/api/ai/skills/fica-verification", { customerId });
 }

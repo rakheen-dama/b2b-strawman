@@ -4,12 +4,7 @@ import { useState, useTransition } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Loader2, Sparkles } from "lucide-react";
 import { FicaResultDisplay } from "@/components/ai/fica-result-display";
 import { ExecutionGateCard } from "@/components/ai/execution-gate-card";
@@ -37,7 +32,12 @@ function formatZarCents(cents: number): string {
   return `R ${(cents / 100).toFixed(2)}`;
 }
 
-function getDisabledReason(props: Pick<FicaVerificationPanelProps, "isAiConfigured" | "hasDocuments" | "hasPendingChecklistItems">): string | null {
+function getDisabledReason(
+  props: Pick<
+    FicaVerificationPanelProps,
+    "isAiConfigured" | "hasDocuments" | "hasPendingChecklistItems"
+  >
+): string | null {
   if (!props.isAiConfigured) {
     return "Connect an Anthropic API key in Settings > AI to use this feature.";
   }
@@ -79,7 +79,10 @@ export function FicaVerificationPanel({
           setState({ phase: "ERROR", message: result.error ?? "Verification failed." });
         }
       } catch {
-        setState({ phase: "ERROR", message: "Verification failed unexpectedly. Please try again." });
+        setState({
+          phase: "ERROR",
+          message: "Verification failed unexpectedly. Please try again.",
+        });
       }
     });
   }

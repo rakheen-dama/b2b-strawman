@@ -93,13 +93,13 @@ export function FicaResultDisplay({ output }: FicaResultDisplayProps) {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-slate-200 dark:border-slate-700">
-                    <th className="pb-2 pr-4 text-left text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
+                    <th className="pr-4 pb-2 text-left text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
                       Item
                     </th>
-                    <th className="pb-2 pr-4 text-left text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
+                    <th className="pr-4 pb-2 text-left text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
                       Status
                     </th>
-                    <th className="pb-2 pr-4 text-left text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
+                    <th className="pr-4 pb-2 text-left text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
                       Evidence Document
                     </th>
                     <th className="pb-2 text-left text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">

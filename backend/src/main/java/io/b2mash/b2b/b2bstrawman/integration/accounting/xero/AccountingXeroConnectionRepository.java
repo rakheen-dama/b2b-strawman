@@ -17,4 +17,6 @@ public interface AccountingXeroConnectionRepository
 
   @Query("SELECT c FROM AccountingXeroConnection c WHERE c.status = :status")
   List<AccountingXeroConnection> findByStatus(@Param("status") XeroConnectionStatus status);
+
+  boolean existsByStatus(XeroConnectionStatus status);
 }

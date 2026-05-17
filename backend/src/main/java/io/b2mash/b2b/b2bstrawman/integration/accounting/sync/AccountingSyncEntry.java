@@ -126,6 +126,18 @@ public class AccountingSyncEntry {
     this.nextAttemptAt = nextAttempt;
   }
 
+  /**
+   * Mark as rate-limited: revert to PENDING with a delay but do NOT consume retry budget. Rate
+   * limits are transient provider-side throttles that should not count against the entry's retry
+   * allowance.
+   */
+  public void markRateLimited(Instant nextAttempt) {
+    this.state = SyncState.PENDING;
+    this.lastErrorCode = "RATE_LIMIT";
+    this.lastErrorDetail = "Rate-limited by provider; will retry without consuming attempt budget";
+    this.nextAttemptAt = nextAttempt;
+  }
+
   /** Move to dead-letter (no further automatic retry). */
   public void markDeadLetter(String errorCode, String errorDetail) {
     this.state = SyncState.DEAD_LETTER;

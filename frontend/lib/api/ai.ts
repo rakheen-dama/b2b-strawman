@@ -178,3 +178,47 @@ export async function getAiExecutions(params: {
 export async function getAiExecution(id: string): Promise<AiExecutionDetail> {
   return api.get<AiExecutionDetail>(`/api/ai/executions/${id}`);
 }
+
+// ---- FICA Verification Types ----
+
+export interface ChecklistReviewItem {
+  checklistItemId: string;
+  itemName: string;
+  status: "SATISFIED" | "UNSATISFIED" | "PARTIAL" | "REQUIRES_REVIEW";
+  evidenceDocument: string | null;
+  reasoning: string;
+  flags: string[];
+}
+
+export interface RecommendedAction {
+  action: "MARK_ITEMS_COMPLETE" | "REQUEST_ADDITIONAL_DOCUMENT";
+  items: string[];
+  reasoning: string;
+}
+
+export interface FicaVerificationOutput {
+  overallAssessment: "COMPLETE" | "INCOMPLETE" | "NEEDS_REVIEW";
+  riskLevel: "LOW" | "MEDIUM" | "HIGH";
+  checklistReview: ChecklistReviewItem[];
+  missingDocuments: string[];
+  riskFlags: string[];
+  recommendedActions: RecommendedAction[];
+}
+
+export interface FicaVerificationResponse {
+  executionId: string;
+  status: "COMPLETED" | "FAILED";
+  output: FicaVerificationOutput | null;
+  gates: AiGateListItem[];
+  costCents: number;
+  model: string;
+  durationMs: number;
+}
+
+// ---- FICA Verification API Function ----
+
+export async function invokeFicaVerification(
+  customerId: string
+): Promise<FicaVerificationResponse> {
+  return api.post<FicaVerificationResponse>("/api/ai/skills/fica-verification", { customerId });
+}

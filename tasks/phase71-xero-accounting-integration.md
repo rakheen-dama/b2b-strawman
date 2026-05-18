@@ -29,7 +29,7 @@ Three strategic constraints bound the phase: (1) **Xero only for v1** -- Sage Pa
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 517 | Migration + Entities + Repositories + Port Extensions | Backend | -- | L | 517A, 517B | Done |
-| 518 | AccountingSyncService + Worker + Event Listeners | Backend | 517 | L | 518A, 518B | |
+| 518 | AccountingSyncService + Worker + Event Listeners | Backend | 517 | L | 518A, 518B | Done |
 | 519 | XeroApiClient + XeroOAuthService | Backend | 517A | M | 519A | Done |
 | 520 | XeroAccountingProvider Adapter + Mappers | Backend | 517A, 519A | M | 520A, 520B | |
 | 521 | Trust Boundary Guard | Backend | 518A | S | 521A | |
@@ -171,7 +171,7 @@ PHASES already complete:
 
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
-| 3a | **518B** | `AccountingPaymentPollWorker` skeleton (`@Scheduled(fixedDelay = 900_000)`); tenant iteration via `TenantScopedRunner.forEachTenant()`; cursor update on `connection.lastPollAt`; wired to `NoOpAccountingProvider` until 522A completes the real binding. | 520A, 520B, 521A |
+| 3a | **518B** | `AccountingPaymentPollWorker` skeleton (`@Scheduled(fixedDelay = 900_000)`); tenant iteration via `TenantScopedRunner.forEachTenant()`; cursor update on `connection.lastPollAt`; wired to `NoOpAccountingProvider` until 522A completes the real binding. **Done** (PR #1329) | 520A, 520B, 521A |
 | 3b | **520A** | `XeroAccountingProvider` (`implements AccountingProvider, AccountingPaymentSource`); `XeroInvoicePayloadMapper` (pure function: `InvoiceSyncRequest` + tax mappings to Xero invoice JSON); invoice mapping accuracy + `getPaymentsModifiedSince` mapping tests. | 518B, 520B, 521A |
 | 3c | **520B** | `XeroContactPayloadMapper` (pure function: `CustomerSyncRequest` to Xero contact JSON); wire `AccountingTaxCodeMappingService` into mappers for tax code resolution; contact mapping + tax code resolution tests. | 518B, 520A, 521A |
 | 3d | **521A** | `TrustBoundaryGuard` service (three guard conditions + fail-closed + skip for non-legal tenants); integration with `AccountingSyncService.enqueueInvoicePush`; audit event emission for blocked pushes; all guard condition tests + fail-closed on DB error + non-legal tenant skip test. | 518B, 520A, 520B |
@@ -310,7 +310,7 @@ A realistic day-by-day cadence: 517A days 1-3; 517B days 3-5; 518A + 519A days 5
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **518A** | 518A.1-518A.6 | ~8 backend files (1 service + 1 worker + 1 event listener + 1 record + 4 test files) | `AccountingSyncService` (enqueue invoice/customer push, retry from dead-letter, sync summary, poll orchestration); `AccountingSyncWorker` (`@Scheduled(fixedDelay = 30_000)` drain worker with exponential back-off and dead-letter); `AccountingSyncEventListener` (subscribes to `InvoiceApprovedEvent`, `InvoiceSentEvent`, `InvoiceVoidedEvent`, `CustomerCreatedEvent`, `CustomerUpdatedEvent`); `TrustBoundaryDecision` record. **Done** (PR #1327) |
-| **518B** | 518B.1-518B.3 | ~4 backend files (1 worker + 1 test file + 2 modifications) | `AccountingPaymentPollWorker` skeleton (`@Scheduled(fixedDelay = 900_000)`); tenant iteration via `TenantScopedRunner.forEachTenant()`; connection status check; cursor update; wired to `NoOpAccountingProvider` until 522A replaces with real adapter. |
+| **518B** | 518B.1-518B.3 | ~4 backend files (1 worker + 1 test file + 2 modifications) | `AccountingPaymentPollWorker` skeleton (`@Scheduled(fixedDelay = 900_000)`); tenant iteration via `TenantScopedRunner.forEachTenant()`; connection status check; cursor update; wired to `NoOpAccountingProvider` until 522A replaces with real adapter. **Done** (PR #1329) |
 
 ### Tasks
 

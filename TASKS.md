@@ -587,7 +587,7 @@
 | 516 | QA Capstone — SA Admin POV 30-Day Script | E2E/Process | 511–515 | L | 516A, 516B | |
 | **Phase 71 — Xero Accounting Integration (One-Way Sync)** | | | | | | See [tasks/phase71-xero-accounting-integration.md](tasks/phase71-xero-accounting-integration.md) |
 | 517 | Migration + Entities + Repositories + Port Extensions | Backend | -- | L | 517A, 517B | Done (PR #1325, #1326) |
-| 518 | AccountingSyncService + Worker + Event Listeners | Backend | 517 | L | 518A, 518B | 518A Done (PR #1327) |
+| 518 | AccountingSyncService + Worker + Event Listeners | Backend | 517 | L | 518A, 518B | Done (PR #1327, #1329) |
 | 519 | XeroApiClient + XeroOAuthService | Backend | 517A | M | 519A | Done (PR #1328) |
 | 520 | XeroAccountingProvider Adapter + Mappers | Backend | 517A, 519A | M | 520A, 520B | |
 | 521 | Trust Boundary Guard | Backend | 518A | S | 521A | |

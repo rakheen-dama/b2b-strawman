@@ -87,6 +87,15 @@ docteams:
 # Tests that need webhook access use @DynamicPropertySource to inject a test ECDSA key.
 
 kazi:
+  xero:
+    client-id: test-xero-client-id
+    client-secret: test-xero-client-secret
+    redirect-uri: http://localhost:3000/api/integrations/xero/callback
+    authorize-url: https://login.xero.com/identity/connect/authorize
+    token-url: https://identity.xero.com/connect/token
+    connections-url: https://api.xero.com/connections
+    api-base-url: https://api.xero.com/api.xro/2.0
+    revocation-url: https://identity.xero.com/connect/revocation
   ai:
     anthropic:
       api-base-url: http://localhost:0

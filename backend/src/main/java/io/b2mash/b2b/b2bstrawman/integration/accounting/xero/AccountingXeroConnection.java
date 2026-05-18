@@ -52,6 +52,9 @@ public class AccountingXeroConnection {
   @Column(name = "last_poll_at")
   private Instant lastPollAt;
 
+  @Column(name = "refresh_failure_count", nullable = false)
+  private int refreshFailureCount;
+
   @Column(name = "disconnected_at")
   private Instant disconnectedAt;
 
@@ -91,11 +94,17 @@ public class AccountingXeroConnection {
     this.updatedAt = Instant.now();
   }
 
-  /** Record a successful token refresh. */
+  /** Record a successful token refresh — resets the failure counter. */
   public void recordTokenRefresh(Instant newExpiresAt) {
     this.lastTokenRefreshAt = Instant.now();
     this.accessTokenExpiresAt = newExpiresAt;
     this.status = XeroConnectionStatus.CONNECTED;
+    this.refreshFailureCount = 0;
+  }
+
+  /** Increment the refresh failure counter and return the new value. */
+  public int incrementRefreshFailureCount() {
+    return ++this.refreshFailureCount;
   }
 
   /** Mark the connection as having a failed token refresh. */
@@ -156,6 +165,10 @@ public class AccountingXeroConnection {
 
   public Instant getLastPollAt() {
     return lastPollAt;
+  }
+
+  public int getRefreshFailureCount() {
+    return refreshFailureCount;
   }
 
   public Instant getDisconnectedAt() {

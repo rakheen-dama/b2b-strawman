@@ -19,7 +19,8 @@ import org.springframework.web.client.RestClient;
 /**
  * Thin HTTP wrapper for the Xero API. Each method takes an {@code accessToken} parameter — the
  * caller manages token lifecycle. Reads rate-limit headers on every response and throws {@link
- * XeroRateLimitException} when {@code X-Rate-Limit-Remaining < 5}.
+ * XeroRateLimitException} when {@code X-Rate-Limit-Remaining} reaches 0. Logs a warning when
+ * remaining calls are below the threshold but not yet exhausted.
  *
  * <p>This client does NOT handle 401 retry — per architecture, the calling layer is responsible for
  * catching 401 and refreshing tokens via {@link XeroOAuthService}.
@@ -168,17 +169,22 @@ public class XeroApiClient {
     if (remainingHeader != null) {
       try {
         int remaining = Integer.parseInt(remainingHeader);
-        if (remaining < RATE_LIMIT_THRESHOLD) {
-          Duration retryAfter =
-              retryAfterHeader != null
-                  ? Duration.ofSeconds(Long.parseLong(retryAfterHeader))
-                  : Duration.ofSeconds(60);
+        Duration retryAfter =
+            retryAfterHeader != null
+                ? Duration.ofSeconds(Long.parseLong(retryAfterHeader))
+                : Duration.ofSeconds(60);
+
+        if (remaining == 0) {
+          log.warn(
+              "Xero rate limit exhausted: 0 calls remaining, retry after {}s",
+              retryAfter.toSeconds());
+          throw new XeroRateLimitException(
+              "Xero rate limit exhausted: 0 calls remaining", retryAfter);
+        } else if (remaining < RATE_LIMIT_THRESHOLD) {
           log.warn(
               "Xero rate limit approaching: {} calls remaining, retry after {}s",
               remaining,
               retryAfter.toSeconds());
-          throw new XeroRateLimitException(
-              "Xero rate limit approaching: " + remaining + " calls remaining", retryAfter);
         }
       } catch (NumberFormatException e) {
         log.debug("Could not parse X-Rate-Limit-Remaining header: {}", remainingHeader);

@@ -99,7 +99,7 @@ class XeroApiClientTest {
   }
 
   @Test
-  void throwsRateLimitException_whenRemainingBelowThreshold() {
+  void throwsRateLimitException_whenRemainingIsZero() {
     var builder = RestClient.builder().baseUrl(TEST_PROPERTIES.apiBaseUrl());
     var server = MockRestServiceServer.bindTo(builder).build();
 
@@ -107,7 +107,7 @@ class XeroApiClientTest {
         .expect(MockRestRequestMatchers.requestTo(TEST_PROPERTIES.apiBaseUrl() + "/TaxRates"))
         .andRespond(
             MockRestResponseCreators.withSuccess("{\"TaxRates\": []}", MediaType.APPLICATION_JSON)
-                .headers(rateLimitHeaders(3, 45)));
+                .headers(rateLimitHeaders(0, 45)));
 
     var client = new XeroApiClient(builder.build(), TEST_PROPERTIES);
 
@@ -119,6 +119,25 @@ class XeroApiClientTest {
               assertThat(rle.getRetryAfter()).isEqualTo(Duration.ofSeconds(45));
             });
 
+    server.verify();
+  }
+
+  @Test
+  void doesNotThrowRateLimitException_whenRemainingBelowThresholdButNotZero() {
+    var builder = RestClient.builder().baseUrl(TEST_PROPERTIES.apiBaseUrl());
+    var server = MockRestServiceServer.bindTo(builder).build();
+
+    server
+        .expect(MockRestRequestMatchers.requestTo(TEST_PROPERTIES.apiBaseUrl() + "/TaxRates"))
+        .andRespond(
+            MockRestResponseCreators.withSuccess("{\"TaxRates\": []}", MediaType.APPLICATION_JSON)
+                .headers(rateLimitHeaders(3, 45)));
+
+    var client = new XeroApiClient(builder.build(), TEST_PROPERTIES);
+    var result = client.getTaxRates("tenant-123", "test-token");
+
+    // Response data is returned even though remaining < threshold (warning logged, not thrown)
+    assertThat(result).containsKey("TaxRates");
     server.verify();
   }
 

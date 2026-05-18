@@ -117,7 +117,6 @@ public class XeroOAuthService {
    * tokens, fetches connections for the tenant ID, and creates the connection entity.
    */
   @Transactional
-  @SuppressWarnings("unchecked")
   public XeroCallbackResult handleCallback(String code, String state, UUID memberId) {
     log.info("Handling Xero OAuth callback for member {}", memberId);
 
@@ -343,7 +342,6 @@ public class XeroOAuthService {
 
   // ---- Token endpoint calls ----
 
-  @SuppressWarnings("unchecked")
   private Map<String, Object> exchangeCodeForTokens(String code, String codeVerifier) {
     var formData = new LinkedMultiValueMap<String, String>();
     formData.add("grant_type", "authorization_code");
@@ -368,7 +366,6 @@ public class XeroOAuthService {
         .body(new org.springframework.core.ParameterizedTypeReference<Map<String, Object>>() {});
   }
 
-  @SuppressWarnings("unchecked")
   private Map<String, Object> refreshTokens(String refreshToken) {
     var formData = new LinkedMultiValueMap<String, String>();
     formData.add("grant_type", "refresh_token");
@@ -395,6 +392,8 @@ public class XeroOAuthService {
     var formData = new LinkedMultiValueMap<String, String>();
     formData.add("token", token);
     formData.add("token_type_hint", "refresh_token");
+    formData.add("client_id", properties.clientId());
+    formData.add("client_secret", properties.clientSecret());
 
     tokenClient
         .post()

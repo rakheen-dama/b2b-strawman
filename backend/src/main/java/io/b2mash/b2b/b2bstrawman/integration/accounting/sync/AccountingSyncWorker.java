@@ -222,7 +222,7 @@ public class AccountingSyncWorker {
       }
       case CUSTOMER -> {
         // Stub request — real payload mapping in 519A
-        var request = new CustomerSyncRequest("Pending", null, null, null, null, null, null);
+        var request = new CustomerSyncRequest("Pending", null, null, null, null, null, null, null);
         yield provider.syncCustomer(request);
       }
       case PAYMENT_PULL ->

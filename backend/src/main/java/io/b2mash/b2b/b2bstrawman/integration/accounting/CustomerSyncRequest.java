@@ -8,4 +8,5 @@ public record CustomerSyncRequest(
     String addressLine2,
     String city,
     String postalCode,
-    String country) {}
+    String country,
+    String externalReference) {}

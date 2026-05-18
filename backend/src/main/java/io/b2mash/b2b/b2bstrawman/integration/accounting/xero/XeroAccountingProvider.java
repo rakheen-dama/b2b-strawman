@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.integration.secret.SecretStore;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
@@ -36,6 +35,7 @@ public class XeroAccountingProvider implements AccountingProvider, AccountingPay
   private final XeroApiClient xeroApiClient;
   private final XeroOAuthService xeroOAuthService;
   private final XeroInvoicePayloadMapper invoicePayloadMapper;
+  private final XeroContactPayloadMapper contactPayloadMapper;
   private final AccountingXeroConnectionRepository connectionRepository;
   private final AccountingTaxCodeMappingService taxCodeMappingService;
   private final SecretStore secretStore;
@@ -44,12 +44,14 @@ public class XeroAccountingProvider implements AccountingProvider, AccountingPay
       XeroApiClient xeroApiClient,
       XeroOAuthService xeroOAuthService,
       XeroInvoicePayloadMapper invoicePayloadMapper,
+      XeroContactPayloadMapper contactPayloadMapper,
       AccountingXeroConnectionRepository connectionRepository,
       AccountingTaxCodeMappingService taxCodeMappingService,
       SecretStore secretStore) {
     this.xeroApiClient = xeroApiClient;
     this.xeroOAuthService = xeroOAuthService;
     this.invoicePayloadMapper = invoicePayloadMapper;
+    this.contactPayloadMapper = contactPayloadMapper;
     this.connectionRepository = connectionRepository;
     this.taxCodeMappingService = taxCodeMappingService;
     this.secretStore = secretStore;
@@ -90,7 +92,7 @@ public class XeroAccountingProvider implements AccountingProvider, AccountingPay
       var connection = loadConnectedConnection();
       String accessToken = getAccessToken(connection);
 
-      Map<String, Object> contactPayload = buildContactPayload(request);
+      Map<String, Object> contactPayload = contactPayloadMapper.map(request);
       Map<String, Object> response =
           xeroApiClient.createOrUpdateContact(
               connection.getXeroTenantId(), contactPayload, accessToken);
@@ -150,43 +152,6 @@ public class XeroAccountingProvider implements AccountingProvider, AccountingPay
   private String getAccessToken(AccountingXeroConnection connection) {
     String secretKey = connection.getOrgIntegrationId().toString() + ":xero:access";
     return secretStore.retrieve(secretKey);
-  }
-
-  /**
-   * Builds a simple Xero contact payload from a CustomerSyncRequest. A dedicated
-   * XeroContactPayloadMapper lands in 520B.
-   */
-  private Map<String, Object> buildContactPayload(CustomerSyncRequest request) {
-    var contact = new HashMap<String, Object>();
-    contact.put("Name", request.customerName());
-
-    if (request.email() != null) {
-      contact.put("EmailAddress", request.email());
-    }
-
-    // Build address if any address fields are present
-    if (request.addressLine1() != null || request.city() != null || request.postalCode() != null) {
-      var address = new HashMap<String, Object>();
-      address.put("AddressType", "POBOX");
-      if (request.addressLine1() != null) {
-        address.put("AddressLine1", request.addressLine1());
-      }
-      if (request.addressLine2() != null) {
-        address.put("AddressLine2", request.addressLine2());
-      }
-      if (request.city() != null) {
-        address.put("City", request.city());
-      }
-      if (request.postalCode() != null) {
-        address.put("PostalCode", request.postalCode());
-      }
-      if (request.country() != null) {
-        address.put("Country", request.country());
-      }
-      contact.put("Addresses", List.of(address));
-    }
-
-    return contact;
   }
 
   /** Extracts the InvoiceID from the Xero API response. */

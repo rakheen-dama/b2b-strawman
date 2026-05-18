@@ -35,6 +35,7 @@ class XeroAccountingProviderTest {
 
   private XeroAccountingProvider provider;
   private final XeroInvoicePayloadMapper invoicePayloadMapper = new XeroInvoicePayloadMapper();
+  private final XeroContactPayloadMapper contactPayloadMapper = new XeroContactPayloadMapper();
 
   private static final UUID ORG_INTEGRATION_ID = UUID.randomUUID();
   private static final String XERO_TENANT_ID = "xero-tenant-123";
@@ -47,6 +48,7 @@ class XeroAccountingProviderTest {
             xeroApiClient,
             xeroOAuthService,
             invoicePayloadMapper,
+            contactPayloadMapper,
             connectionRepository,
             taxCodeMappingService,
             secretStore);
@@ -134,7 +136,7 @@ class XeroAccountingProviderTest {
 
     var request =
         new CustomerSyncRequest(
-            "Acme Corp", "billing@acme.com", "123 Main St", null, "Cape Town", "8001", "ZA");
+            "Acme Corp", "billing@acme.com", "123 Main St", null, "Cape Town", "8001", "ZA", null);
 
     var result = provider.syncCustomer(request);
 
@@ -152,7 +154,7 @@ class XeroAccountingProviderTest {
     when(xeroApiClient.createOrUpdateContact(eq(XERO_TENANT_ID), any(), eq(ACCESS_TOKEN)))
         .thenThrow(new XeroApiClient.XeroApiException("Xero API error: HTTP 422"));
 
-    var request = new CustomerSyncRequest("Bad Customer", null, null, null, null, null, null);
+    var request = new CustomerSyncRequest("Bad Customer", null, null, null, null, null, null, null);
 
     var result = provider.syncCustomer(request);
 

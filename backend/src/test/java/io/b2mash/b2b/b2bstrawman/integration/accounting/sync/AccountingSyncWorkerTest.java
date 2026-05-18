@@ -42,7 +42,9 @@ class AccountingSyncWorkerTest {
   private static final String ORG_ID = "org_sync_worker_test";
 
   @MockitoBean private IntegrationRegistry integrationRegistry;
-  @MockitoBean private AccountingProvider accountingProvider;
+
+  @MockitoBean(name = "noOpAccountingProvider")
+  private AccountingProvider accountingProvider;
 
   @Autowired private AccountingSyncWorker syncWorker;
   @Autowired private AccountingSyncEntryRepository syncEntryRepository;

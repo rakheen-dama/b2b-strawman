@@ -46,7 +46,9 @@ class AccountingPaymentPollWorkerTest {
   private static final String ORG_ISO_B = "org_poll_iso_b";
 
   @MockitoBean private IntegrationRegistry integrationRegistry;
-  @MockitoBean private AccountingProvider accountingProvider;
+
+  @MockitoBean(name = "noOpAccountingProvider")
+  private AccountingProvider accountingProvider;
 
   @Autowired private AccountingPaymentPollWorker pollWorker;
   @Autowired private AccountingXeroConnectionRepository xeroConnectionRepository;

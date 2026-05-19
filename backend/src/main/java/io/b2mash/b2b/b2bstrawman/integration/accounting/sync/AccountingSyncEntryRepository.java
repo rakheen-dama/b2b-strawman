@@ -67,6 +67,8 @@ public interface AccountingSyncEntryRepository extends JpaRepository<AccountingS
           io.b2mash.b2b.b2bstrawman.integration.accounting.sync.SyncState.BLOCKED_TRUST_BOUNDARY,
           io.b2mash.b2b.b2bstrawman.integration.accounting.sync.SyncState.DEAD_LETTER
       )
+      ORDER BY e.createdAt DESC
+      FETCH FIRST 1 ROW ONLY
       """)
   Optional<AccountingSyncEntry> findTerminalEntryForEntity(
       @Param("entityType") SyncEntityType entityType, @Param("entityId") UUID entityId);

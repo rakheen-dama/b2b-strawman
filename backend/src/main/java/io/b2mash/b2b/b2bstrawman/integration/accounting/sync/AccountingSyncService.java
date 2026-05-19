@@ -82,6 +82,16 @@ public class AccountingSyncService {
       return;
     }
 
+    var terminal =
+        syncEntryRepository.findTerminalEntryForEntity(SyncEntityType.INVOICE, invoiceId);
+    if (terminal.isPresent()) {
+      log.debug(
+          "Terminal sync entry ({}) already exists for invoice {}; skipping enqueue",
+          terminal.get().getState(),
+          invoiceId);
+      return;
+    }
+
     // Load invoice, lines, and customer for guard evaluation
     var invoice =
         invoiceRepository
@@ -93,10 +103,24 @@ public class AccountingSyncService {
             .findById(invoice.getCustomerId())
             .orElseThrow(() -> new ResourceNotFoundException("Customer", invoice.getCustomerId()));
 
-    // Currency mismatch check
+    // Currency mismatch check — block when orgSettings is absent (fail-closed) or currency differs
     var orgSettings = orgSettingsRepository.findForCurrentTenant();
-    if (orgSettings.isPresent()
-        && !invoice.getCurrency().equals(orgSettings.get().getDefaultCurrency())) {
+    if (orgSettings.isEmpty()) {
+      var entry =
+          new AccountingSyncEntry(
+              SyncEntityType.INVOICE,
+              invoiceId,
+              "xero",
+              SyncDirection.PUSH,
+              trigger,
+              "KAZI-INV-" + invoiceId);
+      entry.markDeadLetter(
+          "MULTI_CURRENCY", "Org settings not configured; cannot verify invoice currency");
+      syncEntryRepository.save(entry);
+      log.warn("Invoice {} dead-lettered: org settings absent, cannot verify currency", invoiceId);
+      return;
+    }
+    if (!invoice.getCurrency().equals(orgSettings.get().getDefaultCurrency())) {
       var entry =
           new AccountingSyncEntry(
               SyncEntityType.INVOICE,
@@ -255,6 +279,7 @@ public class AccountingSyncService {
    * customer cannot be loaded, permits the sync — missing entities are not a trust boundary concern
    * and will be caught at the provider dispatch stage.
    */
+  @Transactional(readOnly = true)
   public TrustBoundaryDecision checkTrustBoundary(AccountingSyncEntry entry) {
     if (entry.getEntityType() != SyncEntityType.INVOICE) {
       return TrustBoundaryDecision.permit();

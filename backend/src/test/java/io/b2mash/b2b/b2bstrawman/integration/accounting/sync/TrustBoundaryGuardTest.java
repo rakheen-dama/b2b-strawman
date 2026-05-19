@@ -14,13 +14,13 @@ import io.b2mash.b2b.b2bstrawman.invoice.Invoice;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
-import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementPaymentSource;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.DisbursementRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.disbursement.LegalDisbursement;
@@ -46,6 +46,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -71,27 +72,27 @@ class TrustBoundaryGuardTest {
   @Autowired private OrgIntegrationRepository orgIntegrationRepository;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
-  @Autowired private MemberSyncService memberSyncService;
+  @Autowired private MockMvc mockMvc;
 
   private String tenantSchema;
   private UUID memberId;
 
   @BeforeAll
-  void setUp() {
+  void setUp() throws Exception {
     provisioningService.provisionTenant(ORG_ID, "Trust Boundary Test Org", null);
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
 
     // Create a real member to satisfy the customers.created_by FK
-    var syncResult =
-        memberSyncService.syncMember(
+    String memberIdStr =
+        TestMemberHelper.syncMember(
+            mockMvc,
             ORG_ID,
             "user_trust_guard_test",
             "trust-guard@test.com",
             "Trust Guard Tester",
-            null,
             "owner");
-    memberId = syncResult.memberId();
+    memberId = UUID.fromString(memberIdStr);
 
     runInTenant(this::createConnectedXeroConnection);
   }

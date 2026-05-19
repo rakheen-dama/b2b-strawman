@@ -54,6 +54,23 @@ public interface AccountingSyncEntryRepository extends JpaRepository<AccountingS
   Optional<AccountingSyncEntry> findActiveEntryForEntity(
       @Param("entityType") SyncEntityType entityType, @Param("entityId") UUID entityId);
 
+  /**
+   * Check for existing terminal entry (BLOCKED_TRUST_BOUNDARY, DEAD_LETTER) for idempotent enqueue
+   * guard — prevents duplicate entries when at-least-once webhooks re-fire.
+   */
+  @Query(
+      """
+      SELECT e FROM AccountingSyncEntry e
+      WHERE e.entityType = :entityType
+      AND e.entityId = :entityId
+      AND e.state IN (
+          io.b2mash.b2b.b2bstrawman.integration.accounting.sync.SyncState.BLOCKED_TRUST_BOUNDARY,
+          io.b2mash.b2b.b2bstrawman.integration.accounting.sync.SyncState.DEAD_LETTER
+      )
+      """)
+  Optional<AccountingSyncEntry> findTerminalEntryForEntity(
+      @Param("entityType") SyncEntityType entityType, @Param("entityId") UUID entityId);
+
   /** Match by external_reference for payment pull (most recently completed). */
   @Query(
       """

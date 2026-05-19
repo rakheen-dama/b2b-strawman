@@ -70,6 +70,10 @@ public class OrgIntegration {
     this.configJson = configJson;
   }
 
+  public void setConfigJson(String configJson) {
+    this.configJson = configJson;
+  }
+
   public void setKeySuffix(String keySuffix) {
     this.keySuffix = keySuffix;
   }

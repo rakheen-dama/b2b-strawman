@@ -590,7 +590,7 @@
 | 518 | AccountingSyncService + Worker + Event Listeners | Backend | 517 | L | 518A, 518B | Done (PR #1327, #1329) |
 | 519 | XeroApiClient + XeroOAuthService | Backend | 517A | M | 519A | Done (PR #1328) |
 | 520 | XeroAccountingProvider Adapter + Mappers | Backend | 517A, 519A | M | 520A, 520B | Done (PR #1330, #1331) |
-| 521 | Trust Boundary Guard | Backend | 518A | S | 521A | |
+| 521 | Trust Boundary Guard | Backend | 518A | S | 521A | **Done** (PR #1332) |
 | 522 | Payment Pull (Poll Worker Completion) | Backend | 518A, 520A | M | 522A | |
 | 523 | One-Time Customer Import | Backend | 519A, 520A | S | 523A | |
 | 524 | Frontend — Connection Management + Settings | Both | 519A, 520B | L | 524A, 524B | |
@@ -602,6 +602,13 @@
 | 529 | Skill Execution Infrastructure + StubAiProvider | Backend | 526A, 528A | M | 529A, 529B | **Done** — 529A (PR #1318), 529B (PR #1320) |
 | 530 | FICA Verification Skill (Backend + Frontend) | Both | 529A | L | 530A, 530B | **Done** — 530A (PR #1321), 530B (PR #1322) |
 | 531 | Matter Intake Skill (Backend + Frontend) | Both | 529A | L | 531A, 531B | **Done** — 531A (PR #1323), 531B (PR #1324) |
+| **Phase 73 — Matter Detail Page Redesign (Sidebar + Grouped Tabs)** | | | | | | See [tasks/phase73-matter-detail-redesign.md](tasks/phase73-matter-detail-redesign.md) |
+| 532 | Layout Shell + Sidebar | Frontend | -- | L | 532A, 532B | |
+| 533 | Grouped Tab Bar | Frontend | -- | M | 533A, 533B | |
+| 534 | Overview Tab Redesign | Frontend | 532 | M | 534A | |
+| 535 | Action Button Relocation | Frontend | 532 | M | 535A | |
+| 536 | Responsive Behaviour + Polish | Frontend | 532, 533 | M | 536A | |
+| 537 | QA Testplan Updates | Frontend | 532-536 | S | 537A | |
 
 
 ---

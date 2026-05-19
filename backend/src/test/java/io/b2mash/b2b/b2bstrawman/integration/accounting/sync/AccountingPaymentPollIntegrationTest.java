@@ -5,17 +5,13 @@ import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
-import io.b2mash.b2b.b2bstrawman.integration.ConnectionTestResult;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
 import io.b2mash.b2b.b2bstrawman.integration.OrgIntegration;
 import io.b2mash.b2b.b2bstrawman.integration.OrgIntegrationRepository;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingPaymentSource;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingProvider;
-import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingSyncResult;
-import io.b2mash.b2b.b2bstrawman.integration.accounting.CustomerSyncRequest;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.ExternalPaymentEvent;
-import io.b2mash.b2b.b2bstrawman.integration.accounting.InvoiceSyncRequest;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.NoOpAccountingProvider;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.AccountingXeroConnection;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.AccountingXeroConnectionRepository;
@@ -164,9 +160,9 @@ class AccountingPaymentPollIntegrationTest {
   }
 
   private void stubPaymentSource(AccountingPaymentSource paymentSource) {
-    // The service resolves AccountingProvider then checks instanceof AccountingPaymentSource
-    when(integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingProvider.class))
-        .thenReturn((AccountingProvider) paymentSource);
+    // The service resolves AccountingPaymentSource directly per ADR-279
+    when(integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingPaymentSource.class))
+        .thenReturn(paymentSource);
   }
 
   @Test
@@ -306,7 +302,8 @@ class AccountingPaymentPollIntegrationTest {
     runInTenant(
         () -> {
           var noopProvider = new NoOpAccountingProvider();
-          when(integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingProvider.class))
+          when(integrationRegistry.resolve(
+                  IntegrationDomain.ACCOUNTING, AccountingPaymentSource.class))
               .thenReturn(noopProvider);
 
           Instant beforePoll = Instant.now();
@@ -320,9 +317,8 @@ class AccountingPaymentPollIntegrationTest {
 
   /**
    * Simple test implementation of AccountingPaymentSource that returns a fixed list of payments.
-   * Also implements AccountingProvider so it passes the instanceof check in the service.
    */
-  private static class TestPaymentSource implements AccountingProvider, AccountingPaymentSource {
+  private static class TestPaymentSource implements AccountingPaymentSource {
 
     private final List<ExternalPaymentEvent> payments;
 
@@ -338,21 +334,6 @@ class AccountingPaymentPollIntegrationTest {
     @Override
     public List<ExternalPaymentEvent> getPaymentsModifiedSince(Instant since) {
       return payments;
-    }
-
-    @Override
-    public AccountingSyncResult syncInvoice(InvoiceSyncRequest request) {
-      throw new UnsupportedOperationException("Not needed for payment pull tests");
-    }
-
-    @Override
-    public AccountingSyncResult syncCustomer(CustomerSyncRequest request) {
-      throw new UnsupportedOperationException("Not needed for payment pull tests");
-    }
-
-    @Override
-    public ConnectionTestResult testConnection() {
-      return new ConnectionTestResult(true, "test", null);
     }
   }
 }

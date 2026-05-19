@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
 import io.b2mash.b2b.b2bstrawman.integration.OrgIntegration;
 import io.b2mash.b2b.b2bstrawman.integration.OrgIntegrationRepository;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingPaymentSource;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingProvider;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.NoOpAccountingProvider;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.AccountingXeroConnection;
@@ -138,7 +139,7 @@ class AccountingPaymentPollWorkerTest {
   @Order(1)
   void pollAllConnections_pollsConnectedConnectionAndUpdatesLastPollAt() {
     var noopProvider = new NoOpAccountingProvider();
-    when(integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingProvider.class))
+    when(integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingPaymentSource.class))
         .thenReturn(noopProvider);
 
     Instant beforePoll = Instant.now();
@@ -160,7 +161,7 @@ class AccountingPaymentPollWorkerTest {
   @Order(2)
   void pollAllConnections_skipsRevokedConnections() {
     var noopProvider = new NoOpAccountingProvider();
-    when(integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingProvider.class))
+    when(integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingPaymentSource.class))
         .thenReturn(noopProvider);
 
     pollWorker.pollAllConnections();
@@ -186,7 +187,7 @@ class AccountingPaymentPollWorkerTest {
     // First resolve() call throws, all subsequent calls succeed.
     // The worker iterates tenants; failure in one tenant's connection must not stop others.
     var noopProvider = new NoOpAccountingProvider();
-    when(integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingProvider.class))
+    when(integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingPaymentSource.class))
         .thenThrow(new RuntimeException("Xero API unavailable"))
         .thenReturn(noopProvider);
 

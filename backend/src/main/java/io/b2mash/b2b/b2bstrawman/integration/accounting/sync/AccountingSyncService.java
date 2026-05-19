@@ -7,7 +7,6 @@ import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingPaymentSource;
-import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingProvider;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.AccountingXeroConnectionRepository;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.XeroConnectionStatus;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
@@ -270,134 +269,78 @@ public class AccountingSyncService {
             .orElseThrow(
                 () -> new ResourceNotFoundException("AccountingXeroConnection", connectionId));
 
-    var provider =
-        integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingProvider.class);
+    var paymentSource =
+        integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingPaymentSource.class);
 
     int matched = 0, drifted = 0, skipped = 0;
 
-    if (provider instanceof AccountingPaymentSource paymentSource) {
-      var since =
-          connection.getLastPollAt() != null
-              ? connection.getLastPollAt()
-              : connection.getConnectedAt();
-      var payments = paymentSource.getPaymentsModifiedSince(since);
-      log.info(
-          "Polled {} payments for connection {} since {}", payments.size(), connectionId, since);
+    var since =
+        connection.getLastPollAt() != null
+            ? connection.getLastPollAt()
+            : connection.getConnectedAt();
+    var payments = paymentSource.getPaymentsModifiedSince(since);
+    log.info("Polled {} payments for connection {} since {}", payments.size(), connectionId, since);
 
-      for (var event : payments) {
-        // 1. Look up Kazi invoice via external_reference on the completed PUSH sync entry
-        var pushEntry =
-            syncEntryRepository.findCompletedPushByExternalReference(
-                event.externalInvoiceReference());
-
-        if (pushEntry.isEmpty()) {
-          log.debug(
-              "No matching Kazi invoice for external reference {}; skipping (Xero-native)",
+    for (var event : payments) {
+      // 1. Look up Kazi invoice via external_reference on the completed PUSH sync entry
+      var pushEntry =
+          syncEntryRepository.findCompletedPushByExternalReference(
               event.externalInvoiceReference());
-          skipped++;
-          continue;
-        }
 
-        UUID invoiceId = pushEntry.get().getEntityId();
-        var invoiceOpt = invoiceRepository.findById(invoiceId);
+      if (pushEntry.isEmpty()) {
+        log.debug(
+            "No matching Kazi invoice for external reference {}; skipping (Xero-native)",
+            event.externalInvoiceReference());
+        skipped++;
+        continue;
+      }
 
-        if (invoiceOpt.isEmpty()) {
-          log.warn(
-              "Invoice {} referenced by sync entry {} not found; skipping",
-              invoiceId,
-              pushEntry.get().getId());
-          skipped++;
-          continue;
-        }
+      UUID invoiceId = pushEntry.get().getEntityId();
+      var invoiceOpt = invoiceRepository.findById(invoiceId);
 
-        var invoice = invoiceOpt.get();
+      if (invoiceOpt.isEmpty()) {
+        log.warn(
+            "Invoice {} referenced by sync entry {} not found; skipping",
+            invoiceId,
+            pushEntry.get().getId());
+        skipped++;
+        continue;
+      }
 
-        // 2. Already PAID — idempotent skip
-        if (invoice.getStatus() == InvoiceStatus.PAID) {
-          log.debug("Invoice {} already PAID; skipping (idempotent)", invoiceId);
-          skipped++;
-          continue;
-        }
+      var invoice = invoiceOpt.get();
 
-        // 3. Not in SENT status — cannot auto-transition (only SENT -> PAID is valid)
-        if (invoice.getStatus() != InvoiceStatus.SENT) {
-          log.warn(
-              "Invoice {} is in {} status (not SENT); skipping payment reconciliation",
-              invoiceId,
-              invoice.getStatus());
-          skipped++;
-          continue;
-        }
+      // 2. Already PAID — idempotent skip
+      if (invoice.getStatus() == InvoiceStatus.PAID) {
+        log.debug("Invoice {} already PAID; skipping (idempotent)", invoiceId);
+        skipped++;
+        continue;
+      }
 
-        // 4. Dedup check — already have a PaymentEvent for this payment
-        if (paymentEventRepository.existsByInvoiceIdAndPaymentReference(
-            invoiceId, event.externalPaymentId())) {
-          log.debug(
-              "PaymentEvent already exists for invoice {} / payment {}; skipping",
-              invoiceId,
-              event.externalPaymentId());
-          skipped++;
-          continue;
-        }
+      // 3. Not in SENT status — cannot auto-transition (only SENT -> PAID is valid)
+      if (invoice.getStatus() != InvoiceStatus.SENT) {
+        log.warn(
+            "Invoice {} is in {} status (not SENT); skipping payment reconciliation",
+            invoiceId,
+            invoice.getStatus());
+        skipped++;
+        continue;
+      }
 
-        // 5. Amount drift check
-        BigDecimal drift = event.amount().subtract(invoice.getTotal()).abs();
-        if (drift.compareTo(new BigDecimal("0.01")) > 0) {
-          var driftEntry =
-              new AccountingSyncEntry(
-                  SyncEntityType.PAYMENT_PULL,
-                  invoiceId,
-                  "xero",
-                  SyncDirection.PULL,
-                  SyncTrigger.EVENT,
-                  event.externalInvoiceReference());
-          driftEntry.markReconcileDrift(
-              "DRIFT_DETECTED",
-              "Xero amount %s does not match Kazi total %s (drift: %s)"
-                  .formatted(event.amount(), invoice.getTotal(), drift));
-          syncEntryRepository.save(driftEntry);
+      // 4. Dedup check — already have a PaymentEvent for this payment
+      if (paymentEventRepository.existsByInvoiceIdAndPaymentReference(
+          invoiceId, event.externalPaymentId())) {
+        log.debug(
+            "PaymentEvent already exists for invoice {} / payment {}; skipping",
+            invoiceId,
+            event.externalPaymentId());
+        skipped++;
+        continue;
+      }
 
-          auditService.log(
-              AuditEventBuilder.builder()
-                  .eventType("integration.xero.reconcile_drift")
-                  .entityType("INVOICE")
-                  .entityId(invoiceId)
-                  .actorType("SYSTEM")
-                  .source("ACCOUNTING_SYNC")
-                  .details(
-                      Map.of(
-                          "invoiceNumber",
-                          invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : "",
-                          "xeroAmount",
-                          event.amount().toString(),
-                          "kaziTotal",
-                          invoice.getTotal().toString(),
-                          "drift",
-                          drift.toString(),
-                          "xeroPaymentId",
-                          event.externalPaymentId()))
-                  .build());
-
-          drifted++;
-          continue;
-        }
-
-        // 6. Match — create PaymentEvent, transition invoice, create PULL sync entry
-        var paymentEvent =
-            new PaymentEvent(
-                invoiceId,
-                "xero",
-                null,
-                PaymentEventStatus.COMPLETED,
-                event.amount(),
-                event.currency(),
-                invoice.getPaymentDestination());
-        paymentEvent.setPaymentReference(event.externalPaymentId());
-        paymentEventRepository.save(paymentEvent);
-
-        invoiceTransitionService.recordPayment(invoiceId, event.externalPaymentId(), true);
-
-        var pullEntry =
+      // 5. Amount drift check
+      BigDecimal drift = event.amount().subtract(invoice.getTotal()).abs();
+      if (drift.compareTo(new BigDecimal("0.01")) > 0) {
+        var driftEntry =
             new AccountingSyncEntry(
                 SyncEntityType.PAYMENT_PULL,
                 invoiceId,
@@ -405,12 +348,15 @@ public class AccountingSyncService {
                 SyncDirection.PULL,
                 SyncTrigger.EVENT,
                 event.externalInvoiceReference());
-        pullEntry.markCompleted(event.externalPaymentId());
-        syncEntryRepository.save(pullEntry);
+        driftEntry.markReconcileDrift(
+            "DRIFT_DETECTED",
+            "Xero amount %s does not match Kazi total %s (drift: %s)"
+                .formatted(event.amount(), invoice.getTotal(), drift));
+        syncEntryRepository.save(driftEntry);
 
         auditService.log(
             AuditEventBuilder.builder()
-                .eventType("integration.xero.payment_reconciled")
+                .eventType("integration.xero.reconcile_drift")
                 .entityType("INVOICE")
                 .entityId(invoiceId)
                 .actorType("SYSTEM")
@@ -419,20 +365,70 @@ public class AccountingSyncService {
                     Map.of(
                         "invoiceNumber",
                         invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : "",
-                        "xeroPaymentId",
-                        event.externalPaymentId(),
-                        "amount",
+                        "xeroAmount",
                         event.amount().toString(),
-                        "syncEntryId",
-                        pullEntry.getId().toString()))
+                        "kaziTotal",
+                        invoice.getTotal().toString(),
+                        "drift",
+                        drift.toString(),
+                        "xeroPaymentId",
+                        event.externalPaymentId()))
                 .build());
 
-        eventPublisher.publishEvent(
-            new XeroPaymentReconciledEvent(
-                invoiceId, invoice.getInvoiceNumber(), event.amount(), event.externalPaymentId()));
-
-        matched++;
+        drifted++;
+        continue;
       }
+
+      // 6. Match — create PaymentEvent, transition invoice, create PULL sync entry
+      var paymentEvent =
+          new PaymentEvent(
+              invoiceId,
+              "xero",
+              null,
+              PaymentEventStatus.COMPLETED,
+              event.amount(),
+              event.currency(),
+              invoice.getPaymentDestination());
+      paymentEvent.setPaymentReference(event.externalPaymentId());
+      paymentEventRepository.save(paymentEvent);
+
+      invoiceTransitionService.recordPayment(invoiceId, event.externalPaymentId(), true);
+
+      var pullEntry =
+          new AccountingSyncEntry(
+              SyncEntityType.PAYMENT_PULL,
+              invoiceId,
+              "xero",
+              SyncDirection.PULL,
+              SyncTrigger.EVENT,
+              event.externalInvoiceReference());
+      pullEntry.markCompleted(event.externalPaymentId());
+      syncEntryRepository.save(pullEntry);
+
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("integration.xero.payment_reconciled")
+              .entityType("INVOICE")
+              .entityId(invoiceId)
+              .actorType("SYSTEM")
+              .source("ACCOUNTING_SYNC")
+              .details(
+                  Map.of(
+                      "invoiceNumber",
+                      invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : "",
+                      "xeroPaymentId",
+                      event.externalPaymentId(),
+                      "amount",
+                      event.amount().toString(),
+                      "syncEntryId",
+                      pullEntry.getId().toString()))
+              .build());
+
+      eventPublisher.publishEvent(
+          new XeroPaymentReconciledEvent(
+              invoiceId, invoice.getInvoiceNumber(), event.amount(), event.externalPaymentId()));
+
+      matched++;
     }
 
     connection.recordPoll();

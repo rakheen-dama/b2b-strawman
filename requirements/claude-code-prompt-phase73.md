@@ -119,7 +119,7 @@ Display as a compact key-value list (`text-sm`, `text-muted-foreground` for labe
 
 ### 2.1 Tab groups
 
-Replace the flat 21-tab `ProjectTabs` with a grouped tab bar. Each group is a top-level item in the tab bar. Groups with multiple items show a dropdown on hover/click. Groups with a single visible item render as a plain tab (no dropdown).
+Replace the flat 21-tab `ProjectTabs` with a grouped tab bar. Each group is a top-level item in the tab bar. Groups with multiple items show a dropdown on click (not hover — hover is unreliable on touch devices). Groups with a single visible item render as a plain tab (no dropdown).
 
 | Group | Sub-tabs | Notes |
 |-------|----------|-------|
@@ -140,7 +140,7 @@ Replace the flat 21-tab `ProjectTabs` with a grouped tab bar. Each group is a to
 
 - Tab URL parameter continues to work: `?tab=tasks` → Work group opens with Tasks selected.
 - Group-level navigation: `?tab=finance` → opens Finance group's first sub-tab (Time).
-- Backward compatibility: all existing tab IDs (`overview`, `documents`, `members`, `tasks`, `time`, `expenses`, `budget`, `financials`, `staffing`, `rates`, `generated-docs`, `requests`, `client-comments`, `court-dates`, `adverse-parties`, `trust`, `disbursements`, `statements`, `activity`, `audit`) continue to resolve correctly.
+- Backward compatibility: all existing tab IDs (`overview`, `documents`, `members`, `tasks`, `time`, `expenses`, `budget`, `financials`, `staffing`, `rates`, `generated`, `requests`, `client-comments`, `court-dates`, `adverse-parties`, `trust`, `disbursements`, `statements`, `activity`, `audit`) continue to resolve correctly.
 
 ### 2.3 Keyboard navigation
 

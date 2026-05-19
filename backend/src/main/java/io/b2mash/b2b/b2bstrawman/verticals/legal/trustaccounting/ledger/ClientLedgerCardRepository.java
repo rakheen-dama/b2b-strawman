@@ -28,4 +28,9 @@ public interface ClientLedgerCardRepository extends JpaRepository<ClientLedgerCa
   @Query(
       "SELECT COALESCE(SUM(c.balance), 0) FROM ClientLedgerCard c WHERE c.trustAccountId = :trustAccountId")
   BigDecimal calculateTotalTrustBalance(@Param("trustAccountId") UUID trustAccountId);
+
+  /** Sums the balance across all client ledger cards for a customer. Used by TrustBoundaryGuard. */
+  @Query(
+      "SELECT COALESCE(SUM(c.balance), 0) FROM ClientLedgerCard c WHERE c.customerId = :customerId")
+  BigDecimal sumBalancesForCustomer(@Param("customerId") UUID customerId);
 }

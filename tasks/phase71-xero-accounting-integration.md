@@ -31,7 +31,7 @@ Three strategic constraints bound the phase: (1) **Xero only for v1** -- Sage Pa
 | 517 | Migration + Entities + Repositories + Port Extensions | Backend | -- | L | 517A, 517B | Done |
 | 518 | AccountingSyncService + Worker + Event Listeners | Backend | 517 | L | 518A, 518B | Done |
 | 519 | XeroApiClient + XeroOAuthService | Backend | 517A | M | 519A | Done |
-| 520 | XeroAccountingProvider Adapter + Mappers | Backend | 517A, 519A | M | 520A, 520B | |
+| 520 | XeroAccountingProvider Adapter + Mappers | Backend | 517A, 519A | M | 520A, 520B | Done |
 | 521 | Trust Boundary Guard | Backend | 518A | S | 521A | |
 | 522 | Payment Pull (Poll Worker Completion) | Backend | 518A, 520A | M | 522A | |
 | 523 | One-Time Customer Import | Backend | 519A, 520A | S | 523A | |
@@ -173,7 +173,7 @@ PHASES already complete:
 |-------|-------|---------|-----------------------|
 | 3a | **518B** | `AccountingPaymentPollWorker` skeleton (`@Scheduled(fixedDelay = 900_000)`); tenant iteration via `TenantScopedRunner.forEachTenant()`; cursor update on `connection.lastPollAt`; wired to `NoOpAccountingProvider` until 522A completes the real binding. **Done** (PR #1329) | 520A, 520B, 521A |
 | 3b | **520A** | `XeroAccountingProvider` (`implements AccountingProvider, AccountingPaymentSource`); `XeroInvoicePayloadMapper` (pure function: `InvoiceSyncRequest` + tax mappings to Xero invoice JSON); invoice mapping accuracy + `getPaymentsModifiedSince` mapping tests. **Done** (PR #1330) | 518B, 520B, 521A |
-| 3c | **520B** | `XeroContactPayloadMapper` (pure function: `CustomerSyncRequest` to Xero contact JSON); wire `AccountingTaxCodeMappingService` into mappers for tax code resolution; contact mapping + tax code resolution tests. | 518B, 520A, 521A |
+| 3c | **520B** | `XeroContactPayloadMapper` (pure function: `CustomerSyncRequest` to Xero contact JSON); wire `AccountingTaxCodeMappingService` into mappers for tax code resolution; contact mapping + tax code resolution tests. **Done** (PR #1331) | 518B, 520A, 521A |
 | 3d | **521A** | `TrustBoundaryGuard` service (three guard conditions + fail-closed + skip for non-legal tenants); integration with `AccountingSyncService.enqueueInvoicePush`; audit event emission for blocked pushes; all guard condition tests + fail-closed on DB error + non-legal tenant skip test. | 518B, 520A, 520B |
 
 ### Stage 4 -- Advanced Features (parallel after Stage 3)
@@ -440,7 +440,7 @@ A realistic day-by-day cadence: 517A days 1-3; 517B days 3-5; 518A + 519A days 5
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **520A** | 520A.1-520A.4 | ~6 backend files (1 provider + 1 mapper + 2 test files + 2 context reads) | `XeroAccountingProvider` (`implements AccountingProvider, AccountingPaymentSource`); `XeroInvoicePayloadMapper` (pure function: `InvoiceSyncRequest` + tax mappings to Xero invoice JSON); invoice mapping accuracy + syncInvoice + syncCustomer + getPaymentsModifiedSince tests. **Done** (PR #1330) |
-| **520B** | 520B.1-520B.3 | ~4 backend files (1 mapper + 1 service integration + 2 test files) | `XeroContactPayloadMapper` (pure function: `CustomerSyncRequest` to Xero contact JSON); wire `AccountingTaxCodeMappingService` into `XeroInvoicePayloadMapper` for tax code resolution; contact mapping + tax code resolution tests. |
+| **520B** | 520B.1-520B.3 | ~4 backend files (1 mapper + 1 service integration + 2 test files) | `XeroContactPayloadMapper` (pure function: `CustomerSyncRequest` to Xero contact JSON); wire `AccountingTaxCodeMappingService` into `XeroInvoicePayloadMapper` for tax code resolution; contact mapping + tax code resolution tests. **Done** (PR #1331) |
 
 ### Tasks
 

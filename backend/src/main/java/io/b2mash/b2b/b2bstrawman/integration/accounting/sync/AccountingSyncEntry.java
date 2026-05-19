@@ -154,6 +154,14 @@ public class AccountingSyncEntry {
     this.nextAttemptAt = null;
   }
 
+  /** Mark as reconciliation drift — payment amount does not match invoice total. */
+  public void markReconcileDrift(String errorCode, String errorDetail) {
+    this.state = SyncState.RECONCILE_DRIFT;
+    this.lastErrorCode = errorCode;
+    this.lastErrorDetail = errorDetail;
+    this.nextAttemptAt = null;
+  }
+
   /** Reset for manual retry from dead-letter. */
   public void resetForRetry() {
     if (this.state != SyncState.DEAD_LETTER) {

@@ -31,4 +31,7 @@ public interface PaymentEventRepository extends JpaRepository<PaymentEvent, UUID
    * </ul>
    */
   List<PaymentEvent> findByInvoiceIdAndStatus(UUID invoiceId, PaymentEventStatus status);
+
+  /** Dedup check for payment pull reconciliation — prevents duplicate PaymentEvent on re-poll. */
+  boolean existsByInvoiceIdAndPaymentReference(UUID invoiceId, String paymentReference);
 }

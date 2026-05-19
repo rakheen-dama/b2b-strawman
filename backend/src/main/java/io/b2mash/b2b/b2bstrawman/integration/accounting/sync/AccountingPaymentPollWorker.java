@@ -17,8 +17,9 @@ import org.springframework.stereotype.Service;
  * prevent polling of remaining connections. Per-tenant isolation is provided by {@link
  * TenantScopedRunner#forEachTenant}.
  *
- * <p>Skeleton implementation — full Xero payment pull binding lands in 522A. Until then, {@code
- * NoOpAccountingProvider.getPaymentsModifiedSince()} returns an empty list.
+ * <p>Payment matching logic delegated to {@link AccountingSyncService#pollPaymentsForConnection}:
+ * matches external payments to Kazi invoices, detects amount drift, and transitions invoices to
+ * PAID on successful reconciliation.
  */
 @Service
 public class AccountingPaymentPollWorker {

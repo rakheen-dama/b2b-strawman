@@ -1,5 +1,8 @@
 package io.b2mash.b2b.b2bstrawman.integration.accounting.sync;
 
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
+import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
@@ -7,6 +10,9 @@ import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingPaymentSource;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingProvider;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.AccountingXeroConnectionRepository;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.XeroConnectionStatus;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
+import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
+import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.UUID;
@@ -26,21 +32,42 @@ public class AccountingSyncService {
   private final AccountingXeroConnectionRepository xeroConnectionRepository;
   private final IntegrationRegistry integrationRegistry;
   private final ApplicationEventPublisher eventPublisher;
+  private final InvoiceRepository invoiceRepository;
+  private final InvoiceLineRepository invoiceLineRepository;
+  private final CustomerRepository customerRepository;
+  private final OrgSettingsRepository orgSettingsRepository;
+  private final AuditService auditService;
+  private final TrustBoundaryGuard trustBoundaryGuard;
 
   public AccountingSyncService(
       AccountingSyncEntryRepository syncEntryRepository,
       AccountingXeroConnectionRepository xeroConnectionRepository,
       IntegrationRegistry integrationRegistry,
-      ApplicationEventPublisher eventPublisher) {
+      ApplicationEventPublisher eventPublisher,
+      InvoiceRepository invoiceRepository,
+      InvoiceLineRepository invoiceLineRepository,
+      CustomerRepository customerRepository,
+      OrgSettingsRepository orgSettingsRepository,
+      AuditService auditService,
+      TrustBoundaryGuard trustBoundaryGuard) {
     this.syncEntryRepository = syncEntryRepository;
     this.xeroConnectionRepository = xeroConnectionRepository;
     this.integrationRegistry = integrationRegistry;
     this.eventPublisher = eventPublisher;
+    this.invoiceRepository = invoiceRepository;
+    this.invoiceLineRepository = invoiceLineRepository;
+    this.customerRepository = customerRepository;
+    this.orgSettingsRepository = orgSettingsRepository;
+    this.auditService = auditService;
+    this.trustBoundaryGuard = trustBoundaryGuard;
   }
 
   /**
    * Enqueue an invoice push to Xero. Idempotent: if an active entry already exists for the invoice,
    * this is a no-op. If no CONNECTED Xero connection exists, returns silently.
+   *
+   * <p>Before creating a PENDING entry, evaluates the trust boundary guard to prevent trust-related
+   * invoices from being synced, and validates currency matches the org's default currency.
    */
   @Transactional
   public void enqueueInvoicePush(UUID invoiceId, SyncTrigger trigger) {
@@ -52,6 +79,76 @@ public class AccountingSyncService {
     var existing = syncEntryRepository.findActiveEntryForEntity(SyncEntityType.INVOICE, invoiceId);
     if (existing.isPresent()) {
       log.debug("Active sync entry already exists for invoice {}; skipping enqueue", invoiceId);
+      return;
+    }
+
+    // Load invoice, lines, and customer for guard evaluation
+    var invoice =
+        invoiceRepository
+            .findById(invoiceId)
+            .orElseThrow(() -> new ResourceNotFoundException("Invoice", invoiceId));
+    var lines = invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
+    var customer =
+        customerRepository
+            .findById(invoice.getCustomerId())
+            .orElseThrow(() -> new ResourceNotFoundException("Customer", invoice.getCustomerId()));
+
+    // Currency mismatch check
+    var orgSettings = orgSettingsRepository.findForCurrentTenant();
+    if (orgSettings.isPresent()
+        && !invoice.getCurrency().equals(orgSettings.get().getDefaultCurrency())) {
+      var entry =
+          new AccountingSyncEntry(
+              SyncEntityType.INVOICE,
+              invoiceId,
+              "xero",
+              SyncDirection.PUSH,
+              trigger,
+              "KAZI-INV-" + invoiceId);
+      entry.markDeadLetter(
+          "MULTI_CURRENCY",
+          "Invoice currency %s does not match org default %s"
+              .formatted(invoice.getCurrency(), orgSettings.get().getDefaultCurrency()));
+      syncEntryRepository.save(entry);
+      log.warn(
+          "Invoice {} dead-lettered: currency mismatch ({} vs {})",
+          invoiceId,
+          invoice.getCurrency(),
+          orgSettings.get().getDefaultCurrency());
+      return;
+    }
+
+    // Trust boundary guard
+    TrustBoundaryDecision decision = trustBoundaryGuard.evaluate(invoice, lines, customer);
+    if (!decision.allowed()) {
+      var entry =
+          new AccountingSyncEntry(
+              SyncEntityType.INVOICE,
+              invoiceId,
+              "xero",
+              SyncDirection.PUSH,
+              trigger,
+              "KAZI-INV-" + invoiceId);
+      entry.markBlockedTrustBoundary(decision.reason());
+      var savedEntry = syncEntryRepository.save(entry);
+
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("integration.xero.push_blocked_trust")
+              .entityType("INVOICE")
+              .entityId(invoice.getId())
+              .actorType("SYSTEM")
+              .source("ACCOUNTING_SYNC")
+              .details(
+                  Map.of(
+                      "reason", decision.reason(),
+                      "invoiceNumber",
+                          invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : "",
+                      "customerName", customer.getName(),
+                      "syncEntryId", savedEntry.getId().toString()))
+              .build());
+
+      log.warn("Invoice {} blocked by trust boundary guard: {}", invoiceId, decision.reason());
       return;
     }
 
@@ -153,11 +250,32 @@ public class AccountingSyncService {
   }
 
   /**
-   * Trust boundary guard for sync entries. Currently always permits — 521A will wire real
-   * validation logic (amount thresholds, entity type checks, org-level controls).
+   * Trust boundary guard for sync entries. Delegates to {@link TrustBoundaryGuard} for INVOICE
+   * entities; permits all other entity types (e.g. CUSTOMER, PAYMENT_PULL). If the invoice or
+   * customer cannot be loaded, permits the sync — missing entities are not a trust boundary concern
+   * and will be caught at the provider dispatch stage.
    */
   public TrustBoundaryDecision checkTrustBoundary(AccountingSyncEntry entry) {
-    return TrustBoundaryDecision.permit();
+    if (entry.getEntityType() != SyncEntityType.INVOICE) {
+      return TrustBoundaryDecision.permit();
+    }
+
+    var invoice = invoiceRepository.findById(entry.getEntityId());
+    if (invoice.isEmpty()) {
+      log.warn("Invoice {} not found for trust boundary check; permitting", entry.getEntityId());
+      return TrustBoundaryDecision.permit();
+    }
+
+    var lines = invoiceLineRepository.findByInvoiceIdOrderBySortOrder(entry.getEntityId());
+    var customer = customerRepository.findById(invoice.get().getCustomerId());
+    if (customer.isEmpty()) {
+      log.warn(
+          "Customer {} not found for trust boundary check; permitting",
+          invoice.get().getCustomerId());
+      return TrustBoundaryDecision.permit();
+    }
+
+    return trustBoundaryGuard.evaluate(invoice.get(), lines, customer.get());
   }
 
   private boolean hasConnectedXeroConnection() {

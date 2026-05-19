@@ -337,7 +337,46 @@ public class AccountingSyncService {
         continue;
       }
 
-      // 5. Amount drift check
+      // 5. Currency mismatch check
+      if (!event.currency().equals(invoice.getCurrency())) {
+        var currencyDriftEntry =
+            new AccountingSyncEntry(
+                SyncEntityType.PAYMENT_PULL,
+                invoiceId,
+                "xero",
+                SyncDirection.PULL,
+                SyncTrigger.EVENT,
+                event.externalInvoiceReference());
+        currencyDriftEntry.markReconcileDrift(
+            "CURRENCY_MISMATCH",
+            "Xero payment currency %s does not match Kazi invoice currency %s"
+                .formatted(event.currency(), invoice.getCurrency()));
+        syncEntryRepository.save(currencyDriftEntry);
+
+        auditService.log(
+            AuditEventBuilder.builder()
+                .eventType("integration.xero.reconcile_drift")
+                .entityType("INVOICE")
+                .entityId(invoiceId)
+                .actorType("SYSTEM")
+                .source("ACCOUNTING_SYNC")
+                .details(
+                    Map.of(
+                        "invoiceNumber",
+                        invoice.getInvoiceNumber() != null ? invoice.getInvoiceNumber() : "",
+                        "xeroCurrency",
+                        event.currency(),
+                        "kaziCurrency",
+                        invoice.getCurrency(),
+                        "xeroPaymentId",
+                        event.externalPaymentId()))
+                .build());
+
+        drifted++;
+        continue;
+      }
+
+      // 6. Amount drift check
       BigDecimal drift = event.amount().subtract(invoice.getTotal()).abs();
       if (drift.compareTo(new BigDecimal("0.01")) > 0) {
         var driftEntry =
@@ -379,7 +418,7 @@ public class AccountingSyncService {
         continue;
       }
 
-      // 6. Match — create PaymentEvent, transition invoice, create PULL sync entry
+      // 7. Match — create PaymentEvent, transition invoice, create PULL sync entry
       var paymentEvent =
           new PaymentEvent(
               invoiceId,

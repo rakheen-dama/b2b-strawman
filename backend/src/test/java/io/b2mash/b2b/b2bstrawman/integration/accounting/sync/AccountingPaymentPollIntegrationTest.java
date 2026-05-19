@@ -243,6 +243,46 @@ class AccountingPaymentPollIntegrationTest {
   }
 
   @Test
+  void currencyMismatch_createsReconcileDriftEntry() {
+    runInTenant(
+        () -> {
+          String extRef = "KAZI-INV-CURR-" + UUID.randomUUID().toString().substring(0, 6);
+          BigDecimal amount = new BigDecimal("750.00");
+          UUID invoiceId =
+              createSentInvoiceWithPushEntry("Currency Mismatch Customer", amount, extRef);
+
+          // Payment has same amount but different currency (GBP vs USD)
+          var paymentEvent =
+              new ExternalPaymentEvent(
+                  extRef, "XERO-PAY-CURR-MISMATCH", amount, "GBP", Instant.now(), "PAID");
+
+          stubPaymentSource(new TestPaymentSource(List.of(paymentEvent)));
+
+          var summary = syncService.pollPaymentsForConnection(connectionId);
+
+          assertThat(summary.matched()).isZero();
+          assertThat(summary.drifted()).isEqualTo(1);
+          assertThat(summary.skipped()).isZero();
+
+          // Invoice should still be SENT
+          var invoice = invoiceRepository.findById(invoiceId).orElseThrow();
+          assertThat(invoice.getStatus()).isEqualTo(InvoiceStatus.SENT);
+
+          // RECONCILE_DRIFT sync entry should exist with CURRENCY_MISMATCH error code
+          var pullEntries =
+              syncEntryRepository.findByEntity(SyncEntityType.PAYMENT_PULL, invoiceId);
+          assertThat(pullEntries).hasSize(1);
+          assertThat(pullEntries.getFirst().getState()).isEqualTo(SyncState.RECONCILE_DRIFT);
+          assertThat(pullEntries.getFirst().getLastErrorCode()).isEqualTo("CURRENCY_MISMATCH");
+          assertThat(pullEntries.getFirst().getLastErrorDetail()).contains("GBP", "USD");
+
+          // No PaymentEvent should be created
+          var events = paymentEventRepository.findByInvoiceIdOrderByCreatedAtDesc(invoiceId);
+          assertThat(events).isEmpty();
+        });
+  }
+
+  @Test
   void xeroNativeInvoice_skippedWhenNoMatchingExternalReference() {
     runInTenant(
         () -> {

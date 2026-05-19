@@ -33,7 +33,7 @@ Three strategic constraints bound the phase: (1) **Xero only for v1** -- Sage Pa
 | 519 | XeroApiClient + XeroOAuthService | Backend | 517A | M | 519A | Done |
 | 520 | XeroAccountingProvider Adapter + Mappers | Backend | 517A, 519A | M | 520A, 520B | Done |
 | 521 | Trust Boundary Guard | Backend | 518A | S | 521A | Done |
-| 522 | Payment Pull (Poll Worker Completion) | Backend | 518A, 520A | M | 522A | |
+| 522 | Payment Pull (Poll Worker Completion) | Backend | 518A, 520A | M | 522A | Done |
 | 523 | One-Time Customer Import | Backend | 519A, 520A | S | 523A | |
 | 524 | Frontend -- Connection Management + Settings | Both | 519A, 520B | L | 524A, 524B | |
 | 525 | Frontend -- Sync Log + Status Chips | Both | 518A, 524A | L | 525A, 525B | |
@@ -180,7 +180,7 @@ PHASES already complete:
 
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
-| 4a | **522A** | Complete `AccountingPaymentPollWorker` body -- wire to `XeroAccountingProvider.getPaymentsModifiedSince`; payment matching logic in `AccountingSyncService.pollPaymentsForConnection`; `PaymentEvent` creation with `provider_slug = "xero"`; invoice transition to `PAID` via `InvoiceTransitionService`; amount drift detection and `RECONCILE_DRIFT` state; happy-path + drift + idempotent re-poll + Xero-native skip tests. | 523A, 524A |
+| 4a | **522A** | Complete `AccountingPaymentPollWorker` body -- wire to `XeroAccountingProvider.getPaymentsModifiedSince`; payment matching logic in `AccountingSyncService.pollPaymentsForConnection`; `PaymentEvent` creation with `provider_slug = "xero"`; invoice transition to `PAID` via `InvoiceTransitionService`; amount drift detection and `RECONCILE_DRIFT` state; happy-path + drift + idempotent re-poll + Xero-native skip tests. **Done** (PR #1333) | 523A, 524A |
 | 4b | **523A** | `XeroCustomerImportService`; pagination of Xero contacts; dedup logic (email, then name+taxNumber); one-time guard (import already run check); customer creation with `PROSPECT` status and `external_reference`; pagination + dedup + guard + summary tests. | 522A, 524A |
 | 4c | **524A** | `XeroIntegrationController` (OAuth connect/callback/disconnect + connection status + settings + tax mappings + customer import endpoints); `AccountingSyncController` (sync summary + entries + retry + resync + reconcile endpoints); controller RBAC gate tests. | 522A, 523A |
 
@@ -554,7 +554,7 @@ A realistic day-by-day cadence: 517A days 1-3; 517B days 3-5; 518A + 519A days 5
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **522A** | 522A.1-522A.4 | ~5 backend files (2 service modifications + 1 event + 2 test files) | Complete `pollPaymentsForConnection` body; payment matching logic; `PaymentEvent` creation with `provider_slug = "xero"`; invoice transition to PAID; amount drift detection; `RECONCILE_DRIFT` state; `XeroPaymentReconciledEvent`. |
+| **522A** | 522A.1-522A.4 | ~5 backend files (2 service modifications + 1 event + 2 test files) | Complete `pollPaymentsForConnection` body; payment matching logic; `PaymentEvent` creation with `provider_slug = "xero"`; invoice transition to PAID; amount drift detection; `RECONCILE_DRIFT` state; `XeroPaymentReconciledEvent`. **Done** (PR #1333) |
 
 ### Tasks
 

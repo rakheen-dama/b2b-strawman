@@ -6,6 +6,7 @@ import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerType;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.OrgIntegration;
@@ -175,7 +176,8 @@ public class XeroCustomerImportService {
     // Safety valve: refuse import if existing customer table is too large for in-memory dedup
     long customerCount = customerRepository.count();
     if (customerCount > MAX_CUSTOMER_COUNT_FOR_IMPORT) {
-      throw new IllegalStateException(
+      throw new InvalidStateException(
+          "Customer table too large for import",
           "Customer table has "
               + customerCount
               + " rows — too large for in-memory dedup (limit "
@@ -298,8 +300,9 @@ public class XeroCustomerImportService {
               "Customers have already been imported from Xero for this connection");
         }
       } catch (JacksonException e) {
-        throw new IllegalStateException(
-            "OrgIntegration configJson is malformed — cannot verify import guard", e);
+        throw new InvalidStateException(
+            "Import guard check failed",
+            "OrgIntegration configJson is malformed — cannot verify import guard");
       }
     }
   }
@@ -316,7 +319,9 @@ public class XeroCustomerImportService {
       orgIntegrationRepository.save(orgIntegration);
     } catch (JacksonException e) {
       log.error("Failed to update OrgIntegration configJson after import", e);
-      throw new IllegalStateException("Failed to mark import as completed", e);
+      throw new InvalidStateException(
+          "Failed to mark import as completed",
+          "Could not update OrgIntegration configJson after Xero customer import");
     }
   }
 

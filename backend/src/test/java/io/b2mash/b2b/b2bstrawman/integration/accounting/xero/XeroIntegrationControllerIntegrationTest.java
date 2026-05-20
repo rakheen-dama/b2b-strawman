@@ -49,7 +49,6 @@ class XeroIntegrationControllerIntegrationTest {
   @Autowired private MemberRepository memberRepository;
 
   @MockitoBean private XeroOAuthService xeroOAuthService;
-  @MockitoBean private XeroApiClient xeroApiClient;
   @MockitoBean private XeroCustomerImportService xeroCustomerImportService;
 
   private String tenantSchema;
@@ -190,7 +189,9 @@ class XeroIntegrationControllerIntegrationTest {
   @Test
   void getSettings_ownerCanAccess() throws Exception {
     when(xeroOAuthService.getSettings())
-        .thenReturn(new XeroOAuthService.XeroSyncSettings(15, "APPROVED", true));
+        .thenReturn(
+            new io.b2mash.b2b.b2bstrawman.integration.accounting.xero.dto.XeroSyncSettings(
+                15, "APPROVED", true));
 
     mockMvc
         .perform(

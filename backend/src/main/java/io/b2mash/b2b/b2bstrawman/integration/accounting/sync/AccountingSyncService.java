@@ -520,6 +520,19 @@ public class AccountingSyncService {
     }
     entry.markCompleted(entry.getExternalId());
     syncEntryRepository.save(entry);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("integration.xero.reconcile_drift_resolved")
+            .entityType("SYNC_ENTRY")
+            .entityId(syncEntryId)
+            .details(
+                Map.of(
+                    "syncEntryId", syncEntryId.toString(),
+                    "entityType", entry.getEntityType().name(),
+                    "entityId", entry.getEntityId().toString()))
+            .build());
+
     log.info("Reconcile drift resolved for sync entry {}", syncEntryId);
   }
 

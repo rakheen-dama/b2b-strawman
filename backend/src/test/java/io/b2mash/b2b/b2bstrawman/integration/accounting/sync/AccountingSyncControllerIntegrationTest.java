@@ -18,7 +18,9 @@ import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -29,6 +31,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -54,6 +58,7 @@ class AccountingSyncControllerIntegrationTest {
   private String tenantSchema;
   private UUID ownerMemberId;
   private UUID syncViewerMemberId;
+  private UUID integrationManagerMemberId;
   private UUID noCapMemberId;
 
   @BeforeAll
@@ -101,6 +106,17 @@ class AccountingSyncControllerIntegrationTest {
                 "Sync Viewer",
                 "member"));
 
+    // Member WITH INTEGRATION_MANAGE capability (for retry/resync write operations)
+    integrationManagerMemberId =
+        UUID.fromString(
+            TestMemberHelper.syncMember(
+                mockMvc,
+                ORG_ID,
+                "user_sync_ctrl_mgr",
+                "sync_ctrl_mgr@test.com",
+                "Sync Manager",
+                "member"));
+
     // Member WITHOUT any sync capabilities
     noCapMemberId =
         UUID.fromString(
@@ -118,7 +134,8 @@ class AccountingSyncControllerIntegrationTest {
         .where(RequestScopes.ORG_ROLE, "owner")
         .run(
             () -> {
-              // Role with INTEGRATION_VIEW_SYNC_STATUS only (no FINANCIAL_RECONCILE)
+              // Role with INTEGRATION_VIEW_SYNC_STATUS only (no FINANCIAL_RECONCILE, no
+              // INTEGRATION_MANAGE)
               var syncViewerRole =
                   orgRoleService.createRole(
                       new OrgRoleDtos.CreateOrgRoleRequest(
@@ -129,6 +146,19 @@ class AccountingSyncControllerIntegrationTest {
               syncViewer.setOrgRoleEntity(
                   orgRoleRepository.findById(syncViewerRole.id()).orElseThrow());
               memberRepository.save(syncViewer);
+
+              // Role with INTEGRATION_MANAGE for write operations (retry/resync)
+              var integrationManagerRole =
+                  orgRoleService.createRole(
+                      new OrgRoleDtos.CreateOrgRoleRequest(
+                          "Integration Manager",
+                          "Can manage integrations",
+                          Set.of("INTEGRATION_MANAGE")));
+              var integrationManager =
+                  memberRepository.findById(integrationManagerMemberId).orElseThrow();
+              integrationManager.setOrgRoleEntity(
+                  orgRoleRepository.findById(integrationManagerRole.id()).orElseThrow());
+              memberRepository.save(integrationManager);
 
               // Role without any sync capabilities
               var noCapRole =
@@ -167,8 +197,84 @@ class AccountingSyncControllerIntegrationTest {
         .andExpect(jsonPath("$.completed").value(42));
   }
 
+  // --- RBAC tests for GET endpoints (H-3) ---
+
   @Test
-  void retry_requiresSyncStatus_returns403ForNoCap() throws Exception {
+  void getEntries_returns403ForNoCap() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/integrations/sync/entries")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_nocap", "member")))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void getEntries_syncViewerCanAccess() throws Exception {
+    when(syncService.findEntries(any(), any(), any(), any()))
+        .thenReturn(new PageImpl<>(Collections.emptyList(), PageRequest.of(0, 20), 0));
+
+    mockMvc
+        .perform(
+            get("/api/integrations/sync/entries")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_viewer", "member")))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void getEntryById_returns403ForNoCap() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/integrations/sync/entries/" + UUID.randomUUID())
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_nocap", "member")))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void getEntryById_syncViewerCanAccess() throws Exception {
+    UUID entryId = UUID.randomUUID();
+    var mockEntry =
+        new AccountingSyncEntry(
+            SyncEntityType.INVOICE,
+            UUID.randomUUID(),
+            "xero",
+            SyncDirection.PUSH,
+            SyncTrigger.EVENT,
+            "KAZI-INV-test");
+    when(syncService.findEntryById(entryId)).thenReturn(mockEntry);
+
+    mockMvc
+        .perform(
+            get("/api/integrations/sync/entries/" + entryId)
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_viewer", "member")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.entityType").value("INVOICE"));
+  }
+
+  @Test
+  void getInvoiceSyncStatus_returns403ForNoCap() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/integrations/sync/invoice/" + UUID.randomUUID() + "/status")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_nocap", "member")))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void getInvoiceSyncStatus_syncViewerCanAccess() throws Exception {
+    UUID invoiceId = UUID.randomUUID();
+    when(syncService.findSyncStatusForInvoice(invoiceId)).thenReturn(List.of());
+
+    mockMvc
+        .perform(
+            get("/api/integrations/sync/invoice/" + invoiceId + "/status")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_viewer", "member")))
+        .andExpect(status().isOk());
+  }
+
+  // --- Retry/resync require INTEGRATION_MANAGE (H-6) ---
+
+  @Test
+  void retry_requiresIntegrationManage_returns403ForNoCap() throws Exception {
     mockMvc
         .perform(
             post("/api/integrations/sync/" + UUID.randomUUID() + "/retry")
@@ -177,14 +283,23 @@ class AccountingSyncControllerIntegrationTest {
   }
 
   @Test
-  void retry_syncViewerCanAccess() throws Exception {
+  void retry_requiresIntegrationManage_returns403ForSyncViewer() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/integrations/sync/" + UUID.randomUUID() + "/retry")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_viewer", "member")))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void retry_integrationManagerCanAccess() throws Exception {
     UUID entryId = UUID.randomUUID();
     doNothing().when(syncService).retryFromDeadLetter(entryId);
 
     mockMvc
         .perform(
             post("/api/integrations/sync/" + entryId + "/retry")
-                .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_viewer", "member")))
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_mgr", "member")))
         .andExpect(status().isNoContent());
   }
 
@@ -210,7 +325,7 @@ class AccountingSyncControllerIntegrationTest {
   }
 
   @Test
-  void resync_requiresSyncStatus_returns403ForNoCap() throws Exception {
+  void resync_requiresIntegrationManage_returns403ForNoCap() throws Exception {
     mockMvc
         .perform(
             post("/api/integrations/sync/invoice/" + UUID.randomUUID() + "/resync")
@@ -219,14 +334,23 @@ class AccountingSyncControllerIntegrationTest {
   }
 
   @Test
-  void resync_syncViewerCanAccess() throws Exception {
+  void resync_requiresIntegrationManage_returns403ForSyncViewer() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/integrations/sync/invoice/" + UUID.randomUUID() + "/resync")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_viewer", "member")))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void resync_integrationManagerCanAccess() throws Exception {
     UUID invoiceId = UUID.randomUUID();
     doNothing().when(syncService).enqueueInvoicePush(any(UUID.class), any(SyncTrigger.class));
 
     mockMvc
         .perform(
             post("/api/integrations/sync/invoice/" + invoiceId + "/resync")
-                .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_viewer", "member")))
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_mgr", "member")))
         .andExpect(status().isNoContent());
   }
 }

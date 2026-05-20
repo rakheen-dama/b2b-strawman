@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.OrgIntegration;
 import io.b2mash.b2b.b2bstrawman.integration.OrgIntegrationRepository;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingTaxCodeMappingService;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.dto.XeroSyncSettings;
 import io.b2mash.b2b.b2bstrawman.integration.secret.SecretStore;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClient;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Orchestrates the Xero OAuth2 authorization code flow with PKCE and manages the full token
@@ -53,6 +55,7 @@ public class XeroOAuthService {
   private final ApplicationEventPublisher eventPublisher;
   private final XeroApiClient xeroApiClient;
   private final RestClient tokenClient;
+  private final ObjectMapper objectMapper;
 
   public XeroOAuthService(
       XeroProperties properties,
@@ -63,7 +66,8 @@ public class XeroOAuthService {
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
       XeroApiClient xeroApiClient,
-      @Qualifier("xeroTokenClient") RestClient xeroTokenClient) {
+      @Qualifier("xeroTokenClient") RestClient xeroTokenClient,
+      ObjectMapper objectMapper) {
     this.properties = properties;
     this.secretStore = secretStore;
     this.orgIntegrationRepository = orgIntegrationRepository;
@@ -73,6 +77,7 @@ public class XeroOAuthService {
     this.eventPublisher = eventPublisher;
     this.xeroApiClient = xeroApiClient;
     this.tokenClient = xeroTokenClient;
+    this.objectMapper = objectMapper;
   }
 
   /** Result of initiating a Xero connection — contains the authorization URL and state. */
@@ -407,23 +412,13 @@ public class XeroOAuthService {
     config.put("autoSyncEnabled", settings.autoSyncEnabled());
 
     try {
-      integration.setConfigJson(
-          new tools.jackson.databind.ObjectMapper().writeValueAsString(config));
+      integration.setConfigJson(objectMapper.writeValueAsString(config));
     } catch (tools.jackson.core.JacksonException e) {
       throw new InvalidStateException(
           "Failed to serialize settings", "Could not write settings to configJson");
     }
     orgIntegrationRepository.save(integration);
     return settings;
-  }
-
-  /** Xero sync settings record stored in OrgIntegration configJson. */
-  public record XeroSyncSettings(
-      int paymentPollIntervalMinutes, String pushTrigger, boolean autoSyncEnabled) {
-
-    public static XeroSyncSettings defaults() {
-      return new XeroSyncSettings(15, "APPROVED", true);
-    }
   }
 
   private XeroSyncSettings parseSettings(OrgIntegration integration) {
@@ -442,9 +437,8 @@ public class XeroOAuthService {
     }
     try {
       return new HashMap<>(
-          new tools.jackson.databind.ObjectMapper()
-              .readValue(
-                  configJson, new tools.jackson.core.type.TypeReference<Map<String, Object>>() {}));
+          objectMapper.readValue(
+              configJson, new tools.jackson.core.type.TypeReference<Map<String, Object>>() {}));
     } catch (tools.jackson.core.JacksonException e) {
       log.warn("Failed to parse configJson; returning empty: {}", e.getMessage());
       return new HashMap<>();

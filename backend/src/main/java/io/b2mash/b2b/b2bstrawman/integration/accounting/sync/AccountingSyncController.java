@@ -66,14 +66,14 @@ public class AccountingSyncController {
   }
 
   @PostMapping("/{entryId}/retry")
-  @RequiresCapability("INTEGRATION_VIEW_SYNC_STATUS")
+  @RequiresCapability("INTEGRATION_MANAGE")
   public ResponseEntity<Void> retry(@PathVariable UUID entryId) {
     syncService.retryFromDeadLetter(entryId);
     return ResponseEntity.noContent().build();
   }
 
   @PostMapping("/invoice/{invoiceId}/resync")
-  @RequiresCapability("INTEGRATION_VIEW_SYNC_STATUS")
+  @RequiresCapability("INTEGRATION_MANAGE")
   public ResponseEntity<Void> resync(@PathVariable UUID invoiceId) {
     syncService.enqueueInvoicePush(invoiceId, SyncTrigger.FORCE_RESYNC);
     return ResponseEntity.noContent().build();

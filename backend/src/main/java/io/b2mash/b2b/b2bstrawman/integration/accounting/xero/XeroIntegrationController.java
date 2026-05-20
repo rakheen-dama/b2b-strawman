@@ -1,9 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.integration.accounting.xero;
 
-import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingTaxCodeMapping;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingTaxCodeMappingService;
-import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.XeroOAuthService.XeroSyncSettings;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.dto.AccountingTaxCodeMappingResponse;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.dto.XeroConnectionResponse;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.dto.XeroSyncSettings;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.validation.Valid;
@@ -76,22 +76,29 @@ public class XeroIntegrationController {
 
   @GetMapping("/tax-mappings")
   @RequiresCapability("INTEGRATION_MANAGE")
-  public ResponseEntity<List<AccountingTaxCodeMapping>> getTaxMappings() {
-    return ResponseEntity.ok(taxCodeMappingService.getByProvider("xero"));
+  public ResponseEntity<List<AccountingTaxCodeMappingResponse>> getTaxMappings() {
+    return ResponseEntity.ok(
+        taxCodeMappingService.getByProvider("xero").stream()
+            .map(AccountingTaxCodeMappingResponse::from)
+            .toList());
   }
 
   @PutMapping("/tax-mappings/{id}")
   @RequiresCapability("INTEGRATION_MANAGE")
-  public ResponseEntity<AccountingTaxCodeMapping> updateTaxMapping(
+  public ResponseEntity<AccountingTaxCodeMappingResponse> updateTaxMapping(
       @PathVariable UUID id, @Valid @RequestBody UpdateTaxMappingRequest request) {
     return ResponseEntity.ok(
-        taxCodeMappingService.update(id, request.externalTaxCode(), request.displayLabel()));
+        AccountingTaxCodeMappingResponse.from(
+            taxCodeMappingService.update(id, request.externalTaxCode(), request.displayLabel())));
   }
 
   @PostMapping("/tax-mappings/reset")
   @RequiresCapability("INTEGRATION_MANAGE")
-  public ResponseEntity<List<AccountingTaxCodeMapping>> resetTaxMappings() {
-    return ResponseEntity.ok(taxCodeMappingService.resetToDefaults("xero"));
+  public ResponseEntity<List<AccountingTaxCodeMappingResponse>> resetTaxMappings() {
+    return ResponseEntity.ok(
+        taxCodeMappingService.resetToDefaults("xero").stream()
+            .map(AccountingTaxCodeMappingResponse::from)
+            .toList());
   }
 
   @GetMapping("/tax-rates")

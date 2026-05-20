@@ -10,11 +10,7 @@ interface ExpandableTextProps {
   className?: string;
 }
 
-export function ExpandableText({
-  text,
-  lineClamp = 2,
-  className,
-}: ExpandableTextProps) {
+export function ExpandableText({ text, lineClamp = 2, className }: ExpandableTextProps) {
   const [expanded, setExpanded] = useState(false);
 
   if (!text) return null;

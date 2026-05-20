@@ -58,10 +58,7 @@ describe("MatterDetailLayout", () => {
 
   it("respects defaultCollapsed", () => {
     render(
-      <MatterDetailLayout
-        sidebar={<div>Sidebar</div>}
-        defaultCollapsed={true}
-      >
+      <MatterDetailLayout sidebar={<div>Sidebar</div>} defaultCollapsed={true}>
         <div>Main</div>
       </MatterDetailLayout>
     );

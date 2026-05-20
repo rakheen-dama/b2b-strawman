@@ -29,9 +29,7 @@ export function MatterDetailLayout({
   children,
   defaultCollapsed = false,
 }: MatterDetailLayoutProps) {
-  const [collapsed, setCollapsed] = useState(() =>
-    readStoredCollapsed(defaultCollapsed)
-  );
+  const [collapsed, setCollapsed] = useState(() => readStoredCollapsed(defaultCollapsed));
 
   const handleToggle = () => {
     const next = !collapsed;
@@ -48,15 +46,13 @@ export function MatterDetailLayout({
       data-testid="matter-detail-layout"
       className={cn(
         "grid min-h-0 transition-[grid-template-columns] duration-200 ease-in-out",
-        collapsed
-          ? "grid-cols-[0_1fr]"
-          : "grid-cols-[var(--sidebar-width)_1fr]"
+        collapsed ? "grid-cols-[0_1fr]" : "grid-cols-[var(--sidebar-width)_1fr]"
       )}
     >
       {/* Sidebar slot */}
       <div
         className={cn(
-          "overflow-y-auto overflow-x-hidden",
+          "overflow-x-hidden overflow-y-auto",
           !collapsed && "border-r border-slate-200 dark:border-slate-800"
         )}
         aria-hidden={collapsed}

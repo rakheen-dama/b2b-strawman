@@ -455,7 +455,10 @@ class AccountingSyncControllerIntegrationTest {
   @Test
   void reconcile_transitionsReconcileDriftToCompleted_withResolution() throws Exception {
     UUID entryId = UUID.randomUUID();
-    doNothing().when(syncService).resolveReconcileDrift(any(UUID.class), any());
+    doNothing()
+        .when(syncService)
+        .resolveReconcileDrift(
+            any(UUID.class), any(AccountingSyncController.ReconcileRequest.class));
 
     mockMvc
         .perform(
@@ -466,7 +469,11 @@ class AccountingSyncControllerIntegrationTest {
         .andExpect(status().isNoContent());
 
     verify(syncService)
-        .resolveReconcileDrift(eq(entryId), eq("Verified with bank statement — amounts match"));
+        .resolveReconcileDrift(
+            eq(entryId),
+            eq(
+                new AccountingSyncController.ReconcileRequest(
+                    "Verified with bank statement — amounts match")));
   }
 
   @Test
@@ -477,6 +484,8 @@ class AccountingSyncControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"resolution\":\"test\"}")
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_nocap", "member")))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").isNotEmpty());
   }
 }

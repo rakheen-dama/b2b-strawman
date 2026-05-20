@@ -78,7 +78,7 @@ public class AccountingSyncController {
   @RequiresCapability("FINANCIAL_RECONCILE")
   public ResponseEntity<Void> reconcile(
       @PathVariable UUID entryId, @RequestBody(required = false) ReconcileRequest request) {
-    syncService.resolveReconcileDrift(entryId, request != null ? request.resolution() : null);
+    syncService.resolveReconcileDrift(entryId, request);
     return ResponseEntity.noContent().build();
   }
 

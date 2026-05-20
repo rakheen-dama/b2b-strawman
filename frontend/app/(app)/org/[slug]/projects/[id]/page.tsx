@@ -574,7 +574,6 @@ export default async function ProjectDetailPage({
               customerName={customers.length > 0 ? customers[0].name : null}
               customerId={customers.length > 0 ? customers[0].id : null}
               canManage={canManage}
-              isAdmin={isAdmin}
               slug={slug}
               setupStatus={setupStatus}
               setupSteps={setupSteps}

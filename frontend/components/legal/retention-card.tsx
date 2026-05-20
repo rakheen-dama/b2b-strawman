@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ShieldAlert } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatLocalDate } from "@/lib/format";
+import { daysUntil } from "@/lib/date-utils";
 
 export interface RetentionCardProps {
   /** Project status — card renders for COMPLETED and CLOSED matters in different states. */
@@ -20,21 +21,6 @@ export interface RetentionCardProps {
   retentionEndsOn: string | null;
   /** Org slug used to deep-link into the data-protection settings page. */
   slug: string;
-}
-
-/**
- * Returns the number of whole days between today (UTC midnight) and the given
- * YYYY-MM-DD retention end date. Negative values are clamped to 0 — once the
- * retention window has elapsed the matter is queued for permanent deletion.
- */
-function daysRemainingUntil(yyyyMmDd: string): number {
-  const [year, month, day] = yyyyMmDd.split("-").map(Number);
-  const endUtc = Date.UTC(year, month - 1, day);
-  const now = new Date();
-  const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-  const diffMs = endUtc - todayUtc;
-  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-  return Math.max(0, diffDays);
 }
 
 /**
@@ -137,7 +123,7 @@ export function RetentionCard({
   }
 
   // State C — fully configured, end-date computed (existing happy path).
-  const daysRemaining = daysRemainingUntil(retentionEndsOn);
+  const daysRemaining = daysUntil(retentionEndsOn);
   const formattedEndDate = formatLocalDate(retentionEndsOn);
   const remainingLabel =
     daysRemaining === 0 ? "0 days — pending deletion" : `${daysRemaining} days remaining`;

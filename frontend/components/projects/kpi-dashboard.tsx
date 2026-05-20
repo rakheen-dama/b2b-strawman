@@ -6,13 +6,12 @@ import { HealthBadge } from "@/components/dashboard/health-badge";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
 import {
   fetchProjectHealthDetail,
-  fetchProjectTaskSummary,
   fetchProjectMemberHours,
   fetchProjectUpcomingDeadlines,
 } from "@/lib/actions/dashboard";
 import { UpcomingDeadlinesTile } from "@/components/projects/upcoming-deadlines-tile";
 import { api } from "@/lib/api";
-import { resolveDateRange } from "@/lib/date-utils";
+import { daysUntil, resolveDateRange } from "@/lib/date-utils";
 import { cn } from "@/lib/utils";
 import {
   DollarSign,
@@ -115,7 +114,7 @@ export interface KPIDashboardProps {
 // --- KPIDashboard component (Tasks 534.2 + 534.3) ---
 export async function KPIDashboard({
   projectId,
-  projectName,
+  projectName: _projectName,
   projectStatus,
   slug,
   canManage,
@@ -134,20 +133,17 @@ export async function KPIDashboard({
 
   const [
     healthResult,
-    taskSummaryResult,
     memberHoursResult,
     budgetResult,
     upcomingDeadlinesResult,
   ] = await Promise.allSettled([
     fetchProjectHealthDetail(projectId),
-    fetchProjectTaskSummary(projectId),
     fetchProjectMemberHours(projectId, from, to),
     api.get<BudgetStatusResponse>(`/api/projects/${projectId}/budget`).catch(() => null),
     fetchProjectUpcomingDeadlines(projectId),
   ]);
 
   const health = settled(healthResult);
-  const taskSummary = settled(taskSummaryResult);
   const memberHours = settled(memberHoursResult);
   const budgetStatus = settled(budgetResult);
   const upcomingDeadlines = settled(upcomingDeadlinesResult) ?? [];
@@ -167,7 +163,7 @@ export async function KPIDashboard({
   const taskCompletionPct = totalTasks > 0 ? Math.round((tasksDone / totalTasks) * 100) : 0;
 
   // Days to deadline
-  const daysToDeadline = projectDueDate ? computeDaysToDeadline(projectDueDate) : null;
+  const daysToDeadline = projectDueDate ? daysUntil(projectDueDate) : null;
 
   // Setup progress computation
   const completedSteps = setupSteps.filter((s) => s.complete).length;
@@ -341,12 +337,3 @@ export async function KPIDashboard({
   );
 }
 
-/** Compute the number of days from today to the given ISO date string. */
-function computeDaysToDeadline(isoDate: string): number {
-  const [year, month, day] = isoDate.split("-").map(Number);
-  const endUtc = Date.UTC(year, month - 1, day);
-  const now = new Date();
-  const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-  const diffMs = endUtc - todayUtc;
-  return Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
-}

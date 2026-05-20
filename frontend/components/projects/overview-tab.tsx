@@ -9,7 +9,6 @@ interface OverviewTabProps {
   customerName: string | null;
   customerId: string | null;
   canManage: boolean;
-  isAdmin: boolean;
   slug: string;
   setupStatus: ProjectSetupStatus | null;
   setupSteps: SetupStep[];

@@ -10,6 +10,7 @@ import { XeroConnectionCard } from "@/components/integrations/XeroConnectionCard
 import { XeroTaxMappingEditor } from "@/components/integrations/XeroTaxMappingEditor";
 import { XeroCustomerImport } from "@/components/integrations/XeroCustomerImport";
 import { XeroSettingsForm } from "@/components/integrations/XeroSettingsForm";
+import { XeroSyncSummary } from "@/components/integrations/XeroSyncSummary";
 import type { XeroConnectionResponse, XeroTaxMapping, XeroSettingsResponse } from "@/lib/types";
 
 export default async function XeroSettingsPage({
@@ -98,7 +99,7 @@ export default async function XeroSettingsPage({
 
             <XeroCustomerImport slug={slug} />
 
-            {/* Sync summary widget placeholder — lands in 525B */}
+            <XeroSyncSummary slug={slug} />
 
             {settings && <XeroSettingsForm settings={settings} slug={slug} />}
           </>

@@ -8,6 +8,7 @@ import {
   getGroupMembers,
   getTemplates,
 } from "@/lib/api";
+import { getXeroConnection } from "@/lib/api/integrations";
 import type {
   InvoiceResponse,
   TaxRateResponse,
@@ -25,6 +26,7 @@ import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSe
 import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
 import { PROMOTED_INVOICE_SLUGS } from "@/lib/constants/promoted-field-slugs";
 import { TerminologyText } from "@/components/terminology-text";
+import { XeroStatusChip } from "@/components/invoices/XeroStatusChip";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { PendingSuggestionsWidget } from "@/components/assistant/queue/pending-suggestions-widget";
@@ -72,6 +74,15 @@ export default async function InvoiceDetailPage({
   const taxRates = await api
     .get<TaxRateResponse[]>("/api/tax-rates")
     .catch(() => [] as TaxRateResponse[]);
+
+  // Check Xero connection status — 404 means not connected
+  let xeroConnected = false;
+  try {
+    const xeroConn = await getXeroConnection();
+    xeroConnected = xeroConn?.status === "CONNECTED";
+  } catch {
+    // Not connected or error
+  }
 
   // Custom field definitions and groups for the Custom Fields section
   let invoiceFieldDefs: FieldDefinitionResponse[] = [];
@@ -123,6 +134,14 @@ export default async function InvoiceDetailPage({
           />
         )}
       </div>
+
+      {xeroConnected && (
+        <XeroStatusChip
+          invoiceId={id}
+          slug={slug}
+          canReconcile={caps.isOwner || caps.capabilities.includes("FINANCIAL_RECONCILE")}
+        />
+      )}
 
       <InvoiceDetailClient
         invoice={invoice!}

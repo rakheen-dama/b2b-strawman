@@ -65,6 +65,7 @@ import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBad
 import { LifecycleTransitionDropdown } from "@/components/compliance/LifecycleTransitionDropdown";
 import { ChecklistInstancePanel } from "@/components/compliance/ChecklistInstancePanel";
 import { KycStatusBadge, type KycSummary } from "@/components/customers/kyc-status-badge";
+import { XeroContactBadge } from "@/components/customers/XeroContactBadge";
 import { SetupProgressCard, ActionCard, TemplateReadinessCard } from "@/components/setup";
 import {
   fetchCustomerReadiness,
@@ -80,6 +81,7 @@ import {
 } from "@/lib/api/information-requests";
 import { RequestList } from "@/components/information-requests/request-list";
 import { CreateRequestDialog } from "@/components/information-requests/create-request-dialog";
+import { getXeroConnection } from "@/lib/api/integrations";
 import { fetchRetainers, fetchPeriods } from "@/lib/api/retainers";
 import type { RetainerResponse, PeriodSummary } from "@/lib/api/retainers";
 import { CustomerRetainerTab } from "@/components/customers/customer-retainer-tab";
@@ -258,6 +260,15 @@ export default async function CustomerDetailPage({
     kycStatus = await api.get<KycIntegrationStatus>("/api/integrations/kyc/status");
   } catch {
     // Non-fatal: KYC verification buttons won't show
+  }
+
+  // Check Xero connection status — 404 means not connected
+  let xeroConnected = false;
+  try {
+    const xeroConn = await getXeroConnection();
+    xeroConnected = xeroConn?.status === "CONNECTED";
+  } catch {
+    // Not connected or error
   }
 
   // Derive a customer-level KYC summary from existing checklist data so the
@@ -528,6 +539,7 @@ export default async function CustomerDetailPage({
             <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
             {customer.lifecycleStatus && <LifecycleStatusBadge status={customer.lifecycleStatus} />}
             {kycSummary && <KycStatusBadge summary={kycSummary} />}
+            {xeroConnected && <XeroContactBadge customerId={id} slug={slug} />}
           </div>
           <p className="mt-1 text-slate-600 dark:text-slate-400">{customer.email}</p>
           {customer.lifecycleStatusChangedAt && (

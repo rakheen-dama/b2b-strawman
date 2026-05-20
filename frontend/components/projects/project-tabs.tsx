@@ -1,14 +1,14 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Tabs as TabsPrimitive } from "radix-ui";
-import { motion } from "motion/react";
-import { cn } from "@/lib/utils";
 import { useOrgProfile } from "@/lib/org-profile";
 import { useTerminology } from "@/lib/terminology";
 import { auditTabLabel } from "@/lib/terminology-map";
 import { useAuditTabVisible } from "@/components/audit/audit-timeline-tab";
+import { GroupedTabBar } from "@/components/projects/grouped-tab-bar";
+import { TAB_GROUPS } from "@/lib/constants/tab-groups";
 
 interface ProjectTabsProps {
   overviewPanel: ReactNode;
@@ -57,44 +57,9 @@ type TabId =
   | "statements"
   | "audit";
 
-interface TabDef {
-  id: TabId;
-  label: string;
-}
-
-function buildBaseTabs(t: (term: string) => string): TabDef[] {
-  return [
-    { id: "overview", label: "Overview" },
-    { id: "documents", label: "Documents" },
-    { id: "members", label: "Members" },
-    { id: "customers", label: t("Customers") },
-    // Use the literal "Tasks" label — the matter-detail scenario expects
-    // "Tasks" regardless of the legal-za terminology map (which rewrites
-    // generic "Tasks" → "Action Items" elsewhere in the product). GAP-L-38.
-    { id: "tasks", label: "Tasks" },
-    { id: "time", label: "Time" },
-    { id: "expenses", label: t("Expenses") },
-    { id: "budget", label: t("Budget") },
-    { id: "financials", label: "Financials" },
-    { id: "staffing", label: "Staffing" },
-    { id: "rates", label: "Rates" },
-    { id: "generated", label: "Generated Docs" },
-    { id: "requests", label: "Requests" },
-    { id: "customer-comments", label: `${t("Client")} Comments` },
-    { id: "court-dates", label: "Court Dates" },
-    { id: "adverse-parties", label: "Adverse Parties" },
-    { id: "trust", label: "Trust" },
-    { id: "disbursements", label: "Disbursements" },
-    { id: "statements", label: "Statements" },
-    { id: "activity", label: "Activity" },
-    { id: "audit", label: auditTabLabel(t) },
-  ];
-}
-
 const validTabIds = new Set<string>([
   "overview",
   "documents",
-  "members",
   "customers",
   "tasks",
   "time",
@@ -139,12 +104,21 @@ export function ProjectTabs({
   auditPanel,
 }: ProjectTabsProps) {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const tabParam = searchParams.get("tab");
   const urlTab = tabParam && validTabIds.has(tabParam) ? (tabParam as TabId) : null;
   const [userTab, setUserTab] = useState<TabId | null>(null);
   const { isModuleEnabled } = useOrgProfile();
   const { t } = useTerminology();
-  const baseTabs = useMemo(() => buildBaseTabs(t), [t]);
+
+  // Members backward-compat redirect: ?tab=members → ?tab=staffing (no history entry)
+  useEffect(() => {
+    if (tabParam === "members") {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", "staffing");
+      router.replace(`?${params.toString()}`);
+    }
+  }, [tabParam, router, searchParams]);
 
   const requestedTab = urlTab ?? userTab;
 
@@ -161,36 +135,68 @@ export function ProjectTabs({
   const auditVisible = useAuditTabVisible();
   const showAudit = !!auditPanel && auditVisible;
 
-  const tabs = useMemo(() => {
-    let filtered = baseTabs;
-    if (!ratesPanel) filtered = filtered.filter((t) => t.id !== "rates");
-    if (!financialsPanel) filtered = filtered.filter((t) => t.id !== "financials");
-    if (!expensesPanel) filtered = filtered.filter((t) => t.id !== "expenses");
-    if (!generatedPanel) filtered = filtered.filter((t) => t.id !== "generated");
-    if (!requestsPanel) filtered = filtered.filter((t) => t.id !== "requests");
-    if (!customerCommentsPanel) filtered = filtered.filter((t) => t.id !== "customer-comments");
-    if (!staffingPanel) filtered = filtered.filter((t) => t.id !== "staffing");
-    if (!showCourtDates) filtered = filtered.filter((t) => t.id !== "court-dates");
-    if (!showAdverseParties) filtered = filtered.filter((t) => t.id !== "adverse-parties");
-    if (!showTrust) filtered = filtered.filter((t) => t.id !== "trust");
-    if (!showDisbursements) filtered = filtered.filter((t) => t.id !== "disbursements");
-    if (!showStatements) filtered = filtered.filter((t) => t.id !== "statements");
-    if (!showAudit) filtered = filtered.filter((t) => t.id !== "audit");
-    // Dedupe: when the legal-specific Disbursements tab is shown AND the
-    // generic Expenses tab is present, their labels collide in legal-za
-    // (terminology maps "Expenses" → "Disbursements"). Prefer the legal
-    // tab and hide the generic one. GAP-L-38.
-    if (showDisbursements) filtered = filtered.filter((t) => t.id !== "expenses");
-    return filtered;
+  // Build visible groups from TAB_GROUPS with module-gating and terminology rewriting
+  const visibleGroups = useMemo(() => {
+    /** Per-tab visibility map — true means the tab should be shown */
+    const tabVisibility: Record<string, boolean> = {
+      // Always-visible tabs
+      overview: true,
+      tasks: true,
+      documents: true,
+      time: true,
+      customers: true,
+      activity: true,
+      // Panel-gated tabs (visible only when the panel prop is provided)
+      generated: !!generatedPanel,
+      staffing: !!staffingPanel,
+      // Dedupe: when the legal-specific Disbursements tab is shown AND the
+      // generic Expenses tab is present, their labels collide in legal-za
+      // (terminology maps "Expenses" → "Disbursements"). Prefer the legal
+      // tab and hide the generic one. GAP-L-38.
+      expenses: !!expensesPanel && !showDisbursements,
+      budget: true,
+      rates: !!ratesPanel,
+      financials: !!financialsPanel,
+      requests: !!requestsPanel,
+      "customer-comments": !!customerCommentsPanel,
+      // Module-gated tabs
+      "court-dates": showCourtDates,
+      "adverse-parties": showAdverseParties,
+      trust: showTrust,
+      disbursements: showDisbursements,
+      statements: showStatements,
+      audit: showAudit,
+    };
+
+    return TAB_GROUPS.map((group) => ({
+      ...group,
+      visible: group.tabs.some((t) => tabVisibility[t.id] !== false),
+      tabs: group.tabs.map((tab) => {
+        // Apply terminology rewriting to specific tab labels
+        let label = tab.label;
+        if (tab.id === "customers") label = t("Customers");
+        if (tab.id === "expenses") label = t("Expenses");
+        if (tab.id === "budget") label = t("Budget");
+        if (tab.id === "customer-comments") label = `${t("Client")} Comments`;
+        if (tab.id === "audit") label = auditTabLabel(t);
+        // Note: "Tasks" stays literal — GAP-L-38
+
+        return {
+          ...tab,
+          label,
+          visible: tabVisibility[tab.id] ?? true,
+        };
+      }),
+    }));
   }, [
-    baseTabs,
+    t,
+    generatedPanel,
+    staffingPanel,
+    expensesPanel,
     ratesPanel,
     financialsPanel,
-    expensesPanel,
-    generatedPanel,
     requestsPanel,
     customerCommentsPanel,
-    staffingPanel,
     showCourtDates,
     showAdverseParties,
     showTrust,
@@ -199,37 +205,30 @@ export function ProjectTabs({
     showAudit,
   ]);
 
-  // Validate activeTab is in the rendered tabs; fall back to "overview" if not
+  // Collect all visible tab IDs for activeTab validation
+  const visibleTabIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const group of visibleGroups) {
+      if (!group.visible) continue;
+      for (const tab of group.tabs) {
+        if (tab.visible !== false) ids.add(tab.id);
+      }
+    }
+    return ids;
+  }, [visibleGroups]);
+
+  // Validate activeTab is in the visible tabs; fall back to "overview" if not
   const activeTab: TabId =
-    requestedTab && tabs.some((t) => t.id === requestedTab) ? requestedTab : "overview";
+    requestedTab && visibleTabIds.has(requestedTab) ? requestedTab : "overview";
+
+  const handleTabChange = (tabId: string) => {
+    setUserTab(tabId as TabId);
+  };
 
   return (
-    <TabsPrimitive.Root value={activeTab} onValueChange={(v) => setUserTab(v as TabId)}>
-      {/* Radix List provides role="tablist" + arrow-key navigation + roving focus */}
-      <TabsPrimitive.List className="relative flex gap-6 border-b border-slate-200 dark:border-slate-800">
-        {tabs.map((tab) => (
-          <TabsPrimitive.Trigger
-            key={tab.id}
-            value={tab.id}
-            className={cn(
-              "relative pb-3 text-sm font-medium transition-colors outline-none",
-              "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",
-              "data-[state=active]:text-slate-950 dark:data-[state=active]:text-slate-50",
-              "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
-            )}
-          >
-            {tab.label}
-            {activeTab === tab.id && (
-              <motion.span
-                className="absolute inset-x-0 bottom-0 h-0.5 bg-teal-500"
-                layoutId="project-tab-indicator"
-                transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                aria-hidden="true"
-              />
-            )}
-          </TabsPrimitive.Trigger>
-        ))}
-      </TabsPrimitive.List>
+    <TabsPrimitive.Root value={activeTab}>
+      {/* GroupedTabBar replaces the flat TabsPrimitive.List — groups 21 sub-tabs into 6 top-level groups */}
+      <GroupedTabBar groups={visibleGroups} activeTab={activeTab} onTabChange={handleTabChange} />
 
       {/* Radix Content provides role="tabpanel" + aria-labelledby */}
       <TabsPrimitive.Content value="overview" className="pt-6 outline-none">

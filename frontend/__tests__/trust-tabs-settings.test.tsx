@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 // --- Mocks (before component imports) ---
 
@@ -39,10 +39,11 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+const mockReplace = vi.fn();
 const mockSearchParams = vi.fn(() => new URLSearchParams());
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
+  useRouter: () => ({ push: vi.fn(), refresh: vi.fn(), replace: mockReplace }),
   usePathname: () => "/org/acme/projects/proj-1",
   useSearchParams: () => mockSearchParams(),
 }));
@@ -65,6 +66,13 @@ vi.mock("@/lib/api", () => ({
 
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn() },
+}));
+
+// GroupedTabBar uses motion/react for the underline indicator
+vi.mock("motion/react", () => ({
+  motion: {
+    span: "span",
+  },
 }));
 
 // Mock the trust transaction actions to prevent server action imports in test env
@@ -154,7 +162,9 @@ describe("Project detail Trust tab", () => {
       )
     );
 
-    expect(screen.getByRole("tab", { name: "Trust" })).toBeInTheDocument();
+    // With GroupedTabBar, trust is a sub-tab within the Finance group.
+    // The Finance group trigger is visible; trust is a dropdown menu item.
+    expect(screen.getByTestId("tab-group-finance")).toBeInTheDocument();
   });
 
   it("hides Trust tab when trust_accounting module is disabled", () => {
@@ -173,7 +183,11 @@ describe("Project detail Trust tab", () => {
       )
     );
 
-    expect(screen.queryByRole("tab", { name: "Trust" })).not.toBeInTheDocument();
+    // Open the finance dropdown so Radix mounts the menu items
+    const financeGroup = screen.getByTestId("tab-group-finance");
+    fireEvent.click(financeGroup);
+
+    expect(screen.queryByTestId("tab-item-trust")).not.toBeInTheDocument();
   });
 
   it("falls back to overview tab when ?tab=trust but trust module is disabled", () => {
@@ -194,11 +208,16 @@ describe("Project detail Trust tab", () => {
       )
     );
 
-    // Trust tab should not be rendered
-    expect(screen.queryByRole("tab", { name: "Trust" })).not.toBeInTheDocument();
-    // Overview tab should be active (fallback)
-    expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("data-state", "active");
+    // Overview group should be active (fallback) — GroupedTabBar uses aria-selected
+    expect(screen.getByTestId("tab-group-overview")).toHaveAttribute("aria-selected", "true");
     expect(screen.getByTestId("overview-content")).toBeInTheDocument();
+
+    // Open the finance dropdown so Radix mounts the menu items
+    const financeGroup = screen.getByTestId("tab-group-finance");
+    fireEvent.click(financeGroup);
+
+    // Trust tab should not be a visible sub-tab (module disabled, no trust in finance dropdown)
+    expect(screen.queryByTestId("tab-item-trust")).not.toBeInTheDocument();
   });
 });
 

@@ -35,7 +35,7 @@ Three strategic constraints bound the phase: (1) **Xero only for v1** -- Sage Pa
 | 521 | Trust Boundary Guard | Backend | 518A | S | 521A | Done |
 | 522 | Payment Pull (Poll Worker Completion) | Backend | 518A, 520A | M | 522A | Done |
 | 523 | One-Time Customer Import | Backend | 519A, 520A | S | 523A | Done |
-| 524 | Frontend -- Connection Management + Settings | Both | 519A, 520B | L | 524A, 524B | |
+| 524 | Frontend -- Connection Management + Settings | Both | 519A, 520B | L | 524A, 524B | Done |
 | 525 | Frontend -- Sync Log + Status Chips | Both | 518A, 524A | L | 525A, 525B | |
 
 **Slice count: 13** (9 architecture slices expanded to 13 numbered slices to honour the 6-10 files / ~800 LOC slice-sizing budget). Backend-frontend split is preserved per slice -- no slice mixes both scopes except where the architecture explicitly co-locates a thin backend controller with its frontend consumers (524A is backend-only; 524B is frontend-only; similarly 525A/525B).
@@ -188,7 +188,7 @@ PHASES already complete:
 
 | Order | Slice | Summary |
 |-------|-------|---------|
-| 5a | **524B** | `frontend/app/(app)/org/[slug]/settings/integrations/xero/page.tsx`; `XeroConnectionCard.tsx`; `XeroTaxMappingEditor.tsx`; `XeroCustomerImport.tsx`; `XeroSettingsForm.tsx`; API client functions in `frontend/lib/api/integrations.ts`; modified integrations settings page (add Xero card linking to new sub-page). |
+| 5a | **524B** | `frontend/app/(app)/org/[slug]/settings/integrations/xero/page.tsx`; `XeroConnectionCard.tsx`; `XeroTaxMappingEditor.tsx`; `XeroCustomerImport.tsx`; `XeroSettingsForm.tsx`; API client functions in `frontend/lib/api/integrations.ts`; modified integrations settings page (add Xero card linking to new sub-page). **Done** (PR #1336) |
 | 5b | **525A** | Sync summary/log/retry/resync/reconcile controller endpoint tests (these complement 524A -- the controller itself was created in 524A; this slice adds the sync-specific frontend API client functions and wires the summary/entries queries). |
 | 5c | **525B** | `frontend/app/(app)/org/[slug]/settings/integrations/xero/sync-log/page.tsx`; `SyncLogTable.tsx`; `SyncEntryStateBadge.tsx`; `XeroSyncSummary.tsx`; `XeroStatusChip.tsx`; `XeroContactBadge.tsx`; modified invoice detail page (add status chip); modified customer detail page (add contact badge). |
 
@@ -661,7 +661,7 @@ A realistic day-by-day cadence: 517A days 1-3; 517B days 3-5; 518A + 519A days 5
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **524A** | 524A.1-524A.4 | ~7 backend files (2 controllers + 1 DTO package + 4 test files) | `XeroIntegrationController` (OAuth connect/callback/disconnect + connection status + settings + tax mappings + customer import + tax rates proxy); `AccountingSyncController` (sync summary + entries + entry detail + invoice sync status + retry + resync + reconcile); controller RBAC gate tests. **Done** (PR #1335) |
-| **524B** | 524B.1-524B.7 | ~9 frontend files (1 page + 4 components + 1 settings form + 1 API client + 1 page modification + i18n) | Xero settings page; `XeroConnectionCard`; `XeroTaxMappingEditor`; `XeroCustomerImport`; `XeroSettingsForm`; API client functions; modified integrations page. |
+| **524B** | 524B.1-524B.7 | ~9 frontend files (1 page + 4 components + 1 settings form + 1 API client + 1 page modification + i18n) | Xero settings page; `XeroConnectionCard`; `XeroTaxMappingEditor`; `XeroCustomerImport`; `XeroSettingsForm`; API client functions; modified integrations page. **Done** (PR #1336) |
 
 ### Tasks
 

@@ -13,11 +13,9 @@ import {
 import type {
   OrgMember,
   Project,
-  ProjectStatus,
   Customer,
   Document,
   ProjectMember,
-  ProjectRole,
   Task,
   ProjectTimeSummary,
   MemberTimeSummary,
@@ -35,7 +33,8 @@ import type {
   PaginatedExpenseResponse,
 } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { MatterDetailLayout } from "@/components/projects/matter-detail-layout";
+import { MatterSidebar } from "@/components/projects/matter-sidebar";
 import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
 import { DeleteProjectDialog } from "@/components/projects/delete-project-dialog";
 import { DocumentsPanel } from "@/components/documents/documents-panel";
@@ -51,9 +50,6 @@ import { ProjectRatesTab } from "@/components/rates/project-rates-tab";
 import { BudgetPanel } from "@/components/budget/budget-panel";
 import { ProjectFinancialsTab } from "@/components/profitability/project-financials-tab";
 import { OverviewTab } from "@/components/projects/overview-tab";
-import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
-import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
-import { TagInput } from "@/components/tags/TagInput";
 import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
 import { CreateProposalDialog } from "@/components/proposals/create-proposal-dialog";
@@ -81,7 +77,6 @@ import type {
   FicaStatus,
 } from "@/lib/types";
 import type { SetupStep } from "@/components/setup/types";
-import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
 import { SaveAsTemplateDialog } from "@/components/templates/SaveAsTemplateDialog";
 import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle-actions";
 import { MatterClosureAction } from "@/components/projects/matter-closure-action";
@@ -99,33 +94,8 @@ import { getProjectStaffing, type ProjectStaffingResponse } from "@/lib/api/capa
 import { getCurrentMonday, formatDate as formatDateUtil, addWeeks } from "@/lib/date-utils";
 import { createSavedViewAction } from "./view-actions";
 import { PROMOTED_PROJECT_SLUGS, PROMOTED_TASK_SLUGS } from "@/lib/constants/promoted-field-slugs";
-import { cn } from "@/lib/utils";
-import {
-  ArrowLeft,
-  AlertTriangle,
-  Calendar,
-  FileText,
-  LayoutTemplate,
-  Pencil,
-  Receipt,
-  Trash2,
-} from "lucide-react";
+import { ArrowLeft, FileText, LayoutTemplate, Pencil, Receipt, Trash2 } from "lucide-react";
 import Link from "next/link";
-
-const ROLE_BADGE: Record<ProjectRole, { label: string; variant: "lead" | "member" }> = {
-  lead: { label: "Lead", variant: "lead" },
-  member: { label: "Member", variant: "member" },
-};
-
-const PROJECT_STATUS_BADGE: Record<
-  ProjectStatus,
-  { label: string; variant: "success" | "warning" | "neutral" }
-> = {
-  ACTIVE: { label: "Active", variant: "success" },
-  COMPLETED: { label: "Completed", variant: "neutral" },
-  ARCHIVED: { label: "Archived", variant: "neutral" },
-  CLOSED: { label: "Closed", variant: "neutral" },
-};
 
 export default async function ProjectDetailPage({
   params,
@@ -149,6 +119,7 @@ export default async function ProjectDetailPage({
   const canEdit = isAdmin || project.projectRole === "lead";
   const isCurrentLead = project.projectRole === "lead";
   const canManage = isAdmin || isCurrentLead;
+  // TODO(epic-535): re-add roleBadge to MatterSidebar (projectRole omitted in 532B)
 
   // Setup guidance data (Epic 112A)
   let setupStatus: ProjectSetupStatus | null = null;
@@ -460,154 +431,44 @@ export default async function ProjectDetailPage({
     }
   }
 
-  const roleBadge = project.projectRole ? ROLE_BADGE[project.projectRole] : null;
-
   return (
-    <div className="space-y-8">
-      {/* Back link */}
-      <div>
-        <Link
-          href={`/org/${slug}/projects`}
-          className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-        >
-          <ArrowLeft className="mr-1.5 size-4" />
-          <TerminologyText template="Back to {Projects}" />
-        </Link>
-      </div>
-
-      {/* Archived banner (208.11) */}
-      {project.status === "ARCHIVED" && (
-        <ArchivedProjectBanner slug={slug} projectId={id} canRestore={isAdmin} />
-      )}
-
-      {/* Project Header (33.6 + 208.8/208.9/208.12) */}
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="min-w-0 flex-1 basis-[280px]">
-          <div className="flex items-center gap-3">
-            <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
-              {project.name}
-            </h1>
-            {roleBadge && <Badge variant={roleBadge.variant}>{roleBadge.label}</Badge>}
-            <Badge
-              variant={PROJECT_STATUS_BADGE[project.status].variant}
-              data-testid="project-status-badge"
-            >
-              {PROJECT_STATUS_BADGE[project.status].label}
-            </Badge>
-          </div>
-          {project.status === "CLOSED" && project.closedAt && (
-            <p
-              className="mt-2 text-sm text-slate-500 dark:text-slate-400"
-              data-testid="project-closed-at"
-            >
-              Closed on {formatDate(project.closedAt)}
-            </p>
-          )}
-          {project.description ? (
-            <p className="mt-2 text-slate-600 dark:text-slate-400">{project.description}</p>
-          ) : (
-            <p className="mt-2 text-sm text-slate-400 italic dark:text-slate-600">No description</p>
-          )}
-          {/* Due date with overdue warning (208.8) */}
-          {project.dueDate && (
-            <p
-              className={cn(
-                "mt-2 inline-flex items-center gap-1 text-sm",
-                project.status === "ACTIVE" && isOverdue(project.dueDate)
-                  ? "font-medium text-red-600 dark:text-red-400"
-                  : "text-slate-500 dark:text-slate-400"
-              )}
-              data-testid="project-due-date"
-            >
-              {project.status === "ACTIVE" && isOverdue(project.dueDate) ? (
-                <AlertTriangle className="size-3.5" />
-              ) : (
-                <Calendar className="size-3.5" />
-              )}
-              Due {formatLocalDate(project.dueDate)}
-            </p>
-          )}
-          {/* Customer display (208.12) */}
-          {customers.length > 0 ? (
-            <p
-              className="mt-2 text-sm text-slate-600 dark:text-slate-400"
-              data-testid="project-customer-link"
-            >
-              <TerminologyText template="{Customer}:" />{" "}
-              <Link
-                href={`/org/${slug}/customers/${customers[0].id}`}
-                className="text-teal-600 hover:text-teal-700 hover:underline dark:text-teal-400 dark:hover:text-teal-300"
-              >
-                {customers[0].name}
-              </Link>
-            </p>
-          ) : (
-            <p
-              className="mt-2 text-sm text-slate-400 dark:text-slate-600"
-              data-testid="project-internal-label"
-            >
-              <TerminologyText template="Internal {Project}" />
-            </p>
-          )}
-          {/* Promoted fields (Epic 464 / Phase 63) */}
-          {(project.referenceNumber || project.priority || project.workType) && (
-            <div
-              className="mt-3 flex flex-wrap items-center gap-3 text-sm text-slate-600 dark:text-slate-400"
-              data-testid="project-promoted-fields"
-            >
-              {project.referenceNumber && (
-                <span
-                  className="inline-flex items-center gap-1"
-                  data-testid="project-reference-number"
-                >
-                  <span className="text-xs tracking-wide text-slate-500 uppercase dark:text-slate-500">
-                    Ref
-                  </span>
-                  <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-700 dark:bg-slate-800 dark:text-slate-300">
-                    {project.referenceNumber}
-                  </code>
-                </span>
-              )}
-              {project.priority && (
-                <Badge
-                  variant={
-                    project.priority === "HIGH"
-                      ? "warning"
-                      : project.priority === "MEDIUM"
-                        ? "neutral"
-                        : "success"
-                  }
-                  data-testid="project-priority-badge"
-                >
-                  {project.priority.charAt(0) + project.priority.slice(1).toLowerCase()} Priority
-                </Badge>
-              )}
-              {project.workType && (
-                <span data-testid="project-work-type">
-                  <span className="text-xs tracking-wide text-slate-500 uppercase dark:text-slate-500">
-                    Type
-                  </span>{" "}
-                  <span className="text-slate-700 dark:text-slate-300">{project.workType}</span>
-                </span>
-              )}
-            </div>
-          )}
-          <p className="mt-3 text-sm text-slate-400 dark:text-slate-600">
-            Created {formatDate(project.createdAt)} &middot; {documents.length}{" "}
-            {documents.length === 1 ? "document" : "documents"} &middot; {members.length}{" "}
-            {members.length === 1 ? "member" : "members"} &middot; {tasks.length}{" "}
-            {tasks.length === 1 ? "task" : "tasks"}
-          </p>
+    <MatterDetailLayout
+      sidebar={
+        <MatterSidebar
+          project={project}
+          customers={customers}
+          slug={slug}
+          canEdit={canEdit}
+          canManage={canManage}
+          isAdmin={isAdmin}
+          isOwner={isOwner}
+          fieldDefinitions={projectFieldDefs}
+          fieldGroups={projectFieldGroups}
+          groupMembers={projectGroupMembers}
+          projectTags={projectTags}
+          allTags={allTags}
+        />
+      }
+    >
+      <div className="space-y-8 p-4 lg:p-6">
+        {/* Back link */}
+        <div>
+          <Link
+            href={`/org/${slug}/projects`}
+            className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+          >
+            <ArrowLeft className="mr-1.5 size-4" />
+            <TerminologyText template="Back to {Projects}" />
+          </Link>
         </div>
 
-        {/* Right-side action cluster: keeps all header actions in a single
-            container so the parent flex (justify-between) keeps a clean
-            two-column layout. Each child self-gates on its own
-            module/status/capability rules, so unrendered actions collapse to
-            nothing and don't leave the cluster stranded. */}
+        {/* Archived banner (208.11) */}
+        {project.status === "ARCHIVED" && (
+          <ArchivedProjectBanner slug={slug} projectId={id} canRestore={isAdmin} />
+        )}
+
+        {/* Action cluster — stays here until Epic 535 */}
         <div className="flex flex-wrap items-center justify-end gap-2">
-          {/* Matter closure button self-gates on module + CLOSE_MATTER capability; render
-              independently so users with CLOSE_MATTER but without edit/manage/owner can see it. */}
           {project.status !== "ARCHIVED" && (
             <MatterClosureAction
               slug={slug}
@@ -616,16 +477,12 @@ export default async function ProjectDetailPage({
               projectStatus={project.status}
             />
           )}
-          {/* Matter reopen button self-gates on module + status=CLOSED + CLOSE_MATTER capability.
-              Rendered independently of the (canEdit || isOwner || canManage) action cluster so a
-              CLOSED matter still surfaces the reopen entry point. */}
           <MatterReopenAction
             slug={slug}
             projectId={id}
             projectName={project.name}
             projectStatus={project.status}
           />
-          {/* Generate Statement of Account — self-gates on module + capability + non-ARCHIVED status. */}
           {project.status !== "ARCHIVED" && (
             <GenerateStatementOfAccountAction
               slug={slug}
@@ -634,7 +491,6 @@ export default async function ProjectDetailPage({
               projectStatus={project.status}
             />
           )}
-          {/* Action buttons: lifecycle + existing (hidden for ARCHIVED except lifecycle) */}
           {project.status !== "ARCHIVED" && (canEdit || isOwner || canManage) && (
             <>
               {isAdmin && (
@@ -655,10 +511,6 @@ export default async function ProjectDetailPage({
                   isAdmin={isAdmin}
                 />
               )}
-              {/* Matter-level "+ New Engagement Letter" CTA (GAP-L-48).
-                  Only shown when the matter has a linked customer in a
-                  non-terminal lifecycle state — the legal-ZA default fee
-                  model is HOURLY per the Proposal entity. */}
               {canManage &&
                 customers.length > 0 &&
                 customers[0].lifecycleStatus !== "OFFBOARDED" &&
@@ -717,7 +569,6 @@ export default async function ProjectDetailPage({
               )}
             </>
           )}
-          {/* For ARCHIVED, only show lifecycle actions (Restore) */}
           {project.status === "ARCHIVED" && isAdmin && (
             <ProjectLifecycleActions
               slug={slug}
@@ -727,239 +578,202 @@ export default async function ProjectDetailPage({
             />
           )}
         </div>
-      </div>
 
-      {/* Custom Fields */}
-      <FieldGroupSelector
-        entityType="PROJECT"
-        entityId={id}
-        appliedFieldGroups={project.appliedFieldGroups ?? []}
-        slug={slug}
-        canManage={canManage}
-        allGroups={projectFieldGroups}
-      />
-      <CustomFieldSection
-        entityType="PROJECT"
-        entityId={id}
-        customFields={project.customFields ?? {}}
-        appliedFieldGroups={project.appliedFieldGroups ?? []}
-        editable={canEdit}
-        slug={slug}
-        fieldDefinitions={projectFieldDefs}
-        fieldGroups={projectFieldGroups}
-        groupMembers={projectGroupMembers}
-      />
-
-      {/* Tags */}
-      <div className="space-y-2">
-        <p className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
-          Tags
-        </p>
-        <TagInput
-          entityType="PROJECT"
-          entityId={id}
-          tags={projectTags}
-          allTags={allTags}
-          editable={canEdit}
-          canInlineCreate={isAdmin}
-          slug={slug}
-        />
-      </div>
-
-      {/* Tabbed Content (33.7) */}
-      <ProjectTabs
-        overviewPanel={
-          <OverviewTab
-            projectId={id}
-            projectName={project.name}
-            projectStatus={project.status}
-            customerName={customers.length > 0 ? customers[0].name : null}
-            customerId={customers.length > 0 ? customers[0].id : null}
-            canManage={canManage}
-            isAdmin={isAdmin}
-            tasks={tasks}
-            slug={slug}
-            setupStatus={setupStatus}
-            setupSteps={setupSteps}
-            unbilledSummary={unbilledSummary}
-            templateReadiness={templateReadiness}
-            ficaStatus={ficaStatus}
-            retentionClockStartedAt={project.retentionClockStartedAt}
-            retentionEndsOn={project.retentionEndsOn}
-          />
-        }
-        documentsPanel={
-          <DocumentsPanel
-            documents={documents}
-            projectId={id}
-            slug={slug}
-            currentMemberId={currentMemberId}
-            canManageVisibility={canManage}
-          />
-        }
-        customersPanel={
-          <ProjectCustomersPanel
-            customers={customers}
-            slug={slug}
-            projectId={id}
-            canManage={canManage}
-          />
-        }
-        membersPanel={
-          <ProjectMembersPanel
-            members={members}
-            slug={slug}
-            projectId={id}
-            canManage={canManage}
-            isCurrentLead={isCurrentLead}
-            currentUserId={userId ?? ""}
-          />
-        }
-        tasksPanel={
-          <TaskListPanel
-            tasks={tasks}
-            slug={slug}
-            projectId={id}
-            canManage={canManage}
-            currentMemberId={currentMemberId}
-            isAdmin={isAdmin}
-            retainerSummary={taskRetainerSummary}
-            members={members.map((m) => ({ id: m.memberId, name: m.name, email: m.email }))}
-            allTags={allTags}
-            fieldDefinitions={taskFieldDefs}
-            fieldGroups={taskFieldGroups}
-            groupMembers={taskGroupMembers}
-            savedViews={savedTaskViews}
-            onSave={handleCreateTaskView}
-          />
-        }
-        timePanel={
-          <TimeSummaryPanel
-            projectId={id}
-            initialSummary={timeSummary}
-            initialByTask={timeSummaryByTask}
-            initialByMember={timeSummaryByMember}
-          />
-        }
-        budgetPanel={
-          <BudgetPanel
-            slug={slug}
-            projectId={id}
-            budget={budgetStatus}
-            canManage={canManage}
-            defaultCurrency={defaultCurrency}
-          />
-        }
-        financialsPanel={
-          canManage ? <ProjectFinancialsTab profitability={projectProfitability} /> : undefined
-        }
-        ratesPanel={
-          canManage ? (
-            <ProjectRatesTab
-              billingRates={projectBillingRates}
-              members={members}
+        {/* Tabbed Content (33.7) */}
+        <ProjectTabs
+          overviewPanel={
+            <OverviewTab
+              projectId={id}
+              projectName={project.name}
+              projectStatus={project.status}
+              customerName={customers.length > 0 ? customers[0].name : null}
+              customerId={customers.length > 0 ? customers[0].id : null}
+              canManage={canManage}
+              isAdmin={isAdmin}
+              tasks={tasks}
+              slug={slug}
+              setupStatus={setupStatus}
+              setupSteps={setupSteps}
+              unbilledSummary={unbilledSummary}
+              templateReadiness={templateReadiness}
+              ficaStatus={ficaStatus}
+              retentionClockStartedAt={project.retentionClockStartedAt}
+              retentionEndsOn={project.retentionEndsOn}
+            />
+          }
+          documentsPanel={
+            <DocumentsPanel
+              documents={documents}
               projectId={id}
               slug={slug}
+              currentMemberId={currentMemberId}
+              canManageVisibility={canManage}
+            />
+          }
+          customersPanel={
+            <ProjectCustomersPanel
+              customers={customers}
+              slug={slug}
+              projectId={id}
+              canManage={canManage}
+            />
+          }
+          membersPanel={
+            <ProjectMembersPanel
+              members={members}
+              slug={slug}
+              projectId={id}
+              canManage={canManage}
+              isCurrentLead={isCurrentLead}
+              currentUserId={userId ?? ""}
+            />
+          }
+          tasksPanel={
+            <TaskListPanel
+              tasks={tasks}
+              slug={slug}
+              projectId={id}
+              canManage={canManage}
+              currentMemberId={currentMemberId}
+              isAdmin={isAdmin}
+              retainerSummary={taskRetainerSummary}
+              members={members.map((m) => ({ id: m.memberId, name: m.name, email: m.email }))}
+              allTags={allTags}
+              fieldDefinitions={taskFieldDefs}
+              fieldGroups={taskFieldGroups}
+              groupMembers={taskGroupMembers}
+              savedViews={savedTaskViews}
+              onSave={handleCreateTaskView}
+            />
+          }
+          timePanel={
+            <TimeSummaryPanel
+              projectId={id}
+              initialSummary={timeSummary}
+              initialByTask={timeSummaryByTask}
+              initialByMember={timeSummaryByMember}
+            />
+          }
+          budgetPanel={
+            <BudgetPanel
+              slug={slug}
+              projectId={id}
+              budget={budgetStatus}
+              canManage={canManage}
               defaultCurrency={defaultCurrency}
             />
-          ) : undefined
-        }
-        expensesPanel={
-          <div className="space-y-6">
-            <div className="flex items-center justify-end">
-              <LogExpenseDialog
+          }
+          financialsPanel={
+            canManage ? <ProjectFinancialsTab profitability={projectProfitability} /> : undefined
+          }
+          ratesPanel={
+            canManage ? (
+              <ProjectRatesTab
+                billingRates={projectBillingRates}
+                members={members}
+                projectId={id}
+                slug={slug}
+                defaultCurrency={defaultCurrency}
+              />
+            ) : undefined
+          }
+          expensesPanel={
+            <div className="space-y-6">
+              <div className="flex items-center justify-end">
+                <LogExpenseDialog
+                  slug={slug}
+                  projectId={id}
+                  tasks={tasks.map((t) => ({ id: t.id, title: t.title }))}
+                >
+                  <Button size="sm">
+                    <Receipt className="mr-1.5 size-4" />
+                    Log Expense
+                  </Button>
+                </LogExpenseDialog>
+              </div>
+              <ExpenseList
+                expenses={expenseData.content}
                 slug={slug}
                 projectId={id}
                 tasks={tasks.map((t) => ({ id: t.id, title: t.title }))}
-              >
-                <Button size="sm">
-                  <Receipt className="mr-1.5 size-4" />
-                  Log Expense
-                </Button>
-              </LogExpenseDialog>
-            </div>
-            <ExpenseList
-              expenses={expenseData.content}
-              slug={slug}
-              projectId={id}
-              tasks={tasks.map((t) => ({ id: t.id, title: t.title }))}
-              members={members.map((m) => ({ id: m.memberId, name: m.name }))}
-              currentMemberId={currentMemberId}
-              isAdmin={isAdmin}
-            />
-          </div>
-        }
-        generatedPanel={
-          <GeneratedDocumentsList
-            entityType="PROJECT"
-            entityId={id}
-            slug={slug}
-            isAdmin={isAdmin}
-            customerId={customers.length > 0 ? customers[0].id : undefined}
-          />
-        }
-        requestsPanel={
-          customers.length > 0 ? (
-            <div className="space-y-6">
-              <div className="flex items-center justify-end">
-                <CreateRequestDialog
-                  slug={slug}
-                  customerId={customers[0].id}
-                  customerName={customers[0].name}
-                  projectId={id}
-                  projectName={project.name}
-                />
-              </div>
-              <RequestList requests={projectRequests} slug={slug} showCustomer={false} />
-            </div>
-          ) : undefined
-        }
-        customerCommentsPanel={
-          customers && customers.length > 0 ? (
-            <ProjectCommentsSection projectId={id} orgSlug={slug} />
-          ) : undefined
-        }
-        staffingPanel={<ProjectStaffingTab staffing={projectStaffing} />}
-        courtDatesPanel={<ProjectCourtDatesTab projectId={id} slug={slug} />}
-        adversePartiesPanel={<ProjectAdversePartiesTab projectId={id} slug={slug} />}
-        disbursementsPanel={
-          <ProjectDisbursementsTab projectId={id} slug={slug} canManage={canManage} />
-        }
-        statementsPanel={
-          <ProjectStatementsTab projectId={id} slug={slug} projectName={project.name} />
-        }
-        trustPanel={
-          customers.length > 0 ? (
-            <TrustBalanceCard
-              customerId={customers[0].id}
-              projectId={id}
-              slug={slug}
-              showQuickActions={canManage}
-            />
-          ) : undefined
-        }
-        activityPanel={
-          <div className="space-y-4">
-            <div className="flex items-center justify-end">
-              <LookbackPicker
-                specialistId="INBOX"
-                surface="MATTER_ACTIVITY_TAB"
-                contextRef={{ entityType: "project", entityId: id }}
-                ctaLabel={SPECIALIST_STRINGS.inboxSummariseLabel}
+                members={members.map((m) => ({ id: m.memberId, name: m.name }))}
+                currentMemberId={currentMemberId}
+                isAdmin={isAdmin}
               />
             </div>
-            <ActivityFeed projectId={id} orgSlug={slug} />
-          </div>
-        }
-        auditPanel={<ProjectAuditTab projectId={id} />}
-      />
+          }
+          generatedPanel={
+            <GeneratedDocumentsList
+              entityType="PROJECT"
+              entityId={id}
+              slug={slug}
+              isAdmin={isAdmin}
+              customerId={customers.length > 0 ? customers[0].id : undefined}
+            />
+          }
+          requestsPanel={
+            customers.length > 0 ? (
+              <div className="space-y-6">
+                <div className="flex items-center justify-end">
+                  <CreateRequestDialog
+                    slug={slug}
+                    customerId={customers[0].id}
+                    customerName={customers[0].name}
+                    projectId={id}
+                    projectName={project.name}
+                  />
+                </div>
+                <RequestList requests={projectRequests} slug={slug} showCustomer={false} />
+              </div>
+            ) : undefined
+          }
+          customerCommentsPanel={
+            customers && customers.length > 0 ? (
+              <ProjectCommentsSection projectId={id} orgSlug={slug} />
+            ) : undefined
+          }
+          staffingPanel={<ProjectStaffingTab staffing={projectStaffing} />}
+          courtDatesPanel={<ProjectCourtDatesTab projectId={id} slug={slug} />}
+          adversePartiesPanel={<ProjectAdversePartiesTab projectId={id} slug={slug} />}
+          disbursementsPanel={
+            <ProjectDisbursementsTab projectId={id} slug={slug} canManage={canManage} />
+          }
+          statementsPanel={
+            <ProjectStatementsTab projectId={id} slug={slug} projectName={project.name} />
+          }
+          trustPanel={
+            customers.length > 0 ? (
+              <TrustBalanceCard
+                customerId={customers[0].id}
+                projectId={id}
+                slug={slug}
+                showQuickActions={canManage}
+              />
+            ) : undefined
+          }
+          activityPanel={
+            <div className="space-y-4">
+              <div className="flex items-center justify-end">
+                <LookbackPicker
+                  specialistId="INBOX"
+                  surface="MATTER_ACTIVITY_TAB"
+                  contextRef={{ entityType: "project", entityId: id }}
+                  ctaLabel={SPECIALIST_STRINGS.inboxSummariseLabel}
+                />
+              </div>
+              <ActivityFeed projectId={id} orgSlug={slug} />
+            </div>
+          }
+          auditPanel={<ProjectAuditTab projectId={id} />}
+        />
 
-      {/* Pending AI Suggestions */}
-      <PendingSuggestionsWidget contextEntityType="project" contextEntityId={id} />
+        {/* Pending AI Suggestions */}
+        <PendingSuggestionsWidget contextEntityType="project" contextEntityId={id} />
 
-      {/* Epic 508B: Closure history (only on CLOSED matters). Per-row audit
-          timelines surface the matter.closure.override_used event from 508A. */}
-      {project.status === "CLOSED" && <ClosureHistorySection projectId={id} />}
-    </div>
+        {/* Epic 508B: Closure history (only on CLOSED matters). Per-row audit
+            timelines surface the matter.closure.override_used event from 508A. */}
+        {project.status === "CLOSED" && <ClosureHistorySection projectId={id} />}
+      </div>
+    </MatterDetailLayout>
   );
 }

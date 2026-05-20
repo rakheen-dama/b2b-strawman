@@ -167,7 +167,7 @@ export interface XeroConnectionResponse {
 }
 
 export interface XeroConnectResponse {
-  authUrl: string;
+  authorizationUrl: string;
   state: string;
 }
 

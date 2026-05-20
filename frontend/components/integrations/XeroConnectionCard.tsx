@@ -64,7 +64,7 @@ export function XeroConnectionCard({ connection, slug }: XeroConnectionCardProps
     try {
       const result = await initiateXeroConnectAction(slug);
       if (result.success && result.data) {
-        window.location.href = result.data.authUrl;
+        window.location.href = result.data.authorizationUrl;
       } else {
         setError(result.error ?? "Failed to initiate connection.");
         setIsConnecting(false);

@@ -66,7 +66,7 @@ export function XeroTaxMappingEditor({ mappings, slug }: XeroTaxMappingEditorPro
 
   // Fetch available Xero tax rates for the dropdown
   const { data: taxRatesData } = useSWR<XeroTaxRate[]>(
-    "xero-tax-rates",
+    `xero-tax-rates-${slug}`,
     () => fetchXeroTaxRatesAction(slug),
     { revalidateOnFocus: false }
   );
@@ -106,6 +106,10 @@ export function XeroTaxMappingEditor({ mappings, slug }: XeroTaxMappingEditorPro
     const state = getEditState(mapping);
     if (!state.externalTaxCode) {
       toast.error("Please select a Xero tax code.");
+      return;
+    }
+    if (!state.displayLabel.trim()) {
+      toast.error("Display label is required.");
       return;
     }
 

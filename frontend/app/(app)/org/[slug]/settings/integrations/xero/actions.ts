@@ -65,7 +65,16 @@ export async function fetchXeroTaxRatesAction(
   _slug: string
 ): Promise<XeroTaxRate[]> {
   try {
-    return await getXeroTaxRates();
+    // Backend proxies raw Xero response: { TaxRates: [{ Name, TaxType, EffectiveRate }] }
+    // Unwrap the envelope and map PascalCase -> camelCase to match XeroTaxRate type
+    const raw = await getXeroTaxRates();
+    const envelope = raw as unknown as { TaxRates?: Array<Record<string, unknown>> };
+    const rates = envelope.TaxRates ?? [];
+    return rates.map((r) => ({
+      name: String(r.Name ?? ""),
+      taxType: String(r.TaxType ?? ""),
+      effectiveRate: Number(r.EffectiveRate ?? 0),
+    }));
   } catch {
     return [];
   }

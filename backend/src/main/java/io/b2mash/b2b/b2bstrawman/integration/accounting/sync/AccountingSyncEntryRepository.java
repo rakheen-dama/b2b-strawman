@@ -86,17 +86,19 @@ public interface AccountingSyncEntryRepository extends JpaRepository<AccountingS
   Optional<AccountingSyncEntry> findCompletedPushByExternalReference(
       @Param("ref") String externalReference);
 
-  /** Paginated sync log with state filter. */
+  /** Paginated sync log with state, entity type, and direction filters. */
   @Query(
       """
       SELECT e FROM AccountingSyncEntry e
       WHERE (:state IS NULL OR e.state = :state)
       AND (:entityType IS NULL OR e.entityType = :entityType)
+      AND (:direction IS NULL OR e.direction = :direction)
       ORDER BY e.createdAt DESC
       """)
   Page<AccountingSyncEntry> findFiltered(
       @Param("state") SyncState state,
       @Param("entityType") SyncEntityType entityType,
+      @Param("direction") SyncDirection direction,
       Pageable pageable);
 
   /** Summary counts by state. */

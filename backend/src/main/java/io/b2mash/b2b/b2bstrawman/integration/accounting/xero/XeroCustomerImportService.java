@@ -70,6 +70,25 @@ public class XeroCustomerImportService {
   }
 
   /**
+   * Imports customers from the currently connected Xero org. Resolves the active connection
+   * internally so the controller does not need to orchestrate multiple service calls.
+   *
+   * @param actorMemberId the member performing the import
+   * @return summary of the import outcome
+   * @throws ResourceNotFoundException if no active Xero connection exists
+   */
+  public CustomerImportSummary importCustomersFromConnectedOrg(UUID actorMemberId) {
+    var connection =
+        connectionRepository.findByStatus(XeroConnectionStatus.CONNECTED).stream()
+            .findFirst()
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        "AccountingXeroConnection", "No active Xero connection found"));
+    return importCustomersFromXero(connection.getId(), actorMemberId);
+  }
+
+  /**
    * Imports contacts from the Xero organisation linked by the given connection.
    *
    * <p>The import is split into two phases to avoid holding a database connection during HTTP

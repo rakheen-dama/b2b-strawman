@@ -91,10 +91,7 @@ export async function getInvoiceSyncStatusAction(
   }
 }
 
-export async function retrySyncEntryAction(
-  slug: string,
-  entryId: string
-): Promise<ActionResult> {
+export async function retrySyncEntryAction(slug: string, entryId: string): Promise<ActionResult> {
   try {
     await retrySyncEntry(entryId);
     revalidatePath(`/org/${slug}/settings/integrations/xero/sync-log`);

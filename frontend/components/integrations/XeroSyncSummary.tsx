@@ -152,12 +152,14 @@ export function XeroSyncSummary({ slug }: XeroSyncSummaryProps) {
         <div className="flex gap-6 border-t border-slate-200 pt-3 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
           {summary.oldestPendingAt && (
             <span>
-              Oldest pending: <span className="font-medium">{formatDate(summary.oldestPendingAt)}</span>
+              Oldest pending:{" "}
+              <span className="font-medium">{formatDate(summary.oldestPendingAt)}</span>
             </span>
           )}
           {summary.lastCompletedAt && (
             <span>
-              Last completed: <span className="font-medium">{formatDate(summary.lastCompletedAt)}</span>
+              Last completed:{" "}
+              <span className="font-medium">{formatDate(summary.lastCompletedAt)}</span>
             </span>
           )}
         </div>

@@ -1,11 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import {
-  getXeroConnection,
-  getXeroTaxMappings,
-  getXeroSettings,
-} from "@/lib/api/integrations";
+import { getXeroConnection, getXeroTaxMappings, getXeroSettings } from "@/lib/api/integrations";
 import { XeroConnectionCard } from "@/components/integrations/XeroConnectionCard";
 import { XeroTaxMappingEditor } from "@/components/integrations/XeroTaxMappingEditor";
 import { XeroCustomerImport } from "@/components/integrations/XeroCustomerImport";
@@ -13,11 +9,7 @@ import { XeroSettingsForm } from "@/components/integrations/XeroSettingsForm";
 import { XeroSyncSummary } from "@/components/integrations/XeroSyncSummary";
 import type { XeroConnectionResponse, XeroTaxMapping, XeroSettingsResponse } from "@/lib/types";
 
-export default async function XeroSettingsPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function XeroSettingsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const caps = await fetchMyCapabilities();
   const isAdmin = caps.isAdmin || caps.isOwner;

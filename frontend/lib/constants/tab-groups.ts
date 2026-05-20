@@ -14,15 +14,16 @@
 // ---------------------------------------------------------------------------
 
 export interface TabDefinition {
-  id: string;
-  label: string;
+  readonly id: string;
+  readonly label: string;
+  readonly visible?: boolean; // defaults to true when omitted
 }
 
 export interface TabGroup {
-  id: string;
-  label: string;
-  tabs: TabDefinition[];
-  visible: boolean;
+  readonly id: string;
+  readonly label: string;
+  readonly tabs: readonly TabDefinition[];
+  visible: boolean; // mutable — callers spread-override this
 }
 
 // ---------------------------------------------------------------------------
@@ -131,10 +132,14 @@ export function resolveTabFromUrl(
     }
   }
 
-  // 4. Value is a group ID → first sub-tab
+  // 4. Value is a group ID → first visible sub-tab
   const matchedGroup = groups.find((g) => g.id === resolved);
   if (matchedGroup && matchedGroup.tabs.length > 0) {
-    return { groupId: matchedGroup.id, tabId: matchedGroup.tabs[0].id };
+    const firstVisible = matchedGroup.tabs.find((t) => t.visible !== false);
+    if (firstVisible) {
+      return { groupId: matchedGroup.id, tabId: firstVisible.id };
+    }
+    // All tabs invisible — fall through to default
   }
 
   // 5. Fallback

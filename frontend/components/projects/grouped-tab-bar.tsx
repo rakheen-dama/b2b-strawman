@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback, type KeyboardEvent } from "react";
+import { useState, useRef, useCallback, useMemo, type KeyboardEvent } from "react";
 import { motion } from "motion/react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -39,8 +39,16 @@ const activeTriggerClassName = "text-slate-950 dark:text-slate-50";
 // ---------------------------------------------------------------------------
 
 export function GroupedTabBar({ groups, activeTab, onTabChange }: GroupedTabBarProps) {
-  const visibleGroups = groups.filter(
-    (g) => g.visible && g.tabs.length > 0,
+  const visibleGroups = useMemo(
+    () =>
+      groups
+        .filter((g) => g.visible)
+        .map((g) => ({
+          ...g,
+          tabs: g.tabs.filter((t) => t.visible !== false),
+        }))
+        .filter((g) => g.tabs.length > 0),
+    [groups],
   );
 
   const groupRefs = useRef<(HTMLButtonElement | null)[]>([]);
@@ -139,13 +147,13 @@ export function GroupedTabBar({ groups, activeTab, onTabChange }: GroupedTabBarP
                   isActive && activeTriggerClassName,
                   "inline-flex items-center gap-1",
                 )}
-                onClick={(e) => {
-                  // If no sub-tab in this group is active, navigate to first tab
+                onClick={() => {
                   if (!isActive) {
-                    e.preventDefault();
+                    // Navigate to first sub-tab; keep dropdown closed via controlled open prop
+                    setOpenGroupId(null);
                     onTabChange(group.tabs[0].id);
                   }
-                  // else: let Radix open the dropdown
+                  // else: isActive — Radix opens via controlled open prop
                 }}
               >
                 {label}

@@ -111,6 +111,31 @@ describe("GroupedTabBar", () => {
     // Work group has multiple tabs but overview is active → click navigates to first work tab
     fireEvent.click(screen.getByTestId("tab-group-work"));
     expect(onTabChange).toHaveBeenCalledWith("tasks");
+    expect(onTabChange).toHaveBeenCalledTimes(1);
+  });
+
+  it("clicking active multi-tab group trigger opens dropdown", () => {
+    const groups = makeGroups();
+    const onTabChange = vi.fn();
+    render(
+      <GroupedTabBar groups={groups} activeTab="tasks" onTabChange={onTabChange} />,
+    );
+
+    const workTrigger = screen.getByTestId("tab-group-work");
+
+    // Work group is active (tasks is in work group) → click should open dropdown, not navigate
+    // Simulate full pointer interaction sequence that Radix listens for
+    fireEvent.pointerDown(workTrigger, { button: 0, pointerType: "mouse" });
+    fireEvent.click(workTrigger);
+
+    // onTabChange should NOT have been called (group is already active)
+    expect(onTabChange).not.toHaveBeenCalled();
+
+    // Dropdown content should be visible with sub-tab items
+    expect(screen.getByTestId("tab-item-tasks")).toBeInTheDocument();
+    expect(screen.getByTestId("tab-item-documents")).toBeInTheDocument();
+    expect(screen.getByTestId("tab-item-generated")).toBeInTheDocument();
+    expect(screen.getByTestId("tab-item-staffing")).toBeInTheDocument();
   });
 });
 

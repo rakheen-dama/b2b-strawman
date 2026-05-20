@@ -7,6 +7,7 @@ import { ExpandableText } from "@/components/ui/expandable-text";
 import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
 import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
 import { TagInput } from "@/components/tags/TagInput";
+import { TerminologyText } from "@/components/terminology-text";
 import { PROJECT_STATUS_BADGE } from "@/lib/constants/project-status";
 import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -32,9 +33,9 @@ export function MatterSidebar({
     <div data-testid="matter-sidebar" className="flex h-full flex-col">
       {/* (A) Matter Identity */}
       <div className="space-y-2 p-4">
-        <h1 className="line-clamp-3 text-lg font-semibold text-slate-950 dark:text-slate-50">
+        <h2 className="font-display line-clamp-3 text-lg font-semibold text-slate-950 dark:text-slate-50">
           {project.name}
-        </h1>
+        </h2>
         <Badge variant={statusBadge.variant} data-testid="project-status-badge">
           {statusBadge.label}
         </Badge>
@@ -66,7 +67,7 @@ export function MatterSidebar({
                 {customers[0].name}
               </Link>
             ) : (
-              "Internal Project"
+              <TerminologyText template="Internal {Project}" />
             )}
           </span>
         </div>

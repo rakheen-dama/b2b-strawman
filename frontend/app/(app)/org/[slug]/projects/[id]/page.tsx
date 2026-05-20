@@ -119,6 +119,7 @@ export default async function ProjectDetailPage({
   const canEdit = isAdmin || project.projectRole === "lead";
   const isCurrentLead = project.projectRole === "lead";
   const canManage = isAdmin || isCurrentLead;
+  // TODO(epic-535): re-add roleBadge to MatterSidebar (projectRole omitted in 532B)
 
   // Setup guidance data (Epic 112A)
   let setupStatus: ProjectSetupStatus | null = null;

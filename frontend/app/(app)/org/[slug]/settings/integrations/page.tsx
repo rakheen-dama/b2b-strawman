@@ -2,12 +2,13 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 import { HelpTip } from "@/components/help-tip";
 import { api } from "@/lib/api";
-import { listIntegrations, listProviders } from "@/lib/api/integrations";
+import { listIntegrations, listProviders, getXeroConnection } from "@/lib/api/integrations";
 import { IntegrationCard } from "@/components/integrations/IntegrationCard";
 import { EmailIntegrationCard } from "@/components/integrations/EmailIntegrationCard";
 import { PaymentIntegrationCard } from "@/components/integrations/PaymentIntegrationCard";
 import { KycIntegrationCard } from "@/components/integrations/KycIntegrationCard";
-import type { IntegrationDomain, OrgIntegration } from "@/lib/types";
+import { AccountingIntegrationCard } from "@/components/integrations/AccountingIntegrationCard";
+import type { IntegrationDomain, OrgIntegration, XeroConnectionResponse } from "@/lib/types";
 import type { BillingResponse } from "@/lib/internal-api";
 
 const DOMAIN_CONFIG: {
@@ -57,6 +58,7 @@ export default async function IntegrationsSettingsPage({
   let integrations: OrgIntegration[] = [];
   let providers: Partial<Record<IntegrationDomain, string[]>> = {};
   let tier = "STARTER";
+  let xeroConnection: XeroConnectionResponse | null = null;
 
   try {
     const [integrationsResult, providersResult] = await Promise.all([
@@ -67,6 +69,12 @@ export default async function IntegrationsSettingsPage({
     providers = providersResult;
   } catch {
     // Non-fatal: show empty state
+  }
+
+  try {
+    xeroConnection = await getXeroConnection();
+  } catch {
+    // Not connected or error — leave as null
   }
 
   try {
@@ -102,6 +110,17 @@ export default async function IntegrationsSettingsPage({
         {DOMAIN_CONFIG.map((config) => {
           const integration = integrations.find((i) => i.domain === config.domain) ?? null;
           const domainProviders = providers[config.domain] ?? [];
+
+          if (config.domain === "ACCOUNTING") {
+            return (
+              <AccountingIntegrationCard
+                key={config.domain}
+                slug={slug}
+                xeroStatus={xeroConnection?.status ?? null}
+                xeroOrgName={xeroConnection?.xeroOrgName ?? null}
+              />
+            );
+          }
 
           if (config.domain === "EMAIL") {
             return <EmailIntegrationCard key={config.domain} />;

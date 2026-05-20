@@ -79,3 +79,6 @@ export type {
   PlaceInvestmentFormData,
   RecordInvestmentInterestFormData,
 } from "./trust";
+
+export { xeroSettingsSchema } from "./xero-settings";
+export type { XeroSettingsFormData } from "./xero-settings";

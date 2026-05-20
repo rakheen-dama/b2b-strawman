@@ -150,3 +150,106 @@ export interface PayFastPaymentConfig {
   merchantKey?: string;
   sandbox?: boolean;
 }
+
+// ---- Xero Integration (from XeroIntegrationController.java) ----
+
+export type XeroConnectionStatus = "CONNECTED" | "TOKEN_EXPIRED" | "REVOKED";
+
+export interface XeroConnectionResponse {
+  id: string;
+  xeroOrgName: string;
+  status: XeroConnectionStatus;
+  connectedAt: string;
+  lastTokenRefreshAt: string | null;
+  accessTokenExpiresAt: string;
+  scope: string;
+  lastPollAt: string | null;
+}
+
+export interface XeroConnectResponse {
+  authorizationUrl: string;
+  state: string;
+}
+
+export interface XeroTaxMapping {
+  id: string;
+  kaziTaxMode: string;
+  externalTaxCode: string | null;
+  displayLabel: string | null;
+  provider: string;
+}
+
+export interface UpdateXeroTaxMappingRequest {
+  externalTaxCode: string;
+  displayLabel: string;
+}
+
+export interface XeroTaxRate {
+  taxType: string;
+  name: string;
+  effectiveRate: number;
+}
+
+export interface XeroCustomerImportResult {
+  created: number;
+  skippedDuplicate: number;
+  skippedNoEmail: number;
+  total: number;
+}
+
+export type XeroPushTrigger = "APPROVED" | "SENT";
+
+export interface XeroSettingsResponse {
+  paymentPollIntervalMinutes: number;
+  pushTrigger: XeroPushTrigger;
+  autoSyncEnabled: boolean;
+}
+
+export interface UpdateXeroSettingsRequest {
+  paymentPollIntervalMinutes: number;
+  pushTrigger: XeroPushTrigger;
+  autoSyncEnabled: boolean;
+}
+
+// ---- Sync (from AccountingSyncController.java) ----
+
+export interface SyncSummaryResponse {
+  pending: number;
+  inFlight: number;
+  completedLast24h: number;
+  failedRetrying: number;
+  deadLetter: number;
+  blockedTrustBoundary: number;
+  reconcileDrift: number;
+  oldestPendingAt: string | null;
+  lastCompletedAt: string | null;
+}
+
+export type SyncEntityType = "INVOICE" | "CUSTOMER";
+export type SyncDirection = "PUSH" | "PULL";
+export type SyncState =
+  | "PENDING"
+  | "IN_FLIGHT"
+  | "COMPLETED"
+  | "FAILED_RETRYING"
+  | "DEAD_LETTER"
+  | "BLOCKED_TRUST_BOUNDARY"
+  | "RECONCILE_DRIFT";
+export type SyncTrigger = "EVENT" | "MANUAL" | "FORCE_RESYNC" | "POLL";
+
+export interface SyncEntryResponse {
+  id: string;
+  entityType: SyncEntityType;
+  entityId: string;
+  providerId: string;
+  direction: SyncDirection;
+  state: SyncState;
+  attemptCount: number;
+  externalReference: string | null;
+  externalId: string | null;
+  lastErrorCode: string | null;
+  lastErrorDetail: string | null;
+  trigger: SyncTrigger;
+  createdAt: string;
+  completedAt: string | null;
+}

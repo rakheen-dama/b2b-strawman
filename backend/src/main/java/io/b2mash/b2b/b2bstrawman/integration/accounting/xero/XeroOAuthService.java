@@ -16,8 +16,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -338,6 +340,115 @@ public class XeroOAuthService {
             .build());
 
     log.info("Xero connection {} disconnected", connection.getId());
+  }
+
+  // ---- Controller-facing service methods ----
+
+  /**
+   * Returns the active (non-REVOKED) Xero connection, preferring CONNECTED over REFRESH_FAILED.
+   * Returns empty if no active connection exists.
+   */
+  @Transactional(readOnly = true)
+  public Optional<AccountingXeroConnection> getActiveConnection() {
+    return connectionRepository.findByStatus(XeroConnectionStatus.CONNECTED).stream()
+        .findFirst()
+        .or(
+            () ->
+                connectionRepository.findByStatus(XeroConnectionStatus.REFRESH_FAILED).stream()
+                    .findFirst());
+  }
+
+  /**
+   * Proxies the Xero tax rates API for the active connection. Returns the raw Xero response
+   * containing available tax rates.
+   *
+   * @throws ResourceNotFoundException if no active Xero connection exists
+   */
+  @Transactional(readOnly = true)
+  public Map<String, Object> getXeroTaxRates() {
+    var connection =
+        getActiveConnection()
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        "AccountingXeroConnection", "No active Xero connection found"));
+
+    String accessToken =
+        secretStore.retrieve(connection.getOrgIntegrationId().toString() + ":xero:access");
+    return xeroApiClient.getTaxRates(connection.getXeroTenantId(), accessToken);
+  }
+
+  /**
+   * Returns the Xero sync settings stored in {@link OrgIntegration#getConfigJson()}. Defaults to
+   * sensible values if no settings have been configured yet.
+   */
+  @Transactional(readOnly = true)
+  public XeroSyncSettings getSettings() {
+    return orgIntegrationRepository
+        .findByDomain(IntegrationDomain.ACCOUNTING)
+        .map(this::parseSettings)
+        .orElse(XeroSyncSettings.defaults());
+  }
+
+  /** Updates the Xero sync settings in {@link OrgIntegration#getConfigJson()}. */
+  @Transactional
+  public XeroSyncSettings updateSettings(XeroSyncSettings settings) {
+    var integration =
+        orgIntegrationRepository
+            .findByDomain(IntegrationDomain.ACCOUNTING)
+            .orElseThrow(
+                () ->
+                    new ResourceNotFoundException(
+                        "OrgIntegration", "No ACCOUNTING integration configured"));
+
+    Map<String, Object> config = parseConfigJson(integration.getConfigJson());
+    config.put("paymentPollIntervalMinutes", settings.paymentPollIntervalMinutes());
+    config.put("pushTrigger", settings.pushTrigger());
+    config.put("autoSyncEnabled", settings.autoSyncEnabled());
+
+    try {
+      integration.setConfigJson(
+          new tools.jackson.databind.ObjectMapper().writeValueAsString(config));
+    } catch (tools.jackson.core.JacksonException e) {
+      throw new InvalidStateException(
+          "Failed to serialize settings", "Could not write settings to configJson");
+    }
+    orgIntegrationRepository.save(integration);
+    return settings;
+  }
+
+  /** Xero sync settings record stored in OrgIntegration configJson. */
+  public record XeroSyncSettings(
+      int paymentPollIntervalMinutes, String pushTrigger, boolean autoSyncEnabled) {
+
+    public static XeroSyncSettings defaults() {
+      return new XeroSyncSettings(15, "APPROVED", true);
+    }
+  }
+
+  private XeroSyncSettings parseSettings(OrgIntegration integration) {
+    Map<String, Object> config = parseConfigJson(integration.getConfigJson());
+    int pollInterval =
+        config.get("paymentPollIntervalMinutes") instanceof Number n ? n.intValue() : 15;
+    String pushTrigger = config.get("pushTrigger") instanceof String s ? s : "APPROVED";
+    boolean autoSync = config.get("autoSyncEnabled") instanceof Boolean b ? b : true;
+    return new XeroSyncSettings(pollInterval, pushTrigger, autoSync);
+  }
+
+  @SuppressWarnings("unchecked")
+  private Map<String, Object> parseConfigJson(String configJson) {
+    if (configJson == null || configJson.isBlank()) {
+      return new HashMap<>();
+    }
+    try {
+      return new HashMap<>(
+          new tools.jackson.databind.ObjectMapper()
+              .readValue(
+                  configJson, new tools.jackson.core.type.TypeReference<Map<String, Object>>() {}));
+    } catch (tools.jackson.core.JacksonException e) {
+      log.warn("Failed to parse configJson; returning empty: {}", e.getMessage());
+      return new HashMap<>();
+    }
   }
 
   // ---- Token endpoint calls ----

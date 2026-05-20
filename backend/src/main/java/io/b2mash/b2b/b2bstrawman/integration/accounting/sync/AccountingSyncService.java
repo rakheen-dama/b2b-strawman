@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.integration.accounting.sync;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
@@ -19,11 +20,14 @@ import io.b2mash.b2b.b2bstrawman.invoice.PaymentEventStatus;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import java.math.BigDecimal;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -474,6 +478,49 @@ public class AccountingSyncService {
     xeroConnectionRepository.save(connection);
 
     return new PaymentPollSummary(matched, drifted, skipped);
+  }
+
+  // ---- Controller-facing service methods ----
+
+  /** Paginated, filterable sync entry log for the sync dashboard. */
+  @Transactional(readOnly = true)
+  public Page<AccountingSyncEntry> findEntries(
+      SyncState state, SyncEntityType entityType, SyncDirection direction, Pageable pageable) {
+    return syncEntryRepository.findFiltered(state, entityType, direction, pageable);
+  }
+
+  /** Returns a single sync entry by ID, or throws if not found. */
+  @Transactional(readOnly = true)
+  public AccountingSyncEntry findEntryById(UUID id) {
+    return syncEntryRepository
+        .findOneById(id)
+        .orElseThrow(() -> new ResourceNotFoundException("AccountingSyncEntry", id));
+  }
+
+  /** Returns all sync entries for a given invoice, ordered by most recent first. */
+  @Transactional(readOnly = true)
+  public List<AccountingSyncEntry> findSyncStatusForInvoice(UUID invoiceId) {
+    return syncEntryRepository.findByEntity(SyncEntityType.INVOICE, invoiceId);
+  }
+
+  /**
+   * Resolves a reconciliation drift entry by marking it as COMPLETED. Only entries in
+   * RECONCILE_DRIFT state can be resolved — throws if the entry is in any other state.
+   */
+  @Transactional
+  public void resolveReconcileDrift(UUID syncEntryId) {
+    var entry =
+        syncEntryRepository
+            .findOneById(syncEntryId)
+            .orElseThrow(() -> new ResourceNotFoundException("AccountingSyncEntry", syncEntryId));
+    if (entry.getState() != SyncState.RECONCILE_DRIFT) {
+      throw new InvalidStateException(
+          "Entry is not in RECONCILE_DRIFT state",
+          "Sync entry " + syncEntryId + " is in state " + entry.getState());
+    }
+    entry.markCompleted(entry.getExternalId());
+    syncEntryRepository.save(entry);
+    log.info("Reconcile drift resolved for sync entry {}", syncEntryId);
   }
 
   /**

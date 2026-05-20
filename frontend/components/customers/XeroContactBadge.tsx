@@ -13,7 +13,7 @@ interface XeroContactBadgeProps {
 
 export function XeroContactBadge({ customerId, slug }: XeroContactBadgeProps) {
   const { data: externalId } = useSWR<string | null>(
-    `xero-contact-${customerId}`,
+    `xero-contact-${slug}-${customerId}`,
     async () => {
       const result = await getInvoiceSyncStatusAction(slug, customerId, "CUSTOMER");
       return result.success && result.data?.externalId ? result.data.externalId : null;

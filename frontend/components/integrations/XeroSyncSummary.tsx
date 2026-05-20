@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchSyncSummaryAction } from "@/app/(app)/org/[slug]/settings/integrations/xero/sync-log/actions";
 import { formatDate } from "@/lib/format";
 import { defaultSWROptions } from "@/lib/swr/fetcher";
+import { cn } from "@/lib/utils";
 import type { SyncSummaryResponse } from "@/lib/types";
 
 interface XeroSyncSummaryProps {
@@ -122,7 +123,7 @@ export function XeroSyncSummary({ slug }: XeroSyncSummaryProps) {
                 <span className="text-muted-foreground text-xs tracking-wider uppercase">
                   {item.label}
                 </span>
-                <span className={`font-mono text-xl font-bold tabular-nums ${item.colorClass}`}>
+                <span className={cn("font-mono text-xl font-bold tabular-nums", item.colorClass)}>
                   {item.count}
                 </span>
               </div>

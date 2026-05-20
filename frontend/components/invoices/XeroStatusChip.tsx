@@ -25,7 +25,7 @@ export function XeroStatusChip({ invoiceId, slug, canReconcile = false }: XeroSt
   const [isPending, startTransition] = useTransition();
 
   const { data: entry, mutate } = useSWR<SyncEntryResponse | null>(
-    `xero-invoice-status-${invoiceId}`,
+    `xero-invoice-status-${slug}-${invoiceId}`,
     async () => {
       const result = await getInvoiceSyncStatusAction(slug, invoiceId, "INVOICE");
       return result.success && result.data ? result.data : null;

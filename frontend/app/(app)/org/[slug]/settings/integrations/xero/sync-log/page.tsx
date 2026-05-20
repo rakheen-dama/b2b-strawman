@@ -45,8 +45,10 @@ export default async function SyncLogPage({
     );
   }
 
-  const pageNum = search.page ? Math.max(0, parseInt(search.page, 10) - 1) : 0;
-  const pageSize = search.size ? Math.min(100, Math.max(1, parseInt(search.size, 10))) : 20;
+  const parsedPage = search.page ? Number.parseInt(search.page, 10) : NaN;
+  const parsedSize = search.size ? Number.parseInt(search.size, 10) : NaN;
+  const pageNum = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage - 1 : 0;
+  const pageSize = Number.isFinite(parsedSize) && parsedSize > 0 ? Math.min(100, parsedSize) : 20;
 
   let entries: SyncEntryResponse[] = [];
   let totalPages = 0;

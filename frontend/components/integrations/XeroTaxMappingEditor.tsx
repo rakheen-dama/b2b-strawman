@@ -40,6 +40,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+  fetchXeroTaxRatesAction,
   updateXeroTaxMappingAction,
   resetXeroTaxMappingsAction,
 } from "@/app/(app)/org/[slug]/settings/integrations/xero/actions";
@@ -65,8 +66,8 @@ export function XeroTaxMappingEditor({ mappings, slug }: XeroTaxMappingEditorPro
 
   // Fetch available Xero tax rates for the dropdown
   const { data: taxRatesData } = useSWR<XeroTaxRate[]>(
-    "/api/integrations/xero/tax-rates",
-    null,
+    "xero-tax-rates",
+    () => fetchXeroTaxRatesAction(slug),
     { revalidateOnFocus: false }
   );
   const taxRates = taxRatesData ?? [];
@@ -86,7 +87,7 @@ export function XeroTaxMappingEditor({ mappings, slug }: XeroTaxMappingEditorPro
     setEditStates((prev) => ({
       ...prev,
       [id]: {
-        ...getEditState(mappings.find((m) => m.id === id)!),
+        ...(prev[id] ?? {}),
         [field]: value,
       },
     }));

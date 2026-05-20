@@ -6,6 +6,7 @@ import {
   disconnectXero,
   updateXeroTaxMapping,
   resetXeroTaxMappings,
+  getXeroTaxRates,
   importXeroCustomers,
   updateXeroSettings,
 } from "@/lib/api/integrations";
@@ -14,6 +15,7 @@ import type {
   XeroConnectResponse,
   UpdateXeroTaxMappingRequest,
   XeroTaxMapping,
+  XeroTaxRate,
   XeroCustomerImportResult,
   UpdateXeroSettingsRequest,
   XeroSettingsResponse,
@@ -45,6 +47,9 @@ export async function initiateXeroConnectAction(
 export async function disconnectXeroAction(slug: string): Promise<ActionResult> {
   try {
     await disconnectXero();
+    revalidatePath(`/org/${slug}/settings/integrations/xero`);
+    revalidatePath(`/org/${slug}/settings/integrations`);
+    return { success: true };
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 403) {
@@ -54,9 +59,16 @@ export async function disconnectXeroAction(slug: string): Promise<ActionResult> 
     }
     return { success: false, error: "An unexpected error occurred." };
   }
-  revalidatePath(`/org/${slug}/settings/integrations/xero`);
-  revalidatePath(`/org/${slug}/settings/integrations`);
-  return { success: true };
+}
+
+export async function fetchXeroTaxRatesAction(
+  _slug: string
+): Promise<XeroTaxRate[]> {
+  try {
+    return await getXeroTaxRates();
+  } catch {
+    return [];
+  }
 }
 
 export async function updateXeroTaxMappingAction(
@@ -82,6 +94,8 @@ export async function updateXeroTaxMappingAction(
 export async function resetXeroTaxMappingsAction(slug: string): Promise<ActionResult> {
   try {
     await resetXeroTaxMappings();
+    revalidatePath(`/org/${slug}/settings/integrations/xero`);
+    return { success: true };
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 403) {
@@ -91,8 +105,6 @@ export async function resetXeroTaxMappingsAction(slug: string): Promise<ActionRe
     }
     return { success: false, error: "An unexpected error occurred." };
   }
-  revalidatePath(`/org/${slug}/settings/integrations/xero`);
-  return { success: true };
 }
 
 export async function importXeroCustomersAction(

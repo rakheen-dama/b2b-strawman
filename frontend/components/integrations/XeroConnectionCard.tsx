@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ExternalLink, Link2Off, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -47,6 +48,7 @@ function getStatusBadge(status: XeroConnectionStatus | null) {
 }
 
 export function XeroConnectionCard({ connection, slug }: XeroConnectionCardProps) {
+  const router = useRouter();
   const [isConnecting, setIsConnecting] = useState(false);
   const [isDisconnecting, setIsDisconnecting] = useState(false);
   const [showDisconnectDialog, setShowDisconnectDialog] = useState(false);
@@ -81,6 +83,7 @@ export function XeroConnectionCard({ connection, slug }: XeroConnectionCardProps
       if (result.success) {
         toast.success("Disconnected from Xero.");
         setShowDisconnectDialog(false);
+        router.refresh();
       } else {
         setError(result.error ?? "Failed to disconnect.");
       }

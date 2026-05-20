@@ -1,7 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.integration.accounting.sync;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -20,6 +22,7 @@ import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -33,6 +36,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -330,7 +334,7 @@ class AccountingSyncControllerIntegrationTest {
   @Test
   void reconcile_ownerCanAccess() throws Exception {
     UUID entryId = UUID.randomUUID();
-    doNothing().when(syncService).resolveReconcileDrift(entryId);
+    doNothing().when(syncService).resolveReconcileDrift(eq(entryId), any());
 
     mockMvc
         .perform(
@@ -367,5 +371,115 @@ class AccountingSyncControllerIntegrationTest {
             post("/api/integrations/sync/invoice/" + invoiceId + "/resync")
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_mgr", "member")))
         .andExpect(status().isNoContent());
+  }
+
+  // --- 525A.2: Additional behavior-verification tests ---
+
+  @Test
+  void getEntries_returnsPaginatedResultsFilteredByState() throws Exception {
+    UUID entryId = UUID.randomUUID();
+    UUID entityId = UUID.randomUUID();
+    var entry =
+        new SyncEntryResponse(
+            entryId,
+            SyncEntityType.INVOICE,
+            entityId,
+            "xero",
+            SyncDirection.PUSH,
+            SyncState.COMPLETED,
+            1,
+            "KAZI-INV-001",
+            "xero-inv-001",
+            null,
+            null,
+            SyncTrigger.EVENT,
+            Instant.now().minusSeconds(60),
+            Instant.now());
+    when(syncService.getEntryResponses(eq(SyncState.COMPLETED), any(), any(), any()))
+        .thenReturn(new PageImpl<>(List.of(entry), PageRequest.of(0, 20), 1));
+
+    mockMvc
+        .perform(
+            get("/api/integrations/sync/entries")
+                .param("state", "COMPLETED")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_viewer", "member")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content").isArray())
+        .andExpect(jsonPath("$.content.length()").value(1))
+        .andExpect(jsonPath("$.content[0].id").value(entryId.toString()))
+        .andExpect(jsonPath("$.content[0].state").value("COMPLETED"))
+        .andExpect(jsonPath("$.content[0].entityType").value("INVOICE"))
+        .andExpect(jsonPath("$.content[0].externalId").value("xero-inv-001"))
+        .andExpect(jsonPath("$.page.totalElements").value(1))
+        .andExpect(jsonPath("$.page.size").value(20));
+
+    verify(syncService).getEntryResponses(eq(SyncState.COMPLETED), any(), any(), any());
+  }
+
+  @Test
+  void getInvoiceSyncStatus_returnsLatestSyncEntryForInvoice() throws Exception {
+    UUID invoiceId = UUID.randomUUID();
+    UUID entryId = UUID.randomUUID();
+    var entry =
+        new SyncEntryResponse(
+            entryId,
+            SyncEntityType.INVOICE,
+            invoiceId,
+            "xero",
+            SyncDirection.PUSH,
+            SyncState.COMPLETED,
+            1,
+            "KAZI-INV-002",
+            "xero-inv-002",
+            null,
+            null,
+            SyncTrigger.EVENT,
+            Instant.now().minusSeconds(120),
+            Instant.now());
+    when(syncService.getInvoiceSyncStatusResponses(invoiceId)).thenReturn(List.of(entry));
+
+    mockMvc
+        .perform(
+            get("/api/integrations/sync/invoice/" + invoiceId + "/status")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_viewer", "member")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.length()").value(1))
+        .andExpect(jsonPath("$[0].id").value(entryId.toString()))
+        .andExpect(jsonPath("$[0].entityId").value(invoiceId.toString()))
+        .andExpect(jsonPath("$[0].state").value("COMPLETED"))
+        .andExpect(jsonPath("$[0].externalReference").value("KAZI-INV-002"));
+
+    verify(syncService).getInvoiceSyncStatusResponses(invoiceId);
+  }
+
+  @Test
+  void reconcile_transitionsReconcileDriftToCompleted_withResolution() throws Exception {
+    UUID entryId = UUID.randomUUID();
+    doNothing().when(syncService).resolveReconcileDrift(any(UUID.class), any());
+
+    mockMvc
+        .perform(
+            post("/api/integrations/sync/" + entryId + "/reconcile")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"resolution\":\"Verified with bank statement — amounts match\"}")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_sync_ctrl_owner")))
+        .andExpect(status().isNoContent());
+
+    verify(syncService)
+        .resolveReconcileDrift(eq(entryId), eq("Verified with bank statement — amounts match"));
+  }
+
+  @Test
+  void reconcile_returns403ForNoCap() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/integrations/sync/" + UUID.randomUUID() + "/reconcile")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"resolution\":\"test\"}")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_nocap", "member")))
+        .andExpect(status().isForbidden())
+        .andExpect(jsonPath("$.status").value(403))
+        .andExpect(jsonPath("$.title").isNotEmpty())
+        .andExpect(jsonPath("$.detail").isNotEmpty());
   }
 }

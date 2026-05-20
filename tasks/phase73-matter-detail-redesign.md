@@ -14,7 +14,7 @@ The 21 flat tabs collapse into 6 logical groups with dropdown sub-navigation. Cu
 |------|------|-------|------|--------|--------|--------|
 | 532 | Layout Shell + Sidebar | Frontend | -- | L | 532A, 532B | **Done** — 532A (PR #1339), 532B (PR #1340) |
 | 533 | Grouped Tab Bar | Frontend | -- | M | 533A, 533B | **Done** — 533A (PR #1341), 533B (PR #1342) |
-| 534 | Overview Tab Redesign | Frontend | 532 | M | 534A | |
+| 534 | Overview Tab Redesign | Frontend | 532 | M | 534A | **Done** (PR #1343) |
 | 535 | Action Button Relocation | Frontend | 532 | M | 535A | |
 | 536 | Responsive Behaviour + Polish | Frontend | 532, 533 | M | 536A | |
 | 537 | QA Testplan Updates | Frontend | 532-536 | S | 537A | |
@@ -64,7 +64,7 @@ The 21 flat tabs collapse into 6 logical groups with dropdown sub-navigation. Cu
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 2a | Epic 534 | 534A | `KPIDashboard` replaces `OverviewTab` body. Depends on 532 (sidebar must exist to receive team roster and other relocated content). |
+| 2a | Epic 534 | 534A | `KPIDashboard` replaces `OverviewTab` body. Depends on 532 (sidebar must exist to receive team roster and other relocated content). | **Done** (PR #1343) |
 | 2b | Epic 535 | 535A | `OverflowActionsMenu` + lifecycle action in sidebar footer. Depends on 532 (sidebar footer is the target). |
 
 ### Stage 3: Polish (after Stage 1 + Stage 2)
@@ -252,7 +252,7 @@ Stage 4:  [537A]                                   <- QA testplan (after all abo
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **534A** | 534.1-534.6 | `KPIDashboard` component with metric cards grid, compact health header, upcoming deadlines list, responsive grid layout, `OverviewTab` gutted and rewired. Unit tests (~6 tests) | |
+| **534A** | 534.1-534.6 | `KPIDashboard` component with metric cards grid, compact health header, upcoming deadlines list, responsive grid layout, `OverviewTab` gutted and rewired. Unit tests (~6 tests) | **Done** (PR #1343) |
 
 ### Tasks
 

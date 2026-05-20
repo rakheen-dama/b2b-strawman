@@ -1,17 +1,19 @@
 "use client";
 
-import { type ReactNode, useCallback, useSyncExternalStore, useRef } from "react";
+import { type ReactNode, useState } from "react";
 import { cn } from "@/lib/utils";
 import { SidebarCollapseToggle } from "@/components/projects/sidebar-collapse-toggle";
 
 const STORAGE_KEY = "kazi-matter-sidebar-collapsed";
 
-function readCollapsed(fallback: boolean): boolean {
+/** Read persisted collapse state. Safe for SSR (returns fallback). */
+function readStoredCollapsed(fallback: boolean): boolean {
+  if (typeof window === "undefined") return fallback;
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored !== null) return stored === "true";
   } catch {
-    // localStorage unavailable — keep fallback
+    // localStorage unavailable (private mode) — keep fallback
   }
   return fallback;
 }
@@ -27,36 +29,19 @@ export function MatterDetailLayout({
   children,
   defaultCollapsed = false,
 }: MatterDetailLayoutProps) {
-  // Use a ref to hold the latest snapshot so the subscribe callback can notify React
-  const listenerRef = useRef<(() => void) | null>(null);
-
-  const subscribe = useCallback((onStoreChange: () => void) => {
-    listenerRef.current = onStoreChange;
-    return () => { listenerRef.current = null; };
-  }, []);
-
-  const getSnapshot = useCallback(
-    () => readCollapsed(defaultCollapsed),
-    [defaultCollapsed]
+  const [collapsed, setCollapsed] = useState(() =>
+    readStoredCollapsed(defaultCollapsed)
   );
 
-  const getServerSnapshot = useCallback(
-    () => defaultCollapsed,
-    [defaultCollapsed]
-  );
-
-  const collapsed = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
-
-  function handleToggle() {
+  const handleToggle = () => {
     const next = !collapsed;
+    setCollapsed(next);
     try {
       localStorage.setItem(STORAGE_KEY, String(next));
     } catch {
-      // localStorage unavailable — ignore
+      // localStorage unavailable — state still updates
     }
-    // Notify useSyncExternalStore to re-read the snapshot
-    listenerRef.current?.();
-  }
+  };
 
   return (
     <div
@@ -74,6 +59,8 @@ export function MatterDetailLayout({
           "overflow-y-auto overflow-x-hidden",
           !collapsed && "border-r border-slate-200 dark:border-slate-800"
         )}
+        aria-hidden={collapsed}
+        inert={collapsed ? true : undefined}
       >
         {!collapsed && (
           <div className="flex justify-end p-2">

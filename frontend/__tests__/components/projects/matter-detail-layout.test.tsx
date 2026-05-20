@@ -1,11 +1,11 @@
-import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach, beforeAll, afterAll } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MatterDetailLayout } from "@/components/projects/matter-detail-layout";
 import { SidebarCollapseToggle } from "@/components/projects/sidebar-collapse-toggle";
 import { ExpandableText } from "@/components/ui/expandable-text";
 
-// Mock localStorage
+// Mock localStorage — scoped to this file only
 const localStorageMock = (() => {
   let store: Record<string, string> = {};
   return {
@@ -19,9 +19,19 @@ const localStorageMock = (() => {
   };
 })();
 
-Object.defineProperty(window, "localStorage", {
-  value: localStorageMock,
-  configurable: true,
+const originalLocalStorage = Object.getOwnPropertyDescriptor(window, "localStorage");
+
+beforeAll(() => {
+  Object.defineProperty(window, "localStorage", {
+    value: localStorageMock,
+    configurable: true,
+  });
+});
+
+afterAll(() => {
+  if (originalLocalStorage) {
+    Object.defineProperty(window, "localStorage", originalLocalStorage);
+  }
 });
 
 describe("MatterDetailLayout", () => {
@@ -83,14 +93,14 @@ describe("MatterDetailLayout", () => {
     expect(toggle).toHaveAttribute("aria-label", "Collapse sidebar");
     await user.click(toggle);
 
-    // Layout should now be collapsed
-    expect(layout.className).toContain("grid-cols-[0_1fr]");
-
-    // localStorage should be updated
-    expect(localStorageMock.setItem).toHaveBeenCalledWith(
-      "kazi-matter-sidebar-collapsed",
-      "true"
-    );
+    // State propagation may be async — wrap in waitFor
+    await waitFor(() => {
+      expect(layout.className).toContain("grid-cols-[0_1fr]");
+      expect(localStorageMock.setItem).toHaveBeenCalledWith(
+        "kazi-matter-sidebar-collapsed",
+        "true"
+      );
+    });
   });
 });
 

@@ -13,7 +13,7 @@ The 21 flat tabs collapse into 6 logical groups with dropdown sub-navigation. Cu
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 532 | Layout Shell + Sidebar | Frontend | -- | L | 532A, 532B | **Done** — 532A (PR #1339), 532B (PR #1340) |
-| 533 | Grouped Tab Bar | Frontend | -- | M | 533A, 533B | |
+| 533 | Grouped Tab Bar | Frontend | -- | M | 533A, 533B | 533A **Done** (PR #1341) |
 | 534 | Overview Tab Redesign | Frontend | 532 | M | 534A | |
 | 535 | Action Button Relocation | Frontend | 532 | M | 535A | |
 | 536 | Responsive Behaviour + Polish | Frontend | 532, 533 | M | 536A | |
@@ -57,7 +57,7 @@ The 21 flat tabs collapse into 6 logical groups with dropdown sub-navigation. Cu
 |-------|------|-------|-----------|
 | 1a | Epic 532 | 532A | `MatterDetailLayout` CSS Grid shell + `SidebarCollapseToggle` + `--sidebar-width` CSS variable. Foundation for the two-column layout. | **Done** (PR #1339) |
 | 1b | Epic 532 | 532B | `MatterSidebar` component. Extract matter identity, metadata, custom fields, tags from `page.tsx` header into sidebar. Wire `MatterDetailLayout` wrapper in `page.tsx`. Depends on 532A. | **Done** (PR #1340) |
-| 1c | Epic 533 | 533A | `GroupedTabBar` component with dropdown sub-navigation, keyboard nav, URL state resolution. Fully independent of 532. |
+| 1c | Epic 533 | 533A | `GroupedTabBar` component with dropdown sub-navigation, keyboard nav, URL state resolution. Fully independent of 532. | **Done** (PR #1341) |
 | 1d | Epic 533 | 533B | Integrate `GroupedTabBar` into `ProjectTabs`, replacing flat tab triggers. Depends on 533A. |
 
 ### Stage 2: Content Restructure (Parallel, after 532B)
@@ -184,7 +184,7 @@ Stage 4:  [537A]                                   <- QA testplan (after all abo
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **533A** | 533.1-533.5 | `GroupedTabBar` component with tab group definitions, dropdown sub-navigation, keyboard navigation, URL state resolution, `?tab=members` redirect, unit tests (~10 tests) | |
+| **533A** | 533.1-533.5 | `GroupedTabBar` component with tab group definitions, dropdown sub-navigation, keyboard navigation, URL state resolution, `?tab=members` redirect, unit tests (~10 tests) | **Done** (PR #1341) |
 | **533B** | 533.6-533.8 | Integrate `GroupedTabBar` into `ProjectTabs`, replacing flat tab triggers. Keep all content panels. Update `ProjectTabs` props interface if needed. Integration tests (~4 tests) | |
 
 ### Tasks

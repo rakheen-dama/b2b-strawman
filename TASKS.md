@@ -604,7 +604,7 @@
 | 531 | Matter Intake Skill (Backend + Frontend) | Both | 529A | L | 531A, 531B | **Done** — 531A (PR #1323), 531B (PR #1324) |
 | **Phase 73 — Matter Detail Page Redesign (Sidebar + Grouped Tabs)** | | | | | | See [tasks/phase73-matter-detail-redesign.md](tasks/phase73-matter-detail-redesign.md) |
 | 532 | Layout Shell + Sidebar | Frontend | -- | L | 532A, 532B | **Done** — 532A (PR #1339), 532B (PR #1340) |
-| 533 | Grouped Tab Bar | Frontend | -- | M | 533A, 533B | |
+| 533 | Grouped Tab Bar | Frontend | -- | M | 533A, 533B | 533A **Done** (PR #1341) |
 | 534 | Overview Tab Redesign | Frontend | 532 | M | 534A | |
 | 535 | Action Button Relocation | Frontend | 532 | M | 535A | |
 | 536 | Responsive Behaviour + Polish | Frontend | 532, 533 | M | 536A | |

@@ -1,6 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 // --- Mocks (before component imports) ---
 
@@ -183,6 +183,10 @@ describe("Project detail Trust tab", () => {
       )
     );
 
+    // Open the finance dropdown so Radix mounts the menu items
+    const financeGroup = screen.getByTestId("tab-group-finance");
+    fireEvent.click(financeGroup);
+
     expect(screen.queryByTestId("tab-item-trust")).not.toBeInTheDocument();
   });
 
@@ -204,11 +208,16 @@ describe("Project detail Trust tab", () => {
       )
     );
 
-    // Trust tab should not be a visible sub-tab (module disabled, no trust in finance dropdown)
-    expect(screen.queryByTestId("tab-item-trust")).not.toBeInTheDocument();
     // Overview group should be active (fallback) — GroupedTabBar uses aria-selected
     expect(screen.getByTestId("tab-group-overview")).toHaveAttribute("aria-selected", "true");
     expect(screen.getByTestId("overview-content")).toBeInTheDocument();
+
+    // Open the finance dropdown so Radix mounts the menu items
+    const financeGroup = screen.getByTestId("tab-group-finance");
+    fireEvent.click(financeGroup);
+
+    // Trust tab should not be a visible sub-tab (module disabled, no trust in finance dropdown)
+    expect(screen.queryByTestId("tab-item-trust")).not.toBeInTheDocument();
   });
 });
 

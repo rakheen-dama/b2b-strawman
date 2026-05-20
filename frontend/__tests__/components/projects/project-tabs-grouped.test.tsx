@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 // ---------------------------------------------------------------------------
 // Mocks — hoisted above component import
@@ -126,7 +126,11 @@ describe("ProjectTabs with GroupedTabBar integration", () => {
     );
 
     // Finance group should still be visible (has other tabs like time, expenses)
-    expect(screen.getByTestId("tab-group-finance")).toBeInTheDocument();
+    const financeGroup = screen.getByTestId("tab-group-finance");
+    expect(financeGroup).toBeInTheDocument();
+
+    // Open the finance dropdown so Radix mounts the menu items
+    fireEvent.click(financeGroup);
 
     // Trust tab should NOT be in the dropdown items (trust_accounting is off)
     expect(screen.queryByTestId("tab-item-trust")).not.toBeInTheDocument();

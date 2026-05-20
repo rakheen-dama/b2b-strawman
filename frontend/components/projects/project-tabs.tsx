@@ -114,9 +114,11 @@ export function ProjectTabs({
   // Members backward-compat redirect: ?tab=members → ?tab=staffing (no history entry)
   useEffect(() => {
     if (tabParam === "members") {
-      router.replace("?tab=staffing");
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("tab", "staffing");
+      router.replace(`?${params.toString()}`);
     }
-  }, [tabParam, router]);
+  }, [tabParam, router, searchParams]);
 
   const requestedTab = urlTab ?? userTab;
 

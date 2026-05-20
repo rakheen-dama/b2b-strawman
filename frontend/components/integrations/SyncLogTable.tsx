@@ -97,9 +97,12 @@ export function SyncLogTable({ entries, slug, canReconcile }: SyncLogTableProps)
                 : null;
 
           const showRetry = entry.state === "DEAD_LETTER";
-          const showOpenInXero = entry.state === "COMPLETED" && entry.externalId;
+          const showOpenInXeroInvoice =
+            entry.state === "COMPLETED" && entry.externalId && entry.entityType === "INVOICE";
+          const showOpenInXeroContact =
+            entry.state === "COMPLETED" && entry.externalId && entry.entityType === "CUSTOMER";
           const showReconcile = entry.state === "RECONCILE_DRIFT" && canReconcile;
-          const hasActions = showRetry || showOpenInXero || showReconcile;
+          const hasActions = showRetry || showOpenInXeroInvoice || showOpenInXeroContact || showReconcile;
 
           return (
             <TableRow key={entry.id}>
@@ -177,10 +180,22 @@ export function SyncLogTable({ entries, slug, canReconcile }: SyncLogTableProps)
                           Retry
                         </DropdownMenuItem>
                       )}
-                      {showOpenInXero && (
+                      {showOpenInXeroInvoice && (
                         <DropdownMenuItem asChild>
                           <a
                             href={`https://go.xero.com/AccountsReceivable/View.aspx?InvoiceID=${entry.externalId}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <ExternalLink className="mr-2 size-4" />
+                            Open in Xero
+                          </a>
+                        </DropdownMenuItem>
+                      )}
+                      {showOpenInXeroContact && (
+                        <DropdownMenuItem asChild>
+                          <a
+                            href={`https://go.xero.com/Contacts/View/${entry.externalId}`}
                             target="_blank"
                             rel="noopener noreferrer"
                           >

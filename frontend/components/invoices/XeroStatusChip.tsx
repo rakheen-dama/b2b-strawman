@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useTransition } from "react";
+import useSWR from "swr";
 import { ExternalLink, RefreshCw, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +12,8 @@ import {
   reconcileSyncEntryAction,
   forceResyncInvoiceAction,
 } from "@/app/(app)/org/[slug]/settings/integrations/xero/sync-log/actions";
-import type { SyncEntryResponse, SyncState } from "@/lib/types";
+import { defaultSWROptions } from "@/lib/swr/fetcher";
+import type { SyncEntryResponse } from "@/lib/types";
 
 interface XeroStatusChipProps {
   invoiceId: string;
@@ -20,29 +22,16 @@ interface XeroStatusChipProps {
 }
 
 export function XeroStatusChip({ invoiceId, slug, canReconcile = false }: XeroStatusChipProps) {
-  const [entry, setEntry] = useState<SyncEntryResponse | null>(null);
-  const [loaded, setLoaded] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      try {
-        const result = await getInvoiceSyncStatusAction(slug, invoiceId, "INVOICE");
-        if (!cancelled && result.success && result.data) {
-          setEntry(result.data);
-        }
-      } catch {
-        // Not synced — show nothing
-      } finally {
-        if (!cancelled) setLoaded(true);
-      }
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [invoiceId, slug]);
+  const { data: entry, mutate } = useSWR<SyncEntryResponse | null>(
+    `xero-invoice-status-${invoiceId}`,
+    async () => {
+      const result = await getInvoiceSyncStatusAction(slug, invoiceId, "INVOICE");
+      return result.success && result.data ? result.data : null;
+    },
+    defaultSWROptions
+  );
 
   function handleRetry() {
     if (!entry) return;
@@ -50,7 +39,7 @@ export function XeroStatusChip({ invoiceId, slug, canReconcile = false }: XeroSt
       const result = await retrySyncEntryAction(slug, entry.id);
       if (result.success) {
         toast.success("Sync retry queued.");
-        setEntry((prev) => (prev ? { ...prev, state: "PENDING" as SyncState } : prev));
+        mutate();
       } else {
         toast.error(result.error ?? "Failed to retry.");
       }
@@ -63,7 +52,7 @@ export function XeroStatusChip({ invoiceId, slug, canReconcile = false }: XeroSt
       const result = await reconcileSyncEntryAction(slug, entry.id);
       if (result.success) {
         toast.success("Reconciliation resolved.");
-        setEntry((prev) => (prev ? { ...prev, state: "COMPLETED" as SyncState } : prev));
+        mutate();
       } else {
         toast.error(result.error ?? "Failed to reconcile.");
       }
@@ -75,14 +64,13 @@ export function XeroStatusChip({ invoiceId, slug, canReconcile = false }: XeroSt
       const result = await forceResyncInvoiceAction(slug, invoiceId);
       if (result.success) {
         toast.success("Resync queued.");
-        setEntry((prev) => (prev ? { ...prev, state: "PENDING" as SyncState } : prev));
+        mutate();
       } else {
         toast.error(result.error ?? "Failed to resync.");
       }
     });
   }
 
-  if (!loaded) return null;
   if (!entry) return null;
 
   const state = entry.state;
@@ -90,10 +78,16 @@ export function XeroStatusChip({ invoiceId, slug, canReconcile = false }: XeroSt
   if (state === "COMPLETED" && entry.externalId) {
     return (
       <div className="flex items-center gap-2">
-        <Badge variant="success">
-          <ExternalLink className="mr-1 size-3" />
-          Synced to Xero
-        </Badge>
+        <a
+          href={`https://go.xero.com/AccountsReceivable/View.aspx?InvoiceID=${entry.externalId}`}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <Badge variant="success">
+            <ExternalLink className="mr-1 size-3" />
+            Synced to Xero
+          </Badge>
+        </a>
       </div>
     );
   }

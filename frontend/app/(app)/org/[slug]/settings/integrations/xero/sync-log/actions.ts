@@ -69,11 +69,14 @@ export async function getInvoiceSyncStatusAction(
       const data = await getInvoiceSyncStatus(entityId);
       return { success: true, data };
     }
-    // For customers, query sync entries filtered by entity
+    // TODO: Backend needs a dedicated GET /sync/customer/{customerId}/status
+    // endpoint (like the invoice one). Until then, fetch a page of CUSTOMER
+    // entries and filter client-side. size=100 is a pragmatic cap — tenants
+    // with >100 customer sync entries will need the proper endpoint.
     const result = await getSyncEntries({
       entityType: "CUSTOMER",
       page: 0,
-      size: 1,
+      size: 100,
     });
     const match = result.content.find((e) => e.entityId === entityId && e.state === "COMPLETED");
     if (match) {

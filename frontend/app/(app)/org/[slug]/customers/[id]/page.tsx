@@ -81,7 +81,7 @@ import {
 } from "@/lib/api/information-requests";
 import { RequestList } from "@/components/information-requests/request-list";
 import { CreateRequestDialog } from "@/components/information-requests/create-request-dialog";
-import { getXeroConnection } from "@/lib/api/integrations";
+import { isXeroConnected } from "@/lib/api/integrations";
 import { fetchRetainers, fetchPeriods } from "@/lib/api/retainers";
 import type { RetainerResponse, PeriodSummary } from "@/lib/api/retainers";
 import { CustomerRetainerTab } from "@/components/customers/customer-retainer-tab";
@@ -262,14 +262,7 @@ export default async function CustomerDetailPage({
     // Non-fatal: KYC verification buttons won't show
   }
 
-  // Check Xero connection status — 404 means not connected
-  let xeroConnected = false;
-  try {
-    const xeroConn = await getXeroConnection();
-    xeroConnected = xeroConn?.status === "CONNECTED";
-  } catch {
-    // Not connected or error
-  }
+  const xeroConnected = await isXeroConnected();
 
   // Derive a customer-level KYC summary from existing checklist data so the
   // header can surface a status badge without an extra round-trip. Walks

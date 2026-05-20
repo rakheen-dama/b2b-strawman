@@ -159,3 +159,16 @@ export async function forceResyncInvoice(invoiceId: string): Promise<void> {
 export async function reconcileSyncEntry(id: string): Promise<void> {
   return api.post<void>(`/api/integrations/sync/${id}/reconcile`);
 }
+
+/**
+ * Check if a Xero connection is active. Returns false if not connected,
+ * the connection endpoint returns 404, or any other error occurs.
+ */
+export async function isXeroConnected(): Promise<boolean> {
+  try {
+    const conn = await getXeroConnection();
+    return conn?.status === "CONNECTED";
+  } catch {
+    return false;
+  }
+}

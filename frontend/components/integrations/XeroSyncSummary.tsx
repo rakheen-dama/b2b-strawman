@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import useSWR from "swr";
 import Link from "next/link";
 import { RefreshCw, Activity } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchSyncSummaryAction } from "@/app/(app)/org/[slug]/settings/integrations/xero/sync-log/actions";
 import { formatDate } from "@/lib/format";
+import { defaultSWROptions } from "@/lib/swr/fetcher";
 import type { SyncSummaryResponse } from "@/lib/types";
 
 interface XeroSyncSummaryProps {
@@ -20,30 +21,16 @@ interface SummaryItem {
 }
 
 export function XeroSyncSummary({ slug }: XeroSyncSummaryProps) {
-  const [summary, setSummary] = useState<SyncSummaryResponse | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { data: summary, isLoading } = useSWR<SyncSummaryResponse | null>(
+    `xero-sync-summary-${slug}`,
+    async () => {
+      const result = await fetchSyncSummaryAction(slug);
+      return result.success && result.data ? result.data : null;
+    },
+    defaultSWROptions
+  );
 
-  useEffect(() => {
-    let cancelled = false;
-    async function load() {
-      try {
-        const result = await fetchSyncSummaryAction(slug);
-        if (!cancelled && result.success && result.data) {
-          setSummary(result.data);
-        }
-      } catch {
-        // Silently fail — widget won't render data
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [slug]);
-
-  if (loading) {
+  if (isLoading) {
     return (
       <Card>
         <CardHeader>

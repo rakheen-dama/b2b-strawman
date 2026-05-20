@@ -8,7 +8,7 @@ import {
   getGroupMembers,
   getTemplates,
 } from "@/lib/api";
-import { getXeroConnection } from "@/lib/api/integrations";
+import { isXeroConnected } from "@/lib/api/integrations";
 import type {
   InvoiceResponse,
   TaxRateResponse,
@@ -75,14 +75,7 @@ export default async function InvoiceDetailPage({
     .get<TaxRateResponse[]>("/api/tax-rates")
     .catch(() => [] as TaxRateResponse[]);
 
-  // Check Xero connection status — 404 means not connected
-  let xeroConnected = false;
-  try {
-    const xeroConn = await getXeroConnection();
-    xeroConnected = xeroConn?.status === "CONNECTED";
-  } catch {
-    // Not connected or error
-  }
+  const xeroConnected = await isXeroConnected();
 
   // Custom field definitions and groups for the Custom Fields section
   let invoiceFieldDefs: FieldDefinitionResponse[] = [];

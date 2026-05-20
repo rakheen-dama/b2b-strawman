@@ -58,6 +58,7 @@ export const TAB_GROUPS: readonly TabGroup[] = [
     tabs: [
       { id: "time", label: "Time" },
       { id: "expenses", label: "Expenses" },
+      { id: "disbursements", label: "Disbursements" },
       { id: "budget", label: "Budget" },
       { id: "rates", label: "Rates" },
       { id: "financials", label: "Financials" },

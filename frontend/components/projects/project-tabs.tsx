@@ -60,7 +60,6 @@ type TabId =
 const validTabIds = new Set<string>([
   "overview",
   "documents",
-  "members",
   "customers",
   "tasks",
   "time",
@@ -169,7 +168,7 @@ export function ProjectTabs({
 
     return TAB_GROUPS.map((group) => ({
       ...group,
-      visible: group.visible,
+      visible: group.tabs.some((t) => tabVisibility[t.id] !== false),
       tabs: group.tabs.map((tab) => {
         // Apply terminology rewriting to specific tab labels
         let label = tab.label;

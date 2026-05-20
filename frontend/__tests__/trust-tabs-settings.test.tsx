@@ -183,7 +183,7 @@ describe("Project detail Trust tab", () => {
       )
     );
 
-    expect(screen.queryByRole("tab", { name: "Trust" })).not.toBeInTheDocument();
+    expect(screen.queryByTestId("tab-item-trust")).not.toBeInTheDocument();
   });
 
   it("falls back to overview tab when ?tab=trust but trust module is disabled", () => {

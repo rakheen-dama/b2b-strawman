@@ -29,7 +29,7 @@ export interface GroupedTabBarProps {
 const triggerClassName = cn(
   "relative pb-3 text-sm font-medium transition-colors outline-none cursor-pointer",
   "text-slate-600 hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-200",
-  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500",
+  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-500"
 );
 
 const activeTriggerClassName = "text-slate-950 dark:text-slate-50";
@@ -48,16 +48,15 @@ export function GroupedTabBar({ groups, activeTab, onTabChange }: GroupedTabBarP
           tabs: g.tabs.filter((t) => t.visible !== false),
         }))
         .filter((g) => g.tabs.length > 0),
-    [groups],
+    [groups]
   );
 
   const groupRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const [openGroupId, setOpenGroupId] = useState<string | null>(null);
 
   // Determine which group the active tab belongs to
-  const activeGroupId = visibleGroups.find((g) =>
-    g.tabs.some((t) => t.id === activeTab),
-  )?.id ?? null;
+  const activeGroupId =
+    visibleGroups.find((g) => g.tabs.some((t) => t.id === activeTab))?.id ?? null;
 
   // Keyboard: ArrowLeft / ArrowRight between group triggers
   const handleKeyDown = useCallback(
@@ -71,13 +70,11 @@ export function GroupedTabBar({ groups, activeTab, onTabChange }: GroupedTabBarP
 
       const len = visibleGroups.length;
       const nextIndex =
-        e.key === "ArrowRight"
-          ? (currentIndex + 1) % len
-          : (currentIndex - 1 + len) % len;
+        e.key === "ArrowRight" ? (currentIndex + 1) % len : (currentIndex - 1 + len) % len;
 
       groupRefs.current[nextIndex]?.focus();
     },
-    [visibleGroups.length],
+    [visibleGroups.length]
   );
 
   return (
@@ -89,9 +86,7 @@ export function GroupedTabBar({ groups, activeTab, onTabChange }: GroupedTabBarP
     >
       {visibleGroups.map((group, idx) => {
         const isActive = activeGroupId === group.id;
-        const activeSubTab = isActive
-          ? group.tabs.find((t) => t.id === activeTab)
-          : null;
+        const activeSubTab = isActive ? group.tabs.find((t) => t.id === activeTab) : null;
         const isSingle = group.tabs.length === 1;
 
         // Build the label: "Finance · Time" when a sub-tab is active
@@ -109,7 +104,9 @@ export function GroupedTabBar({ groups, activeTab, onTabChange }: GroupedTabBarP
           return (
             <button
               key={group.id}
-              ref={(el) => { groupRefs.current[idx] = el; }}
+              ref={(el) => {
+                groupRefs.current[idx] = el;
+              }}
               role="tab"
               aria-selected={isActive}
               data-testid={`tab-group-${group.id}`}
@@ -138,14 +135,16 @@ export function GroupedTabBar({ groups, activeTab, onTabChange }: GroupedTabBarP
           >
             <DropdownMenuTrigger asChild>
               <button
-                ref={(el) => { groupRefs.current[idx] = el; }}
+                ref={(el) => {
+                  groupRefs.current[idx] = el;
+                }}
                 role="tab"
                 aria-selected={isActive}
                 data-testid={`tab-group-${group.id}`}
                 className={cn(
                   triggerClassName,
                   isActive && activeTriggerClassName,
-                  "inline-flex items-center gap-1",
+                  "inline-flex items-center gap-1"
                 )}
                 onClick={() => {
                   if (!isActive) {
@@ -178,8 +177,7 @@ export function GroupedTabBar({ groups, activeTab, onTabChange }: GroupedTabBarP
                     setOpenGroupId(null);
                   }}
                   className={cn(
-                    activeTab === tab.id &&
-                      "bg-slate-100 dark:bg-slate-800 font-medium",
+                    activeTab === tab.id && "bg-slate-100 font-medium dark:bg-slate-800"
                   )}
                 >
                   {tab.label}

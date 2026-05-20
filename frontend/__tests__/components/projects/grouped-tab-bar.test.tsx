@@ -1,11 +1,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, fireEvent } from "@testing-library/react";
 import { GroupedTabBar } from "@/components/projects/grouped-tab-bar";
-import {
-  TAB_GROUPS,
-  resolveTabFromUrl,
-  type TabGroup,
-} from "@/lib/constants/tab-groups";
+import { TAB_GROUPS, resolveTabFromUrl, type TabGroup } from "@/lib/constants/tab-groups";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -44,9 +40,7 @@ afterEach(() => {
 describe("GroupedTabBar", () => {
   it("renders all visible groups", () => {
     const groups = makeGroups();
-    render(
-      <GroupedTabBar groups={groups} activeTab="overview" onTabChange={() => {}} />,
-    );
+    render(<GroupedTabBar groups={groups} activeTab="overview" onTabChange={() => {}} />);
 
     expect(screen.getByTestId("grouped-tab-bar")).toBeInTheDocument();
     expect(screen.getByTestId("tab-group-overview")).toBeInTheDocument();
@@ -59,9 +53,7 @@ describe("GroupedTabBar", () => {
 
   it("hides groups with visible: false", () => {
     const groups = makeGroups({ finance: false, schedule: false });
-    render(
-      <GroupedTabBar groups={groups} activeTab="overview" onTabChange={() => {}} />,
-    );
+    render(<GroupedTabBar groups={groups} activeTab="overview" onTabChange={() => {}} />);
 
     expect(screen.queryByTestId("tab-group-finance")).not.toBeInTheDocument();
     expect(screen.queryByTestId("tab-group-schedule")).not.toBeInTheDocument();
@@ -73,9 +65,7 @@ describe("GroupedTabBar", () => {
   it("renders standalone tab (no dropdown) for single-sub-tab group", () => {
     const groups = makeGroups();
     const onTabChange = vi.fn();
-    render(
-      <GroupedTabBar groups={groups} activeTab="overview" onTabChange={onTabChange} />,
-    );
+    render(<GroupedTabBar groups={groups} activeTab="overview" onTabChange={onTabChange} />);
 
     // Overview has exactly 1 sub-tab — should render as a plain button
     const overviewTrigger = screen.getByTestId("tab-group-overview");
@@ -91,9 +81,7 @@ describe("GroupedTabBar", () => {
 
   it('shows active sub-tab label in group trigger ("Finance · Time")', () => {
     const groups = makeGroups();
-    render(
-      <GroupedTabBar groups={groups} activeTab="time" onTabChange={() => {}} />,
-    );
+    render(<GroupedTabBar groups={groups} activeTab="time" onTabChange={() => {}} />);
 
     const financeTrigger = screen.getByTestId("tab-group-finance");
     expect(financeTrigger.textContent).toContain("Finance");
@@ -104,9 +92,7 @@ describe("GroupedTabBar", () => {
   it("clicking group with multiple tabs and no active sub-tab navigates to first tab", () => {
     const groups = makeGroups();
     const onTabChange = vi.fn();
-    render(
-      <GroupedTabBar groups={groups} activeTab="overview" onTabChange={onTabChange} />,
-    );
+    render(<GroupedTabBar groups={groups} activeTab="overview" onTabChange={onTabChange} />);
 
     // Work group has multiple tabs but overview is active → click navigates to first work tab
     fireEvent.click(screen.getByTestId("tab-group-work"));
@@ -117,9 +103,7 @@ describe("GroupedTabBar", () => {
   it("clicking active multi-tab group trigger opens dropdown", () => {
     const groups = makeGroups();
     const onTabChange = vi.fn();
-    render(
-      <GroupedTabBar groups={groups} activeTab="tasks" onTabChange={onTabChange} />,
-    );
+    render(<GroupedTabBar groups={groups} activeTab="tasks" onTabChange={onTabChange} />);
 
     const workTrigger = screen.getByTestId("tab-group-work");
 
@@ -169,9 +153,7 @@ describe("resolveTabFromUrl", () => {
 describe("GroupedTabBar keyboard navigation", () => {
   it("ArrowRight moves focus to next group trigger", () => {
     const groups = makeGroups();
-    render(
-      <GroupedTabBar groups={groups} activeTab="overview" onTabChange={() => {}} />,
-    );
+    render(<GroupedTabBar groups={groups} activeTab="overview" onTabChange={() => {}} />);
 
     const overviewTrigger = screen.getByTestId("tab-group-overview");
     const workTrigger = screen.getByTestId("tab-group-work");

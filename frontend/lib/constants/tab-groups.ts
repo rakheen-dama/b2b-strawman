@@ -96,7 +96,7 @@ export const TAB_GROUPS: readonly TabGroup[] = [
 
 /** Reverse lookup: tab ID → group ID (O(1)). */
 export const TAB_ID_TO_GROUP_MAP: Record<string, string> = Object.fromEntries(
-  TAB_GROUPS.flatMap((g) => g.tabs.map((t) => [t.id, g.id])),
+  TAB_GROUPS.flatMap((g) => g.tabs.map((t) => [t.id, g.id]))
 );
 
 // ---------------------------------------------------------------------------
@@ -117,7 +117,7 @@ const DEFAULT_RESOLUTION = { groupId: "overview", tabId: "overview" } as const;
  */
 export function resolveTabFromUrl(
   tabParam: string | null,
-  groups: readonly TabGroup[],
+  groups: readonly TabGroup[]
 ): { groupId: string; tabId: string } {
   // 1. null → default
   if (tabParam === null) return DEFAULT_RESOLUTION;

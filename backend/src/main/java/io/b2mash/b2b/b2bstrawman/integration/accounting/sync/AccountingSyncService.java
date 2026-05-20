@@ -537,7 +537,7 @@ public class AccountingSyncService {
    * RECONCILE_DRIFT state can be resolved — throws if the entry is in any other state.
    */
   @Transactional
-  public void resolveReconcileDrift(UUID syncEntryId) {
+  public void resolveReconcileDrift(UUID syncEntryId, String resolution) {
     var entry =
         syncEntryRepository
             .findOneById(syncEntryId)
@@ -548,18 +548,27 @@ public class AccountingSyncService {
           "Sync entry " + syncEntryId + " is in state " + entry.getState());
     }
     entry.markCompleted(entry.getExternalId());
+    if (resolution != null && !resolution.isBlank()) {
+      entry.setLastErrorDetail(resolution);
+    }
     syncEntryRepository.save(entry);
+
+    var details =
+        new java.util.HashMap<String, Object>(
+            Map.of(
+                "syncEntryId", syncEntryId.toString(),
+                "entityType", entry.getEntityType().name(),
+                "entityId", entry.getEntityId().toString()));
+    if (resolution != null && !resolution.isBlank()) {
+      details.put("resolution", resolution);
+    }
 
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("integration.xero.reconcile_drift_resolved")
             .entityType("SYNC_ENTRY")
             .entityId(syncEntryId)
-            .details(
-                Map.of(
-                    "syncEntryId", syncEntryId.toString(),
-                    "entityType", entry.getEntityType().name(),
-                    "entityId", entry.getEntityId().toString()))
+            .details(details)
             .build());
 
     log.info("Reconcile drift resolved for sync entry {}", syncEntryId);

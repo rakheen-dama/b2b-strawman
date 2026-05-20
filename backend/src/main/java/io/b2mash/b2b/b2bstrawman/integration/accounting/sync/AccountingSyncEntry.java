@@ -217,6 +217,11 @@ public class AccountingSyncEntry {
     return lastErrorDetail;
   }
 
+  /** Sets the last error detail (used to record reconciliation resolution notes). */
+  public void setLastErrorDetail(String lastErrorDetail) {
+    this.lastErrorDetail = lastErrorDetail;
+  }
+
   public String getExternalReference() {
     return externalReference;
   }

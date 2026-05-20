@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -75,8 +76,12 @@ public class AccountingSyncController {
 
   @PostMapping("/{entryId}/reconcile")
   @RequiresCapability("FINANCIAL_RECONCILE")
-  public ResponseEntity<Void> reconcile(@PathVariable UUID entryId) {
-    syncService.resolveReconcileDrift(entryId);
+  public ResponseEntity<Void> reconcile(
+      @PathVariable UUID entryId, @RequestBody(required = false) ReconcileRequest request) {
+    syncService.resolveReconcileDrift(entryId, request != null ? request.resolution() : null);
     return ResponseEntity.noContent().build();
   }
+
+  /** Request body for the reconcile endpoint. */
+  public record ReconcileRequest(String resolution) {}
 }

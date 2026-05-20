@@ -66,10 +66,7 @@ import {
 import { RequestList } from "@/components/information-requests/request-list";
 import { CreateRequestDialog } from "@/components/information-requests/create-request-dialog";
 import { fetchProjectSetupStatus } from "@/lib/api/setup-status";
-import type {
-  ProjectSetupStatus,
-  FicaStatus,
-} from "@/lib/types";
+import type { ProjectSetupStatus, FicaStatus } from "@/lib/types";
 import type { SetupStep } from "@/components/setup/types";
 import { SaveAsTemplateDialog } from "@/components/templates/SaveAsTemplateDialog";
 import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle-actions";

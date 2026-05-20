@@ -23,11 +23,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import Link from "next/link";
-import type {
-  BudgetStatusResponse,
-  ProjectSetupStatus,
-  FicaStatus,
-} from "@/lib/types";
+import type { BudgetStatusResponse, ProjectSetupStatus, FicaStatus } from "@/lib/types";
 import type { ReactNode } from "react";
 
 // --- Health band color mapping ---
@@ -76,7 +72,7 @@ function MetricCard({ id, label, value, linkTab, icon, visible }: MetricCardProp
       <div className="flex flex-col gap-1 px-4 py-3">
         <div className="size-5 text-slate-400">{icon}</div>
         <span className="font-mono text-2xl font-bold tabular-nums">{value}</span>
-        <span className="text-muted-foreground text-xs uppercase tracking-wider">{label}</span>
+        <span className="text-muted-foreground text-xs tracking-wider uppercase">{label}</span>
       </div>
     </Card>
   );
@@ -131,17 +127,13 @@ export async function KPIDashboard({
 }: KPIDashboardProps) {
   const { from, to } = resolveDateRange({});
 
-  const [
-    healthResult,
-    memberHoursResult,
-    budgetResult,
-    upcomingDeadlinesResult,
-  ] = await Promise.allSettled([
-    fetchProjectHealthDetail(projectId),
-    fetchProjectMemberHours(projectId, from, to),
-    api.get<BudgetStatusResponse>(`/api/projects/${projectId}/budget`).catch(() => null),
-    fetchProjectUpcomingDeadlines(projectId),
-  ]);
+  const [healthResult, memberHoursResult, budgetResult, upcomingDeadlinesResult] =
+    await Promise.allSettled([
+      fetchProjectHealthDetail(projectId),
+      fetchProjectMemberHours(projectId, from, to),
+      api.get<BudgetStatusResponse>(`/api/projects/${projectId}/budget`).catch(() => null),
+      fetchProjectUpcomingDeadlines(projectId),
+    ]);
 
   const health = settled(healthResult);
   const memberHours = settled(memberHoursResult);
@@ -236,9 +228,7 @@ export async function KPIDashboard({
         <div className="flex items-start gap-4 px-4 py-3">
           <HealthBadge status={healthStatus} size="lg" />
           {customerName && (
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              Customer: {customerName}
-            </p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Customer: {customerName}</p>
           )}
         </div>
 
@@ -336,4 +326,3 @@ export async function KPIDashboard({
     </div>
   );
 }
-

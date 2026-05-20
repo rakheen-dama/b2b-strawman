@@ -41,9 +41,7 @@ vi.mock("@/lib/date-utils", () => ({
 }));
 
 vi.mock("@/components/dashboard/health-badge", () => ({
-  HealthBadge: ({ status }: { status: string }) => (
-    <span data-testid="health-badge">{status}</span>
-  ),
+  HealthBadge: ({ status }: { status: string }) => <span data-testid="health-badge">{status}</span>,
 }));
 
 vi.mock("@/components/dashboard/completion-progress-bar", () => ({
@@ -62,9 +60,7 @@ vi.mock("@/components/legal/retention-card", () => ({
 
 vi.mock("@/components/projects/upcoming-deadlines-tile", () => ({
   UpcomingDeadlinesTile: ({ deadlines }: { deadlines: unknown[] }) => (
-    <div data-testid="matter-upcoming-deadlines-tile">
-      {deadlines.length} deadlines
-    </div>
+    <div data-testid="matter-upcoming-deadlines-tile">{deadlines.length} deadlines</div>
   ),
 }));
 

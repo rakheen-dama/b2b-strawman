@@ -33,7 +33,7 @@ public class AccountingSyncController {
   @GetMapping("/summary")
   @RequiresCapability("INTEGRATION_VIEW_SYNC_STATUS")
   public ResponseEntity<SyncSummaryResponse> getSummary() {
-    return ResponseEntity.ok(SyncSummaryResponse.from(syncService.getSyncSummary(), null, null));
+    return ResponseEntity.ok(syncService.getSyncSummaryResponse());
   }
 
   @GetMapping("/entries")
@@ -43,26 +43,20 @@ public class AccountingSyncController {
       @RequestParam(required = false) SyncEntityType entityType,
       @RequestParam(required = false) SyncDirection direction,
       Pageable pageable) {
-    return ResponseEntity.ok(
-        syncService
-            .findEntries(state, entityType, direction, pageable)
-            .map(SyncEntryResponse::from));
+    return ResponseEntity.ok(syncService.getEntryResponses(state, entityType, direction, pageable));
   }
 
   @GetMapping("/entries/{id}")
   @RequiresCapability("INTEGRATION_VIEW_SYNC_STATUS")
   public ResponseEntity<SyncEntryResponse> getEntry(@PathVariable UUID id) {
-    return ResponseEntity.ok(SyncEntryResponse.from(syncService.findEntryById(id)));
+    return ResponseEntity.ok(syncService.getEntryResponseById(id));
   }
 
   @GetMapping("/invoice/{invoiceId}/status")
   @RequiresCapability("INTEGRATION_VIEW_SYNC_STATUS")
   public ResponseEntity<List<SyncEntryResponse>> getInvoiceSyncStatus(
       @PathVariable UUID invoiceId) {
-    return ResponseEntity.ok(
-        syncService.findSyncStatusForInvoice(invoiceId).stream()
-            .map(SyncEntryResponse::from)
-            .toList());
+    return ResponseEntity.ok(syncService.getInvoiceSyncStatusResponses(invoiceId));
   }
 
   @PostMapping("/{entryId}/retry")

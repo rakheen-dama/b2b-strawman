@@ -10,6 +10,8 @@ import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingPaymentSource;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.AccountingXeroConnectionRepository;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.XeroConnectionStatus;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.dto.SyncEntryResponse;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.dto.SyncSummaryResponse;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
@@ -481,6 +483,33 @@ public class AccountingSyncService {
   }
 
   // ---- Controller-facing service methods ----
+
+  /** Returns the sync summary as a response DTO ready for the controller. */
+  @Transactional(readOnly = true)
+  public SyncSummaryResponse getSyncSummaryResponse() {
+    return SyncSummaryResponse.from(getSyncSummary(), null, null);
+  }
+
+  /** Paginated, filterable sync entry log as response DTOs for the controller. */
+  @Transactional(readOnly = true)
+  public Page<SyncEntryResponse> getEntryResponses(
+      SyncState state, SyncEntityType entityType, SyncDirection direction, Pageable pageable) {
+    return syncEntryRepository
+        .findFiltered(state, entityType, direction, pageable)
+        .map(SyncEntryResponse::from);
+  }
+
+  /** Returns a single sync entry response DTO by ID, or throws if not found. */
+  @Transactional(readOnly = true)
+  public SyncEntryResponse getEntryResponseById(UUID id) {
+    return SyncEntryResponse.from(findEntryById(id));
+  }
+
+  /** Returns all sync entry response DTOs for a given invoice, ordered by most recent first. */
+  @Transactional(readOnly = true)
+  public List<SyncEntryResponse> getInvoiceSyncStatusResponses(UUID invoiceId) {
+    return findSyncStatusForInvoice(invoiceId).stream().map(SyncEntryResponse::from).toList();
+  }
 
   /** Paginated, filterable sync entry log for the sync dashboard. */
   @Transactional(readOnly = true)

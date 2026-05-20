@@ -81,10 +81,6 @@ public class XeroCustomerImportService {
     var connection =
         connectionRepository.findByStatus(XeroConnectionStatus.CONNECTED).stream()
             .findFirst()
-            .or(
-                () ->
-                    connectionRepository.findByStatus(XeroConnectionStatus.REFRESH_FAILED).stream()
-                        .findFirst())
             .orElseThrow(
                 () ->
                     new ResourceNotFoundException(

@@ -9,6 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingTaxCodeMappingService;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.dto.AccountingTaxCodeMappingResponse;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -18,6 +20,8 @@ import io.b2mash.b2b.b2bstrawman.orgrole.dto.OrgRoleDtos;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -50,6 +54,7 @@ class XeroIntegrationControllerIntegrationTest {
 
   @MockitoBean private XeroOAuthService xeroOAuthService;
   @MockitoBean private XeroCustomerImportService xeroCustomerImportService;
+  @MockitoBean private AccountingTaxCodeMappingService taxCodeMappingService;
 
   private String tenantSchema;
   private UUID ownerMemberId;
@@ -143,7 +148,7 @@ class XeroIntegrationControllerIntegrationTest {
 
   @Test
   void getConnection_returns404WhenNotConnected() throws Exception {
-    when(xeroOAuthService.getActiveConnection()).thenReturn(Optional.empty());
+    when(xeroOAuthService.getActiveConnectionResponse()).thenReturn(Optional.empty());
 
     mockMvc
         .perform(
@@ -210,5 +215,70 @@ class XeroIntegrationControllerIntegrationTest {
             get("/api/integrations/xero/tax-rates")
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_xero_ctrl_nocap", "member")))
         .andExpect(status().isForbidden());
+  }
+
+  // --- Tax mapping RBAC tests (H-2) ---
+
+  @Test
+  void getTaxMappings_returns403ForNoCap() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/integrations/xero/tax-mappings")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_xero_ctrl_nocap", "member")))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void getTaxMappings_ownerCanAccess() throws Exception {
+    var mockResponse =
+        new AccountingTaxCodeMappingResponse(
+            UUID.randomUUID(),
+            "xero",
+            "STANDARD_15",
+            "OUTPUT2",
+            "Standard Rate (15%)",
+            true,
+            Instant.now(),
+            Instant.now());
+    when(taxCodeMappingService.getResponsesByProvider("xero")).thenReturn(List.of(mockResponse));
+
+    mockMvc
+        .perform(
+            get("/api/integrations/xero/tax-mappings")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_xero_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].kaziTaxMode").value("STANDARD_15"))
+        .andExpect(jsonPath("$[0].externalTaxCode").value("OUTPUT2"));
+  }
+
+  @Test
+  void resetTaxMappings_returns403ForNoCap() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/integrations/xero/tax-mappings/reset")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_xero_ctrl_nocap", "member")))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void resetTaxMappings_ownerCanAccess() throws Exception {
+    var mockResponse =
+        new AccountingTaxCodeMappingResponse(
+            UUID.randomUUID(),
+            "xero",
+            "STANDARD_15",
+            "OUTPUT2",
+            "Standard Rate (15%)",
+            true,
+            Instant.now(),
+            Instant.now());
+    when(taxCodeMappingService.resetToDefaultsAndRespond("xero")).thenReturn(List.of(mockResponse));
+
+    mockMvc
+        .perform(
+            post("/api/integrations/xero/tax-mappings/reset")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_xero_ctrl_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].kaziTaxMode").value("STANDARD_15"));
   }
 }

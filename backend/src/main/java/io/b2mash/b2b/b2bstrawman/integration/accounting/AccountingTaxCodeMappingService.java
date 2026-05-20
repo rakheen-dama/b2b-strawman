@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.integration.accounting;
 
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.dto.AccountingTaxCodeMappingResponse;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
@@ -72,5 +73,28 @@ public class AccountingTaxCodeMappingService {
                 new ResourceNotFoundException(
                     "AccountingTaxCodeMapping",
                     "providerId=" + providerId + ", kaziTaxMode=" + kaziTaxMode));
+  }
+
+  // ---- Controller-facing response methods ----
+
+  /** Returns all tax code mapping response DTOs for the given provider. */
+  @Transactional(readOnly = true)
+  public List<AccountingTaxCodeMappingResponse> getResponsesByProvider(String providerId) {
+    return getByProvider(providerId).stream().map(AccountingTaxCodeMappingResponse::from).toList();
+  }
+
+  /** Updates a mapping and returns the response DTO. */
+  @Transactional
+  public AccountingTaxCodeMappingResponse updateAndRespond(
+      UUID id, String externalTaxCode, String displayLabel) {
+    return AccountingTaxCodeMappingResponse.from(update(id, externalTaxCode, displayLabel));
+  }
+
+  /** Resets mappings to defaults and returns the response DTOs. */
+  @Transactional
+  public List<AccountingTaxCodeMappingResponse> resetToDefaultsAndRespond(String providerId) {
+    return resetToDefaults(providerId).stream()
+        .map(AccountingTaxCodeMappingResponse::from)
+        .toList();
   }
 }

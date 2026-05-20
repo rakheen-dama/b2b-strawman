@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.OrgIntegration;
 import io.b2mash.b2b.b2bstrawman.integration.OrgIntegrationRepository;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingTaxCodeMappingService;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.dto.XeroConnectionResponse;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.dto.XeroSyncSettings;
 import io.b2mash.b2b.b2bstrawman.integration.secret.SecretStore;
 import java.net.URLEncoder;
@@ -361,6 +362,12 @@ public class XeroOAuthService {
             () ->
                 connectionRepository.findByStatus(XeroConnectionStatus.REFRESH_FAILED).stream()
                     .findFirst());
+  }
+
+  /** Returns the active connection as a response DTO, or empty if none exists. */
+  @Transactional(readOnly = true)
+  public Optional<XeroConnectionResponse> getActiveConnectionResponse() {
+    return getActiveConnection().map(XeroConnectionResponse::from);
   }
 
   /**

@@ -62,8 +62,8 @@ public class XeroIntegrationController {
   @RequiresCapability("INTEGRATION_MANAGE")
   public ResponseEntity<XeroConnectionResponse> getConnection() {
     return xeroOAuthService
-        .getActiveConnection()
-        .map(c -> ResponseEntity.ok(XeroConnectionResponse.from(c)))
+        .getActiveConnectionResponse()
+        .map(ResponseEntity::ok)
         .orElse(ResponseEntity.notFound().build());
   }
 
@@ -77,10 +77,7 @@ public class XeroIntegrationController {
   @GetMapping("/tax-mappings")
   @RequiresCapability("INTEGRATION_MANAGE")
   public ResponseEntity<List<AccountingTaxCodeMappingResponse>> getTaxMappings() {
-    return ResponseEntity.ok(
-        taxCodeMappingService.getByProvider("xero").stream()
-            .map(AccountingTaxCodeMappingResponse::from)
-            .toList());
+    return ResponseEntity.ok(taxCodeMappingService.getResponsesByProvider("xero"));
   }
 
   @PutMapping("/tax-mappings/{id}")
@@ -88,17 +85,14 @@ public class XeroIntegrationController {
   public ResponseEntity<AccountingTaxCodeMappingResponse> updateTaxMapping(
       @PathVariable UUID id, @Valid @RequestBody UpdateTaxMappingRequest request) {
     return ResponseEntity.ok(
-        AccountingTaxCodeMappingResponse.from(
-            taxCodeMappingService.update(id, request.externalTaxCode(), request.displayLabel())));
+        taxCodeMappingService.updateAndRespond(
+            id, request.externalTaxCode(), request.displayLabel()));
   }
 
   @PostMapping("/tax-mappings/reset")
   @RequiresCapability("INTEGRATION_MANAGE")
   public ResponseEntity<List<AccountingTaxCodeMappingResponse>> resetTaxMappings() {
-    return ResponseEntity.ok(
-        taxCodeMappingService.resetToDefaults("xero").stream()
-            .map(AccountingTaxCodeMappingResponse::from)
-            .toList());
+    return ResponseEntity.ok(taxCodeMappingService.resetToDefaultsAndRespond("xero"));
   }
 
   @GetMapping("/tax-rates")

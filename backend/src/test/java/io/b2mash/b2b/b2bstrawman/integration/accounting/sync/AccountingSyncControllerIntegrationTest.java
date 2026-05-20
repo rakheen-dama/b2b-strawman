@@ -9,6 +9,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.dto.SyncEntryResponse;
+import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.dto.SyncSummaryResponse;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -19,9 +21,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
@@ -183,10 +183,8 @@ class AccountingSyncControllerIntegrationTest {
 
   @Test
   void getSummary_syncViewerCanAccess() throws Exception {
-    Map<SyncState, Long> counts = new EnumMap<>(SyncState.class);
-    counts.put(SyncState.PENDING, 3L);
-    counts.put(SyncState.COMPLETED, 42L);
-    when(syncService.getSyncSummary()).thenReturn(counts);
+    when(syncService.getSyncSummaryResponse())
+        .thenReturn(new SyncSummaryResponse(3, 0, 42, 0, 0, 0, 0, null, null));
 
     mockMvc
         .perform(
@@ -210,7 +208,7 @@ class AccountingSyncControllerIntegrationTest {
 
   @Test
   void getEntries_syncViewerCanAccess() throws Exception {
-    when(syncService.findEntries(any(), any(), any(), any()))
+    when(syncService.getEntryResponses(any(), any(), any(), any()))
         .thenReturn(new PageImpl<>(Collections.emptyList(), PageRequest.of(0, 20), 0));
 
     mockMvc
@@ -232,15 +230,23 @@ class AccountingSyncControllerIntegrationTest {
   @Test
   void getEntryById_syncViewerCanAccess() throws Exception {
     UUID entryId = UUID.randomUUID();
-    var mockEntry =
-        new AccountingSyncEntry(
+    var mockResponse =
+        new SyncEntryResponse(
+            entryId,
             SyncEntityType.INVOICE,
             UUID.randomUUID(),
             "xero",
             SyncDirection.PUSH,
+            SyncState.PENDING,
+            0,
+            "KAZI-INV-test",
+            null,
+            null,
+            null,
             SyncTrigger.EVENT,
-            "KAZI-INV-test");
-    when(syncService.findEntryById(entryId)).thenReturn(mockEntry);
+            null,
+            null);
+    when(syncService.getEntryResponseById(entryId)).thenReturn(mockResponse);
 
     mockMvc
         .perform(
@@ -262,7 +268,7 @@ class AccountingSyncControllerIntegrationTest {
   @Test
   void getInvoiceSyncStatus_syncViewerCanAccess() throws Exception {
     UUID invoiceId = UUID.randomUUID();
-    when(syncService.findSyncStatusForInvoice(invoiceId)).thenReturn(List.of());
+    when(syncService.getInvoiceSyncStatusResponses(invoiceId)).thenReturn(List.of());
 
     mockMvc
         .perform(
@@ -301,6 +307,15 @@ class AccountingSyncControllerIntegrationTest {
             post("/api/integrations/sync/" + entryId + "/retry")
                 .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_mgr", "member")))
         .andExpect(status().isNoContent());
+  }
+
+  @Test
+  void reconcile_returns403ForIntegrationManager() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/integrations/sync/" + UUID.randomUUID() + "/reconcile")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_sync_ctrl_mgr", "member")))
+        .andExpect(status().isForbidden());
   }
 
   @Test

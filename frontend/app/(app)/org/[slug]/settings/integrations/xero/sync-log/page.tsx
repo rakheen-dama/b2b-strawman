@@ -101,7 +101,8 @@ export default async function SyncLogPage({
           <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Sync Log</h1>
         </div>
         <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-          View and manage Xero sync entries. {totalElements > 0 && `${totalElements} total entries.`}
+          View and manage Xero sync entries.{" "}
+          {totalElements > 0 && `${totalElements} total entries.`}
         </p>
       </div>
 

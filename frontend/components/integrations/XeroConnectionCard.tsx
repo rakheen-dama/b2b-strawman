@@ -6,13 +6,7 @@ import { ExternalLink, Link2Off, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -132,7 +126,7 @@ export function XeroConnectionCard({ connection, slug }: XeroConnectionCardProps
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-600 dark:text-slate-400">Connected</span>
-                <span className="font-mono tabular-nums text-slate-900 dark:text-slate-100">
+                <span className="font-mono text-slate-900 tabular-nums dark:text-slate-100">
                   {new Date(connection.connectedAt).toLocaleDateString()}
                 </span>
               </div>
@@ -189,7 +183,7 @@ export function XeroConnectionCard({ connection, slug }: XeroConnectionCardProps
             <AlertDialogAction
               onClick={handleDisconnect}
               disabled={isDisconnecting}
-              className="bg-destructive text-white hover:bg-destructive/90"
+              className="bg-destructive hover:bg-destructive/90 text-white"
             >
               {isDisconnecting ? "Disconnecting..." : "Disconnect"}
             </AlertDialogAction>

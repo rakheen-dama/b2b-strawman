@@ -102,7 +102,8 @@ export function SyncLogTable({ entries, slug, canReconcile }: SyncLogTableProps)
           const showOpenInXeroContact =
             entry.state === "COMPLETED" && entry.externalId && entry.entityType === "CUSTOMER";
           const showReconcile = entry.state === "RECONCILE_DRIFT" && canReconcile;
-          const hasActions = showRetry || showOpenInXeroInvoice || showOpenInXeroContact || showReconcile;
+          const hasActions =
+            showRetry || showOpenInXeroInvoice || showOpenInXeroContact || showReconcile;
 
           return (
             <TableRow key={entry.id}>
@@ -132,9 +133,7 @@ export function SyncLogTable({ entries, slug, canReconcile }: SyncLogTableProps)
                 <SyncEntryStateBadge state={entry.state} />
               </TableCell>
               <TableCell className="text-right">
-                <span className="font-mono tabular-nums text-sm">
-                  {entry.attemptCount}
-                </span>
+                <span className="font-mono text-sm tabular-nums">{entry.attemptCount}</span>
               </TableCell>
               <TableCell>
                 {entry.lastErrorDetail ? (
@@ -163,12 +162,7 @@ export function SyncLogTable({ entries, slug, canReconcile }: SyncLogTableProps)
                 {hasActions && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="size-8 p-0"
-                        disabled={isPending}
-                      >
+                      <Button variant="ghost" size="sm" className="size-8 p-0" disabled={isPending}>
                         <MoreVertical className="size-4" />
                         <span className="sr-only">Open menu</span>
                       </Button>

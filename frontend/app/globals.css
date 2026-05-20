@@ -133,6 +133,7 @@
   /* Tenant brand colour — overridable via inline style on <html>.
      Defaults to teal-500 so unbranded orgs see the standard accent. */
   --brand-color: var(--teal-500);
+  --sidebar-width: 280px;
 }
 
 .dark {

@@ -61,9 +61,7 @@ export async function disconnectXeroAction(slug: string): Promise<ActionResult> 
   }
 }
 
-export async function fetchXeroTaxRatesAction(
-  _slug: string
-): Promise<XeroTaxRate[]> {
+export async function fetchXeroTaxRatesAction(_slug: string): Promise<XeroTaxRate[]> {
   try {
     // Backend proxies raw Xero response: { TaxRates: [{ Name, TaxType, EffectiveRate }] }
     // Unwrap the envelope and map PascalCase -> camelCase to match XeroTaxRate type

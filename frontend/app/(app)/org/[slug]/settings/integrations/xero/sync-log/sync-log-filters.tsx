@@ -63,19 +63,14 @@ export function SyncLogFilters({
   );
 
   const clearFilters = useCallback(() => {
-    router.push(
-      `/org/${slug}/settings/integrations/xero/sync-log`
-    );
+    router.push(`/org/${slug}/settings/integrations/xero/sync-log`);
   }, [router, slug]);
 
   const hasFilters = currentState || currentEntityType || currentDirection;
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <Select
-        value={currentState ?? "ALL"}
-        onValueChange={(v) => updateFilter("state", v)}
-      >
+      <Select value={currentState ?? "ALL"} onValueChange={(v) => updateFilter("state", v)}>
         <SelectTrigger className="w-[180px]">
           <SelectValue placeholder="All States" />
         </SelectTrigger>
@@ -106,10 +101,7 @@ export function SyncLogFilters({
         </SelectContent>
       </Select>
 
-      <Select
-        value={currentDirection ?? "ALL"}
-        onValueChange={(v) => updateFilter("direction", v)}
-      >
+      <Select value={currentDirection ?? "ALL"} onValueChange={(v) => updateFilter("direction", v)}>
         <SelectTrigger className="w-[140px]">
           <SelectValue placeholder="All Directions" />
         </SelectTrigger>

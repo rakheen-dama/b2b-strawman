@@ -6,13 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -116,9 +110,7 @@ export function XeroSettingsForm({ settings, slug }: XeroSettingsFormProps) {
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormDescription>
-                    How often Kazi checks Xero for new payments.
-                  </FormDescription>
+                  <FormDescription>How often Kazi checks Xero for new payments.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}

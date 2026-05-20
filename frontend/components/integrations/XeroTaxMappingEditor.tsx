@@ -6,13 +6,7 @@ import { toast } from "sonner";
 import { RotateCcw, Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -170,11 +164,7 @@ export function XeroTaxMappingEditor({ mappings, slug }: XeroTaxMappingEditorPro
                 Map Kazi tax modes to Xero tax codes for accurate invoice syncing.
               </CardDescription>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowResetDialog(true)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setShowResetDialog(true)}>
               <RotateCcw className="mr-2 size-4" />
               Reset to Defaults
             </Button>
@@ -265,8 +255,8 @@ export function XeroTaxMappingEditor({ mappings, slug }: XeroTaxMappingEditorPro
           <AlertDialogHeader>
             <AlertDialogTitle>Reset Tax Mappings?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will reset all tax code mappings to their default values. Any custom
-              mappings will be lost.
+              This will reset all tax code mappings to their default values. Any custom mappings
+              will be lost.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

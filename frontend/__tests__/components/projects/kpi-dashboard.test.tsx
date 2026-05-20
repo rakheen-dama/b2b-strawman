@@ -25,14 +25,6 @@ vi.mock("@/lib/actions/dashboard", () => ({
       daysSinceLastActivity: 2,
     },
   }),
-  fetchProjectTaskSummary: vi.fn().mockResolvedValue({
-    todo: 2,
-    inProgress: 3,
-    done: 5,
-    cancelled: 0,
-    total: 10,
-    overdueCount: 1,
-  }),
   fetchProjectMemberHours: vi.fn().mockResolvedValue([
     { memberId: "m1", memberName: "Alice", totalHours: 20, billableHours: 18 },
     { memberId: "m2", memberName: "Bob", totalHours: 15, billableHours: 12 },

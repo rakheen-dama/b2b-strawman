@@ -182,7 +182,7 @@ PHASES already complete:
 |-------|-------|---------|-----------------------|
 | 4a | **522A** | Complete `AccountingPaymentPollWorker` body -- wire to `XeroAccountingProvider.getPaymentsModifiedSince`; payment matching logic in `AccountingSyncService.pollPaymentsForConnection`; `PaymentEvent` creation with `provider_slug = "xero"`; invoice transition to `PAID` via `InvoiceTransitionService`; amount drift detection and `RECONCILE_DRIFT` state; happy-path + drift + idempotent re-poll + Xero-native skip tests. **Done** (PR #1333) | 523A, 524A |
 | 4b | **523A** | `XeroCustomerImportService`; pagination of Xero contacts; dedup logic (email, then name+taxNumber); one-time guard (import already run check); customer creation with `PROSPECT` status and `external_reference`; pagination + dedup + guard + summary tests. **Done** (PR #1334) | 522A, 524A |
-| 4c | **524A** | `XeroIntegrationController` (OAuth connect/callback/disconnect + connection status + settings + tax mappings + customer import endpoints); `AccountingSyncController` (sync summary + entries + retry + resync + reconcile endpoints); controller RBAC gate tests. | 522A, 523A |
+| 4c | **524A** | `XeroIntegrationController` (OAuth connect/callback/disconnect + connection status + settings + tax mappings + customer import endpoints); `AccountingSyncController` (sync summary + entries + retry + resync + reconcile endpoints); controller RBAC gate tests. **Done** (PR #1335) | 522A, 523A |
 
 ### Stage 5 -- Frontend (sequential after 524A)
 
@@ -660,7 +660,7 @@ A realistic day-by-day cadence: 517A days 1-3; 517B days 3-5; 518A + 519A days 5
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **524A** | 524A.1-524A.4 | ~7 backend files (2 controllers + 1 DTO package + 4 test files) | `XeroIntegrationController` (OAuth connect/callback/disconnect + connection status + settings + tax mappings + customer import + tax rates proxy); `AccountingSyncController` (sync summary + entries + entry detail + invoice sync status + retry + resync + reconcile); controller RBAC gate tests. |
+| **524A** | 524A.1-524A.4 | ~7 backend files (2 controllers + 1 DTO package + 4 test files) | `XeroIntegrationController` (OAuth connect/callback/disconnect + connection status + settings + tax mappings + customer import + tax rates proxy); `AccountingSyncController` (sync summary + entries + entry detail + invoice sync status + retry + resync + reconcile); controller RBAC gate tests. **Done** (PR #1335) |
 | **524B** | 524B.1-524B.7 | ~9 frontend files (1 page + 4 components + 1 settings form + 1 API client + 1 page modification + i18n) | Xero settings page; `XeroConnectionCard`; `XeroTaxMappingEditor`; `XeroCustomerImport`; `XeroSettingsForm`; API client functions; modified integrations page. |
 
 ### Tasks

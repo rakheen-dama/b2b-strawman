@@ -593,7 +593,7 @@
 | 521 | Trust Boundary Guard | Backend | 518A | S | 521A | **Done** (PR #1332) |
 | 522 | Payment Pull (Poll Worker Completion) | Backend | 518A, 520A | M | 522A | **Done** (PR #1333) |
 | 523 | One-Time Customer Import | Backend | 519A, 520A | S | 523A | **Done** (PR #1334) |
-| 524 | Frontend — Connection Management + Settings | Both | 519A, 520B | L | 524A, 524B | |
+| 524 | Frontend — Connection Management + Settings | Both | 519A, 520B | L | 524A, 524B | 524A Done (PR #1335) |
 | 525 | Frontend — Sync Log + Status Chips | Both | 518A, 524A | L | 525A, 525B | |
 | **Phase 72 — AI Foundation + Client Intelligence (FICA & Matter Intake)** | | | | | | See [tasks/phase72-ai-foundation-client-intelligence.md](tasks/phase72-ai-foundation-client-intelligence.md) |
 | 526 | AiProvider Evolution + AnthropicAiProvider | Backend | -- | L | 526A, 526B | **Done** — 526A (PR #1313), 526B (PR #1314) |

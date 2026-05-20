@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.integration.accounting.sync;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.dto.SyncEntryResponse;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.dto.SyncSummaryResponse;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -77,11 +79,11 @@ public class AccountingSyncController {
   @PostMapping("/{entryId}/reconcile")
   @RequiresCapability("FINANCIAL_RECONCILE")
   public ResponseEntity<Void> reconcile(
-      @PathVariable UUID entryId, @RequestBody(required = false) ReconcileRequest request) {
+      @PathVariable UUID entryId, @RequestBody(required = false) @Valid ReconcileRequest request) {
     syncService.resolveReconcileDrift(entryId, request);
     return ResponseEntity.noContent().build();
   }
 
   /** Request body for the reconcile endpoint. */
-  public record ReconcileRequest(String resolution) {}
+  public record ReconcileRequest(@Size(max = 2000) String resolution) {}
 }

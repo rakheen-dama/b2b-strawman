@@ -592,7 +592,7 @@
 | 520 | XeroAccountingProvider Adapter + Mappers | Backend | 517A, 519A | M | 520A, 520B | Done (PR #1330, #1331) |
 | 521 | Trust Boundary Guard | Backend | 518A | S | 521A | **Done** (PR #1332) |
 | 522 | Payment Pull (Poll Worker Completion) | Backend | 518A, 520A | M | 522A | **Done** (PR #1333) |
-| 523 | One-Time Customer Import | Backend | 519A, 520A | S | 523A | |
+| 523 | One-Time Customer Import | Backend | 519A, 520A | S | 523A | **Done** (PR #1334) |
 | 524 | Frontend — Connection Management + Settings | Both | 519A, 520B | L | 524A, 524B | |
 | 525 | Frontend — Sync Log + Status Chips | Both | 518A, 524A | L | 525A, 525B | |
 | **Phase 72 — AI Foundation + Client Intelligence (FICA & Matter Intake)** | | | | | | See [tasks/phase72-ai-foundation-client-intelligence.md](tasks/phase72-ai-foundation-client-intelligence.md) |

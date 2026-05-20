@@ -80,10 +80,13 @@ public class AccountingSyncController {
   @RequiresCapability("FINANCIAL_RECONCILE")
   public ResponseEntity<Void> reconcile(
       @PathVariable UUID entryId, @RequestBody(required = false) @Valid ReconcileRequest request) {
-    syncService.resolveReconcileDrift(entryId, request);
+    syncService.resolveReconcileDrift(entryId, ReconcileRequest.resolutionOf(request));
     return ResponseEntity.noContent().build();
   }
 
-  /** Request body for the reconcile endpoint. */
-  public record ReconcileRequest(@Size(max = 2000) String resolution) {}
+  public record ReconcileRequest(@Size(max = 2000) String resolution) {
+    static String resolutionOf(ReconcileRequest request) {
+      return request != null ? request.resolution() : null;
+    }
+  }
 }

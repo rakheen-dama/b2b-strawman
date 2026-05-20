@@ -538,8 +538,7 @@ public class AccountingSyncService {
    * RECONCILE_DRIFT state can be resolved — throws if the entry is in any other state.
    */
   @Transactional
-  public void resolveReconcileDrift(
-      UUID syncEntryId, AccountingSyncController.ReconcileRequest request) {
+  public void resolveReconcileDrift(UUID syncEntryId, String resolution) {
     var entry =
         syncEntryRepository
             .findOneById(syncEntryId)
@@ -549,7 +548,6 @@ public class AccountingSyncService {
           "Entry is not in RECONCILE_DRIFT state",
           "Sync entry " + syncEntryId + " is in state " + entry.getState());
     }
-    String resolution = request != null ? request.resolution() : null;
     entry.markCompleted(entry.getExternalId());
     if (resolution != null && !resolution.isBlank()) {
       entry.setLastErrorDetail(resolution);

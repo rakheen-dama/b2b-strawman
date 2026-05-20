@@ -2,7 +2,6 @@
 
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 
 interface SidebarCollapseToggleProps {
   collapsed: boolean;
@@ -22,7 +21,7 @@ export function SidebarCollapseToggle({
       onClick={onToggle}
       aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
       data-testid="sidebar-collapse-toggle"
-      className={cn(className)}
+      className={className}
     >
       {collapsed ? <ChevronRight /> : <ChevronLeft />}
     </Button>

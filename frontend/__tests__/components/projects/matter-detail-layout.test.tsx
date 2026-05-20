@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MatterDetailLayout } from "@/components/projects/matter-detail-layout";
 import { SidebarCollapseToggle } from "@/components/projects/sidebar-collapse-toggle";
@@ -19,11 +19,15 @@ const localStorageMock = (() => {
   };
 })();
 
-Object.defineProperty(window, "localStorage", { value: localStorageMock });
+Object.defineProperty(window, "localStorage", {
+  value: localStorageMock,
+  configurable: true,
+});
 
 describe("MatterDetailLayout", () => {
   beforeEach(() => {
     localStorageMock.clear();
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
@@ -52,12 +56,41 @@ describe("MatterDetailLayout", () => {
       </MatterDetailLayout>
     );
 
+    // defaultCollapsed={true} sets initial state to true; useEffect finds nothing
+    // in localStorage so collapsed stays true — assertion is synchronous
     const layout = screen.getByTestId("matter-detail-layout");
     expect(layout.className).toContain("grid-cols-[0_1fr]");
 
     // When collapsed, the expand toggle should be visible in the main area
     const toggle = screen.getByTestId("sidebar-collapse-toggle");
     expect(toggle).toHaveAttribute("aria-label", "Expand sidebar");
+  });
+
+  it("toggles sidebar and persists to localStorage", async () => {
+    const user = userEvent.setup();
+    render(
+      <MatterDetailLayout sidebar={<div>Sidebar</div>}>
+        <div>Main</div>
+      </MatterDetailLayout>
+    );
+
+    // Initially expanded (defaultCollapsed defaults to false)
+    const layout = screen.getByTestId("matter-detail-layout");
+    expect(layout.className).toContain("grid-cols-[var(--sidebar-width)_1fr]");
+
+    // Click collapse toggle
+    const toggle = screen.getByTestId("sidebar-collapse-toggle");
+    expect(toggle).toHaveAttribute("aria-label", "Collapse sidebar");
+    await user.click(toggle);
+
+    // Layout should now be collapsed
+    expect(layout.className).toContain("grid-cols-[0_1fr]");
+
+    // localStorage should be updated
+    expect(localStorageMock.setItem).toHaveBeenCalledWith(
+      "kazi-matter-sidebar-collapsed",
+      "true"
+    );
   });
 });
 

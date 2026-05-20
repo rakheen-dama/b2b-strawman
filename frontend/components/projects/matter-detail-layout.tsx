@@ -1,10 +1,20 @@
 "use client";
 
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useCallback, useSyncExternalStore, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { SidebarCollapseToggle } from "@/components/projects/sidebar-collapse-toggle";
 
 const STORAGE_KEY = "kazi-matter-sidebar-collapsed";
+
+function readCollapsed(fallback: boolean): boolean {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored !== null) return stored === "true";
+  } catch {
+    // localStorage unavailable — keep fallback
+  }
+  return fallback;
+}
 
 interface MatterDetailLayoutProps {
   sidebar: ReactNode;
@@ -17,27 +27,35 @@ export function MatterDetailLayout({
   children,
   defaultCollapsed = false,
 }: MatterDetailLayoutProps) {
-  const [collapsed, setCollapsed] = useState(() => {
-    if (typeof window === "undefined") return defaultCollapsed;
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored !== null) return stored === "true";
-    } catch {
-      // localStorage unavailable (private mode) — keep default
-    }
-    return defaultCollapsed;
-  });
+  // Use a ref to hold the latest snapshot so the subscribe callback can notify React
+  const listenerRef = useRef<(() => void) | null>(null);
+
+  const subscribe = useCallback((onStoreChange: () => void) => {
+    listenerRef.current = onStoreChange;
+    return () => { listenerRef.current = null; };
+  }, []);
+
+  const getSnapshot = useCallback(
+    () => readCollapsed(defaultCollapsed),
+    [defaultCollapsed]
+  );
+
+  const getServerSnapshot = useCallback(
+    () => defaultCollapsed,
+    [defaultCollapsed]
+  );
+
+  const collapsed = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   function handleToggle() {
-    setCollapsed((prev) => {
-      const next = !prev;
-      try {
-        localStorage.setItem(STORAGE_KEY, String(next));
-      } catch {
-        // localStorage unavailable — ignore
-      }
-      return next;
-    });
+    const next = !collapsed;
+    try {
+      localStorage.setItem(STORAGE_KEY, String(next));
+    } catch {
+      // localStorage unavailable — ignore
+    }
+    // Notify useSyncExternalStore to re-read the snapshot
+    listenerRef.current?.();
   }
 
   return (
@@ -51,7 +69,12 @@ export function MatterDetailLayout({
       )}
     >
       {/* Sidebar slot */}
-      <div className="overflow-y-auto overflow-x-hidden border-r border-slate-200 dark:border-slate-800">
+      <div
+        className={cn(
+          "overflow-y-auto overflow-x-hidden",
+          !collapsed && "border-r border-slate-200 dark:border-slate-800"
+        )}
+      >
         {!collapsed && (
           <div className="flex justify-end p-2">
             <SidebarCollapseToggle collapsed={false} onToggle={handleToggle} />

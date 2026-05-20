@@ -65,15 +65,9 @@ import {
 } from "@/lib/api/information-requests";
 import { RequestList } from "@/components/information-requests/request-list";
 import { CreateRequestDialog } from "@/components/information-requests/create-request-dialog";
-import {
-  fetchProjectSetupStatus,
-  fetchProjectUnbilledSummary,
-  fetchTemplateReadiness,
-} from "@/lib/api/setup-status";
+import { fetchProjectSetupStatus } from "@/lib/api/setup-status";
 import type {
   ProjectSetupStatus,
-  UnbilledTimeSummary,
-  TemplateReadiness,
   FicaStatus,
 } from "@/lib/types";
 import type { SetupStep } from "@/components/setup/types";
@@ -123,17 +117,8 @@ export default async function ProjectDetailPage({
 
   // Setup guidance data (Epic 112A)
   let setupStatus: ProjectSetupStatus | null = null;
-  let unbilledSummary: UnbilledTimeSummary | null = null;
-  let templateReadiness: TemplateReadiness[] = [];
   try {
-    const [setupRes, unbilledRes, templateRes] = await Promise.all([
-      fetchProjectSetupStatus(id),
-      fetchProjectUnbilledSummary(id),
-      fetchTemplateReadiness("PROJECT", id),
-    ]);
-    setupStatus = setupRes;
-    unbilledSummary = unbilledRes;
-    templateReadiness = templateRes;
+    setupStatus = await fetchProjectSetupStatus(id);
   } catch {
     // Non-fatal: setup guidance cards will not render if fetch fails
   }
@@ -590,15 +575,15 @@ export default async function ProjectDetailPage({
               customerId={customers.length > 0 ? customers[0].id : null}
               canManage={canManage}
               isAdmin={isAdmin}
-              tasks={tasks}
               slug={slug}
               setupStatus={setupStatus}
               setupSteps={setupSteps}
-              unbilledSummary={unbilledSummary}
-              templateReadiness={templateReadiness}
               ficaStatus={ficaStatus}
               retentionClockStartedAt={project.retentionClockStartedAt}
               retentionEndsOn={project.retentionEndsOn}
+              trustEnabled={false} // TODO: derive from org module flags
+              disbursementsEnabled={false} // TODO: derive from org module flags
+              projectDueDate={project.dueDate ?? null}
             />
           }
           documentsPanel={

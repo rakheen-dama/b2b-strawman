@@ -60,7 +60,7 @@ export function MatterDetailLayout({
       {/* Sidebar slot — hidden below lg */}
       <div
         className={cn(
-          "hidden overflow-hidden overflow-y-auto lg:block",
+          "hidden overflow-x-hidden overflow-y-auto lg:block",
           !collapsed && "border-r border-slate-200 dark:border-slate-800"
         )}
         aria-hidden={collapsed}

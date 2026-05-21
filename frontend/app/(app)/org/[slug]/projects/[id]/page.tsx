@@ -423,22 +423,6 @@ export default async function ProjectDetailPage({
           allTags={allTags}
         />
       }
-      mobileSidebar={
-        <MatterSidebar
-          project={project}
-          customers={customers}
-          slug={slug}
-          canEdit={canEdit}
-          canManage={canManage}
-          isAdmin={isAdmin}
-          isOwner={isOwner}
-          fieldDefinitions={projectFieldDefs}
-          fieldGroups={projectFieldGroups}
-          groupMembers={projectGroupMembers}
-          projectTags={projectTags}
-          allTags={allTags}
-        />
-      }
     >
       <div className="space-y-8 p-4 lg:p-6">
         {/* Archived banner (208.11) — above breadcrumb row */}

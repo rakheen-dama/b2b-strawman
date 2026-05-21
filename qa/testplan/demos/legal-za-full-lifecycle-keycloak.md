@@ -23,7 +23,7 @@ The story is deliberately realistic for an SA general-practice litigation firm: 
 ## Selector Reference (Phase 73 Grouped Tabs)
 
 > **Phase 73 (Epics 532–536) moved the matter detail page to a sidebar + grouped tab layout.**
-> All tab navigation now uses a two-step pattern. Old flat tab selectors are broken.
+> Multi-tab groups (Work, Finance, Compliance) use a two-step pattern: click group → click sub-tab. Single-tab groups (Overview, Customers, Setup) remain one-step selectors. Old flat tab selectors for grouped tabs are broken.
 >
 > **Tab navigation pattern:**
 > - Single-tab groups (Overview, Schedule): one click → `page.getByTestId('tab-group-overview')`

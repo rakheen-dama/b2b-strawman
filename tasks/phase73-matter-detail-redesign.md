@@ -16,7 +16,7 @@ The 21 flat tabs collapse into 6 logical groups with dropdown sub-navigation. Cu
 | 533 | Grouped Tab Bar | Frontend | -- | M | 533A, 533B | **Done** — 533A (PR #1341), 533B (PR #1342) |
 | 534 | Overview Tab Redesign | Frontend | 532 | M | 534A | **Done** (PR #1343) |
 | 535 | Action Button Relocation | Frontend | 532 | M | 535A | **Done** (PR #1344) |
-| 536 | Responsive Behaviour + Polish | Frontend | 532, 533 | M | 536A | |
+| 536 | Responsive Behaviour + Polish | Frontend | 532, 533 | M | 536A | **Done** (PR #1345) |
 | 537 | QA Testplan Updates | Frontend | 532-536 | S | 537A | |
 
 ## Dependency Graph
@@ -71,7 +71,7 @@ The 21 flat tabs collapse into 6 logical groups with dropdown sub-navigation. Cu
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 3a | Epic 536 | 536A | Sheet on mobile, collapse transitions, dark mode, edge-case testing. Depends on all layout and content slices. |
+| 3a | Epic 536 | 536A | Sheet on mobile, collapse transitions, dark mode, edge-case testing. Depends on all layout and content slices. | **Done** (PR #1345) |
 
 ### Stage 4: QA (after Stage 3)
 
@@ -375,7 +375,7 @@ Stage 4:  [537A]                                   <- QA testplan (after all abo
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **536A** | 536.1-536.6 | Sheet trigger for mobile sidebar, responsive breakpoint handling, collapse/expand transition animation, dark mode verification, edge-case styling fixes, Playwright viewport tests (~4 tests) | |
+| **536A** | 536.1-536.6 | Sheet trigger for mobile sidebar, responsive breakpoint handling, collapse/expand transition animation, dark mode verification, edge-case styling fixes, Playwright viewport tests (~4 tests) | **Done** (PR #1345) |
 
 ### Tasks
 

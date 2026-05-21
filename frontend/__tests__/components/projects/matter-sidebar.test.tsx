@@ -121,9 +121,25 @@ describe("MatterSidebar", () => {
     expect(link.closest("a")).toHaveAttribute("href", "/org/test-org/customers/cust-1");
   });
 
-  it("renders custom fields section", () => {
-    render(<MatterSidebar {...defaultProps} />);
+  it("renders custom fields section when field definitions exist", () => {
+    render(
+      <MatterSidebar
+        {...defaultProps}
+        fieldDefinitions={[{ id: "fd-1", slug: "matter-type", label: "Matter Type" } as never]}
+      />
+    );
     expect(screen.getByTestId("custom-field-section")).toBeInTheDocument();
+  });
+
+  it("hides custom fields section when no definitions, groups, or applied groups", () => {
+    render(
+      <MatterSidebar
+        {...defaultProps}
+        fieldDefinitions={[]}
+        fieldGroups={[]}
+      />
+    );
+    expect(screen.queryByTestId("custom-field-section")).not.toBeInTheDocument();
   });
 
   it("renders tags section", () => {

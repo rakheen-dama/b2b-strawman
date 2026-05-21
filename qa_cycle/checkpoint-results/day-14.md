@@ -1,69 +1,62 @@
-# Day 14 Checkpoint Results — Accounting ZA 90-Day Lifecycle (Keycloak)
+# Day 14 — Firm onboards Moroka Family Trust (isolation setup) [FIRM]
 
-**Date**: 2026-05-15
-**Branch**: `bugfix_cycle_2026-05-14`
-**Stack**: Keycloak dev stack (frontend :3000, backend :8080, KC :8180)
-**Agent**: QA Agent (Opus 4.6)
-**Actor**: Bob Ndlovu (Admin)
-**Engagement**: Kgosi Holdings — FY2025/26 Year-End Pack (ID: 388d5104-7789-4ad6-bb6c-6d045e9663f3)
+**Date**: 2026-05-21
+**Actor**: Thandi Mathebula (Owner)
+**Stack**: Keycloak dev stack (frontend :3000, backend :8080, gateway :8443)
+**Purpose**: Create Moroka Family Trust client + Deceased Estate matter + seed data for Day 15 isolation check.
 
 ---
 
-## Scenario
+## Phase A: Create Moroka Family Trust client
 
-> **14.1** Budget tab on year-end pack: set budget to 40 hours, R60,000 → verify burn tracking
+| # | Checkpoint | Result | Evidence |
+|---|-----------|--------|----------|
+| 14.1 | Navigate to Clients > + New Client | PASS | Dialog "Create Client — Step 1 of 2" opened |
+| 14.2 | Fill: Type=TRUST, Name=Moroka Family Trust, Email=moroka.portal@example.com, Registration=IT 001234/2024 | PASS | Form fields accepted Trust type with Contact (Peter Moroka), Business Details (Registration Number IT 001234/2024, Entity Type Trust), Country=ZA |
+| 14.3 | Submit > client created | PASS | Redirected to client detail page at `/customers/ae29fada-e2bb-47a6-9b33-212d5b15a5c0`. Status: Active/Prospect. |
+| 14.4 | Run Conflict Check > CLEAR | PASS | "No Conflict" with green checkmark. Checked "Moroka Family Trust" at 2026/05/21 20:18:45. History(2). |
 
-## Pre-conditions
+**Note on 14.2**: Scenario mentions "Beneficial owners: add 2" — the Create Client dialog does not have a beneficial owners field. This would need to be added post-creation if supported. Not a blocker for isolation setup.
 
-- Logged in as Bob Ndlovu (bob@thornton-test.local, Admin)
-- Year-End Pack engagement exists with 3.0h logged (2.0h Thandi + 1.0h Bob) and R3,850 unbilled
-- No budget previously configured (Overview showed "Budget: --", Budget tab showed "No budget configured")
+## Phase B: Create Moroka matter
 
----
+| # | Checkpoint | Result | Evidence |
+|---|-----------|--------|----------|
+| 14.5 | On Moroka client detail > + New Matter > select Deceased Estate template | PASS | "New from Template — Select Template" dialog showed 5 templates. Selected "Deceased Estate Administration (9 tasks)". |
+| 14.6 | Fill: Reference=EST-2026-002, Title=Estate Late Peter Moroka | PASS | Form pre-filled Client=Moroka Family Trust. Template description: "Administration of deceased estate from reporting to final distribution. Matter type: ESTATES" |
+| 14.7 | Submit > matter created | PASS | Matter detail page at `/projects/ca96c33f-c365-455d-a6ce-4810657d36e4`. Status: Active. Grouped tab bar (Overview, Work, Finance, Client, Schedule, Activity) rendered. SA Legal — Matter Details field group with promoted fields (Case Number, Court, Opposing Party, etc.). |
 
-## Checkpoint Results
+**Note on 14.5–14.6**: Scenario mentions "Matter type: Estates — Deceased" and "Master's Office: Johannesburg" — the create dialog doesn't have these fields directly. Matter type is implicit from the template selection. Master's Office would be a promoted field on the matter detail page (not in the create dialog). Not a blocker.
 
-| ID | Checkpoint | Result | Evidence |
-|----|-----------|--------|----------|
-| 14.1a | Navigate to Year-End Pack engagement | **PASS** | Clicked engagement from Dashboard Engagement Health table. URL: `/org/thornton-associates/projects/388d5104-7789-4ad6-bb6c-6d045e9663f3`. Title: "Kgosi Holdings — FY2025/26 Year-End Pack", Status: Active. |
-| 14.1b | Budget tab exists and loads | **PASS** | Budget tab visible in tablist. Clicked it. Shows "No budget configured" with "Configure budget" button and description: "Set a budget to track spending against your project plan. Choose between fixed-price or time-and-materials." |
-| 14.1c | Configure budget dialog opens | **PASS** | Clicked "Configure budget". Dialog: "Set Budget -- Configure budget limits for this project. Set hours, amount, or both." Fields: Budget Hours (spinbutton), Budget Amount (spinbutton), Currency (combobox, pre-set to "ZAR -- South African Rand"), Alert Threshold (spinbutton, default 80%), Notes (textbox). |
-| 14.1d | Set budget to 40 hours | **PASS** | Filled Budget Hours = 40. Value confirmed in dialog snapshot. |
-| 14.1e | Set budget to R60,000 | **PASS** | Filled Budget Amount = 60000. Value confirmed in dialog snapshot. Currency: ZAR. |
-| 14.1f | Alert threshold defaults to 80% | **PASS** | Pre-populated at 80%. Help text: "You will be alerted when consumption reaches this percentage (50-100%)." |
-| 14.1g | Save budget | **PASS** | Clicked "Save Budget". Dialog closed. Budget tab re-rendered with burn tracking view (no errors, no spinner stuck). |
-| 14.1h | Verify hours burn tracking | **PASS** | Hours section: Budget=40h, Consumed=3h, Remaining=37h, Used=8%. Status badge: "On Track". Progress bar rendered. |
-| 14.1i | Verify amount burn tracking (ZAR) | **PASS** | Amount section: Budget=R 60 000,00, Consumed=R 3 850,00, Remaining=R 56 150,00, Used=6%. Status badge: "On Track". Progress bar rendered. ZAR formatting correct (space-separated thousands, comma decimal). |
-| 14.1j | Budget status overall | **PASS** | Top-level status: "On Track". Edit and Delete buttons available. |
-| 14.1k | Notes persisted | **PASS** | Displays: "Notes: Year-end pack budget: 40 hours at blended rate for AFS preparation and CIPC filing". Alert threshold: 80%. |
-| 14.1l | Overview tab reflects budget | **PASS** | Switched to Overview tab. Budget summary card now shows "8% used" (was "--"). Setup steps advanced from 3/5 (60%) to 4/5 (80%) -- budget configuration counted as a setup step. Budget widget in sidebar: "8% used", "3.0h consumed", "37.0h remaining". |
-| 14.1m | Activity event recorded | **PASS** | Activity tab shows: "Bob Ndlovu performed budget.created on project_budget" as most recent event. Timestamp correct. |
-| 14.1n | Dashboard budget health | **PASS** | Dashboard Budget Health card: 3 on track (green), 0 at risk, 0 over budget. Year-End Pack row: "Healthy", 3.0h, 0/7 tasks. |
+## Phase C: Seed data on Moroka matter
 
----
+| # | Checkpoint | Result | Evidence |
+|---|-----------|--------|----------|
+| 14.8 | Send info request: Liquidation and Distribution Account Pack > moroka.portal@example.com | PASS | REQ-0002 created. Template: "Liquidation and Distribution Account Pack" (5 items: Executor's Letters of Authority, Death certificate, ID of deceased, L&D account draft, Beneficiary ID documents). Status: Sent. Due: Jun 20, 2026. |
+| 14.9 | Upload/generate one document on Moroka matter | PASS | Generated "Project Summary Report" via Generate Document dropdown. PDF saved to Work > Generated Docs tab (1.2 KB, generated by Thandi Mathebula, May 21 2026). |
+| 14.10 | Record trust deposit R 25,000 against Moroka / EST-2026-002 | PASS | Deposited via matter Finance > Trust tab "Record Deposit" button. Client and matter pre-filled. DEP/2026/002, R 25,000.00. Trust Balance now R 25,000.00 (Funds Held). |
 
-## Summary
+## Moroka Entity IDs (for Day 15 isolation probes)
 
-| Metric | Count |
-|--------|-------|
-| PASS | 14 |
-| FAIL | 0 |
-| PARTIAL | 0 |
-| DEFERRED | 0 |
-| New gaps | 0 |
+| Entity | ID |
+|--------|-----|
+| Client (Moroka Family Trust) | `ae29fada-e2bb-47a6-9b33-212d5b15a5c0` |
+| Matter (Estate Late Peter Moroka / EST-2026-002) | `ca96c33f-c365-455d-a6ce-4810657d36e4` |
+| Info Request (REQ-0002) | `3ac5f213-9ba4-4d54-ab9d-b7026d44d12c` |
+| Generated Document (Project Summary Report) | `1cee3615-4077-4fd1-914b-e6c8d757a98c` |
+| Document (underlying) | `0d888cc0-7545-4867-ba2d-fc13b671412a` |
+| Trust Transaction (DEP/2026/002) | `bd3ec3f8-b989-452f-98b5-e51a41709245` |
 
-## Evidence Files
+## Day 14 Checkpoints Summary
 
-- `qa_cycle/evidence/day-14/budget-configure-dialog.png` -- Set Budget dialog with 40h / R60,000 / ZAR / 80% threshold filled
-- `qa_cycle/evidence/day-14/budget-tracking-configured.png` -- Budget tab showing burn tracking (hours + amount progress bars, On Track status)
+| Checkpoint | Result |
+|-----------|--------|
+| Two clients and two matters exist on the tenant: Sipho (individual, RAF) + Moroka (trust, Estate) | PASS |
+| Moroka has at least: 1 info request, 1 document, 1 trust deposit | PASS |
+| Moroka entity IDs captured for Day 15 probes | PASS |
 
-## Notes
+## Console Errors
+None observed.
 
-- Budget configuration is straightforward -- single dialog with hours, amount, currency, alert threshold, and notes.
-- Burn tracking correctly picks up the 3.0h and R3,850 already logged against this engagement.
-- Hours used (8%) and amount used (6%) differ because the blended hourly rate of logged time (~R1,283/hr weighted average of Thandi R1,500/hr and Bob R850/hr) is lower than the implied budget rate (R60,000 / 40h = R1,500/hr).
-- ZAR formatting throughout is correct (R symbol, space-separated thousands, comma for decimals).
-- The alert threshold (80%) will be relevant for Day 30 automation trigger check in the scenario.
-- One pre-existing cosmetic note: Thandi's Day 12 comment activity still shows literal "project" text -- this is the audit event persisted before OBS-4005 was fixed. Not a new issue; the fix only affects events created after PR #1306.
-
-**Day 14: ALL PASS (14/14)**
+## Gaps Filed
+None. Zero new gaps.

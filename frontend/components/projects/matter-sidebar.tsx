@@ -156,28 +156,32 @@ export function MatterSidebar({
         </div>
       </div>
 
-      {/* (C) Custom Fields */}
-      <div className="space-y-3 border-t border-slate-200 p-4 dark:border-slate-800">
-        <FieldGroupSelector
-          entityType="PROJECT"
-          entityId={project.id}
-          appliedFieldGroups={project.appliedFieldGroups ?? []}
-          slug={slug}
-          canManage={canManage}
-          allGroups={fieldGroups}
-        />
-        <CustomFieldSection
-          entityType="PROJECT"
-          entityId={project.id}
-          customFields={project.customFields ?? {}}
-          appliedFieldGroups={project.appliedFieldGroups ?? []}
-          editable={canEdit}
-          slug={slug}
-          fieldDefinitions={fieldDefinitions}
-          fieldGroups={fieldGroups}
-          groupMembers={groupMembers}
-        />
-      </div>
+      {/* (C) Custom Fields — hidden when no definitions, groups, or applied groups */}
+      {(fieldDefinitions.length > 0 ||
+        fieldGroups.length > 0 ||
+        (project.appliedFieldGroups ?? []).length > 0) && (
+        <div className="space-y-3 border-t border-slate-200 p-4 dark:border-slate-800">
+          <FieldGroupSelector
+            entityType="PROJECT"
+            entityId={project.id}
+            appliedFieldGroups={project.appliedFieldGroups ?? []}
+            slug={slug}
+            canManage={canManage}
+            allGroups={fieldGroups}
+          />
+          <CustomFieldSection
+            entityType="PROJECT"
+            entityId={project.id}
+            customFields={project.customFields ?? {}}
+            appliedFieldGroups={project.appliedFieldGroups ?? []}
+            editable={canEdit}
+            slug={slug}
+            fieldDefinitions={fieldDefinitions}
+            fieldGroups={fieldGroups}
+            groupMembers={groupMembers}
+          />
+        </div>
+      )}
 
       {/* (D) Tags */}
       <div className="space-y-2 border-t border-slate-200 p-4 dark:border-slate-800">

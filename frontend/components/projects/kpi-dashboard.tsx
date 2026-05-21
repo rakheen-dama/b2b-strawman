@@ -220,7 +220,7 @@ export async function KPIDashboard({
       <div
         data-testid="project-health-header"
         className={cn(
-          "bg-card rounded-lg border border-slate-200/60 shadow-sm",
+          "bg-card rounded-lg border border-slate-200/60 shadow-sm dark:border-slate-700/60",
           "border-t-4",
           HEALTH_BAND_COLORS[healthStatus] ?? HEALTH_BAND_COLORS.UNKNOWN
         )}
@@ -254,7 +254,7 @@ export async function KPIDashboard({
       {setupIncomplete && (
         <details
           data-testid="setup-progress-bar"
-          className="group bg-card rounded-lg border border-slate-200/60 shadow-sm"
+          className="group bg-card rounded-lg border border-slate-200/60 shadow-sm dark:border-slate-700/60"
         >
           <summary className="flex cursor-pointer items-center gap-3 px-4 py-3">
             <div className="min-w-0 flex-1">

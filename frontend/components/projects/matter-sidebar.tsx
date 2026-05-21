@@ -204,29 +204,36 @@ export function MatterSidebar({
         data-testid="sidebar-footer"
       >
         <div data-testid="sidebar-lifecycle-action" className="flex w-full flex-col gap-2">
-          {/* MatterClosureAction self-gates: only renders for ACTIVE/COMPLETED with matter_closure module */}
-          <MatterClosureAction
-            slug={slug}
-            projectId={project.id}
-            projectName={project.name}
-            projectStatus={project.status}
-          />
-          {/* MatterReopenAction self-gates: only renders for CLOSED with matter_closure module */}
-          <MatterReopenAction
-            slug={slug}
-            projectId={project.id}
-            projectName={project.name}
-            projectStatus={project.status}
-          />
-          {/* ProjectLifecycleActions: Complete (ACTIVE), Archive (COMPLETED), Restore (ARCHIVED) */}
-          {isAdmin && (
-            <ProjectLifecycleActions
+          {/* ACTIVE with matter_closure module → MatterClosureAction (self-gates internally) */}
+          {project.status === "ACTIVE" && (
+            <MatterClosureAction
               slug={slug}
               projectId={project.id}
               projectName={project.name}
               projectStatus={project.status}
             />
           )}
+          {/* CLOSED → MatterReopenAction (self-gates on module + capability) */}
+          {project.status === "CLOSED" && (
+            <MatterReopenAction
+              slug={slug}
+              projectId={project.id}
+              projectName={project.name}
+              projectStatus={project.status}
+            />
+          )}
+          {/* ACTIVE (Complete when no module), COMPLETED (Archive), ARCHIVED (Restore) */}
+          {(project.status === "ACTIVE" ||
+            project.status === "COMPLETED" ||
+            project.status === "ARCHIVED") &&
+            isAdmin && (
+              <ProjectLifecycleActions
+                slug={slug}
+                projectId={project.id}
+                projectName={project.name}
+                projectStatus={project.status}
+              />
+            )}
         </div>
       </div>
     </div>

@@ -189,11 +189,9 @@ describe("OverflowActionsMenu", () => {
     expect(screen.queryByTestId("generate-document-dropdown")).not.toBeInTheDocument();
   });
 
-  it("shows Generate Statement action (self-gating component always rendered)", () => {
+  it("renders GenerateStatementOfAccountAction (gating delegated to component)", () => {
     // The GenerateStatementOfAccountAction self-gates internally via useOrgProfile.
-    // We verify it's rendered — the component itself handles module/capability gating.
-    mockIsModuleEnabled.mockReturnValue(true);
-    mockHasCapability.mockReturnValue(true);
+    // We verify it's always rendered — the component itself handles module/capability gating.
     render(<OverflowActionsMenu {...defaultProps} />);
     expect(screen.getByTestId("generate-statement-action")).toBeInTheDocument();
   });

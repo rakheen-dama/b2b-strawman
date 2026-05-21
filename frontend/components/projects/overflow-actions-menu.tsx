@@ -67,6 +67,8 @@ export function OverflowActionsMenu({
   const [templateOpen, setTemplateOpen] = useState(false);
   const [proposalOpen, setProposalOpen] = useState(false);
 
+  const [archiveError, setArchiveError] = useState<string | null>(null);
+
   const isArchived = projectStatus === "ARCHIVED";
 
   // Engagement letter gate: canManage + customer linked + customer not offboarded/anonymized
@@ -78,8 +80,12 @@ export function OverflowActionsMenu({
     primaryCustomerLifecycleStatus !== "ANONYMIZED";
 
   function handleArchive() {
+    setArchiveError(null);
     startTransition(async () => {
-      await archiveProject(slug, projectId);
+      const result = await archiveProject(slug, projectId);
+      if (!result.success) {
+        setArchiveError(result.error ?? "Failed to archive.");
+      }
     });
   }
 
@@ -211,6 +217,12 @@ export function OverflowActionsMenu({
           open={deleteOpen}
           onOpenChange={setDeleteOpen}
         />
+      )}
+
+      {archiveError && (
+        <p className="text-xs text-red-600 dark:text-red-400" role="alert">
+          {archiveError}
+        </p>
       )}
     </div>
   );

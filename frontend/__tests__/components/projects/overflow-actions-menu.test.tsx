@@ -151,7 +151,7 @@ describe("OverflowActionsMenu", () => {
     // canEdit = true — Edit should be visible
     const { unmount } = render(<OverflowActionsMenu {...defaultProps} canEdit={true} />);
     await user.click(screen.getByTestId("overflow-actions-trigger"));
-    expect(screen.getByText(/^Edit/)).toBeInTheDocument();
+    expect(screen.getByText(/^Edit Project$/)).toBeInTheDocument();
     unmount();
     cleanup();
 

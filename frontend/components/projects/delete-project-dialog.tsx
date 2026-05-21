@@ -58,7 +58,16 @@ export function DeleteProjectDialog({
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
+    <AlertDialog
+      open={open}
+      onOpenChange={(next) => {
+        if (next) {
+          setError(null);
+          setIsDeleting(false);
+        }
+        setOpen(next);
+      }}
+    >
       {children && <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>}
       <AlertDialogContent className="border-t-4 border-t-red-500">
         <AlertDialogHeader>

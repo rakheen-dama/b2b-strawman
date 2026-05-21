@@ -6,7 +6,7 @@ export type InvoiceStatus = "DRAFT" | "APPROVED" | "SENT" | "PAID" | "VOID";
 
 export type TaxType = "VAT" | "GST" | "SALES_TAX" | "NONE";
 
-export type InvoiceLineType = "TIME" | "EXPENSE" | "RETAINER" | "MANUAL" | "TARIFF" | "FIXED_FEE";
+export type InvoiceLineType = "TIME" | "EXPENSE" | "DISBURSEMENT" | "RETAINER" | "MANUAL" | "TARIFF" | "FIXED_FEE";
 
 export interface InvoiceLineResponse {
   id: string;

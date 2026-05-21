@@ -147,6 +147,91 @@ describe("InvoiceLineTable", () => {
     expect(screen.queryByRole("button", { name: /delete/i })).not.toBeInTheDocument();
   });
 
+  it("renders DISBURSEMENT lines in the table", () => {
+    const disbursementLine: InvoiceLineResponse[] = [
+      {
+        id: "line-disb-1",
+        projectId: "p1",
+        projectName: "Dlamini v RAF",
+        timeEntryId: null,
+        expenseId: null,
+        lineType: "DISBURSEMENT",
+        lineSource: "DISBURSEMENT",
+        description: "Sheriff fees: Sheriff service of summons on RAF",
+        quantity: 1,
+        unitPrice: 1250,
+        amount: 1250,
+        sortOrder: 2,
+        taxRateId: null,
+        taxRateName: null,
+        taxRatePercent: null,
+        taxAmount: null,
+        taxExempt: true,
+        tariffItemId: null,
+      },
+    ];
+
+    render(<InvoiceLineTable lines={disbursementLine} currency="ZAR" editable={false} />);
+
+    expect(screen.getByText("Sheriff fees: Sheriff service of summons on RAF")).toBeInTheDocument();
+    // Amount cell renders ZAR — exact format depends on ICU (polyfill vs Node small-icu)
+    expect(screen.getAllByText(/1[,.\s ]*250/).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("shows Disbursements section header when mixed with TIME lines", () => {
+    const mixedLines: InvoiceLineResponse[] = [
+      {
+        id: "line-time-1",
+        projectId: "p1",
+        projectName: "Dlamini v RAF",
+        timeEntryId: "te-1",
+        expenseId: null,
+        lineType: "TIME",
+        lineSource: null,
+        description: "Consultation with client",
+        quantity: 2,
+        unitPrice: 500,
+        amount: 1000,
+        sortOrder: 0,
+        taxRateId: null,
+        taxRateName: null,
+        taxRatePercent: null,
+        taxAmount: null,
+        taxExempt: false,
+        tariffItemId: null,
+      },
+      {
+        id: "line-disb-2",
+        projectId: "p1",
+        projectName: "Dlamini v RAF",
+        timeEntryId: null,
+        expenseId: null,
+        lineType: "DISBURSEMENT",
+        lineSource: "DISBURSEMENT",
+        description: "Court filing fees",
+        quantity: 1,
+        unitPrice: 800,
+        amount: 800,
+        sortOrder: 1,
+        taxRateId: null,
+        taxRateName: null,
+        taxRatePercent: null,
+        taxAmount: null,
+        taxExempt: true,
+        tariffItemId: null,
+      },
+    ];
+
+    render(<InvoiceLineTable lines={mixedLines} currency="ZAR" editable={false} />);
+
+    // Both section headers should appear when there are multiple groups
+    expect(screen.getByText("Time Entries")).toBeInTheDocument();
+    expect(screen.getByText("Disbursements")).toBeInTheDocument();
+    // Both line descriptions should be visible
+    expect(screen.getByText("Consultation with client")).toBeInTheDocument();
+    expect(screen.getByText("Court filing fees")).toBeInTheDocument();
+  });
+
   it("calls onDeleteLine when delete button is clicked", async () => {
     const user = userEvent.setup();
     const onDeleteLine = vi.fn();

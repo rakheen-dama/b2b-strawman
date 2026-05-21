@@ -30,9 +30,9 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 1 — COMPLETE
-- **Next checkpoint**: Day 2 (Onboard Sipho as client, run conflict check + KYC)
-- **Completed**: Day 0 (all phases), Day 1 (Firm onboarding polish — logo, brand colour, tariffs, trust account)
+- **Day**: 2 — COMPLETE
+- **Next checkpoint**: Day 3 (Create RAF matter, send FICA info request)
+- **Completed**: Day 0 (all phases), Day 1 (Firm onboarding polish — logo, brand colour, tariffs, trust account), Day 2 (Sipho onboarded as client, conflict check CLEAR, KYC skipped — adapter not configured)
 
 ## Stack State
 - Dev Stack: **Running** — all healthy
@@ -52,6 +52,7 @@ For each day-N walk in this cycle:
 |--------|---------|----------|-------|--------|-----|-------|
 | OBS-ENV-01 | Chrome password manager extension blocks form interactions with chrome-extension:// errors | LOW | Env | WORKAROUND | 0 | Use JS form submission via javascript_tool |
 | OBS-ENV-02 | Gateway BFF session persists across browser tab groups; requires gateway restart for user switching | LOW | Env | WORKAROUND | 0 | Restart gateway via svc.sh restart gateway |
+| OBS-201 | KYC Verification not available — no adapter configured, no "Run KYC Verification" button on client detail | LOW | Product | EXPECTED | 2 | Mandate allows KYC gap. Scenario allows skip (checkpoint 2.8). |
 
 ## Log
 
@@ -64,3 +65,4 @@ For each day-N walk in this cycle:
 | 1 | QA | Day 0 Phase D: Team invites (Bob Admin + Carol Member) | PASS (7/7 checkpoints pass — both users invited, KC invitation emails received, both registered and reached dashboard with legal terminology active) |
 | 1 | QA | Day 0 Final Checkpoints: 3 KC users, legal-za profile, no tier gate | PASS (4/4 — all verified via Keycloak Admin API + browser observation) |
 | 1 | QA | Day 1: Firm onboarding polish (logo, brand colour, tariffs, trust account) | PASS (7/7 checkpoints — branding persists, LSSA tariffs pre-seeded 19 items, Section 86 trust account created at R 0.00, zero console errors) |
+| 1 | QA | Day 2: Onboard Sipho as client, conflict check + KYC | PASS (7/10 checkpoints — client created with Individual type + SA Legal fields, conflict check CLEAR, 3 checkpoints SKIPPED: KYC adapter not configured, zero console errors) |

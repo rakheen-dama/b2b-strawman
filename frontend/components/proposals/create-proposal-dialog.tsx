@@ -593,7 +593,7 @@ export function CreateProposalDialog({
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create Proposal"}
+                {isSubmitting ? "Creating..." : <TerminologyText template="Create {Proposal}" />}
               </Button>
             </DialogFooter>
           </form>

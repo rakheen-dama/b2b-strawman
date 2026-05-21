@@ -30,14 +30,14 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 4 — COMPLETE
-- **Next checkpoint**: Day 5 (Firm reviews FICA submission — Bob accepts uploaded documents)
-- **Completed**: Day 0 (all phases), Day 1 (Firm onboarding polish — logo, brand colour, tariffs, trust account), Day 2 (Sipho onboarded as client, conflict check CLEAR, KYC skipped — adapter not configured), Day 3 (RAF matter created RAF-2026-001, FICA info request REQ-0001 sent to sipho.portal@example.com, magic-link email delivered), Day 4 (Sipho portal login via magic-link, 3 FICA documents uploaded and submitted, envelope IN_PROGRESS 3/3 submitted, pending count 0, "Powered by Kazi" footer confirmed, zero console errors, zero new gaps)
+- **Day**: 5 — COMPLETE
+- **Next checkpoint**: Day 7 (Firm drafts + sends proposal / engagement letter — Thandi)
+- **Completed**: Day 0 (all phases), Day 1 (Firm onboarding polish — logo, brand colour, tariffs, trust account), Day 2 (Sipho onboarded as client, conflict check CLEAR, KYC skipped — adapter not configured), Day 3 (RAF matter created RAF-2026-001, FICA info request REQ-0001 sent to sipho.portal@example.com, magic-link email delivered), Day 4 (Sipho portal login via magic-link, 3 FICA documents uploaded and submitted, envelope IN_PROGRESS 3/3 submitted, pending count 0, "Powered by Kazi" footer confirmed, zero console errors, zero new gaps), Day 5 (Bob reviews FICA submission: 3 items accepted sequentially 0/3->1/3->2/3->3/3, envelope auto-transitioned In Progress->Completed, FICA Status Card shows Done + Verified, View request link routes to /information-requests/{id} (OBS-501 PASS), Activity trail shows all accept+submit events, 4 Mailpit emails (3 per-item-accepted + 1 completed), portal spot-check: COMPLETED + 3/3 accepted (OBS-502 PASS), zero console errors, zero new gaps)
 
 ## Stack State
 - Dev Stack: **Running** — all healthy
   - Backend: :8080 (PID 42107)
-  - Gateway: :8443 (PID 42336)
+  - Gateway: :8443 (PID 68644)
   - Frontend: :3000 (PID 42477)
   - Portal: :3002 (PID 42529)
   - Keycloak: :8180 (Docker)
@@ -68,3 +68,4 @@ For each day-N walk in this cycle:
 | 1 | QA | Day 2: Onboard Sipho as client, conflict check + KYC | PASS (7/10 checkpoints — client created with Individual type + SA Legal fields, conflict check CLEAR, 3 checkpoints SKIPPED: KYC adapter not configured, zero console errors) |
 | 1 | QA | Day 3: Create RAF matter, send FICA info request | PASS (14/14 checkpoints — matter RAF-2026-001 created from Litigation (Road Accident Fund -- RAF) template with 9 tasks, grouped tab bar verified (6 groups), SA Legal promoted fields inline, FICA info request REQ-0001 sent via FICA Onboarding Pack template (3 items: ID copy, Proof of residence, Bank statement), portal contact linked, magic-link email to sipho.portal@example.com delivered, zero console errors, zero new gaps) |
 | 1 | QA | Day 4: Sipho first portal login, upload FICA documents | PASS (12/12 checkpoints — magic-link token exchange succeeded at /auth/exchange, redirected to /projects, /home shows 1 pending info request, request detail shows matter context "Dlamini v Road Accident Fund" with 3 upload slots (ID copy, Proof of residence, Bank statement), all 3 PDFs uploaded and submitted per-item, envelope state SENT -> IN_PROGRESS (3/3 submitted), /home pending count dropped to 0, firm branding (navy M logo) rendered, user identity "Sipho Dlamini" displayed, sidebar uses legal-za terminology (Matters, Fee Notes, Engagement Letters), footer reads "Powered by Kazi" (OBS-404 confirmed), zero console errors, zero new gaps) |
+| 1 | QA | Day 5: Firm reviews FICA submission (Bob accepts documents) | PASS (8/9 checkpoints — 3 items accepted sequentially (0/3->1/3->2/3->3/3), envelope auto-transitioned In Progress->Completed on 3rd Accept, FICA Status Card shows Done + "Verified May 21, 2026", View request link -> /information-requests/{id} (OBS-501 PASS), Activity trail complete (4 BN events + 5 SD events), 4 Mailpit emails (3x per-item-accepted + 1x envelope-completed), portal spot-check COMPLETED + 3/3 accepted (OBS-502 PASS), 1 PARTIAL: Download handler wired but S3 content not available (test tooling artifact, not product bug), zero console errors, zero new gaps) |

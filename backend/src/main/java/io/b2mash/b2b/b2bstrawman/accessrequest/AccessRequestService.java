@@ -41,7 +41,7 @@ public class AccessRequestService {
       EmailDomainValidator emailDomainValidator,
       PasswordEncoder passwordEncoder,
       Optional<JavaMailSender> mailSender,
-      @Value("${docteams.email.sender-address:noreply@docteams.app}") String senderAddress,
+      @Value("${docteams.email.sender-address:noreply@kazi.app}") String senderAddress,
       @Value("${docteams.app.product-name:Kazi}") String productName) {
     this.accessRequestRepository = accessRequestRepository;
     this.configProperties = configProperties;

@@ -42,8 +42,7 @@ class SendGridEmailProviderTest {
     when(mockSendGrid.api(any(Request.class))).thenReturn(mockResponse);
 
     // Use package-private factory constructor
-    provider =
-        new SendGridEmailProvider(secretStore, "noreply@docteams.app", apiKey -> mockSendGrid);
+    provider = new SendGridEmailProvider(secretStore, "noreply@kazi.app", apiKey -> mockSendGrid);
   }
 
   @Test

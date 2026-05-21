@@ -254,7 +254,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **5.1** Navigate to Sipho's litigation matter detail page
 - [ ] **5.2** Verify all promoted fields visible inline at top (matter_type, case_number, court_name)
-- [ ] **5.3** Verify Tasks tab, Time tab, Documents tab, Comments tab, Activity tab all load without errors
+- [ ] **5.3** Verify grouped tab bar renders and all key tabs load without errors: click **Work** group → **Tasks** sub-tab loads; click **Finance** group → **Time** sub-tab loads; click **Work** group → **Documents** sub-tab loads; click **Client** group → **Client Comments** sub-tab loads; click **Activity** group → **Activity** sub-tab loads
 - [ ] **5.4** 📸 **Screenshot**: Matter detail page with promoted fields + terminology + tabs visible
 
 #### Phase 67 — Disbursements (Epics 486–488)
@@ -268,7 +268,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **5.9** As Bob: create a **deeds-office fee disbursement** (`TRUST_ACCOUNT`): amount R1,250.00, description "Deeds office search fee", category = DEEDS_OFFICE_FEE; in the trust-link slot select an approved `DISBURSEMENT_PAYMENT` trust transaction → submit → status `SUBMITTED`
 - [ ] **5.10** As Thandi (Owner): navigate to the trust-linked disbursement detail → click **Approve** → status transitions to `APPROVED` (owner has `APPROVE_TRUST_PAYMENT`)
 - [ ] **5.11** As Bob: approve the sheriff-fee (office-account) disbursement → status transitions to `APPROVED`
-- [ ] **5.12** Navigate to Sipho's matter detail → Disbursements tab (`data-testid="project-disbursements-tab"`) → verify unbilled summary shows **"Unbilled Disbursements: R2,000.00"** (sheriff + deeds office combined)
+- [ ] **5.12** Navigate to Sipho's matter detail → click **Finance** group tab → click **Disbursements** sub-tab → verify unbilled summary shows **"Unbilled Disbursements: R2,000.00"** (sheriff + deeds office combined) (`data-testid="project-disbursements-tab"` is the content panel, still valid)
 - [ ] **5.13** Verify terminology throughout is **Disbursement** (never "Expense")
 - [ ] **5.14** 📸 **Screenshot**: Disbursement list view with mixed statuses + unbilled summary visible on matter detail
 
@@ -366,7 +366,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **23.2** Navigate to **Court Calendar**
 - [ ] **23.3** Create court event: Matter = RAF claim, Type = "Case Management Conference", Date = Day 45 from today, Court = "Gauteng High Court"
 - [ ] **23.4** Verify event appears on the court calendar view
-- [ ] **23.5** Verify the event also appears on the matter detail Activity tab
+- [ ] **23.5** Verify the event also appears on the matter detail Activity group → Activity sub-tab
 - [ ] **23.6** 📸 **Screenshot**: Court calendar with the RAF event highlighted
 
 ### Days 24–35 — RAF claim work
@@ -397,7 +397,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Thandi (Owner) or Bob (Admin).
 
-- [ ] **30.1** Navigate to the **oldest active matter** (Sipho's litigation) → open **Statements** tab (`data-testid="project-statements-tab"` — rendered by `project-statements-tab.tsx`)
+- [ ] **30.1** Navigate to the **oldest active matter** (Sipho's litigation) → click **Finance** group tab → click **Statements** sub-tab (`data-testid="project-statements-tab"` — content panel, still valid)
 - [ ] **30.2** Click **"Generate Statement of Account"** → dialog opens (`data-testid="statement-of-account-dialog"`)
 - [ ] **30.3** Fill period: start = matter-opened date (Day 3), end = today (Day 30) → click **Generate**
 - [ ] **30.4** Preview pane (`data-testid="statement-preview-container"`) renders HTML with: fees section (time entries from Days 4–7), disbursements section (sheriff fee + deeds-office fee from Day 5), trust activity section, and summary totals block
@@ -475,7 +475,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Thandi (Owner — has `CLOSE_MATTER` capability).
 
-- [ ] **75.2** Navigate to the target matter detail → click **"Close Matter"** action (capability-gated — rendered by `matter-closure-action.tsx`)
+- [ ] **75.2** Navigate to the target matter detail → locate the sidebar footer on the left sidebar → click **"Close Matter"** action (`data-testid="sidebar-lifecycle-action"` wraps the action; capability-gated — rendered by `matter-closure-action.tsx`)
 - [ ] **75.3** Close Matter dialog opens (`data-testid="matter-closure-dialog"`) → **Step 1 — Gate Report** (`data-testid="matter-closure-step-1"`) shows all 9 gates as **green/pass** (trust, disbursements, invoices, court-calendar, prescriptions, tasks, info-requests, acceptances + 9th per arch)
 - [ ] **75.4** Click **Continue** (`data-testid="matter-closure-next-btn"`) → advances to **Step 2 — Close form** (`data-testid="matter-closure-step-2"`)
 - [ ] **75.5** Reason select (`data-testid="matter-closure-reason-select"`) defaults to **CONCLUDED** → leave
@@ -531,7 +531,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ### Day 88 — 📸 Activity feed wow moment
 
-- [ ] **88.1** Navigate to Moroka estate matter → Activity tab
+- [ ] **88.1** Navigate to Moroka estate matter → click **Activity** group tab → click **Activity** sub-tab
 - [ ] **88.2** Verify full 90-day activity history renders (matter created, tasks completed, time entries, documents, comments, fee notes, payments)
 - [ ] **88.3** 📸 **Screenshot**: 90-day activity feed for estate matter
 

@@ -261,7 +261,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **10.1** Bob uploads bank statements to bookkeeping engagement documents
 - [ ] **12.1** Thandi comments on year-end pack with @Bob: "Need FS draft by day 30"
 - [ ] **13.1** Bob acknowledges with comment + 1.0 hour log: "FS structure review"
-- [ ] **14.1** Budget tab on year-end pack: set budget to 40 hours, R60,000 → verify burn tracking
+- [ ] **14.1** Navigate to year-end pack → click **Finance** group tab → click **Budget** sub-tab: set budget to 40 hours, R60,000 → verify burn tracking
 
 ---
 
@@ -312,7 +312,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ### Day 36 — First invoice (Kgosi bookkeeping)
 
-- [ ] **36.1** Navigate to Kgosi → Monthly Bookkeeping engagement → Billing tab
+- [ ] **36.1** Navigate to Kgosi → Monthly Bookkeeping engagement → click **Finance** group tab → click **Financials** sub-tab
 - [ ] **36.2** Create invoice from unbilled time entries
 - [ ] **36.3** Verify line items show date, member, description, hours, rate, amount
 - [ ] **36.4** Verify VAT 15% calculation correct

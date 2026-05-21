@@ -19,7 +19,11 @@ interface DeleteProjectDialogProps {
   slug: string;
   projectId: string;
   projectName: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  /** Controlled mode: external open state */
+  open?: boolean;
+  /** Controlled mode: external open-state setter */
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function DeleteProjectDialog({
@@ -27,7 +31,12 @@ export function DeleteProjectDialog({
   projectId,
   projectName,
   children,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: DeleteProjectDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = controlledOnOpenChange ?? setInternalOpen;
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,8 +58,8 @@ export function DeleteProjectDialog({
   }
 
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
+    <AlertDialog open={open} onOpenChange={setOpen}>
+      {children && <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>}
       <AlertDialogContent className="border-t-4 border-t-red-500">
         <AlertDialogHeader>
           <div className="flex justify-center">

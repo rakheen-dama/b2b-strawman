@@ -32,16 +32,28 @@ import { useTerminology } from "@/lib/terminology";
 interface EditProjectDialogProps {
   project: Project;
   slug: string;
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  /** Controlled mode: external open state */
+  open?: boolean;
+  /** Controlled mode: external open-state setter */
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function EditProjectDialog({ project, slug, children }: EditProjectDialogProps) {
+export function EditProjectDialog({
+  project,
+  slug,
+  children,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
+}: EditProjectDialogProps) {
   const { t } = useTerminology();
   const referencePlaceholder =
     t("project.referencePlaceholder") === "project.referencePlaceholder"
       ? "e.g. PRJ-2026-001"
       : t("project.referencePlaceholder");
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = controlledOnOpenChange ?? setInternalOpen;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -113,7 +125,7 @@ export function EditProjectDialog({ project, slug, children }: EditProjectDialog
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{`Edit ${t("Project")}`}</DialogTitle>

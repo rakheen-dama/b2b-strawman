@@ -57,7 +57,7 @@ const FEE_MODEL_LABELS: Record<FeeModel, string> = {
 interface CreateProposalDialogProps {
   slug: string;
   customers: Array<{ id: string; name: string; email: string }>;
-  children: React.ReactNode;
+  children?: React.ReactNode;
   /**
    * When provided, pre-selects the customer and hides / disables the
    * customer combobox. Used by the matter-level "+ New Engagement Letter"
@@ -70,6 +70,10 @@ interface CreateProposalDialogProps {
    * engagement letters.
    */
   defaultFeeModel?: FeeModel;
+  /** Controlled mode: external open state */
+  open?: boolean;
+  /** Controlled mode: external open-state setter */
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function CreateProposalDialog({
@@ -78,9 +82,13 @@ export function CreateProposalDialog({
   children,
   defaultCustomerId,
   defaultFeeModel,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: CreateProposalDialogProps) {
   const router = useRouter();
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = controlledOnOpenChange ?? setInternalOpen;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [customerPopoverOpen, setCustomerPopoverOpen] = useState(false);
@@ -194,7 +202,7 @@ export function CreateProposalDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>

@@ -608,7 +608,7 @@
 | 534 | Overview Tab Redesign | Frontend | 532 | M | 534A | **Done** (PR #1343) |
 | 535 | Action Button Relocation | Frontend | 532 | M | 535A | **Done** (PR #1344) |
 | 536 | Responsive Behaviour + Polish | Frontend | 532, 533 | M | 536A | **Done** (PR #1345) |
-| 537 | QA Testplan Updates | Frontend | 532-536 | S | 537A | |
+| 537 | QA Testplan Updates | Frontend | 532-536 | S | 537A | **Done** (PR #1346) |
 
 
 ---

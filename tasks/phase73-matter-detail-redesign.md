@@ -17,7 +17,7 @@ The 21 flat tabs collapse into 6 logical groups with dropdown sub-navigation. Cu
 | 534 | Overview Tab Redesign | Frontend | 532 | M | 534A | **Done** (PR #1343) |
 | 535 | Action Button Relocation | Frontend | 532 | M | 535A | **Done** (PR #1344) |
 | 536 | Responsive Behaviour + Polish | Frontend | 532, 533 | M | 536A | **Done** (PR #1345) |
-| 537 | QA Testplan Updates | Frontend | 532-536 | S | 537A | |
+| 537 | QA Testplan Updates | Frontend | 532-536 | S | 537A | **Done** (PR #1346) |
 
 ## Dependency Graph
 
@@ -77,7 +77,7 @@ The 21 flat tabs collapse into 6 logical groups with dropdown sub-navigation. Cu
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 4a | Epic 537 | 537A | Migrate all QA lifecycle scripts to grouped tab selectors. Re-capture screenshot baselines. Depends on all prior slices. |
+| 4a | Epic 537 | 537A | Migrate all QA lifecycle scripts to grouped tab selectors. Re-capture screenshot baselines. Depends on all prior slices. | **Done** (PR #1346) |
 
 ### Timeline
 
@@ -429,7 +429,7 @@ Stage 4:  [537A]                                   <- QA testplan (after all abo
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **537A** | 537.1-537.5 | Update 6 QA lifecycle scripts, migrate Playwright selectors, update action button locators, re-capture screenshot baselines, verification pass | |
+| **537A** | 537.1-537.5 | Update 6 QA lifecycle scripts, migrate Playwright selectors, update action button locators, re-capture screenshot baselines, verification pass | **Done** (PR #1346) |
 
 ### Tasks
 

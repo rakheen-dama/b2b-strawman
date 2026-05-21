@@ -20,6 +20,30 @@ The story is deliberately realistic for an SA general-practice litigation firm: 
 
 ---
 
+## Selector Reference (Phase 73 Grouped Tabs)
+
+> **Phase 73 (Epics 532–536) moved the matter detail page to a sidebar + grouped tab layout.**
+> All tab navigation now uses a two-step pattern. Old flat tab selectors are broken.
+>
+> **Tab navigation pattern:**
+> - Single-tab groups (Overview, Schedule): one click → `page.getByTestId('tab-group-overview')`
+> - Multi-tab groups (Work, Finance, Client, Activity): two clicks:
+>   1. `page.getByTestId('tab-group-finance').click()` — opens dropdown
+>   2. `page.getByTestId('tab-item-time').click()` — selects sub-tab
+>
+> **Group → Sub-tab mapping:**
+> - Work: tasks, documents, generated, staffing
+> - Finance: time, expenses, disbursements, budget, rates, financials, statements, trust
+> - Client: customers, requests, customer-comments, adverse-parties
+> - Activity: activity, audit
+>
+> **Action button relocation:**
+> - Close Matter / Complete: `data-testid="sidebar-lifecycle-action"` in left sidebar footer
+> - Generate Document: standalone button before the `data-testid="overflow-actions-trigger"` button
+> - Edit/Delete/Archive/Template: inside overflow menu (`data-testid="overflow-actions-menu"`)
+
+---
+
 ## Driver compatibility — `/qa-cycle-kc` shims
 
 `/qa-cycle-kc` is authored around the firm-side Keycloak OIDC flow. This script exercises **both** firm auth (Keycloak redirect) and portal auth (magic-link + portal JWT). The QA agent MUST apply the shims below when a day is tagged `[PORTAL]`:
@@ -242,9 +266,9 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
   - Case number: (blank at intake; populated later)
   - Primary attorney: Bob Ndlovu
 - [ ] **3.4** Submit → matter created, redirected to matter detail
-- [ ] **3.5** Verify matter sidebar tabs include the canonical legal-za set: **Overview, Documents, Members, Clients, Tasks, Time, Expenses, Fee Estimate, Financials, Staffing, Rates, Generated Docs, Requests, Client Comments, Court Dates, Adverse Parties, Trust, Disbursements, Statements, Activity**. Note: tab is "Fee Estimate" (legal-za term for matter-level budget/planning) — NOT "Fee Notes" (which is the legal-za term for invoices, surfaced under the Fee Notes module, not as a per-matter tab). Matter-level audit history is surfaced via the **Activity** tab; org-wide audit log lives under **Settings > Audit Log** (per OBS-302 triage — there is no per-matter "Audit" tab in this product).
+- [ ] **3.5** Verify matter detail page shows the new grouped tab bar (`data-testid="grouped-tab-bar"`) with 6 groups: **Overview** (standalone), **Work** (Tasks, Documents, Generated Docs, Staffing), **Finance** (Time, Expenses, Disbursements, Budget/Fee Estimate, Rates, Financials, Statements, Trust), **Client** (Customers/Clients, Requests/Info Requests, Client Comments, Adverse Parties), **Schedule** (standalone — Court Dates), **Activity** (Activity sub-tab; Audit sub-tab if Team Oversight module enabled). Note: the old flat "Members" tab is replaced by Work > Staffing (`?tab=staffing`). The old "Fee Estimate" tab (legal-za term for budget) is now Finance > Budget (`?tab=budget`). Per OBS-302: no per-matter "Audit" tab in the flat list; matter audit history is in Activity group → Activity sub-tab or (if TEAM_OVERSIGHT enabled) Activity group → Audit sub-tab.
 - [ ] **3.6** Promoted fields (matter_type, court_name, case_number) render inline on Overview tab — **NOT** duplicated in a generic "Custom Fields" section
-- [ ] **3.7** Navigate to **Info Requests** tab on matter → click **+ New Info Request**
+- [ ] **3.7** Navigate to matter detail → click **Client** group tab (`data-testid="tab-group-client"`) → click **Requests** sub-tab (`data-testid="tab-item-requests"`) → click **+ New Info Request**
 - [ ] **3.8** Select template: **FICA Onboarding Pack** (from `legal-za` request pack)
 - [ ] **3.9** Addressee: **Sipho Dlamini** (portal contact auto-populated from client record)
 - [ ] **3.10** Request items pre-filled from template: ID copy, Proof of residence (≤ 3 months), Bank statement (≤ 3 months)
@@ -302,7 +326,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 **Actor**: Bob Ndlovu
 
-- [ ] **5.1** Navigate to matter RAF-2026-001 → Info Requests tab (matter detail uses `?tab=requests` query param, not segment routes)
+- [ ] **5.1** Navigate to matter RAF-2026-001 → click **Client** group tab (`data-testid="tab-group-client"`) → click **Requests** sub-tab (`data-testid="tab-item-requests"`) (URL param: `?tab=requests` — same as before; only the UI navigation changed from flat tab to grouped dropdown)
 - [ ] **5.2** FICA Onboarding Pack row shows envelope status = **In Progress** (per OBS-403: there is no `SUBMITTED` envelope status; firm review is mandatory before closure) with `0/3 accepted` counter; clicking the row link in the table navigates to `/org/{slug}/information-requests/{id}` (NOT `/requests/{id}` — see OBS-501). Reach the request detail page and confirm 3 items render with `Submitted` per-item status and the 3 PDFs (`fica-id.pdf`, `fica-address.pdf`, `fica-bank.pdf`) attached.
 - [ ] **5.3** Verify each per-item **Download** button is operational (no console errors on click; headless Playwright won't persist the file but the handler is wired).
 - [ ] **5.4** Click **Accept** on each item in turn (per-item Accept replaces a separate envelope-level "Mark as Reviewed" — refines OBS-403 lifecycle understanding). Counter advances 0/3 → 1/3 → 2/3 → 3/3 accepted; on the third Accept, envelope status auto-transitions `In Progress → Completed` with a "Completed on …" stamp.
@@ -415,7 +439,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **10.5** Submit → transaction enters approval queue (if dual-approval enabled) OR posts directly depending on trust account config
 - [ ] **10.6** If in approval queue: switch to Bob → navigate to Trust Accounting → Pending Approvals → approve the deposit
 - [ ] **10.7** Trust account balance reflects **R 50,000.00** with Sipho's client ledger card showing +R50,000.00
-- [ ] **10.8** Navigate to matter → **Trust** tab → verify matter-level trust balance = **R 50,000.00**
+- [ ] **10.8** Navigate to matter → click **Finance** group tab (`data-testid="tab-group-finance"`) → click **Trust** sub-tab (`data-testid="tab-item-trust"`) → verify matter-level trust balance = **R 50,000.00**
 - [ ] **10.9** 📸 Optional: `day-10-firm-trust-deposit-recorded.png`
 
 **Day 10 checkpoints**
@@ -570,8 +594,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 > multi-epic legal-vertical phase — out of scope for this cycle. Day 21
 > Phase A is rewritten to drive the actual non-tariff time-entry path.
 
-- [ ] **21.1** Navigate to matter RAF-2026-001 → Tasks tab (Time tab is
-      read-only summary; the canonical `Log Time` CTA is on each task row).
+- [ ] **21.1** Navigate to matter RAF-2026-001 → click **Work** group tab (`data-testid="tab-group-work"`) → click **Tasks** sub-tab (`data-testid="tab-item-tasks"`) (Time tab is read-only summary; the canonical `Log Time` CTA is on each task row).
 - [ ] **21.2** Pick the assigned RAF task "Initial RAF claim assessment &
       instructions" → click **Log Time**. Dialog opens with Duration /
       Date / Description / Billable fields (no tariff dropdown — does
@@ -602,14 +625,14 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 ### Phase B: Disbursement (Phase 67)
 
-- [ ] **21.6** Navigate to **Disbursements** tab (Phase 67 Epic 486) → **+ New Disbursement**
+- [ ] **21.6** Navigate to matter → click **Finance** group tab (`data-testid="tab-group-finance"`) → click **Disbursements** sub-tab (`data-testid="tab-item-disbursements"`) → **+ New Disbursement**
 - [ ] **21.7** Type: **Sheriff's fee**, Amount: **R 1,250.00**, Date: today, Description: "Sheriff service of summons on RAF"
 - [ ] **21.8** Mark as **recoverable** (client-rebillable)
 - [ ] **21.9** Submit → disbursement saved, appears in matter Disbursements tab with status **UNBILLED**
 
 ### Phase C: Court date
 
-- [ ] **21.10** Navigate to matter **Court Calendar** tab → **+ Add Court Date**
+- [ ] **21.10** Navigate to matter → click **Schedule** tab (`data-testid="tab-group-schedule"` — single-tab group, no dropdown) → **+ Add Court Date**
 - [ ] **21.11** Fill:
   - Court: Gauteng Division, Pretoria
   - Date: Day 35 (14 days from today)
@@ -730,7 +753,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] **45.2** Mailpit → verify second magic-link email sent to Sipho
 - [ ] **45.3** Navigate to Trust Accounting → Mathebula Trust — Main → record / import a second deposit of **R 20,000** against Sipho / RAF-2026-001 (describe as "Top-up per engagement letter")
 - [ ] **45.4** Approve (if dual-approval) → client ledger now shows trust balance **R 71,000** (R 50,000 Day 10 + R 1,000 Day 14 OBS-1101 verify deposit + R 20,000 Day 45 top-up). NOTE (cycle 18 amend 2026-04-30): scenario originally said R 70,000 — actual R 71,000 reflects Day 14 cycle-15 R 1,000 OBS-1101 verify carry-over deposit.
-- [ ] **45.5** Matter Trust tab shows balance **R 71,000** (minus any fee-transfer-out if applied — in this script, none yet)
+- [ ] **45.5** Matter Finance > Trust sub-tab shows balance **R 71,000** (navigate: Finance group → Trust sub-tab) (minus any fee-transfer-out if applied — in this script, none yet)
 
 **Day 45 checkpoints**
 - [ ] Second info request dispatched
@@ -774,7 +797,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 ### Phase B: Run matter closure workflow (Phase 67 Epic 489)
 
-- [ ] **60.4** Navigate to matter RAF-2026-001 → **Close Matter**
+- [ ] **60.4** Navigate to matter RAF-2026-001 → locate the sidebar footer on the left sidebar (`data-testid="sidebar-lifecycle-action"`) → click **Close Matter** (lifecycle action button relocated from page header to sidebar footer in Phase 73)
 - [ ] **60.5** Closure dialog Step 1 — gate report renders. Verify all gates GREEN: no unbilled time, no unpaid fee notes, trust balance zero or earmarked, no pending tasks
 - [ ] **60.6** Click **Continue** → Step 2 — Close form
 - [ ] **60.7** Reason: **CONCLUDED** (settlement reached)
@@ -866,7 +889,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 This is the closing-demo wow moment: show the firm's 90-day activity feed on the matter, then swap context to the portal and show Sipho's 90-day activity trail. Side-by-side they tell the same story.
 
-- [ ] **88.1** `[FIRM]` On RAF-2026-001 → Activity tab → full 90-day history renders: matter created, info requests sent/received, time entries, disbursements, fee notes, payments, court date, matter closed, documents generated
+- [ ] **88.1** `[FIRM]` On RAF-2026-001 → click **Activity** group tab (`data-testid="tab-group-activity"`) → click **Activity** sub-tab (`data-testid="tab-item-activity"`) → full 90-day history renders: matter created, info requests sent/received, time entries, disbursements, fee notes, payments, court date, matter closed, documents generated
 - [ ] **88.2** 📸 **Screenshot**: `day-88-firm-activity-feed.png` — firm-side 90-day matter activity
 - [ ] **88.3** Context swap to portal → login as Sipho → activity trail on `/home` or `/profile`
 - [ ] **88.4** Activity trail shows: FICA submit (Day 4), proposal accept (Day 8), first trust balance view (Day 11), fee-note paid (Day 30), second info-req submit (Day 46), SoA download (Day 61)
@@ -930,3 +953,19 @@ This is the closing-demo wow moment: show the firm's 90-day activity feed on the
 - [ ] **E.16** Cycle completed on one clean pass — no dev subagent dispatches mid-loop to fix BLOCKER bugs
 
 **If any checkpoint fails**: log finding to `qa/gap-reports/legal-za-full-lifecycle-{YYYY-MM-DD}.md` using the severity/format defined in the master doc, and let `/qa-cycle-kc` dispatch a fix before re-running the failing step. **Fix PRs that do not pass the test suite gate (E.15) must NOT be merged** — either extend the fix to cover broken tests or revert and re-approach. Isolation-failure findings (E.10) are automatically BLOCKER severity regardless of scope.
+
+---
+
+## Phase 73 Screenshot Baseline Re-Capture
+
+> These baselines must be re-captured after all Phase 73 epic PRs (#1339–#1345) are merged and
+> the E2E stack is running with the new layout. Mark each TODO complete with the filename and
+> date captured.
+
+- [ ] **B.1** `matter-detail-desktop-expanded.png` — Matter detail at 1440px viewport, sidebar expanded, Finance > Time tab visible
+- [ ] **B.2** `matter-detail-desktop-collapsed.png` — Matter detail at 1440px viewport, sidebar collapsed (chevron visible in main area)
+- [ ] **B.3** `matter-detail-mobile-sheet-closed.png` — Matter detail at 375px viewport (iPhone), sidebar Sheet closed, PanelLeft trigger visible
+- [ ] **B.4** `matter-detail-mobile-sheet-open.png` — Matter detail at 375px viewport, sidebar Sheet slid in from left
+- [ ] **B.5** `matter-detail-overview-kpi.png` — Overview tab (KPI Dashboard) with metric cards visible
+- [ ] **B.6** `matter-detail-finance-dropdown-open.png` — Finance group tab with dropdown open, showing all sub-tabs
+- [ ] **B.7** `matter-detail-overflow-menu-open.png` — Overflow actions menu open (MoreHorizontal trigger clicked)

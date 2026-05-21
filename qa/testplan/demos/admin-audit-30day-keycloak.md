@@ -170,7 +170,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **15.11** Navigate to `/org/acme-corp/dashboard` → locate the **Sensitive Events** widget (Epic 509A).
 - [ ] **15.12** Verify the override row appears in the widget's top-5.
 - [ ] **15.13** 📸 **Screenshot** slot **#8**: `phase69-08-dashboard-sensitive-events-widget.png` — dashboard with Sensitive Events widget populated.
-- [ ] **15.14** Navigate to the **per-entity Audit tab** for the closed matter (`/org/acme-corp/projects/{id}` → Audit tab inside `<ClosureHistorySection>`). Confirm the override row surfaces here too.
+- [ ] **15.14** Navigate to the **per-entity Audit tab** for the closed matter (`/org/acme-corp/projects/{id}`) → click **Activity** group tab → click **Audit** sub-tab (if TEAM_OVERSIGHT capability enabled and `audit` sub-tab visible; otherwise look in **Activity** sub-tab for closure history inside `<ClosureHistorySection>`). Confirm the override row surfaces here too.
 - [ ] **15.15** 📸 **Screenshot** slot **#9**: `phase69-09-per-entity-matter-closure-audit.png` — per-entity Matter Closure detail showing override row.
 
 **Day 15 checkpoints**

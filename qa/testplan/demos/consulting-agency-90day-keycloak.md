@@ -254,7 +254,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **5.1** Navigate to project detail → Budget tab
 - [ ] **5.2** Set budget: **120 hours, R120,000 cap** (matches Website Design & Build template default)
 - [ ] **5.3** Verify budget status indicator shows "on track" (~5.0 hours consumed)
-- [ ] **5.4** Verify project detail page shows promoted fields inline at top, the `campaign_type = WEBSITE_BUILD` value is visible, and tabs (Tasks, Time Logs, Documents, Comments, Activity, Budget, Billing) all load
+- [ ] **5.4** Verify project detail page shows `campaign_type = WEBSITE_BUILD` visible in the project sidebar, and grouped tab bar renders all groups: **Work** (Tasks, Documents, Generated Docs, Staffing), **Finance** (Time/Time Logs, Budget/Billing, Rates, Financials, Statements), **Client** (Customers, Requests, Client Comments), **Activity** (Activity)
 - [ ] **5.5** 📸 **Screenshot**: Project detail with budget tab + `campaign_type` field + en-ZA-consulting terminology
 - [ ] **5.6** From BrightCup detail, click **New Project** again → select template **Brand Identity** → Name = "BrightCup — Brand Identity Refresh", `reference_number` = "BC-2026-002"
 - [ ] **5.7** Verify `campaign_type` auto-set to `BRAND_IDENTITY`; budget defaults to **80 hrs / R110,000**
@@ -294,7 +294,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **11.1** Bob logs 2.0 hrs (Time Log) on Ubuntu Social Media: "Monthly strategy call with Sipho"
 - [ ] **12.1** Carol logs 3.0 hrs on Ubuntu Social Media: "Social media posts for March week 2"
 - [ ] **13.1** Carol logs 2.5 hrs on Ubuntu Content Engine: "Email campaign design + copy"
-- [ ] **14.1** 📸 **Creative Brief request wow moment** — On the BrightCup Brand Identity Refresh project (or any active creative project), navigate to project detail → **Requests** tab → click **New Request** → select request pack **`consulting-za-creative-brief`** → assert:
+- [ ] **14.1** 📸 **Creative Brief request wow moment** — On the BrightCup Brand Identity Refresh project (or any active creative project), navigate to project detail → click **Client** group tab → click **Requests** sub-tab (`data-testid="tab-item-requests"`) → click **New Request** → select request pack **`consulting-za-creative-brief`** → assert:
   - All **10 questions** appear in the order shipped by the pack
   - Question titles match: Brand & Company Description, Target Audience, Core Business Goals, Competitive Landscape & Reference Brands, Must-Have Deliverables, Known Constraints or Brand Guidelines, Existing Assets or Content, Tone of Voice Preferences, Key Stakeholders & Decision-Making Process, Launch & Milestone Dates
   - **3 questions are marked required** (Brand & Company Description, Target Audience, Core Business Goals)
@@ -332,7 +332,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **28.1** Carol logs 3.5 hrs on SEO assets
 - [ ] **29.1** Log additional time on Ubuntu Social Media + Content Engine to bring March cycle close to budget cap (push Social Media to ~32 / 40 hrs to set up Day 45 budget-80 trigger)
 - [ ] **30.1** 📸 **Monthly Retainer Report wow moment** — Close the Ubuntu Social Media March cycle:
-  - Navigate to Ubuntu Social Media (Mar 2026) project → **Generate Document** → select template **`monthly-retainer-report`**
+  - Navigate to Ubuntu Social Media (Mar 2026) project → click **Generate Document** button (standalone button in the main area header row, next to the ⋯ overflow button) → select template **`monthly-retainer-report`**
   - Render the PDF preview
   - Assert all four `retainer.*` context variables resolve (no literal `{{...}}` placeholders in the rendered output): `retainer.periodStart` (2026-03-01), `retainer.periodEnd` (2026-03-31), `retainer.hourBank` (40), `retainer.hoursUsed` (~32)
   - Assert `org.name` = "Zolani Creative", `org.documentFooterText` resolves, `customer.name` = "Ubuntu Startup (Pty) Ltd", `project.name` = "Ubuntu Startup — Social Media (Mar 2026)"
@@ -392,7 +392,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ### Day 60 — 📸 Statement of Work wow moment (clauses pre-included)
 
-- [ ] **60.1** Navigate to Ubuntu Apr Social Media project → **Generate Document** → select template **`statement-of-work`**
+- [ ] **60.1** Navigate to Ubuntu Apr Social Media project → click **Generate Document** button (standalone button in header row) → select template **`statement-of-work`**
 - [ ] **60.2** Render the SOW preview / PDF
 - [ ] **60.3** Assert the SOW pre-includes the three required clauses from `requiredSlugs`:
   - **`consulting-payment-terms`** ("Payment Terms (Agency)")
@@ -405,7 +405,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ## Days 61–80 — Engagement Letter, portal, utilization widget
 
-- [ ] **61.1** From BrightCup Brand Identity project → **Generate Document** → select **`engagement-letter`** → assert pre-included clauses include the engagement-letter `requiredSlugs`: `consulting-payment-terms`, `consulting-termination`, `consulting-nda-mutual`
+- [ ] **61.1** From BrightCup Brand Identity project → click **Generate Document** button (standalone in header row) → select **`engagement-letter`** → assert pre-included clauses include the engagement-letter `requiredSlugs`: `consulting-payment-terms`, `consulting-termination`, `consulting-nda-mutual`
 - [ ] **65.1** **Portal**: generate magic link for BrightCup primary contact (Naledi) → verify Mailpit → open in incognito → portal loads with BrightCup's projects, invoices, documents visible
 - [ ] **65.2** Verify portal uses the `en-ZA-consulting` terminology (Clients, Time Logs, Billing Rates) consistently
 - [ ] **70.1** Create third Ubuntu retainer cycle (May) by cloning the template again → repeat the `campaign_type` + `retainer_tier` auto-fill assertion

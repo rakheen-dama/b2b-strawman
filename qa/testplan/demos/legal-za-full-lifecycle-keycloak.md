@@ -505,7 +505,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 ### Phase C: Seed data on Moroka matter (to make isolation check meaningful)
 
 - [ ] **14.8** Send an info request on Moroka matter: template **Liquidation and Distribution Account docs** → addressee = `moroka.portal@example.com`, due Day 30 → Send
-- [ ] **14.9** Upload one internal document to Moroka matter Documents tab (e.g., "Death certificate — Moroka.pdf" — use any test PDF)
+- [ ] **14.9** Upload one internal document to Moroka matter → click **Work** group tab → click **Documents** sub-tab (e.g., "Death certificate — Moroka.pdf" — use any test PDF)
 - [ ] **14.10** Record a trust deposit of R 25,000 against Moroka Trust / EST-2026-002 (either via bank import or manual)
 - [ ] **14.11** Note the Moroka matter ID, client ID, info-request ID, document ID, and trust-transaction ID — record these in the `isolation-probe-ids.txt` scratch file (or note in gap-report appendix). The Day 15 portal probes will target these IDs to prove Sipho cannot reach them.
 
@@ -803,7 +803,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] **60.7** Reason: **CONCLUDED** (settlement reached)
 - [ ] **60.8** Leave **Generate closure letter** checked, and also check **Generate Statement of Account** (Phase 67 Epic 491) if surfaced as a separate flag
 - [ ] **60.9** Click **Confirm Close** → matter status = **CLOSED**
-- [ ] **60.10** Closure letter + Statement of Account documents both attached to matter Documents tab
+- [ ] **60.10** Closure letter + Statement of Account documents both attached to matter **Work** > **Documents** sub-tab
 - [ ] **60.11** Retention policy row inserted with `end_date = today + 5 years` (ADR-249 verify)
 
 **Day 60 checkpoints**

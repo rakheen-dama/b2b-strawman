@@ -251,7 +251,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ### Day 5 — 📸 Project wow moment + budget + Brand Identity project
 
-- [ ] **5.1** Navigate to project detail → Budget tab
+- [ ] **5.1** Navigate to project detail → click **Finance** group tab → click **Budget** sub-tab
 - [ ] **5.2** Set budget: **120 hours, R120,000 cap** (matches Website Design & Build template default)
 - [ ] **5.3** Verify budget status indicator shows "on track" (~5.0 hours consumed)
 - [ ] **5.4** Verify project detail page shows `campaign_type = WEBSITE_BUILD` visible in the project sidebar, and grouped tab bar renders all groups: **Work** (Tasks, Documents, Generated Docs, Staffing), **Finance** (Time/Time Logs, Budget/Billing, Rates, Financials, Statements), **Client** (Customers, Requests, Client Comments), **Activity** (Activity)

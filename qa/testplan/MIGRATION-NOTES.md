@@ -20,7 +20,7 @@ script step that navigates matter detail tabs.
 - 6 grouped tab groups in `GroupedTabBar` (`data-testid="grouped-tab-bar"`)
 - Tab navigation requires two steps for multi-tab groups
 - Primary lifecycle action (Complete/Close/Reopen) in sidebar footer
-- Secondary actions (Generate Document, Edit, Delete, Archive) in overflow menu
+- Secondary actions (Edit, Delete, Archive, Save as Template) in overflow menu; Generate Document is a standalone dropdown button before the overflow trigger
 - Matter metadata in collapsible sidebar
 
 ---

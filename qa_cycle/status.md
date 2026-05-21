@@ -30,9 +30,9 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 3 — COMPLETE
-- **Next checkpoint**: Day 4 (Sipho first portal login, upload FICA documents)
-- **Completed**: Day 0 (all phases), Day 1 (Firm onboarding polish — logo, brand colour, tariffs, trust account), Day 2 (Sipho onboarded as client, conflict check CLEAR, KYC skipped — adapter not configured), Day 3 (RAF matter created RAF-2026-001, FICA info request REQ-0001 sent to sipho.portal@example.com, magic-link email delivered)
+- **Day**: 4 — COMPLETE
+- **Next checkpoint**: Day 5 (Firm reviews FICA submission — Bob accepts uploaded documents)
+- **Completed**: Day 0 (all phases), Day 1 (Firm onboarding polish — logo, brand colour, tariffs, trust account), Day 2 (Sipho onboarded as client, conflict check CLEAR, KYC skipped — adapter not configured), Day 3 (RAF matter created RAF-2026-001, FICA info request REQ-0001 sent to sipho.portal@example.com, magic-link email delivered), Day 4 (Sipho portal login via magic-link, 3 FICA documents uploaded and submitted, envelope IN_PROGRESS 3/3 submitted, pending count 0, "Powered by Kazi" footer confirmed, zero console errors, zero new gaps)
 
 ## Stack State
 - Dev Stack: **Running** — all healthy
@@ -67,3 +67,4 @@ For each day-N walk in this cycle:
 | 1 | QA | Day 1: Firm onboarding polish (logo, brand colour, tariffs, trust account) | PASS (7/7 checkpoints — branding persists, LSSA tariffs pre-seeded 19 items, Section 86 trust account created at R 0.00, zero console errors) |
 | 1 | QA | Day 2: Onboard Sipho as client, conflict check + KYC | PASS (7/10 checkpoints — client created with Individual type + SA Legal fields, conflict check CLEAR, 3 checkpoints SKIPPED: KYC adapter not configured, zero console errors) |
 | 1 | QA | Day 3: Create RAF matter, send FICA info request | PASS (14/14 checkpoints — matter RAF-2026-001 created from Litigation (Road Accident Fund -- RAF) template with 9 tasks, grouped tab bar verified (6 groups), SA Legal promoted fields inline, FICA info request REQ-0001 sent via FICA Onboarding Pack template (3 items: ID copy, Proof of residence, Bank statement), portal contact linked, magic-link email to sipho.portal@example.com delivered, zero console errors, zero new gaps) |
+| 1 | QA | Day 4: Sipho first portal login, upload FICA documents | PASS (12/12 checkpoints — magic-link token exchange succeeded at /auth/exchange, redirected to /projects, /home shows 1 pending info request, request detail shows matter context "Dlamini v Road Accident Fund" with 3 upload slots (ID copy, Proof of residence, Bank statement), all 3 PDFs uploaded and submitted per-item, envelope state SENT -> IN_PROGRESS (3/3 submitted), /home pending count dropped to 0, firm branding (navy M logo) rendered, user identity "Sipho Dlamini" displayed, sidebar uses legal-za terminology (Matters, Fee Notes, Engagement Letters), footer reads "Powered by Kazi" (OBS-404 confirmed), zero console errors, zero new gaps) |

@@ -24,7 +24,7 @@ class SmtpEmailProviderIntegrationTest {
     var mailSender = new JavaMailSenderImpl();
     mailSender.setHost(greenMail.getSmtp().getBindTo());
     mailSender.setPort(greenMail.getSmtp().getPort());
-    provider = new SmtpEmailProvider(mailSender, "test@docteams.app");
+    provider = new SmtpEmailProvider(mailSender, "test@kazi.app");
   }
 
   @Test
@@ -90,7 +90,7 @@ class SmtpEmailProviderIntegrationTest {
     var badMailSender = new JavaMailSenderImpl();
     badMailSender.setHost("unreachable.invalid");
     badMailSender.setPort(9999);
-    var badProvider = new SmtpEmailProvider(badMailSender, "test@docteams.app");
+    var badProvider = new SmtpEmailProvider(badMailSender, "test@kazi.app");
 
     var message =
         new EmailMessage("recipient@example.com", "Test", "<p>test</p>", "test", null, Map.of());

@@ -73,7 +73,7 @@ integration:
 
 docteams:
   email:
-    sender-address: ${EMAIL_SENDER_ADDRESS:noreply@docteams.app}
+    sender-address: ${EMAIL_SENDER_ADDRESS:noreply@kazi.app}
     unsubscribe-secret: ${EMAIL_UNSUBSCRIBE_SECRET:}
     rate-limit:
       smtp: 50

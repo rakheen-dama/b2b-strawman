@@ -92,7 +92,10 @@ export default function ProposalDetailPage() {
         `/portal/api/proposals/${proposalId}/accept`,
         {},
       );
-      setActionMessage({ type: "success", text: result.message });
+      setActionMessage({
+        type: "success",
+        text: `Thank you for accepting this ${t("proposal")}. Your ${t("project")} has been set up.`,
+      });
       setProposal((prev) => (prev ? { ...prev, status: "ACCEPTED" } : prev));
     } catch (err) {
       setActionMessage({

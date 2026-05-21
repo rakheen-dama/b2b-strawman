@@ -30,9 +30,9 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 0 — in progress
-- **Next checkpoint**: Day 0, Phase D (Team invites, checkpoint 0.26)
-- **Completed**: Phase A (Access request + OTP), Phase B (Platform admin approval), Phase C (Owner Keycloak registration)
+- **Day**: 0 — COMPLETE
+- **Next checkpoint**: Day 1 (Firm onboarding polish)
+- **Completed**: Phase A (Access request + OTP), Phase B (Platform admin approval), Phase C (Owner Keycloak registration), Phase D (Team invites — Bob Admin + Carol Member registered)
 
 ## Stack State
 - Dev Stack: **Running** — all healthy
@@ -61,3 +61,5 @@ For each day-N walk in this cycle:
 | 1 | QA | Day 0 Phase A: Access request + OTP verification (thandi@mathebula-test.local) | PASS (7/8 checkpoints pass, 1 PARTIAL due to extension interference) |
 | 1 | QA | Day 0 Phase B: Platform admin approval (padmin approves Mathebula & Partners) | PASS (8/9 checkpoints pass, 0.16 deferred — profile verified indirectly) |
 | 1 | QA | Day 0 Phase C: Owner registration (Thandi registers via KC invite link) | PASS (8/8 checkpoints pass — registration required KC admin API password reset after session conflict) |
+| 1 | QA | Day 0 Phase D: Team invites (Bob Admin + Carol Member) | PASS (7/7 checkpoints pass — both users invited, KC invitation emails received, both registered and reached dashboard with legal terminology active) |
+| 1 | QA | Day 0 Final Checkpoints: 3 KC users, legal-za profile, no tier gate | PASS (4/4 — all verified via Keycloak Admin API + browser observation) |

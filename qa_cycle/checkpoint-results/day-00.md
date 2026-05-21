@@ -3,7 +3,7 @@
 **Date**: 2026-05-21
 **Agent**: QA
 **Stack**: Keycloak dev stack (frontend :3000, backend :8080, gateway :8443, KC :8180, Mailpit :8025)
-**Status**: IN PROGRESS — Phases A-C complete, Phase D pending
+**Status**: COMPLETE — All phases (A-D) complete
 
 ## Environment Notes
 
@@ -52,9 +52,26 @@
 | 0.24 | Legal module nav items visible | PASS | Visible: Matters, Court Calendar, Calendar, My Work, Recurring Schedules, Clients, Finance, Team, AI. "Conflict Check" not visible as a sidebar item (may be accessible via client detail). "Trust Accounting" not visible at sidebar level (may be under Finance). "Fee Notes" terminology will be verified at Day 28. |
 | 0.25 | Screenshot captured | PASS | day-00-firm-dashboard-legal.png — dashboard with legal nav + terminology |
 
-## Phase D: Team Invites — NOT YET EXECUTED
+## Phase D: Team Invites
 
-Checkpoints 0.26 through 0.32 have not been executed yet.
+| ID | Checkpoint | Result | Evidence |
+|----|-----------|--------|----------|
+| 0.26 | Navigate to Team via sidebar Team group | PASS | Clicked Team in sidebar TEAM group. URL: http://localhost:3000/org/mathebula-partners/team. Team page loaded with "Invite a team member" form and Members tab showing Thandi Mathebula as Owner. |
+| 0.27 | Thandi listed as Owner; no "Upgrade to Pro" gate on invite flow | PASS | Thandi Mathebula shown in Members table with Role=Owner. Invite form visible with Email address field, Role dropdown (Member/Admin), and "Send Invite" button. No "Upgrade to Pro", tier gate, or billing upsell visible anywhere on the page. |
+| 0.28 | Invite bob@mathebula-test.local as Admin → Send | PASS | Entered email bob@mathebula-test.local, selected Role=Admin from dropdown, clicked "Send Invite". Success message: "Invitation sent to bob@mathebula-test.local." Counter updated to "2 members (1 pending)". |
+| 0.29 | Invite carol@mathebula-test.local as Member → Send | PASS | Entered email carol@mathebula-test.local, Role=Member (default), clicked "Send Invite". Success message: "Invitation sent to carol@mathebula-test.local." Counter updated to "3 members (2 pending)". |
+| 0.30 | Mailpit → two Keycloak invitation emails arrived | PASS | Mailpit shows 2 new emails: (1) To: bob@mathebula-test.local, Subject: "Invitation to join the Mathebula & Partners organization", From: Kazi noreply@docteams.local. (2) To: carol@mathebula-test.local, same subject. Both contain Keycloak registration links with org-bound tokens. Pending Invitations tab on Team page confirms: carol=Member, bob=Admin, both dated May 21, 2026. |
+| 0.31 | Bob registers via invite link → reaches dashboard → logout | PASS | Restarted gateway to clear BFF session (OBS-ENV-02 workaround). Navigated to Bob's invite link. Keycloak logout page appeared (clearing previous session); clicked Logout. Registration page loaded: "Create an account to join the Mathebula & Partners organization", email pre-filled=bob@mathebula-test.local. Filled First=Bob, Last=Ndlovu, Password=SecureP@ss2 via JS. Submitted. Redirected to /org/mathebula-partners/dashboard. Initials "BN" in top-right. Legal terminology active. "Getting started with Kazi 1 of 6 complete" banner visible. |
+| 0.32 | Carol registers via invite link → reaches dashboard → logout | PASS | Restarted gateway again. Navigated to Carol's invite link. Registration page loaded directly (no logout needed). Filled First=Carol, Last=Mokoena, Password=SecureP@ss3 via JS. Submitted. Redirected to /org/mathebula-partners/dashboard. Initials "CM" in top-right. Legal terminology active. Dashboard shows Member-role view (Recent Activity, My Week sections). |
+
+## Day 0 Final Checkpoints
+
+| Checkpoint | Result | Evidence |
+|-----------|--------|----------|
+| Org created via real access-request → approval → Keycloak registration (no mock IDP) | PASS | Full flow: /request-access → OTP → padmin approval → Keycloak invite → registration. No mock IDP used at any step. |
+| Three Keycloak users exist under realm docteams for @mathebula-test.local | PASS | Keycloak Admin API query confirms: Thandi Mathebula (thandi@), Bob Ndlovu (bob@), Carol Mokoena (carol@) — all Enabled=True. Plus padmin@docteams.local (4 total users). |
+| Vertical profile = legal-za, terminology + nav reflect legal | PASS | All three users see legal terminology on dashboard: Matters, Clients, Court Calendar. No "Projects"/"Customers"/"Invoices" visible. Verified across Thandi (Phase C), Bob (0.31), Carol (0.32). |
+| No tier / upgrade / billing upsell visible | PASS | Team invite flow shows no "Upgrade to Pro" gate. Invite form is directly accessible. No billing, subscription, or tier UI visible on Team page or Dashboard for any of the three users. |
 
 ---
 

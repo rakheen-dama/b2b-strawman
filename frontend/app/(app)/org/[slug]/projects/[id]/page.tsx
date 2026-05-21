@@ -35,8 +35,6 @@ import type {
 import { Button } from "@/components/ui/button";
 import { MatterDetailLayout } from "@/components/projects/matter-detail-layout";
 import { MatterSidebar } from "@/components/projects/matter-sidebar";
-import { EditProjectDialog } from "@/components/projects/edit-project-dialog";
-import { DeleteProjectDialog } from "@/components/projects/delete-project-dialog";
 import { DocumentsPanel } from "@/components/documents/documents-panel";
 import { ProjectMembersPanel } from "@/components/projects/project-members-panel";
 import { TaskListPanel } from "@/components/tasks/task-list-panel";
@@ -50,9 +48,7 @@ import { ProjectRatesTab } from "@/components/rates/project-rates-tab";
 import { BudgetPanel } from "@/components/budget/budget-panel";
 import { ProjectFinancialsTab } from "@/components/profitability/project-financials-tab";
 import { OverviewTab } from "@/components/projects/overview-tab";
-import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
-import { CreateProposalDialog } from "@/components/proposals/create-proposal-dialog";
 import { ProjectCommentsSection } from "@/components/projects/project-comments-section";
 import { LookbackPicker } from "@/components/assistant/specialists/lookback-picker";
 import { SPECIALIST_STRINGS } from "@/components/assistant/specialist-strings";
@@ -68,12 +64,8 @@ import { CreateRequestDialog } from "@/components/information-requests/create-re
 import { fetchProjectSetupStatus } from "@/lib/api/setup-status";
 import type { ProjectSetupStatus, FicaStatus } from "@/lib/types";
 import type { SetupStep } from "@/components/setup/types";
-import { SaveAsTemplateDialog } from "@/components/templates/SaveAsTemplateDialog";
-import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle-actions";
-import { MatterClosureAction } from "@/components/projects/matter-closure-action";
-import { MatterReopenAction } from "@/components/projects/matter-reopen-action";
-import { GenerateStatementOfAccountAction } from "@/components/projects/generate-statement-action";
 import { ArchivedProjectBanner } from "@/components/projects/archived-project-banner";
+import { OverflowActionsMenu } from "@/components/projects/overflow-actions-menu";
 import { ProjectStaffingTab } from "@/components/capacity/project-staffing-tab";
 import { ProjectCourtDatesTab } from "@/components/legal/project-court-dates-tab";
 import { ProjectAdversePartiesTab } from "@/components/legal/project-adverse-parties-tab";
@@ -85,7 +77,7 @@ import { getProjectStaffing, type ProjectStaffingResponse } from "@/lib/api/capa
 import { getCurrentMonday, formatDate as formatDateUtil, addWeeks } from "@/lib/date-utils";
 import { createSavedViewAction } from "./view-actions";
 import { PROMOTED_PROJECT_SLUGS, PROMOTED_TASK_SLUGS } from "@/lib/constants/promoted-field-slugs";
-import { ArrowLeft, FileText, LayoutTemplate, Pencil, Receipt, Trash2 } from "lucide-react";
+import { ArrowLeft, Receipt } from "lucide-react";
 import Link from "next/link";
 
 export default async function ProjectDetailPage({
@@ -433,8 +425,13 @@ export default async function ProjectDetailPage({
       }
     >
       <div className="space-y-8 p-4 lg:p-6">
-        {/* Back link */}
-        <div>
+        {/* Archived banner (208.11) — above breadcrumb row */}
+        {project.status === "ARCHIVED" && (
+          <ArchivedProjectBanner slug={slug} projectId={id} canRestore={isAdmin} />
+        )}
+
+        {/* Back link + overflow actions row */}
+        <div className="flex items-center justify-between">
           <Link
             href={`/org/${slug}/projects`}
             className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
@@ -442,123 +439,28 @@ export default async function ProjectDetailPage({
             <ArrowLeft className="mr-1.5 size-4" />
             <TerminologyText template="Back to {Projects}" />
           </Link>
-        </div>
-
-        {/* Archived banner (208.11) */}
-        {project.status === "ARCHIVED" && (
-          <ArchivedProjectBanner slug={slug} projectId={id} canRestore={isAdmin} />
-        )}
-
-        {/* Action cluster — stays here until Epic 535 */}
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          {project.status !== "ARCHIVED" && (
-            <MatterClosureAction
-              slug={slug}
-              projectId={id}
-              projectName={project.name}
-              projectStatus={project.status}
-            />
-          )}
-          <MatterReopenAction
+          <OverflowActionsMenu
             slug={slug}
             projectId={id}
             projectName={project.name}
             projectStatus={project.status}
+            canEdit={canEdit}
+            canManage={canManage}
+            isAdmin={isAdmin}
+            isOwner={isOwner}
+            templates={projectTemplates}
+            primaryCustomer={
+              customers.length > 0
+                ? { id: customers[0].id, name: customers[0].name, email: customers[0].email }
+                : null
+            }
+            projectTags={projectTags}
+            project={project}
+            tasks={tasks}
+            primaryCustomerLifecycleStatus={
+              customers.length > 0 ? customers[0].lifecycleStatus : undefined
+            }
           />
-          {project.status !== "ARCHIVED" && (
-            <GenerateStatementOfAccountAction
-              slug={slug}
-              projectId={id}
-              projectName={project.name}
-              projectStatus={project.status}
-            />
-          )}
-          {project.status !== "ARCHIVED" && (canEdit || isOwner || canManage) && (
-            <>
-              {isAdmin && (
-                <ProjectLifecycleActions
-                  slug={slug}
-                  projectId={id}
-                  projectName={project.name}
-                  projectStatus={project.status}
-                />
-              )}
-              {canManage && projectTemplates.length > 0 && (
-                <GenerateDocumentDropdown
-                  templates={projectTemplates}
-                  entityId={id}
-                  entityType="PROJECT"
-                  slug={slug}
-                  customerId={customers.length > 0 ? customers[0].id : undefined}
-                  isAdmin={isAdmin}
-                />
-              )}
-              {canManage &&
-                customers.length > 0 &&
-                customers[0].lifecycleStatus !== "OFFBOARDED" &&
-                customers[0].lifecycleStatus !== "OFFBOARDING" &&
-                customers[0].lifecycleStatus !== "ANONYMIZED" && (
-                  <CreateProposalDialog
-                    slug={slug}
-                    customers={[
-                      {
-                        id: customers[0].id,
-                        name: customers[0].name,
-                        email: customers[0].email,
-                      },
-                    ]}
-                    defaultCustomerId={customers[0].id}
-                    defaultFeeModel="HOURLY"
-                  >
-                    <Button variant="outline" size="sm" data-testid="matter-new-engagement-letter">
-                      <FileText className="mr-1.5 size-4" />
-                      New Engagement Letter
-                    </Button>
-                  </CreateProposalDialog>
-                )}
-              {canManage && (
-                <SaveAsTemplateDialog
-                  slug={slug}
-                  projectId={id}
-                  projectTasks={tasks}
-                  projectTags={projectTags}
-                >
-                  <Button variant="outline" size="sm">
-                    <LayoutTemplate className="mr-1.5 size-4" />
-                    Save as Template
-                  </Button>
-                </SaveAsTemplateDialog>
-              )}
-              {canEdit && (
-                <EditProjectDialog project={project} slug={slug}>
-                  <Button variant="outline" size="sm">
-                    <Pencil className="mr-1.5 size-4" />
-                    Edit
-                  </Button>
-                </EditProjectDialog>
-              )}
-              {isOwner && (
-                <DeleteProjectDialog slug={slug} projectId={project.id} projectName={project.name}>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
-                  >
-                    <Trash2 className="mr-1.5 size-4" />
-                    Delete
-                  </Button>
-                </DeleteProjectDialog>
-              )}
-            </>
-          )}
-          {project.status === "ARCHIVED" && isAdmin && (
-            <ProjectLifecycleActions
-              slug={slug}
-              projectId={id}
-              projectName={project.name}
-              projectStatus={project.status}
-            />
-          )}
         </div>
 
         {/* Tabbed Content (33.7) */}

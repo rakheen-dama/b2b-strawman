@@ -9,6 +9,9 @@ import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSel
 import { TagInput } from "@/components/tags/TagInput";
 import { TerminologyText } from "@/components/terminology-text";
 import { PROJECT_STATUS_BADGE } from "@/lib/constants/project-status";
+import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle-actions";
+import { MatterClosureAction } from "@/components/projects/matter-closure-action";
+import { MatterReopenAction } from "@/components/projects/matter-reopen-action";
 import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { MatterSidebarProps } from "@/lib/types/matter-sidebar";
@@ -20,7 +23,7 @@ export function MatterSidebar({
   canEdit,
   canManage,
   isAdmin,
-  // isOwner — reserved for Epic 535 (lifecycle actions in sidebar footer)
+  isOwner,
   fieldDefinitions,
   fieldGroups,
   groupMembers,
@@ -195,12 +198,43 @@ export function MatterSidebar({
       {/* Spacer to push footer to bottom */}
       <div className="flex-1" />
 
-      {/* (E) Sticky Footer Placeholder */}
+      {/* (E) Sticky Footer — Primary Lifecycle Action */}
       <div
         className="sticky bottom-0 border-t border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-950"
         data-testid="sidebar-footer"
       >
-        {/* Lifecycle action will be wired in Epic 535 */}
+        <div data-testid="sidebar-lifecycle-action" className="flex w-full flex-col gap-2">
+          {/* ACTIVE with matter_closure module → MatterClosureAction (self-gates internally) */}
+          {project.status === "ACTIVE" && (
+            <MatterClosureAction
+              slug={slug}
+              projectId={project.id}
+              projectName={project.name}
+              projectStatus={project.status}
+            />
+          )}
+          {/* CLOSED → MatterReopenAction (self-gates on module + capability) */}
+          {project.status === "CLOSED" && (
+            <MatterReopenAction
+              slug={slug}
+              projectId={project.id}
+              projectName={project.name}
+              projectStatus={project.status}
+            />
+          )}
+          {/* ACTIVE (Complete when no module), COMPLETED (Archive), ARCHIVED (Restore) */}
+          {(project.status === "ACTIVE" ||
+            project.status === "COMPLETED" ||
+            project.status === "ARCHIVED") &&
+            isAdmin && (
+              <ProjectLifecycleActions
+                slug={slug}
+                projectId={project.id}
+                projectName={project.name}
+                projectStatus={project.status}
+              />
+            )}
+        </div>
       </div>
     </div>
   );

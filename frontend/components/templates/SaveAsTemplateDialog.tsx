@@ -26,7 +26,11 @@ interface SaveAsTemplateDialogProps {
   projectId: string;
   projectTasks: Task[];
   projectTags: TagResponse[];
-  children: React.ReactNode;
+  children?: React.ReactNode;
+  /** Controlled mode: external open state */
+  open?: boolean;
+  /** Controlled mode: external open-state setter */
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function SaveAsTemplateDialog({
@@ -35,8 +39,10 @@ export function SaveAsTemplateDialog({
   projectTasks,
   projectTags,
   children,
+  open: controlledOpen,
+  onOpenChange: controlledOnOpenChange,
 }: SaveAsTemplateDialogProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successTemplateId, setSuccessTemplateId] = useState<string | null>(null);
@@ -48,6 +54,9 @@ export function SaveAsTemplateDialog({
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
   const [taskRoles, setTaskRoles] = useState<Record<string, AssigneeRole>>({});
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
+
+  const open = controlledOpen ?? internalOpen;
+  const setOpen = controlledOnOpenChange ?? setInternalOpen;
 
   function handleOpenChange(newOpen: boolean) {
     if (isSubmitting) return;
@@ -135,7 +144,7 @@ export function SaveAsTemplateDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      {children && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Save as Template</DialogTitle>

@@ -33,6 +33,19 @@ vi.mock("next/link", () => ({
   ),
 }));
 
+// Mock lifecycle action components (they import server actions which trigger server-only)
+vi.mock("@/components/projects/project-lifecycle-actions", () => ({
+  ProjectLifecycleActions: () => <div data-testid="project-lifecycle-actions" />,
+}));
+
+vi.mock("@/components/projects/matter-closure-action", () => ({
+  MatterClosureAction: () => <div data-testid="matter-closure-action" />,
+}));
+
+vi.mock("@/components/projects/matter-reopen-action", () => ({
+  MatterReopenAction: () => <div data-testid="matter-reopen-action" />,
+}));
+
 const mockProject: Project = {
   id: "proj-1",
   name: "Test Matter Alpha",
@@ -118,8 +131,9 @@ describe("MatterSidebar", () => {
     expect(screen.getByTestId("tag-input")).toBeInTheDocument();
   });
 
-  it("renders sticky footer placeholder", () => {
+  it("renders sticky footer with lifecycle action", () => {
     render(<MatterSidebar {...defaultProps} />);
     expect(screen.getByTestId("sidebar-footer")).toBeInTheDocument();
+    expect(screen.getByTestId("sidebar-lifecycle-action")).toBeInTheDocument();
   });
 });

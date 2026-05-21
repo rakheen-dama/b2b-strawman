@@ -319,7 +319,7 @@ class TrustTransactionControllerTest {
     var paymentId =
         JsonPath.read(paymentResult.getResponse().getContentAsString(), "$.id").toString();
 
-    // Owner approves (APPROVE_TRUST_PAYMENT is owner-only)
+    // Owner approves (APPROVE_TRUST_PAYMENT — owner or admin)
     mockMvc
         .perform(
             post("/api/trust-transactions/" + paymentId + "/approve")
@@ -375,7 +375,7 @@ class TrustTransactionControllerTest {
     var paymentId =
         JsonPath.read(paymentResult.getResponse().getContentAsString(), "$.id").toString();
 
-    // Owner rejects (APPROVE_TRUST_PAYMENT is owner-only)
+    // Owner rejects (APPROVE_TRUST_PAYMENT — owner or admin)
     mockMvc
         .perform(
             post("/api/trust-transactions/" + paymentId + "/reject")
@@ -439,7 +439,7 @@ class TrustTransactionControllerTest {
     var paymentId =
         JsonPath.read(paymentResult.getResponse().getContentAsString(), "$.id").toString();
 
-    // Owner approves the payment (APPROVE_TRUST_PAYMENT is owner-only)
+    // Owner approves the payment (APPROVE_TRUST_PAYMENT — owner or admin)
     mockMvc
         .perform(
             post("/api/trust-transactions/" + paymentId + "/approve")

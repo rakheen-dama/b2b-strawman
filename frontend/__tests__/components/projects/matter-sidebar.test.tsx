@@ -132,13 +132,7 @@ describe("MatterSidebar", () => {
   });
 
   it("hides custom fields section when no definitions, groups, or applied groups", () => {
-    render(
-      <MatterSidebar
-        {...defaultProps}
-        fieldDefinitions={[]}
-        fieldGroups={[]}
-      />
-    );
+    render(<MatterSidebar {...defaultProps} fieldDefinitions={[]} fieldGroups={[]} />);
     expect(screen.queryByTestId("custom-field-section")).not.toBeInTheDocument();
   });
 

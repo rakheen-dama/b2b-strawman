@@ -15,7 +15,7 @@ The 21 flat tabs collapse into 6 logical groups with dropdown sub-navigation. Cu
 | 532 | Layout Shell + Sidebar | Frontend | -- | L | 532A, 532B | **Done** — 532A (PR #1339), 532B (PR #1340) |
 | 533 | Grouped Tab Bar | Frontend | -- | M | 533A, 533B | **Done** — 533A (PR #1341), 533B (PR #1342) |
 | 534 | Overview Tab Redesign | Frontend | 532 | M | 534A | **Done** (PR #1343) |
-| 535 | Action Button Relocation | Frontend | 532 | M | 535A | |
+| 535 | Action Button Relocation | Frontend | 532 | M | 535A | **Done** (PR #1344) |
 | 536 | Responsive Behaviour + Polish | Frontend | 532, 533 | M | 536A | |
 | 537 | QA Testplan Updates | Frontend | 532-536 | S | 537A | |
 
@@ -65,7 +65,7 @@ The 21 flat tabs collapse into 6 logical groups with dropdown sub-navigation. Cu
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 2a | Epic 534 | 534A | `KPIDashboard` replaces `OverviewTab` body. Depends on 532 (sidebar must exist to receive team roster and other relocated content). | **Done** (PR #1343) |
-| 2b | Epic 535 | 535A | `OverflowActionsMenu` + lifecycle action in sidebar footer. Depends on 532 (sidebar footer is the target). |
+| 2b | Epic 535 | 535A | `OverflowActionsMenu` + lifecycle action in sidebar footer. Depends on 532 (sidebar footer is the target). | **Done** (PR #1344) |
 
 ### Stage 3: Polish (after Stage 1 + Stage 2)
 
@@ -313,7 +313,7 @@ Stage 4:  [537A]                                   <- QA testplan (after all abo
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **535A** | 535.1-535.5 | `OverflowActionsMenu` component, lifecycle action wired in sidebar footer, action cluster removed from `page.tsx` header. Unit tests (~5 tests) | |
+| **535A** | 535.1-535.5 | `OverflowActionsMenu` component, lifecycle action wired in sidebar footer, action cluster removed from `page.tsx` header. Unit tests (~5 tests) | **Done** (PR #1344) |
 
 ### Tasks
 

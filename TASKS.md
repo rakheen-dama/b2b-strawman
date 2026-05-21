@@ -606,7 +606,7 @@
 | 532 | Layout Shell + Sidebar | Frontend | -- | L | 532A, 532B | **Done** — 532A (PR #1339), 532B (PR #1340) |
 | 533 | Grouped Tab Bar | Frontend | -- | M | 533A, 533B | **Done** — 533A (PR #1341), 533B (PR #1342) |
 | 534 | Overview Tab Redesign | Frontend | 532 | M | 534A | **Done** (PR #1343) |
-| 535 | Action Button Relocation | Frontend | 532 | M | 535A | |
+| 535 | Action Button Relocation | Frontend | 532 | M | 535A | **Done** (PR #1344) |
 | 536 | Responsive Behaviour + Polish | Frontend | 532, 533 | M | 536A | |
 | 537 | QA Testplan Updates | Frontend | 532-536 | S | 537A | |
 

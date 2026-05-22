@@ -139,7 +139,7 @@ export default function PortalProposalDetailPage() {
     try {
       const result = await acceptProposal(proposalId);
       setSuccessMessage(
-        `Thank you for accepting this ${t("proposal")}. Your ${t("project")} has been set up.`,
+        `Thank you for accepting this ${t("proposal")}. Your ${t("project")} has been set up.`
       );
       await fetchProposal();
     } catch (err) {

@@ -1,1 +1,7 @@
-{"commit":"cd86c9ed8","command":"pnpm run lint && pnpm run build && pnpm test","exit":0,"ts":"2026-05-21T19:55:07Z","summary":"367 files passed, 2295 tests passed, 2 skipped"}
+{
+  "commit": "cd86c9ed8",
+  "command": "pnpm run lint && pnpm run build && pnpm test",
+  "exit": 0,
+  "ts": "2026-05-21T19:55:07Z",
+  "summary": "367 files passed, 2295 tests passed, 2 skipped"
+}

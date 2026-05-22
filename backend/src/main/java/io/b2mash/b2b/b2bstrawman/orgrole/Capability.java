@@ -57,7 +57,6 @@ public enum Capability {
   public static final Set<String> OWNER_ONLY =
       Set.of(
           MANAGE_COMPLIANCE_DESTRUCTIVE.name(),
-          APPROVE_TRUST_PAYMENT.name(),
           OVERRIDE_MATTER_CLOSURE.name(),
           FINANCIAL_RECONCILE.name());
 

@@ -20,6 +20,7 @@ import {
 import { PortalApiError, clearPortalAuth } from "@/lib/portal-api";
 import { getPortalProposal, acceptProposal, declineProposal } from "@/lib/api/portal-proposals";
 import { formatDate, formatCurrencySafe } from "@/lib/format";
+import { useTerminology } from "@/lib/terminology";
 import type { PortalProposalDetail } from "@/lib/types/document";
 
 function statusBadgeVariant(status: string): "warning" | "success" | "destructive" | "neutral" {
@@ -94,6 +95,7 @@ function isExpiringSoon(expiresAt: string | null): boolean {
 export default function PortalProposalDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
+  const { t } = useTerminology();
   const [proposal, setProposal] = useState<PortalProposalDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -136,7 +138,9 @@ export default function PortalProposalDetailPage() {
 
     try {
       const result = await acceptProposal(proposalId);
-      setSuccessMessage(result.message);
+      setSuccessMessage(
+        `Thank you for accepting this ${t("proposal")}. Your ${t("project")} has been set up.`
+      );
       await fetchProposal();
     } catch (err) {
       if (err instanceof PortalApiError && err.status === 401) {

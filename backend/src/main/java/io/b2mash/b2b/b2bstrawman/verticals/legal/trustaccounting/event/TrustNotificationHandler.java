@@ -122,7 +122,7 @@ public class TrustNotificationHandler {
   }
 
   private void handleAwaitingApproval(TrustTransactionApprovalEvent event) {
-    // Notify members with APPROVE_TRUST_PAYMENT capability (owners)
+    // Notify members with APPROVE_TRUST_PAYMENT capability (owners and admins)
     var notifications =
         notificationService.notifyAdminsAndOwners(
             "TRUST_PAYMENT_AWAITING_APPROVAL",

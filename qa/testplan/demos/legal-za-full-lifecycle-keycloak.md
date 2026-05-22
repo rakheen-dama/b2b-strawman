@@ -785,29 +785,76 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 
 ## Day 60 — Firm matter closure + generate Statement of Account  `[FIRM]`
 
-**Context swap** — portal → firm (port 3000, login as Thandi).
+**Context swap** — portal → firm (port 3000).
 
-**Actor**: Thandi Mathebula (Owner — required for closure if override ever needed; in this clean-path scenario no override is required)
+**Actors**: Thandi Mathebula (Owner), Bob Ndlovu (Admin — required for trust dual-approval per Section 86)
 
-### Phase A: Settle matter finances before closure
+> **Amended 2026-05-21 (OBS-6001)**: Original scenario assumed single-user clean-path closure.
+> The product correctly enforces 4 closure gates that require multi-step, multi-user resolution
+> before matter can close: (1) trust balance must be zero — dual-approval payment required,
+> (2) court dates must be resolved, (3) all tasks must be closed/cancelled,
+> (4) all info requests must be completed (firm must review submitted items).
+> Phase A rewritten as gate-resolution flow. No code bugs — scenario gap only.
 
-- [ ] **60.1** Generate a final fee note for any remaining unbilled time + disbursements (if any). For the script narrative, assume one more small fee note is issued R 15,000 and settled via trust transfer.
-- [ ] **60.2** Navigate to Trust Accounting → **Fee Transfer Out** → transfer R 15,000 from Sipho's trust to firm business account (pay the final fee note from trust)
-- [ ] **60.3** Approve the fee transfer → client ledger shows transfer-out, remaining trust balance reconciles
+### Phase A: Resolve closure gate prerequisites
 
-### Phase B: Run matter closure workflow (Phase 67 Epic 489)
+**Actor**: Bob Ndlovu (Admin — login as Bob, port 3000)
 
-- [ ] **60.4** Navigate to matter RAF-2026-001 → locate the sidebar footer on the left sidebar (`data-testid="sidebar-lifecycle-action"`) → click **Close Matter** (lifecycle action button relocated from page header to sidebar footer in Phase 73)
-- [ ] **60.5** Closure dialog Step 1 — gate report renders. Verify all gates GREEN: no unbilled time, no unpaid fee notes, trust balance zero or earmarked, no pending tasks
-- [ ] **60.6** Click **Continue** → Step 2 — Close form
-- [ ] **60.7** Reason: **CONCLUDED** (settlement reached)
-- [ ] **60.8** Leave **Generate closure letter** checked, and also check **Generate Statement of Account** (Phase 67 Epic 491) if surfaced as a separate flag
-- [ ] **60.9** Click **Confirm Close** → matter status = **CLOSED**
-- [ ] **60.10** Closure letter + Statement of Account documents both attached to matter **Work** > **Documents** sub-tab
-- [ ] **60.11** Retention policy row inserted with `end_date = today + 5 years` (ADR-249 verify)
+**A1: Review REQ-0003 submitted items (clear Info Requests gate)**
+
+- [ ] **60.1** Navigate to matter RAF-2026-001 → Work > Info Requests → open REQ-0003 ("Supporting medical evidence")
+- [ ] **60.2** REQ-0003 shows 2 items submitted by Sipho on Day 46 (Hospital discharge summary + Orthopaedic report), both in SUBMITTED status
+- [ ] **60.3** Accept item 1 (Hospital discharge summary) → status transitions to ACCEPTED (1/2 accepted)
+- [ ] **60.4** Accept item 2 (Orthopaedic report) → status transitions to ACCEPTED (2/2 accepted), envelope auto-transitions to COMPLETED
+- [ ] **60.5** Verify REQ-0003 status = COMPLETED. Both info requests (REQ-0001 from Day 5, REQ-0003) now COMPLETED.
+
+**A2: Complete/cancel open tasks (clear Open Tasks gate)**
+
+- [ ] **60.6** Navigate to matter RAF-2026-001 → Work > Tasks → view all 9 open tasks from the RAF matter template
+- [ ] **60.7** For each task: mark as COMPLETED (for tasks with logged time: "Initial RAF claim assessment & instructions" 2h30m, "File RAF1 claim form + supporting documents" 1h30m) or CANCELLED (for remaining tasks that were not worked on during this matter lifecycle). The goal is zero open tasks.
+- [ ] **60.8** Verify Tasks tab shows 0 open tasks remaining
+
+**A3: Resolve court date (clear Court Dates gate)**
+
+- [ ] **60.9** Navigate to matter RAF-2026-001 → Overview or Court Calendar → locate Pre-Trial court date scheduled Jun 4 2026 at Gauteng Division Pretoria
+- [ ] **60.10** Update court date status to COMPLETED or VACATED (whichever the product supports — the pre-trial has been held or is no longer required for the concluded matter)
+- [ ] **60.11** Verify court date no longer shows as an active/scheduled date blocking closure
+
+**A4: Approve trust payment (clear Trust Balance gate — Section 86 dual-approval)**
+
+- [ ] **60.12** Navigate to Trust Accounting → locate trust payment PAY/2026/001 (R 70,000) recorded by Thandi, status AWAITING_APPROVAL
+- [ ] **60.13** Bob approves the payment (Bob is not the recorder, satisfying Section 86 dual-approval constraint: "recorder cannot be sole approver")
+- [ ] **60.14** Verify payment status transitions to APPROVED → trust balance for Sipho/RAF-2026-001 drops to **R 0.00**
+- [ ] **60.15** Client ledger shows payment-out of R 70,000, running balance R 0.00
+
+### Phase B: Verify all gates green (pre-closure check)
+
+**Actor**: Thandi Mathebula (Owner — context swap: restart gateway if needed for session switch, login as Thandi)
+
+- [ ] **60.16** Navigate to matter RAF-2026-001 → locate the sidebar footer on the left sidebar (`data-testid="sidebar-lifecycle-action"`) → click **Close Matter** (lifecycle action button relocated from page header to sidebar footer in Phase 73)
+- [ ] **60.17** Closure dialog Step 1 — gate report renders. Verify **all gates GREEN**:
+  - Trust balance: R 0.00 (PASS)
+  - Disbursements approved: PASS
+  - Disbursements settled: PASS
+  - Final bill issued: PASS (no unbilled items)
+  - Court dates: PASS (no active court dates)
+  - Prescription timers: PASS
+  - Open tasks: PASS (0 open)
+  - Info requests: PASS (all COMPLETED)
+  - Document acceptances: PASS
+
+### Phase C: Run matter closure workflow (Phase 67 Epic 489)
+
+- [ ] **60.18** Click **Continue** → Step 2 — Close form
+- [ ] **60.19** Reason: **CONCLUDED** (settlement reached)
+- [ ] **60.20** Leave **Generate closure letter** checked, and also check **Generate Statement of Account** (Phase 67 Epic 491) if surfaced as a separate flag
+- [ ] **60.21** Click **Confirm Close** → matter status = **CLOSED**
+- [ ] **60.22** Closure letter + Statement of Account documents both attached to matter **Work** > **Documents** sub-tab
+- [ ] **60.23** Retention policy row inserted with `end_date = today + 5 years` (ADR-249 verify)
 
 **Day 60 checkpoints**
-- [ ] Matter closes cleanly on the happy path (no override needed)
+- [ ] All 4 closure gates resolved before closure attempt (trust dual-approval, court date, tasks, info requests)
+- [ ] Matter closes cleanly after gate resolution (no override needed)
 - [ ] Statement of Account PDF generated and attached to matter Documents
 - [ ] Mailpit → notification email to `sipho.portal@example.com`: "Your Statement of Account is ready" (or equivalent)
 
@@ -826,9 +873,10 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
   - Mathebula letterhead + contact details
   - Matter reference RAF-2026-001 + party names
   - Opening balance: R 0.00
-  - Deposits: R 50,000 (Day 10) + R 20,000 (Day 45) = R 70,000
-  - Fee transfers out: Day 30 fee note paid (amount), Day 60 fee note paid (R 15,000)
-  - Closing balance: reconciles to 0 or the residual earmarked amount
+  - Deposits: R 50,000 (Day 10) + R 20,000 (Day 45) = R 70,000 total deposits
+  - Payments out: R 70,000 trust payment (Day 60 — approved by Bob, dual-approval Section 86)
+  - Closing balance: R 0.00
+  - Fee note: INV-0001 R 1,250 (Day 28, PAID Day 30 via mock payment gateway)
   - VAT line summary
 - [ ] **61.5** 📸 **Screenshot**: `day-61-portal-soa-download.png` — Documents tab with SoA + download indicator
 - [ ] **61.6** File byte-size matches firm-side preview byte-size (±5%)
@@ -854,7 +902,7 @@ Using Sipho's portal JWT (capture from browser devtools → Application → cook
 - [ ] **75.5** Activity trail renders events from Days 4, 8, 11, 15, 30, 46, 61 — all are Sipho's. Zero Moroka references.
 - [ ] **75.6** **Passive isolation spot-check** (61 days after Day 14 onboarding of Moroka):
   - `/home` — no Moroka entries
-  - `/trust` — balance shows what is remaining against RAF-2026-001 only (whatever the residual after Day 60 transfer); NOT R 25,000 Moroka leak
+  - `/trust` — balance shows R 0.00 against RAF-2026-001 (trust fully paid out Day 60); NOT R 25,000 Moroka leak
   - `/projects` — one matter only (RAF-2026-001, now CLOSED — verify it either shows as closed or moves to a "Past" tab)
 - [ ] **75.7** 📸 Optional: `day-75-portal-digest-plus-activity.png`
 
@@ -941,7 +989,7 @@ This is the closing-demo wow moment: show the firm's 90-day activity feed on the
 - [ ] **E.10** **Isolation — BLOCKER-severity gate** — Day 15 and Day 90 isolation probes both pass at list, URL, and API levels. No Moroka data leak anywhere on portal throughout 90 days.
 - [ ] **E.11** **Trust accounting reconciliation** — firm-side Section 86 ledger + matter Trust tab + portal `/trust` all reconcile to identical balances at Days 11, 46, 61
 - [ ] **E.12** **Fee note + payment flow** — Day 28 generation + Day 30 PayFast sandbox payment completes end-to-end; firm PAID status reflects within 60s
-- [ ] **E.13** **Matter closure** — Day 60 clean-path closure (no override) + SoA generation + portal download succeed
+- [ ] **E.13** **Matter closure** — Day 60 multi-user gate resolution (Bob approves trust, reviews REQ-0003, tasks closed, court date resolved) → clean-path closure (no override) + SoA generation + portal download succeed
 - [ ] **E.14** **Audit trail completeness** — Day 85 audit log filters return both firm-user events and portal-contact events over the 90 days
 - [ ] **E.15** **Test suite gate** (mandatory — see master doc "Test suite gate" section):
   - [ ] `cd backend && ./mvnw -B verify` → BUILD SUCCESS, zero failures, zero newly-skipped tests

@@ -9,6 +9,7 @@ import type { InvoiceLineResponse } from "@/lib/types";
 const SECTION_LABELS: Record<string, string> = {
   TIME: "Time Entries",
   EXPENSE: "Expenses",
+  DISBURSEMENT: "Disbursements",
   TARIFF: "Tariff Items",
   OTHER: "Other",
 };
@@ -22,17 +23,19 @@ function groupLinesByType(lines: InvoiceLineResponse[]) {
     const groupKey: string =
       type === "TARIFF"
         ? "TARIFF"
-        : type === "MANUAL" || type === "RETAINER" || type === "FIXED_FEE"
-          ? "OTHER"
-          : type;
+        : type === "DISBURSEMENT"
+          ? "DISBURSEMENT"
+          : type === "MANUAL" || type === "RETAINER" || type === "FIXED_FEE"
+            ? "OTHER"
+            : type;
     if (!groups[groupKey]) {
       groups[groupKey] = [];
     }
     groups[groupKey].push(line);
   }
-  // Return in display order: TIME, EXPENSE, TARIFF, OTHER
+  // Return in display order: TIME, EXPENSE, DISBURSEMENT, TARIFF, OTHER
   const ordered: { key: string; label: string; lines: InvoiceLineResponse[] }[] = [];
-  for (const key of ["TIME", "EXPENSE", "TARIFF", "OTHER"]) {
+  for (const key of ["TIME", "EXPENSE", "DISBURSEMENT", "TARIFF", "OTHER"]) {
     if (groups[key] && groups[key].length > 0) {
       ordered.push({ key, label: SECTION_LABELS[key], lines: groups[key] });
     }

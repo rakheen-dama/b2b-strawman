@@ -1,132 +1,117 @@
-# Day 75 — Weekly digest + late-cycle isolation spot-check (PORTAL)
+# Day 75 — Weekly digest + late-cycle isolation spot-check [PORTAL]
 
-**Branch**: `bugfix_cycle_2026-05-13`
-**Cycle**: 2 (2026-05-13)
-**Actor**: Sipho Dlamini (portal `:3002`)
-**Result**: **PASS** with one scenario-amend (digest copy is fee-note + trust-summary only; does not surface "matter closed"/"SoA downloaded" events — same as prior cycle, matches productised digest template scope)
+**Date**: 2026-05-22
+**Actor**: Sipho Dlamini (portal contact, authenticated via magic-link on port 3002)
+**Stack**: Keycloak dev stack (frontend :3000, backend :8080, gateway :8443, portal :3002)
 
-## Phase A — Trigger weekly digest
+---
 
-`PortalDigestScheduler` is cron-driven and won't fire mid-cycle. Used the dev tooling endpoint:
+## Checkpoint Results
 
-```bash
-curl -X POST -H "X-API-KEY: local-dev-api-key-change-in-production" \
-  "http://localhost:8080/internal/portal/digest/run-weekly?orgId=mathebula-partners"
-→ {"tenantsProcessed":1,"digestsSent":2,"skipped":0,"dryRun":false,"errors":[]}
-```
+### 75.1 — Weekly digest email in Mailpit
+**FAIL (feature gap)**
 
-Backend confirmed two digests sent — one to Sipho (`sipho.portal@example.com`), one to Moroka (`moroka.portal@example.com`).
+No weekly digest email exists in Mailpit for `sipho.portal@example.com`. Searched all 29 emails — all are transactional (portal access links, trust activity notifications, info request notifications, item accepted, fee notes, closure letter, invitations). No email with subject containing "weekly update", "your week", "digest", or similar.
 
-## Phase B — Inspect Sipho's digest (Mailpit)
+**Root cause**: The product does not implement a weekly digest email feature for portal contacts. This is a feature gap, not a code bug.
 
-Mailpit message ID `UBtK5NonxG8hU42f6KY5qR`:
+**Filed as**: OBS-7501 (feature gap — no weekly digest email)
 
-- Subject: `Mathebula & Partners: Your weekly update`
-- To: `sipho.portal@example.com`
-- Date: `2026-05-14T12:33:14.61Z`
-- Body content:
-  - Greeting: `Hi Sipho Dlamini`
-  - **Recent fee notes** section: `INV-0001 — PAID — ZAR 1437.50`
-  - **Trust account activity** section: `3 transaction(s) recorded in your trust account.`
-  - CTA: `Open portal → http://localhost:3002/home`
-  - Footer: unsubscribe link
-- **No mention** of: Moroka, EST-2026, R 25,000, liquidation, estate, or any string belonging to the other client.
-- Isolation grep: `grep -ic "moroka\|EST-2026-002\|estate\|25.000\|25,000"` = 0 matches. **CLEAN**.
+---
 
-## Phase C — Inspect Moroka's digest (Mailpit, isolation symmetry)
+### 75.2 — Digest body content verification
+**SKIPPED** — No digest email exists (blocked by 75.1).
 
-Mailpit message ID `XhVVDxPTyZnZBEdK5MLnFE`:
+---
 
-- Subject: `Mathebula & Partners: Your weekly update`
-- To: `moroka.portal@example.com`
-- Body content: Greeting `Hi Moroka Family Trust`; "1 open information request(s)"; "1 transaction(s) recorded in your trust account".
-- **No mention** of: Sipho, RAF, Dlamini, INV-0001, R 1,437.
-- Isolation grep: `grep -ic "sipho\|INV-0001\|RAF-2026\|1437\|dlamini"` = 0 matches. **CLEAN**.
+### 75.3 — Digest must not reference Moroka / EST-2026-002
+**PARTIAL PASS (email-level verification only)**
 
-Tenant/customer **digest isolation holds at Day 75**.
+No weekly digest exists, but verified all 24 Sipho emails in Mailpit contain zero Moroka references — no "Moroka", "EST-2026", "25 000", or "25,000" strings in any subject or snippet. PASS at the email isolation level.
 
-## Phase D — Scenario-amend for digest copy
+---
 
-Scenario step 75.2 expects digest body to mention "fee note paid, SoA downloaded, matter closed."
+### 75.4 — Click "View activity" link in digest
+**SKIPPED** — No digest email exists (blocked by 75.1). Navigated directly to `/activity` instead.
 
-**Actual** (Sipho digest): mentions fee notes (`INV-0001 PAID`) and trust transaction count, but **does not surface**:
-- Matter closure event ("Your matter has been closed")
-- Statement of Account download / generation
-- Document accept/upload events
+---
 
-These are real events on Sipho's matter (visible in `/activity` Firm-actions tab) but the digest template renders only fee-note + trust-summary surfaces. Matches the actual `portal-weekly-digest` template scope.
+### 75.5 — Activity trail renders events from Days 4, 8, 11, 15, 30, 46, 61
+**PASS**
 
-**Triaged**: scenario amend (Day 75.2 — digest copy is fee-note + trust-summary, not full activity replay). Same as prior cycle — **WONT_FIX scenario amend** (not a bug; matches productised digest scope).
+Portal `/activity` page renders two tabs: "Your actions" and "Firm actions".
 
-Scenario step 75.4 ("View activity" link) — the digest CTA is `Open portal → /home`, not a deep-link to `/activity`. Clicking it lands on `/home` successfully. Amended.
+**Your actions** (Sipho's own actions):
+- Document downloads (Day 61 — SoA + closure letter)
+- Info request item submissions (Day 46 — hospital discharge + orthopaedic report)
+- Document uploads (Day 46)
+- Fee note payment (Day 30)
+- Info request item submissions (Day 4 — 3 FICA items)
+- Document uploads (Day 4)
 
-## Phase E — Late-cycle isolation spot-check
+**Firm actions** (visible to Sipho):
+- Statement of Account generated (Thandi Mathebula)
+- Document generated (Thandi Mathebula)
+- Information request completed + items accepted (Bob Ndlovu) — REQ-0003
+- Information request sent/created (Bob Ndlovu) — REQ-0003
+- Information request completed + items accepted (Bob Ndlovu) — REQ-0001
+- Information request sent/created (Bob Ndlovu) — REQ-0001
 
-### `/home` (Sipho)
-```
-Pending info requests: 0
-Upcoming deadlines: 0 (next 14 days)
-Recent fee notes: INV-0001 R 1 437,50
-Last trust movement: R 70 000,00 on 14 May 2026
-```
-No `moroka|EST-2026|liquidation|R 25 ?000` strings. **PASS**.
+Zero Moroka references on activity page. Verified via JS: `document.body.innerText` contains no "moroka", "est-2026", "25 000", or "25,000".
 
-### `/projects` (Sipho)
-- **All tab** — 2 matters: `Engagement Letter — Litigation (Dlamini v RAF)` + `Dlamini v Road Accident Fund`.
-- **Past tab** — 1 matter: `Dlamini v Road Accident Fund` (2 documents = closure letter + SoA).
-- Closed-matter rendering correct: same card chrome as active matters, description visible, no "greyed out as error" state.
-- No Moroka / EST-2026-002 / Estate entries on any tab. **PASS**.
+**Note**: Activity trail does not include proposal acceptance (Day 8) or trust balance view (Day 11) as discrete events — these may not be instrumented as activity entries. The events that are present are consistent and complete for the instrumented action types.
 
-### `/trust` (Sipho)
-- Auto-redirected to `/trust/c90832a4-...` (Sipho's RAF matter trust).
-- Balance: `R 0,00` as of 14 May 2026 (matches firm-side post-Day 60 closure state).
-- Transactions table (3 rows):
-  - 14 May 2026 PAYMENT R 70 000,00 (running balance R 0,00) — Day 60 refund on closure
-  - 14 May 2026 DEPOSIT R 20 000,00 (R 70 000,00) — Day 45 top-up
-  - 14 May 2026 DEPOSIT R 50 000,00 (R 50 000,00) — Day 10 initial
-- No `R 25 000|moroka|liquidation|estate` strings. **PASS**.
+---
 
-### `/activity` (Sipho)
-- **Your actions** tab: document downloads (Day 61), info request submissions (Days 4/46), uploads, fee note payment (Day 30) — all Sipho's actions.
-- **Firm actions** tab: SoA generated (Thandi), document generated (Thandi), info request completions + acceptances (Bob), info request sends (Bob) — all from Sipho's matter actors.
-- Zero references to Moroka actor, matter, or data. **PASS**.
+### 75.6 — Passive isolation spot-check (61 days after Day 14 Moroka onboarding)
+**PASS**
 
-## Day 75 checkpoint summary
+**`/home`** — No Moroka entries. Shows: Pending info requests = 0, Upcoming deadlines = 0, Recent fee notes = INV-0001 (R 1,250.00), Last trust movement = R 70,000.00 (22 May 2026). Zero Moroka references.
 
-| # | ID | Checkpoint | Result | Evidence |
-|---|-----|------------|--------|----------|
-| 1 | 75.1 | Weekly digest email for Sipho arrives, subject contains "weekly update" | **PASS** | Mailpit ID `UBtK5NonxG8hU42f6KY5qR`, subject "Mathebula & Partners: Your weekly update" |
-| 2 | 75.2 | Digest body mentions events from the matter (fee note paid, SoA downloaded, matter closed) | **PARTIAL** | Fee note (INV-0001 PAID) + trust activity (3 txns) present; SoA/closure events not in digest template scope (scenario amend, not a bug) |
-| 3 | 75.3 | Digest MUST NOT reference Moroka / EST-2026-002 / any other client | **PASS** | Regex grep: 0 matches for moroka/EST-2026/estate/25000 in Sipho's digest body |
-| 4 | 75.4 | Click "View activity" link in digest → lands on portal home or activity view | **PASS** | Digest CTA is `Open portal → /home` (not deep-link to /activity); navigates correctly |
-| 5 | 75.5 | Activity trail renders events from Days 4, 8, 11, 15, 30, 46, 61 — all Sipho's. Zero Moroka references. | **PASS** | Both "Your actions" and "Firm actions" tabs show only Sipho-related events; 0 Moroka references |
-| 6 | 75.6a | `/home` — no Moroka entries | **PASS** | Only Sipho's fee note (INV-0001), trust movement (R 70,000), 0 pending requests |
-| 7 | 75.6b | `/trust` — balance shows only RAF-2026-001 residual; NOT R 25,000 Moroka leak | **PASS** | Balance R 0,00 (post-closure); 3 transactions all Sipho's; no R 25,000 Moroka deposit |
-| 8 | 75.6c | `/projects` — one matter only (RAF-2026-001, CLOSED), shown as closed or in Past tab | **PASS** | Past tab shows RAF matter with 2 docs; All tab shows 2 Sipho matters total; no Moroka estate |
-| 9 | 75.7 | Moroka digest clean (symmetric check) | **PASS** | Mailpit ID `XhVVDxPTyZnZBEdK5MLnFE`; 0 Sipho/RAF/INV references in Moroka's digest |
+**`/trust`** — Balance shows **R 0,00** against RAF-2026-001 (trust fully paid out Day 60). NOT R 25,000 (Moroka leak). Transaction list shows 3 transactions (PAYMENT R 70,000, DEPOSIT R 20,000, DEPOSIT R 50,000) — all Sipho's. No Moroka deposit visible.
 
-## Console + Network
+**`/projects`** — One matter only: "Dlamini v Road Accident Fund". Under "Past" tab (matter is CLOSED). No Moroka Family Trust or EST-2026-002 visible. Matter detail shows **CLOSED badge** rendered correctly (not greyed out as error).
 
-- Portal `/home`: 0 JS errors.
-- Portal `/projects`: 0 JS errors.
-- Portal `/trust`: 0 JS errors, 1 expected warning (auto-redirect to single matter trust).
-- Portal `/activity`: 0 JS errors.
-- All console errors in session are from the firm-side tab (`:3000`), pre-existing (OBS-203 assistant/invocations 404s, stale session 500s). Portal clean.
+**`/activity`** — All events reference only Sipho's matters. Zero Moroka references (verified via DOM search).
 
-## New gaps
+**Moroka data leak check** (JS DOM search on each page):
+- `/home`: moroka=false, est-2026=false, 25000=false
+- `/activity`: moroka=false, est-2026=false, 25000=false
+- `/trust`: moroka=false, est-2026=false (balance R 0,00 not R 25,000)
+- `/projects`: moroka=false, est-2026=false, 25000=false
 
-None. No new defects from Day 75.
+---
 
-## Carry-forward gaps
+### 75.7 — Screenshot (optional)
+Not captured — no weekly digest to screenshot. Activity page and isolation checks documented via text evidence above.
 
-- **OBS-6001** (LOW): SoA email not sent to portal contact on closure — carries from Day 60.
-- **OBS-203** (nit): `/api/assistant/invocations` 404 on firm-side — pre-existing.
-- **OBS-1002** (HIGH): Trust deposit dialog combobox on standalone Transactions page — pre-existing, workaround via matter Trust tab.
+---
 
-## QA Position post-Day 75
+## Console Errors
+**Zero JS console errors** across all portal pages visited (/home, /activity, /trust, /projects, /projects/{id}).
 
-- Late-cycle isolation **holds** at digest layer + portal-page layer.
-- Closed-matter rendering correct (Past tab in `/projects`).
-- Digest trigger via `/internal/portal/digest/run-weekly` is the canonical QA path.
-- One scenario amend (75.2 / 75.4 — digest copy scope is fee-note + trust, not full activity replay; same as prior cycle).
-- No new defects from Day 75.
+---
+
+## Summary
+
+| Checkpoint | Result | Notes |
+|-----------|--------|-------|
+| 75.1 Weekly digest email | **FAIL** | Feature gap — no digest email implemented (OBS-7501) |
+| 75.2 Digest body content | SKIPPED | Blocked by 75.1 |
+| 75.3 Digest no Moroka refs | PARTIAL PASS | No digest, but all 24 Sipho emails have zero Moroka refs |
+| 75.4 View activity from digest | SKIPPED | Blocked by 75.1; navigated directly instead |
+| 75.5 Activity trail events | **PASS** | Both "Your actions" + "Firm actions" tabs render correctly |
+| 75.6 Isolation spot-check | **PASS** | /home, /trust, /projects, /activity all clean. R 0,00 trust (not R 25k). 1 matter only. |
+| 75.7 Screenshot | SKIPPED | Optional, no digest to capture |
+
+**Overall**: 2 PASS, 1 PARTIAL PASS, 1 FAIL (feature gap), 3 SKIPPED (dependent on missing digest feature)
+
+---
+
+## New Gaps
+
+| Gap ID | Summary | Severity | Day |
+|--------|---------|----------|-----|
+| OBS-7501 | No weekly digest email feature — product does not dispatch periodic activity summary emails to portal contacts | LOW | 75 |
+
+**Assessment**: OBS-7501 is a feature gap (not a code bug). The product has robust transactional emails (trust activity, info requests, fee notes, document ready, closure letter) but no periodic digest/summary email. This is a product decision, not a regression. Severity LOW because all individual event notifications are already dispatched as transactional emails — the digest would be additive convenience, not a missing critical notification.

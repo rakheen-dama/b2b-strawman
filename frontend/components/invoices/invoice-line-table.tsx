@@ -33,7 +33,7 @@ function groupLinesByType(lines: InvoiceLineResponse[]) {
     }
     groups[groupKey].push(line);
   }
-  // Return in display order: TIME, EXPENSE, TARIFF, OTHER
+  // Return in display order: TIME, EXPENSE, DISBURSEMENT, TARIFF, OTHER
   const ordered: { key: string; label: string; lines: InvoiceLineResponse[] }[] = [];
   for (const key of ["TIME", "EXPENSE", "DISBURSEMENT", "TARIFF", "OTHER"]) {
     if (groups[key] && groups[key].length > 0) {

@@ -3,7 +3,7 @@
 import { createContext, useContext, useMemo } from "react";
 
 // ---- Capability Constants ----
-// Must stay in sync with backend Capability enum (com.docteams.backend.orgrole.Capability)
+// Must stay in sync with backend Capability enum (io.b2mash.b2b.b2bstrawman.orgrole.Capability)
 
 export const CAPABILITIES = {
   FINANCIAL_VISIBILITY: "FINANCIAL_VISIBILITY",

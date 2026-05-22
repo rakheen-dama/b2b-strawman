@@ -330,6 +330,62 @@ class TrustTransactionControllerTest {
   }
 
   @Test
+  void postApprove_adminRole_returns200WithApprovedStatus() throws Exception {
+    // Owner deposits funds
+    var ownerJwt = TestJwtFactory.ownerJwt(ORG_ID, "user_txn_ctrl_owner");
+    mockMvc
+        .perform(
+            post("/api/trust-accounts/" + trustAccountId + "/transactions/deposit")
+                .with(ownerJwt)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "customerId": "%s",
+                      "amount": 7000.00,
+                      "reference": "DEP-CTRL-ADMIN-APPROVE-SETUP",
+                      "description": "Setup deposit for admin approve test",
+                      "transactionDate": "2026-03-01"
+                    }
+                    """
+                        .formatted(customerId)))
+        .andExpect(status().isCreated());
+
+    // Owner records a payment (will be AWAITING_APPROVAL)
+    var paymentResult =
+        mockMvc
+            .perform(
+                post("/api/trust-accounts/" + trustAccountId + "/transactions/payment")
+                    .with(ownerJwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {
+                          "customerId": "%s",
+                          "amount": 1500.00,
+                          "reference": "PAY-CTRL-ADMIN-APPROVE",
+                          "description": "Payment for admin approve test",
+                          "transactionDate": "2026-03-02"
+                        }
+                        """
+                            .formatted(customerId)))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    var paymentId =
+        JsonPath.read(paymentResult.getResponse().getContentAsString(), "$.id").toString();
+
+    // Admin approves (APPROVE_TRUST_PAYMENT — exercises role→resolveCapabilities→approve path)
+    mockMvc
+        .perform(
+            post("/api/trust-transactions/" + paymentId + "/approve")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_txn_ctrl_admin")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("APPROVED"))
+        .andExpect(jsonPath("$.id").value(paymentId));
+  }
+
+  @Test
   void postReject_returns200WithRejectedStatusAndReason() throws Exception {
     // Admin deposits funds (MANAGE_TRUST)
     var adminJwt = TestJwtFactory.adminJwt(ORG_ID, "user_txn_ctrl_admin");

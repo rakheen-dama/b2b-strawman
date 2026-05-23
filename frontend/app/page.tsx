@@ -2,6 +2,8 @@ import { NavBar } from "@/components/marketing/nav-bar";
 import { HeroSection } from "@/components/marketing/hero-section";
 import { BuiltForAfrica } from "@/components/marketing/built-for-africa";
 import { FeaturesSection } from "@/components/marketing/features-section";
+import { AiSection } from "@/components/marketing/ai-section";
+import { IntegrationsSection } from "@/components/marketing/integrations-section";
 import { PricingPreview } from "@/components/marketing/pricing-preview";
 import { CtaSection } from "@/components/marketing/cta-section";
 import { Footer } from "@/components/marketing/footer";
@@ -14,6 +16,8 @@ export default function LandingPage() {
         <HeroSection />
         <BuiltForAfrica />
         <FeaturesSection />
+        <AiSection />
+        <IntegrationsSection />
         <PricingPreview />
         <CtaSection />
       </main>

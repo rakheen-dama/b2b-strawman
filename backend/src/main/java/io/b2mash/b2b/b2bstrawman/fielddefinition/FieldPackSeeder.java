@@ -99,6 +99,14 @@ public class FieldPackSeeder extends AbstractPackSeeder<FieldPackDefinition> {
     if (!workTypes.isEmpty()) {
       group.setApplicableWorkTypes(new ArrayList<>(workTypes));
     }
+    // OBS-5004: opt-in entity-value scoping. When the pack JSON declares
+    // applicableEntityValues (e.g. accounting-za-customer-trust specifies ["TRUST"]), persist it
+    // so FieldGroupService.resolveAutoApplyGroupIds(EntityType, String, String) can filter at the
+    // CUSTOMER auto-apply step. Packs that don't opt in default to null → unscoped behaviour.
+    var entityValues = pack.group().applicableEntityValuesOrEmpty();
+    if (!entityValues.isEmpty()) {
+      group.setApplicableEntityValues(new ArrayList<>(entityValues));
+    }
     group = fieldGroupRepository.save(group);
 
     // Create each field definition and link to the group

@@ -1,1 +1,1 @@
-{"commit":"05111e12e","command":"./mvnw verify","exit":0,"ts":"2026-05-23T15:54:45Z","summary":"5397 tests, 0 failures, 0 errors, 26 skipped (main repo clean verify). Worktree run: 11 GreenMail port-contention errors in email tests — pre-existing, unrelated to fix."}
+{"commit":"3b8e59400","command":"./mvnw verify","exit":0,"ts":"2026-05-23T16:27:04Z","summary":"5405 tests, 0 failures, 0 errors, 26 skipped"}

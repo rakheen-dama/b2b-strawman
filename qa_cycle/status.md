@@ -30,9 +30,9 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 0 (Day 0 — Phase E next)
-- **Next checkpoint**: Day 0 Phase E (Settings > General, rates, tax)
-- **Completed**: Session 0 (prep), Day 0 Phase A (access request + OTP), Phase B (admin approval), Phase C (owner registration), Phase D (team invites + Bob/Carol registration)
+- **Day**: 0 COMPLETE → Ready for Day 1
+- **Next checkpoint**: Day 1 checkpoint 1.1 (Login as Bob, create first client: Sipho Dlamini)
+- **Completed**: Session 0 (prep), Day 0 Phase A-D (onboarding), Day 0 Phase E (General/rates/tax), Phase F (custom fields + field promotion), Phase G (templates + automations), Phase H (progressive disclosure), Phase I (billing/tier removal)
 
 ## Stack State
 - Dev Stack: **Running** — org provisioned 2026-05-23
@@ -51,6 +51,7 @@ For each day-N walk in this cycle:
 
 | Gap ID | Summary | Severity | Owner | Status | Day | Notes |
 |--------|---------|----------|-------|--------|-----|-------|
+| OBS-5001 | Engagements empty state uses "projects" terminology instead of "engagements" | LOW | Dev | OPEN | 0 | Empty state text: "No projects yet" / "Projects organise your work..." Should say "engagements" per accounting-za vertical profile. Also: automation rule "New Project Welcome" uses "Project" instead of "Engagement". |
 
 ## Log
 
@@ -58,3 +59,4 @@ For each day-N walk in this cycle:
 |-------|-------|--------|--------|
 | 0 | Infra | Clean slate setup: wiped all Docker volumes, started fresh infra, bootstrapped Keycloak (padmin only), verified 0 tenant schemas, 0 stale KC users, started all 4 services, cleared Mailpit | All services healthy. Ready for Day 0. |
 | 1 | QA | Day 0 Phase A-D: access request, OTP verify, padmin approval, owner registration, team invites (Bob Admin, Carol Member), all 3 users registered via Keycloak | ALL PASS. 0 gaps. Org=Thornton & Associates, vertical=accounting-za, 3 KC users, 1 tenant schema. |
+| 2 | QA | Day 0 Phase E-I: Settings (General/brand colour/rates/tax), Custom Fields (field promotion verified on Client + Engagement dialogs), Templates (7 engagement templates), Automations (13 rules), Progressive Disclosure (no legal modules, clean URL gating), Billing (flat managed account, no tier UI) | ALL PASS (1 PARTIAL: logo upload — no test file). 1 LOW gap filed: OBS-5001 (terminology). 0 console errors. Day 0 complete. |

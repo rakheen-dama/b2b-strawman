@@ -10,9 +10,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberSyncService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import org.junit.jupiter.api.AfterEach;
@@ -222,9 +220,7 @@ class ChecklistEntityTypeFilterTest {
             "Test Customer " + counter,
             "etf_customer_" + counter + "_" + uuid8() + "@test.com",
             memberId);
-    Map<String, Object> customFields = new HashMap<>();
-    customFields.put("acct_entity_type", entityType);
-    customer.setCustomFields(customFields);
+    customer.setEntityType(entityType);
     return customerRepository.save(customer);
   }
 

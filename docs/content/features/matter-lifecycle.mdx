@@ -1,0 +1,195 @@
+---
+title: "Matter Lifecycle"
+description: "Manage the full lifecycle of projects and matters — completion, closure with gate checks, reopening, and archiving."
+---
+
+import { Callout, Steps } from "nextra/components"
+
+# Matter Lifecycle
+
+Every project or matter in HeyKazi follows a lifecycle from creation through completion, closure, and archiving. The lifecycle actions available depend on whether your organisation uses generic project terminology or legal matter terminology — but the underlying workflow is the same.
+
+For generic organisations, the flow is **Active** to **Completed** to **Archived**. For legal firms with the matter closure module enabled, an additional **Closed** status provides a formal closure workflow with compliance gate checks. Both paths support reopening when work needs to resume.
+
+## Key Concepts
+
+### Lifecycle Statuses
+
+| Status | Available for | Description |
+|--------|--------------|-------------|
+| **Active** | All organisations | The project or matter is in progress. Tasks are being worked on, time is being logged, and documents are being produced. |
+| **Completed** | All organisations | The work is finished. The project is marked as done but remains accessible for review. No further time entries are expected. |
+| **Closed** | Legal firms (matter closure module) | The matter has been formally closed following a compliance-gated workflow. All closure prerequisites have been satisfied or explicitly overridden. |
+| **Archived** | All organisations | The project or matter has been archived for long-term storage. It no longer appears in active lists but remains searchable. |
+
+### Terminology Adapts to Your Organisation
+
+HeyKazi adapts its terminology based on your organisation's vertical profile:
+
+| Generic term | Legal term |
+|-------------|-----------|
+| Project | Matter |
+| Complete Project | Close Matter |
+| Completed | Closed |
+
+Throughout the application — in buttons, headings, and notifications — the terminology matches your organisation type. This documentation uses both terms interchangeably.
+
+## Standard Project Lifecycle (All Organisations)
+
+### Completing a Project
+
+When a project's work is finished, mark it as complete.
+
+<Steps>
+### Step 1 — Open the project detail page
+
+Navigate to the project you want to complete.
+
+### Step 2 — Click Complete Project
+
+Click the **Complete Project** button (or **Close Matter** for legal firms without the closure module). A confirmation dialog appears.
+
+### Step 3 — Confirm
+
+Confirm the completion. The project status changes to **Completed**.
+</Steps>
+
+### Archiving a Project
+
+Completed projects can be archived to move them out of active views.
+
+- From an **Active** project: archive is available in the overflow menu (three-dot icon)
+- From a **Completed** project: the **Archive** button appears directly
+
+Archived projects no longer appear in the default project list but remain accessible through filters or search.
+
+### Reopening a Project
+
+If you need to resume work on a completed or archived project:
+
+- From a **Completed** project: reopen is available in the overflow menu
+- From an **Archived** project: click the **Restore** button
+
+Reopening moves the project back to **Active** status.
+
+## Matter Closure (Legal Firms)
+
+Legal firms with the `matter_closure` module enabled get a formal closure workflow that enforces compliance checks before a matter can be closed. This ensures all regulatory and operational prerequisites are met.
+
+### Closure Gates
+
+Before a matter can be closed, the system evaluates a series of closure gates. Each gate checks a specific prerequisite:
+
+| Gate | What it checks |
+|------|---------------|
+| **All Tasks Resolved** | Every task on the matter is either completed or cancelled — no open work items remain. |
+| **All Information Requests Closed** | All information requests linked to the matter have reached a final state. |
+| **All Acceptance Requests Final** | Client acceptance requests (if any) have been accepted, declined, or withdrawn. |
+| **Final Bill Issued** | At least one invoice has been issued for this matter, ensuring the client has been billed. |
+| **Trust Balance Zero** | The client's trust balance for this matter is zero — all trust funds have been disbursed or refunded. |
+| **All Disbursements Approved** | All trust disbursements on the matter have been approved. |
+| **All Disbursements Settled** | All approved disbursements have been settled (paid out). |
+| **No Open Court Dates** | There are no upcoming court dates scheduled for this matter. |
+| **No Open Prescriptions** | There are no prescription dates that have not been addressed. |
+
+<Callout type="warning">
+  Gate results are evaluated in real time when the closure dialog opens. If any gate fails, you will see a clear indication of what needs to be resolved before the matter can be closed.
+</Callout>
+
+### Closing a Matter
+
+<Steps>
+### Step 1 — Open the matter detail page
+
+Navigate to the matter you want to close.
+
+### Step 2 — Click Close Matter
+
+Click the **Close Matter** button. This opens the closure dialog, which runs all closure gates and displays their results.
+
+### Step 3 — Review gate results
+
+Each gate shows as passed or failed. If all gates pass, you can proceed directly. If any gates have failed, you must either resolve the outstanding items or use the override option.
+
+### Step 4 — Select a closure reason
+
+Choose the reason for closing:
+
+| Reason | Description |
+|--------|-------------|
+| **Concluded** | The matter has reached its natural conclusion — work is complete. |
+| **Client Terminated** | The client has terminated the engagement. |
+| **Referred Out** | The matter has been referred to another firm or practitioner. |
+| **Other** | Any other reason (provide notes for context). |
+
+### Step 5 — Optional: generate closure documents
+
+You can optionally generate:
+
+- **Closure Letter** — a formal letter to the client confirming the matter has been closed
+- **Statement of Account** — a final statement covering the matter's open date through today
+
+### Step 6 — Close the matter
+
+Click **Close** to finalise. The matter status changes to **Closed** and a closure log entry is created.
+</Steps>
+
+### Overriding Failed Gates
+
+In some situations, a gate may fail but the closure should still proceed — for example, when a client has been unreachable and acceptance requests cannot be obtained. The closure dialog provides an **Override** option.
+
+When overriding:
+
+- You must provide a written justification (minimum 20 characters)
+- The override, the justification, and the identity of the person who authorised it are all recorded in the audit trail
+- An **Override used** badge appears on the closure history entry
+
+<Callout type="info">
+  Overrides are intended for exceptional circumstances. The audit trail ensures full accountability — every override is traceable to a specific user and reason.
+</Callout>
+
+### Closure History
+
+Closed matters display a **Closure History** section on the detail page. Each entry shows:
+
+- **Date closed** — when the matter was closed
+- **Reason** — the selected closure reason
+- **Closed by** — the team member who performed the closure
+- **Override used** — whether any gates were overridden, with the justification
+- **Reopened** — if the matter was later reopened, the reopen date is shown
+
+Each closure entry has an expandable audit timeline that surfaces detailed events, particularly useful for matters where overrides were used.
+
+### Reopening a Closed Matter
+
+A closed matter can be reopened if work needs to resume. Click **Reopen Matter** on a closed matter's detail page. Reopening:
+
+- Moves the matter back to **Active** status
+- Records the reopen event in the closure history
+- Does not erase the original closure log — the full history is preserved
+
+<Callout type="warning">
+  Only users with the **Close Matter** capability can close or reopen matters. This is typically restricted to Admins and Owners.
+</Callout>
+
+## Permissions
+
+| Capability | What it allows |
+|------------|----------------|
+| **Complete Project** | Mark a project as completed (standard workflow, all organisations). Available to Admins and Owners. |
+| **Close Matter** | Close a matter using the formal closure workflow with gate checks. Also required to reopen a closed matter. |
+
+## Tips and Best Practices
+
+- **Resolve gate failures before closing** — while overrides are available, it is best practice to address each gate failure at its source rather than routinely overriding
+- **Generate closure letters** — sending a formal closure letter to the client sets clear expectations and provides a paper trail
+- **Archive after a cooling period** — keep completed or closed matters in their post-completion state for a few months before archiving, in case work needs to resume
+- **Review closure history during audits** — the audit timeline on each closure entry provides a complete record of decisions, overrides, and the people involved
+
+## Related Features
+
+- [Projects](/features/projects) — the core project and matter management module
+- [Tasks](/features/tasks) — open tasks must be resolved before closure gates pass
+- [Trust Accounting](/features/trust-accounting) — trust balance must be zero for the closure gate to pass
+- [Invoicing](/features/invoicing) — a final bill must be issued before closure
+- [Documents and Templates](/features/documents) — closure letters and statements of account are generated as documents

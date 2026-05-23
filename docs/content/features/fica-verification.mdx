@@ -1,0 +1,181 @@
+---
+title: "FICA Verification"
+description: "Checklist-based FICA compliance for South African firms — identity verification, document collection, risk assessment, and AI-assisted review."
+---
+
+import { Callout, Steps } from "nextra/components"
+
+# FICA Verification
+
+FICA (Financial Intelligence Centre Act) compliance is a legal requirement for accountable institutions in South Africa, including law firms and accounting practices. HeyKazi provides a structured, checklist-driven approach to FICA onboarding that guides your team through identity verification, document collection, and risk assessment for each client.
+
+The FICA workflow integrates with the customer onboarding lifecycle and the information requests module. It surfaces a compliance status card on each customer's detail page and supports both manual verification and AI-assisted document review.
+
+## Key Concepts
+
+### FICA Onboarding Status
+
+Each customer has a FICA status derived from the progress of their onboarding checklist.
+
+| Status | Badge colour | Description |
+|--------|-------------|-------------|
+| **Not Started** | Grey | No FICA onboarding request has been created for this customer yet. |
+| **In Progress** | Amber | An onboarding request exists and is awaiting client response or firm-side review. |
+| **Done** | Green | All checklist items have been completed and signed off. The customer is FICA-compliant. |
+
+The FICA status card on the customer detail page shows the current status, the date of last verification (when done), and a link to the originating information request.
+
+### Compliance Packs
+
+FICA requirements vary based on the type of client. HeyKazi ships pre-configured compliance packs:
+
+| Pack | For | Description |
+|------|-----|-------------|
+| **SA FICA — Individual** | Individual clients | Covers identity document verification, proof of address, source of funds, risk assessment, and compliance sign-off. |
+| **SA FICA — Company** | Company/entity clients | Covers company registration documents, director identification, beneficial ownership, and entity risk assessment. |
+
+Each compliance pack defines a checklist template, custom fields for capturing structured data (such as ID numbers and risk ratings), and document retention rules.
+
+### Checklist Items (Individual Client)
+
+The individual client FICA checklist includes the following steps, in order:
+
+| Step | Required | Documents | Description |
+|------|----------|-----------|-------------|
+| **Verify identity document** | Yes | Certified copy of SA ID or passport | Confirm the client's identity using an official document. |
+| **Verify proof of address** | Yes | Utility bill, bank statement, or municipal account (not older than 3 months) | Confirm the client's residential address with recent documentation. |
+| **Confirm source of funds** | Yes | Source of funds documentation | Obtain documentation confirming how the client's income or funds originate. |
+| **Perform risk assessment** | Yes | — | Classify the client's risk rating (Low, Medium, or High) based on the FICA risk matrix. Depends on identity verification being completed first. |
+| **Confirm FICA compliance sign-off** | Yes | — | A senior compliance officer signs off on the client's FICA compliance. Depends on the risk assessment being completed first. |
+
+<Callout type="info">
+  Some checklist items have dependencies. For example, the risk assessment cannot be started until identity verification is complete. These dependencies are enforced automatically.
+</Callout>
+
+## Running FICA Onboarding
+
+<Steps>
+### Step 1 — Open the customer detail page
+
+Navigate to the customer who needs FICA onboarding.
+
+### Step 2 — Check the FICA status card
+
+The FICA status card appears on the customer detail page. If the status shows **Not Started**, you need to initiate the onboarding process.
+
+### Step 3 — Create an information request
+
+Use the Information Requests module to send a FICA onboarding pack to the client. This creates the checklist and notifies the client to provide the required documents.
+
+### Step 4 — Collect and review documents
+
+As the client uploads documents (ID copy, proof of address, source of funds), review each one against the checklist requirements. Mark each item as complete when satisfied.
+
+### Step 5 — Complete the risk assessment
+
+Once the identity has been verified, perform the risk assessment. Select the appropriate risk rating (Low, Medium, or High) using the custom field on the customer record.
+
+### Step 6 — Sign off
+
+A senior compliance officer reviews the completed checklist and signs off on FICA compliance. The status moves to **Done** and the verification date is recorded.
+</Steps>
+
+## KYC Identity Verification
+
+For the identity verification step, HeyKazi provides an integrated KYC (Know Your Customer) verification dialog. This allows you to verify a client's identity electronically against government databases.
+
+<Steps>
+### Step 1 — Open the verification dialog
+
+From the identity verification checklist item, click the verification action to open the KYC dialog.
+
+### Step 2 — Enter client details
+
+Fill in the required fields:
+
+- **ID Number** — the client's South African ID number or passport number
+- **Full Name** — the client's full legal name
+- **ID Document Type** (optional) — SA ID Card, Smart ID Card, or Passport
+
+### Step 3 — Acknowledge consent
+
+Check the consent acknowledgement confirming that the client has given explicit written consent for identity verification against government databases, as required by POPIA and FICA.
+
+### Step 4 — Submit verification
+
+Click **Verify**. The system sends the request to the configured KYC provider.
+</Steps>
+
+### Verification Results
+
+| Result | Description |
+|--------|-------------|
+| **Verified** | The identity was confirmed against the government database. A provider reference and timestamp are recorded. |
+| **Not Verified** | The identity could not be confirmed. A reason is provided (for example, ID number does not match). |
+| **Needs Review** | The provider validated the format but could not confirm against a live database. Manual review of the physical ID document is required. |
+| **Error** | A technical error occurred. Retry the verification or contact support. |
+
+<Callout type="warning">
+  KYC verification requires an active integration with a verification provider (such as VerifyNow or Check ID SA). Configure this in your organisation's integration settings.
+</Callout>
+
+## AI-Assisted FICA Verification
+
+When an AI provider is configured (via Settings > AI), HeyKazi can use AI to assist with FICA document verification. The AI reads uploaded documents and evaluates them against the checklist requirements.
+
+### Prerequisites
+
+- An Anthropic API key must be configured in Settings > AI
+- At least one document must be uploaded for the customer
+- There must be pending checklist items to verify
+
+### How It Works
+
+Click **Verify with AI** on the FICA Verification panel (visible on the customer detail page). The AI:
+
+1. Reads the uploaded documents for the customer
+2. Evaluates each pending checklist item against the document contents
+3. Produces a structured result with findings per item
+4. Creates execution gates for items that require human approval before changes are applied
+
+The panel shows the AI's findings, the execution cost, and the processing time. Items flagged for approval require a user with the **AI Review** capability to approve or reject before they take effect.
+
+<Callout type="info">
+  AI verification does not auto-complete checklist items. Every AI recommendation passes through an execution gate that requires explicit human approval. This ensures a human is always in the loop for compliance decisions.
+</Callout>
+
+## Custom Fields
+
+FICA compliance packs automatically provision custom fields on the customer record for capturing structured compliance data:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| **SA ID Number** | Text | The client's South African identity number. |
+| **Passport Number** | Text | The client's passport number (for non-SA citizens). |
+| **Risk Rating** | Select (Low / Medium / High) | The client's FICA risk classification. |
+
+These fields appear in the FICA Compliance field group on the customer detail page.
+
+## Data Retention
+
+FICA compliance packs include retention rules that ensure records are kept for the legally required periods:
+
+- **Customer records**: flagged for retention review 5 years (1,825 days) after offboarding
+- **Audit events**: flagged for retention review 7 years (2,555 days) after creation
+
+These retention flags surface in the system when the retention period elapses, prompting a review before any data is removed.
+
+## Tips and Best Practices
+
+- **Start FICA onboarding early** — initiate the process as soon as a client is onboarded, before substantive work begins
+- **Use AI verification to accelerate review** — AI can pre-screen documents and flag issues, but always have a compliance officer perform the final sign-off
+- **Keep documents current** — proof of address must be no older than 3 months; set calendar reminders for periodic re-verification of existing clients
+- **Document the risk rationale** — when assigning a risk rating, add notes explaining the basis for the classification
+- **Leverage information requests** — use the information requests module to formally request documents from clients, creating a clear audit trail of what was requested and when
+
+## Related Features
+
+- [Customers](/features/customers) — FICA status is displayed on the customer detail page
+- [Information Requests](/features/information-requests) — FICA onboarding is delivered through information request packs
+- [Custom Fields and Tags](/features/custom-fields-tags) — FICA compliance data is captured via custom fields
+- [AI Assistant](/features/ai-assistant) — AI-assisted verification uses the AI infrastructure

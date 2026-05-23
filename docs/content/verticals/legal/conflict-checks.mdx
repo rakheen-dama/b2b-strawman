@@ -1,26 +1,184 @@
 ---
-title: "Conflict Checks (Coming Soon)"
-description: "Run conflict-of-interest checks before accepting new matters."
+title: "Conflict Checks"
+description: "Run conflict-of-interest checks against the adverse party registry before accepting new matters."
 ---
 
-import { Callout } from "nextra/components"
+import { Callout, Steps } from "nextra/components"
 
 # Conflict Checks
 
+Conflict checking in HeyKazi helps law firms identify potential conflicts of interest before taking on new clients or matters. The system searches your adverse party registry for name matches, ID number matches, and registration number matches, then presents the results with a similarity score so you can make an informed decision about whether to proceed.
+
+Running conflict checks is a professional obligation under the Legal Practice Act and Law Society rules. HeyKazi provides the tooling to perform these checks systematically and maintain an auditable history of every check performed.
+
+## Key Concepts
+
+### How Conflict Checking Works
+
+The conflict check system relies on two connected features: the **Adverse Party Registry** and the **Conflict Check Engine**.
+
+The Adverse Party Registry is a firm-wide database of parties who are on the opposing side of your clients' matters. Every time you add an adverse party to a matter, that party is recorded in the registry. When you run a conflict check, the system searches the registry for matches against the name, ID number, or registration number you provide.
+
+### Match Types
+
+The system uses several matching strategies to detect potential conflicts:
+
+| Match Type | Description |
+|------------|-------------|
+| **Name Similarity** | Fuzzy name matching that accounts for spelling variations, abbreviations, and common name formats. Returns a similarity score as a percentage. |
+| **ID Number** | Exact match on South African ID number (13-digit format). |
+| **Registration Number** | Exact match on company or close corporation registration number. |
+
+Each match shows the adverse party name, the matter they are linked to, the client on that matter, the relationship type, and a similarity score. Exact ID and registration number matches score 100%.
+
+### Check Types
+
+When running a conflict check, you specify the context:
+
+| Check Type | When to use |
+|------------|-------------|
+| **New Client** | Before accepting a new client relationship. Check the prospective client's name and identifiers against your adverse party registry. |
+| **New Matter** | Before opening a new matter for an existing client. Check the opposing parties in the new matter against your existing client and matter records. |
+| **Periodic Review** | For ongoing monitoring. Run periodically against existing matters to catch conflicts that may have developed over time (for example, when a new adverse party is added to another matter). |
+
+### Check Results
+
+Every conflict check produces one of three results:
+
+| Result | Description |
+|--------|-------------|
+| **No Conflict** | No matches found in the adverse party registry. You can proceed with confidence. |
+| **Potential Conflict** | One or more fuzzy name matches were found with a moderate similarity score. Review the matches to determine whether a genuine conflict exists. |
+| **Conflict Found** | One or more exact matches (ID number or registration number) or high-confidence name matches were found. Requires careful review and a formal resolution decision. |
+
+### Conflict Resolutions
+
+When a conflict is found or a potential conflict is flagged, you must record how you resolved it:
+
+| Resolution | Description |
+|------------|-------------|
+| **Proceed** | After review, the match does not constitute a conflict and you can proceed with the matter. |
+| **Declined** | The conflict is genuine and the firm has declined the engagement. |
+| **Waiver Obtained** | A conflict exists but both affected clients have provided informed written consent (a conflict waiver). |
+| **Referred** | The matter has been referred to another firm to avoid the conflict. |
+
 <Callout type="info">
-  This feature is coming soon. The sections below describe planned capabilities.
+  Every conflict check and its resolution is recorded with a timestamp and the identity of the person who performed it. This provides an audit trail that can be produced for Law Society compliance enquiries.
 </Callout>
 
-## What's Planned
+## Running a Conflict Check
 
-Conflict checks will allow law firms to screen new matters against existing clients and opposing parties before accepting an engagement. When you open a new matter, the system will search across your client database, matter records, and associated parties to flag potential conflicts of interest. Results will be presented in a clear report showing the nature of each potential conflict, the related matter, and the parties involved.
+<Steps>
+### Step 1 -- Open the Conflict Check page
 
-Planned features include configurable conflict rules (for example, different thresholds for direct representation versus peripheral involvement), the ability to record a conflict waiver with supporting documentation, and an audit trail of every check performed — essential for Law Society compliance.
+Click **Conflict Check** in the left sidebar to open the conflict check page. The page opens on the **Run Check** tab by default.
 
-## What's Available Today
+### Step 2 -- Enter the details to check
 
-While the dedicated conflict check feature is in development, you can use the following features as a manual workaround:
+Complete the form:
 
-- [Customers](/features/customers) — search your client database by name, registration number, or custom fields to identify existing relationships.
-- [Projects](/features/projects) — review active and completed matters to check for overlapping parties.
-- [Documents & Templates](/features/documents) — store conflict waiver letters and related correspondence.
+- **Name to Check** (required) -- the full name of the person or entity to check
+- **ID Number** (optional) -- the South African ID number for natural persons
+- **Registration Number** (optional) -- the CIPC registration number for companies, close corporations, or trusts
+- **Check Type** (required) -- select New Client, New Matter, or Periodic Review
+- **Client** (optional) -- link the check to an existing client for record-keeping
+- **Matter** (optional) -- link the check to an existing matter
+
+### Step 3 -- Run the check
+
+Click **Run Conflict Check**. The system searches the adverse party registry and returns the result immediately.
+
+### Step 4 -- Review the results
+
+The result is displayed with a clear visual indicator:
+
+- **Green** with a checkmark for No Conflict
+- **Amber** with a warning icon for Potential Conflict
+- **Red** with an alert icon for Conflict Found
+
+If matches are found, a table shows each match with the adverse party name, match type, similarity score, the linked matter, and the relationship.
+
+### Step 5 -- Resolve (if needed)
+
+If a conflict or potential conflict is found, click **Resolve Conflict** to record your resolution. Choose the appropriate resolution (Proceed, Decline, Waiver Obtained, or Refer) and add notes explaining your reasoning.
+</Steps>
+
+<Callout type="warning">
+  Always run a conflict check before accepting a new client or opening a new matter. Failure to identify conflicts of interest can result in disciplinary proceedings, cost orders, and reputational damage.
+</Callout>
+
+## Conflict Check History
+
+Switch to the **History** tab to see a complete record of all conflict checks performed by your firm. The history table shows the date, checked name, check type, result, and resolution status.
+
+You can filter the history by:
+
+- **Result** -- No Conflict, Potential Conflict, or Conflict Found
+- **Check Type** -- New Client, New Matter, or Periodic Review
+
+Unresolved conflicts show a **Resolve** link in the actions column, allowing you to record a resolution decision at any time.
+
+## The Adverse Party Registry
+
+The Adverse Party Registry is the firm-wide database that powers conflict checking. You can access it from the **Adverse Parties** page under the Legal section in the sidebar.
+
+### Party Types
+
+Each adverse party is classified by entity type:
+
+| Type | Description |
+|------|-------------|
+| **Natural Person** | An individual (for example, a defendant, respondent, or witness). |
+| **Company** | A company registered under the Companies Act. |
+| **Trust** | A trust registered with the Master of the High Court. |
+| **Close Corporation** | A CC registered under the Close Corporations Act. |
+| **Partnership** | A partnership between individuals or entities. |
+| **Other** | Any entity type not covered above. |
+
+### Relationship Types
+
+When linking an adverse party to a matter, you specify the relationship:
+
+| Relationship | Description |
+|--------------|-------------|
+| **Opposing Party** | The main opposing party in the matter (defendant, respondent, etc.). |
+| **Witness** | A witness who may give evidence adverse to your client. |
+| **Co-Accused** | A co-accused in criminal proceedings. |
+| **Related Entity** | A related party such as a subsidiary, holding company, or associated entity. |
+| **Guarantor** | A party who has provided a guarantee for the opposing party. |
+
+### Managing Adverse Parties
+
+The Adverse Parties page provides a searchable registry with filters by party type. From here you can:
+
+- **Add a new adverse party** -- record the name, ID number, registration number, party type, aliases, and notes
+- **Search** -- find parties by name with debounced search
+- **Filter by type** -- narrow down to Natural Persons, Companies, Trusts, etc.
+- **Link to matter** -- connect an adverse party to a matter with a specific relationship
+- **Delete** -- remove an adverse party that has no linked matters
+
+<Callout type="info">
+  Adverse parties can also be added directly from a matter's **Adverse Parties** tab. This is the most common workflow: open the matter, go to the Adverse Parties tab, and link the opposing party. The party is automatically added to the firm-wide registry.
+</Callout>
+
+### Adverse Parties on a Matter
+
+Each matter has an **Adverse Parties** tab that shows all parties linked to that specific matter. From this tab you can:
+
+- **Link an adverse party** -- search the registry and link an existing party, or create a new one
+- **View relationship** -- see the relationship type (Opposing Party, Witness, Co-Accused, etc.)
+- **Unlink** -- remove the link between an adverse party and this matter (the party remains in the registry)
+
+## Tips and Best Practices
+
+- **Check early, check often** -- run a conflict check before the first client meeting, not after you have started work. If a conflict emerges later, the unwinding costs are much higher.
+- **Use ID and registration numbers** -- name matching catches most conflicts, but exact identifier matches are definitive. Always record ID numbers and registration numbers when you have them.
+- **Record aliases** -- some parties are known by multiple names (trading names, former names, maiden names). Record aliases in the adverse party registry so the fuzzy matching can find them.
+- **Resolve promptly** -- do not leave conflict checks in an unresolved state. Record your resolution decision with clear notes so that the audit trail is complete.
+- **Run periodic reviews** -- as your firm takes on new matters and adds new adverse parties, conflicts can emerge retroactively. Schedule periodic conflict reviews to catch these.
+
+## Related Features
+
+- [Projects](/features/projects) -- matters are where adverse parties are linked
+- [Customers](/features/customers) -- conflict checks can be linked to specific clients
+- [Documents and Templates](/features/documents) -- store conflict waiver letters and related correspondence

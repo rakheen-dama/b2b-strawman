@@ -1,0 +1,154 @@
+---
+title: "Matter Closure"
+description: "Close legal matters through a compliance-gated workflow with override controls, closure letters, and a full audit trail."
+---
+
+import { Callout, Steps } from "nextra/components"
+
+# Matter Closure
+
+Closing a legal matter is not the same as completing a project. In South African legal practice, a matter cannot simply be marked as done -- there are compliance obligations that must be satisfied first: trust accounts must be reconciled, all disbursements must be settled or approved, outstanding information requests must be resolved, and a final bill must be issued. Failing to meet these requirements can expose a firm to regulatory action.
+
+HeyKazi enforces this through a gated closure workflow. When you close a matter, the system evaluates a series of compliance gates and only allows closure when all gates pass -- or when an authorised user explicitly overrides failing gates with a recorded justification.
+
+<Callout type="info">
+  Matter closure requires the **matter_closure** module to be enabled for your organisation. The **Close Matter** button only appears for users with the **CLOSE_MATTER** capability.
+</Callout>
+
+## Key Concepts
+
+### Closure Gates
+
+Before a matter can be closed, the system evaluates a set of compliance gates. Each gate checks a specific condition and reports whether it passes or fails.
+
+| Gate | What it checks |
+|------|---------------|
+| **Trust Balance Zero** | The client's trust balance for this matter is zero -- all trust funds have been properly disbursed or refunded. |
+| **All Disbursements Approved** | Every disbursement recorded against this matter has been approved (none remain in Draft or Pending Approval). |
+| **All Disbursements Settled** | Every disbursement has been billed or written off (none remain Unbilled). |
+| **Final Bill Issued** | At least one invoice has been issued for this matter. |
+| **No Open Court Dates** | There are no future court dates or hearing schedules linked to this matter. |
+| **No Open Prescriptions** | There are no unresolved prescription deadlines on this matter. |
+| **All Tasks Resolved** | All tasks on this matter have been completed or cancelled. |
+| **All Info Requests Closed** | All information requests sent to the client have been resolved. |
+| **All Acceptance Requests Final** | All acceptance requests have reached a final state (accepted or declined). |
+
+<Callout type="warning">
+  Each failing gate includes a **Fix this** link that navigates directly to the relevant tab or page where the issue can be resolved -- for example, the Disbursements tab, the Trust tab, or the Invoices page filtered to the matter.
+</Callout>
+
+### Closure Reasons
+
+When closing a matter, you must select a reason that explains why the matter is being closed.
+
+| Reason | Description |
+|--------|-------------|
+| **Concluded** | The matter reached its natural conclusion -- judgment, settlement, or completion of the mandated work. |
+| **Client Terminated** | The client withdrew their instructions or terminated the mandate. |
+| **Referred Out** | The matter was referred to another firm or practitioner. |
+| **Other** | Any reason not covered above. |
+
+### Override
+
+When one or more closure gates fail, users with the **OVERRIDE_MATTER_CLOSURE** capability can override the failing gates and proceed with closure. An override requires a written justification of at least 20 characters explaining why closure should proceed despite the failing conditions.
+
+Overrides are prominently flagged in the closure history with an **Override used** badge and the full justification text, ensuring transparency and accountability.
+
+<Callout type="warning">
+  Closure overrides are designed for exceptional circumstances -- for example, a matter where the client has become unreachable and trust funds have been dealt with via the Law Society. They are not a shortcut to skip compliance steps. Every override is logged and auditable.
+</Callout>
+
+## Closing a Matter
+
+<Steps>
+### Step 1 -- Click Close Matter
+
+On the matter's detail page, click the **Close Matter** button in the action bar. This opens the closure dialog.
+
+### Step 2 -- Review the closure gate report
+
+The first step of the dialog evaluates all closure gates and displays a report. Each gate shows a pass (green check) or fail (red cross) with a descriptive message.
+
+- If **all gates pass**, click **Continue** to proceed to the closure form.
+- If gates are failing and you have **override permission**, click **Continue** to proceed with the option to override.
+- If gates are failing and you **do not have override permission**, you will see a message explaining that the failing gates must be resolved before closure. Use the **Fix this** links to navigate to the relevant areas.
+
+### Step 3 -- Complete the closure form
+
+Fill in the closure details:
+
+- **Reason** -- select why the matter is being closed
+- **Notes** -- optionally add context or instructions (up to 5,000 characters)
+- **Generate closure letter** -- checked by default; produces a PDF closure letter attached to the matter's documents
+- **Generate Statement of Account** -- checked by default; produces a Section 86 ledger reconciliation PDF covering the matter's full duration
+
+If gates are failing and you have override permission:
+
+- **Override failing gates** -- check this box to proceed despite failures
+- **Override justification** -- explain why closure should proceed (minimum 20 characters)
+
+### Step 4 -- Confirm closure
+
+Click **Close matter**. The matter status changes to **Closed**, closure documents are generated, and the retention clock begins.
+</Steps>
+
+## Reopening a Closed Matter
+
+A closed matter can be reopened if new work arises -- for example, an appeal is filed, or a related dispute emerges that requires reopening the file. Only users with the **CLOSE_MATTER** capability can reopen matters.
+
+<Steps>
+### Step 1 -- Click Reopen Matter
+
+On the closed matter's detail page, click the **Reopen Matter** button.
+
+### Step 2 -- Provide reopen notes
+
+Enter a note explaining why the matter is being reopened (minimum 10 characters). This is recorded in the closure history for audit purposes.
+
+### Step 3 -- Confirm
+
+Click **Reopen matter**. The matter status changes back to **Active** and work can resume.
+</Steps>
+
+<Callout type="warning">
+  Reopening is blocked if the matter's retention window has expired. The system returns a clear error indicating when the retention period ended. Once retention has elapsed, the matter record is preserved for reference but can no longer be reopened.
+</Callout>
+
+## Closure History
+
+Every closed matter displays a **Closure history** section on its detail page. This provides a complete audit trail of all closure and reopen events for the matter.
+
+Each closure history entry shows:
+
+- **Closed date** -- when the matter was closed
+- **Reason** -- the selected closure reason (Concluded, Client Terminated, Referred Out, Other)
+- **Override used** -- an amber badge if closure gates were overridden
+- **Override justification** -- the full text of the justification, if an override was used
+- **Closed by** -- the name of the user who closed the matter
+- **Reopened date** -- if the matter was subsequently reopened, the reopen date is shown
+
+Each entry has a **View audit** toggle that expands to show the detailed audit events associated with that closure, including override events logged by the system.
+
+## Generated Documents
+
+The closure workflow can automatically generate two documents and attach them to the matter:
+
+- **Closure letter** -- a formal PDF letter notifying the client that the matter has been closed. Generated from your organisation's document template.
+- **Statement of Account** -- a Section 86 ledger reconciliation PDF summarising all fees, disbursements, payments, and trust balances for the full duration of the matter. This is the same document you can generate manually from the Statements tab, but produced automatically at close time for convenience.
+
+Both documents appear in the matter's Documents tab after closure.
+
+## Tips and Best Practices
+
+- **Resolve gates before attempting closure** -- review the gate report and address failing items (approve pending disbursements, close open tasks, issue a final invoice) before clicking Close Matter. This avoids needing overrides.
+- **Use overrides sparingly** -- every override is permanently recorded. Reserve them for situations where compliance steps genuinely cannot be completed, not as a convenience.
+- **Generate both documents** -- the closure letter and statement of account checkboxes are enabled by default. Keep them on unless you have a specific reason to suppress a document.
+- **Add meaningful notes** -- closure notes and reopen notes become part of the permanent record. A brief explanation now saves confusion when someone reviews the matter years later.
+- **Monitor the retention clock** -- once a matter is closed, the retention period begins. Plan ahead if you anticipate needing to reopen the file.
+
+## Related Features
+
+- [Projects](/features/projects) -- matters are projects with legal-vertical terminology and additional legal tabs
+- [Disbursements & Statements](/verticals/legal/disbursements) -- disbursement approval and settlement are closure gate prerequisites
+- [Invoicing](/features/invoicing) -- the Final Bill Issued gate checks that at least one invoice exists for the matter
+- [Tasks](/features/tasks) -- the All Tasks Resolved gate checks that no open tasks remain

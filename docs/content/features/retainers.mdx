@@ -1,0 +1,179 @@
+---
+title: "Retainers"
+description: "Manage retainer agreements with clients — track hour banks, fixed fees, period consumption, rollover policies, and overage."
+---
+
+import { Callout, Steps } from "nextra/components"
+
+# Retainers
+
+Retainers in HeyKazi let you set up recurring engagement agreements with clients. A retainer defines a block of hours or a fixed fee that a client pays for on a periodic basis — weekly, monthly, quarterly, or longer. As your team logs time against the client's projects, the retainer tracks consumption against the allocated hours and surfaces alerts when usage approaches the limit.
+
+Retainers integrate with time tracking, invoicing, and billing runs. When generating invoices, retainer line items can be included alongside regular billable time. Clients can also view their retainer status and consumption history through the customer portal.
+
+## Key Concepts
+
+### Retainer Types
+
+| Type | Description |
+|------|-------------|
+| **Hour Bank** | The client purchases a block of hours per period (for example, 40 hours per month). Time entries logged against the client's projects consume hours from the bank. Overage beyond the allocation is tracked separately. |
+| **Fixed Fee** | The client pays a flat fee per period for a defined scope of work. No hour allocation or consumption tracking — the retainer simply tracks the recurring fee schedule. |
+
+### Retainer Statuses
+
+| Status | Badge colour | Description |
+|--------|-------------|-------------|
+| **Active** | Green | The retainer is in effect. Time entries are being consumed against it and periods are rolling over on schedule. |
+| **Paused** | Amber | The retainer has been temporarily suspended. No new consumption is tracked. |
+| **Terminated** | Grey | The retainer has been ended. It cannot be resumed. Historical data remains accessible for reporting. |
+
+### Billing Frequency
+
+Retainers support the following billing frequencies, which determine how long each period lasts:
+
+| Frequency | Period length |
+|-----------|--------------|
+| **Weekly** | 1 week |
+| **Fortnightly** | 2 weeks |
+| **Monthly** | 1 calendar month |
+| **Quarterly** | 3 calendar months |
+| **Semi-Annually** | 6 calendar months |
+| **Annually** | 1 year |
+
+When a period ends, it automatically rolls over to the next period based on the frequency.
+
+### Rollover Policies (Hour Bank only)
+
+When a period ends with unused hours, the rollover policy determines what happens to them:
+
+| Policy | Description |
+|--------|-------------|
+| **Forfeit** | Unused hours are lost at the end of each period. The next period starts fresh with the full allocation. |
+| **Carry Forward** | All unused hours roll forward into the next period, adding to the new allocation. |
+| **Carry Capped** | Unused hours roll forward, but only up to a specified cap. Any hours beyond the cap are forfeited. |
+
+## Creating a Retainer
+
+<Steps>
+### Step 1 — Navigate to Retainers
+
+Click **Retainers** in the left sidebar. If no retainers exist yet, you will see an empty state prompting you to create your first retainer agreement.
+
+### Step 2 — Click New Retainer
+
+Click the **New Retainer** button to open the creation dialog.
+
+### Step 3 — Select a customer
+
+Choose the customer this retainer will be associated with. Customers in any lifecycle stage except terminal (Offboarding, Offboarded, or Anonymized) are available for selection.
+
+### Step 4 — Configure the agreement
+
+Fill in the retainer details:
+
+- **Name** (required) — a descriptive name, for example "Monthly Retainer - Acme Corp"
+- **Type** (required) — Hour Bank or Fixed Fee
+- **Frequency** (required) — how often periods roll over
+- **Start Date** (required) — when the first period begins
+- **End Date** (optional) — set an end date for fixed-term agreements
+
+For **Hour Bank** retainers, also set:
+
+- **Allocated Hours** — the number of hours included per period
+- **Period Fee** — the fee charged per period
+- **Rollover Policy** — what happens to unused hours (Forfeit, Carry Forward, or Carry Capped)
+- **Rollover Cap** (if Carry Capped) — maximum hours that can roll forward
+
+For **Fixed Fee** retainers, the period fee is optional.
+
+### Step 5 — Create the retainer
+
+Click **Create Retainer**. The retainer is created in **Active** status and the first period begins on the start date.
+</Steps>
+
+## The Retainer List Page
+
+The retainer list page provides an overview of all retainer agreements across your organisation.
+
+**Summary cards** at the top show:
+
+- **Active Retainers** — the total count of retainers currently in effect
+- **Periods Ready to Close** — periods that have ended and are ready to be closed out (highlighted amber when non-zero)
+- **Total Overage Hours** — cumulative hours consumed beyond the allocated bank across all active retainers (highlighted amber when non-zero)
+
+The retainer list shows each agreement with its status badge, customer name, type, frequency, and current period consumption. You can filter by **status** (Active, Paused, Terminated) and by **customer**.
+
+## The Retainer Detail Page
+
+The retainer detail page shows the full picture of a specific agreement.
+
+**Header area:**
+
+- Retainer name and status badge
+- Customer name
+- Type badge (Hour Bank or Fixed Fee) and frequency badge
+- Start and end dates
+
+**Retainer Details card:**
+
+- Allocated hours per period (Hour Bank only)
+- Period fee
+- Rollover policy and cap
+
+**Current Period card (Hour Bank):**
+
+- Period date range
+- A consumption progress bar showing hours used versus allocated
+- Rollover hours carried in from the previous period
+- Consumption alerts at 80% and 100% capacity
+
+**Period History table:**
+
+A chronological list of all periods — current and past — showing the consumed hours, period dates, and status for each.
+
+<Callout type="info">
+  When a retainer reaches 80% of its allocated hours, an amber warning appears on the detail page. At 100%, the alert turns red and indicates that additional hours are overage.
+</Callout>
+
+## Managing a Retainer
+
+### Editing
+
+Admins and Owners can edit the retainer's name, allocated hours, period fee, rollover policy, frequency, and end date. Editing does not retroactively change past periods.
+
+### Pausing and Resuming
+
+Pausing a retainer suspends consumption tracking. The retainer can be resumed later without losing historical data. Use this for clients who temporarily stop work.
+
+### Terminating
+
+Terminating a retainer ends it permanently. Terminated retainers cannot be resumed, but their history remains accessible for reporting and invoicing purposes.
+
+### Closing a Period
+
+When a period ends, it can be closed to finalise the consumption figures for that period. Closing a period triggers the rollover calculation (if applicable) and opens the next period.
+
+## Retainers on Invoices
+
+Retainer line items can be included when generating invoices. During billing runs, the cherry-pick step allows you to select retainer-related charges alongside time entries and expenses. Retainer draws appear as dedicated line items on the invoice with the retainer name and period reference.
+
+<Callout type="warning">
+  The Retainers page is available to organisation Owners, Admins, and users with the Invoicing capability. Team members without this permission will not see the Retainers item in the sidebar.
+</Callout>
+
+## Tips and Best Practices
+
+- **Set realistic hour allocations** — base the allocation on historical data from similar engagements rather than guessing
+- **Review overage regularly** — if clients consistently exceed their allocation, consider increasing the hours or adjusting rates
+- **Use Carry Capped for flexibility** — this balances client goodwill (unused hours are not completely lost) with risk management (you do not accumulate unbounded liabilities)
+- **Close periods promptly** — closing periods on time ensures accurate rollover calculations and keeps the retainer data clean for invoicing
+- **Name retainers clearly** — include the client name and engagement type in the retainer name so it is easy to identify in lists and on invoices
+
+## Related Features
+
+- [Time Tracking](/features/time-tracking) — logged time entries consume hours from Hour Bank retainers
+- [Invoicing](/features/invoicing) — retainer charges appear as line items on invoices
+- [Customers](/features/customers) — each retainer is linked to a specific customer
+- [Rate Cards and Budgets](/features/rate-cards-budgets) — billing rates determine the value of hours consumed against retainers
+- [Customer Portal](/features/customer-portal) — clients can view their retainer status and consumption

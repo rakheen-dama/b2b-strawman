@@ -1,0 +1,151 @@
+---
+title: "Adverse Parties"
+description: "Register and manage opposing parties across your firm's matters to support conflict-of-interest checking."
+---
+
+import { Callout, Steps } from "nextra/components"
+
+# Adverse Parties
+
+Adverse parties are the individuals, companies, or other entities on the opposing side of a legal matter. South African law firms are required to maintain records of adverse parties to identify conflicts of interest before accepting new instructions -- if your firm has previously acted for (or against) a party, you need to know before you take on a matter that could create a conflict.
+
+HeyKazi maintains a firm-wide adverse party registry where each party is recorded once and linked to the matters in which they appear. When a party is linked to multiple matters, the system surfaces this information to support conflict checking.
+
+<Callout type="info">
+  Adverse parties require the **conflict_check** module to be enabled for your organisation. Contact your administrator to activate it.
+</Callout>
+
+## Key Concepts
+
+### Party Types
+
+Each adverse party is classified by entity type, which determines which identification fields are relevant.
+
+| Type | Badge | Description |
+|------|-------|-------------|
+| **Natural Person** | Grey | An individual. Identified by SA ID number. |
+| **Company** | Blue | A registered company (Pty Ltd, Ltd). Identified by company registration number. |
+| **Trust** | Purple | An inter vivos or testamentary trust. Identified by trust registration number. |
+| **Close Corporation** | Teal | A close corporation (CC). Identified by CK number. |
+| **Partnership** | Amber | A partnership of natural persons or entities. |
+| **Other** | Grey | Any entity that does not fit the above categories. |
+
+### Relationships
+
+When an adverse party is linked to a matter, you specify the nature of their involvement.
+
+| Relationship | Badge | Description |
+|-------------|-------|-------------|
+| **Opposing Party** | Red | The primary party on the other side of the matter (defendant, respondent, counterparty). |
+| **Witness** | Grey | A witness who may testify in the matter. |
+| **Co-Accused** | Amber | A co-accused in criminal or disciplinary proceedings. |
+| **Related Entity** | Blue | An entity related to one of the parties (subsidiary, holding company, connected person). |
+| **Guarantor** | Teal | A party who has guaranteed obligations of another party in the matter. |
+
+### The Adverse Party Registry
+
+The registry is the firm-wide list of all adverse parties. It is accessible from the **Adverse Parties** page under the Legal section in the sidebar. Each entry shows the party name, ID number, registration number, entity type, and the number of matters they are linked to.
+
+The registry supports:
+
+- **Search** -- find parties by name across the entire registry
+- **Filter by type** -- narrow the list to a specific entity type (Natural Person, Company, Trust, etc.)
+- **Link to Matter** -- link an existing party to a new matter directly from the registry
+- **Delete** -- remove a party that is not linked to any matters
+
+<Callout type="warning">
+  An adverse party cannot be deleted while it is linked to one or more matters. Unlink it from all matters first before deleting.
+</Callout>
+
+## Adding an Adverse Party
+
+<Steps>
+### Step 1 -- Open the Adverse Parties page
+
+Navigate to the **Adverse Parties** page from the Legal section in the sidebar. Alternatively, open a matter and go to the **Adverse Parties** tab.
+
+### Step 2 -- Click Add Party
+
+Click the **Add Party** button to open the creation dialog.
+
+### Step 3 -- Fill in the details
+
+Complete the form:
+
+- **Name** (required) -- full legal name of the individual or registered name of the entity
+- **Party Type** (required) -- select the entity type from the dropdown
+- **ID Number** -- South African identity number for natural persons
+- **Registration Number** -- company, CC, or trust registration number
+- **Aliases** -- alternative names, comma-separated (e.g. trading names, maiden names)
+- **Notes** -- any additional context about the party
+
+### Step 4 -- Create the party
+
+Click **Create Party**. The party is added to the firm-wide registry and can now be linked to matters.
+</Steps>
+
+## Linking an Adverse Party to a Matter
+
+There are two ways to link an adverse party to a matter.
+
+### From the matter detail page
+
+<Steps>
+### Step 1 -- Open the Adverse Parties tab
+
+Navigate to the matter and select the **Adverse Parties** tab.
+
+### Step 2 -- Click Link Adverse Party
+
+Click the **Link Adverse Party** button.
+
+### Step 3 -- Complete the link form
+
+- **Adverse Party** -- select the party from the registry dropdown
+- **Client** -- select the client associated with this matter
+- **Relationship** -- choose the relationship type (Opposing Party, Witness, Co-Accused, Related Entity, or Guarantor)
+- **Description** -- optionally add context about the nature of the link
+
+### Step 4 -- Link the party
+
+Click **Link Party**. The adverse party now appears in the matter's Adverse Parties tab with the specified relationship badge.
+</Steps>
+
+### From the registry
+
+Open the adverse party registry, click the actions menu on a party row, and select **Link to Matter**. This opens a similar dialog where you choose the matter, client, and relationship.
+
+## The Matter Adverse Parties Tab
+
+The Adverse Parties tab on a matter's detail page shows all parties linked to that matter. Each row displays:
+
+- **Party Name** -- the registered name from the adverse party registry
+- **Relationship** -- a colour-coded badge showing the relationship type
+- **Description** -- any additional context provided when the link was created
+- **Linked** -- the date the party was linked to this matter
+
+Each row has an actions menu with an **Unlink** option that removes the party from the matter without deleting the party from the registry.
+
+## Conflict Checking
+
+The adverse party registry is the data foundation for conflict-of-interest checking. When a party is linked to multiple matters across different clients, this creates a potential conflict that should be reviewed before accepting new instructions.
+
+<Callout type="info">
+  The number in the **Links** column on the registry table shows how many matters each party is connected to. A party linked to more than one matter warrants a closer look -- particularly if the matters involve different clients.
+</Callout>
+
+The combination of a firm-wide registry with matter-level linking means that adverse party data is centralised and searchable. When a prospective client names the opposing party in a new matter, you can search the registry to see whether that party (or a related entity) appears in any of your existing matters.
+
+## Tips and Best Practices
+
+- **Register early** -- add adverse parties as soon as they are identified, ideally at matter intake. This maximises the value of conflict checking for future matters.
+- **Use aliases** -- if a party is known by multiple names (maiden name, trading name, shortened form), record them as aliases so searches catch all variations.
+- **Be specific with relationships** -- distinguishing between Opposing Party, Witness, and Related Entity gives better context when reviewing potential conflicts.
+- **Record ID and registration numbers** -- name matching alone is unreliable. ID numbers and registration numbers provide definitive identification.
+- **Review links before closure** -- the adverse party record persists after a matter is closed, continuing to support conflict checks for future matters.
+
+## Related Features
+
+- [Conflict Checks](/verticals/legal/conflict-checks) -- the planned conflict check feature will use adverse party data to automate screening
+- [Projects](/features/projects) -- adverse parties are linked at the matter (project) level
+- [Customers](/features/customers) -- linking requires selecting the client associated with the matter

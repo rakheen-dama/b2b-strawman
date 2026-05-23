@@ -1,0 +1,176 @@
+---
+title: "Disbursements & Statements"
+description: "Record disbursements advanced on behalf of clients, manage approval workflows, and generate statements of account for legal matters."
+---
+
+import { Callout, Steps } from "nextra/components"
+
+# Disbursements & Statements
+
+Disbursements are costs that a law firm advances on behalf of a client during the course of a matter — sheriff fees, court fees, advocate fees, expert witness costs, and similar third-party expenses. In South African legal practice, these must be tracked separately from professional fees and reconciled before a matter can be closed.
+
+HeyKazi provides a dedicated disbursement register per matter with a full approval workflow, VAT handling aligned to SARS requirements, and the ability to generate statements of account that summarise fees, disbursements, and trust balances for a client.
+
+<Callout type="info">
+  Disbursements and Statements of Account require the **disbursements** module to be enabled for your organisation. Contact your administrator to activate it.
+</Callout>
+
+## Key Concepts
+
+### Disbursement Categories
+
+Each disbursement is classified into a category that determines default VAT treatment and reporting.
+
+| Category | Description | Default VAT |
+|----------|-------------|-------------|
+| **Sheriff Fees** | Service of court documents, attachment of property | Zero-rated |
+| **Court Fees** | Filing fees, issue fees, set-down fees | Zero-rated |
+| **Deeds Office Fees** | Property registration and search fees | Zero-rated |
+| **Counsel Fees** | Fees paid to external counsel for opinions or appearances | Standard (15%) |
+| **Advocate Fees** | Brief fees and appearance fees for advocates | Standard (15%) |
+| **Search Fees** | Company searches, credit checks, tracing | Standard (15%) |
+| **Expert Witness** | Reports and testimony from expert witnesses | Standard (15%) |
+| **Travel** | Travel costs incurred on the client's behalf | Standard (15%) |
+| **Other** | Any disbursement that does not fit the above categories | Standard (15%) |
+
+<Callout type="info">
+  The VAT treatment auto-selects based on category but can always be overridden. Statutory fees (sheriff, court, deeds office) default to zero-rated pass-through since no VAT is charged by the issuing authority.
+</Callout>
+
+### Approval Status
+
+Disbursements move through an approval workflow before they can be billed to the client.
+
+| Status | Badge | Description |
+|--------|-------|-------------|
+| **Draft** | Grey | Newly recorded. Can be edited freely. |
+| **Pending Approval** | Amber | Submitted for review by a senior practitioner. |
+| **Approved** | Green | Reviewed and approved. Ready to be included on an invoice. |
+| **Rejected** | Red | Returned to the submitter with a reason. Must be corrected and resubmitted. |
+
+### Billing Status
+
+Tracks whether a disbursement has been recovered from the client.
+
+| Status | Badge | Description |
+|--------|-------|-------------|
+| **Unbilled** | Grey | Not yet included on any invoice. |
+| **Billed** | Green | Included as a line item on an invoice. |
+| **Written Off** | Grey | Written off with a recorded reason. Will not be billed. |
+
+### Payment Source
+
+Each disbursement records where the funds were drawn from.
+
+| Source | Description |
+|--------|-------------|
+| **Office Account** | Paid from the firm's own operating account. |
+| **Trust Account** | Paid from the client's trust funds held by the firm. Requires linking a trust transaction. |
+
+<Callout type="warning">
+  When paying from the trust account, you must link the disbursement to a specific trust transaction. The amount field locks to the linked transaction amount to prevent mismatches. The trust account option only appears when the **trust_accounting** module is enabled.
+</Callout>
+
+## Recording a Disbursement
+
+<Steps>
+### Step 1 -- Open the Disbursements tab
+
+Navigate to a matter and select the **Disbursements** tab. If no disbursements have been recorded yet, the tab will show an empty state.
+
+### Step 2 -- Click New Disbursement
+
+Click the **New Disbursement** button to open the creation dialog.
+
+### Step 3 -- Fill in the details
+
+Complete the form:
+
+- **Matter** -- pre-selected if you opened the dialog from a matter's Disbursements tab
+- **Client** -- the client associated with this matter
+- **Category** -- select the type of disbursement (VAT treatment auto-fills based on your selection)
+- **Description** -- what was paid for, e.g. "Sheriff service fee -- summons on defendant"
+- **Amount (ZAR, excl VAT)** -- the net amount before VAT
+- **VAT Treatment** -- auto-seeded from the category; override if needed
+- **Payment Source** -- Office Account or Trust Account
+- **Incurred Date** -- the date the cost was incurred
+- **Supplier** -- the party who provided the service, e.g. "Sheriff Sandton"
+- **Supplier Reference** -- optional invoice or reference number from the supplier
+- **Receipt** -- optionally upload a PDF or image of the receipt
+
+### Step 4 -- Create the disbursement
+
+Click **Create Disbursement**. The new record appears in the disbursement list in Draft status, ready to be reviewed and submitted for approval.
+</Steps>
+
+## Approving Disbursements
+
+When a disbursement is submitted for approval (moved from Draft to Pending Approval), a senior practitioner with the appropriate capability sees an **Approval Required** panel on the disbursement detail page.
+
+<Steps>
+### Step 1 -- Review the disbursement
+
+Check the amount, supplier, category, and any attached receipt to confirm the cost is legitimate and correctly categorised.
+
+### Step 2 -- Approve or reject
+
+- Click **Approve** to mark the disbursement as approved. You can optionally add approval notes.
+- Click **Reject** to return it to the submitter. A reason is required so the submitter knows what to correct.
+</Steps>
+
+<Callout type="warning">
+  Only disbursements in **Draft** or **Pending Approval** status can be edited. Once a disbursement is approved, it is locked to preserve the audit trail.
+</Callout>
+
+## Statements of Account
+
+A statement of account is a formal document that summarises all financial activity on a matter for a given period -- professional fees, disbursements incurred, payments received, and trust balances held. In South African legal practice, this is commonly required under Section 86 of the Attorneys Act for trust account reconciliation.
+
+### Generating a Statement
+
+<Steps>
+### Step 1 -- Open the Statements tab
+
+Navigate to a matter and select the **Statements** tab. Previously generated statements are listed with their date, closing balance owing, and trust balance held.
+
+### Step 2 -- Click Generate Statement of Account
+
+Click the **Generate Statement of Account** button to open the generation dialog.
+
+### Step 3 -- Set the period
+
+Choose a **Period start** and **Period end** date. If prior statements exist, the start date defaults to the day after the most recent statement was generated, avoiding overlap.
+
+### Step 4 -- Preview and save
+
+Click **Preview & Save**. The system generates the statement, displays an HTML preview, and saves it as a PDF to the matter's documents. You can download the PDF immediately.
+</Steps>
+
+The statement summary includes:
+
+- **Total fees** -- professional fees charged in the period
+- **Total disbursements** -- third-party costs incurred in the period
+- **Previous balance owing** -- carried forward from prior periods
+- **Payments received** -- client payments during the period
+- **Closing balance owing** -- net amount the client owes
+- **Trust balance held** -- funds held in trust on the client's behalf
+
+## The Disbursement List
+
+The disbursement list provides a sortable view of all disbursements for a matter or across the organisation. Columns include date, matter, category, description, supplier, amount (inclusive of VAT), approval status, and billing status.
+
+You can sort by date, supplier name, amount, or approval status by clicking the column headers. The list supports filtering by approval status, billing status, and category on the full disbursements page.
+
+## Tips and Best Practices
+
+- **Record disbursements promptly** -- enter costs on the day they are incurred to keep the matter ledger accurate and avoid end-of-month scrambles.
+- **Attach receipts** -- uploading supplier invoices or receipts provides an audit trail and makes approval faster.
+- **Check VAT treatment** -- statutory fees (sheriff, court, deeds office) are zero-rated; commercial services carry standard VAT. Getting this wrong affects your VAT return.
+- **Generate statements regularly** -- monthly or quarterly statements keep clients informed and reduce disputes at billing time.
+- **Review unbilled disbursements before invoicing** -- the billing run wizard pulls in approved unbilled disbursements as invoice line items. Make sure all pending disbursements are approved before running a billing cycle.
+
+## Related Features
+
+- [Invoicing](/features/invoicing) -- approved disbursements flow into invoices as line items
+- [Projects](/features/projects) -- disbursements are tracked within matters (projects)
+- [Time Tracking](/features/time-tracking) -- professional fees complement disbursement tracking on statements of account

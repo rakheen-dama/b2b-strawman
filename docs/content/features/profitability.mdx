@@ -1,0 +1,162 @@
+---
+title: "Profitability"
+description: "Analyse team utilization, project profitability, and customer profitability with margin tracking and date-range filtering."
+---
+
+import { Callout, Steps } from "nextra/components"
+
+# Profitability
+
+The Profitability page in HeyKazi gives you a clear picture of where your organisation is making money and where it is not. It brings together three views — team utilization, project profitability, and customer profitability — into a single dashboard with date-range filtering and sortable tables.
+
+Profitability data is derived from time entries, billing rates, and cost rates. Revenue is calculated from billable hours multiplied by billing rates. Cost is calculated from the same hours multiplied by internal cost rates. The difference is your margin.
+
+## Key Concepts
+
+### Revenue, Cost, and Margin
+
+| Term | Definition |
+|------|-----------|
+| **Revenue (Billable Value)** | The total value of billable hours worked, calculated as billable hours multiplied by the billing rate assigned to each team member or project. |
+| **Cost (Cost Value)** | The total internal cost of the hours worked, calculated as hours multiplied by the cost rate configured on each team member's rate card. |
+| **Margin** | Revenue minus cost. A positive margin means the work is profitable. |
+| **Margin %** | Margin as a percentage of revenue. For example, R10,000 revenue with R6,000 cost gives a margin of R4,000 and a margin percentage of 40%. |
+
+<Callout type="info">
+  Cost rates must be configured in your rate cards for margin calculations to appear. Without cost rates, the Margin and Margin % columns show "N/A" instead of calculated values.
+</Callout>
+
+### Utilization
+
+Utilization measures how much of a team member's logged time is billable versus non-billable. It is expressed as a percentage:
+
+**Utilization % = (Billable Hours / Total Hours) x 100**
+
+A utilization rate of 70% or above is generally considered healthy for professional services firms, though the target varies by role and organisation.
+
+## The Profitability Dashboard
+
+The profitability page defaults to the current calendar month and displays three sections. Each section has its own date-range picker so you can analyse different periods independently.
+
+### Include Projections Toggle
+
+At the top of the page, a toggle switch lets you **Include Projections**. When enabled, the profitability data includes projected values (such as budgeted hours not yet logged), giving you a forward-looking view alongside actual figures.
+
+## Team Utilization
+
+The Team Utilization table shows each team member's time breakdown for the selected period.
+
+**Columns:**
+
+| Column | Description |
+|--------|-------------|
+| **Name** | The team member's name. Click the expand arrow to see a currency breakdown of their billable and cost values. |
+| **Total Hours** | All hours logged (billable and non-billable combined). |
+| **Billable** | Hours logged against billable tasks. |
+| **Non-Billable** | Hours logged against non-billable tasks or internal work. |
+| **Utilization %** | Billable hours as a percentage of total hours, shown as a progress bar and numeric value. |
+
+The utilization bar uses colour coding:
+
+- **Green** (70% and above) — strong utilization
+- **Amber** (40% to 69%) — moderate utilization
+- **Grey** (below 40%) — low utilization
+
+All columns are sortable. Click any column header to sort ascending or descending.
+
+**Currency breakdown:** Expanding a team member's row reveals a per-currency breakdown showing billable value and cost value. This is useful when your team works across multiple currencies.
+
+## Project Profitability
+
+The Project Profitability table shows the financial performance of each project for the selected period.
+
+**Columns:**
+
+| Column | Description |
+|--------|-------------|
+| **Project** | The project name. |
+| **Customer** | The customer associated with the project (or a dash if unassigned). |
+| **Currency** | The billing currency for this project. |
+| **Billable Hours** | Total billable hours logged against this project. |
+| **Revenue** | Billable value (hours multiplied by billing rate). |
+| **Cost** | Internal cost (hours multiplied by cost rate). Shows "N/A" if cost rates are not configured. |
+| **Margin** | Revenue minus cost. Green for positive, red for negative. |
+| **Margin %** | Margin as a percentage of revenue. Green for positive, red for negative. |
+
+All columns are sortable. The default sort is by margin (descending), putting your most profitable projects at the top.
+
+<Callout type="warning">
+  Projects with no cost rate configured will show "N/A" for cost, margin, and margin percentage. To get accurate profitability figures, configure cost rates in your rate card settings.
+</Callout>
+
+## Customer Profitability
+
+The Customer Profitability table aggregates project profitability data by customer. This gives you a client-level view of which relationships are most and least profitable.
+
+**Columns:**
+
+| Column | Description |
+|--------|-------------|
+| **Customer** | The customer name. Click the row to expand and see the individual project breakdown. |
+| **Currency** | The billing currency. |
+| **Revenue** | Total billable value across all projects for this customer. |
+| **Cost** | Total internal cost across all projects for this customer. |
+| **Margin** | Total margin across all projects. |
+| **Margin %** | Overall margin percentage for this customer. |
+
+Clicking a customer row expands it to show each underlying project with its individual figures. This drill-down makes it easy to identify which specific engagements are driving profitability — or dragging it down.
+
+## Date-Range Filtering
+
+Each section (utilization, project profitability, customer profitability) has **From** and **To** date pickers. Changing the date range fetches fresh data for that period without affecting the other sections. The page defaults to the first day of the current month through today.
+
+## Accessing Profitability
+
+The Profitability page requires the **Financial Visibility** capability or Admin/Owner role. Team members without this permission see a "Permission Denied" message when attempting to access the page.
+
+## How Profitability Is Calculated
+
+Understanding where the numbers come from helps you interpret the dashboard correctly.
+
+<Steps>
+### Step 1 — Time entries provide the hours
+
+Every time entry logged by a team member records the number of hours and whether the work is billable or non-billable. Only billable hours contribute to revenue.
+
+### Step 2 — Billing rates determine revenue
+
+Each team member has a billing rate configured via rate cards. The billable value of a time entry equals the hours logged multiplied by the applicable billing rate. If project-specific or customer-specific rate overrides exist, those take precedence.
+
+### Step 3 — Cost rates determine internal cost
+
+Cost rates represent your internal cost of labour — typically derived from the team member's salary and overhead. The cost value of a time entry equals the hours logged multiplied by the cost rate.
+
+### Step 4 — Margin is calculated per project
+
+For each project, the system sums all billable values (revenue) and all cost values, then computes margin (revenue minus cost) and margin percentage (margin divided by revenue).
+
+### Step 5 — Customer figures are aggregated
+
+Customer profitability is computed by summing the revenue, cost, and margin across all projects belonging to that customer.
+</Steps>
+
+<Callout type="info">
+  Multi-currency support is built in. When a team member works on projects in different currencies, the utilization currency breakdown shows billable and cost values per currency. Project and customer profitability tables display the currency alongside each row so you can compare like-for-like.
+</Callout>
+
+## Tips and Best Practices
+
+- **Review weekly** — check profitability data at least weekly to catch unprofitable projects early, before they accumulate significant losses
+- **Configure cost rates** — without cost rates, you only see revenue. Setting accurate internal cost rates (salary cost per hour) enables true margin analysis
+- **Compare periods** — adjust the date range to compare month-over-month or quarter-over-quarter performance
+- **Investigate low utilization** — team members with consistently low utilization may need more billable assignments or may be spending too much time on internal tasks
+- **Use customer profitability for pricing decisions** — if a client relationship consistently shows negative margins, it may be time to renegotiate rates or scope
+- **Enable projections for planning** — the projections toggle helps you forecast whether the current month will hit profitability targets based on scheduled work
+
+## Related Features
+
+- [Time Tracking](/features/time-tracking) — billable and non-billable hours feed into utilization and profitability calculations
+- [Rate Cards and Budgets](/features/rate-cards-budgets) — billing rates and cost rates determine revenue and cost figures
+- [Projects](/features/projects) — project-level profitability rolls up from time entries logged against project tasks
+- [Customers](/features/customers) — customer profitability aggregates project data by client
+- [Reports](/features/reports) — additional profitability reports are available in the Reports module

@@ -1,0 +1,236 @@
+---
+title: "Trust Accounting"
+description: "LSSA-compliant trust account management for client funds — deposits, payments, client ledgers, reconciliation, interest, and investments."
+---
+
+import { Callout, Steps } from "nextra/components"
+
+# Trust Accounting
+
+Trust Accounting in HeyKazi provides LSSA-compliant management of client funds held in trust. Law firms in South Africa are required to maintain separate trust accounts for client money, keep accurate ledgers per client, and reconcile regularly. This module handles the full lifecycle — from receiving deposits and making payments to running interest calculations and performing bank reconciliations.
+
+The trust accounting module is gated behind the `trust_accounting` organisation module flag. Once enabled, it appears in the sidebar and provides a dashboard with real-time balances, pending approvals, and compliance alerts.
+
+## Key Concepts
+
+### Trust Account Types
+
+Each organisation can configure one or more trust accounts. One account is designated as the primary account.
+
+| Type | Description |
+|------|-------------|
+| **General** | The main trust account used for day-to-day client fund management. Most firms have one general trust account. |
+| **Investment** | A dedicated account for trust investments placed with financial institutions on behalf of clients. |
+| **Section 86** | A Section 86 trust account as defined by the Attorneys Act, used for specific trust fund arrangements. |
+
+### Trust Account Status
+
+| Status | Description |
+|--------|-------------|
+| **Active** | The account is in use and accepting transactions. |
+| **Closed** | The account has been closed. No new transactions can be recorded. |
+
+### Transaction Types
+
+Trust transactions fall into two categories: inflows (money coming in) and outflows (money going out).
+
+| Type | Direction | Description |
+|------|-----------|-------------|
+| **Deposit** | Inflow | Client funds received into trust. |
+| **Payment** | Outflow | Payment made from trust on behalf of a client. |
+| **Transfer In** | Inflow | Funds transferred in from another account or source. |
+| **Transfer Out** | Outflow | Funds transferred out to another account. |
+| **Fee Transfer** | Outflow | Transfer of earned fees from trust to the firm's business account. |
+| **Refund** | Inflow | Refund of funds back into trust. |
+| **Interest Credit** | Inflow | Interest earned on trust funds credited to the client. |
+| **Interest (LPFF)** | Inflow | Interest allocated to the Legal Practitioners Fidelity Fund. |
+| **Reversal** | Either | Reversal of a previously recorded transaction. |
+
+### Transaction Statuses
+
+Every transaction moves through a status lifecycle that enforces approval controls.
+
+| Status | Badge colour | Description |
+|--------|-------------|-------------|
+| **Recorded** | Grey | The transaction has been recorded but does not yet require approval (typically deposits). |
+| **Awaiting Approval** | Amber | The transaction requires approval before it takes effect (typically payments and fee transfers). |
+| **Approved** | Green | An authorised user has approved the transaction. |
+| **Rejected** | Red | The transaction was rejected with a reason. |
+| **Reversed** | Grey | The transaction has been reversed by a subsequent reversal entry. |
+
+<Callout type="warning">
+  Payments and fee transfers from trust require explicit approval by a user with the **Approve Trust Payment** capability. This is a compliance requirement — the person recording a transaction cannot be the same person approving it.
+</Callout>
+
+## The Trust Dashboard
+
+The main trust accounting page displays four summary cards at a glance:
+
+- **Trust Balance** — the total cashbook balance across all client ledgers
+- **Active Clients** — the number of clients currently holding trust balances
+- **Pending Approvals** — transactions awaiting approval, with a warning badge when attention is needed
+- **Reconciliation** — the status and date of the last bank reconciliation (Balanced or Unbalanced)
+
+Below the summary cards, an **Alerts** section surfaces compliance warnings such as overdue reconciliations or unusual balance movements. A **Recent Transactions** table shows the last 10 transactions across all client ledgers.
+
+## Recording a Transaction
+
+<Steps>
+### Step 1 — Navigate to Transactions
+
+Click **Trust Accounting** in the sidebar, then click **Record Transaction** in the top-right corner. Alternatively, navigate directly to the Transactions page.
+
+### Step 2 — Choose the transaction type
+
+Select the transaction type from the available options: Deposit, Payment, Fee Transfer, or Refund. Each type opens a dialog tailored to that transaction.
+
+### Step 3 — Fill in the details
+
+Complete the required fields:
+
+- **Client** — select which client this transaction relates to
+- **Amount** — the transaction amount
+- **Reference** — a unique reference for audit trail purposes
+- **Date** — the transaction date
+- **Description** (optional) — additional context
+
+For payments and fee transfers, you may also link the transaction to a specific matter.
+
+### Step 4 — Submit
+
+Click **Submit**. Deposits are recorded immediately. Payments and fee transfers move to **Awaiting Approval** status and appear in the pending approvals count on the dashboard.
+</Steps>
+
+### Approving or Rejecting Transactions
+
+Users with the **Approve Trust Payment** capability can approve or reject pending transactions directly from the Transactions page. Each pending row shows approval action buttons. Rejected transactions require a reason, which is recorded in the audit trail.
+
+### Reversing a Transaction
+
+Approved transactions can be reversed by users with trust management permissions. A reversal creates a new offsetting transaction linked to the original, maintaining a complete audit trail.
+
+## Client Ledgers
+
+The Client Ledgers page shows trust account balances broken down by client. Each row displays:
+
+- **Client Name** — links through to the individual client ledger detail
+- **Trust Balance** — current balance held in trust for this client
+- **Total Deposits** — cumulative deposits received
+- **Total Payments** — cumulative payments made
+- **Total Fee Transfers** — cumulative fees transferred to the business account
+- **Last Transaction** — date of the most recent transaction
+
+Use the **Non-zero balances only** filter to focus on clients with active balances. A search field lets you find specific clients by name.
+
+<Callout type="info">
+  Client ledger balances are derived from the transaction history. There is no manual balance adjustment — all movements must go through recorded transactions to maintain the audit trail.
+</Callout>
+
+## Reconciliation
+
+Bank reconciliation compares the trust account's cashbook balance against the actual bank statement to identify discrepancies. Reconciliations are a regulatory requirement for trust accounts.
+
+<Steps>
+### Step 1 — Start a new reconciliation
+
+Navigate to **Trust Accounting > Reconciliation** and click **New Reconciliation**.
+
+### Step 2 — Enter the bank statement balance
+
+Enter the closing balance from your bank statement and the period end date.
+
+### Step 3 — Review the comparison
+
+The system compares three figures:
+
+- **Bank Balance** — the balance from your bank statement
+- **Cashbook Balance** — the calculated balance from recorded transactions
+- **Client Ledger Total** — the sum of all individual client ledger balances
+
+### Step 4 — Complete the reconciliation
+
+If all three figures agree, the reconciliation is marked as **Balanced**. If there are discrepancies, it is marked as **Unbalanced** and requires investigation.
+</Steps>
+
+The reconciliation history table shows all past reconciliations with their status and completion date. The dashboard summary card always reflects the most recent reconciliation result.
+
+## Interest
+
+The Interest page manages interest calculations on trust funds. South African law requires that interest earned on trust funds be split between the client and the Legal Practitioners Fidelity Fund (LPFF).
+
+### Interest Runs
+
+An interest run calculates interest for a specific period across all client balances. Each run moves through three statuses:
+
+| Status | Description |
+|--------|-------------|
+| **Draft** | The interest calculation has been prepared but not yet finalised. |
+| **Approved** | The run has been reviewed and approved. |
+| **Posted** | Interest entries have been posted to client ledgers. |
+
+Each run shows the total interest calculated, the LPFF share, and the client share.
+
+### LPFF Rate History
+
+The LPFF rate table tracks the interest rate and the percentage allocated to the Legal Practitioners Fidelity Fund over time. Each rate has an effective date, and the system applies the correct rate for each calculation period.
+
+## Investments
+
+The Investments page tracks trust funds placed with financial institutions as fixed deposits or call accounts. Each investment records:
+
+- **Client** — which client's funds are invested
+- **Investment Basis** — whether the investment was placed at firm discretion or on client instruction
+- **Institution** — the financial institution holding the funds
+- **Principal** — the amount invested
+- **Interest Rate** — the rate of return
+- **Deposit and Maturity Dates** — when the investment was placed and when it matures (or "Call deposit" for on-demand)
+- **Interest Earned** — accumulated interest on the investment
+
+Investments nearing maturity (within 30 days) are highlighted with an amber background to prompt action.
+
+| Status | Description |
+|--------|-------------|
+| **Active** | The investment is currently placed and earning interest. |
+| **Matured** | The investment has reached its maturity date. |
+| **Withdrawn** | The investment has been withdrawn and funds returned to the trust account. |
+
+<Callout type="info">
+  For investments placed on client instruction, the LPFF rate is set at the statutory 5%. For firm-discretion investments, the rate follows the arrangement agreed with the LPFF.
+</Callout>
+
+## Trust Reports
+
+The Trust Reports page provides access to trust-specific report definitions. Available reports typically include:
+
+- **Client Trust Balances** — a snapshot of all client trust balances at a point in time
+- **Trust Receipts and Payments** — a detailed register of all trust transactions for a period
+- **Trust Reconciliation Report** — a formal reconciliation report suitable for regulatory submission
+
+Each report card links through to the report execution page where you can set parameters and generate the output.
+
+## Permissions
+
+Trust accounting access is controlled by three capabilities:
+
+| Capability | What it allows |
+|------------|----------------|
+| **View Trust** | View trust balances, transactions, and reports (read-only). |
+| **Manage Trust** | Record transactions, create reconciliations, manage investments. |
+| **Approve Trust Payment** | Approve or reject pending trust payments and fee transfers. |
+
+Organisation Owners and Admins have all three capabilities by default. Other team members must be granted these capabilities explicitly.
+
+## Tips and Best Practices
+
+- **Reconcile monthly** — at minimum, perform a bank reconciliation at the end of every month. Many firms reconcile weekly.
+- **Separate approval from recording** — the person who records a payment should not be the person who approves it. This separation of duties is a core compliance requirement.
+- **Review pending approvals daily** — stale pending transactions can block matter closure and delay client work.
+- **Keep references meaningful** — use client matter references in transaction descriptions to make the audit trail easy to follow.
+- **Run interest calculations promptly** — interest should be calculated and posted at the end of each quarter or as required by your LPFF agreement.
+
+## Related Features
+
+- [Invoicing](/features/invoicing) — fee transfers from trust often follow invoice generation
+- [Projects](/features/projects) — trust transactions can be linked to specific matters
+- [Customers](/features/customers) — client ledgers are tied to customer records
+- [Reports](/features/reports) — trust reports are accessible through the main reports module

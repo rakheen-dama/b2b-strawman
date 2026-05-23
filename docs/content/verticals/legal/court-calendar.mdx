@@ -1,27 +1,190 @@
 ---
-title: "Court Calendar (Coming Soon)"
-description: "Track court dates, hearing schedules, and filing deadlines for legal matters."
+title: "Court Calendar"
+description: "Track court dates, hearing schedules, prescription periods, and filing deadlines across all active matters."
 ---
 
-import { Callout } from "nextra/components"
+import { Callout, Steps } from "nextra/components"
 
 # Court Calendar
 
+The Court Calendar gives law firms a centralised view for managing court appearances, hearings, and prescription tracking across every active matter. Instead of maintaining separate spreadsheets or relying on diary entries, you can schedule court dates, record outcomes, and monitor prescription periods from a single page.
+
+The Court Calendar module is available to organisations that have enabled it in their organisation settings. All court dates are linked to a specific matter and client, so your team always knows which engagement a hearing relates to.
+
+## Key Concepts
+
+### Court Date Types
+
+Every court date is categorised by type so you can filter and report on the nature of upcoming appearances.
+
+| Type | Description |
+|------|-------------|
+| **Hearing** | A general court hearing, typically for arguments or applications. |
+| **Trial** | A scheduled trial date for the matter. |
+| **Motion** | A motion hearing, such as an interlocutory application or urgent application. |
+| **Mediation** | A mediation session, whether court-ordered or voluntary. |
+| **Arbitration** | An arbitration proceeding, typically in commercial or labour disputes. |
+| **Pre-Trial** | A pre-trial conference to set the trial agenda, agree on facts, or narrow issues. |
+| **Case Management** | A case management meeting with the court to discuss progress and set deadlines. |
+| **Taxation** | A taxation of costs hearing (bill of costs assessment by the Taxing Master). |
+| **Other** | Any court event that does not fit the categories above. |
+
+### Court Date Statuses
+
+Each court date moves through a lifecycle that reflects what has happened.
+
+| Status | Description |
+|--------|-------------|
+| **Scheduled** | The court date is confirmed and upcoming. This is the default status when a court date is created. |
+| **Postponed** | The hearing has been postponed to a new date. A reason is recorded for audit purposes. |
+| **Heard** | The court date took place and an outcome has been recorded. |
+| **Cancelled** | The court date was cancelled. A reason is recorded. |
+
 <Callout type="info">
-  This feature is coming soon. The sections below describe planned capabilities.
+  Court dates in **Scheduled** status can be edited, postponed, cancelled, or have an outcome recorded. **Postponed** dates can be edited, cancelled, or have an outcome recorded but cannot be postponed again. Once a court date is **Heard** or **Cancelled**, no further actions are available.
 </Callout>
 
-## What's Planned
+## Scheduling a Court Date
 
-The court calendar will give law firms a dedicated view for tracking court dates, hearing schedules, motion deadlines, and filing due dates across all active matters. You will be able to see upcoming dates in a calendar or list view, set reminders for critical deadlines, and link each court date to the relevant matter and client. The calendar will support South African court jurisdictions, including the High Court, Magistrate's Court, and specialist tribunals.
+<Steps>
+### Step 1 -- Open the Court Calendar
 
-Planned features include automatic deadline calculation based on court rules (for example, days to file a plea after service), conflict detection when multiple hearings overlap, and the ability to share calendar entries with team members assigned to the matter.
+Click **Court Calendar** in the left sidebar, or open the **Court Dates** tab on a matter's detail page.
 
-## What's Available Today
+### Step 2 -- Click New Court Date
 
-While the dedicated court calendar is in development, you can use the following features to track court-related dates:
+Click the **New Court Date** button to open the scheduling dialog.
 
-- [Projects](/features/projects) — create a project for each matter and use task due dates to track hearing and filing deadlines.
-- [Customers](/features/customers) — manage client records and link matters to the correct client.
-- [Documents & Templates](/features/documents) — store court documents and use templates for standard pleadings.
-- [Workflow Automations](/features/workflow-automations) — set up reminders for upcoming task due dates so nothing is missed.
+### Step 3 -- Fill in the details
+
+Complete the form:
+
+- **Matter** -- select the matter this court date relates to
+- **Type** -- choose the court date type (Hearing, Trial, Motion, etc.)
+- **Date** -- the scheduled date of the appearance
+- **Time** (optional) -- the scheduled time, if known
+- **Court Name** -- the name of the court (for example, "Johannesburg High Court" or "Randburg Magistrate's Court")
+- **Court Reference** (optional) -- the case number or court file reference
+- **Judge / Magistrate** (optional) -- the presiding judicial officer, if assigned
+- **Description** (optional) -- any additional details about the hearing
+- **Reminder (days before)** -- how many days in advance you want to be reminded (defaults to 7)
+
+### Step 4 -- Save
+
+Click **Schedule Court Date**. The court date appears immediately in the list and calendar views, linked to the selected matter and its client.
+</Steps>
+
+You can also create court dates directly from a matter's detail page using the **Court Dates** tab. When you create a court date from within a matter, the matter is pre-selected in the form.
+
+## Views
+
+The Court Calendar page offers three views, accessible via the tab strip at the top of the page.
+
+### List View
+
+The default view. Displays all court dates in a sortable table with columns for date, time, type, court, matter, client, and status. You can sort by date, court name, or status by clicking the column headers. Each row has an actions menu with options to edit, postpone, cancel, or record an outcome.
+
+### Calendar View
+
+A monthly calendar grid showing court dates as colour-coded dots on each day. Navigate between months using the arrow buttons. Click on a day with court dates to open the detail panel for the first entry on that day.
+
+Status colours on the calendar:
+
+| Colour | Status |
+|--------|--------|
+| Blue | Scheduled |
+| Amber | Postponed |
+| Teal | Heard |
+| Grey | Cancelled |
+
+Today's date is highlighted with a teal circle for quick orientation.
+
+### Prescriptions View
+
+Displays prescription trackers in a dedicated table. See the [Prescription Tracking](#prescription-tracking) section below.
+
+## Filtering and Searching
+
+The Court Calendar provides several filters to narrow down what you see:
+
+- **Status filter** -- show only Scheduled, Postponed, Heard, or Cancelled court dates
+- **Type filter** -- filter by court date type (Hearing, Trial, Motion, etc.)
+- **Date range** -- set a "from" and "to" date to scope the results
+- **Search** -- search by client name or matter name
+
+Filters apply to both the list and calendar views.
+
+## Managing Court Dates
+
+### Editing a Court Date
+
+Open the actions menu on a Scheduled or Postponed court date and click **Edit**. You can change the type, date, time, court details, and description. The matter link cannot be changed after creation.
+
+### Postponing a Court Date
+
+Click **Postpone** from the actions menu on a Scheduled court date. You must provide a new date and a reason for the postponement. The status changes to **Postponed** and the new date is reflected across all views.
+
+### Cancelling a Court Date
+
+Click **Cancel** from the actions menu on a Scheduled or Postponed court date. You must provide a reason for the cancellation. The status changes to **Cancelled** and the court date remains in history for audit purposes.
+
+### Recording an Outcome
+
+After a hearing takes place, click **Record Outcome** to document what happened. Enter the outcome description (for example, "Matter postponed by agreement to allow for further discovery" or "Judgment granted in favour of applicant"). The status changes to **Heard**.
+
+<Callout type="warning">
+  Recording an outcome is a permanent action. Once a court date is marked as Heard, it cannot be edited or changed. Make sure your outcome notes are complete before saving.
+</Callout>
+
+## Detail Panel
+
+Clicking on any court date in the list or calendar view opens a detail panel on the right side of the page. The panel shows all information about the court date: scheduled date and time, type, court name, court reference, judge or magistrate, matter, client, status, outcome, and description. Action buttons at the bottom of the panel let you edit, postpone, cancel, or record an outcome without leaving the page.
+
+## Dashboard Widget
+
+The **Upcoming Court Dates** widget appears on the organisation dashboard. It shows up to five upcoming court dates with urgency indicators:
+
+- Dates within 3 days are highlighted in red
+- Dates within 7 days are shown in amber
+- Dates further out appear in the default colour
+
+Click **View All** at the bottom of the widget to navigate to the full Court Calendar page.
+
+## Prescription Tracking
+
+South African law imposes time limits (prescription periods) within which legal proceedings must be instituted. If prescription expires, the claim is extinguished. The Prescriptions tab within the Court Calendar helps you track these critical deadlines.
+
+### Prescription Types
+
+| Type | Period | Description |
+|------|--------|-------------|
+| **General** | 3 years | The default prescription period for most claims under the Prescription Act. |
+| **Debt** | 6 years | Applies to certain debt claims. |
+| **Mortgage** | 30 years | Applies to mortgage bonds. |
+| **Delict** | 3 years | Claims arising from wrongful acts (personal injury, property damage, etc.). |
+| **Contract** | 3 years | Claims arising from breach of contract. |
+| **Custom** | Variable | For matters with non-standard prescription periods. You specify the number of years. |
+
+### Prescription Statuses
+
+| Status | Description |
+|--------|-------------|
+| **Running** | Prescription is active and the clock is ticking. |
+| **Warned** | The prescription date is approaching (within the warning threshold). |
+| **Interrupted** | Prescription has been interrupted by a formal act (such as service of a summons or acknowledgement of debt). |
+| **Expired** | The prescription period has lapsed. |
+
+### Interrupting Prescription
+
+If prescription is interrupted (for example, by the service of process or an acknowledgement of debt), click **Interrupt** on the tracker. Provide the interruption date and reason. The status changes to **Interrupted** and the tracker records the details for compliance purposes.
+
+<Callout type="warning">
+  Prescription tracking is a risk management tool, not legal advice. Always verify prescription dates independently and consult the Prescription Act 68 of 1969 for the applicable rules. HeyKazi calculates prescription dates based on the cause of action date and type you provide, but does not account for all possible interruptions or extensions.
+</Callout>
+
+## Related Features
+
+- [Projects](/features/projects) -- court dates are linked to matters (projects)
+- [Customers](/features/customers) -- each court date is associated with the matter's client
+- [Tasks](/features/tasks) -- use tasks to manage preparation work for upcoming court dates
+- [Workflow Automations](/features/workflow-automations) -- set up reminders for critical deadlines

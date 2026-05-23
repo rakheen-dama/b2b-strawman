@@ -1,27 +1,157 @@
 ---
-title: "LSSA Tariff Billing (Coming Soon)"
-description: "Bill using LSSA tariff rates for attorney-client and party-party costs."
+title: "LSSA Tariff Billing"
+description: "Bill using LSSA tariff schedules with standardised fee items, rates, and direct invoice integration."
 ---
 
-import { Callout } from "nextra/components"
+import { Callout, Steps } from "nextra/components"
 
 # LSSA Tariff Billing
 
+LSSA tariff billing in HeyKazi gives law firms built-in support for billing according to the Law Society of South Africa tariff guidelines. Instead of manually looking up tariff items and typing amounts into invoices, you can browse a structured tariff schedule, select the applicable items, and add them directly to a fee note with the correct rates applied.
+
+Tariff schedules are managed centrally for your firm and can be updated when new tariff revisions are published. The active schedule is used by default when adding tariff items to invoices.
+
+## Key Concepts
+
+### What Are LSSA Tariffs?
+
+The Law Society of South Africa publishes standardised tariff schedules that set recommended fees for common legal services. These tariffs provide a baseline for billing, particularly for:
+
+- **Attorney-client billing** -- fees charged to your own client for professional services rendered
+- **Party-party costs** -- recoverable costs that may be claimed from the opposing party in successful litigation
+- **Taxation of costs** -- the formal process where a Taxing Master assesses whether claimed costs are reasonable and in accordance with the tariff
+
+Tariff-based billing is common in litigation, conveyancing, and collections work where the nature of the services is standardised enough to have prescribed rates.
+
+### Tariff Schedules
+
+A tariff schedule is a named collection of tariff items with an effective date range. Your firm can maintain multiple schedules -- for example, one for the current published tariff and another for a previous version that still applies to matters opened before the revision date.
+
+Each schedule has:
+
+| Field | Description |
+|-------|-------------|
+| **Name** | A descriptive name (for example, "LSSA Tariff 2025" or "High Court Tariff 2024"). |
+| **Code** | A short identifier (for example, "LSSA-2025" or "HC-2024"). |
+| **Effective From** | The date from which this schedule applies. |
+| **Effective To** | The date until which this schedule applies (optional -- leave blank for the current schedule). |
+| **Active** | Whether this schedule is the currently active default. Only one schedule can be active at a time. |
+| **Item Count** | The number of tariff items in the schedule. |
+
+### Tariff Items
+
+Each tariff item represents a specific billable activity with a prescribed rate. Items are identified by an item number that follows the structure of the published tariff.
+
+| Field | Description |
+|-------|-------------|
+| **Item Number** | The tariff reference number (for example, "1(a)", "3(b)(ii)", "12"). |
+| **Description** | What the item covers (for example, "Instructions to sue or defend" or "Perusal of documents, per folio"). |
+| **Unit** | How the item is measured and billed. |
+| **Amount** | The prescribed rate in Rands. |
+| **Notes** | Optional notes about when or how the item applies. |
+
+### Billing Units
+
+Tariff items are measured in different units depending on the nature of the work:
+
+| Unit | Description |
+|------|-------------|
+| **Per Item** | A flat fee for the activity (for example, "Instructions to sue"). |
+| **Per Page** | Charged per page (for example, typing or printing). |
+| **Per Folio** | Charged per folio of 100 words (used for perusal of documents). |
+| **Per Quarter Hour** | Charged in 15-minute increments (for example, consultations). |
+| **Per Hour** | Charged per hour of work. |
+| **Per Day** | Charged per day (for example, court attendance). |
+
+## Managing Tariff Schedules
+
+<Steps>
+### Step 1 -- Open Tariff Schedules
+
+Navigate to **Tariff Schedules** under the Legal section in the sidebar.
+
+### Step 2 -- Browse schedules
+
+The page displays all tariff schedules with their name, code, effective dates, item count, and active status. The active schedule is highlighted with a teal badge.
+
+### Step 3 -- Expand a schedule
+
+Click on a schedule row to expand it and reveal the item browser. You can search items by keyword, browse by section, and view the item number, description, unit, and amount for each entry.
+
+### Step 4 -- Search within a schedule
+
+Use the search field at the top of the item browser to find specific tariff items. The search filters items by their item number and description with debounced input, so results update as you type.
+</Steps>
+
+### Cloning a Schedule
+
+When a new tariff revision is published, you do not need to re-enter every item from scratch. Click the **Clone** button on an existing schedule to create a copy. The cloned schedule inherits all items from the original, and you can then update the items that have changed, adjust the effective dates, and set the new schedule as active.
+
+### Browsing Items by Section
+
+Tariff items are automatically grouped by section based on their item number prefix. Each section can be expanded or collapsed independently, making it easy to navigate large schedules with dozens of items.
+
 <Callout type="info">
-  This feature is coming soon. The sections below describe planned capabilities.
+  Only one tariff schedule can be marked as active at a time. When you add tariff items to an invoice, the system defaults to the active schedule. If you need to bill from an older tariff, you can switch schedules in the tariff item picker.
 </Callout>
 
-## What's Planned
+## Adding Tariff Items to an Invoice
 
-LSSA tariff billing will provide law firms with built-in support for billing according to the Law Society of South Africa tariff guidelines. You will be able to select tariff items when recording time or creating invoices, with rates automatically applied based on the current published tariff. The feature will support both attorney-client billing (the fee your client pays) and party-party billing (recoverable costs from the opposing party), with separate rate schedules for each.
+The primary workflow for tariff billing is adding tariff line items directly to a fee note (invoice).
 
-Planned features include a tariff rate library that is updated with each published tariff revision, the ability to generate detailed bills of costs for taxation proceedings, and support for tariff-based fee estimates at matter inception. The system will distinguish between High Court and Magistrate's Court tariffs where applicable.
+<Steps>
+### Step 1 -- Open a draft invoice
 
-## What's Available Today
+Navigate to the invoice detail page for a draft invoice. The tariff option is only available on invoices in **Draft** status.
 
-While dedicated LSSA tariff support is in development, you can use the following features to manage legal billing:
+### Step 2 -- Click Add Tariff Items
 
-- [Time Tracking](/features/time-tracking) — record time entries against matters with hourly rates.
-- [Invoicing](/features/invoicing) — create invoices with custom line items for tariff-based charges.
-- [Rate Cards & Budgets](/features/rate-cards-budgets) — configure custom rate structures that approximate tariff rates for your most common activities.
-- [Projects](/features/projects) — track matter budgets and compare actual costs against estimates.
+On the invoice detail page, click the **Add Tariff Items** button. This opens the tariff item picker dialog.
+
+### Step 3 -- Select a schedule
+
+If your firm has multiple schedules, a schedule picker appears at the top of the dialog. The active schedule is selected by default.
+
+### Step 4 -- Browse and select items
+
+Browse the tariff items using the section-based layout or search by keyword. Click on an item to select it -- selected items are highlighted with a teal border. Click again to deselect. You can select multiple items at once.
+
+### Step 5 -- Set quantities
+
+For each selected item, set the quantity. For example, if you are billing for "Perusal of documents, per folio" and there were 12 folios, set the quantity to 12. The amount is calculated automatically (unit rate multiplied by quantity).
+
+### Step 6 -- Review and add
+
+The bottom of the dialog shows the total number of selected items and the calculated total amount. Click **Add to Invoice** to add all selected items as line items on the invoice.
+</Steps>
+
+Each tariff line item added to the invoice includes the item number and description (for example, "1(a) - Instructions to sue or defend"), the quantity, unit price from the tariff, and the calculated total. The tariff item reference is preserved on the line item for audit and taxation purposes.
+
+<Callout type="warning">
+  Tariff items can only be added to invoices in **Draft** status. Once an invoice is approved, it is locked and cannot be modified. If you need to add tariff items to an approved invoice, void it and create a new one.
+</Callout>
+
+## Tariff Billing vs. Hourly Billing
+
+HeyKazi supports both tariff-based and hourly billing, and you can use both on the same invoice. This is common in practice -- for example, you might bill standard tariff items for procedural steps (filing a plea, instructing counsel) while billing consultations and research at your firm's hourly rate.
+
+| Approach | Best for | How it works in HeyKazi |
+|----------|----------|------------------------|
+| **Tariff billing** | Procedural steps with prescribed rates, bills of costs for taxation, party-party cost recovery | Add tariff items from the tariff schedule picker |
+| **Hourly billing** | Advisory work, research, consultations, non-standard services | Log time entries and generate invoices from tracked time |
+| **Mixed** | Most litigation matters | Combine tariff line items and time-based line items on the same invoice |
+
+## Tips and Best Practices
+
+- **Keep your active schedule current** -- when the LSSA publishes a tariff revision, clone the existing schedule, update the changed rates, and set the new schedule as active. This ensures that new invoices use the latest rates while historical invoices retain the rates that were in effect when they were generated.
+- **Use meaningful item numbers** -- when adding custom items to a schedule, follow the numbering convention of the published tariff so that items are easy to cross-reference during taxation.
+- **Record notes on specialised items** -- some tariff items have conditions or limitations on when they apply. Use the notes field to capture these details so your billing team applies them correctly.
+- **Review before adding** -- the tariff item picker lets you select multiple items and set quantities before adding them to the invoice. Take a moment to review the selection and totals before clicking Add to Invoice.
+- **Combine with time entries** -- for matters that involve both procedural and advisory work, generate the invoice from unbilled time entries first, then add tariff items for the procedural steps. This gives the client a complete picture of the work performed.
+
+## Related Features
+
+- [Invoicing](/features/invoicing) -- tariff items are added as line items on invoices
+- [Time Tracking](/features/time-tracking) -- hourly billing for work not covered by tariff items
+- [Rate Cards and Budgets](/features/rate-cards-budgets) -- configure hourly rates for non-tariff billing
+- [Projects](/features/projects) -- tariff items are billed in the context of matters

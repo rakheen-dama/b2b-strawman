@@ -12,10 +12,23 @@ interface SparklineChartProps {
   className?: string;
 }
 
+function buildSmoothPath(points: [number, number][]): string {
+  if (points.length < 2) return "";
+  const [first, ...rest] = points;
+  let d = `M ${first[0]},${first[1]}`;
+  for (let i = 0; i < rest.length; i++) {
+    const prev = i === 0 ? first : rest[i - 1];
+    const curr = rest[i];
+    const cpx = (prev[0] + curr[0]) / 2;
+    d += ` C ${cpx},${prev[1]} ${cpx},${curr[1]} ${curr[0]},${curr[1]}`;
+  }
+  return d;
+}
+
 export function SparklineChart({
   data,
   width = 80,
-  height = 24,
+  height = 28,
   color = "currentColor",
   showGradient = true,
   className,
@@ -34,7 +47,6 @@ export function SparklineChart({
     );
   }
 
-  // Filter out non-finite values (NaN, Infinity, -Infinity)
   const validData = data.filter(Number.isFinite);
   if (validData.length === 0) {
     return (
@@ -52,22 +64,19 @@ export function SparklineChart({
   const max = Math.max(...validData);
   const range = max - min || 1;
 
-  const padding = 1;
+  const padding = 2;
   const plotHeight = height - padding * 2;
-  const stepX = (width - 2) / Math.max(validData.length - 1, 1);
+  const stepX = (width - 4) / Math.max(validData.length - 1, 1);
 
-  const points = validData
-    .map((value, i) => {
-      const x = 1 + i * stepX;
-      const y = padding + plotHeight - ((value - min) / range) * plotHeight;
-      return `${x},${y}`;
-    })
-    .join(" ");
+  const coords: [number, number][] = validData.map((value, i) => [
+    2 + i * stepX,
+    padding + plotHeight - ((value - min) / range) * plotHeight,
+  ]);
 
-  // Build the polygon for the gradient fill area (line + bottom edge)
-  const firstX = 1;
-  const lastX = 1 + (validData.length - 1) * stepX;
-  const fillPoints = `${firstX},${height} ${points} ${lastX},${height}`;
+  const linePath = buildSmoothPath(coords);
+  const firstX = coords[0][0];
+  const lastX = coords[coords.length - 1][0];
+  const fillPath = `${linePath} L ${lastX},${height} L ${firstX},${height} Z`;
 
   return (
     <svg
@@ -81,19 +90,26 @@ export function SparklineChart({
       {showGradient && (
         <defs>
           <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor={color} stopOpacity={0.2} />
-            <stop offset="100%" stopColor={color} stopOpacity={0} />
+            <stop offset="0%" stopColor={color} stopOpacity={0.25} />
+            <stop offset="100%" stopColor={color} stopOpacity={0.02} />
           </linearGradient>
         </defs>
       )}
-      {showGradient && <polygon points={fillPoints} fill={`url(#${gradientId})`} />}
-      <polyline
-        points={points}
+      {showGradient && <path d={fillPath} fill={`url(#${gradientId})`} />}
+      <path
+        d={linePath}
         fill="none"
         stroke={color}
-        strokeWidth={1}
+        strokeWidth={1.5}
         strokeLinecap="round"
         strokeLinejoin="round"
+      />
+      {/* End dot */}
+      <circle
+        cx={coords[coords.length - 1][0]}
+        cy={coords[coords.length - 1][1]}
+        r={2}
+        fill={color}
       />
     </svg>
   );

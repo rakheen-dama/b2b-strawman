@@ -57,14 +57,16 @@ function KpiCardContent({
   const isEmpty = emptyState != null && (value === null || value === 0 || value === "0");
 
   return (
-    <div className="flex flex-col gap-1 px-4 py-3">
-      <span className="text-muted-foreground text-xs tracking-wider uppercase">{label}</span>
-      <div className="flex items-end justify-between gap-2">
+    <div className="flex flex-col gap-1.5 px-4 py-3.5">
+      <span className="text-muted-foreground text-[11px] font-medium tracking-wider uppercase">
+        {label}
+      </span>
+      <div className="flex items-end justify-between gap-3">
         <div className="flex flex-col gap-1">
           {isEmpty ? (
             <span className="text-muted-foreground text-sm italic">{emptyState}</span>
           ) : (
-            <span className="font-mono text-2xl font-bold tracking-tight tabular-nums">
+            <span className="font-mono text-2xl font-bold tracking-tight tabular-nums text-slate-950 dark:text-slate-50">
               {value}
             </span>
           )}
@@ -72,7 +74,9 @@ function KpiCardContent({
             <ChangeIndicator changePercent={changePercent} changeDirection={changeDirection} />
           )}
         </div>
-        {trend && trend.length > 0 && !isEmpty && <SparklineChart data={trend} />}
+        {trend && trend.length > 0 && !isEmpty && (
+          <SparklineChart data={trend} width={88} height={28} className="text-teal-500" />
+        )}
       </div>
     </div>
   );

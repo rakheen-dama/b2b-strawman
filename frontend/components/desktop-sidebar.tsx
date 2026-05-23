@@ -54,7 +54,7 @@ export function DesktopSidebar({
   }, [brandColor]);
 
   return (
-    <aside className="hidden w-60 flex-col bg-slate-950 md:flex">
+    <aside className="sticky top-0 hidden h-screen w-60 flex-col bg-slate-950 md:flex">
       {/* Header — firm logo (if branded) or product wordmark fallback */}
       <div className="flex h-14 items-center gap-2 px-4">
         {logoUrl ? (
@@ -93,7 +93,7 @@ export function DesktopSidebar({
       </button>
 
       {/* Nav body — zone-based */}
-      <nav aria-label="Main navigation" className="flex flex-1 flex-col gap-0 p-2">
+      <nav aria-label="Main navigation" className="flex min-h-0 flex-1 flex-col gap-0 overflow-y-auto p-2">
         {NAV_GROUPS.map((group, index) => (
           <Fragment key={group.id}>
             {index > 0 && <div className="mx-2 my-1 border-t border-white/5" />}

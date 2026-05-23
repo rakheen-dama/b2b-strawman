@@ -51,7 +51,7 @@ For each day-N walk in this cycle:
 
 | Gap ID | Summary | Severity | Owner | Status | Day | Notes |
 |--------|---------|----------|-------|--------|-----|-------|
-| OBS-5001 | Engagements empty state uses "projects" terminology instead of "engagements" | LOW | Dev | OPEN | 0 | Empty state text: "No projects yet" / "Projects organise your work..." Should say "engagements" per accounting-za vertical profile. Also: automation rule "New Project Welcome" uses "Project" instead of "Engagement". |
+| OBS-5001 | Engagements empty state uses "projects" terminology instead of "engagements" | LOW | Dev | SPEC_READY | 0 | Empty state text: "No projects yet" / "Projects organise your work..." Should say "engagements" per accounting-za vertical profile. Also: automation rule "New Project Welcome" uses "Project" instead of "Engagement". Fix spec: `qa_cycle/fix-specs/OBS-5001.md`. |
 
 ## Log
 
@@ -60,3 +60,4 @@ For each day-N walk in this cycle:
 | 0 | Infra | Clean slate setup: wiped all Docker volumes, started fresh infra, bootstrapped Keycloak (padmin only), verified 0 tenant schemas, 0 stale KC users, started all 4 services, cleared Mailpit | All services healthy. Ready for Day 0. |
 | 1 | QA | Day 0 Phase A-D: access request, OTP verify, padmin approval, owner registration, team invites (Bob Admin, Carol Member), all 3 users registered via Keycloak | ALL PASS. 0 gaps. Org=Thornton & Associates, vertical=accounting-za, 3 KC users, 1 tenant schema. |
 | 2 | QA | Day 0 Phase E-I: Settings (General/brand colour/rates/tax), Custom Fields (field promotion verified on Client + Engagement dialogs), Templates (7 engagement templates), Automations (13 rules), Progressive Disclosure (no legal modules, clean URL gating), Billing (flat managed account, no tier UI) | ALL PASS (1 PARTIAL: logo upload — no test file). 1 LOW gap filed: OBS-5001 (terminology). 0 console errors. Day 0 complete. |
+| 3 | Product | Triage OBS-5001: confirmed root cause in 4 files. Frontend empty state uses `createMessages` without `TerminologyText` wrapping (unlike customers page which does it correctly). Backend `common.json` automation pack seeds "New Project Welcome" name verbatim. Fix spec written. | OPEN → SPEC_READY. Fix spec: `qa_cycle/fix-specs/OBS-5001.md`. Effort: S (< 30 min). |

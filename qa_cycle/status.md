@@ -30,9 +30,10 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 0 COMPLETE → Ready for Day 1
-- **Next checkpoint**: Day 1 checkpoint 1.1 (Login as Bob, create first client: Sipho Dlamini)
-- **Completed**: Session 0 (prep), Day 0 Phase A-D (onboarding), Day 0 Phase E (General/rates/tax), Phase F (custom fields + field promotion), Phase G (templates + automations), Phase H (progressive disclosure), Phase I (billing/tier removal)
+- **Day**: Day 1 COMPLETE, Day 2 BLOCKED → Waiting for OBS-5002 fix
+- **Next checkpoint**: Day 2 checkpoint 2.2 (Complete onboarding checklist — blocked by OBS-5002)
+- **Completed**: Session 0 (prep), Day 0 Phase A-D (onboarding), Day 0 Phase E-I (settings/fields/templates/automations/disclosure/billing), Day 1 (client creation: Sipho Dlamini, all 6 checkpoints PASS)
+- **Blocked**: Day 2-7 blocked by OBS-5002 (cannot complete onboarding checklist without document uploads, cannot activate client)
 
 ## Stack State
 - Dev Stack: **Running** — org provisioned 2026-05-23
@@ -45,13 +46,15 @@ For each day-N walk in this cycle:
   - Mailpit: :8025 (Docker, healthy)
   - LocalStack: :4566 (Docker, healthy)
 - NEEDS_REBUILD: false
-- **Current session**: Thandi Thornton logged in on :3000
+- **Current session**: Bob Ndlovu logged in on :3000 (via dev-login helper)
+- **Client created**: Sipho Dlamini (c0b6b059-ab3e-4060-bb35-89a8bed3a2af), status=ONBOARDING
 
 ## Tracker
 
 | Gap ID | Summary | Severity | Owner | Status | Day | Notes |
 |--------|---------|----------|-------|--------|-----|-------|
-| OBS-5001 | Engagements empty state uses "projects" terminology instead of "engagements" | LOW | Dev | FIXED | 0 | Added `{Projects}/{projects}/{project}` placeholders to `empty-states.json`, wrapped in `<TerminologyText>` on projects page, used `t("projects")` in KPI card, renamed automation rule to "Welcome Notification". PR #1353. Frontend: 367 files, 2290 passed (5 pre-existing chart failures). Backend: 5397 tests, 0 failures. |
+| OBS-5001 | Engagements empty state uses "projects" terminology instead of "engagements" | LOW | Dev | VERIFIED | 0 | Added `{Projects}/{projects}/{project}` placeholders to `empty-states.json`, wrapped in `<TerminologyText>` on projects page, used `t("projects")` in KPI card, renamed automation rule to "Welcome Notification". PR #1353. Frontend: 367 files, 2290 passed (5 pre-existing chart failures). Backend: 5397 tests, 0 failures. **Verified Day 1**: Engagements page shows "No engagements yet", correct terminology throughout. |
+| OBS-5002 | Onboarding checklist items cannot be confirmed without document uploads — blocks ONBOARDING->ACTIVE transition | HIGH | Dev | OPEN | 2 | "Mark Complete" expands item to show Notes + document selector + Confirm/Cancel. Confirm does NOT work without selecting a document. Activation dialog says "All onboarding checklists must be completed before activation" and blocks with error. **BLOCKER** for Days 2-7. Two possible fixes: (1) Allow confirm-without-document for QA/demo scenarios, or (2) add admin override to bypass checklist gate. |
 
 ## Log
 
@@ -62,3 +65,5 @@ For each day-N walk in this cycle:
 | 2 | QA | Day 0 Phase E-I: Settings (General/brand colour/rates/tax), Custom Fields (field promotion verified on Client + Engagement dialogs), Templates (7 engagement templates), Automations (13 rules), Progressive Disclosure (no legal modules, clean URL gating), Billing (flat managed account, no tier UI) | ALL PASS (1 PARTIAL: logo upload — no test file). 1 LOW gap filed: OBS-5001 (terminology). 0 console errors. Day 0 complete. |
 | 3 | Product | Triage OBS-5001: confirmed root cause in 4 files. Frontend empty state uses `createMessages` without `TerminologyText` wrapping (unlike customers page which does it correctly). Backend `common.json` automation pack seeds "New Project Welcome" name verbatim. Fix spec written. | OPEN → SPEC_READY. Fix spec: `qa_cycle/fix-specs/OBS-5001.md`. Effort: S (< 30 min). |
 | 4 | Dev | OBS-5001: Added `{Projects}/{projects}/{project}` terminology placeholders to `empty-states.json`, wrapped empty state title/description in `<TerminologyText>` on projects page (matching customers page pattern), used `t("projects")` for KPI card empty state, renamed automation rule from "New Project Welcome" to "Welcome Notification" with vertical-neutral wording. Updated `use-message.test.ts` assertions. Frontend verified: lint clean, build clean, 367 files / 2290 tests passed (5 pre-existing chart failures). Backend verified: 5397 tests, 0 failures. PR #1353. | OBS-5001 → FIXED |
+| 5 | QA | Day 1: Login as Bob (via dev-login helper), navigate to Clients, create first client Sipho Dlamini (sole trader, Individual type). All standard + promoted fields filled and verified inline. Step 2 custom fields (SARS Tax Ref, FICA Verified) completed. Client detail page verified: promoted fields (Tax Number, Entity Type=Sole Proprietor, Address) render inline, not in sidebar. OBS-5001 verified on Engagements empty state. | Day 1: ALL PASS (6/6). OBS-5001 → VERIFIED. 0 console errors. |
+| 6 | QA | Day 2: Transition Sipho to ONBOARDING — PASS. Onboarding checklist "FICA KYC -- SA Accounting" auto-created (11 items, 8 required). Attempted checklist completion — BLOCKED: items require document uploads before confirmation. Attempted manual activation — BLOCKED: "Cannot activate customer -- one or more onboarding checklists are not yet completed". Filed OBS-5002 (HIGH). Days 3-7 not executed due to blocker. | Day 2: 1 PASS, 2 FAIL (BLOCKER). 1 HIGH gap filed: OBS-5002. Days 3-7 NOT EXECUTED. |

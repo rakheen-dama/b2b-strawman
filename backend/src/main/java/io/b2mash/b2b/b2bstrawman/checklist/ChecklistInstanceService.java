@@ -166,6 +166,11 @@ public class ChecklistInstanceService {
               .findById(customerId)
               .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
     }
+    // Phase 63: acct_entity_type was promoted to a structural column
+    if (customer.getEntityType() != null) {
+      return customer.getEntityType();
+    }
+    // Backwards-compatible fallback for any pre-migration data
     var customFields = customer.getCustomFields();
     if (customFields == null) {
       return null;

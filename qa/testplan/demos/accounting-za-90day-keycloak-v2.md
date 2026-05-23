@@ -241,6 +241,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
   - `acct_entity_type` = **COMPANY_PTY_LTD**
   - `acct_company_registration_number` = **2018/123456/07**
   - `vat_number` = **4123456789**
+  - `tax_number` = **9876543210**
   - `financial_year_end` = **2026-02-28**
   - `registered_address` = "Suite 402, Kgosi Towers, 15 Biermann Ave, Rosebank, 2196"
   - `primary_contact_name` = "Lerato Khumalo"

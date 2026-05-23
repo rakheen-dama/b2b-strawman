@@ -111,6 +111,18 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
     await page.waitForTimeout(1500);
     await page.waitForLoadState("networkidle");
 
+    // Navigate to the Fields tab (custom fields moved from sidebar to tab)
+    const detailsGroup = page.getByTestId("tab-group-details");
+    if (await detailsGroup.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await detailsGroup.click();
+      await page.waitForTimeout(300);
+      const fieldsItem = page.getByTestId("tab-item-fields");
+      if (await fieldsItem.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await fieldsItem.click();
+        await page.waitForTimeout(500);
+      }
+    }
+
     const mainContent = await page
       .locator("main")
       .textContent()
@@ -144,6 +156,18 @@ test.describe.serial("Day 14 — Conveyancing matter + OTP acceptance (Phase 67)
 
     await matterLink.click();
     await page.waitForTimeout(1500);
+
+    // Navigate to the Fields tab (custom fields moved from sidebar to tab)
+    const detailsGroup = page.getByTestId("tab-group-details");
+    if (await detailsGroup.isVisible({ timeout: 3000 }).catch(() => false)) {
+      await detailsGroup.click();
+      await page.waitForTimeout(300);
+      const fieldsItem = page.getByTestId("tab-item-fields");
+      if (await fieldsItem.isVisible({ timeout: 2000 }).catch(() => false)) {
+        await fieldsItem.click();
+        await page.waitForTimeout(500);
+      }
+    }
 
     // Open custom-fields edit (if there's an Edit button)
     const editBtn = page.getByRole("button", { name: /edit.*custom|edit.*fields|edit/i }).first();

@@ -33,8 +33,9 @@ import type {
   PaginatedExpenseResponse,
 } from "@/lib/types";
 import { Button } from "@/components/ui/button";
-import { MatterDetailLayout } from "@/components/projects/matter-detail-layout";
-import { MatterSidebar } from "@/components/projects/matter-sidebar";
+import { MatterHeaderCard } from "@/components/projects/matter-header-card";
+import { MatterDetailsTab } from "@/components/projects/matter-details-tab";
+import { MatterFieldsTab } from "@/components/projects/matter-fields-tab";
 import { DocumentsPanel } from "@/components/documents/documents-panel";
 import { ProjectMembersPanel } from "@/components/projects/project-members-panel";
 import { TaskListPanel } from "@/components/tasks/task-list-panel";
@@ -144,7 +145,7 @@ export default async function ProjectDetailPage({
           complete:
             setupStatus.requiredFields.total === 0 ||
             setupStatus.requiredFields.filled === setupStatus.requiredFields.total,
-          actionHref: "#custom-fields",
+          actionHref: "?tab=fields",
         },
       ]
     : [];
@@ -406,66 +407,89 @@ export default async function ProjectDetailPage({
   }
 
   return (
-    <MatterDetailLayout
-      sidebar={
-        <MatterSidebar
-          project={project}
-          customers={customers}
+    <div className="space-y-6 p-4 lg:p-6">
+      {/* Archived banner (208.11) — above breadcrumb row */}
+      {project.status === "ARCHIVED" && (
+        <ArchivedProjectBanner slug={slug} projectId={id} canRestore={isAdmin} />
+      )}
+
+      {/* Back link + overflow actions row */}
+      <div className="flex items-center justify-between">
+        <Link
+          href={`/org/${slug}/projects`}
+          className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
+        >
+          <ArrowLeft className="mr-1.5 size-4" />
+          <TerminologyText template="Back to {Projects}" />
+        </Link>
+        <OverflowActionsMenu
           slug={slug}
+          projectId={id}
+          projectName={project.name}
+          projectStatus={project.status}
           canEdit={canEdit}
           canManage={canManage}
           isAdmin={isAdmin}
           isOwner={isOwner}
-          fieldDefinitions={projectFieldDefs}
-          fieldGroups={projectFieldGroups}
-          groupMembers={projectGroupMembers}
+          templates={projectTemplates}
+          primaryCustomer={
+            customers.length > 0
+              ? { id: customers[0].id, name: customers[0].name, email: customers[0].email }
+              : null
+          }
           projectTags={projectTags}
-          allTags={allTags}
+          project={project}
+          tasks={tasks}
+          primaryCustomerLifecycleStatus={
+            customers.length > 0 ? customers[0].lifecycleStatus : undefined
+          }
         />
-      }
-    >
-      <div className="space-y-8 p-4 lg:p-6">
-        {/* Archived banner (208.11) — above breadcrumb row */}
-        {project.status === "ARCHIVED" && (
-          <ArchivedProjectBanner slug={slug} projectId={id} canRestore={isAdmin} />
-        )}
+      </div>
 
-        {/* Back link + overflow actions row */}
-        <div className="flex items-center justify-between">
-          <Link
-            href={`/org/${slug}/projects`}
-            className="inline-flex items-center text-sm text-slate-600 transition-colors hover:text-slate-900 dark:text-slate-400 dark:hover:text-slate-100"
-          >
-            <ArrowLeft className="mr-1.5 size-4" />
-            <TerminologyText template="Back to {Projects}" />
-          </Link>
-          <OverflowActionsMenu
-            slug={slug}
+      {/* Matter header card — name, status, work type, client, lifecycle actions */}
+      <MatterHeaderCard
+        projectId={id}
+        projectName={project.name}
+        projectStatus={project.status}
+        workType={project.workType ?? null}
+        referenceNumber={project.referenceNumber ?? null}
+        closedAt={project.closedAt ?? null}
+        customers={customers.map((c) => ({ id: c.id, name: c.name }))}
+        slug={slug}
+        isAdmin={isAdmin}
+      />
+
+      {/* Tabbed Content */}
+      <ProjectTabs
+        detailsPanel={
+          <MatterDetailsTab
             projectId={id}
-            projectName={project.name}
+            description={project.description ?? null}
+            priority={project.priority ?? null}
+            dueDate={project.dueDate ?? null}
+            createdAt={project.createdAt}
             projectStatus={project.status}
+            projectTags={projectTags}
+            allTags={allTags}
+            canEdit={canEdit}
+            isAdmin={isAdmin}
+            slug={slug}
+          />
+        }
+        fieldsPanel={
+          <MatterFieldsTab
+            projectId={id}
+            customFields={project.customFields ?? {}}
+            appliedFieldGroups={project.appliedFieldGroups ?? []}
+            fieldDefinitions={projectFieldDefs}
+            fieldGroups={projectFieldGroups}
+            groupMembers={projectGroupMembers}
             canEdit={canEdit}
             canManage={canManage}
-            isAdmin={isAdmin}
-            isOwner={isOwner}
-            templates={projectTemplates}
-            primaryCustomer={
-              customers.length > 0
-                ? { id: customers[0].id, name: customers[0].name, email: customers[0].email }
-                : null
-            }
-            projectTags={projectTags}
-            project={project}
-            tasks={tasks}
-            primaryCustomerLifecycleStatus={
-              customers.length > 0 ? customers[0].lifecycleStatus : undefined
-            }
+            slug={slug}
           />
-        </div>
-
-        {/* Tabbed Content (33.7) */}
-        <ProjectTabs
-          overviewPanel={
+        }
+        overviewPanel={
             <OverviewTab
               projectId={id}
               projectName={project.name}
@@ -653,10 +677,9 @@ export default async function ProjectDetailPage({
         {/* Pending AI Suggestions */}
         <PendingSuggestionsWidget contextEntityType="project" contextEntityId={id} />
 
-        {/* Epic 508B: Closure history (only on CLOSED matters). Per-row audit
-            timelines surface the matter.closure.override_used event from 508A. */}
-        {project.status === "CLOSED" && <ClosureHistorySection projectId={id} />}
-      </div>
-    </MatterDetailLayout>
+      {/* Epic 508B: Closure history (only on CLOSED matters). Per-row audit
+          timelines surface the matter.closure.override_used event from 508A. */}
+      {project.status === "CLOSED" && <ClosureHistorySection projectId={id} />}
+    </div>
   );
 }

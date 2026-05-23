@@ -33,8 +33,17 @@ export interface TabGroup {
 /** Backward-compat redirect: `?tab=members` → staffing sub-tab. */
 export const MEMBERS_TAB_REDIRECT = "staffing";
 
-/** Canonical tab group definitions (6 groups, 21 sub-tabs). */
+/** Canonical tab group definitions (7 groups, 23 sub-tabs). */
 export const TAB_GROUPS: readonly TabGroup[] = [
+  {
+    id: "details",
+    label: "Details",
+    tabs: [
+      { id: "details", label: "Details" },
+      { id: "fields", label: "Fields" },
+    ],
+    visible: true,
+  },
   {
     id: "overview",
     label: "Overview",

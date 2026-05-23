@@ -11,6 +11,8 @@ import { GroupedTabBar } from "@/components/projects/grouped-tab-bar";
 import { TAB_GROUPS } from "@/lib/constants/tab-groups";
 
 interface ProjectTabsProps {
+  detailsPanel: ReactNode;
+  fieldsPanel: ReactNode;
   overviewPanel: ReactNode;
   documentsPanel: ReactNode;
   membersPanel: ReactNode;
@@ -35,6 +37,8 @@ interface ProjectTabsProps {
 }
 
 type TabId =
+  | "details"
+  | "fields"
   | "overview"
   | "documents"
   | "members"
@@ -58,6 +62,8 @@ type TabId =
   | "audit";
 
 const validTabIds = new Set<string>([
+  "details",
+  "fields",
   "overview",
   "documents",
   "customers",
@@ -81,6 +87,8 @@ const validTabIds = new Set<string>([
 ]);
 
 export function ProjectTabs({
+  detailsPanel,
+  fieldsPanel,
   overviewPanel,
   documentsPanel,
   membersPanel,
@@ -139,6 +147,9 @@ export function ProjectTabs({
   const visibleGroups = useMemo(() => {
     /** Per-tab visibility map — true means the tab should be shown */
     const tabVisibility: Record<string, boolean> = {
+      // Details group — always visible
+      details: true,
+      fields: true,
       // Always-visible tabs
       overview: true,
       tasks: true,
@@ -231,6 +242,12 @@ export function ProjectTabs({
       <GroupedTabBar groups={visibleGroups} activeTab={activeTab} onTabChange={handleTabChange} />
 
       {/* Radix Content provides role="tabpanel" + aria-labelledby */}
+      <TabsPrimitive.Content value="details" className="pt-6 outline-none">
+        {detailsPanel}
+      </TabsPrimitive.Content>
+      <TabsPrimitive.Content value="fields" className="pt-6 outline-none">
+        {fieldsPanel}
+      </TabsPrimitive.Content>
       <TabsPrimitive.Content value="overview" className="pt-6 outline-none">
         {overviewPanel}
       </TabsPrimitive.Content>

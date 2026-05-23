@@ -13,6 +13,7 @@ import { Receipt, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { HelpTip } from "@/components/help-tip";
 import { TerminologyHeading } from "@/components/terminology-heading";
+import { TerminologyText } from "@/components/terminology-text";
 import { docsLink } from "@/lib/docs";
 
 function computeSummary(invoices: InvoiceResponse[], fallbackCurrency: string) {
@@ -203,11 +204,15 @@ export default async function InvoicesPage({
       {invoices.length === 0 ? (
         <EmptyState
           icon={Receipt}
-          title={search.status ? "No fee notes found" : t("invoices.list.heading")}
+          title={
+            search.status
+              ? <TerminologyText template={`No ${search.status.toLowerCase()} {invoices} found`} />
+              : <TerminologyText template={t("invoices.list.heading")} />
+          }
           description={
             search.status
-              ? `No ${search.status.toLowerCase()} fee notes found.`
-              : t("invoices.list.description")
+              ? <TerminologyText template={`No ${search.status.toLowerCase()} {invoices} found.`} />
+              : <TerminologyText template={t("invoices.list.description")} />
           }
           secondaryLink={{ label: "Read the guide", href: docsLink("/features/invoicing") }}
         />

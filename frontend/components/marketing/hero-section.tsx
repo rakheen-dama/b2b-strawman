@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -73,9 +74,14 @@ export function HeroSection() {
                   <div className="ml-2 h-5 flex-1 rounded bg-white/5" />
                 </div>
                 <div className="aspect-[4/3] bg-slate-800/50 p-1">
-                  <div className="flex size-full items-center justify-center rounded bg-slate-800 text-sm text-slate-600">
-                    Dashboard screenshot
-                  </div>
+                  <Image
+                    src="/screenshots/dashboard.png"
+                    alt="Kazi dashboard showing matter health, team time, and KPI cards"
+                    width={1440}
+                    height={900}
+                    className="size-full rounded object-cover object-left-top"
+                    priority
+                  />
                 </div>
               </div>
             </div>

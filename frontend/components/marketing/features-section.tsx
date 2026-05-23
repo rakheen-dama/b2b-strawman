@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Clock, Receipt, ShieldCheck, BarChart3 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -6,6 +7,7 @@ interface Story {
   heading: string;
   description: string;
   highlights: string[];
+  screenshot: { src: string; alt: string };
 }
 
 const stories: Story[] = [
@@ -19,6 +21,10 @@ const stories: Story[] = [
       "My Work cross-project view",
       "Billable vs non-billable breakdown",
     ],
+    screenshot: {
+      src: "/screenshots/matter-detail.png",
+      alt: "Matter detail showing hours logged, task completion, and FICA verification status",
+    },
   },
   {
     icon: Receipt,
@@ -30,6 +36,10 @@ const stories: Story[] = [
       "Batch invoicing for month-end",
       "Client portal with payment links",
     ],
+    screenshot: {
+      src: "/screenshots/invoices.png",
+      alt: "Fee notes page showing paid invoice in ZAR with status filters",
+    },
   },
   {
     icon: ShieldCheck,
@@ -41,6 +51,10 @@ const stories: Story[] = [
       "Configurable retention policies",
       "Template-driven document generation",
     ],
+    screenshot: {
+      src: "/screenshots/trust-accounting.png",
+      alt: "Trust accounting with LSSA-compliant transaction ledger and R25,000 balance",
+    },
   },
   {
     icon: BarChart3,
@@ -52,6 +66,10 @@ const stories: Story[] = [
       "Budget vs actual tracking",
       "Team capacity & allocation",
     ],
+    screenshot: {
+      src: "/screenshots/compliance.png",
+      alt: "Compliance dashboard showing client lifecycle distribution and onboarding pipeline",
+    },
   },
 ];
 
@@ -99,12 +117,16 @@ export function FeaturesSection() {
                 </ul>
               </div>
 
-              {/* Screenshot placeholder */}
+              {/* Screenshot */}
               <div className="flex-1">
                 <div className="overflow-hidden rounded-xl border border-slate-200 bg-slate-50 shadow-lg dark:border-slate-800 dark:bg-slate-900">
-                  <div className="flex aspect-[16/10] items-center justify-center text-sm text-slate-400 dark:text-slate-600">
-                    {story.heading} screenshot
-                  </div>
+                  <Image
+                    src={story.screenshot.src}
+                    alt={story.screenshot.alt}
+                    width={1440}
+                    height={900}
+                    className="aspect-[16/10] w-full object-cover object-left-top"
+                  />
                 </div>
               </div>
             </div>

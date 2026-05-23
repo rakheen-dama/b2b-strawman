@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { docsLink } from "@/lib/docs";
 
 const AUTH_MODE = process.env.NEXT_PUBLIC_AUTH_MODE || "keycloak";
 const GATEWAY_URL = process.env.NEXT_PUBLIC_GATEWAY_URL || "http://localhost:8443";
@@ -21,6 +22,12 @@ export function NavBar() {
           </a>
           <a href="#pricing" className="text-sm text-white/60 transition-colors hover:text-white">
             Pricing
+          </a>
+          <a
+            href={docsLink("")}
+            className="text-sm text-white/60 transition-colors hover:text-white"
+          >
+            Docs
           </a>
         </div>
 

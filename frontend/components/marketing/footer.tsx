@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { docsLink } from "@/lib/docs";
 
 const linkGroups = [
   {
@@ -6,6 +7,7 @@ const linkGroups = [
     links: [
       { label: "Features", href: "#features" },
       { label: "Pricing", href: "#pricing" },
+      { label: "Documentation", href: docsLink("") },
     ],
   },
   {
@@ -46,7 +48,7 @@ export function Footer() {
                 <ul className="space-y-2">
                   {group.links.map((link) => (
                     <li key={link.label}>
-                      {link.href.startsWith("mailto:") || link.href === "#" ? (
+                      {link.href.startsWith("mailto:") || link.href.startsWith("http") || link.href === "#" ? (
                         <a
                           href={link.href}
                           className="text-sm text-white/60 transition-colors hover:text-white"

@@ -415,7 +415,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 Changes from the v1 plan (for reviewers comparing the two):
 
 1. **Removed all tier upgrade steps** — v1 had "Click Upgrade to Pro → confirm → verify plan shows Pro" (old step 0.22). Deleted. Added a new explicit tier-removal checkpoint instead.
-2. **Added field promotion checks** — v1 only verified custom fields existed in the settings page. v2 also verifies they render inline on create dialogs and do NOT duplicate in the sidebar CustomFieldSection.
+2. **Added field promotion checks** — v1 only verified custom fields existed in the settings page. v2 also verifies they render inline on create dialogs and do NOT duplicate on the Fields tab (Details > Fields).
 3. **Added progressive disclosure checks** — v1 did not verify that legal modules are hidden. v2 has an explicit sidebar check + direct-URL leak check.
 4. **Promoted invoice slugs added** — v1 predates invoice field promotion. v2 checks the four invoice-level promoted slugs on the create-invoice dialog.
 5. **Aligned structure** with `qa/testplan/demo-readiness-keycloak-master.md` so legal / accounting / agency plans all follow the same rhythm.

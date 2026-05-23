@@ -197,7 +197,7 @@ Every lifecycle script enforces these three checkpoints explicitly. Quick refere
 
 ### Field promotion
 - **Where**: Customer/Client create/edit dialog, Customer detail page, Project/Matter/Engagement create/edit dialog, Project detail page, Task create dialog, Invoice/Fee Note create dialog
-- **Pass**: Each promoted slug (see `frontend/lib/constants/promoted-field-slugs.ts` for the list) renders as a **first-class native form input** on the create/edit dialog and as an inline column or field on the detail page. **Promoted slugs do NOT appear again inside the `CustomFieldSection` sidebar.** Non-promoted custom fields remain in the sidebar.
+- **Pass**: Each promoted slug (see `frontend/lib/constants/promoted-field-slugs.ts` for the list) renders as a **first-class native form input** on the create/edit dialog and as an inline column or field on the detail page. **Promoted slugs do NOT appear again inside the `CustomFieldSection` on the Fields tab.** Non-promoted custom fields remain on the Fields tab (under the Details tab group).
 - **Fail**: Duplicate rendering (promoted slug appears both inline AND in CustomFieldSection), or promoted slug buried inside "Other Fields" instead of inline, or promoted slug missing entirely from the dialog.
 
 ### Progressive disclosure

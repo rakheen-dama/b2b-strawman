@@ -20,25 +20,25 @@ The story is deliberately realistic for an SA general-practice litigation firm: 
 
 ---
 
-## Selector Reference (Phase 73 Grouped Tabs)
+## Selector Reference (Grouped Tabs + Header Card)
 
-> **Phase 73 (Epics 532–536) moved the matter detail page to a sidebar + grouped tab layout.**
-> Multi-tab groups (Work, Finance, Compliance) use a two-step pattern: click group → click sub-tab. Single-tab groups (Overview, Customers, Setup) remain one-step selectors. Old flat tab selectors for grouped tabs are broken.
+> **Phase 73 (Epics 532–536) moved to grouped tabs. A follow-up removed the sidebar — matter identity is now in a header card, description/tags on a Details tab, custom fields on a Fields tab.**
 >
 > **Tab navigation pattern:**
 > - Single-tab groups (Overview, Schedule): one click → `page.getByTestId('tab-group-overview')`
-> - Multi-tab groups (Work, Finance, Client, Activity): two clicks:
+> - Multi-tab groups (Details, Work, Finance, Client, Activity): two clicks:
 >   1. `page.getByTestId('tab-group-finance').click()` — opens dropdown
 >   2. `page.getByTestId('tab-item-time').click()` — selects sub-tab
 >
 > **Group → Sub-tab mapping:**
+> - Details: details, fields
 > - Work: tasks, documents, generated, staffing
 > - Finance: time, expenses, disbursements, budget, rates, financials, statements, trust
 > - Client: customers, requests, customer-comments, adverse-parties
 > - Activity: activity, audit
 >
-> **Action button relocation:**
-> - Close Matter / Complete: `data-testid="sidebar-lifecycle-action"` in left sidebar footer
+> **Action button locations:**
+> - Close Matter / Complete / Reopen: `data-testid="header-lifecycle-actions"` in header card
 > - Generate Document: standalone button before the `data-testid="overflow-actions-trigger"` button
 > - Edit/Delete/Archive/Template: inside overflow menu (`data-testid="overflow-actions-menu"`)
 
@@ -266,8 +266,8 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
   - Case number: (blank at intake; populated later)
   - Primary attorney: Bob Ndlovu
 - [ ] **3.4** Submit → matter created, redirected to matter detail
-- [ ] **3.5** Verify matter detail page shows the new grouped tab bar (`data-testid="grouped-tab-bar"`) with 6 groups: **Overview** (standalone), **Work** (Tasks, Documents, Generated Docs, Staffing), **Finance** (Time, Expenses, Disbursements, Budget/Fee Estimate, Rates, Financials, Statements, Trust), **Client** (Customers/Clients, Requests/Info Requests, Client Comments, Adverse Parties), **Schedule** (standalone — Court Dates), **Activity** (Activity sub-tab; Audit sub-tab if Team Oversight module enabled). Note: the old flat "Members" tab is replaced by Work > Staffing (`?tab=staffing`). The old "Fee Estimate" tab (legal-za term for budget) is now Finance > Budget (`?tab=budget`). Per OBS-302: no per-matter "Audit" tab in the flat list; matter audit history is in Activity group → Activity sub-tab or (if TEAM_OVERSIGHT enabled) Activity group → Audit sub-tab.
-- [ ] **3.6** Promoted fields (matter_type, court_name, case_number) render inline on Overview tab — **NOT** duplicated in a generic "Custom Fields" section
+- [ ] **3.5** Verify matter detail page shows the header card (`data-testid="matter-header-card"`) with name, status, work type, client, and the grouped tab bar (`data-testid="grouped-tab-bar"`) with 7 groups: **Details** (Details, Fields), **Overview** (standalone), **Work** (Tasks, Documents, Generated Docs, Staffing), **Finance** (Time, Expenses, Disbursements, Budget/Fee Estimate, Rates, Financials, Statements, Trust), **Client** (Customers/Clients, Requests/Info Requests, Client Comments, Adverse Parties), **Schedule** (standalone — Court Dates), **Activity** (Activity sub-tab; Audit sub-tab if Team Oversight module enabled). Note: the old flat "Members" tab is replaced by Work > Staffing (`?tab=staffing`). The old "Fee Estimate" tab (legal-za term for budget) is now Finance > Budget (`?tab=budget`). Per OBS-302: no per-matter "Audit" tab in the flat list; matter audit history is in Activity group → Activity sub-tab or (if TEAM_OVERSIGHT enabled) Activity group → Audit sub-tab.
+- [ ] **3.6** Promoted fields (matter_type, court_name, case_number) render inline on Overview tab — **NOT** duplicated in the Fields tab
 - [ ] **3.7** Navigate to matter detail → click **Client** group tab (`data-testid="tab-group-client"`) → click **Requests** sub-tab (`data-testid="tab-item-requests"`) → click **+ New Info Request**
 - [ ] **3.8** Select template: **FICA Onboarding Pack** (from `legal-za` request pack)
 - [ ] **3.9** Addressee: **Sipho Dlamini** (portal contact auto-populated from client record)
@@ -955,7 +955,7 @@ This is the closing-demo wow moment: show the firm's 90-day activity feed on the
 ### Firm-side regression sweep
 
 - [ ] **90.1** `[FIRM]` Terminology sweep: walk sidebar, settings pages, every create dialog → zero occurrences of "Project" (must be "Matter"), "Customer" (must be "Client"), "Invoice" (must be "Fee Note"), "Task" where legal terminology applies. Zero accounting / consulting vocabulary leaks.
-- [ ] **90.2** `[FIRM]` Field promotion sweep: reopen every create dialog (Client, Matter, Task, Fee Note) → verify no promoted slugs have regressed into a generic Custom Fields section
+- [ ] **90.2** `[FIRM]` Field promotion sweep: reopen every create dialog (Client, Matter, Task, Fee Note) → verify no promoted slugs have regressed into a generic Custom Fields section. On matter detail, promoted fields render on Overview tab, non-promoted fields are on the Details > Fields tab.
 - [ ] **90.3** `[FIRM]` Progressive disclosure: all 4 legal modules visible (Matters, Trust Accounting, Court Calendar, Conflict Check); no accounting / consulting nav items
 - [ ] **90.4** `[FIRM]` Tier removal: Settings > Billing shows flat subscription state only, no tier UI
 - [ ] **90.5** `[FIRM]` Console errors: browser devtools open → click through every top-level nav → zero JS errors

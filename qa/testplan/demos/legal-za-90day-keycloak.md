@@ -321,8 +321,8 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 - [ ] **14.2** As Thandi: create a new client **"Khumalo Property Holdings"** (type INDIVIDUAL), complete FICA checklist → ACTIVE
 - [ ] **14.3** Create a new matter using the **Property Transfer** template (`matter_type = CONVEYANCING`) → matter title "Khumalo Property Holdings — Erf 1234 Sandton Transfer"
-- [ ] **14.4** On matter detail, verify the **10 conveyancing custom fields** (from field pack `conveyancing_za_matter`) are all present in the custom-fields section (even if empty): `conveyancing_type`, `property_address`, `erf_number`, `deeds_office`, `lodgement_date`, `registration_date`, `deed_number`, `purchase_price`, `transfer_duty`, `bond_institution`
-- [ ] **14.5** Fill the minimum Day 14 set: `property_address = "12 Rivonia Road, Sandton, 2196"`, `erf_number = "1234"`, `deeds_office = JOHANNESBURG` → save
+- [ ] **14.4** On matter detail, navigate to **Details > Fields** tab, verify the **10 conveyancing custom fields** (from field pack `conveyancing_za_matter`) are all present (even if empty): `conveyancing_type`, `property_address`, `erf_number`, `deeds_office`, `lodgement_date`, `registration_date`, `deed_number`, `purchase_price`, `transfer_duty`, `bond_institution`
+- [ ] **14.5** On the Fields tab, fill the minimum Day 14 set: `property_address = "12 Rivonia Road, Sandton, 2196"`, `erf_number = "1234"`, `deeds_office = JOHANNESBURG` → save
 - [ ] **14.6** Verify promoted / inline fields re-render with new values
 - [ ] **14.7** Navigate to Document Templates from matter → select **Offer to Purchase** (key `offer-to-purchase`, `acceptanceEligible: true`) → generate document
 - [ ] **14.8** Verify generated OTP document contains the conveyancing clauses inserted from clause pack `conveyancing-za-clauses` (Phase 492 clause injection)

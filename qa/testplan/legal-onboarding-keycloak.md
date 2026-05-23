@@ -427,7 +427,7 @@ Actor: **Bob Ndlovu** (Admin — log in via Keycloak)
   - Court: Gauteng Division, Johannesburg
   - Notes: "Application for interim payment under Section 17(4)"
 - [ ] **5.27** Save → court date appears with status **SCHEDULED**
-- [ ] **5.28** Reload the matter detail page → court date visible on the matter timeline / sidebar
+- [ ] **5.28** Reload the matter detail page → court date visible on the Schedule tab
 
 - [ ] **5.29** From the matter, navigate to **Adverse Parties** (or equivalent section)
 - [ ] **5.30** Add adverse party: **"Road Accident Fund"** — Type = STATUTORY ENTITY, Notes = "Statutory third-party defendant under RAF Act 56 of 1996"

@@ -1,10 +1,10 @@
 {
   "projects": {
     "list": {
-      "heading": "No projects yet",
-      "description": "Projects organise your work, documents, and time tracking. Create your first project to get started.",
-      "descriptionMember": "You\u2019re not on any projects yet.",
-      "cta": "Create project"
+      "heading": "No {projects} yet",
+      "description": "{Projects} organise your work, documents, and time tracking. Create your first {project} to get started.",
+      "descriptionMember": "You\u2019re not on any {projects} yet.",
+      "cta": "Create {project}"
     }
   },
   "customers": {

@@ -61,6 +61,17 @@ public class FieldGroup {
   @Column(name = "applicable_work_types", columnDefinition = "jsonb")
   private List<String> applicableWorkTypes;
 
+  /**
+   * OBS-5004: optional list of customer entity type values (e.g. "TRUST", "PTY_LTD") this group
+   * auto-applies to. Null/empty means "applies to all entity type values" (default — preserves
+   * legacy behaviour for groups that don't opt in to entity-value scoping). Used only by the
+   * CUSTOMER entity type at create time; mirrors the {@code applicableWorkTypes} pattern for
+   * PROJECT groups.
+   */
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Column(name = "applicable_entity_values", columnDefinition = "jsonb")
+  private List<String> applicableEntityValues;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -148,6 +159,10 @@ public class FieldGroup {
     return applicableWorkTypes == null ? null : List.copyOf(applicableWorkTypes);
   }
 
+  public List<String> getApplicableEntityValues() {
+    return applicableEntityValues == null ? null : List.copyOf(applicableEntityValues);
+  }
+
   // --- Setters for mutable fields ---
 
   public void setDescription(String description) {
@@ -181,6 +196,18 @@ public class FieldGroup {
     }
     this.applicableWorkTypes =
         applicableWorkTypes == null ? null : List.copyOf(applicableWorkTypes);
+    this.updatedAt = Instant.now();
+  }
+
+  public void setApplicableEntityValues(List<String> applicableEntityValues) {
+    if (applicableEntityValues != null
+        && !applicableEntityValues.isEmpty()
+        && entityType != EntityType.CUSTOMER) {
+      throw new IllegalStateException(
+          "applicableEntityValues is CUSTOMER-only; cannot set on entityType=" + entityType);
+    }
+    this.applicableEntityValues =
+        applicableEntityValues == null ? null : List.copyOf(applicableEntityValues);
     this.updatedAt = Instant.now();
   }
 }

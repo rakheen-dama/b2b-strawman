@@ -346,13 +346,13 @@ public class FieldGroupService {
    * direct auto-apply groups plus one level of dependsOn dependencies.
    *
    * <p>Delegates to {@link #resolveAutoApplyGroupIds(EntityType, String)} with {@code workType =
-   * null}. Used by CUSTOMER/TASK/INVOICE create paths (which have no work_type concept) and by
-   * legacy callers. A null work_type causes any group that REQUIRES a work_type to be filtered out
-   * — correct, because such groups (e.g. conveyancing-za-project) only make sense for projects with
-   * a matching work_type.
+   * null}. Used by TASK/INVOICE create paths (which have no work_type concept) and by legacy
+   * callers. A null work_type causes any group that REQUIRES a work_type to be filtered out —
+   * correct, because such groups (e.g. conveyancing-za-project) only make sense for projects with a
+   * matching work_type.
    */
   public List<UUID> resolveAutoApplyGroupIds(EntityType entityType) {
-    return resolveAutoApplyGroupIds(entityType, null);
+    return resolveAutoApplyGroupIds(entityType, null, null);
   }
 
   /**
@@ -368,18 +368,39 @@ public class FieldGroupService {
    * the default for the 8 packs that don't opt in.
    */
   public List<UUID> resolveAutoApplyGroupIds(EntityType entityType, String workType) {
+    return resolveAutoApplyGroupIds(entityType, workType, null);
+  }
+
+  /**
+   * OBS-5004: full variant that filters by both {@code workType} (PROJECT groups) and {@code
+   * customerEntityValue} (CUSTOMER groups). Used at customer-create time so that a group like
+   * accounting-za-customer-trust (scoped to {@code ["TRUST"]}) only auto-applies to TRUST entity
+   * type customers, not PTY_LTD or CC clients.
+   *
+   * <p>Pass {@code null} for {@code customerEntityValue} to omit any group that REQUIRES an entity
+   * value (i.e., groups with non-empty {@code applicable_entity_values} can never match a null
+   * value). Groups with null/empty {@code applicable_entity_values} are unscoped and always match.
+   */
+  public List<UUID> resolveAutoApplyGroupIds(
+      EntityType entityType, String workType, String customerEntityValue) {
     var autoGroups = fieldGroupRepository.findByEntityTypeAndAutoApplyTrueAndActiveTrue(entityType);
     var filtered = new ArrayList<FieldGroup>();
     for (var group : autoGroups) {
-      var required = group.getApplicableWorkTypes();
-      if (required == null || required.isEmpty()) {
-        filtered.add(group); // unscoped — always applies
-        continue;
+      // Work-type filter (PROJECT groups)
+      var requiredWorkTypes = group.getApplicableWorkTypes();
+      if (requiredWorkTypes != null && !requiredWorkTypes.isEmpty()) {
+        if (workType == null || !requiredWorkTypes.contains(workType)) {
+          continue; // scoped to a different work_type → skip
+        }
       }
-      if (workType != null && required.contains(workType)) {
-        filtered.add(group); // matches caller's work_type
+      // Entity-value filter (CUSTOMER groups) — OBS-5004
+      var requiredEntityValues = group.getApplicableEntityValues();
+      if (requiredEntityValues != null && !requiredEntityValues.isEmpty()) {
+        if (customerEntityValue == null || !requiredEntityValues.contains(customerEntityValue)) {
+          continue; // scoped to a different entity value → skip
+        }
       }
-      // else: scoped to a different work_type → skip
+      filtered.add(group);
     }
     var groupIds = new LinkedHashSet<>(filtered.stream().map(FieldGroup::getId).toList());
     // Resolve one-level dependencies — only include existing, active groups. Dependencies are

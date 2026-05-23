@@ -8,7 +8,8 @@ public record FieldPackGroup(
     String name,
     String description,
     Boolean autoApply,
-    List<String> applicableWorkTypes) {
+    List<String> applicableWorkTypes,
+    List<String> applicableEntityValues) {
 
   /** Returns autoApply with null-safe default of false. */
   public boolean autoApplyOrDefault() {
@@ -22,5 +23,14 @@ public record FieldPackGroup(
    */
   public List<String> applicableWorkTypesOrEmpty() {
     return applicableWorkTypes != null ? applicableWorkTypes : List.of();
+  }
+
+  /**
+   * Returns applicableEntityValues with null-safe default of empty list. An empty list (or null in
+   * JSON) means the group applies regardless of the customer's entity type value — preserving the
+   * default behaviour for groups that don't opt in to entity-value scoping.
+   */
+  public List<String> applicableEntityValuesOrEmpty() {
+    return applicableEntityValues != null ? applicableEntityValues : List.of();
   }
 }

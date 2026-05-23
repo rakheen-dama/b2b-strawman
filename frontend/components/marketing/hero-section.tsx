@@ -73,13 +73,13 @@ export function HeroSection() {
                   <div className="size-2.5 rounded-full bg-white/20" />
                   <div className="ml-2 h-5 flex-1 rounded bg-white/5" />
                 </div>
-                <div className="aspect-[4/3] bg-slate-800/50 p-1">
+                <div className="aspect-[16/10] bg-slate-800/50 p-1">
                   <Image
                     src="/screenshots/dashboard.png"
                     alt="Kazi dashboard showing matter health, team time, and KPI cards"
                     width={1440}
                     height={900}
-                    className="size-full rounded object-cover object-left-top"
+                    className="size-full rounded object-contain"
                     priority
                   />
                 </div>

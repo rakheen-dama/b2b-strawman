@@ -195,8 +195,21 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 ### Day 2 — Onboarding
 
 - [ ] **2.1** Transition Sipho to **ONBOARDING**
-- [ ] **2.2** Complete onboarding checklist (accounting-za FICA/KYC variant: Certified ID, Proof of Address, SARS tax confirmation)
-- [ ] **2.3** Verify customer transitions to ACTIVE
+- [ ] **2.2a** Navigate to **Documents** tab → upload FICA test documents (any small text/PDF files):
+  - `certified-id-sipho.txt` — for Certified ID Copy
+  - `proof-of-residence-sipho.txt` — for Proof of Residence
+  - `tax-clearance-sipho.txt` — for Tax Clearance Certificate
+  - `bank-confirmation-sipho.txt` — for Bank Confirmation Letter
+  - (Only these 4 are needed for SOLE_PROP — Company Registration, Resolution/Mandate, Beneficial Ownership, Letters of Authority, and Trust Deed are entity-type-filtered out)
+- [ ] **2.2b** Navigate to **Onboarding** tab → verify "FICA KYC — SA Accounting" checklist is auto-instantiated. For a SOLE_PROP client, expect ~6 items (entity-type filtering removes company/trust-specific items). If all 11 items appear, note as secondary observation but proceed.
+- [ ] **2.2c** Complete each **required** checklist item: click "Mark Complete" → add notes → select the corresponding uploaded document from the dropdown → click "Confirm"
+  - Certified ID Copy → link `certified-id-sipho.txt`, note: "Verified against home affairs ID"
+  - Proof of Residence → link `proof-of-residence-sipho.txt`, note: "Utility bill verified, within 3 months"
+  - Tax Clearance Certificate → link `tax-clearance-sipho.txt`, note: "SARS TCS verified"
+  - Bank Confirmation Letter → link `bank-confirmation-sipho.txt`, note: "FNB bank confirmation received"
+- [ ] **2.2d** **Skip** optional items (Proof of Business Address, Source of Funds Declaration) with reason: "Not applicable for sole proprietor — low-risk individual"
+- [ ] **2.2e** Verify checklist shows all required items complete → checklist status = "Completed"
+- [ ] **2.3** Verify customer transitions to ACTIVE (may require filling City/Country activation prerequisites first — edit client profile if blocking prereqs appear)
 
 ### Day 3 — Engagement from template
 
@@ -236,7 +249,10 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **4.5** 📸 **Screenshot**: New Client dialog with all promoted fields visible inline, scroll-visible at once, with accounting-za flavor
 - [ ] **4.6** Save → client appears
 - [ ] **4.7** Open detail → verify all promoted fields render inline on the detail page (not in sidebar)
-- [ ] **4.8** Complete onboarding checklist → ACTIVE
+- [ ] **4.8a** Transition to ONBOARDING → checklist auto-created. For PTY_LTD entity type, expect additional company-specific items (Company Registration, Resolution/Mandate, Beneficial Ownership Declaration)
+- [ ] **4.8b** Upload FICA documents to Documents tab: certified ID, proof of residence, company registration cert, tax clearance, bank confirmation, beneficial ownership declaration, and any other required docs
+- [ ] **4.8c** Complete all required checklist items by linking uploaded documents with notes. Skip optional items with reasons
+- [ ] **4.8d** Verify checklist complete → fill any activation prerequisites → verify ACTIVE transition
 
 ### Day 5 — First engagement: Monthly Bookkeeping
 
@@ -274,7 +290,10 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **15.1** Create client: Name = **Moroka Family Trust**, `acct_entity_type` = **TRUST**
 - [ ] **15.2** Verify trust-specific custom fields are surfaced (from `accounting-za-customer-trust` variant): trust registration, trustees, beneficiaries, `financial_year_end`
 - [ ] **15.3** Fill trust fields
-- [ ] **15.4** Complete onboarding → ACTIVE
+- [ ] **15.4a** Transition to ONBOARDING → checklist auto-created. For TRUST entity type, expect trust-specific items (Letters of Authority, Trust Deed) in addition to standard FICA items
+- [ ] **15.4b** Upload FICA documents to Documents tab: certified ID, proof of residence, tax clearance, bank confirmation, beneficial ownership declaration, letters of authority, trust deed, and any other required docs
+- [ ] **15.4c** Complete all required checklist items by linking uploaded documents with notes. Skip optional items with reasons
+- [ ] **15.4d** Verify checklist complete → fill any activation prerequisites → verify ACTIVE transition
 
 ### Day 16 — Trust AFS engagement
 
@@ -297,7 +316,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **26.1** Add comment on Moroka AFS with @Carol mention → Carol sees notification → responds
 - [ ] **28.1** Upload additional working papers to year-end pack
 - [ ] **30.1** **Automation trigger check**: engagement budget reaches ~70% on year-end pack → verify automation rule fires notification to Thandi (if `automation-accounting-za` pack includes a budget-alert rule)
-- [ ] **32.1** Add 4th client (Pty Ltd, compressed happy-path onboarding) → create VAT Return engagement from template
+- [ ] **32.1** Add 4th client (Pty Ltd, compressed happy-path onboarding): create client → transition to ONBOARDING → upload FICA docs to Documents tab → complete checklist items by linking docs → verify ACTIVE transition → create VAT Return engagement from template
 
 ### Day 34 — 📸 Profitability wow moment
 

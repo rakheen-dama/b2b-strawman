@@ -66,7 +66,7 @@ export function KpiCardRow({ kpis, isAdmin, orgSlug }: KpiCardRowProps) {
       changeDirection: changeDirection(activeProjectsChange),
       trend: trendValues,
       href: `/org/${orgSlug}/projects`,
-      emptyState: "No projects yet",
+      emptyState: `No ${t("projects")} yet`,
       adminOnly: false,
     },
     {

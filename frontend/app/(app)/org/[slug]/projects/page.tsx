@@ -30,6 +30,7 @@ import { AlertTriangle, Calendar, Clock, FileText, FolderOpen, Users } from "luc
 import Link from "next/link";
 import { EmptyState } from "@/components/empty-state";
 import { TerminologyHeading } from "@/components/terminology-heading";
+import { TerminologyText } from "@/components/terminology-text";
 import { createMessages } from "@/lib/messages";
 import { docsLink } from "@/lib/docs";
 
@@ -242,9 +243,11 @@ export default async function ProjectsPage({
       {projects.length === 0 ? (
         <EmptyState
           icon={FolderOpen}
-          title={t("projects.list.heading")}
+          title={<TerminologyText template={t("projects.list.heading")} />}
           description={
-            isAdmin ? t("projects.list.description") : t("projects.list.descriptionMember")
+            <TerminologyText
+              template={isAdmin ? t("projects.list.description") : t("projects.list.descriptionMember")}
+            />
           }
           action={<CreateProjectDialog slug={slug} />}
           secondaryLink={{ label: "Read the guide", href: docsLink("/features/projects") }}

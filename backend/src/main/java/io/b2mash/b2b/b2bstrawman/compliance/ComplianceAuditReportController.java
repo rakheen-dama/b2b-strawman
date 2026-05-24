@@ -3,8 +3,6 @@ package io.b2mash.b2b.b2bstrawman.compliance;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import java.time.Instant;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
@@ -41,9 +39,8 @@ public class ComplianceAuditReportController {
   @PreAuthorize("isAuthenticated()")
   @RequiresCapability("AI_MANAGE")
   public ResponseEntity<ComplianceAuditReportResponse> getReport(@PathVariable UUID id) {
-    return ResponseEntity.ok(
-        ComplianceAuditReportResponse.from(
-            reportService.findReport(id), reportService.findingCounts(id)));
+    var result = reportService.findReportWithCounts(id);
+    return ResponseEntity.ok(ComplianceAuditReportResponse.from(result.report(), result.counts()));
   }
 
   @GetMapping("/{reportId}/findings")
@@ -59,8 +56,7 @@ public class ComplianceAuditReportController {
         reportService
             .findFindings(
                 reportId,
-                new FindingFilterParams(
-                    splitParam(severity), splitParam(category), splitParam(status)),
+                FindingFilterParams.fromRequestParams(severity, category, status),
                 pageable)
             .map(ComplianceAuditFindingResponse::from));
   }
@@ -80,10 +76,6 @@ public class ComplianceAuditReportController {
                 request.status(),
                 request.resolutionNotes(),
                 RequestScopes.requireMemberId())));
-  }
-
-  private static List<String> splitParam(String param) {
-    return param == null || param.isBlank() ? null : Arrays.asList(param.split(","));
   }
 
   // -- DTOs --

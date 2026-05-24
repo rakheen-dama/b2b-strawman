@@ -166,8 +166,19 @@ public class ComplianceAuditReportService {
         pageable);
   }
 
+  /** Combined report + finding counts for single-service-call controller use. */
+  public record ReportWithCounts(ComplianceAuditReport report, FindingCounts counts) {}
+
   @Transactional(readOnly = true)
-  public FindingCounts findingCounts(UUID reportId) {
+  public ReportWithCounts findReportWithCounts(UUID id) {
+    var report = findReport(id);
+    var counts = findingCounts(id);
+    return new ReportWithCounts(report, counts);
+  }
+
+  // JPQL projection column order: [0] = severity (String), [1] = count (Long)
+  @Transactional(readOnly = true)
+  FindingCounts findingCounts(UUID reportId) {
     var rows = findingRepository.countByReportIdGroupedBySeverity(reportId);
     int critical = 0, high = 0, medium = 0, low = 0, info = 0;
     for (Object[] row : rows) {

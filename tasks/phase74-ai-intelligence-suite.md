@@ -25,7 +25,7 @@ Phase 74 delivers three new AI skills -- contract review, template-guided drafti
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 538 | V127 Migration + Document Provenance | Backend | -- | M | 538A, 538B | **Done** (PR #1359) |
-| 539 | Contract Review Skill (Backend) | Backend | 538A | L | 539A, 539B | |
+| 539 | Contract Review Skill (Backend) | Backend | 538A | L | 539A, 539B | **Done** (PRs #1360, #1361) |
 | 540 | Drafting Skill (Backend) | Backend | 538A | L | 540A, 540B | |
 | 541 | Compliance Data Collector + Audit Skill (Backend) | Backend | 538A | L | 541A, 541B | |
 | 542 | Compliance Audit Persistence + Finding Lifecycle | Backend | 538A, 541A | L | 542A, 542B | |
@@ -167,7 +167,7 @@ PHASES already complete:
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
 | 2a | **539A** | `ContractReviewSkill` implementing `AiSkill`; `ContractReviewOutput` record + nested records; system prompt resource; output schema resource; canned test response; integration test. | 540A, 541A | **Done** (PR #1360) |
-| 2b | **539B** | `AiReviewReportGenerator` (Tiptap report builder from `ContractReviewOutput`); integration test with document creation. | 540B, 541B |
+| 2b | **539B** | `AiReviewReportGenerator` (Tiptap report builder from `ContractReviewOutput`); integration test with document creation. | 540B, 541B | **Done** (PR #1361) |
 | 2c | **540A** | `DraftingSkill` implementing `AiSkill`; `DraftingOutput` record + nested records; system prompt resource; output schema resource; canned test response; integration test. | 539A, 541A |
 | 2d | **540B** | `AiDraftDocumentGenerator` (template filling with AI variable values); integration test with document generation. | 539B, 541B |
 | 2e | **541A** | `ComplianceDataCollectorService` + `ComplianceSnapshot` record; module guard logic; data aggregation + outlier extraction. | 539A, 540A |
@@ -294,7 +294,7 @@ A realistic day-by-day cadence: 538A days 1-2; 538B days 2-4; 539A + 540A + 541A
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **539A** | 539A.1-539A.5 | ~7 backend files (1 skill class + 1 output record + 2 resource files + 1 test resource + 1 test file + 1 schema file) | `ContractReviewSkill` implementing `AiSkill`; `ContractReviewOutput` record with nested records; system prompt resource (SA legal framework); output schema resource; canned test response; integration test. | **Done** (PR #1360) |
-| **539B** | 539B.1-539B.3 | ~4 backend files (1 generator service + 1 test file + 1 test resource) | `AiReviewReportGenerator` (Tiptap JSON report builder from `ContractReviewOutput`); integration test verifying document creation with provenance. |
+| **539B** | 539B.1-539B.3 | ~4 backend files (1 generator service + 1 test file + 1 test resource) | `AiReviewReportGenerator` (Tiptap JSON report builder from `ContractReviewOutput`); integration test verifying document creation with provenance. | **Done** (PR #1361) |
 
 ### Tasks
 

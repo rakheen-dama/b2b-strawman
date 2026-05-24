@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
 /**
@@ -98,7 +99,12 @@ public class ContractReviewSkill implements AiSkill {
     String matterType = "";
     Object projectIdObj = context.additionalContext().get("projectId");
     if (projectIdObj != null) {
-      UUID projectId = UUID.fromString(projectIdObj.toString());
+      UUID projectId;
+      try {
+        projectId = projectIdObj instanceof UUID u ? u : UUID.fromString(projectIdObj.toString());
+      } catch (IllegalArgumentException e) {
+        throw new InvalidStateException("INVALID_PROJECT_ID", "projectId must be a valid UUID");
+      }
       Project project =
           projectRepository
               .findById(projectId)
@@ -150,17 +156,8 @@ public class ContractReviewSkill implements AiSkill {
     }
 
     // One gate per execution with the parsed output as proposed_action
-    Map<String, Object> proposedAction;
-    try {
-      String json = objectMapper.writeValueAsString(output);
-      @SuppressWarnings("unchecked")
-      Map<String, Object> parsed = objectMapper.readValue(json, Map.class);
-      proposedAction = parsed;
-    } catch (JacksonException e) {
-      throw new InvalidStateException(
-          "AI response serialization failed",
-          "Failed to serialize contract review output: " + e.getMessage());
-    }
+    Map<String, Object> proposedAction =
+        objectMapper.convertValue(output, new TypeReference<Map<String, Object>>() {});
 
     var gate =
         new AiExecutionGate(
@@ -202,7 +199,6 @@ public class ContractReviewSkill implements AiSkill {
         || lowerContent.contains("shareholders agreement")
         || lowerContent.contains("board resolution")
         || lowerContent.contains("companies act")
-        || lowerContent.contains("director")
         || lowerMatterType.contains("corporate")
         || lowerMatterType.contains("company")) {
       return "CORPORATE_DOCUMENT";

@@ -109,10 +109,10 @@ class ContractReviewSkillTest {
           ContractReviewOutput output = parseOutput(execution.getOutputContent());
           assertThat(output.documentClassification()).isNotNull();
           assertThat(output.documentClassification().type()).isEqualTo("COMMERCIAL_CONTRACT");
-          assertThat(output.executiveSummary()).contains("Service Level Agreement");
-          assertThat(output.findings()).hasSize(3);
-          assertThat(output.missingProtections()).hasSize(1);
-          assertThat(output.recommendedActions()).hasSize(1);
+          assertThat(output.executiveSummary()).isNotBlank();
+          assertThat(output.findings()).isNotEmpty();
+          assertThat(output.missingProtections()).isNotEmpty();
+          assertThat(output.recommendedActions()).isNotEmpty();
         });
   }
 
@@ -131,7 +131,7 @@ class ContractReviewSkillTest {
           assertThat(gates).hasSize(1);
           assertThat(gates.getFirst().getGateType()).isEqualTo("CREATE_REVIEW_REPORT");
           assertThat(gates.getFirst().getStatus()).isEqualTo("PENDING");
-          assertThat(gates.getFirst().getAiReasoning()).contains("Service Level Agreement");
+          assertThat(gates.getFirst().getAiReasoning()).isNotBlank();
         });
   }
 

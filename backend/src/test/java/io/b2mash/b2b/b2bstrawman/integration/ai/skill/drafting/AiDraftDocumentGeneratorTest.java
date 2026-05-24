@@ -296,4 +296,33 @@ class AiDraftDocumentGeneratorTest {
           assertThat(doc.getFileName()).contains("Engagement Letter");
         });
   }
+
+  @Test
+  void generateDraft_injectsRecommendedClausesIntoDocument() {
+    runInTenant(
+        () -> {
+          var template = createTestTemplate();
+          var project = createTestProject();
+          var execution = createTestExecution();
+          var clause = createTestClause();
+          var output = buildTestOutput(clause.getId());
+
+          Document doc =
+              draftGenerator.generateDraft(
+                  output, template.getId(), project.getId(), execution.getId(), ownerMemberId);
+
+          byte[] storedBytes = storageService.download(doc.getS3Key());
+          String content = new String(storedBytes, StandardCharsets.UTF_8);
+
+          // Recommended Clauses heading should be present
+          assertThat(content).contains("Recommended Clauses");
+
+          // Clause title should appear as a sub-heading
+          assertThat(content).contains("Limitation of Liability");
+
+          // Clause body content should be injected
+          assertThat(content)
+              .contains("The total liability of the service provider shall not exceed");
+        });
+  }
 }

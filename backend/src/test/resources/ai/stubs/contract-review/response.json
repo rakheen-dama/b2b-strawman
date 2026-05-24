@@ -1,0 +1,55 @@
+{
+  "documentClassification": {
+    "type": "COMMERCIAL_CONTRACT",
+    "subtype": "Service Level Agreement",
+    "partiesIdentified": ["Acme Solutions (Pty) Ltd", "TechCorp Holdings (Pty) Ltd"]
+  },
+  "executiveSummary": "This is a Service Level Agreement between Acme Solutions (Pty) Ltd (the service provider) and TechCorp Holdings (Pty) Ltd (the client) for the provision of IT managed services. The agreement covers a 24-month term with automatic renewal, service availability targets of 99.5%, and a monthly fee of R45,000 excluding VAT. The contract contains several clauses that warrant attention regarding liability limitations, termination provisions, and CPA compliance.",
+  "findings": [
+    {
+      "severity": "HIGH",
+      "category": "Liability",
+      "clauseReference": "Clause 12.3",
+      "title": "Unlimited liability exclusion may be unenforceable",
+      "description": "The clause purports to exclude all liability for indirect, consequential, and special damages without limitation. Under South African law, such blanket exclusions may be unenforceable where they are unreasonable or where the Consumer Protection Act applies.",
+      "riskExplanation": "If the client qualifies as a consumer under the CPA, this clause could be struck down as unfair, unreasonable or unjust under s48. Even outside the CPA, the clause may fail the reasonableness test established in Afrox Healthcare v Strydom.",
+      "recommendation": "Limit the exclusion to specific categories of loss and ensure compliance with CPA s49 notice requirements. Consider a mutual liability cap linked to contract value.",
+      "statutoryReference": "CPA s48, s49"
+    },
+    {
+      "severity": "MEDIUM",
+      "category": "Termination",
+      "clauseReference": "Clause 15.1",
+      "title": "Automatic renewal without adequate notice",
+      "description": "The contract auto-renews for successive 12-month periods unless either party gives 30 days written notice before expiry. The CPA requires that fixed-term agreements not exceed 24 months and that consumers be notified 40-80 business days before expiry.",
+      "riskExplanation": "If the CPA applies, the auto-renewal mechanism with only 30 days notice may not meet the s14 requirements for fixed-term agreements, exposing the provider to a challenge of the renewal terms.",
+      "recommendation": "Extend the notice period to comply with CPA s14 requirements (40-80 business days before expiry) and include express notification obligations.",
+      "statutoryReference": "CPA s14"
+    },
+    {
+      "severity": "LOW",
+      "category": "Data Protection",
+      "clauseReference": "Clause 18",
+      "title": "Insufficient data processing provisions",
+      "description": "The data protection clause references general confidentiality obligations but does not contain specific POPIA-compliant operator processing provisions including purpose limitation, security measures, breach notification timelines, and cross-border transfer restrictions.",
+      "riskExplanation": "Without explicit POPIA-compliant processing terms, both parties may face regulatory risk if personal information is processed under this agreement. The Information Regulator has signalled increased enforcement activity.",
+      "recommendation": "Include a comprehensive data processing addendum covering POPIA sections 19-22, specifying the operator's obligations, security measures, breach notification (within 72 hours), and restrictions on cross-border transfers.",
+      "statutoryReference": "POPIA s19-22"
+    }
+  ],
+  "missingProtections": [
+    {
+      "protection": "Force majeure clause",
+      "reasoning": "The agreement contains no force majeure or hardship provision. Given the 24-month term, unforeseen events (load-shedding, pandemic, civil unrest) could materially affect performance. South African common law provides limited relief through supervening impossibility, but a contractual clause provides greater certainty.",
+      "recommendation": "Include a force majeure clause specifying qualifying events, notification obligations, mitigation duties, and termination rights if the force majeure event persists beyond a specified period (e.g., 90 days).",
+      "priority": "MEDIUM"
+    }
+  ],
+  "overallRiskAssessment": "The agreement presents a MODERATE risk profile. The core commercial terms are reasonable, but three areas require attention before execution: (1) the liability exclusion clause needs CPA-compliant safeguards, (2) the auto-renewal mechanism should align with CPA fixed-term agreement requirements, and (3) data protection provisions need strengthening for POPIA compliance. The missing force majeure clause is a secondary concern but recommended for a contract of this duration.",
+  "recommendedActions": [
+    {
+      "action": "Revise liability exclusion clause (Clause 12.3) to include CPA s49 notice requirements and a mutual liability cap",
+      "reasoning": "The current blanket exclusion poses the highest risk of unenforceability and potential regulatory challenge under the CPA."
+    }
+  ]
+}

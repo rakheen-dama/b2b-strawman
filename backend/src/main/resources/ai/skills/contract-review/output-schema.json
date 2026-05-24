@@ -1,0 +1,119 @@
+{
+  "type": "object",
+  "required": ["documentClassification", "executiveSummary", "findings", "missingProtections", "overallRiskAssessment", "recommendedActions"],
+  "properties": {
+    "documentClassification": {
+      "type": "object",
+      "required": ["type", "subtype", "partiesIdentified"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["COMMERCIAL_CONTRACT", "EMPLOYMENT_CONTRACT", "CORPORATE_DOCUMENT", "GENERAL"],
+          "description": "Primary classification of the document"
+        },
+        "subtype": {
+          "type": "string",
+          "description": "Specific subtype (e.g., 'Service Level Agreement', 'Fixed-term Employment Contract')"
+        },
+        "partiesIdentified": {
+          "type": "array",
+          "items": {"type": "string"},
+          "description": "Names of parties identified in the document"
+        }
+      }
+    },
+    "executiveSummary": {
+      "type": "string",
+      "description": "Concise summary of the contract's purpose and key terms"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["severity", "category", "clauseReference", "title", "description", "riskExplanation", "recommendation"],
+        "properties": {
+          "severity": {
+            "type": "string",
+            "enum": ["HIGH", "MEDIUM", "LOW"],
+            "description": "Severity of the finding"
+          },
+          "category": {
+            "type": "string",
+            "description": "Category of the finding (e.g., 'Liability', 'Termination', 'Compliance')"
+          },
+          "clauseReference": {
+            "type": "string",
+            "description": "Reference to the specific clause (e.g., 'Clause 7.2')"
+          },
+          "title": {
+            "type": "string",
+            "description": "Short title describing the finding"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description of the issue"
+          },
+          "riskExplanation": {
+            "type": "string",
+            "description": "Explanation of the risk this finding poses"
+          },
+          "recommendation": {
+            "type": "string",
+            "description": "Specific recommendation to address the finding"
+          },
+          "statutoryReference": {
+            "type": ["string", "null"],
+            "description": "Reference to applicable legislation (e.g., 'CPA s48')"
+          }
+        }
+      }
+    },
+    "missingProtections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["protection", "reasoning", "recommendation", "priority"],
+        "properties": {
+          "protection": {
+            "type": "string",
+            "description": "Name of the missing protection"
+          },
+          "reasoning": {
+            "type": "string",
+            "description": "Why this protection is important"
+          },
+          "recommendation": {
+            "type": "string",
+            "description": "How to add this protection"
+          },
+          "priority": {
+            "type": "string",
+            "enum": ["HIGH", "MEDIUM", "LOW"],
+            "description": "Priority for adding this protection"
+          }
+        }
+      }
+    },
+    "overallRiskAssessment": {
+      "type": "string",
+      "description": "Overall assessment of the contract's risk profile and fitness for purpose"
+    },
+    "recommendedActions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["action", "reasoning"],
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Description of the recommended action"
+          },
+          "reasoning": {
+            "type": "string",
+            "description": "Reasoning for this recommendation"
+          }
+        }
+      }
+    }
+  }
+}

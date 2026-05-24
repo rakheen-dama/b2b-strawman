@@ -169,6 +169,44 @@ class CustomerReadinessServiceTest {
     assertThat(result.overallReadiness()).isEqualTo("Needs Attention");
   }
 
+  @Test
+  void getReadiness_excludesTrustFieldsForNonTrustCustomer() {
+    // OBS-5004: trust-specific required fields should not inflate the denominator
+    // for non-trust customers because their visibility condition is unmet.
+    var customer = mockCustomerWithEntityType(LifecycleStatus.ACTIVE, Map.of(), "PTY_LTD");
+    mockNoChecklist();
+    mockRequiredFieldWithVisibility(
+        "SARS Tax Reference", "sars_tax_ref", null); // no visibility condition — always visible
+    mockRequiredFieldWithVisibility(
+        "Trust Registration Number",
+        "trust_registration_number",
+        Map.of("dependsOnSlug", "acct_entity_type", "operator", "eq", "value", "TRUST"));
+    when(customerProjectRepository.existsByCustomerId(CUSTOMER_ID)).thenReturn(true);
+
+    var result = service.getReadiness(CUSTOMER_ID);
+
+    // Only 1 required field should count (SARS Tax Ref), not 2 (trust field hidden)
+    assertThat(result.requiredFields().total()).isEqualTo(1);
+  }
+
+  @Test
+  void getReadiness_includesTrustFieldsForTrustCustomer() {
+    // OBS-5004: trust-specific required fields should be included for TRUST customers
+    var customer = mockCustomerWithEntityType(LifecycleStatus.ACTIVE, Map.of(), "TRUST");
+    mockNoChecklist();
+    mockRequiredFieldWithVisibility("SARS Tax Reference", "sars_tax_ref", null);
+    mockRequiredFieldWithVisibility(
+        "Trust Registration Number",
+        "trust_registration_number",
+        Map.of("dependsOnSlug", "acct_entity_type", "operator", "eq", "value", "TRUST"));
+    when(customerProjectRepository.existsByCustomerId(CUSTOMER_ID)).thenReturn(true);
+
+    var result = service.getReadiness(CUSTOMER_ID);
+
+    // Both fields should count for TRUST customers
+    assertThat(result.requiredFields().total()).isEqualTo(2);
+  }
+
   // --- Helper methods ---
 
   private Customer mockCustomer(LifecycleStatus lifecycleStatus) {
@@ -180,6 +218,17 @@ class CustomerReadinessServiceTest {
         TestCustomerFactory.createCustomerWithStatus(
             "Test Customer", "test@test.com", MEMBER_ID, lifecycleStatus);
     customer.setCustomFields(customFields);
+    when(customerRepository.findById(CUSTOMER_ID)).thenReturn(Optional.of(customer));
+    return customer;
+  }
+
+  private Customer mockCustomerWithEntityType(
+      LifecycleStatus lifecycleStatus, Map<String, Object> customFields, String entityType) {
+    var customer =
+        TestCustomerFactory.createCustomerWithStatus(
+            "Test Customer", "test@test.com", MEMBER_ID, lifecycleStatus);
+    customer.setCustomFields(customFields);
+    customer.setEntityType(entityType);
     when(customerRepository.findById(CUSTOMER_ID)).thenReturn(Optional.of(customer));
     return customer;
   }
@@ -217,5 +266,30 @@ class CustomerReadinessServiceTest {
     when(fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
             EntityType.CUSTOMER))
         .thenReturn(List.of(fd));
+  }
+
+  /**
+   * OBS-5004: accumulates required fields with optional visibility conditions. Call multiple times
+   * before exercising the service — all accumulated fields are returned as a single list on the
+   * final mock setup.
+   */
+  private final List<FieldDefinition> accumulatedFields = new java.util.ArrayList<>();
+
+  private void mockRequiredFieldWithVisibility(
+      String name, String slug, Map<String, Object> visibilityCondition) {
+    var fd = new FieldDefinition(EntityType.CUSTOMER, name, slug, FieldType.TEXT);
+    fd.updateMetadata(name, null, true, null);
+    if (visibilityCondition != null) {
+      fd.setVisibilityCondition(visibilityCondition);
+    }
+    accumulatedFields.add(fd);
+    when(fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
+            EntityType.CUSTOMER))
+        .thenReturn(List.copyOf(accumulatedFields));
+  }
+
+  @org.junit.jupiter.api.BeforeEach
+  void resetAccumulatedFields() {
+    accumulatedFields.clear();
   }
 }

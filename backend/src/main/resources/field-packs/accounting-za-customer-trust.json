@@ -7,7 +7,8 @@
     "slug": "accounting_za_trust_details",
     "name": "SA Accounting — Trust Details",
     "description": "Trust-specific fields for South African trust entity clients",
-    "autoApply": true
+    "autoApply": true,
+    "applicableEntityValues": ["TRUST"]
   },
   "fields": [
     {

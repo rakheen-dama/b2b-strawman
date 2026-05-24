@@ -1,11 +1,4 @@
-import {
-  Shield,
-  Scale,
-  Landmark,
-  Banknote,
-  FileSearch,
-  GavelIcon,
-} from "lucide-react";
+import { Shield, Scale, Landmark, Banknote, FileSearch, GavelIcon } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 interface Regulation {
@@ -47,8 +40,7 @@ const regulations: Regulation[] = [
     icon: FileSearch,
     acronym: "PAIA",
     name: "Promotion of Access to Information Act",
-    detail:
-      "Information request workflows for PAIA compliance, with tracking and audit trails.",
+    detail: "Information request workflows for PAIA compliance, with tracking and audit trails.",
     features: [
       "Structured request intake forms",
       "Response deadline tracking",
@@ -73,8 +65,7 @@ const regulations: Regulation[] = [
     icon: Landmark,
     acronym: "SARS",
     name: "SA Revenue Service",
-    detail:
-      "Tax deadline tracking, VAT calculations, and financial year-end management.",
+    detail: "Tax deadline tracking, VAT calculations, and financial year-end management.",
     features: [
       "Automated deadline calculation",
       "VAT-inclusive and zero-rated billing",
@@ -112,9 +103,8 @@ export function BuiltForAfrica() {
         </h2>
         <p className="mx-auto mt-5 max-w-2xl text-center text-base leading-relaxed text-slate-400">
           Every South African professional practice operates under layers of regulation — FICA,
-          POPIA, PAIA, Law Society rules, SARS deadlines. Kazi doesn&apos;t bolt compliance on
-          after the fact. It&apos;s woven into every workflow, every client record, every
-          transaction.
+          POPIA, PAIA, Law Society rules, SARS deadlines. Kazi doesn&apos;t bolt compliance on after
+          the fact. It&apos;s woven into every workflow, every client record, every transaction.
         </p>
 
         <div className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">

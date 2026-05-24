@@ -63,8 +63,10 @@ describe("createMessages", () => {
     const { t } = createMessages("empty-states");
     const adminDesc = t("projects.list.description");
     const memberDesc = t("projects.list.descriptionMember");
-    expect(adminDesc).toContain("Create your first project");
-    expect(memberDesc).toContain("not on any projects");
+    // Copy now uses {Projects}/{project}/{projects} placeholders that TerminologyText
+    // expands at render time (OBS-5001 — vertical-aware terminology).
+    expect(adminDesc).toContain("Create your first {project}");
+    expect(memberDesc).toContain("not on any {projects}");
     expect(adminDesc).not.toBe(memberDesc);
   });
 

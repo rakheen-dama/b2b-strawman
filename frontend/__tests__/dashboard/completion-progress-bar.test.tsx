@@ -37,21 +37,21 @@ describe("CompletionProgressBar", () => {
     expect(screen.getByText("34%")).toBeInTheDocument();
   });
 
-  it("applies green color for percent > 66", () => {
+  it("applies emerald gradient for percent > 66", () => {
     const { container } = render(<CompletionProgressBar percent={80} />);
-    const bar = container.querySelector(".bg-green-500");
+    const bar = container.querySelector(".from-emerald-400");
     expect(bar).toBeTruthy();
   });
 
-  it("applies amber color for percent > 33 and <= 66", () => {
+  it("applies amber gradient for percent > 33 and <= 66", () => {
     const { container } = render(<CompletionProgressBar percent={50} />);
-    const bar = container.querySelector(".bg-amber-500");
+    const bar = container.querySelector(".from-amber-400");
     expect(bar).toBeTruthy();
   });
 
-  it("applies red color for percent <= 33", () => {
+  it("applies red gradient for percent <= 33", () => {
     const { container } = render(<CompletionProgressBar percent={20} />);
-    const bar = container.querySelector(".bg-red-500");
+    const bar = container.querySelector(".from-red-400");
     expect(bar).toBeTruthy();
   });
 });

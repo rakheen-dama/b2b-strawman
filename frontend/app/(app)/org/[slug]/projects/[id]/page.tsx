@@ -490,192 +490,192 @@ export default async function ProjectDetailPage({
           />
         }
         overviewPanel={
-            <OverviewTab
-              projectId={id}
-              projectName={project.name}
-              projectStatus={project.status}
-              customerName={customers.length > 0 ? customers[0].name : null}
-              customerId={customers.length > 0 ? customers[0].id : null}
-              canManage={canManage}
-              slug={slug}
-              setupStatus={setupStatus}
-              setupSteps={setupSteps}
-              ficaStatus={ficaStatus}
-              retentionClockStartedAt={project.retentionClockStartedAt}
-              retentionEndsOn={project.retentionEndsOn}
-              trustEnabled={false} // TODO: derive from org module flags
-              disbursementsEnabled={false} // TODO: derive from org module flags
-              projectDueDate={project.dueDate ?? null}
-            />
-          }
-          documentsPanel={
-            <DocumentsPanel
-              documents={documents}
-              projectId={id}
-              slug={slug}
-              currentMemberId={currentMemberId}
-              canManageVisibility={canManage}
-            />
-          }
-          customersPanel={
-            <ProjectCustomersPanel
-              customers={customers}
-              slug={slug}
-              projectId={id}
-              canManage={canManage}
-            />
-          }
-          membersPanel={
-            <ProjectMembersPanel
+          <OverviewTab
+            projectId={id}
+            projectName={project.name}
+            projectStatus={project.status}
+            customerName={customers.length > 0 ? customers[0].name : null}
+            customerId={customers.length > 0 ? customers[0].id : null}
+            canManage={canManage}
+            slug={slug}
+            setupStatus={setupStatus}
+            setupSteps={setupSteps}
+            ficaStatus={ficaStatus}
+            retentionClockStartedAt={project.retentionClockStartedAt}
+            retentionEndsOn={project.retentionEndsOn}
+            trustEnabled={false} // TODO: derive from org module flags
+            disbursementsEnabled={false} // TODO: derive from org module flags
+            projectDueDate={project.dueDate ?? null}
+          />
+        }
+        documentsPanel={
+          <DocumentsPanel
+            documents={documents}
+            projectId={id}
+            slug={slug}
+            currentMemberId={currentMemberId}
+            canManageVisibility={canManage}
+          />
+        }
+        customersPanel={
+          <ProjectCustomersPanel
+            customers={customers}
+            slug={slug}
+            projectId={id}
+            canManage={canManage}
+          />
+        }
+        membersPanel={
+          <ProjectMembersPanel
+            members={members}
+            slug={slug}
+            projectId={id}
+            canManage={canManage}
+            isCurrentLead={isCurrentLead}
+            currentUserId={userId ?? ""}
+          />
+        }
+        tasksPanel={
+          <TaskListPanel
+            tasks={tasks}
+            slug={slug}
+            projectId={id}
+            canManage={canManage}
+            currentMemberId={currentMemberId}
+            isAdmin={isAdmin}
+            retainerSummary={taskRetainerSummary}
+            members={members.map((m) => ({ id: m.memberId, name: m.name, email: m.email }))}
+            allTags={allTags}
+            fieldDefinitions={taskFieldDefs}
+            fieldGroups={taskFieldGroups}
+            groupMembers={taskGroupMembers}
+            savedViews={savedTaskViews}
+            onSave={handleCreateTaskView}
+          />
+        }
+        timePanel={
+          <TimeSummaryPanel
+            projectId={id}
+            initialSummary={timeSummary}
+            initialByTask={timeSummaryByTask}
+            initialByMember={timeSummaryByMember}
+          />
+        }
+        budgetPanel={
+          <BudgetPanel
+            slug={slug}
+            projectId={id}
+            budget={budgetStatus}
+            canManage={canManage}
+            defaultCurrency={defaultCurrency}
+          />
+        }
+        financialsPanel={
+          canManage ? <ProjectFinancialsTab profitability={projectProfitability} /> : undefined
+        }
+        ratesPanel={
+          canManage ? (
+            <ProjectRatesTab
+              billingRates={projectBillingRates}
               members={members}
+              projectId={id}
               slug={slug}
-              projectId={id}
-              canManage={canManage}
-              isCurrentLead={isCurrentLead}
-              currentUserId={userId ?? ""}
-            />
-          }
-          tasksPanel={
-            <TaskListPanel
-              tasks={tasks}
-              slug={slug}
-              projectId={id}
-              canManage={canManage}
-              currentMemberId={currentMemberId}
-              isAdmin={isAdmin}
-              retainerSummary={taskRetainerSummary}
-              members={members.map((m) => ({ id: m.memberId, name: m.name, email: m.email }))}
-              allTags={allTags}
-              fieldDefinitions={taskFieldDefs}
-              fieldGroups={taskFieldGroups}
-              groupMembers={taskGroupMembers}
-              savedViews={savedTaskViews}
-              onSave={handleCreateTaskView}
-            />
-          }
-          timePanel={
-            <TimeSummaryPanel
-              projectId={id}
-              initialSummary={timeSummary}
-              initialByTask={timeSummaryByTask}
-              initialByMember={timeSummaryByMember}
-            />
-          }
-          budgetPanel={
-            <BudgetPanel
-              slug={slug}
-              projectId={id}
-              budget={budgetStatus}
-              canManage={canManage}
               defaultCurrency={defaultCurrency}
             />
-          }
-          financialsPanel={
-            canManage ? <ProjectFinancialsTab profitability={projectProfitability} /> : undefined
-          }
-          ratesPanel={
-            canManage ? (
-              <ProjectRatesTab
-                billingRates={projectBillingRates}
-                members={members}
-                projectId={id}
-                slug={slug}
-                defaultCurrency={defaultCurrency}
-              />
-            ) : undefined
-          }
-          expensesPanel={
-            <div className="space-y-6">
-              <div className="flex items-center justify-end">
-                <LogExpenseDialog
-                  slug={slug}
-                  projectId={id}
-                  tasks={tasks.map((t) => ({ id: t.id, title: t.title }))}
-                >
-                  <Button size="sm">
-                    <Receipt className="mr-1.5 size-4" />
-                    Log Expense
-                  </Button>
-                </LogExpenseDialog>
-              </div>
-              <ExpenseList
-                expenses={expenseData.content}
+          ) : undefined
+        }
+        expensesPanel={
+          <div className="space-y-6">
+            <div className="flex items-center justify-end">
+              <LogExpenseDialog
                 slug={slug}
                 projectId={id}
                 tasks={tasks.map((t) => ({ id: t.id, title: t.title }))}
-                members={members.map((m) => ({ id: m.memberId, name: m.name }))}
-                currentMemberId={currentMemberId}
-                isAdmin={isAdmin}
-              />
+              >
+                <Button size="sm">
+                  <Receipt className="mr-1.5 size-4" />
+                  Log Expense
+                </Button>
+              </LogExpenseDialog>
             </div>
-          }
-          generatedPanel={
-            <GeneratedDocumentsList
-              entityType="PROJECT"
-              entityId={id}
+            <ExpenseList
+              expenses={expenseData.content}
               slug={slug}
+              projectId={id}
+              tasks={tasks.map((t) => ({ id: t.id, title: t.title }))}
+              members={members.map((m) => ({ id: m.memberId, name: m.name }))}
+              currentMemberId={currentMemberId}
               isAdmin={isAdmin}
-              customerId={customers.length > 0 ? customers[0].id : undefined}
             />
-          }
-          requestsPanel={
-            customers.length > 0 ? (
-              <div className="space-y-6">
-                <div className="flex items-center justify-end">
-                  <CreateRequestDialog
-                    slug={slug}
-                    customerId={customers[0].id}
-                    customerName={customers[0].name}
-                    projectId={id}
-                    projectName={project.name}
-                  />
-                </div>
-                <RequestList requests={projectRequests} slug={slug} showCustomer={false} />
-              </div>
-            ) : undefined
-          }
-          customerCommentsPanel={
-            customers && customers.length > 0 ? (
-              <ProjectCommentsSection projectId={id} orgSlug={slug} />
-            ) : undefined
-          }
-          staffingPanel={<ProjectStaffingTab staffing={projectStaffing} />}
-          courtDatesPanel={<ProjectCourtDatesTab projectId={id} slug={slug} />}
-          adversePartiesPanel={<ProjectAdversePartiesTab projectId={id} slug={slug} />}
-          disbursementsPanel={
-            <ProjectDisbursementsTab projectId={id} slug={slug} canManage={canManage} />
-          }
-          statementsPanel={
-            <ProjectStatementsTab projectId={id} slug={slug} projectName={project.name} />
-          }
-          trustPanel={
-            customers.length > 0 ? (
-              <TrustBalanceCard
-                customerId={customers[0].id}
-                projectId={id}
-                slug={slug}
-                showQuickActions={canManage}
-              />
-            ) : undefined
-          }
-          activityPanel={
-            <div className="space-y-4">
+          </div>
+        }
+        generatedPanel={
+          <GeneratedDocumentsList
+            entityType="PROJECT"
+            entityId={id}
+            slug={slug}
+            isAdmin={isAdmin}
+            customerId={customers.length > 0 ? customers[0].id : undefined}
+          />
+        }
+        requestsPanel={
+          customers.length > 0 ? (
+            <div className="space-y-6">
               <div className="flex items-center justify-end">
-                <LookbackPicker
-                  specialistId="INBOX"
-                  surface="MATTER_ACTIVITY_TAB"
-                  contextRef={{ entityType: "project", entityId: id }}
-                  ctaLabel={SPECIALIST_STRINGS.inboxSummariseLabel}
+                <CreateRequestDialog
+                  slug={slug}
+                  customerId={customers[0].id}
+                  customerName={customers[0].name}
+                  projectId={id}
+                  projectName={project.name}
                 />
               </div>
-              <ActivityFeed projectId={id} orgSlug={slug} />
+              <RequestList requests={projectRequests} slug={slug} showCustomer={false} />
             </div>
-          }
-          auditPanel={<ProjectAuditTab projectId={id} />}
-        />
+          ) : undefined
+        }
+        customerCommentsPanel={
+          customers && customers.length > 0 ? (
+            <ProjectCommentsSection projectId={id} orgSlug={slug} />
+          ) : undefined
+        }
+        staffingPanel={<ProjectStaffingTab staffing={projectStaffing} />}
+        courtDatesPanel={<ProjectCourtDatesTab projectId={id} slug={slug} />}
+        adversePartiesPanel={<ProjectAdversePartiesTab projectId={id} slug={slug} />}
+        disbursementsPanel={
+          <ProjectDisbursementsTab projectId={id} slug={slug} canManage={canManage} />
+        }
+        statementsPanel={
+          <ProjectStatementsTab projectId={id} slug={slug} projectName={project.name} />
+        }
+        trustPanel={
+          customers.length > 0 ? (
+            <TrustBalanceCard
+              customerId={customers[0].id}
+              projectId={id}
+              slug={slug}
+              showQuickActions={canManage}
+            />
+          ) : undefined
+        }
+        activityPanel={
+          <div className="space-y-4">
+            <div className="flex items-center justify-end">
+              <LookbackPicker
+                specialistId="INBOX"
+                surface="MATTER_ACTIVITY_TAB"
+                contextRef={{ entityType: "project", entityId: id }}
+                ctaLabel={SPECIALIST_STRINGS.inboxSummariseLabel}
+              />
+            </div>
+            <ActivityFeed projectId={id} orgSlug={slug} />
+          </div>
+        }
+        auditPanel={<ProjectAuditTab projectId={id} />}
+      />
 
-        {/* Pending AI Suggestions */}
-        <PendingSuggestionsWidget contextEntityType="project" contextEntityId={id} />
+      {/* Pending AI Suggestions */}
+      <PendingSuggestionsWidget contextEntityType="project" contextEntityId={id} />
 
       {/* Epic 508B: Closure history (only on CLOSED matters). Per-row audit
           timelines surface the matter.closure.override_used event from 508A. */}

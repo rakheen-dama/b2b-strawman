@@ -42,7 +42,7 @@ export function MatterDetailsTab({
           Description
         </h3>
         {description ? (
-          <p className="max-w-prose whitespace-pre-wrap text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+          <p className="max-w-prose text-sm leading-relaxed whitespace-pre-wrap text-slate-700 dark:text-slate-300">
             {description}
           </p>
         ) : (
@@ -65,11 +65,7 @@ export function MatterDetailsTab({
               <dd className="mt-1">
                 <Badge
                   variant={
-                    priority === "HIGH"
-                      ? "warning"
-                      : priority === "MEDIUM"
-                        ? "neutral"
-                        : "success"
+                    priority === "HIGH" ? "warning" : priority === "MEDIUM" ? "neutral" : "success"
                   }
                 >
                   {priority.charAt(0) + priority.slice(1).toLowerCase()}

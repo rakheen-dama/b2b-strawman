@@ -81,8 +81,8 @@
     },
     {
       "slug": "new-project-welcome",
-      "name": "New Project Welcome",
-      "description": "Sends a welcome notification to project members when a project becomes active",
+      "name": "Welcome Notification",
+      "description": "Sends a welcome notification to team members when work becomes active",
       "category": "notifications",
       "triggerType": "PROJECT_STATUS_CHANGED",
       "triggerConfig": { "toStatus": "ACTIVE" },
@@ -93,7 +93,7 @@
           "actionConfig": {
             "recipientType": "PROJECT_MEMBERS",
             "title": "Welcome to {{project.name}}",
-            "message": "Project {{project.name}} is now active. You can start logging time and creating tasks."
+            "message": "{{project.name}} is now active. You can start logging time and creating tasks."
           },
           "delayDuration": null,
           "delayUnit": null,

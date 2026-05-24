@@ -43,22 +43,22 @@ describe("Sparkline", () => {
     cleanup();
   });
 
-  it("renders SVG polyline with data points", () => {
+  it("renders SVG path with data points", () => {
     const { container } = render(<Sparkline data={[10, 20, 15, 30, 25]} />);
 
     const svg = container.querySelector("svg");
     expect(svg).toBeInTheDocument();
     expect(svg).toHaveAttribute("width", "80");
-    expect(svg).toHaveAttribute("height", "24");
+    expect(svg).toHaveAttribute("height", "28");
 
-    const polyline = container.querySelector("polyline");
-    expect(polyline).toBeInTheDocument();
-    expect(polyline).toHaveAttribute("points");
-    expect(polyline!.getAttribute("points")!.split(" ").length).toBe(5);
+    // Smooth curve rendered as <path> elements (line + gradient fill)
+    const paths = container.querySelectorAll("path");
+    expect(paths.length).toBeGreaterThanOrEqual(2); // fill path + line path
 
-    // Gradient fill polygon should also be present
-    const polygon = container.querySelector("polygon");
-    expect(polygon).toBeInTheDocument();
+    // Line path should have no fill and a stroke
+    const linePath = Array.from(paths).find((p) => p.getAttribute("fill") === "none");
+    expect(linePath).toBeTruthy();
+    expect(linePath!.getAttribute("d")).toBeTruthy();
   });
 
   it("handles empty data array gracefully", () => {
@@ -67,9 +67,9 @@ describe("Sparkline", () => {
     const svg = container.querySelector("svg");
     expect(svg).toBeInTheDocument();
 
-    // No polyline or polygon when data is empty
-    const polyline = container.querySelector("polyline");
-    expect(polyline).not.toBeInTheDocument();
+    // No path elements when data is empty
+    const paths = container.querySelectorAll("path");
+    expect(paths.length).toBe(0);
   });
 
   it("respects custom width and height", () => {
@@ -78,6 +78,7 @@ describe("Sparkline", () => {
     const svg = container.querySelector("svg");
     expect(svg).toHaveAttribute("width", "120");
     expect(svg).toHaveAttribute("height", "40");
+    expect(svg).toHaveAttribute("viewBox", "0 0 120 40");
   });
 });
 

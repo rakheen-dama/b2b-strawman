@@ -52,13 +52,13 @@ export async function sendInvoice(
   customerId: string,
   overrideWarnings?: boolean
 ): Promise<InvoiceActionResult> {
-  const caps = await fetchMyCapabilities();
-  if (!caps.isAdmin && !caps.isOwner) {
-    return { success: false, error: "Only admins and owners can send invoices." };
-  }
-
   try {
-    const body = overrideWarnings ? { overrideWarnings: true } : undefined;
+    const caps = await fetchMyCapabilities();
+    if (!caps.isAdmin && !caps.isOwner) {
+      return { success: false, error: "Only admins and owners can send invoices." };
+    }
+
+    const body = overrideWarnings ? { overrideWarnings: true } : { overrideWarnings: false };
     const invoice = await api.post<InvoiceResponse>(`/api/invoices/${invoiceId}/send`, body);
     revalidateInvoicePaths(slug, invoiceId, customerId);
     return { success: true, invoice };

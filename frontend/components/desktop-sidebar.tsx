@@ -93,7 +93,10 @@ export function DesktopSidebar({
       </button>
 
       {/* Nav body — zone-based */}
-      <nav aria-label="Main navigation" className="flex min-h-0 flex-1 flex-col gap-0 overflow-y-auto p-2">
+      <nav
+        aria-label="Main navigation"
+        className="flex min-h-0 flex-1 flex-col gap-0 overflow-y-auto p-2"
+      >
         {NAV_GROUPS.map((group, index) => (
           <Fragment key={group.id}>
             {index > 0 && <div className="mx-2 my-1 border-t border-white/5" />}

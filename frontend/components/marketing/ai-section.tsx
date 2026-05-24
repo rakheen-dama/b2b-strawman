@@ -49,10 +49,10 @@ const features: AiFeature[] = [
 export function AiSection() {
   return (
     <section className="relative overflow-hidden bg-slate-950 px-6 py-24 lg:py-32">
-      <div className="pointer-events-none absolute inset-0 opacity-[0.02]"
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.02]"
         style={{
-          backgroundImage:
-            "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
+          backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)",
           backgroundSize: "40px 40px",
         }}
       />
@@ -62,13 +62,12 @@ export function AiSection() {
           AI-Powered
         </p>
         <h2 className="font-display mx-auto mt-4 max-w-2xl text-center text-3xl text-white sm:text-4xl">
-          Intelligence that understands{" "}
-          <span className="text-teal-400">your practice</span>
+          Intelligence that understands <span className="text-teal-400">your practice</span>
         </h2>
         <p className="mx-auto mt-5 max-w-2xl text-center text-base leading-relaxed text-slate-400">
-          Kazi&apos;s AI is configured per firm — your practice areas, jurisdiction,
-          risk calibration, and house style. It doesn&apos;t guess. It works within your
-          rules, and every action requires your approval.
+          Kazi&apos;s AI is configured per firm — your practice areas, jurisdiction, risk
+          calibration, and house style. It doesn&apos;t guess. It works within your rules, and every
+          action requires your approval.
         </p>
 
         <div className="mt-16 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -83,9 +82,7 @@ export function AiSection() {
               <h3 className="font-display mt-4 text-sm font-semibold text-white">
                 {feature.title}
               </h3>
-              <p className="mt-2 text-sm leading-relaxed text-slate-400">
-                {feature.description}
-              </p>
+              <p className="mt-2 text-sm leading-relaxed text-slate-400">{feature.description}</p>
             </div>
           ))}
         </div>

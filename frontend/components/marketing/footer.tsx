@@ -48,7 +48,9 @@ export function Footer() {
                 <ul className="space-y-2">
                   {group.links.map((link) => (
                     <li key={link.label}>
-                      {link.href.startsWith("mailto:") || link.href.startsWith("http") || link.href === "#" ? (
+                      {link.href.startsWith("mailto:") ||
+                      link.href.startsWith("http") ||
+                      link.href === "#" ? (
                         <a
                           href={link.href}
                           className="text-sm text-white/60 transition-colors hover:text-white"

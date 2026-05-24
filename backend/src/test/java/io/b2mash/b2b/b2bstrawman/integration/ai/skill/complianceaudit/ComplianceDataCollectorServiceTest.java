@@ -14,7 +14,6 @@ import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.datarequest.DataSubjectRequestRepository;
-import io.b2mash.b2b.b2bstrawman.datarequest.ProcessingActivity;
 import io.b2mash.b2b.b2bstrawman.datarequest.ProcessingActivityRepository;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionCheckResult;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyRepository;
@@ -100,13 +99,12 @@ class ComplianceDataCollectorServiceTest {
         .thenReturn(List.of());
 
     // POPIA data
-    when(processingActivityRepository.findAll())
-        .thenReturn(List.of(createProcessingActivity(), createProcessingActivity()));
+    when(processingActivityRepository.count()).thenReturn(2L);
     when(dataSubjectRequestRepository.countByStatusIn(List.of("RECEIVED", "IN_PROGRESS")))
         .thenReturn(3L);
-    when(dataSubjectRequestRepository.findByStatusInAndDeadlineBefore(
+    when(dataSubjectRequestRepository.countByStatusInAndDeadlineBefore(
             List.of("RECEIVED", "IN_PROGRESS"), LocalDate.now()))
-        .thenReturn(List.of());
+        .thenReturn(0L);
 
     // Trust accounting enabled
     when(moduleGuard.isModuleEnabled("trust_accounting")).thenReturn(true);
@@ -149,10 +147,10 @@ class ComplianceDataCollectorServiceTest {
     when(moduleGuard.isModuleEnabled("trust_accounting")).thenReturn(false);
     when(moduleGuard.isModuleEnabled("court_calendar")).thenReturn(false);
 
-    when(processingActivityRepository.findAll()).thenReturn(List.of());
+    when(processingActivityRepository.count()).thenReturn(0L);
     when(dataSubjectRequestRepository.countByStatusIn(anyList())).thenReturn(0L);
-    when(dataSubjectRequestRepository.findByStatusInAndDeadlineBefore(anyList(), any()))
-        .thenReturn(List.of());
+    when(dataSubjectRequestRepository.countByStatusInAndDeadlineBefore(anyList(), any()))
+        .thenReturn(0L);
     when(retentionService.previewPurge()).thenReturn(new RetentionCheckResult());
     when(retentionPolicyRepository.findByActive(true)).thenReturn(List.of());
 
@@ -186,10 +184,10 @@ class ComplianceDataCollectorServiceTest {
 
     when(moduleGuard.isModuleEnabled("trust_accounting")).thenReturn(false);
     when(moduleGuard.isModuleEnabled("court_calendar")).thenReturn(false);
-    when(processingActivityRepository.findAll()).thenReturn(List.of());
+    when(processingActivityRepository.count()).thenReturn(0L);
     when(dataSubjectRequestRepository.countByStatusIn(anyList())).thenReturn(0L);
-    when(dataSubjectRequestRepository.findByStatusInAndDeadlineBefore(anyList(), any()))
-        .thenReturn(List.of());
+    when(dataSubjectRequestRepository.countByStatusInAndDeadlineBefore(anyList(), any()))
+        .thenReturn(0L);
     when(retentionService.previewPurge()).thenReturn(new RetentionCheckResult());
     when(retentionPolicyRepository.findByActive(true)).thenReturn(List.of());
 
@@ -206,10 +204,10 @@ class ComplianceDataCollectorServiceTest {
     when(moduleGuard.isModuleEnabled("trust_accounting")).thenReturn(true);
     when(moduleGuard.isModuleEnabled("court_calendar")).thenReturn(true);
 
-    when(processingActivityRepository.findAll()).thenReturn(List.of());
+    when(processingActivityRepository.count()).thenReturn(0L);
     when(dataSubjectRequestRepository.countByStatusIn(anyList())).thenReturn(0L);
-    when(dataSubjectRequestRepository.findByStatusInAndDeadlineBefore(anyList(), any()))
-        .thenReturn(List.of());
+    when(dataSubjectRequestRepository.countByStatusInAndDeadlineBefore(anyList(), any()))
+        .thenReturn(0L);
     when(trustAccountRepository.findByStatus(TrustAccountStatus.ACTIVE)).thenReturn(List.of());
     when(prescriptionTrackerRepository.findByStatusInAndPrescriptionDateBetween(
             anyList(), any(LocalDate.class), any(LocalDate.class)))
@@ -246,10 +244,10 @@ class ComplianceDataCollectorServiceTest {
 
     when(moduleGuard.isModuleEnabled("trust_accounting")).thenReturn(false);
     when(moduleGuard.isModuleEnabled("court_calendar")).thenReturn(false);
-    when(processingActivityRepository.findAll()).thenReturn(List.of());
+    when(processingActivityRepository.count()).thenReturn(0L);
     when(dataSubjectRequestRepository.countByStatusIn(anyList())).thenReturn(0L);
-    when(dataSubjectRequestRepository.findByStatusInAndDeadlineBefore(anyList(), any()))
-        .thenReturn(List.of());
+    when(dataSubjectRequestRepository.countByStatusInAndDeadlineBefore(anyList(), any()))
+        .thenReturn(0L);
     when(retentionService.previewPurge()).thenReturn(new RetentionCheckResult());
     when(retentionPolicyRepository.findByActive(true)).thenReturn(List.of());
 
@@ -292,10 +290,10 @@ class ComplianceDataCollectorServiceTest {
 
     when(moduleGuard.isModuleEnabled("trust_accounting")).thenReturn(false);
     when(moduleGuard.isModuleEnabled("court_calendar")).thenReturn(false);
-    when(processingActivityRepository.findAll()).thenReturn(List.of());
+    when(processingActivityRepository.count()).thenReturn(0L);
     when(dataSubjectRequestRepository.countByStatusIn(anyList())).thenReturn(0L);
-    when(dataSubjectRequestRepository.findByStatusInAndDeadlineBefore(anyList(), any()))
-        .thenReturn(List.of());
+    when(dataSubjectRequestRepository.countByStatusInAndDeadlineBefore(anyList(), any()))
+        .thenReturn(0L);
     when(retentionService.previewPurge()).thenReturn(new RetentionCheckResult());
     when(retentionPolicyRepository.findByActive(true)).thenReturn(List.of());
 
@@ -347,16 +345,6 @@ class ComplianceDataCollectorServiceTest {
     // Item defaults to PENDING status which satisfies the "required and not COMPLETED" check
     return new io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceItem(
         instanceId, UUID.randomUUID(), "FICA ID Document", "Verify identity", 1, true, false, null);
-  }
-
-  private ProcessingActivity createProcessingActivity() {
-    return new ProcessingActivity(
-        "Client data processing",
-        "Processing client data",
-        "POPIA s14",
-        "Clients",
-        "5 years",
-        "Internal staff");
   }
 
   private TrustAccount createTrustAccount() {

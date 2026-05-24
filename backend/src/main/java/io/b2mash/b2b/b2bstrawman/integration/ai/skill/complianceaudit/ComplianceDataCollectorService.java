@@ -7,7 +7,6 @@ import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.datarequest.DataSubjectRequestRepository;
-import io.b2mash.b2b.b2bstrawman.datarequest.ProcessingActivity;
 import io.b2mash.b2b.b2bstrawman.datarequest.ProcessingActivityRepository;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.complianceaudit.ComplianceSnapshot.FicaCddSummary;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.complianceaudit.ComplianceSnapshot.FlaggedCustomer;
@@ -255,8 +254,7 @@ public class ComplianceDataCollectorService {
   }
 
   private PopiaSummary aggregatePopiaData() {
-    List<ProcessingActivity> activities = processingActivityRepository.findAll();
-    int registered = activities.size();
+    int registered = (int) processingActivityRepository.count();
     // Unregistered activities: domain heuristic — expected minimum categories
     // For simplicity, report 0 unregistered (would need firm-type-specific logic)
     int unregistered = 0;
@@ -264,9 +262,9 @@ public class ComplianceDataCollectorService {
     long pendingDsars =
         dataSubjectRequestRepository.countByStatusIn(List.of("RECEIVED", "IN_PROGRESS"));
     int overdueDsars =
-        dataSubjectRequestRepository
-            .findByStatusInAndDeadlineBefore(List.of("RECEIVED", "IN_PROGRESS"), LocalDate.now())
-            .size();
+        (int)
+            dataSubjectRequestRepository.countByStatusInAndDeadlineBefore(
+                List.of("RECEIVED", "IN_PROGRESS"), LocalDate.now());
 
     return new PopiaSummary(registered, unregistered, (int) pendingDsars, overdueDsars);
   }
@@ -299,10 +297,11 @@ public class ComplianceDataCollectorService {
   private PrescriptionSummary aggregatePrescriptionData(int flaggedItemsCap, StringBuilder notes) {
     LocalDate now = LocalDate.now();
 
-    // Approaching: prescriptions expiring within 90 days
+    // Approaching: prescriptions expiring within 90 days (starting tomorrow to avoid overlap with
+    // expired)
     List<PrescriptionTracker> approaching =
         prescriptionTrackerRepository.findByStatusInAndPrescriptionDateBetween(
-            List.of("RUNNING", "WARNED"), now, now.plusDays(90));
+            List.of("RUNNING", "WARNED"), now.plusDays(1), now.plusDays(90));
 
     // Expired: prescriptions already past their date
     List<PrescriptionTracker> expired =

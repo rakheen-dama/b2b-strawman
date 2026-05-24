@@ -1,0 +1,109 @@
+{
+  "type": "object",
+  "required": ["templateId", "variableFills", "narrativeSections", "clauseRecommendations", "warnings", "recommendedActions"],
+  "properties": {
+    "templateId": {
+      "type": "string",
+      "format": "uuid",
+      "description": "The UUID of the template being filled"
+    },
+    "variableFills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["variableName", "value", "source", "confidence"],
+        "properties": {
+          "variableName": {
+            "type": "string",
+            "description": "The template variable name to fill"
+          },
+          "value": {
+            "type": "string",
+            "description": "The value to insert for this variable"
+          },
+          "source": {
+            "type": "string",
+            "enum": ["DATA", "INFERRED", "UNAVAILABLE"],
+            "description": "Where the value was sourced from: DATA (from matter/customer data), INFERRED (AI-derived), UNAVAILABLE (cannot determine)"
+          },
+          "confidence": {
+            "type": "string",
+            "enum": ["HIGH", "MEDIUM", "UNDETERMINED"],
+            "description": "Confidence level: HIGH (data-sourced), MEDIUM (inferred), UNDETERMINED (unavailable)"
+          },
+          "flag": {
+            "type": ["string", "null"],
+            "description": "Optional flag explaining why a value is uncertain or unavailable"
+          }
+        }
+      }
+    },
+    "narrativeSections": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sectionName", "content"],
+        "properties": {
+          "sectionName": {
+            "type": "string",
+            "description": "The name of the narrative section in the template"
+          },
+          "content": {
+            "type": "string",
+            "description": "The generated narrative content for this section"
+          },
+          "notes": {
+            "type": ["string", "null"],
+            "description": "Optional notes for the attorney about this section"
+          }
+        }
+      }
+    },
+    "clauseRecommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["clauseId", "clauseName", "reasoning"],
+        "properties": {
+          "clauseId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID of the recommended clause from the firm's library"
+          },
+          "clauseName": {
+            "type": "string",
+            "description": "Name of the recommended clause"
+          },
+          "reasoning": {
+            "type": "string",
+            "description": "Why this clause is recommended for this document"
+          }
+        }
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Legal risks, missing information, or compliance concerns"
+    },
+    "recommendedActions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["action", "reasoning"],
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "Description of the recommended action"
+          },
+          "reasoning": {
+            "type": "string",
+            "description": "Reasoning for this recommendation"
+          }
+        }
+      }
+    }
+  }
+}

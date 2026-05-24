@@ -1,0 +1,76 @@
+{
+  "templateId": "00000000-0000-0000-0000-000000000001",
+  "variableFills": [
+    {
+      "variableName": "client_name",
+      "value": "Themba Consulting (Pty) Ltd",
+      "source": "DATA",
+      "confidence": "HIGH",
+      "flag": null
+    },
+    {
+      "variableName": "client_registration_number",
+      "value": "2024/123456/07",
+      "source": "DATA",
+      "confidence": "HIGH",
+      "flag": null
+    },
+    {
+      "variableName": "matter_reference",
+      "value": "COM-2026-001",
+      "source": "DATA",
+      "confidence": "HIGH",
+      "flag": null
+    },
+    {
+      "variableName": "effective_date",
+      "value": "the 15th day of January 2026",
+      "source": "INFERRED",
+      "confidence": "MEDIUM",
+      "flag": "Inferred from matter creation date; confirm with client"
+    },
+    {
+      "variableName": "service_fee",
+      "value": "R25,000.00 (twenty-five thousand Rand)",
+      "source": "INFERRED",
+      "confidence": "MEDIUM",
+      "flag": "Estimated from similar matters; confirm fee schedule"
+    },
+    {
+      "variableName": "governing_law_jurisdiction",
+      "value": "",
+      "source": "UNAVAILABLE",
+      "confidence": "UNDETERMINED",
+      "flag": "Client has offices in multiple provinces; attorney must specify applicable High Court division"
+    }
+  ],
+  "narrativeSections": [
+    {
+      "sectionName": "recitals",
+      "content": "WHEREAS the Client is a company duly registered and incorporated in terms of the Companies Act 71 of 2008 and carries on business as a management consulting firm;\n\nAND WHEREAS the Client requires legal services in connection with commercial contract review and advisory;\n\nAND WHEREAS the Firm has the requisite expertise and capacity to provide such services;",
+      "notes": "Standard recitals for commercial engagement. Verify client business description with customer."
+    },
+    {
+      "sectionName": "scope_of_services",
+      "content": "The Firm shall provide the following legal services to the Client:\n1. Review and advice on commercial agreements;\n2. Drafting and negotiation of service level agreements;\n3. General commercial legal advisory as requested from time to time.",
+      "notes": "Scope derived from matter work type 'commercial'. Attorney should confirm specific deliverables."
+    }
+  ],
+  "clauseRecommendations": [
+    {
+      "clauseId": "00000000-0000-0000-0000-000000000099",
+      "clauseName": "Limitation of Liability",
+      "reasoning": "Commercial engagement letters should include a liability cap linked to fees paid. Protects the firm against disproportionate claims per Afrox Healthcare v Strydom principles."
+    }
+  ],
+  "warnings": [
+    "Client registration number should be verified against CIPC records before finalising the engagement letter.",
+    "No FICA verification status found for this client — ensure compliance before proceeding."
+  ],
+  "recommendedActions": [
+    {
+      "action": "Confirm the applicable High Court division for jurisdiction clause",
+      "reasoning": "Client has not specified a preferred jurisdiction. The choice affects dispute resolution costs and convenience for both parties."
+    }
+  ]
+}

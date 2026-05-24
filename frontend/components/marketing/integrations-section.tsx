@@ -1,11 +1,4 @@
-import {
-  ArrowLeftRight,
-  CreditCard,
-  Mail,
-  UserCheck,
-  Brain,
-  Receipt,
-} from "lucide-react";
+import { ArrowLeftRight, CreditCard, Mail, UserCheck, Brain, Receipt } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
 interface Integration {
@@ -77,10 +70,7 @@ export function IntegrationsSection() {
 
         <div className="mt-16 grid grid-cols-1 gap-px overflow-hidden rounded-2xl border border-slate-200 bg-slate-200 sm:grid-cols-2 lg:grid-cols-3 dark:border-slate-800 dark:bg-slate-800">
           {integrations.map((integration) => (
-            <div
-              key={integration.name}
-              className="bg-white p-6 dark:bg-slate-950"
-            >
+            <div key={integration.name} className="bg-white p-6 dark:bg-slate-950">
               <div className="flex items-center gap-3">
                 <div className="flex size-9 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
                   <integration.icon className="size-4.5 text-teal-600 dark:text-teal-500" />

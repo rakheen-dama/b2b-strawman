@@ -66,7 +66,7 @@ function KpiCardContent({
           {isEmpty ? (
             <span className="text-muted-foreground text-sm italic">{emptyState}</span>
           ) : (
-            <span className="font-mono text-2xl font-bold tracking-tight tabular-nums text-slate-950 dark:text-slate-50">
+            <span className="font-mono text-2xl font-bold tracking-tight text-slate-950 tabular-nums dark:text-slate-50">
               {value}
             </span>
           )}

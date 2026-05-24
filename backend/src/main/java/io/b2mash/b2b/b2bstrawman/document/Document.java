@@ -53,6 +53,12 @@ public class Document {
   @Column(name = "visibility", nullable = false, length = 20)
   private String visibility;
 
+  @Column(name = "source", nullable = false, length = 30)
+  private String source = Source.MANUAL;
+
+  @Column(name = "ai_execution_id")
+  private UUID aiExecutionId;
+
   @Column(name = "created_at", nullable = false, updatable = false)
   private Instant createdAt;
 
@@ -69,6 +75,7 @@ public class Document {
     this.uploadedBy = uploadedBy;
     this.scope = Scope.PROJECT;
     this.visibility = Visibility.INTERNAL;
+    this.source = Source.MANUAL;
     this.createdAt = Instant.now();
   }
 
@@ -92,6 +99,7 @@ public class Document {
     this.status = Status.PENDING;
     this.uploadedBy = uploadedBy;
     this.visibility = visibility;
+    this.source = Source.MANUAL;
     this.createdAt = Instant.now();
   }
 
@@ -114,6 +122,12 @@ public class Document {
 
   public boolean isCustomerScoped() {
     return Scope.CUSTOMER.equals(scope);
+  }
+
+  /** Mark this document as AI-generated and link to the execution that produced it. */
+  public void markAsAiGenerated(UUID executionId) {
+    this.source = Source.AI_GENERATED;
+    this.aiExecutionId = executionId;
   }
 
   public UUID getId() {
@@ -168,6 +182,14 @@ public class Document {
     this.visibility = visibility;
   }
 
+  public String getSource() {
+    return source;
+  }
+
+  public UUID getAiExecutionId() {
+    return aiExecutionId;
+  }
+
   public Instant getCreatedAt() {
     return createdAt;
   }
@@ -218,5 +240,14 @@ public class Document {
     public static boolean isPortalVisible(String visibility) {
       return SHARED.equals(visibility) || PORTAL.equals(visibility);
     }
+  }
+
+  /** Document source constants (ADR-292). */
+  public static final class Source {
+    public static final String MANUAL = "MANUAL";
+    public static final String AI_GENERATED = "AI_GENERATED";
+    public static final String TEMPLATE_GENERATED = "TEMPLATE_GENERATED";
+
+    private Source() {}
   }
 }

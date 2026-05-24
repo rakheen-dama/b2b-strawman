@@ -1,0 +1,41 @@
+{
+  "type": "doc",
+  "content": [
+    {
+      "type": "heading",
+      "attrs": {"level": 1},
+      "content": [{"type": "text", "text": "Test Heading"}]
+    },
+    {
+      "type": "paragraph",
+      "content": [
+        {"type": "text", "text": "Hello "},
+        {"type": "text", "marks": [{"type": "bold"}], "text": "world"},
+        {"type": "text", "text": ". This is a test."}
+      ]
+    },
+    {
+      "type": "bulletList",
+      "content": [
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{"type": "text", "text": "Item one"}]
+            }
+          ]
+        },
+        {
+          "type": "listItem",
+          "content": [
+            {
+              "type": "paragraph",
+              "content": [{"type": "text", "text": "Item two"}]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

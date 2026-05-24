@@ -609,6 +609,16 @@
 | 535 | Action Button Relocation | Frontend | 532 | M | 535A | **Done** (PR #1344) |
 | 536 | Responsive Behaviour + Polish | Frontend | 532, 533 | M | 536A | **Done** (PR #1345) |
 | 537 | QA Testplan Updates | Frontend | 532-536 | S | 537A | **Done** (PR #1346) |
+| **Phase 74 — AI Intelligence Suite: Contract Review, Drafting & Compliance Audit** | | | | | | See [tasks/phase74-ai-intelligence-suite.md](tasks/phase74-ai-intelligence-suite.md) |
+| 538 | V127 Migration + Document Provenance | Backend | -- | M | 538A, 538B | |
+| 539 | Contract Review Skill (Backend) | Backend | 538A | L | 539A, 539B | |
+| 540 | Drafting Skill (Backend) | Backend | 538A | L | 540A, 540B | |
+| 541 | Compliance Data Collector + Audit Skill (Backend) | Backend | 538A | L | 541A, 541B | |
+| 542 | Compliance Audit Persistence + Finding Lifecycle | Backend | 538A, 541A | L | 542A, 542B | |
+| 543 | Gate Executors + StubAiProvider Extensions | Backend | 539A, 540A, 541A, 542A | M | 543A | |
+| 544 | Contract Review Frontend | Frontend | 539A | M | 544A | |
+| 545 | Drafting Frontend | Frontend | 540A | M | 545A | |
+| 546 | Compliance Dashboard Extension (Frontend) | Frontend | 542A | L | 546A, 546B | |
 
 
 ---

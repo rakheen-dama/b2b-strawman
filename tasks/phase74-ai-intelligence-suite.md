@@ -27,7 +27,7 @@ Phase 74 delivers three new AI skills -- contract review, template-guided drafti
 | 538 | V127 Migration + Document Provenance | Backend | -- | M | 538A, 538B | **Done** (PR #1359) |
 | 539 | Contract Review Skill (Backend) | Backend | 538A | L | 539A, 539B | **Done** (PRs #1360, #1361) |
 | 540 | Drafting Skill (Backend) | Backend | 538A | L | 540A, 540B | **Done** (PRs #1362, #1363) |
-| 541 | Compliance Data Collector + Audit Skill (Backend) | Backend | 538A | L | 541A, 541B | |
+| 541 | Compliance Data Collector + Audit Skill (Backend) | Backend | 538A | L | 541A, 541B | **Done** (PRs #1364, #1365) |
 | 542 | Compliance Audit Persistence + Finding Lifecycle | Backend | 538A, 541A | L | 542A, 542B | |
 | 543 | Gate Executors + StubAiProvider Extensions | Backend | 539A, 540A, 541A, 542A | M | 543A | |
 | 544 | Contract Review Frontend | Frontend | 539A | M | 544A | |
@@ -171,7 +171,7 @@ PHASES already complete:
 | 2c | **540A** | `DraftingSkill` implementing `AiSkill`; `DraftingOutput` record + nested records; system prompt resource; output schema resource; canned test response; integration test. | 539A, 541A | **Done** (PR #1362) |
 | 2d | **540B** | `AiDraftDocumentGenerator` (template filling with AI variable values); integration test with document generation. | 539B, 541B | **Done** (PR #1363) |
 | 2e | **541A** | `ComplianceDataCollectorService` + `ComplianceSnapshot` record; module guard logic; data aggregation + outlier extraction. | 539A, 540A | **Done** (PR #1364) |
-| 2f | **541B** | `ComplianceAuditSkill` implementing `AiSkill`; `ComplianceAuditOutput` record; system prompt resource; output schema resource; canned test response; concurrent audit prevention; integration test. | 539B, 540B |
+| 2f | **541B** | `ComplianceAuditSkill` implementing `AiSkill`; `ComplianceAuditOutput` record; system prompt resource; output schema resource; canned test response; concurrent audit prevention; integration test. | 539B, 540B | **Done** (PR #1365) |
 
 ### Stage 3 -- Compliance Persistence (sequential after 541A)
 
@@ -434,7 +434,7 @@ A realistic day-by-day cadence: 538A days 1-2; 538B days 2-4; 539A + 540A + 541A
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **541A** | 541A.1-541A.4 | ~5 backend files (1 service + 1 snapshot record + 1 category data records + 1 test file) | `ComplianceDataCollectorService` aggregating 6+ services; `ComplianceSnapshot` record with category-level data records; module guard logic; unit tests. | **Done** (PR #1364) |
-| **541B** | 541B.1-541B.5 | ~7 backend files (1 skill class + 1 output record + 2 resource files + 1 test resource + 1 test file + 1 schema file) | `ComplianceAuditSkill` implementing `AiSkill`; `ComplianceAuditOutput` record; system prompt (SA regulatory framework); output schema; concurrent audit prevention; canned test response; integration test. |
+| **541B** | 541B.1-541B.5 | ~7 backend files (1 skill class + 1 output record + 2 resource files + 1 test resource + 1 test file + 1 schema file) | `ComplianceAuditSkill` implementing `AiSkill`; `ComplianceAuditOutput` record; system prompt (SA regulatory framework); output schema; concurrent audit prevention; canned test response; integration test. | **Done** (PR #1365) |
 
 ### Tasks
 

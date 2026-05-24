@@ -1,5 +1,11 @@
 package io.b2mash.b2b.b2bstrawman.integration.ai.skill.contractreview;
 
+import static io.b2mash.b2b.b2bstrawman.integration.ai.skill.TiptapNodeBuilder.buildBoldParagraph;
+import static io.b2mash.b2b.b2bstrawman.integration.ai.skill.TiptapNodeBuilder.buildBulletList;
+import static io.b2mash.b2b.b2bstrawman.integration.ai.skill.TiptapNodeBuilder.buildDocument;
+import static io.b2mash.b2b.b2bstrawman.integration.ai.skill.TiptapNodeBuilder.buildHeading;
+import static io.b2mash.b2b.b2bstrawman.integration.ai.skill.TiptapNodeBuilder.buildParagraph;
+
 import io.b2mash.b2b.b2bstrawman.document.Document;
 import io.b2mash.b2b.b2bstrawman.document.DocumentRepository;
 import io.b2mash.b2b.b2bstrawman.integration.storage.StorageService;
@@ -203,71 +209,5 @@ public class AiReviewReportGenerator {
     nodes.add(buildBoldParagraph("Recommendation", finding.recommendation()));
 
     return nodes;
-  }
-
-  // ── Tiptap Node Builders ───────────────────────────────────────────────────
-
-  private Map<String, Object> buildDocument(List<Map<String, Object>> content) {
-    var node = new LinkedHashMap<String, Object>();
-    node.put("type", "doc");
-    node.put("content", content);
-    return node;
-  }
-
-  private Map<String, Object> buildHeading(String text, int level) {
-    var node = new LinkedHashMap<String, Object>();
-    node.put("type", "heading");
-    node.put("attrs", Map.of("level", level));
-    node.put("content", List.of(text(text)));
-    return node;
-  }
-
-  private Map<String, Object> buildParagraph(String text) {
-    var node = new LinkedHashMap<String, Object>();
-    node.put("type", "paragraph");
-    if (text != null && !text.isEmpty()) {
-      node.put("content", List.of(text(text)));
-    }
-    return node;
-  }
-
-  private Map<String, Object> buildBoldParagraph(String label, String value) {
-    var node = new LinkedHashMap<String, Object>();
-    node.put("type", "paragraph");
-    node.put("content", List.of(boldText(label + ": "), text(value != null ? value : "")));
-    return node;
-  }
-
-  private Map<String, Object> buildBulletList(List<String> items) {
-    var listItems =
-        items.stream()
-            .map(
-                item -> {
-                  var listItem = new LinkedHashMap<String, Object>();
-                  listItem.put("type", "listItem");
-                  listItem.put("content", List.of(buildParagraph(item)));
-                  return (Map<String, Object>) listItem;
-                })
-            .toList();
-
-    var node = new LinkedHashMap<String, Object>();
-    node.put("type", "bulletList");
-    node.put("content", listItems);
-    return node;
-  }
-
-  private static Map<String, Object> text(String value) {
-    var node = new LinkedHashMap<String, Object>();
-    node.put("type", "text");
-    node.put("text", value);
-    return node;
-  }
-
-  private static Map<String, Object> boldText(String value) {
-    var node = new LinkedHashMap<String, Object>();
-    node.put("type", "text");
-    node.put("marks", List.of(Map.of("type", "bold")));
-    node.put("text", value);
-    return node;
   }
 }

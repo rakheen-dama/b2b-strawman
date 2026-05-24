@@ -24,7 +24,7 @@ Phase 74 delivers three new AI skills -- contract review, template-guided drafti
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 538 | V127 Migration + Document Provenance | Backend | -- | M | 538A, 538B | |
+| 538 | V127 Migration + Document Provenance | Backend | -- | M | 538A, 538B | **Done** (PR #1359) |
 | 539 | Contract Review Skill (Backend) | Backend | 538A | L | 539A, 539B | |
 | 540 | Drafting Skill (Backend) | Backend | 538A | L | 540A, 540B | |
 | 541 | Compliance Data Collector + Audit Skill (Backend) | Backend | 538A | L | 541A, 541B | |
@@ -159,8 +159,8 @@ PHASES already complete:
 
 | Order | Slice | Summary |
 |-------|-------|---------|
-| 1a | **538A** | V127 tenant migration: `compliance_audit_reports` table, `compliance_audit_findings` table, `ALTER TABLE documents` adding `source` and `ai_execution_id` provenance columns, all indexes per architecture Section 11.7. |
-| 1b | **538B** | `DocumentTextExtractorService` (PDF via PDFBox, DOCX via POI OOXML, Tiptap via JSON traversal), `ExtractedText` record, 100KB truncation logic, `Document` entity modification (add `source` + `aiExecutionId` fields), unit tests. |
+| 1a | **538A** | V127 tenant migration: `compliance_audit_reports` table, `compliance_audit_findings` table, `ALTER TABLE documents` adding `source` and `ai_execution_id` provenance columns, all indexes per architecture Section 11.7. | **Done** (PR #1359) |
+| 1b | **538B** | `DocumentTextExtractorService` (PDF via PDFBox, DOCX via POI OOXML, Tiptap via JSON traversal), `ExtractedText` record, 100KB truncation logic, `Document` entity modification (add `source` + `aiExecutionId` fields), unit tests. | **Done** (PR #1359) |
 
 ### Stage 2 -- Skill Backends (parallel after 538A, sequential within each skill)
 
@@ -225,8 +225,8 @@ A realistic day-by-day cadence: 538A days 1-2; 538B days 2-4; 539A + 540A + 541A
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **538A** | 538A.1-538A.3 | ~3 backend files (1 migration + 1 entity modification + 1 test file) | V127 migration (2 new tables + ALTER documents + indexes); `Document` entity provenance fields (`source`, `aiExecutionId`); migration verification test. |
-| **538B** | 538B.1-538B.4 | ~5 backend files (1 service + 1 record + 1 test file + optional pom.xml modification + 1 test resource) | `DocumentTextExtractorService` (PDF via PDFBox, DOCX via POI OOXML, Tiptap via JSON traversal); `ExtractedText` record; 100KB truncation logic; unit tests for all three formats. |
+| **538A** | 538A.1-538A.3 | ~3 backend files (1 migration + 1 entity modification + 1 test file) | V127 migration (2 new tables + ALTER documents + indexes); `Document` entity provenance fields (`source`, `aiExecutionId`); migration verification test. | **Done** (PR #1359) |
+| **538B** | 538B.1-538B.4 | ~5 backend files (1 service + 1 record + 1 test file + optional pom.xml modification + 1 test resource) | `DocumentTextExtractorService` (PDF via PDFBox, DOCX via POI OOXML, Tiptap via JSON traversal); `ExtractedText` record; 100KB truncation logic; unit tests for all three formats. | **Done** (PR #1359) |
 
 ### Tasks
 

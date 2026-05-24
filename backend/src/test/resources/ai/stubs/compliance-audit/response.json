@@ -1,0 +1,91 @@
+{
+  "auditDate": "2026-05-24",
+  "overallGrade": "B",
+  "overallAssessment": "The firm demonstrates generally good compliance with minor gaps in FICA CDD documentation and POPIA processing activity registration. Trust accounting and prescription tracking are well-managed. Immediate attention is required for 2 critically overdue CDD verifications.",
+  "categoryScores": {
+    "FICA_CDD": {
+      "grade": "C",
+      "compliant": 18,
+      "nonCompliant": 4,
+      "critical": 2
+    },
+    "POPIA": {
+      "grade": "B",
+      "compliant": 5,
+      "nonCompliant": 2,
+      "critical": 0
+    },
+    "TRUST_ACCOUNTING": {
+      "grade": "A",
+      "compliant": 3,
+      "nonCompliant": 0,
+      "critical": 0
+    }
+  },
+  "findings": [
+    {
+      "id": "FICA-001",
+      "severity": "CRITICAL",
+      "category": "FICA_CDD",
+      "title": "Critically overdue CDD verification for high-value client",
+      "description": "Client 'Ngubane Holdings (Pty) Ltd' has not undergone CDD verification renewal in over 90 days past the due date. The client has active matters with trust funds held.",
+      "regulatoryBasis": "FICA s21B — Ongoing CDD monitoring obligation",
+      "remediation": "Immediately initiate enhanced CDD review for this client. Request updated CIPC documents, proof of address, and beneficial ownership declaration. Escalate to MLRO if client is unresponsive within 7 days.",
+      "entityReferences": [
+        {
+          "type": "CUSTOMER",
+          "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "name": "Ngubane Holdings (Pty) Ltd"
+        }
+      ]
+    },
+    {
+      "id": "FICA-002",
+      "severity": "HIGH",
+      "category": "FICA_CDD",
+      "title": "Missing beneficial ownership declaration",
+      "description": "Client 'Moyo Investments' lacks a beneficial ownership declaration as required for legal persons. CDD file is incomplete.",
+      "regulatoryBasis": "FICA s21A — Enhanced CDD for legal persons",
+      "remediation": "Request beneficial ownership declaration from client within 14 days. If not provided, consider filing a s29 report and restricting the business relationship.",
+      "entityReferences": [
+        {
+          "type": "CUSTOMER",
+          "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+          "name": "Moyo Investments"
+        }
+      ]
+    },
+    {
+      "id": "POPIA-001",
+      "severity": "MEDIUM",
+      "category": "POPIA",
+      "title": "Unregistered processing activities",
+      "description": "2 processing activities related to client marketing communications have not been registered in the firm's PAIA/POPIA manual.",
+      "regulatoryBasis": "POPIA s14 — Collection limitation principle",
+      "remediation": "Register the 2 outstanding processing activities in the PAIA manual. Document the lawful basis for processing, data categories, and retention periods.",
+      "entityReferences": []
+    },
+    {
+      "id": "FICA-003",
+      "severity": "LOW",
+      "category": "FICA_CDD",
+      "title": "CDD documentation approaching renewal date",
+      "description": "3 clients have CDD documentation expiring within the next 30 days. Proactive renewal is recommended.",
+      "regulatoryBasis": "FICA s21B — Ongoing CDD monitoring",
+      "remediation": "Schedule CDD renewal reviews for the 3 approaching clients. Send renewal reminders and prepare updated verification checklists.",
+      "entityReferences": []
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "CRITICAL",
+      "recommendation": "Complete CDD verification for Ngubane Holdings immediately and escalate to MLRO",
+      "estimatedEffort": "4 hours"
+    },
+    {
+      "priority": "HIGH",
+      "recommendation": "Implement automated CDD expiry alerting to prevent future overdue situations",
+      "estimatedEffort": "2 days"
+    }
+  ]
+}

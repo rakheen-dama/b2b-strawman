@@ -59,11 +59,66 @@ public class AiSkillController {
     return ResponseEntity.ok(SkillExecutionResponse.from(result.execution(), result.gates()));
   }
 
+  @PostMapping("/contract-review")
+  @PreAuthorize("isAuthenticated()")
+  @RequiresCapability("AI_EXECUTE")
+  public ResponseEntity<SkillExecutionResponse> executeContractReview(
+      @RequestBody ContractReviewRequest request) {
+    var context =
+        new SkillContext(
+            request.documentId(),
+            "DOCUMENT",
+            "Contract review for document " + request.documentId(),
+            Map.of("projectId", request.projectId()));
+    SkillExecutionResult result =
+        executionService.executeSkill(
+            "contract-review", context, RequestScopes.requireMemberId(), List.of());
+    return ResponseEntity.ok(SkillExecutionResponse.from(result.execution(), result.gates()));
+  }
+
+  @PostMapping("/drafting")
+  @PreAuthorize("isAuthenticated()")
+  @RequiresCapability("AI_EXECUTE")
+  public ResponseEntity<SkillExecutionResponse> executeDrafting(
+      @RequestBody DraftingRequest request) {
+    var context =
+        new SkillContext(
+            request.projectId(),
+            "PROJECT",
+            "AI drafting for project " + request.projectId(),
+            Map.of("templateId", request.templateId()));
+    SkillExecutionResult result =
+        executionService.executeSkill(
+            "drafting", context, RequestScopes.requireMemberId(), List.of());
+    return ResponseEntity.ok(SkillExecutionResponse.from(result.execution(), result.gates()));
+  }
+
+  @PostMapping("/compliance-audit")
+  @PreAuthorize("isAuthenticated()")
+  @RequiresCapability("AI_EXECUTE")
+  public ResponseEntity<SkillExecutionResponse> executeComplianceAudit(
+      @RequestBody(required = false) ComplianceAuditRequest request) {
+    var context = new SkillContext(FIRM_SENTINEL_ID, "FIRM", "Compliance audit for firm", Map.of());
+    SkillExecutionResult result =
+        executionService.executeSkill(
+            "compliance-audit", context, RequestScopes.requireMemberId(), List.of());
+    return ResponseEntity.ok(SkillExecutionResponse.from(result.execution(), result.gates()));
+  }
+
   // ── DTOs ────────────────────────────────────────────────────────────────
+
+  private static final UUID FIRM_SENTINEL_ID =
+      UUID.fromString("00000000-0000-0000-0000-000000000000");
 
   public record FicaVerificationRequest(UUID customerId) {}
 
   public record MatterIntakeRequest(UUID customerId, String description) {}
+
+  public record ContractReviewRequest(UUID documentId, UUID projectId) {}
+
+  public record DraftingRequest(UUID templateId, UUID projectId) {}
+
+  public record ComplianceAuditRequest() {}
 
   public record SkillExecutionResponse(
       UUID executionId,

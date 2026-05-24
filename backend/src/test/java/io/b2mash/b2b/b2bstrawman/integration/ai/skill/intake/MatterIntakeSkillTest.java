@@ -193,7 +193,10 @@ class MatterIntakeSkillTest {
               """;
 
           List<AiExecutionGate> gates =
-              matterIntakeSkill.createGates(execution, conflictDetectedJson);
+              matterIntakeSkill.createGates(
+                  execution,
+                  conflictDetectedJson,
+                  new SkillContext(UUID.randomUUID(), "CUSTOMER", "test", Map.of()));
           assertThat(
                   gates.stream().noneMatch(g -> "CONFIRM_CONFLICT_SCREEN".equals(g.getGateType())))
               .isTrue();

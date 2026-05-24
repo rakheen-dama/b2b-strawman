@@ -242,7 +242,8 @@ class AiSkillExecutionServiceTest {
     }
 
     @Override
-    public List<AiExecutionGate> createGates(AiExecution execution, String outputContent) {
+    public List<AiExecutionGate> createGates(
+        AiExecution execution, String outputContent, SkillContext context) {
       var gate =
           new AiExecutionGate(
               execution,
@@ -282,7 +283,8 @@ class AiSkillExecutionServiceTest {
     }
 
     @Override
-    public List<AiExecutionGate> createGates(AiExecution execution, String outputContent) {
+    public List<AiExecutionGate> createGates(
+        AiExecution execution, String outputContent, SkillContext context) {
       return List.of();
     }
 

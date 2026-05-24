@@ -21,7 +21,8 @@ public interface AiSkill {
   String assembleUserPrompt(SkillContext context);
 
   /** Parse AI output and create execution gates (proposed actions needing attorney review). */
-  List<AiExecutionGate> createGates(AiExecution execution, String outputContent);
+  List<AiExecutionGate> createGates(
+      AiExecution execution, String outputContent, SkillContext context);
 
   /** Whether this skill requires vision (image) inputs. */
   boolean requiresVision();

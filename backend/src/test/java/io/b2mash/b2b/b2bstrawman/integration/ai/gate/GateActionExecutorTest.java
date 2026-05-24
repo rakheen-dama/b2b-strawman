@@ -7,6 +7,9 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceService;
+import io.b2mash.b2b.b2bstrawman.compliance.ComplianceAuditReportService;
+import io.b2mash.b2b.b2bstrawman.integration.ai.skill.contractreview.AiReviewReportGenerator;
+import io.b2mash.b2b.b2bstrawman.integration.ai.skill.drafting.AiDraftDocumentGenerator;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.conflictcheck.ConflictCheckService;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.conflictcheck.ConflictCheckService.ResolveRequest;
 import java.util.List;
@@ -14,6 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.ObjectMapper;
 
 class GateActionExecutorTest {
 
@@ -25,7 +29,14 @@ class GateActionExecutorTest {
   void setUp() {
     checklistInstanceService = mock(ChecklistInstanceService.class);
     conflictCheckService = mock(ConflictCheckService.class);
-    executor = new GateActionExecutor(checklistInstanceService, conflictCheckService);
+    executor =
+        new GateActionExecutor(
+            checklistInstanceService,
+            conflictCheckService,
+            mock(AiReviewReportGenerator.class),
+            mock(AiDraftDocumentGenerator.class),
+            mock(ComplianceAuditReportService.class),
+            new ObjectMapper());
   }
 
   @Test

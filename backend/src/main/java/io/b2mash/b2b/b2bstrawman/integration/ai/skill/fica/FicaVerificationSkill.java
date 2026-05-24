@@ -170,7 +170,8 @@ public class FicaVerificationSkill implements AiSkill {
   }
 
   @Override
-  public List<AiExecutionGate> createGates(AiExecution execution, String outputContent) {
+  public List<AiExecutionGate> createGates(
+      AiExecution execution, String outputContent, SkillContext context) {
     FicaVerificationOutput output;
     try {
       output = objectMapper.readValue(outputContent, FicaVerificationOutput.class);

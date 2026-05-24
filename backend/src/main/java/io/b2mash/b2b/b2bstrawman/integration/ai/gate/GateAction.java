@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.integration.ai.gate;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -10,7 +11,10 @@ import java.util.UUID;
 public sealed interface GateAction
     permits GateAction.MarkKycCompleteAction,
         GateAction.SelectMatterTemplateAction,
-        GateAction.ClearConflictAction {
+        GateAction.ClearConflictAction,
+        GateAction.CreateReviewReportAction,
+        GateAction.CreateDraftDocumentAction,
+        GateAction.PublishComplianceReportAction {
 
   record MarkKycCompleteAction(List<UUID> checklistItemIds, String completionNotes)
       implements GateAction {}
@@ -19,4 +23,12 @@ public sealed interface GateAction
       implements GateAction {}
 
   record ClearConflictAction(UUID conflictCheckId, String clearanceNotes) implements GateAction {}
+
+  record CreateReviewReportAction(UUID projectId, Map<String, Object> reviewOutput)
+      implements GateAction {}
+
+  record CreateDraftDocumentAction(UUID templateId, UUID projectId, Map<String, Object> draftOutput)
+      implements GateAction {}
+
+  record PublishComplianceReportAction(Map<String, Object> auditOutput) implements GateAction {}
 }

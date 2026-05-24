@@ -213,7 +213,8 @@ public class MatterIntakeSkill implements AiSkill {
   }
 
   @Override
-  public List<AiExecutionGate> createGates(AiExecution execution, String outputContent) {
+  public List<AiExecutionGate> createGates(
+      AiExecution execution, String outputContent, SkillContext context) {
     MatterIntakeOutput output;
     try {
       output = objectMapper.readValue(outputContent, MatterIntakeOutput.class);

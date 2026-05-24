@@ -155,7 +155,8 @@ public class AiSkillExecutionService {
     execution = executionRepository.save(execution);
 
     // 6. Parse output and create gates via skill interface
-    List<AiExecutionGate> gates = request.skill().createGates(execution, response.content());
+    List<AiExecutionGate> gates =
+        request.skill().createGates(execution, response.content(), request.context());
     if (!gates.isEmpty()) {
       gateRepository.saveAll(gates);
     }

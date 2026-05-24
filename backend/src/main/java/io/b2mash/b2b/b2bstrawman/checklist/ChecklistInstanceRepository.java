@@ -8,6 +8,8 @@ public interface ChecklistInstanceRepository extends JpaRepository<ChecklistInst
 
   List<ChecklistInstance> findByCustomerId(UUID customerId);
 
+  List<ChecklistInstance> findByCustomerIdIn(List<UUID> customerIds);
+
   boolean existsByCustomerIdAndTemplateId(UUID customerId, UUID templateId);
 
   boolean existsByCustomerIdAndStatusNot(UUID customerId, String status);

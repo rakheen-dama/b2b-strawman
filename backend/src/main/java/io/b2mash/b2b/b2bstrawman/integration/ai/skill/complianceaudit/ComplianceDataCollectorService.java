@@ -16,8 +16,10 @@ import io.b2mash.b2b.b2bstrawman.integration.ai.skill.complianceaudit.Compliance
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.complianceaudit.ComplianceSnapshot.PrescriptionSummary;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.complianceaudit.ComplianceSnapshot.RetentionSummary;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.complianceaudit.ComplianceSnapshot.TrustAccountingSummary;
+import io.b2mash.b2b.b2bstrawman.retention.RetentionCheckResult;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicy;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyRepository;
+import io.b2mash.b2b.b2bstrawman.retention.RetentionService;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTracker;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerRepository;
@@ -31,7 +33,9 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -70,6 +74,7 @@ public class ComplianceDataCollectorService {
   private final ClientLedgerCardRepository clientLedgerCardRepository;
   private final PrescriptionTrackerRepository prescriptionTrackerRepository;
   private final RetentionPolicyRepository retentionPolicyRepository;
+  private final RetentionService retentionService;
   private final VerticalModuleGuard moduleGuard;
 
   public ComplianceDataCollectorService(
@@ -82,6 +87,7 @@ public class ComplianceDataCollectorService {
       ClientLedgerCardRepository clientLedgerCardRepository,
       PrescriptionTrackerRepository prescriptionTrackerRepository,
       RetentionPolicyRepository retentionPolicyRepository,
+      RetentionService retentionService,
       VerticalModuleGuard moduleGuard) {
     this.customerRepository = customerRepository;
     this.checklistInstanceRepository = checklistInstanceRepository;
@@ -92,6 +98,7 @@ public class ComplianceDataCollectorService {
     this.clientLedgerCardRepository = clientLedgerCardRepository;
     this.prescriptionTrackerRepository = prescriptionTrackerRepository;
     this.retentionPolicyRepository = retentionPolicyRepository;
+    this.retentionService = retentionService;
     this.moduleGuard = moduleGuard;
   }
 
@@ -154,6 +161,10 @@ public class ComplianceDataCollectorService {
 
   private FicaCddSummary aggregateFicaData(
       List<Customer> activeCustomers, int flaggedItemsCap, StringBuilder notes) {
+    if (activeCustomers.isEmpty()) {
+      return new FicaCddSummary(0, 0, 0, List.of());
+    }
+
     int compliant = 0;
     int nonCompliant = 0;
     int criticallyOverdue = 0;
@@ -161,9 +172,42 @@ public class ComplianceDataCollectorService {
 
     Instant overdueThreshold = Instant.now().minus(Duration.ofDays(CRITICALLY_OVERDUE_DAYS));
 
+    // Batch-fetch all checklist instances for active customers (avoids N+1)
+    List<UUID> customerIds = activeCustomers.stream().map(Customer::getId).toList();
+    List<ChecklistInstance> allInstances =
+        checklistInstanceRepository.findByCustomerIdIn(customerIds);
+    Map<UUID, List<ChecklistInstance>> instancesByCustomer =
+        allInstances.stream().collect(Collectors.groupingBy(ChecklistInstance::getCustomerId));
+
+    // Identify overdue instances needing item-level checks, batch those too
+    List<UUID> overdueInstanceIds =
+        allInstances.stream()
+            .filter(
+                inst ->
+                    "IN_PROGRESS".equals(inst.getStatus())
+                        && inst.getCreatedAt().isBefore(overdueThreshold))
+            .map(ChecklistInstance::getId)
+            .toList();
+
+    // Batch-fetch items for potentially overdue instances to avoid N+1 on item checks
+    var itemsByInstance =
+        checklistInstanceItemRepository
+            .findByInstanceIdInOrderByInstanceIdAscSortOrderAsc(overdueInstanceIds)
+            .stream()
+            .collect(Collectors.groupingBy(item -> item.getInstanceId()));
+
     for (Customer customer : activeCustomers) {
       List<ChecklistInstance> instances =
-          checklistInstanceRepository.findByCustomerId(customer.getId());
+          instancesByCustomer.getOrDefault(customer.getId(), List.of());
+
+      if (instances.isEmpty()) {
+        // Customer has no checklist at all — non-compliant and flagged
+        nonCompliant++;
+        flagged.add(
+            new FlaggedCustomer(
+                customer.getId(), customer.getName(), "No FICA checklist initiated"));
+        continue;
+      }
 
       boolean hasInProgressInstance = false;
       boolean isCompliant = false;
@@ -178,9 +222,10 @@ public class ComplianceDataCollectorService {
           hasInProgressInstance = true;
           // Check if critically overdue (instance created >90 days ago with pending required items)
           if (instance.getCreatedAt().isBefore(overdueThreshold)) {
+            var items = itemsByInstance.getOrDefault(instance.getId(), List.of());
             boolean hasRequiredPending =
-                checklistInstanceItemRepository.existsByInstanceIdAndRequiredAndStatusNot(
-                    instance.getId(), true, "COMPLETED");
+                items.stream()
+                    .anyMatch(item -> item.isRequired() && !"COMPLETED".equals(item.getStatus()));
             if (hasRequiredPending) {
               isCriticallyOverdue = true;
             }
@@ -287,35 +332,37 @@ public class ComplianceDataCollectorService {
   }
 
   private RetentionSummary aggregateRetentionData() {
+    // Use RetentionService.previewPurge() to evaluate ALL record types (CUSTOMER, AUDIT_EVENT,
+    // DOCUMENT, TIME_ENTRY, COMMENT) rather than duplicating partial logic for CUSTOMER only.
+    RetentionCheckResult previewResult = retentionService.previewPurge();
+    int pastExpiry = previewResult.getTotalFlagged();
+
+    // Approaching: evaluate 30-day warning window across all active policies
     List<RetentionPolicy> policies = retentionPolicyRepository.findByActive(true);
     int approaching = 0;
-    int pastExpiry = 0;
-
     Instant now = Instant.now();
+
     for (RetentionPolicy policy : policies) {
-      if (policy.getRetentionDays() <= 0) {
-        continue;
+      if (policy.getRetentionDays() <= 30) {
+        continue; // No meaningful warning window for very short policies
       }
-      // Past expiry: records older than retention period
       Instant expiredCutoff = now.minus(Duration.ofDays(policy.getRetentionDays()));
-      // Approaching: records within 30 days of retention expiry
       Instant approachingCutoff = now.minus(Duration.ofDays(policy.getRetentionDays() - 30));
 
-      // Use customer count as a proxy (most impactful record type)
-      if ("CUSTOMER".equals(policy.getRecordType())) {
-        List<UUID> expiredIds =
-            customerRepository.findIdsByLifecycleStatusAndOffboardedAtBefore(
-                LifecycleStatus.OFFBOARDED, expiredCutoff);
-        pastExpiry += expiredIds.size();
-
-        if (policy.getRetentionDays() > 30) {
-          List<UUID> approachingIds =
-              customerRepository.findIdsByLifecycleStatusAndOffboardedAtBefore(
-                  LifecycleStatus.OFFBOARDED, approachingCutoff);
-          // Approaching = those in warning window but not yet expired
-          approaching += Math.max(0, approachingIds.size() - expiredIds.size());
-        }
-      }
+      int approachingForPolicy =
+          switch (policy.getRecordType()) {
+            case "CUSTOMER" -> {
+              List<UUID> allInWindow =
+                  customerRepository.findIdsByLifecycleStatusAndOffboardedAtBefore(
+                      LifecycleStatus.OFFBOARDED, approachingCutoff);
+              List<UUID> expired =
+                  customerRepository.findIdsByLifecycleStatusAndOffboardedAtBefore(
+                      LifecycleStatus.OFFBOARDED, expiredCutoff);
+              yield Math.max(0, allInWindow.size() - expired.size());
+            }
+            default -> 0; // Other record types don't have a convenient approaching-window query
+          };
+      approaching += approachingForPolicy;
     }
 
     return new RetentionSummary(approaching, pastExpiry);
@@ -324,7 +371,8 @@ public class ComplianceDataCollectorService {
   /**
    * Truncates a list of flagged items to the given cap, appending a note if truncation occurred.
    */
-  <T> List<T> limitFlaggedItems(List<T> items, int max, StringBuilder notes, String category) {
+  private <T> List<T> limitFlaggedItems(
+      List<T> items, int max, StringBuilder notes, String category) {
     if (items.size() <= max) {
       return List.copyOf(items);
     }

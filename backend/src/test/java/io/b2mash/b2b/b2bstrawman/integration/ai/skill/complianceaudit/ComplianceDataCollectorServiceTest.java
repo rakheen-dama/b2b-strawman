@@ -16,8 +16,11 @@ import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
 import io.b2mash.b2b.b2bstrawman.datarequest.DataSubjectRequestRepository;
 import io.b2mash.b2b.b2bstrawman.datarequest.ProcessingActivity;
 import io.b2mash.b2b.b2bstrawman.datarequest.ProcessingActivityRepository;
+import io.b2mash.b2b.b2bstrawman.retention.RetentionCheckResult;
 import io.b2mash.b2b.b2bstrawman.retention.RetentionPolicyRepository;
+import io.b2mash.b2b.b2bstrawman.retention.RetentionService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
+import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar.PrescriptionTrackerRepository;
 import io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.TrustAccount;
@@ -29,6 +32,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.IntStream;
@@ -54,6 +58,7 @@ class ComplianceDataCollectorServiceTest {
   @Mock private ClientLedgerCardRepository clientLedgerCardRepository;
   @Mock private PrescriptionTrackerRepository prescriptionTrackerRepository;
   @Mock private RetentionPolicyRepository retentionPolicyRepository;
+  @Mock private RetentionService retentionService;
   @Mock private VerticalModuleGuard moduleGuard;
 
   private ComplianceDataCollectorService dataCollectorService;
@@ -71,6 +76,7 @@ class ComplianceDataCollectorServiceTest {
             clientLedgerCardRepository,
             prescriptionTrackerRepository,
             retentionPolicyRepository,
+            retentionService,
             moduleGuard);
   }
 
@@ -80,19 +86,18 @@ class ComplianceDataCollectorServiceTest {
     List<Customer> customers = createCustomers(10);
     when(customerRepository.findByLifecycleStatus(LifecycleStatus.ACTIVE)).thenReturn(customers);
 
-    // 7 customers have completed checklists
+    // Build batch instances: 7 completed, 3 in-progress
+    List<ChecklistInstance> allInstances = new ArrayList<>();
     for (int i = 0; i < 7; i++) {
-      ChecklistInstance completedInstance = createInstance(customers.get(i).getId(), "COMPLETED");
-      when(checklistInstanceRepository.findByCustomerId(customers.get(i).getId()))
-          .thenReturn(List.of(completedInstance));
+      allInstances.add(createInstance(customers.get(i).getId(), "COMPLETED"));
     }
-    // 3 customers have in-progress checklists (not overdue)
     for (int i = 7; i < 10; i++) {
-      ChecklistInstance inProgressInstance =
-          createInstance(customers.get(i).getId(), "IN_PROGRESS");
-      when(checklistInstanceRepository.findByCustomerId(customers.get(i).getId()))
-          .thenReturn(List.of(inProgressInstance));
+      allInstances.add(createInstance(customers.get(i).getId(), "IN_PROGRESS"));
     }
+    when(checklistInstanceRepository.findByCustomerIdIn(anyList())).thenReturn(allInstances);
+    when(checklistInstanceItemRepository.findByInstanceIdInOrderByInstanceIdAscSortOrderAsc(
+            anyList()))
+        .thenReturn(List.of());
 
     // POPIA data
     when(processingActivityRepository.findAll())
@@ -121,6 +126,7 @@ class ComplianceDataCollectorServiceTest {
         .thenReturn(List.of());
 
     // Retention
+    when(retentionService.previewPurge()).thenReturn(new RetentionCheckResult());
     when(retentionPolicyRepository.findByActive(true)).thenReturn(List.of());
 
     ComplianceSnapshot snapshot = dataCollectorService.collectComplianceSnapshot();
@@ -147,6 +153,7 @@ class ComplianceDataCollectorServiceTest {
     when(dataSubjectRequestRepository.countByStatusIn(anyList())).thenReturn(0L);
     when(dataSubjectRequestRepository.findByStatusInAndDeadlineBefore(anyList(), any()))
         .thenReturn(List.of());
+    when(retentionService.previewPurge()).thenReturn(new RetentionCheckResult());
     when(retentionPolicyRepository.findByActive(true)).thenReturn(List.of());
 
     ComplianceSnapshot snapshot = dataCollectorService.collectComplianceSnapshot();
@@ -170,11 +177,12 @@ class ComplianceDataCollectorServiceTest {
     List<Customer> customers = createCustomers(60);
     when(customerRepository.findByLifecycleStatus(LifecycleStatus.ACTIVE)).thenReturn(customers);
 
-    for (Customer customer : customers) {
-      ChecklistInstance instance = createInstance(customer.getId(), "IN_PROGRESS");
-      when(checklistInstanceRepository.findByCustomerId(customer.getId()))
-          .thenReturn(List.of(instance));
-    }
+    List<ChecklistInstance> allInstances =
+        customers.stream().map(c -> createInstance(c.getId(), "IN_PROGRESS")).toList();
+    when(checklistInstanceRepository.findByCustomerIdIn(anyList())).thenReturn(allInstances);
+    when(checklistInstanceItemRepository.findByInstanceIdInOrderByInstanceIdAscSortOrderAsc(
+            anyList()))
+        .thenReturn(List.of());
 
     when(moduleGuard.isModuleEnabled("trust_accounting")).thenReturn(false);
     when(moduleGuard.isModuleEnabled("court_calendar")).thenReturn(false);
@@ -182,6 +190,7 @@ class ComplianceDataCollectorServiceTest {
     when(dataSubjectRequestRepository.countByStatusIn(anyList())).thenReturn(0L);
     when(dataSubjectRequestRepository.findByStatusInAndDeadlineBefore(anyList(), any()))
         .thenReturn(List.of());
+    when(retentionService.previewPurge()).thenReturn(new RetentionCheckResult());
     when(retentionPolicyRepository.findByActive(true)).thenReturn(List.of());
 
     ComplianceSnapshot snapshot = dataCollectorService.collectComplianceSnapshot();
@@ -208,6 +217,7 @@ class ComplianceDataCollectorServiceTest {
     when(prescriptionTrackerRepository.findByStatusInAndPrescriptionDateLessThanEqual(
             anyList(), any(LocalDate.class)))
         .thenReturn(List.of());
+    when(retentionService.previewPurge()).thenReturn(new RetentionCheckResult());
     when(retentionPolicyRepository.findByActive(true)).thenReturn(List.of());
 
     ComplianceSnapshot snapshot = dataCollectorService.collectComplianceSnapshot();
@@ -227,11 +237,12 @@ class ComplianceDataCollectorServiceTest {
     when(customerRepository.findByLifecycleStatus(LifecycleStatus.ACTIVE)).thenReturn(customers);
 
     // All have in-progress (non-compliant) to generate flagged items
-    for (Customer customer : customers) {
-      ChecklistInstance instance = createInstance(customer.getId(), "IN_PROGRESS");
-      when(checklistInstanceRepository.findByCustomerId(customer.getId()))
-          .thenReturn(List.of(instance));
-    }
+    List<ChecklistInstance> allInstances =
+        customers.stream().map(c -> createInstance(c.getId(), "IN_PROGRESS")).toList();
+    when(checklistInstanceRepository.findByCustomerIdIn(anyList())).thenReturn(allInstances);
+    when(checklistInstanceItemRepository.findByInstanceIdInOrderByInstanceIdAscSortOrderAsc(
+            anyList()))
+        .thenReturn(List.of());
 
     when(moduleGuard.isModuleEnabled("trust_accounting")).thenReturn(false);
     when(moduleGuard.isModuleEnabled("court_calendar")).thenReturn(false);
@@ -239,6 +250,7 @@ class ComplianceDataCollectorServiceTest {
     when(dataSubjectRequestRepository.countByStatusIn(anyList())).thenReturn(0L);
     when(dataSubjectRequestRepository.findByStatusInAndDeadlineBefore(anyList(), any()))
         .thenReturn(List.of());
+    when(retentionService.previewPurge()).thenReturn(new RetentionCheckResult());
     when(retentionPolicyRepository.findByActive(true)).thenReturn(List.of());
 
     ComplianceSnapshot snapshot = dataCollectorService.collectComplianceSnapshot();
@@ -256,23 +268,27 @@ class ComplianceDataCollectorServiceTest {
     List<Customer> customers = createCustomers(5);
     when(customerRepository.findByLifecycleStatus(LifecycleStatus.ACTIVE)).thenReturn(customers);
 
+    // Build batch instances
+    List<ChecklistInstance> allInstances = new ArrayList<>();
     // Customers 0,1 = compliant (completed checklists)
     for (int i = 0; i < 2; i++) {
-      when(checklistInstanceRepository.findByCustomerId(customers.get(i).getId()))
-          .thenReturn(List.of(createInstance(customers.get(i).getId(), "COMPLETED")));
+      allInstances.add(createInstance(customers.get(i).getId(), "COMPLETED"));
     }
     // Customer 2,3 = non-compliant (in-progress, recent)
     for (int i = 2; i < 4; i++) {
-      when(checklistInstanceRepository.findByCustomerId(customers.get(i).getId()))
-          .thenReturn(List.of(createInstance(customers.get(i).getId(), "IN_PROGRESS")));
+      allInstances.add(createInstance(customers.get(i).getId(), "IN_PROGRESS"));
     }
     // Customer 4 = critically overdue (in-progress, >90 days old)
     ChecklistInstance overdueInstance = createOverdueInstance(customers.get(4).getId());
-    when(checklistInstanceRepository.findByCustomerId(customers.get(4).getId()))
-        .thenReturn(List.of(overdueInstance));
-    when(checklistInstanceItemRepository.existsByInstanceIdAndRequiredAndStatusNot(
-            overdueInstance.getId(), true, "COMPLETED"))
-        .thenReturn(true);
+    allInstances.add(overdueInstance);
+
+    when(checklistInstanceRepository.findByCustomerIdIn(anyList())).thenReturn(allInstances);
+
+    // Provide items for the overdue instance showing required pending item
+    var overdueItem = createOverdueChecklistItem(overdueInstance.getId());
+    when(checklistInstanceItemRepository.findByInstanceIdInOrderByInstanceIdAscSortOrderAsc(
+            anyList()))
+        .thenReturn(List.of(overdueItem));
 
     when(moduleGuard.isModuleEnabled("trust_accounting")).thenReturn(false);
     when(moduleGuard.isModuleEnabled("court_calendar")).thenReturn(false);
@@ -280,6 +296,7 @@ class ComplianceDataCollectorServiceTest {
     when(dataSubjectRequestRepository.countByStatusIn(anyList())).thenReturn(0L);
     when(dataSubjectRequestRepository.findByStatusInAndDeadlineBefore(anyList(), any()))
         .thenReturn(List.of());
+    when(retentionService.previewPurge()).thenReturn(new RetentionCheckResult());
     when(retentionPolicyRepository.findByActive(true)).thenReturn(List.of());
 
     ComplianceSnapshot snapshot = dataCollectorService.collectComplianceSnapshot();
@@ -298,29 +315,18 @@ class ComplianceDataCollectorServiceTest {
   private List<Customer> createCustomers(int count) {
     return IntStream.range(0, count)
         .mapToObj(
-            i -> {
-              Customer c =
-                  TestCustomerFactory.createActiveCustomer(
-                      "Customer " + i, "customer" + i + "@test.com", ACTOR_ID);
-              setId(c, UUID.randomUUID());
-              return c;
-            })
+            i ->
+                TestIds.withId(
+                    TestCustomerFactory.createActiveCustomer(
+                        "Customer " + i, "customer" + i + "@test.com", ACTOR_ID),
+                    UUID.randomUUID()))
         .toList();
-  }
-
-  private static void setId(Object entity, UUID id) {
-    try {
-      var field = entity.getClass().getDeclaredField("id");
-      field.setAccessible(true);
-      field.set(entity, id);
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to set id via reflection", e);
-    }
   }
 
   private ChecklistInstance createInstance(UUID customerId, String status) {
     ChecklistInstance instance =
         new ChecklistInstance(UUID.randomUUID(), customerId, Instant.now());
+    TestIds.withId(instance, UUID.randomUUID());
     if ("COMPLETED".equals(status)) {
       instance.complete(UUID.randomUUID());
     }
@@ -331,14 +337,16 @@ class ComplianceDataCollectorServiceTest {
     ChecklistInstance instance =
         new ChecklistInstance(
             UUID.randomUUID(), customerId, Instant.now().minus(100, ChronoUnit.DAYS));
-    try {
-      var field = ChecklistInstance.class.getDeclaredField("createdAt");
-      field.setAccessible(true);
-      field.set(instance, Instant.now().minus(100, ChronoUnit.DAYS));
-    } catch (Exception e) {
-      throw new RuntimeException("Failed to set createdAt via reflection", e);
-    }
+    TestIds.withId(instance, UUID.randomUUID());
+    TestIds.withField(instance, "createdAt", Instant.now().minus(100, ChronoUnit.DAYS));
     return instance;
+  }
+
+  private io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceItem createOverdueChecklistItem(
+      UUID instanceId) {
+    // Item defaults to PENDING status which satisfies the "required and not COMPLETED" check
+    return new io.b2mash.b2b.b2bstrawman.checklist.ChecklistInstanceItem(
+        instanceId, UUID.randomUUID(), "FICA ID Document", "Verify identity", 1, true, false, null);
   }
 
   private ProcessingActivity createProcessingActivity() {
@@ -364,7 +372,6 @@ class ComplianceDataCollectorServiceTest {
             BigDecimal.ZERO,
             LocalDate.now(),
             null);
-    setId(account, UUID.randomUUID());
-    return account;
+    return TestIds.withId(account, UUID.randomUUID());
   }
 }

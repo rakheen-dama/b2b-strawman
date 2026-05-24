@@ -166,6 +166,36 @@ public class ComplianceAuditReportService {
         pageable);
   }
 
+  /** Combined report + finding counts for single-service-call controller use. */
+  public record ReportWithCounts(ComplianceAuditReport report, FindingCounts counts) {}
+
+  @Transactional(readOnly = true)
+  public ReportWithCounts findReportWithCounts(UUID id) {
+    var report = findReport(id);
+    var counts = findingCounts(id);
+    return new ReportWithCounts(report, counts);
+  }
+
+  // JPQL projection column order: [0] = severity (String), [1] = count (Long)
+  @Transactional(readOnly = true)
+  FindingCounts findingCounts(UUID reportId) {
+    var rows = findingRepository.countByReportIdGroupedBySeverity(reportId);
+    int critical = 0, high = 0, medium = 0, low = 0, info = 0;
+    for (Object[] row : rows) {
+      String severity = (String) row[0];
+      long count = (Long) row[1];
+      switch (severity) {
+        case "CRITICAL" -> critical = (int) count;
+        case "HIGH" -> high = (int) count;
+        case "MEDIUM" -> medium = (int) count;
+        case "LOW" -> low = (int) count;
+        case "INFO" -> info = (int) count;
+        default -> log.warn("Unknown finding severity in count: {}", severity);
+      }
+    }
+    return new FindingCounts(critical, high, medium, low, info);
+  }
+
   @Transactional
   public ComplianceAuditFinding updateFindingStatus(
       UUID reportId, UUID findingId, String newStatus, String resolutionNotes, UUID memberId) {

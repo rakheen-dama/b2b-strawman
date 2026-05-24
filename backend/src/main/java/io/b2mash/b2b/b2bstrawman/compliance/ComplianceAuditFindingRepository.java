@@ -21,6 +21,11 @@ public interface ComplianceAuditFindingRepository
       @Param("reportId") UUID reportId, Pageable pageable);
 
   @Query(
+      "SELECT f.severity, COUNT(f) FROM ComplianceAuditFinding f"
+          + " WHERE f.report.id = :reportId GROUP BY f.severity")
+  List<Object[]> countByReportIdGroupedBySeverity(@Param("reportId") UUID reportId);
+
+  @Query(
       "SELECT f FROM ComplianceAuditFinding f WHERE f.report.id = :reportId"
           + " AND (:severities IS NULL OR f.severity IN :severities)"
           + " AND (:categories IS NULL OR f.category IN :categories)"

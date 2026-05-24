@@ -14,6 +14,8 @@ public interface DataSubjectRequestRepository extends JpaRepository<DataSubjectR
   List<DataSubjectRequest> findByStatusInAndDeadlineBefore(
       List<String> statuses, LocalDate deadline);
 
+  long countByStatusInAndDeadlineBefore(List<String> statuses, LocalDate deadline);
+
   List<DataSubjectRequest> findByStatusInAndDeadlineBetween(
       List<String> statuses, LocalDate from, LocalDate to);
 

@@ -210,14 +210,18 @@ export default async function InvoicesPage({
         <EmptyState
           icon={Receipt}
           title={
-            validatedStatus
-              ? <TerminologyText template={`No ${validatedStatus.toLowerCase()} {invoices} found`} />
-              : <TerminologyText template={t("invoices.list.heading")} />
+            validatedStatus ? (
+              <TerminologyText template={`No ${validatedStatus.toLowerCase()} {invoices} found`} />
+            ) : (
+              <TerminologyText template={t("invoices.list.heading")} />
+            )
           }
           description={
-            validatedStatus
-              ? <TerminologyText template={`No ${validatedStatus.toLowerCase()} {invoices} found.`} />
-              : <TerminologyText template={t("invoices.list.description")} />
+            validatedStatus ? (
+              <TerminologyText template={`No ${validatedStatus.toLowerCase()} {invoices} found.`} />
+            ) : (
+              <TerminologyText template={t("invoices.list.description")} />
+            )
           }
           secondaryLink={{ label: "Read the guide", href: docsLink("/features/invoicing") }}
         />

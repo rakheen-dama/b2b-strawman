@@ -246,7 +246,9 @@ export default async function ProjectsPage({
           title={<TerminologyText template={t("projects.list.heading")} />}
           description={
             <TerminologyText
-              template={isAdmin ? t("projects.list.description") : t("projects.list.descriptionMember")}
+              template={
+                isAdmin ? t("projects.list.description") : t("projects.list.descriptionMember")
+              }
             />
           }
           action={<CreateProjectDialog slug={slug} />}

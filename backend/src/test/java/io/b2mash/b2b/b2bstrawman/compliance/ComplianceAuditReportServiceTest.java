@@ -98,7 +98,7 @@ class ComplianceAuditReportServiceTest {
           assertThat(findings.getTotalElements()).isEqualTo(2);
           var findingList = findings.getContent();
 
-          // Findings are ordered by severity ASC (alphabetical: CRITICAL < HIGH)
+          // Findings are ordered by severity via CASE expression (CRITICAL=1, HIGH=2, ...)
           var criticalFinding =
               findingList.stream().filter(f -> "CRITICAL".equals(f.getSeverity())).findFirst();
           assertThat(criticalFinding).isPresent();

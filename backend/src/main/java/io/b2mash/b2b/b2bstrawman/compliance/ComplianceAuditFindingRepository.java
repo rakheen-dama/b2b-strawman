@@ -20,15 +20,6 @@ public interface ComplianceAuditFindingRepository
   Page<ComplianceAuditFinding> findByReportIdOrderBySeverity(
       @Param("reportId") UUID reportId, Pageable pageable);
 
-  Page<ComplianceAuditFinding> findByReportIdAndSeverityIn(
-      UUID reportId, List<String> severities, Pageable pageable);
-
-  Page<ComplianceAuditFinding> findByReportIdAndCategoryIn(
-      UUID reportId, List<String> categories, Pageable pageable);
-
-  Page<ComplianceAuditFinding> findByReportIdAndStatusIn(
-      UUID reportId, List<String> statuses, Pageable pageable);
-
   @Query(
       "SELECT f FROM ComplianceAuditFinding f WHERE f.report.id = :reportId"
           + " AND (:severities IS NULL OR f.severity IN :severities)"

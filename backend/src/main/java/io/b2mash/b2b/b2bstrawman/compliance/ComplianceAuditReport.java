@@ -80,6 +80,11 @@ public class ComplianceAuditReport {
   }
 
   public void publish(UUID publisherId) {
+    if (!ReportStatus.DRAFT.name().equals(this.status)) {
+      throw new InvalidStateException(
+          "Invalid report status transition",
+          "Only DRAFT reports can be published, but current status is " + this.status);
+    }
     this.status = ReportStatus.PUBLISHED.name();
     this.publishedBy = publisherId;
     this.publishedAt = Instant.now();

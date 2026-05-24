@@ -1,12 +1,11 @@
 "use client";
 
-export default function InvoiceError({
-  error: _error,
-  reset,
-}: {
+interface InvoiceErrorProps {
   error: Error;
   reset: () => void;
-}) {
+}
+
+export default function InvoiceError({ error: _error, reset }: InvoiceErrorProps) {
   return (
     <div className="flex flex-col items-center gap-4 py-24 text-center">
       <h2 className="font-display text-xl text-slate-950 dark:text-slate-50">

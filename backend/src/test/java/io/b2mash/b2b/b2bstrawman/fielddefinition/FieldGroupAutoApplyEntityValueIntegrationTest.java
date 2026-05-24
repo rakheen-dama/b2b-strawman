@@ -12,7 +12,6 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
@@ -37,11 +36,24 @@ class FieldGroupAutoApplyEntityValueIntegrationTest {
 
   private static final String ORG_ID = "org_fg_aa_entityval_test";
 
-  @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
-  @Autowired private FieldGroupRepository fieldGroupRepository;
-  @Autowired private FieldGroupService fieldGroupService;
-  @Autowired private TransactionTemplate transactionTemplate;
+  private final TenantProvisioningService provisioningService;
+  private final OrgSchemaMappingRepository orgSchemaMappingRepository;
+  private final FieldGroupRepository fieldGroupRepository;
+  private final FieldGroupService fieldGroupService;
+  private final TransactionTemplate transactionTemplate;
+
+  FieldGroupAutoApplyEntityValueIntegrationTest(
+      TenantProvisioningService provisioningService,
+      OrgSchemaMappingRepository orgSchemaMappingRepository,
+      FieldGroupRepository fieldGroupRepository,
+      FieldGroupService fieldGroupService,
+      TransactionTemplate transactionTemplate) {
+    this.provisioningService = provisioningService;
+    this.orgSchemaMappingRepository = orgSchemaMappingRepository;
+    this.fieldGroupRepository = fieldGroupRepository;
+    this.fieldGroupService = fieldGroupService;
+    this.transactionTemplate = transactionTemplate;
+  }
 
   private String tenantSchema;
   private UUID unscopedGroupId;

@@ -188,7 +188,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **1.1** Login as Bob
 - [ ] **1.2** Navigate to **Clients** → **New Client**
 - [ ] **1.3** Fill standard: Name = **Sipho Dlamini**, Email = `sipho@email.co.za`, Phone = +27-82-555-0201
-- [ ] **1.4** Fill promoted fields (verify inline rendering): `acct_entity_type` = **SOLE_PROPRIETOR**, `tax_number` = "1234567890", `registered_address` = "12 Jorissen St, Braamfontein, 2017"
+- [ ] **1.4** Fill promoted fields (verify inline rendering): `acct_entity_type` = **SOLE_PROP**, `tax_number` = "1234567890", `registered_address` = "12 Jorissen St, Braamfontein, 2017"
 - [ ] **1.5** Save → client appears in list with status **PROSPECT**
 - [ ] **1.6** Open detail → verify promoted fields render inline (not in sidebar)
 

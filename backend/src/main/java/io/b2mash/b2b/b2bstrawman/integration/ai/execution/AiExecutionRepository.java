@@ -1,11 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.integration.ai.execution;
 
+import jakarta.persistence.LockModeType;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -30,4 +32,9 @@ public interface AiExecutionRepository extends JpaRepository<AiExecution, UUID> 
 
   List<AiExecution> findByEntityTypeAndEntityIdOrderByCreatedAtDesc(
       String entityType, UUID entityId);
+
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("SELECT e FROM AiExecution e WHERE e.skillId = :skillId AND e.status = :status")
+  List<AiExecution> findBySkillIdAndStatusForUpdate(
+      @Param("skillId") String skillId, @Param("status") String status);
 }

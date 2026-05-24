@@ -1,0 +1,123 @@
+{
+  "type": "object",
+  "required": ["auditDate", "overallGrade", "overallAssessment", "categoryScores", "findings", "recommendations"],
+  "properties": {
+    "auditDate": {
+      "type": "string",
+      "description": "ISO date of the audit (YYYY-MM-DD)"
+    },
+    "overallGrade": {
+      "type": "string",
+      "enum": ["A", "B", "C", "D", "F"],
+      "description": "Overall compliance grade"
+    },
+    "overallAssessment": {
+      "type": "string",
+      "description": "Concise summary of the firm's compliance posture"
+    },
+    "categoryScores": {
+      "type": "object",
+      "description": "Compliance scores per regulatory category",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["grade", "compliant", "nonCompliant", "critical"],
+        "properties": {
+          "grade": {
+            "type": "string",
+            "enum": ["A", "B", "C", "D", "F"]
+          },
+          "compliant": {
+            "type": "integer",
+            "description": "Number of compliant items"
+          },
+          "nonCompliant": {
+            "type": "integer",
+            "description": "Number of non-compliant items"
+          },
+          "critical": {
+            "type": "integer",
+            "description": "Number of critical items requiring immediate action"
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "severity", "category", "title", "description", "regulatoryBasis", "remediation"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique finding identifier (e.g., FICA-001)"
+          },
+          "severity": {
+            "type": "string",
+            "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+          },
+          "category": {
+            "type": "string",
+            "enum": ["FICA_CDD", "POPIA", "TRUST_ACCOUNTING", "PRESCRIPTION", "RETENTION"]
+          },
+          "title": {
+            "type": "string",
+            "description": "Short title of the finding"
+          },
+          "description": {
+            "type": "string",
+            "description": "Detailed description of the non-compliance"
+          },
+          "regulatoryBasis": {
+            "type": "string",
+            "description": "Specific Act and section reference"
+          },
+          "remediation": {
+            "type": "string",
+            "description": "Specific steps to remediate"
+          },
+          "entityReferences": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["type", "id", "name"],
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "description": "Entity type (CUSTOMER, MATTER, TRUST_ACCOUNT)"
+                },
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "name": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["priority", "recommendation", "estimatedEffort"],
+        "properties": {
+          "priority": {
+            "type": "string",
+            "enum": ["CRITICAL", "HIGH", "MEDIUM", "LOW"]
+          },
+          "recommendation": {
+            "type": "string",
+            "description": "Actionable recommendation"
+          },
+          "estimatedEffort": {
+            "type": "string",
+            "description": "Estimated effort to implement (e.g., '2 hours', '1 day')"
+          }
+        }
+      }
+    }
+  }
+}

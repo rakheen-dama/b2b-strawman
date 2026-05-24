@@ -92,7 +92,7 @@ class ComplianceAuditReportServiceTest {
           var report = reportService.publishReport(output, execution.getId(), ownerMemberId);
 
           var findings =
-              findingRepository.findByReportIdOrderBySeverityAsc(
+              findingRepository.findByReportIdOrderBySeverity(
                   report.getId(), org.springframework.data.domain.PageRequest.of(0, 10));
 
           assertThat(findings.getTotalElements()).isEqualTo(2);
@@ -190,6 +190,50 @@ class ComplianceAuditReportServiceTest {
   }
 
   @Test
+  void findingTransition_resolveWithNullNotes_throwsInvalidState() {
+    runInTenantScope(
+        () -> {
+          var report = publishReportWithFindings();
+          var finding = getFirstFinding(report.getId());
+
+          reportService.updateFindingStatus(
+              report.getId(), finding.getId(), "ACKNOWLEDGED", null, ownerMemberId);
+          reportService.updateFindingStatus(
+              report.getId(), finding.getId(), "IN_PROGRESS", null, ownerMemberId);
+
+          UUID reportId = report.getId();
+          UUID findingUuid = finding.getId();
+          assertThatThrownBy(
+                  () ->
+                      reportService.updateFindingStatus(
+                          reportId, findingUuid, "RESOLVED", null, ownerMemberId))
+              .isInstanceOf(InvalidStateException.class);
+        });
+  }
+
+  @Test
+  void findingTransition_resolveWithBlankNotes_throwsInvalidState() {
+    runInTenantScope(
+        () -> {
+          var report = publishReportWithFindings();
+          var finding = getFirstFinding(report.getId());
+
+          reportService.updateFindingStatus(
+              report.getId(), finding.getId(), "ACKNOWLEDGED", null, ownerMemberId);
+          reportService.updateFindingStatus(
+              report.getId(), finding.getId(), "IN_PROGRESS", null, ownerMemberId);
+
+          UUID reportId = report.getId();
+          UUID findingUuid = finding.getId();
+          assertThatThrownBy(
+                  () ->
+                      reportService.updateFindingStatus(
+                          reportId, findingUuid, "RESOLVED", "  ", ownerMemberId))
+              .isInstanceOf(InvalidStateException.class);
+        });
+  }
+
+  @Test
   void findingTransition_backwardTransition_throwsInvalidState() {
     runInTenantScope(
         () -> {
@@ -260,7 +304,7 @@ class ComplianceAuditReportServiceTest {
 
   private ComplianceAuditFinding getFirstFinding(UUID reportId) {
     return findingRepository
-        .findByReportIdOrderBySeverityAsc(
+        .findByReportIdOrderBySeverity(
             reportId, org.springframework.data.domain.PageRequest.of(0, 1))
         .getContent()
         .getFirst();

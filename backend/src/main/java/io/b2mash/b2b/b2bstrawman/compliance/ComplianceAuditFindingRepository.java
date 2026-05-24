@@ -11,7 +11,14 @@ import org.springframework.data.repository.query.Param;
 public interface ComplianceAuditFindingRepository
     extends JpaRepository<ComplianceAuditFinding, UUID> {
 
-  Page<ComplianceAuditFinding> findByReportIdOrderBySeverityAsc(UUID reportId, Pageable pageable);
+  @Query(
+      "SELECT f FROM ComplianceAuditFinding f WHERE f.report.id = :reportId"
+          + " ORDER BY CASE f.severity"
+          + " WHEN 'CRITICAL' THEN 1 WHEN 'HIGH' THEN 2"
+          + " WHEN 'MEDIUM' THEN 3 WHEN 'LOW' THEN 4 WHEN 'INFO' THEN 5"
+          + " ELSE 6 END ASC")
+  Page<ComplianceAuditFinding> findByReportIdOrderBySeverity(
+      @Param("reportId") UUID reportId, Pageable pageable);
 
   Page<ComplianceAuditFinding> findByReportIdAndSeverityIn(
       UUID reportId, List<String> severities, Pageable pageable);
@@ -27,7 +34,10 @@ public interface ComplianceAuditFindingRepository
           + " AND (:severities IS NULL OR f.severity IN :severities)"
           + " AND (:categories IS NULL OR f.category IN :categories)"
           + " AND (:statuses IS NULL OR f.status IN :statuses)"
-          + " ORDER BY f.severity ASC")
+          + " ORDER BY CASE f.severity"
+          + " WHEN 'CRITICAL' THEN 1 WHEN 'HIGH' THEN 2"
+          + " WHEN 'MEDIUM' THEN 3 WHEN 'LOW' THEN 4 WHEN 'INFO' THEN 5"
+          + " ELSE 6 END ASC")
   Page<ComplianceAuditFinding> findByReportIdFiltered(
       @Param("reportId") UUID reportId,
       @Param("severities") List<String> severities,

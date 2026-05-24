@@ -122,6 +122,7 @@ public class ComplianceAuditFinding {
   }
 
   public void resolve(UUID memberId, String notes) {
+    requireResolutionNotes(notes);
     requireStatus(FindingStatus.IN_PROGRESS, FindingStatus.RESOLVED);
     this.status = FindingStatus.RESOLVED.name();
     this.resolvedBy = memberId;
@@ -132,6 +133,7 @@ public class ComplianceAuditFinding {
   }
 
   public void markFalsePositive(UUID memberId, String notes) {
+    requireResolutionNotes(notes);
     requireStatus(FindingStatus.IN_PROGRESS, FindingStatus.FALSE_POSITIVE);
     this.status = FindingStatus.FALSE_POSITIVE.name();
     this.resolvedBy = memberId;
@@ -139,6 +141,14 @@ public class ComplianceAuditFinding {
     this.resolutionNotes = notes;
     this.updatedBy = memberId;
     this.updatedAt = Instant.now();
+  }
+
+  private void requireResolutionNotes(String notes) {
+    if (notes == null || notes.isBlank()) {
+      throw new InvalidStateException(
+          "Resolution notes required",
+          "Resolution notes must be provided when resolving a finding");
+    }
   }
 
   private void requireStatus(FindingStatus expected, FindingStatus target) {

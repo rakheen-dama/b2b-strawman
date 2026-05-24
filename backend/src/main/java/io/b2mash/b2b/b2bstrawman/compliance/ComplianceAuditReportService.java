@@ -59,7 +59,7 @@ public class ComplianceAuditReportService {
             ReportStatus.PUBLISHED.name(), PageRequest.of(0, 1));
     if (!publishedReports.isEmpty()) {
       ComplianceAuditReport previous = publishedReports.getContent().getFirst();
-      previous.archive();
+      previous.archive(memberId);
       reportRepository.save(previous);
       log.info("Archived previous published report id={}", previous.getId());
     }
@@ -106,6 +106,21 @@ public class ComplianceAuditReportService {
     }
     findingRepository.saveAll(findings);
 
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("compliance.report.published")
+            .entityType("compliance_audit_report")
+            .entityId(report.getId())
+            .details(
+                Map.of(
+                    "overallGrade",
+                    report.getOverallGrade(),
+                    "executionId",
+                    executionId.toString(),
+                    "findingCount",
+                    String.valueOf(findings.size())))
+            .build());
+
     log.info(
         "Published compliance audit report id={} with {} findings",
         report.getId(),
@@ -142,14 +157,14 @@ public class ComplianceAuditReportService {
                 || filterParams.statuses() != null);
 
     if (!hasFilter) {
-      return findingRepository.findByReportIdOrderBySeverityAsc(reportId, pageable);
+      return findingRepository.findByReportIdOrderBySeverity(reportId, pageable);
     }
 
     return findingRepository.findByReportIdFiltered(
         reportId,
-        filterParams.severities(),
-        filterParams.categories(),
-        filterParams.statuses(),
+        nullIfEmpty(filterParams.severities()),
+        nullIfEmpty(filterParams.categories()),
+        nullIfEmpty(filterParams.statuses()),
         pageable);
   }
 
@@ -168,7 +183,13 @@ public class ComplianceAuditReportService {
     }
 
     String oldStatus = finding.getStatus();
-    FindingStatus targetStatus = FindingStatus.valueOf(newStatus);
+    FindingStatus targetStatus;
+    try {
+      targetStatus = FindingStatus.valueOf(newStatus);
+    } catch (IllegalArgumentException e) {
+      throw new io.b2mash.b2b.b2bstrawman.exception.InvalidStateException(
+          "Invalid target status", "Unknown finding status: " + newStatus);
+    }
 
     switch (targetStatus) {
       case ACKNOWLEDGED -> finding.acknowledge(memberId);
@@ -204,6 +225,10 @@ public class ComplianceAuditReportService {
             .build());
 
     return finding;
+  }
+
+  private static List<String> nullIfEmpty(List<String> list) {
+    return (list == null || list.isEmpty()) ? null : list;
   }
 
   private static Map<String, Object> convertCategoryScores(

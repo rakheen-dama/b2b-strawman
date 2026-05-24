@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.compliance;
 
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecution;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -86,8 +87,14 @@ public class ComplianceAuditReport {
     this.updatedAt = Instant.now();
   }
 
-  public void archive() {
+  public void archive(UUID archivedBy) {
+    if (!ReportStatus.PUBLISHED.name().equals(this.status)) {
+      throw new InvalidStateException(
+          "Invalid report status transition",
+          "Only PUBLISHED reports can be archived, but current status is " + this.status);
+    }
     this.status = ReportStatus.ARCHIVED.name();
+    this.updatedBy = archivedBy;
     this.updatedAt = Instant.now();
   }
 

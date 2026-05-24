@@ -170,7 +170,7 @@ PHASES already complete:
 | 2b | **539B** | `AiReviewReportGenerator` (Tiptap report builder from `ContractReviewOutput`); integration test with document creation. | 540B, 541B | **Done** (PR #1361) |
 | 2c | **540A** | `DraftingSkill` implementing `AiSkill`; `DraftingOutput` record + nested records; system prompt resource; output schema resource; canned test response; integration test. | 539A, 541A | **Done** (PR #1362) |
 | 2d | **540B** | `AiDraftDocumentGenerator` (template filling with AI variable values); integration test with document generation. | 539B, 541B | **Done** (PR #1363) |
-| 2e | **541A** | `ComplianceDataCollectorService` + `ComplianceSnapshot` record; module guard logic; data aggregation + outlier extraction. | 539A, 540A |
+| 2e | **541A** | `ComplianceDataCollectorService` + `ComplianceSnapshot` record; module guard logic; data aggregation + outlier extraction. | 539A, 540A | **Done** (PR #1364) |
 | 2f | **541B** | `ComplianceAuditSkill` implementing `AiSkill`; `ComplianceAuditOutput` record; system prompt resource; output schema resource; canned test response; concurrent audit prevention; integration test. | 539B, 540B |
 
 ### Stage 3 -- Compliance Persistence (sequential after 541A)
@@ -433,7 +433,7 @@ A realistic day-by-day cadence: 538A days 1-2; 538B days 2-4; 539A + 540A + 541A
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **541A** | 541A.1-541A.4 | ~5 backend files (1 service + 1 snapshot record + 1 category data records + 1 test file) | `ComplianceDataCollectorService` aggregating 6+ services; `ComplianceSnapshot` record with category-level data records; module guard logic; unit tests. |
+| **541A** | 541A.1-541A.4 | ~5 backend files (1 service + 1 snapshot record + 1 category data records + 1 test file) | `ComplianceDataCollectorService` aggregating 6+ services; `ComplianceSnapshot` record with category-level data records; module guard logic; unit tests. | **Done** (PR #1364) |
 | **541B** | 541B.1-541B.5 | ~7 backend files (1 skill class + 1 output record + 2 resource files + 1 test resource + 1 test file + 1 schema file) | `ComplianceAuditSkill` implementing `AiSkill`; `ComplianceAuditOutput` record; system prompt (SA regulatory framework); output schema; concurrent audit prevention; canned test response; integration test. |
 
 ### Tasks

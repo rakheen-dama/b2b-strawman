@@ -613,7 +613,7 @@
 | 538 | V127 Migration + Document Provenance | Backend | -- | M | 538A, 538B | **Done** (PR #1359) |
 | 539 | Contract Review Skill (Backend) | Backend | 538A | L | 539A, 539B | **Done** (PRs #1360, #1361) |
 | 540 | Drafting Skill (Backend) | Backend | 538A | L | 540A, 540B | **Done** (PRs #1362, #1363) |
-| 541 | Compliance Data Collector + Audit Skill (Backend) | Backend | 538A | L | 541A, 541B | |
+| 541 | Compliance Data Collector + Audit Skill (Backend) | Backend | 538A | L | 541A, 541B | 541A **Done** (PR #1364) |
 | 542 | Compliance Audit Persistence + Finding Lifecycle | Backend | 538A, 541A | L | 542A, 542B | |
 | 543 | Gate Executors + StubAiProvider Extensions | Backend | 539A, 540A, 541A, 542A | M | 543A | |
 | 544 | Contract Review Frontend | Frontend | 539A | M | 544A | |

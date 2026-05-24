@@ -28,7 +28,7 @@ Phase 74 delivers three new AI skills -- contract review, template-guided drafti
 | 539 | Contract Review Skill (Backend) | Backend | 538A | L | 539A, 539B | **Done** (PRs #1360, #1361) |
 | 540 | Drafting Skill (Backend) | Backend | 538A | L | 540A, 540B | **Done** (PRs #1362, #1363) |
 | 541 | Compliance Data Collector + Audit Skill (Backend) | Backend | 538A | L | 541A, 541B | **Done** (PRs #1364, #1365) |
-| 542 | Compliance Audit Persistence + Finding Lifecycle | Backend | 538A, 541A | L | 542A, 542B | 542A **Done** (PR #1366) |
+| 542 | Compliance Audit Persistence + Finding Lifecycle | Backend | 538A, 541A | L | 542A, 542B | **Done** (PRs #1366, #1367) |
 | 543 | Gate Executors + StubAiProvider Extensions | Backend | 539A, 540A, 541A, 542A | M | 543A | |
 | 544 | Contract Review Frontend | Frontend | 539A | M | 544A | |
 | 545 | Drafting Frontend | Frontend | 540A | M | 545A | |
@@ -178,7 +178,7 @@ PHASES already complete:
 | Order | Slice | Summary |
 |-------|-------|---------|
 | 3a | **542A** | `ComplianceAuditReport` entity + repo; `ComplianceAuditFinding` entity + repo; `ComplianceAuditReportService` (CRUD + finding lifecycle with status validation); integration tests for entity persistence and lifecycle transitions. | **Done** (PR #1366) |
-| 3b | **542B** | `ComplianceAuditReportController` (4 endpoints: list reports, get report, list findings, update finding status); `COMPLIANCE_FINDING_STATUS_CHANGED` audit event; integration tests for controller + capability checks. |
+| 3b | **542B** | `ComplianceAuditReportController` (4 endpoints: list reports, get report, list findings, update finding status); `COMPLIANCE_FINDING_STATUS_CHANGED` audit event; integration tests for controller + capability checks. | **Done** (PR #1367) |
 
 ### Stage 4 -- Gate Executors + Stubs (after 539A, 540A, 541A, 542A)
 
@@ -508,7 +508,7 @@ A realistic day-by-day cadence: 538A days 1-2; 538B days 2-4; 539A + 540A + 541A
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **542A** | 542A.1-542A.6 | ~7 backend files (2 entities + 2 repos + 1 service + 1 enum file + 1 test file) | `ComplianceAuditReport` entity + repo; `ComplianceAuditFinding` entity + repo; `FindingSeverity` and `FindingCategory` enums; `ComplianceAuditReportService` (CRUD + finding lifecycle with validation); integration tests. | **Done** (PR #1366) |
-| **542B** | 542B.1-542B.4 | ~5 backend files (1 controller + 1 event record + 1 DTO file + 1 test file) | `ComplianceAuditReportController` (4 endpoints); `ComplianceFindingStatusChangedEvent` audit event; response/request DTOs; integration tests for controller + capability checks. |
+| **542B** | 542B.1-542B.4 | ~5 backend files (1 controller + 1 event record + 1 DTO file + 1 test file) | `ComplianceAuditReportController` (4 endpoints); `ComplianceFindingStatusChangedEvent` audit event; response/request DTOs; integration tests for controller + capability checks. | **Done** (PR #1367) |
 
 ### Tasks
 

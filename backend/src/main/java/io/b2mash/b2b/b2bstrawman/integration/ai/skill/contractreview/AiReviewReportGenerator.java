@@ -17,6 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
 /**
@@ -63,7 +64,12 @@ public class AiReviewReportGenerator {
     String orgId = RequestScopes.requireOrgId();
     Map<String, Object> tiptapDoc = buildReportDocument(output);
 
-    byte[] contentBytes = objectMapper.writeValueAsBytes(tiptapDoc);
+    byte[] contentBytes;
+    try {
+      contentBytes = objectMapper.writeValueAsBytes(tiptapDoc);
+    } catch (JacksonException e) {
+      throw new IllegalStateException("Failed to serialize review report to JSON", e);
+    }
     String fileName = "Contract Review Report - " + LocalDate.now() + ".json";
 
     var document =
@@ -228,7 +234,7 @@ public class AiReviewReportGenerator {
   private Map<String, Object> buildBoldParagraph(String label, String value) {
     var node = new LinkedHashMap<String, Object>();
     node.put("type", "paragraph");
-    node.put("content", List.of(boldText(label + ": "), text(value)));
+    node.put("content", List.of(boldText(label + ": "), text(value != null ? value : "")));
     return node;
   }
 

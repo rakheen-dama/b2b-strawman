@@ -84,25 +84,14 @@ class DocumentProvenanceTest {
   }
 
   @Test
-  void scopeAwareConstructor_hasSourceManual_byDefault() {
-    runInTenant(
-        () -> {
-          var doc =
-              new Document(
-                  Document.Scope.ORG,
-                  null,
-                  null,
-                  "org-doc.pdf",
-                  "application/pdf",
-                  2048L,
-                  ownerMemberId,
-                  Document.Visibility.INTERNAL);
-          doc.assignS3Key("test/org-key");
-          Document saved = documentRepository.save(doc);
+  void legacyConstructor_hasSourceManual_byDefault() {
+    // Verifies the PROJECT-scoped legacy constructor also initializes source = MANUAL.
+    // Not persisted — the legacy constructor requires a valid projectId FK.
+    var doc =
+        new Document(UUID.randomUUID(), "legacy.pdf", "application/pdf", 1024L, ownerMemberId);
 
-          assertThat(saved.getSource()).isEqualTo(Document.Source.MANUAL);
-          assertThat(saved.getAiExecutionId()).isNull();
-        });
+    assertThat(doc.getSource()).isEqualTo(Document.Source.MANUAL);
+    assertThat(doc.getAiExecutionId()).isNull();
   }
 
   @Test

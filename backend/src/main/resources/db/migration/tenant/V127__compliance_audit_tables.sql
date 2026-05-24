@@ -11,6 +11,23 @@ ALTER TABLE documents ADD COLUMN IF NOT EXISTS ai_execution_id UUID REFERENCES a
 CREATE INDEX IF NOT EXISTS idx_documents_source ON documents(source) WHERE source != 'MANUAL';
 CREATE INDEX IF NOT EXISTS idx_documents_ai_execution ON documents(ai_execution_id) WHERE ai_execution_id IS NOT NULL;
 
+-- Ensure provenance consistency: AI_GENERATED must have execution_id, others must not.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+      SELECT 1
+      FROM pg_constraint
+      WHERE conname = 'chk_documents_provenance'
+  ) THEN
+    ALTER TABLE documents
+      ADD CONSTRAINT chk_documents_provenance
+      CHECK (
+        (source = 'AI_GENERATED' AND ai_execution_id IS NOT NULL)
+        OR (source <> 'AI_GENERATED' AND ai_execution_id IS NULL)
+      );
+  END IF;
+END $$;
+
 -- ============================================================================
 -- 2. Compliance Audit Reports
 -- ============================================================================

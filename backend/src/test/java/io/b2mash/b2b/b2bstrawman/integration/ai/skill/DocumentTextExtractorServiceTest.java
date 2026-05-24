@@ -17,6 +17,7 @@ import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 import org.apache.pdfbox.pdmodel.font.Standard14Fonts;
+import org.apache.poi.openxml4j.util.ZipSecureFile;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.apache.poi.xwpf.usermodel.XWPFRun;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.ObjectMapper;
 
 @ExtendWith(MockitoExtension.class)
 class DocumentTextExtractorServiceTest {
@@ -35,7 +37,7 @@ class DocumentTextExtractorServiceTest {
 
   @BeforeEach
   void setup() {
-    service = new DocumentTextExtractorService(storageService);
+    service = new DocumentTextExtractorService(storageService, new ObjectMapper());
   }
 
   @Test
@@ -89,18 +91,30 @@ class DocumentTextExtractorServiceTest {
 
   @Test
   void extractText_truncatesAtLimit_withWarning() throws IOException {
-    // Create a PDF with text exceeding 100KB
-    String longText = "A".repeat(110_000);
-    byte[] pdfBytes = createTestPdf(longText);
-    Document doc = createDocument("long.pdf", "application/pdf", "s3/long.pdf");
-    when(storageService.download("s3/long.pdf")).thenReturn(pdfBytes);
+    // Use DOCX for truncation test — DOCX faithfully holds all characters (no page overflow),
+    // whereas PDF on a single page may silently discard text beyond the page boundary.
+    // Disable zip bomb detection for this test — large synthetic DOCX triggers it legitimately.
+    double originalRatio = ZipSecureFile.getMinInflateRatio();
+    try {
+      ZipSecureFile.setMinInflateRatio(0);
+      String longText = "A".repeat(110_000);
+      byte[] docxBytes = createTestDocx(longText);
+      Document doc =
+          createDocument(
+              "long.docx",
+              "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+              "s3/long.docx");
+      when(storageService.download("s3/long.docx")).thenReturn(docxBytes);
 
-    ExtractedText result = service.extractText(doc);
+      ExtractedText result = service.extractText(doc);
 
-    assertThat(result.characterCount()).isEqualTo(102_400);
-    assertThat(result.wasTruncated()).isTrue();
-    assertThat(result.truncationWarning()).contains("truncated");
-    assertThat(result.truncationWarning()).contains("100KB limit");
+      assertThat(result.characterCount()).isEqualTo(102_400);
+      assertThat(result.wasTruncated()).isTrue();
+      assertThat(result.truncationWarning()).contains("truncated");
+      assertThat(result.truncationWarning()).contains("100KB limit");
+    } finally {
+      ZipSecureFile.setMinInflateRatio(originalRatio);
+    }
   }
 
   @Test

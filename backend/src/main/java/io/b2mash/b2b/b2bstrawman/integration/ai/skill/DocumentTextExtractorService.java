@@ -23,9 +23,11 @@ public class DocumentTextExtractorService {
   private static final int MAX_TEXT_LENGTH = 102_400; // 100KB
 
   private final StorageService storageService;
+  private final ObjectMapper objectMapper;
 
-  public DocumentTextExtractorService(StorageService storageService) {
+  public DocumentTextExtractorService(StorageService storageService, ObjectMapper objectMapper) {
     this.storageService = storageService;
+    this.objectMapper = objectMapper;
   }
 
   public ExtractedText extractText(Document document) {
@@ -57,6 +59,8 @@ public class DocumentTextExtractorService {
     return new ExtractedText(text, text.length(), false, null);
   }
 
+  // NOTE: This PDF extraction logic is structurally similar to FicaDocumentReader.processPdf().
+  // Consolidation opportunity — a shared PdfTextExtractor utility could serve both call-sites.
   private String extractFromPdf(byte[] bytes, String fileName) {
     try (PDDocument pdf = Loader.loadPDF(bytes)) {
       PDFTextStripper stripper = new PDFTextStripper();
@@ -85,13 +89,23 @@ public class DocumentTextExtractorService {
     }
   }
 
+  private static final int MAX_RECURSION_DEPTH = 100;
+
   private String extractFromTiptap(byte[] bytes, String fileName) {
     try {
-      ObjectMapper mapper = new ObjectMapper();
-      JsonNode root = mapper.readTree(bytes);
+      JsonNode root = objectMapper.readTree(bytes);
+
+      // Validate that this is a Tiptap document (root must have "type": "doc")
+      if (!root.isObject() || !"doc".equals(root.path("type").asText())) {
+        throw new InvalidStateException(
+            "UNSUPPORTED_DOCUMENT", "JSON document is not in Tiptap format");
+      }
+
       var sb = new StringBuilder();
-      extractTextNodes(root, sb);
+      extractTextNodes(root, sb, 0);
       return sb.toString();
+    } catch (InvalidStateException e) {
+      throw e;
     } catch (Exception e) {
       log.warn("Failed to extract text from Tiptap JSON {}: {}", fileName, e.getMessage());
       throw new InvalidStateException(
@@ -99,7 +113,12 @@ public class DocumentTextExtractorService {
     }
   }
 
-  private void extractTextNodes(JsonNode node, StringBuilder sb) {
+  private void extractTextNodes(JsonNode node, StringBuilder sb, int depth) {
+    if (depth > MAX_RECURSION_DEPTH) {
+      throw new InvalidStateException(
+          "UNSUPPORTED_DOCUMENT",
+          "Tiptap JSON exceeds maximum nesting depth of " + MAX_RECURSION_DEPTH);
+    }
     if (node.isObject()) {
       String type = node.path("type").asText();
 
@@ -114,7 +133,7 @@ public class DocumentTextExtractorService {
         JsonNode content = node.get("content");
         if (content != null && content.isArray()) {
           for (JsonNode child : content) {
-            extractTextNodes(child, sb);
+            extractTextNodes(child, sb, depth + 1);
           }
         }
         sb.append("\n");
@@ -125,12 +144,12 @@ public class DocumentTextExtractorService {
       JsonNode content = node.get("content");
       if (content != null && content.isArray()) {
         for (JsonNode child : content) {
-          extractTextNodes(child, sb);
+          extractTextNodes(child, sb, depth + 1);
         }
       }
     } else if (node.isArray()) {
       for (JsonNode child : node) {
-        extractTextNodes(child, sb);
+        extractTextNodes(child, sb, depth + 1);
       }
     }
   }

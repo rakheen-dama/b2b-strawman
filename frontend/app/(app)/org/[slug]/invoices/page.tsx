@@ -114,6 +114,11 @@ export default async function InvoicesPage({
 
   const statusOptions: InvoiceStatus[] = ["DRAFT", "APPROVED", "SENT", "PAID", "VOID"];
 
+  // Validate search.status against the whitelist — reject unknown values
+  const validatedStatus = statusOptions.includes(search.status as InvoiceStatus)
+    ? (search.status as InvoiceStatus)
+    : undefined;
+
   return (
     <div className="space-y-8">
       {/* Page Header */}
@@ -178,7 +183,7 @@ export default async function InvoicesPage({
         <Link
           href={`/org/${slug}/invoices`}
           className={`rounded-full px-3 py-1 text-sm transition-colors ${
-            !search.status
+            !validatedStatus
               ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
               : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
           }`}
@@ -190,7 +195,7 @@ export default async function InvoicesPage({
             key={status}
             href={`/org/${slug}/invoices?status=${status}`}
             className={`rounded-full px-3 py-1 text-sm transition-colors ${
-              search.status === status
+              validatedStatus === status
                 ? "bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900"
                 : "bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700"
             }`}
@@ -205,13 +210,13 @@ export default async function InvoicesPage({
         <EmptyState
           icon={Receipt}
           title={
-            search.status
-              ? <TerminologyText template={`No ${search.status.toLowerCase()} {invoices} found`} />
+            validatedStatus
+              ? <TerminologyText template={`No ${validatedStatus.toLowerCase()} {invoices} found`} />
               : <TerminologyText template={t("invoices.list.heading")} />
           }
           description={
-            search.status
-              ? <TerminologyText template={`No ${search.status.toLowerCase()} {invoices} found.`} />
+            validatedStatus
+              ? <TerminologyText template={`No ${validatedStatus.toLowerCase()} {invoices} found.`} />
               : <TerminologyText template={t("invoices.list.description")} />
           }
           secondaryLink={{ label: "Read the guide", href: docsLink("/features/invoicing") }}

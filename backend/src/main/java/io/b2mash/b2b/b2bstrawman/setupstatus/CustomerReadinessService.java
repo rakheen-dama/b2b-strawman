@@ -188,6 +188,14 @@ public class CustomerReadinessService {
             .orElseThrow(() -> new ResourceNotFoundException("Customer", customerId));
 
     Map<String, Object> customFields = customer.getCustomFields();
+    // OBS-5004: build effective values map including promoted structural field
+    Map<String, Object> effectiveValues = new HashMap<>();
+    if (customFields != null) {
+      effectiveValues.putAll(customFields);
+    }
+    if (customer.getEntityType() != null) {
+      effectiveValues.putIfAbsent("acct_entity_type", customer.getEntityType());
+    }
 
     var allDefs =
         fieldDefinitionRepository.findByEntityTypeAndActiveTrueOrderBySortOrder(
@@ -201,7 +209,11 @@ public class CustomerReadinessService {
       if (contexts == null || contexts.isEmpty()) {
         continue;
       }
-      Object value = customFields != null ? customFields.get(fd.getSlug()) : null;
+      // OBS-5004: skip fields hidden by visibility conditions
+      if (!CustomFieldUtils.isFieldVisible(fd, effectiveValues)) {
+        continue;
+      }
+      Object value = effectiveValues.get(fd.getSlug());
       boolean filled = CustomFieldUtils.isFieldValueFilled(fd, value);
       var fieldStatus = new FieldStatus(fd.getName(), fd.getSlug(), filled);
 
@@ -304,8 +316,21 @@ public class CustomerReadinessService {
 
     for (var customer : allCustomers) {
       Map<String, Object> customFields = customer.getCustomFields();
-      for (var fd : requiredDefs) {
-        Object value = customFields != null ? customFields.get(fd.getSlug()) : null;
+      // OBS-5004: build effective values map including promoted structural field
+      Map<String, Object> effectiveValues = new HashMap<>();
+      if (customFields != null) {
+        effectiveValues.putAll(customFields);
+      }
+      if (customer.getEntityType() != null) {
+        effectiveValues.putIfAbsent("acct_entity_type", customer.getEntityType());
+      }
+      // OBS-5004: filter out fields hidden by visibility conditions
+      var visibleDefs =
+          requiredDefs.stream()
+              .filter(fd -> CustomFieldUtils.isFieldVisible(fd, effectiveValues))
+              .toList();
+      for (var fd : visibleDefs) {
+        Object value = effectiveValues.get(fd.getSlug());
         if (!CustomFieldUtils.isFieldValueFilled(fd, value)) {
           slugToCount.merge(fd.getSlug(), 1, Integer::sum);
         }
@@ -347,10 +372,23 @@ public class CustomerReadinessService {
 
     for (var customer : allCustomers) {
       Map<String, Object> customFields = customer.getCustomFields();
-      int total = requiredDefs.size();
+      // OBS-5004: build effective values map including promoted structural field
+      Map<String, Object> effectiveValues = new HashMap<>();
+      if (customFields != null) {
+        effectiveValues.putAll(customFields);
+      }
+      if (customer.getEntityType() != null) {
+        effectiveValues.putIfAbsent("acct_entity_type", customer.getEntityType());
+      }
+      // OBS-5004: filter out fields hidden by visibility conditions
+      var visibleDefs =
+          requiredDefs.stream()
+              .filter(fd -> CustomFieldUtils.isFieldVisible(fd, effectiveValues))
+              .toList();
+      int total = visibleDefs.size();
       int filled = 0;
-      for (var fd : requiredDefs) {
-        Object value = customFields != null ? customFields.get(fd.getSlug()) : null;
+      for (var fd : visibleDefs) {
+        Object value = effectiveValues.get(fd.getSlug());
         if (CustomFieldUtils.isFieldValueFilled(fd, value)) {
           filled++;
         } else {

@@ -617,7 +617,7 @@
 | 542 | Compliance Audit Persistence + Finding Lifecycle | Backend | 538A, 541A | L | 542A, 542B | **Done** (PRs #1366, #1367) |
 | 543 | Gate Executors + StubAiProvider Extensions | Backend | 539A, 540A, 541A, 542A | M | 543A | **Done** (PR #1368) |
 | 544 | Contract Review Frontend | Frontend | 539A | M | 544A | **Done** (PR #1369) |
-| 545 | Drafting Frontend | Frontend | 540A | M | 545A | |
+| 545 | Drafting Frontend | Frontend | 540A | M | 545A | **Done** (PR #1370) |
 | 546 | Compliance Dashboard Extension (Frontend) | Frontend | 542A | L | 546A, 546B | |
 
 

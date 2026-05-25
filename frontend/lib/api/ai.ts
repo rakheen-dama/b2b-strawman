@@ -294,3 +294,75 @@ export async function invokeMatterIntake(
     description,
   });
 }
+
+// ---- Contract Review Types ----
+
+export interface DocumentClassification {
+  type: string;
+  subtype: string;
+  partiesIdentified: string[];
+}
+
+export interface ContractReviewFinding {
+  severity: "HIGH" | "MEDIUM" | "LOW";
+  category: string;
+  clauseReference: string;
+  title: string;
+  description: string;
+  riskExplanation: string;
+  recommendation: string;
+  statutoryReference: string;
+}
+
+export interface MissingProtection {
+  protection: string;
+  reasoning: string;
+  recommendation: string;
+  priority: string;
+}
+
+export interface ContractReviewRecommendedAction {
+  action: string;
+  reasoning: string;
+}
+
+export interface ContractReviewOutput {
+  documentClassification: DocumentClassification;
+  executiveSummary: string;
+  findings: ContractReviewFinding[];
+  missingProtections: MissingProtection[];
+  overallRiskAssessment: string;
+  recommendedActions: ContractReviewRecommendedAction[];
+}
+
+export interface ContractReviewResponse {
+  executionId: string;
+  status: "COMPLETED" | "FAILED";
+  output: ContractReviewOutput | null;
+  gates: AiGateListItem[];
+  costCents: number;
+  model: string;
+  durationMs: number;
+}
+
+// ---- Contract Review API Function ----
+
+export async function invokeContractReview(
+  documentId: string,
+  projectId: string
+): Promise<ContractReviewResponse> {
+  const raw = await api.post<{
+    executionId: string;
+    status: "COMPLETED" | "FAILED";
+    output: string | null;
+    gates: AiGateListItem[];
+    costCents: number;
+    model: string;
+    durationMs: number;
+  }>("/api/ai/skills/contract-review", { documentId, projectId });
+
+  return {
+    ...raw,
+    output: raw.output ? (JSON.parse(raw.output) as ContractReviewOutput) : null,
+  };
+}

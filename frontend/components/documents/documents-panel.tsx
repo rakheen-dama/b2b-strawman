@@ -12,6 +12,7 @@ import {
   Loader2,
   ChevronDown,
   ChevronRight,
+  Sparkles,
 } from "lucide-react";
 import { CommentSectionClient } from "@/components/comments/comment-section-client";
 import { Button } from "@/components/ui/button";
@@ -42,6 +43,7 @@ import {
 } from "@/app/(app)/org/[slug]/projects/[id]/actions";
 import { cn } from "@/lib/utils";
 import { createMessages } from "@/lib/messages";
+import { ContractReviewButton, isReviewableDocument } from "@/components/ai/contract-review-button";
 import type { Document, DocumentStatus, DocumentScope } from "@/lib/types";
 
 // --- Upload state reducer ---
@@ -133,6 +135,12 @@ interface DocumentsPanelProps {
   currentMemberId?: string | null;
   /** Whether current user can manage comment visibility (admin/owner/lead) */
   canManageVisibility?: boolean;
+  /** Whether AI is configured for this org (cold-start completed) */
+  isAiConfigured?: boolean;
+  /** Whether the current user can approve/reject AI gates (AI_REVIEW capability) */
+  canReviewGates?: boolean;
+  /** Whether the current user can invoke AI skills (AI_EXECUTE capability) */
+  canExecuteAi?: boolean;
 }
 
 export function DocumentsPanel({
@@ -142,6 +150,9 @@ export function DocumentsPanel({
   showScope = false,
   currentMemberId,
   canManageVisibility = false,
+  isAiConfigured = false,
+  canReviewGates = false,
+  canExecuteAi = false,
 }: DocumentsPanelProps) {
   const router = useRouter();
   const { t } = createMessages("empty-states");
@@ -149,6 +160,7 @@ export function DocumentsPanel({
   const xhrMapRef = useRef<Map<string, XMLHttpRequest>>(new Map());
   const fileMapRef = useRef<Map<string, { file: File; mimeType: string }>>(new Map());
   const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
+  const [reviewDocId, setReviewDocId] = useState<string | null>(null);
 
   // Cleanup: abort all in-flight uploads on unmount
   useEffect(() => {
@@ -371,7 +383,7 @@ export function DocumentsPanel({
                 <TableHead className="hidden text-xs tracking-wide text-slate-600 uppercase sm:table-cell dark:text-slate-400">
                   Uploaded
                 </TableHead>
-                <TableHead className="w-[60px]" />
+                <TableHead className="w-[100px]" />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -431,11 +443,44 @@ export function DocumentsPanel({
                         </span>
                       </TableCell>
                       <TableCell>
-                        {doc.status === "UPLOADED" && (
-                          <DownloadButton documentId={doc.id} fileName={doc.fileName} />
-                        )}
+                        <div className="flex items-center gap-1">
+                          {doc.status === "UPLOADED" && (
+                            <DownloadButton documentId={doc.id} fileName={doc.fileName} />
+                          )}
+                          {canExecuteAi && isReviewableDocument(doc.contentType, doc.status) && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="size-8"
+                              onClick={() =>
+                                setReviewDocId(reviewDocId === doc.id ? null : doc.id)
+                              }
+                              aria-label={`Review ${doc.fileName} with AI`}
+                            >
+                              <Sparkles className="size-4 text-teal-600 dark:text-teal-400" />
+                            </Button>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
+                    {/* AI Contract Review expandable panel */}
+                    {isReviewableDocument(doc.contentType, doc.status) && reviewDocId === doc.id && (
+                      <TableRow className="border-slate-100 dark:border-slate-800/50">
+                        <TableCell
+                          colSpan={colSpan}
+                          className="bg-slate-50/30 px-6 py-4 dark:bg-slate-900/30"
+                        >
+                          <ContractReviewButton
+                            documentId={doc.id}
+                            projectId={projectId}
+                            slug={slug}
+                            isAiConfigured={isAiConfigured}
+                            canExecuteAi={canExecuteAi}
+                            canReviewGates={canReviewGates}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    )}
                     {isExpanded && (
                       <TableRow className="border-slate-100 dark:border-slate-800/50">
                         <TableCell

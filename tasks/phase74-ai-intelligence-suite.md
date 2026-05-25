@@ -32,7 +32,7 @@ Phase 74 delivers three new AI skills -- contract review, template-guided drafti
 | 543 | Gate Executors + StubAiProvider Extensions | Backend | 539A, 540A, 541A, 542A | M | 543A | **Done** (PR #1368) |
 | 544 | Contract Review Frontend | Frontend | 539A | M | 544A | **Done** (PR #1369) |
 | 545 | Drafting Frontend | Frontend | 540A | M | 545A | **Done** (PR #1370) |
-| 546 | Compliance Dashboard Extension (Frontend) | Frontend | 542A | L | 546A, 546B | |
+| 546 | Compliance Dashboard Extension (Frontend) | Frontend | 542A | L | 546A, 546B | **Done** (PR #1371) |
 
 **Slice count: 14** (9 architecture slices expanded to 14 numbered slices to enforce the backend-frontend separation rule, split heavy backends into sub-slices, and honour the 6-10 files / ~800 LOC slice-sizing budget).
 
@@ -192,8 +192,8 @@ PHASES already complete:
 |-------|-------|---------|-----------------------|
 | 5a | **544A** | Contract review button on matter documents tab; review results panel; API hooks; loading/error states. | 545A, 546A | **Done** (PR #1369) |
 | 5b | **545A** | Drafting dialog (template selector + AI processing + variable editing + clause recommendations); drafting variable table with confidence badges; API hooks. | 544A, 546A | **Done** (PR #1370) |
-| 5c | **546A** | Compliance audit tab on compliance dashboard; "Run AI Audit" button; audit summary (grade badge, category scores); audit history panel; API hooks. | 544A, 545A |
-| 5d | **546B** | Compliance finding list with severity/category/status filters; finding detail dialog with resolution workflow; finding status transitions. | After 546A |
+| 5c | **546A** | Compliance audit tab on compliance dashboard; "Run AI Audit" button; audit summary (grade badge, category scores); audit history panel; API hooks. | 544A, 545A | **Done** (PR #1371) |
+| 5d | **546B** | Compliance finding list with severity/category/status filters; finding detail dialog with resolution workflow; finding status transitions. | After 546A | **Done** (PR #1371) |
 
 ### Timeline
 
@@ -757,8 +757,8 @@ A realistic day-by-day cadence: 538A days 1-2; 538B days 2-4; 539A + 540A + 541A
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **546A** | 546A.1-546A.5 | ~7 frontend files (3 new components + 1 page modification + 1 API client file + 1 actions file + 1 type file) | "AI Audit" tab on compliance dashboard; "Run AI Audit" button; audit summary (grade, category scores); audit history panel; API hooks. |
-| **546B** | 546B.1-546B.4 | ~5 frontend files (2 new components + 1 API client extension + 1 actions extension + 1 type extension) | Finding list with filters; finding detail dialog with resolution workflow; status transition actions. |
+| **546A** | 546A.1-546A.5 | ~7 frontend files (3 new components + 1 page modification + 1 API client file + 1 actions file + 1 type file) | "AI Audit" tab on compliance dashboard; "Run AI Audit" button; audit summary (grade, category scores); audit history panel; API hooks. | **Done** (PR #1371) |
+| **546B** | 546B.1-546B.4 | ~5 frontend files (2 new components + 1 API client extension + 1 actions extension + 1 type extension) | Finding list with filters; finding detail dialog with resolution workflow; status transition actions. | **Done** (PR #1371) |
 
 ### Tasks
 

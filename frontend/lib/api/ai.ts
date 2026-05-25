@@ -361,8 +361,17 @@ export async function invokeContractReview(
     durationMs: number;
   }>("/api/ai/skills/contract-review", { documentId, projectId });
 
+  let parsedOutput: ContractReviewOutput | null = null;
+  if (raw.output) {
+    try {
+      parsedOutput = JSON.parse(raw.output) as ContractReviewOutput;
+    } catch {
+      parsedOutput = null;
+    }
+  }
+
   return {
     ...raw,
-    output: raw.output ? (JSON.parse(raw.output) as ContractReviewOutput) : null,
+    output: parsedOutput,
   };
 }

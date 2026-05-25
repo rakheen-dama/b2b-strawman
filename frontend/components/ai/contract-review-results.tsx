@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronRight, AlertTriangle, Shield, Scale } from "lucide-react";
 import type { ContractReviewOutput, ContractReviewFinding } from "@/lib/api/ai";
 
@@ -56,6 +55,7 @@ function FindingCard({ finding }: { finding: ContractReviewFinding }) {
       <button
         type="button"
         className="flex w-full items-center gap-2 px-4 py-3 text-left"
+        aria-expanded={expanded}
         onClick={() => setExpanded(!expanded)}
       >
         {expanded ? (

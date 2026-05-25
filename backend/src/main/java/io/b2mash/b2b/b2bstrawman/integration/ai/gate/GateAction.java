@@ -24,7 +24,7 @@ public sealed interface GateAction
 
   record ClearConflictAction(UUID conflictCheckId, String clearanceNotes) implements GateAction {}
 
-  record CreateReviewReportAction(UUID projectId, Map<String, Object> reviewOutput)
+  record CreateReviewReportAction(UUID projectId, UUID documentId, Map<String, Object> reviewOutput)
       implements GateAction {}
 
   record CreateDraftDocumentAction(UUID templateId, UUID projectId, Map<String, Object> draftOutput)

@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 class GateActionExecutorTest {
 
@@ -36,7 +36,7 @@ class GateActionExecutorTest {
             mock(AiReviewReportGenerator.class),
             mock(AiDraftDocumentGenerator.class),
             mock(ComplianceAuditReportService.class),
-            new ObjectMapper());
+            JsonMapper.builder().findAndAddModules().build());
   }
 
   @Test

@@ -172,10 +172,14 @@ public class ContractReviewSkill implements AiSkill {
     }
 
     // Wrap the output with context IDs needed by the gate executor
+    UUID documentId = execution.getEntityId();
     Map<String, Object> reviewOutput =
         objectMapper.convertValue(output, new TypeReference<Map<String, Object>>() {});
     Map<String, Object> proposedAction =
-        Map.of("project_id", projectId.toString(), "review_output", reviewOutput);
+        Map.of(
+            "project_id", projectId.toString(),
+            "document_id", documentId.toString(),
+            "review_output", reviewOutput);
 
     var gate =
         new AiExecutionGate(

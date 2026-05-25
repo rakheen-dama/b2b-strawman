@@ -252,6 +252,10 @@ public class DraftingSkill implements AiSkill {
 
     // Extract templateId from execution context (set by controller)
     Object templateIdObj = context.additionalContext().get("templateId");
+    if (templateIdObj == null) {
+      throw new InvalidStateException(
+          "Missing context", "templateId is required for drafting skill");
+    }
     UUID templateId =
         templateIdObj instanceof UUID u ? u : UUID.fromString(templateIdObj.toString());
     UUID projectId = execution.getEntityId();

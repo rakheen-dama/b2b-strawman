@@ -173,6 +173,56 @@ public class AiSkillExecutionService {
     return new SkillExecutionResult(execution, gates);
   }
 
+  // ── Typed convenience methods for controller one-liners ──────────────────
+
+  private static final UUID FIRM_SENTINEL_ID =
+      UUID.fromString("00000000-0000-0000-0000-000000000000");
+
+  @Transactional
+  public SkillExecutionResult executeFicaVerification(UUID customerId, UUID memberId) {
+    var context =
+        new SkillContext(
+            customerId, "CUSTOMER", "FICA verification for customer " + customerId, Map.of());
+    return executeSkill("fica-verification", context, memberId, List.of());
+  }
+
+  @Transactional
+  public SkillExecutionResult executeMatterIntake(
+      UUID customerId, String description, UUID memberId) {
+    var context =
+        new SkillContext(customerId, "CUSTOMER", description, Map.of("description", description));
+    return executeSkill("matter-intake", context, memberId, List.of());
+  }
+
+  @Transactional
+  public SkillExecutionResult executeContractReview(
+      UUID documentId, UUID projectId, UUID memberId) {
+    var context =
+        new SkillContext(
+            documentId,
+            "DOCUMENT",
+            "Contract review for document " + documentId,
+            Map.of("projectId", projectId));
+    return executeSkill("contract-review", context, memberId, List.of());
+  }
+
+  @Transactional
+  public SkillExecutionResult executeDrafting(UUID templateId, UUID projectId, UUID memberId) {
+    var context =
+        new SkillContext(
+            projectId,
+            "PROJECT",
+            "AI drafting for project " + projectId,
+            Map.of("templateId", templateId));
+    return executeSkill("drafting", context, memberId, List.of());
+  }
+
+  @Transactional
+  public SkillExecutionResult executeComplianceAudit(UUID memberId) {
+    var context = new SkillContext(FIRM_SENTINEL_ID, "FIRM", "Compliance audit for firm", Map.of());
+    return executeSkill("compliance-audit", context, memberId, List.of());
+  }
+
   /**
    * Resolve the AI provider for the current tenant. Uses the IntegrationRegistry which returns the
    * configured provider (e.g. AnthropicAiProvider) or NoOpAiProvider when no integration is set up.

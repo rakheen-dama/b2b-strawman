@@ -316,7 +316,7 @@ class AiSkillEndToEndTest {
 
   @Test
   @Order(7)
-  void gateRejection_leavesNoDownstreamEffects() throws Exception {
+  void contractReviewGateRejection_leavesNoDownstreamEffects() throws Exception {
     // Record baseline document count
     int[] baselineCount = new int[1];
     runInTenant(
@@ -359,6 +359,56 @@ class AiSkillEndToEndTest {
         () -> {
           int afterCount = documentRepository.findProjectScopedByProjectId(projectId).size();
           assertThat(afterCount).isEqualTo(baselineCount[0]);
+        });
+  }
+
+  @Test
+  @Order(10)
+  void complianceAuditGateRejection_leavesNoDownstreamEffects() throws Exception {
+    // Record baseline report count
+    long[] baselineReportCount = new long[1];
+    runInTenant(
+        () -> {
+          baselineReportCount[0] =
+              complianceAuditReportRepository
+                  .findByStatusOrderByCreatedAtDesc("PUBLISHED", Pageable.unpaged())
+                  .getTotalElements();
+        });
+
+    // Step 1: Execute compliance audit skill to get a gate
+    var skillResult =
+        mockMvc
+            .perform(
+                post("/api/ai/skills/compliance-audit")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_e2e_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{}"))
+            .andExpect(status().isOk())
+            .andReturn();
+
+    String gateId = JsonPath.read(skillResult.getResponse().getContentAsString(), "$.gates[0].id");
+
+    // Step 2: Reject the gate
+    mockMvc
+        .perform(
+            post("/api/ai/gates/" + gateId + "/reject")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_e2e_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"notes":"Audit findings rejected"}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("REJECTED"));
+
+    // Step 3: Verify no new compliance audit report was published (count unchanged)
+    runInTenant(
+        () -> {
+          long afterCount =
+              complianceAuditReportRepository
+                  .findByStatusOrderByCreatedAtDesc("PUBLISHED", Pageable.unpaged())
+                  .getTotalElements();
+          assertThat(afterCount).isEqualTo(baselineReportCount[0]);
         });
   }
 

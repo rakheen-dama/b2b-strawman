@@ -131,9 +131,10 @@ public class GateActionExecutor {
         }
         case "CREATE_REVIEW_REPORT" -> {
           UUID projectId = UUID.fromString((String) proposedAction.get("project_id"));
+          UUID documentId = UUID.fromString((String) proposedAction.get("document_id"));
           Map<String, Object> reviewOutput =
               (Map<String, Object>) proposedAction.get("review_output");
-          yield new GateAction.CreateReviewReportAction(projectId, reviewOutput);
+          yield new GateAction.CreateReviewReportAction(projectId, documentId, reviewOutput);
         }
         case "CREATE_DRAFT_DOCUMENT" -> {
           UUID draftTemplateId = UUID.fromString((String) proposedAction.get("template_id"));

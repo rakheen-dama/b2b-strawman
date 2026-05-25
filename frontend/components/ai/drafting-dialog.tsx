@@ -25,6 +25,7 @@ import { DraftingVariableTable } from "@/components/ai/drafting-variable-table";
 import { ExecutionGateCard } from "@/components/ai/execution-gate-card";
 import { invokeDraftingAction } from "@/app/(app)/org/[slug]/projects/[id]/ai-review-actions";
 import { approveGateAction, rejectGateAction } from "@/app/(app)/org/[slug]/ai/reviews/actions";
+import { draftingVariableFillsSchema } from "@/lib/schemas/drafting";
 import {
   AlertTriangle,
   ChevronDown,
@@ -34,6 +35,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import Link from "next/link";
+import { toast } from "sonner";
 import type { DraftingResponse, VariableFill } from "@/lib/api/ai";
 import type { TemplateListResponse } from "@/lib/types";
 
@@ -113,6 +115,12 @@ export function DraftingDialog({
   }
 
   function handleConfirm() {
+    const validation = draftingVariableFillsSchema.safeParse({ variableFills });
+    if (!validation.success) {
+      const firstError = validation.error.issues[0];
+      toast.error(firstError?.message ?? "Variable fills validation failed.");
+      return;
+    }
     setStep("CONFIRMED");
   }
 
@@ -156,7 +164,7 @@ export function DraftingDialog({
             {step === "LOADING" && "AI is analyzing matter data and preparing the draft..."}
             {step === "RESULTS" &&
               "Review the AI-generated draft below. Edit variables and select clauses before creating."}
-            {step === "CONFIRMED" && "Draft document gate has been created."}
+            {step === "CONFIRMED" && "Review the gate below to approve or reject the draft."}
           </DialogDescription>
         </DialogHeader>
 
@@ -401,6 +409,12 @@ export function DraftingDialog({
                 Generate Draft
               </Button>
             </>
+          )}
+
+          {step === "LOADING" && (
+            <Button variant="outline" disabled>
+              Cancel
+            </Button>
           )}
 
           {step === "RESULTS" && (

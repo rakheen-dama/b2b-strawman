@@ -356,46 +356,40 @@ export function DocumentsPanel({
     dispatch({ type: "REMOVE", id });
   }, []);
 
+  const draftDisabledReason = !isAiConfigured
+    ? "Connect an Anthropic API key in Settings > AI to use this feature."
+    : !canExecuteAi
+      ? "You do not have permission to invoke AI skills."
+      : templates.filter((t) => t.active).length === 0
+        ? "Create a document template first."
+        : null;
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="font-semibold text-slate-900 dark:text-slate-100">Documents</h2>
-        {(() => {
-          const draftDisabledReason = !isAiConfigured
-            ? "Connect an Anthropic API key in Settings > AI to use this feature."
-            : !canExecuteAi
-              ? "You do not have permission to invoke AI skills."
-              : templates.length === 0
-                ? "Create a document template first."
-                : null;
-
-          if (draftDisabledReason) {
-            return (
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <span tabIndex={0}>
-                      <Button variant="accent" size="sm" disabled>
-                        <Sparkles className="mr-1.5 size-3.5" />
-                        Draft with AI
-                      </Button>
-                    </span>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{draftDisabledReason}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            );
-          }
-
-          return (
-            <Button variant="accent" size="sm" onClick={() => setDraftingOpen(true)}>
-              <Sparkles className="mr-1.5 size-3.5" />
-              Draft with AI
-            </Button>
-          );
-        })()}
+        {draftDisabledReason ? (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span tabIndex={0}>
+                  <Button variant="accent" size="sm" disabled>
+                    <Sparkles className="mr-1.5 size-3.5" />
+                    Draft with AI
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{draftDisabledReason}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          <Button variant="accent" size="sm" onClick={() => setDraftingOpen(true)}>
+            <Sparkles className="mr-1.5 size-3.5" />
+            Draft with AI
+          </Button>
+        )}
       </div>
 
       <DraftingDialog

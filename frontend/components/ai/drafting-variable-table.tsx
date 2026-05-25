@@ -84,8 +84,11 @@ export function DraftingVariableTable({ variableFills, onChange }: DraftingVaria
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sorted.map((fill) => (
-            <TableRow key={fill.variableName} className="border-slate-100 dark:border-slate-800/50">
+          {sorted.map((fill, i) => (
+            <TableRow
+              key={fill.variableName + "-" + i}
+              className="border-slate-100 dark:border-slate-800/50"
+            >
               <TableCell>
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm font-medium text-slate-950 dark:text-slate-50">

@@ -7,6 +7,7 @@ export const variableFillSchema = z.object({
   value: z.string().nullable(),
   source: z.string(),
   confidence: confidenceEnum,
+  flag: z.string().nullable().optional(),
 });
 
 export const draftingVariableFillsSchema = z.object({

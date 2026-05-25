@@ -21,6 +21,12 @@ import {
 import { ChevronLeft, ChevronRight, Filter } from "lucide-react";
 import { ComplianceFindingDetail } from "@/components/ai/compliance-finding-detail";
 import { fetchAuditFindingsAction } from "@/app/(app)/org/[slug]/compliance/actions";
+import {
+  getSeverityBadgeVariant,
+  getStatusBadgeVariant,
+  formatCategoryName,
+  formatStatusName,
+} from "@/components/ai/compliance-finding-utils";
 import type {
   ComplianceAuditFindingResponse,
   FindingFilters,
@@ -30,6 +36,7 @@ import type {
 interface ComplianceFindingListProps {
   reportId: string;
   slug: string;
+  canReview: boolean;
 }
 
 const SEVERITY_OPTIONS = ["CRITICAL", "HIGH", "MEDIUM", "LOW", "INFO"];
@@ -42,57 +49,7 @@ const CATEGORY_OPTIONS = [
 ];
 const STATUS_OPTIONS = ["OPEN", "ACKNOWLEDGED", "IN_PROGRESS", "RESOLVED", "FALSE_POSITIVE"];
 
-function getSeverityBadgeVariant(
-  severity: string
-): "destructive" | "warning" | "success" | "neutral" {
-  switch (severity.toUpperCase()) {
-    case "CRITICAL":
-      return "destructive";
-    case "HIGH":
-      return "destructive";
-    case "MEDIUM":
-      return "warning";
-    case "LOW":
-      return "success";
-    case "INFO":
-      return "neutral";
-    default:
-      return "neutral";
-  }
-}
-
-function getStatusBadgeVariant(status: string): "destructive" | "warning" | "success" | "neutral" {
-  switch (status.toUpperCase()) {
-    case "OPEN":
-      return "destructive";
-    case "ACKNOWLEDGED":
-      return "warning";
-    case "IN_PROGRESS":
-      return "warning";
-    case "RESOLVED":
-      return "success";
-    case "FALSE_POSITIVE":
-      return "neutral";
-    default:
-      return "neutral";
-  }
-}
-
-function formatCategoryName(category: string): string {
-  return category
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function formatStatusName(status: string): string {
-  return status
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-export function ComplianceFindingList({ reportId, slug }: ComplianceFindingListProps) {
+export function ComplianceFindingList({ reportId, slug, canReview }: ComplianceFindingListProps) {
   const [findings, setFindings] =
     useState<PaginatedResponse<ComplianceAuditFindingResponse> | null>(null);
   const [filters, setFilters] = useState<FindingFilters>({});
@@ -295,6 +252,7 @@ export function ComplianceFindingList({ reportId, slug }: ComplianceFindingListP
             if (!open) setSelectedFinding(null);
           }}
           onStatusChange={handleStatusChange}
+          canReview={canReview}
         />
       )}
     </div>

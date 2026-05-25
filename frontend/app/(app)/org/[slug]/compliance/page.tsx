@@ -50,7 +50,7 @@ export default async function ComplianceDashboardPage({
     content: [],
     page: { totalElements: 0, totalPages: 0, size: 10, number: 0 },
   };
-  if (isAiConfigured) {
+  if (isAiConfigured && capData.capabilities.includes("AI_MANAGE")) {
     try {
       initialReports = await getAuditReports(0, 10);
     } catch {

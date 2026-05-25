@@ -21,6 +21,12 @@ import {
   resolveFindingAction,
   markFalsePositiveAction,
 } from "@/app/(app)/org/[slug]/compliance/actions";
+import {
+  getSeverityBadgeVariant,
+  getStatusBadgeVariant,
+  formatCategoryName,
+  formatStatusName,
+} from "@/components/ai/compliance-finding-utils";
 import type { ComplianceAuditFindingResponse } from "@/lib/api/compliance-audit";
 
 interface ComplianceFindingDetailProps {
@@ -30,56 +36,7 @@ interface ComplianceFindingDetailProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onStatusChange: () => void;
-}
-
-function getSeverityBadgeVariant(
-  severity: string
-): "destructive" | "warning" | "success" | "neutral" {
-  switch (severity.toUpperCase()) {
-    case "CRITICAL":
-      return "destructive";
-    case "HIGH":
-      return "destructive";
-    case "MEDIUM":
-      return "warning";
-    case "LOW":
-      return "success";
-    case "INFO":
-      return "neutral";
-    default:
-      return "neutral";
-  }
-}
-
-function getStatusBadgeVariant(status: string): "destructive" | "warning" | "success" | "neutral" {
-  switch (status.toUpperCase()) {
-    case "OPEN":
-      return "destructive";
-    case "ACKNOWLEDGED":
-      return "warning";
-    case "IN_PROGRESS":
-      return "warning";
-    case "RESOLVED":
-      return "success";
-    case "FALSE_POSITIVE":
-      return "neutral";
-    default:
-      return "neutral";
-  }
-}
-
-function formatCategoryName(category: string): string {
-  return category
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
-}
-
-function formatStatusName(status: string): string {
-  return status
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
+  canReview: boolean;
 }
 
 export function ComplianceFindingDetail({
@@ -89,6 +46,7 @@ export function ComplianceFindingDetail({
   open,
   onOpenChange,
   onStatusChange,
+  canReview,
 }: ComplianceFindingDetailProps) {
   const [confirmAction, setConfirmAction] = useState<"resolve" | "false_positive" | null>(null);
   const [resolutionNotes, setResolutionNotes] = useState("");
@@ -247,19 +205,19 @@ export function ComplianceFindingDetail({
             )}
 
             {/* Status Transition Buttons */}
-            {finding.status === "OPEN" && (
+            {canReview && finding.status === "OPEN" && (
               <Button variant="accent" size="sm" disabled={isPending} onClick={handleAcknowledge}>
                 Acknowledge
               </Button>
             )}
 
-            {finding.status === "ACKNOWLEDGED" && (
+            {canReview && finding.status === "ACKNOWLEDGED" && (
               <Button variant="accent" size="sm" disabled={isPending} onClick={handleStartProgress}>
                 Start Progress
               </Button>
             )}
 
-            {finding.status === "IN_PROGRESS" && (
+            {canReview && finding.status === "IN_PROGRESS" && (
               <div className="flex items-center gap-2">
                 <Button
                   variant="accent"

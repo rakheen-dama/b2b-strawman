@@ -10,44 +10,24 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  getSeverityBadgeVariant,
+  formatCategoryName,
+} from "@/components/ai/compliance-finding-utils";
 import type { ComplianceAuditReportResponse, CategoryScore } from "@/lib/api/compliance-audit";
 
 interface ComplianceAuditSummaryProps {
   report: ComplianceAuditReportResponse;
 }
 
-function getGradeBadgeVariant(grade: string): "success" | "warning" | "destructive" | "neutral" {
+export function getGradeBadgeVariant(
+  grade: string
+): "success" | "warning" | "destructive" | "neutral" {
   const letter = grade.replace(/[+-]/g, "");
   if (letter === "A" || letter === "B") return "success";
   if (letter === "C") return "warning";
   if (letter === "D" || letter === "F") return "destructive";
   return "neutral";
-}
-
-function getSeverityBadgeVariant(
-  severity: string
-): "destructive" | "warning" | "success" | "neutral" {
-  switch (severity.toUpperCase()) {
-    case "CRITICAL":
-      return "destructive";
-    case "HIGH":
-      return "destructive";
-    case "MEDIUM":
-      return "warning";
-    case "LOW":
-      return "success";
-    case "INFO":
-      return "neutral";
-    default:
-      return "neutral";
-  }
-}
-
-function formatCategoryName(key: string): string {
-  return key
-    .replace(/_/g, " ")
-    .toLowerCase()
-    .replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
 export function ComplianceAuditSummary({ report }: ComplianceAuditSummaryProps) {

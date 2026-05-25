@@ -171,6 +171,11 @@ export async function fetchAuditReportsAction(
   error?: string;
   data?: PaginatedResponse<ComplianceAuditReportResponse>;
 }> {
+  const caps = await fetchMyCapabilities();
+  if (!caps.capabilities.includes("AI_MANAGE")) {
+    return { success: false, error: "You do not have permission to view audit reports." };
+  }
+
   try {
     const data = await getAuditReports(page, size);
     return { success: true, data };
@@ -193,6 +198,11 @@ export async function fetchAuditFindingsAction(
   error?: string;
   data?: PaginatedResponse<ComplianceAuditFindingResponse>;
 }> {
+  const caps = await fetchMyCapabilities();
+  if (!caps.capabilities.includes("AI_MANAGE")) {
+    return { success: false, error: "You do not have permission to view audit findings." };
+  }
+
   try {
     const data = await getAuditFindings(reportId, filters, page, size);
     return { success: true, data };

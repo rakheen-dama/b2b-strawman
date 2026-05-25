@@ -6,7 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ChevronDown, ChevronRight, Loader2, Sparkles } from "lucide-react";
-import { ComplianceAuditSummary } from "@/components/ai/compliance-audit-summary";
+import {
+  ComplianceAuditSummary,
+  getGradeBadgeVariant,
+} from "@/components/ai/compliance-audit-summary";
 import { ComplianceFindingList } from "@/components/ai/compliance-finding-list";
 import { ExecutionGateCard } from "@/components/ai/execution-gate-card";
 import {
@@ -33,14 +36,6 @@ type TabState =
   | { phase: "LOADING" }
   | { phase: "SUCCESS"; result: ComplianceAuditInvokeResponse }
   | { phase: "ERROR"; message: string };
-
-function getGradeBadgeVariant(grade: string): "success" | "warning" | "destructive" | "neutral" {
-  const letter = grade.replace(/[+-]/g, "");
-  if (letter === "A" || letter === "B") return "success";
-  if (letter === "C") return "warning";
-  if (letter === "D" || letter === "F") return "destructive";
-  return "neutral";
-}
 
 function getDisabledReason(isAiConfigured: boolean, canExecuteAi: boolean): string | null {
   if (!isAiConfigured) {
@@ -218,7 +213,11 @@ export function ComplianceAuditTab({
           <ComplianceAuditSummary report={latestReport} />
 
           {/* Finding List for latest report */}
-          <ComplianceFindingList reportId={latestReport.id} slug={slug} />
+          <ComplianceFindingList
+            reportId={latestReport.id}
+            slug={slug}
+            canReview={canReviewGates}
+          />
         </div>
       ) : (
         state.phase === "IDLE" && (
@@ -274,7 +273,11 @@ export function ComplianceAuditTab({
                 <CardContent className="pt-0">
                   <ComplianceAuditSummary report={report} />
                   <div className="mt-4">
-                    <ComplianceFindingList reportId={report.id} slug={slug} />
+                    <ComplianceFindingList
+                      reportId={report.id}
+                      slug={slug}
+                      canReview={canReviewGates}
+                    />
                   </div>
                 </CardContent>
               )}

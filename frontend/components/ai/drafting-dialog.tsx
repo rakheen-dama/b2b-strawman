@@ -94,7 +94,7 @@ export function DraftingDialog({
     startTransition(async () => {
       try {
         const actionResult = await invokeDraftingAction(slug, projectId, selectedTemplateId);
-        if (actionResult.success && actionResult.data) {
+        if (actionResult.success && actionResult.data?.output) {
           setResult(actionResult.data);
           setVariableFills(actionResult.data.output?.variableFills ?? []);
           // Pre-select all clause recommendations
@@ -104,7 +104,7 @@ export function DraftingDialog({
           setSelectedClauses(clauseIds);
           setStep("RESULTS");
         } else {
-          setError(actionResult.error ?? "Drafting failed.");
+          setError(actionResult.error ?? "Drafting returned no output. Please try again.");
           setStep("SELECT_TEMPLATE");
         }
       } catch {

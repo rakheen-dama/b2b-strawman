@@ -44,7 +44,9 @@ import {
 import { cn } from "@/lib/utils";
 import { createMessages } from "@/lib/messages";
 import { ContractReviewButton, isReviewableDocument } from "@/components/ai/contract-review-button";
-import type { Document, DocumentStatus, DocumentScope } from "@/lib/types";
+import { DraftingDialog } from "@/components/ai/drafting-dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import type { Document, DocumentStatus, DocumentScope, TemplateListResponse } from "@/lib/types";
 
 // --- Upload state reducer ---
 
@@ -141,6 +143,8 @@ interface DocumentsPanelProps {
   canReviewGates?: boolean;
   /** Whether the current user can invoke AI skills (AI_EXECUTE capability) */
   canExecuteAi?: boolean;
+  /** Available document templates for AI drafting */
+  templates?: TemplateListResponse[];
 }
 
 export function DocumentsPanel({
@@ -153,6 +157,7 @@ export function DocumentsPanel({
   isAiConfigured = false,
   canReviewGates = false,
   canExecuteAi = false,
+  templates = [],
 }: DocumentsPanelProps) {
   const router = useRouter();
   const { t } = createMessages("empty-states");
@@ -161,6 +166,7 @@ export function DocumentsPanel({
   const fileMapRef = useRef<Map<string, { file: File; mimeType: string }>>(new Map());
   const [expandedDocId, setExpandedDocId] = useState<string | null>(null);
   const [reviewDocId, setReviewDocId] = useState<string | null>(null);
+  const [draftingOpen, setDraftingOpen] = useState(false);
 
   // Cleanup: abort all in-flight uploads on unmount
   useEffect(() => {
@@ -350,9 +356,50 @@ export function DocumentsPanel({
     dispatch({ type: "REMOVE", id });
   }, []);
 
+  const draftDisabledReason = !isAiConfigured
+    ? "Connect an Anthropic API key in Settings > AI to use this feature."
+    : !canExecuteAi
+      ? "You do not have permission to invoke AI skills."
+      : templates.filter((t) => t.active).length === 0
+        ? "Create a document template first."
+        : null;
+
   return (
     <div className="space-y-4">
-      <h2 className="font-semibold text-slate-900 dark:text-slate-100">Documents</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="font-semibold text-slate-900 dark:text-slate-100">Documents</h2>
+        {draftDisabledReason ? (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span tabIndex={0}>
+                  <Button variant="accent" size="sm" disabled>
+                    <Sparkles className="mr-1.5 size-3.5" />
+                    Draft with AI
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{draftDisabledReason}</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          <Button variant="accent" size="sm" onClick={() => setDraftingOpen(true)}>
+            <Sparkles className="mr-1.5 size-3.5" />
+            Draft with AI
+          </Button>
+        )}
+      </div>
+
+      <DraftingDialog
+        projectId={projectId}
+        slug={slug}
+        isOpen={draftingOpen}
+        onClose={() => setDraftingOpen(false)}
+        templates={templates}
+        canReviewGates={canReviewGates}
+      />
 
       {documents.length === 0 && uploads.length === 0 ? (
         <EmptyState

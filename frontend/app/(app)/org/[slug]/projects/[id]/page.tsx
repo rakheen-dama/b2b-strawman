@@ -535,6 +535,7 @@ export default async function ProjectDetailPage({
             isAiConfigured={isAiConfigured}
             canReviewGates={canReviewGates}
             canExecuteAi={canExecuteAi}
+            templates={projectTemplates}
           />
         }
         customersPanel={

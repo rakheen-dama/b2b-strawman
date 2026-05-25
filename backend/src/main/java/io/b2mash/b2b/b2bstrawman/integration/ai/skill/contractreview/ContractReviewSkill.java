@@ -145,7 +145,8 @@ public class ContractReviewSkill implements AiSkill {
   }
 
   @Override
-  public List<AiExecutionGate> createGates(AiExecution execution, String outputContent) {
+  public List<AiExecutionGate> createGates(
+      AiExecution execution, String outputContent, SkillContext context) {
     ContractReviewOutput output;
     try {
       output = objectMapper.readValue(outputContent, ContractReviewOutput.class);
@@ -155,9 +156,30 @@ public class ContractReviewSkill implements AiSkill {
           "AI response could not be parsed as valid contract review output: " + e.getMessage());
     }
 
-    // One gate per execution with the parsed output as proposed_action
-    Map<String, Object> proposedAction =
+    // Extract projectId: prefer context, fall back to document's project
+    Object projectIdObj = context.additionalContext().get("projectId");
+    UUID projectId;
+    if (projectIdObj != null) {
+      projectId = projectIdObj instanceof UUID u ? u : UUID.fromString(projectIdObj.toString());
+    } else {
+      // Fall back: look up the document to find its project
+      UUID documentId = execution.getEntityId();
+      Document document =
+          documentRepository
+              .findById(documentId)
+              .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
+      projectId = document.getProjectId();
+    }
+
+    // Wrap the output with context IDs needed by the gate executor
+    UUID documentId = execution.getEntityId();
+    Map<String, Object> reviewOutput =
         objectMapper.convertValue(output, new TypeReference<Map<String, Object>>() {});
+    Map<String, Object> proposedAction =
+        Map.of(
+            "project_id", projectId.toString(),
+            "document_id", documentId.toString(),
+            "review_output", reviewOutput);
 
     var gate =
         new AiExecutionGate(

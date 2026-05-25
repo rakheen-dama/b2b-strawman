@@ -239,7 +239,8 @@ public class DraftingSkill implements AiSkill {
   }
 
   @Override
-  public List<AiExecutionGate> createGates(AiExecution execution, String outputContent) {
+  public List<AiExecutionGate> createGates(
+      AiExecution execution, String outputContent, SkillContext context) {
     DraftingOutput output;
     try {
       output = objectMapper.readValue(outputContent, DraftingOutput.class);
@@ -249,9 +250,24 @@ public class DraftingSkill implements AiSkill {
           "AI response could not be parsed as valid drafting output: " + e.getMessage());
     }
 
-    // One gate per execution with the parsed output as proposed_action
-    Map<String, Object> proposedAction =
+    // Extract templateId from execution context (set by controller)
+    Object templateIdObj = context.additionalContext().get("templateId");
+    if (templateIdObj == null) {
+      throw new InvalidStateException(
+          "Missing context", "templateId is required for drafting skill");
+    }
+    UUID templateId =
+        templateIdObj instanceof UUID u ? u : UUID.fromString(templateIdObj.toString());
+    UUID projectId = execution.getEntityId();
+
+    // Wrap the output with context IDs needed by the gate executor
+    Map<String, Object> draftOutput =
         objectMapper.convertValue(output, new TypeReference<Map<String, Object>>() {});
+    Map<String, Object> proposedAction =
+        Map.of(
+            "template_id", templateId.toString(),
+            "project_id", projectId.toString(),
+            "draft_output", draftOutput);
 
     String reasoning = buildGateReasoning(output);
 

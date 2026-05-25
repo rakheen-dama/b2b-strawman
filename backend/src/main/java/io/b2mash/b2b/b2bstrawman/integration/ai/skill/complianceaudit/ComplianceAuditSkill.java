@@ -193,7 +193,8 @@ public class ComplianceAuditSkill implements AiSkill {
   }
 
   @Override
-  public List<AiExecutionGate> createGates(AiExecution execution, String outputContent) {
+  public List<AiExecutionGate> createGates(
+      AiExecution execution, String outputContent, SkillContext context) {
     ComplianceAuditOutput output;
     try {
       output = objectMapper.readValue(outputContent, ComplianceAuditOutput.class);
@@ -203,8 +204,10 @@ public class ComplianceAuditSkill implements AiSkill {
           "AI response could not be parsed as valid compliance audit output: " + e.getMessage());
     }
 
-    Map<String, Object> proposedAction =
+    // Wrap the output under audit_output key for the gate executor
+    Map<String, Object> auditOutput =
         objectMapper.convertValue(output, new TypeReference<Map<String, Object>>() {});
+    Map<String, Object> proposedAction = Map.of("audit_output", auditOutput);
 
     String reasoning = buildGateReasoning(output);
 

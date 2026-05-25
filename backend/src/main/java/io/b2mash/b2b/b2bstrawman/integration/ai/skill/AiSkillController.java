@@ -30,16 +30,10 @@ public class AiSkillController {
   @RequiresCapability("AI_EXECUTE")
   public ResponseEntity<SkillExecutionResponse> executeFicaVerification(
       @RequestBody FicaVerificationRequest request) {
-    var context =
-        new SkillContext(
-            request.customerId(),
-            "CUSTOMER",
-            "FICA verification for customer " + request.customerId(),
-            Map.of());
-    SkillExecutionResult result =
-        executionService.executeSkill(
-            "fica-verification", context, RequestScopes.requireMemberId(), List.of());
-    return ResponseEntity.ok(SkillExecutionResponse.from(result.execution(), result.gates()));
+    return ResponseEntity.ok(
+        SkillExecutionResponse.from(
+            executionService.executeFicaVerification(
+                request.customerId(), RequestScopes.requireMemberId())));
   }
 
   @PostMapping("/matter-intake")
@@ -47,16 +41,42 @@ public class AiSkillController {
   @RequiresCapability("AI_EXECUTE")
   public ResponseEntity<SkillExecutionResponse> executeMatterIntake(
       @RequestBody MatterIntakeRequest request) {
-    var context =
-        new SkillContext(
-            request.customerId(),
-            "CUSTOMER",
-            request.description(),
-            Map.of("description", request.description()));
-    SkillExecutionResult result =
-        executionService.executeSkill(
-            "matter-intake", context, RequestScopes.requireMemberId(), List.of());
-    return ResponseEntity.ok(SkillExecutionResponse.from(result.execution(), result.gates()));
+    return ResponseEntity.ok(
+        SkillExecutionResponse.from(
+            executionService.executeMatterIntake(
+                request.customerId(), request.description(), RequestScopes.requireMemberId())));
+  }
+
+  @PostMapping("/contract-review")
+  @PreAuthorize("isAuthenticated()")
+  @RequiresCapability("AI_EXECUTE")
+  public ResponseEntity<SkillExecutionResponse> executeContractReview(
+      @RequestBody ContractReviewRequest request) {
+    return ResponseEntity.ok(
+        SkillExecutionResponse.from(
+            executionService.executeContractReview(
+                request.documentId(), request.projectId(), RequestScopes.requireMemberId())));
+  }
+
+  @PostMapping("/drafting")
+  @PreAuthorize("isAuthenticated()")
+  @RequiresCapability("AI_EXECUTE")
+  public ResponseEntity<SkillExecutionResponse> executeDrafting(
+      @RequestBody DraftingRequest request) {
+    return ResponseEntity.ok(
+        SkillExecutionResponse.from(
+            executionService.executeDrafting(
+                request.templateId(), request.projectId(), RequestScopes.requireMemberId())));
+  }
+
+  @PostMapping("/compliance-audit")
+  @PreAuthorize("isAuthenticated()")
+  @RequiresCapability("AI_EXECUTE")
+  public ResponseEntity<SkillExecutionResponse> executeComplianceAudit(
+      @RequestBody(required = false) ComplianceAuditRequest request) {
+    return ResponseEntity.ok(
+        SkillExecutionResponse.from(
+            executionService.executeComplianceAudit(RequestScopes.requireMemberId())));
   }
 
   // ── DTOs ────────────────────────────────────────────────────────────────
@@ -64,6 +84,12 @@ public class AiSkillController {
   public record FicaVerificationRequest(UUID customerId) {}
 
   public record MatterIntakeRequest(UUID customerId, String description) {}
+
+  public record ContractReviewRequest(UUID documentId, UUID projectId) {}
+
+  public record DraftingRequest(UUID templateId, UUID projectId) {}
+
+  public record ComplianceAuditRequest() {}
 
   public record SkillExecutionResponse(
       UUID executionId,
@@ -73,6 +99,10 @@ public class AiSkillController {
       long costCents,
       String model,
       Long durationMs) {
+
+    public static SkillExecutionResponse from(SkillExecutionResult result) {
+      return from(result.execution(), result.gates());
+    }
 
     public static SkillExecutionResponse from(AiExecution execution, List<AiExecutionGate> gates) {
       return new SkillExecutionResponse(

@@ -30,7 +30,7 @@ Phase 74 delivers three new AI skills -- contract review, template-guided drafti
 | 541 | Compliance Data Collector + Audit Skill (Backend) | Backend | 538A | L | 541A, 541B | **Done** (PRs #1364, #1365) |
 | 542 | Compliance Audit Persistence + Finding Lifecycle | Backend | 538A, 541A | L | 542A, 542B | **Done** (PRs #1366, #1367) |
 | 543 | Gate Executors + StubAiProvider Extensions | Backend | 539A, 540A, 541A, 542A | M | 543A | **Done** (PR #1368) |
-| 544 | Contract Review Frontend | Frontend | 539A | M | 544A | |
+| 544 | Contract Review Frontend | Frontend | 539A | M | 544A | **Done** (PR #1369) |
 | 545 | Drafting Frontend | Frontend | 540A | M | 545A | |
 | 546 | Compliance Dashboard Extension (Frontend) | Frontend | 542A | L | 546A, 546B | |
 
@@ -190,7 +190,7 @@ PHASES already complete:
 
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
-| 5a | **544A** | Contract review button on matter documents tab; review results panel; API hooks; loading/error states. | 545A, 546A |
+| 5a | **544A** | Contract review button on matter documents tab; review results panel; API hooks; loading/error states. | 545A, 546A | **Done** (PR #1369) |
 | 5b | **545A** | Drafting dialog (template selector + AI processing + variable editing + clause recommendations); drafting variable table with confidence badges; API hooks. | 544A, 546A |
 | 5c | **546A** | Compliance audit tab on compliance dashboard; "Run AI Audit" button; audit summary (grade badge, category scores); audit history panel; API hooks. | 544A, 545A |
 | 5d | **546B** | Compliance finding list with severity/category/status filters; finding detail dialog with resolution workflow; finding status transitions. | After 546A |
@@ -638,7 +638,7 @@ A realistic day-by-day cadence: 538A days 1-2; 538B days 2-4; 539A + 540A + 541A
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **544A** | 544A.1-544A.5 | ~7 frontend files (2 new components + 1 page modification + 1 API client extension + 1 actions file + 1 type file + 1 existing component modification) | "Review with AI" button on document cards; contract review results panel; API hooks; server action for invocation; loading/error states. |
+| **544A** | 544A.1-544A.5 | ~7 frontend files (2 new components + 1 page modification + 1 API client extension + 1 actions file + 1 type file + 1 existing component modification) | "Review with AI" button on document cards; contract review results panel; API hooks; server action for invocation; loading/error states. | **Done** (PR #1369) |
 
 ### Tasks
 

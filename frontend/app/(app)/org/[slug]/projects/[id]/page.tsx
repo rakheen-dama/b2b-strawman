@@ -63,6 +63,7 @@ import {
 import { RequestList } from "@/components/information-requests/request-list";
 import { CreateRequestDialog } from "@/components/information-requests/create-request-dialog";
 import { fetchProjectSetupStatus } from "@/lib/api/setup-status";
+import { getAiProfile } from "@/lib/api/ai";
 import type { ProjectSetupStatus, FicaStatus } from "@/lib/types";
 import type { SetupStep } from "@/components/setup/types";
 import { ArchivedProjectBanner } from "@/components/projects/archived-project-banner";
@@ -149,6 +150,22 @@ export default async function ProjectDetailPage({
         },
       ]
     : [];
+
+  // AI configuration status — needed for contract review button in documents tab
+  const canExecuteAi = caps.capabilities.includes("AI_EXECUTE");
+  const canReviewGates = caps.capabilities.includes("AI_REVIEW");
+  let isAiConfigured = false;
+  if (caps.capabilities.includes("AI_MANAGE")) {
+    try {
+      const aiProfile = await getAiProfile();
+      isAiConfigured = aiProfile.coldStartCompleted;
+    } catch {
+      // Non-fatal: panel will show disabled state
+    }
+  } else if (canExecuteAi) {
+    // MEMBER with AI_EXECUTE: they wouldn't have this capability without setup being done
+    isAiConfigured = true;
+  }
 
   let documents: Document[] = [];
   try {
@@ -515,6 +532,9 @@ export default async function ProjectDetailPage({
             slug={slug}
             currentMemberId={currentMemberId}
             canManageVisibility={canManage}
+            isAiConfigured={isAiConfigured}
+            canReviewGates={canReviewGates}
+            canExecuteAi={canExecuteAi}
           />
         }
         customersPanel={

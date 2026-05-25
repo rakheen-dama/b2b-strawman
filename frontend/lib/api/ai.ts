@@ -294,3 +294,84 @@ export async function invokeMatterIntake(
     description,
   });
 }
+
+// ---- Contract Review Types ----
+
+export interface DocumentClassification {
+  type: string;
+  subtype: string;
+  partiesIdentified: string[];
+}
+
+export interface ContractReviewFinding {
+  severity: "HIGH" | "MEDIUM" | "LOW";
+  category: string;
+  clauseReference: string | null;
+  title: string;
+  description: string;
+  riskExplanation: string | null;
+  recommendation: string | null;
+  statutoryReference: string | null;
+}
+
+export interface MissingProtection {
+  protection: string;
+  reasoning: string;
+  recommendation: string | null;
+  priority: string | null;
+}
+
+export interface ContractReviewRecommendedAction {
+  action: string;
+  reasoning: string;
+}
+
+export interface ContractReviewOutput {
+  documentClassification: DocumentClassification;
+  executiveSummary: string;
+  findings: ContractReviewFinding[];
+  missingProtections: MissingProtection[];
+  overallRiskAssessment: string;
+  recommendedActions: ContractReviewRecommendedAction[];
+}
+
+export interface ContractReviewResponse {
+  executionId: string;
+  status: "COMPLETED" | "FAILED";
+  output: ContractReviewOutput | null;
+  gates: AiGateListItem[];
+  costCents: number;
+  model: string;
+  durationMs: number;
+}
+
+// ---- Contract Review API Function ----
+
+export async function invokeContractReview(
+  documentId: string,
+  projectId: string
+): Promise<ContractReviewResponse> {
+  const raw = await api.post<{
+    executionId: string;
+    status: "COMPLETED" | "FAILED";
+    output: string | null;
+    gates: AiGateListItem[];
+    costCents: number;
+    model: string;
+    durationMs: number;
+  }>("/api/ai/skills/contract-review", { documentId, projectId });
+
+  let parsedOutput: ContractReviewOutput | null = null;
+  if (raw.output) {
+    try {
+      parsedOutput = JSON.parse(raw.output) as ContractReviewOutput;
+    } catch {
+      parsedOutput = null;
+    }
+  }
+
+  return {
+    ...raw,
+    output: parsedOutput,
+  };
+}

@@ -242,9 +242,9 @@ export function ContractReviewResults({ output }: ContractReviewResultsProps) {
                       <Badge variant={getRiskBadgeVariant(mp.priority)}>{mp.priority}</Badge>
                     )}
                   </div>
-                  <p className="pl-5.5 text-sm text-slate-700 dark:text-slate-300">{mp.reasoning}</p>
+                  <p className="pl-6 text-sm text-slate-700 dark:text-slate-300">{mp.reasoning}</p>
                   {mp.recommendation && (
-                    <p className="pl-5.5 text-sm text-slate-500 italic dark:text-slate-400">
+                    <p className="pl-6 text-sm text-slate-500 italic dark:text-slate-400">
                       {mp.recommendation}
                     </p>
                   )}

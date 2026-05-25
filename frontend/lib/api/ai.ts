@@ -306,19 +306,19 @@ export interface DocumentClassification {
 export interface ContractReviewFinding {
   severity: "HIGH" | "MEDIUM" | "LOW";
   category: string;
-  clauseReference: string;
+  clauseReference: string | null;
   title: string;
   description: string;
-  riskExplanation: string;
-  recommendation: string;
-  statutoryReference: string;
+  riskExplanation: string | null;
+  recommendation: string | null;
+  statutoryReference: string | null;
 }
 
 export interface MissingProtection {
   protection: string;
   reasoning: string;
-  recommendation: string;
-  priority: string;
+  recommendation: string | null;
+  priority: string | null;
 }
 
 export interface ContractReviewRecommendedAction {

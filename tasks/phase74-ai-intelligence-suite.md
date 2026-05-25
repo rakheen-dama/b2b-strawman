@@ -29,7 +29,7 @@ Phase 74 delivers three new AI skills -- contract review, template-guided drafti
 | 540 | Drafting Skill (Backend) | Backend | 538A | L | 540A, 540B | **Done** (PRs #1362, #1363) |
 | 541 | Compliance Data Collector + Audit Skill (Backend) | Backend | 538A | L | 541A, 541B | **Done** (PRs #1364, #1365) |
 | 542 | Compliance Audit Persistence + Finding Lifecycle | Backend | 538A, 541A | L | 542A, 542B | **Done** (PRs #1366, #1367) |
-| 543 | Gate Executors + StubAiProvider Extensions | Backend | 539A, 540A, 541A, 542A | M | 543A | |
+| 543 | Gate Executors + StubAiProvider Extensions | Backend | 539A, 540A, 541A, 542A | M | 543A | **Done** (PR #1368) |
 | 544 | Contract Review Frontend | Frontend | 539A | M | 544A | |
 | 545 | Drafting Frontend | Frontend | 540A | M | 545A | |
 | 546 | Compliance Dashboard Extension (Frontend) | Frontend | 542A | L | 546A, 546B | |
@@ -184,7 +184,7 @@ PHASES already complete:
 
 | Order | Slice | Summary |
 |-------|-------|---------|
-| 4a | **543A** | `GateAction` sealed interface extension (3 new permits: `CreateReviewReportAction`, `CreateDraftDocumentAction`, `PublishComplianceReportAction`); `GateActionExecutor` extension (3 new cases); `AiSkillController` endpoint additions (3 new POST endpoints); `StubAiProvider` canned response routing for 3 new skill IDs; end-to-end integration tests. |
+| 4a | **543A** | `GateAction` sealed interface extension (3 new permits: `CreateReviewReportAction`, `CreateDraftDocumentAction`, `PublishComplianceReportAction`); `GateActionExecutor` extension (3 new cases); `AiSkillController` endpoint additions (3 new POST endpoints); `StubAiProvider` canned response routing for 3 new skill IDs; end-to-end integration tests. | **Done** (PR #1368) |
 
 ### Stage 5 -- Frontends (parallel after Stage 4)
 
@@ -578,7 +578,7 @@ A realistic day-by-day cadence: 538A days 1-2; 538B days 2-4; 539A + 540A + 541A
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **543A** | 543A.1-543A.6 | ~8 backend files (1 sealed interface modification + 1 executor modification + 1 controller modification + 3 gate executor classes + 1 test file + 1 stub extension) | `GateAction` 3 new permits; `GateActionExecutor` 3 new cases; `AiSkillController` 3 new POST endpoints; 3 `GateActionExecutor` implementations (contract review, drafting, compliance); `StubAiProvider` extensions; end-to-end integration tests. |
+| **543A** | 543A.1-543A.6 | ~8 backend files (1 sealed interface modification + 1 executor modification + 1 controller modification + 3 gate executor classes + 1 test file + 1 stub extension) | `GateAction` 3 new permits; `GateActionExecutor` 3 new cases; `AiSkillController` 3 new POST endpoints; 3 `GateActionExecutor` implementations (contract review, drafting, compliance); `StubAiProvider` extensions; end-to-end integration tests. | **Done** (PR #1368) |
 
 ### Tasks
 

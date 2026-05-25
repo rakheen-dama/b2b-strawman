@@ -615,7 +615,7 @@
 | 540 | Drafting Skill (Backend) | Backend | 538A | L | 540A, 540B | **Done** (PRs #1362, #1363) |
 | 541 | Compliance Data Collector + Audit Skill (Backend) | Backend | 538A | L | 541A, 541B | **Done** (PRs #1364, #1365) |
 | 542 | Compliance Audit Persistence + Finding Lifecycle | Backend | 538A, 541A | L | 542A, 542B | **Done** (PRs #1366, #1367) |
-| 543 | Gate Executors + StubAiProvider Extensions | Backend | 539A, 540A, 541A, 542A | M | 543A | |
+| 543 | Gate Executors + StubAiProvider Extensions | Backend | 539A, 540A, 541A, 542A | M | 543A | **Done** (PR #1368) |
 | 544 | Contract Review Frontend | Frontend | 539A | M | 544A | |
 | 545 | Drafting Frontend | Frontend | 540A | M | 545A | |
 | 546 | Compliance Dashboard Extension (Frontend) | Frontend | 542A | L | 546A, 546B | |

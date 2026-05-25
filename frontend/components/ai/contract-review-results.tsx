@@ -160,15 +160,9 @@ export function ContractReviewResults({ output }: ContractReviewResultsProps) {
             Findings
           </p>
           <div className="flex items-center gap-1.5">
-            {highCount > 0 && (
-              <Badge variant="destructive">{highCount} High</Badge>
-            )}
-            {mediumCount > 0 && (
-              <Badge variant="warning">{mediumCount} Medium</Badge>
-            )}
-            {lowCount > 0 && (
-              <Badge variant="success">{lowCount} Low</Badge>
-            )}
+            {highCount > 0 && <Badge variant="destructive">{highCount} High</Badge>}
+            {mediumCount > 0 && <Badge variant="warning">{mediumCount} Medium</Badge>}
+            {lowCount > 0 && <Badge variant="success">{lowCount} Low</Badge>}
             {output.findings.length === 0 && (
               <span className="text-sm text-slate-500 dark:text-slate-400">None</span>
             )}

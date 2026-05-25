@@ -452,9 +452,7 @@ export function DocumentsPanel({
                               variant="ghost"
                               size="icon"
                               className="size-8"
-                              onClick={() =>
-                                setReviewDocId(reviewDocId === doc.id ? null : doc.id)
-                              }
+                              onClick={() => setReviewDocId(reviewDocId === doc.id ? null : doc.id)}
                               aria-label={`Review ${doc.fileName} with AI`}
                             >
                               <Sparkles className="size-4 text-teal-600 dark:text-teal-400" />
@@ -464,23 +462,24 @@ export function DocumentsPanel({
                       </TableCell>
                     </TableRow>
                     {/* AI Contract Review expandable panel */}
-                    {isReviewableDocument(doc.contentType, doc.status) && reviewDocId === doc.id && (
-                      <TableRow className="border-slate-100 dark:border-slate-800/50">
-                        <TableCell
-                          colSpan={colSpan}
-                          className="bg-slate-50/30 px-6 py-4 dark:bg-slate-900/30"
-                        >
-                          <ContractReviewButton
-                            documentId={doc.id}
-                            projectId={projectId}
-                            slug={slug}
-                            isAiConfigured={isAiConfigured}
-                            canExecuteAi={canExecuteAi}
-                            canReviewGates={canReviewGates}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    )}
+                    {isReviewableDocument(doc.contentType, doc.status) &&
+                      reviewDocId === doc.id && (
+                        <TableRow className="border-slate-100 dark:border-slate-800/50">
+                          <TableCell
+                            colSpan={colSpan}
+                            className="bg-slate-50/30 px-6 py-4 dark:bg-slate-900/30"
+                          >
+                            <ContractReviewButton
+                              documentId={doc.id}
+                              projectId={projectId}
+                              slug={slug}
+                              isAiConfigured={isAiConfigured}
+                              canExecuteAi={canExecuteAi}
+                              canReviewGates={canReviewGates}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      )}
                     {isExpanded && (
                       <TableRow className="border-slate-100 dark:border-slate-800/50">
                         <TableCell

@@ -295,6 +295,52 @@ export async function invokeMatterIntake(
   });
 }
 
+// ---- Drafting Types ----
+
+export interface VariableFill {
+  variableName: string;
+  value: string | null;
+  source: string;
+  confidence: "HIGH" | "MEDIUM" | "LOW" | "UNDETERMINED";
+  flag: string | null;
+}
+
+export interface NarrativeSection {
+  sectionName: string;
+  content: string;
+  notes: string | null;
+}
+
+export interface ClauseRecommendation {
+  clauseId: string;
+  clauseName: string;
+  reasoning: string;
+}
+
+export interface DraftingRecommendedAction {
+  action: string;
+  reasoning: string;
+}
+
+export interface DraftingOutput {
+  templateId: string;
+  variableFills: VariableFill[];
+  narrativeSections: NarrativeSection[];
+  clauseRecommendations: ClauseRecommendation[];
+  warnings: string[];
+  recommendedActions: DraftingRecommendedAction[];
+}
+
+export interface DraftingResponse {
+  executionId: string;
+  status: "COMPLETED" | "FAILED";
+  output: DraftingOutput | null;
+  gates: AiGateListItem[];
+  costCents: number;
+  model: string;
+  durationMs: number;
+}
+
 // ---- Contract Review Types ----
 
 export interface DocumentClassification {
@@ -365,6 +411,37 @@ export async function invokeContractReview(
   if (raw.output) {
     try {
       parsedOutput = JSON.parse(raw.output) as ContractReviewOutput;
+    } catch {
+      parsedOutput = null;
+    }
+  }
+
+  return {
+    ...raw,
+    output: parsedOutput,
+  };
+}
+
+// ---- Drafting API Function ----
+
+export async function invokeDrafting(
+  templateId: string,
+  projectId: string
+): Promise<DraftingResponse> {
+  const raw = await api.post<{
+    executionId: string;
+    status: "COMPLETED" | "FAILED";
+    output: string | null;
+    gates: AiGateListItem[];
+    costCents: number;
+    model: string;
+    durationMs: number;
+  }>("/api/ai/skills/drafting", { templateId, projectId });
+
+  let parsedOutput: DraftingOutput | null = null;
+  if (raw.output) {
+    try {
+      parsedOutput = JSON.parse(raw.output) as DraftingOutput;
     } catch {
       parsedOutput = null;
     }

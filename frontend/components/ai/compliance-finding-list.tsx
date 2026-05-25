@@ -173,6 +173,14 @@ export function ComplianceFindingList({ reportId, slug, canReview }: ComplianceF
               key={finding.id}
               className="cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-900"
               onClick={() => setSelectedFinding(finding)}
+              tabIndex={0}
+              role="button"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setSelectedFinding(finding);
+                }
+              }}
             >
               <TableCell>
                 <Badge variant={getSeverityBadgeVariant(finding.severity)}>

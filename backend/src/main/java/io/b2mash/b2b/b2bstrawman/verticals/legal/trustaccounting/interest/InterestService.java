@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -207,7 +207,9 @@ public class InterestService {
 
     // Get all clients with ledger cards
     var ledgerCards =
-        clientLedgerCardRepository.findByTrustAccountId(accountId, Pageable.unpaged()).getContent();
+        clientLedgerCardRepository
+            .findByTrustAccountId(accountId, PageRequest.of(0, 10_000))
+            .getContent();
 
     // Remove any existing allocations from a previous calculation of this draft run
     var existingAllocations = interestAllocationRepository.findByInterestRunId(runId);

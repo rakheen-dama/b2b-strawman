@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.portal;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -31,6 +32,7 @@ public class MagicLinkCleanupService {
     this.transactionTemplate = transactionTemplate;
   }
 
+  @SchedulerLock(name = "magic_link_cleanup_expired_tokens", lockAtLeastFor = "30m")
   @Scheduled(fixedRate = 3600000) // hourly
   public void cleanupExpiredTokens() {
     Instant cutoff = Instant.now().minus(1, ChronoUnit.DAYS);

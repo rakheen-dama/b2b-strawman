@@ -10,6 +10,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -51,6 +52,7 @@ public class RequestReminderScheduler {
     this.transactionTemplate = transactionTemplate;
   }
 
+  @SchedulerLock(name = "request_reminder_check_request_reminders", lockAtLeastFor = "5m")
   @Scheduled(fixedRate = CHECK_INTERVAL_MS, initialDelay = CHECK_INTERVAL_MS)
   public void checkRequestReminders() {
     log.debug("Request reminder scheduler started");

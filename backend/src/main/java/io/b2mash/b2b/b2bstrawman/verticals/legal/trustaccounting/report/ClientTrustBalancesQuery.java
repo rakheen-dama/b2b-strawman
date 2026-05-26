@@ -11,6 +11,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
@@ -63,7 +64,9 @@ public class ClientTrustBalancesQuery implements ReportQuery {
 
     // Fetch all ledger cards for this trust account
     var ledgerCards =
-        ledgerCardRepository.findByTrustAccountId(trustAccountId, Pageable.unpaged()).getContent();
+        ledgerCardRepository
+            .findByTrustAccountId(trustAccountId, PageRequest.of(0, 10_000))
+            .getContent();
 
     // Batch-load customer names
     var customerIds =

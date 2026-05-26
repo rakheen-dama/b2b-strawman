@@ -3,8 +3,8 @@ spring:
     app:
       jdbc-url: ${DATABASE_URL}
       driver-class-name: org.postgresql.Driver
-      maximum-pool-size: 10
-      minimum-idle: 3
+      maximum-pool-size: 25
+      minimum-idle: 5
       connection-timeout: 10000
       validation-timeout: 5000
       idle-timeout: 600000
@@ -58,7 +58,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,prometheus
   endpoint:
     health:
       show-details: when-authorized

@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,7 +56,7 @@ public class ComplianceAuditReportService {
     // Archive all existing PUBLISHED reports
     Page<ComplianceAuditReport> publishedReports =
         reportRepository.findByStatusOrderByCreatedAtDesc(
-            ReportStatus.PUBLISHED.name(), Pageable.unpaged());
+            ReportStatus.PUBLISHED.name(), PageRequest.of(0, 10_000));
     for (ComplianceAuditReport previous : publishedReports) {
       previous.archive(memberId);
       reportRepository.save(previous);

@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Component;
 
@@ -81,12 +82,12 @@ public class InvestmentRegisterQuery implements ReportQuery {
       investments =
           investmentRepository
               .findByTrustAccountIdAndInvestmentBasisOrderByDepositDateDesc(
-                  trustAccountId, basis, Pageable.unpaged())
+                  trustAccountId, basis, PageRequest.of(0, 10_000))
               .getContent();
     } else {
       investments =
           investmentRepository
-              .findByTrustAccountIdOrderByDepositDateDesc(trustAccountId, Pageable.unpaged())
+              .findByTrustAccountIdOrderByDepositDateDesc(trustAccountId, PageRequest.of(0, 10_000))
               .getContent();
     }
 

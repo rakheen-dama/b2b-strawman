@@ -4,6 +4,10 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,11 +21,17 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RequestMapping("/api/assistant")
 public class AssistantController {
 
+  private static final long SSE_TIMEOUT_MS = 150_000L;
+
   private final AssistantService assistantService;
   private final ExecutorService virtualThreadExecutor = Executors.newVirtualThreadPerTaskExecutor();
+  private final Semaphore concurrencyLimit;
 
-  public AssistantController(AssistantService assistantService) {
+  public AssistantController(
+      AssistantService assistantService,
+      @Value("${kazi.ai.max-concurrent-sessions:20}") int maxConcurrentSessions) {
     this.assistantService = assistantService;
+    this.concurrencyLimit = new Semaphore(maxConcurrentSessions);
   }
 
   /**
@@ -33,19 +43,34 @@ public class AssistantController {
   @PostMapping("/chat")
   @PreAuthorize("isAuthenticated()")
   public ResponseEntity<SseEmitter> chat(@RequestBody ChatContext context) {
-    // Capture ScopedValue bindings on the request thread before submitting to virtual thread
+    if (!concurrencyLimit.tryAcquire()) {
+      return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+    }
+
     var tenantId = RequestScopes.requireTenantId();
     var memberId = RequestScopes.requireMemberId();
     var orgId = RequestScopes.requireOrgId();
     var orgRole = RequestScopes.getOrgRole();
     var capabilities = RequestScopes.getCapabilities();
 
-    var emitter = new SseEmitter(300_000L);
-    // Register handlers before submitting to executor to avoid race condition
-    emitter.onTimeout(emitter::complete);
-    emitter.onError(e -> emitter.complete());
+    var emitter = new SseEmitter(SSE_TIMEOUT_MS);
+    var released = new AtomicBoolean(false);
+    Runnable releaseOnce =
+        () -> {
+          if (released.compareAndSet(false, true)) concurrencyLimit.release();
+        };
+    emitter.onCompletion(releaseOnce::run);
+    emitter.onTimeout(
+        () -> {
+          releaseOnce.run();
+          emitter.complete();
+        });
+    emitter.onError(
+        e -> {
+          releaseOnce.run();
+          emitter.complete();
+        });
 
-    // Build carrier conditionally — ScopedValue.where(key, null) throws NPE
     var carrier =
         ScopedValue.where(RequestScopes.TENANT_ID, tenantId)
             .where(RequestScopes.MEMBER_ID, memberId)

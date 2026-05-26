@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.acceptance;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -24,6 +25,7 @@ public class AcceptanceExpiryProcessor {
     this.acceptanceService = acceptanceService;
   }
 
+  @SchedulerLock(name = "acceptance_process_expired", lockAtLeastFor = "30m")
   @Scheduled(fixedDelay = 3600000)
   public void processExpired() {
     log.info("Acceptance expiry processor started");

@@ -38,7 +38,7 @@ import java.util.zip.ZipOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.core.JacksonException;
@@ -435,7 +435,7 @@ public class DataExportService {
     // Audit events referencing the customer entity
     var auditPage =
         auditEventRepository.findByFilter(
-            "customer", customerId, null, null, null, null, Pageable.unpaged());
+            "customer", customerId, null, null, null, null, PageRequest.of(0, 10_000));
     data.put(
         "auditEvents",
         auditPage.getContent().stream()

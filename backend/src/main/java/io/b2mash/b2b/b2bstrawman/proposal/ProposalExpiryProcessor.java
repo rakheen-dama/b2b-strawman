@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
 import java.time.Instant;
 import java.util.Map;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -54,6 +55,7 @@ public class ProposalExpiryProcessor {
     this.transactionTemplate = transactionTemplate;
   }
 
+  @SchedulerLock(name = "proposal_process_expired_proposals", lockAtLeastFor = "30m")
   @Scheduled(fixedRateString = "${proposal.expiry.interval:3600000}")
   public void processExpiredProposals() {
     log.info("Proposal expiry processor started");

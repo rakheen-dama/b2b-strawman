@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -62,6 +63,7 @@ public class AccountingSyncWorker {
     this.transactionTemplate = transactionTemplate;
   }
 
+  @SchedulerLock(name = "accounting_sync_drain_pending_entries", lockAtLeastFor = "15s")
   @Scheduled(fixedDelay = 30_000)
   public void drainPendingEntries() {
     log.debug("AccountingSyncWorker: starting drain cycle");

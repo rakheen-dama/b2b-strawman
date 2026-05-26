@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.UUID;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -57,6 +58,7 @@ public class FieldDateScannerJob {
     this.transactionTemplate = transactionTemplate;
   }
 
+  @SchedulerLock(name = "field_date_scanner_execute", lockAtLeastFor = "5m")
   @Scheduled(cron = "${app.automation.field-date-scan-cron:0 0 6 * * *}")
   public void execute() {
     log.debug("Field date scanner started");

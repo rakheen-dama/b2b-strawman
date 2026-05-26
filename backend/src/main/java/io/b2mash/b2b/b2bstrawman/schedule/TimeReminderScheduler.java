@@ -12,6 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.util.UUID;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -57,6 +58,7 @@ public class TimeReminderScheduler {
     this.transactionTemplate = transactionTemplate;
   }
 
+  @SchedulerLock(name = "time_reminder_check_time_reminders", lockAtLeastFor = "5m")
   @Scheduled(fixedRate = CHECK_INTERVAL_MS)
   public void checkTimeReminders() {
     log.debug("Time reminder scheduler started");

@@ -7,6 +7,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -61,6 +62,7 @@ public class AiInvocationExpirySweeper {
   }
 
   /** Runs daily at 03:00 UTC. */
+  @SchedulerLock(name = "ai_invocation_expiry_sweep", lockAtLeastFor = "5m")
   @Scheduled(cron = "0 0 3 * * *")
   public void sweep() {
     log.info("AiInvocationExpirySweeper: starting daily sweep");

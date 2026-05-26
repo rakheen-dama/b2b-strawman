@@ -5,6 +5,7 @@ import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -58,6 +59,7 @@ public class AutomationScheduler {
     this.objectMapper = objectMapper;
   }
 
+  @SchedulerLock(name = "automation_poll_delayed_actions", lockAtLeastFor = "7m")
   @Scheduled(fixedDelay = POLL_INTERVAL_MS)
   public void pollDelayedActions() {
     log.debug("Automation scheduler started");
@@ -75,6 +77,7 @@ public class AutomationScheduler {
    * Cron pass: fires SCHEDULED trigger rules whose next fire time has arrived. Runs every 60s,
    * per-tenant. Missed-run policy: fire-once-on-resume, no flood-backfill (ADR-271).
    */
+  @SchedulerLock(name = "automation_poll_scheduled_triggers", lockAtLeastFor = "30s")
   @Scheduled(fixedDelay = CRON_POLL_INTERVAL_MS)
   public void pollScheduledTriggers() {
     log.debug("Scheduled trigger cron pass started");

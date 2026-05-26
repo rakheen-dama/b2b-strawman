@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.integration.accounting.sync;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.AccountingXeroConnectionRepository;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.xero.XeroConnectionStatus;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -39,6 +40,7 @@ public class AccountingPaymentPollWorker {
     this.syncService = syncService;
   }
 
+  @SchedulerLock(name = "accounting_payment_poll_all_connections", lockAtLeastFor = "7m")
   @Scheduled(fixedDelay = 900_000)
   public void pollAllConnections() {
     log.debug("AccountingPaymentPollWorker: starting poll cycle");

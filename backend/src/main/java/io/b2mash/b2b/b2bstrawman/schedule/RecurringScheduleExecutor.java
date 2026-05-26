@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.schedule;
 
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -27,6 +28,7 @@ public class RecurringScheduleExecutor {
     this.scheduleService = scheduleService;
   }
 
+  @SchedulerLock(name = "recurring_schedule_execute_schedules", lockAtLeastFor = "5m")
   @Scheduled(cron = "0 0 2 * * *")
   public void executeSchedules() {
     log.info("Recurring schedule executor started");

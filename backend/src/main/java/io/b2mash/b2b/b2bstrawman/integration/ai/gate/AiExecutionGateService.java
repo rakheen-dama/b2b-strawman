@@ -7,6 +7,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -100,6 +101,7 @@ public class AiExecutionGateService {
   }
 
   /** Scheduled job: expire stale gates. Runs every hour. */
+  @SchedulerLock(name = "ai_gate_expire_stale_gates", lockAtLeastFor = "30m")
   @Scheduled(fixedRate = 3600000)
   public void expireStaleGates() {
     log.info("AiExecutionGateService: starting hourly gate expiry sweep");

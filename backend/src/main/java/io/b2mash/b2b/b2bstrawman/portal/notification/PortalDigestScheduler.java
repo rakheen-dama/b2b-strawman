@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -91,6 +92,7 @@ public class PortalDigestScheduler {
   /**
    * Cron entry point — Monday 08:00 server time. Tests call {@link #runWeeklyDigest()} directly.
    */
+  @SchedulerLock(name = "portal_digest_scheduled_run", lockAtLeastFor = "5m")
   @Scheduled(cron = "0 0 8 ? * MON")
   public void scheduledRun() {
     runWeeklyDigest();

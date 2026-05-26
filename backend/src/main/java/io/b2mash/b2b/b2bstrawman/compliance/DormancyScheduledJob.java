@@ -5,6 +5,7 @@ import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import java.util.List;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -35,6 +36,7 @@ public class DormancyScheduledJob {
     this.memberRepository = memberRepository;
   }
 
+  @SchedulerLock(name = "dormancy_execute_dormancy_check", lockAtLeastFor = "5m")
   @Scheduled(cron = "0 0 2 * * *")
   public void executeDormancyCheck() {
     log.info("Auto-dormancy scheduled job started");

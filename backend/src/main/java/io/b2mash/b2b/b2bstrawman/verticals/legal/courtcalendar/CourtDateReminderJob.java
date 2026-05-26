@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleGuard;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -50,6 +51,7 @@ public class CourtDateReminderJob {
     this.transactionTemplate = transactionTemplate;
   }
 
+  @SchedulerLock(name = "court_date_reminder_execute", lockAtLeastFor = "5m")
   @Scheduled(cron = "${court.reminder.cron:0 0 6 * * *}")
   public void execute() {
     log.debug("Court date reminder job started");

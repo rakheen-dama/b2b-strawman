@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -51,6 +52,7 @@ public class SubscriptionExpiryJob {
   }
 
   /** Transitions TRIALING subscriptions past their trial end date to EXPIRED with grace period. */
+  @SchedulerLock(name = "subscription_process_trial_expiry", lockAtLeastFor = "5m")
   @Scheduled(cron = "0 0 3 * * *")
   public void processTrialExpiry() {
     log.info("Trial expiry job started");
@@ -92,6 +94,7 @@ public class SubscriptionExpiryJob {
    * Transitions GRACE_PERIOD, EXPIRED, and SUSPENDED subscriptions past their grace end date to
    * LOCKED.
    */
+  @SchedulerLock(name = "subscription_process_grace_expiry", lockAtLeastFor = "5m")
   @Scheduled(cron = "0 5 3 * * *")
   public void processGraceExpiry() {
     log.info("Grace period expiry job started");
@@ -138,6 +141,7 @@ public class SubscriptionExpiryJob {
    * Transitions PENDING_CANCELLATION subscriptions past their current period end to GRACE_PERIOD
    * with grace period set.
    */
+  @SchedulerLock(name = "subscription_process_pending_cancellation_end", lockAtLeastFor = "5m")
   @Scheduled(cron = "0 10 3 * * *")
   public void processPendingCancellationEnd() {
     log.info("Pending cancellation end job started");

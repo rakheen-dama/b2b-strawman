@@ -50,6 +50,10 @@ public class JobWorker implements SmartLifecycle {
 
   @Override
   public void start() {
+    if (running) {
+      log.debug("JobWorker.start() called but already running — ignoring");
+      return;
+    }
     running = true;
     pollThread = Thread.ofVirtual().name("job-worker-poll").start(this::pollLoop);
     log.info(
@@ -185,6 +189,10 @@ public class JobWorker implements SmartLifecycle {
 
   @Override
   public void stop() {
+    if (!running) {
+      log.debug("JobWorker.stop() called but not running — ignoring");
+      return;
+    }
     running = false;
     if (pollThread != null) {
       pollThread.interrupt();
@@ -197,6 +205,7 @@ public class JobWorker implements SmartLifecycle {
         log.warn(
             "JobWorker poll thread still alive after {}ms shutdown timeout", SHUTDOWN_TIMEOUT_MS);
       }
+      pollThread = null;
     }
     log.info("JobWorker stopped");
   }

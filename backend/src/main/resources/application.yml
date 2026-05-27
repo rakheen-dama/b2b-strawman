@@ -117,6 +117,13 @@ app:
 # The KeycloakProvisioningClient bean is only created when that profile is active.
 
 kazi:
+  job-queue:
+    enabled: true
+    batch-size: 20
+    poll-interval-ms: 2000
+    stale-claim-timeout-minutes: 15
+    max-retries-default: 3
+    backoff-base-seconds: 10
   ai:
     anthropic:
       api-base-url: ${ANTHROPIC_API_BASE_URL:https://api.anthropic.com}

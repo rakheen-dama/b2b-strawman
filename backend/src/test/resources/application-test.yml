@@ -87,6 +87,9 @@ docteams:
 # Tests that need webhook access use @DynamicPropertySource to inject a test ECDSA key.
 
 kazi:
+  job-queue:
+    enabled: false
+    poll-interval-ms: 100
   xero:
     client-id: test-xero-client-id
     client-secret: test-xero-client-secret

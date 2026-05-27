@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.security;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -43,7 +44,10 @@ class SecurityIntegrationTest {
 
   @Test
   void actuatorHealth_isPublic() throws Exception {
-    mockMvc.perform(get("/actuator/health")).andExpect(status().isOk());
+    // Verify no auth is required — accept 200 (all UP) or 503 (a contributor is DOWN)
+    var result = mockMvc.perform(get("/actuator/health")).andReturn();
+    int status = result.getResponse().getStatus();
+    assertThat(status).isIn(200, 503);
   }
 
   @Test

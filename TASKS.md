@@ -620,7 +620,7 @@
 | 545 | Drafting Frontend | Frontend | 540A | M | 545A | **Done** (PR #1370) |
 | 546 | Compliance Dashboard Extension (Frontend) | Frontend | 542A | L | 546A, 546B | **Done** (PR #1371) |
 | **Phase 75 — Scalability: Job Queue Fanout + Shard-Aware DB Resolver** | | | | | | See [tasks/phase75-scalability-job-queue-sharding.md](tasks/phase75-scalability-job-queue-sharding.md) |
-| 547 | Job Queue Entity Foundation + Migration | Backend | -- | M | 547A, 547B | |
+| 547 | Job Queue Entity Foundation + Migration | Backend | -- | M | 547A, 547B | **Done** (PR #1372) |
 | 548 | Job Worker + Handler Infrastructure | Backend | 547 | M | 548A, 548B | |
 | 549 | Scheduler Migration Batch 1 (5 High-Frequency Jobs) | Backend | 548 | M | 549A, 549B | |
 | 550 | Scheduler Migration Batch 2 (14 Remaining Jobs) + Admin API | Backend | 549 | L | 550A, 550B, 550C | |

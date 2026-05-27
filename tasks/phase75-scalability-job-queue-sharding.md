@@ -26,7 +26,7 @@ Phase 75 replaces the sequential scheduler-then-tenant-loop pattern with a job q
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 547 | Job Queue Entity Foundation + Migration | Backend | -- | M | 547A, 547B | |
+| 547 | Job Queue Entity Foundation + Migration | Backend | -- | M | 547A, 547B | **Done** (PR #1372) |
 | 548 | Job Worker + Handler Infrastructure | Backend | 547 | M | 548A, 548B | |
 | 549 | Scheduler Migration Batch 1 (5 High-Frequency Jobs) | Backend | 548 | M | 549A, 549B | |
 | 550 | Scheduler Migration Batch 2 (14 Remaining Jobs) + Admin API | Backend | 549 | L | 550A, 550B, 550C | |
@@ -202,8 +202,8 @@ A realistic day-by-day cadence (2 tracks in parallel): 547A + 551A days 1-2; 547
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **547A** | 547A.1-547A.4 | ~5 backend files (1 migration + 1 entity + 1 enum + 1 repository + 1 test) | V24 global migration (job_queue table + 4 indexes + ShedLock seed row); `JobQueue` entity; `JobStatus` enum; `JobQueueRepository` with custom queries; migration verification test. |
-| **547B** | 547B.1-547B.5 | ~6 backend files (1 interface + 1 implementation + 1 config properties + 2 config files + 1 test) | `JobEnqueuer` interface; `DefaultJobEnqueuer` (batch insert + dedup); `JobQueueProperties` (`@ConfigurationProperties`); `application.yml` + `application-test.yml` config additions; unit/integration tests. |
+| **547A** | 547A.1-547A.4 | ~5 backend files (1 migration + 1 entity + 1 enum + 1 repository + 1 test) | V24 global migration (job_queue table + 4 indexes + ShedLock seed row); `JobQueue` entity; `JobStatus` enum; `JobQueueRepository` with custom queries; migration verification test. | **Done** (PR #1372) |
+| **547B** | 547B.1-547B.5 | ~6 backend files (1 interface + 1 implementation + 1 config properties + 2 config files + 1 test) | `JobEnqueuer` interface; `DefaultJobEnqueuer` (batch insert + dedup); `JobQueueProperties` (`@ConfigurationProperties`); `application.yml` + `application-test.yml` config additions; unit/integration tests. | **Done** (PR #1372) |
 
 ### Tasks
 

@@ -33,6 +33,15 @@ class JobHandlerRegistryTest {
   }
 
   @Test
+  void shouldReturnRegisteredTypes() {
+    var handlerA = new StubJobHandler("type_a");
+    var handlerB = new StubJobHandler("type_b");
+    var registry = new JobHandlerRegistry(List.of(handlerA, handlerB));
+
+    assertThat(registry.getRegisteredTypes()).containsExactlyInAnyOrder("type_a", "type_b");
+  }
+
+  @Test
   void shouldThrowIllegalArgumentExceptionForUnknownJobType() {
     var handler = new StubJobHandler("known_type");
     var registry = new JobHandlerRegistry(List.of(handler));

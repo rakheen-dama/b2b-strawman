@@ -35,7 +35,6 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(
     properties = {
       "kazi.job-queue.enabled=true",
-      "kazi.job-queue.poll-interval-ms=100",
       "kazi.job-queue.backoff-base-seconds=1",
       "kazi.job-queue.auto-start=false"
     })
@@ -101,8 +100,11 @@ class JobWorkerIntegrationTest {
   }
 
   @Test
-  void shouldNotDoubleClaimJobs() {
-    // Enqueue 10 jobs with unique tenants
+  void shouldCompleteAllJobsExactlyOnce() {
+    // Verifies each job is executed exactly once by a single worker.
+    // NOTE: True concurrent multi-worker testing (validating FOR UPDATE SKIP LOCKED under
+    // contention) requires multiple Spring contexts or external processes — deferred to
+    // Epic 555B's integration test suite.
     for (int i = 0; i < 10; i++) {
       String tenantId = String.format("tenant_%012x", 100 + i);
       jobQueueRepository.saveAndFlush(

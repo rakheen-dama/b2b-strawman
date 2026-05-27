@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,15 @@ public class JobHandlerRegistry {
         handlerList.stream().collect(Collectors.toUnmodifiableMap(JobHandler::jobType, h -> h));
 
     log.info("Registered {} job handler(s): {}", handlers.size(), handlers.keySet());
+  }
+
+  /**
+   * Returns the set of all registered job type identifiers. The returned set is unmodifiable.
+   *
+   * @return registered job type names
+   */
+  public Set<String> getRegisteredTypes() {
+    return handlers.keySet();
   }
 
   /**

@@ -3,7 +3,6 @@ package io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.time.Instant;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
@@ -28,9 +27,10 @@ public class JobWorker implements SmartLifecycle {
   private static final Logger log = LoggerFactory.getLogger(JobWorker.class);
   private static final int MAX_ERROR_MESSAGE_LENGTH = 2000;
 
+  private static final long SHUTDOWN_TIMEOUT_MS = 30_000;
+
   private volatile boolean running = false;
   private Thread pollThread;
-  private final AtomicInteger inFlightCount = new AtomicInteger(0);
 
   private final JobQueueRepository repository;
   private final JobHandlerRegistry handlerRegistry;
@@ -103,36 +103,31 @@ public class JobWorker implements SmartLifecycle {
   }
 
   private void processJob(JobQueue job) {
-    inFlightCount.incrementAndGet();
+    MDC.put("tenantId", job.getTenantId());
+    MDC.put("orgId", job.getOrgId());
+    MDC.put("shardId", job.getShardId());
+    MDC.put("jobType", job.getJobType());
+    MDC.put("jobId", job.getId().toString());
     try {
-      MDC.put("tenantId", job.getTenantId());
-      MDC.put("orgId", job.getOrgId());
-      MDC.put("shardId", job.getShardId());
-      MDC.put("jobType", job.getJobType());
-      MDC.put("jobId", job.getId().toString());
-      try {
-        // Execute the handler in tenant scope — only the handler runs with TENANT_ID bound.
-        // The worker's own DB operations (markCompleted/handleFailure) must run against the
-        // public schema since job_queue lives in public, not in a tenant schema.
-        RequestScopes.runForTenant(
-            job.getTenantId(),
-            job.getOrgId(),
-            () -> {
-              var handler = handlerRegistry.getHandler(job.getJobType());
-              handler.execute(job.getPayload());
-            });
-        markCompleted(job);
-      } catch (Exception e) {
-        handleFailure(job, e);
-      } finally {
-        MDC.remove("tenantId");
-        MDC.remove("orgId");
-        MDC.remove("shardId");
-        MDC.remove("jobType");
-        MDC.remove("jobId");
-      }
+      // Execute the handler in tenant scope — only the handler runs with TENANT_ID bound.
+      // The worker's own DB operations (markCompleted/handleFailure) must run against the
+      // public schema since job_queue lives in public, not in a tenant schema.
+      RequestScopes.runForTenant(
+          job.getTenantId(),
+          job.getOrgId(),
+          () -> {
+            var handler = handlerRegistry.getHandler(job.getJobType());
+            handler.execute(job.getPayload());
+          });
+      markCompleted(job);
+    } catch (Exception e) {
+      handleFailure(job, e);
     } finally {
-      inFlightCount.decrementAndGet();
+      MDC.remove("tenantId");
+      MDC.remove("orgId");
+      MDC.remove("shardId");
+      MDC.remove("jobType");
+      MDC.remove("jobId");
     }
   }
 
@@ -194,23 +189,14 @@ public class JobWorker implements SmartLifecycle {
     if (pollThread != null) {
       pollThread.interrupt();
       try {
-        pollThread.join(5_000);
+        pollThread.join(SHUTDOWN_TIMEOUT_MS);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
       }
-    }
-    // Wait for in-flight jobs with 30s hard timeout
-    long deadline = System.currentTimeMillis() + 30_000;
-    while (inFlightCount.get() > 0 && System.currentTimeMillis() < deadline) {
-      try {
-        Thread.sleep(100);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        break;
+      if (pollThread.isAlive()) {
+        log.warn(
+            "JobWorker poll thread still alive after {}ms shutdown timeout", SHUTDOWN_TIMEOUT_MS);
       }
-    }
-    if (inFlightCount.get() > 0) {
-      log.warn("Shutdown timeout: {} jobs still in-flight", inFlightCount.get());
     }
     log.info("JobWorker stopped");
   }

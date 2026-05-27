@@ -41,7 +41,14 @@ public interface JobQueueRepository extends JpaRepository<JobQueue, UUID> {
   List<Object[]> countByStatus();
 
   /** Paginated query for the admin API — filter by status and optionally by job type. */
-  Page<JobQueue> findByStatusAndJobType(JobStatus status, String jobType, Pageable pageable);
+  @Query(
+      """
+      SELECT j FROM JobQueue j
+      WHERE j.status = :status
+        AND (:jobType IS NULL OR j.jobType = :jobType)
+      """)
+  Page<JobQueue> findByStatusAndJobType(
+      @Param("status") JobStatus status, @Param("jobType") String jobType, Pageable pageable);
 
   /** Finds active (PENDING or CLAIMED) jobs for a given job type — used for dedup pre-filter. */
   @Query(

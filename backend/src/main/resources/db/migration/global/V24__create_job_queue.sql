@@ -21,6 +21,10 @@ CREATE TABLE IF NOT EXISTS public.job_queue (
 
     CONSTRAINT chk_job_status CHECK (
         status IN ('PENDING', 'CLAIMED', 'COMPLETED', 'FAILED', 'DEAD_LETTER')
+    ),
+    CONSTRAINT chk_job_queue_non_negative CHECK (
+        retry_count >= 0
+        AND max_retries >= 0
     )
 );
 

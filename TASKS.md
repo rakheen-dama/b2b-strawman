@@ -619,6 +619,16 @@
 | 544 | Contract Review Frontend | Frontend | 539A | M | 544A | **Done** (PR #1369) |
 | 545 | Drafting Frontend | Frontend | 540A | M | 545A | **Done** (PR #1370) |
 | 546 | Compliance Dashboard Extension (Frontend) | Frontend | 542A | L | 546A, 546B | **Done** (PR #1371) |
+| **Phase 75 — Scalability: Job Queue Fanout + Shard-Aware DB Resolver** | | | | | | See [tasks/phase75-scalability-job-queue-sharding.md](tasks/phase75-scalability-job-queue-sharding.md) |
+| 547 | Job Queue Entity Foundation + Migration | Backend | -- | M | 547A, 547B | |
+| 548 | Job Worker + Handler Infrastructure | Backend | 547 | M | 548A, 548B | |
+| 549 | Scheduler Migration Batch 1 (5 High-Frequency Jobs) | Backend | 548 | M | 549A, 549B | |
+| 550 | Scheduler Migration Batch 2 (14 Remaining Jobs) + Admin API | Backend | 549 | L | 550A, 550B, 550C | |
+| 551 | Shard Config + Registry + Migration | Backend | -- | M | 551A, 551B | |
+| 552 | Shard-Aware Connection Provider | Backend | 551 | M | 552A, 552B | |
+| 553 | Shard-Aware Request Scopes + Filter + Runner | Backend | 551, 552 | S | 553A | |
+| 554 | Shard-Aware Provisioning + Flyway | Backend | 551, 552, 553 | M | 554A, 554B | |
+| 555 | Integration Tests + Observability | Backend | 550, 554 | M | 555A, 555B | |
 
 
 ---

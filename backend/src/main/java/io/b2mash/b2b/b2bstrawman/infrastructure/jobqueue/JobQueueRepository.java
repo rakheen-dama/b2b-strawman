@@ -2,6 +2,7 @@ package io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,5 +46,5 @@ public interface JobQueueRepository extends JpaRepository<JobQueue, UUID> {
   /** Finds active (PENDING or CLAIMED) jobs for a given job type — used for dedup pre-filter. */
   @Query(
       "SELECT j.tenantId FROM JobQueue j WHERE j.jobType = :jobType AND j.status IN ('PENDING', 'CLAIMED')")
-  List<String> findActiveTenantIdsByJobType(@Param("jobType") String jobType);
+  Set<String> findActiveTenantIdsByJobType(@Param("jobType") String jobType);
 }

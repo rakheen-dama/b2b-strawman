@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class DefaultJobEnqueuerTest {
 
-  @Autowired private DefaultJobEnqueuer enqueuer;
+  @Autowired private JobEnqueuer enqueuer;
 
   @Autowired private JobQueueRepository jobQueueRepository;
 
@@ -29,9 +29,11 @@ class DefaultJobEnqueuerTest {
 
   @BeforeEach
   void setUp() {
-    // Clear any existing data
+    // Clear any existing data — both tables for deterministic assertions
     jobQueueRepository.deleteAll();
     jobQueueRepository.flush();
+    mappingRepository.deleteAll();
+    mappingRepository.flush();
 
     // Seed 3 test tenant mappings
     mappingRepository.saveAndFlush(new OrgSchemaMapping("org_enq_1", "tenant_enq_1"));
@@ -43,13 +45,11 @@ class DefaultJobEnqueuerTest {
   void fanOutToAllTenantsShouldEnqueueOneJobPerTenant() {
     int enqueued = enqueuer.fanOutToAllTenants("TEST_JOB", null);
 
-    // Should enqueue at least 3 (our test tenants). There may be more from other
-    // mappings seeded by previous test runs, so assert >= 3.
-    assertThat(enqueued).isGreaterThanOrEqualTo(3);
+    assertThat(enqueued).isEqualTo(3);
 
     var jobs = jobQueueRepository.findAll();
     var testJobs = jobs.stream().filter(j -> j.getJobType().equals("TEST_JOB")).toList();
-    assertThat(testJobs).hasSizeGreaterThanOrEqualTo(3);
+    assertThat(testJobs).hasSize(3);
     assertThat(testJobs)
         .extracting(JobQueue::getTenantId)
         .contains("tenant_enq_1", "tenant_enq_2", "tenant_enq_3");
@@ -65,7 +65,7 @@ class DefaultJobEnqueuerTest {
   void fanOutToAllTenantsShouldDedupOnSecondCall() {
     // First enqueue
     int first = enqueuer.fanOutToAllTenants("DEDUP_JOB", null);
-    assertThat(first).isGreaterThanOrEqualTo(3);
+    assertThat(first).isEqualTo(3);
 
     // Second enqueue — all jobs are still PENDING, so dedup pre-filter should skip all
     int second = enqueuer.fanOutToAllTenants("DEDUP_JOB", null);

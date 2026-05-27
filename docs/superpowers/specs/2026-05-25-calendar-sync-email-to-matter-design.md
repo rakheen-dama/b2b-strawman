@@ -1,4 +1,4 @@
-# Phase 75 — Calendar Sync + Email-to-Matter Filing
+# Phase 76 — Calendar Sync + Email-to-Matter Filing
 
 Two cross-vertical integration domains in one phase: bidirectional Google Calendar sync (per-member) and inbound email filing to projects via dedicated forwarding addresses.
 

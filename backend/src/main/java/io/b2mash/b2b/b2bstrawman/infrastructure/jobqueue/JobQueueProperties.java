@@ -12,6 +12,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class JobQueueProperties {
 
   private boolean enabled = false;
+  private boolean autoStart = true;
   private int batchSize = 20;
   private long pollIntervalMs = 2000;
   private int staleClaimTimeoutMinutes = 15;
@@ -37,6 +38,14 @@ public class JobQueueProperties {
 
   public void setEnabled(boolean enabled) {
     this.enabled = enabled;
+  }
+
+  public boolean isAutoStart() {
+    return autoStart;
+  }
+
+  public void setAutoStart(boolean autoStart) {
+    this.autoStart = autoStart;
   }
 
   public int getBatchSize() {

@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.verticals.legal.courtcalendar;
 
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
@@ -31,6 +33,8 @@ public class CourtDateReminderJob {
   private final VerticalModuleGuard moduleGuard;
   private final ProjectRepository projectRepository;
   private final TransactionTemplate transactionTemplate;
+  private final JobEnqueuer jobEnqueuer;
+  private final JobQueueProperties jobQueueProperties;
 
   public CourtDateReminderJob(
       TenantScopedRunner tenantScopedRunner,
@@ -40,7 +44,9 @@ public class CourtDateReminderJob {
       NotificationRepository notificationRepository,
       VerticalModuleGuard moduleGuard,
       ProjectRepository projectRepository,
-      TransactionTemplate transactionTemplate) {
+      TransactionTemplate transactionTemplate,
+      JobEnqueuer jobEnqueuer,
+      JobQueueProperties jobQueueProperties) {
     this.tenantScopedRunner = tenantScopedRunner;
     this.courtDateRepository = courtDateRepository;
     this.prescriptionTrackerRepository = prescriptionTrackerRepository;
@@ -49,24 +55,32 @@ public class CourtDateReminderJob {
     this.moduleGuard = moduleGuard;
     this.projectRepository = projectRepository;
     this.transactionTemplate = transactionTemplate;
+    this.jobEnqueuer = jobEnqueuer;
+    this.jobQueueProperties = jobQueueProperties;
   }
 
   @SchedulerLock(name = "court_date_reminder_execute", lockAtLeastFor = "5m")
   @Scheduled(cron = "${court.reminder.cron:0 0 6 * * *}")
   public void execute() {
     log.debug("Court date reminder job started");
-    int[] totalNotifications = {0};
-    tenantScopedRunner.forEachTenant((tenantId, orgId) -> totalNotifications[0] += processTenant());
 
-    if (totalNotifications[0] > 0) {
-      log.info(
-          "Court date reminder job completed: {} notifications created", totalNotifications[0]);
-    } else {
-      log.debug("Court date reminder job completed: 0 notifications created");
+    if (jobQueueProperties.isDualMode("court_date_reminder")) {
+      int[] totalNotifications = {0};
+      tenantScopedRunner.forEachTenant(
+          (tenantId, orgId) -> totalNotifications[0] += processTenant());
+
+      if (totalNotifications[0] > 0) {
+        log.info(
+            "Court date reminder job completed: {} notifications created", totalNotifications[0]);
+      } else {
+        log.debug("Court date reminder job completed: 0 notifications created");
+      }
     }
+
+    jobEnqueuer.fanOutToAllTenants("court_date_reminder", null);
   }
 
-  private int processTenant() {
+  int processTenant() {
     // Check module enablement in its own read
     Boolean enabled = transactionTemplate.execute(tx -> moduleGuard.isModuleEnabled(MODULE_ID));
     if (!Boolean.TRUE.equals(enabled)) {

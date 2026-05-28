@@ -116,7 +116,7 @@ class TimeReminderSchedulerTest {
     // Setup: reminders disabled
     configureOrgSettings(false, todayDayAbbrev(), currentUtcTime(), 240);
 
-    scheduler.checkTimeReminders();
+    runInTenant(() -> scheduler.processTenant());
 
     runInTenant(
         () ->
@@ -136,7 +136,7 @@ class TimeReminderSchedulerTest {
     String notToday = nonTodayDayAbbrev();
     configureOrgSettings(true, notToday, currentUtcTime(), 240);
 
-    scheduler.checkTimeReminders();
+    runInTenant(() -> scheduler.processTenant());
 
     runInTenant(
         () ->
@@ -155,7 +155,7 @@ class TimeReminderSchedulerTest {
     // Setup: enabled, today is working day, member has 0 minutes logged
     configureOrgSettings(true, todayDayAbbrev(), currentUtcTime(), 240);
 
-    scheduler.checkTimeReminders();
+    runInTenant(() -> scheduler.processTenant());
 
     runInTenant(
         () ->
@@ -176,7 +176,7 @@ class TimeReminderSchedulerTest {
     configureOrgSettings(true, todayDayAbbrev(), currentUtcTime(), 240);
     logTimeEntry(300);
 
-    scheduler.checkTimeReminders();
+    runInTenant(() -> scheduler.processTenant());
 
     runInTenant(
         () ->
@@ -202,7 +202,7 @@ class TimeReminderSchedulerTest {
                     notificationPreferenceRepository.save(
                         new NotificationPreference(memberId, "TIME_REMINDER", false, false))));
 
-    scheduler.checkTimeReminders();
+    runInTenant(() -> scheduler.processTenant());
 
     runInTenant(
         () ->
@@ -222,7 +222,7 @@ class TimeReminderSchedulerTest {
     var farAwayTime = LocalTime.now(ZoneOffset.UTC).plusHours(3);
     configureOrgSettings(true, todayDayAbbrev(), farAwayTime, 240);
 
-    scheduler.checkTimeReminders();
+    runInTenant(() -> scheduler.processTenant());
 
     runInTenant(
         () ->
@@ -242,7 +242,7 @@ class TimeReminderSchedulerTest {
     configureOrgSettings(true, todayDayAbbrev(), currentUtcTime(), 240);
     logTimeEntry(60);
 
-    scheduler.checkTimeReminders();
+    runInTenant(() -> scheduler.processTenant());
 
     runInTenant(
         () ->
@@ -263,7 +263,7 @@ class TimeReminderSchedulerTest {
   void notificationCreated_withCorrectType() {
     configureOrgSettings(true, todayDayAbbrev(), currentUtcTime(), 240);
 
-    scheduler.checkTimeReminders();
+    runInTenant(() -> scheduler.processTenant());
 
     runInTenant(
         () ->
@@ -287,10 +287,10 @@ class TimeReminderSchedulerTest {
     configureOrgSettings(true, todayDayAbbrev(), currentUtcTime(), 240);
 
     // First run — should create a notification
-    scheduler.checkTimeReminders();
+    runInTenant(() -> scheduler.processTenant());
 
     // Second run — should NOT create a duplicate
-    scheduler.checkTimeReminders();
+    runInTenant(() -> scheduler.processTenant());
 
     runInTenant(
         () ->

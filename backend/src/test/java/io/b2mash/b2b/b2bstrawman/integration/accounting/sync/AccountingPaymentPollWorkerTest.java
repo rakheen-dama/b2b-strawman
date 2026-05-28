@@ -137,20 +137,19 @@ class AccountingPaymentPollWorkerTest {
 
   @Test
   @Order(1)
-  void pollAllConnections_pollsConnectedConnectionAndUpdatesLastPollAt() {
+  void pollForTenant_pollsConnectedConnectionAndUpdatesLastPollAt() {
     var noopProvider = new NoOpAccountingProvider();
     when(integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingPaymentSource.class))
         .thenReturn(noopProvider);
 
     Instant beforePoll = Instant.now();
 
-    pollWorker.pollAllConnections();
-
-    // CONNECTED connection's lastPollAt should have been updated
     ScopedValue.where(RequestScopes.TENANT_ID, schemaConnected)
         .where(RequestScopes.ORG_ID, ORG_CONNECTED)
         .run(
             () -> {
+              pollWorker.pollForTenant();
+
               var updated =
                   xeroConnectionRepository.findOneById(connectedConnectionId).orElseThrow();
               assertThat(updated.getLastPollAt()).isNotNull().isAfterOrEqualTo(beforePoll);
@@ -159,18 +158,17 @@ class AccountingPaymentPollWorkerTest {
 
   @Test
   @Order(2)
-  void pollAllConnections_skipsRevokedConnections() {
+  void pollForTenant_skipsRevokedConnections() {
     var noopProvider = new NoOpAccountingProvider();
     when(integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingPaymentSource.class))
         .thenReturn(noopProvider);
 
-    pollWorker.pollAllConnections();
-
-    // REVOKED connection's lastPollAt should remain null — findByStatus(CONNECTED) filters it out
     ScopedValue.where(RequestScopes.TENANT_ID, schemaRevoked)
         .where(RequestScopes.ORG_ID, ORG_REVOKED)
         .run(
             () -> {
+              pollWorker.pollForTenant();
+
               var unchanged =
                   xeroConnectionRepository.findOneById(revokedConnectionId).orElseThrow();
               assertThat(unchanged.getLastPollAt()).isNull();
@@ -180,21 +178,28 @@ class AccountingPaymentPollWorkerTest {
 
   @Test
   @Order(3)
-  void pollAllConnections_isolatesExceptionAcrossTenants() {
-    // Record timestamps before this poll cycle to distinguish this run from prior test runs
-    Instant beforePoll = Instant.now();
-
-    // First resolve() call throws, all subsequent calls succeed.
-    // The worker iterates tenants; failure in one tenant's connection must not stop others.
+  void pollForTenant_isolatesExceptionAcrossConnections() {
+    // First resolve() call throws, subsequent calls succeed.
+    // Per-connection isolation: failure on one connection must not prevent others in the same
+    // tenant.
     var noopProvider = new NoOpAccountingProvider();
     when(integrationRegistry.resolve(IntegrationDomain.ACCOUNTING, AccountingPaymentSource.class))
         .thenThrow(new RuntimeException("Xero API unavailable"))
         .thenReturn(noopProvider);
 
-    pollWorker.pollAllConnections();
+    Instant beforePoll = Instant.now();
+
+    // Poll tenant A — exception on first connection, success on subsequent
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaIsoA)
+        .where(RequestScopes.ORG_ID, ORG_ISO_A)
+        .run(() -> pollWorker.pollForTenant());
+
+    // Poll tenant B — should succeed (provider no longer throws after first call)
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaIsoB)
+        .where(RequestScopes.ORG_ID, ORG_ISO_B)
+        .run(() -> pollWorker.pollForTenant());
 
     // Count how many of the isolation connections were polled during THIS cycle.
-    // At least one must have succeeded despite the exception on another.
     int polledThisCycle = 0;
 
     Instant pollAtA =
@@ -223,11 +228,11 @@ class AccountingPaymentPollWorkerTest {
       polledThisCycle++;
     }
 
-    // With 2 CONNECTED connections across 2 tenants and the first resolve() throwing,
-    // exactly 1 should have failed and at least 1 should have succeeded
+    // At least one of the two tenants should have been polled successfully
     assertThat(polledThisCycle)
         .as(
-            "At least one isolation connection should be polled despite exception in another tenant")
+            "At least one isolation connection should be polled despite exception on another"
+                + " connection")
         .isGreaterThanOrEqualTo(1);
   }
 }

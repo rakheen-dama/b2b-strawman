@@ -109,7 +109,7 @@ class AccountingSyncWorkerTest {
                   "KAZI-INV-" + invoiceId);
           syncEntryRepository.save(entry);
 
-          syncWorker.drainPendingEntries();
+          syncWorker.drainForTenant();
 
           var processed = syncEntryRepository.findByEntity(SyncEntityType.INVOICE, invoiceId);
           assertThat(processed).hasSize(1);
@@ -138,7 +138,7 @@ class AccountingSyncWorkerTest {
                   "KAZI-INV-" + invoiceId);
           syncEntryRepository.save(entry);
 
-          syncWorker.drainPendingEntries();
+          syncWorker.drainForTenant();
 
           var processed = syncEntryRepository.findByEntity(SyncEntityType.INVOICE, invoiceId);
           assertThat(processed).hasSize(1);
@@ -188,7 +188,7 @@ class AccountingSyncWorkerTest {
               "TRANSIENT", "timeout", Instant.now().minus(1, ChronoUnit.MINUTES));
           syncEntryRepository.save(entry);
 
-          syncWorker.drainPendingEntries();
+          syncWorker.drainForTenant();
 
           var processed = syncEntryRepository.findByEntity(SyncEntityType.INVOICE, invoiceId);
           assertThat(processed).hasSize(1);
@@ -218,7 +218,7 @@ class AccountingSyncWorkerTest {
                   "KAZI-CUST-" + customerId);
           syncEntryRepository.save(entry);
 
-          syncWorker.drainPendingEntries();
+          syncWorker.drainForTenant();
 
           var processed = syncEntryRepository.findByEntity(SyncEntityType.CUSTOMER, customerId);
           assertThat(processed).hasSize(1);

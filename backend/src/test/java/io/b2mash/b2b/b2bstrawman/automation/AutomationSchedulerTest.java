@@ -125,7 +125,7 @@ class AutomationSchedulerTest {
               actionExecutionRepository.save(actionExecution);
 
               // Run the scheduler
-              automationScheduler.pollDelayedActions();
+              automationScheduler.processTenant();
 
               // Verify the action execution was processed (COMPLETED or FAILED — not SCHEDULED)
               var updated = actionExecutionRepository.findById(actionExecution.getId());
@@ -174,7 +174,7 @@ class AutomationSchedulerTest {
                       Instant.now().plus(2, ChronoUnit.HOURS));
               actionExecutionRepository.save(actionExecution);
 
-              automationScheduler.pollDelayedActions();
+              automationScheduler.processTenant();
 
               var updated = actionExecutionRepository.findById(actionExecution.getId());
               assertThat(updated).isPresent();
@@ -226,7 +226,7 @@ class AutomationSchedulerTest {
               actionExecution.storeContext(contextData);
               actionExecutionRepository.save(actionExecution);
 
-              automationScheduler.pollDelayedActions();
+              automationScheduler.processTenant();
 
               var updated = actionExecutionRepository.findById(actionExecution.getId());
               assertThat(updated).isPresent();
@@ -284,7 +284,7 @@ class AutomationSchedulerTest {
               transactionTemplate.executeWithoutResult(
                   tx -> actionRepository.deleteByRuleId(rule.getId()));
 
-              automationScheduler.pollDelayedActions();
+              automationScheduler.processTenant();
 
               var updated = actionExecutionRepository.findById(actionExecution.getId());
               assertThat(updated).isPresent();
@@ -333,7 +333,7 @@ class AutomationSchedulerTest {
               actionExecution.storeContext(contextData);
               actionExecutionRepository.save(actionExecution);
 
-              automationScheduler.pollDelayedActions();
+              automationScheduler.processTenant();
 
               var updated = actionExecutionRepository.findById(actionExecution.getId());
               assertThat(updated).isPresent();
@@ -433,8 +433,13 @@ class AutomationSchedulerTest {
                   return actionExecution.getId();
                 });
 
-    // Run scheduler — processes both tenants
-    automationScheduler.pollDelayedActions();
+    // Run per-tenant processing for both tenants (job queue handles fan-out in production)
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(() -> automationScheduler.processTenant());
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName2)
+        .where(RequestScopes.ORG_ID, ORG_ID_2)
+        .run(() -> automationScheduler.processTenant());
 
     // Verify both were processed (no longer SCHEDULED)
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
@@ -503,8 +508,10 @@ class AutomationSchedulerTest {
                   return actionExecution.getId();
                 });
 
-    // Run scheduler — tenant 1 may have errors from previous tests but tenant 2 should still work
-    automationScheduler.pollDelayedActions();
+    // Run per-tenant processing for tenant 2 (job queue handles fan-out in production)
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName2)
+        .where(RequestScopes.ORG_ID, ORG_ID_2)
+        .run(() -> automationScheduler.processTenant());
 
     // Verify tenant 2 action was processed
     ScopedValue.where(RequestScopes.TENANT_ID, schemaName2)
@@ -572,7 +579,7 @@ class AutomationSchedulerTest {
               actionExecution.storeContext(contextData);
               actionExecutionRepository.save(actionExecution);
 
-              automationScheduler.pollDelayedActions();
+              automationScheduler.processTenant();
 
               // Verify the action was processed (not still SCHEDULED)
               var updated = actionExecutionRepository.findById(actionExecution.getId());

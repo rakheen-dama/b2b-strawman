@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.billing;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.provisioning.OrganizationRepository;
@@ -35,6 +37,8 @@ public class SubscriptionExpiryJob {
   private final AuditService auditService;
   private final OrganizationRepository organizationRepository;
   private final OrgSchemaMappingRepository orgSchemaMappingRepository;
+  private final JobEnqueuer jobEnqueuer;
+  private final JobQueueProperties jobQueueProperties;
 
   public SubscriptionExpiryJob(
       SubscriptionRepository subscriptionRepository,
@@ -42,13 +46,17 @@ public class SubscriptionExpiryJob {
       SubscriptionStatusCache statusCache,
       AuditService auditService,
       OrganizationRepository organizationRepository,
-      OrgSchemaMappingRepository orgSchemaMappingRepository) {
+      OrgSchemaMappingRepository orgSchemaMappingRepository,
+      JobEnqueuer jobEnqueuer,
+      JobQueueProperties jobQueueProperties) {
     this.subscriptionRepository = subscriptionRepository;
     this.billingProperties = billingProperties;
     this.statusCache = statusCache;
     this.auditService = auditService;
     this.organizationRepository = organizationRepository;
     this.orgSchemaMappingRepository = orgSchemaMappingRepository;
+    this.jobEnqueuer = jobEnqueuer;
+    this.jobQueueProperties = jobQueueProperties;
   }
 
   /** Transitions TRIALING subscriptions past their trial end date to EXPIRED with grace period. */
@@ -56,6 +64,20 @@ public class SubscriptionExpiryJob {
   @Scheduled(cron = "0 0 3 * * *")
   public void processTrialExpiry() {
     log.info("Trial expiry job started");
+
+    if (jobQueueProperties.isDualMode("subscription_trial_expiry")) {
+      doProcessTrialExpiry();
+    }
+
+    jobEnqueuer.fanOutToAllTenants("subscription_trial_expiry", null);
+  }
+
+  /**
+   * Processes trial expiry for all matching subscriptions. Called by both the {@code @Scheduled}
+   * method (in dual-mode) and by {@link TrialExpiryHandler} (via the job queue). This method
+   * contains only the query + transition + audit logic without the dual-mode check or fanout call.
+   */
+  void doProcessTrialExpiry() {
     var now = Instant.now();
     var expired =
         subscriptionRepository.findBySubscriptionStatusAndBillingMethodInAndTrialEndsAtBefore(
@@ -98,6 +120,21 @@ public class SubscriptionExpiryJob {
   @Scheduled(cron = "0 5 3 * * *")
   public void processGraceExpiry() {
     log.info("Grace period expiry job started");
+
+    if (jobQueueProperties.isDualMode("subscription_grace_expiry")) {
+      doProcessGraceExpiry();
+    }
+
+    jobEnqueuer.fanOutToAllTenants("subscription_grace_expiry", null);
+  }
+
+  /**
+   * Processes grace period expiry for all matching subscriptions. Called by both the
+   * {@code @Scheduled} method (in dual-mode) and by {@link GraceExpiryHandler} (via the job queue).
+   * This method contains only the query + transition + audit logic without the dual-mode check or
+   * fanout call.
+   */
+  void doProcessGraceExpiry() {
     var now = Instant.now();
     var expired =
         subscriptionRepository.findBySubscriptionStatusInAndGraceEndsAtBefore(
@@ -145,6 +182,21 @@ public class SubscriptionExpiryJob {
   @Scheduled(cron = "0 10 3 * * *")
   public void processPendingCancellationEnd() {
     log.info("Pending cancellation end job started");
+
+    if (jobQueueProperties.isDualMode("subscription_cancellation_end")) {
+      doProcessPendingCancellationEnd();
+    }
+
+    jobEnqueuer.fanOutToAllTenants("subscription_cancellation_end", null);
+  }
+
+  /**
+   * Processes pending cancellation end for all matching subscriptions. Called by both the
+   * {@code @Scheduled} method (in dual-mode) and by {@link CancellationEndHandler} (via the job
+   * queue). This method contains only the query + transition + audit logic without the dual-mode
+   * check or fanout call.
+   */
+  void doProcessPendingCancellationEnd() {
     var now = Instant.now();
     var ended =
         subscriptionRepository.findBySubscriptionStatusAndCurrentPeriodEndBefore(

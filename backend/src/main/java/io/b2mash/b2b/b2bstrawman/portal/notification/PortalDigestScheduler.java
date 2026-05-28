@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.portal.notification;
 
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
@@ -63,6 +65,8 @@ public class PortalDigestScheduler {
   private final PortalEmailService portalEmailService;
   private final EmailContextBuilder emailContextBuilder;
   private final TransactionTemplate transactionTemplate;
+  private final JobEnqueuer jobEnqueuer;
+  private final JobQueueProperties jobQueueProperties;
   private final String portalBaseUrl;
   private final String productName;
 
@@ -75,6 +79,8 @@ public class PortalDigestScheduler {
       PortalEmailService portalEmailService,
       EmailContextBuilder emailContextBuilder,
       TransactionTemplate transactionTemplate,
+      JobEnqueuer jobEnqueuer,
+      JobQueueProperties jobQueueProperties,
       @Value("${docteams.app.portal-base-url:http://localhost:3002}") String portalBaseUrl,
       @Value("${docteams.app.product-name:Kazi}") String productName) {
     this.orgSchemaMappingRepository = orgSchemaMappingRepository;
@@ -85,6 +91,8 @@ public class PortalDigestScheduler {
     this.portalEmailService = portalEmailService;
     this.emailContextBuilder = emailContextBuilder;
     this.transactionTemplate = transactionTemplate;
+    this.jobEnqueuer = jobEnqueuer;
+    this.jobQueueProperties = jobQueueProperties;
     this.portalBaseUrl = portalBaseUrl;
     this.productName = productName;
   }
@@ -95,7 +103,11 @@ public class PortalDigestScheduler {
   @SchedulerLock(name = "portal_digest_scheduled_run", lockAtLeastFor = "5m")
   @Scheduled(cron = "0 0 8 ? * MON")
   public void scheduledRun() {
-    runWeeklyDigest();
+    if (jobQueueProperties.isDualMode("portal_digest")) {
+      runWeeklyDigest();
+    }
+
+    jobEnqueuer.fanOutToAllTenants("portal_digest", null);
   }
 
   /**
@@ -181,7 +193,7 @@ public class PortalDigestScheduler {
    * counts; the parent loop aggregates across tenants. Per-contact exceptions are caught + appended
    * to the returned errors list (mirroring the prior {@code log.warn} convention).
    */
-  private TenantResult processTenant(RunOptions options) {
+  TenantResult processTenant(RunOptions options) {
     var settingsOpt =
         transactionTemplate.execute(tx -> orgSettingsRepository.findForCurrentTenant());
     OrgSettings settings = settingsOpt == null ? null : settingsOpt.orElse(null);

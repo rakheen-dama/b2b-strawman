@@ -1,9 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.schedule;
 
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
-import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationRepository;
 import io.b2mash.b2b.b2bstrawman.notification.NotificationService;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
@@ -35,7 +33,6 @@ public class TimeReminderScheduler {
   /** Scheduler runs every 15 minutes (900 000 ms). */
   private static final long CHECK_INTERVAL_MS = 900_000;
 
-  private final TenantScopedRunner tenantScopedRunner;
   private final OrgSettingsRepository orgSettingsRepository;
   private final MemberRepository memberRepository;
   private final TimeEntryRepository timeEntryRepository;
@@ -43,19 +40,15 @@ public class TimeReminderScheduler {
   private final NotificationRepository notificationRepository;
   private final TransactionTemplate transactionTemplate;
   private final JobEnqueuer jobEnqueuer;
-  private final JobQueueProperties jobQueueProperties;
 
   public TimeReminderScheduler(
-      TenantScopedRunner tenantScopedRunner,
       OrgSettingsRepository orgSettingsRepository,
       MemberRepository memberRepository,
       TimeEntryRepository timeEntryRepository,
       NotificationService notificationService,
       NotificationRepository notificationRepository,
       TransactionTemplate transactionTemplate,
-      JobEnqueuer jobEnqueuer,
-      JobQueueProperties jobQueueProperties) {
-    this.tenantScopedRunner = tenantScopedRunner;
+      JobEnqueuer jobEnqueuer) {
     this.orgSettingsRepository = orgSettingsRepository;
     this.memberRepository = memberRepository;
     this.timeEntryRepository = timeEntryRepository;
@@ -63,21 +56,12 @@ public class TimeReminderScheduler {
     this.notificationRepository = notificationRepository;
     this.transactionTemplate = transactionTemplate;
     this.jobEnqueuer = jobEnqueuer;
-    this.jobQueueProperties = jobQueueProperties;
   }
 
   @SchedulerLock(name = "time_reminder_check_time_reminders", lockAtLeastFor = "5m")
   @Scheduled(fixedRate = CHECK_INTERVAL_MS)
   public void checkTimeReminders() {
     log.debug("Time reminder scheduler started");
-
-    if (jobQueueProperties.isDualMode("time_reminder_check")) {
-      int[] remindersCreated = {0};
-      tenantScopedRunner.forEachTenant((tenantId, orgId) -> remindersCreated[0] += processTenant());
-
-      log.info("Time reminder scheduler completed: {} reminders created", remindersCreated[0]);
-    }
-
     jobEnqueuer.fanOutToAllTenants("time_reminder_check", null);
   }
 

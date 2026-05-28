@@ -1,8 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.automation;
 
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
-import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -30,7 +28,6 @@ public class AutomationScheduler {
   private static final long POLL_INTERVAL_MS = 900_000; // 15 minutes
   private static final long CRON_POLL_INTERVAL_MS = 60_000; // 60 seconds
 
-  private final TenantScopedRunner tenantScopedRunner;
   private final ActionExecutionRepository actionExecutionRepository;
   private final AutomationExecutionRepository executionRepository;
   private final AutomationRuleRepository ruleRepository;
@@ -40,10 +37,8 @@ public class AutomationScheduler {
   private final TransactionTemplate transactionTemplate;
   private final ObjectMapper objectMapper;
   private final JobEnqueuer jobEnqueuer;
-  private final JobQueueProperties jobQueueProperties;
 
   public AutomationScheduler(
-      TenantScopedRunner tenantScopedRunner,
       ActionExecutionRepository actionExecutionRepository,
       AutomationExecutionRepository executionRepository,
       AutomationRuleRepository ruleRepository,
@@ -52,9 +47,7 @@ public class AutomationScheduler {
       AutomationEventListener automationEventListener,
       TransactionTemplate transactionTemplate,
       ObjectMapper objectMapper,
-      JobEnqueuer jobEnqueuer,
-      JobQueueProperties jobQueueProperties) {
-    this.tenantScopedRunner = tenantScopedRunner;
+      JobEnqueuer jobEnqueuer) {
     this.actionExecutionRepository = actionExecutionRepository;
     this.executionRepository = executionRepository;
     this.ruleRepository = ruleRepository;
@@ -64,25 +57,12 @@ public class AutomationScheduler {
     this.transactionTemplate = transactionTemplate;
     this.objectMapper = objectMapper;
     this.jobEnqueuer = jobEnqueuer;
-    this.jobQueueProperties = jobQueueProperties;
   }
 
   @SchedulerLock(name = "automation_poll_delayed_actions", lockAtLeastFor = "7m")
   @Scheduled(fixedDelay = POLL_INTERVAL_MS)
   public void pollDelayedActions() {
     log.debug("Automation scheduler started");
-
-    if (jobQueueProperties.isDualMode("automation_poll_delayed")) {
-      int[] processed = {0};
-      tenantScopedRunner.forEachTenant((tenantId, orgId) -> processed[0] += processTenant());
-
-      if (processed[0] > 0) {
-        log.info("Automation scheduler completed: {} delayed actions processed", processed[0]);
-      } else {
-        log.debug("Automation scheduler completed: 0 delayed actions processed");
-      }
-    }
-
     jobEnqueuer.fanOutToAllTenants("automation_poll_delayed", null);
   }
 
@@ -94,22 +74,10 @@ public class AutomationScheduler {
   @Scheduled(fixedDelay = CRON_POLL_INTERVAL_MS)
   public void pollScheduledTriggers() {
     log.debug("Scheduled trigger cron pass started");
-
-    if (jobQueueProperties.isDualMode("automation_poll_triggers")) {
-      int[] fired = {0};
-      tenantScopedRunner.forEachTenant((tenantId, orgId) -> fired[0] += processScheduledTenant());
-
-      if (fired[0] > 0) {
-        log.info("Scheduled trigger cron pass completed: {} rules fired", fired[0]);
-      } else {
-        log.debug("Scheduled trigger cron pass completed: 0 rules fired");
-      }
-    }
-
     jobEnqueuer.fanOutToAllTenants("automation_poll_triggers", null);
   }
 
-  private int processScheduledTenant() {
+  int processScheduledTenant() {
     // Phase 1: short transaction to evaluate which rules should fire and update lastRunAt.
     // This prevents holding a long-running transaction open during LLM execution.
     record DueRule(AutomationRule rule, Instant now) {}
@@ -211,7 +179,7 @@ public class AutomationScheduler {
     log.info("Fired scheduled rule {} ({}) at {}", rule.getId(), rule.getName(), now);
   }
 
-  private int processTenant() {
+  int processTenant() {
     Integer processed =
         transactionTemplate.execute(
             tx -> {

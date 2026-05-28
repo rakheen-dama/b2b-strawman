@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.assistant.invocation;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import java.time.Duration;
 import java.time.Instant;
@@ -49,16 +51,22 @@ public class AiInvocationExpirySweeper {
   private final AiSpecialistInvocationRepository repository;
   private final AuditService auditService;
   private final TransactionTemplate transactionTemplate;
+  private final JobEnqueuer jobEnqueuer;
+  private final JobQueueProperties jobQueueProperties;
 
   public AiInvocationExpirySweeper(
       TenantScopedRunner tenantScopedRunner,
       AiSpecialistInvocationRepository repository,
       AuditService auditService,
-      TransactionTemplate transactionTemplate) {
+      TransactionTemplate transactionTemplate,
+      JobEnqueuer jobEnqueuer,
+      JobQueueProperties jobQueueProperties) {
     this.tenantScopedRunner = tenantScopedRunner;
     this.repository = repository;
     this.auditService = auditService;
     this.transactionTemplate = transactionTemplate;
+    this.jobEnqueuer = jobEnqueuer;
+    this.jobQueueProperties = jobQueueProperties;
   }
 
   /** Runs daily at 03:00 UTC. */
@@ -66,25 +74,30 @@ public class AiInvocationExpirySweeper {
   @Scheduled(cron = "0 0 3 * * *")
   public void sweep() {
     log.info("AiInvocationExpirySweeper: starting daily sweep");
-    int[] totalExpired = {0};
-    int[] totalRetained = {0};
 
-    tenantScopedRunner.forEachTenant(
-        (tenantId, orgId) -> {
-          var result = sweepForTenant();
-          if (result != null) {
-            totalExpired[0] += result[0];
-            totalRetained[0] += result[1];
-          }
-        });
+    if (jobQueueProperties.isDualMode("ai_invocation_expiry")) {
+      int[] totalExpired = {0};
+      int[] totalRetained = {0};
 
-    log.info(
-        "AiInvocationExpirySweeper: completed. Expired: {}, Retention-nulled: {}",
-        totalExpired[0],
-        totalRetained[0]);
+      tenantScopedRunner.forEachTenant(
+          (tenantId, orgId) -> {
+            var result = sweepForTenant();
+            if (result != null) {
+              totalExpired[0] += result[0];
+              totalRetained[0] += result[1];
+            }
+          });
+
+      log.info(
+          "AiInvocationExpirySweeper: completed. Expired: {}, Retention-nulled: {}",
+          totalExpired[0],
+          totalRetained[0]);
+    }
+
+    jobEnqueuer.fanOutToAllTenants("ai_invocation_expiry", null);
   }
 
-  private int[] sweepForTenant() {
+  int[] sweepForTenant() {
     return transactionTemplate.execute(
         tx -> {
           int expired = expirePendingApprovals();

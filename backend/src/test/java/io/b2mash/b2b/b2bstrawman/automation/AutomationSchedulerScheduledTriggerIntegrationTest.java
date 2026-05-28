@@ -97,7 +97,7 @@ class AutomationSchedulerScheduledTriggerIntegrationTest {
           actionRepository.save(action);
 
           // Trigger the cron pass
-          scheduler.pollScheduledTriggers();
+          scheduler.processScheduledTenant();
 
           // Verify lastRunAt was updated
           var updatedRule = ruleRepository.findById(rule.getId()).orElseThrow();
@@ -131,7 +131,7 @@ class AutomationSchedulerScheduledTriggerIntegrationTest {
                       ownerMemberId));
 
           // Should not throw, just skip the rule
-          scheduler.pollScheduledTriggers();
+          scheduler.processScheduledTenant();
 
           // No new executions should be created for this rule
           var newExecs =
@@ -163,14 +163,14 @@ class AutomationSchedulerScheduledTriggerIntegrationTest {
           ruleRepository.save(rule);
 
           // First poll fires once
-          scheduler.pollScheduledTriggers();
+          scheduler.processScheduledTenant();
 
           var updatedRule = ruleRepository.findById(rule.getId()).orElseThrow();
           Instant firstRunAt = updatedRule.getLastRunAt();
           assertThat(firstRunAt).isNotNull();
 
           // Second poll should not fire again immediately (next fire is ~1min away)
-          scheduler.pollScheduledTriggers();
+          scheduler.processScheduledTenant();
 
           var reloadedRule = ruleRepository.findById(rule.getId()).orElseThrow();
           // lastRunAt should be same as after first fire (no second fire within the same second)

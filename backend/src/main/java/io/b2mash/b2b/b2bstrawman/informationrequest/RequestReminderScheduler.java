@@ -2,6 +2,8 @@ package io.b2mash.b2b.b2bstrawman.informationrequest;
 
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
@@ -32,6 +34,8 @@ public class RequestReminderScheduler {
   private final InformationRequestEmailService emailService;
   private final AuditService auditService;
   private final TransactionTemplate transactionTemplate;
+  private final JobEnqueuer jobEnqueuer;
+  private final JobQueueProperties jobQueueProperties;
 
   public RequestReminderScheduler(
       TenantScopedRunner tenantScopedRunner,
@@ -41,7 +45,9 @@ public class RequestReminderScheduler {
       PortalContactRepository portalContactRepository,
       InformationRequestEmailService emailService,
       AuditService auditService,
-      TransactionTemplate transactionTemplate) {
+      TransactionTemplate transactionTemplate,
+      JobEnqueuer jobEnqueuer,
+      JobQueueProperties jobQueueProperties) {
     this.tenantScopedRunner = tenantScopedRunner;
     this.orgSettingsRepository = orgSettingsRepository;
     this.informationRequestRepository = informationRequestRepository;
@@ -50,19 +56,26 @@ public class RequestReminderScheduler {
     this.emailService = emailService;
     this.auditService = auditService;
     this.transactionTemplate = transactionTemplate;
+    this.jobEnqueuer = jobEnqueuer;
+    this.jobQueueProperties = jobQueueProperties;
   }
 
   @SchedulerLock(name = "request_reminder_check_request_reminders", lockAtLeastFor = "5m")
   @Scheduled(fixedRate = CHECK_INTERVAL_MS, initialDelay = CHECK_INTERVAL_MS)
   public void checkRequestReminders() {
     log.debug("Request reminder scheduler started");
-    int[] remindersSent = {0};
-    tenantScopedRunner.forEachTenant((tenantId, orgId) -> remindersSent[0] += processTenant());
 
-    log.info("Request reminder scheduler completed: {} reminders sent", remindersSent[0]);
+    if (jobQueueProperties.isDualMode("request_reminder_check")) {
+      int[] remindersSent = {0};
+      tenantScopedRunner.forEachTenant((tenantId, orgId) -> remindersSent[0] += processTenant());
+
+      log.info("Request reminder scheduler completed: {} reminders sent", remindersSent[0]);
+    }
+
+    jobEnqueuer.fanOutToAllTenants("request_reminder_check", null);
   }
 
-  private int processTenant() {
+  int processTenant() {
     var orgSettingsOpt =
         transactionTemplate.execute(tx -> orgSettingsRepository.findForCurrentTenant());
 

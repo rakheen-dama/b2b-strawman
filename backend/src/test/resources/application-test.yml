@@ -90,6 +90,12 @@ kazi:
   job-queue:
     enabled: false
     poll-interval-ms: 100
+    dual-mode:
+      automation_poll_triggers: true
+      automation_poll_delayed: true
+      accounting_sync_drain: true
+      accounting_payment_poll: true
+      time_reminder_check: true
   xero:
     client-id: test-xero-client-id
     client-secret: test-xero-client-secret

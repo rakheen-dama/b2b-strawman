@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.automation;
 
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import java.time.Instant;
 import java.util.LinkedHashMap;
@@ -37,6 +39,8 @@ public class AutomationScheduler {
   private final AutomationEventListener automationEventListener;
   private final TransactionTemplate transactionTemplate;
   private final ObjectMapper objectMapper;
+  private final JobEnqueuer jobEnqueuer;
+  private final JobQueueProperties jobQueueProperties;
 
   public AutomationScheduler(
       TenantScopedRunner tenantScopedRunner,
@@ -47,7 +51,9 @@ public class AutomationScheduler {
       AutomationActionExecutor automationActionExecutor,
       AutomationEventListener automationEventListener,
       TransactionTemplate transactionTemplate,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      JobEnqueuer jobEnqueuer,
+      JobQueueProperties jobQueueProperties) {
     this.tenantScopedRunner = tenantScopedRunner;
     this.actionExecutionRepository = actionExecutionRepository;
     this.executionRepository = executionRepository;
@@ -57,20 +63,27 @@ public class AutomationScheduler {
     this.automationEventListener = automationEventListener;
     this.transactionTemplate = transactionTemplate;
     this.objectMapper = objectMapper;
+    this.jobEnqueuer = jobEnqueuer;
+    this.jobQueueProperties = jobQueueProperties;
   }
 
   @SchedulerLock(name = "automation_poll_delayed_actions", lockAtLeastFor = "7m")
   @Scheduled(fixedDelay = POLL_INTERVAL_MS)
   public void pollDelayedActions() {
     log.debug("Automation scheduler started");
-    int[] processed = {0};
-    tenantScopedRunner.forEachTenant((tenantId, orgId) -> processed[0] += processTenant());
 
-    if (processed[0] > 0) {
-      log.info("Automation scheduler completed: {} delayed actions processed", processed[0]);
-    } else {
-      log.debug("Automation scheduler completed: 0 delayed actions processed");
+    if (jobQueueProperties.isDualMode("automation_poll_delayed")) {
+      int[] processed = {0};
+      tenantScopedRunner.forEachTenant((tenantId, orgId) -> processed[0] += processTenant());
+
+      if (processed[0] > 0) {
+        log.info("Automation scheduler completed: {} delayed actions processed", processed[0]);
+      } else {
+        log.debug("Automation scheduler completed: 0 delayed actions processed");
+      }
     }
+
+    jobEnqueuer.fanOutToAllTenants("automation_poll_delayed", null);
   }
 
   /**
@@ -81,14 +94,19 @@ public class AutomationScheduler {
   @Scheduled(fixedDelay = CRON_POLL_INTERVAL_MS)
   public void pollScheduledTriggers() {
     log.debug("Scheduled trigger cron pass started");
-    int[] fired = {0};
-    tenantScopedRunner.forEachTenant((tenantId, orgId) -> fired[0] += processScheduledTenant());
 
-    if (fired[0] > 0) {
-      log.info("Scheduled trigger cron pass completed: {} rules fired", fired[0]);
-    } else {
-      log.debug("Scheduled trigger cron pass completed: 0 rules fired");
+    if (jobQueueProperties.isDualMode("automation_poll_triggers")) {
+      int[] fired = {0};
+      tenantScopedRunner.forEachTenant((tenantId, orgId) -> fired[0] += processScheduledTenant());
+
+      if (fired[0] > 0) {
+        log.info("Scheduled trigger cron pass completed: {} rules fired", fired[0]);
+      } else {
+        log.debug("Scheduled trigger cron pass completed: 0 rules fired");
+      }
     }
+
+    jobEnqueuer.fanOutToAllTenants("automation_poll_triggers", null);
   }
 
   private int processScheduledTenant() {

@@ -1,14 +1,12 @@
 package io.b2mash.b2b.b2bstrawman.integration.accounting.sync;
 
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
-import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingProvider;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingSyncResult;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.CustomerSyncRequest;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.InvoiceSyncRequest;
-import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -43,53 +41,32 @@ public class AccountingSyncWorker {
     Duration.ofHours(6) // attempt 5
   };
 
-  private final TenantScopedRunner tenantScopedRunner;
   private final AccountingSyncEntryRepository syncEntryRepository;
   private final IntegrationRegistry integrationRegistry;
   private final AccountingSyncService syncService;
   private final ApplicationEventPublisher eventPublisher;
   private final TransactionTemplate transactionTemplate;
   private final JobEnqueuer jobEnqueuer;
-  private final JobQueueProperties jobQueueProperties;
 
   public AccountingSyncWorker(
-      TenantScopedRunner tenantScopedRunner,
       AccountingSyncEntryRepository syncEntryRepository,
       IntegrationRegistry integrationRegistry,
       AccountingSyncService syncService,
       ApplicationEventPublisher eventPublisher,
       TransactionTemplate transactionTemplate,
-      JobEnqueuer jobEnqueuer,
-      JobQueueProperties jobQueueProperties) {
-    this.tenantScopedRunner = tenantScopedRunner;
+      JobEnqueuer jobEnqueuer) {
     this.syncEntryRepository = syncEntryRepository;
     this.integrationRegistry = integrationRegistry;
     this.syncService = syncService;
     this.eventPublisher = eventPublisher;
     this.transactionTemplate = transactionTemplate;
     this.jobEnqueuer = jobEnqueuer;
-    this.jobQueueProperties = jobQueueProperties;
   }
 
   @SchedulerLock(name = "accounting_sync_drain_pending_entries", lockAtLeastFor = "15s")
   @Scheduled(fixedDelay = 30_000)
   public void drainPendingEntries() {
     log.debug("AccountingSyncWorker: starting drain cycle");
-
-    if (jobQueueProperties.isDualMode("accounting_sync_drain")) {
-      int[] totalProcessed = {0};
-
-      tenantScopedRunner.forEachTenant(
-          (tenantId, orgId) -> {
-            int processed = drainForTenant();
-            totalProcessed[0] += processed;
-          });
-
-      if (totalProcessed[0] > 0) {
-        log.info("AccountingSyncWorker: drain cycle complete. Processed: {}", totalProcessed[0]);
-      }
-    }
-
     jobEnqueuer.fanOutToAllTenants("accounting_sync_drain", null);
   }
 

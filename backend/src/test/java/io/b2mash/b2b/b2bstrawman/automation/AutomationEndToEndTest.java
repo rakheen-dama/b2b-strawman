@@ -403,7 +403,7 @@ class AutomationEndToEndTest {
               actionExecutionRepository.save(pastActionExec);
 
               // Run the scheduler
-              automationScheduler.pollDelayedActions();
+              automationScheduler.processTenant();
 
               // Verify the past-due action was executed
               var updated = actionExecutionRepository.findById(pastActionExec.getId());
@@ -650,7 +650,7 @@ class AutomationEndToEndTest {
               actionExecutionRepository.save(actionExecution);
 
               // Run scheduler — should cancel since rule is disabled
-              automationScheduler.pollDelayedActions();
+              automationScheduler.processTenant();
 
               var updated = actionExecutionRepository.findById(actionExecution.getId());
               assertThat(updated).isPresent();

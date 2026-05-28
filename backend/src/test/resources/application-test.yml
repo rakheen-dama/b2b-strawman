@@ -91,11 +91,6 @@ kazi:
     enabled: false
     poll-interval-ms: 100
     dual-mode:
-      automation_poll_triggers: true
-      automation_poll_delayed: true
-      accounting_sync_drain: true
-      accounting_payment_poll: true
-      time_reminder_check: true
       recurring_schedule_execute: true
       dormancy_check: true
       proposal_expiry: true
@@ -103,6 +98,13 @@ kazi:
       magic_link_cleanup: true
       ai_gate_expiry: true
       field_date_scan: true
+      request_reminder_check: true
+      subscription_trial_expiry: true
+      subscription_grace_expiry: true
+      subscription_cancellation_end: true
+      court_date_reminder: true
+      ai_invocation_expiry: true
+      portal_digest: true
   xero:
     client-id: test-xero-client-id
     client-secret: test-xero-client-secret

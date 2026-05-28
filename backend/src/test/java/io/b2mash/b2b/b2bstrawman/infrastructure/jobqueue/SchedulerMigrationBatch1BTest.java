@@ -119,15 +119,16 @@ class SchedulerMigrationBatch1BTest {
 
   @Test
   void dualModeConfigFlagTogglesOldPathExecution() {
-    // Verify that @TestPropertySource override (false) takes precedence over application-test.yml
-    // default (true) for accounting_sync_drain
+    // Batch 1 dual-mode entries were removed from application-test.yml after cleanup (550B.8).
+    // Batch 1 schedulers no longer check isDualMode — they delegate to fanOutToAllTenants directly.
+    // The @TestPropertySource override still applies.
     assertThat(jobQueueProperties.isDualMode("accounting_sync_drain")).isFalse();
 
-    // Other types inherit the application-test.yml defaults (true for backward compatibility)
-    assertThat(jobQueueProperties.isDualMode("automation_poll_triggers")).isTrue();
-    assertThat(jobQueueProperties.isDualMode("automation_poll_delayed")).isTrue();
-    assertThat(jobQueueProperties.isDualMode("accounting_payment_poll")).isTrue();
-    assertThat(jobQueueProperties.isDualMode("time_reminder_check")).isTrue();
+    // Batch 1 types no longer have dual-mode entries — default is false
+    assertThat(jobQueueProperties.isDualMode("automation_poll_triggers")).isFalse();
+    assertThat(jobQueueProperties.isDualMode("automation_poll_delayed")).isFalse();
+    assertThat(jobQueueProperties.isDualMode("accounting_payment_poll")).isFalse();
+    assertThat(jobQueueProperties.isDualMode("time_reminder_check")).isFalse();
 
     // An unconfigured job type should still default to false
     assertThat(jobQueueProperties.isDualMode("some_unknown_type")).isFalse();

@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.portal;
 
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -22,37 +24,47 @@ public class MagicLinkCleanupService {
   private final MagicLinkTokenRepository tokenRepository;
   private final TenantScopedRunner tenantScopedRunner;
   private final TransactionTemplate transactionTemplate;
+  private final JobEnqueuer jobEnqueuer;
+  private final JobQueueProperties jobQueueProperties;
 
   public MagicLinkCleanupService(
       MagicLinkTokenRepository tokenRepository,
       TenantScopedRunner tenantScopedRunner,
-      TransactionTemplate transactionTemplate) {
+      TransactionTemplate transactionTemplate,
+      JobEnqueuer jobEnqueuer,
+      JobQueueProperties jobQueueProperties) {
     this.tokenRepository = tokenRepository;
     this.tenantScopedRunner = tenantScopedRunner;
     this.transactionTemplate = transactionTemplate;
+    this.jobEnqueuer = jobEnqueuer;
+    this.jobQueueProperties = jobQueueProperties;
   }
 
   @SchedulerLock(name = "magic_link_cleanup_expired_tokens", lockAtLeastFor = "30m")
   @Scheduled(fixedRate = 3600000) // hourly
   public void cleanupExpiredTokens() {
-    Instant cutoff = Instant.now().minus(1, ChronoUnit.DAYS);
-    int[] totalDeleted = {0};
-    int tenantsProcessed =
-        tenantScopedRunner.forEachTenant(
-            (tenantId, orgId) -> {
-              Integer deleted =
-                  transactionTemplate.execute(
-                      status -> tokenRepository.deleteByExpiresAtBefore(cutoff));
-              if (deleted != null && deleted > 0) {
-                totalDeleted[0] += deleted;
-              }
-            });
+    if (jobQueueProperties.isDualMode("magic_link_cleanup")) {
+      Instant cutoff = Instant.now().minus(1, ChronoUnit.DAYS);
+      int[] totalDeleted = {0};
+      int tenantsProcessed =
+          tenantScopedRunner.forEachTenant(
+              (tenantId, orgId) -> {
+                Integer deleted =
+                    transactionTemplate.execute(
+                        status -> tokenRepository.deleteByExpiresAtBefore(cutoff));
+                if (deleted != null && deleted > 0) {
+                  totalDeleted[0] += deleted;
+                }
+              });
 
-    if (totalDeleted[0] > 0) {
-      log.info(
-          "Cleaned up {} expired magic link tokens across {} schemas",
-          totalDeleted[0],
-          tenantsProcessed);
+      if (totalDeleted[0] > 0) {
+        log.info(
+            "Cleaned up {} expired magic link tokens across {} schemas",
+            totalDeleted[0],
+            tenantsProcessed);
+      }
     }
+
+    jobEnqueuer.fanOutToAllTenants("magic_link_cleanup", null);
   }
 }

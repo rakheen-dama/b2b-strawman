@@ -6,6 +6,8 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
@@ -26,14 +28,22 @@ class DormancyScheduledJobTest {
   @Mock private CustomerLifecycleService lifecycleService;
   @Mock private NotificationService notificationService;
   @Mock private MemberRepository memberRepository;
+  @Mock private JobEnqueuer jobEnqueuer;
+  @Mock private JobQueueProperties jobQueueProperties;
 
   private DormancyScheduledJob job;
 
   @BeforeEach
   void setUp() {
+    when(jobQueueProperties.isDualMode("dormancy_check")).thenReturn(true);
     job =
         new DormancyScheduledJob(
-            tenantScopedRunner, lifecycleService, notificationService, memberRepository);
+            tenantScopedRunner,
+            lifecycleService,
+            notificationService,
+            memberRepository,
+            jobEnqueuer,
+            jobQueueProperties);
   }
 
   /** Stubs forEachTenant to invoke the action once with synthetic tenant data. */

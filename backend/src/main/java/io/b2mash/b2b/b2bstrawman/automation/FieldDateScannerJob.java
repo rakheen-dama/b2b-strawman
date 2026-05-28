@@ -6,6 +6,8 @@ import io.b2mash.b2b.b2bstrawman.fielddefinition.EntityType;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinition;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldDefinitionRepository;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldType;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -40,6 +42,8 @@ public class FieldDateScannerJob {
   private final FieldDateNotificationLogRepository notificationLogRepository;
   private final ApplicationEventPublisher eventPublisher;
   private final TransactionTemplate transactionTemplate;
+  private final JobEnqueuer jobEnqueuer;
+  private final JobQueueProperties jobQueueProperties;
 
   public FieldDateScannerJob(
       TenantScopedRunner tenantScopedRunner,
@@ -48,7 +52,9 @@ public class FieldDateScannerJob {
       ProjectRepository projectRepository,
       FieldDateNotificationLogRepository notificationLogRepository,
       ApplicationEventPublisher eventPublisher,
-      TransactionTemplate transactionTemplate) {
+      TransactionTemplate transactionTemplate,
+      JobEnqueuer jobEnqueuer,
+      JobQueueProperties jobQueueProperties) {
     this.tenantScopedRunner = tenantScopedRunner;
     this.fieldDefinitionRepository = fieldDefinitionRepository;
     this.customerRepository = customerRepository;
@@ -56,23 +62,30 @@ public class FieldDateScannerJob {
     this.notificationLogRepository = notificationLogRepository;
     this.eventPublisher = eventPublisher;
     this.transactionTemplate = transactionTemplate;
+    this.jobEnqueuer = jobEnqueuer;
+    this.jobQueueProperties = jobQueueProperties;
   }
 
   @SchedulerLock(name = "field_date_scanner_execute", lockAtLeastFor = "5m")
   @Scheduled(cron = "${app.automation.field-date-scan-cron:0 0 6 * * *}")
   public void execute() {
     log.debug("Field date scanner started");
-    int[] totalFired = {0};
-    tenantScopedRunner.forEachTenant((tenantId, orgId) -> totalFired[0] += scanTenant());
 
-    if (totalFired[0] > 0) {
-      log.info("Field date scanner completed: {} events fired", totalFired[0]);
-    } else {
-      log.debug("Field date scanner completed: 0 events fired");
+    if (jobQueueProperties.isDualMode("field_date_scan")) {
+      int[] totalFired = {0};
+      tenantScopedRunner.forEachTenant((tenantId, orgId) -> totalFired[0] += scanTenant());
+
+      if (totalFired[0] > 0) {
+        log.info("Field date scanner completed: {} events fired", totalFired[0]);
+      } else {
+        log.debug("Field date scanner completed: 0 events fired");
+      }
     }
+
+    jobEnqueuer.fanOutToAllTenants("field_date_scan", null);
   }
 
-  private int scanTenant() {
+  int scanTenant() {
     Integer count =
         transactionTemplate.execute(
             tx -> {

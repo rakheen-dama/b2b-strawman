@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.compliance;
 
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.member.Member;
 import io.b2mash.b2b.b2bstrawman.member.MemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
@@ -24,34 +26,45 @@ public class DormancyScheduledJob {
   private final CustomerLifecycleService lifecycleService;
   private final NotificationService notificationService;
   private final MemberRepository memberRepository;
+  private final JobEnqueuer jobEnqueuer;
+  private final JobQueueProperties jobQueueProperties;
 
   public DormancyScheduledJob(
       TenantScopedRunner tenantScopedRunner,
       CustomerLifecycleService lifecycleService,
       NotificationService notificationService,
-      MemberRepository memberRepository) {
+      MemberRepository memberRepository,
+      JobEnqueuer jobEnqueuer,
+      JobQueueProperties jobQueueProperties) {
     this.tenantScopedRunner = tenantScopedRunner;
     this.lifecycleService = lifecycleService;
     this.notificationService = notificationService;
     this.memberRepository = memberRepository;
+    this.jobEnqueuer = jobEnqueuer;
+    this.jobQueueProperties = jobQueueProperties;
   }
 
   @SchedulerLock(name = "dormancy_execute_dormancy_check", lockAtLeastFor = "5m")
   @Scheduled(cron = "0 0 2 * * *")
   public void executeDormancyCheck() {
     log.info("Auto-dormancy scheduled job started");
-    int[] totalTransitioned = {0};
-    int tenantsProcessed =
-        tenantScopedRunner.forEachTenant(
-            (tenantId, orgId) -> totalTransitioned[0] += processTenant());
 
-    log.info(
-        "Auto-dormancy scheduled job completed: {} tenants processed, {} total customers transitioned",
-        tenantsProcessed,
-        totalTransitioned[0]);
+    if (jobQueueProperties.isDualMode("dormancy_check")) {
+      int[] totalTransitioned = {0};
+      int tenantsProcessed =
+          tenantScopedRunner.forEachTenant(
+              (tenantId, orgId) -> totalTransitioned[0] += processTenant());
+
+      log.info(
+          "Auto-dormancy scheduled job completed: {} tenants processed, {} total customers transitioned",
+          tenantsProcessed,
+          totalTransitioned[0]);
+    }
+
+    jobEnqueuer.fanOutToAllTenants("dormancy_check", null);
   }
 
-  private int processTenant() {
+  int processTenant() {
     int transitioned = lifecycleService.executeDormancyTransitions();
 
     if (transitioned > 0) {

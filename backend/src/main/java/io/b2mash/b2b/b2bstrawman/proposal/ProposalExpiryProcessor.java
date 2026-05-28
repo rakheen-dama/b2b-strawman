@@ -3,6 +3,8 @@ package io.b2mash.b2b.b2bstrawman.proposal;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventBuilder;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
@@ -35,6 +37,8 @@ public class ProposalExpiryProcessor {
   private final AuditService auditService;
   private final ApplicationEventPublisher eventPublisher;
   private final TransactionTemplate transactionTemplate;
+  private final JobEnqueuer jobEnqueuer;
+  private final JobQueueProperties jobQueueProperties;
 
   public ProposalExpiryProcessor(
       TenantScopedRunner tenantScopedRunner,
@@ -44,7 +48,9 @@ public class ProposalExpiryProcessor {
       OrganizationRepository organizationRepository,
       AuditService auditService,
       ApplicationEventPublisher eventPublisher,
-      TransactionTemplate transactionTemplate) {
+      TransactionTemplate transactionTemplate,
+      JobEnqueuer jobEnqueuer,
+      JobQueueProperties jobQueueProperties) {
     this.tenantScopedRunner = tenantScopedRunner;
     this.proposalRepository = proposalRepository;
     this.customerRepository = customerRepository;
@@ -53,28 +59,35 @@ public class ProposalExpiryProcessor {
     this.auditService = auditService;
     this.eventPublisher = eventPublisher;
     this.transactionTemplate = transactionTemplate;
+    this.jobEnqueuer = jobEnqueuer;
+    this.jobQueueProperties = jobQueueProperties;
   }
 
   @SchedulerLock(name = "proposal_process_expired_proposals", lockAtLeastFor = "30m")
   @Scheduled(fixedRateString = "${proposal.expiry.interval:3600000}")
   public void processExpiredProposals() {
     log.info("Proposal expiry processor started");
-    int[] totalExpired = {0};
-    int tenantsProcessed =
-        tenantScopedRunner.forEachTenant(
-            (tenantId, orgId) -> totalExpired[0] += processExpiredForTenant(orgId));
 
-    if (totalExpired[0] > 0) {
-      log.info(
-          "Proposal expiry processor completed: {} proposals expired across {} tenants",
-          totalExpired[0],
-          tenantsProcessed);
-    } else {
-      log.info("Proposal expiry processor completed: no proposals expired");
+    if (jobQueueProperties.isDualMode("proposal_expiry")) {
+      int[] totalExpired = {0};
+      int tenantsProcessed =
+          tenantScopedRunner.forEachTenant(
+              (tenantId, orgId) -> totalExpired[0] += processExpiredForTenant(orgId));
+
+      if (totalExpired[0] > 0) {
+        log.info(
+            "Proposal expiry processor completed: {} proposals expired across {} tenants",
+            totalExpired[0],
+            tenantsProcessed);
+      } else {
+        log.info("Proposal expiry processor completed: no proposals expired");
+      }
     }
+
+    jobEnqueuer.fanOutToAllTenants("proposal_expiry", null);
   }
 
-  private int processExpiredForTenant(String orgId) {
+  int processExpiredForTenant(String orgId) {
     Integer result =
         transactionTemplate.execute(
             status -> {

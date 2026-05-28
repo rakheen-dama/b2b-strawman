@@ -162,7 +162,7 @@ PHASES already complete:
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
 | 4a | **550A** | Migrate 7 schedulers: `RecurringScheduleExecutor`, `DormancyScheduledJob`, `ProposalExpiryProcessor`, `AcceptanceExpiryProcessor`, `MagicLinkCleanupService`, `AiExecutionGateService`, `FieldDateScannerJob`. | 554A | **Done** (PR #1375) |
-| 4b | **550B** | Migrate 7 schedulers: `RequestReminderScheduler`, `SubscriptionExpiryJob` (3 methods: trial, grace, cancellation), `CourtDateReminderJob`, `AiInvocationExpirySweeper`, `PortalDigestScheduler`. | 554B |
+| 4b | **550B** | Migrate 7 schedulers: `RequestReminderScheduler`, `SubscriptionExpiryJob` (3 methods: trial, grace, cancellation), `CourtDateReminderJob`, `AiInvocationExpirySweeper`, `PortalDigestScheduler`. | 554B | **Done** (PR #1376) |
 | 4c | **550C** | `JobQueueAdminController` (list, retry, delete, stats endpoints); platform-admin only; integration tests with MockMvc. | After 550B |
 | 4d | **554A** | `TenantProvisioningService` shard parameter + validation via `ShardRegistry`; provisioning API extension (optional `shardId` field); integration test for provisioning on non-primary shard. | 550A |
 | 4e | **554B** | `TenantMigrationRunner` shard iteration (iterate active shards from `ShardRegistry`, run Flyway per shard per schema); integration test with two embedded Postgres instances. | 550B |
@@ -443,7 +443,7 @@ A realistic day-by-day cadence (2 tracks in parallel): 547A + 551A days 1-2; 547
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
 | **550A** | 550A.1-550A.8 | ~12 backend files (7 new handlers + 7 modified schedulers + 1 test) | Migrate schedulers #6-12: `RecurringScheduleExecutor`, `DormancyScheduledJob`, `ProposalExpiryProcessor`, `AcceptanceExpiryProcessor`, `MagicLinkCleanupService`, `AiExecutionGateService`, `FieldDateScannerJob`. | **Done** (PR #1375) |
-| **550B** | 550B.1-550B.8 | ~12 backend files (7 new handlers + 5 modified schedulers + 1 test) | Migrate schedulers #13-19: `RequestReminderScheduler`, `SubscriptionExpiryJob` (3 handlers), `CourtDateReminderJob`, `AiInvocationExpirySweeper`, `PortalDigestScheduler`. |
+| **550B** | 550B.1-550B.8 | ~12 backend files (7 new handlers + 5 modified schedulers + 1 test) | Migrate schedulers #13-19: `RequestReminderScheduler`, `SubscriptionExpiryJob` (3 handlers), `CourtDateReminderJob`, `AiInvocationExpirySweeper`, `PortalDigestScheduler`. | **Done** (PR #1376) |
 | **550C** | 550C.1-550C.3 | ~3 backend files (1 controller + 1 DTO record + 1 test) | `JobQueueAdminController` (list, retry, delete, stats); platform-admin security; integration tests. |
 
 ### Tasks

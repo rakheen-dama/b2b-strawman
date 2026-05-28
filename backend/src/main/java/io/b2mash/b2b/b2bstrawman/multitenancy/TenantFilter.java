@@ -29,7 +29,7 @@ public class TenantFilter extends OncePerRequestFilter {
   private final OrgSchemaMappingRepository mappingRepository;
   private final ObjectProvider<TenantProvisioningService> provisioningService;
   private final boolean jitProvisioningEnabled;
-  private final Cache<String, String> tenantCache =
+  private final Cache<String, TenantMapping> tenantCache =
       Caffeine.newBuilder().maximumSize(10_000).expireAfterWrite(Duration.ofHours(1)).build();
 
   public TenantFilter(
@@ -58,13 +58,9 @@ public class TenantFilter extends OncePerRequestFilter {
       String orgId = JwtUtils.extractOrgId(jwt);
 
       if (orgId != null) {
-        String schema = resolveTenant(orgId);
-        if (schema != null) {
-          ScopedFilterChain.runScoped(
-              ScopedValue.where(RequestScopes.TENANT_ID, schema).where(RequestScopes.ORG_ID, orgId),
-              filterChain,
-              request,
-              response);
+        TenantMapping mapping = resolveTenant(orgId);
+        if (mapping != null) {
+          ScopedFilterChain.runScoped(buildCarrier(mapping, orgId), filterChain, request, response);
           return;
         } else {
           // Schema not found — attempt JIT provisioning if enabled and user is admin/owner
@@ -73,15 +69,11 @@ public class TenantFilter extends OncePerRequestFilter {
           if (svc != null) {
             // Any authenticated user can trigger JIT provisioning — the first user
             // gets promoted to owner by MemberFilter (founding user logic)
-            schema = attemptJitProvisioning(jwt, orgId, svc);
+            mapping = attemptJitProvisioning(jwt, orgId, svc);
           }
-          if (schema != null) {
+          if (mapping != null) {
             ScopedFilterChain.runScoped(
-                ScopedValue.where(RequestScopes.TENANT_ID, schema)
-                    .where(RequestScopes.ORG_ID, orgId),
-                filterChain,
-                request,
-                response);
+                buildCarrier(mapping, orgId), filterChain, request, response);
             return;
           }
           response.sendError(HttpServletResponse.SC_FORBIDDEN, "Organization not provisioned");
@@ -102,48 +94,59 @@ public class TenantFilter extends OncePerRequestFilter {
         || path.startsWith("/portal/");
   }
 
-  private String resolveTenant(String clerkOrgId) {
+  private static ScopedValue.Carrier buildCarrier(TenantMapping mapping, String orgId) {
+    ScopedValue.Carrier carrier =
+        ScopedValue.where(RequestScopes.TENANT_ID, mapping.schemaName())
+            .where(RequestScopes.ORG_ID, orgId);
+    if (mapping.shardId() != null && !mapping.shardId().isBlank()) {
+      carrier = carrier.where(RequestScopes.SHARD_ID, mapping.shardId());
+    }
+    return carrier;
+  }
+
+  private TenantMapping resolveTenant(String clerkOrgId) {
     // Caffeine's cache.get(key, loader) throws NPE if loader returns null.
     // Use getIfPresent + manual put to handle unprovisioned orgs gracefully.
-    String cached = tenantCache.getIfPresent(clerkOrgId);
+    TenantMapping cached = tenantCache.getIfPresent(clerkOrgId);
     if (cached != null) {
       return cached;
     }
-    String schema = lookupTenant(clerkOrgId);
-    if (schema != null) {
-      tenantCache.put(clerkOrgId, schema);
+    TenantMapping mapping = lookupTenant(clerkOrgId);
+    if (mapping != null) {
+      tenantCache.put(clerkOrgId, mapping);
     }
-    return schema;
+    return mapping;
   }
 
-  private String lookupTenant(String clerkOrgId) {
+  private TenantMapping lookupTenant(String clerkOrgId) {
     return mappingRepository
         .findByClerkOrgId(clerkOrgId)
-        .map(OrgSchemaMapping::getSchemaName)
+        .map(m -> new TenantMapping(m.getSchemaName(), m.getExternalOrgId(), m.getShardId()))
         .orElse(null);
   }
 
-  private String attemptJitProvisioning(Jwt jwt, String orgId, TenantProvisioningService svc) {
+  private TenantMapping attemptJitProvisioning(
+      Jwt jwt, String orgId, TenantProvisioningService svc) {
     String orgSlug = JwtUtils.extractOrgSlug(jwt);
     String orgName = orgSlug != null ? orgSlug : orgId;
     try {
       log.info("JIT provisioning tenant for org {}", orgId);
       svc.provisionTenant(orgId, orgName, null);
       // Provisioning succeeded — retry lookup (bypasses cache)
-      String schema = lookupTenant(orgId);
-      if (schema == null) {
+      TenantMapping mapping = lookupTenant(orgId);
+      if (mapping == null) {
         log.error("JIT provisioning completed but schema mapping not found for org {}", orgId);
       } else {
-        tenantCache.put(orgId, schema);
+        tenantCache.put(orgId, mapping);
       }
-      return schema;
+      return mapping;
     } catch (Exception e) {
       // Could be a concurrent provisioning race — retry lookup
       log.warn("JIT provisioning failed for org {}, retrying lookup: {}", orgId, e.getMessage());
-      String schema = lookupTenant(orgId);
-      if (schema != null) {
-        tenantCache.put(orgId, schema);
-        return schema;
+      TenantMapping mapping = lookupTenant(orgId);
+      if (mapping != null) {
+        tenantCache.put(orgId, mapping);
+        return mapping;
       }
       log.error("JIT provisioning and retry lookup both failed for org {}", orgId, e);
       return null;

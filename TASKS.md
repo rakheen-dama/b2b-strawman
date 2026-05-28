@@ -625,7 +625,7 @@
 | 549 | Scheduler Migration Batch 1 (5 High-Frequency Jobs) | Backend | 548 | M | 549A, 549B | **Done** (PR #1374) |
 | 550 | Scheduler Migration Batch 2 (14 Remaining Jobs) + Admin API | Backend | 549 | L | 550A, 550B, 550C | **Done** (PRs #1375, #1376, #1377) |
 | 551 | Shard Config + Registry + Migration | Backend | -- | M | 551A, 551B | **Done** (PR #1378) |
-| 552 | Shard-Aware Connection Provider | Backend | 551 | M | 552A, 552B | |
+| 552 | Shard-Aware Connection Provider | Backend | 551 | M | 552A, 552B | **Done** (PR #1379) |
 | 553 | Shard-Aware Request Scopes + Filter + Runner | Backend | 551, 552 | S | 553A | |
 | 554 | Shard-Aware Provisioning + Flyway | Backend | 551, 552, 553 | M | 554A, 554B | |
 | 555 | Integration Tests + Observability | Backend | 550, 554 | M | 555A, 555B | |

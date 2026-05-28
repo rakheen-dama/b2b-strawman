@@ -31,7 +31,7 @@ Phase 75 replaces the sequential scheduler-then-tenant-loop pattern with a job q
 | 549 | Scheduler Migration Batch 1 (5 High-Frequency Jobs) | Backend | 548 | M | 549A, 549B | **Done** (PR #1374) |
 | 550 | Scheduler Migration Batch 2 (14 Remaining Jobs) + Admin API | Backend | 549 | L | 550A, 550B, 550C | **Done** (PRs #1375, #1376, #1377) |
 | 551 | Shard Config + Registry + Migration | Backend | -- | M | 551A, 551B | **Done** (PR #1378) |
-| 552 | Shard-Aware Connection Provider | Backend | 551 | M | 552A, 552B | |
+| 552 | Shard-Aware Connection Provider | Backend | 551 | M | 552A, 552B | **Done** (PR #1379) |
 | 553 | Shard-Aware Request Scopes + Filter + Runner | Backend | 551, 552 | S | 553A | |
 | 554 | Shard-Aware Provisioning + Flyway | Backend | 551, 552, 553 | M | 554A, 554B | |
 | 555 | Integration Tests + Observability | Backend | 550, 554 | M | 555A, 555B | |
@@ -146,8 +146,8 @@ PHASES already complete:
 |-------|-------|---------|-----------------------|
 | 2a | **548A** | `JobHandler` interface + `JobHandlerRegistry` (startup validation); `JobQueueConfig` (`@Configuration` + `@ConditionalOnProperty`); extend `JobQueueProperties` with worker fields. | 552A |
 | 2b | **548B** | `JobWorker` poll loop (virtual threads, `FOR UPDATE SKIP LOCKED`, ScopedValue binding, retry/dead-letter); `StaleJobRecoveryTask` (`@Scheduled` + `@SchedulerLock`); graceful shutdown; integration tests for enqueue-claim-execute cycle, concurrent workers, stale recovery, dead letter. | 552B |
-| 2c | **552A** | `ShardAwareConnectionProvider` implementing `MultiTenantConnectionProvider<String>` (parse composite identifier, resolve DataSource, set search_path); conditional wiring in `HibernateMultiTenancyConfig` (`@ConditionalOnProperty`). | 548A |
-| 2d | **552B** | `TenantIdentifierResolver` changes (composite `{shardId}:{schemaName}` format when sharding enabled); single-shard characterization test (enable sharding with primary only, run test suite). | 548B |
+| 2c | **552A** | `ShardAwareConnectionProvider` implementing `MultiTenantConnectionProvider<String>` (parse composite identifier, resolve DataSource, set search_path); conditional wiring in `HibernateMultiTenancyConfig` (`@ConditionalOnProperty`). | 548A | **Done** (PR #1379) |
+| 2d | **552B** | `TenantIdentifierResolver` changes (composite `{shardId}:{schemaName}` format when sharding enabled); single-shard characterization test (enable sharding with primary only, run test suite). | 548B | **Done** (PR #1379) |
 
 ### Stage 3 -- Scheduler Batch 1 + Request Scopes (parallel tracks)
 
@@ -618,8 +618,8 @@ A realistic day-by-day cadence (2 tracks in parallel): 547A + 551A days 1-2; 547
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **552A** | 552A.1-552A.3 | ~4 backend files (1 new provider + 1 modified config + 1 modified existing provider + 1 test) | `ShardAwareConnectionProvider` implementing `MultiTenantConnectionProvider<String>`; conditional wiring in `HibernateMultiTenancyConfig`; `@ConditionalOnProperty` on existing `SchemaMultiTenantConnectionProvider`. |
-| **552B** | 552B.1-552B.3 | ~3 backend files (1 modified resolver + 1 modified config + 1 test) | `TenantIdentifierResolver` composite identifier format (when sharding enabled); backward compatibility (schema-only when sharding disabled); single-shard characterization test. |
+| **552A** | 552A.1-552A.3 | ~4 backend files (1 new provider + 1 modified config + 1 modified existing provider + 1 test) | `ShardAwareConnectionProvider` implementing `MultiTenantConnectionProvider<String>`; conditional wiring in `HibernateMultiTenancyConfig`; `@ConditionalOnProperty` on existing `SchemaMultiTenantConnectionProvider`. | **Done** (PR #1379) |
+| **552B** | 552B.1-552B.3 | ~3 backend files (1 modified resolver + 1 modified config + 1 test) | `TenantIdentifierResolver` composite identifier format (when sharding enabled); backward compatibility (schema-only when sharding disabled); single-shard characterization test. | **Done** (PR #1379) |
 
 ### Tasks
 

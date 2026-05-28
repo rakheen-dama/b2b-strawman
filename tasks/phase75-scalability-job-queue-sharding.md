@@ -28,7 +28,7 @@ Phase 75 replaces the sequential scheduler-then-tenant-loop pattern with a job q
 |------|------|-------|------|--------|--------|--------|
 | 547 | Job Queue Entity Foundation + Migration | Backend | -- | M | 547A, 547B | **Done** (PR #1372) |
 | 548 | Job Worker + Handler Infrastructure | Backend | 547 | M | 548A, 548B | **Done** (PR #1373) |
-| 549 | Scheduler Migration Batch 1 (5 High-Frequency Jobs) | Backend | 548 | M | 549A, 549B | |
+| 549 | Scheduler Migration Batch 1 (5 High-Frequency Jobs) | Backend | 548 | M | 549A, 549B | **Done** (PR #1374) |
 | 550 | Scheduler Migration Batch 2 (14 Remaining Jobs) + Admin API | Backend | 549 | L | 550A, 550B, 550C | |
 | 551 | Shard Config + Registry + Migration | Backend | -- | M | 551A, 551B | |
 | 552 | Shard-Aware Connection Provider | Backend | 551 | M | 552A, 552B | |
@@ -153,8 +153,8 @@ PHASES already complete:
 
 | Order | Slice | Summary | Runs in parallel with |
 |-------|-------|---------|-----------------------|
-| 3a | **549A** | Migrate 3 schedulers: `AutomationScheduler.pollScheduledTriggers()` -> `AutomationPollTriggersHandler`; `AutomationScheduler.pollDelayedActions()` -> `AutomationPollDelayedHandler`; `AccountingSyncWorker.drainPendingEntries()` -> `AccountingSyncDrainHandler`. Dual-mode support. | 553A |
-| 3b | **549B** | Migrate 2 schedulers: `AccountingPaymentPollWorker.pollAllConnections()` -> `AccountingPaymentPollHandler`; `TimeReminderScheduler.checkTimeReminders()` -> `TimeReminderHandler`. Characterization tests. | 553A |
+| 3a | **549A** | Migrate 3 schedulers: `AutomationScheduler.pollScheduledTriggers()` -> `AutomationPollTriggersHandler`; `AutomationScheduler.pollDelayedActions()` -> `AutomationPollDelayedHandler`; `AccountingSyncWorker.drainPendingEntries()` -> `AccountingSyncDrainHandler`. Dual-mode support. | 553A | **Done** (PR #1374) |
+| 3b | **549B** | Migrate 2 schedulers: `AccountingPaymentPollWorker.pollAllConnections()` -> `AccountingPaymentPollHandler`; `TimeReminderScheduler.checkTimeReminders()` -> `TimeReminderHandler`. Characterization tests. | 553A | **Done** (PR #1374) |
 | 3c | **553A** | `RequestScopes.SHARD_ID` ScopedValue + `runForTenantOnShard()` method; `TenantFilter` cache change (`Cache<String, String>` -> `Cache<String, TenantMapping>`); `TenantScopedRunner.forEachTenant()` shard binding per iteration. | 549A, 549B |
 
 ### Stage 4 -- Scheduler Batch 2 + Provisioning (parallel tracks)
@@ -353,8 +353,8 @@ A realistic day-by-day cadence (2 tracks in parallel): 547A + 551A days 1-2; 547
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **549A** | 549A.1-549A.4 | ~6 backend files (3 new handlers + 2 modified schedulers + 1 test) | Migrate `AutomationScheduler.pollScheduledTriggers()`, `AutomationScheduler.pollDelayedActions()`, `AccountingSyncWorker.drainPendingEntries()`. Create 3 `JobHandler` implementations. Update scheduler method bodies. |
-| **549B** | 549B.1-549B.3 | ~4 backend files (2 new handlers + 2 modified schedulers + 1 test) | Migrate `AccountingPaymentPollWorker.pollAllConnections()`, `TimeReminderScheduler.checkTimeReminders()`. Create 2 `JobHandler` implementations. Characterization tests for all 5 batch 1 handlers. |
+| **549A** | 549A.1-549A.4 | ~6 backend files (3 new handlers + 2 modified schedulers + 1 test) | Migrate `AutomationScheduler.pollScheduledTriggers()`, `AutomationScheduler.pollDelayedActions()`, `AccountingSyncWorker.drainPendingEntries()`. Create 3 `JobHandler` implementations. Update scheduler method bodies. | **Done** (PR #1374) |
+| **549B** | 549B.1-549B.3 | ~4 backend files (2 new handlers + 2 modified schedulers + 1 test) | Migrate `AccountingPaymentPollWorker.pollAllConnections()`, `TimeReminderScheduler.checkTimeReminders()`. Create 2 `JobHandler` implementations. Characterization tests for all 5 batch 1 handlers. | **Done** (PR #1374) |
 
 ### Tasks
 

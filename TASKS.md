@@ -622,7 +622,7 @@
 | **Phase 75 — Scalability: Job Queue Fanout + Shard-Aware DB Resolver** | | | | | | See [tasks/phase75-scalability-job-queue-sharding.md](tasks/phase75-scalability-job-queue-sharding.md) |
 | 547 | Job Queue Entity Foundation + Migration | Backend | -- | M | 547A, 547B | **Done** (PR #1372) |
 | 548 | Job Worker + Handler Infrastructure | Backend | 547 | M | 548A, 548B | **Done** (PR #1373) |
-| 549 | Scheduler Migration Batch 1 (5 High-Frequency Jobs) | Backend | 548 | M | 549A, 549B | |
+| 549 | Scheduler Migration Batch 1 (5 High-Frequency Jobs) | Backend | 548 | M | 549A, 549B | **Done** (PR #1374) |
 | 550 | Scheduler Migration Batch 2 (14 Remaining Jobs) + Admin API | Backend | 549 | L | 550A, 550B, 550C | |
 | 551 | Shard Config + Registry + Migration | Backend | -- | M | 551A, 551B | |
 | 552 | Shard-Aware Connection Provider | Backend | 551 | M | 552A, 552B | |

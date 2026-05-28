@@ -23,14 +23,22 @@ public class OrgSchemaMapping {
   @Column(name = "schema_name", nullable = false)
   private String schemaName;
 
+  @Column(name = "shard_id", nullable = false)
+  private String shardId = "primary";
+
   @Column(name = "created_at", nullable = false)
   private Instant createdAt;
 
   protected OrgSchemaMapping() {}
 
   public OrgSchemaMapping(String externalOrgId, String schemaName) {
+    this(externalOrgId, schemaName, "primary");
+  }
+
+  public OrgSchemaMapping(String externalOrgId, String schemaName, String shardId) {
     this.externalOrgId = externalOrgId;
     this.schemaName = schemaName;
+    this.shardId = shardId;
     this.createdAt = Instant.now();
   }
 
@@ -52,6 +60,10 @@ public class OrgSchemaMapping {
 
   public String getSchemaName() {
     return schemaName;
+  }
+
+  public String getShardId() {
+    return shardId;
   }
 
   public Instant getCreatedAt() {

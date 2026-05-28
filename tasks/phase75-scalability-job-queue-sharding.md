@@ -32,7 +32,7 @@ Phase 75 replaces the sequential scheduler-then-tenant-loop pattern with a job q
 | 550 | Scheduler Migration Batch 2 (14 Remaining Jobs) + Admin API | Backend | 549 | L | 550A, 550B, 550C | **Done** (PRs #1375, #1376, #1377) |
 | 551 | Shard Config + Registry + Migration | Backend | -- | M | 551A, 551B | **Done** (PR #1378) |
 | 552 | Shard-Aware Connection Provider | Backend | 551 | M | 552A, 552B | **Done** (PR #1379) |
-| 553 | Shard-Aware Request Scopes + Filter + Runner | Backend | 551, 552 | S | 553A | |
+| 553 | Shard-Aware Request Scopes + Filter + Runner | Backend | 551, 552 | S | 553A | **Done** (PR #1380) |
 | 554 | Shard-Aware Provisioning + Flyway | Backend | 551, 552, 553 | M | 554A, 554B | |
 | 555 | Integration Tests + Observability | Backend | 550, 554 | M | 555A, 555B | |
 
@@ -155,7 +155,7 @@ PHASES already complete:
 |-------|-------|---------|-----------------------|
 | 3a | **549A** | Migrate 3 schedulers: `AutomationScheduler.pollScheduledTriggers()` -> `AutomationPollTriggersHandler`; `AutomationScheduler.pollDelayedActions()` -> `AutomationPollDelayedHandler`; `AccountingSyncWorker.drainPendingEntries()` -> `AccountingSyncDrainHandler`. Dual-mode support. | 553A | **Done** (PR #1374) |
 | 3b | **549B** | Migrate 2 schedulers: `AccountingPaymentPollWorker.pollAllConnections()` -> `AccountingPaymentPollHandler`; `TimeReminderScheduler.checkTimeReminders()` -> `TimeReminderHandler`. Characterization tests. | 553A | **Done** (PR #1374) |
-| 3c | **553A** | `RequestScopes.SHARD_ID` ScopedValue + `runForTenantOnShard()` method; `TenantFilter` cache change (`Cache<String, String>` -> `Cache<String, TenantMapping>`); `TenantScopedRunner.forEachTenant()` shard binding per iteration. | 549A, 549B |
+| 3c | **553A** | `RequestScopes.SHARD_ID` ScopedValue + `runForTenantOnShard()` method; `TenantFilter` cache change (`Cache<String, String>` -> `Cache<String, TenantMapping>`); `TenantScopedRunner.forEachTenant()` shard binding per iteration. | 549A, 549B | **Done** (PR #1380) |
 
 ### Stage 4 -- Scheduler Batch 2 + Provisioning (parallel tracks)
 
@@ -681,7 +681,7 @@ A realistic day-by-day cadence (2 tracks in parallel): 547A + 551A days 1-2; 547
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **553A** | 553A.1-553A.5 | ~5 backend files (3 modified + 1 new record + 1 test) | `RequestScopes.SHARD_ID` ScopedValue + `runForTenantOnShard()`; `TenantFilter` cache change; `TenantScopedRunner` shard binding; `TenantMapping` record. |
+| **553A** | 553A.1-553A.5 | ~5 backend files (3 modified + 1 new record + 1 test) | `RequestScopes.SHARD_ID` ScopedValue + `runForTenantOnShard()`; `TenantFilter` cache change; `TenantScopedRunner` shard binding; `TenantMapping` record. | **Done** (PR #1380) |
 
 ### Tasks
 

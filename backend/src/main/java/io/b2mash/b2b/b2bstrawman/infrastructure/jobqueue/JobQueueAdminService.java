@@ -64,7 +64,7 @@ public class JobQueueAdminService {
   }
 
   @Transactional(readOnly = true)
-  public JobQueueAdminController.JobQueueStatsResponse getStats() {
+  public JobQueueStatsResponse getStats() {
     // Aggregate by status
     Map<JobStatus, Long> byStatus = new EnumMap<>(JobStatus.class);
     for (Object[] row : jobQueueRepository.countByStatus()) {
@@ -83,7 +83,14 @@ public class JobQueueAdminService {
     Instant oldestPending = jobQueueRepository.findOldestPendingCreatedAt();
     Instant oldestClaimed = jobQueueRepository.findOldestClaimedAt();
 
-    return new JobQueueAdminController.JobQueueStatsResponse(
-        byStatus, byJobType, oldestPending, oldestClaimed);
+    return new JobQueueStatsResponse(byStatus, byJobType, oldestPending, oldestClaimed);
   }
+
+  // --- DTOs ---
+
+  record JobQueueStatsResponse(
+      Map<JobStatus, Long> byStatus,
+      Map<String, Map<JobStatus, Long>> byJobType,
+      Instant oldestPending,
+      Instant oldestClaimed) {}
 }

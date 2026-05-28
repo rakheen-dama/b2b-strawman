@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue;
 
 import java.time.Instant;
-import java.util.Map;
 import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -15,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/admin/jobs")
+@RequestMapping("/api/platform-admin/jobs")
 @PreAuthorize("@platformSecurityService.isPlatformAdmin()")
 public class JobQueueAdminController {
 
@@ -45,7 +44,7 @@ public class JobQueueAdminController {
   }
 
   @GetMapping("/stats")
-  public ResponseEntity<JobQueueStatsResponse> getStats() {
+  public ResponseEntity<JobQueueAdminService.JobQueueStatsResponse> getStats() {
     return ResponseEntity.ok(jobQueueAdminService.getStats());
   }
 
@@ -57,10 +56,4 @@ public class JobQueueAdminController {
           job.getId(), job.getStatus(), job.getRetryCount(), job.getNextAttemptAt());
     }
   }
-
-  record JobQueueStatsResponse(
-      Map<JobStatus, Long> byStatus,
-      Map<String, Map<JobStatus, Long>> byJobType,
-      Instant oldestPending,
-      Instant oldestClaimed) {}
 }

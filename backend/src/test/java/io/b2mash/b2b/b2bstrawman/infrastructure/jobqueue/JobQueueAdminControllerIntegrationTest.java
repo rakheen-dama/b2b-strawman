@@ -26,7 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 @ActiveProfiles("test")
 class JobQueueAdminControllerIntegrationTest {
 
-  private static final String BASE_PATH = "/api/admin/jobs";
+  private static final String BASE_PATH = "/api/platform-admin/jobs";
   private static final String TENANT_1 = "tenant_admin_test_001";
   private static final String ORG_1 = "org_admin_test_1";
 
@@ -38,7 +38,7 @@ class JobQueueAdminControllerIntegrationTest {
     jobQueueRepository.deleteAllInBatch();
   }
 
-  // --- GET /api/admin/jobs ---
+  // --- GET /api/platform-admin/jobs ---
 
   @Test
   void listDeadLetteredJobs_returnsCorrectResults() throws Exception {
@@ -61,7 +61,7 @@ class JobQueueAdminControllerIntegrationTest {
         .andExpect(status().isForbidden());
   }
 
-  // --- POST /api/admin/jobs/{id}/retry ---
+  // --- POST /api/platform-admin/jobs/{id}/retry ---
 
   @Test
   void retryJob_resetsDeadLetterToPending() throws Exception {
@@ -88,7 +88,7 @@ class JobQueueAdminControllerIntegrationTest {
                 .value("Only DEAD_LETTER jobs can be retried; current status is PENDING"));
   }
 
-  // --- DELETE /api/admin/jobs/{id} ---
+  // --- DELETE /api/platform-admin/jobs/{id} ---
 
   @Test
   void deleteJob_removesDeadLetteredJob() throws Exception {
@@ -112,7 +112,7 @@ class JobQueueAdminControllerIntegrationTest {
                 .value("Only DEAD_LETTER jobs can be deleted; current status is COMPLETED"));
   }
 
-  // --- GET /api/admin/jobs/stats ---
+  // --- GET /api/platform-admin/jobs/stats ---
 
   @Test
   void getStats_returnsCorrectCounts() throws Exception {

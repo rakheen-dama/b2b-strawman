@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.multitenancy;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import java.time.Instant;
 
@@ -117,7 +118,14 @@ public class ShardConfig {
     this.active = active;
   }
 
-  public void setUpdatedAt(Instant updatedAt) {
+  /** Called by JPA before any UPDATE to keep updatedAt current. */
+  @PreUpdate
+  void onPreUpdate() {
+    this.updatedAt = Instant.now();
+  }
+
+  /** Package-private — prefer the @PreUpdate callback for automatic timestamp management. */
+  void setUpdatedAt(Instant updatedAt) {
     this.updatedAt = updatedAt;
   }
 }

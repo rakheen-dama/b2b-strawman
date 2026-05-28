@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.sql.DataSource;
@@ -30,7 +31,7 @@ public class DefaultShardRegistry implements ShardRegistry {
   private final ShardConfigRepository shardConfigRepository;
   private final Environment environment;
 
-  private final ConcurrentHashMap<String, DataSource> dataSources = new ConcurrentHashMap<>();
+  private volatile ConcurrentHashMap<String, DataSource> dataSources = new ConcurrentHashMap<>();
 
   public DefaultShardRegistry(
       DataSource primaryDataSource,
@@ -67,11 +68,12 @@ public class DefaultShardRegistry implements ShardRegistry {
 
   @Override
   public void refresh() {
-    // Close existing secondary DataSources before rebuilding
-    closeSecondaryDataSources();
+    // Build a new map locally, then atomically swap the reference to avoid a window
+    // where concurrent getDataSource() calls see an empty/incomplete map.
+    var newDataSources = new ConcurrentHashMap<String, DataSource>();
 
     // Primary shard always present
-    dataSources.put(PRIMARY_SHARD_ID, primaryDataSource);
+    newDataSources.put(PRIMARY_SHARD_ID, primaryDataSource);
 
     var activeShards = shardConfigRepository.findByActiveTrue();
     for (var shard : activeShards) {
@@ -81,13 +83,18 @@ public class DefaultShardRegistry implements ShardRegistry {
 
       DataSource ds = createSecondaryDataSource(shard);
       if (ds != null) {
-        dataSources.put(shard.getShardId(), ds);
+        newDataSources.put(shard.getShardId(), ds);
         log.info(
             "Registered secondary shard: {} (poolSize={})",
             shard.getShardId(),
             shard.getPoolSize());
       }
     }
+
+    // Atomically swap the live map, then close stale secondary DataSources from the old map
+    var oldDataSources = this.dataSources;
+    this.dataSources = newDataSources;
+    closeSecondaryDataSources(oldDataSources);
 
     log.info(
         "ShardRegistry initialized with {} active shard(s): {}",
@@ -97,11 +104,11 @@ public class DefaultShardRegistry implements ShardRegistry {
 
   @PreDestroy
   void shutdown() {
-    closeSecondaryDataSources();
+    closeSecondaryDataSources(this.dataSources);
   }
 
   private DataSource createSecondaryDataSource(ShardConfig shard) {
-    String shardIdUpper = shard.getShardId().toUpperCase();
+    String shardIdUpper = shard.getShardId().toUpperCase(Locale.ROOT);
     String envPrefix = "KAZI_SHARD_" + shardIdUpper;
 
     String url = environment.getProperty(envPrefix + "_URL");
@@ -129,8 +136,8 @@ public class DefaultShardRegistry implements ShardRegistry {
     return ds;
   }
 
-  private void closeSecondaryDataSources() {
-    for (var entry : dataSources.entrySet()) {
+  private void closeSecondaryDataSources(ConcurrentHashMap<String, DataSource> map) {
+    for (var entry : map.entrySet()) {
       if (!PRIMARY_SHARD_ID.equals(entry.getKey())
           && entry.getValue() instanceof HikariDataSource hikari) {
         try {
@@ -140,6 +147,6 @@ public class DefaultShardRegistry implements ShardRegistry {
         }
       }
     }
-    dataSources.clear();
+    map.clear();
   }
 }

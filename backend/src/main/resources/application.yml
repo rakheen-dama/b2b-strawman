@@ -118,7 +118,7 @@ app:
 
 kazi:
   sharding:
-    enabled: true
+    enabled: false
     control-plane-datasource: primary
   job-queue:
     enabled: true

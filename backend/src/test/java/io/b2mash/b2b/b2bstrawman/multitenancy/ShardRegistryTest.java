@@ -16,6 +16,9 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
+// @TestPropertySource is required here: application-test.yml disables sharding globally, but this
+// test class needs the DefaultShardRegistry bean active. This genuinely varies per test class per
+// the anti-pattern policy in backend/CLAUDE.md (cannot move to application-test.yml).
 @TestPropertySource(properties = "kazi.sharding.enabled=true")
 @Transactional
 class ShardRegistryTest {

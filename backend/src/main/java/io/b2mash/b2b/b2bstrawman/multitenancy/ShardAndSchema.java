@@ -17,6 +17,12 @@ public record ShardAndSchema(String shardId, String schemaName) {
   /** Schema names: "public" or "tenant_" followed by 12 hex chars. */
   private static final Pattern SCHEMA_NAME_PATTERN = Pattern.compile("^tenant_[0-9a-f]{12}$");
 
+  /** Compact constructor — validates both components so no invalid instances can exist. */
+  public ShardAndSchema {
+    validateShardId(shardId);
+    validateSchemaName(schemaName);
+  }
+
   /** Default identifier for the primary shard's public schema. */
   public static final ShardAndSchema DEFAULT = new ShardAndSchema("primary", "public");
 
@@ -41,20 +47,22 @@ public record ShardAndSchema(String shardId, String schemaName) {
     String shard = composite.substring(0, colonIndex);
     String schema = composite.substring(colonIndex + 1);
 
-    validateShardId(shard);
-    validateSchemaName(schema);
-
+    // Constructor validates both components
     return new ShardAndSchema(shard, schema);
   }
 
   /**
-   * Formats a shard ID and schema name into a composite identifier string.
+   * Formats a shard ID and schema name into a composite identifier string. Both parameters are
+   * validated before formatting.
    *
    * @param shardId the shard identifier
    * @param schemaName the schema name
    * @return the composite identifier in {@code shardId:schemaName} format
+   * @throws IllegalArgumentException if either parameter is invalid
    */
   public static String format(String shardId, String schemaName) {
+    validateShardId(shardId);
+    validateSchemaName(schemaName);
     return shardId + ":" + schemaName;
   }
 

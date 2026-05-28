@@ -96,6 +96,13 @@ kazi:
       accounting_sync_drain: true
       accounting_payment_poll: true
       time_reminder_check: true
+      recurring_schedule_execute: true
+      dormancy_check: true
+      proposal_expiry: true
+      acceptance_expiry: true
+      magic_link_cleanup: true
+      ai_gate_expiry: true
+      field_date_scan: true
   xero:
     client-id: test-xero-client-id
     client-secret: test-xero-client-secret

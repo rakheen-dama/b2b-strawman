@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.acceptance;
 
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
@@ -18,29 +20,41 @@ public class AcceptanceExpiryProcessor {
 
   private final TenantScopedRunner tenantScopedRunner;
   private final AcceptanceService acceptanceService;
+  private final JobEnqueuer jobEnqueuer;
+  private final JobQueueProperties jobQueueProperties;
 
   public AcceptanceExpiryProcessor(
-      TenantScopedRunner tenantScopedRunner, AcceptanceService acceptanceService) {
+      TenantScopedRunner tenantScopedRunner,
+      AcceptanceService acceptanceService,
+      JobEnqueuer jobEnqueuer,
+      JobQueueProperties jobQueueProperties) {
     this.tenantScopedRunner = tenantScopedRunner;
     this.acceptanceService = acceptanceService;
+    this.jobEnqueuer = jobEnqueuer;
+    this.jobQueueProperties = jobQueueProperties;
   }
 
   @SchedulerLock(name = "acceptance_process_expired", lockAtLeastFor = "30m")
   @Scheduled(fixedDelay = 3600000)
   public void processExpired() {
     log.info("Acceptance expiry processor started");
-    int[] totalExpired = {0};
-    int tenantsProcessed =
-        tenantScopedRunner.forEachTenant(
-            (tenantId, orgId) -> totalExpired[0] += acceptanceService.processExpiredForTenant());
 
-    if (totalExpired[0] > 0) {
-      log.info(
-          "Expiry processor completed: {} requests expired after processing {} tenants",
-          totalExpired[0],
-          tenantsProcessed);
-    } else {
-      log.info("Expiry processor completed: no requests expired");
+    if (jobQueueProperties.isDualMode("acceptance_expiry")) {
+      int[] totalExpired = {0};
+      int tenantsProcessed =
+          tenantScopedRunner.forEachTenant(
+              (tenantId, orgId) -> totalExpired[0] += acceptanceService.processExpiredForTenant());
+
+      if (totalExpired[0] > 0) {
+        log.info(
+            "Expiry processor completed: {} requests expired after processing {} tenants",
+            totalExpired[0],
+            tenantsProcessed);
+      } else {
+        log.info("Expiry processor completed: no requests expired");
+      }
     }
+
+    jobEnqueuer.fanOutToAllTenants("acceptance_expiry", null);
   }
 }

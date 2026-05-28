@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.schedule;
 
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantScopedRunner;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
@@ -21,36 +23,48 @@ public class RecurringScheduleExecutor {
 
   private final TenantScopedRunner tenantScopedRunner;
   private final RecurringScheduleService scheduleService;
+  private final JobEnqueuer jobEnqueuer;
+  private final JobQueueProperties jobQueueProperties;
 
   public RecurringScheduleExecutor(
-      TenantScopedRunner tenantScopedRunner, RecurringScheduleService scheduleService) {
+      TenantScopedRunner tenantScopedRunner,
+      RecurringScheduleService scheduleService,
+      JobEnqueuer jobEnqueuer,
+      JobQueueProperties jobQueueProperties) {
     this.tenantScopedRunner = tenantScopedRunner;
     this.scheduleService = scheduleService;
+    this.jobEnqueuer = jobEnqueuer;
+    this.jobQueueProperties = jobQueueProperties;
   }
 
   @SchedulerLock(name = "recurring_schedule_execute_schedules", lockAtLeastFor = "5m")
   @Scheduled(cron = "0 0 2 * * *")
   public void executeSchedules() {
     log.info("Recurring schedule executor started");
-    int[] totals = {0, 0}; // [processed, created]
-    tenantScopedRunner.forEachTenant(
-        (tenantId, orgId) -> {
-          int[] result = processSchedulesForTenant();
-          totals[0] += result[0];
-          totals[1] += result[1];
-        });
 
-    log.info(
-        "Recurring schedule executor completed: {} schedules processed, {} projects created",
-        totals[0],
-        totals[1]);
+    if (jobQueueProperties.isDualMode("recurring_schedule_execute")) {
+      int[] totals = {0, 0}; // [processed, created]
+      tenantScopedRunner.forEachTenant(
+          (tenantId, orgId) -> {
+            int[] result = processSchedulesForTenant();
+            totals[0] += result[0];
+            totals[1] += result[1];
+          });
+
+      log.info(
+          "Recurring schedule executor completed: {} schedules processed, {} projects created",
+          totals[0],
+          totals[1]);
+    }
+
+    jobEnqueuer.fanOutToAllTenants("recurring_schedule_execute", null);
   }
 
   /**
    * Processes all due schedules for the current tenant. Each schedule is executed in its own
    * transaction via the service proxy, providing error isolation.
    */
-  private int[] processSchedulesForTenant() {
+  int[] processSchedulesForTenant() {
     var dueSchedules = scheduleService.findDueSchedules();
 
     int processed = 0;

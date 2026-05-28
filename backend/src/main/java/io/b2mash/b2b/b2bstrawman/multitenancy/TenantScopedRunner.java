@@ -7,9 +7,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 /**
- * Iterates every active tenant schema and runs an action once per tenant with TENANT_ID + ORG_ID
- * bound on a fresh ScopedValue carrier. The canonical replacement for the inline {@code for
- * (mapping : repo.findAll()) { ScopedValue.where(...).run(...) }} pattern that appeared in 13+
+ * Iterates every active tenant schema and runs an action once per tenant with TENANT_ID + ORG_ID +
+ * SHARD_ID bound on a fresh ScopedValue carrier. The canonical replacement for the inline {@code
+ * for (mapping : repo.findAll()) { ScopedValue.where(...).run(...) }} pattern that appeared in 13+
  * scheduled jobs prior to PR #2 (ADR-T008 Surface 2).
  *
  * <p>Per-tenant exception isolation: failures inside {@code action} for one tenant are caught,
@@ -28,8 +28,9 @@ public class TenantScopedRunner {
   }
 
   /**
-   * Run {@code action} once per tenant schema with {@link RequestScopes#TENANT_ID} and {@link
-   * RequestScopes#ORG_ID} bound. The action receives {@code (tenantId, orgId)}.
+   * Run {@code action} once per tenant schema with {@link RequestScopes#TENANT_ID}, {@link
+   * RequestScopes#ORG_ID}, and {@link RequestScopes#SHARD_ID} bound. The action receives {@code
+   * (tenantId, orgId)}.
    *
    * @return the count of tenants for which {@code action} completed without throwing.
    * @throws NullPointerException if {@code action} is null.
@@ -40,10 +41,10 @@ public class TenantScopedRunner {
     for (var mapping : mappingRepository.findAll()) {
       String tenantId = mapping.getSchemaName();
       String orgId = mapping.getExternalOrgId();
-      // TODO Epic 553: bind SHARD_ID from mapping.getShardId() here so
-      //  ShardAwareConnectionProvider can resolve the correct shard DataSource.
+      String shardId = mapping.getShardId();
       try {
-        RequestScopes.runForTenant(tenantId, orgId, () -> action.accept(tenantId, orgId));
+        RequestScopes.runForTenantOnShard(
+            tenantId, orgId, shardId, () -> action.accept(tenantId, orgId));
         succeeded++;
       } catch (Exception e) {
         log.error(

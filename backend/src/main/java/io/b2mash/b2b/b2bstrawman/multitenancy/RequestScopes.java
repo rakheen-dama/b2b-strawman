@@ -233,10 +233,54 @@ public final class RequestScopes {
     }
   }
 
+  /**
+   * Run {@code action} with {@link #TENANT_ID}, {@link #ORG_ID}, and {@link #SHARD_ID} bound on a
+   * fresh ScopedValue carrier. Extension of {@link #runForTenant} that additionally binds the shard
+   * identifier for shard-aware connection routing.
+   *
+   * @throws IllegalArgumentException if {@code tenantId} is null or blank.
+   * @throws NullPointerException if {@code action} is null.
+   */
+  public static void runForTenantOnShard(
+      String tenantId, @Nullable String orgId, @Nullable String shardId, Runnable action) {
+    Objects.requireNonNull(action, "action");
+    requireValidTenantId(tenantId);
+    bindTenantScope(tenantId, orgId, shardId).run(action);
+  }
+
+  /**
+   * Variant of {@link #runForTenantOnShard} that returns a value. Checked exceptions thrown by the
+   * Callable are wrapped in {@link RuntimeException} per JDK Callable convention.
+   *
+   * @throws IllegalArgumentException if {@code tenantId} is null or blank.
+   * @throws NullPointerException if {@code action} is null.
+   */
+  public static <T> T callForTenantOnShard(
+      String tenantId, @Nullable String orgId, @Nullable String shardId, Callable<T> action) {
+    Objects.requireNonNull(action, "action");
+    requireValidTenantId(tenantId);
+    ScopedValue.CallableOp<T, Exception> op = action::call;
+    try {
+      return bindTenantScope(tenantId, orgId, shardId).call(op);
+    } catch (RuntimeException e) {
+      throw e;
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
+  }
+
   private static ScopedValue.Carrier bindTenantScope(String tenantId, @Nullable String orgId) {
+    return bindTenantScope(tenantId, orgId, null);
+  }
+
+  private static ScopedValue.Carrier bindTenantScope(
+      String tenantId, @Nullable String orgId, @Nullable String shardId) {
     ScopedValue.Carrier carrier = ScopedValue.where(TENANT_ID, tenantId);
     if (orgId != null && !orgId.isBlank()) {
       carrier = carrier.where(ORG_ID, orgId);
+    }
+    if (shardId != null && !shardId.isBlank()) {
+      carrier = carrier.where(SHARD_ID, shardId);
     }
     return carrier;
   }

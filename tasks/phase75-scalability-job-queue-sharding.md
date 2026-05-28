@@ -30,7 +30,7 @@ Phase 75 replaces the sequential scheduler-then-tenant-loop pattern with a job q
 | 548 | Job Worker + Handler Infrastructure | Backend | 547 | M | 548A, 548B | **Done** (PR #1373) |
 | 549 | Scheduler Migration Batch 1 (5 High-Frequency Jobs) | Backend | 548 | M | 549A, 549B | **Done** (PR #1374) |
 | 550 | Scheduler Migration Batch 2 (14 Remaining Jobs) + Admin API | Backend | 549 | L | 550A, 550B, 550C | **Done** (PRs #1375, #1376, #1377) |
-| 551 | Shard Config + Registry + Migration | Backend | -- | M | 551A, 551B | |
+| 551 | Shard Config + Registry + Migration | Backend | -- | M | 551A, 551B | **Done** (PR #1378) |
 | 552 | Shard-Aware Connection Provider | Backend | 551 | M | 552A, 552B | |
 | 553 | Shard-Aware Request Scopes + Filter + Runner | Backend | 551, 552 | S | 553A | |
 | 554 | Shard-Aware Provisioning + Flyway | Backend | 551, 552, 553 | M | 554A, 554B | |
@@ -137,8 +137,8 @@ PHASES already complete:
 |-------|-------|---------|
 | 1a | **547A** | V24 global migration (`job_queue` table + 4 indexes + ShedLock seed); `JobQueue` entity + `JobStatus` enum + `JobQueueRepository` with custom `@Query` methods for claim, stale recovery, stats. |
 | 1b | **547B** | `JobEnqueuer` interface + `DefaultJobEnqueuer` implementation (batch insert with `ON CONFLICT DO NOTHING`); `JobQueueProperties` configuration class; unit tests for dedup logic and configuration binding. |
-| 1c | **551A** | V25 global migration (`shard_config` table + `org_schema_mapping.shard_id` extension + FK + index); `ShardConfig` entity + `ShardAndSchema` record; `OrgSchemaMapping` entity modification (add `shard_id` field); `OrgSchemaMappingRepository` extension (add `findByShardId`). |
-| 1d | **551B** | `ShardRegistry` interface + `DefaultShardRegistry` implementation (DataSource lifecycle); `ShardConfigRepository`; unit tests for startup, env var resolution, `ShardAndSchema` parsing. |
+| 1c | **551A** | V25 global migration (`shard_config` table + `org_schema_mapping.shard_id` extension + FK + index); `ShardConfig` entity + `ShardAndSchema` record; `OrgSchemaMapping` entity modification (add `shard_id` field); `OrgSchemaMappingRepository` extension (add `findByShardId`). | **Done** (PR #1378) |
+| 1d | **551B** | `ShardRegistry` interface + `DefaultShardRegistry` implementation (DataSource lifecycle); `ShardConfigRepository`; unit tests for startup, env var resolution, `ShardAndSchema` parsing. | **Done** (PR #1378) |
 
 ### Stage 2 -- Worker Infrastructure + Connection Provider (parallel tracks)
 
@@ -544,8 +544,8 @@ A realistic day-by-day cadence (2 tracks in parallel): 547A + 551A days 1-2; 547
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **551A** | 551A.1-551A.5 | ~6 backend files (1 migration + 1 entity + 1 record + 1 entity modification + 1 repository modification + 1 test) | V25 global migration (shard_config table + org_schema_mapping extension); `ShardConfig` entity; `ShardAndSchema` record; `OrgSchemaMapping` shard_id field; `OrgSchemaMappingRepository.findByShardId()`. |
-| **551B** | 551B.1-551B.4 | ~5 backend files (1 interface + 1 implementation + 1 repository + 1 config file modification + 1 test) | `ShardRegistry` interface; `DefaultShardRegistry` (DataSource lifecycle from env vars); `ShardConfigRepository`; sharding config in `application.yml`; unit tests. |
+| **551A** | 551A.1-551A.5 | ~6 backend files (1 migration + 1 entity + 1 record + 1 entity modification + 1 repository modification + 1 test) | V25 global migration (shard_config table + org_schema_mapping extension); `ShardConfig` entity; `ShardAndSchema` record; `OrgSchemaMapping` shard_id field; `OrgSchemaMappingRepository.findByShardId()`. | **Done** (PR #1378) |
+| **551B** | 551B.1-551B.4 | ~5 backend files (1 interface + 1 implementation + 1 repository + 1 config file modification + 1 test) | `ShardRegistry` interface; `DefaultShardRegistry` (DataSource lifecycle from env vars); `ShardConfigRepository`; sharding config in `application.yml`; unit tests. | **Done** (PR #1378) |
 
 ### Tasks
 

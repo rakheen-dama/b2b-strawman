@@ -40,6 +40,8 @@ public class TenantScopedRunner {
     for (var mapping : mappingRepository.findAll()) {
       String tenantId = mapping.getSchemaName();
       String orgId = mapping.getExternalOrgId();
+      // TODO Epic 553: bind SHARD_ID from mapping.getShardId() here so
+      //  ShardAwareConnectionProvider can resolve the correct shard DataSource.
       try {
         RequestScopes.runForTenant(tenantId, orgId, () -> action.accept(tenantId, orgId));
         succeeded++;

@@ -1,7 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.multitenancy;
 
 import com.zaxxer.hikari.HikariDataSource;
-import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import java.util.Collections;
 import java.util.Locale;
@@ -10,6 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.sql.DataSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
@@ -19,10 +19,17 @@ import org.springframework.stereotype.Component;
  * The primary shard reuses the Spring-managed {@code appDataSource}. Secondary shards are
  * configured from environment variables following the naming convention {@code
  * KAZI_SHARD_{SHARD_ID_UPPER}_{PROPERTY}}.
+ *
+ * <p>Implements {@link SmartInitializingSingleton} instead of using {@code @PostConstruct} to defer
+ * the {@link #refresh()} call until after all singleton beans (including the EntityManagerFactory)
+ * are fully initialized. This avoids a circular dependency: EMF -> HibernateMultiTenancyConfig ->
+ * ShardAwareConnectionProvider -> ShardRegistry -> ShardConfigRepository -> EMF. The primary shard
+ * DataSource is registered eagerly in the constructor so that Hibernate's dialect detection (via
+ * {@link ShardAwareConnectionProvider#getAnyConnection()}) works during EMF bootstrap.
  */
 @Component
 @ConditionalOnProperty(name = "kazi.sharding.enabled", havingValue = "true")
-public class DefaultShardRegistry implements ShardRegistry {
+public class DefaultShardRegistry implements ShardRegistry, SmartInitializingSingleton {
 
   private static final Logger log = LoggerFactory.getLogger(DefaultShardRegistry.class);
   private static final String PRIMARY_SHARD_ID = "primary";
@@ -40,10 +47,12 @@ public class DefaultShardRegistry implements ShardRegistry {
     this.primaryDataSource = primaryDataSource;
     this.shardConfigRepository = shardConfigRepository;
     this.environment = environment;
+    // Pre-seed with primary shard so getAnyConnection() works during EMF bootstrap
+    this.dataSources.put(PRIMARY_SHARD_ID, primaryDataSource);
   }
 
-  @PostConstruct
-  void initialize() {
+  @Override
+  public void afterSingletonsInstantiated() {
     refresh();
   }
 

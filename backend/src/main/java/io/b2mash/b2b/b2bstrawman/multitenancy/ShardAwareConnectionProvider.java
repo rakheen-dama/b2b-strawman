@@ -2,7 +2,6 @@ package io.b2mash.b2b.b2bstrawman.multitenancy;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.regex.Pattern;
 import javax.sql.DataSource;
 import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.slf4j.Logger;
@@ -34,8 +33,6 @@ import org.springframework.stereotype.Component;
 public class ShardAwareConnectionProvider implements MultiTenantConnectionProvider<String> {
 
   private static final Logger log = LoggerFactory.getLogger(ShardAwareConnectionProvider.class);
-
-  private static final Pattern SCHEMA_PATTERN = Pattern.compile("^tenant_[0-9a-f]{12}$");
 
   private final DataSource primaryDataSource;
   private final ShardRegistry shardRegistry;
@@ -88,7 +85,12 @@ public class ShardAwareConnectionProvider implements MultiTenantConnectionProvid
   @Override
   public Connection getReadOnlyConnection(String tenantIdentifier) throws SQLException {
     Connection connection = getConnection(tenantIdentifier);
-    connection.setReadOnly(true);
+    try {
+      connection.setReadOnly(true);
+    } catch (SQLException e) {
+      releaseConnection(tenantIdentifier, connection);
+      throw e;
+    }
     return connection;
   }
 
@@ -125,9 +127,14 @@ public class ShardAwareConnectionProvider implements MultiTenantConnectionProvid
     throw new IllegalArgumentException("Cannot unwrap to " + unwrapType);
   }
 
+  /**
+   * Sets the connection's search_path to the given schema. The schema name is already validated by
+   * {@link ShardAndSchema#parse(String)} (compact constructor rejects anything outside the {@code
+   * public | tenant_[0-9a-f]{12}} allowlist), so no secondary sanitisation is needed here.
+   */
   private void setSearchPath(Connection connection, String schema) throws SQLException {
     try (var stmt = connection.createStatement()) {
-      stmt.execute("SET search_path TO " + sanitizeSchema(schema));
+      stmt.execute("SET search_path TO " + schema);
     }
   }
 
@@ -135,12 +142,5 @@ public class ShardAwareConnectionProvider implements MultiTenantConnectionProvid
     try (var stmt = connection.createStatement()) {
       stmt.execute("SET search_path TO public");
     }
-  }
-
-  private String sanitizeSchema(String schema) {
-    if ("public".equals(schema) || SCHEMA_PATTERN.matcher(schema).matches()) {
-      return schema;
-    }
-    throw new IllegalArgumentException("Invalid schema name: " + schema);
   }
 }

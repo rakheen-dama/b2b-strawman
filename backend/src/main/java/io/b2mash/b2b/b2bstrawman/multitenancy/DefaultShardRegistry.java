@@ -116,8 +116,13 @@ public class DefaultShardRegistry implements ShardRegistry {
     String password = environment.getProperty(envPrefix + "_PASSWORD");
 
     if (url == null || username == null || password == null) {
+      if (shard.isActive()) {
+        throw new IllegalStateException(
+            "Active shard '%s' is missing required environment variables. Expected: %s_URL, %s_USERNAME, %s_PASSWORD"
+                .formatted(shard.getShardId(), envPrefix, envPrefix, envPrefix));
+      }
       log.warn(
-          "Missing environment variables for shard '{}'. Expected: {}_URL, {}_USERNAME, {}_PASSWORD. Skipping.",
+          "Missing environment variables for inactive shard '{}'. Expected: {}_URL, {}_USERNAME, {}_PASSWORD. Skipping.",
           shard.getShardId(),
           envPrefix,
           envPrefix,
@@ -129,7 +134,10 @@ public class DefaultShardRegistry implements ShardRegistry {
     ds.setJdbcUrl(url);
     ds.setUsername(username);
     ds.setPassword(password);
-    ds.setMaximumPoolSize(shard.getPoolSize());
+    ds.setMaximumPoolSize(Math.min(shard.getPoolSize(), 10));
+    ds.setMaxLifetime(1_680_000); // 28 min, matches app datasource (under Neon 30-min timeout)
+    ds.setConnectionTimeout(10_000); // 10 sec, accommodates Neon cold starts
+    ds.setConnectionInitSql("SET search_path TO public");
     ds.setPoolName("shard-" + shard.getShardId());
     ds.setReadOnly(shard.isReadOnly());
 

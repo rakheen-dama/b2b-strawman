@@ -19,11 +19,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class ShardConfigMigrationTest {
 
-  @Autowired private ShardConfigRepository shardConfigRepository;
+  private final ShardConfigRepository shardConfigRepository;
+  private final OrgSchemaMappingRepository orgSchemaMappingRepository;
+  private final JdbcTemplate jdbcTemplate;
 
-  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
-
-  @Autowired private JdbcTemplate jdbcTemplate;
+  @Autowired
+  ShardConfigMigrationTest(
+      ShardConfigRepository shardConfigRepository,
+      OrgSchemaMappingRepository orgSchemaMappingRepository,
+      JdbcTemplate jdbcTemplate) {
+    this.shardConfigRepository = shardConfigRepository;
+    this.orgSchemaMappingRepository = orgSchemaMappingRepository;
+    this.jdbcTemplate = jdbcTemplate;
+  }
 
   @Test
   void v25MigrationCreatesShardConfigTable() {
@@ -41,7 +49,7 @@ class ShardConfigMigrationTest {
     assertThat(primary).isPresent();
     assertThat(primary.get().getDisplayName()).isEqualTo("Primary Database");
     assertThat(primary.get().isActive()).isTrue();
-    assertThat(primary.get().getPoolSize()).isEqualTo(25);
+    assertThat(primary.get().getPoolSize()).isEqualTo(10);
     assertThat(primary.get().isReadOnly()).isFalse();
   }
 

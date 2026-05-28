@@ -30,7 +30,7 @@ public class ShardConfig {
   private String username;
 
   @Column(name = "pool_size", nullable = false)
-  private int poolSize = 25;
+  private int poolSize = 10;
 
   @Column(name = "read_only", nullable = false)
   private boolean readOnly = false;

@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS public.shard_config (
     display_name VARCHAR(100) NOT NULL,
     jdbc_url     VARCHAR(500),
     username     VARCHAR(100),
-    pool_size    INT          NOT NULL DEFAULT 25,
+    pool_size    INT          NOT NULL DEFAULT 10,
     read_only    BOOLEAN      NOT NULL DEFAULT FALSE,
     active       BOOLEAN      NOT NULL DEFAULT TRUE,
     created_at   TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
@@ -33,7 +33,12 @@ ALTER TABLE public.org_schema_mapping
 DO $$
 BEGIN
     IF NOT EXISTS (
-        SELECT 1 FROM pg_constraint WHERE conname = 'fk_org_schema_mapping_shard'
+        SELECT 1 FROM pg_constraint c
+        JOIN pg_class r ON c.conrelid = r.oid
+        JOIN pg_namespace n ON r.relnamespace = n.oid
+        WHERE c.conname = 'fk_org_schema_mapping_shard'
+          AND n.nspname = 'public'
+          AND r.relname = 'org_schema_mapping'
     ) THEN
         ALTER TABLE public.org_schema_mapping
             ADD CONSTRAINT fk_org_schema_mapping_shard

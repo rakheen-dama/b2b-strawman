@@ -23,11 +23,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class ShardRegistryTest {
 
-  @Autowired private ShardRegistry shardRegistry;
+  private final ShardRegistry shardRegistry;
+  private final DataSource primaryDataSource;
+  private final OrgSchemaMappingRepository orgSchemaMappingRepository;
 
-  @Autowired private DataSource primaryDataSource;
-
-  @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired
+  ShardRegistryTest(
+      ShardRegistry shardRegistry,
+      DataSource primaryDataSource,
+      OrgSchemaMappingRepository orgSchemaMappingRepository) {
+    this.shardRegistry = shardRegistry;
+    this.primaryDataSource = primaryDataSource;
+    this.orgSchemaMappingRepository = orgSchemaMappingRepository;
+  }
 
   @Test
   void startupWithPrimaryOnlyReturnsOneActiveShard() {

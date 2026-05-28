@@ -1,5 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.integration.accounting.sync;
 
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
+import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobQueueProperties;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationDomain;
 import io.b2mash.b2b.b2bstrawman.integration.IntegrationRegistry;
 import io.b2mash.b2b.b2bstrawman.integration.accounting.AccountingProvider;
@@ -47,6 +49,8 @@ public class AccountingSyncWorker {
   private final AccountingSyncService syncService;
   private final ApplicationEventPublisher eventPublisher;
   private final TransactionTemplate transactionTemplate;
+  private final JobEnqueuer jobEnqueuer;
+  private final JobQueueProperties jobQueueProperties;
 
   public AccountingSyncWorker(
       TenantScopedRunner tenantScopedRunner,
@@ -54,33 +58,42 @@ public class AccountingSyncWorker {
       IntegrationRegistry integrationRegistry,
       AccountingSyncService syncService,
       ApplicationEventPublisher eventPublisher,
-      TransactionTemplate transactionTemplate) {
+      TransactionTemplate transactionTemplate,
+      JobEnqueuer jobEnqueuer,
+      JobQueueProperties jobQueueProperties) {
     this.tenantScopedRunner = tenantScopedRunner;
     this.syncEntryRepository = syncEntryRepository;
     this.integrationRegistry = integrationRegistry;
     this.syncService = syncService;
     this.eventPublisher = eventPublisher;
     this.transactionTemplate = transactionTemplate;
+    this.jobEnqueuer = jobEnqueuer;
+    this.jobQueueProperties = jobQueueProperties;
   }
 
   @SchedulerLock(name = "accounting_sync_drain_pending_entries", lockAtLeastFor = "15s")
   @Scheduled(fixedDelay = 30_000)
   public void drainPendingEntries() {
     log.debug("AccountingSyncWorker: starting drain cycle");
-    int[] totalProcessed = {0};
 
-    tenantScopedRunner.forEachTenant(
-        (tenantId, orgId) -> {
-          int processed = drainForTenant();
-          totalProcessed[0] += processed;
-        });
+    if (jobQueueProperties.isDualMode("accounting_sync_drain")) {
+      int[] totalProcessed = {0};
 
-    if (totalProcessed[0] > 0) {
-      log.info("AccountingSyncWorker: drain cycle complete. Processed: {}", totalProcessed[0]);
+      tenantScopedRunner.forEachTenant(
+          (tenantId, orgId) -> {
+            int processed = drainForTenant();
+            totalProcessed[0] += processed;
+          });
+
+      if (totalProcessed[0] > 0) {
+        log.info("AccountingSyncWorker: drain cycle complete. Processed: {}", totalProcessed[0]);
+      }
     }
+
+    jobEnqueuer.fanOutToAllTenants("accounting_sync_drain", null);
   }
 
-  private int drainForTenant() {
+  int drainForTenant() {
     var entries =
         syncEntryRepository.findDrainableEntries(Instant.now(), PageRequest.of(0, BATCH_SIZE));
     int processed = 0;

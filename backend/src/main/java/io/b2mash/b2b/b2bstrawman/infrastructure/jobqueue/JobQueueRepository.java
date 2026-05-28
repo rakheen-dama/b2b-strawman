@@ -50,6 +50,18 @@ public interface JobQueueRepository extends JpaRepository<JobQueue, UUID> {
   Page<JobQueue> findByStatusAndJobType(
       @Param("status") JobStatus status, @Param("jobType") String jobType, Pageable pageable);
 
+  /** Returns the count of jobs grouped by status and jobType (for admin stats endpoint). */
+  @Query("SELECT j.status, j.jobType, COUNT(j) FROM JobQueue j GROUP BY j.status, j.jobType")
+  List<Object[]> countByStatusAndJobType();
+
+  /** Returns the creation time of the oldest PENDING job, or null if none exist. */
+  @Query("SELECT MIN(j.createdAt) FROM JobQueue j WHERE j.status = 'PENDING'")
+  Instant findOldestPendingCreatedAt();
+
+  /** Returns the claimed_at of the oldest CLAIMED job, or null if none exist. */
+  @Query("SELECT MIN(j.claimedAt) FROM JobQueue j WHERE j.status = 'CLAIMED'")
+  Instant findOldestClaimedAt();
+
   /** Finds active (PENDING or CLAIMED) jobs for a given job type — used for dedup pre-filter. */
   @Query(
       "SELECT j.tenantId FROM JobQueue j WHERE j.jobType = :jobType AND j.status IN ('PENDING', 'CLAIMED')")

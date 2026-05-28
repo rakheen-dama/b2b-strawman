@@ -27,7 +27,7 @@ Phase 75 replaces the sequential scheduler-then-tenant-loop pattern with a job q
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 547 | Job Queue Entity Foundation + Migration | Backend | -- | M | 547A, 547B | **Done** (PR #1372) |
-| 548 | Job Worker + Handler Infrastructure | Backend | 547 | M | 548A, 548B | |
+| 548 | Job Worker + Handler Infrastructure | Backend | 547 | M | 548A, 548B | **Done** (PR #1373) |
 | 549 | Scheduler Migration Batch 1 (5 High-Frequency Jobs) | Backend | 548 | M | 549A, 549B | |
 | 550 | Scheduler Migration Batch 2 (14 Remaining Jobs) + Admin API | Backend | 549 | L | 550A, 550B, 550C | |
 | 551 | Shard Config + Registry + Migration | Backend | -- | M | 551A, 551B | |
@@ -277,8 +277,8 @@ A realistic day-by-day cadence (2 tracks in parallel): 547A + 551A days 1-2; 547
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **548A** | 548A.1-548A.3 | ~4 backend files (1 interface + 1 registry + 1 config + 1 test) | `JobHandler` interface; `JobHandlerRegistry` (Spring bean discovery, fail-fast on duplicates); `JobQueueConfig` (`@Configuration` + `@ConditionalOnProperty`). |
-| **548B** | 548B.1-548B.4 | ~4 backend files (1 worker + 1 stale recovery task + 1 test file + 1 test handler) | `JobWorker` (poll loop, virtual threads, claim, ScopedValue binding, retry/dead-letter, backoff, graceful shutdown); `StaleJobRecoveryTask`; integration tests. |
+| **548A** | 548A.1-548A.3 | ~4 backend files (1 interface + 1 registry + 1 config + 1 test) | `JobHandler` interface; `JobHandlerRegistry` (Spring bean discovery, fail-fast on duplicates); `JobQueueConfig` (`@Configuration` + `@ConditionalOnProperty`). | **Done** (PR #1373) |
+| **548B** | 548B.1-548B.4 | ~4 backend files (1 worker + 1 stale recovery task + 1 test file + 1 test handler) | `JobWorker` (poll loop, virtual threads, claim, ScopedValue binding, retry/dead-letter, backoff, graceful shutdown); `StaleJobRecoveryTask`; integration tests. | **Done** (PR #1373) |
 
 ### Tasks
 

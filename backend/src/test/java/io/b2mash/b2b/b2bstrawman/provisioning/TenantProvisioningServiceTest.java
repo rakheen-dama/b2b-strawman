@@ -21,6 +21,7 @@ import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
 import io.b2mash.b2b.b2bstrawman.integration.payment.MockPaymentIntegrationSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ShardRegistry;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.packs.PackCatalogService;
 import io.b2mash.b2b.b2bstrawman.packs.PackInstallService;
@@ -46,6 +47,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.ObjectProvider;
 
 /**
  * Unit test for TenantProvisioningService. Uses @Spy + @InjectMocks so that Mockito handles
@@ -79,6 +81,7 @@ class TenantProvisioningServiceTest {
   @Mock private TenantTransactionHelper tenantTransactionHelper;
   @Mock private OrgSettingsRepository orgSettingsRepository;
   @Mock private VerticalProfileRegistry verticalProfileRegistry;
+  @Mock private ObjectProvider<ShardRegistry> shardRegistryProvider;
 
   @Spy @InjectMocks private TenantProvisioningService service;
 
@@ -112,7 +115,7 @@ class TenantProvisioningServiceTest {
     when(mappingRepository.save(any(OrgSchemaMapping.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
-    doNothing().when(service).runTenantMigrations(anyString());
+    doNothing().when(service).runTenantMigrations(anyString(), any(DataSource.class));
 
     var result = service.provisionTenant("org_new", "New Org", null);
 
@@ -138,7 +141,7 @@ class TenantProvisioningServiceTest {
     when(mappingRepository.save(any(OrgSchemaMapping.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
-    doNothing().when(service).runTenantMigrations(anyString());
+    doNothing().when(service).runTenantMigrations(anyString(), any(DataSource.class));
 
     var result = service.provisionTenant("org_pro", "Pro Org", null);
 
@@ -183,7 +186,7 @@ class TenantProvisioningServiceTest {
     when(migrationDataSource.getConnection()).thenReturn(mockConn);
     when(mockConn.createStatement()).thenReturn(mockStmt);
 
-    doNothing().when(service).runTenantMigrations(anyString());
+    doNothing().when(service).runTenantMigrations(anyString(), any(DataSource.class));
 
     var result = service.provisionTenant("org_idem", "Idem Org", null);
 
@@ -207,7 +210,7 @@ class TenantProvisioningServiceTest {
     when(mappingRepository.save(any(OrgSchemaMapping.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
-    doNothing().when(service).runTenantMigrations(anyString());
+    doNothing().when(service).runTenantMigrations(anyString(), any(DataSource.class));
 
     // Mock the registry to return legal-za profile
     var legalProfile =
@@ -263,7 +266,7 @@ class TenantProvisioningServiceTest {
     when(mappingRepository.save(any(OrgSchemaMapping.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
-    doNothing().when(service).runTenantMigrations(anyString());
+    doNothing().when(service).runTenantMigrations(anyString(), any(DataSource.class));
 
     var result = service.provisionTenant("org_null_profile", "Null Profile Org", null);
 
@@ -290,7 +293,7 @@ class TenantProvisioningServiceTest {
     when(mappingRepository.save(any(OrgSchemaMapping.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
-    doNothing().when(service).runTenantMigrations(anyString());
+    doNothing().when(service).runTenantMigrations(anyString(), any(DataSource.class));
 
     service.provisionTenant("org_acct", "Accounting Org", null);
 
@@ -315,7 +318,7 @@ class TenantProvisioningServiceTest {
     when(mappingRepository.save(any(OrgSchemaMapping.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
-    doNothing().when(service).runTenantMigrations(anyString());
+    doNothing().when(service).runTenantMigrations(anyString(), any(DataSource.class));
 
     service.provisionTenant("org_no_profile", "No Profile Org", null);
 
@@ -343,7 +346,7 @@ class TenantProvisioningServiceTest {
     when(mappingRepository.save(any(OrgSchemaMapping.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
-    doNothing().when(service).runTenantMigrations(anyString());
+    doNothing().when(service).runTenantMigrations(anyString(), any(DataSource.class));
 
     // Mock profile registry
     var legalProfile =
@@ -419,7 +422,7 @@ class TenantProvisioningServiceTest {
     when(mappingRepository.save(any(OrgSchemaMapping.class)))
         .thenAnswer(invocation -> invocation.getArgument(0));
 
-    doNothing().when(service).runTenantMigrations(anyString());
+    doNothing().when(service).runTenantMigrations(anyString(), any(DataSource.class));
 
     // Mock universal packs (always installed regardless of profile)
     when(packCatalogService.getUniversalPackIds(PackType.DOCUMENT_TEMPLATE))

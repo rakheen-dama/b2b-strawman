@@ -3,11 +3,13 @@ package io.b2mash.b2b.b2bstrawman.provisioning;
 import io.b2mash.b2b.b2bstrawman.billing.SubscriptionService;
 import io.b2mash.b2b.b2bstrawman.clause.ClausePackSeeder;
 import io.b2mash.b2b.b2bstrawman.compliance.CompliancePackSeeder;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.FieldPackSeeder;
 import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
 import io.b2mash.b2b.b2bstrawman.integration.payment.MockPaymentIntegrationSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.ShardRegistry;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.packs.PackCatalogService;
 import io.b2mash.b2b.b2bstrawman.packs.PackInstallService;
@@ -28,6 +30,7 @@ import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.lang.Nullable;
 import org.springframework.retry.annotation.Backoff;
@@ -82,6 +85,7 @@ public class TenantProvisioningService {
   private final TenantTransactionHelper tenantTransactionHelper;
   private final OrgSettingsRepository orgSettingsRepository;
   private final VerticalProfileRegistry verticalProfileRegistry;
+  private final ShardRegistry shardRegistry;
 
   public TenantProvisioningService(
       OrganizationRepository organizationRepository,
@@ -103,7 +107,8 @@ public class TenantProvisioningService {
       MockPaymentIntegrationSeeder mockPaymentIntegrationSeeder,
       TenantTransactionHelper tenantTransactionHelper,
       OrgSettingsRepository orgSettingsRepository,
-      VerticalProfileRegistry verticalProfileRegistry) {
+      VerticalProfileRegistry verticalProfileRegistry,
+      ObjectProvider<ShardRegistry> shardRegistryProvider) {
     this.organizationRepository = organizationRepository;
     this.mappingRepository = mappingRepository;
     this.migrationDataSource = migrationDataSource;
@@ -124,6 +129,7 @@ public class TenantProvisioningService {
     this.tenantTransactionHelper = tenantTransactionHelper;
     this.orgSettingsRepository = orgSettingsRepository;
     this.verticalProfileRegistry = verticalProfileRegistry;
+    this.shardRegistry = shardRegistryProvider.getIfAvailable();
   }
 
   @Retryable(
@@ -133,7 +139,7 @@ public class TenantProvisioningService {
       backoff = @Backoff(delay = 1000, multiplier = 2))
   public ProvisioningResult provisionTenant(
       String clerkOrgId, String orgName, String verticalProfile) {
-    return provisionTenant(clerkOrgId, orgName, verticalProfile, null);
+    return provisionTenant(clerkOrgId, orgName, verticalProfile, null, null);
   }
 
   @Retryable(
@@ -143,11 +149,39 @@ public class TenantProvisioningService {
       backoff = @Backoff(delay = 1000, multiplier = 2))
   public ProvisioningResult provisionTenant(
       String clerkOrgId, String orgName, String verticalProfile, @Nullable String country) {
+    return provisionTenant(clerkOrgId, orgName, verticalProfile, country, null);
+  }
+
+  @Retryable(
+      retryFor = ProvisioningException.class,
+      noRetryFor = IllegalArgumentException.class,
+      maxAttempts = 3,
+      backoff = @Backoff(delay = 1000, multiplier = 2))
+  public ProvisioningResult provisionTenant(
+      String clerkOrgId,
+      String orgName,
+      String verticalProfile,
+      @Nullable String country,
+      @Nullable String shardId) {
     // Idempotency check: already fully provisioned?
     var existingMapping = mappingRepository.findByClerkOrgId(clerkOrgId);
     if (existingMapping.isPresent()) {
       log.info("Tenant already provisioned for org {}", clerkOrgId);
       return ProvisioningResult.alreadyProvisioned(existingMapping.get().getSchemaName());
+    }
+
+    // Resolve the DataSource and effective shard ID for this provisioning request
+    DataSource targetDataSource = migrationDataSource;
+    String effectiveShardId = "primary";
+    if (shardId != null && !shardId.isBlank() && shardRegistry != null) {
+      if (!shardRegistry.getActiveShardIds().contains(shardId)) {
+        throw new InvalidStateException(
+            "Invalid shard", "Shard '%s' is not active or does not exist".formatted(shardId));
+      }
+      targetDataSource = shardRegistry.getDataSource(shardId);
+      effectiveShardId = shardId;
+    } else if (shardId != null && !shardId.isBlank() && shardRegistry == null) {
+      log.warn("Shard ID '{}' specified but sharding is disabled — using primary", shardId);
     }
 
     // Create or find organization record (default tier is STARTER)
@@ -162,15 +196,19 @@ public class TenantProvisioningService {
 
     try {
       String schemaName = SchemaNameGenerator.generateSchemaName(clerkOrgId);
-      log.info("Provisioning tenant schema {} for org {}", schemaName, clerkOrgId);
+      log.info(
+          "Provisioning tenant schema {} for org {} on shard {}",
+          schemaName,
+          clerkOrgId,
+          effectiveShardId);
 
       // Each step is idempotent — safe to retry after partial failure.
       // Subscription is created before the mapping so that if it fails,
       // retries won't see the mapping and short-circuit via "alreadyProvisioned".
       // Mapping is created LAST so TenantFilter only resolves to this
       // schema once all tables and the subscription exist (prevents race).
-      createSchema(schemaName);
-      runTenantMigrations(schemaName);
+      createSchema(schemaName, targetDataSource);
+      runTenantMigrations(schemaName, targetDataSource);
       String defaultCurrency = resolveCurrency(country, verticalProfile);
       if (verticalProfile != null) {
         setVerticalProfile(schemaName, clerkOrgId, verticalProfile, defaultCurrency);
@@ -196,7 +234,7 @@ public class TenantProvisioningService {
       // No-op in prod profile or non-legal-za verticals.
       mockPaymentIntegrationSeeder.seedForTenant(schemaName, clerkOrgId);
       subscriptionService.createSubscription(org.getId());
-      createMapping(clerkOrgId, schemaName);
+      createMapping(clerkOrgId, schemaName, effectiveShardId);
 
       org.markCompleted();
       organizationRepository.save(org);
@@ -211,9 +249,9 @@ public class TenantProvisioningService {
     }
   }
 
-  void runTenantMigrations(String schemaName) {
+  void runTenantMigrations(String schemaName, DataSource dataSource) {
     Flyway.configure()
-        .dataSource(migrationDataSource)
+        .dataSource(dataSource)
         .locations("classpath:db/migration/tenant")
         .schemas(schemaName)
         .baselineOnMigrate(true)
@@ -222,9 +260,9 @@ public class TenantProvisioningService {
     log.info("Ran tenant migrations for schema {}", schemaName);
   }
 
-  private void createSchema(String schemaName) throws SQLException {
+  private void createSchema(String schemaName, DataSource dataSource) throws SQLException {
     validateSchemaName(schemaName);
-    try (var conn = migrationDataSource.getConnection();
+    try (var conn = dataSource.getConnection();
         var stmt = conn.createStatement()) {
       // Schema name is validated to match ^tenant_[0-9a-f]{12}$ — safe to concatenate
       stmt.execute("CREATE SCHEMA IF NOT EXISTS \"" + schemaName + "\"");
@@ -232,10 +270,10 @@ public class TenantProvisioningService {
     }
   }
 
-  private void createMapping(String clerkOrgId, String schemaName) {
+  private void createMapping(String clerkOrgId, String schemaName, String shardId) {
     if (mappingRepository.findByClerkOrgId(clerkOrgId).isEmpty()) {
-      mappingRepository.save(new OrgSchemaMapping(clerkOrgId, schemaName));
-      log.info("Created mapping {} -> {}", clerkOrgId, schemaName);
+      mappingRepository.save(new OrgSchemaMapping(clerkOrgId, schemaName, shardId));
+      log.info("Created mapping {} -> {} on shard {}", clerkOrgId, schemaName, shardId);
     }
   }
 

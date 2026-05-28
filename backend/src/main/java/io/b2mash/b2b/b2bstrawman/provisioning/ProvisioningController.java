@@ -30,7 +30,11 @@ public class ProvisioningController {
 
     var result =
         provisioningService.provisionTenant(
-            request.clerkOrgId(), request.orgName(), request.verticalProfile());
+            request.clerkOrgId(),
+            request.orgName(),
+            request.verticalProfile(),
+            null,
+            request.shardId());
 
     if (result.alreadyProvisioned()) {
       return ResponseEntity.status(409)
@@ -48,7 +52,8 @@ public class ProvisioningController {
   public record ProvisioningRequest(
       @NotBlank(message = "clerkOrgId is required") String clerkOrgId,
       @NotBlank(message = "orgName is required") String orgName,
-      String verticalProfile) {}
+      String verticalProfile,
+      String shardId) {}
 
   public record ProvisioningResponse(String schemaName, String message, String status) {}
 }

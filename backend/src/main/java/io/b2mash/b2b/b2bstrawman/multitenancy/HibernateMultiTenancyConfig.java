@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.multitenancy;
 import jakarta.persistence.EntityManagerFactory;
 import java.util.Map;
 import org.hibernate.cfg.MultiTenancySettings;
+import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.springframework.boot.hibernate.autoconfigure.HibernatePropertiesCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +16,7 @@ public class HibernateMultiTenancyConfig {
 
   @Bean
   HibernatePropertiesCustomizer multiTenancyCustomizer(
-      SchemaMultiTenantConnectionProvider connectionProvider,
+      MultiTenantConnectionProvider<String> connectionProvider,
       TenantIdentifierResolver tenantResolver) {
     return (Map<String, Object> hibernateProperties) -> {
       hibernateProperties.put(

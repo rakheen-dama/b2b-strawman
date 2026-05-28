@@ -46,6 +46,9 @@ public final class RequestScopes {
   /** Effective capability names for the current member. Bound by MemberFilter. */
   public static final ScopedValue<Set<String>> CAPABILITIES = ScopedValue.newInstance();
 
+  /** Shard identifier (e.g. "primary", "kazi_legal_1"). Bound by TenantFilter (Epic 553). */
+  public static final ScopedValue<String> SHARD_ID = ScopedValue.newInstance();
+
   /** JWT group memberships (e.g., "platform-admins"). Bound by PlatformAdminFilter. */
   public static final ScopedValue<Set<String>> GROUPS = ScopedValue.newInstance();
 

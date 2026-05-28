@@ -8,26 +8,47 @@ import org.hibernate.engine.jdbc.connections.spi.MultiTenantConnectionProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
+/**
+ * Shard-aware Hibernate connection provider. Parses composite tenant identifiers of the form {@code
+ * {shardId}:{schemaName}} and routes connections to the correct shard DataSource via {@link
+ * ShardRegistry}. Active only when {@code kazi.sharding.enabled=true}.
+ *
+ * <p>The primary {@link DataSource} is injected directly for {@link #getAnyConnection()} —
+ * Hibernate calls this during EntityManagerFactory bootstrap to detect the dialect, so it must not
+ * depend on {@link ShardRegistry} (which requires JPA repositories that in turn need the EMF).
+ *
+ * <p>{@code @Lazy} on {@link ShardRegistry} breaks the remaining circular dependency:
+ * EntityManagerFactory -> HibernateMultiTenancyConfig -> ShardAwareConnectionProvider ->
+ * ShardRegistry -> ShardConfigRepository -> EntityManagerFactory. The registry proxy is resolved on
+ * first tenant-specific connection request, by which time the EntityManagerFactory is fully
+ * initialized.
+ *
+ * @see ShardAndSchema
+ * @see SchemaMultiTenantConnectionProvider
+ */
 @Component
-@ConditionalOnProperty(name = "kazi.sharding.enabled", havingValue = "false", matchIfMissing = true)
-public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectionProvider<String> {
+@ConditionalOnProperty(name = "kazi.sharding.enabled", havingValue = "true")
+public class ShardAwareConnectionProvider implements MultiTenantConnectionProvider<String> {
 
-  private static final Logger log =
-      LoggerFactory.getLogger(SchemaMultiTenantConnectionProvider.class);
+  private static final Logger log = LoggerFactory.getLogger(ShardAwareConnectionProvider.class);
 
   private static final Pattern SCHEMA_PATTERN = Pattern.compile("^tenant_[0-9a-f]{12}$");
 
-  private final DataSource dataSource;
+  private final DataSource primaryDataSource;
+  private final ShardRegistry shardRegistry;
 
-  public SchemaMultiTenantConnectionProvider(DataSource dataSource) {
-    this.dataSource = dataSource;
+  public ShardAwareConnectionProvider(
+      DataSource primaryDataSource, @Lazy ShardRegistry shardRegistry) {
+    this.primaryDataSource = primaryDataSource;
+    this.shardRegistry = shardRegistry;
   }
 
   @Override
   public Connection getAnyConnection() throws SQLException {
-    return dataSource.getConnection();
+    return primaryDataSource.getConnection();
   }
 
   @Override
@@ -37,12 +58,13 @@ public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectio
 
   @Override
   public Connection getConnection(String tenantIdentifier) throws SQLException {
-    Connection connection = getAnyConnection();
+    ShardAndSchema parsed = ShardAndSchema.parse(tenantIdentifier);
+    Connection connection = shardRegistry.getDataSource(parsed.shardId()).getConnection();
     try {
-      setSearchPath(connection, tenantIdentifier);
+      setSearchPath(connection, parsed.schemaName());
     } catch (SQLException e) {
       // Release connection on setup failure to prevent pool leak
-      releaseAnyConnection(connection);
+      connection.close();
       throw e;
     }
     return connection;
@@ -59,7 +81,7 @@ public class SchemaMultiTenantConnectionProvider implements MultiTenantConnectio
           tenantIdentifier,
           e.getMessage());
     } finally {
-      releaseAnyConnection(connection);
+      connection.close();
     }
   }
 

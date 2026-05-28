@@ -117,6 +117,9 @@ app:
 # The KeycloakProvisioningClient bean is only created when that profile is active.
 
 kazi:
+  sharding:
+    enabled: true
+    control-plane-datasource: primary
   job-queue:
     enabled: true
     batch-size: 20

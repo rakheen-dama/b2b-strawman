@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.multitenancy;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -12,4 +13,6 @@ public interface OrgSchemaMappingRepository extends JpaRepository<OrgSchemaMappi
   }
 
   Optional<OrgSchemaMapping> findBySchemaName(String schemaName);
+
+  List<OrgSchemaMapping> findByShardId(String shardId);
 }

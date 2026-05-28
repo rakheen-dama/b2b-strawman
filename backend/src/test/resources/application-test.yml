@@ -87,6 +87,8 @@ docteams:
 # Tests that need webhook access use @DynamicPropertySource to inject a test ECDSA key.
 
 kazi:
+  sharding:
+    enabled: false
   job-queue:
     enabled: false
     poll-interval-ms: 100

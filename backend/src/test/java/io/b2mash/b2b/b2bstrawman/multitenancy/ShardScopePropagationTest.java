@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import jakarta.servlet.Filter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -18,9 +19,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 /**
  * Integration tests verifying that SHARD_ID is correctly propagated through the HTTP request path
@@ -44,17 +48,20 @@ class ShardScopePropagationTest {
   private final TenantProvisioningService provisioningService;
   private final TenantFilter tenantFilter;
   private final TenantScopedRunner tenantScopedRunner;
+  private final WebApplicationContext wac;
 
   @Autowired
   ShardScopePropagationTest(
       MockMvc mockMvc,
       TenantProvisioningService provisioningService,
       TenantFilter tenantFilter,
-      TenantScopedRunner tenantScopedRunner) {
+      TenantScopedRunner tenantScopedRunner,
+      WebApplicationContext wac) {
     this.mockMvc = mockMvc;
     this.provisioningService = provisioningService;
     this.tenantFilter = tenantFilter;
     this.tenantScopedRunner = tenantScopedRunner;
+    this.wac = wac;
   }
 
   @BeforeAll
@@ -83,20 +90,28 @@ class ShardScopePropagationTest {
     // Evict cache to force a fresh DB lookup
     tenantFilter.evictSchema(ORG_ID);
 
-    // Make a request through the filter chain — SHARD_ID should be bound
-    // We use /api/projects as a known tenant-scoped endpoint
-    mockMvc.perform(get("/api/projects").with(jwt)).andExpect(status().isOk());
+    // Capture SHARD_ID from within the request scope using a filter that runs
+    // inside TenantFilter's ScopedValue carrier.
+    AtomicReference<String> capturedShardId = new AtomicReference<>();
+    Filter shardCapture =
+        (request, response, chain) -> {
+          if (RequestScopes.SHARD_ID.isBound()) {
+            capturedShardId.set(RequestScopes.SHARD_ID.get());
+          }
+          chain.doFilter(request, response);
+        };
 
-    // The request completed without error, which means TenantIdentifierResolver
-    // resolved the composite identifier correctly (primary:tenant_xxx).
-    // Direct verification: make another request and check via the TenantIdentifierResolver
-    // The resolver reads SHARD_ID from RequestScopes in the filter chain.
-    // If SHARD_ID were not bound, it would default to "primary" — so we verify by
-    // checking the OrgSchemaMapping has shardId="primary" and the request succeeds.
-    var mapping =
-        provisioningService
-            .getClass(); // Existence of successful request proves shard binding worked
-    assertThat(true).isTrue(); // Request succeeded with sharding enabled = SHARD_ID was bound
+    MockMvc capturingMvc =
+        MockMvcBuilders.webAppContextSetup(wac)
+            .apply(SecurityMockMvcConfigurers.springSecurity())
+            .addFilter(shardCapture, "/*")
+            .build();
+
+    capturingMvc.perform(get("/api/projects").with(jwt)).andExpect(status().isOk());
+
+    assertThat(capturedShardId.get())
+        .as("SHARD_ID should be bound to 'primary' during the HTTP request")
+        .isEqualTo("primary");
   }
 
   @Test
@@ -105,14 +120,35 @@ class ShardScopePropagationTest {
 
     // Evict and make first request to populate cache
     tenantFilter.evictSchema(ORG_ID);
-    mockMvc.perform(get("/api/projects").with(jwt)).andExpect(status().isOk());
 
-    // Second request should hit cache — SHARD_ID must still be bound from cached TenantMapping
-    mockMvc.perform(get("/api/projects").with(jwt)).andExpect(status().isOk());
+    AtomicReference<String> capturedShardId = new AtomicReference<>();
+    Filter shardCapture =
+        (request, response, chain) -> {
+          if (RequestScopes.SHARD_ID.isBound()) {
+            capturedShardId.set(RequestScopes.SHARD_ID.get());
+          }
+          chain.doFilter(request, response);
+        };
 
-    // If cache hit didn't include SHARD_ID, TenantIdentifierResolver would still default to
-    // "primary", but the composite format would not match — this verifies the TenantMapping
-    // cache preserves shard information across hits.
+    MockMvc capturingMvc =
+        MockMvcBuilders.webAppContextSetup(wac)
+            .apply(SecurityMockMvcConfigurers.springSecurity())
+            .addFilter(shardCapture, "/*")
+            .build();
+
+    // First request populates the cache
+    capturingMvc.perform(get("/api/projects").with(jwt)).andExpect(status().isOk());
+    assertThat(capturedShardId.get())
+        .as("SHARD_ID should be bound on first (cache-miss) request")
+        .isEqualTo("primary");
+
+    // Reset capture and make second request — should hit cache
+    capturedShardId.set(null);
+    capturingMvc.perform(get("/api/projects").with(jwt)).andExpect(status().isOk());
+
+    assertThat(capturedShardId.get())
+        .as("SHARD_ID should still be bound on cache-hit request")
+        .isEqualTo("primary");
   }
 
   @Test

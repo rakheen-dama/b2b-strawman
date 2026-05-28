@@ -43,7 +43,8 @@ class TenantScopeBindingTest {
           .beDeclaredInClassesThat()
           .resideInAPackage("..multitenancy..")
           .because(
-              "Bind tenant scope via RequestScopes.runForTenant / callForTenant. "
+              "Bind tenant scope via RequestScopes.runForTenant / callForTenant / "
+                  + "runForTenantOnShard / callForTenantOnShard. "
                   + "Adding a private handleInTenantScope helper recreates the duplication "
                   + "this rule prevents. See ADR-T008.")
           .allowEmptyShould(true);
@@ -56,7 +57,9 @@ class TenantScopeBindingTest {
           .should()
           .beDeclaredInClassesThat()
           .resideInAPackage("..multitenancy..")
-          .because("Bind tenant scope via RequestScopes.runForTenant. See ADR-T008.")
+          .because(
+              "Bind tenant scope via RequestScopes.runForTenant / callForTenant / "
+                  + "runForTenantOnShard / callForTenantOnShard. See ADR-T008.")
           .allowEmptyShould(true);
 
   @ArchTest
@@ -67,7 +70,9 @@ class TenantScopeBindingTest {
           .should()
           .beDeclaredInClassesThat()
           .resideInAPackage("..multitenancy..")
-          .because("Bind tenant scope via RequestScopes.runForTenant. See ADR-T008.")
+          .because(
+              "Bind tenant scope via RequestScopes.runForTenant / callForTenant / "
+                  + "runForTenantOnShard / callForTenantOnShard. See ADR-T008.")
           .allowEmptyShould(true);
 
   /**
@@ -76,8 +81,8 @@ class TenantScopeBindingTest {
    * <p>Bans direct {@code ScopedValue.where(...)} method calls in classes outside the {@code
    * ..multitenancy..} package and outside the documented exemption set. Catches re-introduction of
    * the inline binding pattern that PR #2 just consolidated to {@code RequestScopes.runForTenant} /
-   * {@code callForTenant} / {@code runForTenantWithMember} / {@code
-   * TenantScopedRunner.forEachTenant}.
+   * {@code callForTenant} / {@code runForTenantOnShard} / {@code callForTenantOnShard} / {@code
+   * runForTenantWithMember} / {@code TenantScopedRunner.forEachTenant}.
    *
    * <p><b>Why broader than TENANT_ID-specific:</b> the precise rule "ban {@code
    * ScopedValue.where(RequestScopes.TENANT_ID, ...)}" requires first-argument-value introspection
@@ -136,6 +141,7 @@ class TenantScopeBindingTest {
               java.lang.ScopedValue.class, "where", java.lang.ScopedValue.class, Object.class)
           .because(
               "Bind tenant scope via RequestScopes.runForTenant / callForTenant / "
+                  + "runForTenantOnShard / callForTenantOnShard / "
                   + "runForTenantWithMember or TenantScopedRunner.forEachTenant. "
                   + "See ADR-T008. Adding a new exemption to this rule requires explicit "
                   + "ADR-T008 amendment. Exemptions use fully-qualified class names so a future "

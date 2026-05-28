@@ -9,15 +9,14 @@ import org.springframework.stereotype.Component;
 
 /**
  * Job handler for processing pending cancellation end. Delegates to {@link
- * SubscriptionExpiryJob#processPendingCancellationEnd()} which queries the global {@code
+ * SubscriptionExpiryJob#doProcessPendingCancellationEnd()} which queries the global {@code
  * public.subscriptions} table for PENDING_CANCELLATION subscriptions past their current period end
  * and transitions them to GRACE_PERIOD.
  *
  * <p>Note: Subscriptions live in the public schema, not per-tenant schemas. The handler delegates
- * to the same method the {@code @Scheduled} annotation calls. The method is idempotent because
- * {@code transitionTo()} changes status, so subsequent invocations find no matching rows.
- *
- * <p>Extracted from {@link SubscriptionExpiryJob#processPendingCancellationEnd()}.
+ * to the extracted processing method (not the {@code @Scheduled} method) to avoid re-enqueuing jobs
+ * via {@code fanOutToAllTenants}. The method is idempotent because {@code transitionTo()} changes
+ * status, so subsequent invocations find no matching rows.
  */
 @Component
 public class CancellationEndHandler implements JobHandler {
@@ -38,6 +37,6 @@ public class CancellationEndHandler implements JobHandler {
   @Override
   public void execute(@Nullable JsonNode payload) {
     log.debug("CancellationEndHandler: executing pending cancellation end check");
-    subscriptionExpiryJob.processPendingCancellationEnd();
+    subscriptionExpiryJob.doProcessPendingCancellationEnd();
   }
 }

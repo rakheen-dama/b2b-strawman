@@ -66,41 +66,50 @@ public class SubscriptionExpiryJob {
     log.info("Trial expiry job started");
 
     if (jobQueueProperties.isDualMode("subscription_trial_expiry")) {
-      var now = Instant.now();
-      var expired =
-          subscriptionRepository.findBySubscriptionStatusAndBillingMethodInAndTrialEndsAtBefore(
-              Subscription.SubscriptionStatus.TRIALING,
-              List.of(BillingMethod.PAYFAST, BillingMethod.MANUAL),
-              now);
-
-      int count = 0;
-      for (var sub : expired) {
-        try {
-          sub.transitionTo(Subscription.SubscriptionStatus.EXPIRED);
-          sub.setGraceEndsAt(now.plus(Duration.ofDays(billingProperties.gracePeriodDays())));
-          subscriptionRepository.save(sub);
-          statusCache.evict(sub.getOrganizationId());
-          logAuditEvent(
-              sub,
-              "subscription.trial_expired",
-              Map.of(
-                  "organization_id", sub.getOrganizationId().toString(),
-                  "previous_status", "TRIALING",
-                  "new_status", "EXPIRED"));
-          count++;
-        } catch (Exception e) {
-          log.error(
-              "Failed to process trial expiry for subscription {}: {}",
-              sub.getId(),
-              e.getMessage(),
-              e);
-        }
-      }
-
-      log.info("Trial expiry job completed: {} subscriptions transitioned", count);
+      doProcessTrialExpiry();
     }
 
     jobEnqueuer.fanOutToAllTenants("subscription_trial_expiry", null);
+  }
+
+  /**
+   * Processes trial expiry for all matching subscriptions. Called by both the {@code @Scheduled}
+   * method (in dual-mode) and by {@link TrialExpiryHandler} (via the job queue). This method
+   * contains only the query + transition + audit logic without the dual-mode check or fanout call.
+   */
+  void doProcessTrialExpiry() {
+    var now = Instant.now();
+    var expired =
+        subscriptionRepository.findBySubscriptionStatusAndBillingMethodInAndTrialEndsAtBefore(
+            Subscription.SubscriptionStatus.TRIALING,
+            List.of(BillingMethod.PAYFAST, BillingMethod.MANUAL),
+            now);
+
+    int count = 0;
+    for (var sub : expired) {
+      try {
+        sub.transitionTo(Subscription.SubscriptionStatus.EXPIRED);
+        sub.setGraceEndsAt(now.plus(Duration.ofDays(billingProperties.gracePeriodDays())));
+        subscriptionRepository.save(sub);
+        statusCache.evict(sub.getOrganizationId());
+        logAuditEvent(
+            sub,
+            "subscription.trial_expired",
+            Map.of(
+                "organization_id", sub.getOrganizationId().toString(),
+                "previous_status", "TRIALING",
+                "new_status", "EXPIRED"));
+        count++;
+      } catch (Exception e) {
+        log.error(
+            "Failed to process trial expiry for subscription {}: {}",
+            sub.getId(),
+            e.getMessage(),
+            e);
+      }
+    }
+
+    log.info("Trial expiry job completed: {} subscriptions transitioned", count);
   }
 
   /**
@@ -113,46 +122,56 @@ public class SubscriptionExpiryJob {
     log.info("Grace period expiry job started");
 
     if (jobQueueProperties.isDualMode("subscription_grace_expiry")) {
-      var now = Instant.now();
-      var expired =
-          subscriptionRepository.findBySubscriptionStatusInAndGraceEndsAtBefore(
-              List.of(
-                  Subscription.SubscriptionStatus.GRACE_PERIOD,
-                  Subscription.SubscriptionStatus.EXPIRED,
-                  Subscription.SubscriptionStatus.SUSPENDED),
-              now);
-
-      int count = 0;
-      for (var sub : expired) {
-        try {
-          var previousStatus = sub.getSubscriptionStatus().name();
-          sub.transitionTo(Subscription.SubscriptionStatus.LOCKED);
-          subscriptionRepository.save(sub);
-          statusCache.evict(sub.getOrganizationId());
-          logAuditEvent(
-              sub,
-              "subscription.locked",
-              Map.of(
-                  "organization_id",
-                  sub.getOrganizationId().toString(),
-                  "previous_status",
-                  previousStatus,
-                  "new_status",
-                  "LOCKED"));
-          count++;
-        } catch (Exception e) {
-          log.error(
-              "Failed to process grace expiry for subscription {}: {}",
-              sub.getId(),
-              e.getMessage(),
-              e);
-        }
-      }
-
-      log.info("Grace period expiry job completed: {} subscriptions transitioned", count);
+      doProcessGraceExpiry();
     }
 
     jobEnqueuer.fanOutToAllTenants("subscription_grace_expiry", null);
+  }
+
+  /**
+   * Processes grace period expiry for all matching subscriptions. Called by both the
+   * {@code @Scheduled} method (in dual-mode) and by {@link GraceExpiryHandler} (via the job queue).
+   * This method contains only the query + transition + audit logic without the dual-mode check or
+   * fanout call.
+   */
+  void doProcessGraceExpiry() {
+    var now = Instant.now();
+    var expired =
+        subscriptionRepository.findBySubscriptionStatusInAndGraceEndsAtBefore(
+            List.of(
+                Subscription.SubscriptionStatus.GRACE_PERIOD,
+                Subscription.SubscriptionStatus.EXPIRED,
+                Subscription.SubscriptionStatus.SUSPENDED),
+            now);
+
+    int count = 0;
+    for (var sub : expired) {
+      try {
+        var previousStatus = sub.getSubscriptionStatus().name();
+        sub.transitionTo(Subscription.SubscriptionStatus.LOCKED);
+        subscriptionRepository.save(sub);
+        statusCache.evict(sub.getOrganizationId());
+        logAuditEvent(
+            sub,
+            "subscription.locked",
+            Map.of(
+                "organization_id",
+                sub.getOrganizationId().toString(),
+                "previous_status",
+                previousStatus,
+                "new_status",
+                "LOCKED"));
+        count++;
+      } catch (Exception e) {
+        log.error(
+            "Failed to process grace expiry for subscription {}: {}",
+            sub.getId(),
+            e.getMessage(),
+            e);
+      }
+    }
+
+    log.info("Grace period expiry job completed: {} subscriptions transitioned", count);
   }
 
   /**
@@ -165,44 +184,54 @@ public class SubscriptionExpiryJob {
     log.info("Pending cancellation end job started");
 
     if (jobQueueProperties.isDualMode("subscription_cancellation_end")) {
-      var now = Instant.now();
-      var ended =
-          subscriptionRepository.findBySubscriptionStatusAndCurrentPeriodEndBefore(
-              Subscription.SubscriptionStatus.PENDING_CANCELLATION, now);
-
-      int count = 0;
-      for (var sub : ended) {
-        try {
-          if (sub.getCurrentPeriodEnd() == null) {
-            log.warn("Subscription {} has null currentPeriodEnd, skipping", sub.getId());
-            continue;
-          }
-          sub.transitionTo(Subscription.SubscriptionStatus.GRACE_PERIOD);
-          sub.setGraceEndsAt(
-              sub.getCurrentPeriodEnd().plus(Duration.ofDays(billingProperties.gracePeriodDays())));
-          subscriptionRepository.save(sub);
-          statusCache.evict(sub.getOrganizationId());
-          logAuditEvent(
-              sub,
-              "subscription.cancellation_effective",
-              Map.of(
-                  "organization_id", sub.getOrganizationId().toString(),
-                  "previous_status", "PENDING_CANCELLATION",
-                  "new_status", "GRACE_PERIOD"));
-          count++;
-        } catch (Exception e) {
-          log.error(
-              "Failed to process pending cancellation end for subscription {}: {}",
-              sub.getId(),
-              e.getMessage(),
-              e);
-        }
-      }
-
-      log.info("Pending cancellation end job completed: {} subscriptions transitioned", count);
+      doProcessPendingCancellationEnd();
     }
 
     jobEnqueuer.fanOutToAllTenants("subscription_cancellation_end", null);
+  }
+
+  /**
+   * Processes pending cancellation end for all matching subscriptions. Called by both the
+   * {@code @Scheduled} method (in dual-mode) and by {@link CancellationEndHandler} (via the job
+   * queue). This method contains only the query + transition + audit logic without the dual-mode
+   * check or fanout call.
+   */
+  void doProcessPendingCancellationEnd() {
+    var now = Instant.now();
+    var ended =
+        subscriptionRepository.findBySubscriptionStatusAndCurrentPeriodEndBefore(
+            Subscription.SubscriptionStatus.PENDING_CANCELLATION, now);
+
+    int count = 0;
+    for (var sub : ended) {
+      try {
+        if (sub.getCurrentPeriodEnd() == null) {
+          log.warn("Subscription {} has null currentPeriodEnd, skipping", sub.getId());
+          continue;
+        }
+        sub.transitionTo(Subscription.SubscriptionStatus.GRACE_PERIOD);
+        sub.setGraceEndsAt(
+            sub.getCurrentPeriodEnd().plus(Duration.ofDays(billingProperties.gracePeriodDays())));
+        subscriptionRepository.save(sub);
+        statusCache.evict(sub.getOrganizationId());
+        logAuditEvent(
+            sub,
+            "subscription.cancellation_effective",
+            Map.of(
+                "organization_id", sub.getOrganizationId().toString(),
+                "previous_status", "PENDING_CANCELLATION",
+                "new_status", "GRACE_PERIOD"));
+        count++;
+      } catch (Exception e) {
+        log.error(
+            "Failed to process pending cancellation end for subscription {}: {}",
+            sub.getId(),
+            e.getMessage(),
+            e);
+      }
+    }
+
+    log.info("Pending cancellation end job completed: {} subscriptions transitioned", count);
   }
 
   private void logAuditEvent(Subscription sub, String eventType, Map<String, Object> details) {

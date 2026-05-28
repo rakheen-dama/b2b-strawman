@@ -9,15 +9,14 @@ import org.springframework.stereotype.Component;
 
 /**
  * Job handler for processing grace period expiry. Delegates to {@link
- * SubscriptionExpiryJob#processGraceExpiry()} which queries the global {@code public.subscriptions}
- * table for GRACE_PERIOD/EXPIRED/SUSPENDED subscriptions past their grace end date and transitions
- * them to LOCKED.
+ * SubscriptionExpiryJob#doProcessGraceExpiry()} which queries the global {@code
+ * public.subscriptions} table for GRACE_PERIOD/EXPIRED/SUSPENDED subscriptions past their grace end
+ * date and transitions them to LOCKED.
  *
  * <p>Note: Subscriptions live in the public schema, not per-tenant schemas. The handler delegates
- * to the same method the {@code @Scheduled} annotation calls. The method is idempotent because
- * {@code transitionTo()} changes status, so subsequent invocations find no matching rows.
- *
- * <p>Extracted from {@link SubscriptionExpiryJob#processGraceExpiry()}.
+ * to the extracted processing method (not the {@code @Scheduled} method) to avoid re-enqueuing jobs
+ * via {@code fanOutToAllTenants}. The method is idempotent because {@code transitionTo()} changes
+ * status, so subsequent invocations find no matching rows.
  */
 @Component
 public class GraceExpiryHandler implements JobHandler {
@@ -38,6 +37,6 @@ public class GraceExpiryHandler implements JobHandler {
   @Override
   public void execute(@Nullable JsonNode payload) {
     log.debug("GraceExpiryHandler: executing grace period expiry check");
-    subscriptionExpiryJob.processGraceExpiry();
+    subscriptionExpiryJob.doProcessGraceExpiry();
   }
 }

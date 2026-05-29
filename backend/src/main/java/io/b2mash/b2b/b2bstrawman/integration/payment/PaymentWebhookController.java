@@ -59,22 +59,23 @@ public class PaymentWebhookController {
       return ResponseEntity.ok().build();
     }
 
-    // Resolve orgId from tenant schema so downstream events (InvoicePaidEvent,
-    // InvoiceSyncEvent) have the orgId for portal sync and notification routing.
-    String orgId =
-        orgSchemaMappingRepository
-            .findBySchemaName(tenantSchema)
-            .map(m -> m.getClerkOrgId())
-            .orElse(null);
+    // Resolve org + shard from tenant schema so downstream events (InvoicePaidEvent,
+    // InvoiceSyncEvent) have the orgId for portal sync/notification routing, and the handler
+    // executes against the tenant's shard rather than defaulting to primary (D5).
+    var mapping = orgSchemaMappingRepository.findBySchemaName(tenantSchema).orElse(null);
+    String orgId = mapping != null ? mapping.getExternalOrgId() : null;
+    String shardId = mapping != null ? mapping.getShardId() : null;
 
-    if (orgId == null) {
-      log.warn("No org mapping found for tenant schema {} — orgId will be null", tenantSchema);
+    if (mapping == null) {
+      log.warn(
+          "No org mapping found for tenant schema {} — orgId/shard will be null", tenantSchema);
     }
 
     try {
-      RequestScopes.runForTenant(
+      RequestScopes.runForTenantOnShard(
           tenantSchema,
           orgId,
+          shardId,
           () -> paymentWebhookService.processWebhook(sanitizedProvider, payload, headers));
     } catch (Exception e) {
       log.error("Error processing {} webhook", sanitizedProvider, e);

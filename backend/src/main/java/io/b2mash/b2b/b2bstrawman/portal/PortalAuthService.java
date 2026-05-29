@@ -59,9 +59,10 @@ public class PortalAuthService {
 
     // Look up portal contact and generate token within the tenant scope
     try {
-      return RequestScopes.callForTenant(
+      return RequestScopes.callForTenantOnShard(
           tenantSchema,
           null,
+          mapping.getShardId(),
           () -> {
             PortalContact contact =
                 portalContactRepository.findByEmailAndOrgId(email, orgClerkId).orElse(null);
@@ -119,8 +120,11 @@ public class PortalAuthService {
     UUID portalContactId;
     try {
       portalContactId =
-          RequestScopes.callForTenant(
-              tenantSchema, null, () -> magicLinkService.verifyAndConsumeToken(token));
+          RequestScopes.callForTenantOnShard(
+              tenantSchema,
+              null,
+              mapping.getShardId(),
+              () -> magicLinkService.verifyAndConsumeToken(token));
     } catch (PortalAuthException e) {
       throw e;
     } catch (Exception e) {
@@ -129,9 +133,10 @@ public class PortalAuthService {
 
     // Load portal contact and customer within tenant context
     try {
-      return RequestScopes.callForTenant(
+      return RequestScopes.callForTenantOnShard(
           tenantSchema,
           null,
+          mapping.getShardId(),
           () -> {
             PortalContact contact =
                 portalContactRepository

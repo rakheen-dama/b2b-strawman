@@ -162,7 +162,8 @@ public class PortalDigestScheduler {
       String orgId = mapping.getExternalOrgId();
       try {
         TenantResult tenantResult =
-            RequestScopes.callForTenant(schema, orgId, () -> processTenant(options));
+            RequestScopes.callForTenantOnShard(
+                schema, orgId, mapping.getShardId(), () -> processTenant(options));
         if (tenantResult != null) {
           totalDigestsSent += tenantResult.sent();
           totalSkipped += tenantResult.skipped();

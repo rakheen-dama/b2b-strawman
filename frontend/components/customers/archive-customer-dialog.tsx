@@ -28,12 +28,18 @@ interface ArchiveCustomerDialogProps {
    * for the full rationale — adjacent cloneElement-injected onClicks under
    * React 19 lose one of the two siblings on commit, so the dialog renders
    * the `<Button>` itself rather than relying on consumer-supplied children.
+   *
+   * When `open`/`onOpenChange` are provided (controlled mode), the trigger
+   * button is not rendered — the consumer manages open state externally.
    */
-  triggerLabel: ReactNode;
+  triggerLabel?: ReactNode;
   triggerVariant?: ButtonVariant;
   triggerSize?: ButtonSize;
   triggerClassName?: string;
   triggerIcon?: ReactNode;
+  /** External controlled mode — when provided, overrides internal state */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function ArchiveCustomerDialog({
@@ -45,8 +51,13 @@ export function ArchiveCustomerDialog({
   triggerSize = "sm",
   triggerClassName,
   triggerIcon,
+  open: externalOpen,
+  onOpenChange: externalOnOpenChange,
 }: ArchiveCustomerDialogProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = externalOpen !== undefined;
+  const open = isControlled ? externalOpen : internalOpen;
+  const setOpen = isControlled ? (externalOnOpenChange ?? (() => {})) : setInternalOpen;
   const [isArchiving, setIsArchiving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -74,16 +85,18 @@ export function ArchiveCustomerDialog({
   // `edit-customer-dialog.tsx` for the full rationale.
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
-      <Button
-        type="button"
-        variant={triggerVariant}
-        size={triggerSize}
-        className={triggerClassName}
-        onClick={() => setOpen(true)}
-      >
-        {triggerIcon}
-        {triggerLabel}
-      </Button>
+      {!isControlled && (
+        <Button
+          type="button"
+          variant={triggerVariant}
+          size={triggerSize}
+          className={triggerClassName}
+          onClick={() => setOpen(true)}
+        >
+          {triggerIcon}
+          {triggerLabel}
+        </Button>
+      )}
       <AlertDialogContent className="border-t-4 border-t-red-500">
         <AlertDialogHeader>
           <div className="flex justify-center">

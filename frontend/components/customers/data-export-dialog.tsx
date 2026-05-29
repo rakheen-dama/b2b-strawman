@@ -19,7 +19,11 @@ type Step = "confirm" | "processing" | "download" | "error";
 
 interface DataExportDialogProps {
   customerId: string;
-  children: React.ReactNode;
+  /** Trigger element — required in uncontrolled mode, ignored in controlled mode */
+  children?: React.ReactNode;
+  /** External controlled mode — when provided, overrides internal state */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 function formatBytes(bytes: number): string {
@@ -30,8 +34,16 @@ function formatBytes(bytes: number): string {
   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
 }
 
-export function DataExportDialog({ customerId, children }: DataExportDialogProps) {
-  const [open, setOpen] = useState(false);
+export function DataExportDialog({
+  customerId,
+  children,
+  open: externalOpen,
+  onOpenChange: externalOnOpenChange,
+}: DataExportDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = externalOpen !== undefined;
+  const open = isControlled ? externalOpen : internalOpen;
+  const setOpen = isControlled ? (externalOnOpenChange ?? (() => {})) : setInternalOpen;
   const [step, setStep] = useState<Step>("confirm");
   const [exportResult, setExportResult] = useState<StandaloneExportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +79,7 @@ export function DataExportDialog({ customerId, children }: DataExportDialogProps
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      {!isControlled && <DialogTrigger asChild>{children}</DialogTrigger>}
       <DialogContent className="max-w-md">
         {step === "confirm" && (
           <>

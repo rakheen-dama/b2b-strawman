@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen, fireEvent } from "@testing-library/react";
-import { GroupedTabBar } from "@/components/projects/grouped-tab-bar";
-import { TAB_GROUPS, resolveTabFromUrl, type TabGroup } from "@/lib/constants/tab-groups";
+import { GroupedTabBar } from "@/components/shared/grouped-tab-bar";
+import { TAB_GROUPS } from "@/lib/constants/project-tab-groups";
+import { resolveTabFromUrl, type TabGroup } from "@/lib/constants/tab-group-types";
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -129,9 +130,11 @@ describe("resolveTabFromUrl", () => {
     expect(result).toEqual({ groupId: "overview", tabId: "overview" });
   });
 
-  it("maps 'members' to staffing via redirect", () => {
+  it("returns overview for unknown param (members redirect handled by caller)", () => {
+    // The shared resolveTabFromUrl no longer handles the members -> staffing redirect;
+    // that is entity-specific logic handled by ProjectTabs via useEffect.
     const result = resolveTabFromUrl("members", TAB_GROUPS);
-    expect(result).toEqual({ groupId: "work", tabId: "staffing" });
+    expect(result).toEqual({ groupId: "overview", tabId: "overview" });
   });
 
   it("finds correct group for known tab id (time → finance)", () => {

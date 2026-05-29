@@ -10,7 +10,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
-import type { TabGroup } from "@/lib/constants/tab-groups";
+import type { TabGroup } from "@/lib/constants/tab-group-types";
 
 // ---------------------------------------------------------------------------
 // Types

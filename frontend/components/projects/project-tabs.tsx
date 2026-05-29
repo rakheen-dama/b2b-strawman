@@ -7,8 +7,8 @@ import { useOrgProfile } from "@/lib/org-profile";
 import { useTerminology } from "@/lib/terminology";
 import { auditTabLabel } from "@/lib/terminology-map";
 import { useAuditTabVisible } from "@/components/audit/audit-timeline-tab";
-import { GroupedTabBar } from "@/components/projects/grouped-tab-bar";
-import { TAB_GROUPS } from "@/lib/constants/tab-groups";
+import { GroupedTabBar } from "@/components/shared/grouped-tab-bar";
+import { TAB_GROUPS, MEMBERS_TAB_REDIRECT } from "@/lib/constants/project-tab-groups";
 
 interface ProjectTabsProps {
   detailsPanel: ReactNode;
@@ -123,7 +123,7 @@ export function ProjectTabs({
   useEffect(() => {
     if (tabParam === "members") {
       const params = new URLSearchParams(searchParams.toString());
-      params.set("tab", "staffing");
+      params.set("tab", MEMBERS_TAB_REDIRECT);
       router.replace(`?${params.toString()}`);
     }
   }, [tabParam, router, searchParams]);

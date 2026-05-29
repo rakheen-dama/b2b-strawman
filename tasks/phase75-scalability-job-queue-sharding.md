@@ -34,7 +34,7 @@ Phase 75 replaces the sequential scheduler-then-tenant-loop pattern with a job q
 | 552 | Shard-Aware Connection Provider | Backend | 551 | M | 552A, 552B | **Done** (PR #1379) |
 | 553 | Shard-Aware Request Scopes + Filter + Runner | Backend | 551, 552 | S | 553A | **Done** (PR #1380) |
 | 554 | Shard-Aware Provisioning + Flyway | Backend | 551, 552, 553 | M | 554A, 554B | **Done** (PR #1381) |
-| 555 | Integration Tests + Observability | Backend | 550, 554 | M | 555A, 555B | |
+| 555 | Integration Tests + Observability | Backend | 550, 554 | M | 555A, 555B | **Done** (PR #1382) |
 
 **Slice count: 17** (9 architecture slices expanded to 17 numbered slices to enforce the 6-12 files / ~800 LOC slice-sizing budget and split large epics into sub-slices).
 
@@ -171,8 +171,8 @@ PHASES already complete:
 
 | Order | Slice | Summary |
 |-------|-------|---------|
-| 5a | **555A** | `JobQueueMetrics` (Micrometer counters, gauges, histograms per architecture Section 75.12.1); `ShardMetrics` (per-shard pool metrics per Section 75.12.2); `ShardHealthIndicator` + `JobQueueHealthIndicator`. |
-| 5b | **555B** | End-to-end integration test (enqueue -> claim -> execute against shard 2); shard isolation test (tenant on shard A cannot access shard B); single-shard characterization test (full `./mvnw verify` with sharding enabled + primary only). |
+| 5a | **555A** | `JobQueueMetrics` (Micrometer counters, gauges, histograms per architecture Section 75.12.1); `ShardMetrics` (per-shard pool metrics per Section 75.12.2); `ShardHealthIndicator` + `JobQueueHealthIndicator`. | **Done** (PR #1382) |
+| 5b | **555B** | End-to-end integration test (enqueue -> claim -> execute against shard 2); shard isolation test (tenant on shard A cannot access shard B); single-shard characterization test (full `./mvnw verify` with sharding enabled + primary only). | **Done** (PR #1382) |
 
 ### Timeline
 
@@ -802,8 +802,8 @@ A realistic day-by-day cadence (2 tracks in parallel): 547A + 551A days 1-2; 547
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **555A** | 555A.1-555A.4 | ~5 backend files (2 metrics classes + 2 health indicators + 1 test) | `JobQueueMetrics` (counters, gauges, histograms); `ShardMetrics` (per-shard pool metrics); `ShardHealthIndicator`; `JobQueueHealthIndicator`. |
-| **555B** | 555B.1-555B.4 | ~4 backend files (3 test files + 1 test utility reuse) | End-to-end integration test (enqueue -> claim -> execute on shard 2); shard isolation test; single-shard characterization (`./mvnw verify` with sharding enabled + primary only). |
+| **555A** | 555A.1-555A.4 | ~5 backend files (2 metrics classes + 2 health indicators + 1 test) | `JobQueueMetrics` (counters, gauges, histograms); `ShardMetrics` (per-shard pool metrics); `ShardHealthIndicator`; `JobQueueHealthIndicator`. | **Done** (PR #1382) |
+| **555B** | 555B.1-555B.4 | ~4 backend files (3 test files + 1 test utility reuse) | End-to-end integration test (enqueue -> claim -> execute on shard 2); shard isolation test; single-shard characterization (`./mvnw verify` with sharding enabled + primary only). | **Done** (PR #1382) |
 
 ### Tasks
 

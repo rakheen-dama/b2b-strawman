@@ -628,7 +628,7 @@
 | 552 | Shard-Aware Connection Provider | Backend | 551 | M | 552A, 552B | **Done** (PR #1379) |
 | 553 | Shard-Aware Request Scopes + Filter + Runner | Backend | 551, 552 | S | 553A | **Done** (PR #1380) |
 | 554 | Shard-Aware Provisioning + Flyway | Backend | 551, 552, 553 | M | 554A, 554B | **Done** (PR #1381) |
-| 555 | Integration Tests + Observability | Backend | 550, 554 | M | 555A, 555B | |
+| 555 | Integration Tests + Observability | Backend | 550, 554 | M | 555A, 555B | **Done** (PR #1382) |
 
 
 ---

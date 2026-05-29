@@ -33,7 +33,7 @@ Phase 75 replaces the sequential scheduler-then-tenant-loop pattern with a job q
 | 551 | Shard Config + Registry + Migration | Backend | -- | M | 551A, 551B | **Done** (PR #1378) |
 | 552 | Shard-Aware Connection Provider | Backend | 551 | M | 552A, 552B | **Done** (PR #1379) |
 | 553 | Shard-Aware Request Scopes + Filter + Runner | Backend | 551, 552 | S | 553A | **Done** (PR #1380) |
-| 554 | Shard-Aware Provisioning + Flyway | Backend | 551, 552, 553 | M | 554A, 554B | |
+| 554 | Shard-Aware Provisioning + Flyway | Backend | 551, 552, 553 | M | 554A, 554B | **Done** (PR #1381) |
 | 555 | Integration Tests + Observability | Backend | 550, 554 | M | 555A, 555B | |
 
 **Slice count: 17** (9 architecture slices expanded to 17 numbered slices to enforce the 6-12 files / ~800 LOC slice-sizing budget and split large epics into sub-slices).
@@ -164,8 +164,8 @@ PHASES already complete:
 | 4a | **550A** | Migrate 7 schedulers: `RecurringScheduleExecutor`, `DormancyScheduledJob`, `ProposalExpiryProcessor`, `AcceptanceExpiryProcessor`, `MagicLinkCleanupService`, `AiExecutionGateService`, `FieldDateScannerJob`. | 554A | **Done** (PR #1375) |
 | 4b | **550B** | Migrate 7 schedulers: `RequestReminderScheduler`, `SubscriptionExpiryJob` (3 methods: trial, grace, cancellation), `CourtDateReminderJob`, `AiInvocationExpirySweeper`, `PortalDigestScheduler`. | 554B | **Done** (PR #1376) |
 | 4c | **550C** | `JobQueueAdminController` (list, retry, delete, stats endpoints); platform-admin only; integration tests with MockMvc. | After 550B | **Done** (PR #1377) |
-| 4d | **554A** | `TenantProvisioningService` shard parameter + validation via `ShardRegistry`; provisioning API extension (optional `shardId` field); integration test for provisioning on non-primary shard. | 550A |
-| 4e | **554B** | `TenantMigrationRunner` shard iteration (iterate active shards from `ShardRegistry`, run Flyway per shard per schema); integration test with two embedded Postgres instances. | 550B |
+| 4d | **554A** | `TenantProvisioningService` shard parameter + validation via `ShardRegistry`; provisioning API extension (optional `shardId` field); integration test for provisioning on non-primary shard. | 550A | **Done** (PR #1381) |
+| 4e | **554B** | `TenantMigrationRunner` shard iteration (iterate active shards from `ShardRegistry`, run Flyway per shard per schema); integration test with two embedded Postgres instances. | 550B | **Done** (PR #1381) |
 
 ### Stage 5 -- Convergence: Observability + Integration Tests
 
@@ -738,8 +738,8 @@ A realistic day-by-day cadence (2 tracks in parallel): 547A + 551A days 1-2; 547
 
 | Slice | Tasks | Files Touched | Summary |
 |-------|-------|---------------|---------|
-| **554A** | 554A.1-554A.4 | ~5 backend files (2 modified services + 1 modified controller + 1 modified DTO/record + 1 test) | `TenantProvisioningService` shard parameter + shard DataSource for schema creation/migration/seeding; provisioning API `shardId` field; validation via `ShardRegistry`. |
-| **554B** | 554B.1-554B.3 | ~3 backend files (1 modified runner + 1 test + 1 test utility) | `TenantMigrationRunner` shard iteration (per-shard Flyway); integration test with two embedded Postgres instances. |
+| **554A** | 554A.1-554A.4 | ~5 backend files (2 modified services + 1 modified controller + 1 modified DTO/record + 1 test) | `TenantProvisioningService` shard parameter + shard DataSource for schema creation/migration/seeding; provisioning API `shardId` field; validation via `ShardRegistry`. | **Done** (PR #1381) |
+| **554B** | 554B.1-554B.3 | ~3 backend files (1 modified runner + 1 test + 1 test utility) | `TenantMigrationRunner` shard iteration (per-shard Flyway); integration test with two embedded Postgres instances. | **Done** (PR #1381) |
 
 ### Tasks
 

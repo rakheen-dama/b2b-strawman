@@ -546,9 +546,10 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onCommentCreated(CommentCreatedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             if (!"SHARED".equals(event.visibility())) {
@@ -571,9 +572,10 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onCommentVisibilityChanged(CommentVisibilityChangedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             if ("SHARED".equals(event.newVisibility())) {
@@ -624,9 +626,10 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onCommentDeleted(CommentDeletedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var projectId = event.projectId();
@@ -650,9 +653,10 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onAcceptanceRequestSent(AcceptanceRequestSentEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             // Resolve org name from Organization entity (public schema)
@@ -700,9 +704,10 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onAcceptanceRequestAccepted(AcceptanceRequestAcceptedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             readModelRepo.updateAcceptanceRequestStatus(event.requestId(), "ACCEPTED");
@@ -717,9 +722,10 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onAcceptanceRequestRevoked(AcceptanceRequestRevokedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             readModelRepo.updateAcceptanceRequestStatus(event.requestId(), "REVOKED");
@@ -734,9 +740,10 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onAcceptanceRequestExpired(AcceptanceRequestExpiredEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             readModelRepo.updateAcceptanceRequestStatus(event.requestId(), "EXPIRED");
@@ -753,9 +760,10 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInformationRequestSent(InformationRequestSentEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var request = informationRequestRepository.findById(event.requestId()).orElseThrow();
@@ -818,9 +826,10 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInformationRequestCancelled(InformationRequestCancelledEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             readModelRepo.updatePortalRequestStatus(event.requestId(), "CANCELLED", null);
@@ -835,9 +844,10 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInformationRequestCompleted(InformationRequestCompletedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             readModelRepo.updatePortalRequestStatus(
@@ -853,9 +863,10 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onRequestItemSubmitted(RequestItemSubmittedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var item = requestItemRepository.findById(event.itemId()).orElseThrow();
@@ -880,9 +891,10 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onRequestItemAccepted(RequestItemAcceptedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             readModelRepo.updatePortalRequestItemStatus(
@@ -896,9 +908,10 @@ public class PortalEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onRequestItemRejected(RequestItemRejectedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             readModelRepo.updatePortalRequestItemStatus(

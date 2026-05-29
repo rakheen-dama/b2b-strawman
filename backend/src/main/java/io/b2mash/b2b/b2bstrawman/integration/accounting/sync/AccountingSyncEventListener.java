@@ -29,9 +29,10 @@ public class AccountingSyncEventListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInvoiceApproved(InvoiceApprovedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             syncService.enqueueInvoicePush(event.entityId(), SyncTrigger.EVENT);
@@ -47,9 +48,10 @@ public class AccountingSyncEventListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInvoiceSent(InvoiceSentEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             syncService.enqueueInvoicePush(event.entityId(), SyncTrigger.EVENT);
@@ -65,9 +67,10 @@ public class AccountingSyncEventListener {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInvoiceVoided(InvoiceVoidedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             syncService.enqueueInvoicePush(event.entityId(), SyncTrigger.EVENT);

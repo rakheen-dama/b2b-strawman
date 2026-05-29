@@ -208,9 +208,10 @@ public class PortalEmailNotificationChannel {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onFieldDateApproaching(FieldDateApproachingEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             UUID customerId = resolveCustomerIdFromEvent(event);

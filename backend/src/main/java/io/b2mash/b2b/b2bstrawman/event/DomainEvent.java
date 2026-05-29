@@ -75,6 +75,18 @@ public sealed interface DomainEvent
   /** Clerk org ID for ORG_ID ScopedValue binding. */
   String orgId();
 
+  /**
+   * Returns the shard ID for this event's tenant. Reads from the current {@link
+   * RequestScopes#SHARD_ID} ScopedValue at call time — correct for AFTER_COMMIT listeners which
+   * fire on the same thread as the publisher where SHARD_ID is still bound.
+   *
+   * <p>When events are serialized for the outbox pattern (B1), this must become an explicit record
+   * field instead of a scope-reading default.
+   */
+  default String shardId() {
+    return RequestScopes.SHARD_ID.isBound() ? RequestScopes.SHARD_ID.get() : "primary";
+  }
+
   Instant occurredAt();
 
   Map<String, Object> details();

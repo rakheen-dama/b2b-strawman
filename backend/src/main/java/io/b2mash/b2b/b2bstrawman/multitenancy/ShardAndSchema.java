@@ -11,8 +11,13 @@ import java.util.regex.Pattern;
  */
 public record ShardAndSchema(String shardId, String schemaName) {
 
-  /** Shard IDs: lowercase alphanumeric with underscores, 1-50 chars, or exactly "primary". */
-  private static final Pattern SHARD_ID_PATTERN = Pattern.compile("^[a-z][a-z0-9_]{0,48}[a-z0-9]$");
+  /**
+   * Shard IDs: lowercase alphanumeric with underscores, 1-50 chars, starting with a letter and not
+   * ending in an underscore. Single-character IDs (e.g. "a") are allowed via the optional tail
+   * group (D7). "primary" is also accepted (and happens to match this pattern too).
+   */
+  private static final Pattern SHARD_ID_PATTERN =
+      Pattern.compile("^[a-z]([a-z0-9_]{0,48}[a-z0-9])?$");
 
   /** Schema names: "public" or "tenant_" followed by 12 hex chars. */
   private static final Pattern SCHEMA_NAME_PATTERN = Pattern.compile("^tenant_[0-9a-f]{12}$");
@@ -66,11 +71,21 @@ public record ShardAndSchema(String shardId, String schemaName) {
     return shardId + ":" + schemaName;
   }
 
+  /**
+   * Validates a shard identifier, throwing {@link IllegalArgumentException} if it is null, blank,
+   * or malformed. Use to fail fast at binding time rather than late during identifier resolution.
+   *
+   * @param shardId the shard identifier to validate
+   */
+  public static void requireValidShardId(String shardId) {
+    validateShardId(shardId);
+  }
+
   private static void validateShardId(String shardId) {
     if (shardId == null || shardId.isBlank()) {
       throw new IllegalArgumentException("Shard ID must not be null or blank");
     }
-    // "primary" is always valid; single-char shard IDs are not valid per the pattern
+    // "primary" is always valid; single-char shard IDs (e.g. "a") are now allowed by the pattern.
     if (!"primary".equals(shardId) && !SHARD_ID_PATTERN.matcher(shardId).matches()) {
       throw new IllegalArgumentException("Invalid shard ID format: " + shardId);
     }

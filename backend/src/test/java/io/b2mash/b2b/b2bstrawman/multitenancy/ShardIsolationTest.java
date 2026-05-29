@@ -37,7 +37,9 @@ import org.springframework.test.context.TestPropertySource;
     properties = {
       "kazi.sharding.enabled=true",
       "kazi.job-queue.enabled=true",
-      "kazi.job-queue.auto-start=false"
+      "kazi.job-queue.auto-start=false",
+      "KAZI_SHARD_SHARD2_USERNAME=postgres",
+      "KAZI_SHARD_SHARD2_PASSWORD=postgres"
     })
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ShardIsolationTest {
@@ -49,16 +51,28 @@ class ShardIsolationTest {
 
   private String shard1Schema;
 
-  @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private ShardConfigRepository shardConfigRepository;
-  @Autowired private ShardRegistry shardRegistry;
-  @Autowired private OrgSchemaMappingRepository mappingRepository;
+  private final TenantProvisioningService provisioningService;
+  private final ShardConfigRepository shardConfigRepository;
+  private final ShardRegistry shardRegistry;
+  private final OrgSchemaMappingRepository mappingRepository;
+
+  @Autowired
+  ShardIsolationTest(
+      TenantProvisioningService provisioningService,
+      ShardConfigRepository shardConfigRepository,
+      ShardRegistry shardRegistry,
+      OrgSchemaMappingRepository mappingRepository) {
+    this.provisioningService = provisioningService;
+    this.shardConfigRepository = shardConfigRepository;
+    this.shardRegistry = shardRegistry;
+    this.mappingRepository = mappingRepository;
+  }
 
   @DynamicPropertySource
   static void registerSecondaryShardProperties(DynamicPropertyRegistry registry) {
+    // Only the JDBC URL is runtime-generated (random port). Static credentials
+    // are in @TestPropertySource above.
     registry.add("KAZI_SHARD_SHARD2_URL", SecondaryEmbeddedPostgres::getJdbcUrl);
-    registry.add("KAZI_SHARD_SHARD2_USERNAME", () -> "postgres");
-    registry.add("KAZI_SHARD_SHARD2_PASSWORD", () -> "postgres");
   }
 
   @BeforeAll

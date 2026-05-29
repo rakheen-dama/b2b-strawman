@@ -38,12 +38,28 @@ class ObservabilityTest {
 
   private static final String ORG_ID = "org_obs_test";
 
-  @Autowired private MeterRegistry meterRegistry;
-  @Autowired private JobQueueMetrics jobQueueMetrics;
-  @Autowired private JobQueueHealthIndicator jobQueueHealthIndicator;
-  @Autowired private ShardHealthIndicator shardHealthIndicator;
-  @Autowired private JobQueueRepository jobQueueRepository;
-  @Autowired private OrgSchemaMappingRepository mappingRepository;
+  private final MeterRegistry meterRegistry;
+  private final JobQueueMetrics jobQueueMetrics;
+  private final JobQueueHealthIndicator jobQueueHealthIndicator;
+  private final ShardHealthIndicator shardHealthIndicator;
+  private final JobQueueRepository jobQueueRepository;
+  private final OrgSchemaMappingRepository mappingRepository;
+
+  @Autowired
+  ObservabilityTest(
+      MeterRegistry meterRegistry,
+      JobQueueMetrics jobQueueMetrics,
+      JobQueueHealthIndicator jobQueueHealthIndicator,
+      ShardHealthIndicator shardHealthIndicator,
+      JobQueueRepository jobQueueRepository,
+      OrgSchemaMappingRepository mappingRepository) {
+    this.meterRegistry = meterRegistry;
+    this.jobQueueMetrics = jobQueueMetrics;
+    this.jobQueueHealthIndicator = jobQueueHealthIndicator;
+    this.shardHealthIndicator = shardHealthIndicator;
+    this.jobQueueRepository = jobQueueRepository;
+    this.mappingRepository = mappingRepository;
+  }
 
   @BeforeAll
   void setUp() {

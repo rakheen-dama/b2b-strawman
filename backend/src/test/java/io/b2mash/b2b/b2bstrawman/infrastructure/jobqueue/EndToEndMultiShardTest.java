@@ -43,7 +43,9 @@ import org.springframework.test.context.TestPropertySource;
     properties = {
       "kazi.sharding.enabled=true",
       "kazi.job-queue.enabled=true",
-      "kazi.job-queue.auto-start=false"
+      "kazi.job-queue.auto-start=false",
+      "KAZI_SHARD_SHARD2_USERNAME=postgres",
+      "KAZI_SHARD_SHARD2_PASSWORD=postgres"
     })
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class EndToEndMultiShardTest {
@@ -52,18 +54,29 @@ class EndToEndMultiShardTest {
   private static final String SHARD2_ID = "shard2";
   private static final String SHARD2_SCHEMA = "tenant_e2e000000002";
 
-  @Autowired private ShardConfigRepository shardConfigRepository;
-  @Autowired private ShardRegistry shardRegistry;
-  @Autowired private OrgSchemaMappingRepository mappingRepository;
-  @Autowired private JobQueueRepository jobQueueRepository;
+  private final ShardConfigRepository shardConfigRepository;
+  private final ShardRegistry shardRegistry;
+  private final OrgSchemaMappingRepository mappingRepository;
+  private final JobQueueRepository jobQueueRepository;
+
+  @Autowired
+  EndToEndMultiShardTest(
+      ShardConfigRepository shardConfigRepository,
+      ShardRegistry shardRegistry,
+      OrgSchemaMappingRepository mappingRepository,
+      JobQueueRepository jobQueueRepository) {
+    this.shardConfigRepository = shardConfigRepository;
+    this.shardRegistry = shardRegistry;
+    this.mappingRepository = mappingRepository;
+    this.jobQueueRepository = jobQueueRepository;
+  }
 
   @DynamicPropertySource
   static void registerSecondaryShardProperties(DynamicPropertyRegistry registry) {
     // SecondaryEmbeddedPostgres JDBC URL is runtime-generated (random port),
-    // so @DynamicPropertySource is the correct pattern here.
+    // so @DynamicPropertySource is the correct pattern here. Static credentials
+    // are in @TestPropertySource above.
     registry.add("KAZI_SHARD_SHARD2_URL", SecondaryEmbeddedPostgres::getJdbcUrl);
-    registry.add("KAZI_SHARD_SHARD2_USERNAME", () -> "postgres");
-    registry.add("KAZI_SHARD_SHARD2_PASSWORD", () -> "postgres");
   }
 
   @BeforeAll

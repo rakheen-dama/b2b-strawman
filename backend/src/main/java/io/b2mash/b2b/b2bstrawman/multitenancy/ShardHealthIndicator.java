@@ -6,6 +6,7 @@ import javax.sql.DataSource;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.health.contributor.Health;
 import org.springframework.boot.health.contributor.HealthIndicator;
+import org.springframework.boot.health.contributor.Status;
 import org.springframework.stereotype.Component;
 
 /**
@@ -24,7 +25,7 @@ public class ShardHealthIndicator implements HealthIndicator {
 
   @Override
   public Health health() {
-    var builder = Health.up();
+    var details = new java.util.LinkedHashMap<String, Object>();
     boolean allHealthy = true;
 
     for (String shardId : shardRegistry.getActiveShardIds()) {
@@ -34,20 +35,20 @@ public class ShardHealthIndicator implements HealthIndicator {
             Statement stmt = conn.createStatement()) {
           stmt.execute("SELECT 1");
         }
-        builder.withDetail("shard_" + shardId, "UP");
+        details.put("shard_" + shardId, "UP");
       } catch (Exception e) {
-        builder.withDetail("shard_" + shardId, "DOWN: " + e.getMessage());
+        details.put("shard_" + shardId, "DOWN: " + e.getMessage());
         allHealthy = false;
       }
     }
 
-    builder.withDetail("activeShards", shardRegistry.getActiveShardIds().size());
+    details.put("activeShards", shardRegistry.getActiveShardIds().size());
 
+    var status = allHealthy ? Status.UP : Status.DOWN;
+    var builder = new Health.Builder(status);
+    details.forEach(builder::withDetail);
     if (!allHealthy) {
-      return Health.down()
-          .withDetail("reason", "one or more shards unreachable")
-          .withDetail("activeShards", shardRegistry.getActiveShardIds().size())
-          .build();
+      builder.withDetail("reason", "one or more shards unreachable");
     }
 
     return builder.build();

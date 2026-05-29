@@ -47,12 +47,28 @@ class SingleShardFullCharacterizationTest {
 
   private static final String ORG_ID = "org_full_char_test";
 
-  @Autowired private MockMvc mockMvc;
-  @Autowired private TenantProvisioningService provisioningService;
-  @Autowired private TenantScopedRunner tenantScopedRunner;
-  @Autowired private OrgSchemaMappingRepository mappingRepository;
-  @Autowired private JobEnqueuer jobEnqueuer;
-  @Autowired private JobQueueRepository jobQueueRepository;
+  private final MockMvc mockMvc;
+  private final TenantProvisioningService provisioningService;
+  private final TenantScopedRunner tenantScopedRunner;
+  private final OrgSchemaMappingRepository mappingRepository;
+  private final JobEnqueuer jobEnqueuer;
+  private final JobQueueRepository jobQueueRepository;
+
+  @Autowired
+  SingleShardFullCharacterizationTest(
+      MockMvc mockMvc,
+      TenantProvisioningService provisioningService,
+      TenantScopedRunner tenantScopedRunner,
+      OrgSchemaMappingRepository mappingRepository,
+      JobEnqueuer jobEnqueuer,
+      JobQueueRepository jobQueueRepository) {
+    this.mockMvc = mockMvc;
+    this.provisioningService = provisioningService;
+    this.tenantScopedRunner = tenantScopedRunner;
+    this.mappingRepository = mappingRepository;
+    this.jobEnqueuer = jobEnqueuer;
+    this.jobQueueRepository = jobQueueRepository;
+  }
 
   @BeforeAll
   void provisionTenant() throws Exception {

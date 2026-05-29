@@ -8,6 +8,8 @@ import java.time.Instant;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -23,6 +25,8 @@ import org.springframework.stereotype.Component;
 @Component
 @ConditionalOnProperty(name = "kazi.job-queue.enabled", havingValue = "true")
 public class JobQueueMetrics {
+
+  private static final Logger log = LoggerFactory.getLogger(JobQueueMetrics.class);
 
   private final MeterRegistry registry;
   private final JobQueueRepository repository;
@@ -123,8 +127,8 @@ public class JobQueueMetrics {
       pendingCount.set(pending);
       claimedCount.set(claimed);
     } catch (Exception e) {
-      // Silently absorb — gauge will keep its last value.
-      // Logging at trace to avoid noise during tests or transient DB issues.
+      // Gauge keeps its last value; log at trace to avoid noise during transient DB issues.
+      log.trace("Gauge refresh skipped — DB unavailable: {}", e.getMessage());
     }
   }
 

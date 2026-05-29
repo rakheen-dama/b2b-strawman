@@ -24,14 +24,17 @@ public class DefaultJobEnqueuer implements JobEnqueuer {
   private final OrgSchemaMappingRepository mappingRepository;
   private final JobQueueRepository jobQueueRepository;
   private final JobQueueProperties properties;
+  private final @Nullable JobQueueMetrics metrics;
 
   public DefaultJobEnqueuer(
       OrgSchemaMappingRepository mappingRepository,
       JobQueueRepository jobQueueRepository,
-      JobQueueProperties properties) {
+      JobQueueProperties properties,
+      @Nullable JobQueueMetrics metrics) {
     this.mappingRepository = mappingRepository;
     this.jobQueueRepository = jobQueueRepository;
     this.properties = properties;
+    this.metrics = metrics;
   }
 
   @Override
@@ -60,6 +63,9 @@ public class DefaultJobEnqueuer implements JobEnqueuer {
 
     try {
       jobQueueRepository.saveAndFlush(job);
+      if (metrics != null) {
+        metrics.recordEnqueued(jobType);
+      }
       log.debug("Enqueued job: type={}, tenant={}", jobType, tenantId);
     } catch (DataIntegrityViolationException e) {
       log.debug("Dedup: job already active for type={}, tenant={} — skipped", jobType, tenantId);
@@ -118,6 +124,9 @@ public class DefaultJobEnqueuer implements JobEnqueuer {
     for (var job : newJobs) {
       try {
         jobQueueRepository.saveAndFlush(job);
+        if (metrics != null) {
+          metrics.recordEnqueued(jobType);
+        }
         enqueued++;
       } catch (DataIntegrityViolationException e) {
         log.debug(

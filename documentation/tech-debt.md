@@ -142,3 +142,19 @@ Tracked items that are acceptable for now but should be addressed as the system 
 **Fix when needed**: For each controller, extract a service that does the repository work and have the controller delegate. Pattern: `controller calls exactly one service method per endpoint, returns ResponseEntity` (`backend/CLAUDE.md` "Controller Discipline" section). MockPaymentController is a dev-only mock and may stay as-is or move under the dev-profile-only path used by `DevPortalController`.
 
 **Trigger to fix**: Opportunistic — when next touching any of these controllers for a feature change.
+
+## TD-D5: Shard-unaware `runForTenant()` call sites (event-listener shard propagation)
+
+**Introduced**: pre-sharding code; surfaced by the Phase 75 infra review (kazi-infra-review-scheduling-sharding.md, finding D5)
+**Severity**: Low today (sharding is off by default; no secondary shards exist), **Blocker before enabling secondary shards in production**
+**Guard**: `architecture/TenantScopeBindingTest#no_new_shard_unaware_tenant_binding` (ArchUnit) freezes the set below — new code must use `runForTenantOnShard` / `callForTenantOnShard`; the set may only shrink.
+
+**Problem**: These classes bind tenant scope via the shard-unaware `RequestScopes.runForTenant` / `callForTenant` / `runForTenantWithMember`, which leave `SHARD_ID` unbound so `TenantIdentifierResolver` defaults to the primary shard. For any tenant on a secondary shard, these paths read/write the wrong database. PR #1383 (D1/D2) fixed the job-queue paths; PR for D5 migrated the call sites that already had the `OrgSchemaMapping` (and thus `getShardId()`) in hand: `SubscriptionExpiryJob`, `PortalDigestScheduler`, `PortalAuthService`, `PaymentWebhookController`.
+
+**Remaining (grandfathered) — must migrate before secondary shards go live**:
+- **Event-listener handlers** (the bulk): `NotificationEventHandler`, `PortalEventHandler`, `PortalDocumentNotificationHandler`, `PortalEmailNotificationChannel`, `AccountingSyncEventListener`, `ProposalAcceptedEventHandler`, `ProposalPortalSyncEventHandler`, `ProposalSentEmailHandler`, `ProposalExpiredEventHandler`, `InvoiceEmailEventListener`, `InformationRequestEmailEventListener`, `InformationRequestNotificationEventListener`, `TrustNotificationHandler`. These consume domain events that carry `tenantId`/`orgId` but **not** `shardId`. Migrating requires threading `shardId` through the domain-event payloads (bind `SHARD_ID` at publish time / add a field to the event base type), then switching the handlers to `runForTenantOnShard`.
+- **Need a repository lookup / minor refactor**: `MemberSyncService` (resolve helpers return only the schema name), `EmailWebhookService`, `UnsubscribeService`, `AcceptanceService` (portal `AcceptanceContext` lacks shardId), `PackInstallService`, `PackReconciliationRunner`, `InternalAuditController`, `AuditExportService`, `CustomerAuthFilter`, `PortalBrandingController`. Each can inject `OrgSchemaMappingRepository` (most already do) and look up `getShardId()` at the call site, or carry shardId on the relevant context object.
+
+**Fix**: migrate each grandfathered class to `runForTenantOnShard`/`callForTenantOnShard` and remove it from `D5_GRANDFATHERED` in `TenantScopeBindingTest`. The event-listener group is the larger effort (event-payload change) and should be batched with the sharding-activation work.
+
+**Trigger to fix**: before setting `kazi.sharding.enabled=true` with any secondary shard in a production environment.

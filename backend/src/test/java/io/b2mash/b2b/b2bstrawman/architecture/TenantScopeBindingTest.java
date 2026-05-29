@@ -3,10 +3,14 @@ package io.b2mash.b2b.b2bstrawman.architecture;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
+import com.tngtech.archunit.base.DescribedPredicate;
+import com.tngtech.archunit.core.domain.JavaClass;
+import com.tngtech.archunit.core.domain.JavaMethodCall;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
 import com.tngtech.archunit.lang.ArchRule;
+import java.util.Set;
 
 /**
  * Bans the duplicated tenant-scope-binding helper method names that were consolidated into {@code
@@ -147,5 +151,97 @@ class TenantScopeBindingTest {
                   + "ADR-T008 amendment. Exemptions use fully-qualified class names so a future "
                   + "class with the same simple name in a different package is not accidentally "
                   + "exempted.")
+          .allowEmptyShould(true);
+
+  // ---------------------------------------------------------------------------
+  // D5 (kazi-infra-review-scheduling-sharding.md): shard-unaware tenant binding
+  // ---------------------------------------------------------------------------
+
+  /**
+   * RequestScopes binders that do NOT bind SHARD_ID — they default routing to the primary shard.
+   */
+  private static final Set<String> SHARD_UNAWARE_BINDERS =
+      Set.of("runForTenant", "callForTenant", "runForTenantWithMember");
+
+  private static final String REQUEST_SCOPES_FQN =
+      "io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes";
+
+  /**
+   * Classes that still call a shard-unaware binder as of the D5 guard's introduction (2026-05-29).
+   * These are latent wrong-shard routes once secondary shards go live and are tracked in {@code
+   * documentation/tech-debt.md} (D5). The set may only SHRINK — new code must use {@code
+   * runForTenantOnShard} / {@code callForTenantOnShard}. Most are
+   * {@code @TransactionalEventListener} handlers whose domain events do not carry a shard id yet
+   * (migrating them requires threading shardId through the event payloads).
+   */
+  private static final Set<String> D5_GRANDFATHERED =
+      Set.of(
+          "io.b2mash.b2b.b2bstrawman.acceptance.AcceptanceService",
+          "io.b2mash.b2b.b2bstrawman.audit.InternalAuditController",
+          "io.b2mash.b2b.b2bstrawman.audit.export.AuditExportService",
+          "io.b2mash.b2b.b2bstrawman.customerbackend.handler.PortalEventHandler",
+          "io.b2mash.b2b.b2bstrawman.customerbackend.service.DeadlinePortalSyncService",
+          "io.b2mash.b2b.b2bstrawman.customerbackend.service.PortalResyncService",
+          "io.b2mash.b2b.b2bstrawman.customerbackend.service.RetainerPortalSyncService",
+          "io.b2mash.b2b.b2bstrawman.customerbackend.service.TrustLedgerPortalSyncService",
+          "io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestEmailEventListener",
+          "io.b2mash.b2b.b2bstrawman.informationrequest.InformationRequestNotificationEventListener",
+          "io.b2mash.b2b.b2bstrawman.integration.accounting.sync.AccountingSyncEventListener",
+          "io.b2mash.b2b.b2bstrawman.integration.email.EmailWebhookService",
+          "io.b2mash.b2b.b2bstrawman.integration.email.UnsubscribeService",
+          "io.b2mash.b2b.b2bstrawman.invoice.InvoiceEmailEventListener",
+          "io.b2mash.b2b.b2bstrawman.member.MemberSyncService",
+          "io.b2mash.b2b.b2bstrawman.notification.NotificationEventHandler",
+          "io.b2mash.b2b.b2bstrawman.packs.PackInstallService",
+          "io.b2mash.b2b.b2bstrawman.portal.CustomerAuthFilter",
+          "io.b2mash.b2b.b2bstrawman.portal.PortalBrandingController",
+          "io.b2mash.b2b.b2bstrawman.portal.PortalDocumentNotificationHandler",
+          "io.b2mash.b2b.b2bstrawman.portal.notification.PortalEmailNotificationChannel",
+          "io.b2mash.b2b.b2bstrawman.proposal.ProposalAcceptedEventHandler",
+          "io.b2mash.b2b.b2bstrawman.proposal.ProposalExpiredEventHandler",
+          "io.b2mash.b2b.b2bstrawman.proposal.ProposalPortalSyncEventHandler",
+          "io.b2mash.b2b.b2bstrawman.proposal.ProposalSentEmailHandler",
+          "io.b2mash.b2b.b2bstrawman.provisioning.PackReconciliationRunner",
+          "io.b2mash.b2b.b2bstrawman.verticals.legal.trustaccounting.event.TrustNotificationHandler");
+
+  private static final DescribedPredicate<JavaClass> OUTSIDE_MULTITENANCY_AND_NOT_GRANDFATHERED =
+      new DescribedPredicate<>("outside ..multitenancy.. and not a D5-grandfathered class") {
+        @Override
+        public boolean test(JavaClass clazz) {
+          return !clazz.getPackageName().contains(".multitenancy")
+              && !D5_GRANDFATHERED.contains(clazz.getFullName());
+        }
+      };
+
+  private static final DescribedPredicate<JavaMethodCall> A_SHARD_UNAWARE_REQUEST_SCOPES_BINDER =
+      new DescribedPredicate<>("a shard-unaware RequestScopes tenant binding") {
+        @Override
+        public boolean test(JavaMethodCall call) {
+          var target = call.getTarget();
+          return REQUEST_SCOPES_FQN.equals(target.getOwner().getFullName())
+              && SHARD_UNAWARE_BINDERS.contains(target.getName());
+        }
+      };
+
+  /**
+   * D5 guard: new code outside the grandfathered set must not call the shard-unaware binders
+   * ({@code runForTenant} / {@code callForTenant} / {@code runForTenantWithMember}). Use {@code
+   * runForTenantOnShard} / {@code callForTenantOnShard} (or {@code
+   * TenantScopedRunner.forEachTenant}, which is shard-aware) so a job/handler for a secondary-shard
+   * tenant routes to the correct database instead of defaulting to primary. To migrate a
+   * grandfathered class, remove it from {@link #D5_GRANDFATHERED} once its shard id is available at
+   * the call site.
+   */
+  @ArchTest
+  static final ArchRule no_new_shard_unaware_tenant_binding =
+      noClasses()
+          .that(OUTSIDE_MULTITENANCY_AND_NOT_GRANDFATHERED)
+          .should()
+          .callMethodWhere(A_SHARD_UNAWARE_REQUEST_SCOPES_BINDER)
+          .because(
+              "shard-unaware RequestScopes binders leave SHARD_ID unbound (routing defaults to the "
+                  + "primary shard). New code must use runForTenantOnShard / callForTenantOnShard. "
+                  + "Grandfathered classes are tracked in documentation/tech-debt.md (D5) and must "
+                  + "be migrated before enabling secondary shards in production.")
           .allowEmptyShould(true);
 }

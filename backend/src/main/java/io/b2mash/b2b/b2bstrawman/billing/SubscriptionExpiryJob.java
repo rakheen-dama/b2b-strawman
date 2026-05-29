@@ -256,9 +256,10 @@ public class SubscriptionExpiryJob {
 
     var mapping = mappingOpt.get();
     try {
-      RequestScopes.runForTenant(
+      RequestScopes.runForTenantOnShard(
           mapping.getSchemaName(),
           mapping.getExternalOrgId(),
+          mapping.getShardId(),
           () ->
               auditService.log(
                   AuditEventBuilder.builder()

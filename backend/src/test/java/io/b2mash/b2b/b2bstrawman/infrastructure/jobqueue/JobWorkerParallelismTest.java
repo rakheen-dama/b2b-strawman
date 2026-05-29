@@ -16,10 +16,12 @@ import org.springframework.test.context.TestPropertySource;
 /**
  * S2: the worker executes a claimed batch with bounded in-pod parallelism rather than one job at a
  * time. {@code processBatch(batch, parallelism)} is driven directly with an explicit parallelism so
- * the assertion is deterministic and independent of the test connection-pool size (the embedded
- * pool is pinned to 3, which would otherwise cap effective parallelism to 1). The pool-derived
- * guardrail itself is covered by {@link #boundedParallelism_capsAtHalfPoolSize()}. See
- * kazi-infra-review-scheduling-sharding.md finding S2.
+ * the test is independent of the test connection-pool size (the embedded pool is pinned to 3, which
+ * would otherwise cap effective parallelism to 1). The observed-concurrency assertion uses a {@code
+ * >= 2} threshold — ample slack against virtual-thread scheduler jitter while still proving the
+ * batch does not run strictly one-at-a-time. The pool-derived guardrail itself is covered by {@link
+ * #boundedParallelism_capsAtHalfPoolSize()}. See kazi-infra-review-scheduling-sharding.md finding
+ * S2.
  *
  * <p>NOT {@code @Transactional}: each job runs in its own transaction on its own virtual thread.
  */

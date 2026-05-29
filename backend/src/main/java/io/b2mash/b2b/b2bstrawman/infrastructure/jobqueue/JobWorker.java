@@ -81,6 +81,11 @@ public class JobWorker implements SmartLifecycle {
    * Caps the configured worker parallelism at half the app connection pool so a single worker can't
    * starve request traffic (or itself) of connections. Falls back to the configured value when the
    * pool size can't be determined.
+   *
+   * <p>The cap is computed against the <em>app</em> (primary) DataSource pool. When sharding is
+   * enabled, jobs for a secondary-shard tenant draw connections from that shard's own pool, not the
+   * app pool — so secondary shard pools should be sized for at least the configured worker
+   * parallelism (operator responsibility), since this guardrail only bounds against the primary.
    */
   private int computeEffectiveParallelism() {
     Integer maxPoolSize =
@@ -129,6 +134,11 @@ public class JobWorker implements SmartLifecycle {
    * and never throws, so a failing job cannot abort its siblings. The {@link Semaphore} bounds
    * in-flight jobs to {@link #effectiveParallelism} to protect the connection pool, and the
    * try-with-resources {@code close()} awaits all submitted jobs before the next poll.
+   *
+   * <p>Execution order within a batch is <em>not</em> guaranteed under parallel execution —
+   * handlers must not assume the claim order (priority only determines which rows are claimed into
+   * the batch, not the order they run). At-most-once-per-claim is unaffected: each job is claimed
+   * exactly once via {@code FOR UPDATE SKIP LOCKED} before it reaches this method.
    */
   private void processBatch(List<JobQueue> claimed) {
     processBatch(claimed, effectiveParallelism);

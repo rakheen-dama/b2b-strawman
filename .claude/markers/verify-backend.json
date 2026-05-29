@@ -1,1 +1,7 @@
-{"commit":"3b8e59400","command":"./mvnw verify","exit":0,"ts":"2026-05-23T16:27:04Z","summary":"5405 tests, 0 failures, 0 errors, 26 skipped"}
+{
+  "commit": "e7d3d2bce3b24b121cfb8485b1bc4cb9a2694683",
+  "command": "./mvnw verify",
+  "exit": 0,
+  "ts": "2026-05-29T20:16:03Z",
+  "summary": "PR #1390 D5 proof test + TD-D5 refresh (test/docs only). Full backend verify clean: 5592 tests, 0 failures, 0 errors, 26 skipped (single-process)."
+}

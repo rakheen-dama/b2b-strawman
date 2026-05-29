@@ -129,3 +129,16 @@
 **Detection**: For any merged PR, `gh pr view <N> --json reviews,body` should show either (a) a non-"Review failed" CodeRabbit review object, or (b) a `## CodeRabbit: DEFERRED` line in the body. Both must be paired with two `## Verdict: APPROVE` markers in the body.
 
 **Damage to audit**: PRs #1281, 1282, 1284, 1286 on main are unreviewed by both gates. Need separate `/review` pass before considering them trustworthy.
+
+---
+
+## Lesson: never run two `./mvnw verify` (or any GreenMail-using tests) concurrently — 2026-05-29
+
+**Context**: During the infra-review PR series I started a second `./mvnw verify` (commit+push+verify for D3 review fixes) while the previous D3 verify was still running. The second run failed with 11 email/notification context errors — all `NoClassDefFoundError: Could not initialize class GreenMailTestSupport` → `IllegalStateException: Could not start mail server smtp:127.0.0.1:13025`.
+
+**Root cause**: GreenMail is a JVM-singleton SMTP server bound to port **13025** (see `application-test.yml` + `GreenMailTestSupport`). Backend tests run sequentially precisely so the port is never contended. Two concurrent Maven test JVMs both try to bind 13025 → the second fails to start the mail server → every test whose static initializer touches `GreenMailTestSupport` errors at ~0ms (context/class-init failure, not test logic).
+
+**How to apply**:
+- Run at most ONE `./mvnw verify`/`test` at a time. Before starting a verify, ensure no other is running (`pgrep -fl surefire`, `lsof -iTCP:13025`).
+- If you see a burst of email/notification tests erroring at ~0.001s with "Could not start mail server :13025", suspect a concurrent verify (or a leftover JVM holding the port), not a code defect. Re-run clean.
+- Don't chain `commit && push && verify` in the background while a prior verify is still in flight.

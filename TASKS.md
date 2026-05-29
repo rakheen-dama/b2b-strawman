@@ -630,7 +630,7 @@
 | 554 | Shard-Aware Provisioning + Flyway | Backend | 551, 552, 553 | M | 554A, 554B | **Done** (PR #1381) |
 | 555 | Integration Tests + Observability | Backend | 550, 554 | M | 555A, 555B | **Done** (PR #1382) |
 | **Phase 77 — Customer Detail Page Redesign** | | | | | | See [tasks/phase77-customer-detail-redesign.md](tasks/phase77-customer-detail-redesign.md) |
-| 556 | Shared Component Extraction | Frontend | -- | M | 556A, 556B | |
+| 556 | Shared Component Extraction | Frontend | -- | M | 556A, 556B | **Done** (PR #1391) |
 | 557 | ClientHeaderCard + ClientOverflowMenu | Frontend | -- | M | 557A, 557B | |
 | 558 | CustomerGroupedTabs + Tab Panels | Frontend | 556 | M | 558A, 558B | |
 | 559 | ClientOverviewTab | Frontend | -- | S | 559A | |

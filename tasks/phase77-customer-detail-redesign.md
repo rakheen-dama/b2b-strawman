@@ -12,7 +12,7 @@ The current layout has 7 action buttons sprawled horizontally, a metadata wall p
 
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
-| 556 | Shared Component Extraction | Frontend | -- | M | 556A, 556B | |
+| 556 | Shared Component Extraction | Frontend | -- | M | 556A, 556B | **Done** (PR #1391) |
 | 557 | ClientHeaderCard + ClientOverflowMenu | Frontend | -- | M | 557A, 557B | |
 | 558 | CustomerGroupedTabs + Tab Panels | Frontend | 556 | M | 558A, 558B | |
 | 559 | ClientOverviewTab | Frontend | -- | S | 559A | |
@@ -63,8 +63,8 @@ The current layout has 7 action buttons sprawled horizontally, a metadata wall p
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 1a | Epic 556 | 556A | Move `GroupedTabBar` from `components/projects/` to `components/shared/`. Update `ProjectTabs` import. Verify matter detail page unchanged. |
-| 1b | Epic 556 | 556B | Split `tab-groups.ts` into shared types + entity-specific constants. Create `CUSTOMER_TAB_GROUPS`. Depends on 556A. |
+| 1a | Epic 556 | 556A | Move `GroupedTabBar` from `components/projects/` to `components/shared/`. Update `ProjectTabs` import. Verify matter detail page unchanged. **Done** (PR #1391) |
+| 1b | Epic 556 | 556B | Split `tab-groups.ts` into shared types + entity-specific constants. Create `CUSTOMER_TAB_GROUPS`. Depends on 556A. **Done** (PR #1391) |
 | 1c | Epic 557 | 557A | `ClientHeaderCard` with name, badges, contact, context, smart primary action. Independent of 556. |
 | 1d | Epic 557 | 557B | `ClientOverflowMenu` with all 8 actions and gating rules. Depends on 557A (overflow renders inside header card). |
 
@@ -116,8 +116,8 @@ Stage 4:  [561A]                                 ← QA testplan (after all abov
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **556A** | 556.1-556.3 | Move `GroupedTabBar` to `components/shared/`, update `ProjectTabs` import, verify existing tests pass (~0 new tests, run existing) | |
-| **556B** | 556.4-556.8 | Extract shared types to `tab-group-types.ts`, rename `tab-groups.ts` to `project-tab-groups.ts`, create `customer-tab-groups.ts`, unit tests (~8 tests) | |
+| **556A** | 556.1-556.3 | Move `GroupedTabBar` to `components/shared/`, update `ProjectTabs` import, verify existing tests pass (~0 new tests, run existing) | **Done** (PR #1391) |
+| **556B** | 556.4-556.8 | Extract shared types to `tab-group-types.ts`, rename `tab-groups.ts` to `project-tab-groups.ts`, create `customer-tab-groups.ts`, unit tests (~8 tests) | **Done** (PR #1391) |
 
 ### Tasks
 

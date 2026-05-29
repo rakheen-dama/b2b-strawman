@@ -52,7 +52,7 @@ public class AssistantController {
     var orgId = RequestScopes.requireOrgId();
     var orgRole = RequestScopes.getOrgRole();
     var capabilities = RequestScopes.getCapabilities();
-    var shardId = RequestScopes.SHARD_ID.isBound() ? RequestScopes.SHARD_ID.get() : "primary";
+    var shardId = RequestScopes.getShardIdOrDefault();
 
     var emitter = new SseEmitter(SSE_TIMEOUT_MS);
     var released = new AtomicBoolean(false);

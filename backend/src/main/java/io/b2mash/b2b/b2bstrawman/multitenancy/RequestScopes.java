@@ -106,6 +106,11 @@ public final class RequestScopes {
     return ORG_ID.isBound() ? ORG_ID.get() : null;
   }
 
+  /** Returns the shard ID if bound, or {@code "primary"} as the default. */
+  public static String getShardIdOrDefault() {
+    return SHARD_ID.isBound() ? SHARD_ID.get() : "primary";
+  }
+
   /** Returns the authenticated customer's UUID. Throws if not bound by CustomerAuthFilter. */
   public static UUID requireCustomerId() {
     if (!CUSTOMER_ID.isBound()) {

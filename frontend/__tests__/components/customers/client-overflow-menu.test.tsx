@@ -33,6 +33,23 @@ const mockTemplates: TemplateListResponse[] = [
   { id: "tpl-1", name: "Invoice Template", format: "HTML" } as TemplateListResponse,
 ];
 
+const mockCustomer = {
+  id: "cust-1",
+  name: "Acme Corp",
+  email: "acme@test.com",
+  phone: "+27 11 123 4567",
+  idNumber: null,
+  status: "ACTIVE" as const,
+  notes: null,
+  createdBy: "user-1",
+  createdByName: "Alice",
+  createdAt: "2026-01-10T10:00:00Z",
+  updatedAt: "2026-01-15T10:00:00Z",
+  lifecycleStatus: "ACTIVE" as const,
+};
+
+const mockOnSummariseActivity = vi.fn();
+
 const defaultProps = {
   customerId: "cust-1",
   customerName: "Acme Corp",
@@ -47,6 +64,8 @@ const defaultProps = {
   conflictCheckEnabled: true,
   kycConfigured: true,
   kycVerified: false,
+  customer: mockCustomer,
+  onSummariseActivity: mockOnSummariseActivity,
 };
 
 // ---- Tests ----

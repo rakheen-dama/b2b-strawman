@@ -24,7 +24,7 @@ import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog"
 import { ArchiveCustomerDialog } from "@/components/customers/archive-customer-dialog";
 import { AnonymizeCustomerDialog } from "@/components/customers/anonymize-customer-dialog";
 import { DataExportDialog } from "@/components/customers/data-export-dialog";
-import type { CustomerStatus, LifecycleStatus, TemplateListResponse } from "@/lib/types";
+import type { Customer, CustomerStatus, LifecycleStatus, TemplateListResponse } from "@/lib/types";
 
 interface ClientOverflowMenuProps {
   customerId: string;
@@ -40,6 +40,10 @@ interface ClientOverflowMenuProps {
   conflictCheckEnabled: boolean;
   kycConfigured: boolean;
   kycVerified: boolean;
+  /** Full customer object for EditCustomerDialog — avoids data loss from partial stubs */
+  customer: Customer;
+  /** Called when "Summarise Activity" is selected; consumer wires specialist session */
+  onSummariseActivity?: () => void;
 }
 
 export function ClientOverflowMenu({
@@ -56,6 +60,8 @@ export function ClientOverflowMenu({
   conflictCheckEnabled,
   kycConfigured,
   kycVerified,
+  customer,
+  onSummariseActivity,
 }: ClientOverflowMenuProps) {
   const router = useRouter();
 
@@ -66,28 +72,12 @@ export function ClientOverflowMenu({
   const [exportOpen, setExportOpen] = useState(false);
 
   const showEditClient = !isAnonymized;
-  const showSummariseActivity = aiProviderConfigured;
+  const showSummariseActivity = isAdmin && aiProviderConfigured && !!onSummariseActivity;
   const showGenerateDocument = isAdmin && templates.length > 0 && !isAnonymized;
   const showConflictCheck = conflictCheckEnabled && !isAnonymized;
   const showVerifyKyc = kycConfigured && !kycVerified && !isAnonymized;
   const showAnonymize = isOwner && !isAnonymized;
   const showArchive = isAdmin && !isAnonymized;
-
-  // Build a minimal Customer object for the EditCustomerDialog
-  const customerForEdit = {
-    id: customerId,
-    name: customerName,
-    email: "",
-    phone: null,
-    idNumber: null,
-    status: customerStatus,
-    notes: null,
-    createdBy: "",
-    createdByName: null,
-    createdAt: "",
-    updatedAt: "",
-    lifecycleStatus: lifecycleStatus ?? undefined,
-  };
 
   const hasFirstGroup = showEditClient || showSummariseActivity;
   const hasSecondGroup = showGenerateDocument || showConflictCheck || showVerifyKyc;
@@ -116,13 +106,7 @@ export function ClientOverflowMenu({
           )}
 
           {showSummariseActivity && (
-            <DropdownMenuItem
-              onSelect={() =>
-                router.push(
-                  `/org/${slug}/customers/${customerId}?assistant=INBOX&prompt=Summarise+recent+customer+activity.`
-                )
-              }
-            >
+            <DropdownMenuItem onSelect={() => onSummariseActivity?.()}>
               <Sparkles className="mr-2 size-4" />
               Summarise Activity
             </DropdownMenuItem>
@@ -197,7 +181,7 @@ export function ClientOverflowMenu({
       {/* Dialogs rendered outside DropdownMenuContent — no Slot collision (OBS-2103) */}
       {showEditClient && (
         <EditCustomerDialog
-          customer={customerForEdit}
+          customer={customer}
           slug={slug}
           open={editOpen}
           onOpenChange={setEditOpen}

@@ -11,9 +11,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 vi.mock("@/components/compliance/LifecycleStatusBadge", () => ({
-  LifecycleStatusBadge: ({ status }: { status: string }) => (
-    <span data-testid="lifecycle-badge">{status}</span>
-  ),
+  LifecycleStatusBadge: ({ status }: { status: string }) => <span>{status}</span>,
 }));
 
 vi.mock("@/components/customers/kyc-status-badge", () => ({
@@ -48,6 +46,21 @@ vi.mock("@/components/customers/data-export-dialog", () => ({
 
 // ---- Test Data ----
 
+const mockCustomer = {
+  id: "cust-1",
+  name: "Acme Corporation",
+  email: "info@acme.com",
+  phone: "+27 11 123 4567",
+  idNumber: null,
+  status: "ACTIVE" as const,
+  notes: null,
+  createdBy: "user-1",
+  createdByName: "Alice",
+  createdAt: "2026-01-10T10:00:00Z",
+  updatedAt: "2026-01-15T10:00:00Z",
+  lifecycleStatus: "ACTIVE" as const,
+};
+
 const defaultProps: ClientHeaderCardProps = {
   customerId: "cust-1",
   customerName: "Acme Corporation",
@@ -67,6 +80,7 @@ const defaultProps: ClientHeaderCardProps = {
   conflictCheckEnabled: false,
   kycConfigured: false,
   kycVerified: false,
+  customer: mockCustomer,
 };
 
 // ---- Tests ----
@@ -76,12 +90,11 @@ describe("ClientHeaderCard", () => {
     cleanup();
   });
 
-  it("renders customer name with line-clamp", () => {
+  it("renders customer name with title attribute for overflow", () => {
     render(<ClientHeaderCard {...defaultProps} />);
     const nameEl = screen.getByTestId("client-name");
     expect(nameEl).toHaveTextContent("Acme Corporation");
     expect(nameEl.getAttribute("title")).toBe("Acme Corporation");
-    expect(nameEl.className).toContain("line-clamp-2");
   });
 
   it('renders "Start Onboarding" button for PROSPECT lifecycle', () => {

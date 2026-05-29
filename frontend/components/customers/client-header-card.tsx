@@ -9,7 +9,7 @@ import type { KycSummary } from "@/components/customers/kyc-status-badge";
 import { XeroContactBadge } from "@/components/customers/XeroContactBadge";
 import { ClientOverflowMenu } from "@/components/customers/client-overflow-menu";
 import { formatDate } from "@/lib/format";
-import type { CustomerStatus, LifecycleStatus, TemplateListResponse } from "@/lib/types";
+import type { Customer, CustomerStatus, LifecycleStatus, TemplateListResponse } from "@/lib/types";
 
 const STATUS_BADGE: Record<CustomerStatus, { label: string; variant: "success" | "neutral" }> = {
   ACTIVE: { label: "Active", variant: "success" },
@@ -69,6 +69,12 @@ export interface ClientHeaderCardProps {
   conflictCheckEnabled: boolean;
   kycConfigured: boolean;
   kycVerified: boolean;
+  /** Full customer object — forwarded to EditCustomerDialog via overflow menu */
+  customer: Customer;
+  /** Called when the smart primary action button is clicked (Epic 560 wires lifecycle transitions) */
+  onPrimaryAction?: () => void;
+  /** Called when "Summarise Activity" is selected from overflow menu */
+  onSummariseActivity?: () => void;
 }
 
 export function ClientHeaderCard({
@@ -90,6 +96,9 @@ export function ClientHeaderCard({
   conflictCheckEnabled,
   kycConfigured,
   kycVerified,
+  customer,
+  onPrimaryAction,
+  onSummariseActivity,
 }: ClientHeaderCardProps) {
   const statusBadge = STATUS_BADGE[customerStatus];
   const smartAction = getSmartPrimaryAction(lifecycleStatus, customerStatus);
@@ -114,7 +123,9 @@ export function ClientHeaderCard({
               {statusBadge.label}
             </Badge>
             {lifecycleStatus && (
-              <LifecycleStatusBadge status={lifecycleStatus} data-testid="lifecycle-badge" />
+              <span data-testid="lifecycle-badge">
+                <LifecycleStatusBadge status={lifecycleStatus} />
+              </span>
             )}
             {kycSummary && <KycStatusBadge summary={kycSummary} />}
             {xeroConnected && <XeroContactBadge customerId={customerId} slug={slug} />}
@@ -146,6 +157,7 @@ export function ClientHeaderCard({
               size="sm"
               disabled={smartAction.disabled}
               title={smartAction.tooltip}
+              onClick={onPrimaryAction}
               data-testid="smart-primary-action"
             >
               {smartAction.label}
@@ -165,6 +177,8 @@ export function ClientHeaderCard({
             conflictCheckEnabled={conflictCheckEnabled}
             kycConfigured={kycConfigured}
             kycVerified={kycVerified}
+            customer={customer}
+            onSummariseActivity={onSummariseActivity}
           />
         </div>
       </div>

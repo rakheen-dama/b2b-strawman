@@ -63,7 +63,7 @@ public class PaymentWebhookController {
     // InvoiceSyncEvent) have the orgId for portal sync/notification routing, and the handler
     // executes against the tenant's shard rather than defaulting to primary (D5).
     var mapping = orgSchemaMappingRepository.findBySchemaName(tenantSchema).orElse(null);
-    String orgId = mapping != null ? mapping.getClerkOrgId() : null;
+    String orgId = mapping != null ? mapping.getExternalOrgId() : null;
     String shardId = mapping != null ? mapping.getShardId() : null;
 
     if (mapping == null) {

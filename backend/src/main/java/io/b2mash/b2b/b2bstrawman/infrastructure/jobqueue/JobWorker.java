@@ -36,16 +36,19 @@ public class JobWorker implements SmartLifecycle {
   private final JobHandlerRegistry handlerRegistry;
   private final JobQueueProperties properties;
   private final PlatformTransactionManager transactionManager;
+  private final JobQueueMetrics metrics;
 
   public JobWorker(
       JobQueueRepository repository,
       JobHandlerRegistry handlerRegistry,
       JobQueueProperties properties,
-      PlatformTransactionManager transactionManager) {
+      PlatformTransactionManager transactionManager,
+      JobQueueMetrics metrics) {
     this.repository = repository;
     this.handlerRegistry = handlerRegistry;
     this.properties = properties;
     this.transactionManager = transactionManager;
+    this.metrics = metrics;
   }
 
   @Override
@@ -143,9 +146,11 @@ public class JobWorker implements SmartLifecycle {
           job.setCompletedAt(Instant.now());
           repository.save(job);
         });
+    metrics.recordCompleted(job.getJobType(), job.getCreatedAt(), job.getClaimedAt());
   }
 
   private void handleFailure(JobQueue job, Exception e) {
+    Instant claimedAt = job.getClaimedAt();
     var tt = new TransactionTemplate(transactionManager);
     tt.executeWithoutResult(
         status -> {
@@ -185,6 +190,14 @@ public class JobWorker implements SmartLifecycle {
           }
           repository.save(job);
         });
+
+    // Record metrics after the transaction commits
+    int retryCount = job.getRetryCount();
+    if (retryCount >= job.getMaxRetries()) {
+      metrics.recordDeadLettered(job.getJobType(), claimedAt);
+    } else {
+      metrics.recordFailed(job.getJobType(), claimedAt);
+    }
   }
 
   @Override

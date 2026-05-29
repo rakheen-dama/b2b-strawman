@@ -124,7 +124,19 @@ class EndToEndMultiShardTest {
   }
 
   @AfterAll
-  void cleanUpShard2Data() {
+  void cleanUpShard2Data() throws Exception {
+    // Drop the marker table created by ShardRoutingTestJobHandler so the test is repeatable within
+    // the same JVM (the secondary Postgres is a JVM-scoped singleton). Must happen before refresh()
+    // deregisters shard2's DataSource.
+    try (Connection conn = shardRegistry.getDataSource(SHARD2_ID).getConnection();
+        Statement stmt = conn.createStatement()) {
+      stmt.execute(
+          "DROP TABLE IF EXISTS \""
+              + SHARD2_SCHEMA
+              + "\"."
+              + ShardRoutingTestJobHandler.MARKER_TABLE);
+    }
+
     // Remove shard2 data from the shared embedded Postgres so other test contexts that enable
     // sharding don't encounter an active shard2 config row (which would require shard2 env vars).
     mappingRepository.findByExternalOrgId(SHARD2_ORG_ID).ifPresent(mappingRepository::delete);

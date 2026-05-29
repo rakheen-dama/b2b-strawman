@@ -52,6 +52,7 @@ public class AssistantController {
     var orgId = RequestScopes.requireOrgId();
     var orgRole = RequestScopes.getOrgRole();
     var capabilities = RequestScopes.getCapabilities();
+    var shardId = RequestScopes.getShardIdOrDefault();
 
     var emitter = new SseEmitter(SSE_TIMEOUT_MS);
     var released = new AtomicBoolean(false);
@@ -75,7 +76,8 @@ public class AssistantController {
         ScopedValue.where(RequestScopes.TENANT_ID, tenantId)
             .where(RequestScopes.MEMBER_ID, memberId)
             .where(RequestScopes.ORG_ID, orgId)
-            .where(RequestScopes.CAPABILITIES, capabilities);
+            .where(RequestScopes.CAPABILITIES, capabilities)
+            .where(RequestScopes.SHARD_ID, shardId);
     if (orgRole != null) {
       carrier = carrier.where(RequestScopes.ORG_ROLE, orgRole);
     }

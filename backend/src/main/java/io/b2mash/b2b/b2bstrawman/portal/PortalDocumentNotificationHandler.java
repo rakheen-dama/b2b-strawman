@@ -113,9 +113,10 @@ public class PortalDocumentNotificationHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onDocumentGenerated(DocumentGeneratedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             process(event);

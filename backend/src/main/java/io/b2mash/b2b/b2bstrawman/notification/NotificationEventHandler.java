@@ -68,9 +68,10 @@ public class NotificationEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onCommentCreated(CommentCreatedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var notifications = notificationService.handleCommentCreated(event);
@@ -84,9 +85,10 @@ public class NotificationEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onTaskAssigned(TaskAssignedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var notifications = notificationService.handleTaskAssigned(event);
@@ -100,9 +102,10 @@ public class NotificationEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onTaskClaimed(TaskClaimedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var notifications = notificationService.handleTaskClaimed(event);
@@ -116,9 +119,10 @@ public class NotificationEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onTaskStatusChanged(TaskStatusChangedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var notifications = notificationService.handleTaskStatusChanged(event);
@@ -134,9 +138,10 @@ public class NotificationEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onTaskCancelled(TaskCancelledEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var notifications = notificationService.handleTaskCancelled(event);
@@ -150,9 +155,10 @@ public class NotificationEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onTaskRecurrenceCreated(TaskRecurrenceCreatedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var notifications = notificationService.handleTaskRecurrenceCreated(event);
@@ -168,9 +174,10 @@ public class NotificationEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onDocumentUploaded(DocumentUploadedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var notifications = notificationService.handleDocumentUploaded(event);
@@ -186,9 +193,10 @@ public class NotificationEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onMemberAddedToProject(MemberAddedToProjectEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var notifications = notificationService.handleMemberAddedToProject(event);
@@ -204,9 +212,10 @@ public class NotificationEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onBudgetThreshold(BudgetThresholdEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var notifications = notificationService.handleBudgetThreshold(event);
@@ -222,9 +231,10 @@ public class NotificationEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onDocumentGenerated(DocumentGeneratedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var notifications = notificationService.handleDocumentGenerated(event);
@@ -240,9 +250,10 @@ public class NotificationEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInvoiceApproved(InvoiceApprovedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var notifications = notificationService.handleInvoiceApproved(event);
@@ -258,9 +269,10 @@ public class NotificationEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInvoiceSent(InvoiceSentEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var notifications = notificationService.handleInvoiceSent(event);
@@ -274,9 +286,10 @@ public class NotificationEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInvoicePaid(InvoicePaidEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var notifications = notificationService.handleInvoicePaid(event);
@@ -290,9 +303,10 @@ public class NotificationEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onInvoiceVoided(InvoiceVoidedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var notifications = notificationService.handleInvoiceVoided(event);
@@ -360,9 +374,10 @@ public class NotificationEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onAcceptanceRequestAccepted(AcceptanceRequestAcceptedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var notifications = notificationService.handleAcceptanceRequestAccepted(event);
@@ -378,9 +393,10 @@ public class NotificationEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onProjectCompleted(ProjectCompletedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var notifications = notificationService.handleProjectCompleted(event);
@@ -396,9 +412,10 @@ public class NotificationEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onProjectArchived(ProjectArchivedEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             var notifications = notificationService.handleProjectArchived(event);
@@ -414,9 +431,10 @@ public class NotificationEventHandler {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   public void onProposalSent(ProposalSentEvent event) {
-    RequestScopes.runForTenant(
+    RequestScopes.runForTenantOnShard(
         event.tenantId(),
         event.orgId(),
+        event.shardId(),
         () -> {
           try {
             String title =

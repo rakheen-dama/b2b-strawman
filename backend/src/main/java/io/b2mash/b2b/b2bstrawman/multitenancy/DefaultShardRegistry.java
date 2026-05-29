@@ -195,6 +195,14 @@ public class DefaultShardRegistry implements ShardRegistry, SmartInitializingSin
 
     String username = environment.getProperty(envPrefix + "_USERNAME");
     String password = environment.getProperty(envPrefix + "_PASSWORD");
+    // Fail fast rather than handing HikariCP a null credential (opaque driver error at DDL time).
+    // In the current flow these are already validated by createSecondaryDataSource before this
+    // runs, but the guard keeps the method self-contained against future call-order changes.
+    if (username == null || password == null) {
+      throw new IllegalStateException(
+          "Shard '%s' configures %s_MIGRATION_URL but is missing %s_USERNAME or %s_PASSWORD"
+              .formatted(shard.getShardId(), envPrefix, envPrefix, envPrefix));
+    }
 
     HikariDataSource ds = new HikariDataSource();
     ds.setJdbcUrl(migrationUrl);
@@ -208,6 +216,11 @@ public class DefaultShardRegistry implements ShardRegistry, SmartInitializingSin
     return ds;
   }
 
+  /**
+   * Closes secondary HikariCP pools in the given (already-detached) map. Does not mutate the map's
+   * contents — after a {@link #refresh()} swap the old map is discarded, and at shutdown the live
+   * map is abandoned; clearing it in place risked emptying the live registry mid-operation.
+   */
   private void closeSecondaryDataSources(ConcurrentHashMap<String, DataSource> map) {
     for (var entry : map.entrySet()) {
       if (!PRIMARY_SHARD_ID.equals(entry.getKey())
@@ -219,6 +232,5 @@ public class DefaultShardRegistry implements ShardRegistry, SmartInitializingSin
         }
       }
     }
-    map.clear();
   }
 }

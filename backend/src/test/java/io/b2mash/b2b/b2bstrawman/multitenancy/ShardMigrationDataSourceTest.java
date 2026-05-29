@@ -36,12 +36,15 @@ import org.springframework.test.context.TestPropertySource;
     properties = {
       "kazi.sharding.enabled=true",
       "KAZI_SHARD_SHARD2_USERNAME=postgres",
-      "KAZI_SHARD_SHARD2_PASSWORD=postgres"
+      "KAZI_SHARD_SHARD2_PASSWORD=postgres",
+      "KAZI_SHARD_SHARD3_USERNAME=postgres",
+      "KAZI_SHARD_SHARD3_PASSWORD=postgres"
     })
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ShardMigrationDataSourceTest {
 
-  private static final String SHARD2_ID = "shard2";
+  private static final String SHARD2_ID = "shard2"; // has a dedicated migration URL
+  private static final String SHARD3_ID = "shard3"; // no migration URL — exercises the fallback
 
   private final ShardConfigRepository shardConfigRepository;
   private final ShardRegistry shardRegistry;
@@ -59,12 +62,17 @@ class ShardMigrationDataSourceTest {
     // being present is what triggers the dedicated direct-connection DataSource under test.
     registry.add("KAZI_SHARD_SHARD2_URL", SecondaryEmbeddedPostgres::getJdbcUrl);
     registry.add("KAZI_SHARD_SHARD2_MIGRATION_URL", SecondaryEmbeddedPostgres::getJdbcUrl);
+    // shard3 deliberately has NO _MIGRATION_URL, to exercise the runtime-pool fallback.
+    registry.add("KAZI_SHARD_SHARD3_URL", SecondaryEmbeddedPostgres::getJdbcUrl);
   }
 
   @BeforeAll
-  void registerShard() {
+  void registerShards() {
     if (shardConfigRepository.findById(SHARD2_ID).isEmpty()) {
       shardConfigRepository.saveAndFlush(new ShardConfig(SHARD2_ID, "Migration DS Shard"));
+    }
+    if (shardConfigRepository.findById(SHARD3_ID).isEmpty()) {
+      shardConfigRepository.saveAndFlush(new ShardConfig(SHARD3_ID, "No-Migration-URL Shard"));
     }
     shardRegistry.refresh();
   }
@@ -72,6 +80,7 @@ class ShardMigrationDataSourceTest {
   @AfterAll
   void cleanUp() {
     shardConfigRepository.findById(SHARD2_ID).ifPresent(shardConfigRepository::delete);
+    shardConfigRepository.findById(SHARD3_ID).ifPresent(shardConfigRepository::delete);
     shardConfigRepository.flush();
     shardRegistry.refresh();
   }
@@ -99,10 +108,11 @@ class ShardMigrationDataSourceTest {
   }
 
   @Test
-  void noMigrationUrl_fallsBackToRuntimeDataSource() {
-    // "primary" has no migration URL configured — must fall back to the runtime DataSource.
-    assertThat(shardRegistry.getMigrationDataSource("primary"))
+  void secondaryShardWithoutMigrationUrl_fallsBackToRuntimeDataSource() {
+    // shard3 is a secondary shard with no _MIGRATION_URL — must fall back to its runtime pool
+    // (correct for shards that connect directly without PgBouncer).
+    assertThat(shardRegistry.getMigrationDataSource(SHARD3_ID))
         .as("migration DataSource falls back to the runtime pool when no migration URL is set")
-        .isSameAs(shardRegistry.getDataSource("primary"));
+        .isSameAs(shardRegistry.getDataSource(SHARD3_ID));
   }
 }

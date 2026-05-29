@@ -9,6 +9,7 @@ import io.b2mash.b2b.b2bstrawman.informationrequest.RequestPackSeeder;
 import io.b2mash.b2b.b2bstrawman.integration.payment.MockPaymentIntegrationSeeder;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMapping;
 import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ShardRegistry;
 import io.b2mash.b2b.b2bstrawman.multitenancy.TenantTransactionHelper;
 import io.b2mash.b2b.b2bstrawman.packs.PackCatalogService;
@@ -154,7 +155,7 @@ public class TenantProvisioningService {
 
   @Retryable(
       retryFor = ProvisioningException.class,
-      noRetryFor = IllegalArgumentException.class,
+      noRetryFor = {IllegalArgumentException.class, InvalidStateException.class},
       maxAttempts = 3,
       backoff = @Backoff(delay = 1000, multiplier = 2))
   public ProvisioningResult provisionTenant(
@@ -210,31 +211,43 @@ public class TenantProvisioningService {
       createSchema(schemaName, targetDataSource);
       runTenantMigrations(schemaName, targetDataSource);
       String defaultCurrency = resolveCurrency(country, verticalProfile);
-      if (verticalProfile != null) {
-        setVerticalProfile(schemaName, clerkOrgId, verticalProfile, defaultCurrency);
-      } else if (!"USD".equals(defaultCurrency)) {
-        setDefaultCurrency(schemaName, clerkOrgId, defaultCurrency);
-      }
-      fieldPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-      installPacksViaPipeline(schemaName, verticalProfile, PackType.DOCUMENT_TEMPLATE);
-      clausePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-      compliancePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-      standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
-      requestPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-      installPacksViaPipeline(schemaName, verticalProfile, PackType.AUTOMATION_TEMPLATE);
-      ratePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-      projectTemplatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-      schedulePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
-      legalTariffSeeder.seedForTenant(schemaName, clerkOrgId);
-      // GAP-L-44 + GAP-L-27 — apply profile enabled_modules and taxDefaults to the fresh tenant
-      // so the first user never sees a bare "Standard" rate or missing vertical modules.
-      verticalProfileReconciliationSeeder.reconcile(schemaName, clerkOrgId);
-      // OBS-3001 — seed dev-only mock PSP adapter (symmetric with PackReconciliationRunner).
-      // Must run after setVerticalProfile so orgSettings.verticalProfile is readable.
-      // No-op in prod profile or non-legal-za verticals.
-      mockPaymentIntegrationSeeder.seedForTenant(schemaName, clerkOrgId);
-      subscriptionService.createSubscription(org.getId());
-      createMapping(clerkOrgId, schemaName, effectiveShardId);
+      // Bind SHARD_ID so Hibernate's TenantIdentifierResolver routes all JPA operations
+      // (seeders, vertical profile, mapping) to the correct shard. Schema creation and
+      // Flyway migration above use raw JDBC and don't need ScopedValue binding.
+      String boundShardId = effectiveShardId;
+      RequestScopes.runForTenantOnShard(
+          schemaName,
+          clerkOrgId,
+          boundShardId,
+          () -> {
+            if (verticalProfile != null) {
+              setVerticalProfile(schemaName, clerkOrgId, verticalProfile, defaultCurrency);
+            } else if (!"USD".equals(defaultCurrency)) {
+              setDefaultCurrency(schemaName, clerkOrgId, defaultCurrency);
+            }
+            fieldPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+            installPacksViaPipeline(schemaName, verticalProfile, PackType.DOCUMENT_TEMPLATE);
+            clausePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+            compliancePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+            standardReportPackSeeder.seedForTenant(schemaName, clerkOrgId);
+            requestPackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+            installPacksViaPipeline(schemaName, verticalProfile, PackType.AUTOMATION_TEMPLATE);
+            ratePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+            projectTemplatePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+            schedulePackSeeder.seedPacksForTenant(schemaName, clerkOrgId);
+            legalTariffSeeder.seedForTenant(schemaName, clerkOrgId);
+            // GAP-L-44 + GAP-L-27 — apply profile enabled_modules and taxDefaults to the
+            // fresh tenant so the first user never sees a bare "Standard" rate or missing
+            // vertical modules.
+            verticalProfileReconciliationSeeder.reconcile(schemaName, clerkOrgId);
+            // OBS-3001 — seed dev-only mock PSP adapter (symmetric with
+            // PackReconciliationRunner). Must run after setVerticalProfile so
+            // orgSettings.verticalProfile is readable.
+            // No-op in prod profile or non-legal-za verticals.
+            mockPaymentIntegrationSeeder.seedForTenant(schemaName, clerkOrgId);
+            subscriptionService.createSubscription(org.getId());
+            createMapping(clerkOrgId, schemaName, boundShardId);
+          });
 
       org.markCompleted();
       organizationRepository.save(org);

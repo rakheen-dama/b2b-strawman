@@ -12,6 +12,9 @@ import javax.sql.DataSource;
  * since only a few test classes use this instance.
  *
  * <p>Port is auto-allocated — no explicit port configuration needed.
+ *
+ * <p><b>Status:</b> Pre-staged for Epic 555B (multi-shard integration tests). Currently unused —
+ * will be referenced once shard-aware integration test classes are introduced in that epic.
  */
 public final class SecondaryEmbeddedPostgres {
 

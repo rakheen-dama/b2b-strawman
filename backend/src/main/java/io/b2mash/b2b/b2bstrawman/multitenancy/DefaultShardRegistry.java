@@ -96,39 +96,50 @@ public class DefaultShardRegistry implements ShardRegistry, SmartInitializingSin
     // where concurrent getDataSource() calls see an empty/incomplete map.
     var newDataSources = new ConcurrentHashMap<String, DataSource>();
     var newMigrationDataSources = new ConcurrentHashMap<String, DataSource>();
+    boolean swapped = false;
 
-    // Primary shard always present
-    newDataSources.put(PRIMARY_SHARD_ID, primaryDataSource);
+    try {
+      // Primary shard always present
+      newDataSources.put(PRIMARY_SHARD_ID, primaryDataSource);
 
-    var activeShards = shardConfigRepository.findByActiveTrue();
-    for (var shard : activeShards) {
-      if (PRIMARY_SHARD_ID.equals(shard.getShardId())) {
-        continue; // Primary already registered
-      }
+      var activeShards = shardConfigRepository.findByActiveTrue();
+      for (var shard : activeShards) {
+        if (PRIMARY_SHARD_ID.equals(shard.getShardId())) {
+          continue; // Primary already registered
+        }
 
-      DataSource ds = createSecondaryDataSource(shard);
-      if (ds != null) {
-        newDataSources.put(shard.getShardId(), ds);
-        log.info(
-            "Registered secondary shard: {} (poolSize={})",
-            shard.getShardId(),
-            shard.getPoolSize());
+        DataSource ds = createSecondaryDataSource(shard);
+        if (ds != null) {
+          newDataSources.put(shard.getShardId(), ds);
+          log.info(
+              "Registered secondary shard: {} (poolSize={})",
+              shard.getShardId(),
+              shard.getPoolSize());
 
-        DataSource migrationDs = createMigrationDataSource(shard);
-        if (migrationDs != null) {
-          newMigrationDataSources.put(shard.getShardId(), migrationDs);
-          log.info("Registered dedicated migration DataSource for shard: {}", shard.getShardId());
+          DataSource migrationDs = createMigrationDataSource(shard);
+          if (migrationDs != null) {
+            newMigrationDataSources.put(shard.getShardId(), migrationDs);
+            log.info("Registered dedicated migration DataSource for shard: {}", shard.getShardId());
+          }
         }
       }
-    }
 
-    // Atomically swap the live maps, then close stale DataSources from the old maps
-    var oldDataSources = this.dataSources;
-    var oldMigrationDataSources = this.migrationDataSources;
-    this.dataSources = newDataSources;
-    this.migrationDataSources = newMigrationDataSources;
-    closeSecondaryDataSources(oldDataSources);
-    closeSecondaryDataSources(oldMigrationDataSources);
+      // Atomically swap the live maps, then close stale DataSources from the old maps
+      var oldDataSources = this.dataSources;
+      var oldMigrationDataSources = this.migrationDataSources;
+      this.dataSources = newDataSources;
+      this.migrationDataSources = newMigrationDataSources;
+      swapped = true;
+      closeSecondaryDataSources(oldDataSources);
+      closeSecondaryDataSources(oldMigrationDataSources);
+    } finally {
+      // If a pool failed to build before the swap (e.g. a misconfigured shard threw), close the
+      // pools we already opened so they don't leak — the live maps remain the previous good set.
+      if (!swapped) {
+        closeSecondaryDataSources(newDataSources);
+        closeSecondaryDataSources(newMigrationDataSources);
+      }
+    }
 
     log.info(
         "ShardRegistry initialized with {} active shard(s): {}",

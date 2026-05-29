@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.multitenancy;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.infrastructure.testutil.SecondaryEmbeddedPostgres;
@@ -114,5 +115,29 @@ class ShardMigrationDataSourceTest {
     assertThat(shardRegistry.getMigrationDataSource(SHARD3_ID))
         .as("migration DataSource falls back to the runtime pool when no migration URL is set")
         .isSameAs(shardRegistry.getDataSource(SHARD3_ID));
+  }
+
+  @Test
+  void refresh_whenShardMisconfigured_throwsAndLeavesLiveRegistryIntact() {
+    var before = shardRegistry.getActiveShardIds();
+    // An active shard with no connection env vars makes createSecondaryDataSource throw
+    // mid-refresh,
+    // before the atomic swap. The live registry must remain the previous good set and stay usable —
+    // and the pools opened during the aborted refresh must not leak (CodeRabbit D3 finding).
+    shardConfigRepository.saveAndFlush(new ShardConfig("shard_bad", "Misconfigured shard"));
+    try {
+      assertThatThrownBy(shardRegistry::refresh).isInstanceOf(IllegalStateException.class);
+
+      assertThat(shardRegistry.getActiveShardIds())
+          .as("a failed refresh must not mutate the live shard set")
+          .containsExactlyInAnyOrderElementsOf(before);
+      assertThat(shardRegistry.getDataSource(SHARD2_ID))
+          .as("previously registered shards remain usable after a failed refresh")
+          .isNotNull();
+    } finally {
+      shardConfigRepository.findById("shard_bad").ifPresent(shardConfigRepository::delete);
+      shardConfigRepository.flush();
+      shardRegistry.refresh();
+    }
   }
 }

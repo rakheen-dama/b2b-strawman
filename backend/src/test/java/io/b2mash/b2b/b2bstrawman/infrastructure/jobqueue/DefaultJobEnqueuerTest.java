@@ -11,11 +11,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
 
+/**
+ * Exercises the enqueue/fan-out/dedup logic with the queue ENABLED — the realistic precondition for
+ * enqueuing. {@code auto-start=false} keeps {@code JobWorker} from draining jobs while assertions
+ * inspect their PENDING state. The disabled-state guard (S1) is covered by {@code
+ * JobEnqueuerDisabledTest}, which runs with the {@code application-test.yml} default ({@code
+ * enabled=false}).
+ */
 @SpringBootTest
 @Import(TestcontainersConfiguration.class)
 @ActiveProfiles("test")
+@TestPropertySource(properties = {"kazi.job-queue.enabled=true", "kazi.job-queue.auto-start=false"})
 @Transactional
 class DefaultJobEnqueuerTest {
 
@@ -124,8 +133,9 @@ class DefaultJobEnqueuerTest {
 
   @Test
   void propertiesShouldBindFromTestYaml() {
-    // application-test.yml sets enabled: false and poll-interval-ms: 100
-    assertThat(properties.isEnabled()).isFalse();
+    // enabled is overridden to true by this class's @TestPropertySource; poll-interval-ms=100
+    // still comes from application-test.yml.
+    assertThat(properties.isEnabled()).isTrue();
     assertThat(properties.getPollIntervalMs()).isEqualTo(100);
     // Defaults for fields not overridden in test profile
     assertThat(properties.getBatchSize()).isEqualTo(20);

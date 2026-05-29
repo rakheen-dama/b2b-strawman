@@ -5,6 +5,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -25,6 +27,9 @@ public class DefaultJobEnqueuer implements JobEnqueuer {
   private final JobQueueRepository jobQueueRepository;
   private final JobQueueProperties properties;
   private final @Nullable JobQueueMetrics metrics;
+
+  /** Job types already WARN-logged as skipped-while-disabled, to avoid per-poll log spam. */
+  private final Set<String> warnedDisabledTypes = ConcurrentHashMap.newKeySet();
 
   public DefaultJobEnqueuer(
       OrgSchemaMappingRepository mappingRepository,
@@ -169,10 +174,15 @@ public class DefaultJobEnqueuer implements JobEnqueuer {
     if (properties.isEnabled()) {
       return false;
     }
-    log.warn(
-        "Job queue is disabled (kazi.job-queue.enabled=false) — skipping enqueue of type={}. "
-            + "No worker will drain these jobs; check the rollout configuration.",
-        jobType);
+    // WARN once per job type (schedulers can fire as often as every 30s); DEBUG thereafter.
+    if (warnedDisabledTypes.add(jobType)) {
+      log.warn(
+          "Job queue is disabled (kazi.job-queue.enabled=false) — skipping enqueue of type={}. "
+              + "No worker will drain these jobs; check the rollout configuration.",
+          jobType);
+    } else {
+      log.debug("Job queue disabled — skipping enqueue of type={}", jobType);
+    }
     return true;
   }
 

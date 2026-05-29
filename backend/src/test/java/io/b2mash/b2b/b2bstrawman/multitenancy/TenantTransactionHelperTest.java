@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.multitenancy;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
@@ -72,6 +73,16 @@ class TenantTransactionHelperTest {
     var seen = new AtomicReference<String>();
     helper.executeInTenantTransaction(schema, ORG_ID, "kazi_legal_2", t -> seen.set(boundShard()));
     assertThat(seen.get()).isEqualTo("kazi_legal_2");
+  }
+
+  @Test
+  void threeArgCall_rejectsMalformedShardId() {
+    var ran = new AtomicReference<Boolean>(false);
+    assertThatThrownBy(
+            () ->
+                helper.executeInTenantTransaction(schema, ORG_ID, "Bad Shard!", t -> ran.set(true)))
+        .isInstanceOf(IllegalArgumentException.class);
+    assertThat(ran.get()).as("action must not run when the shard id is invalid").isFalse();
   }
 
   private static String boundShard() {

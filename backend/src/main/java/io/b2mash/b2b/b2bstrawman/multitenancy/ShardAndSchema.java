@@ -71,6 +71,16 @@ public record ShardAndSchema(String shardId, String schemaName) {
     return shardId + ":" + schemaName;
   }
 
+  /**
+   * Validates a shard identifier, throwing {@link IllegalArgumentException} if it is null, blank,
+   * or malformed. Use to fail fast at binding time rather than late during identifier resolution.
+   *
+   * @param shardId the shard identifier to validate
+   */
+  public static void requireValidShardId(String shardId) {
+    validateShardId(shardId);
+  }
+
   private static void validateShardId(String shardId) {
     if (shardId == null || shardId.isBlank()) {
       throw new IllegalArgumentException("Shard ID must not be null or blank");

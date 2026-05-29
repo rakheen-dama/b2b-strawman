@@ -69,6 +69,8 @@ public class TenantTransactionHelper {
     validateSchema(tenantId);
     String effectiveShardId =
         (shardId != null && !shardId.isBlank()) ? shardId : ShardAndSchema.DEFAULT.shardId();
+    // Fail fast on a malformed shard id rather than late during identifier resolution.
+    ShardAndSchema.requireValidShardId(effectiveShardId);
     ScopedValue.where(RequestScopes.TENANT_ID, tenantId)
         .where(RequestScopes.ORG_ID, orgId)
         .where(RequestScopes.SHARD_ID, effectiveShardId)

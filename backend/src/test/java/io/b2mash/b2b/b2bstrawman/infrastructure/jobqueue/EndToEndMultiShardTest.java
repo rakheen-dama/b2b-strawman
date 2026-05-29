@@ -1,6 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.infrastructure.testutil.SecondaryEmbeddedPostgres;
@@ -12,6 +13,7 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.ShardRegistry;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
+import java.time.Duration;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
 import org.junit.jupiter.api.AfterAll;
@@ -58,17 +60,23 @@ class EndToEndMultiShardTest {
   private final ShardRegistry shardRegistry;
   private final OrgSchemaMappingRepository mappingRepository;
   private final JobQueueRepository jobQueueRepository;
+  private final JobEnqueuer jobEnqueuer;
+  private final JobWorker worker;
 
   @Autowired
   EndToEndMultiShardTest(
       ShardConfigRepository shardConfigRepository,
       ShardRegistry shardRegistry,
       OrgSchemaMappingRepository mappingRepository,
-      JobQueueRepository jobQueueRepository) {
+      JobQueueRepository jobQueueRepository,
+      JobEnqueuer jobEnqueuer,
+      JobWorker worker) {
     this.shardConfigRepository = shardConfigRepository;
     this.shardRegistry = shardRegistry;
     this.mappingRepository = mappingRepository;
     this.jobQueueRepository = jobQueueRepository;
+    this.jobEnqueuer = jobEnqueuer;
+    this.worker = worker;
   }
 
   @DynamicPropertySource
@@ -147,6 +155,104 @@ class EndToEndMultiShardTest {
     // Clean up
     jobQueueRepository.delete(job);
     jobQueueRepository.flush();
+  }
+
+  /**
+   * D2 regression: {@code fanOutToAllTenants} must stamp each job with the tenant's actual shard id
+   * from its {@code OrgSchemaMapping}, not a hardcoded "primary".
+   */
+  @Test
+  void fanOutToAllTenants_stampsShardIdFromMapping() {
+    jobQueueRepository.deleteAllInBatch();
+
+    jobEnqueuer.fanOutToAllTenants(ShardRoutingTestJobHandler.JOB_TYPE, null);
+
+    var shard2Job =
+        jobQueueRepository.findAll().stream()
+            .filter(j -> j.getJobType().equals(ShardRoutingTestJobHandler.JOB_TYPE))
+            .filter(j -> j.getTenantId().equals(SHARD2_SCHEMA))
+            .findFirst();
+
+    assertThat(shard2Job).as("fan-out should create a job for the shard2 tenant").isPresent();
+    assertThat(shard2Job.get().getShardId())
+        .as("job for a shard2 tenant must carry shardId=shard2, not the default 'primary'")
+        .isEqualTo(SHARD2_ID);
+
+    jobQueueRepository.deleteAllInBatch();
+  }
+
+  /**
+   * D1 regression: the worker must bind {@code SHARD_ID} before invoking the handler, so a job for
+   * a secondary-shard tenant executes against that shard's physical database — not primary. The
+   * handler writes a marker row via Hibernate; we assert it lands in shard2 and that shard2's
+   * schema does not exist on primary at all.
+   */
+  @Test
+  void jobForShard2Tenant_executesAgainstShard2Database() throws Exception {
+    jobQueueRepository.deleteAllInBatch();
+    DataSource shard2Ds = shardRegistry.getDataSource(SHARD2_ID);
+    assertThat(countMarkerRows(shard2Ds, SHARD2_SCHEMA))
+        .as("no marker rows before the job runs")
+        .isZero();
+
+    // Enqueue (committed) a job for the shard2 tenant, then drive it through the worker.
+    var job =
+        new JobQueue(
+            ShardRoutingTestJobHandler.JOB_TYPE, SHARD2_SCHEMA, SHARD2_ORG_ID, SHARD2_ID, null, 0);
+    jobQueueRepository.saveAndFlush(job);
+
+    try {
+      worker.start();
+      await()
+          .atMost(Duration.ofSeconds(10))
+          .pollInterval(Duration.ofMillis(250))
+          .untilAsserted(
+              () -> {
+                var current = jobQueueRepository.findById(job.getId()).orElseThrow();
+                assertThat(current.getStatus()).isEqualTo(JobStatus.COMPLETED);
+              });
+    } finally {
+      worker.stop();
+    }
+
+    // The marker must land in the shard2 database...
+    assertThat(countMarkerRows(shard2Ds, SHARD2_SCHEMA))
+        .as("handler write must land in the shard2 tenant schema")
+        .isEqualTo(1);
+
+    // ...and shard2's tenant schema must not exist on primary at all.
+    DataSource primaryDs = shardRegistry.getPrimaryDataSource();
+    try (Connection conn = primaryDs.getConnection();
+        Statement stmt = conn.createStatement();
+        ResultSet rs =
+            stmt.executeQuery(
+                "SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name = '"
+                    + SHARD2_SCHEMA
+                    + "'")) {
+      assertThat(rs.next()).isTrue();
+      assertThat(rs.getInt(1)).as("shard2 tenant schema must not exist on primary").isZero();
+    }
+
+    jobQueueRepository.deleteAllInBatch();
+  }
+
+  private long countMarkerRows(DataSource ds, String schema) throws Exception {
+    String qualifiedTable = "\"" + schema + "\"." + ShardRoutingTestJobHandler.MARKER_TABLE;
+    try (Connection conn = ds.getConnection();
+        Statement stmt = conn.createStatement()) {
+      // Guard: the marker table is created lazily by the handler, so it may not exist yet.
+      try (ResultSet exists =
+          stmt.executeQuery("SELECT to_regclass('" + qualifiedTable + "') IS NOT NULL")) {
+        assertThat(exists.next()).isTrue();
+        if (!exists.getBoolean(1)) {
+          return 0L;
+        }
+      }
+      try (ResultSet rs = stmt.executeQuery("SELECT COUNT(*) FROM " + qualifiedTable)) {
+        assertThat(rs.next()).isTrue();
+        return rs.getLong(1);
+      }
+    }
   }
 
   @Test

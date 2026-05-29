@@ -32,9 +32,19 @@ import org.springframework.test.context.TestPropertySource;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class JobWorkerParallelismTest {
 
-  @Autowired private JobQueueRepository jobQueueRepository;
-  @Autowired private JobWorker worker;
-  @Autowired private SlowConcurrencyTestJobHandler slowHandler;
+  private final JobQueueRepository jobQueueRepository;
+  private final JobWorker worker;
+  private final SlowConcurrencyTestJobHandler slowHandler;
+
+  @Autowired
+  JobWorkerParallelismTest(
+      JobQueueRepository jobQueueRepository,
+      JobWorker worker,
+      SlowConcurrencyTestJobHandler slowHandler) {
+    this.jobQueueRepository = jobQueueRepository;
+    this.worker = worker;
+    this.slowHandler = slowHandler;
+  }
 
   @BeforeEach
   void setUp() {

@@ -6,9 +6,10 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 // ---------------------------------------------------------------------------
 
 const mockReplace = vi.fn();
+let mockSearchParams = new URLSearchParams();
 
 vi.mock("next/navigation", () => ({
-  useSearchParams: () => new URLSearchParams(),
+  useSearchParams: () => mockSearchParams,
   useRouter: () => ({ replace: mockReplace }),
 }));
 
@@ -96,6 +97,7 @@ afterEach(() => {
     return enabled[moduleId] ?? false;
   });
   mockUseAuditTabVisible.mockImplementation(() => true);
+  mockSearchParams = new URLSearchParams();
 });
 
 // ---------------------------------------------------------------------------
@@ -152,6 +154,26 @@ describe("ProjectTabs with GroupedTabBar integration", () => {
 
     // Schedule group should be completely hidden (court-dates is its only tab and it is gated off)
     expect(screen.queryByTestId("tab-group-schedule")).not.toBeInTheDocument();
+  });
+
+  it("redirects ?tab=members to ?tab=staffing via router.replace", () => {
+    mockSearchParams = new URLSearchParams("tab=members");
+
+    render(
+      <ProjectTabs
+        {...baseProps}
+        detailsPanel={<div>Details</div>}
+        fieldsPanel={<div>Fields</div>}
+        staffingPanel={<div>Staffing</div>}
+        budgetPanel={<div>Budget</div>}
+      />
+    );
+
+    // The useEffect should have called router.replace with tab=staffing
+    expect(mockReplace).toHaveBeenCalledTimes(1);
+    expect(mockReplace).toHaveBeenCalledWith(
+      expect.stringContaining("tab=staffing")
+    );
   });
 
   it("renders activity group as standalone tab when audit is hidden", () => {

@@ -39,7 +39,7 @@ export function buildTabIdToGroupMap(groups: readonly TabGroup[]): Record<string
 // URL state resolution
 // ---------------------------------------------------------------------------
 
-const DEFAULT_RESOLUTION = { groupId: "overview", tabId: "overview" } as const;
+export const DEFAULT_RESOLUTION = { groupId: "overview", tabId: "overview" } as const;
 
 /**
  * Resolve a `?tab=` search-param value to its group + tab pair.

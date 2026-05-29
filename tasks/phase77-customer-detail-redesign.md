@@ -13,7 +13,7 @@ The current layout has 7 action buttons sprawled horizontally, a metadata wall p
 | Epic | Name | Scope | Deps | Effort | Slices | Status |
 |------|------|-------|------|--------|--------|--------|
 | 556 | Shared Component Extraction | Frontend | -- | M | 556A, 556B | **Done** (PR #1391) |
-| 557 | ClientHeaderCard + ClientOverflowMenu | Frontend | -- | M | 557A, 557B | |
+| 557 | ClientHeaderCard + ClientOverflowMenu | Frontend | -- | M | 557A, 557B | **Done** (PR #1392) |
 | 558 | CustomerGroupedTabs + Tab Panels | Frontend | 556 | M | 558A, 558B | |
 | 559 | ClientOverviewTab | Frontend | -- | S | 559A | |
 | 560 | Page Integration + Polish | Frontend | 556, 557, 558, 559 | L | 560A, 560B | |
@@ -65,8 +65,8 @@ The current layout has 7 action buttons sprawled horizontally, a metadata wall p
 |-------|------|-------|-----------|
 | 1a | Epic 556 | 556A | Move `GroupedTabBar` from `components/projects/` to `components/shared/`. Update `ProjectTabs` import. Verify matter detail page unchanged. **Done** (PR #1391) |
 | 1b | Epic 556 | 556B | Split `tab-groups.ts` into shared types + entity-specific constants. Create `CUSTOMER_TAB_GROUPS`. Depends on 556A. **Done** (PR #1391) |
-| 1c | Epic 557 | 557A | `ClientHeaderCard` with name, badges, contact, context, smart primary action. Independent of 556. |
-| 1d | Epic 557 | 557B | `ClientOverflowMenu` with all 8 actions and gating rules. Depends on 557A (overflow renders inside header card). |
+| 1c | Epic 557 | 557A | `ClientHeaderCard` with name, badges, contact, context, smart primary action. Independent of 556. **Done** (PR #1392) |
+| 1d | Epic 557 | 557B | `ClientOverflowMenu` with all 8 actions and gating rules. Depends on 557A (overflow renders inside header card). **Done** (PR #1392) |
 
 ### Stage 2: Tabs + Overview (Parallel, after 556B)
 
@@ -188,8 +188,8 @@ Stage 4:  [561A]                                 ← QA testplan (after all abov
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **557A** | 557.1-557.4 | `ClientHeaderCard` with name, badges, contact, context line, smart primary action for all 8 lifecycle states. Unit tests (~6 tests) | |
-| **557B** | 557.5-557.8 | `ClientOverflowMenu` with all 8 menu items, gating rules, OBS-2103-safe dialog rendering. Unit tests (~6 tests) | |
+| **557A** | 557.1-557.4 | `ClientHeaderCard` with name, badges, contact, context line, smart primary action for all 8 lifecycle states. Unit tests (~6 tests) | **Done** (PR #1392) |
+| **557B** | 557.5-557.8 | `ClientOverflowMenu` with all 8 menu items, gating rules, OBS-2103-safe dialog rendering. Unit tests (~6 tests) | **Done** (PR #1392) |
 
 ### Tasks
 

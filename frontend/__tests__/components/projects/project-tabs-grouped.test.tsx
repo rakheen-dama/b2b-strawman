@@ -171,9 +171,7 @@ describe("ProjectTabs with GroupedTabBar integration", () => {
 
     // The useEffect should have called router.replace with tab=staffing
     expect(mockReplace).toHaveBeenCalledTimes(1);
-    expect(mockReplace).toHaveBeenCalledWith(
-      expect.stringContaining("tab=staffing")
-    );
+    expect(mockReplace).toHaveBeenCalledWith(expect.stringContaining("tab=staffing"));
   });
 
   it("renders activity group as standalone tab when audit is hidden", () => {

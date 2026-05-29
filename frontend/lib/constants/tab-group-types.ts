@@ -30,9 +30,7 @@ export interface TabGroup {
 
 /** Build a reverse lookup map: tab ID -> group ID. */
 export function buildTabIdToGroupMap(groups: readonly TabGroup[]): Record<string, string> {
-  return Object.fromEntries(
-    groups.flatMap((g) => g.tabs.map((t) => [t.id, g.id]))
-  );
+  return Object.fromEntries(groups.flatMap((g) => g.tabs.map((t) => [t.id, g.id])));
 }
 
 // ---------------------------------------------------------------------------

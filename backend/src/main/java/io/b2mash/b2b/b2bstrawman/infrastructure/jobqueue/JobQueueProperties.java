@@ -18,6 +18,14 @@ public class JobQueueProperties {
   private int staleClaimTimeoutMinutes = 15;
   private int maxRetriesDefault = 3;
   private int backoffBaseSeconds = 10;
+
+  /**
+   * Maximum number of jobs from a claimed batch to execute concurrently within a single worker
+   * (pod). The effective parallelism is additionally capped at half the app DataSource pool size to
+   * avoid exhausting connections (see {@code JobWorker}). Set to 1 to disable in-pod parallelism.
+   */
+  private int workerParallelism = 10;
+
   private Map<String, Boolean> dualMode = new HashMap<>();
 
   /**
@@ -86,6 +94,14 @@ public class JobQueueProperties {
 
   public void setBackoffBaseSeconds(int backoffBaseSeconds) {
     this.backoffBaseSeconds = backoffBaseSeconds;
+  }
+
+  public int getWorkerParallelism() {
+    return workerParallelism;
+  }
+
+  public void setWorkerParallelism(int workerParallelism) {
+    this.workerParallelism = workerParallelism;
   }
 
   public Map<String, Boolean> getDualMode() {

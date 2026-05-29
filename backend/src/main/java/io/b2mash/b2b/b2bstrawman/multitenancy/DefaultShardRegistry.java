@@ -40,6 +40,13 @@ public class DefaultShardRegistry implements ShardRegistry, SmartInitializingSin
 
   private volatile ConcurrentHashMap<String, DataSource> dataSources = new ConcurrentHashMap<>();
 
+  /**
+   * Dedicated direct-connection DataSources for DDL, keyed by shard id. Populated only for shards
+   * that configure {@code KAZI_SHARD_{ID}_MIGRATION_URL}. See {@link #getMigrationDataSource}.
+   */
+  private volatile ConcurrentHashMap<String, DataSource> migrationDataSources =
+      new ConcurrentHashMap<>();
+
   public DefaultShardRegistry(
       DataSource primaryDataSource,
       ShardConfigRepository shardConfigRepository,
@@ -71,6 +78,14 @@ public class DefaultShardRegistry implements ShardRegistry, SmartInitializingSin
   }
 
   @Override
+  public DataSource getMigrationDataSource(String shardId) {
+    DataSource migration = migrationDataSources.get(shardId);
+    // Fall back to the runtime DataSource when no dedicated migration URL is configured — correct
+    // for shards that connect directly (no PgBouncer). getDataSource() still validates the shard.
+    return migration != null ? migration : getDataSource(shardId);
+  }
+
+  @Override
   public Set<String> getActiveShardIds() {
     return Collections.unmodifiableSet(dataSources.keySet());
   }
@@ -80,6 +95,7 @@ public class DefaultShardRegistry implements ShardRegistry, SmartInitializingSin
     // Build a new map locally, then atomically swap the reference to avoid a window
     // where concurrent getDataSource() calls see an empty/incomplete map.
     var newDataSources = new ConcurrentHashMap<String, DataSource>();
+    var newMigrationDataSources = new ConcurrentHashMap<String, DataSource>();
 
     // Primary shard always present
     newDataSources.put(PRIMARY_SHARD_ID, primaryDataSource);
@@ -97,13 +113,22 @@ public class DefaultShardRegistry implements ShardRegistry, SmartInitializingSin
             "Registered secondary shard: {} (poolSize={})",
             shard.getShardId(),
             shard.getPoolSize());
+
+        DataSource migrationDs = createMigrationDataSource(shard);
+        if (migrationDs != null) {
+          newMigrationDataSources.put(shard.getShardId(), migrationDs);
+          log.info("Registered dedicated migration DataSource for shard: {}", shard.getShardId());
+        }
       }
     }
 
-    // Atomically swap the live map, then close stale secondary DataSources from the old map
+    // Atomically swap the live maps, then close stale DataSources from the old maps
     var oldDataSources = this.dataSources;
+    var oldMigrationDataSources = this.migrationDataSources;
     this.dataSources = newDataSources;
+    this.migrationDataSources = newMigrationDataSources;
     closeSecondaryDataSources(oldDataSources);
+    closeSecondaryDataSources(oldMigrationDataSources);
 
     log.info(
         "ShardRegistry initialized with {} active shard(s): {}",
@@ -114,6 +139,7 @@ public class DefaultShardRegistry implements ShardRegistry, SmartInitializingSin
   @PreDestroy
   void shutdown() {
     closeSecondaryDataSources(this.dataSources);
+    closeSecondaryDataSources(this.migrationDataSources);
   }
 
   private DataSource createSecondaryDataSource(ShardConfig shard) {
@@ -150,6 +176,35 @@ public class DefaultShardRegistry implements ShardRegistry, SmartInitializingSin
     ds.setPoolName("shard-" + shard.getShardId());
     ds.setReadOnly(shard.isReadOnly());
 
+    return ds;
+  }
+
+  /**
+   * Builds a dedicated direct-connection DataSource for DDL on a secondary shard, from {@code
+   * KAZI_SHARD_{ID}_MIGRATION_URL} (credentials reuse the shard's {@code _USERNAME}/{@code
+   * _PASSWORD}). Returns {@code null} when no migration URL is configured, in which case DDL falls
+   * back to the runtime pool (fine for shards that connect directly without PgBouncer). The pool is
+   * intentionally small (DDL is infrequent) and never read-only — migrations write schema.
+   */
+  private DataSource createMigrationDataSource(ShardConfig shard) {
+    String envPrefix = "KAZI_SHARD_" + shard.getShardId().toUpperCase(Locale.ROOT);
+    String migrationUrl = environment.getProperty(envPrefix + "_MIGRATION_URL");
+    if (migrationUrl == null || migrationUrl.isBlank()) {
+      return null;
+    }
+
+    String username = environment.getProperty(envPrefix + "_USERNAME");
+    String password = environment.getProperty(envPrefix + "_PASSWORD");
+
+    HikariDataSource ds = new HikariDataSource();
+    ds.setJdbcUrl(migrationUrl);
+    ds.setUsername(username);
+    ds.setPassword(password);
+    ds.setMaximumPoolSize(2); // DDL is infrequent; a direct, low-connection pool is sufficient
+    ds.setMaxLifetime(1_680_000); // 28 min, under Neon's 30-min timeout
+    ds.setConnectionTimeout(10_000); // 10 sec, accommodates Neon cold starts
+    ds.setConnectionInitSql("SET search_path TO public");
+    ds.setPoolName("shard-migration-" + shard.getShardId());
     return ds;
   }
 

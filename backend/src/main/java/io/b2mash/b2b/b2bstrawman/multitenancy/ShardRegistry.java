@@ -22,6 +22,23 @@ public interface ShardRegistry {
   /** Returns the DataSource for the primary shard. */
   DataSource getPrimaryDataSource();
 
+  /**
+   * Returns a DataSource suitable for running DDL (schema creation, Flyway migrations) against the
+   * given shard. DDL statements (CREATE SCHEMA, CREATE TABLE, ...) are rejected by PgBouncer in
+   * transaction-pooling mode, so when {@code KAZI_SHARD_{ID}_MIGRATION_URL} is configured this
+   * returns a dedicated direct-connection DataSource that bypasses the pooler. When no migration
+   * URL is configured it falls back to {@link #getDataSource(String)} (correct for shards that
+   * connect directly without PgBouncer). See kazi-infra-review-scheduling-sharding.md finding D3.
+   *
+   * <p>Callers provisioning/migrating the primary shard should use the dedicated {@code
+   * migrationDataSource} bean directly rather than this method.
+   *
+   * @param shardId the shard identifier
+   * @return a DataSource safe for DDL against the shard
+   * @throws IllegalArgumentException if the shard is unknown or inactive
+   */
+  DataSource getMigrationDataSource(String shardId);
+
   /** Returns the set of active shard IDs (always includes "primary"). */
   Set<String> getActiveShardIds();
 

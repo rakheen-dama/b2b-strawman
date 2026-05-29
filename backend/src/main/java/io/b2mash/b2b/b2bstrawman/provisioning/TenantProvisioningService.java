@@ -171,18 +171,23 @@ public class TenantProvisioningService {
       return ProvisioningResult.alreadyProvisioned(existingMapping.get().getSchemaName());
     }
 
-    // Resolve the DataSource and effective shard ID for this provisioning request
+    // Resolve the DDL DataSource and effective shard ID for this provisioning request.
+    // Primary always uses the dedicated migrationDataSource bean (direct, bypasses PgBouncer).
+    // Secondary shards use shardRegistry.getMigrationDataSource() which returns a direct
+    // connection when KAZI_SHARD_{ID}_MIGRATION_URL is set, else the runtime pool (D3).
     DataSource targetDataSource = migrationDataSource;
     String effectiveShardId = "primary";
-    if (shardId != null && !shardId.isBlank() && shardRegistry != null) {
-      if (!shardRegistry.getActiveShardIds().contains(shardId)) {
-        throw new InvalidStateException(
-            "Invalid shard", "Shard '%s' is not active or does not exist".formatted(shardId));
+    if (shardId != null && !shardId.isBlank() && !"primary".equals(shardId)) {
+      if (shardRegistry == null) {
+        log.warn("Shard ID '{}' specified but sharding is disabled — using primary", shardId);
+      } else {
+        if (!shardRegistry.getActiveShardIds().contains(shardId)) {
+          throw new InvalidStateException(
+              "Invalid shard", "Shard '%s' is not active or does not exist".formatted(shardId));
+        }
+        targetDataSource = shardRegistry.getMigrationDataSource(shardId);
+        effectiveShardId = shardId;
       }
-      targetDataSource = shardRegistry.getDataSource(shardId);
-      effectiveShardId = shardId;
-    } else if (shardId != null && !shardId.isBlank() && shardRegistry == null) {
-      log.warn("Shard ID '{}' specified but sharding is disabled — using primary", shardId);
     }
 
     // Create or find organization record (default tier is STARTER)

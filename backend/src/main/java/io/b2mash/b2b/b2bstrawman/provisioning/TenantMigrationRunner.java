@@ -46,7 +46,13 @@ public class TenantMigrationRunner implements ApplicationRunner {
     int totalSchemas = 0;
 
     for (String shardId : activeShardIds) {
-      var dataSource = shardRegistry.getDataSource(shardId);
+      // DDL must use a direct connection. Primary uses the dedicated migrationDataSource bean;
+      // secondary shards use getMigrationDataSource() (direct when KAZI_SHARD_{ID}_MIGRATION_URL
+      // is configured, else the runtime pool). See review finding D3.
+      var dataSource =
+          "primary".equals(shardId)
+              ? migrationDataSource
+              : shardRegistry.getMigrationDataSource(shardId);
       var shardMappings = mappingRepository.findByShardId(shardId);
 
       for (var mapping : shardMappings) {

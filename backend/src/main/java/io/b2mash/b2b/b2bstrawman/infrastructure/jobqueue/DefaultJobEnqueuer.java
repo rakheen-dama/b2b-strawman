@@ -57,7 +57,7 @@ public class DefaultJobEnqueuer implements JobEnqueuer {
             jobType,
             tenantId,
             orgId,
-            shardId != null ? shardId : DEFAULT_SHARD_ID,
+            shardIdOrDefault(shardId),
             payload,
             properties.getMaxRetriesDefault());
 
@@ -104,7 +104,7 @@ public class DefaultJobEnqueuer implements JobEnqueuer {
               jobType,
               tenantId,
               mapping.getExternalOrgId(),
-              DEFAULT_SHARD_ID,
+              shardIdOrDefault(mapping.getShardId()),
               payload,
               properties.getMaxRetriesDefault());
       job.setPriority(priority);
@@ -146,5 +146,15 @@ public class DefaultJobEnqueuer implements JobEnqueuer {
         skippedByDedup);
 
     return enqueued;
+  }
+
+  /**
+   * Falls back to {@link #DEFAULT_SHARD_ID} only when the tenant has no shard assignment (legacy
+   * rows predating sharding). A tenant on a secondary shard MUST keep its real shard id so the
+   * worker routes execution to the correct database — see {@code JobWorker#processJob} and the
+   * D1/D2 findings in kazi-infra-review-scheduling-sharding.md.
+   */
+  private static String shardIdOrDefault(@Nullable String shardId) {
+    return shardId != null && !shardId.isBlank() ? shardId : DEFAULT_SHARD_ID;
   }
 }

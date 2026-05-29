@@ -116,12 +116,20 @@ public class JobWorker implements SmartLifecycle {
     MDC.put("jobType", job.getJobType());
     MDC.put("jobId", job.getId().toString());
     try {
-      // Execute the handler in tenant scope — only the handler runs with TENANT_ID bound.
+      // Execute the handler in shard-aware tenant scope — only the handler runs with TENANT_ID,
+      // ORG_ID and SHARD_ID bound. Binding SHARD_ID is mandatory: without it the
+      // TenantIdentifierResolver defaults to the primary shard, so a job for a secondary-shard
+      // tenant would silently execute against the wrong database (review finding D1).
       // The worker's own DB operations (markCompleted/handleFailure) must run against the
       // public schema since job_queue lives in public, not in a tenant schema.
-      RequestScopes.runForTenant(
+      //
+      // Note: handlers that operate only on global (public.*) tables — e.g. the subscription
+      // expiry handlers — still run inside this scope, but ignore the bound schema. That is
+      // intentional; there is no separate global-handler type today (review finding S3).
+      RequestScopes.runForTenantOnShard(
           job.getTenantId(),
           job.getOrgId(),
+          job.getShardId(),
           () -> {
             var handler = handlerRegistry.getHandler(job.getJobType());
             handler.execute(job.getPayload());

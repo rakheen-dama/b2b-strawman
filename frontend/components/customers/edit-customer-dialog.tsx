@@ -48,12 +48,19 @@ interface EditCustomerDialogProps {
    * itself rather than cloning a consumer-supplied element. This avoids both
    * the Radix `Slot` adjacency collision (OBS-2103) AND the lazy/RSC
    * `cloneElement` onClick-strip that bit OBS-2103b.
+   *
+   * When `open`/`onOpenChange` are provided (controlled mode), the trigger
+   * button is not rendered — the consumer manages open state externally
+   * (e.g. from a DropdownMenuItem).
    */
-  triggerLabel: ReactNode;
+  triggerLabel?: ReactNode;
   triggerVariant?: ButtonVariant;
   triggerSize?: ButtonSize;
   triggerClassName?: string;
   triggerIcon?: ReactNode;
+  /** External controlled mode — when provided, overrides internal state */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 function buildDefaults(customer: Customer): EditCustomerFormData {
@@ -92,8 +99,13 @@ export function EditCustomerDialog({
   triggerSize = "sm",
   triggerClassName,
   triggerIcon,
+  open: externalOpen,
+  onOpenChange: externalOnOpenChange,
 }: EditCustomerDialogProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = externalOpen !== undefined;
+  const open = isControlled ? externalOpen : internalOpen;
+  const setOpen = isControlled ? (externalOnOpenChange ?? (() => {})) : setInternalOpen;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -161,16 +173,18 @@ export function EditCustomerDialog({
   // No Slot wrapper, no cloneElement, no lazy-children fragility.
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <Button
-        type="button"
-        variant={triggerVariant}
-        size={triggerSize}
-        className={triggerClassName}
-        onClick={() => setOpen(true)}
-      >
-        {triggerIcon}
-        {triggerLabel}
-      </Button>
+      {!isControlled && (
+        <Button
+          type="button"
+          variant={triggerVariant}
+          size={triggerSize}
+          className={triggerClassName}
+          onClick={() => setOpen(true)}
+        >
+          {triggerIcon}
+          {triggerLabel}
+        </Button>
+      )}
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Edit Customer</DialogTitle>

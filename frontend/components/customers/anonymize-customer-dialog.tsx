@@ -28,7 +28,11 @@ interface AnonymizeCustomerDialogProps {
   slug: string;
   customerId: string;
   customerName: string;
-  children: React.ReactNode;
+  /** Trigger element — required in uncontrolled mode, ignored in controlled mode */
+  children?: React.ReactNode;
+  /** External controlled mode — when provided, overrides internal state */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function AnonymizeCustomerDialog({
@@ -36,8 +40,13 @@ export function AnonymizeCustomerDialog({
   customerId,
   customerName,
   children,
+  open: externalOpen,
+  onOpenChange: externalOnOpenChange,
 }: AnonymizeCustomerDialogProps) {
-  const [open, setOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = externalOpen !== undefined;
+  const openState = isControlled ? externalOpen : internalOpen;
+  const setOpenState = isControlled ? (externalOnOpenChange ?? (() => {})) : setInternalOpen;
   const [step, setStep] = useState<Step>("preview");
   const [confirmInput, setConfirmInput] = useState("");
   const [reason, setReason] = useState("Data subject request");
@@ -50,7 +59,7 @@ export function AnonymizeCustomerDialog({
     data: previewResult,
     error: previewError,
     isLoading: previewLoading,
-  } = useSWR(open && step === "preview" ? `anonymize-preview-${customerId}` : null, () =>
+  } = useSWR(openState && step === "preview" ? `anonymize-preview-${customerId}` : null, () =>
     fetchAnonymizationPreview(customerId)
   );
 
@@ -66,7 +75,7 @@ export function AnonymizeCustomerDialog({
       setResult(null);
       setIsPending(false);
     }
-    setOpen(newOpen);
+    setOpenState(newOpen);
   }
 
   async function handleExecute() {
@@ -97,8 +106,8 @@ export function AnonymizeCustomerDialog({
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={handleOpenChange}>
-      <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>
+    <AlertDialog open={openState} onOpenChange={handleOpenChange}>
+      {!isControlled && <AlertDialogTrigger asChild>{children}</AlertDialogTrigger>}
       <AlertDialogContent className="max-w-lg border-t-4 border-t-red-500">
         {step === "preview" && (
           <>

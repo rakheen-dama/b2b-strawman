@@ -49,7 +49,7 @@ public class ShardMetrics {
   }
 
   private void registerShardMetrics(String shardId) {
-    if (registeredShards.putIfAbsent(shardId, Boolean.TRUE) != null) {
+    if (registeredShards.containsKey(shardId)) {
       return;
     }
 
@@ -97,6 +97,8 @@ public class ShardMetrics {
         .tag("shard_id", shardId)
         .description("Number of tenant schemas on this shard")
         .register(registry);
+
+    registeredShards.putIfAbsent(shardId, Boolean.TRUE);
   }
 
   /** Refreshes tenant count gauges from the database. Called every 60 seconds by the scheduler. */

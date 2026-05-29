@@ -5,6 +5,8 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.OrgSchemaMappingRepository;
 import jakarta.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -26,6 +28,9 @@ public class DefaultJobEnqueuer implements JobEnqueuer {
   private final JobQueueProperties properties;
   private final @Nullable JobQueueMetrics metrics;
 
+  /** Job types already WARN-logged as skipped-while-disabled, to avoid per-poll log spam. */
+  private final Set<String> warnedDisabledTypes = ConcurrentHashMap.newKeySet();
+
   public DefaultJobEnqueuer(
       OrgSchemaMappingRepository mappingRepository,
       JobQueueRepository jobQueueRepository,
@@ -44,6 +49,10 @@ public class DefaultJobEnqueuer implements JobEnqueuer {
     Objects.requireNonNull(jobType, "jobType must not be null");
     Objects.requireNonNull(tenantId, "tenantId must not be null");
     Objects.requireNonNull(orgId, "orgId must not be null");
+
+    if (isQueueDisabled(jobType)) {
+      return;
+    }
 
     // Pre-filter: skip if an active job already exists for this type + tenant
     var activeTenantIds = jobQueueRepository.findActiveTenantIdsByJobType(jobType);
@@ -82,6 +91,10 @@ public class DefaultJobEnqueuer implements JobEnqueuer {
   @Transactional
   public int fanOutToAllTenants(String jobType, @Nullable JsonNode payload, int priority) {
     Objects.requireNonNull(jobType, "jobType must not be null");
+
+    if (isQueueDisabled(jobType)) {
+      return 0;
+    }
 
     // Step 1: Pre-filter — find tenants that already have an active job of this type
     var activeTenantIds = jobQueueRepository.findActiveTenantIdsByJobType(jobType);
@@ -146,6 +159,31 @@ public class DefaultJobEnqueuer implements JobEnqueuer {
         skippedByDedup);
 
     return enqueued;
+  }
+
+  /**
+   * Guards against silent queue accumulation: {@code JobWorker} is gated on {@code
+   * kazi.job-queue.enabled}, so enqueuing while it is disabled would write rows that nothing ever
+   * drains. The bean stays available for programmatic use, but no-ops (with a WARN so operators
+   * notice a misconfiguration — e.g. dual-mode turned on without enabling the worker). See
+   * kazi-infra-review-scheduling-sharding.md finding S1.
+   *
+   * @return {@code true} if the queue is disabled and the caller should no-op
+   */
+  private boolean isQueueDisabled(String jobType) {
+    if (properties.isEnabled()) {
+      return false;
+    }
+    // WARN once per job type (schedulers can fire as often as every 30s); DEBUG thereafter.
+    if (warnedDisabledTypes.add(jobType)) {
+      log.warn(
+          "Job queue is disabled (kazi.job-queue.enabled=false) — skipping enqueue of type={}. "
+              + "No worker will drain these jobs; check the rollout configuration.",
+          jobType);
+    } else {
+      log.debug("Job queue disabled — skipping enqueue of type={}", jobType);
+    }
+    return true;
   }
 
   /**

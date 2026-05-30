@@ -1,5 +1,3 @@
-"use client";
-
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { CheckCircle, Clock, RefreshCw } from "lucide-react";
@@ -10,6 +8,7 @@ import { TemplateReadinessCard } from "@/components/setup/template-readiness-car
 import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBadge";
 import type { SetupStep, ContextGroup, TemplateReadinessItem } from "@/components/setup/types";
 import type { LifecycleStatus } from "@/lib/types/customer";
+import { cn } from "@/lib/utils";
 
 interface ClientOverviewTabProps {
   /** Section A: Client Readiness — SetupProgressCard props */
@@ -41,8 +40,6 @@ interface ClientOverviewTabProps {
     allocatedHours: number | null;
     consumedHours: number | null;
     remainingHours: number | null;
-    periodStart: string | null;
-    periodEnd: string | null;
   } | null;
 
   /** Section D: Template readiness — TemplateReadinessCard props */
@@ -128,7 +125,7 @@ export function ClientOverviewTab({
 
       {/* Section C: Financial Summary */}
       {hasFinancialSummary && (
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className={cn("grid gap-4", unbilledTimeData && activeRetainer && "md:grid-cols-2")}>
           {unbilledTimeData && (
             <Card data-testid="unbilled-time-card">
               <CardHeader>

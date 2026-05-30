@@ -62,8 +62,25 @@ describe("ClientOverviewTab", () => {
     expect(screen.getByText("Client Readiness")).toBeInTheDocument();
   });
 
-  // Test 2: Hides SetupProgressCard when setup data is null
-  it("hides SetupProgressCard when setup data is null", () => {
+  // Test 2: SetupProgressCard presence is driven by setupProgressData
+  it("shows SetupProgressCard with data and hides it without", () => {
+    // First: confirm it appears when data is provided
+    const { unmount } = render(
+      <ClientOverviewTab
+        {...baseProps}
+        setupProgressData={{
+          title: "Setup",
+          completionPercentage: 25,
+          overallComplete: false,
+          steps: [{ label: "Link project", complete: false }],
+          canManage: true,
+        }}
+      />
+    );
+    expect(screen.getByTestId("setup-progress-card")).toBeInTheDocument();
+    unmount();
+
+    // Then: confirm it is absent when setupProgressData is null but other content exists
     render(
       <ClientOverviewTab
         {...baseProps}
@@ -75,9 +92,7 @@ describe("ClientOverviewTab", () => {
         }}
       />
     );
-
     expect(screen.queryByTestId("setup-progress-card")).not.toBeInTheDocument();
-    // Should still render something (the financial card)
     expect(screen.getByTestId("unbilled-time-card")).toBeInTheDocument();
   });
 
@@ -98,8 +113,6 @@ describe("ClientOverviewTab", () => {
           allocatedHours: 40,
           consumedHours: 12,
           remainingHours: 28,
-          periodStart: "2026-05-01",
-          periodEnd: "2026-05-31",
         }}
       />
     );

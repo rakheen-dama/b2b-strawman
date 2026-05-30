@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 // --- Mocks (before component imports) ---
 
-// CustomerTabs/ProjectTabs now import useAuditTabVisible from
+// CustomerGroupedTabs/ProjectTabs now import useAuditTabVisible from
 // @/components/audit/audit-timeline-tab, which transitively pulls a
 // `server-only` module via the audit data layer. Stub it for jsdom.
 vi.mock("server-only", () => ({}));

@@ -52,7 +52,6 @@ import {
   fetchCustomerReadiness,
   fetchCustomerUnbilledSummary,
   fetchTemplateReadiness,
-  fetchCompletenessScore,
 } from "@/lib/api/setup-status";
 import { getCustomerChecklists, getChecklistTemplates } from "@/lib/checklist-api";
 import type { KycIntegrationStatus } from "@/lib/types";
@@ -333,9 +332,6 @@ export default async function CustomerDetailPage({
       fetchCustomerReadiness(id),
       fetchCustomerUnbilledSummary(id),
       fetchTemplateReadiness("CUSTOMER", id),
-      // completenessScore is fetched for future use (e.g. progress ring)
-      // but not consumed in the current render — kept for API parity.
-      fetchCompletenessScore(id),
     ]);
     customerReadiness = readinessRes;
     customerUnbilledSummary = unbilledRes;
@@ -499,27 +495,29 @@ export default async function CustomerDetailPage({
       </div>
 
       {/* Client header card */}
-      <ClientHeaderCard
-        customerId={id}
-        customerName={customer.name}
-        customerStatus={customer.status}
-        lifecycleStatus={customer.lifecycleStatus ?? null}
-        email={customer.email}
-        phone={customer.phone}
-        lifecycleStatusChangedAt={customer.lifecycleStatusChangedAt ?? null}
-        linkedProjectCount={linkedProjects.length}
-        kycSummary={kycSummary}
-        xeroConnected={xeroConnected}
-        slug={slug}
-        isAdmin={isAdmin}
-        isOwner={isOwner}
-        templates={customerTemplates}
-        aiProviderConfigured={isAiConfigured}
-        conflictCheckEnabled={enabledModules.includes("conflict_check")}
-        kycConfigured={kycStatus.configured}
-        kycVerified={kycSummary?.state === "verified"}
-        customer={customer}
-      />
+      <div id="lifecycle-transition">
+        <ClientHeaderCard
+          customerId={id}
+          customerName={customer.name}
+          customerStatus={customer.status}
+          lifecycleStatus={customer.lifecycleStatus ?? null}
+          email={customer.email}
+          phone={customer.phone}
+          lifecycleStatusChangedAt={customer.lifecycleStatusChangedAt ?? null}
+          linkedProjectCount={linkedProjects.length}
+          kycSummary={kycSummary}
+          xeroConnected={xeroConnected}
+          slug={slug}
+          isAdmin={isAdmin}
+          isOwner={isOwner}
+          templates={customerTemplates}
+          aiProviderConfigured={isAiConfigured}
+          conflictCheckEnabled={enabledModules.includes("conflict_check")}
+          kycConfigured={kycStatus.configured}
+          kycVerified={kycSummary?.state === "verified"}
+          customer={customer}
+        />
+      </div>
 
       {/* Anonymized Info Banner */}
       {customer.lifecycleStatus === "ANONYMIZED" && (
@@ -594,7 +592,7 @@ export default async function CustomerDetailPage({
               ) : null
             }
             unbilledTimeData={
-              customerUnbilledSummary && customerUnbilledSummary.entryCount > 0
+              isAdmin && customerUnbilledSummary && customerUnbilledSummary.entryCount > 0
                 ? {
                     amount: formatCurrencySafe(
                       customerUnbilledSummary.totalAmount,

@@ -10,9 +10,7 @@ import {
 } from "@/lib/api";
 import type {
   Customer,
-  CustomerStatus,
   CustomerReadiness,
-  CompletenessScore,
   UnbilledTimeSummary,
   TemplateReadiness,
   Document,
@@ -32,41 +30,24 @@ import type {
   ChecklistTemplateResponse,
 } from "@/lib/types";
 import type { SetupStep, ContextGroup } from "@/components/setup/types";
-import { MiniProgressRing } from "@/components/dashboard/mini-progress-ring";
 import { TerminologyText } from "@/components/terminology-text";
-import { TerminologyHeading } from "@/components/terminology-heading";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
-import { ArchiveCustomerDialog } from "@/components/customers/archive-customer-dialog";
-import { DataExportDialog } from "@/components/customers/data-export-dialog";
-import { AnonymizeCustomerDialog } from "@/components/customers/anonymize-customer-dialog";
-import { CustomerProjectsPanel } from "@/components/customers/customer-projects-panel";
-import { CustomerAddressBlock } from "@/components/customers/customer-address-block";
-import { CustomerContactCard } from "@/components/customers/customer-contact-card";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Briefcase } from "lucide-react";
 import { PROMOTED_CUSTOMER_SLUGS } from "@/lib/constants/promoted-field-slugs";
-import { ENTITY_TYPES } from "@/lib/constants/entity-types";
+import { CustomerProjectsPanel } from "@/components/customers/customer-projects-panel";
 import { CustomerDocumentsPanel } from "@/components/documents/customer-documents-panel";
-import { CustomerTabs } from "@/components/customers/customer-tabs";
+import { CustomerGroupedTabs } from "@/components/customers/customer-grouped-tabs";
+import { ClientHeaderCard } from "@/components/customers/client-header-card";
+import { ClientDetailsTab } from "@/components/customers/client-details-tab";
+import { ClientFieldsTab } from "@/components/customers/client-fields-tab";
+import { ClientTagsTab } from "@/components/customers/client-tags-tab";
+import { ClientOverviewTab } from "@/components/customers/client-overview-tab";
 import { CustomerAuditTab } from "./audit-tab";
 import { CustomerRatesTab } from "@/components/rates/customer-rates-tab";
 import { CustomerFinancialsTab } from "@/components/profitability/customer-financials-tab";
 import { CustomerInvoicesTab } from "@/components/customers/customer-invoices-tab";
-import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
-import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
-import { TagInput } from "@/components/tags/TagInput";
-import { GenerateDocumentDropdown } from "@/components/templates/GenerateDocumentDropdown";
 import { GeneratedDocumentsList } from "@/components/templates/GeneratedDocumentsList";
-import { SpecialistLauncherButton } from "@/components/assistant/specialist-launcher-button";
-import { SPECIALIST_STRINGS } from "@/components/assistant/specialist-strings";
-import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBadge";
-import { LifecycleTransitionDropdown } from "@/components/compliance/LifecycleTransitionDropdown";
 import { ChecklistInstancePanel } from "@/components/compliance/ChecklistInstancePanel";
-import { KycStatusBadge, type KycSummary } from "@/components/customers/kyc-status-badge";
-import { XeroContactBadge } from "@/components/customers/XeroContactBadge";
-import { SetupProgressCard, ActionCard, TemplateReadinessCard } from "@/components/setup";
+import type { KycSummary } from "@/components/customers/kyc-status-badge";
+import { ActionCard } from "@/components/setup";
 import {
   fetchCustomerReadiness,
   fetchCustomerUnbilledSummary,
@@ -89,26 +70,11 @@ import { PendingSuggestionsWidget } from "@/components/assistant/queue/pending-s
 import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { checkPrerequisites } from "@/lib/prerequisites";
 import type { PrerequisiteCheck } from "@/components/prerequisite/types";
-import { formatDate, formatCurrencySafe } from "@/lib/format";
+import { formatCurrencySafe } from "@/lib/format";
 import { FicaVerificationPanel } from "@/components/ai/fica-verification-panel";
 import { getAiProfile } from "@/lib/api/ai";
-import {
-  ArrowLeft,
-  Pencil,
-  Archive,
-  Clock,
-  UserCheck,
-  ArrowRight,
-  Download,
-  ShieldCheck,
-  Scale,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, UserCheck, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-
-const STATUS_BADGE: Record<CustomerStatus, { label: string; variant: "success" | "neutral" }> = {
-  ACTIVE: { label: "Active", variant: "success" },
-  ARCHIVED: { label: "Archived", variant: "neutral" },
-};
 
 export default async function CustomerDetailPage({
   params,
@@ -362,18 +328,18 @@ export default async function CustomerDetailPage({
   let customerReadiness: CustomerReadiness | null = null;
   let customerUnbilledSummary: UnbilledTimeSummary | null = null;
   let customerTemplateReadiness: TemplateReadiness[] = [];
-  let completenessScore: CompletenessScore | null = null;
   try {
-    const [readinessRes, unbilledRes, templateReadinessRes, completenessRes] = await Promise.all([
+    const [readinessRes, unbilledRes, templateReadinessRes] = await Promise.all([
       fetchCustomerReadiness(id),
       fetchCustomerUnbilledSummary(id),
       fetchTemplateReadiness("CUSTOMER", id),
+      // completenessScore is fetched for future use (e.g. progress ring)
+      // but not consumed in the current render — kept for API parity.
       fetchCompletenessScore(id),
     ]);
     customerReadiness = readinessRes;
     customerUnbilledSummary = unbilledRes;
     customerTemplateReadiness = templateReadinessRes;
-    completenessScore = completenessRes;
   } catch {
     // Non-fatal: setup guidance cards will not render if fetch fails
   }
@@ -504,10 +470,23 @@ export default async function CustomerDetailPage({
           : null
       : null;
 
-  const statusBadge = STATUS_BADGE[customer.status];
+  // Pre-compute promoted field values for ClientFieldsTab
+  const promotedFieldValues: Record<string, unknown> = {};
+  if (customer.entityType) {
+    promotedFieldValues["acct_entity_type"] = customer.entityType;
+    promotedFieldValues["client_type"] = customer.entityType;
+  }
+  if (customer.taxNumber) {
+    promotedFieldValues["tax_number"] = customer.taxNumber;
+    promotedFieldValues["vat_number"] = customer.taxNumber;
+  }
+  if (customer.registrationNumber) {
+    promotedFieldValues["acct_company_registration_number"] = customer.registrationNumber;
+    promotedFieldValues["registration_number"] = customer.registrationNumber;
+  }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Back link */}
       <div>
         <Link
@@ -519,161 +498,28 @@ export default async function CustomerDetailPage({
         </Link>
       </div>
 
-      {/* Customer Header */}
-      <div className="flex items-start justify-between gap-4">
-        <div className="min-w-0">
-          <div className="flex items-center gap-3">
-            <h1 className="font-display text-2xl text-slate-950 dark:text-slate-50">
-              {customer.name}
-            </h1>
-            {completenessScore && completenessScore.totalRequired > 0 && (
-              <MiniProgressRing value={completenessScore.percentage} size={40} />
-            )}
-            <Badge variant={statusBadge.variant}>{statusBadge.label}</Badge>
-            {customer.lifecycleStatus && <LifecycleStatusBadge status={customer.lifecycleStatus} />}
-            {kycSummary && <KycStatusBadge summary={kycSummary} />}
-            {xeroConnected && <XeroContactBadge customerId={id} slug={slug} />}
-          </div>
-          <p className="mt-1 text-slate-600 dark:text-slate-400">{customer.email}</p>
-          {customer.lifecycleStatusChangedAt && (
-            <p className="mt-1 text-sm text-slate-500">
-              Since {formatDate(customer.lifecycleStatusChangedAt)}
-            </p>
-          )}
-          <p className="mt-3 text-sm text-slate-400 dark:text-slate-600">
-            {customer.phone && <>{customer.phone} &middot; </>}
-            {customer.idNumber && <>{customer.idNumber} &middot; </>}
-            Created {formatDate(customer.createdAt)} &middot;{" "}
-            <TerminologyHeading
-              term="projects"
-              singularTerm="project"
-              count={linkedProjects.length}
-            />
-          </p>
-          {customer.notes && (
-            <p className="mt-3 text-sm text-slate-600 dark:text-slate-400">{customer.notes}</p>
-          )}
-        </div>
-
-        {isAdmin && (
-          <div id="lifecycle-transition" className="flex shrink-0 gap-2">
-            <SpecialistLauncherButton
-              specialistId="INBOX"
-              surface="CUSTOMER_DETAIL"
-              contextRef={{ entityType: "customer", entityId: id }}
-              initialPrompt="Summarise recent customer activity."
-              ctaLabel={SPECIALIST_STRINGS.inboxCustomerSummariseLabel}
-            />
-            {activationBlockers.length > 0 && (
-              <SpecialistLauncherButton
-                specialistId="INTAKE"
-                surface="CUSTOMER_DETAIL_PREREQ"
-                contextRef={{ entityType: "customer", entityId: id }}
-                initialPrompt="Fill in missing customer fields from uploaded documents."
-                ctaLabel={SPECIALIST_STRINGS.intakePrereqLabel}
-              />
-            )}
-            {customer.status === "ACTIVE" &&
-              customer.lifecycleStatus &&
-              customer.lifecycleStatus !== "ANONYMIZED" && (
-                <LifecycleTransitionDropdown
-                  currentStatus={customer.lifecycleStatus}
-                  customerId={id}
-                  slug={slug}
-                />
-              )}
-            {customer.lifecycleStatus !== "ANONYMIZED" &&
-              enabledModules.includes("conflict_check") &&
-              (() => {
-                const conflictCheckParams = new URLSearchParams();
-                conflictCheckParams.set("customerId", customer.id);
-                if (customer.name) {
-                  conflictCheckParams.set("checkedName", customer.name);
-                }
-                if (customer.idNumber) {
-                  conflictCheckParams.set("checkedIdNumber", customer.idNumber);
-                }
-                return (
-                  <Button asChild variant="outline" size="sm">
-                    <Link
-                      href={`/org/${slug}/conflict-check?${conflictCheckParams.toString()}`}
-                      data-testid="run-conflict-check-link"
-                    >
-                      <Scale className="mr-1.5 size-4" />
-                      <TerminologyText template="Run Conflict Check" />
-                    </Link>
-                  </Button>
-                );
-              })()}
-            {customerTemplates.length > 0 && customer.lifecycleStatus !== "ANONYMIZED" && (
-              <GenerateDocumentDropdown
-                templates={customerTemplates}
-                entityId={id}
-                entityType="CUSTOMER"
-                slug={slug}
-                customerId={id}
-                isAdmin={isAdmin}
-              />
-            )}
-            {kycStatus.configured &&
-              kycSummary?.state !== "verified" &&
-              customer.lifecycleStatus !== "ANONYMIZED" && (
-                <Button asChild variant="outline" size="sm">
-                  <Link href={`/org/${slug}/customers/${id}?tab=onboarding`}>
-                    <ShieldCheck className="mr-1.5 size-4" />
-                    Verify KYC
-                  </Link>
-                </Button>
-              )}
-            {customer.lifecycleStatus !== "ANONYMIZED" && (
-              <DataExportDialog customerId={customer.id}>
-                <Button variant="outline" size="sm">
-                  <Download className="mr-1.5 size-4" />
-                  Export Data
-                </Button>
-              </DataExportDialog>
-            )}
-            {isOwner && customer.lifecycleStatus !== "ANONYMIZED" && (
-              <AnonymizeCustomerDialog
-                slug={slug}
-                customerId={customer.id}
-                customerName={customer.name}
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
-                >
-                  <ShieldCheck className="mr-1.5 size-4" />
-                  Anonymize
-                </Button>
-              </AnonymizeCustomerDialog>
-            )}
-            {customer.lifecycleStatus !== "ANONYMIZED" && (
-              <EditCustomerDialog
-                customer={customer}
-                slug={slug}
-                triggerLabel="Edit"
-                triggerVariant="outline"
-                triggerSize="sm"
-                triggerIcon={<Pencil className="mr-1.5 size-4" />}
-              />
-            )}
-            {customer.status === "ACTIVE" && customer.lifecycleStatus !== "ANONYMIZED" && (
-              <ArchiveCustomerDialog
-                slug={slug}
-                customerId={customer.id}
-                customerName={customer.name}
-                triggerLabel="Archive"
-                triggerVariant="ghost"
-                triggerSize="sm"
-                triggerClassName="text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-950 dark:hover:text-red-300"
-                triggerIcon={<Archive className="mr-1.5 size-4" />}
-              />
-            )}
-          </div>
-        )}
-      </div>
+      {/* Client header card */}
+      <ClientHeaderCard
+        customerId={id}
+        customerName={customer.name}
+        customerStatus={customer.status}
+        lifecycleStatus={customer.lifecycleStatus ?? null}
+        email={customer.email}
+        phone={customer.phone}
+        lifecycleStatusChangedAt={customer.lifecycleStatusChangedAt ?? null}
+        linkedProjectCount={linkedProjects.length}
+        kycSummary={kycSummary}
+        xeroConnected={xeroConnected}
+        slug={slug}
+        isAdmin={isAdmin}
+        isOwner={isOwner}
+        templates={customerTemplates}
+        aiProviderConfigured={isAiConfigured}
+        conflictCheckEnabled={enabledModules.includes("conflict_check")}
+        kycConfigured={kycStatus.configured}
+        kycVerified={kycSummary?.state === "verified"}
+        customer={customer}
+      />
 
       {/* Anonymized Info Banner */}
       {customer.lifecycleStatus === "ANONYMIZED" && (
@@ -689,186 +535,117 @@ export default async function CustomerDetailPage({
         </div>
       )}
 
-      {/* Promoted fields — Address, Contact, Business Details (Epic 463) */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <CustomerAddressBlock customer={customer} />
-        <CustomerContactCard customer={customer} />
-      </div>
-      {(customer.registrationNumber ||
-        customer.taxNumber ||
-        customer.entityType ||
-        customer.financialYearEnd) && (
-        <Card data-testid="customer-business-details">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <Briefcase className="size-5 text-slate-400" />
-              <CardTitle>Business Details</CardTitle>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <dl className="grid gap-4 text-sm sm:grid-cols-2">
-              {customer.registrationNumber && (
-                <div>
-                  <dt className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
-                    Registration Number
-                  </dt>
-                  <dd className="mt-1 text-slate-700 dark:text-slate-300">
-                    {customer.registrationNumber}
-                  </dd>
-                </div>
-              )}
-              {customer.taxNumber && (
-                <div>
-                  <dt className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
-                    Tax Number
-                  </dt>
-                  <dd className="mt-1 text-slate-700 dark:text-slate-300">{customer.taxNumber}</dd>
-                </div>
-              )}
-              {customer.entityType && (
-                <div>
-                  <dt className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
-                    Entity Type
-                  </dt>
-                  <dd className="mt-1 text-slate-700 dark:text-slate-300">
-                    {ENTITY_TYPES.find((e) => e.value === customer.entityType)?.label ??
-                      customer.entityType}
-                  </dd>
-                </div>
-              )}
-              {customer.financialYearEnd && (
-                <div>
-                  <dt className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
-                    Financial Year End
-                  </dt>
-                  <dd className="mt-1 text-slate-700 dark:text-slate-300">
-                    {/* Append T00:00:00 so the date is parsed in the local
-                        timezone, not UTC — otherwise west-of-UTC users see
-                        the previous day. */}
-                    {formatDate(new Date(customer.financialYearEnd + "T00:00:00"))}
-                  </dd>
-                </div>
-              )}
-            </dl>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Custom Fields */}
-      <FieldGroupSelector
-        entityType="CUSTOMER"
-        entityId={id}
-        appliedFieldGroups={customer.appliedFieldGroups ?? []}
-        slug={slug}
-        canManage={isAdmin}
-        allGroups={customerFieldGroups}
-      />
-      <CustomFieldSection
-        entityType="CUSTOMER"
-        entityId={id}
-        customFields={customer.customFields ?? {}}
-        appliedFieldGroups={customer.appliedFieldGroups ?? []}
-        editable={isAdmin}
-        slug={slug}
-        fieldDefinitions={customerFieldDefs}
-        fieldGroups={customerFieldGroups}
-        groupMembers={customerGroupMembers}
-        promotedFieldValues={(() => {
-          // Inject promoted field slug values so that visibility conditions
-          // referencing promoted slugs (e.g. acct_entity_type → TRUST) can
-          // be evaluated correctly. See OBS-4006.
-          const pv: Record<string, unknown> = {};
-          if (customer.entityType) {
-            pv["acct_entity_type"] = customer.entityType;
-            pv["client_type"] = customer.entityType;
-          }
-          if (customer.taxNumber) {
-            pv["tax_number"] = customer.taxNumber;
-            pv["vat_number"] = customer.taxNumber;
-          }
-          if (customer.registrationNumber) {
-            pv["acct_company_registration_number"] = customer.registrationNumber;
-            pv["registration_number"] = customer.registrationNumber;
-          }
-          return pv;
-        })()}
-      />
-
-      {/* Tags */}
-      <div className="space-y-2">
-        <p className="text-xs font-medium tracking-wide text-slate-500 uppercase dark:text-slate-400">
-          Tags
-        </p>
-        <TagInput
-          entityType="CUSTOMER"
-          entityId={id}
-          tags={customerTags}
-          allTags={allTags}
-          editable={isAdmin}
-          canInlineCreate={isAdmin}
-          slug={slug}
-        />
-      </div>
-
-      {/* Trust Balance — conditional on trust_accounting module */}
-      <TrustBalanceCard customerId={id} slug={slug} />
-
-      {/* Setup Guidance Cards — Epic 113A */}
-      {customerReadiness && (
-        <SetupProgressCard
-          title={<TerminologyText template="{Client} Readiness" />}
-          completionPercentage={customerReadinessPercentage}
-          overallComplete={customerReadinessComplete}
-          steps={customerSetupSteps}
-          canManage={isAdmin}
-          activationBlockers={activationBlockers.length > 0 ? activationBlockers : undefined}
-          contextGroups={contextGroups.length > 0 ? contextGroups : undefined}
-        />
-      )}
-
-      {customerUnbilledSummary && customerUnbilledSummary.entryCount > 0 && (
-        <ActionCard
-          icon={Clock}
-          title="Unbilled Time"
-          description={`${formatCurrencySafe(customerUnbilledSummary.totalAmount, customerUnbilledSummary.currency)} across ${customerUnbilledSummary.totalHours.toFixed(1)} hours`}
-          primaryAction={
-            isAdmin
-              ? {
-                  label: <TerminologyText template="Create {Invoice}" />,
-                  href: `?tab=invoices`,
-                }
-              : undefined
-          }
-          secondaryAction={{
-            label: "View Time",
-            href: `?tab=time`,
-          }}
-          variant="accent"
-        />
-      )}
-
-      {customerTemplateReadiness.length > 0 && (
-        <TemplateReadinessCard
-          templates={customerTemplateReadiness}
-          baseHref={`/org/${slug}/customers/${id}`}
-        />
-      )}
-
-      {lifecycleActionPrompt && (
-        <ActionCard
-          icon={lifecycleActionPrompt.icon}
-          title={lifecycleActionPrompt.title}
-          description={lifecycleActionPrompt.description}
-          primaryAction={{
-            label: lifecycleActionPrompt.actionLabel,
-            href: `#lifecycle-transition`,
-          }}
-          variant="default"
-        />
-      )}
-
-      {/* Tabbed Content */}
-      <CustomerTabs
+      {/* Grouped Tabs — all panels as ReactNode props */}
+      <CustomerGroupedTabs
+        detailsPanel={<ClientDetailsTab customer={customer} />}
+        fieldsPanel={
+          <ClientFieldsTab
+            entityId={id}
+            appliedFieldGroups={customer.appliedFieldGroups ?? []}
+            slug={slug}
+            canManage={isAdmin}
+            allGroups={customerFieldGroups}
+            customFields={customer.customFields ?? {}}
+            editable={isAdmin}
+            fieldDefinitions={customerFieldDefs}
+            fieldGroups={customerFieldGroups}
+            groupMembers={customerGroupMembers}
+            promotedFieldValues={promotedFieldValues}
+          />
+        }
+        tagsPanel={
+          <ClientTagsTab
+            entityId={id}
+            tags={customerTags}
+            allTags={allTags}
+            editable={isAdmin}
+            canInlineCreate={isAdmin}
+            slug={slug}
+          />
+        }
+        overviewPanel={
+          <ClientOverviewTab
+            setupProgressData={
+              customerReadiness
+                ? {
+                    title: <TerminologyText template="{Client} Readiness" />,
+                    completionPercentage: customerReadinessPercentage,
+                    overallComplete: customerReadinessComplete,
+                    steps: customerSetupSteps,
+                    canManage: isAdmin,
+                    activationBlockers:
+                      activationBlockers.length > 0 ? activationBlockers : undefined,
+                    contextGroups: contextGroups.length > 0 ? contextGroups : undefined,
+                  }
+                : null
+            }
+            lifecyclePrompt={
+              lifecycleActionPrompt ? (
+                <ActionCard
+                  icon={lifecycleActionPrompt.icon}
+                  title={lifecycleActionPrompt.title}
+                  description={lifecycleActionPrompt.description}
+                  primaryAction={{
+                    label: lifecycleActionPrompt.actionLabel,
+                    href: "#lifecycle-transition",
+                  }}
+                  variant="default"
+                />
+              ) : null
+            }
+            unbilledTimeData={
+              customerUnbilledSummary && customerUnbilledSummary.entryCount > 0
+                ? {
+                    amount: formatCurrencySafe(
+                      customerUnbilledSummary.totalAmount,
+                      customerUnbilledSummary.currency
+                    ),
+                    hours: customerUnbilledSummary.totalHours.toFixed(1),
+                    createInvoiceHref: "?tab=invoices",
+                    viewTimeHref: "?tab=time",
+                  }
+                : null
+            }
+            activeRetainer={
+              activeRetainer
+                ? {
+                    name: activeRetainer.name,
+                    status: activeRetainer.status,
+                    allocatedHours: activeRetainer.currentPeriod?.allocatedHours ?? activeRetainer.allocatedHours ?? null,
+                    consumedHours: activeRetainer.currentPeriod?.consumedHours ?? null,
+                    remainingHours: activeRetainer.currentPeriod?.remainingHours ?? null,
+                  }
+                : null
+            }
+            templateReadiness={
+              customerTemplateReadiness.length > 0
+                ? {
+                    templates: customerTemplateReadiness,
+                    baseHref: `/org/${slug}/customers/${id}`,
+                  }
+                : null
+            }
+            pendingSuggestions={
+              <PendingSuggestionsWidget contextEntityType="customer" contextEntityId={id} />
+            }
+            ficaPanel={
+              caps.capabilities.includes("AI_EXECUTE") &&
+              customer.lifecycleStatus !== "ANONYMIZED" ? (
+                <FicaVerificationPanel
+                  customerId={id}
+                  slug={slug}
+                  hasDocuments={hasDocuments}
+                  hasPendingChecklistItems={hasPendingChecklistItems}
+                  isAiConfigured={isAiConfigured}
+                  canReviewGates={caps.capabilities.includes("AI_REVIEW")}
+                />
+              ) : null
+            }
+            customerName={customer.name}
+            lifecycleStatus={customer.lifecycleStatus ?? null}
+            linkedProjectCount={linkedProjects.length}
+          />
+        }
         projectsPanel={
           <CustomerProjectsPanel
             projects={linkedProjects}
@@ -963,21 +740,6 @@ export default async function CustomerDetailPage({
           ) : undefined
         }
       />
-
-      {/* Pending AI Suggestions */}
-      <PendingSuggestionsWidget contextEntityType="customer" contextEntityId={id} />
-
-      {/* FICA AI Verification Panel */}
-      {caps.capabilities.includes("AI_EXECUTE") && customer.lifecycleStatus !== "ANONYMIZED" && (
-        <FicaVerificationPanel
-          customerId={id}
-          slug={slug}
-          hasDocuments={hasDocuments}
-          hasPendingChecklistItems={hasPendingChecklistItems}
-          isAiConfigured={isAiConfigured}
-          canReviewGates={caps.capabilities.includes("AI_REVIEW")}
-        />
-      )}
     </div>
   );
 }

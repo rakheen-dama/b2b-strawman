@@ -9,6 +9,8 @@ import { Layers, Plus, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
+import { TerminologyHeading } from "@/components/terminology-heading";
+import { TerminologyText } from "@/components/terminology-text";
 
 export default async function BillingRunsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -53,7 +55,7 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ sl
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <h1 className="font-display text-3xl text-slate-950 dark:text-slate-50">Invoices</h1>
+          <TerminologyHeading term="Invoices" />
         </div>
         <Button asChild size="sm">
           <Link href={`/org/${slug}/invoices/billing-runs/new`}>
@@ -69,7 +71,7 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ sl
           href={`/org/${slug}/invoices`}
           className="border-b-2 border-transparent px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300"
         >
-          Invoices
+          <TerminologyText template="{Invoices}" />
         </Link>
         <Link
           href={`/org/${slug}/invoices/billing-runs`}
@@ -103,7 +105,7 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ sl
         <EmptyState
           icon={Layers}
           title="No billing runs"
-          description="Create a billing run to generate invoices for multiple customers at once."
+          description={<TerminologyText template="Create a billing run to generate {invoices} for multiple {customers} at once." />}
           actionLabel="New Billing Run"
           actionHref={`/org/${slug}/invoices/billing-runs/new`}
         />

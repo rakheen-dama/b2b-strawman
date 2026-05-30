@@ -35,7 +35,7 @@ import { PROMOTED_CUSTOMER_SLUGS } from "@/lib/constants/promoted-field-slugs";
 import { CustomerProjectsPanel } from "@/components/customers/customer-projects-panel";
 import { CustomerDocumentsPanel } from "@/components/documents/customer-documents-panel";
 import { CustomerGroupedTabs } from "@/components/customers/customer-grouped-tabs";
-import { ClientHeaderCard } from "@/components/customers/client-header-card";
+import { ClientHeaderCardWithLifecycle } from "@/components/customers/client-header-card-with-lifecycle";
 import { ClientDetailsTab } from "@/components/customers/client-details-tab";
 import { ClientFieldsTab } from "@/components/customers/client-fields-tab";
 import { ClientTagsTab } from "@/components/customers/client-tags-tab";
@@ -451,15 +451,23 @@ export default async function CustomerDetailPage({
             targetStatus: "ONBOARDING",
           }
         : customer.lifecycleStatus === "ONBOARDING" &&
-            customerReadiness?.checklistProgress !== null &&
-            customerReadiness?.checklistProgress?.completed ===
-              customerReadiness?.checklistProgress?.total &&
-            (customerReadiness?.checklistProgress?.total ?? 0) > 0
+            (customerReadiness?.checklistProgress == null ||
+              customerReadiness.checklistProgress.total === 0 ||
+              (customerReadiness.checklistProgress.completed ===
+                customerReadiness.checklistProgress.total &&
+                customerReadiness.checklistProgress.total > 0))
           ? {
               icon: UserCheck,
-              title: "All items verified — Activate Customer",
+              title:
+                customerReadiness?.checklistProgress != null &&
+                customerReadiness.checklistProgress.total > 0
+                  ? "All items verified — Activate Customer"
+                  : "Ready to activate",
               description:
-                "Onboarding checklist is complete. This customer is ready to be activated.",
+                customerReadiness?.checklistProgress != null &&
+                customerReadiness.checklistProgress.total > 0
+                  ? "Onboarding checklist is complete. This customer is ready to be activated."
+                  : "No onboarding checklist assigned. This customer is ready to be activated.",
               actionLabel: "Activate Customer",
               targetStatus: "ACTIVE",
             }
@@ -496,7 +504,7 @@ export default async function CustomerDetailPage({
 
       {/* Client header card */}
       <div id="lifecycle-transition">
-        <ClientHeaderCard
+        <ClientHeaderCardWithLifecycle
           customerId={id}
           customerName={customer.name}
           customerStatus={customer.status}
@@ -516,6 +524,7 @@ export default async function CustomerDetailPage({
           kycConfigured={kycStatus.configured}
           kycVerified={kycSummary?.state === "verified"}
           customer={customer}
+          targetLifecycleStatus={lifecycleActionPrompt?.targetStatus ?? null}
         />
       </div>
 

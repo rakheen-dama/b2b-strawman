@@ -192,7 +192,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 **Actor**: Bob (Admin, `bob@example.com`).
 
 - [ ] **20.1** Log in as Bob. Pick a known customer (one whose matter Alice created on Day 0).
-- [ ] **20.2** Navigate to the customer detail page (`/org/acme-corp/customers/{id}`) → open the **Audit** tab.
+- [ ] **20.2** Navigate to the customer detail page (`/org/acme-corp/customers/{id}`) → click **Activity** tab group (`tab-group-activity`) to access the Audit timeline.
 - [ ] **20.3** Verify the tab renders an event list scoped to that customer's entity tree (matters, documents, notes touching the customer).
 - [ ] **20.4** Cross-check: every event visible here is for `entityType in {customer, matter, matter_closure, document, ...}` AND its entity ID resolves to (or is owned by) the current customer. No events from unrelated customers leak in.
 - [ ] **20.5** Confirm the activity from Day 0 → Day 20 for this customer is present: matter creation (Day 0), trust deposit (Day 0, legal-za), trust approval (Day 10, legal-za), closure override (Day 15).
@@ -204,7 +204,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] Day-0-to-Day-20 activity present and ordered chronologically (newest-first or oldest-first per UI convention).
 
 **Audit assertion**
-- `data-testid="customer-audit-tab"` (or analogous) visible.
+- Audit content visible under the **Activity** tab group (`tab-group-activity`). Note: On the customer detail page, Activity is a single-tab group — clicking `tab-group-activity` directly shows the audit timeline.
 - Each row's `data-entity-id` (where exposed) maps to the current customer subtree.
 
 ---

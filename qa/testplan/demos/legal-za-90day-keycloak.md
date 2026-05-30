@@ -155,7 +155,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **0.47** Verify `legal-za-customer` field group is present with fields including: `client_type`, `id_passport_number`, `physical_address`, `registration_number`, `beneficial_owners`
 - [ ] **0.48** Verify `legal-za-project` (matter) field group is present with fields including: `matter_type`, `case_number`, `court_name`, `opposing_party`
 - [ ] **0.49** **Field promotion checkpoint (customer)**: on a blank **New Client** dialog (open but don't submit), verify these promoted slugs render as native first-class inputs INLINE (not inside a generic "Other Fields" section): `client_type`, `physical_address`, `registration_number`, `tax_number`, `phone`, `primary_contact_name`, `primary_contact_email`
-- [ ] **0.50** **Field promotion checkpoint (customer negative)**: verify these promoted slugs do NOT appear again inside the CustomFieldSection sidebar: same list as 0.49
+- [ ] **0.50** **Field promotion checkpoint (customer negative)**: verify these promoted slugs do NOT appear again inside the CustomFieldSection on the **Fields** tab (`tab-group-details` → `tab-item-fields`): same list as 0.49
 - [ ] **0.51** **Field promotion checkpoint (matter)**: on a blank **New Matter** dialog, verify `matter_type` renders as a native inline form input (promoted project slug)
 - [ ] **0.52** Cancel both dialogs without saving
 
@@ -215,19 +215,19 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **1.7** Fill standard fields: Name = **Sipho Dlamini**, Email = `sipho.dlamini@email.co.za`, Phone = **+27-82-555-0101**
 - [ ] **1.8** Fill promoted fields (verify inline rendering): `client_type` = **INDIVIDUAL**, `physical_address` = "42 Commissioner St, Johannesburg, 2001", `id_passport_number` = "8501015800083"
 - [ ] **1.9** Save → verify client appears in list with status **PROSPECT**
-- [ ] **1.10** Click into client detail → verify lifecycle badge shows **PROSPECT**
-- [ ] **1.11** Verify promoted fields render inline at the top of the detail page, NOT in the sidebar CustomFieldSection
+- [ ] **1.10** Click into client detail → verify lifecycle badge shows **PROSPECT** in the header card (`data-testid="client-header-card"`)
+- [ ] **1.11** Navigate to **Details** tab group → **Details** sub-tab (`tab-group-details` → `tab-item-details`). Verify promoted fields render on the Details tab, NOT in the CustomFieldSection on the Fields tab
 
 ### Day 2 — FICA/KYC onboarding
 
-- [ ] **2.1** On Sipho's client detail page, transition to **ONBOARDING** → verify badge updates
-- [ ] **2.2** Navigate to Onboarding/Compliance tab → verify FICA checklist is auto-instantiated (from `fica-kyc-za` pack)
+- [ ] **2.1** On Sipho's client detail page, click the smart primary action button **"Start Onboarding"** in the header card → verify badge updates
+- [ ] **2.2** Navigate to **Compliance** tab group → **Onboarding** sub-tab (`tab-group-compliance` → `tab-item-onboarding`) → verify FICA checklist is auto-instantiated (from `fica-kyc-za` pack)
 - [ ] **2.3** Verify checklist contains at minimum: "Certified ID Copy", "Proof of Address" (utility bill), "Source of Funds"
 - [ ] **2.4** Mark "Certified ID Copy" ✓ → add note "Verified against home affairs ID"
 - [ ] **2.5** Mark "Proof of Address" ✓ → upload a test PDF (any small PDF)
 - [ ] **2.6** Mark "Source of Funds" ✓ → add note "Employment income, verified via payslip"
 - [ ] **2.7** Verify checklist shows 100% complete → customer auto-transitions to **ACTIVE**
-- [ ] **2.8** Verify ACTIVE badge appears on client detail page
+- [ ] **2.8** Verify ACTIVE badge appears on client detail header card (`data-testid="client-header-card"`)
 - [ ] **2.9** Navigate to audit log for this client → verify FICA completion events are recorded
 
 ### Day 3 — Matter creation from template

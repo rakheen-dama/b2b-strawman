@@ -236,12 +236,12 @@ Actor: **Bob Ndlovu** (Admin — log in via Keycloak)
   - `id_passport_number` = `8501015800083`
   - `physical_address` = `42 Commissioner St, Johannesburg, 2001`
 - [ ] **3.9** Save → client appears in client list with status **PROSPECT**
-- [ ] **3.10** Open client detail → lifecycle badge = **PROSPECT**
+- [ ] **3.10** Open client detail → lifecycle badge = **PROSPECT** (visible in header card, `data-testid="client-header-card"`)
 
 ### Phase C — FICA / KYC onboarding
 
 - [ ] **3.11** Click **Transition to Onboarding** → badge updates to **ONBOARDING**
-- [ ] **3.12** Open the **Onboarding** (or Compliance / Checklist) tab → FICA checklist auto-populated (legal-za)
+- [ ] **3.12** Navigate to **Compliance** tab group → **Onboarding** sub-tab (`tab-group-compliance` → `tab-item-onboarding`) → FICA checklist auto-populated (legal-za)
 - [ ] **3.13** Mark items: "Certified ID Copy" ✓, "Proof of Address" ✓, "FICA declaration signed" ✓ (whatever the pack ships)
 - [ ] **3.14** Complete remaining required FICA items
 - [ ] **3.15** After last item ticked → client lifecycle auto-transitions to **ACTIVE**
@@ -480,6 +480,9 @@ Actor: **Thandi Mathebula** (Owner)
 
 - [ ] **6.13** From the backend log terminal, search for `ERROR` or stack traces during the test session — none expected
 - [ ] **6.14** Connect to Postgres and verify entity counts in the new tenant schema (replace `<schema>` with the schema for Mathebula & Partners — find via `SELECT * FROM public.org_schema_mapping;`):
+
+  > **Phase 75 note**: The `org_schema_mapping` table now includes a `shard_id` column. Verify that `shard_id` is `primary` for the new tenant.
+
   ```
   docker exec -it b2b-postgres psql -U postgres -d app -c "SET search_path = '<schema>'; SELECT 'customers' AS t, COUNT(*) FROM customers UNION ALL SELECT 'projects', COUNT(*) FROM projects UNION ALL SELECT 'tasks', COUNT(*) FROM tasks UNION ALL SELECT 'time_entries', COUNT(*) FROM time_entries UNION ALL SELECT 'proposals', COUNT(*) FROM proposals;"
   ```

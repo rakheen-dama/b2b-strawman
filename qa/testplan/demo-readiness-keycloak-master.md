@@ -196,8 +196,8 @@ Every lifecycle script enforces these three checkpoints explicitly. Quick refere
 - **Fail**: Any "Upgrade to Pro", "Starter plan", plan picker, or member-limit-enforced gate anywhere in the product.
 
 ### Field promotion
-- **Where**: Customer/Client create/edit dialog, Customer detail page, Project/Matter/Engagement create/edit dialog, Project detail page, Task create dialog, Invoice/Fee Note create dialog
-- **Pass**: Each promoted slug (see `frontend/lib/constants/promoted-field-slugs.ts` for the list) renders as a **first-class native form input** on the create/edit dialog and as an inline column or field on the detail page. **Promoted slugs do NOT appear again inside the `CustomFieldSection` on the Fields tab.** Non-promoted custom fields remain on the Fields tab (under the Details tab group).
+- **Where**: Customer/Client create/edit dialog, Customer detail page (Details tab), Project/Matter/Engagement create/edit dialog, Project detail page, Task create dialog, Invoice/Fee Note create dialog
+- **Pass**: Each promoted slug (see `frontend/lib/constants/promoted-field-slugs.ts` for the list) renders as a **first-class native form input** on the create/edit dialog and as an inline field on the **Details tab** (`tab-group-details` → `tab-item-details`) of the detail page. **Promoted slugs do NOT appear again inside the `CustomFieldSection` on the Fields tab** (`tab-group-details` → `tab-item-fields`). Non-promoted custom fields remain on the Fields tab (under the Details tab group).
 - **Fail**: Duplicate rendering (promoted slug appears both inline AND in CustomFieldSection), or promoted slug buried inside "Other Fields" instead of inline, or promoted slug missing entirely from the dialog.
 
 ### Progressive disclosure

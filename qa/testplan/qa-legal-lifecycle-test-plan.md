@@ -69,12 +69,12 @@ Actor: **Bob** (Associate / Admin)
 - [ ] **1.6** Fill: Name = **Sipho Ndlovu**, Email = **sipho.ndlovu@email.co.za**, Phone = **+27-82-555-0101**
 - [ ] **1.7** Fill custom fields: client_type = **INDIVIDUAL**, id_passport_number = **8501015800083**, physical_address = "42 Commissioner St, Johannesburg, 2001"
 - [ ] **1.8** Save → verify client appears in list with status **PROSPECT**
-- [ ] **1.9** Click into client detail → verify lifecycle badge shows **PROSPECT**
+- [ ] **1.9** Click into client detail → verify lifecycle badge shows **PROSPECT** in the header card (`data-testid="client-header-card"`)
 
 ### FICA/KYC onboarding
 
 - [ ] **1.10** Transition Sipho to **ONBOARDING** → verify badge updates
-- [ ] **1.11** Navigate to Onboarding/Compliance tab → verify FICA checklist auto-instantiated
+- [ ] **1.11** Navigate to **Compliance** tab group → **Onboarding** sub-tab (`tab-group-compliance` → `tab-item-onboarding`) → verify FICA checklist auto-instantiated
 - [ ] **1.12** Mark checklist items: "Certified ID Copy" ✓, "Proof of Address" ✓
 - [ ] **1.13** If KYC verification button is available (Phase 61), click to verify ID — expect no-op in E2E stack but verify UI flow
 - [ ] **1.14** Complete all remaining FICA checklist items
@@ -122,7 +122,7 @@ Actor: **Alice** (Senior Partner)
 - [ ] **2.5** Create matter from **Commercial template**: "Shareholder Agreement — Apex Holdings"
 - [ ] **2.6** Set: matter_type = COMMERCIAL, estimated_value = R2,500,000
 - [ ] **2.7** Verify 9 action items from commercial template
-- [ ] **2.8** 📸 **Screenshot**: Client detail with legal custom fields populated
+- [ ] **2.8** 📸 **Screenshot**: Client detail with legal custom fields populated (navigate to **Details** tab group → **Details** sub-tab to see custom fields on the detail page)
 
 ### Moroka Family Trust (trust, estates) — Actor: Alice
 
@@ -443,7 +443,7 @@ Actor: **Alice** (billing)
 ### Multi-matter per client — Actor: Alice
 
 - [ ] **75.1** Create new matter for Sipho: **"Road Accident Fund Claim — Sipho Ndlovu (Second Incident)"** using Litigation template
-- [ ] **75.2** Verify Sipho now has **2 matters** — both visible on client detail
+- [ ] **75.2** Verify Sipho now has **2 matters** — open customer detail → **Work** tab group → **Projects** sub-tab (`tab-group-work` → `tab-item-projects`) → both visible
 
 ### Adverse party registry
 
@@ -541,7 +541,7 @@ Actor: **Alice** (full review)
 
 ### Document generation
 
-- [ ] **90.25** Open Sipho client → find **Generate Document** button/dropdown
+- [ ] **90.25** Open Sipho client detail → click overflow menu (`data-testid="client-overflow-trigger"`) → click **Generate Document**
 - [ ] **90.26** Select a legal template → click **Preview** → verify HTML renders with Sipho's details
 - [ ] **90.27** Generate PDF if available → verify download
 

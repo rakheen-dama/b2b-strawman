@@ -15,7 +15,7 @@ The current layout has 7 action buttons sprawled horizontally, a metadata wall p
 | 556 | Shared Component Extraction | Frontend | -- | M | 556A, 556B | **Done** (PR #1391) |
 | 557 | ClientHeaderCard + ClientOverflowMenu | Frontend | -- | M | 557A, 557B | **Done** (PR #1392) |
 | 558 | CustomerGroupedTabs + Tab Panels | Frontend | 556 | M | 558A, 558B | **Done** (PR #1393) |
-| 559 | ClientOverviewTab | Frontend | -- | S | 559A | |
+| 559 | ClientOverviewTab | Frontend | -- | S | 559A | **Done** (PR #1394) |
 | 560 | Page Integration + Polish | Frontend | 556, 557, 558, 559 | L | 560A, 560B | |
 | 561 | QA Testplan Updates | Frontend | 556-560 | S | 561A | |
 
@@ -74,7 +74,7 @@ The current layout has 7 action buttons sprawled horizontally, a metadata wall p
 |-------|------|-------|-----------|
 | 2a | Epic 558 | 558A | `CustomerGroupedTabs` component wiring `GroupedTabBar` with `CUSTOMER_TAB_GROUPS`. Module-gating and URL state. Depends on 556B. **Done** (PR #1393) |
 | 2b | Epic 558 | 558B | `ClientDetailsTab`, `ClientFieldsTab`, `ClientTagsTab`. Depends on 558A (tabs must exist as the container). **Done** (PR #1393) |
-| 2c | Epic 559 | 559A | `ClientOverviewTab` aggregating setup guidance, financial summary, AI panels. Independent — component built in isolation. |
+| 2c | Epic 559 | 559A | `ClientOverviewTab` aggregating setup guidance, financial summary, AI panels. Independent — component built in isolation. **Done** (PR #1394) |
 
 ### Stage 3: Integration (after Stage 1 + Stage 2)
 
@@ -331,7 +331,7 @@ Stage 4:  [561A]                                 ← QA testplan (after all abov
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **559A** | 559.1-559.4 | `ClientOverviewTab` with setup progress, lifecycle prompt, financial summary grid, template readiness, AI panels, empty state. Unit tests (~5 tests) | |
+| **559A** | 559.1-559.4 | `ClientOverviewTab` with setup progress, lifecycle prompt, financial summary grid, template readiness, AI panels, empty state. Unit tests (~5 tests) | **Done** (PR #1394) |
 
 ### Tasks
 

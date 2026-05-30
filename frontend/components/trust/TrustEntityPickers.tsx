@@ -28,7 +28,6 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { FormControl } from "@/components/ui/form";
 import { fetchCustomerProjects } from "@/app/(app)/org/[slug]/customers/[id]/actions";
 import { cn } from "@/lib/utils";
 
@@ -66,7 +65,6 @@ export function TrustCustomerPicker<TFieldValues extends FieldValues>({
       modal={false}
     >
       <PopoverTrigger asChild>
-        <FormControl>
           <Button
             type="button"
             variant="outline"
@@ -79,7 +77,6 @@ export function TrustCustomerPicker<TFieldValues extends FieldValues>({
             {selected ? selected.name : "Select a client..."}
             <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
           </Button>
-        </FormControl>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
         <Command>
@@ -183,7 +180,6 @@ export function TrustMatterPicker<TFieldValues extends FieldValues>({
       modal={false}
     >
       <PopoverTrigger asChild>
-        <FormControl>
           <Button
             type="button"
             variant="outline"
@@ -196,7 +192,6 @@ export function TrustMatterPicker<TFieldValues extends FieldValues>({
             {triggerLabel}
             <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
           </Button>
-        </FormControl>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
         <Command>

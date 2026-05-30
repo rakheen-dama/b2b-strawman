@@ -125,3 +125,160 @@ page.getByTestId('tab-item-activity').click()
 | Court Dates / Court Calendar | Schedule (standalone) | court-dates | `tab-group-schedule` click |
 | Activity | Activity | activity | `tab-group-activity` → `tab-item-activity` |
 | Audit | Activity | audit | `tab-group-activity` → `tab-item-audit` |
+
+---
+
+# QA Selector Migration Notes: Customer Detail Redesign
+
+**Applies to**: All QA lifecycle scripts in `qa/testplan/` that reference customer/client detail pages
+**Phase**: 77 (Epics 556–561, PRs #1391–#1396)
+**Updated**: 2026-05-30
+
+## What Changed
+
+Phase 77 restructured the customer detail page (`/org/[slug]/customers/[id]`) from a vertical-stack layout to a **header card + grouped tabs** layout — the same pattern applied to the matter detail page in Phase 73.
+
+### Before Phase 77
+- 7 action buttons in the header row (Summarise, Change Status, Generate Document, Export Data, Anonymize, Edit, Archive)
+- Metadata (address, contact, business details, custom fields, tags, setup progress, AI panels) inline above tabs, pushing tabs below the fold
+- 11 flat tabs in a single row (Projects, Documents, Onboarding, Invoices, Retainer, Requests, Rates, Generated Docs, Financials, Trust, Audit)
+- Default tab: Projects
+
+### After Phase 77
+- `ClientHeaderCard` (`data-testid="client-header-card"`) with name, badges, contact, context line, 1 smart primary action (`data-testid="smart-primary-action"`), and `ClientOverflowMenu` (`data-testid="client-overflow-trigger"`)
+- 6 grouped tab groups via shared `GroupedTabBar` (`data-testid="grouped-tab-bar"`)
+- Metadata moved to **Details** tab group (Details, Fields, Tags sub-tabs)
+- Setup progress, AI panels, financial summary moved to **Overview** tab (default landing)
+- Default tab: Overview
+
+---
+
+## Customer Tab Group Reference
+
+| Group | data-testid | Sub-tabs (data-testid="tab-item-{id}") | Type |
+|-------|-------------|----------------------------------------|------|
+| Details | `tab-group-details` | details, fields, tags | Multi (dropdown) |
+| Overview | `tab-group-overview` | overview | Single (no dropdown) |
+| Work | `tab-group-work` | projects, documents, generated | Multi (dropdown) |
+| Finance | `tab-group-finance` | invoices, rates, retainer, financials, trust | Multi (dropdown) |
+| Compliance | `tab-group-compliance` | onboarding, requests | Multi (dropdown) |
+| Activity | `tab-group-activity` | — (renders directly) | Single (no dropdown) |
+
+> **Note:** Activity group renders the audit timeline directly when clicked — no sub-tab click required.
+
+> `trust` sub-tab only appears when `trust_accounting` module is enabled.
+> `audit` sub-tab only appears when TEAM_OVERSIGHT capability is enabled.
+> `Finance` group hides entirely when all sub-tabs are gated off (non-admin user).
+
+---
+
+## Playwright Selector Patterns
+
+### Single-tab group (Overview, Activity)
+One click — no dropdown:
+```js
+page.getByTestId('tab-group-overview').click()     // Overview (default landing)
+page.getByTestId('tab-group-activity').click()     // Activity → Audit
+```
+
+### Multi-tab group (Details, Work, Finance, Compliance)
+Two clicks — click group to open dropdown, then click sub-tab:
+```js
+// Details → Details (address, contact, business details)
+page.getByTestId('tab-group-details').click()
+page.getByTestId('tab-item-details').click()
+
+// Details → Fields (custom fields)
+page.getByTestId('tab-group-details').click()
+page.getByTestId('tab-item-fields').click()
+
+// Details → Tags
+page.getByTestId('tab-group-details').click()
+page.getByTestId('tab-item-tags').click()
+
+// Work → Projects
+page.getByTestId('tab-group-work').click()
+page.getByTestId('tab-item-projects').click()
+
+// Work → Documents
+page.getByTestId('tab-group-work').click()
+page.getByTestId('tab-item-documents').click()
+
+// Finance → Invoices
+page.getByTestId('tab-group-finance').click()
+page.getByTestId('tab-item-invoices').click()
+
+// Compliance → Onboarding
+page.getByTestId('tab-group-compliance').click()
+page.getByTestId('tab-item-onboarding').click()
+
+// Compliance → Requests
+page.getByTestId('tab-group-compliance').click()
+page.getByTestId('tab-item-requests').click()
+```
+
+---
+
+## Action Button Migration
+
+| Old Location | Old Selector | New Location | New Selector |
+|---|---|---|---|
+| Header row | `page.getByText('Edit')` | Overflow menu | `page.getByTestId('client-overflow-trigger').click()` then `page.getByText(/edit/i)` |
+| Header row | Lifecycle transition dropdown | Header card | `page.getByTestId('client-header-card').getByRole('button', { name: /start onboarding/i })` |
+| Header row | `page.getByText('Generate Document')` | Overflow menu | `page.getByTestId('client-overflow-trigger').click()` then `page.getByText(/generate document/i)` |
+| Header row | `page.getByText('Export Data')` | Overflow menu | `page.getByTestId('client-overflow-trigger').click()` then `page.getByText(/export/i)` |
+| Header row | `page.getByText('Anonymize')` | Overflow menu | `page.getByTestId('client-overflow-trigger').click()` then `page.getByText(/anonymize/i)` |
+| Header row | `page.getByText('Archive')` | Overflow menu | `page.getByTestId('client-overflow-trigger').click()` then `page.getByText(/archive/i)` |
+| Header row | `page.getByText('Summarise')` | Overflow menu | `page.getByTestId('client-overflow-trigger').click()` then `page.getByText(/summarise/i)` |
+
+---
+
+## Content Relocation
+
+| Content | Old Location | New Location |
+|---|---|---|
+| Address, Contact, Business Details | Inline above tabs | Details tab (`tab-group-details` → `tab-item-details`) |
+| Custom fields section | Inline above tabs | Fields tab (`tab-group-details` → `tab-item-fields`) |
+| Tags section | Inline above tabs | Tags tab (`tab-group-details` → `tab-item-tags`) |
+| Setup Progress card | Inline above tabs | Overview tab (`tab-group-overview` click) |
+| Unbilled Time card | Inline above tabs | Overview tab |
+| Template Readiness card | Inline above tabs | Overview tab |
+| Lifecycle Action Prompt | Inline above tabs | Overview tab |
+| Pending AI Suggestions | Below tabs | Overview tab |
+| FICA Verification Panel | Below tabs | Overview tab |
+
+---
+
+## Field Promotion Checkpoint Changes
+
+Pre-Phase 77, promoted fields were visible "on page load, inline at the top of the detail page."
+
+Post-Phase 77, promoted fields are on the **Details tab** (`tab-group-details` → `tab-item-details`). QA scripts that verify field promotion on customer detail pages must add a navigation step:
+
+1. Navigate to customer detail page
+2. Click **Details** tab group (`tab-group-details`)
+3. Click **Details** sub-tab (`tab-item-details`)
+4. THEN verify promoted fields render as first-class inputs
+5. Click **Fields** sub-tab (`tab-item-fields`) and verify promoted slugs do NOT appear in CustomFieldSection
+
+---
+
+## Old Tab Name → New Location Quick Reference
+
+| Old Tab Name | New Group | New Tab ID | Navigation |
+|---|---|---|---|
+| _(new)_ Details (address, contact, business) | Details | details | `tab-group-details` → `tab-item-details` |
+| _(new)_ Fields (custom fields) | Details | fields | `tab-group-details` → `tab-item-fields` |
+| _(new)_ Tags | Details | tags | `tab-group-details` → `tab-item-tags` |
+| _(new)_ Overview (setup, AI, financial summary) | Overview (standalone) | overview | `tab-group-overview` click |
+| Projects | Work | projects | `tab-group-work` → `tab-item-projects` |
+| Documents | Work | documents | `tab-group-work` → `tab-item-documents` |
+| Generated Docs | Work | generated | `tab-group-work` → `tab-item-generated` |
+| Invoices | Finance | invoices | `tab-group-finance` → `tab-item-invoices` |
+| Rates | Finance | rates | `tab-group-finance` → `tab-item-rates` |
+| Retainer | Finance | retainer | `tab-group-finance` → `tab-item-retainer` |
+| Financials | Finance | financials | `tab-group-finance` → `tab-item-financials` |
+| Trust | Finance | trust | `tab-group-finance` → `tab-item-trust` |
+| Onboarding | Compliance | onboarding | `tab-group-compliance` → `tab-item-onboarding` |
+| Requests | Compliance | requests | `tab-group-compliance` → `tab-item-requests` |
+| Audit | Activity (standalone) | audit | `tab-group-activity` click |

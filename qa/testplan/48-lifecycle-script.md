@@ -119,13 +119,13 @@ Actor: **Bob** (Admin)
 - [ ] **1.3** Fill: Name = **Kgosi Construction (Pty) Ltd**, Email = **thabo@kgosiconstruction.co.za**, Phone = **+27-11-555-0100**
 - [ ] **1.4** If custom fields are visible in the form, fill: Notes = "Pty Ltd, FYE 28 Feb, VAT vendor"
 - [ ] **1.5** Save → verify customer appears in list with status **PROSPECT**
-- [ ] **1.6** Click into customer detail → verify lifecycle badge shows **PROSPECT**
+- [ ] **1.6** Click into customer detail → verify lifecycle badge shows **PROSPECT** in the header card (`data-testid="client-header-card"`)
 
 ### FICA/KYC onboarding
 
-- [ ] **1.7** On customer detail, find a **lifecycle transition** action (button or dropdown)
-- [ ] **1.8** Transition Kgosi to **ONBOARDING** → verify badge updates
-- [ ] **1.9** Check for an **Onboarding** or **Compliance** tab → click it
+- [ ] **1.7** On customer detail, find the smart primary action button in the header card (`data-testid="client-header-card"`) — for a PROSPECT it should show **"Start Onboarding"**
+- [ ] **1.8** Click **Start Onboarding** → verify badge updates to **ONBOARDING**
+- [ ] **1.9** Navigate to the **Compliance** tab group → click **Onboarding** sub-tab (`tab-group-compliance` → `tab-item-onboarding`)
 - [ ] **1.10** Verify a FICA checklist was auto-instantiated with items
 - [ ] **1.11** Mark **first checklist item** as complete (e.g. "Certified ID Copy")
 - [ ] **1.12** Mark **second checklist item** as complete (e.g. "Company Registration")
@@ -133,7 +133,7 @@ Actor: **Bob** (Admin)
 
 ### Information request
 
-- [ ] **1.14** Navigate to customer detail → **Requests** tab (or **Compliance > Requests**)
+- [ ] **1.14** Navigate to customer detail → **Compliance** tab group → **Requests** sub-tab (`tab-group-compliance` → `tab-item-requests`)
 - [ ] **1.15** Click **New Information Request**
 - [ ] **1.16** Fill: Subject = "FICA Documents Required", add 3 items: "Certified ID Copy", "Company Registration (CM29)", "Proof of Address"
 - [ ] **1.17** Save → then click **Send**
@@ -153,9 +153,9 @@ Actor: **Thandi** (Owner)
 ### Activate customer
 
 - [ ] **1.25** Navigate to Kgosi customer detail
-- [ ] **1.26** Complete all remaining FICA checklist items
+- [ ] **1.26** Complete all remaining FICA checklist items (navigate via `tab-group-compliance` → `tab-item-onboarding`)
 - [ ] **1.27** Verify customer auto-transitions to **ACTIVE** (or manually transition if needed)
-- [ ] **1.28** Verify lifecycle badge shows **ACTIVE**
+- [ ] **1.28** Verify lifecycle badge shows **ACTIVE** in the header card
 
 ### Create engagement (project)
 
@@ -430,7 +430,7 @@ Actor: **Thandi**
 
 ### Information request for tax documents
 
-- [ ] **75.3** Navigate to Kgosi customer → Requests tab → New Information Request
+- [ ] **75.3** Navigate to Kgosi customer detail → **Compliance** tab group → **Requests** sub-tab (`tab-group-compliance` → `tab-item-requests`) → New Information Request
 - [ ] **75.4** Fill: Subject = "Annual Tax Return — Documents Required"
 - [ ] **75.5** Add items: "Trial Balance" (required), "Bank Statements (12 months)" (required), "Loan Agreements" (optional), "Fixed Asset Register" (required)
 - [ ] **75.6** Save → Send → check Mailpit for email
@@ -444,7 +444,7 @@ Actor: **Carol**
 
 ### Verify multi-engagement
 
-- [ ] **75.9** Open Kgosi customer → Projects tab → verify both "Monthly Bookkeeping" AND "Annual Tax Return" projects are listed
+- [ ] **75.9** Open Kgosi customer detail → **Work** tab group → **Projects** sub-tab (`tab-group-work` → `tab-item-projects`) → verify both "Monthly Bookkeeping" AND "Annual Tax Return" projects are listed
 - [ ] **75.10** Verify time logged on both projects doesn't conflict
 
 **Day 75 Checkpoints**:
@@ -480,7 +480,7 @@ Actor: **Thandi**
 
 ### Document generation
 
-- [ ] **90.11** Open Kgosi customer → find **Generate Document** button or dropdown
+- [ ] **90.11** Open Kgosi customer detail → open the overflow menu (`data-testid="client-overflow-trigger"`) → click **Generate Document**
 - [ ] **90.12** Select a customer template → click **Preview** → verify HTML renders with Kgosi's details
 - [ ] **90.13** If Generate PDF available → generate → verify download works
 

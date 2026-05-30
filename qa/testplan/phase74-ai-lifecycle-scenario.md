@@ -103,7 +103,7 @@ Each checkpoint is a browser-observed action + verification. Screenshots recomme
 
 | # | Action | Expected | Status |
 |---|--------|----------|--------|
-| D1.4.1 | Navigate to a customer detail page | "Verify with AI" button visible on compliance panel (if FICA skill from Phase 72 is active) | [ ] |
+| D1.4.1 | Navigate to a customer detail page → click **Overview** tab group (`tab-group-overview`) | "Verify with AI" button visible on the Overview tab (compliance/FICA panel) (if FICA skill from Phase 72 is active) | [ ] |
 | D1.4.2 | Navigate to a matter detail page → Documents tab | "Review with AI" button visible on document rows | [ ] |
 | D1.4.3 | Navigate to matter → Documents → "Draft with AI" | Button visible and enabled (if templates exist) | [ ] |
 | D1.4.4 | Navigate to Compliance dashboard | "Run AI Audit" button visible | [ ] |

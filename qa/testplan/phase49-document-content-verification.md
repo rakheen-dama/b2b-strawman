@@ -139,7 +139,7 @@ This creates the baseline entities (customers, projects, invoices, time entries,
 
 **Actor**: Bob (Admin)
 
-Navigate to Kgosi Construction customer detail → custom fields section (or edit dialog).
+Navigate to Kgosi Construction customer detail → **Details** tab group → **Fields** sub-tab (`tab-group-details` → `tab-item-fields`) for the custom fields section.
 If fields were partially filled during creation, update them now. If they were blank,
 fill all values.
 
@@ -248,8 +248,8 @@ Track 4 (information requests) and Track 6 (e-signing) require portal contacts t
 
 Before proceeding to Track 1, spot-check the data:
 
-- [ ] **T0.9.1** Open Kgosi customer detail → verify at least 10 custom field values are visible and non-blank
-- [ ] **T0.9.2** Open Moroka customer detail → verify trust fields are visible and populated
+- [ ] **T0.9.1** Open Kgosi customer detail → navigate to **Details** tab group → **Fields** sub-tab (`tab-group-details` → `tab-item-fields`) → verify at least 10 custom field values are visible and non-blank
+- [ ] **T0.9.2** Open Moroka customer detail → navigate to **Details** tab group → **Fields** sub-tab (`tab-group-details` → `tab-item-fields`) → verify trust fields are visible and populated
 - [ ] **T0.9.3** Navigate to Invoices → verify at least 2 invoices exist with line items
 - [ ] **T0.9.4** Navigate to Projects → verify at least 4 projects exist
 - [ ] **T0.9.5** Navigate to Settings > General → verify org name, currency, and footer text are set
@@ -372,7 +372,7 @@ wrong-customer data.
 #### T1.6 — Statement of Account (CUSTOMER scope)
 
 **Template slug**: `statement-of-account`
-**Generate from**: Kgosi Construction customer detail → Generate Document
+**Generate from**: Kgosi Construction customer detail → overflow menu (`data-testid="client-overflow-trigger"`) → Generate Document
 
 **Content checklist**:
 
@@ -392,7 +392,7 @@ wrong-customer data.
 #### T1.7 — FICA Confirmation Letter (CUSTOMER scope)
 
 **Template slug**: `fica-confirmation`
-**Generate from**: Kgosi Construction customer detail → Generate Document
+**Generate from**: Kgosi Construction customer detail → overflow menu (`data-testid="client-overflow-trigger"`) → Generate Document
 
 **Content checklist**:
 
@@ -518,7 +518,7 @@ the engagement letter → verify the letter's content matches the proposal data.
 
 **Actor**: Alice (Owner)
 
-- [ ] **T4.1.1** Navigate to Kgosi customer detail → Requests tab
+- [ ] **T4.1.1** Navigate to Kgosi customer detail → **Compliance** tab group → **Requests** sub-tab (`tab-group-compliance` → `tab-item-requests`)
 - [ ] **T4.1.2** Click New Information Request
 - [ ] **T4.1.3** Select request template: "Year-End Info Request" (or create from scratch)
 - [ ] **T4.1.4** Verify request items are pre-populated from template:
@@ -557,7 +557,7 @@ the engagement letter → verify the letter's content matches the proposal data.
 
 **Actor**: Bob (Admin)
 
-- [ ] **T4.4.1** Navigate to Kgosi customer → Requests tab → open the request
+- [ ] **T4.4.1** Navigate to Kgosi customer detail → **Compliance** tab group → **Requests** sub-tab (`tab-group-compliance` → `tab-item-requests`) → open the request
 - [ ] **T4.4.2** Verify request status shows partial/submitted
 - [ ] **T4.4.3** For "Trial Balance": click item → see uploaded file → click Accept
 - [ ] **T4.4.4** For "Bank Statements": click item → click Reject with reason "Incomplete — missing December statement"
@@ -582,7 +582,7 @@ correctly in the generated document.
 
 #### T5.1 — Standard Custom Field Flow (Kgosi)
 
-- [ ] **T5.1.1** Open Kgosi customer detail → verify custom fields section shows accounting-za fields
+- [ ] **T5.1.1** Open Kgosi customer detail → navigate to **Details** tab group → **Fields** sub-tab (`tab-group-details` → `tab-item-fields`) → verify custom fields section shows accounting-za fields
 - [ ] **T5.1.2** Verify these field values are populated:
   - Company Registration Number = "2019/123456/07"
   - VAT Number = "4520012345"

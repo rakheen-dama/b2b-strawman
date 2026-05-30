@@ -129,11 +129,11 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **0.33** Verify `accounting-za-customer` field group is present with fields including: `vat_number`, `primary_contact_name`, `primary_contact_email`, `primary_contact_phone`, `acct_company_registration_number`, `acct_entity_type`, `financial_year_end`, `registered_address`
 - [ ] **0.34** Verify `accounting-za-customer-trust` variant fields are present for trust clients
 - [ ] **0.35** Verify `accounting-za-project` (engagement) field group is present with fields including: `engagement_type`, `reference_number`
-- [ ] **0.36** **Field promotion checkpoint (customer)**: open blank **New Client** dialog → verify these promoted slugs render as native first-class inline inputs (not inside "Other Fields"):
+- [ ] **0.36** **Field promotion checkpoint (customer)**: open blank **New Client** dialog → verify these promoted slugs render as native first-class inline inputs (not inside "Other Fields"). On customer detail pages, navigate to **Details** tab group → **Details** sub-tab (`tab-group-details` → `tab-item-details`) to verify promoted fields on the detail view:
   - `vat_number`, `primary_contact_name`, `primary_contact_email`, `primary_contact_phone`
   - `acct_company_registration_number`, `acct_entity_type`, `financial_year_end`, `registered_address`
   - Common: `tax_number`, `phone`, `address_line1`, `city`, `postal_code`, `country`
-- [ ] **0.37** **Field promotion negative check**: verify these promoted slugs do NOT appear in the CustomFieldSection sidebar panel (no duplicates)
+- [ ] **0.37** **Field promotion negative check**: verify these promoted slugs do NOT appear in the CustomFieldSection on the **Fields** tab (`tab-group-details` → `tab-item-fields`) (no duplicates)
 - [ ] **0.38** **Field promotion checkpoint (engagement)**: open blank **New Engagement** dialog → verify `engagement_type` and `reference_number` render as native inline inputs
 - [ ] **0.39** Cancel both dialogs without saving
 
@@ -190,18 +190,18 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **1.3** Fill standard: Name = **Sipho Dlamini**, Email = `sipho@email.co.za`, Phone = +27-82-555-0201
 - [ ] **1.4** Fill promoted fields (verify inline rendering): `acct_entity_type` = **SOLE_PROP**, `tax_number` = "1234567890", `registered_address` = "12 Jorissen St, Braamfontein, 2017"
 - [ ] **1.5** Save → client appears in list with status **PROSPECT**
-- [ ] **1.6** Open detail → verify promoted fields render inline (not in sidebar)
+- [ ] **1.6** Open detail → click **Details** tab group → **Details** sub-tab (`tab-group-details` → `tab-item-details`) → verify promoted fields render on the Details tab (not in the Fields tab CustomFieldSection)
 
 ### Day 2 — Onboarding
 
 - [ ] **2.1** Transition Sipho to **ONBOARDING**
-- [ ] **2.2a** Navigate to **Documents** tab → upload FICA test documents (any small text/PDF files):
+- [ ] **2.2a** Navigate to **Work** tab group → **Documents** sub-tab (`tab-group-work` → `tab-item-documents`) → upload FICA test documents (any small text/PDF files):
   - `certified-id-sipho.txt` — for Certified ID Copy
   - `proof-of-residence-sipho.txt` — for Proof of Residence
   - `tax-clearance-sipho.txt` — for Tax Clearance Certificate
   - `bank-confirmation-sipho.txt` — for Bank Confirmation Letter
   - (Only these 4 are needed for SOLE_PROP — Company Registration, Resolution/Mandate, Beneficial Ownership, Letters of Authority, and Trust Deed are entity-type-filtered out)
-- [ ] **2.2b** Navigate to **Onboarding** tab → verify "FICA KYC — SA Accounting" checklist is auto-instantiated. For a SOLE_PROP client, expect ~6 items (entity-type filtering removes company/trust-specific items). If all 11 items appear, note as secondary observation but proceed.
+- [ ] **2.2b** Navigate to **Compliance** tab group → **Onboarding** sub-tab (`tab-group-compliance` → `tab-item-onboarding`) → verify "FICA KYC — SA Accounting" checklist is auto-instantiated. For a SOLE_PROP client, expect ~6 items (entity-type filtering removes company/trust-specific items). If all 11 items appear, note as secondary observation but proceed.
 - [ ] **2.2c** Complete each **required** checklist item: click "Mark Complete" → add notes → select the corresponding uploaded document from the dropdown → click "Confirm"
   - Certified ID Copy → link `certified-id-sipho.txt`, note: "Verified against home affairs ID"
   - Proof of Residence → link `proof-of-residence-sipho.txt`, note: "Utility bill verified, within 3 months"
@@ -249,9 +249,9 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
   - `primary_contact_phone` = "+27-82-555-0302"
 - [ ] **4.5** 📸 **Screenshot**: New Client dialog with all promoted fields visible inline, scroll-visible at once, with accounting-za flavor
 - [ ] **4.6** Save → client appears
-- [ ] **4.7** Open detail → verify all promoted fields render inline on the detail page (not in sidebar)
+- [ ] **4.7** Open detail → click **Details** tab group → **Details** sub-tab (`tab-group-details` → `tab-item-details`) → verify all promoted fields render on the Details tab (not in the Fields tab)
 - [ ] **4.8a** Transition to ONBOARDING → checklist auto-created. For PTY_LTD entity type, expect additional company-specific items (Company Registration, Resolution/Mandate, Beneficial Ownership Declaration)
-- [ ] **4.8b** Upload FICA documents to Documents tab: certified ID, proof of residence, company registration cert, tax clearance, bank confirmation, beneficial ownership declaration, and any other required docs
+- [ ] **4.8b** Upload FICA documents to **Work** tab group → **Documents** sub-tab (`tab-group-work` → `tab-item-documents`): certified ID, proof of residence, company registration cert, tax clearance, bank confirmation, beneficial ownership declaration, and any other required docs
 - [ ] **4.8c** Complete all required checklist items by linking uploaded documents with notes. Skip optional items with reasons
 - [ ] **4.8d** Verify checklist complete → fill any activation prerequisites → verify ACTIVE transition
 
@@ -292,7 +292,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **15.2** Verify trust-specific custom fields are surfaced (from `accounting-za-customer-trust` variant): trust registration, trustees, beneficiaries, `financial_year_end`
 - [ ] **15.3** Fill trust fields
 - [ ] **15.4a** Transition to ONBOARDING → checklist auto-created. For TRUST entity type, expect trust-specific items (Letters of Authority, Trust Deed) in addition to standard FICA items
-- [ ] **15.4b** Upload FICA documents to Documents tab: certified ID, proof of residence, tax clearance, bank confirmation, beneficial ownership declaration, letters of authority, trust deed, and any other required docs
+- [ ] **15.4b** Upload FICA documents to **Work** tab group → **Documents** sub-tab (`tab-group-work` → `tab-item-documents`): certified ID, proof of residence, tax clearance, bank confirmation, beneficial ownership declaration, letters of authority, trust deed, and any other required docs
 - [ ] **15.4c** Complete all required checklist items by linking uploaded documents with notes. Skip optional items with reasons
 - [ ] **15.4d** Verify checklist complete → fill any activation prerequisites → verify ACTIVE transition
 
@@ -317,7 +317,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **26.1** Add comment on Moroka AFS with @Carol mention → Carol sees notification → responds
 - [ ] **28.1** Upload additional working papers to year-end pack
 - [ ] **30.1** **Automation trigger check**: engagement budget reaches ~70% on year-end pack → verify automation rule fires notification to Thandi (if `automation-accounting-za` pack includes a budget-alert rule)
-- [ ] **32.1** Add 4th client (Pty Ltd, compressed happy-path onboarding): create client → transition to ONBOARDING → upload FICA docs to Documents tab → complete checklist items by linking docs → verify ACTIVE transition → create VAT Return engagement from template
+- [ ] **32.1** Add 4th client (Pty Ltd, compressed happy-path onboarding): create client → transition to ONBOARDING → upload FICA docs to **Work** tab group → **Documents** sub-tab (`tab-group-work` → `tab-item-documents`) → complete checklist items by linking docs → verify ACTIVE transition → create VAT Return engagement from template
 
 ### Day 34 — 📸 Profitability wow moment
 
@@ -398,7 +398,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 ### Day 90 — Final regression sweep
 
 - [ ] **90.1** **Terminology sweep**: verify no "Matter", "Attorney", "Conflict", or other legal terminology anywhere in sidebar, breadcrumbs, dialogs, settings pages, or email subjects
-- [ ] **90.2** **Field promotion sweep**: reopen New Client, New Engagement, New Invoice dialogs → confirm promoted slugs still inline, no regression into sidebar
+- [ ] **90.2** **Field promotion sweep**: reopen New Client, New Engagement, New Invoice dialogs → confirm promoted slugs still inline, no regression. On customer detail pages, navigate to **Details** tab group → **Details** sub-tab (`tab-group-details` → `tab-item-details`) to verify promoted fields on the detail view. Promoted fields are no longer visible on initial page load (they are on the Details tab, not inline above tabs)
 - [ ] **90.3** **Progressive disclosure sweep**: confirm sidebar still has NO legal modules (Trust Accounting, Court Calendar, Conflict Check, Tariffs)
 - [ ] **90.4** **Tier removal sweep**: reopen Settings > Billing, team invite flow, any member limit surface → confirm no tier UI anywhere
 - [ ] **90.5** **Console errors**: devtools open, walk every nav item → zero errors

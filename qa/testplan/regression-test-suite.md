@@ -163,7 +163,7 @@ Tests that role-based access control works across all gated pages.
 |---|------|-------|-------|----------|
 | 1 | Create customer with required fields | Alice | Open dialog, fill Name+Email+Phone, submit | Customer appears in list |
 | 2 | Create customer with custom fields | Alice | Open dialog, fill Step 1, advance to Step 2, fill custom fields, submit | Customer created, custom fields saved |
-| 3 | Edit customer name | Alice | Open customer detail, edit name, save | Name updated |
+| 3 | Edit customer name | Alice | Open customer detail → click overflow menu (`data-testid="client-overflow-trigger"`) → click Edit, edit name, save | Name updated |
 | 4 | Search customer list | Alice | Type in search input | List filters to matching customers |
 | 5 | Customer list pagination | Alice | Verify pagination controls if >10 customers | Pagination works |
 
@@ -176,7 +176,7 @@ Full state machine testing. Uses seeded + freshly created customers.
 | # | Test | Actor | Steps | Expected |
 |---|------|-------|-------|----------|
 | 1 | New customer defaults to PROSPECT | Alice | Create customer | Status badge shows "Prospect" |
-| 2 | PROSPECT → ONBOARDING | Bob | Click Change Status → Start Onboarding | Badge shows "Onboarding" |
+| 2 | PROSPECT → ONBOARDING | Bob | Click smart primary action "Start Onboarding" in header card (`data-testid="client-header-card"`) | Badge shows "Onboarding" |
 | 3 | ONBOARDING → ACTIVE (via checklist completion) | Alice | Complete all checklist items | Auto-transition to "Active" |
 | 4 | PROSPECT blocked from creating project | Alice | Navigate to prospect customer, attempt New Project | Action blocked or hidden |
 | 5 | PROSPECT blocked from creating invoice | Alice | Attempt to create invoice for prospect customer | Action blocked |
@@ -363,7 +363,7 @@ High-value features that should work correctly. Run on every PR.
 
 | # | Test | Actor | Steps | Expected |
 |---|------|-------|-------|----------|
-| 1 | Generate document from template | Alice | On customer/project, click Generate Document, select template | Document generated |
+| 1 | Generate document from template | Alice | On customer detail, click overflow menu (`data-testid="client-overflow-trigger"`) → Generate Document, select template; on project detail, click Generate Document button directly | Document generated |
 | 2 | Preview shows resolved variables | Alice | View HTML preview | Customer name, org name, dates visible — no `{{...}}` |
 | 3 | Download PDF | Alice | Click Download | PDF downloads, non-zero size |
 | 4 | Generated documents list | Alice | Navigate to /documents | Generated docs listed |
@@ -475,8 +475,8 @@ High-value features that should work correctly. Run on every PR.
 
 | # | Test | Actor | Steps | Expected |
 |---|------|-------|-------|----------|
-| 1 | Download customer data export | Alice | On customer detail, click Download Data, confirm | Export initiated, download link appears |
-| 2 | Anonymize customer (preview) | Alice | Click Delete Personal Data | Preview shows entity counts |
+| 1 | Download customer data export | Alice | On customer detail, click overflow menu (`data-testid="client-overflow-trigger"`) → click Export Data, confirm | Export initiated, download link appears |
+| 2 | Anonymize customer (preview) | Alice | Click overflow menu (`data-testid="client-overflow-trigger"`) → click Anonymize | Preview shows entity counts |
 | 3 | Anonymize customer (execute) | Alice | Type customer name to confirm, submit | Status changes to ANONYMIZED, PI fields cleared |
 | 4 | ANONYMIZED customer is read-only | Alice | View anonymized customer | Edit disabled, badge shown |
 | 5 | Cannot transition out of ANONYMIZED | API | Attempt status change | HTTP 400/409 |
@@ -719,6 +719,33 @@ export class CustomerListPage {
 ```
 
 Priority page objects: `CustomerListPage`, `CustomerDetailPage`, `ProjectListPage`, `ProjectDetailPage`, `InvoiceListPage`, `InvoiceDetailPage`, `SettingsPage`, `PortalPage`.
+
+**`CustomerDetailPage` component structure (post-Phase 77)**:
+
+```typescript
+// e2e/page-objects/customer-detail.page.ts
+export class CustomerDetailPage {
+  constructor(private page: Page) {}
+  
+  // Header card
+  get headerCard() { return this.page.getByTestId('client-header-card'); }
+  get overflowTrigger() { return this.page.getByTestId('client-overflow-trigger'); }
+  get smartPrimaryAction() { return this.page.getByTestId('smart-primary-action'); }
+  
+  // Tab navigation (grouped)
+  async navigateToTab(groupId: string, tabId?: string) {
+    await this.page.getByTestId(`tab-group-${groupId}`).click();
+    if (tabId) await this.page.getByTestId(`tab-item-${tabId}`).click();
+  }
+  
+  // Overflow menu actions
+  async openOverflowMenu() { await this.overflowTrigger.click(); }
+  async clickOverflowAction(name: RegExp) {
+    await this.openOverflowMenu();
+    await this.page.getByText(name).click();
+  }
+}
+```
 
 ### Parallel Execution
 

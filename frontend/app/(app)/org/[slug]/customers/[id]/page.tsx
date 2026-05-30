@@ -451,15 +451,23 @@ export default async function CustomerDetailPage({
             targetStatus: "ONBOARDING",
           }
         : customer.lifecycleStatus === "ONBOARDING" &&
-            customerReadiness?.checklistProgress !== null &&
-            customerReadiness?.checklistProgress?.completed ===
-              customerReadiness?.checklistProgress?.total &&
-            (customerReadiness?.checklistProgress?.total ?? 0) > 0
+            (customerReadiness?.checklistProgress == null ||
+              customerReadiness.checklistProgress.total === 0 ||
+              (customerReadiness.checklistProgress.completed ===
+                customerReadiness.checklistProgress.total &&
+                customerReadiness.checklistProgress.total > 0))
           ? {
               icon: UserCheck,
-              title: "All items verified — Activate Customer",
+              title:
+                customerReadiness?.checklistProgress != null &&
+                customerReadiness.checklistProgress.total > 0
+                  ? "All items verified — Activate Customer"
+                  : "Ready to activate",
               description:
-                "Onboarding checklist is complete. This customer is ready to be activated.",
+                customerReadiness?.checklistProgress != null &&
+                customerReadiness.checklistProgress.total > 0
+                  ? "Onboarding checklist is complete. This customer is ready to be activated."
+                  : "No onboarding checklist assigned. This customer is ready to be activated.",
               actionLabel: "Activate Customer",
               targetStatus: "ACTIVE",
             }

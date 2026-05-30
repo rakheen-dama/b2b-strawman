@@ -39,7 +39,7 @@ export function ClientDetailsTab({ customer }: ClientDetailsTabProps) {
         <Card data-testid="customer-business-details">
           <CardHeader>
             <div className="flex items-center gap-3">
-              <Briefcase className="size-5 text-slate-400" />
+              <Briefcase className="size-5 text-slate-400 dark:text-slate-500" />
               <CardTitle>Business Details</CardTitle>
             </div>
           </CardHeader>

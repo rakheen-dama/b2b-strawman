@@ -240,7 +240,7 @@ Actor: **Bob Ndlovu** (Admin — log in via Keycloak)
 
 ### Phase C — FICA / KYC onboarding
 
-- [ ] **3.11** Click **Transition to Onboarding** → badge updates to **ONBOARDING**
+- [ ] **3.11** Click the smart primary action button **"Start Onboarding"** in the header card (`data-testid="smart-primary-action"`) → badge updates to **ONBOARDING**
 - [ ] **3.12** Navigate to **Compliance** tab group → **Onboarding** sub-tab (`tab-group-compliance` → `tab-item-onboarding`) → FICA checklist auto-populated (legal-za)
 - [ ] **3.13** Mark items: "Certified ID Copy" ✓, "Proof of Address" ✓, "FICA declaration signed" ✓ (whatever the pack ships)
 - [ ] **3.14** Complete remaining required FICA items
@@ -511,7 +511,7 @@ If any checkpoint fails:
 3. Note the step number and a one-line description in the run notes.
 4. Triage:
    - Auth / Keycloak failure → re-check `keycloak-bootstrap.sh` ran, gateway is up, browser cookies cleared.
-   - Provisioning failure → check `org_schema_mapping` and provisioning status table; look for backend stack traces.
+   - Provisioning failure → check `org_schema_mapping` (note: now includes a `shard_id` column — verify it is `primary` for the new tenant) and provisioning status table; look for backend stack traces.
    - Terminology miss → verify the org's vertical profile is set to `legal-za` (likely a profile-binding bug, not a terminology-map bug).
    - Template missing → verify `project-template-packs/legal-za.json` was loaded at startup.
 5. Do not work around failures by manipulating the database — this plan exists to validate the real product flow. Surface bugs upstream.

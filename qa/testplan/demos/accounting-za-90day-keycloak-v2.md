@@ -251,7 +251,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **4.6** Save → client appears
 - [ ] **4.7** Open detail → click **Details** tab group → **Details** sub-tab (`tab-group-details` → `tab-item-details`) → verify all promoted fields render on the Details tab (not in the Fields tab)
 - [ ] **4.8a** Transition to ONBOARDING → checklist auto-created. For PTY_LTD entity type, expect additional company-specific items (Company Registration, Resolution/Mandate, Beneficial Ownership Declaration)
-- [ ] **4.8b** Upload FICA documents to Documents tab: certified ID, proof of residence, company registration cert, tax clearance, bank confirmation, beneficial ownership declaration, and any other required docs
+- [ ] **4.8b** Upload FICA documents to **Work** tab group → **Documents** sub-tab (`tab-group-work` → `tab-item-documents`): certified ID, proof of residence, company registration cert, tax clearance, bank confirmation, beneficial ownership declaration, and any other required docs
 - [ ] **4.8c** Complete all required checklist items by linking uploaded documents with notes. Skip optional items with reasons
 - [ ] **4.8d** Verify checklist complete → fill any activation prerequisites → verify ACTIVE transition
 
@@ -292,7 +292,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 - [ ] **15.2** Verify trust-specific custom fields are surfaced (from `accounting-za-customer-trust` variant): trust registration, trustees, beneficiaries, `financial_year_end`
 - [ ] **15.3** Fill trust fields
 - [ ] **15.4a** Transition to ONBOARDING → checklist auto-created. For TRUST entity type, expect trust-specific items (Letters of Authority, Trust Deed) in addition to standard FICA items
-- [ ] **15.4b** Upload FICA documents to Documents tab: certified ID, proof of residence, tax clearance, bank confirmation, beneficial ownership declaration, letters of authority, trust deed, and any other required docs
+- [ ] **15.4b** Upload FICA documents to **Work** tab group → **Documents** sub-tab (`tab-group-work` → `tab-item-documents`): certified ID, proof of residence, tax clearance, bank confirmation, beneficial ownership declaration, letters of authority, trust deed, and any other required docs
 - [ ] **15.4c** Complete all required checklist items by linking uploaded documents with notes. Skip optional items with reasons
 - [ ] **15.4d** Verify checklist complete → fill any activation prerequisites → verify ACTIVE transition
 

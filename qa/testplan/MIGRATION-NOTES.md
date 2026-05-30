@@ -162,7 +162,9 @@ Phase 77 restructured the customer detail page (`/org/[slug]/customers/[id]`) fr
 | Work | `tab-group-work` | projects, documents, generated | Multi (dropdown) |
 | Finance | `tab-group-finance` | invoices, rates, retainer, financials, trust | Multi (dropdown) |
 | Compliance | `tab-group-compliance` | onboarding, requests | Multi (dropdown) |
-| Activity | `tab-group-activity` | audit | Single (no dropdown) |
+| Activity | `tab-group-activity` | — (renders directly) | Single (no dropdown) |
+
+> **Note:** Activity group renders the audit timeline directly when clicked — no sub-tab click required.
 
 > `trust` sub-tab only appears when `trust_accounting` module is enabled.
 > `audit` sub-tab only appears when TEAM_OVERSIGHT capability is enabled.

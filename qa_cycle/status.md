@@ -30,9 +30,9 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 0 (complete)
-- **Next checkpoint**: Day 1 Phase A (firm onboarding polish)
-- **Completed**: Day 0 (Phase A-D: access request, OTP, padmin approval, KC registration, team invites)
+- **Day**: 1 (complete)
+- **Next checkpoint**: Day 2 (onboard Sipho as client, conflict check + KYC)
+- **Completed**: Day 0 (Phase A-D: access request, OTP, padmin approval, KC registration, team invites), Day 1 (firm onboarding polish: branding, tariffs, trust account)
 - **Resolved**: None
 - **Open gaps**: None
 - **Fixed (awaiting verify)**: None
@@ -60,3 +60,4 @@ For each day-N walk in this cycle:
 |-------|-------|--------|--------|
 | 0 | Infra | Clean slate setup: wiped all Docker volumes, started fresh infra, bootstrapped Keycloak (padmin), started all 4 services, cleared Mailpit, verified 0 tenant schemas | All services healthy, clean slate confirmed |
 | 1 | QA | Day 0 Phase A-D executed: access request + OTP (PASS), padmin approval (PASS), KC registration for Thandi (PASS), team invites for Bob + Carol (PASS), all 3 users registered via KC. Vertical profile legal-za auto-assigned. Zero console errors, zero gaps. | All 32 checkpoints PASS |
+| 2 | QA | Day 1 executed: branding (logo upload + brand colour #1B3358) persists across logout/login (PASS), LSSA 2024/2025 tariff schedule pre-seeded with 19 items (PASS), trust account "Mathebula Trust -- Main" created as SECTION_86 with R 0,00 balance (PASS). Zero console errors, zero gaps. | All 7 checkpoints PASS |

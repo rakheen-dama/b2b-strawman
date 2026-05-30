@@ -632,7 +632,7 @@
 | **Phase 77 — Customer Detail Page Redesign** | | | | | | See [tasks/phase77-customer-detail-redesign.md](tasks/phase77-customer-detail-redesign.md) |
 | 556 | Shared Component Extraction | Frontend | -- | M | 556A, 556B | **Done** (PR #1391) |
 | 557 | ClientHeaderCard + ClientOverflowMenu | Frontend | -- | M | 557A, 557B | **Done** (PR #1392) |
-| 558 | CustomerGroupedTabs + Tab Panels | Frontend | 556 | M | 558A, 558B | |
+| 558 | CustomerGroupedTabs + Tab Panels | Frontend | 556 | M | 558A, 558B | **Done** (PR #1393) |
 | 559 | ClientOverviewTab | Frontend | -- | S | 559A | |
 | 560 | Page Integration + Polish | Frontend | 556, 557, 558, 559 | L | 560A, 560B | |
 | 561 | QA Testplan Updates | Frontend | 556-560 | S | 561A | |

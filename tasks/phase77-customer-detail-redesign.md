@@ -14,7 +14,7 @@ The current layout has 7 action buttons sprawled horizontally, a metadata wall p
 |------|------|-------|------|--------|--------|--------|
 | 556 | Shared Component Extraction | Frontend | -- | M | 556A, 556B | **Done** (PR #1391) |
 | 557 | ClientHeaderCard + ClientOverflowMenu | Frontend | -- | M | 557A, 557B | **Done** (PR #1392) |
-| 558 | CustomerGroupedTabs + Tab Panels | Frontend | 556 | M | 558A, 558B | |
+| 558 | CustomerGroupedTabs + Tab Panels | Frontend | 556 | M | 558A, 558B | **Done** (PR #1393) |
 | 559 | ClientOverviewTab | Frontend | -- | S | 559A | |
 | 560 | Page Integration + Polish | Frontend | 556, 557, 558, 559 | L | 560A, 560B | |
 | 561 | QA Testplan Updates | Frontend | 556-560 | S | 561A | |
@@ -72,8 +72,8 @@ The current layout has 7 action buttons sprawled horizontally, a metadata wall p
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 2a | Epic 558 | 558A | `CustomerGroupedTabs` component wiring `GroupedTabBar` with `CUSTOMER_TAB_GROUPS`. Module-gating and URL state. Depends on 556B. |
-| 2b | Epic 558 | 558B | `ClientDetailsTab`, `ClientFieldsTab`, `ClientTagsTab`. Depends on 558A (tabs must exist as the container). |
+| 2a | Epic 558 | 558A | `CustomerGroupedTabs` component wiring `GroupedTabBar` with `CUSTOMER_TAB_GROUPS`. Module-gating and URL state. Depends on 556B. **Done** (PR #1393) |
+| 2b | Epic 558 | 558B | `ClientDetailsTab`, `ClientFieldsTab`, `ClientTagsTab`. Depends on 558A (tabs must exist as the container). **Done** (PR #1393) |
 | 2c | Epic 559 | 559A | `ClientOverviewTab` aggregating setup guidance, financial summary, AI panels. Independent — component built in isolation. |
 
 ### Stage 3: Integration (after Stage 1 + Stage 2)
@@ -259,8 +259,8 @@ Stage 4:  [561A]                                 ← QA testplan (after all abov
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **558A** | 558.1-558.4 | `CustomerGroupedTabs` component with `GroupedTabBar`, module-gating, URL state management, all 15 tab IDs, unit tests (~8 tests) | |
-| **558B** | 558.5-558.8 | `ClientDetailsTab`, `ClientFieldsTab`, `ClientTagsTab` panel components, unit tests (~4 tests) | |
+| **558A** | 558.1-558.4 | `CustomerGroupedTabs` component with `GroupedTabBar`, module-gating, URL state management, all 15 tab IDs, unit tests (~8 tests) | **Done** (PR #1393) |
+| **558B** | 558.5-558.8 | `ClientDetailsTab`, `ClientFieldsTab`, `ClientTagsTab` panel components, unit tests (~4 tests) | **Done** (PR #1393) |
 
 ### Tasks
 

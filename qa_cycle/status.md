@@ -30,9 +30,9 @@ For each day-N walk in this cycle:
 - AI provider 5xx → wait and retry, do not stop.
 
 ## QA Position
-- **Day**: 2 (complete)
-- **Next checkpoint**: Day 3 (create RAF matter, send FICA info request)
-- **Completed**: Day 0 (Phase A-D: access request, OTP, padmin approval, KC registration, team invites), Day 1 (firm onboarding polish: branding, tariffs, trust account), Day 2 (onboard Sipho as client, conflict check + KYC)
+- **Day**: 3 (complete)
+- **Next checkpoint**: Day 4 (Sipho first portal login, upload FICA documents)
+- **Completed**: Day 0 (Phase A-D: access request, OTP, padmin approval, KC registration, team invites), Day 1 (firm onboarding polish: branding, tariffs, trust account), Day 2 (onboard Sipho as client, conflict check + KYC), Day 3 (create RAF matter, send FICA info request)
 - **Resolved**: None
 - **Open gaps**: None
 - **Exempt gaps**: OBS-201 (WONT_FIX-EXEMPT — AI infra client-side proxy not wired)
@@ -65,3 +65,4 @@ For each day-N walk in this cycle:
 | 2 | QA | Day 1 executed: branding (logo upload + brand colour #1B3358) persists across logout/login (PASS), LSSA 2024/2025 tariff schedule pre-seeded with 19 items (PASS), trust account "Mathebula Trust -- Main" created as SECTION_86 with R 0,00 balance (PASS). Zero console errors, zero gaps. | All 7 checkpoints PASS |
 | 3 | QA | Day 2 executed: Sipho Dlamini onboarded as INDIVIDUAL client (PASS), SA Legal promoted fields visible (ID/Passport, Preferred Correspondence) (PASS), conflict check "No Conflict" (PASS), KYC/FICA adapter not configured (PARTIAL — expected per mandate). 1 LOW gap: OBS-201 (/api/assistant/invocations 404). Client ID: d74963c8-4527-41b8-bd67-a2ca3ed6a3cf. | 8/10 checkpoints PASS, 1 PARTIAL (KYC expected skip), 1 SKIPPED (KYC screenshot) |
 | 4 | Product | Triaged OBS-201 → WONT_FIX-EXEMPT. Root cause: `PendingSuggestionsWidget` client-side fetch uses `API_BASE=""` in KC mode → hits Next.js `:3000` which has no proxy route for `/api/assistant/*` → 404. Backend controller exists and works. Same gap class as KYC/FICA: AI infrastructure not end-to-end wired. Widget degrades gracefully (returns null). Zero user impact, non-cascading. No fix needed for QA cycle. | OBS-201 WONT_FIX-EXEMPT |
+| 5 | QA | Day 3 executed: RAF matter "Dlamini v Road Accident Fund" (RAF-2026-001) created from "Litigation (Road Accident Fund -- RAF)" template with 9 tasks (PASS). 6 legal-za templates available. Matter detail: header card + 7 grouped tabs correct. SA Legal custom fields (Court, Case Number, etc.) on Fields tab only — no duplication. FICA info request REQ-0001 sent to Sipho (3 items from FICA Onboarding Pack), magic-link email delivered to portal. FICA status on matter Overview: "In Progress". Matter ID: d80aeac5-d5f4-4690-9291-193f05e3785d. Zero new gaps. | All 14 checkpoints PASS |

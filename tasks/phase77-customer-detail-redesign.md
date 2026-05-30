@@ -16,7 +16,7 @@ The current layout has 7 action buttons sprawled horizontally, a metadata wall p
 | 557 | ClientHeaderCard + ClientOverflowMenu | Frontend | -- | M | 557A, 557B | **Done** (PR #1392) |
 | 558 | CustomerGroupedTabs + Tab Panels | Frontend | 556 | M | 558A, 558B | **Done** (PR #1393) |
 | 559 | ClientOverviewTab | Frontend | -- | S | 559A | **Done** (PR #1394) |
-| 560 | Page Integration + Polish | Frontend | 556, 557, 558, 559 | L | 560A, 560B | |
+| 560 | Page Integration + Polish | Frontend | 556, 557, 558, 559 | L | 560A, 560B | **Done** (PRs #1395, #1396) |
 | 561 | QA Testplan Updates | Frontend | 556-560 | S | 561A | |
 
 ## Dependency Graph
@@ -81,7 +81,7 @@ The current layout has 7 action buttons sprawled horizontally, a metadata wall p
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
 | 3a | Epic 560 | 560A | Refactor `page.tsx` to wire all components. Depends on all prior slices. **Done** (PR #1395) |
-| 3b | Epic 560 | 560B | Responsive polish, dark mode, edge-case testing. Depends on 560A. |
+| 3b | Epic 560 | 560B | Responsive polish, dark mode, edge-case testing. Depends on 560A. **Done** (PR #1396) |
 
 ### Stage 4: QA (after Stage 3)
 
@@ -382,7 +382,7 @@ Stage 4:  [561A]                                 ← QA testplan (after all abov
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
 | **560A** | 560.1-560.5 | Refactor `page.tsx`: remove old header/inline sections, wire `ClientHeaderCard` → banner → `CustomerGroupedTabs`. Build all panel ReactNodes. Delete old `CustomerTabs`. Full `pnpm lint && pnpm build && pnpm test` pass. | **Done** (PR #1395) |
-| **560B** | 560.6-560.9 | Responsive polish, dark mode audit, edge-case testing, integration test. (~4 tests) | |
+| **560B** | 560.6-560.9 | Responsive polish, dark mode audit, edge-case testing, integration test. (~4 tests) | **Done** (PR #1396) |
 
 ### Tasks
 

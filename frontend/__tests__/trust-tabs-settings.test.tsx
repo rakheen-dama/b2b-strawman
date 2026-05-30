@@ -4,7 +4,7 @@ import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 
 // --- Mocks (before component imports) ---
 
-// CustomerTabs/ProjectTabs now import useAuditTabVisible from
+// CustomerGroupedTabs/ProjectTabs now import useAuditTabVisible from
 // @/components/audit/audit-timeline-tab, which transitively pulls a
 // `server-only` module via the audit data layer. Stub it for jsdom.
 vi.mock("server-only", () => ({}));
@@ -104,7 +104,7 @@ vi.mock("@/app/(app)/org/[slug]/customers/[id]/actions", () => ({
 import useSWR from "swr";
 import { OrgProfileProvider } from "@/lib/org-profile";
 import { ProjectTabs } from "@/components/projects/project-tabs";
-import { CustomerTabs } from "@/components/customers/customer-tabs";
+import { CustomerGroupedTabs } from "@/components/customers/customer-grouped-tabs";
 import { TrustBalanceCard } from "@/components/trust/TrustBalanceCard";
 import { NAV_GROUPS, SETTINGS_ITEMS } from "@/lib/nav-items";
 
@@ -222,7 +222,7 @@ describe("Project detail Trust tab", () => {
 });
 
 describe("Customer detail Trust tab", () => {
-  it("shows Trust tab with balance card when trust_accounting is enabled", () => {
+  it("shows Trust tab group when trust_accounting is enabled", () => {
     vi.mocked(useSWR).mockReturnValue({
       data: undefined,
       error: undefined,
@@ -232,7 +232,11 @@ describe("Customer detail Trust tab", () => {
 
     render(
       withTrustEnabled(
-        <CustomerTabs
+        <CustomerGroupedTabs
+          detailsPanel={placeholder}
+          fieldsPanel={placeholder}
+          tagsPanel={placeholder}
+          overviewPanel={placeholder}
           projectsPanel={placeholder}
           documentsPanel={placeholder}
           trustPanel={<TrustBalanceCard customerId="cust-1" slug="acme" showQuickActions={true} />}
@@ -240,7 +244,8 @@ describe("Customer detail Trust tab", () => {
       )
     );
 
-    expect(screen.getByRole("tab", { name: "Trust" })).toBeInTheDocument();
+    // With GroupedTabBar, trust is a sub-tab within the Finance group.
+    expect(screen.getByTestId("tab-group-finance")).toBeInTheDocument();
   });
 });
 

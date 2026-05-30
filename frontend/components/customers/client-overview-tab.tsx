@@ -130,7 +130,7 @@ export function ClientOverviewTab({
             <Card data-testid="unbilled-time-card">
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-slate-400" />
+                  <Clock className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                   <CardTitle className="text-base">Unbilled Time</CardTitle>
                 </div>
               </CardHeader>
@@ -157,7 +157,7 @@ export function ClientOverviewTab({
             <Card data-testid="retainer-status-card">
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <RefreshCw className="h-4 w-4 text-slate-400" />
+                  <RefreshCw className="h-4 w-4 text-slate-400 dark:text-slate-500" />
                   <CardTitle className="text-base">Retainer</CardTitle>
                 </div>
               </CardHeader>

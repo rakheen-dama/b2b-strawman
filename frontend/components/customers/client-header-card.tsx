@@ -106,7 +106,7 @@ export function ClientHeaderCard({
 
   return (
     <Card className="p-5" data-testid="client-header-card">
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-2">
           {/* Row 1 — Name */}
           <h1
@@ -150,7 +150,10 @@ export function ClientHeaderCard({
         </div>
 
         {/* Row 5 — Actions */}
-        <div className="flex shrink-0 items-center gap-2" data-testid="client-header-actions">
+        <div
+          className="flex shrink-0 items-center gap-2 self-end sm:self-auto"
+          data-testid="client-header-actions"
+        >
           {smartAction && (
             <Button
               variant={smartAction.variant}

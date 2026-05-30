@@ -34,7 +34,8 @@ For each day-N walk in this cycle:
 - **Next checkpoint**: Day 3 (create RAF matter, send FICA info request)
 - **Completed**: Day 0 (Phase A-D: access request, OTP, padmin approval, KC registration, team invites), Day 1 (firm onboarding polish: branding, tariffs, trust account), Day 2 (onboard Sipho as client, conflict check + KYC)
 - **Resolved**: None
-- **Open gaps**: OBS-201 (LOW, non-cascading — /api/assistant/invocations 404)
+- **Open gaps**: None
+- **Exempt gaps**: OBS-201 (WONT_FIX-EXEMPT — AI infra client-side proxy not wired)
 - **Fixed (awaiting verify)**: None
 
 ## Stack State
@@ -53,7 +54,7 @@ For each day-N walk in this cycle:
 
 | Gap ID | Summary | Severity | Owner | Status | Day | Notes |
 |--------|---------|----------|-------|--------|-----|-------|
-| OBS-201 | `/api/assistant/invocations` returns 404 on client detail page | LOW | — | OPEN | 2 | AI assistant endpoint not registered. Cosmetic, no user-facing impact. Non-cascading. |
+| OBS-201 | `/api/assistant/invocations` returns 404 on client detail page | LOW | Product | WONT_FIX-EXEMPT | 2 | AI infra — client-side proxy not wired for KC mode. Backend controller exists (`AiSpecialistInvocationController`), but `PendingSuggestionsWidget` client fetch uses `API_BASE=""` (browser origin `:3000`), and no Next.js API route proxies to gateway `:8443`. Widget gracefully returns null on error — zero user-facing impact. Same class as KYC adapter gap: AI infrastructure not yet plumbed end-to-end. Mandate: "AI provider 5xx → wait and retry." |
 
 ## Log
 
@@ -63,3 +64,4 @@ For each day-N walk in this cycle:
 | 1 | QA | Day 0 Phase A-D executed: access request + OTP (PASS), padmin approval (PASS), KC registration for Thandi (PASS), team invites for Bob + Carol (PASS), all 3 users registered via KC. Vertical profile legal-za auto-assigned. Zero console errors, zero gaps. | All 32 checkpoints PASS |
 | 2 | QA | Day 1 executed: branding (logo upload + brand colour #1B3358) persists across logout/login (PASS), LSSA 2024/2025 tariff schedule pre-seeded with 19 items (PASS), trust account "Mathebula Trust -- Main" created as SECTION_86 with R 0,00 balance (PASS). Zero console errors, zero gaps. | All 7 checkpoints PASS |
 | 3 | QA | Day 2 executed: Sipho Dlamini onboarded as INDIVIDUAL client (PASS), SA Legal promoted fields visible (ID/Passport, Preferred Correspondence) (PASS), conflict check "No Conflict" (PASS), KYC/FICA adapter not configured (PARTIAL — expected per mandate). 1 LOW gap: OBS-201 (/api/assistant/invocations 404). Client ID: d74963c8-4527-41b8-bd67-a2ca3ed6a3cf. | 8/10 checkpoints PASS, 1 PARTIAL (KYC expected skip), 1 SKIPPED (KYC screenshot) |
+| 4 | Product | Triaged OBS-201 → WONT_FIX-EXEMPT. Root cause: `PendingSuggestionsWidget` client-side fetch uses `API_BASE=""` in KC mode → hits Next.js `:3000` which has no proxy route for `/api/assistant/*` → 404. Backend controller exists and works. Same gap class as KYC/FICA: AI infrastructure not end-to-end wired. Widget degrades gracefully (returns null). Zero user impact, non-cascading. No fix needed for QA cycle. | OBS-201 WONT_FIX-EXEMPT |

@@ -609,7 +609,10 @@ export default async function CustomerDetailPage({
                 ? {
                     name: activeRetainer.name,
                     status: activeRetainer.status,
-                    allocatedHours: activeRetainer.currentPeriod?.allocatedHours ?? activeRetainer.allocatedHours ?? null,
+                    allocatedHours:
+                      activeRetainer.currentPeriod?.allocatedHours ??
+                      activeRetainer.allocatedHours ??
+                      null,
                     consumedHours: activeRetainer.currentPeriod?.consumedHours ?? null,
                     remainingHours: activeRetainer.currentPeriod?.remainingHours ?? null,
                   }

@@ -73,7 +73,7 @@ Actor: **Bob** (Associate / Admin)
 
 ### FICA/KYC onboarding
 
-- [ ] **1.10** Transition Sipho to **ONBOARDING** → verify badge updates
+- [ ] **1.10** Click the smart primary action button **"Start Onboarding"** in the header card (`data-testid="smart-primary-action"`) → verify badge updates to **ONBOARDING**
 - [ ] **1.11** Navigate to **Compliance** tab group → **Onboarding** sub-tab (`tab-group-compliance` → `tab-item-onboarding`) → verify FICA checklist auto-instantiated
 - [ ] **1.12** Mark checklist items: "Certified ID Copy" ✓, "Proof of Address" ✓
 - [ ] **1.13** If KYC verification button is available (Phase 61), click to verify ID — expect no-op in E2E stack but verify UI flow

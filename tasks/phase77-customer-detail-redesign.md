@@ -17,7 +17,7 @@ The current layout has 7 action buttons sprawled horizontally, a metadata wall p
 | 558 | CustomerGroupedTabs + Tab Panels | Frontend | 556 | M | 558A, 558B | **Done** (PR #1393) |
 | 559 | ClientOverviewTab | Frontend | -- | S | 559A | **Done** (PR #1394) |
 | 560 | Page Integration + Polish | Frontend | 556, 557, 558, 559 | L | 560A, 560B | **Done** (PRs #1395, #1396) |
-| 561 | QA Testplan Updates | Frontend | 556-560 | S | 561A | |
+| 561 | QA Testplan Updates | Frontend | 556-560 | S | 561A | **Done** (PR #1397) |
 
 ## Dependency Graph
 
@@ -87,7 +87,7 @@ The current layout has 7 action buttons sprawled horizontally, a metadata wall p
 
 | Order | Epic | Slice | Rationale |
 |-------|------|-------|-----------|
-| 4a | Epic 561 | 561A | Migrate all QA testplan selectors. Add `MIGRATION-NOTES.md` Customer Detail section. Depends on all prior slices. |
+| 4a | Epic 561 | 561A | Migrate all QA testplan selectors. Add `MIGRATION-NOTES.md` Customer Detail section. Depends on all prior slices. **Done** (PR #1397) |
 
 ### Timeline
 
@@ -451,7 +451,7 @@ Stage 4:  [561A]                                 ← QA testplan (after all abov
 
 | Slice | Tasks | Summary | Status |
 |-------|-------|---------|--------|
-| **561A** | 561.1-561.6 | Update 10 QA testplan files, migrate tab/action/content selectors, update field promotion checkpoints, add sharding note, update MIGRATION-NOTES.md | |
+| **561A** | 561.1-561.6 | Update 10 QA testplan files, migrate tab/action/content selectors, update field promotion checkpoints, add sharding note, update MIGRATION-NOTES.md | **Done** (PR #1397) |
 
 ### Tasks
 

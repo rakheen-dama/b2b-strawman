@@ -635,7 +635,7 @@
 | 558 | CustomerGroupedTabs + Tab Panels | Frontend | 556 | M | 558A, 558B | **Done** (PR #1393) |
 | 559 | ClientOverviewTab | Frontend | -- | S | 559A | **Done** (PR #1394) |
 | 560 | Page Integration + Polish | Frontend | 556, 557, 558, 559 | L | 560A, 560B | **Done** (PRs #1395, #1396) |
-| 561 | QA Testplan Updates | Frontend | 556-560 | S | 561A | |
+| 561 | QA Testplan Updates | Frontend | 556-560 | S | 561A | **Done** (PR #1397) |
 
 
 ---

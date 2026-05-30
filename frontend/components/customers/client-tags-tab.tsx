@@ -1,5 +1,3 @@
-"use client";
-
 import { TagInput } from "@/components/tags/TagInput";
 import type { TagResponse } from "@/lib/types";
 

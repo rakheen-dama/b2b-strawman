@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Tabs as TabsPrimitive } from "radix-ui";
 import { useOrgProfile } from "@/lib/org-profile";
@@ -63,7 +63,6 @@ export function CustomerGroupedTabs({
   const searchParams = useSearchParams();
   const router = useRouter();
   const tabParam = searchParams.get("tab");
-  const [userTab, setUserTab] = useState<string | null>(null);
   const { isModuleEnabled } = useOrgProfile();
   const { t } = useTerminology();
 
@@ -130,17 +129,28 @@ export function CustomerGroupedTabs({
     showAudit,
   ]);
 
-  // Resolve the active tab from URL or user click
+  // Collect all visible tab IDs for activeTab validation
+  const visibleTabIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const group of visibleGroups) {
+      if (!group.visible) continue;
+      for (const tab of group.tabs) {
+        if (tab.visible !== false) ids.add(tab.id);
+      }
+    }
+    return ids;
+  }, [visibleGroups]);
+
+  // Resolve the active tab from URL — single source of truth
   const resolved = useMemo(
     () => resolveTabFromUrl(tabParam, visibleGroups),
     [tabParam, visibleGroups]
   );
 
-  // User-clicked tab takes priority over URL when URL has not changed
-  const activeTab = userTab ?? resolved.tabId;
+  const activeTab =
+    resolved.tabId && visibleTabIds.has(resolved.tabId) ? resolved.tabId : "overview";
 
   const handleTabChange = (tabId: string) => {
-    setUserTab(tabId);
     const params = new URLSearchParams(searchParams.toString());
     params.set("tab", tabId);
     router.replace(`?${params.toString()}`);

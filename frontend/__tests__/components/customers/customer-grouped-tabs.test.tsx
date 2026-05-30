@@ -168,6 +168,9 @@ describe("CustomerGroupedTabs", () => {
 
   it("hides trust tab when trust_accounting disabled", () => {
     mockIsModuleEnabled.mockImplementation(() => false);
+    // Set tab=invoices so the Finance group is already active; clicking it
+    // opens the dropdown instead of navigating to the first sub-tab.
+    mockSearchParams = new URLSearchParams("tab=invoices");
 
     render(
       <CustomerGroupedTabs

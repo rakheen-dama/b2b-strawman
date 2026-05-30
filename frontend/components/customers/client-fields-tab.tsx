@@ -1,5 +1,3 @@
-"use client";
-
 import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";
 import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
 import type {

@@ -1,5 +1,3 @@
-"use client";
-
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Briefcase } from "lucide-react";
 import { CustomerAddressBlock } from "@/components/customers/customer-address-block";

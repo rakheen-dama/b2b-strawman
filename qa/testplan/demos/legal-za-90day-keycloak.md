@@ -220,7 +220,7 @@ Follow `qa/testplan/demo-readiness-keycloak-master.md` → "Session 0 — Stack 
 
 ### Day 2 — FICA/KYC onboarding
 
-- [ ] **2.1** On Sipho's client detail page, click the smart primary action button **"Start Onboarding"** in the header card → verify badge updates
+- [ ] **2.1** On Sipho's client detail page, click the smart primary action button **"Start Onboarding"** in the header card → verify lifecycle badge changes from **PROSPECT** to **ONBOARDING**
 - [ ] **2.2** Navigate to **Compliance** tab group → **Onboarding** sub-tab (`tab-group-compliance` → `tab-item-onboarding`) → verify FICA checklist is auto-instantiated (from `fica-kyc-za` pack)
 - [ ] **2.3** Verify checklist contains at minimum: "Certified ID Copy", "Proof of Address" (utility bill), "Source of Funds"
 - [ ] **2.4** Mark "Certified ID Copy" ✓ → add note "Verified against home affairs ID"

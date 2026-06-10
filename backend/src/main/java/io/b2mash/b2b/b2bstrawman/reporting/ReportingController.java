@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.reporting;
 
+import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
@@ -28,17 +29,20 @@ public class ReportingController {
   }
 
   @GetMapping
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<ReportExportService.CategorizedReportsResponse> listReportDefinitions() {
     return ResponseEntity.ok(reportExportService.listCategorized());
   }
 
   @GetMapping("/{slug}")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<ReportExportService.ReportDetailResponse> getReportDefinition(
       @PathVariable String slug) {
     return ResponseEntity.ok(reportExportService.getBySlug(slug));
   }
 
   @PostMapping("/{slug}/execute")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<ReportExecutionResponse> executeReport(
       @PathVariable String slug, @Valid @RequestBody ExecuteReportRequest request) {
     var pageable = PageRequest.of(request.page(), request.size());
@@ -46,6 +50,7 @@ public class ReportingController {
   }
 
   @GetMapping("/{slug}/preview")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<String> previewReport(
       @PathVariable String slug, @RequestParam Map<String, Object> parameters) {
     return ResponseEntity.ok()
@@ -54,6 +59,7 @@ public class ReportingController {
   }
 
   @GetMapping("/{slug}/export/pdf")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public ResponseEntity<byte[]> exportPdf(
       @PathVariable String slug, @RequestParam Map<String, Object> parameters) {
     var result = reportExportService.exportAsPdf(slug, parameters);
@@ -64,6 +70,7 @@ public class ReportingController {
   }
 
   @GetMapping("/{slug}/export/csv")
+  @RequiresCapability("FINANCIAL_VISIBILITY")
   public void exportCsv(
       @PathVariable String slug,
       @RequestParam Map<String, Object> parameters,

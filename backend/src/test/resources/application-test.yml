@@ -9,8 +9,6 @@ spring:
     # Required: AiSpecialistInvocation*IntegrationTest @TestConfiguration classes override
     # the billingPolishApplier bean by name. Without this flag, Spring refuses the override.
     allow-bean-definition-overriding: true
-  scheduling:
-    enabled: false
   datasource:
     app:
       maximum-pool-size: 3
@@ -87,6 +85,12 @@ docteams:
 # Tests that need webhook access use @DynamicPropertySource to inject a test ECDSA key.
 
 kazi:
+  # Disable Spring scheduling in tests — @SpringBootTest contexts boot the full app, so without
+  # this every @Scheduled method (drain workers, pollers) would fire during the suite. Gated by
+  # SchedulingConfig (matchIfMissing=true, so prod/dev/local stay on). A test class that needs a
+  # scheduler can opt back in via @TestPropertySource(properties = "kazi.scheduling.enabled=true").
+  scheduling:
+    enabled: false
   sharding:
     enabled: false
   job-queue:

@@ -82,8 +82,12 @@ class JobWorkerParallelismTest {
     assertThat(slowHandler.maxInFlight())
         .as("claimed batch must execute with real parallelism, not one job at a time")
         .isGreaterThanOrEqualTo(2);
+    // Scope to this test's job type: the AccountingSyncWorker scheduler fans out
+    // accounting_sync_drain jobs into the shared job_queue on a 30s cadence in any
+    // scheduling-enabled context, so an unscoped COMPLETED census could be polluted.
     long completed =
         jobQueueRepository.findAll().stream()
+            .filter(j -> j.getJobType().equals(SlowConcurrencyTestJobHandler.JOB_TYPE))
             .filter(j -> j.getStatus() == JobStatus.COMPLETED)
             .count();
     assertThat(completed).isEqualTo(jobCount);

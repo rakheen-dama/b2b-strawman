@@ -29,7 +29,8 @@ class VerticalProfileRegistryTest {
     assertThat(p.description()).startsWith("Complete configuration for");
     assertThat(p.currency()).isEqualTo("ZAR");
     assertThat(p.enabledModules())
-        .containsExactlyInAnyOrder("deadlines", "information_requests", "automation_builder");
+        .containsExactlyInAnyOrder(
+            "regulatory_deadlines", "deadlines", "information_requests", "automation_builder");
     assertThat(p.terminologyNamespace()).isEqualTo("en-ZA-accounting");
     assertThat(p.packs()).containsKey("field");
   }
@@ -92,11 +93,14 @@ class VerticalProfileRegistryTest {
   void accountingZaProfileEnablesExpectedModules() {
     // OBS-4004: automation_builder must be enabled because accounting-za seeds automation
     // packs (automation-accounting-za) — the UI to manage those rules requires this module.
-    // Regression guard still holds: legal-only modules (trust_accounting, court_calendar etc.)
-    // must NOT leak into accounting-za.
+    // regulatory_deadlines is the firm-side SARS/CIPC deadline module declared default-enabled for
+    // accounting-za in VerticalModuleRegistry; "deadlines" is the distinct customer-portal deadline
+    // view (Epic 497A) — both are legitimately enabled. Regression guard still holds: legal-only
+    // modules (trust_accounting, court_calendar etc.) must NOT leak into accounting-za.
     var profile = registry.getProfile("accounting-za").orElseThrow();
     assertThat(profile.enabledModules())
-        .containsExactlyInAnyOrder("deadlines", "information_requests", "automation_builder");
+        .containsExactlyInAnyOrder(
+            "regulatory_deadlines", "deadlines", "information_requests", "automation_builder");
   }
 
   @Test

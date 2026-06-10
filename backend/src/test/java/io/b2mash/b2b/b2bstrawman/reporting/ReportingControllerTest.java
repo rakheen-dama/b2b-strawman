@@ -65,6 +65,8 @@ class ReportingControllerTest {
         UUID.fromString(
             TestMemberHelper.syncMember(
                 mockMvc, ORG_ID, "user_rc_owner", "rc_owner@test.com", "RC Owner", "owner"));
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc, ORG_ID, "user_rc_member", "rc_member@test.com", "RC Member", "member");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();

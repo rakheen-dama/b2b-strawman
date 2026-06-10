@@ -128,8 +128,9 @@ class PortalContextControllerIntegrationTest {
                       "Acct Client", "acct-client@test.com", null, null, null, acctMemberId);
               acctCustomerId = customer.getId();
               // GAP-L-34: auto-provisioner already created the portal contact for this email.
-              // accounting-za.json seeds enabledModules: []. Set regulatory_deadlines explicitly
-              // and ensure trust_accounting is absent so assertions (2) hold.
+              // Pin enabledModules to exactly regulatory_deadlines so the assertions below are
+              // deterministic regardless of the accounting-za profile's full module set, while
+              // ensuring trust_accounting is absent so assertion (2) holds.
               var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
               settings.setEnabledModules(List.of("regulatory_deadlines"));
               orgSettingsRepository.save(settings);

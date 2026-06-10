@@ -45,6 +45,7 @@ class VerticalProfileIntegrationTest {
   // Separate org IDs per test group to ensure independence
   private static final String LIFECYCLE_ORG_ID = "org_vpi_lifecycle";
   private static final String GUARD_ORG_ID = "org_vpi_guard";
+  private static final String ACCT_ORG_ID = "org_vpi_accounting";
 
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
@@ -80,6 +81,12 @@ class VerticalProfileIntegrationTest {
         "vpi_guard@test.com",
         "Guard Owner",
         "owner");
+
+    // Provision an accounting-za tenant — its profile declares regulatory_deadlines as
+    // default-enabled, so the firm-side DeadlineController must NOT fail closed.
+    provisioningService.provisionTenant(ACCT_ORG_ID, "Accounting Test Org", "accounting-za");
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc, ACCT_ORG_ID, "user_vpi_acct_owner", "vpi_acct@test.com", "Acct Owner", "owner");
   }
 
   // --- Task 372.1: Profile Switching Lifecycle ---
@@ -205,5 +212,24 @@ class VerticalProfileIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(GUARD_ORG_ID, "user_vpi_guard_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray());
+  }
+
+  // --- Regression: accounting-za must have the firm-side regulatory_deadlines module ---
+
+  @Test
+  @Order(4)
+  void accountingZaTenant_canAccessRegulatoryDeadlines() throws Exception {
+    // A freshly provisioned accounting-za tenant copies enabledModules from the profile JSON, which
+    // now includes regulatory_deadlines (declared default-enabled in VerticalModuleRegistry). The
+    // firm-side DeadlineController guards on requireModule("regulatory_deadlines") — before the fix
+    // it fail-closed with 403 because the profile omitted the slug.
+    mockMvc
+        .perform(
+            get("/api/deadlines")
+                .param("from", "2026-01-01")
+                .param("to", "2026-12-31")
+                .with(TestJwtFactory.ownerJwt(ACCT_ORG_ID, "user_vpi_acct_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray());
   }
 }

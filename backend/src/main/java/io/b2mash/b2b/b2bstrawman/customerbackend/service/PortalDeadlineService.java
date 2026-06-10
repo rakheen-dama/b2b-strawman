@@ -24,7 +24,13 @@ import org.springframework.stereotype.Service;
 @Service
 public class PortalDeadlineService {
 
-  private static final String MODULE_ID = "deadlines";
+  /**
+   * Module ID guarding the customer-portal deadline view (Epic 497A, ADR-254/256). Distinct from
+   * the firm-side {@code regulatory_deadlines} module in {@link
+   * io.b2mash.b2b.b2bstrawman.verticals.VerticalModuleRegistry}: this slug is owned here, not in
+   * the registry, so it is a source-of-truth constant for vertical-profile slug validation.
+   */
+  public static final String MODULE_ID = "deadlines";
 
   /** Default list window when {@code to} is not supplied by the caller. */
   private static final int DEFAULT_LOOKAHEAD_DAYS = 60;

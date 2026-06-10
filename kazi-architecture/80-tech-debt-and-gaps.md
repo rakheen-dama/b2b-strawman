@@ -50,7 +50,6 @@ This file is **not a roadmap.** It is an inventory of debt, gaps, and risks visi
 | B-06 | `consulting-za.json` ≠ phase66 doc | Low | S | Phase 66 architecture doc shows empty `enabledModules`; the shipped JSON has three. Doc was not updated when the JSON was finalised. | `60-verticals/consulting-za.md` |
 | B-07 | "base" profile is `consulting-generic.json` | Low | S | Documentation refers to a `base` vertical; no `base.json` exists in `vertical-profiles/`. The de-facto base is `consulting-generic.json` with empty modules. Naming gap. | `60-verticals/base.md` |
 | B-08 | ADR-139 / ADR-156 retired without formal `Superseded` marker | Low | S | A4 triage marked them Stale based on context; the ADR files themselves carry no `Status: Superseded by ADR-178` line. | `_discovery/A4-adr-triage.md`; `90-adr-index.md` |
-| B-09 | Reports backend has no capability gate | High | S | The frontend gates `/reports` on `FINANCIAL_VISIBILITY`; the backend `ReportingController` has no `@RequiresCapability`. A direct API call bypasses authorisation. | `reporting.md` §6 |
 | B-10 | Retainers backend missing module-gate call | Med | S | Backend services don't call `verticalModuleGuard.requireModule("retainer_agreements")`. Defense-in-depth gap; UI nav-absence and portal redirect are the only enforcement. | `retainers.md` §6 |
 
 ## C — Vocabulary / naming drift
@@ -121,7 +120,7 @@ These are concrete bugs surfaced while writing the module pages. None blocked Ph
 | H-03 | `accounting-za.json` slug `"deadlines"` ≠ registry `"regulatory_deadlines"` | High | S | `verticals/accounting-za.json` | Open. Likely active defect — accounting tenants miss the deadline module. |
 | H-04 | `automation-legal-za` pack not referenced in `legal-za.json` | High | S | `verticals/legal-za.json` | Open. Pack ships standalone but doesn't auto-install. |
 | H-05 | `Subscription` enum still contains plan-tier states | High | M | `billing/Subscription.java` | Open. Per `project_no_plan_subscriptions.md` decision; not yet cleaned up. |
-| H-06 | Reports controller missing `@RequiresCapability` | High | S | `reporting/ReportingController.java` | Open. Frontend-only enforcement — direct API call bypasses authz. |
+| H-06 | Reports controller missing `@RequiresCapability` | High | S | `reporting/ReportingController.java` | **Fixed.** `@RequiresCapability("FINANCIAL_VISIBILITY")` added to all 6 endpoints; member-role denial covered by `ReportingControllerTest`. |
 | H-07 | `ViewFilterHelper` `tableName` SQL surface | Med | S | `view/ViewFilterHelper.java` | Open IF tableName ever becomes user-controlled. Currently safe (caller-supplied from controlled enum). |
 | H-08 | Audit triggers may not cover `TRUNCATE` | Med | S | `V12_*.sql` migration | Open — verify the trigger function and consider blocking TRUNCATE. |
 | H-09 | `RetainerPeriod.PeriodStatus.INVOICED` unwired | Low | S | `retainer/PeriodStatus.java` | Open. Dead enum value or unwired transition. |
@@ -180,7 +179,7 @@ Cross-references for areas where the work is mostly done but specific edges are 
 | `ai-assistant` | BYOAK key rotation gap; tool-capability ArchUnit absent. | `ai-assistant.md` §10 |
 | `audit` | Severity-derivation logic ~100-entry ceiling. | `audit.md` §10 |
 | `notifications` | Free-form notification type strings (no enum); no retry on email failure. | `notifications.md` §10 |
-| `reporting` | Backend missing `FINANCIAL_VISIBILITY` gate (H-06). | `reporting.md` §10 |
+| `reporting` | Backend `FINANCIAL_VISIBILITY` gate added (H-06, fixed). | `reporting.md` §10 |
 | `capacity-planning` | `MemberOverAllocatedEvent` has no listeners (F-02). | `capacity-planning.md` §10 |
 | `customer-portal` | JWT-on-suspend revocation gap (J-03); read-model schema vs extension drift. | `customer-portal.md` §10 |
 | `settings-navigation` | OrgSettings god-object (D-07). | `settings-navigation.md` §10 |
@@ -204,11 +203,10 @@ These are good first-PRs for new contributors or for housekeeping sprints.
 3. Fix `accounting-za.json` slug `"deadlines"` → `"regulatory_deadlines"` (B-04, H-03). One-line.
 4. Add `packs.automation` key to `legal-za.json` to wire the legal automation pack (B-05, H-04).
 5. Remove `RetainerPeriod.PeriodStatus.INVOICED` if confirmed dead (E-03, H-09).
-6. Add `@RequiresCapability("FINANCIAL_VISIBILITY")` to `ReportingController` (B-09, H-06).
-7. Add `verticalModuleGuard.requireModule("retainer_agreements")` to retainer service entry points (B-10).
-8. Add a boot-time warning when `VerticalProfileRegistry` skips a malformed JSON (G-01, K-05).
-9. Rename `ProjectStatus.VALID_TRANSITIONS` ↔ `ALLOWED_TRANSITIONS` to a single name (E-04).
-10. Mark superseded ADRs (139, 156, 010, 013, 014, 219, 222) with explicit `Status: Superseded by ADR-XXX` headers in the ADR files (B-08).
+6. Add `verticalModuleGuard.requireModule("retainer_agreements")` to retainer service entry points (B-10).
+7. Add a boot-time warning when `VerticalProfileRegistry` skips a malformed JSON (G-01, K-05).
+8. Rename `ProjectStatus.VALID_TRANSITIONS` ↔ `ALLOWED_TRANSITIONS` to a single name (E-04).
+9. Mark superseded ADRs (139, 156, 010, 013, 014, 219, 222) with explicit `Status: Superseded by ADR-XXX` headers in the ADR files (B-08).
 
 ## N — Recommended next ADRs
 

@@ -65,6 +65,8 @@ class ReportingControllerTest {
         UUID.fromString(
             TestMemberHelper.syncMember(
                 mockMvc, ORG_ID, "user_rc_owner", "rc_owner@test.com", "RC Owner", "owner"));
+    TestMemberHelper.syncMemberQuietly(
+        mockMvc, ORG_ID, "user_rc_member", "rc_member@test.com", "RC Member", "member");
 
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
@@ -117,8 +119,7 @@ class ReportingControllerTest {
   void listReportDefinitionsReturnsThreeCategories() throws Exception {
     mockMvc
         .perform(
-            get("/api/report-definitions")
-                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member")))
+            get("/api/report-definitions").with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.categories").isArray())
         .andExpect(jsonPath("$.categories.length()").value(3));
@@ -128,8 +129,7 @@ class ReportingControllerTest {
   void listReportDefinitionsHasCorrectCategoryLabels() throws Exception {
     mockMvc
         .perform(
-            get("/api/report-definitions")
-                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member")))
+            get("/api/report-definitions").with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.categories[?(@.category == 'FINANCIAL')].label").value("Financial"))
         .andExpect(
@@ -143,7 +143,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             get("/api/report-definitions/timesheet")
-                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member")))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.slug").value("timesheet"))
         .andExpect(jsonPath("$.name").value("Timesheet Report"))
@@ -159,7 +159,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             get("/api/report-definitions/nonexistent")
-                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member")))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner")))
         .andExpect(status().isNotFound());
   }
 
@@ -175,7 +175,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             post("/api/report-definitions/timesheet/execute")
-                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -203,7 +203,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             post("/api/report-definitions/nonexistent-report/execute")
-                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -244,7 +244,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             post("/api/report-definitions/timesheet/execute")
-                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -273,7 +273,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             get("/api/report-definitions/timesheet/preview")
-                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner"))
                 .param("dateFrom", "2025-06-01")
                 .param("dateTo", "2025-06-30")
                 .param("groupBy", "member"))
@@ -286,7 +286,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             get("/api/report-definitions/nonexistent-report/preview")
-                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner"))
                 .param("dateFrom", "2025-06-01")
                 .param("dateTo", "2025-06-30"))
         .andExpect(status().isNotFound());
@@ -299,7 +299,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             get("/api/report-definitions/timesheet/export/pdf")
-                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner"))
                 .param("dateFrom", "2025-06-01")
                 .param("dateTo", "2025-06-30")
                 .param("groupBy", "member"))
@@ -317,7 +317,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             get("/api/report-definitions/timesheet/export/pdf")
-                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner"))
                 .param("dateFrom", "2025-06-01")
                 .param("dateTo", "2025-06-30")
                 .param("groupBy", "member"))
@@ -353,7 +353,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             get("/api/report-definitions/timesheet/export/csv")
-                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner"))
                 .param("dateFrom", "2025-06-01")
                 .param("dateTo", "2025-06-30")
                 .param("groupBy", "member"))
@@ -390,7 +390,7 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             get("/api/report-definitions/timesheet/export/csv")
-                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner"))
                 .param("dateFrom", "2025-06-01")
                 .param("dateTo", "2025-06-30")
                 .param("groupBy", "member"))
@@ -432,9 +432,102 @@ class ReportingControllerTest {
     mockMvc
         .perform(
             get("/api/report-definitions/nonexistent/export/csv")
-                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner"))
                 .param("dateFrom", "2025-06-01")
                 .param("dateTo", "2025-06-30"))
         .andExpect(status().isNotFound());
+  }
+
+  // --- FINANCIAL_VISIBILITY capability enforcement (B-09) ---
+  //
+  // The "member" system role is seeded with an empty capability set (see tenant migration
+  // V67__create_org_role_tables.sql), so it lacks FINANCIAL_VISIBILITY. Every endpoint on this
+  // controller exposes financial data and MUST deny a plain member with 403 (the established
+  // denial status from CapabilityAuthorizationService's AccessDeniedException — see
+  // report/ReportCapabilityTest).
+
+  @Test
+  void listReportDefinitionsWithoutFinancialVisibilityReturns403() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/report-definitions")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member")))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void getReportDefinitionWithoutFinancialVisibilityReturns403() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/report-definitions/timesheet")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member")))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void executeReportWithoutFinancialVisibilityReturns403() throws Exception {
+    mockMvc
+        .perform(
+            post("/api/report-definitions/timesheet/execute")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {
+                      "parameters": {
+                        "dateFrom": "2025-06-01",
+                        "dateTo": "2025-06-30",
+                        "groupBy": "member"
+                      },
+                      "page": 0,
+                      "size": 50
+                    }
+                    """))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void previewReportWithoutFinancialVisibilityReturns403() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/report-definitions/timesheet/preview")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
+                .param("dateFrom", "2025-06-01")
+                .param("dateTo", "2025-06-30")
+                .param("groupBy", "member"))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void exportPdfWithoutFinancialVisibilityReturns403() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/report-definitions/timesheet/export/pdf")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
+                .param("dateFrom", "2025-06-01")
+                .param("dateTo", "2025-06-30")
+                .param("groupBy", "member"))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void exportCsvWithoutFinancialVisibilityReturns403() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/report-definitions/timesheet/export/csv")
+                .with(TestJwtFactory.jwtAs(ORG_ID, "user_rc_member", "member"))
+                .param("dateFrom", "2025-06-01")
+                .param("dateTo", "2025-06-30")
+                .param("groupBy", "member"))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void listReportDefinitionsWithFinancialVisibilityReturns200() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/report-definitions").with(TestJwtFactory.ownerJwt(ORG_ID, "user_rc_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.categories").isArray());
   }
 }

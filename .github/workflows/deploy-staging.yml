@@ -12,9 +12,14 @@ permissions:
   contents: read
   id-token: write
 
+# Override via repository variables (Settings -> Secrets and variables -> Actions
+# -> Variables); the || fallbacks keep the workflow working with none set.
 env:
-  AWS_REGION: af-south-1
-  ECS_CLUSTER: kazi-staging
+  AWS_REGION: ${{ vars.AWS_REGION || 'af-south-1' }}
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER_STAGING || 'kazi-staging' }}
+  APP_DOMAIN: ${{ vars.STAGING_APP_DOMAIN || 'staging-app.heykazi.com' }}
+  AUTH_DOMAIN: ${{ vars.STAGING_AUTH_DOMAIN || 'staging-auth.heykazi.com' }}
+  PORTAL_DOMAIN: ${{ vars.STAGING_PORTAL_DOMAIN || 'staging-portal.heykazi.com' }}
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -79,7 +84,7 @@ jobs:
             ${{ steps.ecr-login.outputs.registry }}/kazi/frontend:staging
           build-args: |
             NEXT_PUBLIC_AUTH_MODE=keycloak
-            NEXT_PUBLIC_GATEWAY_URL=https://staging-app.heykazi.com/bff
+            NEXT_PUBLIC_GATEWAY_URL=https://${{ env.APP_DOMAIN }}/bff
           cache-from: type=gha,scope=frontend-staging
           cache-to: type=gha,mode=max,scope=frontend-staging
 
@@ -180,7 +185,7 @@ jobs:
             ${{ steps.ecr-login.outputs.registry }}/kazi/portal:${{ github.sha }}
             ${{ steps.ecr-login.outputs.registry }}/kazi/portal:staging
           build-args: |
-            NEXT_PUBLIC_PORTAL_API_URL=https://staging-portal.heykazi.com/api
+            NEXT_PUBLIC_PORTAL_API_URL=https://${{ env.PORTAL_DOMAIN }}/api
           cache-from: type=gha,scope=portal-staging
           cache-to: type=gha,mode=max,scope=portal-staging
 
@@ -267,8 +272,8 @@ jobs:
         uses: ./.github/actions/ecs-deploy
         with:
           cluster: ${{ env.ECS_CLUSTER }}
-          service: kazi-staging-frontend
-          task-definition-family: kazi-staging-frontend
+          service: ${{ env.ECS_CLUSTER }}-frontend
+          task-definition-family: ${{ env.ECS_CLUSTER }}-frontend
           container-name: frontend
           image: ${{ steps.tags.outputs.frontend }}
 
@@ -276,8 +281,8 @@ jobs:
         uses: ./.github/actions/ecs-deploy
         with:
           cluster: ${{ env.ECS_CLUSTER }}
-          service: kazi-staging-backend
-          task-definition-family: kazi-staging-backend
+          service: ${{ env.ECS_CLUSTER }}-backend
+          task-definition-family: ${{ env.ECS_CLUSTER }}-backend
           container-name: backend
           image: ${{ steps.tags.outputs.backend }}
 
@@ -285,8 +290,8 @@ jobs:
         uses: ./.github/actions/ecs-deploy
         with:
           cluster: ${{ env.ECS_CLUSTER }}
-          service: kazi-staging-gateway
-          task-definition-family: kazi-staging-gateway
+          service: ${{ env.ECS_CLUSTER }}-gateway
+          task-definition-family: ${{ env.ECS_CLUSTER }}-gateway
           container-name: gateway
           image: ${{ steps.tags.outputs.gateway }}
 
@@ -294,8 +299,8 @@ jobs:
         uses: ./.github/actions/ecs-deploy
         with:
           cluster: ${{ env.ECS_CLUSTER }}
-          service: kazi-staging-portal
-          task-definition-family: kazi-staging-portal
+          service: ${{ env.ECS_CLUSTER }}-portal
+          task-definition-family: ${{ env.ECS_CLUSTER }}-portal
           container-name: portal
           image: ${{ steps.tags.outputs.portal }}
 
@@ -303,8 +308,8 @@ jobs:
         uses: ./.github/actions/ecs-deploy
         with:
           cluster: ${{ env.ECS_CLUSTER }}
-          service: kazi-staging-keycloak
-          task-definition-family: kazi-staging-keycloak
+          service: ${{ env.ECS_CLUSTER }}-keycloak
+          task-definition-family: ${{ env.ECS_CLUSTER }}-keycloak
           container-name: keycloak
           image: ${{ steps.tags.outputs.keycloak }}
 
@@ -318,14 +323,14 @@ jobs:
     steps:
       - name: Check frontend (200 OK)
         run: |
-          echo "Checking frontend at https://staging-app.heykazi.com/ ..."
-          curl -sf --retry 5 --retry-delay 15 --max-time 30 "https://staging-app.heykazi.com/" > /dev/null
+          echo "Checking frontend at https://${APP_DOMAIN}/ ..."
+          curl -sf --retry 5 --retry-delay 15 --max-time 30 "https://${APP_DOMAIN}/" > /dev/null
           echo "Frontend is healthy."
 
       - name: Check gateway (expect 401 — gateway is working)
         run: |
-          echo "Checking gateway at https://staging-app.heykazi.com/bff/me ..."
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --retry 5 --retry-delay 15 --max-time 30 "https://staging-app.heykazi.com/bff/me")
+          echo "Checking gateway at https://${APP_DOMAIN}/bff/me ..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --retry 5 --retry-delay 15 --max-time 30 "https://${APP_DOMAIN}/bff/me")
           if [ "$HTTP_CODE" = "401" ] || [ "$HTTP_CODE" = "200" ]; then
             echo "Gateway is healthy (HTTP ${HTTP_CODE})."
           else
@@ -335,14 +340,14 @@ jobs:
 
       - name: Check keycloak health
         run: |
-          echo "Checking keycloak at https://staging-auth.heykazi.com/health/ready ..."
-          curl -sf --retry 5 --retry-delay 15 --max-time 30 "https://staging-auth.heykazi.com/health/ready" > /dev/null
+          echo "Checking keycloak at https://${AUTH_DOMAIN}/health/ready ..."
+          curl -sf --retry 5 --retry-delay 15 --max-time 30 "https://${AUTH_DOMAIN}/health/ready" > /dev/null
           echo "Keycloak is healthy."
 
       - name: Check portal (200 OK)
         run: |
-          echo "Checking portal at https://staging-portal.heykazi.com/ ..."
-          curl -sf --retry 5 --retry-delay 15 --max-time 30 "https://staging-portal.heykazi.com/" > /dev/null
+          echo "Checking portal at https://${PORTAL_DOMAIN}/ ..."
+          curl -sf --retry 5 --retry-delay 15 --max-time 30 "https://${PORTAL_DOMAIN}/" > /dev/null
           echo "Portal is healthy."
 
       - name: Post smoke test results to summary
@@ -354,10 +359,10 @@ jobs:
           echo "|---------|-----|--------|" >> "$GITHUB_STEP_SUMMARY"
 
           for url in \
-            "https://staging-app.heykazi.com/" \
-            "https://staging-app.heykazi.com/bff/me" \
-            "https://staging-auth.heykazi.com/health/ready" \
-            "https://staging-portal.heykazi.com/"; do
+            "https://${APP_DOMAIN}/" \
+            "https://${APP_DOMAIN}/bff/me" \
+            "https://${AUTH_DOMAIN}/health/ready" \
+            "https://${PORTAL_DOMAIN}/"; do
             HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$url" 2>/dev/null || echo "ERR")
             if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "401" ]; then
               echo "| ${url} | ${url} | :white_check_mark: ${HTTP_CODE} |" >> "$GITHUB_STEP_SUMMARY"

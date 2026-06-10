@@ -34,7 +34,7 @@ permissions:
   id-token: write
 
 env:
-  AWS_REGION: af-south-1
+  AWS_REGION: ${{ vars.AWS_REGION || 'af-south-1' }}
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -63,9 +63,9 @@ jobs:
     if: inputs.service == 'frontend' || inputs.service == 'all'
     runs-on: ubuntu-latest
     env:
-      CLUSTER: kazi-${{ inputs.environment }}
-      SERVICE: kazi-${{ inputs.environment }}-frontend
-      FAMILY: kazi-${{ inputs.environment }}-frontend
+      CLUSTER: ${{ inputs.environment == 'production' && (vars.ECS_CLUSTER_PRODUCTION || 'kazi-production') || (vars.ECS_CLUSTER_STAGING || 'kazi-staging') }}
+      SERVICE: ${{ inputs.environment == 'production' && (vars.ECS_CLUSTER_PRODUCTION || 'kazi-production') || (vars.ECS_CLUSTER_STAGING || 'kazi-staging') }}-frontend
+      FAMILY: ${{ inputs.environment == 'production' && (vars.ECS_CLUSTER_PRODUCTION || 'kazi-production') || (vars.ECS_CLUSTER_STAGING || 'kazi-staging') }}-frontend
       CONTAINER: frontend
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
@@ -165,9 +165,9 @@ jobs:
     if: inputs.service == 'backend' || inputs.service == 'all'
     runs-on: ubuntu-latest
     env:
-      CLUSTER: kazi-${{ inputs.environment }}
-      SERVICE: kazi-${{ inputs.environment }}-backend
-      FAMILY: kazi-${{ inputs.environment }}-backend
+      CLUSTER: ${{ inputs.environment == 'production' && (vars.ECS_CLUSTER_PRODUCTION || 'kazi-production') || (vars.ECS_CLUSTER_STAGING || 'kazi-staging') }}
+      SERVICE: ${{ inputs.environment == 'production' && (vars.ECS_CLUSTER_PRODUCTION || 'kazi-production') || (vars.ECS_CLUSTER_STAGING || 'kazi-staging') }}-backend
+      FAMILY: ${{ inputs.environment == 'production' && (vars.ECS_CLUSTER_PRODUCTION || 'kazi-production') || (vars.ECS_CLUSTER_STAGING || 'kazi-staging') }}-backend
       CONTAINER: backend
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
@@ -267,9 +267,9 @@ jobs:
     if: inputs.service == 'gateway' || inputs.service == 'all'
     runs-on: ubuntu-latest
     env:
-      CLUSTER: kazi-${{ inputs.environment }}
-      SERVICE: kazi-${{ inputs.environment }}-gateway
-      FAMILY: kazi-${{ inputs.environment }}-gateway
+      CLUSTER: ${{ inputs.environment == 'production' && (vars.ECS_CLUSTER_PRODUCTION || 'kazi-production') || (vars.ECS_CLUSTER_STAGING || 'kazi-staging') }}
+      SERVICE: ${{ inputs.environment == 'production' && (vars.ECS_CLUSTER_PRODUCTION || 'kazi-production') || (vars.ECS_CLUSTER_STAGING || 'kazi-staging') }}-gateway
+      FAMILY: ${{ inputs.environment == 'production' && (vars.ECS_CLUSTER_PRODUCTION || 'kazi-production') || (vars.ECS_CLUSTER_STAGING || 'kazi-staging') }}-gateway
       CONTAINER: gateway
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
@@ -369,9 +369,9 @@ jobs:
     if: inputs.service == 'portal' || inputs.service == 'all'
     runs-on: ubuntu-latest
     env:
-      CLUSTER: kazi-${{ inputs.environment }}
-      SERVICE: kazi-${{ inputs.environment }}-portal
-      FAMILY: kazi-${{ inputs.environment }}-portal
+      CLUSTER: ${{ inputs.environment == 'production' && (vars.ECS_CLUSTER_PRODUCTION || 'kazi-production') || (vars.ECS_CLUSTER_STAGING || 'kazi-staging') }}
+      SERVICE: ${{ inputs.environment == 'production' && (vars.ECS_CLUSTER_PRODUCTION || 'kazi-production') || (vars.ECS_CLUSTER_STAGING || 'kazi-staging') }}-portal
+      FAMILY: ${{ inputs.environment == 'production' && (vars.ECS_CLUSTER_PRODUCTION || 'kazi-production') || (vars.ECS_CLUSTER_STAGING || 'kazi-staging') }}-portal
       CONTAINER: portal
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
@@ -471,9 +471,9 @@ jobs:
     if: inputs.service == 'keycloak' || inputs.service == 'all'
     runs-on: ubuntu-latest
     env:
-      CLUSTER: kazi-${{ inputs.environment }}
-      SERVICE: kazi-${{ inputs.environment }}-keycloak
-      FAMILY: kazi-${{ inputs.environment }}-keycloak
+      CLUSTER: ${{ inputs.environment == 'production' && (vars.ECS_CLUSTER_PRODUCTION || 'kazi-production') || (vars.ECS_CLUSTER_STAGING || 'kazi-staging') }}
+      SERVICE: ${{ inputs.environment == 'production' && (vars.ECS_CLUSTER_PRODUCTION || 'kazi-production') || (vars.ECS_CLUSTER_STAGING || 'kazi-staging') }}-keycloak
+      FAMILY: ${{ inputs.environment == 'production' && (vars.ECS_CLUSTER_PRODUCTION || 'kazi-production') || (vars.ECS_CLUSTER_STAGING || 'kazi-staging') }}-keycloak
       CONTAINER: keycloak
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
@@ -579,18 +579,24 @@ jobs:
         id: urls
         env:
           ENV: ${{ inputs.environment }}
+          STAGING_APP: ${{ vars.STAGING_APP_DOMAIN || 'staging-app.heykazi.com' }}
+          STAGING_AUTH: ${{ vars.STAGING_AUTH_DOMAIN || 'staging-auth.heykazi.com' }}
+          STAGING_PORTAL: ${{ vars.STAGING_PORTAL_DOMAIN || 'staging-portal.heykazi.com' }}
+          PROD_APP: ${{ vars.PRODUCTION_APP_DOMAIN || 'app.heykazi.com' }}
+          PROD_AUTH: ${{ vars.PRODUCTION_AUTH_DOMAIN || 'auth.heykazi.com' }}
+          PROD_PORTAL: ${{ vars.PRODUCTION_PORTAL_DOMAIN || 'portal.heykazi.com' }}
         run: |
           if [ "$ENV" = "production" ]; then
-            echo "frontend=https://app.heykazi.com/" >> "$GITHUB_OUTPUT"
-            echo "gateway=https://app.heykazi.com/bff/me" >> "$GITHUB_OUTPUT"
-            echo "keycloak=https://auth.heykazi.com/health/ready" >> "$GITHUB_OUTPUT"
-            echo "portal=https://portal.heykazi.com/" >> "$GITHUB_OUTPUT"
+            APP="$PROD_APP"; AUTH="$PROD_AUTH"; PORTAL="$PROD_PORTAL"
           else
-            echo "frontend=https://staging-app.heykazi.com/" >> "$GITHUB_OUTPUT"
-            echo "gateway=https://staging-app.heykazi.com/bff/me" >> "$GITHUB_OUTPUT"
-            echo "keycloak=https://staging-auth.heykazi.com/health/ready" >> "$GITHUB_OUTPUT"
-            echo "portal=https://staging-portal.heykazi.com/" >> "$GITHUB_OUTPUT"
+            APP="$STAGING_APP"; AUTH="$STAGING_AUTH"; PORTAL="$STAGING_PORTAL"
           fi
+          {
+            echo "frontend=https://${APP}/"
+            echo "gateway=https://${APP}/bff/me"
+            echo "keycloak=https://${AUTH}/health/ready"
+            echo "portal=https://${PORTAL}/"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Check frontend (200 OK)
         env:

@@ -19,9 +19,13 @@ permissions:
   contents: read
   id-token: write
 
+# Override via repository variables; || fallbacks keep the workflow working with none set.
 env:
-  AWS_REGION: af-south-1
-  ECS_CLUSTER: kazi-production
+  AWS_REGION: ${{ vars.AWS_REGION || 'af-south-1' }}
+  ECS_CLUSTER: ${{ vars.ECS_CLUSTER_PRODUCTION || 'kazi-production' }}
+  APP_DOMAIN: ${{ vars.PRODUCTION_APP_DOMAIN || 'app.heykazi.com' }}
+  AUTH_DOMAIN: ${{ vars.PRODUCTION_AUTH_DOMAIN || 'auth.heykazi.com' }}
+  PORTAL_DOMAIN: ${{ vars.PRODUCTION_PORTAL_DOMAIN || 'portal.heykazi.com' }}
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -116,7 +120,7 @@ jobs:
             ${{ steps.ecr-login.outputs.registry }}/kazi/frontend:production
           build-args: |
             NEXT_PUBLIC_AUTH_MODE=keycloak
-            NEXT_PUBLIC_GATEWAY_URL=https://app.heykazi.com/bff
+            NEXT_PUBLIC_GATEWAY_URL=https://${{ env.APP_DOMAIN }}/bff
           cache-from: type=gha,scope=frontend-prod
           cache-to: type=gha,mode=max,scope=frontend-prod
 
@@ -145,8 +149,8 @@ jobs:
         uses: ./.github/actions/ecs-deploy
         with:
           cluster: ${{ env.ECS_CLUSTER }}
-          service: kazi-production-frontend
-          task-definition-family: kazi-production-frontend
+          service: ${{ env.ECS_CLUSTER }}-frontend
+          task-definition-family: ${{ env.ECS_CLUSTER }}-frontend
           container-name: frontend
           image: ${{ steps.ecr-login.outputs.registry }}/kazi/frontend:${{ needs.validate.outputs.sha }}
 
@@ -154,8 +158,8 @@ jobs:
         uses: ./.github/actions/ecs-deploy
         with:
           cluster: ${{ env.ECS_CLUSTER }}
-          service: kazi-production-backend
-          task-definition-family: kazi-production-backend
+          service: ${{ env.ECS_CLUSTER }}-backend
+          task-definition-family: ${{ env.ECS_CLUSTER }}-backend
           container-name: backend
           image: ${{ steps.ecr-login.outputs.registry }}/kazi/backend:${{ needs.validate.outputs.sha }}
 
@@ -163,8 +167,8 @@ jobs:
         uses: ./.github/actions/ecs-deploy
         with:
           cluster: ${{ env.ECS_CLUSTER }}
-          service: kazi-production-gateway
-          task-definition-family: kazi-production-gateway
+          service: ${{ env.ECS_CLUSTER }}-gateway
+          task-definition-family: ${{ env.ECS_CLUSTER }}-gateway
           container-name: gateway
           image: ${{ steps.ecr-login.outputs.registry }}/kazi/gateway:${{ needs.validate.outputs.sha }}
 
@@ -172,8 +176,8 @@ jobs:
         uses: ./.github/actions/ecs-deploy
         with:
           cluster: ${{ env.ECS_CLUSTER }}
-          service: kazi-production-portal
-          task-definition-family: kazi-production-portal
+          service: ${{ env.ECS_CLUSTER }}-portal
+          task-definition-family: ${{ env.ECS_CLUSTER }}-portal
           container-name: portal
           image: ${{ steps.ecr-login.outputs.registry }}/kazi/portal:${{ needs.validate.outputs.sha }}
 
@@ -181,8 +185,8 @@ jobs:
         uses: ./.github/actions/ecs-deploy
         with:
           cluster: ${{ env.ECS_CLUSTER }}
-          service: kazi-production-keycloak
-          task-definition-family: kazi-production-keycloak
+          service: ${{ env.ECS_CLUSTER }}-keycloak
+          task-definition-family: ${{ env.ECS_CLUSTER }}-keycloak
           container-name: keycloak
           image: ${{ steps.ecr-login.outputs.registry }}/kazi/keycloak:${{ needs.validate.outputs.sha }}
 
@@ -196,14 +200,14 @@ jobs:
     steps:
       - name: Check frontend (200 OK)
         run: |
-          echo "Checking frontend at https://app.heykazi.com/ ..."
-          curl -sf --retry 5 --retry-delay 15 --max-time 30 "https://app.heykazi.com/" > /dev/null
+          echo "Checking frontend at https://${APP_DOMAIN}/ ..."
+          curl -sf --retry 5 --retry-delay 15 --max-time 30 "https://${APP_DOMAIN}/" > /dev/null
           echo "Frontend is healthy."
 
       - name: Check gateway (expect 401 — gateway is working)
         run: |
-          echo "Checking gateway at https://app.heykazi.com/bff/me ..."
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --retry 5 --retry-delay 15 --max-time 30 "https://app.heykazi.com/bff/me")
+          echo "Checking gateway at https://${APP_DOMAIN}/bff/me ..."
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --retry 5 --retry-delay 15 --max-time 30 "https://${APP_DOMAIN}/bff/me")
           if [ "$HTTP_CODE" = "401" ] || [ "$HTTP_CODE" = "200" ]; then
             echo "Gateway is healthy (HTTP ${HTTP_CODE})."
           else
@@ -213,14 +217,14 @@ jobs:
 
       - name: Check keycloak health
         run: |
-          echo "Checking keycloak at https://auth.heykazi.com/health/ready ..."
-          curl -sf --retry 5 --retry-delay 15 --max-time 30 "https://auth.heykazi.com/health/ready" > /dev/null
+          echo "Checking keycloak at https://${AUTH_DOMAIN}/health/ready ..."
+          curl -sf --retry 5 --retry-delay 15 --max-time 30 "https://${AUTH_DOMAIN}/health/ready" > /dev/null
           echo "Keycloak is healthy."
 
       - name: Check portal (200 OK)
         run: |
-          echo "Checking portal at https://portal.heykazi.com/ ..."
-          curl -sf --retry 5 --retry-delay 15 --max-time 30 "https://portal.heykazi.com/" > /dev/null
+          echo "Checking portal at https://${PORTAL_DOMAIN}/ ..."
+          curl -sf --retry 5 --retry-delay 15 --max-time 30 "https://${PORTAL_DOMAIN}/" > /dev/null
           echo "Portal is healthy."
 
       - name: Post smoke test results to summary
@@ -232,10 +236,10 @@ jobs:
           echo "|---------|-----|--------|" >> "$GITHUB_STEP_SUMMARY"
 
           for url in \
-            "https://app.heykazi.com/" \
-            "https://app.heykazi.com/bff/me" \
-            "https://auth.heykazi.com/health/ready" \
-            "https://portal.heykazi.com/"; do
+            "https://${APP_DOMAIN}/" \
+            "https://${APP_DOMAIN}/bff/me" \
+            "https://${AUTH_DOMAIN}/health/ready" \
+            "https://${PORTAL_DOMAIN}/"; do
             HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$url" 2>/dev/null || echo "ERR")
             if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "401" ]; then
               echo "| ${url} | ${url} | :white_check_mark: ${HTTP_CODE} |" >> "$GITHUB_STEP_SUMMARY"

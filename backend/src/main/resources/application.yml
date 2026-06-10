@@ -30,8 +30,11 @@ spring:
     username: ${SMTP_USERNAME:}
     password: ${SMTP_PASSWORD:}
     properties:
-      mail.smtp.auth: true
-      mail.smtp.starttls.enable: true
+      # SMTP_AUTH/SMTP_STARTTLS=false let staging relay through Mailpit
+      # (plain SMTP, no auth) without touching this file. Real SMTP (SES)
+      # keeps the defaults.
+      mail.smtp.auth: ${SMTP_AUTH:true}
+      mail.smtp.starttls.enable: ${SMTP_STARTTLS:true}
   servlet:
     multipart:
       max-file-size: 10MB

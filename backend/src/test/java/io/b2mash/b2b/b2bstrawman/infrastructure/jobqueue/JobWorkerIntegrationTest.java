@@ -73,6 +73,21 @@ class JobWorkerIntegrationTest {
     }
   }
 
+  /**
+   * Counts jobs of a specific type in a specific status. Assertions MUST scope by job type: the
+   * {@code AccountingSyncWorker} scheduler (@Scheduled fixedDelay) runs in every scheduling-enabled
+   * Spring context and fans out one {@code accounting_sync_drain} job per mapped tenant on a 30s
+   * cadence. In a full-suite run the shared embedded Postgres accumulates hundreds of tenant
+   * mappings from earlier test classes, so a fan-out landing mid-test would otherwise pollute an
+   * unscoped {@code findAll()} census in either direction.
+   */
+  private long countByTypeAndStatus(String jobType, JobStatus status) {
+    return jobQueueRepository.findAll().stream()
+        .filter(j -> j.getJobType().equals(jobType))
+        .filter(j -> j.getStatus() == status)
+        .count();
+  }
+
   @Test
   void shouldEnqueueAndCompleteAllJobs() {
     // Enqueue 10 test jobs with unique tenants to bypass the dedup partial unique index
@@ -89,10 +104,7 @@ class JobWorkerIntegrationTest {
         .pollInterval(Duration.ofMillis(500))
         .untilAsserted(
             () -> {
-              long completed =
-                  jobQueueRepository.findAll().stream()
-                      .filter(j -> j.getStatus() == JobStatus.COMPLETED)
-                      .count();
+              long completed = countByTypeAndStatus(TestJobHandler.JOB_TYPE, JobStatus.COMPLETED);
               assertThat(completed).isEqualTo(10);
             });
 
@@ -119,10 +131,7 @@ class JobWorkerIntegrationTest {
         .pollInterval(Duration.ofMillis(500))
         .untilAsserted(
             () -> {
-              long completed =
-                  jobQueueRepository.findAll().stream()
-                      .filter(j -> j.getStatus() == JobStatus.COMPLETED)
-                      .count();
+              long completed = countByTypeAndStatus(TestJobHandler.JOB_TYPE, JobStatus.COMPLETED);
               assertThat(completed).isEqualTo(10);
             });
 
@@ -214,10 +223,7 @@ class JobWorkerIntegrationTest {
         .pollInterval(Duration.ofMillis(500))
         .untilAsserted(
             () -> {
-              long completed =
-                  jobQueueRepository.findAll().stream()
-                      .filter(j -> j.getStatus() == JobStatus.COMPLETED)
-                      .count();
+              long completed = countByTypeAndStatus(TestJobHandler.JOB_TYPE, JobStatus.COMPLETED);
               assertThat(completed).isEqualTo(1);
             });
 

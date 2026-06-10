@@ -1,0 +1,139 @@
+name: Seed Images
+
+# One-off image seeding: builds ALL 5 services and pushes <tag> + <sha> to ECR
+# WITHOUT touching ECS. Run this after the persistent Terraform layer (ECR +
+# OIDC role) exists but before the runtime layer is provisioned — the runtime
+# ECS task definitions reference these :staging images on first apply.
+# Also useful to re-seed after an ECR wipe.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag to seed (staging or production)"
+        required: false
+        default: "staging"
+        type: choice
+        options:
+          - staging
+          - production
+
+concurrency:
+  group: seed-images
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+# Override via repository variables; || fallbacks keep the workflow working with none set.
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'af-south-1' }}
+
+jobs:
+  resolve:
+    name: Resolve build config
+    runs-on: ubuntu-latest
+    outputs:
+      app_domain: ${{ steps.cfg.outputs.app_domain }}
+      portal_domain: ${{ steps.cfg.outputs.portal_domain }}
+    steps:
+      - id: cfg
+        env:
+          TAG: ${{ inputs.tag }}
+          STAGING_APP: ${{ vars.STAGING_APP_DOMAIN || 'staging-app.heykazi.com' }}
+          STAGING_PORTAL: ${{ vars.STAGING_PORTAL_DOMAIN || 'staging-portal.heykazi.com' }}
+          PROD_APP: ${{ vars.PRODUCTION_APP_DOMAIN || 'app.heykazi.com' }}
+          PROD_PORTAL: ${{ vars.PRODUCTION_PORTAL_DOMAIN || 'portal.heykazi.com' }}
+        run: |
+          if [ "$TAG" = "production" ]; then
+            echo "app_domain=${PROD_APP}" >> "$GITHUB_OUTPUT"
+            echo "portal_domain=${PROD_PORTAL}" >> "$GITHUB_OUTPUT"
+          else
+            echo "app_domain=${STAGING_APP}" >> "$GITHUB_OUTPUT"
+            echo "portal_domain=${STAGING_PORTAL}" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    name: Build ${{ matrix.service }}
+    needs: resolve
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - service: frontend
+            context: frontend
+            dockerfile: frontend/Dockerfile
+          - service: backend
+            context: backend
+            dockerfile: backend/Dockerfile
+          - service: gateway
+            context: gateway
+            dockerfile: gateway/Dockerfile
+          - service: portal
+            context: portal
+            dockerfile: portal/Dockerfile
+          - service: keycloak
+            context: compose/keycloak
+            dockerfile: compose/keycloak/Dockerfile.production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          role-session-name: GitHubActions-SeedImages
+          aws-region: ${{ env.AWS_REGION }}
+
+      - id: ecr-login
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Resolve build args
+        id: args
+        env:
+          SERVICE: ${{ matrix.service }}
+          APP_DOMAIN: ${{ needs.resolve.outputs.app_domain }}
+          PORTAL_DOMAIN: ${{ needs.resolve.outputs.portal_domain }}
+        run: |
+          {
+            echo "build_args<<EOF"
+            case "$SERVICE" in
+              frontend)
+                echo "NEXT_PUBLIC_AUTH_MODE=keycloak"
+                echo "NEXT_PUBLIC_GATEWAY_URL=https://${APP_DOMAIN}/bff"
+                ;;
+              portal)
+                echo "NEXT_PUBLIC_PORTAL_API_URL=https://${PORTAL_DOMAIN}/api"
+                ;;
+            esac
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          file: ${{ matrix.dockerfile }}
+          push: true
+          tags: |
+            ${{ steps.ecr-login.outputs.registry }}/kazi/${{ matrix.service }}:${{ github.sha }}
+            ${{ steps.ecr-login.outputs.registry }}/kazi/${{ matrix.service }}:${{ inputs.tag }}
+          build-args: ${{ steps.args.outputs.build_args }}
+          cache-from: type=gha,scope=${{ matrix.service }}-${{ inputs.tag }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.service }}-${{ inputs.tag }}
+
+  summary:
+    name: Seed summary
+    needs: [resolve, build]
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          {
+            echo "## Seeded images"
+            echo ""
+            echo "All 5 services pushed to ECR with tags \`${{ inputs.tag }}\` and \`${{ github.sha }}\`."
+            echo "No ECS services were touched — provision/refresh the runtime layer to pick these up."
+          } >> "$GITHUB_STEP_SUMMARY"

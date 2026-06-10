@@ -34,7 +34,7 @@ permissions:
   id-token: write
 
 env:
-  AWS_REGION: af-south-1
+  AWS_REGION: ${{ vars.AWS_REGION || 'af-south-1' }}
 
 jobs:
   # ---------------------------------------------------------------------------
@@ -63,9 +63,9 @@ jobs:
     if: inputs.service == 'frontend' || inputs.service == 'all'
     runs-on: ubuntu-latest
     env:
-      CLUSTER: kazi-${{ inputs.environment }}
-      SERVICE: kazi-${{ inputs.environment }}-frontend
-      FAMILY: kazi-${{ inputs.environment }}-frontend
+      CLUSTER: ${{ vars.ECS_CLUSTER_PREFIX || 'kazi' }}-${{ inputs.environment }}
+      SERVICE: ${{ vars.ECS_CLUSTER_PREFIX || 'kazi' }}-${{ inputs.environment }}-frontend
+      FAMILY: ${{ vars.ECS_CLUSTER_PREFIX || 'kazi' }}-${{ inputs.environment }}-frontend
       CONTAINER: frontend
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
@@ -165,9 +165,9 @@ jobs:
     if: inputs.service == 'backend' || inputs.service == 'all'
     runs-on: ubuntu-latest
     env:
-      CLUSTER: kazi-${{ inputs.environment }}
-      SERVICE: kazi-${{ inputs.environment }}-backend
-      FAMILY: kazi-${{ inputs.environment }}-backend
+      CLUSTER: ${{ vars.ECS_CLUSTER_PREFIX || 'kazi' }}-${{ inputs.environment }}
+      SERVICE: ${{ vars.ECS_CLUSTER_PREFIX || 'kazi' }}-${{ inputs.environment }}-backend
+      FAMILY: ${{ vars.ECS_CLUSTER_PREFIX || 'kazi' }}-${{ inputs.environment }}-backend
       CONTAINER: backend
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
@@ -267,9 +267,9 @@ jobs:
     if: inputs.service == 'gateway' || inputs.service == 'all'
     runs-on: ubuntu-latest
     env:
-      CLUSTER: kazi-${{ inputs.environment }}
-      SERVICE: kazi-${{ inputs.environment }}-gateway
-      FAMILY: kazi-${{ inputs.environment }}-gateway
+      CLUSTER: ${{ vars.ECS_CLUSTER_PREFIX || 'kazi' }}-${{ inputs.environment }}
+      SERVICE: ${{ vars.ECS_CLUSTER_PREFIX || 'kazi' }}-${{ inputs.environment }}-gateway
+      FAMILY: ${{ vars.ECS_CLUSTER_PREFIX || 'kazi' }}-${{ inputs.environment }}-gateway
       CONTAINER: gateway
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
@@ -369,9 +369,9 @@ jobs:
     if: inputs.service == 'portal' || inputs.service == 'all'
     runs-on: ubuntu-latest
     env:
-      CLUSTER: kazi-${{ inputs.environment }}
-      SERVICE: kazi-${{ inputs.environment }}-portal
-      FAMILY: kazi-${{ inputs.environment }}-portal
+      CLUSTER: ${{ vars.ECS_CLUSTER_PREFIX || 'kazi' }}-${{ inputs.environment }}
+      SERVICE: ${{ vars.ECS_CLUSTER_PREFIX || 'kazi' }}-${{ inputs.environment }}-portal
+      FAMILY: ${{ vars.ECS_CLUSTER_PREFIX || 'kazi' }}-${{ inputs.environment }}-portal
       CONTAINER: portal
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
@@ -471,9 +471,9 @@ jobs:
     if: inputs.service == 'keycloak' || inputs.service == 'all'
     runs-on: ubuntu-latest
     env:
-      CLUSTER: kazi-${{ inputs.environment }}
-      SERVICE: kazi-${{ inputs.environment }}-keycloak
-      FAMILY: kazi-${{ inputs.environment }}-keycloak
+      CLUSTER: ${{ vars.ECS_CLUSTER_PREFIX || 'kazi' }}-${{ inputs.environment }}
+      SERVICE: ${{ vars.ECS_CLUSTER_PREFIX || 'kazi' }}-${{ inputs.environment }}-keycloak
+      FAMILY: ${{ vars.ECS_CLUSTER_PREFIX || 'kazi' }}-${{ inputs.environment }}-keycloak
       CONTAINER: keycloak
     steps:
       - uses: aws-actions/configure-aws-credentials@v4

@@ -1,7 +1,30 @@
 # Infrastructure Review: Job Queue Scheduling & Database Sharding
 
-**Date**: 2026-05-29
+**Date**: 2026-05-29 | **Last updated**: 2026-06-10
 **Scope**: Review of two recently implemented infrastructure features — job queue fanout (replacing `@Scheduled` + `TenantScopedRunner`) and database sharding (multi-database schema-per-tenant).
+
+---
+
+## Resolution Summary
+
+All critical and high-priority issues have been resolved across PRs #1383–#1389. The sharding implementation is now safe for activation with secondary shards, subject to the remaining low-priority items.
+
+| Finding | Severity | Status | Resolved In |
+|---------|----------|--------|-------------|
+| D1 — JobWorker doesn't bind SHARD_ID | Critical | **Resolved** | PR #1383 |
+| D2 — fanOutToAllTenants hardcodes "primary" | Critical | **Resolved** | PR #1383 |
+| D6 — No test for job→shard execution | Critical | **Resolved** | PR #1383 |
+| S1 — Enqueuer not gated by enabled flag | Medium | **Resolved** | PR #1384 |
+| D3 — Secondary shards use pooled DDL connection | Medium | **Resolved** | PR #1385 |
+| D5 — 25 shard-unaware runForTenant callers | Latent | **Partially resolved** | PR #1386, #1389 |
+| S2 — Single-threaded worker poll loop | Medium | **Resolved** | PR #1388 |
+| D4 — TenantTransactionHelper missing SHARD_ID | Low | **Resolved** | PR #1387 |
+| D7 — Shard ID regex rejects single-char IDs | Minor | **Resolved** | PR #1387 |
+| S3 — Subscription handler tenant context docs | Low | **Resolved** | PR #1383 (Javadoc) |
+| S4 — No Prometheus metrics for job queue | Low | **Open** | — |
+| NEW — AssistantController carrier missing SHARD_ID | Critical | **Resolved** | PR #1389 |
+| NEW — DomainEvent lacks shardId() | Medium | **Resolved** | PR #1389 |
+| NEW — RequestScopes.getShardIdOrDefault() helper | Medium | **Resolved** | PR #1389 |
 
 ---
 
@@ -33,87 +56,34 @@ New Pattern:
 | **Lifecycle management** | `SmartLifecycle` with `phase = Integer.MAX_VALUE - 10` ensures the poll loop stops before DataSource closes on shutdown. |
 | **Handler registration** | `JobHandlerRegistry` validates uniqueness of job type names at startup — fail-fast on misconfiguration. |
 
-### Issues to Fix
+### Issues
 
-#### Issue S1: `DefaultJobEnqueuer` is not gated by `kazi.job-queue.enabled` (Medium)
+#### Issue S1: `DefaultJobEnqueuer` is not gated by `kazi.job-queue.enabled` ~~(Medium)~~ **RESOLVED — PR #1384**
 
-**File**: `infrastructure/jobqueue/DefaultJobEnqueuer.java`
-
-**Problem**: `JobWorker` and `JobHandlerRegistry` are both `@ConditionalOnProperty(name = "kazi.job-queue.enabled", havingValue = "true")`, but `DefaultJobEnqueuer` is not. If a scheduler calls `fanOutToAllTenants()` while `kazi.job-queue.enabled=false`, rows are written to `public.job_queue` but nothing drains them. The queue fills up silently.
-
-This can happen during the dual-mode migration phase: if an operator sets `isDualMode=true` for a scheduler but forgets to set `kazi.job-queue.enabled=true`, the old inline path runs AND the queue fills with unprocessed jobs.
-
-**Recommendation**: Either:
-- (a) Make `DefaultJobEnqueuer` conditional on `kazi.job-queue.enabled`, OR
-- (b) Add a guard at the top of `fanOutToAllTenants()` that checks the `enabled` property and no-ops if false (with a WARN log so operators notice)
-
-Option (b) is safer because it prevents silent queue accumulation while keeping the bean available for programmatic use.
+`DefaultJobEnqueuer` now checks `properties.isEnabled()` via `isQueueDisabled()` at the top of both `enqueue()` and `fanOutToAllTenants()`. If disabled, it no-ops with a warn-once log per job type (using a `ConcurrentHashMap`-backed set to avoid log spam).
 
 ---
 
-#### Issue S2: Single-threaded job worker poll loop (Medium)
+#### Issue S2: Single-threaded job worker poll loop ~~(Medium)~~ **RESOLVED — PR #1388**
 
-**File**: `infrastructure/jobqueue/JobWorker.java`
-
-**Problem**: The worker spawns a single virtual thread running `pollLoop()`. It claims a batch, then processes jobs sequentially within that batch. At scale with 1000+ jobs per sweep (1000 tenants), the claim-execute loop is sequential within each pod.
-
-With 3 pods and 1000 jobs, each pod claims ~333 jobs and processes them one at a time. If each job takes 1 second, one pod takes 333 seconds to drain its share — over 5 minutes for a 60-second cron sweep.
-
-**Recommendation**: Process claimed batches in parallel using a bounded virtual thread pool:
-
-```java
-private static final int WORKER_PARALLELISM = 10; // configurable
-
-// After claiming a batch:
-try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-    for (var job : batch) {
-        scope.fork(() -> { processJob(job); return null; });
-    }
-    scope.join();
-}
-```
-
-This transforms per-pod throughput from `batchSize / avgJobDuration` to `batchSize / (avgJobDuration / parallelism)`. With parallelism of 10 and 1-second jobs, 333 jobs drain in ~33 seconds instead of 333 seconds.
-
-**Guardrail**: The parallelism should be bounded to avoid overwhelming the connection pool. `min(workerParallelism, hikariMaxPoolSize / 2)` is a safe heuristic.
+`JobWorker.processBatch()` now uses `Executors.newVirtualThreadPerTaskExecutor()` with a `Semaphore(parallelism)` to bound concurrent job execution. Parallelism is capped at `min(configured, max(1, hikariMaxPoolSize / 2))` via `computeEffectiveParallelism()` — protecting request traffic from pool exhaustion. Falls back to sequential processing when parallelism ≤ 1 or batch size = 1.
 
 ---
 
-#### Issue S3: Subscription handlers receive unnecessary tenant context (Low)
+#### Issue S3: Subscription handlers receive unnecessary tenant context ~~(Low)~~ **RESOLVED — PR #1383 (Javadoc)**
 
-**Files**: `billing/TrialExpiryHandler.java`, `GraceExpiryHandler.java`, `CancellationEndHandler.java`
-
-**Problem**: These handlers query `public.subscriptions` (a global table), not tenant-scoped data. The `JobWorker` binds `TENANT_ID` and sets `search_path` to a tenant schema before calling `execute()`, but these handlers never query tenant tables. The tenant scope binding is wasted work — and potentially misleading, since a reader might assume the handler operates on tenant data.
-
-**Recommendation**: Either:
-- (a) Document this clearly in handler Javadoc (partially done already), OR
-- (b) Introduce a `GlobalJobHandler` interface (no tenant scoping) vs `TenantJobHandler` (scoped), and have the worker skip tenant binding for global handlers
-
-Option (a) is sufficient for now. Option (b) is a nice-to-have if more global handlers are added.
+Class-level Javadoc added to `TrialExpiryHandler` and cross-referenced in `JobWorker.processJob()` documenting that subscription handlers operate on global `public.*` tables, not tenant-scoped data. No code change — documentation-only.
 
 ---
 
-#### Issue S4: No metrics on job queue throughput (Low)
+#### Issue S4: No metrics on job queue throughput (Low) — **OPEN**
 
-**Problem**: The job worker logs processing times but doesn't expose Micrometer metrics. With Prometheus now available (Tier A), the queue should report:
+The job worker still doesn't expose Micrometer metrics. Recommended metrics:
 - `kazi_job_queue_pending_count` (gauge, by job type)
 - `kazi_job_queue_processing_duration_seconds` (histogram, by job type)
 - `kazi_job_queue_claim_batch_size` (histogram)
 - `kazi_job_queue_dead_letter_count` (counter, by job type)
 - `kazi_job_queue_retry_count` (counter, by job type)
-
-**Recommendation**: Add a `MeterBinder` implementation in the job queue package that reads from `JobQueueRepository` stats and the admin stats endpoint. Timer instrumentation around `processJob()` for per-handler duration histograms.
-
----
-
-### Scheduling Improvements Roadmap
-
-| Priority | Item | Effort |
-|----------|------|--------|
-| **P0** | Fix S1 — gate enqueuer on `enabled` flag | 30 min |
-| **P1** | Fix S2 — parallel job execution within worker | 1-2 days |
-| **P2** | Add S4 — Prometheus metrics for queue throughput | 1 day |
-| **P3** | Consider S3 — separate global vs tenant handler types | 2-3 days |
 
 ---
 
@@ -145,155 +115,83 @@ Request Flow (sharding enabled):
 | **Provisioning correctness** | Creates schema on correct DataSource, runs Flyway on correct DataSource, creates `OrgSchemaMapping` row last (so `TenantFilter` can't resolve the tenant until setup is fully complete). |
 | **Test infrastructure** | Second embedded Postgres (`SecondaryEmbeddedPostgres`) for true multi-database integration tests. Physical isolation verified in `ShardIsolationTest`. |
 
-### Issues to Fix
+### Issues
 
-#### Issue D1: `JobWorker` does not bind `SHARD_ID` during execution (Critical)
+#### Issue D1: `JobWorker` does not bind `SHARD_ID` during execution ~~(Critical)~~ **RESOLVED — PR #1383**
 
-**File**: `infrastructure/jobqueue/JobWorker.java`, line 122
-
-**Problem**: The worker calls `RequestScopes.runForTenant(job.getTenantId(), job.getOrgId(), ...)` instead of `RequestScopes.runForTenantOnShard(job.getTenantId(), job.getOrgId(), job.getShardId(), ...)`.
-
-The `job.getShardId()` value is available (it's stored in the job row and logged via MDC), but it's never propagated to the `ScopedValue` that `TenantIdentifierResolver` reads. Inside the handler, `TenantIdentifierResolver` sees `SHARD_ID` unbound and defaults to `"primary"`. The handler executes against the primary database regardless of which shard the tenant actually lives on.
-
-**Impact**: For any tenant on a secondary shard, job handlers silently read from and write to the wrong database. Data corruption or missing data with no error signal.
-
-**Fix**:
-```java
-// Line 122 — change:
-RequestScopes.runForTenant(job.getTenantId(), job.getOrgId(), () -> { ... });
-// To:
-RequestScopes.runForTenantOnShard(job.getTenantId(), job.getOrgId(), job.getShardId(), () -> { ... });
-```
-
-**Verification**: Add a test to `EndToEndMultiShardTest` that provisions a tenant on shard2, enqueues a job, executes it via the worker, and asserts the handler's write lands in the shard2 database — not primary.
+`JobWorker.processJob()` now calls `RequestScopes.runForTenantOnShard(job.getTenantId(), job.getOrgId(), job.getShardId(), ...)`. Inline comment references D1 as motivation.
 
 ---
 
-#### Issue D2: `fanOutToAllTenants()` hardcodes `shard_id = 'primary'` (Critical)
+#### Issue D2: `fanOutToAllTenants()` hardcodes `shard_id = 'primary'` ~~(Critical)~~ **RESOLVED — PR #1383**
 
-**File**: `infrastructure/jobqueue/DefaultJobEnqueuer.java`, line 107
-
-**Problem**: `fanOutToAllTenants()` iterates all `OrgSchemaMapping` rows but creates every job with `DEFAULT_SHARD_ID = "primary"` instead of using `mapping.getShardId()`.
-
-Even if Issue D1 were fixed, secondary-shard tenants would receive jobs stamped with `shard_id = 'primary'`, causing the worker to route to the primary database.
-
-**Fix**:
-```java
-// Line 107 — change:
-var job = new JobQueue(jobType, mapping.getSchemaName(), mapping.getExternalOrgId(),
-    DEFAULT_SHARD_ID, payload, priority, maxRetries);
-// To:
-var job = new JobQueue(jobType, mapping.getSchemaName(), mapping.getExternalOrgId(),
-    mapping.getShardId(), payload, priority, maxRetries);
-```
+`fanOutToAllTenants()` now passes `shardIdOrDefault(mapping.getShardId())` when creating job rows. `"primary"` is used only as a null/blank fallback via the private helper. Javadoc on the helper explicitly references D1/D2 findings.
 
 ---
 
-#### Issue D3: Secondary shards use pooled connection for Flyway DDL (Medium)
+#### Issue D3: Secondary shards use pooled connection for Flyway DDL ~~(Medium)~~ **RESOLVED — PR #1385**
 
-**File**: `provisioning/TenantProvisioningService.java`
-
-**Problem**: The primary shard uses a dedicated `migrationDataSource` for Flyway — a direct connection to Neon without PgBouncer, because PgBouncer in transaction mode rejects DDL statements (`CREATE SCHEMA`, `CREATE TABLE`, etc.). Secondary shards use `shardRegistry.getDataSource(shardId)` — the runtime HikariCP pool — for both schema creation and Flyway migrations.
-
-If a secondary shard is behind PgBouncer in transaction mode, `CREATE SCHEMA` will fail with a PgBouncer error. If secondary shards connect directly (no PgBouncer), this is fine.
-
-**Recommendation**: Support a per-shard migration URL. Either:
-- (a) Add `migration_jdbc_url` to `shard_config` table, with an env var pattern `KAZI_SHARD_{ID}_MIGRATION_URL`, OR
-- (b) Document that secondary shards must use direct connections (not PgBouncer) and enforce this with a validation check at shard registration
+`DefaultShardRegistry` now supports per-shard migration DataSources via `KAZI_SHARD_{ID}_MIGRATION_URL` env var. `getMigrationDataSource(shardId)` returns the dedicated migration DS if configured, falling back to the pooled DS otherwise. `TenantProvisioningService` uses the migration DS for both `createSchema()` and `runTenantMigrations()` on secondary shards.
 
 ---
 
-#### Issue D4: `TenantTransactionHelper` does not bind `SHARD_ID` (Low)
+#### Issue D4: `TenantTransactionHelper` does not bind `SHARD_ID` ~~(Low)~~ **RESOLVED — PR #1387**
 
-**File**: `multitenancy/TenantTransactionHelper.java`, line 44
-
-**Problem**: Binds `TENANT_ID` and `ORG_ID` but not `SHARD_ID`. Currently only called during provisioning inside `runForTenantOnShard()`, so the outer scope provides `SHARD_ID`. But the helper is a public component — any future caller using it for a secondary-shard tenant without wrapping in `runForTenantOnShard()` first would silently route to primary.
-
-**Recommendation**: Either:
-- (a) Add `SHARD_ID` binding (accept it as a parameter, default to `"primary"`), OR
-- (b) Document the dependency on outer scope binding in Javadoc + add an assertion: `assert RequestScopes.SHARD_ID.isBound() : "SHARD_ID must be bound before calling TenantTransactionHelper"`
+`TenantTransactionHelper` now has a 3-arg overload accepting `shardId` with full `ScopedValue.where(SHARD_ID, ...)` binding. The 2-arg overload inherits `SHARD_ID` from the enclosing scope if bound, defaulting to `"primary"` only when unbound. Shard ID is validated via `ShardAndSchema.requireValidShardId()`.
 
 ---
 
-#### Issue D5: 25 call sites use `runForTenant()` instead of `runForTenantOnShard()` (Latent)
+#### Issue D5: 25 call sites use `runForTenant()` instead of `runForTenantOnShard()` ~~(Latent)~~ **PARTIALLY RESOLVED — PR #1386, #1389**
 
-**Problem**: A grep across the codebase shows 25 files calling `RequestScopes.runForTenant()` (the two-arg variant that doesn't bind `SHARD_ID`). These are primarily event listeners (`@TransactionalEventListener`) and utility methods. When `kazi.sharding.enabled=true` with secondary shards, any of these paths that execute for a secondary-shard tenant will route to the primary database.
+**Resolved (PR #1386):**
+- ArchUnit guard `no_new_shard_unaware_tenant_binding` added — new code is forced to use `runForTenantOnShard`/`callForTenantOnShard`
+- 4 "mapping-in-hand" sites migrated: `JobWorker`, `TenantProvisioningService`, `SubscriptionExpiryJob`, `PaymentWebhookController`
 
-Today this is not a bug because sharding is disabled and no secondary shards exist. But every one of these call sites is a latent wrong-shard route that will activate when sharding goes live.
+**Resolved (PR #1389):**
+- `DomainEvent.shardId()` default method added — reads from `RequestScopes.SHARD_ID` at call time
+- `RequestScopes.getShardIdOrDefault()` centralized helper added
+- 35 AFTER_COMMIT event listener call sites migrated from `runForTenant()` to `runForTenantOnShard()` across `NotificationEventHandler` (18), `PortalEventHandler` (13), `AccountingSyncEventListener` (3), `PortalDocumentNotificationHandler` (1), `PortalEmailNotificationChannel` (1)
+- `AssistantController` virtual thread carrier now binds `SHARD_ID` (previously omitted — active bug for secondary-shard AI chat)
+- ArchUnit grandfathered set shrunk by 1 (`PortalDocumentNotificationHandler` fully migrated)
 
-**Affected patterns**:
-- `@TransactionalEventListener(AFTER_COMMIT)` handlers that re-bind tenant scope
-- Portal sync event handlers
-- Accounting sync event listeners
-- Notification dispatch handlers
+**Remaining (~20 call sites in 20 files):**
+These use non-`DomainEvent` event types (`PortalDomainEvent`, `BillingRunEvent`, trust accounting events, schedule events) that don't carry `shardId()`. They are safe today because they inherit `SHARD_ID` from the outer ScopedValue scope (TenantFilter for HTTP, TenantScopedRunner for scheduled jobs, JobWorker for queue jobs). They are tracked in the D5 ArchUnit grandfathered set and will need their event types enriched with `shardId` before full migration.
 
-**Recommendation**: Before enabling sharding in production:
-1. Audit all 25 `runForTenant()` call sites
-2. For each, determine if it could execute for a secondary-shard tenant
-3. Migrate to `runForTenantOnShard()` where needed (the shard ID is available from the `OrgSchemaMapping` lookup or can be passed via the domain event payload)
-4. Consider deprecating `runForTenant()` with a compile warning to prevent future regressions, or add an ArchUnit rule that flags new usages
-
----
-
-#### Issue D6: No test verifies job execution routes to correct shard (Testing Gap)
-
-**File**: `infrastructure/jobqueue/EndToEndMultiShardTest.java`
-
-**Problem**: The test provisions a tenant on shard2 and verifies the job is persisted with `shard_id = 'shard2'`. But it does not execute the job via `JobWorker` and verify that the handler's database operations land in the shard2 database.
-
-This means Issues D1 and D2 are not caught by the test suite. The test proves "job was created correctly" but not "job executed against the correct database."
-
-**Recommendation**: Extend the test to:
-1. Create a simple test handler that writes a marker row to a tenant table
-2. Execute the job via the worker
-3. Query shard2's database directly to verify the marker row exists
-4. Query primary's database to verify the marker row does NOT exist
+**Note on `DomainEvent.shardId()`**: The default method reads from the ScopedValue at call time, not construction time. This is correct for AFTER_COMMIT listeners (same thread as publisher). When events are serialized for the outbox pattern (Tier B, item B1), `shardId` must become an explicit record field on all 42 `DomainEvent` implementations. The Javadoc includes an explicit warning against deferred invocation past the publishing scope's lifetime.
 
 ---
 
-#### Issue D7: `ShardAndSchema` ID validation rejects single-character shard IDs (Minor)
+#### Issue D6: No test verifies job execution routes to correct shard ~~(Testing Gap)~~ **RESOLVED — PR #1383**
 
-**File**: `multitenancy/ShardAndSchema.java`, line 15
-
-**Problem**: The regex `[a-z][a-z0-9_]{0,48}[a-z0-9]$` requires at least 2 characters. A shard ID of `"a"` is rejected. `"primary"` is special-cased to always pass. This is a minor constraint but could surprise operators choosing short shard names.
-
-**Recommendation**: Either relax the regex to allow single-character IDs (`[a-z][a-z0-9_]{0,48}[a-z0-9]?$`) or document the 2-character minimum in the admin API / shard setup docs.
+`EndToEndMultiShardTest.jobForShard2Tenant_executesAgainstShard2Database()` now covers the full path: provisions tenant on shard2, enqueues job, starts live `JobWorker`, awaits completion, asserts handler's write landed in shard2 database via direct JDBC, and asserts the tenant schema does NOT exist on primary. A separate test `fanOutToAllTenants_stampsShardIdFromMapping()` verifies D2 regression.
 
 ---
 
-### Sharding Improvements Roadmap
+#### Issue D7: `ShardAndSchema` ID validation rejects single-character shard IDs ~~(Minor)~~ **RESOLVED — PR #1387**
 
-| Priority | Item | Effort | Blocks |
-|----------|------|--------|--------|
-| **P0** | Fix D1 — `JobWorker` must call `runForTenantOnShard()` | 30 min | Sharding activation |
-| **P0** | Fix D2 — `fanOutToAllTenants()` must use `mapping.getShardId()` | 30 min | Sharding activation |
-| **P0** | Fix D6 — test that job execution routes to correct shard | 2-3 hrs | Validates D1+D2 fixes |
-| **P1** | Fix D5 — audit and migrate 25 `runForTenant()` call sites | 1-2 days | Sharding activation |
-| **P1** | Fix D3 — per-shard migration DataSource for Flyway DDL | 3-4 hrs | Secondary shards behind PgBouncer |
-| **P2** | Fix D4 — `TenantTransactionHelper` shard binding | 1 hr | — |
-| **P3** | Fix D7 — relax shard ID regex or document constraint | 30 min | — |
+Regex updated to `^[a-z]([a-z0-9_]{0,48}[a-z0-9])?$` with optional tail group. Single-character IDs like `"a"` now pass validation. Confirmed in Javadoc.
 
 ---
 
 ## Cross-Cutting: Job Queue × Sharding Integration
 
-The job queue and sharding features interact at two specific points, and both have bugs:
+~~The job queue and sharding features interact at two specific points, and both have bugs:~~
+
+Both integration points are now fixed:
 
 ```
 Enqueue path:
   fanOutToAllTenants() → reads org_schema_mapping (has shard_id)
-                       → creates JobQueue row
-                       → BUG D2: ignores mapping.getShardId(), hardcodes "primary"
+                       → creates JobQueue row with mapping.getShardId()  ✅ Fixed PR #1383
 
 Execute path:
   JobWorker.processJob() → reads job.getShardId()
-                         → BUG D1: calls runForTenant() instead of runForTenantOnShard()
-                         → handler executes against wrong database
+                         → calls runForTenantOnShard(tenantId, orgId, shardId)  ✅ Fixed PR #1383
+                         → handler executes against correct database
+
+Test coverage:
+  EndToEndMultiShardTest verifies full path with physical DB assertion  ✅ Fixed PR #1383
 ```
-
-**Combined impact**: For any tenant on a secondary shard, jobs are both created with the wrong shard ID AND executed against the wrong database. This is a double failure — fixing only one of the two bugs would still result in wrong-shard execution.
-
-**Fix order**: Fix D2 first (enqueue), then D1 (execute), then D6 (test). The test should verify the full path: enqueue with correct shard → claim → execute against correct shard → verify data in correct database.
 
 ---
 
@@ -301,14 +199,24 @@ Execute path:
 
 ### Job Queue Scheduling
 
-The implementation is **architecturally sound**. True per-tenant fanout with Postgres `FOR UPDATE SKIP LOCKED` is the right pattern for this workload. The dual-mode migration strategy, dedup index, stale recovery, and admin API are all well-designed.
+The implementation is **architecturally sound and operationally ready**. True per-tenant fanout with Postgres `FOR UPDATE SKIP LOCKED`, parallel batch execution, and shard-aware routing are all in place.
 
-**Key improvements**: Gate the enqueuer on the enabled flag (S1), parallelize job execution within the worker (S2), and add Prometheus metrics (S4).
+**Remaining**: Prometheus metrics (S4) — low priority, non-blocking.
 
 ### Database Sharding
 
-The implementation is **structurally clean** — the feature toggle, composite identifier routing, DataSource lifecycle, and test infrastructure are all done correctly. The design avoids common pitfalls (cache-hit shard loss, circular dependency, connection pool isolation).
+The implementation is **safe for activation with secondary shards**. All critical and high-priority bugs have been resolved. The shard routing pipeline is verified end-to-end: enqueue → claim → execute → correct database.
 
-**Blockers before activation**: Two critical bugs in the job queue integration (D1, D2) would cause silent wrong-database execution for secondary-shard tenants. Additionally, 25 call sites using the shard-unaware `runForTenant()` are latent wrong-shard routes (D5). All P0 items must be resolved before `kazi.sharding.enabled=true` can be set in any environment with secondary shards.
+**Remaining**: ~20 `runForTenant` callers using non-`DomainEvent` event types — tracked in ArchUnit grandfathered set, safe via ScopedValue inheritance, will need event type enrichment before outbox migration (B1).
 
-Neither feature has production-visible issues today because sharding is disabled and the job queue is in dual-mode rollout. The bugs are latent — they will surface only when secondary shards are activated.
+### PRs Shipped
+
+| PR | Findings | Description |
+|----|----------|-------------|
+| #1383 | D1, D2, D6, S3 | Critical — worker binds SHARD_ID, fan-out stamps real shard, regression tests |
+| #1384 | S1 | Enqueuer no-ops + WARN-once when queue disabled |
+| #1385 | D3, D5 (ArchUnit) | Per-shard migration DataSource, ArchUnit guard for new code |
+| #1386 | D5 (4 migrations) | 4 mapping-in-hand sites migrated to runForTenantOnShard |
+| #1387 | D4, D7 | TenantTransactionHelper shard binding, regex relaxation |
+| #1388 | S2 | Bounded virtual-thread batch parallelism with pool-headroom guardrail |
+| #1389 | D5 (35 migrations), NEW | AssistantController carrier, DomainEvent.shardId(), 35 event listener migrations, getShardIdOrDefault() helper |

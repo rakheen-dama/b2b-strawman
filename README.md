@@ -85,9 +85,21 @@ b2b-strawman/
 ├── backend/          # Spring Boot 4.0.2, Java 25, Maven
 ├── compose/          # Docker Compose (Postgres 16, LocalStack S3)
 ├── infra/            # Terraform IaC
-├── documentation/    # QA-cycle screenshots and demo recordings
+├── documentation/    # Operational runbooks, tech-debt register, QA screenshots
 └── .github/          # CI/CD workflows
 ```
+
+### Documentation map
+
+Five doc trees serve different purposes — start with the one matching your need:
+
+| Tree | Status | Use it for |
+|------|--------|-----------|
+| `kazi-architecture/` | **Current architectural truth** — updated alongside code changes (per its own README). | What Kazi is and how it's built *today*. ADR status overlay lives in `90-adr-index.md`. |
+| `architecture/` | **Frozen historical** — phase docs `phase5`–`phase75`. | Background context on how a decision was originally made. Not current state. |
+| `adr/` | **Append-only ADR corpus** — files are never edited for status. | The original text of a decision. *Active* status lives in `kazi-architecture/90-adr-index.md`, not in the ADR files. |
+| `documentation/` | **Operational** — runbooks, tech-debt register, QA `screenshots/`. | Running, deploying, and debugging the system. |
+| `requirements/` | **Phase requirement specs** — consumed by the `/architecture` workflow. | The input prompt that drove each phase's architecture. |
 
 ## Tech Stack
 

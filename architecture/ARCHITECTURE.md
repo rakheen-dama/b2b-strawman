@@ -1,5 +1,7 @@
 # Multi-tenant SaaS Starter — Technical Architecture
 
+> **⚠️ Historical document.** This file captures an early-phase view of the architecture and is **superseded by [`kazi-architecture/`](../kazi-architecture/)**, which is the current, code-grounded architectural truth. The product has since been renamed **Kazi** (company **b2mash**); references below to "DocTeams" and to the original Clerk-based auth are retained as historical record and no longer reflect the live system (auth is Keycloak). Read this for background only.
+
 ## 1. Overview
 
 A reusable SaaS starter platform supporting multi-tenant B2B products with schema-per-tenant isolation. The reference implementation is **DocTeams** — a team-based document hub where organizations manage projects and upload documents.

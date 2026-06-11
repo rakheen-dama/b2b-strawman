@@ -123,6 +123,11 @@ CLERK_JWKS_URI
 .notes/
 .tmp/
 
+# Repo-root strays (QA screenshots/recordings, orphaned installs)
+/*.png
+/*.webm
+/node_modules/
+
 # Workflow Observatory (session logs are ephemeral, stats are committed)
 .claude/logs/
 

@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
-import { TERMINOLOGY } from "@/lib/terminology-map";
+import { TERMINOLOGY } from "@b2mash/shared/terminology-map";
 import { TerminologyProvider, useTerminology } from "@/lib/terminology";
 
 // Helper: build a t() function for a given profile without rendering

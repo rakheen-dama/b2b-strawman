@@ -47,7 +47,7 @@ vi.mock("@/lib/terminology", () => ({
   }),
 }));
 
-vi.mock("@/lib/terminology-map", () => ({
+vi.mock("@b2mash/shared/terminology-map", () => ({
   auditTabLabel: (t: (s: string) => string) => {
     const v = t("audit.tab");
     return v === "audit.tab" ? "Audit" : v;

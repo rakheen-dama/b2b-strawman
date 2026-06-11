@@ -2,7 +2,7 @@
 
 import { AuditTimelineTab } from "@/components/audit/audit-timeline-tab";
 import { useTerminology } from "@/lib/terminology";
-import { auditTabLabel } from "@/lib/terminology-map";
+import { auditTabLabel } from "@b2mash/shared/terminology-map";
 import { CAPABILITIES, useCapabilities } from "@/lib/capabilities";
 
 /**

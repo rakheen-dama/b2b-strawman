@@ -23,7 +23,7 @@ vi.mock("@/lib/org-profile", () => ({
 vi.mock("@/lib/terminology", () => ({
   useTerminology: () => ({ t: (s: string) => s }),
 }));
-vi.mock("@/lib/terminology-map", () => ({
+vi.mock("@b2mash/shared/terminology-map", () => ({
   auditTabLabel: () => "Audit Trail",
 }));
 

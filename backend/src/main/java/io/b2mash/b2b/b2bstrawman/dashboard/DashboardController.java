@@ -8,8 +8,6 @@ import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealth;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.ProjectHealthDetail;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TaskSummary;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TeamWorkloadEntry;
-import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import java.time.LocalDate;
@@ -27,12 +25,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class DashboardController {
 
   private final DashboardService dashboardService;
-  private final ProjectAccessService projectAccessService;
 
-  public DashboardController(
-      DashboardService dashboardService, ProjectAccessService projectAccessService) {
+  public DashboardController(DashboardService dashboardService) {
     this.dashboardService = dashboardService;
-    this.projectAccessService = projectAccessService;
   }
 
   // --- Project-scoped endpoints ---
@@ -44,12 +39,8 @@ public class DashboardController {
   @GetMapping("/api/projects/{projectId}/health")
   public ResponseEntity<ProjectHealthDetail> getProjectHealth(
       @PathVariable UUID projectId, ActorContext actor) {
-    String tenantId = RequestScopes.TENANT_ID.get();
-
-    projectAccessService.requireViewAccess(projectId, actor);
-
-    var health = dashboardService.getProjectHealth(projectId, tenantId);
-    return ResponseEntity.ok(health);
+    return ResponseEntity.ok(
+        dashboardService.getProjectHealth(projectId, RequestScopes.TENANT_ID.get(), actor));
   }
 
   /**
@@ -58,12 +49,8 @@ public class DashboardController {
   @GetMapping("/api/projects/{projectId}/task-summary")
   public ResponseEntity<TaskSummary> getTaskSummary(
       @PathVariable UUID projectId, ActorContext actor) {
-    String tenantId = RequestScopes.TENANT_ID.get();
-
-    projectAccessService.requireViewAccess(projectId, actor);
-
-    var summary = dashboardService.getTaskSummary(projectId, tenantId);
-    return ResponseEntity.ok(summary);
+    return ResponseEntity.ok(
+        dashboardService.getTaskSummary(projectId, RequestScopes.TENANT_ID.get(), actor));
   }
 
   /**
@@ -76,17 +63,9 @@ public class DashboardController {
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
       ActorContext actor) {
-    if (from.isAfter(to)) {
-      throw new InvalidStateException(
-          "Invalid Date Range", "'from' date must not be after 'to' date");
-    }
-
-    String tenantId = RequestScopes.TENANT_ID.get();
-
-    projectAccessService.requireViewAccess(projectId, actor);
-
-    var hours = dashboardService.getProjectMemberHours(projectId, tenantId, from, to);
-    return ResponseEntity.ok(hours);
+    return ResponseEntity.ok(
+        dashboardService.getProjectMemberHours(
+            projectId, RequestScopes.TENANT_ID.get(), from, to, actor));
   }
 
   // --- Org-level endpoints ---
@@ -99,16 +78,9 @@ public class DashboardController {
   public ResponseEntity<KpiResponse> getCompanyKpis(
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-    if (from.isAfter(to)) {
-      throw new InvalidStateException(
-          "Invalid Date Range", "'from' date must not be after 'to' date");
-    }
-
-    String tenantId = RequestScopes.TENANT_ID.get();
-    String orgRole = RequestScopes.getOrgRole();
-
-    var kpis = dashboardService.getCompanyKpis(tenantId, orgRole, from, to);
-    return ResponseEntity.ok(kpis);
+    return ResponseEntity.ok(
+        dashboardService.getCompanyKpis(
+            RequestScopes.TENANT_ID.get(), RequestScopes.getOrgRole(), from, to));
   }
 
   /**
@@ -117,10 +89,8 @@ public class DashboardController {
    */
   @GetMapping("/api/dashboard/project-health")
   public ResponseEntity<List<ProjectHealth>> getProjectHealthList(ActorContext actor) {
-    String tenantId = RequestScopes.TENANT_ID.get();
-
-    var healthList = dashboardService.getProjectHealthList(tenantId, actor);
-    return ResponseEntity.ok(healthList);
+    return ResponseEntity.ok(
+        dashboardService.getProjectHealthList(RequestScopes.TENANT_ID.get(), actor));
   }
 
   /**
@@ -132,15 +102,8 @@ public class DashboardController {
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to,
       ActorContext actor) {
-    if (from.isAfter(to)) {
-      throw new InvalidStateException(
-          "Invalid Date Range", "'from' date must not be after 'to' date");
-    }
-
-    String tenantId = RequestScopes.TENANT_ID.get();
-
-    var workload = dashboardService.getTeamWorkload(tenantId, actor, from, to);
-    return ResponseEntity.ok(workload);
+    return ResponseEntity.ok(
+        dashboardService.getTeamWorkload(RequestScopes.TENANT_ID.get(), actor, from, to));
   }
 
   /**
@@ -150,12 +113,8 @@ public class DashboardController {
   @GetMapping("/api/dashboard/activity")
   public ResponseEntity<List<CrossProjectActivityItem>> getCrossProjectActivity(
       @RequestParam(defaultValue = "10") int limit, ActorContext actor) {
-    limit = Math.max(1, Math.min(50, limit));
-
-    String tenantId = RequestScopes.TENANT_ID.get();
-
-    var activity = dashboardService.getCrossProjectActivity(tenantId, actor, limit);
-    return ResponseEntity.ok(activity);
+    return ResponseEntity.ok(
+        dashboardService.getCrossProjectActivity(RequestScopes.TENANT_ID.get(), actor, limit));
   }
 
   // --- Personal dashboard endpoint (Epic 79A) ---
@@ -169,15 +128,8 @@ public class DashboardController {
   public ResponseEntity<PersonalDashboard> getPersonalDashboard(
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate from,
       @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate to) {
-    if (from.isAfter(to)) {
-      throw new InvalidStateException(
-          "Invalid Date Range", "'from' date must not be after 'to' date");
-    }
-
-    UUID memberId = RequestScopes.requireMemberId();
-    String tenantId = RequestScopes.TENANT_ID.get();
-
-    var dashboard = dashboardService.getPersonalDashboard(memberId, tenantId, from, to);
-    return ResponseEntity.ok(dashboard);
+    return ResponseEntity.ok(
+        dashboardService.getPersonalDashboard(
+            RequestScopes.requireMemberId(), RequestScopes.TENANT_ID.get(), from, to));
   }
 }

@@ -23,6 +23,8 @@ import io.b2mash.b2b.b2bstrawman.dashboard.dto.TeamWorkloadEntry;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.TrendPoint;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.UpcomingDeadline;
 import io.b2mash.b2b.b2bstrawman.dashboard.dto.UtilizationSummary;
+import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.member.ProjectAccessService;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.project.ProjectStatus;
@@ -60,6 +62,12 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class DashboardService {
 
+  /** Lower bound for the activity-feed {@code limit} (clamped). */
+  static final int MIN_ACTIVITY_LIMIT = 1;
+
+  /** Upper bound for the activity-feed {@code limit} (clamped). */
+  static final int MAX_ACTIVITY_LIMIT = 50;
+
   private final TaskRepository taskRepository;
   private final TimeEntryRepository timeEntryRepository;
   private final AuditEventRepository auditEventRepository;
@@ -67,6 +75,7 @@ public class DashboardService {
   private final ProjectRepository projectRepository;
   private final CustomerProjectRepository customerProjectRepository;
   private final CustomerRepository customerRepository;
+  private final ProjectAccessService projectAccessService;
 
   private final Cache<String, Object> projectCache =
       Caffeine.newBuilder().maximumSize(5_000).expireAfterWrite(Duration.ofMinutes(1)).build();
@@ -81,7 +90,8 @@ public class DashboardService {
       ProjectBudgetRepository projectBudgetRepository,
       ProjectRepository projectRepository,
       CustomerProjectRepository customerProjectRepository,
-      CustomerRepository customerRepository) {
+      CustomerRepository customerRepository,
+      ProjectAccessService projectAccessService) {
     this.taskRepository = taskRepository;
     this.timeEntryRepository = timeEntryRepository;
     this.auditEventRepository = auditEventRepository;
@@ -89,6 +99,7 @@ public class DashboardService {
     this.projectRepository = projectRepository;
     this.customerProjectRepository = customerProjectRepository;
     this.customerRepository = customerRepository;
+    this.projectAccessService = projectAccessService;
   }
 
   // --- Project-scoped endpoints (Epic 75B) ---
@@ -99,11 +110,14 @@ public class DashboardService {
    *
    * @param projectId the project to compute health for
    * @param tenantId the tenant schema for cache key isolation
+   * @param actor the authenticated actor; must have view access to the project
    * @return the project health detail with status, reasons, and metrics
    */
   @SuppressWarnings("unchecked")
   @Transactional(readOnly = true)
-  public ProjectHealthDetail getProjectHealth(UUID projectId, String tenantId) {
+  public ProjectHealthDetail getProjectHealth(UUID projectId, String tenantId, ActorContext actor) {
+    projectAccessService.requireViewAccess(projectId, actor);
+
     String key = tenantId + ":project:" + projectId + ":health";
     ProjectHealthDetail cached = (ProjectHealthDetail) projectCache.getIfPresent(key);
     if (cached != null) {
@@ -121,11 +135,14 @@ public class DashboardService {
    *
    * @param projectId the project to summarize
    * @param tenantId the tenant schema for cache key isolation
+   * @param actor the authenticated actor; must have view access to the project
    * @return the task summary with counts by status and overdue count
    */
   @SuppressWarnings("unchecked")
   @Transactional(readOnly = true)
-  public TaskSummary getTaskSummary(UUID projectId, String tenantId) {
+  public TaskSummary getTaskSummary(UUID projectId, String tenantId, ActorContext actor) {
+    projectAccessService.requireViewAccess(projectId, actor);
+
     String key = tenantId + ":project:" + projectId + ":task-summary";
     TaskSummary cached = (TaskSummary) projectCache.getIfPresent(key);
     if (cached != null) {
@@ -153,6 +170,8 @@ public class DashboardService {
   @SuppressWarnings("unchecked")
   @Transactional(readOnly = true)
   public KpiResponse getCompanyKpis(String tenantId, String orgRole, LocalDate from, LocalDate to) {
+    requireValidDateRange(from, to);
+
     String key = tenantId + ":kpis:" + from + "_" + to;
 
     // Always cache the FULL version
@@ -218,6 +237,8 @@ public class DashboardService {
   @Transactional(readOnly = true)
   public List<TeamWorkloadEntry> getTeamWorkload(
       String tenantId, ActorContext actor, LocalDate from, LocalDate to) {
+    requireValidDateRange(from, to);
+
     String cacheKey =
         isAdminOrOwner(actor.orgRole())
             ? tenantId + ":team-workload:all:" + from + "_" + to
@@ -239,15 +260,18 @@ public class DashboardService {
    *
    * @param tenantId the tenant schema for cache key isolation
    * @param actor the authenticated actor for access filtering and visibility
-   * @param limit maximum number of events to return
+   * @param limit requested number of events; clamped to [{@value #MIN_ACTIVITY_LIMIT}, {@value
+   *     #MAX_ACTIVITY_LIMIT}]
    * @return list of activity items with actor and project names
    */
   @SuppressWarnings("unchecked")
   @Transactional(readOnly = true)
   public List<CrossProjectActivityItem> getCrossProjectActivity(
       String tenantId, ActorContext actor, int limit) {
+    int clampedLimit = Math.max(MIN_ACTIVITY_LIMIT, Math.min(MAX_ACTIVITY_LIMIT, limit));
+
     String cacheKey =
-        tenantId + ":activity:" + actor.memberId() + ":" + actor.orgRole() + ":" + limit;
+        tenantId + ":activity:" + actor.memberId() + ":" + actor.orgRole() + ":" + clampedLimit;
 
     List<CrossProjectActivityItem> cached =
         (List<CrossProjectActivityItem>) orgCache.getIfPresent(cacheKey);
@@ -255,7 +279,7 @@ public class DashboardService {
       return cached;
     }
 
-    List<CrossProjectActivityItem> result = computeCrossProjectActivity(actor, limit);
+    List<CrossProjectActivityItem> result = computeCrossProjectActivity(actor, clampedLimit);
     orgCache.put(cacheKey, result);
     return result;
   }
@@ -269,14 +293,18 @@ public class DashboardService {
    *
    * @param projectId the project to query
    * @param tenantId the tenant schema for cache key isolation
-   * @param from start date of the period
+   * @param from start date of the period (must not be after {@code to})
    * @param to end date of the period
+   * @param actor the authenticated actor; must have view access to the project
    * @return list of member hours entries sorted by totalHours descending
    */
   @SuppressWarnings("unchecked")
   @Transactional(readOnly = true)
   public List<MemberHoursEntry> getProjectMemberHours(
-      UUID projectId, String tenantId, LocalDate from, LocalDate to) {
+      UUID projectId, String tenantId, LocalDate from, LocalDate to, ActorContext actor) {
+    requireValidDateRange(from, to);
+    projectAccessService.requireViewAccess(projectId, actor);
+
     String key = tenantId + ":project:" + projectId + ":member-hours:" + from + "_" + to;
     List<MemberHoursEntry> cached = (List<MemberHoursEntry>) projectCache.getIfPresent(key);
     if (cached != null) {
@@ -306,6 +334,8 @@ public class DashboardService {
   @Transactional(readOnly = true)
   public PersonalDashboard getPersonalDashboard(
       UUID memberId, String tenantId, LocalDate from, LocalDate to) {
+    requireValidDateRange(from, to);
+
     String key = tenantId + ":personal:" + memberId + ":" + from + "_" + to;
     PersonalDashboard cached = (PersonalDashboard) projectCache.getIfPresent(key);
     if (cached != null) {
@@ -765,6 +795,13 @@ public class DashboardService {
   }
 
   // --- Shared helpers ---
+
+  private void requireValidDateRange(LocalDate from, LocalDate to) {
+    if (from.isAfter(to)) {
+      throw new InvalidStateException(
+          "Invalid Date Range", "'from' date must not be after 'to' date");
+    }
+  }
 
   private boolean isAdminOrOwner(String orgRole) {
     return Roles.ORG_ADMIN.equals(orgRole) || Roles.ORG_OWNER.equals(orgRole);

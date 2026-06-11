@@ -154,6 +154,12 @@ Additional production Thymeleaf consumers build their **own** `new TemplateEngin
 
 **Trigger to fix**: Opportunistic — when next touching any of these controllers for a feature change.
 
+**Thin-controller cleanup progress (Wave 3.1, TD-009 family)** — separate from the repository-injection violators above, the `backend/CLAUDE.md` "Known violations" prose list named controllers that carry orchestration/validation logic the thin-controller rule forbids. These are being restored to pure delegation one controller per PR:
+
+- **Slice 1 — `ProjectController`** (PR #1424, merged): ~117 lines of view-filter/tag/custom-field logic moved into `ProjectService`. Removed from the known-violators list.
+- **Slice 2 — `DocumentController`**: thin-controller restoration (merged/staged in the same family).
+- **Slice 3 — `DashboardController`** (this slice): two violation classes removed — (a) multi-service orchestration (each project-scoped endpoint called `ProjectAccessService.requireViewAccess` *and* a `DashboardService` getter in sequence) and (b) business-policy conditionals in the controller (`from.isAfter(to)` date-range validation on 4 endpoints; `Math.max/min` activity-`limit` clamping). The access-control orchestration now lives inside the `DashboardService` getters (which take `ActorContext`); date validation moved to a private `requireValidDateRange` guard; the limit clamp moved into `getCrossProjectActivity` (bounds as named constants). `DashboardController` no longer injects `ProjectAccessService` and every method is one-line delegation. Removed from the known-violators list. Characterization tests added first for the previously-uncovered moved paths (inverted-date-range 400 ProblemDetail on kpis/team-workload/member-hours/personal; activity limit clamped above 50 and below 1). Note: `DashboardController` was never in the ArchUnit exclusion list or the repository-injection set above — it injected no repositories, so no exemption needed deleting; the rule already passed for it.
+
 ## TD-D5: Shard-unaware `runForTenant()` call sites (event-listener shard propagation)
 
 **Introduced**: pre-sharding code; surfaced by the Phase 75 infra review (kazi-infra-review-scheduling-sharding.md, finding D5)

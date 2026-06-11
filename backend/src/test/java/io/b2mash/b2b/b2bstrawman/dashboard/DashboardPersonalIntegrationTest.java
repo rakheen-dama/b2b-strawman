@@ -382,6 +382,34 @@ class DashboardPersonalIntegrationTest {
         .andExpect(status().isNotFound());
   }
 
+  // --- Date-Range Validation Tests (characterization for service-side guard) ---
+
+  @Test
+  void memberHoursRejectInvertedDateRangeWithProblemDetail() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/projects/" + projectAId + "/member-hours")
+                .param("from", today.toString())
+                .param("to", thirtyDaysAgo.toString())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_pdash_admin")))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Invalid Date Range"))
+        .andExpect(jsonPath("$.detail").value("'from' date must not be after 'to' date"));
+  }
+
+  @Test
+  void personalDashboardRejectsInvertedDateRangeWithProblemDetail() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/dashboard/personal")
+                .param("from", today.toString())
+                .param("to", thirtyDaysAgo.toString())
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_pdash_member1")))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Invalid Date Range"))
+        .andExpect(jsonPath("$.detail").value("'from' date must not be after 'to' date"));
+  }
+
   // --- JWT Helpers ---
 
   // --- Member Sync Helper ---

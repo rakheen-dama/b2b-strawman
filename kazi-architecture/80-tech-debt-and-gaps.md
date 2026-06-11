@@ -1,6 +1,6 @@
 # 80 — Technical Debt, Gaps & Improvement Areas
 
-**Last reviewed:** 2026-05-10
+**Last reviewed:** 2026-06-11
 **Source:** synthesis of open-questions / fragility / drift findings surfaced across the discovery sweep (Phase A), module pages (Phase C), cross-cutting pages (Phase D), and verification pass (Phase E). This file is the consolidated risk register.
 
 This file is **not a roadmap.** It is an inventory of debt, gaps, and risks visible from current code + docs. Decisions about what to address, when, and how are out of scope here — those belong in ADRs and phase docs.
@@ -45,7 +45,6 @@ This file is **not a roadmap.** It is an inventory of debt, gaps, and risks visi
 | B-01 | Plan-tier states still in `Subscription` enum | High | M | `Subscription.SubscriptionStatus` includes `PENDING_CANCELLATION`, `GRACE_PERIOD`, `LOCKED` from the abandoned plan-tier model. The "no plan-tier subscriptions" decision was made (per memory `project_no_plan_subscriptions.md`) but the enum was never cleaned up. | `platform-administration.md` |
 | B-02 | `Member.clerkUserId` field name lies | Med | S | Clerk auth was retired and replaced by Keycloak. The field still holds the IDP `sub` claim but the name advertises a vendor that's no longer in use. | `identity-access.md` §10; `auth-and-rbac.md` §9 |
 | B-03 | Reporting uses Thymeleaf, ADR-263 says Tiptap | Med | M | ADR-263 commits to "audit pdf via Tiptap pipeline" as the doc-render path; reporting templates use Thymeleaf `template_body` (ADR-082). Decision divergence — both ADRs are Active. | `reporting.md` |
-| B-05 | `automation-legal-za` pack not referenced in `legal-za.json` | High | S | The pack JSON ships with `verticalProfile: legal-za` but `legal-za.json` has no `packs.automation` key, so legal-za tenants don't auto-install it at provisioning. | `60-verticals/seeds-and-packs.md` |
 | B-06 | `consulting-za.json` ≠ phase66 doc | Low | S | Phase 66 architecture doc shows empty `enabledModules`; the shipped JSON has three. Doc was not updated when the JSON was finalised. | `60-verticals/consulting-za.md` |
 | B-07 | "base" profile is `consulting-generic.json` | Low | S | Documentation refers to a `base` vertical; no `base.json` exists in `vertical-profiles/`. The de-facto base is `consulting-generic.json` with empty modules. Naming gap. | `60-verticals/base.md` |
 | B-08 | ADR-139 / ADR-156 retired without formal `Superseded` marker | Low | S | A4 triage marked them Stale based on context; the ADR files themselves carry no `Status: Superseded by ADR-178` line. | `_discovery/A4-adr-triage.md`; `90-adr-index.md` |
@@ -117,7 +116,7 @@ These are concrete bugs surfaced while writing the module pages. None blocked Ph
 | H-01 | `s3/` package paths in module page | — | S | `documents-templates.md` | **Fixed in Phase E.** Package was relocated to `integration/storage/`. |
 | H-02 | Information-request event-to-line mapping | — | S | `information-requests.md` | **Fixed in Phase E.** 4 events anchored to wrong lines; 2 published from sibling services (project-templates / portal-backend). |
 | H-03 | `accounting-za.json` missing `regulatory_deadlines` | High | S | `verticals/accounting-za.json` | **Fixed.** Original premise (slug `"deadlines"` should be `"regulatory_deadlines"`) was wrong: these are two distinct, both-valid modules — `regulatory_deadlines` (firm-side SARS/CIPC, `DeadlineController`) and `deadlines` (customer-portal view, `PortalDeadlineService`). Real defect: the profile omitted `regulatory_deadlines` despite the registry declaring it `defaultEnabledFor: ["accounting-za"]`, so the firm-side `DeadlineController` fail-closed. Added `regulatory_deadlines` to `enabledModules`; reconciler back-propagates to existing tenants. `VerticalProfileModuleSlugValidationTest` now guards both directions. |
-| H-04 | `automation-legal-za` pack not referenced in `legal-za.json` | High | S | `verticals/legal-za.json` | Open. Pack ships standalone but doesn't auto-install. |
+| H-04 | `automation-legal-za` pack not referenced in `legal-za.json` | — | S | `verticals/legal-za.json` | **Invalid — premise disproven.** Claim was that the missing `packs.automation` key in `legal-za.json` prevents auto-install. But provisioning installs automation packs via `TenantProvisioningService.installPacksViaPipeline(…, AUTOMATION_TEMPLATE)` → `PackCatalogService.getPackIdsForProfile`, which filters by each pack's own `verticalProfile` field (`AutomationPackInstaller.availablePacks()` → `pack.verticalProfile()`), **not** by the profile JSON's `packs.automation` key. `automation-templates/legal-za.json` declares `verticalProfile: legal-za`, so legal-za tenants already auto-install all 5 rules at provisioning — identical to consulting-za (which `ConsultingZaAutomationPackTest` proves). The `packs.*` map in the profile JSON is vestigial: it's read only by two tests asserting `containsKey("field")`, never by the install pipeline (accounting-za's and consulting-za's `packs.automation` keys are equally inert). Verified by `LegalZaAutomationPackTest` (4 green tests on unchanged production code). No code/JSON change needed. (Duplicate B-05 removed.) |
 | H-05 | `Subscription` enum still contains plan-tier states | High | M | `billing/Subscription.java` | Open. Per `project_no_plan_subscriptions.md` decision; not yet cleaned up. |
 | H-06 | Reports controller missing `@RequiresCapability` | High | S | `reporting/ReportingController.java` | **Fixed.** `@RequiresCapability("FINANCIAL_VISIBILITY")` added to all 6 endpoints; member-role denial covered by `ReportingControllerTest`. |
 | H-07 | `ViewFilterHelper` `tableName` SQL surface | Med | S | `view/ViewFilterHelper.java` | Open IF tableName ever becomes user-controlled. Currently safe (caller-supplied from controlled enum). |
@@ -199,12 +198,11 @@ These are good first-PRs for new contributors or for housekeeping sprints.
 
 1. Delete `Subscription.SubscriptionStatus.{PENDING_CANCELLATION, GRACE_PERIOD, LOCKED}` and verify no callers (B-01, R-03).
 2. Rename `Member.clerkUserId` → `Member.idpSub` with a Flyway migration (B-02).
-3. Add `packs.automation` key to `legal-za.json` to wire the legal automation pack (B-05, H-04).
-4. Remove `RetainerPeriod.PeriodStatus.INVOICED` if confirmed dead (E-03, H-09).
-5. Add `verticalModuleGuard.requireModule("retainer_agreements")` to retainer service entry points (B-10).
-6. Add a boot-time warning when `VerticalProfileRegistry` skips a malformed JSON (G-01, K-05).
-7. Rename `ProjectStatus.VALID_TRANSITIONS` ↔ `ALLOWED_TRANSITIONS` to a single name (E-04).
-8. Mark superseded ADRs (139, 156, 010, 013, 014, 219, 222) with explicit `Status: Superseded by ADR-XXX` headers in the ADR files (B-08).
+3. Remove `RetainerPeriod.PeriodStatus.INVOICED` if confirmed dead (E-03, H-09).
+4. Add `verticalModuleGuard.requireModule("retainer_agreements")` to retainer service entry points (B-10).
+5. Add a boot-time warning when `VerticalProfileRegistry` skips a malformed JSON (G-01, K-05).
+6. Rename `ProjectStatus.VALID_TRANSITIONS` ↔ `ALLOWED_TRANSITIONS` to a single name (E-04).
+7. Mark superseded ADRs (139, 156, 010, 013, 014, 219, 222) with explicit `Status: Superseded by ADR-XXX` headers in the ADR files (B-08).
 
 ## N — Recommended next ADRs
 

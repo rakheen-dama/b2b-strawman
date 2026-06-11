@@ -348,6 +348,29 @@ class ProjectLifecycleIntegrationTest {
         .andExpect(status().isBadRequest());
   }
 
+  /**
+   * Characterization test for the {@code dueBefore} list filter (TD-009 thin-controller refactor).
+   * The filter retains only projects whose dueDate is strictly before the supplied date; projects
+   * with a later dueDate or no dueDate at all are excluded. Captures the pre-refactor behavior so
+   * moving the filter logic into {@link ProjectService} stays behavior-preserving.
+   */
+  @Test
+  void shouldFilterProjectsByDueBefore() throws Exception {
+    String earlyDueId = createProjectWithDueDate("Due Early Filter", "2026-01-10");
+    String lateDueId = createProjectWithDueDate("Due Late Filter", "2026-12-31");
+    String noDueId = createProject("No Due Date Filter");
+
+    mockMvc
+        .perform(
+            get("/api/projects")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"))
+                .param("dueBefore", "2026-06-01"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.id == '%s')]", earlyDueId).exists())
+        .andExpect(jsonPath("$[?(@.id == '%s')]", lateDueId).doesNotExist())
+        .andExpect(jsonPath("$[?(@.id == '%s')]", noDueId).doesNotExist());
+  }
+
   @Test
   void shouldRejectCreateTaskOnArchivedProject() throws Exception {
     String projectId = createProject("Archived No Task");
@@ -431,6 +454,23 @@ class ProjectLifecycleIntegrationTest {
                         {"name": "%s", "description": "Lifecycle test project"}
                         """
                             .formatted(name)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return TestEntityHelper.extractIdFromLocation(result);
+  }
+
+  private String createProjectWithDueDate(String name, String dueDate) throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/projects")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"name": "%s", "description": "Lifecycle test project", "dueDate": "%s"}
+                        """
+                            .formatted(name, dueDate)))
             .andExpect(status().isCreated())
             .andReturn();
     return TestEntityHelper.extractIdFromLocation(result);

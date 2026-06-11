@@ -1,6 +1,5 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
-import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.FieldDefinitionResponse;
 import io.b2mash.b2b.b2bstrawman.fielddefinition.dto.SetFieldGroupsRequest;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
@@ -12,23 +11,17 @@ import io.b2mash.b2b.b2bstrawman.setupstatus.ProjectSetupStatusService;
 import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummary;
 import io.b2mash.b2b.b2bstrawman.setupstatus.UnbilledTimeSummaryService;
 import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
-import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
 import io.b2mash.b2b.b2bstrawman.tag.dto.SetEntityTagsRequest;
 import io.b2mash.b2b.b2bstrawman.tag.dto.TagResponse;
-import io.b2mash.b2b.b2bstrawman.view.CustomFieldFilterUtil;
-import io.b2mash.b2b.b2bstrawman.view.ViewFilterHelper;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.net.URI;
 import java.time.Instant;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,7 +40,6 @@ public class ProjectController {
 
   private final ProjectService projectService;
   private final EntityTagService entityTagService;
-  private final ViewFilterHelper viewFilterHelper;
   private final ProjectSetupStatusService projectSetupStatusService;
   private final UnbilledTimeSummaryService unbilledTimeSummaryService;
   private final ProjectUpcomingDeadlinesService projectUpcomingDeadlinesService;
@@ -55,13 +47,11 @@ public class ProjectController {
   public ProjectController(
       ProjectService projectService,
       EntityTagService entityTagService,
-      ViewFilterHelper viewFilterHelper,
       ProjectSetupStatusService projectSetupStatusService,
       UnbilledTimeSummaryService unbilledTimeSummaryService,
       ProjectUpcomingDeadlinesService projectUpcomingDeadlinesService) {
     this.projectService = projectService;
     this.entityTagService = entityTagService;
-    this.viewFilterHelper = viewFilterHelper;
     this.projectSetupStatusService = projectSetupStatusService;
     this.unbilledTimeSummaryService = unbilledTimeSummaryService;
     this.projectUpcomingDeadlinesService = projectUpcomingDeadlinesService;
@@ -75,117 +65,8 @@ public class ProjectController {
       @RequestParam(required = false) UUID customerId,
       @RequestParam(required = false) Map<String, String> allParams,
       ActorContext actor) {
-
-    // --- View-based filtering (server-side SQL) ---
-    if (view != null) {
-      // Build access control set: regular members only see projects they have access to
-      boolean isAdminOrOwner = actor.isOwnerOrAdmin();
-      Set<UUID> accessibleIds = null;
-      if (!isAdminOrOwner) {
-        accessibleIds =
-            projectService.listProjects(actor).stream()
-                .map(pwr -> pwr.project().getId())
-                .collect(Collectors.toSet());
-      }
-
-      List<Project> filtered =
-          viewFilterHelper.applyViewFilter(
-              view, "PROJECT", "projects", Project.class, accessibleIds, Project::getId);
-
-      if (filtered != null) {
-        // Apply customerId filter to view-based results
-        if (customerId != null) {
-          filtered = filtered.stream().filter(p -> customerId.equals(p.getCustomerId())).toList();
-        }
-        var projectIds = filtered.stream().map(Project::getId).toList();
-        var tagsByEntityId = entityTagService.getEntityTagsBatch("PROJECT", projectIds);
-        var memberNames = projectService.resolveProjectMemberNames(filtered);
-
-        var responses =
-            filtered.stream()
-                .map(
-                    p ->
-                        ProjectResponse.from(
-                            p,
-                            null,
-                            tagsByEntityId.getOrDefault(p.getId(), List.of()),
-                            memberNames))
-                .toList();
-        return ResponseEntity.ok(responses);
-      }
-    }
-
-    // --- Fallback: existing in-memory filtering ---
-    var projectsWithRoles = projectService.listProjects(actor);
-
-    // Apply status filter (default: ACTIVE only)
-    List<ProjectStatus> statusFilter = parseProjectStatuses(status);
-    if (statusFilter != null) {
-      projectsWithRoles =
-          projectsWithRoles.stream()
-              .filter(pwr -> statusFilter.contains(pwr.project().getStatus()))
-              .toList();
-    }
-
-    // Apply dueBefore filter
-    if (dueBefore != null) {
-      projectsWithRoles =
-          projectsWithRoles.stream()
-              .filter(
-                  pwr ->
-                      pwr.project().getDueDate() != null
-                          && pwr.project().getDueDate().isBefore(dueBefore))
-              .toList();
-    }
-
-    // Apply customerId filter
-    if (customerId != null) {
-      projectsWithRoles =
-          projectsWithRoles.stream()
-              .filter(pwr -> customerId.equals(pwr.project().getCustomerId()))
-              .toList();
-    }
-
-    // Batch-load tags for all projects (2 queries instead of 2N)
-    var projectIds = projectsWithRoles.stream().map(pwr -> pwr.project().getId()).toList();
-    var tagsByEntityId = entityTagService.getEntityTagsBatch("PROJECT", projectIds);
-    var allProjects = projectsWithRoles.stream().map(pwr -> pwr.project()).toList();
-    var memberNames = projectService.resolveProjectMemberNames(allProjects);
-
-    var projects =
-        projectsWithRoles.stream()
-            .map(
-                pwr ->
-                    ProjectResponse.from(
-                        pwr.project(),
-                        pwr.projectRole(),
-                        tagsByEntityId.getOrDefault(pwr.project().getId(), List.of()),
-                        memberNames))
-            .toList();
-
-    // Apply custom field filtering if present
-    Map<String, String> customFieldFilters =
-        CustomFieldFilterUtil.extractCustomFieldFilters(allParams);
-    if (!customFieldFilters.isEmpty()) {
-      projects =
-          projects.stream()
-              .filter(
-                  p ->
-                      CustomFieldFilterUtil.matchesCustomFieldFilters(
-                          p.customFields(), customFieldFilters))
-              .toList();
-    }
-
-    // Apply tag filtering if present
-    List<String> tagSlugs = TagFilterUtil.extractTagSlugs(allParams);
-    if (!tagSlugs.isEmpty()) {
-      projects =
-          projects.stream()
-              .filter(p -> TagFilterUtil.matchesTagFilter(p.tags(), tagSlugs))
-              .toList();
-    }
-
-    return ResponseEntity.ok(projects);
+    return ResponseEntity.ok(
+        projectService.listProjects(view, status, dueBefore, customerId, allParams, actor));
   }
 
   @GetMapping("/{id}")
@@ -322,31 +203,6 @@ public class ProjectController {
   public ResponseEntity<List<ProjectUpcomingDeadline>> getUpcomingDeadlines(
       @PathVariable UUID id, ActorContext actor) {
     return ResponseEntity.ok(projectUpcomingDeadlinesService.getUpcomingDeadlines(id, actor));
-  }
-
-  private static List<ProjectStatus> parseProjectStatuses(String status) {
-    if (status == null || status.isBlank()) {
-      return List.of(ProjectStatus.ACTIVE); // Default: show only ACTIVE
-    }
-    if ("ALL".equalsIgnoreCase(status)) {
-      return null; // null = no filter
-    }
-    return Arrays.stream(status.split(","))
-        .map(String::trim)
-        .map(
-            s -> {
-              try {
-                return ProjectStatus.valueOf(s.toUpperCase());
-              } catch (IllegalArgumentException e) {
-                throw new InvalidStateException(
-                    "Invalid project status",
-                    "Invalid project status: '"
-                        + s
-                        + "'. Valid values: "
-                        + Arrays.toString(ProjectStatus.values()));
-              }
-            })
-        .toList();
   }
 
   public record CompleteProjectRequest(Boolean acknowledgeUnbilledTime) {}

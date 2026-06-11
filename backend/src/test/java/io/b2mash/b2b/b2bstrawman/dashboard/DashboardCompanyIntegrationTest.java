@@ -477,7 +477,7 @@ class DashboardCompanyIntegrationTest {
 
   @Test
   void crossProjectActivityClampsLimitBelowMinimumToOne() throws Exception {
-    // limit=0 is clamped to 1 — still a valid 200 with at most one event (we seeded several).
+    // limit=0 is clamped to 1 — exactly one event returned (several are seeded).
     mockMvc
         .perform(
             get("/api/dashboard/activity")
@@ -485,7 +485,7 @@ class DashboardCompanyIntegrationTest {
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$").isArray())
-        .andExpect(jsonPath("$", hasSize(lessThanOrEqualTo(1))));
+        .andExpect(jsonPath("$", hasSize(1)));
   }
 
   // --- Date-Range Validation Tests (characterization for service-side guard) ---
@@ -499,6 +499,7 @@ class DashboardCompanyIntegrationTest {
                 .param("to", thirtyDaysAgo.toString())
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.title").value("Invalid Date Range"))
         .andExpect(jsonPath("$.detail").value("'from' date must not be after 'to' date"));
   }
@@ -512,6 +513,7 @@ class DashboardCompanyIntegrationTest {
                 .param("to", thirtyDaysAgo.toString())
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.title").value("Invalid Date Range"))
         .andExpect(jsonPath("$.detail").value("'from' date must not be after 'to' date"));
   }

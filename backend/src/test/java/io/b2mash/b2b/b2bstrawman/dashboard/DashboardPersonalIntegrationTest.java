@@ -393,6 +393,7 @@ class DashboardPersonalIntegrationTest {
                 .param("to", thirtyDaysAgo.toString())
                 .with(TestJwtFactory.adminJwt(ORG_ID, "user_pdash_admin")))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.title").value("Invalid Date Range"))
         .andExpect(jsonPath("$.detail").value("'from' date must not be after 'to' date"));
   }
@@ -406,6 +407,7 @@ class DashboardPersonalIntegrationTest {
                 .param("to", thirtyDaysAgo.toString())
                 .with(TestJwtFactory.memberJwt(ORG_ID, "user_pdash_member1")))
         .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
         .andExpect(jsonPath("$.title").value("Invalid Date Range"))
         .andExpect(jsonPath("$.detail").value("'from' date must not be after 'to' date"));
   }

@@ -147,6 +147,11 @@ Additional production Thymeleaf consumers build their **own** `new TemplateEngin
 
 **Fix when needed**: For each controller, extract a service that does the repository work and have the controller delegate. Pattern: `controller calls exactly one service method per endpoint, returns ResponseEntity` (`backend/CLAUDE.md` "Controller Discipline" section). MockPaymentController is a dev-only mock and may stay as-is or move under the dev-profile-only path used by `DevPortalController`.
 
+**Progress** (broader `backend/CLAUDE.md` "Known violations" list — the thin-controller-discipline cleanup beyond just repo injection):
+
+- PR #1424 (2026-06-11): `ProjectController` — moved ~117 lines of view-filter/tag/custom-field listing logic into `ProjectService`; controller methods are pure delegation. (ProjectController was never on the ArchUnit exclusion list — it never injected a repository — so no rule change was needed.)
+- `DocumentController` (2026-06-11): moved scope-dispatch (`GET /api/documents` ORG/CUSTOMER switch), uploader-name resolution + DTO mapping, and the org-context guard into `DocumentService` (DTO-returning orchestration methods + `RequestScopes`-resolving upload overloads). Controller is now pure delegation. Removed from the `backend/CLAUDE.md` "Known violations" list. No ArchUnit exclusion entry existed (it never injected a repository), so no rule change was needed. Characterization test (`DocumentScopeIntegrationTest#orgScopedListingResolvesUploaderName`) added for the previously-unasserted `uploadedByName` path before the move.
+
 **Trigger to fix**: Opportunistic — when next touching any of these controllers for a feature change.
 
 ## TD-D5: Shard-unaware `runForTenant()` call sites (event-listener shard propagation)

@@ -1,11 +1,7 @@
 package io.b2mash.b2b.b2bstrawman.document;
 
-import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
-import io.b2mash.b2b.b2bstrawman.exception.MissingOrganizationContextException;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
-import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.orgrole.RequiresCapability;
-import io.b2mash.b2b.b2bstrawman.security.JwtUtils;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -15,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -40,20 +35,11 @@ public class DocumentController {
   public ResponseEntity<UploadInitResponse> initiateUpload(
       @PathVariable UUID projectId,
       @Valid @RequestBody UploadInitRequest request,
-      JwtAuthenticationToken auth,
       ActorContext actor) {
-    String orgId = JwtUtils.extractOrgId(auth.getToken());
-    if (orgId == null) {
-      throw new MissingOrganizationContextException();
-    }
-
     var result =
         documentService.initiateUpload(
-            projectId, request.fileName(), request.contentType(), request.size(), orgId, actor);
-    return ResponseEntity.status(201)
-        .body(
-            new UploadInitResponse(
-                result.documentId(), result.presignedUrl(), result.expiresInSeconds()));
+            projectId, request.fileName(), request.contentType(), request.size(), actor);
+    return ResponseEntity.status(201).body(UploadInitResponse.from(result));
   }
 
   // --- ORG-scoped upload-init ---
@@ -61,20 +47,11 @@ public class DocumentController {
   @PostMapping("/api/documents/upload-init")
   @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<UploadInitResponse> initiateOrgUpload(
-      @Valid @RequestBody UploadInitRequest request, JwtAuthenticationToken auth) {
-    String orgId = JwtUtils.extractOrgId(auth.getToken());
-    if (orgId == null) {
-      throw new MissingOrganizationContextException();
-    }
-    UUID memberId = RequestScopes.requireMemberId();
-
+      @Valid @RequestBody UploadInitRequest request) {
     var result =
         documentService.initiateOrgUpload(
-            request.fileName(), request.contentType(), request.size(), orgId, memberId);
-    return ResponseEntity.status(201)
-        .body(
-            new UploadInitResponse(
-                result.documentId(), result.presignedUrl(), result.expiresInSeconds()));
+            request.fileName(), request.contentType(), request.size());
+    return ResponseEntity.status(201).body(UploadInitResponse.from(result));
   }
 
   // --- CUSTOMER-scoped upload-init ---
@@ -82,22 +59,11 @@ public class DocumentController {
   @PostMapping("/api/customers/{customerId}/documents/upload-init")
   @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<UploadInitResponse> initiateCustomerUpload(
-      @PathVariable UUID customerId,
-      @Valid @RequestBody UploadInitRequest request,
-      JwtAuthenticationToken auth) {
-    String orgId = JwtUtils.extractOrgId(auth.getToken());
-    if (orgId == null) {
-      throw new MissingOrganizationContextException();
-    }
-    UUID memberId = RequestScopes.requireMemberId();
-
+      @PathVariable UUID customerId, @Valid @RequestBody UploadInitRequest request) {
     var result =
         documentService.initiateCustomerUpload(
-            customerId, request.fileName(), request.contentType(), request.size(), orgId, memberId);
-    return ResponseEntity.status(201)
-        .body(
-            new UploadInitResponse(
-                result.documentId(), result.presignedUrl(), result.expiresInSeconds()));
+            customerId, request.fileName(), request.contentType(), request.size());
+    return ResponseEntity.status(201).body(UploadInitResponse.from(result));
   }
 
   // --- Document listing by scope ---
@@ -105,22 +71,7 @@ public class DocumentController {
   @GetMapping("/api/documents")
   public ResponseEntity<List<DocumentResponse>> listDocumentsByScope(
       @RequestParam String scope, @RequestParam(required = false) UUID customerId) {
-    var documents =
-        switch (scope.toUpperCase()) {
-          case "ORG" -> documentService.listOrgDocuments();
-          case "CUSTOMER" -> {
-            if (customerId == null) {
-              throw new InvalidStateException(
-                  "Missing customerId", "customerId is required when scope is CUSTOMER");
-            }
-            yield documentService.listCustomerDocuments(customerId);
-          }
-          default ->
-              throw new InvalidStateException("Invalid scope", "scope must be 'ORG' or 'CUSTOMER'");
-        };
-    var memberNames = documentService.resolveUploaderNames(documents);
-    var response = documents.stream().map(d -> DocumentResponse.from(d, memberNames)).toList();
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(documentService.listDocumentsByScope(scope, customerId));
   }
 
   // --- Confirm, cancel, project listing, download (existing) ---
@@ -128,9 +79,7 @@ public class DocumentController {
   @PostMapping("/api/documents/{documentId}/confirm")
   public ResponseEntity<DocumentResponse> confirmUpload(
       @PathVariable UUID documentId, ActorContext actor) {
-    var document = documentService.confirmUpload(documentId, actor);
-    var memberNames = documentService.resolveUploaderNames(List.of(document));
-    return ResponseEntity.ok(DocumentResponse.from(document, memberNames));
+    return ResponseEntity.ok(documentService.confirmUploadResponse(documentId, actor));
   }
 
   @DeleteMapping("/api/documents/{documentId}/cancel")
@@ -142,10 +91,7 @@ public class DocumentController {
   @GetMapping("/api/projects/{projectId}/documents")
   public ResponseEntity<List<DocumentResponse>> listDocuments(
       @PathVariable UUID projectId, ActorContext actor) {
-    var documents = documentService.listDocuments(projectId, actor);
-    var memberNames = documentService.resolveUploaderNames(documents);
-    var response = documents.stream().map(d -> DocumentResponse.from(d, memberNames)).toList();
-    return ResponseEntity.ok(response);
+    return ResponseEntity.ok(documentService.listDocumentResponses(projectId, actor));
   }
 
   @GetMapping("/api/documents/{documentId}/presign-download")
@@ -161,9 +107,8 @@ public class DocumentController {
   @RequiresCapability("PROJECT_MANAGEMENT")
   public ResponseEntity<DocumentResponse> toggleVisibility(
       @PathVariable UUID documentId, @Valid @RequestBody VisibilityRequest request) {
-    var document = documentService.toggleVisibility(documentId, request.visibility());
-    var memberNames = documentService.resolveUploaderNames(List.of(document));
-    return ResponseEntity.ok(DocumentResponse.from(document, memberNames));
+    return ResponseEntity.ok(
+        documentService.toggleVisibilityResponse(documentId, request.visibility()));
   }
 
   // --- DTOs ---
@@ -177,7 +122,12 @@ public class DocumentController {
           String contentType,
       @Positive(message = "size must be positive") long size) {}
 
-  public record UploadInitResponse(UUID documentId, String presignedUrl, long expiresInSeconds) {}
+  public record UploadInitResponse(UUID documentId, String presignedUrl, long expiresInSeconds) {
+    public static UploadInitResponse from(DocumentService.UploadInitResult result) {
+      return new UploadInitResponse(
+          result.documentId(), result.presignedUrl(), result.expiresInSeconds());
+    }
+  }
 
   public record PresignDownloadResponse(String presignedUrl, long expiresInSeconds) {}
 

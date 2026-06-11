@@ -516,6 +516,35 @@ class DocumentScopeIntegrationTest {
     org.assertj.core.api.Assertions.assertThat(presignedUrl).contains("/customer/");
   }
 
+  // --- Uploader-name resolution (characterization of the listing orchestration) ---
+
+  @Test
+  void orgScopedListingResolvesUploaderName() throws Exception {
+    // Upload an ORG-scoped document as the owner (display name "Owner")
+    var initResult =
+        mockMvc
+            .perform(
+                post("/api/documents/upload-init")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner"))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"fileName": "uploader-name.pdf", "contentType": "application/pdf", "size": 64}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+    var documentId = extractJsonField(initResult, "documentId");
+
+    // The listing must populate uploadedBy + uploadedByName for the just-uploaded document.
+    mockMvc
+        .perform(
+            get("/api/documents?scope=ORG")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_scope_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$[?(@.id == '" + documentId + "')].uploadedByName").value("Owner"));
+  }
+
   // --- Helpers ---
 
   private String extractJsonField(MvcResult result, String field) throws Exception {

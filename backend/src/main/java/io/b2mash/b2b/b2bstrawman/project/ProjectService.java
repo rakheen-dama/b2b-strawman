@@ -21,19 +21,27 @@ import io.b2mash.b2b.b2bstrawman.member.ProjectMember;
 import io.b2mash.b2b.b2bstrawman.member.ProjectMemberRepository;
 import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.project.ProjectController.ProjectResponse;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
+import io.b2mash.b2b.b2bstrawman.tag.EntityTagService;
+import io.b2mash.b2b.b2bstrawman.tag.TagFilterUtil;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskStatus;
 import io.b2mash.b2b.b2bstrawman.timeentry.TimeEntryRepository;
+import io.b2mash.b2b.b2bstrawman.view.CustomFieldFilterUtil;
+import io.b2mash.b2b.b2bstrawman.view.ViewFilterHelper;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneOffset;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -57,6 +65,8 @@ public class ProjectService {
   private final ProjectDeletionGuard projectDeletionGuard;
   private final CustomerProjectRepository customerProjectRepository;
   private final OrgSettingsService orgSettingsService;
+  private final EntityTagService entityTagService;
+  private final ViewFilterHelper viewFilterHelper;
 
   public ProjectService(
       ProjectRepository repository,
@@ -70,7 +80,9 @@ public class ProjectService {
       ProjectFieldService projectFieldService,
       ProjectDeletionGuard projectDeletionGuard,
       CustomerProjectRepository customerProjectRepository,
-      OrgSettingsService orgSettingsService) {
+      OrgSettingsService orgSettingsService,
+      EntityTagService entityTagService,
+      ViewFilterHelper viewFilterHelper) {
     this.repository = repository;
     this.projectMemberRepository = projectMemberRepository;
     this.projectAccessService = projectAccessService;
@@ -83,6 +95,8 @@ public class ProjectService {
     this.projectDeletionGuard = projectDeletionGuard;
     this.customerProjectRepository = customerProjectRepository;
     this.orgSettingsService = orgSettingsService;
+    this.entityTagService = entityTagService;
+    this.viewFilterHelper = viewFilterHelper;
   }
 
   /**
@@ -128,6 +142,166 @@ public class ProjectService {
       return repository.findAllProjectsWithRole(actor.memberId());
     }
     return repository.findProjectsForMember(actor.memberId());
+  }
+
+  /**
+   * Lists projects as {@link ProjectResponse} DTOs, applying the optional view / status / dueBefore
+   * / customerId / custom-field / tag filters used by {@code GET /api/projects}.
+   *
+   * <p>Two filtering modes exist:
+   *
+   * <ul>
+   *   <li><b>View-based</b> ({@code view != null}, server-side SQL): resolves the saved view's
+   *       WHERE clause, applies member-level access control for non-admins, then narrows by
+   *       customerId and attaches tags/member names. If the view produced no WHERE clause the
+   *       method falls through to the in-memory path.
+   *   <li><b>In-memory</b> (default): loads the actor's accessible projects, then applies the
+   *       status (default ACTIVE-only), dueBefore, customerId, custom-field, and tag filters in
+   *       sequence.
+   * </ul>
+   *
+   * Moved verbatim from {@code ProjectController.listProjects} for TD-009 thin-controller cleanup —
+   * behavior-preserving.
+   */
+  @Transactional(readOnly = true)
+  public List<ProjectResponse> listProjects(
+      UUID view,
+      String status,
+      LocalDate dueBefore,
+      UUID customerId,
+      Map<String, String> allParams,
+      ActorContext actor) {
+
+    // --- View-based filtering (server-side SQL) ---
+    if (view != null) {
+      // Build access control set: regular members only see projects they have access to
+      boolean isAdminOrOwner = actor.isOwnerOrAdmin();
+      Set<UUID> accessibleIds = null;
+      if (!isAdminOrOwner) {
+        accessibleIds =
+            listProjects(actor).stream()
+                .map(pwr -> pwr.project().getId())
+                .collect(Collectors.toSet());
+      }
+
+      List<Project> filtered =
+          viewFilterHelper.applyViewFilter(
+              view, "PROJECT", "projects", Project.class, accessibleIds, Project::getId);
+
+      if (filtered != null) {
+        // Apply customerId filter to view-based results
+        if (customerId != null) {
+          filtered = filtered.stream().filter(p -> customerId.equals(p.getCustomerId())).toList();
+        }
+        var projectIds = filtered.stream().map(Project::getId).toList();
+        var tagsByEntityId = entityTagService.getEntityTagsBatch("PROJECT", projectIds);
+        var memberNames = resolveProjectMemberNames(filtered);
+
+        return filtered.stream()
+            .map(
+                p ->
+                    ProjectResponse.from(
+                        p, null, tagsByEntityId.getOrDefault(p.getId(), List.of()), memberNames))
+            .toList();
+      }
+    }
+
+    // --- Fallback: existing in-memory filtering ---
+    var projectsWithRoles = listProjects(actor);
+
+    // Apply status filter (default: ACTIVE only)
+    List<ProjectStatus> statusFilter = parseProjectStatuses(status);
+    if (statusFilter != null) {
+      projectsWithRoles =
+          projectsWithRoles.stream()
+              .filter(pwr -> statusFilter.contains(pwr.project().getStatus()))
+              .toList();
+    }
+
+    // Apply dueBefore filter
+    if (dueBefore != null) {
+      projectsWithRoles =
+          projectsWithRoles.stream()
+              .filter(
+                  pwr ->
+                      pwr.project().getDueDate() != null
+                          && pwr.project().getDueDate().isBefore(dueBefore))
+              .toList();
+    }
+
+    // Apply customerId filter
+    if (customerId != null) {
+      projectsWithRoles =
+          projectsWithRoles.stream()
+              .filter(pwr -> customerId.equals(pwr.project().getCustomerId()))
+              .toList();
+    }
+
+    // Batch-load tags for all projects (2 queries instead of 2N)
+    var projectIds = projectsWithRoles.stream().map(pwr -> pwr.project().getId()).toList();
+    var tagsByEntityId = entityTagService.getEntityTagsBatch("PROJECT", projectIds);
+    var allProjects = projectsWithRoles.stream().map(ProjectWithRole::project).toList();
+    var memberNames = resolveProjectMemberNames(allProjects);
+
+    var projects =
+        projectsWithRoles.stream()
+            .map(
+                pwr ->
+                    ProjectResponse.from(
+                        pwr.project(),
+                        pwr.projectRole(),
+                        tagsByEntityId.getOrDefault(pwr.project().getId(), List.of()),
+                        memberNames))
+            .toList();
+
+    // Apply custom field filtering if present
+    Map<String, String> customFieldFilters =
+        CustomFieldFilterUtil.extractCustomFieldFilters(allParams);
+    if (!customFieldFilters.isEmpty()) {
+      projects =
+          projects.stream()
+              .filter(
+                  p ->
+                      CustomFieldFilterUtil.matchesCustomFieldFilters(
+                          p.customFields(), customFieldFilters))
+              .toList();
+    }
+
+    // Apply tag filtering if present
+    List<String> tagSlugs = TagFilterUtil.extractTagSlugs(allParams);
+    if (!tagSlugs.isEmpty()) {
+      projects =
+          projects.stream()
+              .filter(p -> TagFilterUtil.matchesTagFilter(p.tags(), tagSlugs))
+              .toList();
+    }
+
+    return projects;
+  }
+
+  private static List<ProjectStatus> parseProjectStatuses(String status) {
+    if (status == null || status.isBlank()) {
+      return List.of(ProjectStatus.ACTIVE); // Default: show only ACTIVE
+    }
+    if ("ALL".equalsIgnoreCase(status)) {
+      return null; // null = no filter
+    }
+    return Arrays.stream(status.split(","))
+        .map(String::trim)
+        .map(
+            s -> {
+              try {
+                return ProjectStatus.valueOf(s.toUpperCase());
+              } catch (IllegalArgumentException e) {
+                throw new InvalidStateException(
+                    "Invalid project status",
+                    "Invalid project status: '"
+                        + s
+                        + "'. Valid values: "
+                        + Arrays.toString(ProjectStatus.values()));
+              }
+            })
+        .toList();
   }
 
   @Transactional(readOnly = true)

@@ -348,6 +348,39 @@ class ProjectLifecycleIntegrationTest {
         .andExpect(status().isBadRequest());
   }
 
+  /**
+   * Characterization test for the {@code dueBefore} list filter (TD-009 thin-controller refactor).
+   * The filter retains only projects whose dueDate is strictly before the supplied date; projects
+   * with a later dueDate or no dueDate at all are excluded. Captures the pre-refactor behavior so
+   * moving the filter logic into {@link ProjectService} stays behavior-preserving.
+   */
+  @Test
+  void shouldFilterProjectsByDueBefore() throws Exception {
+    String earlyDueId =
+        TestEntityHelper.createProjectWithDueDate(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"),
+            "Due Early Filter",
+            "2026-01-10");
+    String lateDueId =
+        TestEntityHelper.createProjectWithDueDate(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"),
+            "Due Late Filter",
+            "2026-12-31");
+    String noDueId = createProject("No Due Date Filter");
+
+    mockMvc
+        .perform(
+            get("/api/projects")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"))
+                .param("dueBefore", "2026-06-01"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[?(@.id == '%s')]", earlyDueId).exists())
+        .andExpect(jsonPath("$[?(@.id == '%s')]", lateDueId).doesNotExist())
+        .andExpect(jsonPath("$[?(@.id == '%s')]", noDueId).doesNotExist());
+  }
+
   @Test
   void shouldRejectCreateTaskOnArchivedProject() throws Exception {
     String projectId = createProject("Archived No Task");

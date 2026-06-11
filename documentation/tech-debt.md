@@ -58,17 +58,22 @@ Additional production Thymeleaf consumers build their **own** `new TemplateEngin
 
 **Introduced**: Epic 55A (PR #125)
 **Severity**: Medium
+**Status**: GUARD IN PLACE (Wave 3.2a) — structural guard test landed; repository split (Wave 3.2b) still pending.
 **Affected files**:
-- `customerbackend/repository/PortalReadModelRepository.java` — all query methods filter by `org_id` parameter
+- `customerbackend/repository/PortalReadModelRepository.java` — ~52 hand-written `org_id`-filtered JDBC methods
+- `customerbackend/repository/PortalTrustReadModelRepository.java`, `PortalRetainerSummaryRepository.java`, `PortalRetainerConsumptionEntryRepository.java`, `PortalDeadlineViewRepository.java` — sibling read-model repos that scope by `customer_id` (these tables have NO `org_id` column; V19–V21)
 - `config/PortalDataSourceConfig.java` — single `portal` schema, no per-tenant schemas
+- `test/.../architecture/PortalReadModelOrgScopingGuardTest.java` — the Wave 3.2a guard (see below)
 
-**Problem**: Unlike tenant-scoped entities (which use schema-per-tenant isolation via Hibernate `@Filter` and `search_path`), the portal read-model uses a single shared `portal` schema with `org_id` column filtering. This means a missing `WHERE org_id = ?` in any query exposes data across organizations. The `JdbcClient` used for portal queries doesn't support Hibernate `@Filter`, so there's no automatic safety net — every query must manually include the filter.
+**Problem**: Unlike tenant-scoped entities (which use schema-per-tenant isolation via Hibernate `@Filter` and `search_path`), the portal read-model uses a single shared `portal` schema with column-level filtering. This means a missing tenant predicate in any query exposes data across organizations. The `JdbcClient` used for portal queries doesn't support Hibernate `@Filter`, so there's no automatic safety net — every query must manually include the filter.
 
-**Why acceptable now**: All existing queries are correctly parameterized and filter by `org_id`. Integration tests (`CrossTenantPortalIsolationTest`) verify cross-org isolation. The read-model is denormalized and read-only, reducing the surface for write-path bugs.
+**Correction to original filing**: not "all query methods filter by `org_id`". The layer uses **two** tenant discriminators by design — `org_id` (projects/documents/comments/invoices/tasks/requests) and `customer_id` (trust/retainer/deadline tables, which have no `org_id` column at all). A handful of statements legitimately bind neither (FK children of org-scoped parents, magic-link `request_token` lookups, PK/contact-scoped writes driven only by internal sync handlers, and one admin backfill sweep). See the guard's `SCOPING_EXEMPT` map for the per-statement justifications.
 
-**Fix when needed**: Consider a `PortalQueryBuilder` wrapper that auto-appends `org_id` filtering, or add a pre-commit lint rule that flags portal queries missing `org_id` in their WHERE clause.
+**Wave 3.2a guard (DONE)**: `PortalReadModelOrgScopingGuardTest` scans the source of the read-model **package** (not a single class, so Wave 3.2b's split successors are auto-covered) and asserts every `jdbc.sql(...)` statement either binds a tenant discriminator (`org_id`/`customer_id`) in a predicate-or-INSERT-column position, or is on the justified exemption list. The check is predicate-aware (a discriminator in a `SELECT` list does not count). Verified to fail with a method-naming message when an unscoped query is introduced.
 
-**Trigger to fix**: When adding new portal read-model queries, or if the number of query methods exceeds ~20.
+**Fix when needed (Wave 3.2b)**: Split `PortalReadModelRepository` into per-domain read-repositories and introduce a `PortalQueryBuilder`/helper that makes the tenant predicate impossible to omit. The guard above protects that refactor. Several exempted statements (e.g. `findRequestById`, `updatePortalRequestStatus`, `deleteBySourceEntityAndId`) are hardening candidates that could gain an explicit discriminator predicate during the split.
+
+**Trigger to fix**: When adding new portal read-model queries, or if the number of query methods exceeds ~20 (exceeded — guard now compensates until the split lands).
 
 ### TD-005: No rate limiting on `/internal/*` API key endpoints
 

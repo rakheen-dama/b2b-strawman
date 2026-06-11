@@ -16,7 +16,7 @@ import io.b2mash.b2b.b2bstrawman.security.Roles;
 import io.b2mash.b2b.b2bstrawman.seeder.ProjectTemplatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.RatePackSeeder;
 import io.b2mash.b2b.b2bstrawman.seeder.SchedulePackSeeder;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsController.DataProtectionSettingsRequest;
+import io.b2mash.b2b.b2bstrawman.settings.dto.DataProtectionSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.ModuleSettingsResponse;
 import io.b2mash.b2b.b2bstrawman.settings.dto.ModuleSettingsResponse.ModuleStatus;
 import io.b2mash.b2b.b2bstrawman.settings.dto.SettingsResponse;

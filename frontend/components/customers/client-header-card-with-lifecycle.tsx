@@ -27,10 +27,7 @@ export function ClientHeaderCardWithLifecycle({
     if (!targetLifecycleStatus) return;
 
     // ONBOARDING -> ACTIVE requires prerequisite check first
-    if (
-      targetLifecycleStatus === "ACTIVE" &&
-      cardProps.lifecycleStatus === "ONBOARDING"
-    ) {
+    if (targetLifecycleStatus === "ACTIVE" && cardProps.lifecycleStatus === "ONBOARDING") {
       try {
         const check: PrerequisiteCheck = await checkPrerequisitesAction(
           "LIFECYCLE_ACTIVATION",

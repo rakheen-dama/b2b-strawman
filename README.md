@@ -81,11 +81,12 @@ Run the entire stack in containers — no local Java or Node.js required:
 
 ```
 b2b-strawman/
-├── frontend/    # Next.js 16, React 19, TypeScript 5, Tailwind v4, Shadcn UI
-├── backend/     # Spring Boot 4.0.2, Java 25, Maven
-├── compose/     # Docker Compose (Postgres 16, LocalStack S3)
-├── infra/       # Terraform IaC
-└── .github/     # CI/CD workflows
+├── frontend/         # Next.js 16, React 19, TypeScript 5, Tailwind v4, Shadcn UI
+├── backend/          # Spring Boot 4.0.2, Java 25, Maven
+├── compose/          # Docker Compose (Postgres 16, LocalStack S3)
+├── infra/            # Terraform IaC
+├── documentation/    # QA-cycle screenshots and demo recordings
+└── .github/          # CI/CD workflows
 ```
 
 ## Tech Stack

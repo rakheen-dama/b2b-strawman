@@ -1,7 +1,20 @@
-node_modules
-**/node_modules
-backend/target
-**/.next
-*.png
-*.webm
-.git
+# Deny-by-default: the only root-context Docker builds are frontend/ and
+# portal/ (workspace images). Everything else — especially env files with
+# secrets (compose/.env*), infra/, and Terraform state — stays out of the
+# build context stream.
+*
+!pnpm-workspace.yaml
+!package.json
+!pnpm-lock.yaml
+!frontend
+!portal
+# Re-deny heavy/generated paths inside the allowed trees
+frontend/node_modules
+portal/node_modules
+frontend/.next
+portal/.next
+frontend/test-results
+portal/test-results
+frontend/playwright-report
+portal/playwright-report
+**/.env*

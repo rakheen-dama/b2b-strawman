@@ -43,6 +43,9 @@ jobs:
           filters: |
             frontend:
               - 'frontend/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'package.json'
             backend:
               - 'backend/**'
             gateway:
@@ -80,7 +83,9 @@ jobs:
 
       - uses: docker/build-push-action@v6
         with:
-          context: frontend
+          # Frontend is a pnpm workspace member — build from the repo root.
+          context: .
+          file: frontend/Dockerfile
           push: true
           tags: |
             ${{ steps.ecr-login.outputs.registry }}/kazi/frontend:${{ github.sha }}

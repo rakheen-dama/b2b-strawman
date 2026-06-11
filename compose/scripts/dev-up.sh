@@ -187,6 +187,23 @@ if [[ "${1:-}" == "--all" ]]; then
     echo "Check logs: docker compose -f $COMPOSE_FILE logs frontend"
     exit 1
   fi
+
+  ELAPSED=0
+  printf "  Portal (localhost:3002)... "
+  while [[ $ELAPSED -lt 300 ]]; do
+    # Portal "/" 307-redirects to /home; -L follows so -f sees the final 200.
+    if curl -sfL http://localhost:3002/ > /dev/null 2>&1; then
+      echo "ready"
+      break
+    fi
+    sleep 5
+    ELAPSED=$((ELAPSED + 5))
+  done
+  if [[ $ELAPSED -ge 300 ]]; then
+    echo "TIMEOUT (300s)"
+    echo "Check logs: docker compose -f $COMPOSE_FILE logs portal"
+    exit 1
+  fi
 fi
 
 echo ""
@@ -200,6 +217,7 @@ echo "  Keycloak:       http://localhost:8180 (admin/admin)"
 if [[ "${1:-}" == "--all" ]]; then
   echo "  Backend:        http://localhost:8080"
   echo "  Frontend:       http://localhost:3000"
+  echo "  Portal:         http://localhost:3002"
 fi
 echo ""
 echo "  Start backend:  cd backend && ./mvnw spring-boot:run"

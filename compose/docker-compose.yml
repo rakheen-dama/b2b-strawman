@@ -210,6 +210,36 @@ services:
     networks:
       - dev-network
 
+  portal:
+    build:
+      context: ../portal
+      dockerfile: Dockerfile
+      args:
+        # NEXT_PUBLIC_ vars are inlined into the client bundle at build time.
+        # The portal API client (portal/lib/api-client.ts) runs in the browser
+        # and calls the backend directly, so this must be browser-reachable —
+        # localhost:8080, not the docker-internal backend hostname.
+        NEXT_PUBLIC_PORTAL_API_URL: ${NEXT_PUBLIC_PORTAL_API_URL:-http://localhost:8080}
+    container_name: b2b-portal
+    restart: unless-stopped
+    environment:
+      # Override the Dockerfile default (3001) to the dev portal port 3002,
+      # keeping clear of the e2e mock-auth frontend which owns 3001.
+      PORT: 3002
+    ports:
+      - "3002:3002"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:3002/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    networks:
+      - dev-network
+
 volumes:
   postgres_data:
   localstack_data:

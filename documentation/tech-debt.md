@@ -36,20 +36,23 @@ Tracked items that are acceptable for now but should be addressed as the system 
 
 **Verification**: `SecurityIntegrationTest.devPortalPath_inNonDevProfile_returns401` (integration, `@ActiveProfiles("test")`) observed the 404→401 flip; `CustomerAuthFilterDevPortalGateTest` (pure unit, `MockEnvironment`) covers the local/keycloak skip-allowed and prod skip-withheld branches. Full `./mvnw verify` green.
 
-### TD-003: Thymeleaf dependency unconditional in production classpath
+### TD-003: Thymeleaf dependency unconditional in production classpath — INVALID (premise disproven)
 
 **Introduced**: Epic 58A (PR #132)
-**Severity**: Low
+**Severity**: Low (as originally filed)
 **Affected files**:
 - `backend/pom.xml` — `spring-boot-starter-thymeleaf` with no scope or Maven profile restriction
 
-**Problem**: Thymeleaf is only used by the dev harness (`DevPortalController`), but the dependency is on the production classpath. This adds the template engine, auto-configuration, and template resolver to every deployment. While no templates are served in production (no controller registers), the template infrastructure increases attack surface marginally (SSTI risk if a future endpoint passes user input to template resolution) and adds unnecessary startup overhead.
+**Original problem statement**: "Thymeleaf is only used by the dev harness (`DevPortalController`)", so the production classpath carries the template engine + auto-configuration unnecessarily; proposed fix was to scope the dependency out of prod (or exclude `ThymeleafAutoConfiguration` in the prod profile).
 
-**Why acceptable now**: Spring Boot auto-configures Thymeleaf to resolve templates from `classpath:/templates/` which is controlled. No user input reaches template resolution in any production code path.
+**Why INVALID (verified 2026-06-11 by empirical grep + source read, not by spec)**: Thymeleaf is a **production** dependency with multiple production consumers, not a dev-only one. Two of them depend specifically on the Spring-managed `ITemplateEngine`/`TemplateEngine` bean that **`ThymeleafAutoConfiguration` provides** — there is no custom `@Bean TemplateEngine` anywhere in the codebase to supply it otherwise (`grep -rn 'TemplateEngine' backend/src/main/java` finds zero `@Bean` definitions). Excluding the auto-config in prod, or removing the dependency, would fail context startup (unsatisfied constructor dependency) and break these live features:
 
-**Fix when needed**: Scope the dependency to a Maven profile (`dev-tools`) activated only in local/dev builds, or add `<optional>true</optional>` and make `DevPortalConfig` handle the missing classpath gracefully.
+- `invoice/InvoiceRenderingService.java:37,47,124` — constructor-injects `ITemplateEngine` (the auto-configured bean) and calls `templateEngine.process("invoice-preview", ctx)` to render invoice HTML previews. Plain `@Service` (line 30), no `@Profile` — active in prod.
+- `acceptance/AcceptanceCertificateService.java:41,51,128` — constructor-injects `TemplateEngine` (the auto-configured bean) and calls `templateEngine.process("certificates/certificate-of-acceptance", ctx)`. Plain `@Service` (line 28), no `@Profile` — active in prod.
 
-**Trigger to fix**: During production image size optimization or a dependency audit.
+Additional production Thymeleaf consumers build their **own** `new TemplateEngine()` (so they'd survive an auto-config exclusion, but still prove Thymeleaf is not dev-only): `reporting/ReportRenderingService.java:45,56,268` (report HTML/PDF rendering from `template_body`) and `notification/template/EmailTemplateRenderer.java:27,30,102` (branded HTML emails). Reporting's use is the same path noted in `tasks/tech-debt-assessment.md` **B-03** ("Reporting uses Thymeleaf, ADR-263 says Tiptap" — both ADRs valid for their scope; cross-reference).
+
+**Decision**: No code change. The dependency stays on the production classpath and `ThymeleafAutoConfiguration` remains active in all profiles. The Wave 1.5 minimal fix (exclude `ThymeleafAutoConfiguration` in `application-prod.yml`) was **not applied** because it would break prod invoice-preview and acceptance-certificate rendering at startup. The `DevPortalController` is one Thymeleaf consumer among several, not the only one — the original filing missed the invoice/acceptance/reporting/email consumers.
 
 ### TD-004: Portal read-model uses column-level isolation, not schema isolation
 

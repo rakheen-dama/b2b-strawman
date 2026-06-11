@@ -149,7 +149,7 @@ public ResponseEntity<byte[]> exportPdf(@PathVariable String slug, @RequestParam
 }
 ```
 
-**⚠️ Known violations:** Several existing controllers (PortalAuthController, ReportingController, DataRequestController, RetainerAgreementController, MockPaymentController, PortalBrandingController, PortalDigestInternalController) predate this rule enforcement. Do NOT use them as reference patterns. All new controllers must follow this discipline. Cleanup tracked in `documentation/tech-debt.md` TD-009 (the latter three were surfaced 2026-05-02 when the ArchUnit upgrade made the rule actually enforce).
+**⚠️ Known violations:** Several existing controllers (PortalAuthController, ReportingController, DataRequestController, RetainerAgreementController, MockPaymentController) predate this rule enforcement. Do NOT use them as reference patterns. All new controllers must follow this discipline. `MockPaymentController` is a **permanent, justified** ArchUnit exemption (dev/test-only PSP harness, `@Profile`-gated, never reachable in prod — see `LayerDependencyRulesTest`). `PortalBrandingController` was fixed 2026-06-11 (repository access moved into `PortalBrandingService`) and `PortalDigestInternalController` never actually injected a repository, so both were removed from the rule's exclusion list and now enforce. Repo-injection cleanup tracked in `documentation/tech-debt.md` TD-009 (closed out 2026-06-11).
 
 ## Multitenancy
 

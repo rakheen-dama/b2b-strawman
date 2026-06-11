@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
  * RequestScopes}, which is bound by {@code CustomerAuthFilter} for every authed {@code /portal/**}
  * request.
  *
- * <p>The branding resolution mirrors the one in {@link PortalBrandingController} (org name from the
+ * <p>The branding resolution mirrors the one in {@link PortalBrandingService} (org name from the
  * {@code public} schema, brand color + presigned logo URL from tenant-scoped {@code OrgSettings}).
  * The logic is inlined rather than extracted into a shared helper because there are only two
  * call-sites and they operate under different tenant-binding regimes (pre-auth lookup by {@code

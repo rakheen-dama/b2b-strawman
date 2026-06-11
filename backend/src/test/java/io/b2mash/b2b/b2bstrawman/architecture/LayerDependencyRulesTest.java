@@ -25,15 +25,18 @@ class LayerDependencyRulesTest {
           .doNotHaveSimpleName("InternalAuditController")
           .and()
           .doNotHaveSimpleName("PaymentWebhookController")
-          // ↓ surfaced 2026-05-02 when ArchUnit 1.4.2 made this rule actually fire (it was
-          // silently vacuous on JDK 25 with 1.3.0). These are pre-existing known violations
-          // of the controller-discipline rule; cleanup tracked in tech-debt.md TD-009.
+          // MockPaymentController is a PERMANENT, justified exemption (TD-009 close-out,
+          // 2026-06-11): it is a dev/test-only PSP-checkout harness, @Profile-gated to
+          // {local,dev,keycloak} and never reachable in prod. It injects InvoiceRepository +
+          // OrgSchemaMappingRepository to perform a cross-tenant invoice search (find-which-schema-
+          // owns-this-invoice) that has no production analogue. Extracting a service layer for
+          // throwaway dev tooling adds indirection without value, so this exemption stays.
+          // PortalBrandingController and PortalDigestInternalController were the other two TD-009
+          // entries; their exemptions were DELETED here once PortalBranding's repository access was
+          // moved into PortalBrandingService (PortalDigestInternal never actually injected a
+          // repository — it only delegates to PortalDigestScheduler — so it needed no code change).
           .and()
           .doNotHaveSimpleName("MockPaymentController")
-          .and()
-          .doNotHaveSimpleName("PortalBrandingController")
-          .and()
-          .doNotHaveSimpleName("PortalDigestInternalController")
           .should()
           .dependOnClassesThat()
           .haveSimpleNameEndingWith("Repository")

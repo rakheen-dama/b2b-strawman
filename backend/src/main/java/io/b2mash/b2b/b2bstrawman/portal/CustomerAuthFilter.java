@@ -11,6 +11,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -29,17 +31,30 @@ public class CustomerAuthFilter extends OncePerRequestFilter {
   private static final Logger log = LoggerFactory.getLogger(CustomerAuthFilter.class);
   private static final String BEARER_PREFIX = "Bearer ";
 
+  /**
+   * Profiles in which the Thymeleaf dev portal harness ({@code /portal/dev/**}) exists and may be
+   * reached anonymously. Mirrors {@code DevPortalController} ({@code local}, {@code dev}) plus
+   * {@code MockPaymentController} ({@code local}, {@code dev}, {@code keycloak}), whose
+   * mock-payment checkout page is also served under {@code /portal/dev/**}. In any other profile
+   * (notably {@code prod}) the skip is withheld so anonymous dev-portal traffic is rejected by this
+   * filter (401) instead of being silently permitted (TD-002).
+   */
+  private static final Profiles DEV_PORTAL_PROFILES = Profiles.of("local", "dev", "keycloak");
+
   private final PortalJwtService portalJwtService;
   private final OrgSchemaMappingRepository mappingRepository;
   private final PortalContactRepository portalContactRepository;
+  private final boolean devPortalEnabled;
 
   public CustomerAuthFilter(
       PortalJwtService portalJwtService,
       OrgSchemaMappingRepository mappingRepository,
-      PortalContactRepository portalContactRepository) {
+      PortalContactRepository portalContactRepository,
+      Environment environment) {
     this.portalJwtService = portalJwtService;
     this.mappingRepository = mappingRepository;
     this.portalContactRepository = portalContactRepository;
+    this.devPortalEnabled = environment.acceptsProfiles(DEV_PORTAL_PROFILES);
   }
 
   @Override
@@ -114,9 +129,11 @@ public class CustomerAuthFilter extends OncePerRequestFilter {
     if (!path.startsWith("/portal/")) {
       return true;
     }
-    // Allow unauthenticated access to /portal/dev/** (dev harness)
+    // Allow unauthenticated access to /portal/dev/** (dev harness) — only in profiles where the
+    // harness actually exists. In prod the skip is withheld so the request falls through to the
+    // Bearer-token check below and is rejected with 401 (TD-002 defense in depth).
     if (path.startsWith("/portal/dev/")) {
-      return true;
+      return devPortalEnabled;
     }
     // Allow unauthenticated access to /portal/branding (public branding for login page)
     if (path.equals("/portal/branding")) {

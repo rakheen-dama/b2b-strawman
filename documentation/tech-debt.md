@@ -22,7 +22,7 @@ Tracked items that are acceptable for now but should be addressed as the system 
 
 ## Security Concerns
 
-### TD-002: Dev harness security exclusions not profile-gated
+### TD-002: Dev harness security exclusions not profile-gated — RESOLVED
 
 **Introduced**: Epic 57B (PR #131), Epic 58A (PR #132)
 **Severity**: Low (current risk), High (if misconfigured)
@@ -32,11 +32,11 @@ Tracked items that are acceptable for now but should be addressed as the system 
 
 **Problem**: Both the security filter chain and the `CustomerAuthFilter` exclude `/portal/dev/**` from authentication in ALL profiles, including production. The primary safety net is `@Profile({"local", "dev"})` on `DevPortalController` which prevents the controller bean from registering in production — but the security holes remain open. If anyone adds a non-profile-gated handler at `/portal/dev/**`, it would be accessible without authentication.
 
-**Why acceptable now**: `DevPortalController` is profile-gated, so requests to `/portal/dev/**` return 404 in production. ADR-033 documents this layered approach.
+**Resolved**: branch `fix/portal-dev-security-profile-gate`. `CustomerAuthFilter.shouldNotFilter()` is the documented single source of truth for which portal paths skip authentication (phase22 architecture), so the gate was applied there: `CustomerAuthFilter` now injects `Environment` and only skips `/portal/dev/**` when one of the dev profiles is active (`Environment.acceptsProfiles(Profiles.of("local", "dev", "keycloak"))`, mirroring the `MockPaymentIntegrationSeeder` house pattern). In any other profile (notably `prod`) the skip is withheld, the filter runs, and an anonymous request to `/portal/dev/**` is rejected with **401** instead of falling through to a 404. The redundant explicit `/portal/dev/**` permitAll in `SecurityConfig.portalFilterChain()` (already subsumed by the blanket `/portal/**` permitAll, with `CustomerAuthFilter` as the real gatekeeper) was removed and replaced with a comment pointing at the filter gate.
 
-**Fix when needed**: Move `/portal/dev/**` permitAll into a separate `@Profile({"local", "dev"})` SecurityFilterChain bean. Inject `Environment` into `CustomerAuthFilter` and only bypass `/portal/dev/` when local/dev profiles are active.
+**Profile set rationale**: `local` + `dev` cover `DevPortalController`; `keycloak` is included because `MockPaymentController` (`@Profile({"local","dev","keycloak"})`) also serves its mock-payment checkout page under `/portal/dev/**`, and `application-keycloak.yml` explicitly points the checkout base-url at the backend for that route. The `e2e` and `test` profiles do not register any `/portal/dev/**` handler, so they are deliberately excluded.
 
-**Trigger to fix**: Before adding any additional dev-only endpoints, or during a production security hardening pass.
+**Verification**: `SecurityIntegrationTest.devPortalPath_inNonDevProfile_returns401` (integration, `@ActiveProfiles("test")`) observed the 404→401 flip; `CustomerAuthFilterDevPortalGateTest` (pure unit, `MockEnvironment`) covers the local/keycloak skip-allowed and prod skip-withheld branches. Full `./mvnw verify` green.
 
 ### TD-003: Thymeleaf dependency unconditional in production classpath
 

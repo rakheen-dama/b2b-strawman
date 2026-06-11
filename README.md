@@ -85,7 +85,7 @@ b2b-strawman/
 ├── backend/          # Spring Boot 4.0.2, Java 25, Maven
 ├── compose/          # Docker Compose (Postgres 16, LocalStack S3)
 ├── infra/            # Terraform IaC
-├── documentation/    # Operational runbooks, tech-debt register, QA screenshots/
+├── documentation/    # Operational runbooks, tech-debt register, QA screenshots
 └── .github/          # CI/CD workflows
 ```
 

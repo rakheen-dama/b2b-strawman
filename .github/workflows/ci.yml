@@ -38,6 +38,9 @@ jobs:
               - 'gateway/**'
             portal:
               - 'portal/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'package.json'
             infra:
               - 'infra/**'
 
@@ -158,9 +161,13 @@ jobs:
         with:
           node-version: "22"
           cache: "pnpm"
-          cache-dependency-path: portal/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
 
-      - run: pnpm install --frozen-lockfile
+      # Install from the repo root: the portal is a pnpm workspace member and the
+      # lockfile lives at the root. Restrict the install to the portal subtree.
+      - name: Install
+        working-directory: .
+        run: pnpm install --frozen-lockfile --filter portal...
 
       - name: Lint
         run: pnpm run lint

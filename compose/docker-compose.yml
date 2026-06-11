@@ -212,8 +212,10 @@ services:
 
   portal:
     build:
-      context: ../portal
-      dockerfile: Dockerfile
+      # Portal is a pnpm workspace member; build from the repo root so the
+      # root lockfile + pnpm-workspace.yaml are in the build context.
+      context: ..
+      dockerfile: portal/Dockerfile
       args:
         # NEXT_PUBLIC_ vars are inlined into the client bundle at build time.
         # The portal API client (portal/lib/api-client.ts) runs in the browser

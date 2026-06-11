@@ -49,6 +49,9 @@ jobs:
               - 'gateway/**'
             portal:
               - 'portal/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'package.json'
             keycloak:
               - 'compose/keycloak/**'
 
@@ -179,7 +182,8 @@ jobs:
 
       - uses: docker/build-push-action@v6
         with:
-          context: portal
+          context: .
+          file: portal/Dockerfile
           push: true
           tags: |
             ${{ steps.ecr-login.outputs.registry }}/kazi/portal:${{ github.sha }}

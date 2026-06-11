@@ -73,7 +73,7 @@ jobs:
             context: gateway
             dockerfile: gateway/Dockerfile
           - service: portal
-            context: portal
+            context: .
             dockerfile: portal/Dockerfile
           - service: keycloak
             context: compose/keycloak

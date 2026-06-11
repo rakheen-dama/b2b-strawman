@@ -2,7 +2,7 @@
 
 ## What this concern covers
 
-Operational visibility into a running Kazi: structured logging, metrics, tracing, health checks, and the runtime status of the dozen-plus scheduled jobs that drive lifecycle automation. This page is **honest about a gap**: today, observability is essentially "structured logs to stdout, hope CloudWatch picks them up". There is no metrics export, no distributed tracing, no per-tenant resource accounting, and no scheduler success/failure surface beyond log lines. The system runs and logs; it is not yet *observed* in the SRE sense.
+Operational visibility into a running Kazi: structured logging, metrics, tracing, health checks, and the runtime status of the dozen-plus scheduled jobs that drive lifecycle automation. This page is **honest about a gap**: today, observability is mostly "structured logs to stdout, hope CloudWatch picks them up". A Prometheus exporter and a handful of custom Micrometer meters exist (job-queue and per-shard pool metrics — see below), but there is no distributed tracing, **no per-tenant metric tagging**, no integration-adapter latency, and no dashboards or alerting on top of what is exported. The system runs, logs, and emits a thin slice of metrics; it is not yet *observed* in the SRE sense.
 
 The page documents what the codebase actually does so a future remediation phase has a baseline.
 
@@ -20,26 +20,28 @@ Per-tenant log tagging is the one observability primitive the system does well: 
 
 ### Health checks — `/actuator/health` only
 
-Spring Boot Actuator is on the classpath, but only `health` (and `info`) is exposed. No Prometheus scrape endpoint is configured.
+Spring Boot Actuator is on the classpath. The **default** profile exposes only `health` and `info`; the **prod** profile also exposes `metrics` and `prometheus`, so a Prometheus scrape endpoint *is* configured in production (it just has nothing scraping it).
 
-`→ backend/src/main/resources/application.yml:51` — `management.endpoints.web.exposure.include: health,info`.
-`→ backend/src/main/resources/application-prod.yml:57` — `management.endpoints.web.exposure.include: health,info,metrics` (prod adds `metrics` but **no scrape format** — the raw JSON Spring endpoint, not Prometheus text).
+`→ backend/src/main/resources/application.yml:58` — `management.endpoints.web.exposure.include: health,info` (default profile — no metrics).
+`→ backend/src/main/resources/application-prod.yml:61` — `management.endpoints.web.exposure.include: health,info,metrics,prometheus` (prod exposes both the JSON `metrics` endpoint and the `/actuator/prometheus` scrape endpoint in OpenMetrics text format).
 `→ gateway/src/main/resources/application.yml:65` — gateway exposes only `health`. JMX explicitly disabled (line 55).
 `→ gateway/src/main/resources/application-production.yml:20` — production gateway re-enables Redis health (`management.health.redis.enabled: true`) for the session store.
 `→ gateway/src/main/java/io/b2mash/b2b/gateway/config/GatewaySecurityConfig.java:49` — `/actuator/health` is `permitAll` through the gateway; no other actuator endpoint is publicly reachable.
 
 `compose/scripts/svc.sh` polls `/actuator/health` to gate "is the service ready" during agent stack-up; that's the entire production-shaped use of actuator today.
 
-### Metrics — none custom, no exporter
+### Metrics — Prometheus exporter present, custom meters thin, no per-tenant tagging
 
-Spring Boot 4 transitively pulls in Micrometer's core API, but:
+Spring Boot 4 pulls in Micrometer's core API, and there *is* a Prometheus registry plus two hand-rolled meter classes. The gap is breadth and tenant-dimensioning, not total absence:
 
-- No `MeterRegistry` is configured beyond the default in-memory simple registry.
-- No `micrometer-registry-prometheus` dependency in either `backend/pom.xml` or `gateway/pom.xml` (verified by `grep -E "micrometer|prometheus" pom.xml` returning empty).
-- No `@Timed` / `@Counted` / `@Observed` annotations in `backend/src/main/java` or `gateway/src/main/java` (grep returns empty).
-- No custom `MeterRegistry` injection — no per-tenant counters, no per-job timers, no per-adapter latency histograms.
+- `micrometer-registry-prometheus` **is** a dependency in `backend/pom.xml` (`→ backend/pom.xml:57–59`), so the backend has a real `PrometheusMeterRegistry`. It is **not** in `gateway/pom.xml` — the gateway still has no metrics export.
+- Two custom `MeterRegistry`-backed classes exist:
+  - `→ backend/src/main/java/io/b2mash/b2b/b2bstrawman/infrastructure/jobqueue/JobQueueMetrics.java` — per-job-type counters (`kazi_job_queue_enqueued_total` etc.) and execution/claim-wait `Timer`s, tagged by `job_type`.
+  - `→ backend/src/main/java/io/b2mash/b2b/b2bstrawman/multitenancy/ShardMetrics.java` — per-shard HikariCP pool gauges and tenant-count gauges, tagged by `shard_id`.
+- No `@Timed` / `@Counted` / `@Observed` annotations in `backend/src/main/java` or `gateway/src/main/java` — instrumentation is the two explicit classes above only.
+- **No per-tenant metric tagging.** Custom meters dimension by `job_type` and `shard_id`, never by `tenantId`. The MDC carries `tenantId` for *logs*, but it is not applied to the metric registry, so a noisy-neighbour tenant is invisible in metrics. There are also no request-rate / error-rate / integration-adapter-latency meters.
 
-The `metrics` actuator endpoint exposed in prod (`application-prod.yml:61`) returns the default JVM/HTTP timers in Spring's bespoke JSON format. No system is configured to scrape it.
+The `metrics` and `prometheus` actuator endpoints exposed in prod (`application-prod.yml:61`) surface the default JVM/HTTP timers plus the two custom meter sets. No system is configured to scrape them, and there are no dashboards or alerts built on top.
 
 ### Tracing — none
 
@@ -47,11 +49,11 @@ No Spring Cloud Sleuth, no Brave, no OpenTelemetry, no Zipkin/Jaeger. Distribute
 
 ### Database observability
 
-No slow-query log integration. No `spring.jpa.properties.hibernate.generate_statistics`. No HikariCP metrics export. Connection pool saturation, lock waits, and per-tenant query volume are invisible at runtime.
+No slow-query log integration. No `spring.jpa.properties.hibernate.generate_statistics`. HikariCP pool state **is** exported per shard by `ShardMetrics` (`kazi_shard_connection_pool_active`/`_idle`/`_pending`, tagged by `shard_id`), so pool saturation is visible at the shard level — but lock waits and per-tenant query volume remain invisible at runtime.
 
 ### Scheduled-job observability
 
-Job execution is visible only as log lines. There is no shared `@Scheduled` wrapper that records start/end/error to a metric or to a `job_execution` table. Each scheduler logs free-form. If a scheduler thread dies or `forEachTenant` throws, the only signal is absence of the periodic log line.
+Work dispatched through the **job queue** *is* metered: `JobQueueMetrics` records per-`job_type` completed/failed/dead-letter counters and execution-duration timers, driven by `JobWorker` (a `SmartLifecycle` background worker). What remains unobserved are the **`@Scheduled` tenant-iteration pollers** themselves (24 of them) — the lifecycle-automation methods that run `forEachTenant` directly rather than enqueuing a job. Those are visible only as log lines: there is no shared `@Scheduled` wrapper that records start/end/error to a metric or to a `job_execution` table. If such a scheduler thread dies or `forEachTenant` throws, the only signal is absence of the periodic log line.
 
 ## The pattern: scheduled job + tenant iteration
 
@@ -125,13 +127,13 @@ A future "production observability" ADR is a logical next step.
 - **Health checks are coarse.** `/actuator/health` reports DataSource UP, but does not validate `search_path` resolution for any specific tenant — a half-provisioned schema (Flyway baseline missing on a tenant) is not detected by health.
 - **Audit growth is unmonitored.** With per-tenant append-only audit and no retention sweep specific to audit (only DSAR-driven anonymization), table size is a silent cost.
 - **AI invocation cost is per-tenant but not metered.** The AI invocation table is sweepable (`AiInvocationExpirySweeper`) but the dollar cost of LLM calls is not aggregated to any per-tenant counter.
-- **No DB-level slow-query log integration.** Hibernate `generate_statistics` is off; HikariCP metrics not exported. A slow-rendering report or a missing index is found by user complaint, not by query log.
+- **No DB-level slow-query log integration.** Hibernate `generate_statistics` is off. (HikariCP pool gauges *are* exported per shard by `ShardMetrics`, but there is no query-level timing.) A slow-rendering report or a missing index is found by user complaint, not by query log.
 
 ## What a future plan would look like
 
 Sign-posts only — actual proposals belong in an ADR + phase doc, not here.
 
-- **Micrometer + Prometheus exporter, with `tenantId` as a tag.** Naturally fits the existing MDC; `MeterFilter` can attach the scope. A bounded set of high-value meters (request rate, request latency, error rate, integration-adapter latency, scheduled-job duration) keeps cardinality manageable.
+- **Extend the existing Prometheus exporter with `tenantId` as a tag, and broaden meter coverage.** The Prometheus registry already exists; the gap is dimensioning and breadth. A `MeterFilter` could attach the request scope (`tenantId`) from the existing MDC, and a bounded set of additional high-value meters (request rate, request latency, error rate, integration-adapter latency) would round out what the current job-queue and shard meters start. Keep cardinality manageable.
 - **`@Scheduled` wrapper that emits start / end / error metrics.** A small `MeasuredScheduledRunner` around `TenantScopedRunner.forEachTenant` would give per-job per-tenant success counters and last-run-at gauges.
 - **Per-integration-adapter timer + error counter.** The adapter resolution point (`IntegrationRegistry.resolve(...)`, see `20-cross-cutting/integration-ports.md`) is the natural cross-cut: one decorator covers all adapters.
 - **Custom `HealthIndicator`s.** At minimum: tenant-schema reachability sample, Flyway baseline-applied check, integration-adapter ping (where the adapter supports a cheap probe), Redis session store reachability (gateway).

@@ -100,6 +100,7 @@ export function formatDateShort(date: string | Date): string {
  */
 export function formatLocalDate(yyyyMmDd: string): string {
   const [year, month, day] = yyyyMmDd.split("-").map(Number);
+  if (!year || !month || !day) return "";
   return new Date(year, month - 1, day).toLocaleDateString("en-ZA", {
     year: "numeric",
     month: "short",
@@ -114,7 +115,9 @@ export function formatLocalDate(yyyyMmDd: string): string {
  * flipped from en-US month-first to en-GB day-first.)
  */
 export function formatProposalExpiresAt(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-GB", {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -126,7 +129,9 @@ export function formatProposalExpiresAt(iso: string): string {
  * (Staff-app helper, retained.)
  */
 export function formatComplianceDate(isoString: string): string {
-  return new Date(isoString).toLocaleDateString("en-ZA", {
+  const d = new Date(isoString);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-ZA", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -138,7 +143,9 @@ export function formatComplianceDate(isoString: string): string {
  * (Staff-app helper, retained.)
  */
 export function formatComplianceDateWithTime(isoString: string): string {
-  return new Date(isoString).toLocaleDateString("en-ZA", {
+  const d = new Date(isoString);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleDateString("en-ZA", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -152,8 +159,12 @@ export function formatComplianceDateWithTime(isoString: string): string {
  * (Staff-app helper, retained.)
  */
 export function isOverdue(deadline: string): boolean {
-  const today = new Date().toLocaleDateString("en-CA"); // "YYYY-MM-DD" in local timezone
-  return deadline < today;
+  const [year, month, day] = deadline.split("-").map(Number);
+  if (!year || !month || !day) return false;
+  const deadlineLocal = new Date(year, month - 1, day);
+  const now = new Date();
+  const todayLocal = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return deadlineLocal.getTime() < todayLocal.getTime();
 }
 
 /**

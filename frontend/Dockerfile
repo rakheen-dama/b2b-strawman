@@ -11,8 +11,10 @@ RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
 # Workspace manifests + root lockfile drive a deterministic, frozen install.
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY frontend/package.json ./frontend/
-# Workspace dependency @b2mash/ui — its manifest is part of the install graph.
+# Workspace dependencies (@b2mash/ui, @b2mash/shared) — their manifests are part
+# of the install graph, so the frozen install can resolve the workspace links.
 COPY packages/ui/package.json ./packages/ui/
+COPY packages/shared/package.json ./packages/shared/
 
 # Install only the frontend package and its dependency closure from the root lockfile.
 RUN pnpm install --frozen-lockfile --filter frontend...

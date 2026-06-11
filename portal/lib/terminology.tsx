@@ -1,7 +1,9 @@
 "use client";
 
 import { createContext, useContext, useMemo } from "react";
-import { TERMINOLOGY } from "./terminology-map";
+// The portal uses the base terminology map WITH portal-only overrides layered
+// on (e.g. `Matters → Engagements` for accounting-za, needed by the sidebar).
+import { PORTAL_TERMINOLOGY as TERMINOLOGY } from "@b2mash/shared/terminology-map";
 
 // ---- Context Types ----
 

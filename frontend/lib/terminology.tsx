@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useMemo } from "react";
-import { TERMINOLOGY } from "./terminology-map";
+import { TERMINOLOGY } from "@b2mash/shared/terminology-map";
 
 // ---- Context Types ----
 

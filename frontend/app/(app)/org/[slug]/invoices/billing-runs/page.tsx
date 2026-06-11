@@ -105,7 +105,9 @@ export default async function BillingRunsPage({ params }: { params: Promise<{ sl
         <EmptyState
           icon={Layers}
           title="No billing runs"
-          description={<TerminologyText template="Create a billing run to generate {invoices} for multiple {customers} at once." />}
+          description={
+            <TerminologyText template="Create a billing run to generate {invoices} for multiple {customers} at once." />
+          }
           actionLabel="New Billing Run"
           actionHref={`/org/${slug}/invoices/billing-runs/new`}
         />

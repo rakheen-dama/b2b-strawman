@@ -65,18 +65,18 @@ export function TrustCustomerPicker<TFieldValues extends FieldValues>({
       modal={false}
     >
       <PopoverTrigger asChild>
-          <Button
-            type="button"
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            disabled={locked}
-            data-testid={triggerTestId}
-            className="w-full justify-between font-normal"
-          >
-            {selected ? selected.name : "Select a client..."}
-            <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
-          </Button>
+        <Button
+          type="button"
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          disabled={locked}
+          data-testid={triggerTestId}
+          className="w-full justify-between font-normal"
+        >
+          {selected ? selected.name : "Select a client..."}
+          <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+        </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
         <Command>
@@ -180,18 +180,18 @@ export function TrustMatterPicker<TFieldValues extends FieldValues>({
       modal={false}
     >
       <PopoverTrigger asChild>
-          <Button
-            type="button"
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            disabled={triggerDisabled}
-            data-testid={triggerTestId}
-            className="w-full justify-between font-normal"
-          >
-            {triggerLabel}
-            <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
-          </Button>
+        <Button
+          type="button"
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          disabled={triggerDisabled}
+          data-testid={triggerTestId}
+          className="w-full justify-between font-normal"
+        >
+          {triggerLabel}
+          <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+        </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
         <Command>

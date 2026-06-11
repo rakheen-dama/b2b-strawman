@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentCreatedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentDeletedEvent;
 import io.b2mash.b2b.b2bstrawman.customerbackend.event.DocumentVisibilityChangedEvent;
+import io.b2mash.b2b.b2bstrawman.document.DocumentController.DocumentResponse;
 import io.b2mash.b2b.b2bstrawman.event.DocumentUploadedEvent;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceConflictException;
@@ -88,6 +89,61 @@ public class DocumentService {
     return documentRepository.findByScopeAndCustomerId(Document.Scope.CUSTOMER, customerId);
   }
 
+  /**
+   * Lists documents for {@code GET /api/documents} by scope as {@link DocumentResponse} DTOs,
+   * resolving uploader names. {@code scope} must be {@code "ORG"} or {@code "CUSTOMER"}; {@code
+   * customerId} is required for the CUSTOMER scope.
+   *
+   * <p>Moved verbatim from {@code DocumentController.listDocumentsByScope} for TD-009
+   * thin-controller cleanup — behavior-preserving.
+   */
+  @Transactional(readOnly = true)
+  public List<DocumentResponse> listDocumentsByScope(String scope, UUID customerId) {
+    var documents =
+        switch (scope.toUpperCase()) {
+          case "ORG" -> listOrgDocuments();
+          case "CUSTOMER" -> {
+            if (customerId == null) {
+              throw new InvalidStateException(
+                  "Missing customerId", "customerId is required when scope is CUSTOMER");
+            }
+            yield listCustomerDocuments(customerId);
+          }
+          default ->
+              throw new InvalidStateException("Invalid scope", "scope must be 'ORG' or 'CUSTOMER'");
+        };
+    return toResponses(documents);
+  }
+
+  /**
+   * Lists PROJECT-scoped documents for a project as {@link DocumentResponse} DTOs, resolving
+   * uploader names. Thin-controller delegation wrapper around {@link #listDocuments}.
+   */
+  @Transactional(readOnly = true)
+  public List<DocumentResponse> listDocumentResponses(UUID projectId, ActorContext actor) {
+    return toResponses(listDocuments(projectId, actor));
+  }
+
+  /** Maps documents to {@link DocumentResponse} DTOs with resolved uploader names. */
+  private List<DocumentResponse> toResponses(List<Document> documents) {
+    var memberNames = resolveUploaderNames(documents);
+    return documents.stream().map(d -> DocumentResponse.from(d, memberNames)).toList();
+  }
+
+  /**
+   * Initiate a PROJECT-scoped upload, resolving the org ID from the request scope. Thin-controller
+   * entry point — delegates to {@link #initiateUpload(UUID, String, String, long, String,
+   * ActorContext)}. {@code RequestScopes.requireOrgId()} throws {@link
+   * io.b2mash.b2b.b2bstrawman.exception.MissingOrganizationContextException} when org context is
+   * absent, matching the previous controller-level guard.
+   */
+  @Transactional
+  public UploadInitResult initiateUpload(
+      UUID projectId, String fileName, String contentType, long size, ActorContext actor) {
+    return initiateUpload(
+        projectId, fileName, contentType, size, RequestScopes.requireOrgId(), actor);
+  }
+
   @Transactional
   public UploadInitResult initiateUpload(
       UUID projectId,
@@ -123,6 +179,17 @@ public class DocumentService {
     return new UploadInitResult(document.getId(), presigned.url(), URL_EXPIRY.toSeconds());
   }
 
+  /**
+   * Initiate an ORG-scoped upload, resolving org ID and member ID from the request scope.
+   * Thin-controller entry point — delegates to {@link #initiateOrgUpload(String, String, long,
+   * String, UUID)}.
+   */
+  @Transactional
+  public UploadInitResult initiateOrgUpload(String fileName, String contentType, long size) {
+    return initiateOrgUpload(
+        fileName, contentType, size, RequestScopes.requireOrgId(), RequestScopes.requireMemberId());
+  }
+
   /** Initiate an ORG-scoped document upload. S3 key: org/{orgId}/org-docs/{docId}. */
   @Transactional
   public UploadInitResult initiateOrgUpload(
@@ -154,6 +221,23 @@ public class DocumentService {
             .build());
 
     return new UploadInitResult(document.getId(), presigned.url(), URL_EXPIRY.toSeconds());
+  }
+
+  /**
+   * Initiate a CUSTOMER-scoped upload, resolving org ID and member ID from the request scope.
+   * Thin-controller entry point — delegates to {@link #initiateCustomerUpload(UUID, String, String,
+   * long, String, UUID)}.
+   */
+  @Transactional
+  public UploadInitResult initiateCustomerUpload(
+      UUID customerId, String fileName, String contentType, long size) {
+    return initiateCustomerUpload(
+        customerId,
+        fileName,
+        contentType,
+        size,
+        RequestScopes.requireOrgId(),
+        RequestScopes.requireMemberId());
   }
 
   /**
@@ -225,6 +309,20 @@ public class DocumentService {
               + "'");
     }
     return applyVisibilityChange(documentId, visibility);
+  }
+
+  /**
+   * Toggles visibility and returns the updated document as a {@link DocumentResponse} with resolved
+   * uploader name. Thin-controller delegation wrapper around {@link #toggleVisibility}.
+   */
+  @Transactional
+  public DocumentResponse toggleVisibilityResponse(UUID documentId, String visibility) {
+    return toResponse(toggleVisibility(documentId, visibility));
+  }
+
+  /** Maps a single document to a {@link DocumentResponse} DTO with its resolved uploader name. */
+  private DocumentResponse toResponse(Document document) {
+    return toResponses(List.of(document)).getFirst();
   }
 
   /**
@@ -334,6 +432,15 @@ public class DocumentService {
       return document;
     }
     return document;
+  }
+
+  /**
+   * Confirms an upload and returns the document as a {@link DocumentResponse} with resolved
+   * uploader name. Thin-controller delegation wrapper around {@link #confirmUpload}.
+   */
+  @Transactional
+  public DocumentResponse confirmUploadResponse(UUID documentId, ActorContext actor) {
+    return toResponse(confirmUpload(documentId, actor));
   }
 
   /**

@@ -8,7 +8,7 @@ import { usePortalContext } from "@/hooks/use-portal-context";
 import { BalanceCard } from "@/components/trust/balance-card";
 import { TransactionList } from "@/components/trust/transaction-list";
 import { Skeleton } from "@b2mash/ui/skeleton";
-import { formatDate } from "@/lib/format";
+import { formatDate } from "@b2mash/shared/format";
 import {
   getMatterStatementDocuments,
   getTrustSummary,

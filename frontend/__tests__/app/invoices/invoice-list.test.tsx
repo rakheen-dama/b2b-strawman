@@ -103,8 +103,8 @@ describe("InvoiceLineTable", () => {
     expect(screen.getByText("Development work")).toBeInTheDocument();
     expect(screen.getByText("Flat fee item")).toBeInTheDocument();
     expect(screen.getByText("Project Alpha")).toBeInTheDocument();
-    expect(screen.getByText("$1,200.00")).toBeInTheDocument();
-    expect(screen.getByText("$250.00")).toBeInTheDocument(); // unit price of flat fee item
+    expect(screen.getByText(/US\$1\s200,00/)).toBeInTheDocument();
+    expect(screen.getByText("US$250,00")).toBeInTheDocument(); // unit price of flat fee item
   });
 
   it("shows empty message when no lines", () => {

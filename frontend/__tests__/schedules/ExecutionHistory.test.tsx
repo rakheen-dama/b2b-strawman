@@ -50,7 +50,7 @@ describe("ExecutionHistory", () => {
 
   it("period dates are displayed", () => {
     render(<ExecutionHistory executions={EXECUTIONS} slug="acme" />);
-    // formatDate("2026-01-01") => "Jan 1, 2026"
-    expect(screen.getByText(/Jan 1, 2026/)).toBeInTheDocument();
+    // formatDate("2026-01-01") => "1 Jan 2026" (unified en-GB day-first)
+    expect(screen.getByText(/1 Jan 2026/)).toBeInTheDocument();
   });
 });

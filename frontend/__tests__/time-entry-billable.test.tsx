@@ -159,7 +159,7 @@ describe("Time Entry Billable UI", () => {
     // Wait for rate resolution
     await waitFor(() => {
       const preview = screen.getByTestId("rate-preview");
-      expect(preview).toHaveTextContent("$200.00/hr");
+      expect(preview).toHaveTextContent("US$200,00/hr");
       expect(preview).toHaveTextContent("project override");
     });
 
@@ -171,7 +171,7 @@ describe("Time Entry Billable UI", () => {
     // Computed value should appear
     await waitFor(() => {
       const preview = screen.getByTestId("rate-preview");
-      expect(preview).toHaveTextContent("$400.00");
+      expect(preview).toHaveTextContent("US$400,00");
     });
   });
 
@@ -247,10 +247,10 @@ describe("Time Entry Billable UI", () => {
     // Rate snapshot should show
     const snapshot = screen.getByTestId("rate-snapshot");
     expect(snapshot).toHaveTextContent("Billing rate:");
-    expect(snapshot).toHaveTextContent("$150.00/hr");
-    expect(snapshot).toHaveTextContent("$300.00");
+    expect(snapshot).toHaveTextContent("US$150,00/hr");
+    expect(snapshot).toHaveTextContent("US$300,00");
     expect(snapshot).toHaveTextContent("Cost rate:");
-    expect(snapshot).toHaveTextContent("$80.00/hr");
-    expect(snapshot).toHaveTextContent("$160.00");
+    expect(snapshot).toHaveTextContent("US$80,00/hr");
+    expect(snapshot).toHaveTextContent("US$160,00");
   });
 });

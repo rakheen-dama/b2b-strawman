@@ -103,7 +103,7 @@ describe("ClosePeriodDialog", () => {
 
     // Base fee
     expect(screen.getByText("Base fee")).toBeInTheDocument();
-    expect(screen.getByText("$5,000.00")).toBeInTheDocument();
+    expect(screen.getAllByText(/US\$5\s000,00/).length).toBeGreaterThanOrEqual(1);
 
     // Overage line
     expect(screen.getByText(/Overage.*8\.0h/)).toBeInTheDocument();
@@ -142,7 +142,7 @@ describe("ClosePeriodDialog", () => {
     expect(screen.queryByText(/roll over/)).not.toBeInTheDocument();
 
     // Base fee should show (appears in both "Base fee" line and "Estimated Total")
-    expect(screen.getAllByText("$3,000.00").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText(/US\$3\s000,00/).length).toBeGreaterThanOrEqual(1);
 
     // Confirm button should still work
     expect(screen.getByText("Close Period & Generate Invoice")).toBeInTheDocument();

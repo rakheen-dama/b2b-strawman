@@ -579,6 +579,6 @@ describe("TaskDetailSheet", () => {
     });
 
     expect(screen.getByText(/Completed by Alice on/)).toBeInTheDocument();
-    expect(screen.getByText(/Feb 15, 2026/)).toBeInTheDocument();
+    expect(screen.getByText(/15 Feb 2026/)).toBeInTheDocument();
   });
 });

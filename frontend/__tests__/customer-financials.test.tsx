@@ -72,9 +72,9 @@ describe("CustomerFinancialsTab", () => {
 
     expect(screen.getByText("Customer Profitability")).toBeInTheDocument();
     expect(screen.getByText("200.0h")).toBeInTheDocument();
-    expect(screen.getByText("$30,000.00")).toBeInTheDocument();
-    expect(screen.getByText("$18,000.00")).toBeInTheDocument();
-    expect(screen.getByText("$12,000.00")).toBeInTheDocument();
+    expect(screen.getByText(/US\$30\s000,00/)).toBeInTheDocument();
+    expect(screen.getByText(/US\$18\s000,00/)).toBeInTheDocument();
+    expect(screen.getByText(/US\$12\s000,00/)).toBeInTheDocument();
     expect(screen.getByText("40.0%")).toBeInTheDocument();
   });
 

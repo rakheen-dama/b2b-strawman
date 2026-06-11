@@ -20,7 +20,7 @@ import { Label } from "@b2mash/ui/label";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import { StickyActionBar } from "@/components/ui/sticky-action-bar";
 import { BRAND_NAME } from "@/lib/brand";
-import { formatDate } from "@/lib/format";
+import { formatDate } from "@b2mash/shared/format";
 import { isSafeImageUrl, isValidHexColor } from "@/lib/utils";
 import {
   getAcceptancePageData,

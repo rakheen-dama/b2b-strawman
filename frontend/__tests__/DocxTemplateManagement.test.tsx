@@ -91,7 +91,7 @@ describe("Template List — Format Badges", () => {
     );
 
     expect(screen.getByText(/engagement-letter\.docx/)).toBeInTheDocument();
-    expect(screen.getByText(/51 KB/)).toBeInTheDocument();
+    expect(screen.getByText(/51\.3 KB/)).toBeInTheDocument();
   });
 });
 

@@ -62,11 +62,11 @@ describe("CustomerProfitabilitySection", () => {
     expect(screen.getByText("Customer Profitability")).toBeInTheDocument();
     // Acme Corp aggregate: revenue = 15000 + 7500 = 22500
     expect(screen.getByText("Acme Corp")).toBeInTheDocument();
-    expect(screen.getByText("$22,500.00")).toBeInTheDocument();
+    expect(screen.getByText(/US\$22\s500,00/)).toBeInTheDocument();
     // cost = 9000 + 4500 = 13500
-    expect(screen.getByText("$13,500.00")).toBeInTheDocument();
+    expect(screen.getByText(/US\$13\s500,00/)).toBeInTheDocument();
     // margin = 22500 - 13500 = 9000
-    expect(screen.getByText("$9,000.00")).toBeInTheDocument();
+    expect(screen.getByText(/US\$9\s000,00/)).toBeInTheDocument();
     // margin % = (9000 / 22500) * 100 = 40.0%
     expect(screen.getByText("40.0%")).toBeInTheDocument();
   });
@@ -122,8 +122,8 @@ describe("CustomerProfitabilitySection", () => {
     expect(screen.getByText("Beta Project")).toBeInTheDocument();
 
     // Verify project-level data is shown
-    expect(screen.getByText("$15,000.00")).toBeInTheDocument();
-    expect(screen.getByText("$7,500.00")).toBeInTheDocument();
+    expect(screen.getByText(/US\$15\s000,00/)).toBeInTheDocument();
+    expect(screen.getByText(/US\$7\s500,00/)).toBeInTheDocument();
 
     // Click again to collapse
     await user.click(customerRow);
@@ -151,6 +151,6 @@ describe("CustomerProfitabilitySection", () => {
     render(<CustomerProfitabilitySection initialData={data} {...defaultProps} />);
 
     expect(screen.getByText("Unassigned")).toBeInTheDocument();
-    expect(screen.getByText("$3,000.00")).toBeInTheDocument();
+    expect(screen.getByText(/US\$3\s000,00/)).toBeInTheDocument();
   });
 });

@@ -98,7 +98,7 @@ describe("ProjectRatesTab", () => {
 
     expect(screen.getByText("Project Rate Overrides")).toBeInTheDocument();
     expect(screen.getByText("Alice Johnson")).toBeInTheDocument();
-    expect(screen.getByText("$200.00")).toBeInTheDocument();
+    expect(screen.getByText("US$200,00")).toBeInTheDocument();
     expect(screen.getByText("USD")).toBeInTheDocument();
     expect(screen.getByText("Ongoing")).toBeInTheDocument();
   });

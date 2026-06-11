@@ -4,7 +4,7 @@ import { useState } from "react";
 import { MessageSquare, Loader2 } from "lucide-react";
 import { Button } from "@b2mash/ui/button";
 import { portalPost } from "@/lib/api-client";
-import { formatRelativeDate } from "@/lib/format";
+import { formatRelativeDate } from "@b2mash/shared/format";
 import type { PortalComment } from "@/lib/types";
 
 const MAX_CHARS = 2000;

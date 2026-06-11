@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { X } from "lucide-react";
-import { formatDate } from "@/lib/format";
+import { formatDate } from "@b2mash/shared/format";
 import { cn } from "@/lib/utils";
 import type { PortalDeadline } from "@/lib/api/deadlines";
 

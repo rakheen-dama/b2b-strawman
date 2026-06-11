@@ -1,167 +1,20 @@
+// Staff-app re-export of the unified formatting helpers.
+//
+// The implementation now lives in `@b2mash/shared/format` (shared verbatim with
+// the client portal — see packages/shared/src/format.ts). This thin shim exists
+// for one staff-app-specific reason: it loads `@/lib/intl-polyfill` as a
+// side-effect.
+//
+// Why the shim and not a direct import everywhere:
+//   - Next.js runs on Node, which ships small-icu by default. Without the
+//     @formatjs NumberFormat polyfill, `Intl.NumberFormat("en-ZA", …)` silently
+//     falls back to en-US during SSR, causing ZAR hydration mismatches
+//     (regression GAP-L-12). The portal runs on full-ICU runtimes and must NOT
+//     load this polyfill (doing so would change its byte-for-byte output), so
+//     the polyfill cannot live in the shared package.
+//   - Importing the polyfill here — the module every staff-app caller already
+//     imports — preserves the exact process-wide load behaviour that existed
+//     when the implementation lived in this file, with no call-site churn.
 import "@/lib/intl-polyfill";
 
-export function formatDate(date: string | Date): string {
-  return new Date(date).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-export function formatDateShort(date: string | Date): string {
-  return new Date(date).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-}
-
-export function formatFileSize(bytes: number): string {
-  if (bytes === 0) return "0 B";
-  const units = ["B", "KB", "MB", "GB"];
-  const k = 1024;
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  const value = bytes / Math.pow(k, i);
-  return `${value < 10 ? value.toFixed(1) : Math.round(value)} ${units[i]}`;
-}
-
-/**
- * Formats a duration in minutes as "Xh Ym", "Xh", or "Ym".
- * Returns "0m" for zero or negative values.
- */
-export function formatDuration(minutes: number): string {
-  if (minutes <= 0) return "0m";
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  if (h > 0 && m > 0) return `${h}h ${m}m`;
-  if (h > 0) return `${h}h`;
-  return `${m}m`;
-}
-
-const UNITS: [Intl.RelativeTimeFormatUnit, number][] = [
-  ["year", 365 * 24 * 60 * 60],
-  ["month", 30 * 24 * 60 * 60],
-  ["week", 7 * 24 * 60 * 60],
-  ["day", 24 * 60 * 60],
-  ["hour", 60 * 60],
-  ["minute", 60],
-];
-
-const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
-
-/**
- * Maps currency codes to their natural locale so Intl.NumberFormat
- * renders the correct symbol (e.g. ZAR → "R", GBP → "£").
- */
-const currencyLocaleMap: Record<string, string> = {
-  ZAR: "en-ZA",
-  USD: "en-US",
-  GBP: "en-GB",
-  EUR: "de-DE",
-};
-
-/**
- * Formats a number as currency (e.g. "$125.00" or "R125.00").
- */
-export function formatCurrency(amount: number, currency: string): string {
-  const code = currency || "USD";
-  const locale = currencyLocaleMap[code] ?? "en-US";
-  return new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: code,
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount ?? 0);
-}
-
-/**
- * Null-safe currency formatter. Returns "N/A" if amount or currency is missing.
- */
-export function formatCurrencySafe(
-  amount: number | null | undefined,
-  currency: string | null | undefined
-): string {
-  if (amount == null || !currency) return "N/A";
-  return formatCurrency(amount, currency);
-}
-
-export function formatRelativeDate(date: string | Date): string {
-  const seconds = Math.round((new Date(date).getTime() - Date.now()) / 1000);
-  for (const [unit, threshold] of UNITS) {
-    if (Math.abs(seconds) >= threshold) {
-      return rtf.format(Math.round(seconds / threshold), unit);
-    }
-  }
-  return rtf.format(seconds, "second");
-}
-
-/**
- * Formats a "YYYY-MM-DD" date string using local calendar arithmetic
- * (avoids UTC-midnight off-by-one issues).
- */
-export function formatLocalDate(yyyyMmDd: string): string {
-  const [year, month, day] = yyyyMmDd.split("-").map(Number);
-  return new Date(year, month - 1, day).toLocaleDateString("en-ZA", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-/**
- * Renders an ISO instant as a calendar date in the viewer's local zone.
- * Intended for proposal expiry / matter due-date fields where the underlying
- * value is a wall-clock end-of-day instant — calling toLocaleDateString with
- * the default zone correctly maps the local-end-of-day instant back to the
- * date the user picked.
- */
-export function formatProposalExpiresAt(iso: string): string {
-  return new Date(iso).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-}
-
-/**
- * Returns true if the given "YYYY-MM-DD" deadline is strictly before today.
- */
-export function isOverdue(deadline: string): boolean {
-  const today = new Date().toLocaleDateString("en-CA"); // "YYYY-MM-DD" in local timezone
-  return deadline < today;
-}
-
-/**
- * Formats an ISO timestamp as a short date (en-ZA locale: "19 Feb 2026").
- */
-export function formatComplianceDate(isoString: string): string {
-  return new Date(isoString).toLocaleDateString("en-ZA", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
-}
-
-/**
- * Formats an ISO timestamp with date and time (en-ZA locale).
- */
-export function formatComplianceDateWithTime(isoString: string): string {
-  return new Date(isoString).toLocaleDateString("en-ZA", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-/**
- * Formats the duration between two ISO timestamps as a human-readable string.
- * Returns "..." if completedAt is null (still running).
- */
-export function computeDuration(startedAt: string, completedAt: string | null): string {
-  if (!completedAt) return "...";
-  const ms = new Date(completedAt).getTime() - new Date(startedAt).getTime();
-  if (ms < 1000) return `${ms}ms`;
-  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
-  return `${Math.round(ms / 60000)}m`;
-}
+export * from "@b2mash/shared/format";

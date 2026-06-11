@@ -105,8 +105,8 @@ describe("CustomerInvoicesTab", () => {
     const draftElements = screen.getAllByText("Draft");
     expect(draftElements.length).toBe(2); // link text + status badge
     expect(screen.getByText("Paid")).toBeInTheDocument(); // status badge
-    expect(screen.getByText("$500.00")).toBeInTheDocument();
-    expect(screen.getByText("$300.00")).toBeInTheDocument();
+    expect(screen.getByText("US$500,00")).toBeInTheDocument();
+    expect(screen.getByText("US$300,00")).toBeInTheDocument();
   });
 
   it("shows New Invoice button when canManage is true and opens dialog", async () => {

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FileCheck, Clock, ArrowRight } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
-import { formatDate } from "@/lib/format";
+import { formatDate } from "@b2mash/shared/format";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import type { PortalPendingAcceptance } from "@/lib/types";
 

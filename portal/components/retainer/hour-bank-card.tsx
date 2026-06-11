@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { AlertTriangle, Calendar, FileText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
-import { formatDate } from "@/lib/format";
+import { formatDate } from "@b2mash/shared/format";
 import { cn } from "@/lib/utils";
 import {
   formatHours,

@@ -356,8 +356,18 @@ class ProjectLifecycleIntegrationTest {
    */
   @Test
   void shouldFilterProjectsByDueBefore() throws Exception {
-    String earlyDueId = createProjectWithDueDate("Due Early Filter", "2026-01-10");
-    String lateDueId = createProjectWithDueDate("Due Late Filter", "2026-12-31");
+    String earlyDueId =
+        TestEntityHelper.createProjectWithDueDate(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"),
+            "Due Early Filter",
+            "2026-01-10");
+    String lateDueId =
+        TestEntityHelper.createProjectWithDueDate(
+            mockMvc,
+            TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"),
+            "Due Late Filter",
+            "2026-12-31");
     String noDueId = createProject("No Due Date Filter");
 
     mockMvc
@@ -454,23 +464,6 @@ class ProjectLifecycleIntegrationTest {
                         {"name": "%s", "description": "Lifecycle test project"}
                         """
                             .formatted(name)))
-            .andExpect(status().isCreated())
-            .andReturn();
-    return TestEntityHelper.extractIdFromLocation(result);
-  }
-
-  private String createProjectWithDueDate(String name, String dueDate) throws Exception {
-    var result =
-        mockMvc
-            .perform(
-                post("/api/projects")
-                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"))
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(
-                        """
-                        {"name": "%s", "description": "Lifecycle test project", "dueDate": "%s"}
-                        """
-                            .formatted(name, dueDate)))
             .andExpect(status().isCreated())
             .andReturn();
     return TestEntityHelper.extractIdFromLocation(result);

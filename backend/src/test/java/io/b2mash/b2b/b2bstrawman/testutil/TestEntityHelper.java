@@ -44,6 +44,24 @@ public final class TestEntityHelper {
   }
 
   /** Creates a project with a default description. */
+  public static String createProjectWithDueDate(
+      MockMvc mockMvc, JwtRequestPostProcessor jwt, String name, String dueDate) throws Exception {
+    var result =
+        mockMvc
+            .perform(
+                post("/api/projects")
+                    .with(jwt)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"name":"%s","description":"Test project","dueDate":"%s"}
+                        """
+                            .formatted(name, dueDate)))
+            .andExpect(status().isCreated())
+            .andReturn();
+    return extractIdFromLocation(result);
+  }
+
   public static String createProject(MockMvc mockMvc, JwtRequestPostProcessor jwt, String name)
       throws Exception {
     return createProject(mockMvc, jwt, name, "Test project");

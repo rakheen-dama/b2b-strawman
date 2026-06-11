@@ -3,6 +3,7 @@ package io.b2mash.b2b.b2bstrawman.dashboard;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -459,6 +460,62 @@ class DashboardCompanyIntegrationTest {
     assert adminCount >= memberCount
         : "Admin should see at least as many events (%d) as member (%d)"
             .formatted(adminCount, memberCount);
+  }
+
+  @Test
+  void crossProjectActivityClampsLimitAboveMaximumToFifty() throws Exception {
+    // limit=100 is clamped to 50; the response must never exceed the cap.
+    mockMvc
+        .perform(
+            get("/api/dashboard/activity")
+                .param("limit", "100")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$", hasSize(lessThanOrEqualTo(50))));
+  }
+
+  @Test
+  void crossProjectActivityClampsLimitBelowMinimumToOne() throws Exception {
+    // limit=0 is clamped to 1 — exactly one event returned (several are seeded).
+    mockMvc
+        .perform(
+            get("/api/dashboard/activity")
+                .param("limit", "0")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$").isArray())
+        .andExpect(jsonPath("$", hasSize(1)));
+  }
+
+  // --- Date-Range Validation Tests (characterization for service-side guard) ---
+
+  @Test
+  void kpisRejectInvertedDateRangeWithProblemDetail() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/dashboard/kpis")
+                .param("from", today.toString())
+                .param("to", thirtyDaysAgo.toString())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Invalid Date Range"))
+        .andExpect(jsonPath("$.detail").value("'from' date must not be after 'to' date"));
+  }
+
+  @Test
+  void teamWorkloadRejectsInvertedDateRangeWithProblemDetail() throws Exception {
+    mockMvc
+        .perform(
+            get("/api/dashboard/team-workload")
+                .param("from", today.toString())
+                .param("to", thirtyDaysAgo.toString())
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_cdash_admin")))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.status").value(400))
+        .andExpect(jsonPath("$.title").value("Invalid Date Range"))
+        .andExpect(jsonPath("$.detail").value("'from' date must not be after 'to' date"));
   }
 
   // --- JWT Helpers ---

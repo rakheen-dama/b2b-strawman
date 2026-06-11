@@ -149,7 +149,7 @@ public ResponseEntity<byte[]> exportPdf(@PathVariable String slug, @RequestParam
 }
 ```
 
-**⚠️ Known violations:** Several existing controllers (PortalAuthController, ReportingController, DataRequestController, DashboardController, OrgSettingsController, RetainerAgreementController, MockPaymentController, PortalBrandingController, PortalDigestInternalController) predate this rule enforcement. Do NOT use them as reference patterns. All new controllers must follow this discipline. Cleanup tracked in `documentation/tech-debt.md` TD-009 (the latter three were surfaced 2026-05-02 when the ArchUnit upgrade made the rule actually enforce).
+**⚠️ Known violations:** Several existing controllers (PortalAuthController, ReportingController, DataRequestController, OrgSettingsController, RetainerAgreementController, MockPaymentController, PortalBrandingController, PortalDigestInternalController) predate this rule enforcement. Do NOT use them as reference patterns. All new controllers must follow this discipline. Cleanup tracked in `documentation/tech-debt.md` TD-009 (the latter three were surfaced 2026-05-02 when the ArchUnit upgrade made the rule actually enforce).
 
 ## Multitenancy
 

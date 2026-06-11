@@ -179,8 +179,8 @@ describe("Profitability Page", () => {
       expect(screen.getByText("Project Profitability")).toBeInTheDocument();
       expect(screen.getByText("Alpha Project")).toBeInTheDocument();
       expect(screen.getByText("Acme Corp")).toBeInTheDocument();
-      expect(screen.getByText("$15,000.00")).toBeInTheDocument();
-      expect(screen.getByText("$6,000.00")).toBeInTheDocument();
+      expect(screen.getByText(/US\$15\s000,00/)).toBeInTheDocument();
+      expect(screen.getByText(/US\$6\s000,00/)).toBeInTheDocument();
     });
 
     it("shows N/A badge when margin data is missing", () => {

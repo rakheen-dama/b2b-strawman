@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Scale } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatCurrency, formatDate } from "@b2mash/shared/format";
 import { formatMatterLabel } from "@/lib/api/trust";
 
 interface BalanceCardProps {

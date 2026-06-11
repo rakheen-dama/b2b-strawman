@@ -45,9 +45,9 @@ describe("ProjectFinancialsTab", () => {
 
     expect(screen.getByText("Project Profitability")).toBeInTheDocument();
     expect(screen.getByText("120.0h")).toBeInTheDocument();
-    expect(screen.getByText("$18,000.00")).toBeInTheDocument();
-    expect(screen.getByText("$10,800.00")).toBeInTheDocument();
-    expect(screen.getByText("$7,200.00")).toBeInTheDocument();
+    expect(screen.getByText(/US\$18\s000,00/)).toBeInTheDocument();
+    expect(screen.getByText(/US\$10\s800,00/)).toBeInTheDocument();
+    expect(screen.getByText(/US\$7\s200,00/)).toBeInTheDocument();
     expect(screen.getByText("40.0%")).toBeInTheDocument();
   });
 

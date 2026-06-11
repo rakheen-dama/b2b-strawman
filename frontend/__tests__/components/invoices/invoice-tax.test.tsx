@@ -221,7 +221,7 @@ describe("Invoice Tax UI", () => {
 
       // Tax rate info should appear
       expect(screen.getByText(/VAT \(15%\)/)).toBeInTheDocument();
-      expect(screen.getByText(/\$150\.00/)).toBeInTheDocument();
+      expect(screen.getByText(/US\$150,00/)).toBeInTheDocument();
     });
 
     it("does not show Tax column when hasPerLineTax is false", () => {

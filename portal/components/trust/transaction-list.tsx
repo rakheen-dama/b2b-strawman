@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Receipt } from "lucide-react";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatCurrency, formatDate } from "@b2mash/shared/format";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import {
   getMatterTransactions,

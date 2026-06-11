@@ -167,12 +167,12 @@ describe("InvoiceDetailClient", () => {
     // Line items
     expect(screen.getByText("Consulting work")).toBeInTheDocument();
 
-    // $1,000.00 appears as line amount and as subtotal
-    const thousandElements = screen.getAllByText("$1,000.00");
+    // US$1 000,00 appears as line amount and as subtotal
+    const thousandElements = screen.getAllByText(/US\$1\s000,00/);
     expect(thousandElements.length).toBeGreaterThanOrEqual(2);
 
     // Total
-    expect(screen.getByText("$1,100.00")).toBeInTheDocument();
+    expect(screen.getByText(/US\$1\s100,00/)).toBeInTheDocument();
   });
 
   it("renders APPROVED invoice with lifecycle buttons", () => {

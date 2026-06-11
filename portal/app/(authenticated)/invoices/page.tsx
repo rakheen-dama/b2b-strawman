@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { Download, FileText } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatCurrency, formatDate } from "@b2mash/shared/format";
 import { InvoiceStatusBadge } from "@/components/invoice-status-badge";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import { useTerminology } from "@/lib/terminology";

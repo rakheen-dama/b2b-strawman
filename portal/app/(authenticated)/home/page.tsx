@@ -12,7 +12,7 @@ import {
 import { portalGet } from "@/lib/api-client";
 import { useModules } from "@/hooks/use-portal-context";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatCurrency, formatDate } from "@b2mash/shared/format";
 import { useTerminology } from "@/lib/terminology";
 import type {
   PortalInvoice,

@@ -109,8 +109,8 @@ describe("BudgetPanel", () => {
     // Stat cards — "50%" appears for both hours and amount Used cards
     const fiftyPctCards = screen.getAllByText("50%");
     expect(fiftyPctCards.length).toBe(2);
-    // "$25,000.00" appears for both consumed and remaining (same values)
-    const amountCards = screen.getAllByText("$25,000.00");
+    // "US$25 000,00" appears for both consumed and remaining (same values)
+    const amountCards = screen.getAllByText(/US\$25\s000,00/);
     expect(amountCards.length).toBeGreaterThanOrEqual(1);
   });
 

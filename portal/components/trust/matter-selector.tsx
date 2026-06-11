@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Scale, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
-import { formatCurrency, formatRelativeDate } from "@/lib/format";
+import { formatCurrency, formatRelativeDate } from "@b2mash/shared/format";
 import {
   formatMatterLabel,
   type PortalTrustMatterSummary,

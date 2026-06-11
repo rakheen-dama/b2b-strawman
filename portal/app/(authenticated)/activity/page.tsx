@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Activity as ActivityIcon } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
-import { formatRelativeDate } from "@/lib/format";
+import { formatRelativeDate } from "@b2mash/shared/format";
 import { Skeleton } from "@b2mash/ui/skeleton";
 
 type ActivityTab = "mine" | "firm";

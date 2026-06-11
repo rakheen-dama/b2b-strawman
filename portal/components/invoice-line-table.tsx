@@ -1,4 +1,4 @@
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency } from "@b2mash/shared/format";
 import type { PortalInvoiceLine, TaxBreakdownEntry } from "@/lib/types";
 
 interface InvoiceLineTableProps {

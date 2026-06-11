@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle, XCircle, Clock } from "lucide-react";
 import { portalGet, portalPost } from "@/lib/api-client";
-import { formatCurrency, formatDate } from "@/lib/format";
+import { formatCurrency, formatDate } from "@b2mash/shared/format";
 import { ProposalStatusBadge } from "@/components/proposal-status-badge";
 import { Skeleton } from "@b2mash/ui/skeleton";
 import { Button } from "@b2mash/ui/button";

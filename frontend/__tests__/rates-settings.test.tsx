@@ -117,7 +117,7 @@ describe("RatesSettings", () => {
 
     expect(screen.getByText("Alice Johnson")).toBeInTheDocument();
     expect(screen.getByText("Bob Smith")).toBeInTheDocument();
-    expect(screen.getByText("$150.00")).toBeInTheDocument();
+    expect(screen.getByText("US$150,00")).toBeInTheDocument();
   });
 
   it("currency change triggers server action", async () => {

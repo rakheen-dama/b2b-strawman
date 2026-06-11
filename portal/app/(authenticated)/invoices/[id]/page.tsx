@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle, CreditCard, Download } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
-import { formatDate } from "@/lib/format";
+import { formatDate } from "@b2mash/shared/format";
 import { useBranding } from "@/hooks/use-branding";
 import { InvoiceStatusBadge } from "@/components/invoice-status-badge";
 import { InvoiceLineTable } from "@/components/invoice-line-table";

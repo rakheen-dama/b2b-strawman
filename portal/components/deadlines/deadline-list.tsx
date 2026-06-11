@@ -2,7 +2,7 @@
 
 import { CalendarClock } from "lucide-react";
 import { Skeleton } from "@b2mash/ui/skeleton";
-import { formatDate } from "@/lib/format";
+import { formatDate } from "@b2mash/shared/format";
 import { cn } from "@/lib/utils";
 import type {
   PortalDeadline,

@@ -4,7 +4,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, CheckCircle, Clock, AlertTriangle } from "lucide-react";
 import { usePaymentStatus } from "@/hooks/use-payment-status";
-import { formatDate } from "@/lib/format";
+import { formatDate } from "@b2mash/shared/format";
 import { useTerminology } from "@/lib/terminology";
 
 export default function PaymentSuccessPage() {

@@ -32,6 +32,9 @@ jobs:
           filters: |
             frontend:
               - 'frontend/**'
+              - 'pnpm-lock.yaml'
+              - 'pnpm-workspace.yaml'
+              - 'package.json'
             backend:
               - 'backend/**'
             gateway:
@@ -64,12 +67,13 @@ jobs:
         with:
           node-version: "20"
           cache: "pnpm"
-          cache-dependency-path: frontend/pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
 
-      # --ignore-workspace: frontend is not a workspace member yet; without the
-      # flag pnpm resolves against the root workspace and never creates
-      # frontend/node_modules. Removed when frontend joins the workspace.
-      - run: pnpm install --frozen-lockfile --ignore-workspace
+      # Install from the repo root: the frontend is a pnpm workspace member and the
+      # lockfile lives at the root. Restrict the install to the frontend subtree.
+      - name: Install
+        working-directory: .
+        run: pnpm install --frozen-lockfile --filter frontend...
 
       - name: Lint
         run: pnpm run lint

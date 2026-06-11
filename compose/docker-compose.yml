@@ -179,8 +179,10 @@ services:
 
   frontend:
     build:
-      context: ../frontend
-      dockerfile: Dockerfile
+      # Frontend is a pnpm workspace member; build from the repo root so the
+      # root lockfile + pnpm-workspace.yaml are in the build context.
+      context: ..
+      dockerfile: frontend/Dockerfile
       args:
         NEXT_PUBLIC_AUTH_MODE: ${NEXT_PUBLIC_AUTH_MODE:-clerk}
         NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}

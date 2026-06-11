@@ -112,8 +112,10 @@ services:
 
   frontend:
     build:
-      context: ../frontend
-      dockerfile: Dockerfile
+      # Frontend is a pnpm workspace member; build from the repo root so the
+      # root lockfile + pnpm-workspace.yaml are in the build context.
+      context: ..
+      dockerfile: frontend/Dockerfile
       args:
         NEXT_PUBLIC_AUTH_MODE: mock
         NEXT_PUBLIC_MOCK_IDP_URL: http://localhost:8090

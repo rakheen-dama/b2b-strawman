@@ -1,7 +1,7 @@
 "use client";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Eye, Plus } from "lucide-react";
 import { HelpTip } from "@/components/help-tip";
 import type { EntityType, SavedViewResponse } from "@/lib/types";

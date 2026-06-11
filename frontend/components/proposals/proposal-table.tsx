@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { formatDate } from "@/lib/format";
 import { useNowMs } from "@/hooks/use-now-ms";
 import type { ProposalResponse, ProposalStatus } from "@/lib/types/proposal";

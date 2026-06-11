@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Input } from "@b2mash/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
@@ -30,7 +30,7 @@ import { scrollToFirstError } from "@/lib/error-handler";
 import { useTerminology } from "@/lib/terminology";
 import { useSubscription } from "@/lib/subscription-context";
 import { ModuleGate } from "@/components/module-gate";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { createProjectSchema, type CreateProjectFormData } from "@/lib/schemas/project";
 import { nativeSelectClassName } from "@/lib/styles/native-select";

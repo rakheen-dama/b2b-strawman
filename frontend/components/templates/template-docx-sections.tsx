@@ -2,8 +2,8 @@
 
 import { useCallback, useRef, useState } from "react";
 import { FileText, Upload, Copy, Check } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Button } from "@b2mash/ui/button";
+import { Label } from "@b2mash/ui/label";
 import {
   Dialog,
   DialogContent,

@@ -1,7 +1,7 @@
 "use client";
 
 import { Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { useAssistant } from "@/components/assistant/assistant-provider";
 
 export function AssistantTrigger() {

@@ -1,8 +1,8 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api, handleApiError } from "@/lib/api";
 import { fetchRetainer } from "@/lib/api/retainers";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
+import { Button } from "@b2mash/ui/button";
 import { RetainerStatusBadge } from "@/components/retainers/retainer-status-badge";
 import { RetainerProgress } from "@/components/retainers/retainer-progress";
 import { PeriodHistoryTable } from "@/components/retainers/period-history-table";

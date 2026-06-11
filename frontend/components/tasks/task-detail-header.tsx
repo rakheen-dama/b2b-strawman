@@ -2,8 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { Ban, Check, MoreHorizontal, RotateCcw, X } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,

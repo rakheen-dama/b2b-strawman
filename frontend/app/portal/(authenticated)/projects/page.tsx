@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FolderOpen, FileText, Loader2, AlertCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { portalApi, PortalApiError, clearPortalAuth } from "@/lib/portal-api";
 import { useRouter } from "next/navigation";

@@ -9,7 +9,7 @@ vi.mock("@/app/(app)/org/[slug]/settings/billing/actions", () => ({
   getPayments: vi.fn(),
 }));
 
-vi.mock("@/components/ui/badge", () => ({
+vi.mock("@b2mash/ui/badge", () => ({
   Badge: ({ children, variant }: { children: React.ReactNode; variant: string }) => (
     <span data-testid="badge" data-variant={variant}>
       {children}
@@ -17,7 +17,7 @@ vi.mock("@/components/ui/badge", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/card", () => ({
+vi.mock("@b2mash/ui/card", () => ({
   Card: ({ children, className }: { children: React.ReactNode; className?: string }) => (
     <div data-testid="card" className={className}>
       {children}

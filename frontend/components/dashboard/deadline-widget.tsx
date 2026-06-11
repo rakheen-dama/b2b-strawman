@@ -3,8 +3,8 @@
 import Link from "next/link";
 import useSWR from "swr";
 import { CalendarClock } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@b2mash/ui/card";
+import { Button } from "@b2mash/ui/button";
 import { fetchDeadlineSummary } from "@/app/(app)/org/[slug]/deadlines/actions";
 import type { DeadlineSummary } from "@/lib/types";
 

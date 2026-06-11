@@ -4,7 +4,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { RefreshCw } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 
 interface DateRangeSelectorProps {
   value: { from: Date; to: Date };

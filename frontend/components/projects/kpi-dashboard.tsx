@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { FicaStatusCard } from "@/components/compliance/FicaStatusCard";
 import { RetentionCard } from "@/components/legal/retention-card";
 import type { SetupStep } from "@/components/setup/types";

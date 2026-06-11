@@ -16,7 +16,7 @@ vi.mock("next/navigation", () => ({
 }));
 
 import { CreateProposalDialog } from "@/components/proposals/create-proposal-dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 
 const CUSTOMERS = [
   { id: "11111111-1111-1111-1111-111111111111", name: "Dlamini & Co", email: "dlamini@test.local" },

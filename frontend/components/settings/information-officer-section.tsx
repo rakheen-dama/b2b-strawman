@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { Input } from "@b2mash/ui/input";
+import { Label } from "@b2mash/ui/label";
+import { Button } from "@b2mash/ui/button";
 import { updateDataProtectionSettings } from "@/app/(app)/org/[slug]/settings/data-protection/actions";
 import { informationOfficerSchema } from "@/lib/schemas/data-protection";
 

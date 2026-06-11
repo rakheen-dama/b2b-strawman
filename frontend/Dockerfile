@@ -11,6 +11,8 @@ RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
 # Workspace manifests + root lockfile drive a deterministic, frozen install.
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY frontend/package.json ./frontend/
+# Workspace dependency @b2mash/ui — its manifest is part of the install graph.
+COPY packages/ui/package.json ./packages/ui/
 
 # Install only the frontend package and its dependency closure from the root lockfile.
 RUN pnpm install --frozen-lockfile --filter frontend...
@@ -24,10 +26,17 @@ RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
 # Bring in the installed workspace node_modules from the deps stage.
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
+# @b2mash/ui's own dependency tree (pnpm may place deps under the package).
+COPY --from=deps /app/packages ./packages
 
 # Workspace manifests (so pnpm resolves the `frontend` filter) + frontend source.
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+# Shared base tsconfig — frontend/tsconfig.json extends ../tsconfig.base.json.
+COPY tsconfig.base.json ./
 COPY frontend/ ./frontend/
+# @b2mash/ui ships TS source (no build step) — transpilePackages compiles it
+# during the frontend build, so its sources must be present.
+COPY packages/ ./packages/
 
 # NEXT_PUBLIC_ vars are inlined at build time. Pass via --build-arg or
 # provide a placeholder so the build succeeds (real values at runtime

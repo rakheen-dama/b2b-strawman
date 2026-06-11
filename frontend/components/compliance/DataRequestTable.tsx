@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { cn } from "@/lib/utils";
 import { isOverdue, formatLocalDate, formatComplianceDate } from "@/lib/format";
 import type { DataRequestResponse, DataRequestStatus, DataRequestType } from "@/lib/types";

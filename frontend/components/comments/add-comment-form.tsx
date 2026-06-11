@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Label } from "@b2mash/ui/label";
 import { createComment } from "@/lib/actions/comments";
 
 interface AddCommentFormProps {

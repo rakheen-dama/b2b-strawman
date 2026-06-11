@@ -18,8 +18,8 @@ import {
   FileText,
   GitBranch,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import { Button } from "@b2mash/ui/button";
+import { Separator } from "@b2mash/ui/separator";
 import { cn } from "@/lib/utils";
 import type { TemplateEntityType } from "@/lib/types";
 import { VariablePicker } from "./VariablePicker";

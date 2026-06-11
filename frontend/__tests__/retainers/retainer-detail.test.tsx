@@ -2,7 +2,7 @@ import { describe, it, expect, vi, afterEach } from "vitest";
 import { cleanup, render, screen } from "@testing-library/react";
 import { RetainerDetailActions } from "@/components/retainers/retainer-detail-actions";
 import { EditRetainerDialog } from "@/components/retainers/edit-retainer-dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import type { RetainerResponse } from "@/lib/api/retainers";
 
 vi.mock("next/navigation", () => ({

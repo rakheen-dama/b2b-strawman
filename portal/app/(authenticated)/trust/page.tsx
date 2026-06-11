@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { usePortalContext } from "@/hooks/use-portal-context";
 import { MatterSelector } from "@/components/trust/matter-selector";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import {
   getTrustSummary,
   type PortalTrustMatterSummary,

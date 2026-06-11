@@ -11,7 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { fetchApprovedTrustDisbursementPayments } from "@/app/(app)/org/[slug]/legal/disbursements/actions";
 import { formatCurrency } from "@/lib/format";
 import type { TrustTransaction } from "@/lib/types";

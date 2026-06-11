@@ -18,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { updateDataProtectionSettings } from "@/app/(app)/org/[slug]/settings/data-protection/actions";
 
 const JURISDICTIONS = [

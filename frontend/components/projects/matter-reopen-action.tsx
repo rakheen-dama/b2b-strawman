@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { RotateCcw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { MatterReopenDialog } from "@/components/legal/matter-reopen-dialog";
 import { useCapabilities } from "@/lib/capabilities";
 import { useOrgProfile } from "@/lib/org-profile";

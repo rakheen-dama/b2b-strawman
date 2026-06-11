@@ -43,6 +43,7 @@ jobs:
           filters: |
             frontend:
               - 'frontend/**'
+              - 'packages/**'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
               - 'package.json'
@@ -52,6 +53,7 @@ jobs:
               - 'gateway/**'
             portal:
               - 'portal/**'
+              - 'packages/**'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
               - 'package.json'

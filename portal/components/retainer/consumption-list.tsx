@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { ClipboardList } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import { formatDate } from "@/lib/format";
 import {
   formatHours,

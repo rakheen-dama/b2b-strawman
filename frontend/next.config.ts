@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  transpilePackages: ["@b2mash/ui"],
   async redirects() {
     return [
       // GAP-Doc-Drift-26: Legacy bookmarks and QA scenario docs reference

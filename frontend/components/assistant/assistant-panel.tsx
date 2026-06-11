@@ -9,7 +9,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useAssistant } from "@/components/assistant/assistant-provider";
 import { useAssistantChat } from "@/hooks/use-assistant-chat";

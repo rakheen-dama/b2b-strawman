@@ -1,7 +1,7 @@
 "use client";
 
 import { Clock } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { createMessages } from "@/lib/messages";
 import { formatDuration } from "@/lib/format";

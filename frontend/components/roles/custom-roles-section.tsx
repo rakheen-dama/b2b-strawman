@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { RoleCard } from "@/components/roles/role-card";
 import { RoleDialog } from "@/components/roles/role-dialog";
 import { DeleteRoleDialog } from "@/components/roles/delete-role-dialog";

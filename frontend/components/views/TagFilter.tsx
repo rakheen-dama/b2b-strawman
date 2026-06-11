@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,
@@ -12,7 +12,7 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { Plus, X } from "lucide-react";
-import { Label } from "@/components/ui/label";
+import { Label } from "@b2mash/ui/label";
 import type { TagResponse } from "@/lib/types";
 
 interface TagFilterProps {

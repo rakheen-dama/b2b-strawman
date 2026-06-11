@@ -1,8 +1,8 @@
 "use client";
 
 import { AlertTriangle, Check, Clock, Hand, Repeat, RotateCcw, Undo2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
 import { LogTimeDialog } from "@/components/tasks/log-time-dialog";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";

@@ -15,10 +15,10 @@ import {
   Sparkles,
 } from "lucide-react";
 import { CommentSectionClient } from "@/components/comments/comment-section-client";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { docsLink } from "@/lib/docs";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import {
   Table,
   TableBody,

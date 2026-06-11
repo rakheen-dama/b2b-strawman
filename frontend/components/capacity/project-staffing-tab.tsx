@@ -1,7 +1,7 @@
 "use client";
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
+import { Badge } from "@b2mash/ui/badge";
 import { MiniProgressRing } from "@/components/dashboard/mini-progress-ring";
 import type { ProjectStaffingResponse } from "@/lib/api/capacity";
 

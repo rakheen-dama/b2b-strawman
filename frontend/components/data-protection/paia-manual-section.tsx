@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { FileText, Loader2, AlertTriangle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { generatePaiaManual } from "@/app/(app)/org/[slug]/settings/data-protection/actions";
 
 interface PaiaManualSectionProps {

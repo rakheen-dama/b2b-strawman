@@ -3,8 +3,8 @@
 import { useEffect, useState, useTransition, useRef } from "react";
 import { X } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Input } from "@b2mash/ui/input";
+import { Button } from "@b2mash/ui/button";
 import {
   fetchTaskItems,
   addTaskItem,

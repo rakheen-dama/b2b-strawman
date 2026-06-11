@@ -7,7 +7,7 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { ExecutionStatusBadge } from "@/components/automations/execution-status-badge";
 import { TriggerTypeBadge } from "@/components/automations/trigger-type-badge";
 import { computeDuration } from "@/lib/format";

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Label } from "@b2mash/ui/label";
 import { updateNotificationPreferences } from "@/lib/actions/notifications";
 import type { NotificationPreference } from "@/lib/actions/notifications";
 

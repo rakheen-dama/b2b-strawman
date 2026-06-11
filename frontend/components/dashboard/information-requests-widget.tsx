@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { ClipboardList, AlertTriangle, CheckCircle2 } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@b2mash/ui/card";
+import { Button } from "@b2mash/ui/button";
 import type { InformationRequestSummary } from "@/lib/api/information-requests";
 
 interface InformationRequestsWidgetProps {

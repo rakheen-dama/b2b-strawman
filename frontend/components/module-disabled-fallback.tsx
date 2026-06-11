@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Lock } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@b2mash/ui/card";
 
 interface ModuleDisabledFallbackProps {
   moduleName: string;

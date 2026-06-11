@@ -8,7 +8,7 @@ import type { Customer } from "@/lib/types";
 import { RetainerSummaryCards } from "@/components/retainers/retainer-summary-cards";
 import { RetainerList } from "@/components/retainers/retainer-list";
 import { CreateRetainerDialog } from "@/components/retainers/create-retainer-dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
 
 function computeSummary(retainers: RetainerResponse[]) {

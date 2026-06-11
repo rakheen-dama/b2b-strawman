@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/empty-state";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import { Layers, Plus, AlertCircle } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { ModuleDisabledFallback } from "@/components/module-disabled-fallback";
 import { TerminologyHeading } from "@/components/terminology-heading";
 import { TerminologyText } from "@/components/terminology-text";

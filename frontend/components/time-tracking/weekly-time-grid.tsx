@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { ChevronLeft, ChevronRight, Copy, Upload } from "lucide-react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import {
   Table,
   TableBody,

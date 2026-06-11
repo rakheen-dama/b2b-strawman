@@ -2,7 +2,7 @@
 
 import { CheckCircle, AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import {
   Table,

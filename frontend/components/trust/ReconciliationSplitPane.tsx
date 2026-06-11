@@ -2,9 +2,9 @@
 
 import { useCallback, useState } from "react";
 import { CheckCircle2, XCircle, Link2, Unlink } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@b2mash/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
+import { Badge } from "@b2mash/ui/badge";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import type {
   BankStatementLineResponse,

@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import type { ExecutionStatus } from "@/lib/api/automations";
 
 const EXECUTION_STATUS_CONFIG: Record<

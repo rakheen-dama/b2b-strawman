@@ -1,7 +1,7 @@
 "use client";
 
 import { useMockAuthContext } from "@/lib/auth/client/mock-context";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 
 export function MockOrgSwitcher() {
   const { orgSlug } = useMockAuthContext();

@@ -18,7 +18,7 @@ import { useEffect, useState } from "react";
 import { ChevronsUpDown, Check } from "lucide-react";
 import useSWR from "swr";
 import type { ControllerRenderProps, FieldValues, Path } from "react-hook-form";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   Command,

@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle, Calendar } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { TagInput } from "@/components/tags/TagInput";
 import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";
 import { cn } from "@/lib/utils";

@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { X } from "lucide-react";
 
 interface SyncLogFiltersProps {

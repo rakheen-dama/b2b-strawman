@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ShieldOff } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { createMessages } from "@/lib/messages";
 
 interface PermissionDeniedProps {

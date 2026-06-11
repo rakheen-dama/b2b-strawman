@@ -1,7 +1,7 @@
 "use client";
 
 import { Calendar, Clock } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import type { AllocationResponse, LeaveBlockResponse } from "@/lib/api/capacity";
 
 interface MyScheduleWidgetProps {

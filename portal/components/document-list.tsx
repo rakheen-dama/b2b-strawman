@@ -1,7 +1,7 @@
 "use client";
 
 import { FileText, Download, FileImage, FileSpreadsheet, File } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { formatFileSize, formatDate } from "@/lib/format";
 import { portalGet } from "@/lib/api-client";
 import type { PortalDocument, PortalPresignDownload } from "@/lib/types";

@@ -1,4 +1,4 @@
-import { Card } from "@/components/ui/card";
+import { Card } from "@b2mash/ui/card";
 import { MiniProgressRing } from "@/components/dashboard/mini-progress-ring";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";
 import type { ProjectHealthMetrics } from "@/lib/dashboard-types";

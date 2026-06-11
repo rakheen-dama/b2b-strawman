@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import { testConnectionAction } from "@/app/(app)/org/[slug]/settings/integrations/actions";
 import type { IntegrationDomain } from "@/lib/types";

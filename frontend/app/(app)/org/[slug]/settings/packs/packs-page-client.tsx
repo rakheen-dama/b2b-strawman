@@ -6,7 +6,7 @@ import { Package } from "lucide-react";
 import { toast } from "sonner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Label } from "@b2mash/ui/label";
 import { EmptyState } from "@/components/empty-state";
 import { PackCard } from "@/components/settings/pack-card";
 import type { PackCatalogEntry, UninstallCheck } from "@/lib/api/packs";

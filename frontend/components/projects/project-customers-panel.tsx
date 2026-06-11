@@ -2,9 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { Plus, Users, X } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { LinkCustomerDialog } from "@/components/projects/link-customer-dialog";
 import { unlinkCustomerFromProject } from "@/app/(app)/org/[slug]/projects/[id]/actions";
 import { formatDate } from "@/lib/format";

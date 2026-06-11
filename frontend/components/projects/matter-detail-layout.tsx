@@ -3,7 +3,7 @@
 import { type ReactNode, useState } from "react";
 import { PanelLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { SidebarCollapseToggle } from "@/components/projects/sidebar-collapse-toggle";
 

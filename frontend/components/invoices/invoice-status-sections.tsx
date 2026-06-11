@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Copy, Check, RefreshCw } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import { PaymentEventHistory } from "@/components/invoices/PaymentEventHistory";

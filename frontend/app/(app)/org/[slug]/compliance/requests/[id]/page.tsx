@@ -1,7 +1,7 @@
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getDataRequest } from "@/lib/compliance-api";
 import { handleApiError } from "@/lib/api";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { DataRequestTimeline } from "@/components/compliance/DataRequestTimeline";
 import { DataRequestActions } from "@/components/compliance/DataRequestActions";
 import { STATUS_CONFIG } from "@/components/compliance/DataRequestTable";

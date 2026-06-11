@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FileSignature, Loader2, AlertCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { PortalApiError, clearPortalAuth } from "@/lib/portal-api";
 import { listPortalProposals } from "@/lib/api/portal-proposals";

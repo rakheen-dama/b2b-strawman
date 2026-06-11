@@ -10,9 +10,9 @@ import {
   Users,
   XCircle,
 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { HelpTip } from "@/components/help-tip";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { SubscribeButton } from "@/components/billing/subscribe-button";
 import { CancelConfirmDialog } from "@/components/billing/cancel-confirm-dialog";
 import { PaymentHistory } from "@/components/billing/payment-history";

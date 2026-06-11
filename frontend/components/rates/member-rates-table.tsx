@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { DollarSign, Pencil, Plus, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import {
   Table,
   TableBody,

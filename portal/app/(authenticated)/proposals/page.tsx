@@ -6,7 +6,7 @@ import { FileText } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { ProposalStatusBadge } from "@/components/proposal-status-badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import { useTerminology } from "@/lib/terminology";
 import type { PortalProposal } from "@/lib/types";
 

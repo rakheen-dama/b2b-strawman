@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { Clock, Pencil, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { docsLink } from "@/lib/docs";
 import {

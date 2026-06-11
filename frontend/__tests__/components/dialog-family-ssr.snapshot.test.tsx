@@ -50,7 +50,7 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }),
 }));
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { EditCustomerDialog } from "@/components/customers/edit-customer-dialog";
 import { DeleteCommentDialog } from "@/components/comments/delete-comment-dialog";
 import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";

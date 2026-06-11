@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { Sparkles } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { RequiresCapability, CAPABILITIES } from "@/lib/capabilities";
 import { startSession, type SessionHandle, type ContextRef } from "@/lib/api/assistant-specialists";
 import { SPECIALIST_STRINGS } from "@/components/assistant/specialist-strings";

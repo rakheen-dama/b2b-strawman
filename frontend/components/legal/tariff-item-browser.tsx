@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback, useTransition } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@b2mash/ui/badge";
+import { Input } from "@b2mash/ui/input";
 import { Search, ChevronRight, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fetchTariffItems } from "@/app/(app)/org/[slug]/legal/tariffs/actions";

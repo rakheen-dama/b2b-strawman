@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Bell } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { NotificationDropdown } from "@/components/notifications/notification-dropdown";
 import { useNotificationPolling } from "@/hooks/use-notification-polling";
 import { cn } from "@/lib/utils";

@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { ArrowUp, ArrowDown, Plus, ArrowRight, ChevronDown, ChevronRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getTemplateClauses } from "@/lib/actions/template-clause-actions";
 import type { TemplateClauseDetail } from "@/lib/actions/template-clause-actions";

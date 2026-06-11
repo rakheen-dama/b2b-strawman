@@ -10,7 +10,7 @@ import {
   FileSignature,
   User,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { clearPortalAuth, getPortalCustomerName } from "@/lib/portal-api";
 import { cn } from "@/lib/utils";
 import Link from "next/link";

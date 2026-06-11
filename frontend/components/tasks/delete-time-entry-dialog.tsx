@@ -11,7 +11,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { deleteTimeEntry } from "@/app/(app)/org/[slug]/projects/[id]/time-entry-actions";
 import { AlertTriangle } from "lucide-react";
 

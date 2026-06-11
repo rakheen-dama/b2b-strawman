@@ -1,7 +1,7 @@
 "use client";
 
 import { Mail } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { useState, useEffect } from "react";
 import { formatDate } from "@/lib/format";

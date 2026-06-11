@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { Check, X, Pencil } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { cn } from "@/lib/utils";
 import { SPECIALIST_STRINGS } from "@/components/assistant/specialist-strings";
 import { approveInvocation, rejectInvocation } from "@/lib/api/assistant-specialists";

@@ -2,8 +2,8 @@
 
 import { useState, useCallback } from "react";
 import { X, Check, RotateCcw } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@b2mash/ui/button";
+import { Badge } from "@b2mash/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { AI_QUEUE_STRINGS } from "@/lib/constants/ai-queue-strings";

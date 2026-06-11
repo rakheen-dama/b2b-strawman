@@ -4,7 +4,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import { Download, FileText } from "lucide-react";
 import { ModuleGate } from "@/components/module-gate";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import {
   Table,
   TableBody,

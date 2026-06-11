@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { ModuleGate } from "@/components/module-gate";
 import { DisbursementListView } from "@/components/legal/disbursement-list-view";
 import { CreateDisbursementDialog } from "@/components/legal/create-disbursement-dialog";
-import { Input } from "@/components/ui/input";
+import { Input } from "@b2mash/ui/input";
 import { fetchDisbursements } from "./actions";
 import type {
   DisbursementApprovalStatus,

@@ -8,7 +8,7 @@ import {
 } from "@/hooks/use-portal-context";
 import { DeadlineList } from "@/components/deadlines/deadline-list";
 import { DeadlineDetailPanel } from "@/components/deadlines/deadline-detail-panel";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import {
   listDeadlines,
   type PortalDeadline,

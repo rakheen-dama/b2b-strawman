@@ -2,9 +2,9 @@
 
 import { useEffect, useState, useMemo } from "react";
 import { ChevronDown, ChevronRight, Search } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
+import { Input } from "@b2mash/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,

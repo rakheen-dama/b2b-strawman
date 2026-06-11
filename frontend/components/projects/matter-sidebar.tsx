@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { AlertTriangle, Calendar } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { ExpandableText } from "@/components/ui/expandable-text";
 import { CustomFieldSection } from "@/components/field-definitions/CustomFieldSection";
 import { FieldGroupSelector } from "@/components/field-definitions/FieldGroupSelector";

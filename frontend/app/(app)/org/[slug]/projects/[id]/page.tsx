@@ -32,7 +32,7 @@ import type {
   SavedViewResponse,
   PaginatedExpenseResponse,
 } from "@/lib/types";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { MatterHeaderCard } from "@/components/projects/matter-header-card";
 import { MatterDetailsTab } from "@/components/projects/matter-details-tab";
 import { MatterFieldsTab } from "@/components/projects/matter-fields-tab";

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@b2mash/ui/card";
+import { Button } from "@b2mash/ui/button";
 import type { EmptyStateProps } from "./types";
 
 export function EmptyState({

@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { Label } from "@b2mash/ui/label";
 import {
   updatePortalDigestCadence,
   updatePortalRetainerMemberDisplay,

@@ -19,11 +19,11 @@ import {
 } from "lucide-react";
 import { portalApi, PortalApiError, clearPortalAuth } from "@/lib/portal-api";
 import { PortalDocumentTable } from "@/components/portal/portal-document-table";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@b2mash/ui/card";
 import { formatDate } from "@/lib/format";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type {
   PortalProject,

@@ -6,11 +6,14 @@
 !pnpm-workspace.yaml
 !package.json
 !pnpm-lock.yaml
+!tsconfig.base.json
 !frontend
 !portal
+!packages
 # Re-deny heavy/generated paths inside the allowed trees
 frontend/node_modules
 portal/node_modules
+packages/*/node_modules
 frontend/.next
 portal/.next
 frontend/test-results

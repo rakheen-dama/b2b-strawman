@@ -11,7 +11,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { AlertTriangle } from "lucide-react";
 import { deleteBillingRate, deleteCostRate } from "@/app/(app)/org/[slug]/settings/rates/actions";
 

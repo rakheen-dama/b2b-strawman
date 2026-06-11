@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { getDeliveryLog } from "@/lib/actions/email";
 import type { EmailDeliveryLogEntry, EmailDeliveryStatus } from "@/lib/api/email";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
+import { Input } from "@b2mash/ui/input";
 import {
   Select,
   SelectContent,

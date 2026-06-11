@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft, ClipboardList, Plus } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { TemplateSourceBadge } from "@/components/information-requests/template-source-badge";
 import { RequestTemplateActions } from "@/components/information-requests/request-template-actions";
 import { listRequestTemplates, type RequestTemplateResponse } from "@/lib/api/information-requests";

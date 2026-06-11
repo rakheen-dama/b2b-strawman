@@ -2,7 +2,7 @@
 
 import useSWR from "swr";
 import { ExternalLink } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { getInvoiceSyncStatusAction } from "@/app/(app)/org/[slug]/settings/integrations/xero/sync-log/actions";
 import { defaultSWROptions } from "@/lib/swr/fetcher";
 

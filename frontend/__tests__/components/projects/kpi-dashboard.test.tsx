@@ -64,7 +64,7 @@ vi.mock("@/components/projects/upcoming-deadlines-tile", () => ({
   ),
 }));
 
-vi.mock("@/components/ui/card", () => ({
+vi.mock("@b2mash/ui/card", () => ({
   Card: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => (
     <div {...props}>{children}</div>
   ),

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { Save, Loader2, Play } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@b2mash/ui/button";
+import { Input } from "@b2mash/ui/input";
 import { Switch } from "@/components/ui/switch";
 import {
   Table,

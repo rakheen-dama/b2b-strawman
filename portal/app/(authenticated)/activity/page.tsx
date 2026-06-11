@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Activity as ActivityIcon } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
 import { formatRelativeDate } from "@/lib/format";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@b2mash/ui/skeleton";
 
 type ActivityTab = "mine" | "firm";
 

@@ -12,7 +12,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { completeProject } from "@/app/(app)/org/[slug]/projects/actions";
 import { useTerminology } from "@/lib/terminology";
 import { Alert, AlertDescription } from "@/components/ui/alert";

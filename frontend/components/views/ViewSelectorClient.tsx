@@ -4,7 +4,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 import { SavedViewSelector } from "./SavedViewSelector";
 import { CreateViewDialog } from "./CreateViewDialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Plus } from "lucide-react";
 import type {
   EntityType,

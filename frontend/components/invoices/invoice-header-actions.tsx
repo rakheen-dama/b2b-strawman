@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { StatusBadge } from "@/components/invoices/status-badge";
 import { Eye } from "lucide-react";
 import { HelpTip } from "@/components/help-tip";

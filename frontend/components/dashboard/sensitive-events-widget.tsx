@@ -5,8 +5,8 @@ import Link from "next/link";
 import { ShieldAlert } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@b2mash/ui/card";
+import { Button } from "@b2mash/ui/button";
 import { RelativeDate } from "@/components/ui/relative-date";
 import { SeverityPill } from "@/components/audit/severity-pill";
 import { CAPABILITIES, RequiresCapability } from "@/lib/capabilities";

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { ArrowUp, ArrowDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Card } from "@/components/ui/card";
+import { Card } from "@b2mash/ui/card";
 import { SparklineChart } from "@/components/dashboard/sparkline-chart";
 
 interface KpiCardProps {

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
+import { Badge } from "@b2mash/ui/badge";
 import { ShieldCheck } from "lucide-react";
 import { formatDate } from "@/lib/format";
 import type { FicaStatus } from "@/lib/types/fica";

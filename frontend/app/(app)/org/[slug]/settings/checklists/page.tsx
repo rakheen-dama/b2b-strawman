@@ -2,8 +2,8 @@ import Link from "next/link";
 import { ChevronLeft, ClipboardCheck, Plus } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
 import { ChecklistTemplateActions } from "@/components/compliance/ChecklistTemplateActions";
 import type { ChecklistTemplateResponse } from "@/lib/types";
 

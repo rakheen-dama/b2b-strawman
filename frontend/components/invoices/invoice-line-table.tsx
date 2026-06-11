@@ -1,8 +1,8 @@
 "use client";
 
 import { Pencil, Trash2, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@b2mash/ui/button";
+import { Badge } from "@b2mash/ui/badge";
 import { formatCurrency } from "@/lib/format";
 import type { InvoiceLineResponse } from "@/lib/types";
 

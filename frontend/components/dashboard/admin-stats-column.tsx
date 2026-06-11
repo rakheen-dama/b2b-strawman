@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Users, ClipboardList, Zap } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { ModuleGate } from "@/components/module-gate";
 import type { AggregatedCompletenessResponse } from "@/lib/types";
 import type { InformationRequestSummary } from "@/lib/api/information-requests";

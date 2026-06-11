@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 
 interface ResponseTypeBadgeProps {
   responseType: "FILE_UPLOAD" | "TEXT_RESPONSE";

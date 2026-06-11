@@ -11,6 +11,8 @@ RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
 # Workspace manifests + root lockfile drive a deterministic, frozen install.
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 COPY portal/package.json ./portal/
+# Workspace dependency @b2mash/ui — its manifest is part of the install graph.
+COPY packages/ui/package.json ./packages/ui/
 
 # Install only the portal package and its dependency closure from the root lockfile.
 RUN pnpm install --frozen-lockfile --filter portal...
@@ -24,10 +26,17 @@ RUN corepack enable && corepack prepare pnpm@10.26.1 --activate
 # Bring in the installed workspace node_modules from the deps stage.
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/portal/node_modules ./portal/node_modules
+# @b2mash/ui's own dependency tree (pnpm may place deps under the package).
+COPY --from=deps /app/packages ./packages
 
 # Workspace manifests (so pnpm resolves the `portal` filter) + portal source.
 COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
+# Shared base tsconfig — portal/tsconfig.json extends ../tsconfig.base.json.
+COPY tsconfig.base.json ./
 COPY portal/ ./portal/
+# @b2mash/ui ships TS source (no build step) — transpilePackages compiles it
+# during the portal build, so its sources must be present.
+COPY packages/ ./packages/
 
 # NEXT_PUBLIC_ vars are inlined at build time. Pass via --build-arg.
 ARG NEXT_PUBLIC_PORTAL_API_URL

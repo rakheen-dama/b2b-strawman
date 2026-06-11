@@ -3,7 +3,7 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { api } from "@/lib/api";
 import { ExpenseList } from "@/components/expenses/expense-list";
 import { LogExpenseDialog } from "@/components/expenses/log-expense-dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Receipt } from "lucide-react";
 import type { PaginatedExpenseResponse, ProjectMember, Task, OrgMember } from "@/lib/types";
 

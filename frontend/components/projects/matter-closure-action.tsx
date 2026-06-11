@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Gavel } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { MatterClosureDialog } from "@/components/legal/matter-closure-dialog";
 import { useCapabilities } from "@/lib/capabilities";
 import { useOrgProfile } from "@/lib/org-profile";

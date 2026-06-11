@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { cn } from "@/lib/utils";
 import type { DataRequestResponse } from "@/lib/types";
 import { formatLocalDate } from "@/lib/format";

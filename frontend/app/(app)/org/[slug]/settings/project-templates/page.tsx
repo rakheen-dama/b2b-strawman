@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ChevronLeft, Plus } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { TemplateList } from "@/components/templates/TemplateList";
 import { TerminologyText } from "@/components/terminology-text";
 import { getProjectTemplates } from "@/lib/api/templates";

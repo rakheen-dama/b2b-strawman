@@ -17,8 +17,8 @@ import {
 import { PortalApiError, clearPortalAuth } from "@/lib/portal-api";
 import { PortalRequestStatusBadge } from "@/components/portal/portal-request-status-badge";
 import { PortalRequestProgressBar } from "@/components/portal/portal-request-progress-bar";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@b2mash/ui/button";
+import { Badge } from "@b2mash/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { ACCEPT_ATTRIBUTE, validateFile } from "@/lib/upload-validation";

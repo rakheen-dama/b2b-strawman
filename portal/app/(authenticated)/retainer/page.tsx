@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { FileText } from "lucide-react";
 import { usePortalContext } from "@/hooks/use-portal-context";
 import { HourBankCard } from "@/components/retainer/hour-bank-card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import {
   listRetainers,
   type PortalRetainerSummary,

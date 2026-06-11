@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import type { FieldValueGridProps, FieldValueProps } from "./types";
 
 function FieldItem({ field }: { field: FieldValueProps }) {

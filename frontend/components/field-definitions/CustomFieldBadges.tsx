@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import type { FieldDefinitionResponse } from "@/lib/types";
 import { formatDate, formatCurrency } from "@/lib/format";
 

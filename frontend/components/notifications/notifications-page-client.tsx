@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { Bell, CheckCheck } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { createMessages } from "@/lib/messages";
 import { NotificationItem } from "@/components/notifications/notification-item";

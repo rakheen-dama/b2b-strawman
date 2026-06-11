@@ -1,5 +1,5 @@
 import { CheckCircle2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import type { AcceptanceStatus } from "@/lib/actions/acceptance-actions";
 
 const STATUS_CONFIG: Record<

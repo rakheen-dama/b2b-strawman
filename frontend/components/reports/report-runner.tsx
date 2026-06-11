@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Download, FileText } from "lucide-react";
 import { ReportParameterForm } from "@/components/reports/report-parameter-form";
 import { ReportResults } from "@/components/reports/report-results";

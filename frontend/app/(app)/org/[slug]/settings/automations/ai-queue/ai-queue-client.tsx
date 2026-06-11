@@ -10,9 +10,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Input } from "@b2mash/ui/input";
+import { Button } from "@b2mash/ui/button";
+import { Label } from "@b2mash/ui/label";
 import { AI_QUEUE_STRINGS } from "@/lib/constants/ai-queue-strings";
 import { QueueRow } from "@/components/assistant/queue/queue-row";
 import { BulkApproveBar } from "@/components/assistant/queue/bulk-approve-bar";

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, AlertCircle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { portalApi, PortalApiError, clearPortalAuth } from "@/lib/portal-api";
 import { PortalDocumentTable } from "@/components/portal/portal-document-table";
 import type { PortalDocument } from "@/lib/types";

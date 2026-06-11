@@ -7,8 +7,8 @@ import { ArrowLeft, CheckCircle, XCircle, Clock } from "lucide-react";
 import { portalGet, portalPost } from "@/lib/api-client";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { ProposalStatusBadge } from "@/components/proposal-status-badge";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
+import { Skeleton } from "@b2mash/ui/skeleton";
+import { Button } from "@b2mash/ui/button";
 import { StickyActionBar } from "@/components/ui/sticky-action-bar";
 import { useTerminology } from "@/lib/terminology";
 import type {

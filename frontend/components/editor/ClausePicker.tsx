@@ -8,10 +8,10 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Input } from "@b2mash/ui/input";
+import { Button } from "@b2mash/ui/button";
+import { Badge } from "@b2mash/ui/badge";
+import { Separator } from "@b2mash/ui/separator";
 import { ChevronDown, ChevronRight, FileText } from "lucide-react";
 import { getClauses, type Clause } from "@/lib/actions/clause-actions";
 import { extractTextFromBody } from "@/lib/tiptap-utils";

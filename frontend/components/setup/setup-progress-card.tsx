@@ -11,9 +11,9 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import type { SetupProgressCardProps, ContextGroup } from "./types";
 
 function ContextGroupRow({ group }: { group: ContextGroup }) {

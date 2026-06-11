@@ -1,7 +1,7 @@
 "use client";
 
 import { Users } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { AvatarCircle } from "@/components/ui/avatar-circle";
 import { EmptyState } from "@/components/empty-state";
 import { useOrgMembers } from "@/lib/auth/client";

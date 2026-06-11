@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { NodeViewWrapper, NodeViewContent, type NodeViewProps } from "@tiptap/react";
 import { GitBranch, Settings2, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { ConditionalBlockConfig } from "../ConditionalBlockConfig";
 
 const OPERATOR_LABELS: Record<string, string> = {

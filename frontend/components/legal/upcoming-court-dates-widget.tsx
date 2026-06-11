@@ -3,9 +3,9 @@
 import Link from "next/link";
 import useSWR from "swr";
 import { Gavel } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@b2mash/ui/card";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
 import { cn } from "@/lib/utils";
 import { fetchUpcoming } from "@/app/(app)/org/[slug]/court-calendar/actions";
 import type { CourtDate } from "@/lib/types";

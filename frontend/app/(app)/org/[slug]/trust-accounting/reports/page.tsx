@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { getOrgSettings } from "@/lib/api/settings";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getReportDefinitions } from "@/lib/api/reports";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
 
 // -- Page -----------------------------------------------------------------
 

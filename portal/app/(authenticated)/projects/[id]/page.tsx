@@ -9,8 +9,8 @@ import { StatusBadge } from "@/components/status-badge";
 import { TaskList } from "@/components/task-list";
 import { DocumentList } from "@/components/document-list";
 import { CommentSection } from "@/components/comment-section";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import { useTerminology } from "@/lib/terminology";
 import type {
   PortalProjectDetail,

@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@b2mash/ui/card";
 import {
   Table,
   TableHeader,
@@ -10,8 +10,8 @@ import {
   TableRow,
   TableCell,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@b2mash/ui/button";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ReportExecutionResponse, ColumnDefinition } from "@/lib/api/reports";
 

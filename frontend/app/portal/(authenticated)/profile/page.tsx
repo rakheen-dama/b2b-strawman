@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { User, Loader2, AlertCircle } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { portalApi, PortalApiError, clearPortalAuth } from "@/lib/portal-api";
 import type { PortalProfile } from "@/lib/types";
 

@@ -2,9 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@b2mash/ui/card";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Label } from "@b2mash/ui/label";
 import { updateModuleSettings, type ModuleStatus } from "@/lib/actions/module-settings";
 
 interface FeaturesSettingsFormProps {

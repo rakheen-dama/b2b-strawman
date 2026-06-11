@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { DeleteTenantDialog } from "@/components/billing/delete-tenant-dialog";
 import { SubscribeButton } from "@/components/billing/subscribe-button";
 import { MethodBadge } from "@/components/billing/method-badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@b2mash/ui/card";
 
 const mockDeleteDemoTenant = vi.fn();
 const mockReseedDemoTenant = vi.fn();

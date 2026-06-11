@@ -6,8 +6,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Download, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@b2mash/ui/button";
+import { Input } from "@b2mash/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,

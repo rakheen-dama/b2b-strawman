@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { AlertTriangle } from "lucide-react";
 import type { VariantProps } from "class-variance-authority";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@b2mash/ui/button";
 import {
   AlertDialog,
   AlertDialogCancel,

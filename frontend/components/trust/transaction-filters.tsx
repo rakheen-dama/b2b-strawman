@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useRef } from "react";
-import { Input } from "@/components/ui/input";
+import { Input } from "@b2mash/ui/input";
 
 interface TransactionFiltersProps {
   slug: string;

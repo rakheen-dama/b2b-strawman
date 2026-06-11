@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarClock } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type {

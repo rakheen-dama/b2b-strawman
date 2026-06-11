@@ -5,7 +5,7 @@ import { FolderOpen } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
 import { useBranding } from "@/hooks/use-branding";
 import { ProjectCard } from "@/components/project-card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import { PendingAcceptancesList } from "@/components/pending-acceptances-list";
 import { cn } from "@/lib/utils";
 import { useTerminology } from "@/lib/terminology";

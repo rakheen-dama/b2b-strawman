@@ -1,4 +1,4 @@
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { Briefcase } from "lucide-react";
 import { CustomerAddressBlock } from "@/components/customers/customer-address-block";
 import { CustomerContactCard } from "@/components/customers/customer-contact-card";

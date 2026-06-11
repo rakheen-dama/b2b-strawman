@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
+import { Input } from "@b2mash/ui/input";
 import { Search } from "lucide-react";
 
 interface SearchInputProps {

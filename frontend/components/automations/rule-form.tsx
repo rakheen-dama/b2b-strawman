@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@b2mash/ui/button";
+import { Input } from "@b2mash/ui/input";
+import { Label } from "@b2mash/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { TriggerConfigForm } from "@/components/automations/trigger-config-form";
 import { ConditionBuilder, type ConditionRow } from "@/components/automations/condition-builder";
 import { ActionList, type ActionRow } from "@/components/automations/action-list";

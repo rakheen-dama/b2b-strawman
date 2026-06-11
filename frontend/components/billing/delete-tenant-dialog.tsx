@@ -12,10 +12,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@b2mash/ui/button";
+import { Input } from "@b2mash/ui/input";
+import { Label } from "@b2mash/ui/label";
+import { Badge } from "@b2mash/ui/badge";
 import { formatDate } from "@/components/billing/utils";
 import { deleteDemoTenant } from "@/app/(app)/platform-admin/demo/actions";
 

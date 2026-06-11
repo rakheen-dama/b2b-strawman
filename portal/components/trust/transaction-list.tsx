@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Receipt } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/format";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import {
   getMatterTransactions,
   type PortalTrustTransactionResponse,

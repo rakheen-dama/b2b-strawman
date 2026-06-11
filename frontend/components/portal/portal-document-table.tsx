@@ -10,7 +10,7 @@ import {
   Download,
   Loader2,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import {
   Table,

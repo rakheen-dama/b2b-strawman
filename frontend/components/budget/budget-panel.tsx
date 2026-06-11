@@ -3,8 +3,8 @@
 import { PiggyBank, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { EmptyState } from "@/components/empty-state";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@b2mash/ui/button";
+import { Badge } from "@b2mash/ui/badge";
 import { BudgetConfigDialog } from "@/components/budget/budget-config-dialog";
 import { DeleteBudgetDialog } from "@/components/budget/delete-budget-dialog";
 import { HelpTip } from "@/components/help-tip";

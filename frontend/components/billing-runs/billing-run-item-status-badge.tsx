@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import type { BillingRunItemStatus } from "@/lib/api/billing-runs";
 
 const STATUS_BADGE: Record<

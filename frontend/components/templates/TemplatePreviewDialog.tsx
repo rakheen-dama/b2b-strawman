@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Check, ChevronsUpDown, Eye } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import {
   Command,
   CommandEmpty,

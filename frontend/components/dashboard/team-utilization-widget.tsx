@@ -1,7 +1,7 @@
 "use client";
 
 import useSWR from "swr";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { KpiCard } from "@/components/dashboard/kpi-card";
 import { useProfile } from "@/lib/hooks/useProfile";
 import { fetchTeamUtilizationTrend } from "@/lib/actions/utilization";

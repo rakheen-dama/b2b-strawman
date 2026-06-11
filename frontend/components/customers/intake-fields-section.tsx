@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { Label } from "@/components/ui/label";
+import { Label } from "@b2mash/ui/label";
 import { InlineFieldEditor, type FieldValue } from "@/components/prerequisite/inline-field-editor";
 import type { IntakeField, IntakeFieldGroup } from "@/components/prerequisite/types";
 

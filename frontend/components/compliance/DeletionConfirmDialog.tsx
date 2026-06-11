@@ -10,8 +10,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@b2mash/ui/button";
+import { Input } from "@b2mash/ui/input";
 import { AlertTriangle } from "lucide-react";
 import { executeDeletion } from "@/app/(app)/org/[slug]/compliance/requests/actions";
 import type { AnonymizationResult } from "@/lib/types";

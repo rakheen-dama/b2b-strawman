@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { Check, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { AI_QUEUE_STRINGS } from "@/lib/constants/ai-queue-strings";
 import { bulkApproveInvocations } from "@/lib/api/assistant-specialists";
 import { cn } from "@/lib/utils";

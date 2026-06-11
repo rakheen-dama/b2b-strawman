@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatCurrency, formatLocalDate } from "@/lib/format";
 import type {

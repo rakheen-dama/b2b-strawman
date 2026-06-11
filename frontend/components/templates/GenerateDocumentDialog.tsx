@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { AlertTriangle, ArrowLeft, CheckCircle2, Download, Save, Send } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import {
   Dialog,
   DialogContent,

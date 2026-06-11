@@ -1,7 +1,7 @@
 "use client";
 
 import { Pencil, Sparkles, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { AvatarCircle } from "@/components/ui/avatar-circle";
 import { EditCommentDialog } from "@/components/comments/edit-comment-dialog";
 import { DeleteCommentDialog } from "@/components/comments/delete-comment-dialog";

@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ChevronDown, ChevronRight, Loader2, Sparkles } from "lucide-react";
 import {

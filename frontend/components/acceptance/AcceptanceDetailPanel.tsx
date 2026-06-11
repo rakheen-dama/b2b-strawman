@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Download, Mail, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { AcceptanceStatusBadge } from "@/components/acceptance/AcceptanceStatusBadge";
 import {
   remindAcceptance,

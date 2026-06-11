@@ -4,7 +4,7 @@ import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { getReportDefinitions } from "@/lib/api/reports";
 import { PermissionDenied } from "@/components/permission-denied";
 import type { ReportListResponse } from "@/lib/api/reports";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
 import { EmptyState } from "@/components/empty-state";
 import { docsLink } from "@/lib/docs";
 

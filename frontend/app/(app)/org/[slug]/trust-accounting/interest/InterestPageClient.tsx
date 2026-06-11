@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { InterestRunWizard } from "@/components/trust/InterestRunWizard";
 import { LpffRateDialog } from "@/components/trust/LpffRateDialog";
 

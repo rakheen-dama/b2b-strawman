@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useCallback, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { DeadlineFilters } from "@/components/deadlines/DeadlineFilters";
 import { DeadlineListView } from "@/components/deadlines/DeadlineListView";
 import { DeadlineCalendarView } from "@/components/deadlines/DeadlineCalendarView";

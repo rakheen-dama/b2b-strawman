@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { X } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Sheet,
@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
+import { Label } from "@b2mash/ui/label";
 import { CAPABILITY_META } from "@/lib/capabilities";
 import {
   assignMemberRole,

@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import type { TriggerType } from "@/lib/api/automations";
 
 const TRIGGER_TYPE_CONFIG: Record<

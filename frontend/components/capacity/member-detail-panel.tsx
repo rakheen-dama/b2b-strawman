@@ -3,9 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import { CalendarDays, Clock, Pencil, Plus, Trash2, X } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@b2mash/ui/button";
+import { Input } from "@b2mash/ui/input";
+import { Label } from "@b2mash/ui/label";
 import {
   Sheet,
   SheetClose,

@@ -3,13 +3,13 @@
 import { Suspense, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@b2mash/ui/card";
 import { publicFetch } from "@/lib/api-client";
 import { storeAuth } from "@/lib/auth";
 

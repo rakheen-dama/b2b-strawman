@@ -2,13 +2,13 @@
 
 import { use, useCallback, useEffect, useState } from "react";
 import { portalFetch, portalGet, portalPost } from "@/lib/api-client";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
+} from "@b2mash/ui/card";
 
 interface RequestItem {
   id: string;

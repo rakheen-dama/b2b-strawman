@@ -2,8 +2,8 @@
 
 import { useCallback, useRef, useState } from "react";
 import { Upload, FileText, CheckCircle2, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import { Button } from "@b2mash/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
 import type { BankStatementResponse } from "@/lib/types";
 
 interface BankStatementUploadProps {

@@ -2,7 +2,7 @@
 
 import { useState, useTransition, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { formatDuration } from "@/lib/format";
 import { fetchMyTimeSummary } from "@/app/(app)/org/[slug]/my-work/actions";
 import type { MyWorkTimeSummary } from "@/lib/types";

@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Check, Loader2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@b2mash/ui/card";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   AlertDialog,

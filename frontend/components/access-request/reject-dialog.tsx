@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { rejectAccessRequest } from "@/app/(app)/platform-admin/access-requests/actions";
 
 interface RejectDialogProps {

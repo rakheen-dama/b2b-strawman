@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { cn } from "@/lib/utils";
 
 const PROJECT_STATUS_COLORS: Record<string, string> = {

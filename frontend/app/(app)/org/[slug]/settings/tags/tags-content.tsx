@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { createMessages } from "@/lib/messages";
 import { TagDialog } from "@/components/tags/TagDialog";

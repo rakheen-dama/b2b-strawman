@@ -1,8 +1,8 @@
 "use client";
 
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from "@b2mash/ui/input";
+import { Label } from "@b2mash/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Select,

@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, XCircle } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import { useTerminology } from "@/lib/terminology";
 import type { PortalInvoiceDetail } from "@/lib/types";
 

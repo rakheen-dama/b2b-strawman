@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ArrowUpDown } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { cn } from "@/lib/utils";
 import type { CalculatedDeadline } from "@/lib/types";
 

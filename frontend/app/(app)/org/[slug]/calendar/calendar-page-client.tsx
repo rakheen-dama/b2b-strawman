@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { cn } from "@/lib/utils";
 import { CalendarMonthView } from "./calendar-month-view";
 import { CalendarListView } from "./calendar-list-view";

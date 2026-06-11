@@ -2,7 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { Download, Upload } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import {
   Dialog,
   DialogContent,

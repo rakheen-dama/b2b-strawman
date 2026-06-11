@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@b2mash/ui/button";
+import { Input } from "@b2mash/ui/input";
+import { Label } from "@b2mash/ui/label";
 import {
   Select,
   SelectContent,

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@b2mash/ui/badge";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { ChevronDown, ChevronRight, AlertTriangle, Shield, Scale } from "lucide-react";
 import type { ContractReviewOutput, ContractReviewFinding } from "@/lib/api/ai";
 

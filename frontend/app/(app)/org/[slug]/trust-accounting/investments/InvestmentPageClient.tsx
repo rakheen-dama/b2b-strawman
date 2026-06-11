@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { PlaceInvestmentDialog } from "@/components/trust/PlaceInvestmentDialog";
 import { RecordInvestmentInterestDialog } from "@/components/trust/RecordInvestmentInterestDialog";
 import { WithdrawInvestmentDialog } from "@/components/trust/WithdrawInvestmentDialog";

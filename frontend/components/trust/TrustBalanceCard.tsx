@@ -4,9 +4,9 @@ import { useCallback, useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 import { ModuleGate } from "@/components/module-gate";
 import { useOrgProfile } from "@/lib/org-profile";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
+import { Button } from "@b2mash/ui/button";
+import { Badge } from "@b2mash/ui/badge";
 import {
   Scale,
   ArrowDownLeft,

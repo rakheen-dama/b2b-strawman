@@ -13,7 +13,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { cancelSubscription } from "@/app/(app)/org/[slug]/settings/billing/actions";
 
 interface CancelConfirmDialogProps {

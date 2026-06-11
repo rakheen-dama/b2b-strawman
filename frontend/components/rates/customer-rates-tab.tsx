@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { AlertTriangle, DollarSign, Pencil, Plus, Trash2 } from "lucide-react";
 import type { VariantProps } from "class-variance-authority";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@b2mash/ui/button";
 import {
   Table,
   TableBody,
@@ -29,8 +29,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from "@b2mash/ui/input";
+import { Label } from "@b2mash/ui/label";
 import { AvatarCircle } from "@/components/ui/avatar-circle";
 import { EmptyState } from "@/components/empty-state";
 import { CurrencySelector } from "@/components/rates/currency-selector";

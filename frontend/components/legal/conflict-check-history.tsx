@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition, useCallback, useEffect, useRef } from "react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { cn } from "@/lib/utils";
 import { ResolveConflictDialog } from "@/components/legal/resolve-conflict-dialog";
 import {

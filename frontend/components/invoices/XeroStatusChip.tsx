@@ -4,8 +4,8 @@ import { useTransition } from "react";
 import useSWR from "swr";
 import { ExternalLink, RefreshCw, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
 import {
   getInvoiceSyncStatusAction,
   retrySyncEntryAction,

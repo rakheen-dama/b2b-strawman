@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Pencil, Receipt, RotateCcw, Trash2, XCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import {
   Table,
@@ -26,7 +26,7 @@ import {
   restoreExpense,
 } from "@/app/(app)/org/[slug]/projects/[id]/expense-actions";
 import type { ExpenseResponse, ExpenseCategory, ExpenseBillingStatus } from "@/lib/types";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 
 type BillingStatusFilter = "all" | "UNBILLED" | "BILLED" | "NON_BILLABLE";
 

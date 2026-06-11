@@ -7,7 +7,7 @@ import { ArrowLeft, Download, FileText } from "lucide-react";
 import { usePortalContext } from "@/hooks/use-portal-context";
 import { BalanceCard } from "@/components/trust/balance-card";
 import { TransactionList } from "@/components/trust/transaction-list";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import { formatDate } from "@/lib/format";
 import {
   getMatterStatementDocuments,

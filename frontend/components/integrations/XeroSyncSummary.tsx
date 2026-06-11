@@ -3,7 +3,7 @@
 import useSWR from "swr";
 import Link from "next/link";
 import { RefreshCw, Activity } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { fetchSyncSummaryAction } from "@/app/(app)/org/[slug]/settings/integrations/xero/sync-log/actions";
 import { formatDate } from "@/lib/format";
 import { defaultSWROptions } from "@/lib/swr/fetcher";

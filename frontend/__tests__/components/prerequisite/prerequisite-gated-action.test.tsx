@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 
 const mockCheckPrerequisitesAction = vi.fn();
 

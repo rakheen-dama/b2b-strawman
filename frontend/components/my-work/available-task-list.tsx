@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, ChevronRight, Inbox, AlertTriangle } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import {
   Table,

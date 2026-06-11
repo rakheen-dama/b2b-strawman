@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { MessageSquare, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { portalPost } from "@/lib/api-client";
 import { formatRelativeDate } from "@/lib/format";
 import type { PortalComment } from "@/lib/types";

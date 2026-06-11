@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatCurrency } from "@/lib/format";
 import { loadPreviewAction } from "@/app/(app)/org/[slug]/invoices/billing-runs/new/billing-run-actions";

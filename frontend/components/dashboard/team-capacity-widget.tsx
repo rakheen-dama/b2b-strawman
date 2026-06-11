@@ -2,10 +2,10 @@
 
 import { useRouter } from "next/navigation";
 import { Users, AlertTriangle } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@b2mash/ui/card";
+import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { MiniProgressRing } from "@/components/dashboard/mini-progress-ring";
 import type { TeamCapacityGrid } from "@/lib/api/capacity";
 

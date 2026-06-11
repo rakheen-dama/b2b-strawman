@@ -10,7 +10,7 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { TriggerTypeBadge } from "@/components/automations/trigger-type-badge";
 import { TemplateGallery } from "@/components/automations/template-gallery";

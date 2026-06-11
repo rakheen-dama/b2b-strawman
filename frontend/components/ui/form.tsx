@@ -12,7 +12,7 @@ import {
 import { Label as LabelPrimitive } from "radix-ui";
 
 import { cn } from "@/lib/utils";
-import { Label } from "@/components/ui/label";
+import { Label } from "@b2mash/ui/label";
 
 const Form = FormProvider;
 

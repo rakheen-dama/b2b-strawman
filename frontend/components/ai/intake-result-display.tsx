@@ -1,8 +1,8 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { FileText } from "lucide-react";
 import type { MatterIntakeOutput } from "@/lib/api/ai";
 

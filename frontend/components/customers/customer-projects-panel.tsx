@@ -2,9 +2,9 @@
 
 import { useState, useTransition } from "react";
 import { AlertTriangle, Calendar, FolderKanban, LayoutTemplate, Plus, X } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { LinkProjectDialog } from "@/components/customers/link-project-dialog";
 import { unlinkProject } from "@/app/(app)/org/[slug]/customers/[id]/actions";
 import { formatDate, formatLocalDate, isOverdue } from "@/lib/format";

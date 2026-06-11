@@ -2,9 +2,9 @@
 
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { CheckCircle2, AlertCircle, Loader2, Clock, FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@b2mash/ui/button";
+import { Input } from "@b2mash/ui/input";
+import { Label } from "@b2mash/ui/label";
 import {
   getAcceptancePageData,
   getAcceptancePdf,

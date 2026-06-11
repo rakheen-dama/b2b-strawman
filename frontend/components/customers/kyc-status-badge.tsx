@@ -1,5 +1,5 @@
 import { ShieldAlert, ShieldCheck } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { formatDate } from "@/lib/format";
 
 export type KycSummaryState = "unverified" | "pending" | "verified";

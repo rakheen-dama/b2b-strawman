@@ -5,7 +5,7 @@ import Link from "next/link";
 import { FileCheck, Clock, ArrowRight } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
 import { formatDate } from "@/lib/format";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import type { PortalPendingAcceptance } from "@/lib/types";
 
 function AcceptanceSkeleton() {

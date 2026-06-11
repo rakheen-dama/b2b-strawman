@@ -10,8 +10,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
 import { ChevronLeft, ChevronRight, Activity } from "lucide-react";
 import type { AiExecutionListItem } from "@/lib/api/ai";
 

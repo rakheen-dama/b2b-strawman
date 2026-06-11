@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 
 const statusVariantMap: Record<string, "success" | "warning" | "destructive" | "neutral"> = {
   ACTIVE: "success",

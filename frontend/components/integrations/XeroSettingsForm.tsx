@@ -5,8 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "sonner";
 import { Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@b2mash/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@b2mash/ui/card";
 import {
   Form,
   FormControl,
@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
+import { Label } from "@b2mash/ui/label";
 import { xeroSettingsSchema } from "@/lib/schemas/xero-settings";
 import { updateXeroSettingsAction } from "@/app/(app)/org/[slug]/settings/integrations/xero/actions";
 import type { XeroSettingsFormData } from "@/lib/schemas/xero-settings";

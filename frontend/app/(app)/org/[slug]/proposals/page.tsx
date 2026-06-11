@@ -10,7 +10,7 @@ import { ProposalSummaryCards } from "@/components/proposals/proposal-summary-ca
 import { ProposalsAttentionList } from "@/components/proposals/proposals-attention-list";
 import { ProposalTable } from "@/components/proposals/proposal-table";
 import { CreateProposalDialog } from "@/components/proposals/create-proposal-dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import type { ProposalSummaryDto } from "@/lib/types/proposal";
 import type { ProposalResponse } from "@/lib/types/proposal";
 import type { Customer } from "@/lib/types";

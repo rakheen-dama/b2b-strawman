@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { Archive, FileText, LayoutTemplate, MoreHorizontal, Pencil, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,

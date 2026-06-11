@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { FileText, FileUp, LayoutTemplate, Plus } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
 import {
   Select,
   SelectContent,

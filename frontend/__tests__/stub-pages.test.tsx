@@ -73,8 +73,8 @@ import { OrgProfileProvider } from "@/lib/org-profile";
 import { TerminologyProvider } from "@/lib/terminology";
 import { ModuleGate } from "@/components/module-gate";
 import { TrustBalanceCard } from "@/components/customers/trust-balance-card";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from "@b2mash/ui/badge";
+import { Card, CardHeader, CardTitle, CardDescription } from "@b2mash/ui/card";
 import { Scale, Gavel } from "lucide-react";
 
 afterEach(() => cleanup());

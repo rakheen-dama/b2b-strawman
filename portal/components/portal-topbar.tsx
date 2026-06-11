@@ -6,7 +6,7 @@ import { DropdownMenu } from "radix-ui";
 import { useAuth } from "@/hooks/use-auth";
 import { useBranding } from "@/hooks/use-portal-context";
 import { isSafeImageUrl } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 
 interface PortalTopbarProps {
   onHamburgerClick: () => void;

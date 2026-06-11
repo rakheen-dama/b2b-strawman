@@ -12,8 +12,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { StatusBadge } from "@/components/billing/status-badge";
 import { MethodBadge } from "@/components/billing/method-badge";

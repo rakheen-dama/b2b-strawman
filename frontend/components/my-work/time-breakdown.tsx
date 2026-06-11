@@ -1,6 +1,6 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
+import { Card } from "@b2mash/ui/card";
 import { DonutChart } from "@/components/dashboard/donut-chart";
 import type { PersonalProjectBreakdown } from "@/lib/dashboard-types";
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { FileText } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { InvoiceGenerationDialog } from "@/components/invoices/invoice-generation-dialog";
 import { TerminologyText } from "@/components/terminology-text";

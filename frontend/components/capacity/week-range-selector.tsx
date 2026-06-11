@@ -4,7 +4,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { getCurrentMonday, formatDate, addWeeks } from "@/lib/date-utils";
 
 interface WeekRangeSelectorProps {

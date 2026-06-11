@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { NodeViewWrapper, type NodeViewProps } from "@tiptap/react";
 import { GripVertical, MoreVertical, ChevronDown, ChevronRight, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,

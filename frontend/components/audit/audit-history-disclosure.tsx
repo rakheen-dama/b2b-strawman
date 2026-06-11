@@ -5,7 +5,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 
 import { AuditTimelineTab, useAuditTabVisible } from "@/components/audit/audit-timeline-tab";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { cn } from "@/lib/utils";
 
 export interface AuditHistoryDisclosureProps {

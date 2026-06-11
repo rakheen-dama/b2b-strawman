@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { FilingStatusDialog } from "@/components/deadlines/FilingStatusDialog";
 import { updateFilingStatus } from "@/app/(app)/org/[slug]/deadlines/actions";
 import { derivePeriodKey } from "@/lib/deadline-utils";

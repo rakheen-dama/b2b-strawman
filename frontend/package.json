@@ -16,6 +16,7 @@
     "test:e2e:legal-depth-ii": "playwright test --config e2e/playwright.legal-depth-ii.config.ts"
   },
   "dependencies": {
+    "@b2mash/ui": "workspace:*",
     "@formatjs/intl-numberformat": "^9.3.3",
     "@hookform/resolvers": "^5.2.2",
     "@tiptap/core": "^3.22.5",

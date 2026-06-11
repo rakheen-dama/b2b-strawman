@@ -6,7 +6,7 @@ import { Download, FileText } from "lucide-react";
 import { portalGet } from "@/lib/api-client";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { InvoiceStatusBadge } from "@/components/invoice-status-badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import { useTerminology } from "@/lib/terminology";
 import type { PortalInvoice, PortalDownload } from "@/lib/types";
 

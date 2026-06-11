@@ -1,10 +1,10 @@
 "use client";
 
 import { BarChart3 } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { EmptyState } from "@/components/empty-state";
 import dynamic from "next/dynamic";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@b2mash/ui/skeleton";
 
 const HorizontalBarChart = dynamic(
   () => import("@/components/dashboard/horizontal-bar-chart").then((mod) => mod.HorizontalBarChart),

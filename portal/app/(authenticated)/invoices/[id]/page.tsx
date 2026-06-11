@@ -9,7 +9,7 @@ import { formatDate } from "@/lib/format";
 import { useBranding } from "@/hooks/use-branding";
 import { InvoiceStatusBadge } from "@/components/invoice-status-badge";
 import { InvoiceLineTable } from "@/components/invoice-line-table";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import { StickyActionBar } from "@/components/ui/sticky-action-bar";
 import { useTerminology } from "@/lib/terminology";
 import type { PortalInvoiceDetail, PortalDownload } from "@/lib/types";

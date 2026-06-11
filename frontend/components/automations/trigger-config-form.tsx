@@ -1,7 +1,7 @@
 "use client";
 
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from "@b2mash/ui/input";
+import { Label } from "@b2mash/ui/label";
 import {
   Select,
   SelectContent,

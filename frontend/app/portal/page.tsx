@@ -3,8 +3,8 @@
 import { Suspense, useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Mail, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@b2mash/ui/button";
+import { Input } from "@b2mash/ui/input";
 import { portalApi, setPortalToken, setPortalCustomerName, PortalApiError } from "@/lib/portal-api";
 import type { MagicLinkResponse, PortalAuthResponse } from "@/lib/types";
 

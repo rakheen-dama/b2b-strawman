@@ -8,16 +8,16 @@ import {
   FileText,
   Loader2,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@b2mash/ui/card";
+import { Input } from "@b2mash/ui/input";
+import { Label } from "@b2mash/ui/label";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import { StickyActionBar } from "@/components/ui/sticky-action-bar";
 import { BRAND_NAME } from "@/lib/brand";
 import { formatDate } from "@/lib/format";

@@ -2,7 +2,7 @@
 
 import { Fragment, useState, useTransition } from "react";
 import { cn } from "@/lib/utils";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import {
   Table,
   TableHeader,

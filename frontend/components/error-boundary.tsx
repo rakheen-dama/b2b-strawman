@@ -3,7 +3,7 @@
 import React, { Component, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { AlertTriangle } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { createMessages } from "@/lib/messages";
 
 // --- ErrorFallback ---

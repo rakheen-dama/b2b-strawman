@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
@@ -11,8 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from "@b2mash/ui/input";
+import { Label } from "@b2mash/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { createRoleAction, updateRoleAction } from "@/app/(app)/org/[slug]/settings/roles/actions";
 import { CAPABILITY_META } from "@/lib/capabilities";

@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { ChevronLeft, Pencil } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import { getChecklistTemplateDetail } from "../queries";
 import type { ChecklistTemplateResponse } from "@/lib/types";
 

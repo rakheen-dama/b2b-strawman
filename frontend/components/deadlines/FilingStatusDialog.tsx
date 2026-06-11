@@ -19,9 +19,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
+import { Input } from "@b2mash/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { updateFilingStatus } from "@/app/(app)/org/[slug]/deadlines/actions";
 import { dialogFormSchema, type DialogFormData } from "@/lib/schemas/deadline";
 import { derivePeriodKey } from "@/lib/deadline-utils";

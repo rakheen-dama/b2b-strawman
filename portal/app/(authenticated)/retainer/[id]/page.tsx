@@ -7,7 +7,7 @@ import { ArrowLeft } from "lucide-react";
 import { usePortalContext } from "@/hooks/use-portal-context";
 import { HourBankCard } from "@/components/retainer/hour-bank-card";
 import { ConsumptionList } from "@/components/retainer/consumption-list";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import {
   listRetainers,
   type PortalRetainerSummary,

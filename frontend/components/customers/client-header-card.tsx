@@ -1,8 +1,8 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
+import { Card } from "@b2mash/ui/card";
 import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBadge";
 import { KycStatusBadge } from "@/components/customers/kyc-status-badge";
 import type { KycSummary } from "@/components/customers/kyc-status-badge";

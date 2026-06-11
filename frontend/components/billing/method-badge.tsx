@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 
 const methodVariantMap: Record<string, "success" | "neutral" | "pro"> = {
   PAYFAST: "success",

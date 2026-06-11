@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@b2mash/ui/button";
+import { Input } from "@b2mash/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import { Label } from "@b2mash/ui/label";
 import { Loader2, X } from "lucide-react";
 import { aiProfileSchema, type AiProfileFormData } from "@/lib/schemas/ai-profile";
 import { updateAiProfileAction } from "@/app/(app)/org/[slug]/settings/ai/actions";

@@ -8,8 +8,8 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@b2mash/ui/button";
+import { Badge } from "@b2mash/ui/badge";
 import { TriggerTypeBadge } from "@/components/automations/trigger-type-badge";
 import { toast } from "sonner";
 import { activateTemplateAction } from "@/app/(app)/org/[slug]/settings/automations/actions";

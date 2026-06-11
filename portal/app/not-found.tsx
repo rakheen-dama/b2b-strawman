@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   CardDescription,
-} from "@/components/ui/card";
+} from "@b2mash/ui/card";
 
 export default function NotFound() {
   return (

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
+import { Badge } from "@b2mash/ui/badge";
 import { Zap } from "lucide-react";
 import type { AutomationSummary } from "@/lib/api/automations";
 

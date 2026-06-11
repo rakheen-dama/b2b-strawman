@@ -1,4 +1,4 @@
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import type { InvoiceStatus } from "@/lib/types";
 
 const STATUS_BADGE: Record<

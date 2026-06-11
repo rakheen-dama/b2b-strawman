@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { formatFileSize } from "@/lib/format";
 import { CheckCircle2, AlertCircle, Loader2, X, RotateCcw } from "lucide-react";

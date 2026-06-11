@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from "react";
 import type { VariantProps } from "class-variance-authority";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@b2mash/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Label } from "@b2mash/ui/label";
 import { updateComment } from "@/lib/actions/comments";
 import type { Comment } from "@/lib/actions/comments";
 

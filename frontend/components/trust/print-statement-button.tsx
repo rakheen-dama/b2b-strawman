@@ -2,8 +2,8 @@
 
 import { useState } from "react";
 import { FileText } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from "@b2mash/ui/button";
+import { Input } from "@b2mash/ui/input";
 import { generateStatementPdf } from "@/app/(app)/org/[slug]/trust-accounting/client-ledgers/actions";
 
 interface PrintStatementButtonProps {

@@ -1,7 +1,7 @@
 "use client";
 
 import { Clock, CheckCircle2, ArrowRight } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
 import type { KpiResponse, CrossProjectActivityItem } from "@/lib/dashboard-types";
 
 interface MyWeekColumnProps {

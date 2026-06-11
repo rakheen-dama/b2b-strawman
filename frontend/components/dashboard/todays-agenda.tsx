@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { formatDuration } from "@/lib/format";
 import type { MyWorkTaskItem, MyWorkTimeEntryItem } from "@/lib/types";
 import type { PersonalDeadline } from "@/lib/dashboard-types";

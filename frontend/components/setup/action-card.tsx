@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@b2mash/ui/card";
+import { Button } from "@b2mash/ui/button";
 import type { ActionCardProps } from "./types";
 
 export function ActionCard({

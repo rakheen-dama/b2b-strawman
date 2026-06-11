@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 
 interface ExpandableTextProps {
   text: string | null | undefined;

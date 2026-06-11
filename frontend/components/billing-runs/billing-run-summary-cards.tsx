@@ -1,4 +1,4 @@
-import { Card } from "@/components/ui/card";
+import { Card } from "@b2mash/ui/card";
 import { formatCurrency } from "@/lib/format";
 import type { BillingRun } from "@/lib/api/billing-runs";
 

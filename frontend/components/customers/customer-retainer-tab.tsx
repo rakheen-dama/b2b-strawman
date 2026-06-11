@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { FileText } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
+import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { RetainerStatusBadge } from "@/components/retainers/retainer-status-badge";
 import { RetainerProgress } from "@/components/retainers/retainer-progress";

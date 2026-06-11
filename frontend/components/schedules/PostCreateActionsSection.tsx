@@ -2,8 +2,8 @@
 
 import { useState, useCallback } from "react";
 import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Label } from "@b2mash/ui/label";
+import { Input } from "@b2mash/ui/input";
 import {
   Select,
   SelectContent,

@@ -7,8 +7,8 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { fetchClosureLog } from "@/lib/actions/matter-closure";
 import type { ClosureLogEntry } from "@/lib/api/matter-closure";
 import { AuditTimelineTab } from "@/components/audit/audit-timeline-tab";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@b2mash/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { formatDate } from "@/lib/format";
 

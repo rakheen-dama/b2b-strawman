@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { formatDate, formatCurrency } from "@/lib/format";
 import type { PaymentEvent, PaymentEventStatus } from "@/lib/types";
 

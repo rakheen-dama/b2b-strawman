@@ -10,7 +10,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { AlertTriangle } from "lucide-react";
 import { transitionCustomerLifecycle } from "@/app/(app)/org/[slug]/customers/[id]/lifecycle-actions";

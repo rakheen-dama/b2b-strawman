@@ -1,5 +1,5 @@
 import type { Document, DocumentScope, DocumentStatus } from "@/lib/types";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { OrgDocumentUpload } from "@/components/documents/org-document-upload";
 import { formatDate, formatFileSize } from "@/lib/format";
 import { FileText, FileImage, FileSpreadsheet, FileArchive, File } from "lucide-react";

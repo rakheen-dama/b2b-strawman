@@ -13,9 +13,9 @@ import {
   ArrowDownLeft,
 } from "lucide-react";
 import { getOrgSettings } from "@/lib/api/settings";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@b2mash/ui/card";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
 import { AddTrustAccountButton } from "@/components/trust/AddTrustAccountButton";
 import { fetchTrustAccounts, fetchDashboardData } from "./actions";
 import {

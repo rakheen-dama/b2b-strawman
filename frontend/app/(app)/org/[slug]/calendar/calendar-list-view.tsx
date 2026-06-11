@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ClipboardList, FolderOpen } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { cn } from "@/lib/utils";
 import type { CalendarItem } from "./calendar-types";
 import { getStatusVariant, getItemLink, getDueDateColor } from "./calendar-types";

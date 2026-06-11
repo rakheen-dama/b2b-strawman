@@ -18,10 +18,10 @@ import {
   Download,
   RefreshCw,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { HelpTip } from "@/components/help-tip";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@b2mash/ui/input";
+import { Badge } from "@b2mash/ui/badge";
 import { DocumentEditor } from "@/components/editor/DocumentEditor";
 import { TemplatePreviewDialog } from "@/components/templates/TemplatePreviewDialog";
 import {

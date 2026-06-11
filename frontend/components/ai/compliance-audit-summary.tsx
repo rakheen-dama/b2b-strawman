@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@b2mash/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import {
   Table,
   TableBody,

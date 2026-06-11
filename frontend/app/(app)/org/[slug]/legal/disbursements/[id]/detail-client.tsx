@@ -3,8 +3,8 @@
 import { useCallback, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Pencil, Send, Upload } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@b2mash/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
+import { Input } from "@b2mash/ui/input";
 import {
   approvalStatusBadge,
   billingStatusBadge,

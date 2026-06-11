@@ -3,9 +3,9 @@
 import { useState, useCallback } from "react";
 import useSWR from "swr";
 import { Check, X, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@b2mash/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
+import { Badge } from "@b2mash/ui/badge";
 import { AI_QUEUE_STRINGS } from "@/lib/constants/ai-queue-strings";
 import {
   approveInvocation,

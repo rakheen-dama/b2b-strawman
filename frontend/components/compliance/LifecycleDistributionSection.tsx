@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Card } from "@/components/ui/card";
+import { Card } from "@b2mash/ui/card";
 import { Users, UserPlus, UserCheck, Moon, UserX } from "lucide-react";
 import { cn } from "@/lib/utils";
 

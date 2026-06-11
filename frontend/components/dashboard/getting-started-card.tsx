@@ -6,7 +6,7 @@ import { createMessages } from "@/lib/messages";
 import { HelpTip } from "@/components/help-tip";
 import { useOnboardingProgress } from "@/hooks/use-onboarding-progress";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 const { t } = createMessages("getting-started");

@@ -3,7 +3,7 @@ import { ChevronLeft, Users } from "lucide-react";
 import { fetchMyCapabilities } from "@/lib/api/capabilities";
 import { fetchOrgRoles } from "@/lib/api/org-roles";
 import { PermissionDenied } from "@/components/permission-denied";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { CAPABILITIES } from "@/lib/capabilities";
 import { CustomRolesSection } from "@/components/roles/custom-roles-section";
 import { CapabilityReference } from "./capability-reference";

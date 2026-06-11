@@ -19,7 +19,7 @@ import {
 import { ModuleGate } from "@/components/module-gate";
 import { TariffLineDialog } from "@/components/legal/tariff-line-dialog";
 import { AddDisbursementsPicker } from "@/app/(app)/org/[slug]/invoices/[id]/edit/(components)/add-disbursements-picker";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { FileSpreadsheet, Receipt } from "lucide-react";
 import { SpecialistLauncherButton } from "@/components/assistant/specialist-launcher-button";
 import { SPECIALIST_STRINGS } from "@/components/assistant/specialist-strings";

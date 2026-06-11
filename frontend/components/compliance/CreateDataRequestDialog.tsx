@@ -18,9 +18,9 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Label } from "@b2mash/ui/label";
 import { Plus, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {

@@ -11,7 +11,7 @@ import type {
   SavedViewResponse,
   TagResponse,
 } from "@/lib/types";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { CreateCustomerDialog } from "@/components/customers/create-customer-dialog";
 import { CompletenessBadge } from "@/components/customers/completeness-badge";
 import { CustomFieldBadges } from "@/components/field-definitions/CustomFieldBadges";

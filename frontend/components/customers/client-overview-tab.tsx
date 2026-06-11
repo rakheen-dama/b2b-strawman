@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { CheckCircle, Clock, RefreshCw } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
+import { Button } from "@b2mash/ui/button";
 import { SetupProgressCard } from "@/components/setup/setup-progress-card";
 import { TemplateReadinessCard } from "@/components/setup/template-readiness-card";
 import { LifecycleStatusBadge } from "@/components/compliance/LifecycleStatusBadge";

@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import { Badge } from "@b2mash/ui/badge";
+import { Card } from "@b2mash/ui/card";
 import { TerminologyText } from "@/components/terminology-text";
 import { PROJECT_STATUS_BADGE } from "@/lib/constants/project-status";
 import { ProjectLifecycleActions } from "@/components/projects/project-lifecycle-actions";

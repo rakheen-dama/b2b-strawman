@@ -5,9 +5,9 @@ import { useRouter } from "next/navigation";
 
 import { HeartPulse, ArrowUp, ArrowDown } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { EmptyState } from "@/components/empty-state";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@b2mash/ui/card";
 import { useTerminology } from "@/lib/terminology";
 import { HealthBadge } from "@/components/dashboard/health-badge";
 import { CompletionProgressBar } from "@/components/dashboard/completion-progress-bar";

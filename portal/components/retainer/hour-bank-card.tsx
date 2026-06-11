@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { AlertTriangle, Calendar, FileText } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import {

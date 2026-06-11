@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardHeader, CardTitle, CardContent } from "@b2mash/ui/card";
+import { Button } from "@b2mash/ui/button";
+import { Badge } from "@b2mash/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Loader2, Sparkles } from "lucide-react";
 import { FicaResultDisplay } from "@/components/ai/fica-result-display";

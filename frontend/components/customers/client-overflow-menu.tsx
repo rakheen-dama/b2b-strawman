@@ -12,7 +12,7 @@ import {
   ShieldAlert,
   Sparkles,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,

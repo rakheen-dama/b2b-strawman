@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 
 export interface InboxSummaryPreviewProps {
   invocationId: string;

@@ -16,7 +16,7 @@ import type {
   OrgMember,
   Customer,
 } from "@/lib/types";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { BudgetStatusDot } from "@/components/projects/budget-status-dot";
 import { CreateProjectDialog } from "@/components/projects/create-project-dialog";
 import { NewFromTemplateWrapper } from "@/components/templates/NewFromTemplateWrapper";

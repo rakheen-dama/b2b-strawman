@@ -2,9 +2,9 @@
 
 import { useState, useMemo, useTransition, useCallback, useEffect, useRef } from "react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
+import { Input } from "@b2mash/ui/input";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { CourtDateListView } from "@/components/legal/court-date-list-view";

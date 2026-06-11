@@ -2,8 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { Users, AlertTriangle } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@b2mash/ui/card";
+import { Button } from "@b2mash/ui/button";
 import type { AggregatedCompletenessResponse } from "@/lib/types";
 
 interface IncompleteProfilesWidgetProps {

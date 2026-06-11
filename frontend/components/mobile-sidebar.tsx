@@ -7,7 +7,7 @@ import Image from "next/image";
 import { Menu, Shield } from "lucide-react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import {
   Sheet,
   SheetContent,

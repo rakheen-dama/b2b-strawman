@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { ConfigureStep } from "./configure-step";
 import { CustomerSelectionStep } from "./customer-selection-step";
 import { CherryPickStep } from "./cherry-pick-step";

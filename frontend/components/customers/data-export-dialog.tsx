@@ -10,7 +10,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { triggerDataExport } from "@/app/(app)/org/[slug]/customers/[id]/data-protection-actions";
 import type { StandaloneExportResult } from "@/lib/types/data-protection";
 import { Download, Loader2, FileDown } from "lucide-react";

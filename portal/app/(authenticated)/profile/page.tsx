@@ -10,9 +10,9 @@ import {
   CardHeader,
   CardTitle,
   CardContent,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+} from "@b2mash/ui/card";
+import { Badge } from "@b2mash/ui/badge";
+import { Skeleton } from "@b2mash/ui/skeleton";
 import type { PortalProfile } from "@/lib/types";
 
 function ProfileSkeleton() {

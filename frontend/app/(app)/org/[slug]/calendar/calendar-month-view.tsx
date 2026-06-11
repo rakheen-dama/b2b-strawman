@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, ClipboardList, FolderOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@b2mash/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@b2mash/ui/badge";
 import { cn } from "@/lib/utils";
 import type { CalendarItem } from "./calendar-types";
 import { getStatusVariant, getItemLink, getDueDateColor } from "./calendar-types";

@@ -1,5 +1,5 @@
 import { FileText, Clock, CheckCircle, TrendingUp } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@b2mash/ui/card";
 import { TerminologyText } from "@/components/terminology-text";
 import { cn } from "@/lib/utils";
 import type { ProposalSummaryDto } from "@/lib/types/proposal";

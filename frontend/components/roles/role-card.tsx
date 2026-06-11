@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Badge } from "@b2mash/ui/badge";
+import { Button } from "@b2mash/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import type { OrgRole } from "@/lib/api/org-roles";
 

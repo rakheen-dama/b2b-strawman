@@ -151,6 +151,13 @@ public ResponseEntity<byte[]> exportPdf(@PathVariable String slug, @RequestParam
 
 **⚠️ Known violations:** Several existing controllers (PortalAuthController, ReportingController, DataRequestController, RetainerAgreementController, MockPaymentController) predate this rule enforcement. Do NOT use them as reference patterns. All new controllers must follow this discipline. `MockPaymentController` is a **permanent, justified** ArchUnit exemption (dev/test-only PSP harness, `@Profile`-gated, never reachable in prod — see `LayerDependencyRulesTest`). `PortalBrandingController` was fixed 2026-06-11 (repository access moved into `PortalBrandingService`) and `PortalDigestInternalController` never actually injected a repository, so both were removed from the rule's exclusion list and now enforce. Repo-injection cleanup tracked in `documentation/tech-debt.md` TD-009 (closed out 2026-06-11).
 
+## OrgSettings Entity (post Wave 3.3 refactor, PRs #1433–#1435)
+
+- `OrgSettings` = entity spine (identity, currency, timestamps, vertical profile, module flags) + 10 `@Embeddable` groups — access via `settings.getBranding()/getPortal()/getTax()/getBilling()/getCapacity()/getExpense()/getTimeReminder()/getDataProtection()/getDataRequest()/getPackStatus()`. Group getters lazy-init and never return null.
+- The `org_settings` table shape is pinned by `OrgSettingsSchemaSnapshotTest` (column name, type, varchar length, numeric precision/scale, nullability). NEVER edit `EXPECTED_SNAPSHOT` to make a failing change pass — a failure means an `@AttributeOverride` drifted; fix the override. Intentional schema changes require an authorized Flyway migration plus a deliberate pin update.
+- `updatedAt` refreshes via the entity's `@PreUpdate` callback on any dirty flush — do not add per-setter timestamp bumps.
+- An all-null embedded group reloads as a NULL reference (Hibernate) — guarded by `OrgSettingsEmbeddableNullReloadTest`; if you add a group whose columns are all nullable, extend that test.
+
 ## Multitenancy
 
 Schema-per-tenant isolation within a single Postgres database. Every tenant — regardless of billing tier — gets a dedicated `tenant_<hash>` schema. There is no shared schema.

@@ -35,6 +35,12 @@ export async function updateTimeTrackingSettings(
       timeReminderTime: data.timeReminderTime,
       timeReminderMinMinutes: Math.round(data.timeReminderMinHours * 60),
     });
+
+    // Expense markup lives on its own sub-resource. An explicit null clears the value
+    // (the form lets the operator empty the markup input).
+    await api.patch("/api/settings/expense", {
+      defaultExpenseMarkupPercent: data.defaultExpenseMarkupPercent ?? null,
+    });
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 403) {

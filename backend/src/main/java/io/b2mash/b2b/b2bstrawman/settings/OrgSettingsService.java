@@ -795,6 +795,12 @@ public class OrgSettingsService {
       ActorContext actor) {
     requireAdminOrOwner(actor.orgRole());
 
+    if (billingBatchAsyncThreshold == null
+        && billingEmailRateLimit == null
+        && defaultBillingRunCurrency == null) {
+      return getSettingsWithBranding();
+    }
+
     var settings =
         orgSettingsRepository
             .findForCurrentTenant()

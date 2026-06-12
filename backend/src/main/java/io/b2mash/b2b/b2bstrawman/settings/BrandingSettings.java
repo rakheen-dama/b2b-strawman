@@ -13,10 +13,9 @@ import jakarta.persistence.Embeddable;
  * UNCHANGED from when these fields lived directly on the entity (zero schema change — see {@code
  * OrgSettingsSchemaSnapshotTest}).
  *
- * <p>Setters here intentionally do NOT bump {@code OrgSettings.updatedAt}; the embeddable has no
- * reference to the owning entity's timestamp. Hibernate dirty-checks the embedded columns and
- * persists changes regardless. Callers that need an explicit {@code updatedAt} bump should mutate
- * through an {@code OrgSettings} domain method.
+ * <p>Setters here cannot reach the owning entity's timestamp; {@code OrgSettings.updatedAt} is
+ * refreshed uniformly by the entity's {@code @PreUpdate} callback on every dirty flush, preserving
+ * the pre-refactor contract where every mutator bumped it.
  */
 @Embeddable
 public class BrandingSettings {

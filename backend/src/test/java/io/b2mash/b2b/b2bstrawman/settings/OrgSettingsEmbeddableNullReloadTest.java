@@ -10,6 +10,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.sql.Connection;
 import java.sql.Statement;
+import java.time.Instant;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.sql.DataSource;
@@ -117,6 +118,39 @@ class OrgSettingsEmbeddableNullReloadTest {
                   })
               .doesNotThrowAnyException();
         });
+  }
+
+  /**
+   * Pins the restored {@code updatedAt} contract: before the embeddable refactor every mutator
+   * (including plain branding/portal setters) bumped {@code updatedAt}; the entity-level
+   * {@code @PreUpdate} callback now does this uniformly on any dirty flush, so mutating a field
+   * through an embedded group must still refresh the timestamp.
+   */
+  @Test
+  void updatedAtRefreshesOnEmbeddedGroupMutation() throws Exception {
+    var idRef = new AtomicReference<UUID>();
+    runInTenant(() -> idRef.set(orgSettingsRepository.save(new OrgSettings("EUR")).getId()));
+    UUID id = idRef.get();
+
+    var beforeRef = new AtomicReference<Instant>();
+    runInTenant(
+        () -> beforeRef.set(orgSettingsRepository.findById(id).orElseThrow().getUpdatedAt()));
+
+    // Guard against clock-resolution ties between the constructor stamp and the flush stamp.
+    Thread.sleep(5);
+
+    runInTenant(
+        () -> {
+          var settings = orgSettingsRepository.findById(id).orElseThrow();
+          settings.getBranding().setBrandColor("#123456");
+          orgSettingsRepository.save(settings);
+        });
+
+    runInTenant(
+        () ->
+            assertThat(orgSettingsRepository.findById(id).orElseThrow().getUpdatedAt())
+                .as("updatedAt must refresh when an embedded group field is mutated")
+                .isAfter(beforeRef.get()));
   }
 
   private void runInTenant(Runnable action) {

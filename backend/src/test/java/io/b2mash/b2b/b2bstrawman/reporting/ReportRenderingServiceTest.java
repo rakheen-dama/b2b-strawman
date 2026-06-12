@@ -168,11 +168,12 @@ class ReportRenderingServiceTest {
             () ->
                 transactionTemplate.executeWithoutResult(
                     tx -> {
-                      var settings = orgSettingsRepository.findForCurrentTenant().orElse(null);
-                      if (settings != null) {
-                        settings.getBranding().setDocumentFooterText("Confidential - RRS Test Org");
-                        orgSettingsRepository.save(settings);
-                      }
+                      var settings =
+                          orgSettingsRepository
+                              .findForCurrentTenant()
+                              .orElseGet(() -> orgSettingsRepository.save(new OrgSettings("ZAR")));
+                      settings.getBranding().setDocumentFooterText("Confidential - RRS Test Org");
+                      orgSettingsRepository.save(settings);
                     }));
 
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)

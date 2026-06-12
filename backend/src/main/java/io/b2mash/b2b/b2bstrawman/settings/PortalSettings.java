@@ -22,9 +22,10 @@ import org.hibernate.type.SqlTypes;
  * OrgSettingsSchemaSnapshotTest}). Note {@code portal_notification_doc_types} is NOT NULL (V117
  * JSONB DEFAULT); the constructor seeds the canonical default so fresh entities persist it.
  *
- * <p>Field-level setters here intentionally do NOT bump {@code OrgSettings.updatedAt}. The digest
- * domain mutators ({@link #markDigestSent}/{@link #clearDigestLastSent}) likewise only touch portal
- * state; callers retain the same atomic semantics they had on the entity.
+ * <p>Field-level setters and the digest domain mutators ({@link #markDigestSent}/{@link
+ * #clearDigestLastSent}) cannot reach the owning entity's timestamp; {@code OrgSettings.updatedAt}
+ * is refreshed uniformly by the entity's {@code @PreUpdate} callback on every dirty flush,
+ * preserving the pre-refactor contract where every mutator bumped it.
  */
 @Embeddable
 public class PortalSettings {

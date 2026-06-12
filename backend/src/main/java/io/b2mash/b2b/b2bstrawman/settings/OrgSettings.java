@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
@@ -238,6 +239,18 @@ public class OrgSettings {
   private PortalSettings portal = new PortalSettings();
 
   protected OrgSettings() {}
+
+  /**
+   * Refreshes {@code updatedAt} on every dirty flush. Before the embeddable refactor every mutator
+   * (including the plain branding/portal setters) bumped {@code updatedAt} explicitly; embeddable
+   * setters cannot reach the owning entity's timestamp, so this entity-level callback restores the
+   * contract uniformly — for the embedded groups, the remaining top-level mutators, and any groups
+   * extracted in later waves.
+   */
+  @PreUpdate
+  private void refreshUpdatedAtOnFlush() {
+    this.updatedAt = Instant.now();
+  }
 
   public OrgSettings(String defaultCurrency) {
     this.defaultCurrency = defaultCurrency;

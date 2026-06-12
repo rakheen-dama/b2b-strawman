@@ -24,8 +24,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * Schema snapshot / safety harness for the {@code org_settings} table (Wave 3.3 embeddable
- * refactor). Pins the ENTIRE table shape — every column's name, data type, and nullability — as
- * materialised by Flyway + Hibernate DDL validation against the embedded-Postgres test database.
+ * refactor). Pins the ENTIRE table shape — every column's name, data type (including varchar length
+ * and numeric precision/scale), and nullability — as materialised by Flyway + Hibernate DDL
+ * validation against the embedded-Postgres test database.
  *
  * <p>This test is the refactor's safety net: extracting fields into {@code @Embeddable} groups via
  * {@code @Embedded} + {@code @AttributeOverride} must produce ZERO schema change. If any
@@ -50,8 +51,11 @@ class OrgSettingsSchemaSnapshotTest {
 
   /**
    * Pinned shape of {@code org_settings}: one line per column, sorted by column name, formatted as
-   * {@code <column_name> | <data_type> | <is_nullable>}. Captured against the UNMODIFIED entity
-   * before the embeddable refactor.
+   * {@code <column_name> | <data_type>[(<varchar_length>|<precision,scale>)] | <is_nullable>}.
+   * Captured against the UNMODIFIED entity before the embeddable refactor; varchar lengths and
+   * numeric precision/scale added to the pin so an {@code @AttributeOverride} length/precision
+   * drift cannot pass silently (Hibernate ddl-auto is none here — Flyway owns DDL — so the
+   * information_schema snapshot is the only guard).
    */
   private static final String EXPECTED_SNAPSHOT =
       """
@@ -61,18 +65,18 @@ class OrgSettingsSchemaSnapshotTest {
       automation_pack_status | jsonb | YES
       billing_batch_async_threshold | integer | NO
       billing_email_rate_limit | integer | NO
-      brand_color | character varying | YES
+      brand_color | character varying(7) | YES
       clause_pack_status | jsonb | YES
       compliance_pack_status | jsonb | YES
       created_at | timestamp with time zone | NO
-      data_protection_jurisdiction | character varying | YES
+      data_protection_jurisdiction | character varying(10) | YES
       data_request_deadline_days | integer | YES
-      default_billing_run_currency | character varying | YES
-      default_currency | character varying | NO
-      default_expense_markup_percent | numeric | YES
+      default_billing_run_currency | character varying(3) | YES
+      default_currency | character varying(3) | NO
+      default_expense_markup_percent | numeric(5,2) | YES
       default_request_reminder_days | integer | YES
       default_retention_months | integer | YES
-      default_weekly_capacity_hours | numeric | YES
+      default_weekly_capacity_hours | numeric(5,2) | YES
       digest_last_sent_at | timestamp with time zone | YES
       document_footer_text | text | YES
       document_signing_enabled | boolean | NO
@@ -81,15 +85,15 @@ class OrgSettingsSchemaSnapshotTest {
       field_pack_status | jsonb | YES
       financial_retention_months | integer | YES
       id | uuid | NO
-      information_officer_email | character varying | YES
-      information_officer_name | character varying | YES
+      information_officer_email | character varying(255) | YES
+      information_officer_name | character varying(255) | YES
       legal_matter_retention_years | integer | YES
-      logo_s3_key | character varying | YES
+      logo_s3_key | character varying(500) | YES
       onboarding_dismissed_at | timestamp with time zone | YES
-      portal_digest_cadence | character varying | YES
+      portal_digest_cadence | character varying(12) | YES
       portal_notification_doc_types | jsonb | NO
-      portal_retainer_member_display | character varying | YES
-      project_naming_pattern | character varying | YES
+      portal_retainer_member_display | character varying(20) | YES
+      project_naming_pattern | character varying(500) | YES
       project_template_pack_status | jsonb | YES
       rate_pack_status | jsonb | YES
       report_pack_status | jsonb | YES
@@ -97,17 +101,17 @@ class OrgSettingsSchemaSnapshotTest {
       retention_policy_enabled | boolean | NO
       schedule_pack_status | jsonb | YES
       tax_inclusive | boolean | NO
-      tax_label | character varying | YES
-      tax_registration_label | character varying | YES
-      tax_registration_number | character varying | YES
+      tax_label | character varying(20) | YES
+      tax_registration_label | character varying(30) | YES
+      tax_registration_number | character varying(50) | YES
       template_pack_status | jsonb | YES
-      terminology_namespace | character varying | YES
-      time_reminder_days | character varying | YES
+      terminology_namespace | character varying(100) | YES
+      time_reminder_days | character varying(50) | YES
       time_reminder_enabled | boolean | NO
       time_reminder_min_minutes | integer | YES
       time_reminder_time | time without time zone | YES
       updated_at | timestamp with time zone | NO
-      vertical_profile | character varying | YES
+      vertical_profile | character varying(50) | YES
       """
           .strip();
 
@@ -138,17 +142,26 @@ class OrgSettingsSchemaSnapshotTest {
         Statement stmt = conn.createStatement()) {
       ResultSet rs =
           stmt.executeQuery(
-              "SELECT column_name, data_type, is_nullable "
+              "SELECT column_name, data_type, is_nullable, "
+                  + "character_maximum_length, numeric_precision, numeric_scale "
                   + "FROM information_schema.columns "
                   + "WHERE table_schema = '"
                   + tenantSchema
                   + "' AND table_name = 'org_settings' "
                   + "ORDER BY column_name");
       while (rs.next()) {
+        String dataType = rs.getString("data_type");
+        String detail = "";
+        if ("character varying".equals(dataType)) {
+          detail = "(" + rs.getInt("character_maximum_length") + ")";
+        } else if ("numeric".equals(dataType)) {
+          detail = "(" + rs.getInt("numeric_precision") + "," + rs.getInt("numeric_scale") + ")";
+        }
         lines.add(
             rs.getString("column_name")
                 + " | "
-                + rs.getString("data_type")
+                + dataType
+                + detail
                 + " | "
                 + rs.getString("is_nullable"));
       }

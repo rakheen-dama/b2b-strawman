@@ -143,9 +143,7 @@ public class PortalSettings {
    * absent (i.e. on a fresh entity not yet flushed from the DB).
    */
   public List<String> getPortalNotificationDocTypes() {
-    return portalNotificationDocTypes != null
-        ? List.copyOf(portalNotificationDocTypes)
-        : new ArrayList<>();
+    return portalNotificationDocTypes != null ? List.copyOf(portalNotificationDocTypes) : List.of();
   }
 
   public void setPortalNotificationDocTypes(List<String> portalNotificationDocTypes) {

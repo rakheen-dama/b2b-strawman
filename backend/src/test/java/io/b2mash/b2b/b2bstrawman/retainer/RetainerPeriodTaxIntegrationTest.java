@@ -18,7 +18,6 @@ import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tax.TaxRate;
 import io.b2mash.b2b.b2bstrawman.tax.TaxRateRepository;
 import io.b2mash.b2b.b2bstrawman.testutil.TestCustomerFactory;
-import io.b2mash.b2b.b2bstrawman.testutil.TestIds;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -601,7 +600,7 @@ class RetainerPeriodTaxIntegrationTest {
                   } else {
                     settings = new OrgSettings(currency);
                   }
-                  TestIds.withField(settings, "taxInclusive", taxInclusive);
+                  settings.getTax().setTaxInclusive(taxInclusive);
                   orgSettingsRepository.save(settings);
                 }));
   }

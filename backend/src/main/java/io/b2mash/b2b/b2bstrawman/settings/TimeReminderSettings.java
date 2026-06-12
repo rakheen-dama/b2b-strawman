@@ -7,6 +7,7 @@ import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -103,7 +104,7 @@ public class TimeReminderSettings {
     return Arrays.stream(timeReminderDays.split(","))
         .map(String::trim)
         .filter(s -> !s.isEmpty())
-        .map(s -> DAY_ABBREVIATIONS.get(s.toUpperCase()))
+        .map(s -> DAY_ABBREVIATIONS.get(s.toUpperCase(Locale.ROOT)))
         .filter(Objects::nonNull)
         .collect(Collectors.toCollection(() -> EnumSet.noneOf(DayOfWeek.class)));
   }

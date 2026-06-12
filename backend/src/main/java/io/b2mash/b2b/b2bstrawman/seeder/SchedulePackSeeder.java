@@ -82,16 +82,16 @@ public class SchedulePackSeeder extends AbstractPackSeeder<SchedulePackDefinitio
 
   @Override
   protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
-    if (settings.getSchedulePackStatus() == null) {
+    if (settings.getPackStatus().getSchedulePackStatus() == null) {
       return false;
     }
-    return settings.getSchedulePackStatus().stream()
+    return settings.getPackStatus().getSchedulePackStatus().stream()
         .anyMatch(entry -> packId.equals(entry.get("packId")));
   }
 
   @Override
   protected void recordPackApplication(OrgSettings settings, SchedulePackDefinition pack) {
-    settings.recordSchedulePackApplication(pack.packId(), pack.version());
+    settings.getPackStatus().recordSchedulePackApplication(pack.packId(), pack.version());
   }
 
   private static final Set<String> VALID_FREQUENCIES =

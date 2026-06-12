@@ -70,16 +70,16 @@ public class FieldPackSeeder extends AbstractPackSeeder<FieldPackDefinition> {
 
   @Override
   protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
-    if (settings.getFieldPackStatus() == null) {
+    if (settings.getPackStatus().getFieldPackStatus() == null) {
       return false;
     }
-    return settings.getFieldPackStatus().stream()
+    return settings.getPackStatus().getFieldPackStatus().stream()
         .anyMatch(entry -> packId.equals(entry.get("packId")));
   }
 
   @Override
   protected void recordPackApplication(OrgSettings settings, FieldPackDefinition pack) {
-    settings.recordPackApplication(pack.packId(), pack.version());
+    settings.getPackStatus().recordPackApplication(pack.packId(), pack.version());
   }
 
   @Override

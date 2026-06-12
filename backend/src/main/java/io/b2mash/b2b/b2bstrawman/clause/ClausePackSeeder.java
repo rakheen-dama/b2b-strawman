@@ -69,16 +69,16 @@ public class ClausePackSeeder extends AbstractPackSeeder<ClausePackDefinition> {
 
   @Override
   protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
-    if (settings.getClausePackStatus() == null) {
+    if (settings.getPackStatus().getClausePackStatus() == null) {
       return false;
     }
-    return settings.getClausePackStatus().stream()
+    return settings.getPackStatus().getClausePackStatus().stream()
         .anyMatch(entry -> packId.equals(entry.get("packId")));
   }
 
   @Override
   protected void recordPackApplication(OrgSettings settings, ClausePackDefinition pack) {
-    settings.recordClausePackApplication(pack.packId(), pack.version());
+    settings.getPackStatus().recordClausePackApplication(pack.packId(), pack.version());
   }
 
   @Override

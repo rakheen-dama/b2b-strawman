@@ -181,19 +181,20 @@ class V35MigrationTest {
                   var settings = orgSettingsRepository.findForCurrentTenant();
                   assertThat(settings).isPresent();
                   // report_pack_status already has standard-reports from provisioning seeder
-                  assertThat(settings.get().getReportPackStatus()).isNotNull();
-                  int initialSize = settings.get().getReportPackStatus().size();
-                  assertThat(settings.get().getReportPackStatus())
+                  assertThat(settings.get().getPackStatus().getReportPackStatus()).isNotNull();
+                  int initialSize = settings.get().getPackStatus().getReportPackStatus().size();
+                  assertThat(settings.get().getPackStatus().getReportPackStatus())
                       .anyMatch(entry -> "standard-reports".equals(entry.get("packId")));
 
                   // Record an additional pack application and verify round-trip
-                  settings.get().recordReportPackApplication("custom-reports", 1);
+                  settings.get().getPackStatus().recordReportPackApplication("custom-reports", 1);
                   orgSettingsRepository.saveAndFlush(settings.get());
 
                   var updated = orgSettingsRepository.findForCurrentTenant().orElseThrow();
-                  assertThat(updated.getReportPackStatus()).isNotNull();
-                  assertThat(updated.getReportPackStatus()).hasSize(initialSize + 1);
-                  assertThat(updated.getReportPackStatus())
+                  assertThat(updated.getPackStatus().getReportPackStatus()).isNotNull();
+                  assertThat(updated.getPackStatus().getReportPackStatus())
+                      .hasSize(initialSize + 1);
+                  assertThat(updated.getPackStatus().getReportPackStatus())
                       .anyMatch(entry -> "custom-reports".equals(entry.get("packId")));
                 }));
   }

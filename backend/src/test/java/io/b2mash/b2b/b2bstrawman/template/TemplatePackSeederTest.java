@@ -122,8 +122,8 @@ class TemplatePackSeederTest {
                 tx -> {
                   var settings = orgSettingsRepository.findForCurrentTenant();
                   assertThat(settings).isPresent();
-                  assertThat(settings.get().getTemplatePackStatus()).isNotNull();
-                  assertThat(settings.get().getTemplatePackStatus())
+                  assertThat(settings.get().getPackStatus().getTemplatePackStatus()).isNotNull();
+                  assertThat(settings.get().getPackStatus().getTemplatePackStatus())
                       .anyMatch(entry -> "common".equals(entry.get("packId")));
                 }));
   }

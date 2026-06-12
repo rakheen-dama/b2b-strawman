@@ -129,8 +129,8 @@ class SchedulePackSeederTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
-                  assertThat(settings.getSchedulePackStatus()).isNotNull();
-                  assertThat(settings.getSchedulePackStatus())
+                  assertThat(settings.getPackStatus().getSchedulePackStatus()).isNotNull();
+                  assertThat(settings.getPackStatus().getSchedulePackStatus())
                       .anyMatch(entry -> "schedule-pack-accounting-za".equals(entry.get("packId")));
                 }));
   }

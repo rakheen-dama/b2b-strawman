@@ -379,7 +379,7 @@ class MatterClosureControllerIntegrationTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var settings = orgSettingsService.getOrCreateForCurrentTenant();
-                  settings.setLegalMatterRetentionYears(7);
+                  settings.getDataProtection().setLegalMatterRetentionYears(7);
                   orgSettingsRepository.save(settings);
                 }));
 
@@ -425,7 +425,7 @@ class MatterClosureControllerIntegrationTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var settings = orgSettingsService.getOrCreateForCurrentTenant();
-                  settings.setLegalMatterRetentionYears(5);
+                  settings.getDataProtection().setLegalMatterRetentionYears(5);
                   orgSettingsRepository.save(settings);
                 }));
 
@@ -449,7 +449,7 @@ class MatterClosureControllerIntegrationTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var settings = orgSettingsService.getOrCreateForCurrentTenant();
-                  settings.setLegalMatterRetentionYears(null);
+                  settings.getDataProtection().setLegalMatterRetentionYears(null);
                   orgSettingsRepository.save(settings);
                 }));
 

@@ -116,8 +116,8 @@ class ProjectTemplatePackSeederTest {
                   assertThat(seederTemplates).hasSize(6);
                   // OrgSettings should have the pack recorded
                   var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
-                  assertThat(settings.getProjectTemplatePackStatus()).isNotNull();
-                  assertThat(settings.getProjectTemplatePackStatus())
+                  assertThat(settings.getPackStatus().getProjectTemplatePackStatus()).isNotNull();
+                  assertThat(settings.getPackStatus().getProjectTemplatePackStatus())
                       .anyMatch(entry -> "legal-za-project-templates".equals(entry.get("packId")));
                 }));
   }

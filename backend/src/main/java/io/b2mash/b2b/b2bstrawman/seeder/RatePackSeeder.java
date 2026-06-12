@@ -65,16 +65,16 @@ public class RatePackSeeder extends AbstractPackSeeder<RatePackDefinition> {
 
   @Override
   protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
-    if (settings.getRatePackStatus() == null) {
+    if (settings.getPackStatus().getRatePackStatus() == null) {
       return false;
     }
-    return settings.getRatePackStatus().stream()
+    return settings.getPackStatus().getRatePackStatus().stream()
         .anyMatch(entry -> packId.equals(entry.get("packId")));
   }
 
   @Override
   protected void recordPackApplication(OrgSettings settings, RatePackDefinition pack) {
-    settings.recordRatePackApplication(pack.packId(), pack.version());
+    settings.getPackStatus().recordRatePackApplication(pack.packId(), pack.version());
   }
 
   @Override

@@ -112,8 +112,8 @@ class StandardReportPackSeederTest {
                 tx -> {
                   var settings = orgSettingsRepository.findForCurrentTenant();
                   assertThat(settings).isPresent();
-                  assertThat(settings.get().getReportPackStatus()).isNotNull();
-                  assertThat(settings.get().getReportPackStatus())
+                  assertThat(settings.get().getPackStatus().getReportPackStatus()).isNotNull();
+                  assertThat(settings.get().getPackStatus().getReportPackStatus())
                       .anyMatch(
                           entry ->
                               StandardReportPackSeeder.PACK_ID.equals(entry.get("packId"))

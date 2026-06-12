@@ -75,11 +75,11 @@ public class TimeReminderScheduler {
 
     var orgSettings = orgSettingsOpt.get();
 
-    if (!orgSettings.isTimeReminderEnabled()) {
+    if (!orgSettings.getTimeReminder().isTimeReminderEnabled()) {
       return 0;
     }
 
-    if (!isWithinTimeWindow(orgSettings.getTimeReminderTime())) {
+    if (!isWithinTimeWindow(orgSettings.getTimeReminder().getTimeReminderTime())) {
       return 0;
     }
 
@@ -90,7 +90,7 @@ public class TimeReminderScheduler {
     var today = LocalDate.now(ZoneOffset.UTC);
     DayOfWeek todayDow = today.getDayOfWeek();
 
-    if (!orgSettings.getWorkingDays().contains(todayDow)) {
+    if (!orgSettings.getTimeReminder().getWorkingDays().contains(todayDow)) {
       return 0;
     }
 
@@ -135,8 +135,8 @@ public class TimeReminderScheduler {
               int logged = totalMinutes != null ? totalMinutes : 0;
 
               int threshold =
-                  orgSettings.getTimeReminderMinMinutes() != null
-                      ? orgSettings.getTimeReminderMinMinutes()
+                  orgSettings.getTimeReminder().getTimeReminderMinMinutes() != null
+                      ? orgSettings.getTimeReminder().getTimeReminderMinMinutes()
                       : 240;
 
               return logged < threshold;
@@ -144,8 +144,8 @@ public class TimeReminderScheduler {
 
     if (Boolean.TRUE.equals(shouldNotify)) {
       int threshold =
-          orgSettings.getTimeReminderMinMinutes() != null
-              ? orgSettings.getTimeReminderMinMinutes()
+          orgSettings.getTimeReminder().getTimeReminderMinMinutes() != null
+              ? orgSettings.getTimeReminder().getTimeReminderMinMinutes()
               : 240;
 
       // Build message and create notification in a single transaction

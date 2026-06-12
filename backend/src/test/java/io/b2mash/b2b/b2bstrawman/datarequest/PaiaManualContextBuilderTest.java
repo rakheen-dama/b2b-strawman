@@ -126,7 +126,9 @@ class PaiaManualContextBuilderTest {
 
   private OrgSettings createSettings() {
     var settings = new OrgSettings("ZAR");
-    settings.updateDataProtectionSettings("ZA", true, 36, 60, "Jane Doe", "jane@example.com");
+    settings
+        .getDataProtection()
+        .updateDataProtectionSettings("ZA", true, 36, 60, "Jane Doe", "jane@example.com");
     return settings;
   }
 }

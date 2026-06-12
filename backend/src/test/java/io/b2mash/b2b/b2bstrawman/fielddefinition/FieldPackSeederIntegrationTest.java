@@ -118,19 +118,19 @@ class FieldPackSeederIntegrationTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
-                  assertThat(settings.getFieldPackStatus()).isNotNull();
+                  assertThat(settings.getPackStatus().getFieldPackStatus()).isNotNull();
                   // Post-Epic-462: common-customer and common-invoice packs deleted.
                   // Only common-project and common-task remain.
-                  assertThat(settings.getFieldPackStatus()).hasSize(2);
+                  assertThat(settings.getPackStatus().getFieldPackStatus()).hasSize(2);
 
                   List<String> packIds =
-                      settings.getFieldPackStatus().stream()
+                      settings.getPackStatus().getFieldPackStatus().stream()
                           .map(entry -> (String) entry.get("packId"))
                           .toList();
                   assertThat(packIds).containsExactlyInAnyOrder("common-project", "common-task");
 
                   // Verify each entry has version and appliedAt
-                  for (Map<String, Object> entry : settings.getFieldPackStatus()) {
+                  for (Map<String, Object> entry : settings.getPackStatus().getFieldPackStatus()) {
                     assertThat(entry).containsKey("version");
                     assertThat(entry).containsKey("appliedAt");
                   }
@@ -274,7 +274,7 @@ class FieldPackSeederIntegrationTest {
                 tx -> {
                   var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
                   List<String> packIds =
-                      settings.getFieldPackStatus().stream()
+                      settings.getPackStatus().getFieldPackStatus().stream()
                           .map(entry -> (String) entry.get("packId"))
                           .toList();
                   assertThat(packIds).doesNotContain("common-invoice");

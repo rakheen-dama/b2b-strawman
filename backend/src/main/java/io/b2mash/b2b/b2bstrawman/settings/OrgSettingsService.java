@@ -324,9 +324,9 @@ public class OrgSettingsService {
         logoUrl,
         settings.getBranding().getBrandColor(),
         settings.getBranding().getDocumentFooterText(),
-        settings.getDormancyThresholdDays(),
-        settings.getDataRequestDeadlineDays(),
-        settings.getCompliancePackStatus(),
+        settings.getDataRequest().getDormancyThresholdDays(),
+        settings.getDataRequest().getDataRequestDeadlineDays(),
+        settings.getPackStatus().getCompliancePackStatus(),
         settings.isAccountingEnabled(),
         settings.isAiEnabled(),
         settings.isDocumentSigningEnabled(),
@@ -335,11 +335,13 @@ public class OrgSettingsService {
         settings.getTax().getTaxLabel(),
         settings.getTax().isTaxInclusive(),
         settings.getAcceptanceExpiryDays(),
-        settings.getDefaultRequestReminderDays(),
-        settings.isTimeReminderEnabled(),
-        settings.getTimeReminderDays(),
-        settings.getTimeReminderTime() != null ? settings.getTimeReminderTime().toString() : null,
-        settings.getTimeReminderMinHours(),
+        settings.getDataRequest().getDefaultRequestReminderDays(),
+        settings.getTimeReminder().isTimeReminderEnabled(),
+        settings.getTimeReminder().getTimeReminderDays(),
+        settings.getTimeReminder().getTimeReminderTime() != null
+            ? settings.getTimeReminder().getTimeReminderTime().toString()
+            : null,
+        settings.getTimeReminder().getTimeReminderMinHours(),
         settings.getExpense().getDefaultExpenseMarkupPercent(),
         settings.getCapacity().getDefaultWeeklyCapacityHours() != null
             ? settings.getCapacity().getDefaultWeeklyCapacityHours()
@@ -351,12 +353,12 @@ public class OrgSettingsService {
         settings.getVerticalProfile(),
         settings.getEnabledModules(),
         settings.getTerminologyNamespace(),
-        settings.getDataProtectionJurisdiction(),
-        settings.isRetentionPolicyEnabled(),
-        settings.getDefaultRetentionMonths(),
-        settings.getFinancialRetentionMonths(),
-        settings.getInformationOfficerName(),
-        settings.getInformationOfficerEmail(),
+        settings.getDataProtection().getDataProtectionJurisdiction(),
+        settings.getDataProtection().isRetentionPolicyEnabled(),
+        settings.getDataProtection().getDefaultRetentionMonths(),
+        settings.getDataProtection().getFinancialRetentionMonths(),
+        settings.getDataProtection().getInformationOfficerName(),
+        settings.getDataProtection().getInformationOfficerEmail(),
         settings.getPortal().getEffectivePortalRetainerMemberDisplay().name(),
         settings.getPortal().getEffectivePortalDigestCadence().name());
   }
@@ -390,10 +392,10 @@ public class OrgSettingsService {
 
   /**
    * Returns the raw {@code legal_matter_retention_years} value for the current tenant — without
-   * applying the {@link OrgSettings#DEFAULT_LEGAL_MATTER_RETENTION_YEARS} fallback. Returns {@link
-   * Optional#empty()} when no settings row exists, when the column is null, or when the stored
-   * value is &le; 0 (defensive — the DB CHECK enforces &ge; 1, but legacy rows or future schema
-   * widening shouldn't surface a misleading retention end-date).
+   * applying the {@link DataProtectionSettings#DEFAULT_LEGAL_MATTER_RETENTION_YEARS} fallback.
+   * Returns {@link Optional#empty()} when no settings row exists, when the column is null, or when
+   * the stored value is &le; 0 (defensive — the DB CHECK enforces &ge; 1, but legacy rows or future
+   * schema widening shouldn't surface a misleading retention end-date).
    *
    * <p>Used by the matter detail endpoint (GAP-OBS-Day60-RetentionShape) where a missing/zero value
    * must surface as {@code retentionEndsOn = null} rather than masking a misconfigured tenant with
@@ -403,7 +405,7 @@ public class OrgSettingsService {
   public Optional<Integer> getRawLegalMatterRetentionYears() {
     return orgSettingsRepository
         .findForCurrentTenant()
-        .map(OrgSettings::getLegalMatterRetentionYears)
+        .map(s -> s.getDataProtection().getLegalMatterRetentionYears())
         .filter(years -> years != null && years > 0);
   }
 
@@ -533,11 +535,12 @@ public class OrgSettingsService {
                 });
 
     if (dormancyThresholdDays != null) {
-      settings.setDormancyThresholdDays(dormancyThresholdDays);
+      settings.getDataRequest().setDormancyThresholdDays(dormancyThresholdDays);
     }
     if (dataRequestDeadlineDays != null) {
-      settings.setDataRequestDeadlineDays(dataRequestDeadlineDays);
+      settings.getDataRequest().setDataRequestDeadlineDays(dataRequestDeadlineDays);
     }
+    settings.touchUpdatedAt();
     settings = orgSettingsRepository.save(settings);
 
     log.info(
@@ -709,23 +712,30 @@ public class OrgSettingsService {
     LocalTime timeReminderTime =
         timeReminderTimeStr != null
             ? LocalTime.parse(timeReminderTimeStr)
-            : settings.getTimeReminderTime();
+            : settings.getTimeReminder().getTimeReminderTime();
 
-    settings.updateTimeReminderSettings(
-        timeReminderEnabled != null ? timeReminderEnabled : settings.isTimeReminderEnabled(),
-        timeReminderDays != null ? timeReminderDays : settings.getTimeReminderDays(),
-        timeReminderTime,
-        timeReminderMinMinutes != null
-            ? timeReminderMinMinutes
-            : settings.getTimeReminderMinMinutes());
+    settings
+        .getTimeReminder()
+        .updateTimeReminderSettings(
+            timeReminderEnabled != null
+                ? timeReminderEnabled
+                : settings.getTimeReminder().isTimeReminderEnabled(),
+            timeReminderDays != null
+                ? timeReminderDays
+                : settings.getTimeReminder().getTimeReminderDays(),
+            timeReminderTime,
+            timeReminderMinMinutes != null
+                ? timeReminderMinMinutes
+                : settings.getTimeReminder().getTimeReminderMinMinutes());
+    settings.touchUpdatedAt();
     settings = orgSettingsRepository.save(settings);
 
     log.info(
         "Updated time reminder settings: enabled={}, days={}, time={}, minMinutes={}",
-        settings.isTimeReminderEnabled(),
-        settings.getTimeReminderDays(),
-        settings.getTimeReminderTime(),
-        settings.getTimeReminderMinMinutes());
+        settings.getTimeReminder().isTimeReminderEnabled(),
+        settings.getTimeReminder().getTimeReminderDays(),
+        settings.getTimeReminder().getTimeReminderTime(),
+        settings.getTimeReminder().getTimeReminderMinMinutes());
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -735,9 +745,11 @@ public class OrgSettingsService {
             .details(
                 Map.of(
                     "time_reminder_enabled",
-                    settings.isTimeReminderEnabled(),
+                    settings.getTimeReminder().isTimeReminderEnabled(),
                     "time_reminder_days",
-                    settings.getTimeReminderDays() != null ? settings.getTimeReminderDays() : ""))
+                    settings.getTimeReminder().getTimeReminderDays() != null
+                        ? settings.getTimeReminder().getTimeReminderDays()
+                        : ""))
             .build());
 
     return toSettingsResponse(settings);
@@ -950,13 +962,13 @@ public class OrgSettingsService {
     var settings = getOrCreateForCurrentTenant();
 
     // Capture old jurisdiction before updating
-    String oldJurisdiction = settings.getDataProtectionJurisdiction();
+    String oldJurisdiction = settings.getDataProtection().getDataProtectionJurisdiction();
 
     // Validate financial retention minimum against jurisdiction
     String jurisdiction =
         request.dataProtectionJurisdiction() != null
             ? request.dataProtectionJurisdiction()
-            : settings.getDataProtectionJurisdiction();
+            : settings.getDataProtection().getDataProtectionJurisdiction();
     if (request.financialRetentionMonths() != null) {
       int minMonths = JurisdictionDefaults.getMinFinancialRetentionMonths(jurisdiction);
       if (request.financialRetentionMonths() < minMonths) {
@@ -969,29 +981,32 @@ public class OrgSettingsService {
       }
     }
 
-    settings.updateDataProtectionSettings(
-        request.dataProtectionJurisdiction() != null
-            ? request.dataProtectionJurisdiction()
-            : settings.getDataProtectionJurisdiction(),
-        request.retentionPolicyEnabled() != null
-            ? request.retentionPolicyEnabled()
-            : settings.isRetentionPolicyEnabled(),
-        request.defaultRetentionMonths() != null
-            ? request.defaultRetentionMonths()
-            : settings.getDefaultRetentionMonths(),
-        request.financialRetentionMonths() != null
-            ? request.financialRetentionMonths()
-            : settings.getFinancialRetentionMonths(),
-        request.informationOfficerName() != null
-            ? request.informationOfficerName()
-            : settings.getInformationOfficerName(),
-        request.informationOfficerEmail() != null
-            ? request.informationOfficerEmail()
-            : settings.getInformationOfficerEmail());
+    settings
+        .getDataProtection()
+        .updateDataProtectionSettings(
+            request.dataProtectionJurisdiction() != null
+                ? request.dataProtectionJurisdiction()
+                : settings.getDataProtection().getDataProtectionJurisdiction(),
+            request.retentionPolicyEnabled() != null
+                ? request.retentionPolicyEnabled()
+                : settings.getDataProtection().isRetentionPolicyEnabled(),
+            request.defaultRetentionMonths() != null
+                ? request.defaultRetentionMonths()
+                : settings.getDataProtection().getDefaultRetentionMonths(),
+            request.financialRetentionMonths() != null
+                ? request.financialRetentionMonths()
+                : settings.getDataProtection().getFinancialRetentionMonths(),
+            request.informationOfficerName() != null
+                ? request.informationOfficerName()
+                : settings.getDataProtection().getInformationOfficerName(),
+            request.informationOfficerEmail() != null
+                ? request.informationOfficerEmail()
+                : settings.getDataProtection().getInformationOfficerEmail());
+    settings.touchUpdatedAt();
     settings = orgSettingsRepository.save(settings);
 
     // Seed jurisdiction defaults when jurisdiction is first set
-    String newJurisdiction = settings.getDataProtectionJurisdiction();
+    String newJurisdiction = settings.getDataProtection().getDataProtectionJurisdiction();
     if (oldJurisdiction == null && newJurisdiction != null) {
       retentionService.seedJurisdictionDefaults(newJurisdiction);
       processingActivityService.seedJurisdictionDefaults(newJurisdiction);
@@ -1000,8 +1015,8 @@ public class OrgSettingsService {
 
     log.info(
         "Updated data protection settings: jurisdiction={}, retentionEnabled={}",
-        settings.getDataProtectionJurisdiction(),
-        settings.isRetentionPolicyEnabled());
+        settings.getDataProtection().getDataProtectionJurisdiction(),
+        settings.getDataProtection().isRetentionPolicyEnabled());
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -1011,11 +1026,11 @@ public class OrgSettingsService {
             .details(
                 Map.of(
                     "jurisdiction",
-                    settings.getDataProtectionJurisdiction() != null
-                        ? settings.getDataProtectionJurisdiction()
+                    settings.getDataProtection().getDataProtectionJurisdiction() != null
+                        ? settings.getDataProtection().getDataProtectionJurisdiction()
                         : "",
                     "retention_enabled",
-                    settings.isRetentionPolicyEnabled(),
+                    settings.getDataProtection().isRetentionPolicyEnabled(),
                     "member_id",
                     actor.memberId().toString(),
                     "org_role",
@@ -1126,8 +1141,8 @@ public class OrgSettingsService {
   }
 
   private int resolveDeadlineDays(OrgSettings settings) {
-    Integer tenantOverride = settings.getDataRequestDeadlineDays();
-    String jurisdiction = settings.getDataProtectionJurisdiction();
+    Integer tenantOverride = settings.getDataRequest().getDataRequestDeadlineDays();
+    String jurisdiction = settings.getDataProtection().getDataProtectionJurisdiction();
     if (tenantOverride != null && tenantOverride > 0) {
       return Math.min(tenantOverride, JurisdictionDefaults.getMaxDeadlineDays(jurisdiction));
     }

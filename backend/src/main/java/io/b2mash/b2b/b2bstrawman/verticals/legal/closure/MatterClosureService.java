@@ -293,7 +293,10 @@ public class MatterClosureService {
     //    Idempotent — subsequent closures reuse the same row (UNIQUE on
     //    (record_type, trigger_event)). Best-effort: any failure must not abort the close.
     int retentionYears =
-        orgSettingsService.getOrCreateForCurrentTenant().getEffectiveLegalMatterRetentionYears();
+        orgSettingsService
+            .getOrCreateForCurrentTenant()
+            .getDataProtection()
+            .getEffectiveLegalMatterRetentionYears();
     ensureMatterRetentionPolicy(retentionYears);
 
     // 8. Build intermediate result (letter id is filled in by the outer orchestrator).
@@ -446,7 +449,10 @@ public class MatterClosureService {
           "Cannot reopen matter", "Project has no retention anchor — it was never closed.");
     }
     int retentionYears =
-        orgSettingsService.getOrCreateForCurrentTenant().getEffectiveLegalMatterRetentionYears();
+        orgSettingsService
+            .getOrCreateForCurrentTenant()
+            .getDataProtection()
+            .getEffectiveLegalMatterRetentionYears();
     LocalDate retentionEndsOn =
         anchor.atZone(ZoneOffset.UTC).toLocalDate().plusYears(retentionYears);
     if (LocalDate.now(ZoneOffset.UTC).isAfter(retentionEndsOn)) {

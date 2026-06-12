@@ -45,9 +45,10 @@ public class PaiaManualContextBuilder {
     var orgMap = contextHelper.buildOrgContext();
     context.put("org", orgMap);
     context.put("orgName", orgMap.get("name"));
-    context.put("informationOfficerName", settings.getInformationOfficerName());
-    context.put("informationOfficerEmail", settings.getInformationOfficerEmail());
-    context.put("jurisdiction", settings.getDataProtectionJurisdiction());
+    context.put("informationOfficerName", settings.getDataProtection().getInformationOfficerName());
+    context.put(
+        "informationOfficerEmail", settings.getDataProtection().getInformationOfficerEmail());
+    context.put("jurisdiction", settings.getDataProtection().getDataProtectionJurisdiction());
     context.put("retentionPolicies", retentionPolicyRepository.findByActive(true));
     context.put("processingActivities", processingActivityRepository.findAll());
     context.put("generatedDate", LocalDate.now().toString());

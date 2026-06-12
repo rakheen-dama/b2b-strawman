@@ -67,16 +67,16 @@ public class TemplatePackSeeder extends AbstractPackSeeder<TemplatePackDefinitio
 
   @Override
   protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
-    if (settings.getTemplatePackStatus() == null) {
+    if (settings.getPackStatus().getTemplatePackStatus() == null) {
       return false;
     }
-    return settings.getTemplatePackStatus().stream()
+    return settings.getPackStatus().getTemplatePackStatus().stream()
         .anyMatch(entry -> packId.equals(entry.get("packId")));
   }
 
   @Override
   protected void recordPackApplication(OrgSettings settings, TemplatePackDefinition pack) {
-    settings.recordTemplatePackApplication(pack.packId(), pack.version());
+    settings.getPackStatus().recordTemplatePackApplication(pack.packId(), pack.version());
   }
 
   @Override

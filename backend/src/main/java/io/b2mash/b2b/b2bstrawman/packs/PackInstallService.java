@@ -263,8 +263,10 @@ public class PackInstallService {
     int version = parseVersion(entry.version());
 
     switch (entry.type()) {
-      case DOCUMENT_TEMPLATE -> settings.recordTemplatePackApplication(entry.packId(), version);
-      case AUTOMATION_TEMPLATE -> settings.recordAutomationPackApplication(entry.packId(), version);
+      case DOCUMENT_TEMPLATE ->
+          settings.getPackStatus().recordTemplatePackApplication(entry.packId(), version);
+      case AUTOMATION_TEMPLATE ->
+          settings.getPackStatus().recordAutomationPackApplication(entry.packId(), version);
     }
   }
 
@@ -272,8 +274,8 @@ public class PackInstallService {
     OrgSettings settings = orgSettingsService.getOrCreateForCurrentTenant();
 
     switch (type) {
-      case DOCUMENT_TEMPLATE -> settings.removeTemplatePackEntry(packId);
-      case AUTOMATION_TEMPLATE -> settings.removeAutomationPackEntry(packId);
+      case DOCUMENT_TEMPLATE -> settings.getPackStatus().removeTemplatePackEntry(packId);
+      case AUTOMATION_TEMPLATE -> settings.getPackStatus().removeAutomationPackEntry(packId);
     }
   }
 

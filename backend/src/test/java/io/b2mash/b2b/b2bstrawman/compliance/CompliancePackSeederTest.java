@@ -174,8 +174,8 @@ class CompliancePackSeederTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
-                  assertThat(settings.getCompliancePackStatus()).isNotNull();
-                  assertThat(settings.getCompliancePackStatus()).hasSize(3);
+                  assertThat(settings.getPackStatus().getCompliancePackStatus()).isNotNull();
+                  assertThat(settings.getPackStatus().getCompliancePackStatus()).hasSize(3);
                 }));
   }
 

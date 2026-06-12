@@ -780,7 +780,7 @@ public class AcceptanceService {
                       status ->
                           orgSettingsRepository
                               .findForCurrentTenant()
-                              .map(s -> s.getBrandColor())
+                              .map(s -> s.getBranding().getBrandColor())
                               .orElse(null)));
     } catch (ResourceNotFoundException e) {
       log.debug("No org settings found for brand color: {}", e.getMessage());

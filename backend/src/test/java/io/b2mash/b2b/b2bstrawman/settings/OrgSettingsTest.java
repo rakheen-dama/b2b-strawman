@@ -16,7 +16,7 @@ class OrgSettingsTest {
   @Test
   void defaultPortalNotificationDocTypes_matchesV117CanonicalDefault() {
     var settings = new OrgSettings("USD");
-    assertThat(settings.getPortalNotificationDocTypes())
+    assertThat(settings.getPortal().getPortalNotificationDocTypes())
         .containsExactly("matter-closure-letter", "statement-of-account");
   }
 

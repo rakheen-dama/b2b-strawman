@@ -119,8 +119,10 @@ class MatterClosureEmailIntegrationTest {
                   settings.setEnabledModules(List.of("matter_closure", "disbursements"));
                   // Re-assert default allowlist explicitly — V117 seeds it but a future migration
                   // could change defaults.
-                  settings.setPortalNotificationDocTypes(
-                      List.of("matter-closure-letter", "statement-of-account"));
+                  settings
+                      .getPortal()
+                      .setPortalNotificationDocTypes(
+                          List.of("matter-closure-letter", "statement-of-account"));
                   orgSettingsRepository.save(settings);
 
                   var customer =

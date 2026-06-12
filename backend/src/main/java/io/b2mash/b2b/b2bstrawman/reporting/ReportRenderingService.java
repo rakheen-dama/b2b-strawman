@@ -234,11 +234,17 @@ public class ReportRenderingService {
           "branding",
           Map.of(
               "logoS3Key",
-              settings.getLogoS3Key() != null ? settings.getLogoS3Key() : "",
+              settings.getBranding().getLogoS3Key() != null
+                  ? settings.getBranding().getLogoS3Key()
+                  : "",
               "brandColor",
-              settings.getBrandColor() != null ? settings.getBrandColor() : "#1a1a2e",
+              settings.getBranding().getBrandColor() != null
+                  ? settings.getBranding().getBrandColor()
+                  : "#1a1a2e",
               "footerText",
-              settings.getDocumentFooterText() != null ? settings.getDocumentFooterText() : ""));
+              settings.getBranding().getDocumentFooterText() != null
+                  ? settings.getBranding().getDocumentFooterText()
+                  : ""));
     }
     return context;
   }

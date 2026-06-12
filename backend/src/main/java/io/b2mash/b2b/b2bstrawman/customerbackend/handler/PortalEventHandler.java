@@ -670,7 +670,7 @@ public class PortalEventHandler {
             String orgLogo =
                 orgSettingsRepository
                     .findForCurrentTenant()
-                    .map(settings -> settings.getLogoS3Key())
+                    .map(settings -> settings.getBranding().getLogoS3Key())
                     .orElse(null);
 
             // Load request token from the entity (not on the event)

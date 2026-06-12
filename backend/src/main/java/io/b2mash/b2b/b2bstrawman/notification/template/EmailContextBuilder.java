@@ -69,10 +69,12 @@ public class EmailContextBuilder {
     String footerText = null;
 
     if (settings != null) {
-      orgLogoUrl = generateLogoUrl(settings.getLogoS3Key());
+      orgLogoUrl = generateLogoUrl(settings.getBranding().getLogoS3Key());
       brandColor =
-          settings.getBrandColor() != null ? settings.getBrandColor() : DEFAULT_BRAND_COLOR;
-      footerText = settings.getDocumentFooterText();
+          settings.getBranding().getBrandColor() != null
+              ? settings.getBranding().getBrandColor()
+              : DEFAULT_BRAND_COLOR;
+      footerText = settings.getBranding().getDocumentFooterText();
     }
 
     context.put("orgLogoUrl", orgLogoUrl);

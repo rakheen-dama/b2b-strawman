@@ -73,8 +73,9 @@ public class PortalSessionContextService {
             ? List.of()
             : List.copyOf(settings.getEnabledModules());
     String terminologyKey = resolveTerminologyKey(settings, tenantProfile);
-    String brandColor = settings != null ? settings.getBrandColor() : null;
-    String logoUrl = settings != null ? generateLogoUrl(settings.getLogoS3Key()) : null;
+    String brandColor = settings != null ? settings.getBranding().getBrandColor() : null;
+    String logoUrl =
+        settings != null ? generateLogoUrl(settings.getBranding().getLogoS3Key()) : null;
 
     return new PortalSessionContextDto(
         tenantProfile, enabledModules, terminologyKey, brandColor, org.getName(), logoUrl);

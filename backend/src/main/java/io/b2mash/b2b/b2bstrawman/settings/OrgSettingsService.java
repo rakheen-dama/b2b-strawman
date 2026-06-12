@@ -175,8 +175,8 @@ public class OrgSettingsService {
       settings = new OrgSettings(defaultCurrency);
     }
 
-    settings.setBrandColor(brandColor);
-    settings.setDocumentFooterText(documentFooterText);
+    settings.getBranding().setBrandColor(brandColor);
+    settings.getBranding().setDocumentFooterText(documentFooterText);
 
     // Update integration flags if provided (null = don't change)
     settings.updateIntegrationFlags(
@@ -250,7 +250,7 @@ public class OrgSettingsService {
                     return orgSettingsRepository.save(newSettings);
                   });
 
-      settings.setLogoS3Key(s3Key);
+      settings.getBranding().setLogoS3Key(s3Key);
       settings = orgSettingsRepository.save(settings);
     } catch (RuntimeException e) {
       // DB save failed — clean up the orphaned storage object
@@ -286,10 +286,10 @@ public class OrgSettingsService {
                   return orgSettingsRepository.save(newSettings);
                 });
 
-    String oldKey = settings.getLogoS3Key();
+    String oldKey = settings.getBranding().getLogoS3Key();
     if (oldKey != null) {
       storageService.delete(oldKey);
-      settings.setLogoS3Key(null);
+      settings.getBranding().setLogoS3Key(null);
       settings = orgSettingsRepository.save(settings);
 
       log.info("Deleted logo: {}", oldKey);
@@ -317,13 +317,13 @@ public class OrgSettingsService {
 
   /** Maps an OrgSettings entity to a SettingsResponse DTO including compliance and tax fields. */
   private SettingsResponse toSettingsResponse(OrgSettings settings) {
-    String logoUrl = generateLogoUrl(settings.getLogoS3Key());
+    String logoUrl = generateLogoUrl(settings.getBranding().getLogoS3Key());
     return new SettingsResponse(
         resolveOrgName(),
         settings.getDefaultCurrency(),
         logoUrl,
-        settings.getBrandColor(),
-        settings.getDocumentFooterText(),
+        settings.getBranding().getBrandColor(),
+        settings.getBranding().getDocumentFooterText(),
         settings.getDormancyThresholdDays(),
         settings.getDataRequestDeadlineDays(),
         settings.getCompliancePackStatus(),
@@ -357,8 +357,8 @@ public class OrgSettingsService {
         settings.getFinancialRetentionMonths(),
         settings.getInformationOfficerName(),
         settings.getInformationOfficerEmail(),
-        settings.getEffectivePortalRetainerMemberDisplay().name(),
-        settings.getEffectivePortalDigestCadence().name());
+        settings.getPortal().getEffectivePortalRetainerMemberDisplay().name(),
+        settings.getPortal().getEffectivePortalDigestCadence().name());
   }
 
   /**
@@ -1022,7 +1022,7 @@ public class OrgSettingsService {
   public PortalRetainerMemberDisplay getPortalRetainerMemberDisplay() {
     return orgSettingsRepository
         .findForCurrentTenant()
-        .map(OrgSettings::getEffectivePortalRetainerMemberDisplay)
+        .map(s -> s.getPortal().getEffectivePortalRetainerMemberDisplay())
         .orElse(PortalRetainerMemberDisplay.FIRST_NAME_ROLE);
   }
 
@@ -1041,7 +1041,7 @@ public class OrgSettingsService {
     }
 
     var settings = getOrCreateForCurrentTenant();
-    settings.setPortalRetainerMemberDisplay(mode);
+    settings.getPortal().setPortalRetainerMemberDisplay(mode);
     settings = orgSettingsRepository.save(settings);
 
     log.info("Updated portal retainer member display mode to {}", mode);
@@ -1065,7 +1065,7 @@ public class OrgSettingsService {
   public PortalDigestCadence getPortalDigestCadence() {
     return orgSettingsRepository
         .findForCurrentTenant()
-        .map(OrgSettings::getEffectivePortalDigestCadence)
+        .map(s -> s.getPortal().getEffectivePortalDigestCadence())
         .orElse(PortalDigestCadence.WEEKLY);
   }
 
@@ -1085,7 +1085,7 @@ public class OrgSettingsService {
     }
 
     var settings = getOrCreateForCurrentTenant();
-    settings.setPortalDigestCadence(cadence);
+    settings.getPortal().setPortalDigestCadence(cadence);
     settings = orgSettingsRepository.save(settings);
 
     log.info("Updated portal digest cadence to {}", cadence);

@@ -79,9 +79,9 @@ public class PortalBrandingService {
     String footerText = null;
 
     if (settings != null) {
-      logoUrl = generateLogoUrl(settings.getLogoS3Key());
-      brandColor = settings.getBrandColor();
-      footerText = settings.getDocumentFooterText();
+      logoUrl = generateLogoUrl(settings.getBranding().getLogoS3Key());
+      brandColor = settings.getBranding().getBrandColor();
+      footerText = settings.getBranding().getDocumentFooterText();
     }
 
     return new BrandingResponse(org.getName(), logoUrl, brandColor, footerText);

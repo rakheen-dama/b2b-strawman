@@ -104,8 +104,8 @@ public class AcceptanceCertificateService {
 
     // 8. Resolve brand color
     String brandColor =
-        settings != null && settings.getBrandColor() != null
-            ? settings.getBrandColor()
+        settings != null && settings.getBranding().getBrandColor() != null
+            ? settings.getBranding().getBrandColor()
             : DEFAULT_BRAND_COLOR;
 
     // 9. Build Thymeleaf context
@@ -175,11 +175,13 @@ public class AcceptanceCertificateService {
   }
 
   private String resolveLogoUrl(OrgSettings settings) {
-    if (settings == null || settings.getLogoS3Key() == null) {
+    if (settings == null || settings.getBranding().getLogoS3Key() == null) {
       return null;
     }
     try {
-      return storageService.generateDownloadUrl(settings.getLogoS3Key(), LOGO_URL_EXPIRY).url();
+      return storageService
+          .generateDownloadUrl(settings.getBranding().getLogoS3Key(), LOGO_URL_EXPIRY)
+          .url();
     } catch (RuntimeException e) {
       log.warn("Failed to generate logo URL for certificate: {}", e.getMessage());
       return null;

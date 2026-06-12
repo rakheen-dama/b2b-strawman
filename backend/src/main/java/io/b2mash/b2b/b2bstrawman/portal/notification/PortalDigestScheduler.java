@@ -199,7 +199,9 @@ public class PortalDigestScheduler {
         transactionTemplate.execute(tx -> orgSettingsRepository.findForCurrentTenant());
     OrgSettings settings = settingsOpt == null ? null : settingsOpt.orElse(null);
     PortalDigestCadence cadence =
-        settings != null ? settings.getEffectivePortalDigestCadence() : PortalDigestCadence.WEEKLY;
+        settings != null
+            ? settings.getPortal().getEffectivePortalDigestCadence()
+            : PortalDigestCadence.WEEKLY;
 
     if (cadence == PortalDigestCadence.OFF) {
       log.debug("Skipping tenant {} -- cadence=OFF", RequestScopes.getTenantIdOrNull());
@@ -207,7 +209,7 @@ public class PortalDigestScheduler {
     }
 
     if (cadence == PortalDigestCadence.BIWEEKLY && settings != null) {
-      Instant lastSent = settings.getDigestLastSentAt();
+      Instant lastSent = settings.getPortal().getDigestLastSentAt();
       if (lastSent != null
           && Duration.between(lastSent, Instant.now()).compareTo(BIWEEKLY_SKIP_WINDOW) < 0) {
         log.debug(
@@ -271,7 +273,7 @@ public class PortalDigestScheduler {
                   .findForCurrentTenant()
                   .ifPresent(
                       s -> {
-                        s.markDigestSent(Instant.now());
+                        s.getPortal().markDigestSent(Instant.now());
                         orgSettingsRepository.save(s);
                       }));
     }

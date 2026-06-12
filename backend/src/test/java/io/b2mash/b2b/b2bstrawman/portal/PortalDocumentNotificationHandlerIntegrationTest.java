@@ -86,8 +86,10 @@ class PortalDocumentNotificationHandlerIntegrationTest {
                   // Default allowlist is seeded by Flyway V117. Re-assert it explicitly so the test
                   // tenant is not at the mercy of unrelated migrations.
                   OrgSettings settings = orgSettingsService.getOrCreateForCurrentTenant();
-                  settings.setPortalNotificationDocTypes(
-                      List.of("matter-closure-letter", "statement-of-account"));
+                  settings
+                      .getPortal()
+                      .setPortalNotificationDocTypes(
+                          List.of("matter-closure-letter", "statement-of-account"));
                   orgSettingsRepository.save(settings);
 
                   var customer = createActiveCustomer("L72 Test Client", CONTACT_EMAIL, memberId);
@@ -122,8 +124,10 @@ class PortalDocumentNotificationHandlerIntegrationTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   OrgSettings settings = orgSettingsService.getOrCreateForCurrentTenant();
-                  settings.setPortalNotificationDocTypes(
-                      List.of("matter-closure-letter", "statement-of-account"));
+                  settings
+                      .getPortal()
+                      .setPortalNotificationDocTypes(
+                          List.of("matter-closure-letter", "statement-of-account"));
                   orgSettingsRepository.save(settings);
                 }));
   }
@@ -188,7 +192,7 @@ class PortalDocumentNotificationHandlerIntegrationTest {
             transactionTemplate.executeWithoutResult(
                 tx -> {
                   OrgSettings settings = orgSettingsService.getOrCreateForCurrentTenant();
-                  settings.setPortalNotificationDocTypes(List.of());
+                  settings.getPortal().setPortalNotificationDocTypes(List.of());
                   orgSettingsRepository.save(settings);
                 }));
 

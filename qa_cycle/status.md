@@ -39,9 +39,9 @@ For each day-N walk in this cycle:
 - Payments: mock gateway only — expected per mandate.
 
 ## QA Position
-- **Day**: 2 complete — Day 3 next
-- **Next checkpoint**: Day 3 — Create RAF matter, send FICA info request (3.1, actor Bob, still logged in)
-- **Completed**: Day 0 (32/32 checkpoints PASS + 4/4 summary checkpoints PASS, zero gaps — see `checkpoint-results/day-00.md`); Day 1 (7/7 checkpoints PASS + 3/3 summary checkpoints PASS, zero gaps — see `checkpoint-results/day-01.md`); Day 2 (7/10 PASS, 1 PARTIAL-exempt KYC, 2 SKIPPED-exempt + 2/3 summary PASS, 1 PARTIAL-exempt, zero new gaps — see `checkpoint-results/day-02.md`)
+- **Day**: 3 complete — Day 4 next
+- **Next checkpoint**: Day 4 — Sipho first portal login via magic-link, upload FICA documents (4.1, actor Sipho, fresh portal context on :3002)
+- **Completed**: Day 0 (32/32 checkpoints PASS + 4/4 summary checkpoints PASS, zero gaps — see `checkpoint-results/day-00.md`); Day 1 (7/7 checkpoints PASS + 3/3 summary checkpoints PASS, zero gaps — see `checkpoint-results/day-01.md`); Day 2 (7/10 PASS, 1 PARTIAL-exempt KYC, 2 SKIPPED-exempt + 2/3 summary PASS, 1 PARTIAL-exempt, zero new gaps — see `checkpoint-results/day-02.md`); Day 3 (14/14 PASS + 4/4 summary PASS, zero gaps — see `checkpoint-results/day-03.md`)
 - **Resolved**: none
 - **Open gaps**: none
 - **Fixed (awaiting verify)**: none
@@ -49,6 +49,7 @@ For each day-N walk in this cycle:
 - **Created Day 0**: org `mathebula-partners` (legal-za, tenant_5039f2d497cf); users thandi (Owner) / bob (Admin) / carol (Member) @mathebula-test.local
 - **Created Day 1**: firm branding (logo in S3 `org/tenant_5039f2d497cf/branding/logo.png`, brand colour `#1B3358`); trust account "Mathebula Trust — Main" (Standard Bank · 051001 · 12345678, SECTION_86, Primary, R 0,00)
 - **Created Day 2**: client **Sipho Dlamini** INDIVIDUAL — ID `2211a80a-5523-4a6d-8f96-0d638dff88f6` (`/org/mathebula-partners/customers/2211a80a-5523-4a6d-8f96-0d638dff88f6`); ID/Passport 8501015800088, Preferred Correspondence EMAIL, sipho.portal@example.com, +27 82 555 0101, 12 Loveday St Johannesburg 2001 ZA; lifecycle Prospect/Active; conflict check #1 No Conflict (13/06/2026 01:22:58)
+- **Created Day 3**: matter **Dlamini v Road Accident Fund** — ID `08ad56c4-ff5e-49c2-a034-cb5fa04b462c`, ref RAF-2026-001, RAF template (9 tasks), lead Bob Ndlovu, Work Type Litigation, Court "Gauteng Division, Pretoria", Opposing Party "Road Accident Fund"; info request **REQ-0001** — ID `de3d6962-6018-43bf-852d-d366d1a4d626`, FICA Onboarding Pack (3 items), Sent, due 2026-06-20; magic-link email Mailpit `hhoVkD8UxgQaLsn2dG2oNu` (token `nsJKu6Q0-pI87cRzaViMkltCnxF1hrwoGaPQzusxvFM`)
 
 ## Stack State
 - Dev Stack: **Running** (clean-slate start 2026-06-13)
@@ -77,3 +78,4 @@ For each day-N walk in this cycle:
 | 2 | QA | Day 0 executed: access request + OTP, padmin approval (legal-za auto-assigned, provisioning COMPLETED), Thandi/Bob/Carol KC registrations, team invites — full onboarding flow via browser UI; Mailpit API for OTP/invite links only | 32/32 checkpoints PASS, 0 gaps; Day 1 next |
 | 3 | QA | Day 1 executed as Thandi: logo upload + brand colour #1B3358 (persists across logout/KC re-login, S3-served), LSSA 2024/2025 tariff schedule verified (19 items, 4(a) R 7800/day + 4(c) R 780/hr), Section 86 trust account created (Mathebula Trust — Main, R 0,00) | 7/7 checkpoints PASS + 3/3 summary PASS, 0 gaps; Day 2 next |
 | 4 | QA | Day 2 executed as Bob (context swap, fresh KC login): Sipho Dlamini created as INDIVIDUAL with SA Legal promoted fields (ID 8501015800088, Pref. Correspondence EMAIL), conflict check No Conflict (green, History 1), FICA "Verify with AI" disabled (adapter not configured — exempt). Client ID 2211a80a-5523-4a6d-8f96-0d638dff88f6 | 7/10 PASS + 1 PARTIAL-exempt + 2 SKIPPED-exempt; summary 2/3 PASS + 1 PARTIAL-exempt; 0 new gaps; Day 3 next |
+| 5 | QA | Day 3 executed as Bob (session carried over): RAF matter created from "Litigation (Road Accident Fund -- RAF)" template (Dlamini v Road Accident Fund, RAF-2026-001, 9 tasks, lead Bob), header card + 7-group tab bar verified by testid, promoted fields inline (Court/Case# on Fields only), FICA Onboarding Pack REQ-0001 sent to Sipho (3 items, due 2026-06-20), portal contact ACTIVE-linked, magic-link email in Mailpit. No-Expenses-subtab proven intentional legal-za dedupe (project-tabs.tsx:163-167) | 14/14 PASS + 4/4 summary PASS; 0 new gaps; Day 4 next |

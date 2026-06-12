@@ -749,6 +749,114 @@ class OrgSettingsIntegrationTest {
         .andExpect(status().isBadRequest());
   }
 
+  @Test
+  @Order(28)
+  void patchExpenseSettings_persistsMarkupAndIsReturnedByGet() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/expense")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"defaultExpenseMarkupPercent": 15.50}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.defaultExpenseMarkupPercent").value(15.50));
+
+    mockMvc
+        .perform(get("/api/settings").with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.defaultExpenseMarkupPercent").value(15.50));
+  }
+
+  @Test
+  @Order(29)
+  void patchExpenseSettings_adminCanUpdate() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/expense")
+                .with(TestJwtFactory.adminJwt(ORG_ID, "user_settings_admin"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"defaultExpenseMarkupPercent": 7.25}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.defaultExpenseMarkupPercent").value(7.25));
+  }
+
+  @Test
+  @Order(30)
+  void patchExpenseSettings_nullClearsMarkup() throws Exception {
+    // First set a value...
+    mockMvc
+        .perform(
+            patch("/api/settings/expense")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"defaultExpenseMarkupPercent": 20.00}
+                    """))
+        .andExpect(status().isOk());
+
+    // ...then explicit null clears it (single-field endpoint clears, per Javadoc).
+    mockMvc
+        .perform(
+            patch("/api/settings/expense")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"defaultExpenseMarkupPercent": null}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.defaultExpenseMarkupPercent").doesNotExist());
+  }
+
+  @Test
+  void patchExpenseSettings_memberGetsForbidden() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/expense")
+                .with(TestJwtFactory.memberJwt(ORG_ID, "user_settings_member"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"defaultExpenseMarkupPercent": 10.00}
+                    """))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void patchExpenseSettings_rejectsNegativeMarkup() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/expense")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"defaultExpenseMarkupPercent": -1.00}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
+  void patchExpenseSettings_rejectsMarkupAboveCeiling() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/expense")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"defaultExpenseMarkupPercent": 1000.00}
+                    """))
+        .andExpect(status().isBadRequest());
+  }
+
   // --- Helpers ---
 
 }

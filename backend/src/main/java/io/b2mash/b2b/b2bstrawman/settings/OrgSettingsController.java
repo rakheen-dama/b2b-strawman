@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateAcceptanceSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateBatchBillingSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateCapacitySettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateComplianceSettingsRequest;
+import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateExpenseSettingsRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdatePortalDigestCadenceRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdatePortalRetainerMemberDisplayRequest;
 import io.b2mash.b2b.b2bstrawman.settings.dto.UpdateSettingsRequest;
@@ -113,6 +114,14 @@ public class OrgSettingsController {
             request.timeReminderTime(),
             request.timeReminderMinMinutes(),
             actor));
+  }
+
+  @PatchMapping("/expense")
+  @RequiresCapability("TEAM_OVERSIGHT")
+  public ResponseEntity<SettingsResponse> updateExpenseSettings(
+      @Valid @RequestBody UpdateExpenseSettingsRequest request, ActorContext actor) {
+    return ResponseEntity.ok(
+        orgSettingsService.updateExpenseSettings(request.defaultExpenseMarkupPercent(), actor));
   }
 
   @PatchMapping("/capacity")

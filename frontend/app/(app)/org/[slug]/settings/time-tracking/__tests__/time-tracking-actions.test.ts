@@ -72,6 +72,37 @@ describe("updateTimeTrackingSettings — endpoint wiring", () => {
     expect(mockPut).not.toHaveBeenCalled();
   });
 
+  it("PATCHes /api/settings/expense with the markup value", async () => {
+    const result = await updateTimeTrackingSettings("acme", {
+      timeReminderEnabled: true,
+      timeReminderDays: "MON,TUE,WED,THU,FRI",
+      timeReminderTime: "17:00",
+      timeReminderMinHours: 4.0,
+      defaultExpenseMarkupPercent: 15.5,
+    });
+
+    expect(result.success).toBe(true);
+
+    // The markup value must reach the new expense endpoint, not be dropped.
+    expect(mockPatch).toHaveBeenCalledWith("/api/settings/expense", {
+      defaultExpenseMarkupPercent: 15.5,
+    });
+  });
+
+  it("PATCHes /api/settings/expense with null to clear the markup", async () => {
+    await updateTimeTrackingSettings("acme", {
+      timeReminderEnabled: true,
+      timeReminderDays: "MON",
+      timeReminderTime: "10:00",
+      timeReminderMinHours: 1.0,
+      defaultExpenseMarkupPercent: null,
+    });
+
+    expect(mockPatch).toHaveBeenCalledWith("/api/settings/expense", {
+      defaultExpenseMarkupPercent: null,
+    });
+  });
+
   it("rounds fractional hours to whole minutes", async () => {
     await updateTimeTrackingSettings("acme", {
       timeReminderEnabled: false,

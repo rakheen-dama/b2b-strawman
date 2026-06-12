@@ -640,6 +640,49 @@ public class OrgSettingsService {
     return toSettingsResponse(settings);
   }
 
+  /**
+   * Updates the firm-wide default expense markup percentage. Requires admin or owner role.
+   *
+   * <p>This single-field endpoint treats an explicit {@code null} as a request to CLEAR the markup
+   * (set the column to {@code null}). This diverges from the multi-field sibling endpoints (e.g.
+   * time-reminders) where {@code null} means "keep existing" — the time-tracking form lets the
+   * operator empty the markup input, which must clear the stored value, not no-op.
+   */
+  @Transactional
+  public SettingsResponse updateExpenseSettings(
+      BigDecimal defaultExpenseMarkupPercent, ActorContext actor) {
+    requireAdminOrOwner(actor.orgRole());
+
+    var settings =
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .orElseGet(
+                () -> {
+                  var s = new OrgSettings(DEFAULT_CURRENCY);
+                  return orgSettingsRepository.save(s);
+                });
+
+    settings.setDefaultExpenseMarkupPercent(defaultExpenseMarkupPercent);
+    settings = orgSettingsRepository.save(settings);
+
+    log.info("Updated default expense markup percent to {}", defaultExpenseMarkupPercent);
+
+    auditService.log(
+        AuditEventBuilder.builder()
+            .eventType("org_settings.expense_markup_updated")
+            .entityType("org_settings")
+            .entityId(settings.getId())
+            .details(
+                Map.of(
+                    "default_expense_markup_percent",
+                    defaultExpenseMarkupPercent != null
+                        ? defaultExpenseMarkupPercent.toString()
+                        : ""))
+            .build());
+
+    return toSettingsResponse(settings);
+  }
+
   /** Updates time reminder settings. */
   @Transactional
   public SettingsResponse updateTimeReminderSettings(

@@ -922,7 +922,7 @@ public class InvoiceCreationService {
 
     var orgSettings = orgSettingsRepository.findForCurrentTenant().orElse(null);
     BigDecimal orgMarkup =
-        orgSettings != null ? orgSettings.getDefaultExpenseMarkupPercent() : null;
+        orgSettings != null ? orgSettings.getExpense().getDefaultExpenseMarkupPercent() : null;
     int expSortOrder = sortOrderOffset;
 
     for (UUID expenseId : expenseIds) {

@@ -295,7 +295,7 @@ public class BillingRunGenerationService {
     int rateLimit =
         orgSettingsRepository
             .findForCurrentTenant()
-            .map(s -> s.getBillingEmailRateLimit())
+            .map(s -> s.getBilling().getBillingEmailRateLimit())
             .orElse(5);
 
     var approvedInvoiceIds =

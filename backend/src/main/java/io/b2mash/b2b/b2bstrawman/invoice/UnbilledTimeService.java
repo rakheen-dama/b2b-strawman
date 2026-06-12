@@ -324,7 +324,7 @@ public class UnbilledTimeService {
     var unbilledExpenses = expenseRepository.findUnbilledBillableByCustomerId(customerId);
     // orgSettings already loaded above for currency fallback
     BigDecimal orgMarkup =
-        orgSettings != null ? orgSettings.getDefaultExpenseMarkupPercent() : null;
+        orgSettings != null ? orgSettings.getExpense().getDefaultExpenseMarkupPercent() : null;
 
     Map<UUID, String> expenseProjectNames = new LinkedHashMap<>();
     for (var expense : unbilledExpenses) {

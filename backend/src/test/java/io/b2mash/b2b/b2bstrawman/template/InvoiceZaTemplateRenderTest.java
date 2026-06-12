@@ -80,7 +80,7 @@ class InvoiceZaTemplateRenderTest {
                 tx -> {
                   // Set org tax registration number
                   var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
-                  settings.setTaxRegistrationNumber("4987654321");
+                  settings.getTax().setTaxRegistrationNumber("4987654321");
                   orgSettingsRepository.save(settings);
 
                   // Find the seeded invoice-za template by pack ID + template key

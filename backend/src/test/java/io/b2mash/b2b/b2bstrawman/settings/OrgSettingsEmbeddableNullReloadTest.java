@@ -84,7 +84,13 @@ class OrgSettingsEmbeddableNullReloadTest {
               "UPDATE org_settings SET "
                   + "logo_s3_key = NULL, brand_color = NULL, document_footer_text = NULL, "
                   + "portal_retainer_member_display = NULL, portal_digest_cadence = NULL, "
-                  + "digest_last_sent_at = NULL, portal_notification_doc_types = '[]'::jsonb "
+                  + "digest_last_sent_at = NULL, portal_notification_doc_types = '[]'::jsonb, "
+                  // Expense + Capacity are single-column nullable groups (Wave 3.4) — nulling the
+                  // sole column makes Hibernate materialise a NULL embedded, the genuine NPE risk.
+                  + "default_expense_markup_percent = NULL, default_weekly_capacity_hours = NULL, "
+                  // Billing has a NOT-NULL-defaulted pair, but default_billing_run_currency is
+                  // nullable; null it to exercise the null-safe billing accessor too.
+                  + "default_billing_run_currency = NULL "
                   + "WHERE id = '"
                   + id
                   + "'");
@@ -115,6 +121,27 @@ class OrgSettingsEmbeddableNullReloadTest {
                         .isEqualTo(PortalDigestCadence.WEEKLY);
                     assertThat(reloaded.getPortal().getEffectivePortalRetainerMemberDisplay())
                         .isEqualTo(PortalRetainerMemberDisplay.FIRST_NAME_ROLE);
+
+                    // Wave 3.4 single-column nullable groups: nulling the sole column makes the
+                    // embedded materialise as NULL, so the lazy-fallback getter is the only thing
+                    // keeping this NPE-safe.
+                    assertThat(reloaded.getExpense()).isNotNull();
+                    assertThat(reloaded.getExpense().getDefaultExpenseMarkupPercent()).isNull();
+                    assertThat(reloaded.getCapacity()).isNotNull();
+                    assertThat(reloaded.getCapacity().getDefaultWeeklyCapacityHours()).isNull();
+
+                    // Wave 3.4 billing group: its NOT-NULL-defaulted columns keep the embedded
+                    // non-NULL on reload, but the nullable currency override is null — exercise the
+                    // accessor to prove the group is reachable and null-tolerant.
+                    assertThat(reloaded.getBilling()).isNotNull();
+                    assertThat(reloaded.getBilling().getDefaultBillingRunCurrency()).isNull();
+
+                    // Wave 3.4 tax group: tax_inclusive is NOT NULL, so the embedded never fully
+                    // materialises as NULL — but the group accessor and its nullable fields must
+                    // still be safe to read.
+                    assertThat(reloaded.getTax()).isNotNull();
+                    assertThat(reloaded.getTax().getTaxLabel()).isNull();
+                    assertThat(reloaded.getTax().getTaxRegistrationNumber()).isNull();
                   })
               .doesNotThrowAnyException();
         });

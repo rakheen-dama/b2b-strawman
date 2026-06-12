@@ -426,7 +426,10 @@ public class RetainerPeriodService {
     }
     var taxRate = defaultRate.get();
     boolean taxInclusive =
-        orgSettingsRepository.findForCurrentTenant().map(OrgSettings::isTaxInclusive).orElse(false);
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .map(s -> s.getTax().isTaxInclusive())
+            .orElse(false);
 
     var lines = invoiceLineRepository.findByInvoiceIdOrderBySortOrder(invoiceId);
     for (InvoiceLine line : lines) {
@@ -443,7 +446,10 @@ public class RetainerPeriodService {
     BigDecimal subtotal =
         lines.stream().map(InvoiceLine::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
     boolean taxInclusive =
-        orgSettingsRepository.findForCurrentTenant().map(s -> s.isTaxInclusive()).orElse(false);
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .map(s -> s.getTax().isTaxInclusive())
+            .orElse(false);
     boolean hasPerLineTax = taxCalculationService.hasPerLineTax(lines);
     BigDecimal perLineTaxSum =
         lines.stream()

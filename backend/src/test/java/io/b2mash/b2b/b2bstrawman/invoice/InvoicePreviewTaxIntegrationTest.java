@@ -104,9 +104,9 @@ class InvoicePreviewTaxIntegrationTest {
                     tx -> {
                       // Configure org settings with tax registration
                       var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
-                      settings.setTaxRegistrationNumber("4012345678");
-                      settings.setTaxRegistrationLabel("VAT Number");
-                      settings.setTaxLabel("VAT");
+                      settings.getTax().setTaxRegistrationNumber("4012345678");
+                      settings.getTax().setTaxRegistrationLabel("VAT Number");
+                      settings.getTax().setTaxLabel("VAT");
                       orgSettingsRepository.save(settings);
 
                       // Create tax rates (isDefault=false to avoid unique constraint
@@ -242,8 +242,8 @@ class InvoicePreviewTaxIntegrationTest {
                 transactionTemplate.executeWithoutResult(
                     tx -> {
                       var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
-                      settings.setTaxInclusive(true);
-                      settings.setTaxLabel("VAT");
+                      settings.getTax().setTaxInclusive(true);
+                      settings.getTax().setTaxLabel("VAT");
                       orgSettingsRepository.save(settings);
 
                       var vatRate = new TaxRate("VAT", new BigDecimal("15.00"), false, false, 10);

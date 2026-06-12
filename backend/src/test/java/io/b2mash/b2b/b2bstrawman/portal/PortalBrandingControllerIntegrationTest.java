@@ -110,6 +110,29 @@ class PortalBrandingControllerIntegrationTest {
   }
 
   @Test
+  void branding_logo_url_generation_failure_returns_null_logoUrl() throws Exception {
+    // Characterization: when StorageService throws while generating the presigned logo URL,
+    // PortalBrandingService swallows the RuntimeException and returns a null logoUrl rather than
+    // failing the request (this branch was previously inline in the controller, now in the
+    // service).
+    when(storageService.generateDownloadUrl(any(String.class), any()))
+        .thenThrow(new RuntimeException("storage unavailable"));
+    try {
+      mockMvc
+          .perform(get("/portal/branding").param("orgId", ORG_WITH_LOGO_ID))
+          .andExpect(status().isOk())
+          .andExpect(jsonPath("$.orgName").value("Branding Logo Test Org"))
+          .andExpect(jsonPath("$.logoUrl").doesNotExist())
+          .andExpect(jsonPath("$.brandColor").value("#0066cc"));
+    } finally {
+      // Restore the default stub so subsequent tests (any execution order) see a working URL.
+      when(storageService.generateDownloadUrl(any(String.class), any()))
+          .thenReturn(
+              new PresignedUrl("https://s3.example.com/logo.png", Instant.now().plusSeconds(3600)));
+    }
+  }
+
+  @Test
   void branding_unknown_org_returns_404() throws Exception {
     mockMvc
         .perform(get("/portal/branding").param("orgId", "org_nonexistent"))

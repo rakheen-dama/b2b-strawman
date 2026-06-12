@@ -120,7 +120,7 @@ class PackInstallServiceTest {
                 tx -> {
                   var settings = orgSettingsRepository.findForCurrentTenant();
                   assertThat(settings).isPresent();
-                  var templatePackStatus = settings.get().getTemplatePackStatus();
+                  var templatePackStatus = settings.get().getPackStatus().getTemplatePackStatus();
                   assertThat(templatePackStatus).isNotNull();
                   assertThat(templatePackStatus)
                       .anyMatch(entry -> PACK_ID.equals(entry.get("packId")));
@@ -181,7 +181,7 @@ class PackInstallServiceTest {
                 tx -> {
                   var settings = orgSettingsRepository.findForCurrentTenant();
                   assertThat(settings).isPresent();
-                  var templatePackStatus = settings.get().getTemplatePackStatus();
+                  var templatePackStatus = settings.get().getPackStatus().getTemplatePackStatus();
                   if (templatePackStatus != null) {
                     assertThat(templatePackStatus)
                         .noneMatch(entry -> PACK_ID.equals(entry.get("packId")));

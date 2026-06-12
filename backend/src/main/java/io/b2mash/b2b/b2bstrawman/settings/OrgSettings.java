@@ -9,30 +9,16 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import java.time.DayOfWeek;
 import java.time.Instant;
-import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 @Entity
 @Table(name = "org_settings")
 public class OrgSettings {
-
-  /** Default retention window (in years) for CLOSED legal matters (Phase 67, ADR-249). */
-  public static final int DEFAULT_LEGAL_MATTER_RETENTION_YEARS = 5;
 
   /**
    * Canonical default for {@link PortalSettings#getPortalNotificationDocTypes()}. Must stay in sync
@@ -56,10 +42,6 @@ public class OrgSettings {
   @Column(name = "updated_at", nullable = false)
   private Instant updatedAt;
 
-  @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "field_pack_status", columnDefinition = "jsonb")
-  private List<Map<String, Object>> fieldPackStatus;
-
   /**
    * Branding / document-identity group (Wave 3.3). Persisted inline on {@code org_settings} via
    * {@code @Embedded} — column names pinned by {@code @AttributeOverride} for zero schema change.
@@ -74,50 +56,66 @@ public class OrgSettings {
       column = @Column(name = "document_footer_text", columnDefinition = "TEXT"))
   private BrandingSettings branding = new BrandingSettings();
 
-  @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "template_pack_status", columnDefinition = "jsonb")
-  private List<Map<String, Object>> templatePackStatus;
+  /**
+   * Pack-application status group (Wave 3.5): the ten JSONB pack-status lists (field / template /
+   * compliance / report / clause / request / automation / rate / schedule / project-template) plus
+   * their idempotency record/remove/is-applied helpers. Persisted inline on {@code org_settings}
+   * via {@code @Embedded} — column names pinned by {@code @AttributeOverride} for zero schema
+   * change. All ten columns are nullable, so an all-null group materialises as a NULL embedded on
+   * reload; initialised non-null + lazy-fallback {@link #getPackStatus()} keeps it NPE-safe.
+   */
+  @Embedded
+  @AttributeOverride(
+      name = "fieldPackStatus",
+      column = @Column(name = "field_pack_status", columnDefinition = "jsonb"))
+  @AttributeOverride(
+      name = "templatePackStatus",
+      column = @Column(name = "template_pack_status", columnDefinition = "jsonb"))
+  @AttributeOverride(
+      name = "compliancePackStatus",
+      column = @Column(name = "compliance_pack_status", columnDefinition = "jsonb"))
+  @AttributeOverride(
+      name = "reportPackStatus",
+      column = @Column(name = "report_pack_status", columnDefinition = "jsonb"))
+  @AttributeOverride(
+      name = "clausePackStatus",
+      column = @Column(name = "clause_pack_status", columnDefinition = "jsonb"))
+  @AttributeOverride(
+      name = "requestPackStatus",
+      column = @Column(name = "request_pack_status", columnDefinition = "jsonb"))
+  @AttributeOverride(
+      name = "automationPackStatus",
+      column = @Column(name = "automation_pack_status", columnDefinition = "jsonb"))
+  @AttributeOverride(
+      name = "ratePackStatus",
+      column = @Column(name = "rate_pack_status", columnDefinition = "jsonb"))
+  @AttributeOverride(
+      name = "schedulePackStatus",
+      column = @Column(name = "schedule_pack_status", columnDefinition = "jsonb"))
+  @AttributeOverride(
+      name = "projectTemplatePackStatus",
+      column = @Column(name = "project_template_pack_status", columnDefinition = "jsonb"))
+  private PackStatusSettings packStatus = new PackStatusSettings();
 
-  @Column(name = "dormancy_threshold_days")
-  private Integer dormancyThresholdDays;
-
-  @Column(name = "data_request_deadline_days")
-  private Integer dataRequestDeadlineDays;
-
-  @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "compliance_pack_status", columnDefinition = "jsonb")
-  private List<Map<String, Object>> compliancePackStatus;
-
-  @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "report_pack_status", columnDefinition = "jsonb")
-  private List<Map<String, Object>> reportPackStatus;
-
-  @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "clause_pack_status", columnDefinition = "jsonb")
-  private List<Map<String, Object>> clausePackStatus;
-
-  @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "request_pack_status", columnDefinition = "jsonb")
-  private List<Map<String, Object>> requestPackStatus;
-
-  @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "automation_pack_status", columnDefinition = "jsonb")
-  private List<Map<String, Object>> automationPackStatus;
-
-  @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "rate_pack_status", columnDefinition = "jsonb")
-  private List<Map<String, Object>> ratePackStatus;
-
-  @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "schedule_pack_status", columnDefinition = "jsonb")
-  private List<Map<String, Object>> schedulePackStatus;
-
-  @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "project_template_pack_status", columnDefinition = "jsonb")
-  private List<Map<String, Object>> projectTemplatePackStatus;
-
-  @Column(name = "default_request_reminder_days")
-  private Integer defaultRequestReminderDays;
+  /**
+   * Operational request-handling group (Wave 3.5): the DSAR deadline, request-reminder cadence, and
+   * customer dormancy threshold — scheduler-driven tunables, split from the POPIA officer panel.
+   * Persisted inline on {@code org_settings} via {@code @Embedded} — column names pinned by
+   * {@code @AttributeOverride} for zero schema change. All three columns are nullable, so an
+   * all-null group materialises as a NULL embedded on reload; initialised non-null + lazy-fallback
+   * {@link #getDataRequest()} keeps it NPE-safe.
+   */
+  @Embedded
+  @AttributeOverride(
+      name = "dataRequestDeadlineDays",
+      column = @Column(name = "data_request_deadline_days"))
+  @AttributeOverride(
+      name = "defaultRequestReminderDays",
+      column = @Column(name = "default_request_reminder_days"))
+  @AttributeOverride(
+      name = "dormancyThresholdDays",
+      column = @Column(name = "dormancy_threshold_days"))
+  private DataRequestSettings dataRequest = new DataRequestSettings();
 
   @Column(name = "acceptance_expiry_days")
   private Integer acceptanceExpiryDays;
@@ -178,17 +176,26 @@ public class OrgSettings {
       column = @Column(name = "default_weekly_capacity_hours", precision = 5, scale = 2))
   private CapacitySettings capacity = new CapacitySettings();
 
-  @Column(name = "time_reminder_enabled", nullable = false)
-  private boolean timeReminderEnabled;
-
-  @Column(name = "time_reminder_days", length = 50)
-  private String timeReminderDays;
-
-  @Column(name = "time_reminder_time")
-  private LocalTime timeReminderTime;
-
-  @Column(name = "time_reminder_min_minutes")
-  private Integer timeReminderMinMinutes;
+  /**
+   * Time-tracking reminder group (Wave 3.5): the daily time-entry reminder enabled toggle,
+   * working-day CSV, fire time, and minimum-minutes threshold. Persisted inline on {@code
+   * org_settings} via {@code @Embedded} — column names pinned by {@code @AttributeOverride} for
+   * zero schema change. Initialised non-null so a fresh entity and an all-null DB row never NPE on
+   * {@link #getTimeReminder()}. ({@code time_reminder_enabled} is NOT NULL, so the group never
+   * fully materialises as NULL on reload — but the null-safe getter is kept for symmetry.)
+   */
+  @Embedded
+  @AttributeOverride(
+      name = "timeReminderEnabled",
+      column = @Column(name = "time_reminder_enabled", nullable = false))
+  @AttributeOverride(
+      name = "timeReminderDays",
+      column = @Column(name = "time_reminder_days", length = 50))
+  @AttributeOverride(name = "timeReminderTime", column = @Column(name = "time_reminder_time"))
+  @AttributeOverride(
+      name = "timeReminderMinMinutes",
+      column = @Column(name = "time_reminder_min_minutes"))
+  private TimeReminderSettings timeReminder = new TimeReminderSettings();
 
   /**
    * Billing-run configuration group (Wave 3.4): batch async threshold, per-run email rate limit,
@@ -227,34 +234,38 @@ public class OrgSettings {
   @Column(name = "terminology_namespace", length = 100)
   private String terminologyNamespace;
 
-  // --- Phase 50: Data Protection ---
-  @Column(name = "data_protection_jurisdiction", length = 10)
-  private String dataProtectionJurisdiction;
-
-  @Column(name = "retention_policy_enabled", nullable = false)
-  private boolean retentionPolicyEnabled;
-
-  @Column(name = "default_retention_months")
-  private Integer defaultRetentionMonths;
-
-  @Column(name = "financial_retention_months")
-  private Integer financialRetentionMonths = 60;
-
-  @Column(name = "information_officer_name", length = 255)
-  private String informationOfficerName;
-
-  @Column(name = "information_officer_email", length = 255)
-  private String informationOfficerEmail;
-
   /**
-   * Retention period (in years) for CLOSED legal matters (Phase 67, ADR-249). When null, defaults
-   * to {@link #DEFAULT_LEGAL_MATTER_RETENTION_YEARS} — expose via {@link
-   * #getEffectiveLegalMatterRetentionYears()}.
+   * Data-protection / POPIA group (Wave 3.5): jurisdiction, retention-policy toggle and windows
+   * (default / financial / legal-matter), and the information officer identity. Persisted inline on
+   * {@code org_settings} via {@code @Embedded} — column names pinned by {@code @AttributeOverride}
+   * for zero schema change. Initialised non-null so a fresh entity and an all-null DB row never NPE
+   * on {@link #getDataProtection()}. ({@code retention_policy_enabled} is NOT NULL, so the group
+   * never fully materialises as NULL on reload.) {@code legal_matter_retention_years} carries its
+   * bean-validation {@code @Min}/{@code @Max} annotations on the embeddable field.
    */
-  @Column(name = "legal_matter_retention_years")
-  @Min(value = 1, message = "legalMatterRetentionYears must be at least 1")
-  @Max(value = 100, message = "legalMatterRetentionYears must be at most 100")
-  private Integer legalMatterRetentionYears;
+  @Embedded
+  @AttributeOverride(
+      name = "dataProtectionJurisdiction",
+      column = @Column(name = "data_protection_jurisdiction", length = 10))
+  @AttributeOverride(
+      name = "retentionPolicyEnabled",
+      column = @Column(name = "retention_policy_enabled", nullable = false))
+  @AttributeOverride(
+      name = "defaultRetentionMonths",
+      column = @Column(name = "default_retention_months"))
+  @AttributeOverride(
+      name = "financialRetentionMonths",
+      column = @Column(name = "financial_retention_months"))
+  @AttributeOverride(
+      name = "informationOfficerName",
+      column = @Column(name = "information_officer_name", length = 255))
+  @AttributeOverride(
+      name = "informationOfficerEmail",
+      column = @Column(name = "information_officer_email", length = 255))
+  @AttributeOverride(
+      name = "legalMatterRetentionYears",
+      column = @Column(name = "legal_matter_retention_years"))
+  private DataProtectionSettings dataProtection = new DataProtectionSettings();
 
   /**
    * Customer-portal settings group (Wave 3.3): retainer member-display privacy mode, digest
@@ -280,10 +291,10 @@ public class OrgSettings {
 
   /**
    * Refreshes {@code updatedAt} on every dirty flush. Before the embeddable refactor every mutator
-   * (including the plain branding/portal setters) bumped {@code updatedAt} explicitly; embeddable
-   * setters cannot reach the owning entity's timestamp, so this entity-level callback restores the
-   * contract uniformly — for the embedded groups, the remaining top-level mutators, and any groups
-   * extracted in later waves.
+   * (including the plain branding/portal setters) bumped {@code updatedAt}; embeddable setters
+   * cannot reach the owning entity's timestamp, so this entity-level callback restores the contract
+   * uniformly — for the embedded groups, the remaining top-level mutators, and any groups extracted
+   * in later waves.
    */
   @PreUpdate
   private void refreshUpdatedAtOnFlush() {
@@ -297,8 +308,6 @@ public class OrgSettings {
     this.accountingEnabled = false;
     this.aiEnabled = false;
     this.documentSigningEnabled = false;
-    this.timeReminderEnabled = false;
-    this.retentionPolicyEnabled = false;
     this.portal = PortalSettings.withDefaults();
   }
 
@@ -350,16 +359,49 @@ public class OrgSettings {
     return billing;
   }
 
+  /** Returns the time-tracking reminder settings group. Never null. */
+  public TimeReminderSettings getTimeReminder() {
+    if (timeReminder == null) {
+      timeReminder = new TimeReminderSettings();
+    }
+    return timeReminder;
+  }
+
+  /** Returns the pack-application status settings group. Never null. */
+  public PackStatusSettings getPackStatus() {
+    if (packStatus == null) {
+      packStatus = new PackStatusSettings();
+    }
+    return packStatus;
+  }
+
+  /** Returns the operational request-handling settings group. Never null. */
+  public DataRequestSettings getDataRequest() {
+    if (dataRequest == null) {
+      dataRequest = new DataRequestSettings();
+    }
+    return dataRequest;
+  }
+
+  /** Returns the data-protection / POPIA settings group. Never null. */
+  public DataProtectionSettings getDataProtection() {
+    if (dataProtection == null) {
+      dataProtection = new DataProtectionSettings();
+    }
+    return dataProtection;
+  }
+
   public void updateCurrency(String currency) {
     this.defaultCurrency = currency;
     this.updatedAt = Instant.now();
   }
 
   /**
-   * Bumps {@code updatedAt} to now. Embeddable-group setters (tax/billing/capacity/expense/etc.) do
-   * not touch the owning entity's timestamp; service methods that mutate a group through {@link
-   * #getTax()}/{@link #getBilling()}/{@link #getCapacity()}/{@link #getExpense()} call this to
-   * preserve the explicit timestamp-bump semantics the former top-level entity mutators provided.
+   * Bumps {@code updatedAt} to now. Embeddable-group setters
+   * (tax/billing/capacity/expense/time-reminder/pack-status/data-protection/data-request) do not
+   * touch the owning entity's timestamp; service methods that mutate a group through {@link
+   * #getTax()}/{@link #getBilling()}/etc. call this to preserve the explicit timestamp-bump
+   * semantics the former top-level entity mutators provided.
    */
   public void touchUpdatedAt() {
     this.updatedAt = Instant.now();
@@ -379,304 +421,6 @@ public class OrgSettings {
 
   public Instant getUpdatedAt() {
     return updatedAt;
-  }
-
-  public List<Map<String, Object>> getFieldPackStatus() {
-    return fieldPackStatus;
-  }
-
-  public void setFieldPackStatus(List<Map<String, Object>> fieldPackStatus) {
-    this.fieldPackStatus = fieldPackStatus;
-  }
-
-  /** Records a field pack application in the status list. */
-  public void recordPackApplication(String packId, int version) {
-    if (this.fieldPackStatus == null) {
-      this.fieldPackStatus = new ArrayList<>();
-    }
-    var entry = new HashMap<String, Object>();
-    entry.put("packId", packId);
-    entry.put("version", version);
-    entry.put("appliedAt", Instant.now().toString());
-    this.fieldPackStatus.add(entry);
-    this.updatedAt = Instant.now();
-  }
-
-  public List<Map<String, Object>> getTemplatePackStatus() {
-    return templatePackStatus;
-  }
-
-  public void setTemplatePackStatus(List<Map<String, Object>> status) {
-    this.templatePackStatus = status;
-  }
-
-  /** Removes a template pack entry from the status list by packId. */
-  public void removeTemplatePackEntry(String packId) {
-    if (this.templatePackStatus != null) {
-      this.templatePackStatus.removeIf(entry -> packId.equals(entry.get("packId")));
-      this.updatedAt = Instant.now();
-    }
-  }
-
-  /**
-   * Records a template pack application in the status list. Idempotent -- removes any existing
-   * entry for the same packId before appending, preventing duplicates on re-install.
-   */
-  public void recordTemplatePackApplication(String packId, int version) {
-    if (this.templatePackStatus == null) {
-      this.templatePackStatus = new ArrayList<>();
-    }
-    this.templatePackStatus.removeIf(e -> packId.equals(e.get("packId")));
-    var entry = new HashMap<String, Object>();
-    entry.put("packId", packId);
-    entry.put("version", version);
-    entry.put("appliedAt", Instant.now().toString());
-    this.templatePackStatus.add(entry);
-    this.updatedAt = Instant.now();
-  }
-
-  public Integer getDormancyThresholdDays() {
-    return dormancyThresholdDays;
-  }
-
-  public void setDormancyThresholdDays(Integer dormancyThresholdDays) {
-    this.dormancyThresholdDays = dormancyThresholdDays;
-    this.updatedAt = Instant.now();
-  }
-
-  public Integer getDataRequestDeadlineDays() {
-    return dataRequestDeadlineDays;
-  }
-
-  public void setDataRequestDeadlineDays(Integer dataRequestDeadlineDays) {
-    this.dataRequestDeadlineDays = dataRequestDeadlineDays;
-    this.updatedAt = Instant.now();
-  }
-
-  public List<Map<String, Object>> getCompliancePackStatus() {
-    return compliancePackStatus;
-  }
-
-  /**
-   * Records a compliance pack application in the status list. Uses String version (not int) because
-   * compliance packs use semantic versioning (e.g. "1.0.0"), unlike field/template packs which use
-   * sequential integers.
-   */
-  public void recordCompliancePackApplication(String packId, String version) {
-    if (this.compliancePackStatus == null) {
-      this.compliancePackStatus = new ArrayList<>();
-    }
-    var entry = new HashMap<String, Object>();
-    entry.put("packId", packId);
-    entry.put("version", version);
-    entry.put("appliedAt", Instant.now().toString());
-    this.compliancePackStatus.add(entry);
-    this.updatedAt = Instant.now();
-  }
-
-  public List<Map<String, Object>> getReportPackStatus() {
-    return reportPackStatus;
-  }
-
-  /** Records a report pack application in the status list. */
-  public void recordReportPackApplication(String packId, int version) {
-    if (this.reportPackStatus == null) {
-      this.reportPackStatus = new ArrayList<>();
-    }
-    var entry = new HashMap<String, Object>();
-    entry.put("packId", packId);
-    entry.put("version", version);
-    entry.put("appliedAt", Instant.now().toString());
-    this.reportPackStatus.add(entry);
-    this.updatedAt = Instant.now();
-  }
-
-  public List<Map<String, Object>> getClausePackStatus() {
-    return clausePackStatus;
-  }
-
-  public void setClausePackStatus(List<Map<String, Object>> status) {
-    this.clausePackStatus = status;
-  }
-
-  /** Records a clause pack application in the status list. */
-  public void recordClausePackApplication(String packId, int version) {
-    if (this.clausePackStatus == null) {
-      this.clausePackStatus = new ArrayList<>();
-    }
-    var entry = new HashMap<String, Object>();
-    entry.put("packId", packId);
-    entry.put("version", version);
-    entry.put("appliedAt", Instant.now().toString());
-    this.clausePackStatus.add(entry);
-    this.updatedAt = Instant.now();
-  }
-
-  public List<Map<String, Object>> getRequestPackStatus() {
-    return requestPackStatus;
-  }
-
-  public void setRequestPackStatus(List<Map<String, Object>> status) {
-    this.requestPackStatus = status;
-  }
-
-  /** Records a request pack application in the status list. */
-  public void recordRequestPackApplication(String packId, int version) {
-    if (this.requestPackStatus == null) {
-      this.requestPackStatus = new ArrayList<>();
-    }
-    var entry = new HashMap<String, Object>();
-    entry.put("packId", packId);
-    entry.put("version", version);
-    entry.put("appliedAt", Instant.now().toString());
-    this.requestPackStatus.add(entry);
-    this.updatedAt = Instant.now();
-  }
-
-  public List<Map<String, Object>> getAutomationPackStatus() {
-    return automationPackStatus;
-  }
-
-  public void setAutomationPackStatus(List<Map<String, Object>> status) {
-    this.automationPackStatus = status;
-  }
-
-  /** Removes an automation pack entry from the status list by packId. */
-  public void removeAutomationPackEntry(String packId) {
-    if (this.automationPackStatus != null) {
-      this.automationPackStatus.removeIf(entry -> packId.equals(entry.get("packId")));
-      this.updatedAt = Instant.now();
-    }
-  }
-
-  /**
-   * Records an automation pack application in the status list. Idempotent -- removes any existing
-   * entry for the same packId before appending, preventing duplicates on re-install.
-   */
-  public void recordAutomationPackApplication(String packId, int version) {
-    if (this.automationPackStatus == null) {
-      this.automationPackStatus = new ArrayList<>();
-    }
-    this.automationPackStatus.removeIf(e -> packId.equals(e.get("packId")));
-    var entry = new HashMap<String, Object>();
-    entry.put("packId", packId);
-    entry.put("version", version);
-    entry.put("appliedAt", Instant.now().toString());
-    this.automationPackStatus.add(entry);
-    this.updatedAt = Instant.now();
-  }
-
-  /** Checks whether an automation pack has already been applied. */
-  public boolean isAutomationPackApplied(String packId) {
-    if (this.automationPackStatus == null) {
-      return false;
-    }
-    return this.automationPackStatus.stream().anyMatch(entry -> packId.equals(entry.get("packId")));
-  }
-
-  public List<Map<String, Object>> getRatePackStatus() {
-    return ratePackStatus;
-  }
-
-  /** Records a rate pack application. Idempotent -- skips if already applied. */
-  public void recordRatePackApplication(String packId, int version) {
-    if (isRatePackApplied(packId, version)) {
-      return;
-    }
-    if (this.ratePackStatus == null) {
-      this.ratePackStatus = new ArrayList<>();
-    }
-    var entry = new HashMap<String, Object>();
-    entry.put("packId", packId);
-    entry.put("version", version);
-    entry.put("appliedAt", Instant.now().toString());
-    this.ratePackStatus.add(entry);
-    this.updatedAt = Instant.now();
-  }
-
-  /** Returns true if the given rate pack (specific version) has been applied. */
-  public boolean isRatePackApplied(String packId, int version) {
-    if (this.ratePackStatus == null) {
-      return false;
-    }
-    return this.ratePackStatus.stream()
-        .anyMatch(
-            entry ->
-                packId.equals(entry.get("packId"))
-                    && ((Number) entry.get("version")).intValue() == version);
-  }
-
-  public List<Map<String, Object>> getSchedulePackStatus() {
-    return schedulePackStatus;
-  }
-
-  /** Records a schedule pack application. Idempotent -- skips if already applied. */
-  public void recordSchedulePackApplication(String packId, int version) {
-    if (isSchedulePackApplied(packId, version)) {
-      return;
-    }
-    if (this.schedulePackStatus == null) {
-      this.schedulePackStatus = new ArrayList<>();
-    }
-    var entry = new HashMap<String, Object>();
-    entry.put("packId", packId);
-    entry.put("version", version);
-    entry.put("appliedAt", Instant.now().toString());
-    this.schedulePackStatus.add(entry);
-    this.updatedAt = Instant.now();
-  }
-
-  /** Returns true if the given schedule pack (specific version) has been applied. */
-  public boolean isSchedulePackApplied(String packId, int version) {
-    if (this.schedulePackStatus == null) {
-      return false;
-    }
-    return this.schedulePackStatus.stream()
-        .anyMatch(
-            entry ->
-                packId.equals(entry.get("packId"))
-                    && ((Number) entry.get("version")).intValue() == version);
-  }
-
-  public List<Map<String, Object>> getProjectTemplatePackStatus() {
-    return projectTemplatePackStatus;
-  }
-
-  /** Records a project template pack application. Idempotent -- skips if already applied. */
-  public void recordProjectTemplatePackApplication(String packId, int version) {
-    if (isProjectTemplatePackApplied(packId, version)) {
-      return;
-    }
-    if (this.projectTemplatePackStatus == null) {
-      this.projectTemplatePackStatus = new ArrayList<>();
-    }
-    var entry = new HashMap<String, Object>();
-    entry.put("packId", packId);
-    entry.put("version", version);
-    entry.put("appliedAt", Instant.now().toString());
-    this.projectTemplatePackStatus.add(entry);
-    this.updatedAt = Instant.now();
-  }
-
-  /** Returns true if the given project template pack (specific version) has been applied. */
-  public boolean isProjectTemplatePackApplied(String packId, int version) {
-    if (this.projectTemplatePackStatus == null) {
-      return false;
-    }
-    return this.projectTemplatePackStatus.stream()
-        .anyMatch(
-            entry ->
-                packId.equals(entry.get("packId"))
-                    && ((Number) entry.get("version")).intValue() == version);
-  }
-
-  public Integer getDefaultRequestReminderDays() {
-    return defaultRequestReminderDays;
-  }
-
-  public void setDefaultRequestReminderDays(Integer defaultRequestReminderDays) {
-    this.defaultRequestReminderDays = defaultRequestReminderDays;
-    this.updatedAt = Instant.now();
   }
 
   public Integer getAcceptanceExpiryDays() {
@@ -713,86 +457,12 @@ public class OrgSettings {
     this.updatedAt = Instant.now();
   }
 
-  public boolean isTimeReminderEnabled() {
-    return timeReminderEnabled;
-  }
-
-  public void setTimeReminderEnabled(boolean timeReminderEnabled) {
-    this.timeReminderEnabled = timeReminderEnabled;
-    this.updatedAt = Instant.now();
-  }
-
-  public String getTimeReminderDays() {
-    return timeReminderDays;
-  }
-
-  public void setTimeReminderDays(String timeReminderDays) {
-    this.timeReminderDays = timeReminderDays;
-    this.updatedAt = Instant.now();
-  }
-
-  public LocalTime getTimeReminderTime() {
-    return timeReminderTime;
-  }
-
-  public void setTimeReminderTime(LocalTime timeReminderTime) {
-    this.timeReminderTime = timeReminderTime;
-    this.updatedAt = Instant.now();
-  }
-
-  public Integer getTimeReminderMinMinutes() {
-    return timeReminderMinMinutes;
-  }
-
-  public void setTimeReminderMinMinutes(Integer timeReminderMinMinutes) {
-    this.timeReminderMinMinutes = timeReminderMinMinutes;
-    this.updatedAt = Instant.now();
-  }
-
-  /** Returns the minimum hours threshold, computed from minutes. Defaults to 4.0 if not set. */
-  public double getTimeReminderMinHours() {
-    return timeReminderMinMinutes != null ? timeReminderMinMinutes / 60.0 : 4.0;
-  }
-
   public String getProjectNamingPattern() {
     return projectNamingPattern;
   }
 
   public void setProjectNamingPattern(String projectNamingPattern) {
     this.projectNamingPattern = projectNamingPattern;
-    this.updatedAt = Instant.now();
-  }
-
-  private static final Map<String, DayOfWeek> DAY_ABBREVIATIONS =
-      Map.of(
-          "MON", DayOfWeek.MONDAY,
-          "TUE", DayOfWeek.TUESDAY,
-          "WED", DayOfWeek.WEDNESDAY,
-          "THU", DayOfWeek.THURSDAY,
-          "FRI", DayOfWeek.FRIDAY,
-          "SAT", DayOfWeek.SATURDAY,
-          "SUN", DayOfWeek.SUNDAY);
-
-  /** Parses timeReminderDays CSV (e.g. "MON,TUE,WED,THU,FRI") into a Set of DayOfWeek. */
-  public Set<DayOfWeek> getWorkingDays() {
-    if (timeReminderDays == null || timeReminderDays.isBlank()) {
-      return Collections.emptySet();
-    }
-    return Arrays.stream(timeReminderDays.split(","))
-        .map(String::trim)
-        .filter(s -> !s.isEmpty())
-        .map(s -> DAY_ABBREVIATIONS.get(s.toUpperCase()))
-        .filter(java.util.Objects::nonNull)
-        .collect(Collectors.toCollection(() -> EnumSet.noneOf(DayOfWeek.class)));
-  }
-
-  /** Updates all time reminder fields and the timestamp. */
-  public void updateTimeReminderSettings(
-      boolean enabled, String days, LocalTime time, Integer minMinutes) {
-    this.timeReminderEnabled = enabled;
-    this.timeReminderDays = days;
-    this.timeReminderTime = time;
-    this.timeReminderMinMinutes = minMinutes;
     this.updatedAt = Instant.now();
   }
 
@@ -850,106 +520,6 @@ public class OrgSettings {
     this.enabledModules =
         enabledModules != null ? new ArrayList<>(enabledModules) : new ArrayList<>();
     this.terminologyNamespace = terminologyNamespace;
-    this.updatedAt = Instant.now();
-  }
-
-  // --- Data Protection getters/setters ---
-
-  public String getDataProtectionJurisdiction() {
-    return dataProtectionJurisdiction;
-  }
-
-  public void setDataProtectionJurisdiction(String dataProtectionJurisdiction) {
-    this.dataProtectionJurisdiction = dataProtectionJurisdiction;
-    this.updatedAt = Instant.now();
-  }
-
-  public boolean isRetentionPolicyEnabled() {
-    return retentionPolicyEnabled;
-  }
-
-  public void setRetentionPolicyEnabled(boolean retentionPolicyEnabled) {
-    this.retentionPolicyEnabled = retentionPolicyEnabled;
-    this.updatedAt = Instant.now();
-  }
-
-  public Integer getDefaultRetentionMonths() {
-    return defaultRetentionMonths;
-  }
-
-  public void setDefaultRetentionMonths(Integer defaultRetentionMonths) {
-    this.defaultRetentionMonths = defaultRetentionMonths;
-    this.updatedAt = Instant.now();
-  }
-
-  public Integer getFinancialRetentionMonths() {
-    return financialRetentionMonths;
-  }
-
-  public void setFinancialRetentionMonths(Integer financialRetentionMonths) {
-    this.financialRetentionMonths = financialRetentionMonths;
-    this.updatedAt = Instant.now();
-  }
-
-  public String getInformationOfficerName() {
-    return informationOfficerName;
-  }
-
-  public void setInformationOfficerName(String informationOfficerName) {
-    this.informationOfficerName = informationOfficerName;
-    this.updatedAt = Instant.now();
-  }
-
-  public String getInformationOfficerEmail() {
-    return informationOfficerEmail;
-  }
-
-  public void setInformationOfficerEmail(String informationOfficerEmail) {
-    this.informationOfficerEmail = informationOfficerEmail;
-    this.updatedAt = Instant.now();
-  }
-
-  public Integer getLegalMatterRetentionYears() {
-    return legalMatterRetentionYears;
-  }
-
-  /**
-   * Returns the effective legal-matter retention years, falling back to {@link
-   * #DEFAULT_LEGAL_MATTER_RETENTION_YEARS} when unset. Used by the retention-clock machinery
-   * (ADR-249) when anchoring a retention policy on matter closure.
-   */
-  public int getEffectiveLegalMatterRetentionYears() {
-    return legalMatterRetentionYears != null
-        ? legalMatterRetentionYears
-        : DEFAULT_LEGAL_MATTER_RETENTION_YEARS;
-  }
-
-  public void setLegalMatterRetentionYears(Integer legalMatterRetentionYears) {
-    if (legalMatterRetentionYears != null
-        && (legalMatterRetentionYears < 1 || legalMatterRetentionYears > 100)) {
-      throw new IllegalArgumentException(
-          "legalMatterRetentionYears must be between 1 and 100 (got "
-              + legalMatterRetentionYears
-              + ")");
-    }
-    this.legalMatterRetentionYears = legalMatterRetentionYears;
-    this.updatedAt = Instant.now();
-  }
-
-  /** Updates all data protection settings atomically and bumps updatedAt. */
-  public void updateDataProtectionSettings(
-      String jurisdiction,
-      boolean retentionEnabled,
-      Integer defaultRetentionMonths,
-      Integer financialRetentionMonths,
-      String officerName,
-      String officerEmail) {
-    this.dataProtectionJurisdiction = jurisdiction;
-    this.retentionPolicyEnabled = retentionEnabled;
-    this.defaultRetentionMonths = defaultRetentionMonths;
-    this.financialRetentionMonths = financialRetentionMonths;
-    this.informationOfficerName = officerName;
-    this.informationOfficerEmail = officerEmail;
     this.updatedAt = Instant.now();
   }
 }

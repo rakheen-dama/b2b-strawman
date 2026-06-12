@@ -62,17 +62,17 @@ public class TrustReportPackSeeder {
     upsertReport(interestAllocationDefinition());
     upsertReport(section35DataPackDefinition());
 
-    settings.recordReportPackApplication(PACK_ID, PACK_VERSION);
+    settings.getPackStatus().recordReportPackApplication(PACK_ID, PACK_VERSION);
     orgSettingsRepository.save(settings);
 
     log.info("Applied report pack {} v{} for tenant {}", PACK_ID, PACK_VERSION, tenantId);
   }
 
   private boolean isPackAlreadyApplied(OrgSettings settings) {
-    if (settings.getReportPackStatus() == null) {
+    if (settings.getPackStatus().getReportPackStatus() == null) {
       return false;
     }
-    return settings.getReportPackStatus().stream()
+    return settings.getPackStatus().getReportPackStatus().stream()
         .anyMatch(entry -> PACK_ID.equals(entry.get("packId")));
   }
 

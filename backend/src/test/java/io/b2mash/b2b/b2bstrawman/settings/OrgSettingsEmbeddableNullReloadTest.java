@@ -90,7 +90,27 @@ class OrgSettingsEmbeddableNullReloadTest {
                   + "default_expense_markup_percent = NULL, default_weekly_capacity_hours = NULL, "
                   // Billing has a NOT-NULL-defaulted pair, but default_billing_run_currency is
                   // nullable; null it to exercise the null-safe billing accessor too.
-                  + "default_billing_run_currency = NULL "
+                  + "default_billing_run_currency = NULL, "
+                  // Wave 3.5 DataRequest group — all three columns are nullable, so nulling them
+                  // makes Hibernate materialise a NULL embedded (the genuine NPE risk).
+                  + "data_request_deadline_days = NULL, default_request_reminder_days = NULL, "
+                  + "dormancy_threshold_days = NULL, "
+                  // Wave 3.5 PackStatus group — all ten jsonb columns are nullable, so nulling them
+                  // all makes Hibernate materialise a NULL embedded (the genuine NPE risk).
+                  + "field_pack_status = NULL, template_pack_status = NULL, "
+                  + "compliance_pack_status = NULL, report_pack_status = NULL, "
+                  + "clause_pack_status = NULL, request_pack_status = NULL, "
+                  + "automation_pack_status = NULL, rate_pack_status = NULL, "
+                  + "schedule_pack_status = NULL, project_template_pack_status = NULL, "
+                  // Wave 3.5 DataProtection + TimeReminder groups each carry a NOT NULL column
+                  // (retention_policy_enabled / time_reminder_enabled), so the embedded never fully
+                  // materialises as NULL — but null their remaining columns to exercise the
+                  // null-tolerant accessors on an otherwise-blank group.
+                  + "data_protection_jurisdiction = NULL, default_retention_months = NULL, "
+                  + "financial_retention_months = NULL, information_officer_name = NULL, "
+                  + "information_officer_email = NULL, legal_matter_retention_years = NULL, "
+                  + "time_reminder_days = NULL, time_reminder_time = NULL, "
+                  + "time_reminder_min_minutes = NULL "
                   + "WHERE id = '"
                   + id
                   + "'");
@@ -142,6 +162,53 @@ class OrgSettingsEmbeddableNullReloadTest {
                     assertThat(reloaded.getTax()).isNotNull();
                     assertThat(reloaded.getTax().getTaxLabel()).isNull();
                     assertThat(reloaded.getTax().getTaxRegistrationNumber()).isNull();
+
+                    // Wave 3.5 DataRequest group: all three columns nulled, so the embedded
+                    // materialises as NULL on reload — the lazy-fallback getter is the only thing
+                    // keeping this NPE-safe.
+                    assertThat(reloaded.getDataRequest()).isNotNull();
+                    assertThat(reloaded.getDataRequest().getDataRequestDeadlineDays()).isNull();
+                    assertThat(reloaded.getDataRequest().getDefaultRequestReminderDays()).isNull();
+                    assertThat(reloaded.getDataRequest().getDormancyThresholdDays()).isNull();
+
+                    // Wave 3.5 PackStatus group: all ten jsonb columns nulled, so the embedded
+                    // materialises as NULL on reload — the lazy-fallback getter keeps it NPE-safe,
+                    // and each nullable list accessor returns null without throwing.
+                    assertThat(reloaded.getPackStatus()).isNotNull();
+                    assertThat(reloaded.getPackStatus().getFieldPackStatus()).isNull();
+                    assertThat(reloaded.getPackStatus().getTemplatePackStatus()).isNull();
+                    assertThat(reloaded.getPackStatus().getCompliancePackStatus()).isNull();
+                    assertThat(reloaded.getPackStatus().getReportPackStatus()).isNull();
+                    assertThat(reloaded.getPackStatus().getClausePackStatus()).isNull();
+                    assertThat(reloaded.getPackStatus().getRequestPackStatus()).isNull();
+                    assertThat(reloaded.getPackStatus().getAutomationPackStatus()).isNull();
+                    assertThat(reloaded.getPackStatus().getRatePackStatus()).isNull();
+                    assertThat(reloaded.getPackStatus().getSchedulePackStatus()).isNull();
+                    assertThat(reloaded.getPackStatus().getProjectTemplatePackStatus()).isNull();
+                    // is*Applied accessors must tolerate the all-null group (return false, no NPE).
+                    assertThat(reloaded.getPackStatus().isAutomationPackApplied("x")).isFalse();
+                    assertThat(reloaded.getPackStatus().isRatePackApplied("x", 1)).isFalse();
+
+                    // Wave 3.5 DataProtection group: retention_policy_enabled is NOT NULL, so the
+                    // embedded never fully materialises as NULL — but its nullable fields and the
+                    // effective-getter fallback must still be safe to read.
+                    assertThat(reloaded.getDataProtection()).isNotNull();
+                    assertThat(reloaded.getDataProtection().getDataProtectionJurisdiction())
+                        .isNull();
+                    assertThat(reloaded.getDataProtection().getInformationOfficerName()).isNull();
+                    assertThat(reloaded.getDataProtection().getLegalMatterRetentionYears())
+                        .isNull();
+                    assertThat(reloaded.getDataProtection().getEffectiveLegalMatterRetentionYears())
+                        .isEqualTo(DataProtectionSettings.DEFAULT_LEGAL_MATTER_RETENTION_YEARS);
+
+                    // Wave 3.5 TimeReminder group: time_reminder_enabled is NOT NULL, so the
+                    // embedded never fully materialises as NULL — but the nullable fields and the
+                    // working-days / min-hours fallbacks must still be safe to read.
+                    assertThat(reloaded.getTimeReminder()).isNotNull();
+                    assertThat(reloaded.getTimeReminder().getTimeReminderDays()).isNull();
+                    assertThat(reloaded.getTimeReminder().getTimeReminderTime()).isNull();
+                    assertThat(reloaded.getTimeReminder().getWorkingDays()).isEmpty();
+                    assertThat(reloaded.getTimeReminder().getTimeReminderMinHours()).isEqualTo(4.0);
                   })
               .doesNotThrowAnyException();
         });

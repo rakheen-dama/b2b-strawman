@@ -82,8 +82,8 @@ public class RequestReminderScheduler {
     Integer orgDefaultDays = DEFAULT_REMINDER_INTERVAL_DAYS;
     if (orgSettingsOpt != null && orgSettingsOpt.isPresent()) {
       var orgSettings = orgSettingsOpt.get();
-      if (orgSettings.getDefaultRequestReminderDays() != null) {
-        orgDefaultDays = orgSettings.getDefaultRequestReminderDays();
+      if (orgSettings.getDataRequest().getDefaultRequestReminderDays() != null) {
+        orgDefaultDays = orgSettings.getDataRequest().getDefaultRequestReminderDays();
       }
     }
 

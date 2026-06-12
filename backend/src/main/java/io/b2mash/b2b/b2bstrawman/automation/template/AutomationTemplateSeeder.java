@@ -71,12 +71,12 @@ public class AutomationTemplateSeeder extends AbstractPackSeeder<AutomationTempl
 
   @Override
   protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
-    return settings.isAutomationPackApplied(packId);
+    return settings.getPackStatus().isAutomationPackApplied(packId);
   }
 
   @Override
   protected void recordPackApplication(OrgSettings settings, AutomationTemplatePack pack) {
-    settings.recordAutomationPackApplication(pack.packId(), pack.version());
+    settings.getPackStatus().recordAutomationPackApplication(pack.packId(), pack.version());
   }
 
   @Override

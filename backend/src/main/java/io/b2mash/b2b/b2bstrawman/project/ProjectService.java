@@ -109,8 +109,8 @@ public class ProjectService {
    *   <li>{@code retentionClockStartedAt} is null (matter was never closed), or
    *   <li>the org's {@code legalMatterRetentionYears} setting is null/missing/zero — in which case
    *       a non-fatal log line is emitted to surface the misconfiguration. We deliberately do NOT
-   *       fall back to {@link OrgSettings#DEFAULT_LEGAL_MATTER_RETENTION_YEARS} here so the UI can
-   *       distinguish "configured" from "unconfigured" tenants.
+   *       fall back to {@code DataProtectionSettings.DEFAULT_LEGAL_MATTER_RETENTION_YEARS} here so
+   *       the UI can distinguish "configured" from "unconfigured" tenants.
    * </ul>
    *
    * <p>Calendar-year arithmetic via {@link LocalDate#plusYears(long)} so leap years don't shift the

@@ -120,8 +120,8 @@ class ClausePackSeederIntegrationTest {
                 tx -> {
                   var settings = orgSettingsRepository.findForCurrentTenant();
                   assertThat(settings).isPresent();
-                  assertThat(settings.get().getClausePackStatus()).isNotNull();
-                  assertThat(settings.get().getClausePackStatus())
+                  assertThat(settings.get().getPackStatus().getClausePackStatus()).isNotNull();
+                  assertThat(settings.get().getPackStatus().getClausePackStatus())
                       .anyMatch(entry -> "standard-clauses".equals(entry.get("packId")));
                 }));
   }

@@ -75,8 +75,8 @@ public class DataSubjectRequestService {
 
     var request = new DataSubjectRequest(customerId, requestType, description, actorId, deadline);
     if (orgSettings != null) {
-      request.setJurisdiction(orgSettings.getDataProtectionJurisdiction());
-      request.setDeadlineDaysOverride(orgSettings.getDataRequestDeadlineDays());
+      request.setJurisdiction(orgSettings.getDataProtection().getDataProtectionJurisdiction());
+      request.setDeadlineDaysOverride(orgSettings.getDataRequest().getDataRequestDeadlineDays());
     }
     request = requestRepository.save(request);
 
@@ -248,8 +248,8 @@ public class DataSubjectRequestService {
   }
 
   private int resolveDeadlineDays(OrgSettings settings) {
-    Integer tenantOverride = settings.getDataRequestDeadlineDays();
-    String jurisdiction = settings.getDataProtectionJurisdiction();
+    Integer tenantOverride = settings.getDataRequest().getDataRequestDeadlineDays();
+    String jurisdiction = settings.getDataProtection().getDataProtectionJurisdiction();
     if (tenantOverride != null && tenantOverride > 0) {
       return Math.min(tenantOverride, JurisdictionDefaults.getMaxDeadlineDays(jurisdiction));
     }

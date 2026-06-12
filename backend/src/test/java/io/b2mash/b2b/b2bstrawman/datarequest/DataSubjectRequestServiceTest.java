@@ -83,7 +83,7 @@ class DataSubjectRequestServiceTest {
         () -> {
           var settings =
               orgSettingsRepository.findForCurrentTenant().orElseGet(() -> new OrgSettings("USD"));
-          settings.setDataRequestDeadlineDays(14);
+          settings.getDataRequest().setDataRequestDeadlineDays(14);
           orgSettingsRepository.save(settings);
         });
 
@@ -235,8 +235,8 @@ class DataSubjectRequestServiceTest {
         () -> {
           var settings =
               orgSettingsRepository.findForCurrentTenant().orElseGet(() -> new OrgSettings("USD"));
-          settings.setDataProtectionJurisdiction("ZA");
-          settings.setDataRequestDeadlineDays(null);
+          settings.getDataProtection().setDataProtectionJurisdiction("ZA");
+          settings.getDataRequest().setDataRequestDeadlineDays(null);
           orgSettingsRepository.save(settings);
         });
 
@@ -258,8 +258,8 @@ class DataSubjectRequestServiceTest {
         () -> {
           var settings =
               orgSettingsRepository.findForCurrentTenant().orElseGet(() -> new OrgSettings("USD"));
-          settings.setDataProtectionJurisdiction("ZA");
-          settings.setDataRequestDeadlineDays(14);
+          settings.getDataProtection().setDataProtectionJurisdiction("ZA");
+          settings.getDataRequest().setDataRequestDeadlineDays(14);
           orgSettingsRepository.save(settings);
         });
 
@@ -280,8 +280,8 @@ class DataSubjectRequestServiceTest {
         () -> {
           var settings =
               orgSettingsRepository.findForCurrentTenant().orElseGet(() -> new OrgSettings("USD"));
-          settings.setDataProtectionJurisdiction("ZA");
-          settings.setDataRequestDeadlineDays(45);
+          settings.getDataProtection().setDataProtectionJurisdiction("ZA");
+          settings.getDataRequest().setDataRequestDeadlineDays(45);
           orgSettingsRepository.save(settings);
         });
 
@@ -302,8 +302,8 @@ class DataSubjectRequestServiceTest {
         () -> {
           var settings =
               orgSettingsRepository.findForCurrentTenant().orElseGet(() -> new OrgSettings("USD"));
-          settings.setDataProtectionJurisdiction("ZA");
-          settings.setDataRequestDeadlineDays(null);
+          settings.getDataProtection().setDataProtectionJurisdiction("ZA");
+          settings.getDataRequest().setDataRequestDeadlineDays(null);
           orgSettingsRepository.save(settings);
         });
 
@@ -317,7 +317,7 @@ class DataSubjectRequestServiceTest {
     runInTenant(
         () -> {
           var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
-          settings.setDataProtectionJurisdiction("EU");
+          settings.getDataProtection().setDataProtectionJurisdiction("EU");
           orgSettingsRepository.save(settings);
         });
 

@@ -129,10 +129,11 @@ public class RetentionPolicyService {
     }
     var settings = orgSettingsRepository.findForCurrentTenant().orElse(null);
     int financialRetentionMonths =
-        (settings != null && settings.getFinancialRetentionMonths() != null)
-            ? settings.getFinancialRetentionMonths()
+        (settings != null && settings.getDataProtection().getFinancialRetentionMonths() != null)
+            ? settings.getDataProtection().getFinancialRetentionMonths()
             : 60;
-    String jurisdiction = settings != null ? settings.getDataProtectionJurisdiction() : null;
+    String jurisdiction =
+        settings != null ? settings.getDataProtection().getDataProtectionJurisdiction() : null;
     int minMonths = JurisdictionDefaults.getMinFinancialRetentionMonths(jurisdiction);
     int effectiveMinMonths = Math.max(financialRetentionMonths, minMonths);
     int minDays = effectiveMinMonths * 30;

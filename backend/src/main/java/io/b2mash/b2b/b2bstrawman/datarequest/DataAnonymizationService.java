@@ -351,8 +351,8 @@ public class DataAnonymizationService {
     // Financial retention calculation
     var settings = orgSettingsRepository.findForCurrentTenant().orElse(null);
     int financialRetentionMonths =
-        (settings != null && settings.getFinancialRetentionMonths() != null)
-            ? settings.getFinancialRetentionMonths()
+        (settings != null && settings.getDataProtection().getFinancialRetentionMonths() != null)
+            ? settings.getDataProtection().getFinancialRetentionMonths()
             : 60;
 
     // Find oldest invoice date for retention expiry calculation

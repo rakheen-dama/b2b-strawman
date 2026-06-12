@@ -10,7 +10,7 @@ class OrgSettingsTest {
   @Test
   void defaultTimeReminderEnabled_isFalse() {
     var settings = new OrgSettings("USD");
-    assertThat(settings.isTimeReminderEnabled()).isFalse();
+    assertThat(settings.getTimeReminder().isTimeReminderEnabled()).isFalse();
   }
 
   @Test
@@ -23,8 +23,8 @@ class OrgSettingsTest {
   @Test
   void getWorkingDays_parsesCorrectly() {
     var settings = new OrgSettings("USD");
-    settings.setTimeReminderDays("MON,WED,FRI");
-    var days = settings.getWorkingDays();
+    settings.getTimeReminder().setTimeReminderDays("MON,WED,FRI");
+    var days = settings.getTimeReminder().getWorkingDays();
     assertThat(days)
         .containsExactlyInAnyOrder(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY);
   }
@@ -32,36 +32,36 @@ class OrgSettingsTest {
   @Test
   void getWorkingDays_emptyString_returnsEmptySet() {
     var settings = new OrgSettings("USD");
-    settings.setTimeReminderDays("");
-    assertThat(settings.getWorkingDays()).isEmpty();
+    settings.getTimeReminder().setTimeReminderDays("");
+    assertThat(settings.getTimeReminder().getWorkingDays()).isEmpty();
   }
 
   @Test
   void getWorkingDays_null_returnsEmptySet() {
     var settings = new OrgSettings("USD");
     // timeReminderDays is null by default from constructor
-    assertThat(settings.getWorkingDays()).isEmpty();
+    assertThat(settings.getTimeReminder().getWorkingDays()).isEmpty();
   }
 
   @Test
   void getWorkingDays_invalidAbbreviation_skippedGracefully() {
     var settings = new OrgSettings("USD");
-    settings.setTimeReminderDays("MON,INVALID,FRI");
-    var days = settings.getWorkingDays();
+    settings.getTimeReminder().setTimeReminderDays("MON,INVALID,FRI");
+    var days = settings.getTimeReminder().getWorkingDays();
     assertThat(days).containsExactlyInAnyOrder(DayOfWeek.MONDAY, DayOfWeek.FRIDAY);
   }
 
   @Test
   void getTimeReminderMinHours_returns4ForDefault240Minutes() {
     var settings = new OrgSettings("USD");
-    settings.setTimeReminderMinMinutes(240);
-    assertThat(settings.getTimeReminderMinHours()).isEqualTo(4.0);
+    settings.getTimeReminder().setTimeReminderMinMinutes(240);
+    assertThat(settings.getTimeReminder().getTimeReminderMinHours()).isEqualTo(4.0);
   }
 
   @Test
   void getTimeReminderMinHours_returnsDefaultWhenNull() {
     var settings = new OrgSettings("USD");
     // timeReminderMinMinutes is null by default
-    assertThat(settings.getTimeReminderMinHours()).isEqualTo(4.0);
+    assertThat(settings.getTimeReminder().getTimeReminderMinHours()).isEqualTo(4.0);
   }
 }

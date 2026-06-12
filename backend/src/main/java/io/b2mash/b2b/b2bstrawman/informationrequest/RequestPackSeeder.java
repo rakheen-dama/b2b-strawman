@@ -61,16 +61,16 @@ public class RequestPackSeeder extends AbstractPackSeeder<RequestPackDefinition>
 
   @Override
   protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
-    if (settings.getRequestPackStatus() == null) {
+    if (settings.getPackStatus().getRequestPackStatus() == null) {
       return false;
     }
-    return settings.getRequestPackStatus().stream()
+    return settings.getPackStatus().getRequestPackStatus().stream()
         .anyMatch(entry -> packId.equals(entry.get("packId")));
   }
 
   @Override
   protected void recordPackApplication(OrgSettings settings, RequestPackDefinition pack) {
-    settings.recordRequestPackApplication(pack.packId(), pack.version());
+    settings.getPackStatus().recordRequestPackApplication(pack.packId(), pack.version());
   }
 
   @Override

@@ -280,7 +280,7 @@ class RequestReminderSchedulerTest {
                       orgSettingsRepository
                           .findForCurrentTenant()
                           .orElseGet(() -> new OrgSettings("USD"));
-                  orgSettings.setDefaultRequestReminderDays(3);
+                  orgSettings.getDataRequest().setDefaultRequestReminderDays(3);
                   orgSettingsRepository.save(orgSettings);
                 }));
 

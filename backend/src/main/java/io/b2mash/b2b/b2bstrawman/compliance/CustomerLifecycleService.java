@@ -209,8 +209,8 @@ public class CustomerLifecycleService {
   public DormancyCheckResult runDormancyCheck() {
     var settings = orgSettingsRepository.findForCurrentTenant().orElse(null);
     int thresholdDays =
-        (settings != null && settings.getDormancyThresholdDays() != null)
-            ? settings.getDormancyThresholdDays()
+        (settings != null && settings.getDataRequest().getDormancyThresholdDays() != null)
+            ? settings.getDataRequest().getDormancyThresholdDays()
             : 90;
 
     Instant cutoffDate = Instant.now().minus(thresholdDays, ChronoUnit.DAYS);

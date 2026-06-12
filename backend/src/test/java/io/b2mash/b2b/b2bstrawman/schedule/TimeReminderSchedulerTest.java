@@ -316,7 +316,9 @@ class TimeReminderSchedulerTest {
                       orgSettingsRepository
                           .findForCurrentTenant()
                           .orElseGet(() -> new OrgSettings("ZAR"));
-                  settings.updateTimeReminderSettings(enabled, days, time, minMinutes);
+                  settings
+                      .getTimeReminder()
+                      .updateTimeReminderSettings(enabled, days, time, minMinutes);
                   orgSettingsRepository.save(settings);
                 }));
   }

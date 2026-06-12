@@ -89,16 +89,18 @@ public class ComplianceTemplatePackSeeder extends AbstractPackSeeder<TemplatePac
 
   @Override
   protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
-    if (settings.getCompliancePackStatus() == null) {
+    if (settings.getPackStatus().getCompliancePackStatus() == null) {
       return false;
     }
-    return settings.getCompliancePackStatus().stream()
+    return settings.getPackStatus().getCompliancePackStatus().stream()
         .anyMatch(entry -> packId.equals(entry.get("packId")));
   }
 
   @Override
   protected void recordPackApplication(OrgSettings settings, TemplatePackDefinition pack) {
-    settings.recordCompliancePackApplication(pack.packId(), String.valueOf(pack.version()));
+    settings
+        .getPackStatus()
+        .recordCompliancePackApplication(pack.packId(), String.valueOf(pack.version()));
   }
 
   @Override

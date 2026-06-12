@@ -101,16 +101,16 @@ public class CompliancePackSeeder extends AbstractPackSeeder<CompliancePackDefin
 
   @Override
   protected boolean isPackAlreadyApplied(OrgSettings settings, String packId) {
-    if (settings.getCompliancePackStatus() == null) {
+    if (settings.getPackStatus().getCompliancePackStatus() == null) {
       return false;
     }
-    return settings.getCompliancePackStatus().stream()
+    return settings.getPackStatus().getCompliancePackStatus().stream()
         .anyMatch(entry -> packId.equals(entry.get("packId")));
   }
 
   @Override
   protected void recordPackApplication(OrgSettings settings, CompliancePackDefinition pack) {
-    settings.recordCompliancePackApplication(pack.packId(), pack.version());
+    settings.getPackStatus().recordCompliancePackApplication(pack.packId(), pack.version());
   }
 
   @Override

@@ -178,18 +178,15 @@ describe("Invoice Generation Validation", () => {
     // Click validate
     await user.click(screen.getByText("Validate & Create Draft"));
 
-    // Wait for validation checklist to appear
+    // Wait for the checklist AND its async children — asserting children outside
+    // the waitFor raced slow CI runners (container mounts before rows render).
     await waitFor(() => {
       expect(screen.getByTestId("validation-checklist")).toBeInTheDocument();
+      expect(screen.getByText("All customer required fields are filled")).toBeInTheDocument();
+      expect(screen.getByText("Organization name is set")).toBeInTheDocument();
+      expect(screen.getByText("2 time entries without billing rates")).toBeInTheDocument();
+      expect(screen.getByText("Create Draft (1 issues)")).toBeInTheDocument();
     });
-
-    // Verify check items rendered
-    expect(screen.getByText("All customer required fields are filled")).toBeInTheDocument();
-    expect(screen.getByText("Organization name is set")).toBeInTheDocument();
-    expect(screen.getByText("2 time entries without billing rates")).toBeInTheDocument();
-
-    // After validation, button should say "Create Draft (1 issues)"
-    expect(screen.getByText("Create Draft (1 issues)")).toBeInTheDocument();
   });
 
   it("shows_override_dialog_for_admin", async () => {

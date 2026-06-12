@@ -56,7 +56,7 @@ class PortalBrandingControllerIntegrationTest {
                   orgSettingsRepository
                       .findForCurrentTenant()
                       .orElseGet(() -> new OrgSettings("ZAR"));
-              settings.setBrandColor("#ff5733");
+              settings.getBranding().setBrandColor("#ff5733");
               orgSettingsRepository.save(settings);
             });
 
@@ -72,8 +72,8 @@ class PortalBrandingControllerIntegrationTest {
                   orgSettingsRepository
                       .findForCurrentTenant()
                       .orElseGet(() -> new OrgSettings("ZAR"));
-              settings.setBrandColor("#0066cc");
-              settings.setLogoS3Key("logos/branding-test-org/logo.png");
+              settings.getBranding().setBrandColor("#0066cc");
+              settings.getBranding().setLogoS3Key("logos/branding-test-org/logo.png");
               orgSettingsRepository.save(settings);
             });
 

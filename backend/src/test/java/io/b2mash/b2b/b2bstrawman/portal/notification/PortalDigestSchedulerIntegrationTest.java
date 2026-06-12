@@ -15,7 +15,6 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
 import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.portal.notification.PortalNotificationPreferenceService.PortalNotificationPreferenceUpdate;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsService;
 import io.b2mash.b2b.b2bstrawman.settings.PortalDigestCadence;
@@ -126,7 +125,7 @@ class PortalDigestSchedulerIntegrationTest {
                       .findForCurrentTenant()
                       .ifPresent(
                           s -> {
-                            s.clearDigestLastSent();
+                            s.getPortal().clearDigestLastSent();
                             orgSettingsRepository.save(s);
                           });
                 }));
@@ -173,7 +172,7 @@ class PortalDigestSchedulerIntegrationTest {
             () ->
                 orgSettingsRepository
                     .findForCurrentTenant()
-                    .map(OrgSettings::getDigestLastSentAt)
+                    .map(s -> s.getPortal().getDigestLastSentAt())
                     .orElse(null));
     assertThat(lastSent).isNotNull();
   }
@@ -227,7 +226,7 @@ class PortalDigestSchedulerIntegrationTest {
                       .ifPresent(
                           s -> {
                             // Set last-sent 5 days ago — inside the 12-day BIWEEKLY skip window.
-                            s.markDigestSent(Instant.now().minus(Duration.ofDays(5)));
+                            s.getPortal().markDigestSent(Instant.now().minus(Duration.ofDays(5)));
                             orgSettingsRepository.save(s);
                           });
                 }));

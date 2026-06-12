@@ -89,17 +89,22 @@ public class TemplateContextHelper {
         .ifPresentOrElse(
             settings -> {
               orgMap.put("defaultCurrency", settings.getDefaultCurrency());
-              orgMap.put("brandColor", settings.getBrandColor());
-              orgMap.put("documentFooterText", settings.getDocumentFooterText());
+              orgMap.put("brandColor", settings.getBranding().getBrandColor());
+              orgMap.put("documentFooterText", settings.getBranding().getDocumentFooterText());
               orgMap.put("taxRegistrationNumber", settings.getTaxRegistrationNumber());
 
-              if (settings.getLogoS3Key() != null && !settings.getLogoS3Key().isBlank()) {
+              if (settings.getBranding().getLogoS3Key() != null
+                  && !settings.getBranding().getLogoS3Key().isBlank()) {
                 try {
                   var presigned =
-                      storageService.generateDownloadUrl(settings.getLogoS3Key(), LOGO_URL_EXPIRY);
+                      storageService.generateDownloadUrl(
+                          settings.getBranding().getLogoS3Key(), LOGO_URL_EXPIRY);
                   orgMap.put("logoUrl", presigned.url());
                 } catch (Exception e) {
-                  log.warn("Failed to generate logo URL for key: {}", settings.getLogoS3Key(), e);
+                  log.warn(
+                      "Failed to generate logo URL for key: {}",
+                      settings.getBranding().getLogoS3Key(),
+                      e);
                   orgMap.put("logoUrl", null);
                 }
               } else {

@@ -107,8 +107,8 @@ public class ProposalSentEmailHandler {
             context.put("proposalNumber", proposal.getProposalNumber());
             context.put("proposalTitle", proposal.getTitle());
             context.put("portalUrl", portalBaseUrl + "/proposals/" + proposal.getId());
-            if (orgSettings != null && orgSettings.getBrandColor() != null) {
-              context.put("brandColor", orgSettings.getBrandColor());
+            if (orgSettings != null && orgSettings.getBranding().getBrandColor() != null) {
+              context.put("brandColor", orgSettings.getBranding().getBrandColor());
             }
             if (proposal.getExpiresAt() != null) {
               context.put(

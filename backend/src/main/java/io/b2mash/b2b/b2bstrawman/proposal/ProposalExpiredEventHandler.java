@@ -124,7 +124,7 @@ public class ProposalExpiredEventHandler {
       context.put("proposalNumber", event.proposalNumber());
       orgSettingsRepository
           .findForCurrentTenant()
-          .map(s -> s.getBrandColor())
+          .map(s -> s.getBranding().getBrandColor())
           .ifPresent(c -> context.put("brandColor", c));
       context.put(
           "subject", "%s: Proposal %s has expired".formatted(orgName, event.proposalNumber()));

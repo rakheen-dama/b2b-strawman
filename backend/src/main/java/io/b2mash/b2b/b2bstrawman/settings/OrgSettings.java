@@ -1,9 +1,9 @@
 package io.b2mash.b2b.b2bstrawman.settings;
 
+import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -22,7 +22,6 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -37,9 +36,10 @@ public class OrgSettings {
   public static final int DEFAULT_LEGAL_MATTER_RETENTION_YEARS = 5;
 
   /**
-   * Canonical default for {@link #portalNotificationDocTypes}. Must stay in sync with the JSONB
-   * literal in Flyway tenant migration V117 — the Java constructor seeds this so newly provisioned
-   * tenants persist the canonical list rather than an empty array (OBS-2107 follow-up).
+   * Canonical default for {@link PortalSettings#getPortalNotificationDocTypes()}. Must stay in sync
+   * with the JSONB literal in Flyway tenant migration V117 — {@link PortalSettings#withDefaults()}
+   * seeds this so newly provisioned tenants persist the canonical list rather than an empty array
+   * (OBS-2107 follow-up).
    */
   public static final List<String> DEFAULT_PORTAL_NOTIFICATION_DOC_TYPES =
       List.of("matter-closure-letter", "statement-of-account");
@@ -61,14 +61,19 @@ public class OrgSettings {
   @Column(name = "field_pack_status", columnDefinition = "jsonb")
   private List<Map<String, Object>> fieldPackStatus;
 
-  @Column(name = "logo_s3_key", length = 500)
-  private String logoS3Key;
-
-  @Column(name = "brand_color", length = 7)
-  private String brandColor;
-
-  @Column(name = "document_footer_text", columnDefinition = "TEXT")
-  private String documentFooterText;
+  /**
+   * Branding / document-identity group (Wave 3.3). Persisted inline on {@code org_settings} via
+   * {@code @Embedded} — column names pinned by {@code @AttributeOverride} for zero schema change.
+   * Initialised non-null so a fresh entity and an all-null DB row never NPE on {@link
+   * #getBranding()}.
+   */
+  @Embedded
+  @AttributeOverride(name = "logoS3Key", column = @Column(name = "logo_s3_key", length = 500))
+  @AttributeOverride(name = "brandColor", column = @Column(name = "brand_color", length = 7))
+  @AttributeOverride(
+      name = "documentFooterText",
+      column = @Column(name = "document_footer_text", columnDefinition = "TEXT"))
+  private BrandingSettings branding = new BrandingSettings();
 
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "template_pack_status", columnDefinition = "jsonb")
@@ -213,44 +218,24 @@ public class OrgSettings {
   private Integer legalMatterRetentionYears;
 
   /**
-   * Privacy toggle (ADR-255, Epic 496A) controlling how firm-member names appear on the customer
-   * portal's retainer consumption list. Null-safe default = {@link
-   * PortalRetainerMemberDisplay#FIRST_NAME_ROLE}; use {@link
-   * #getEffectivePortalRetainerMemberDisplay()} to read.
+   * Customer-portal settings group (Wave 3.3): retainer member-display privacy mode, digest
+   * cadence, last-digest-sent timestamp, and the per-event notification allowlist. Persisted inline
+   * on {@code org_settings} via {@code @Embedded} — column names pinned by
+   * {@code @AttributeOverride} for zero schema change. Initialised non-null so a fresh entity and
+   * an all-null DB row never NPE on {@link #getPortal()}.
    */
-  @Enumerated(EnumType.STRING)
-  @Column(name = "portal_retainer_member_display", length = 20)
-  private PortalRetainerMemberDisplay portalRetainerMemberDisplay;
-
-  /**
-   * Firm-wide cadence (Epic 498A, ADR-258) controlling how often the portal digest scheduler emails
-   * active portal contacts. Null-safe default = {@link PortalDigestCadence#WEEKLY}; use {@link
-   * #getEffectivePortalDigestCadence()} to read.
-   */
-  @Enumerated(EnumType.STRING)
-  @Column(name = "portal_digest_cadence", length = 12)
-  private PortalDigestCadence portalDigestCadence;
-
-  /**
-   * Timestamp of the most recent successful portal digest send for this tenant (Epic 498B, Phase
-   * 68). Consumed by {@code PortalDigestScheduler} for the {@link PortalDigestCadence#BIWEEKLY}
-   * skip-window (12 days). WEEKLY ignores this column; OFF never runs. Null until the first
-   * successful send.
-   */
-  @Column(name = "digest_last_sent_at")
-  private Instant digestLastSentAt;
-
-  /**
-   * Per-tenant allowlist (GAP-L-72, slice 23) of generated-document template names whose {@code
-   * DocumentGeneratedEvent} should trigger an immediate portal-contact email via {@code
-   * PortalDocumentNotificationHandler}. Mirrors the JSONB-list shape of {@link #enabledModules}.
-   * Default (set by Flyway V117) is {@code ["matter-closure-letter", "statement-of-account"]}: the
-   * two portal-visible artefacts that warrant a per-event email on top of the weekly digest. An
-   * empty list disables per-event sends without affecting the weekly digest.
-   */
-  @JdbcTypeCode(SqlTypes.JSON)
-  @Column(name = "portal_notification_doc_types", columnDefinition = "jsonb")
-  private List<String> portalNotificationDocTypes = new ArrayList<>();
+  @Embedded
+  @AttributeOverride(
+      name = "portalRetainerMemberDisplay",
+      column = @Column(name = "portal_retainer_member_display", length = 20))
+  @AttributeOverride(
+      name = "portalDigestCadence",
+      column = @Column(name = "portal_digest_cadence", length = 12))
+  @AttributeOverride(name = "digestLastSentAt", column = @Column(name = "digest_last_sent_at"))
+  @AttributeOverride(
+      name = "portalNotificationDocTypes",
+      column = @Column(name = "portal_notification_doc_types", columnDefinition = "jsonb"))
+  private PortalSettings portal = new PortalSettings();
 
   protected OrgSettings() {}
 
@@ -266,7 +251,23 @@ public class OrgSettings {
     this.retentionPolicyEnabled = false;
     this.billingBatchAsyncThreshold = 50;
     this.billingEmailRateLimit = 5;
-    this.portalNotificationDocTypes = new ArrayList<>(DEFAULT_PORTAL_NOTIFICATION_DOC_TYPES);
+    this.portal = PortalSettings.withDefaults();
+  }
+
+  /** Returns the branding settings group. Never null. */
+  public BrandingSettings getBranding() {
+    if (branding == null) {
+      branding = new BrandingSettings();
+    }
+    return branding;
+  }
+
+  /** Returns the customer-portal settings group. Never null. */
+  public PortalSettings getPortal() {
+    if (portal == null) {
+      portal = new PortalSettings();
+    }
+    return portal;
   }
 
   public void updateCurrency(String currency) {
@@ -308,33 +309,6 @@ public class OrgSettings {
     entry.put("version", version);
     entry.put("appliedAt", Instant.now().toString());
     this.fieldPackStatus.add(entry);
-    this.updatedAt = Instant.now();
-  }
-
-  public String getLogoS3Key() {
-    return logoS3Key;
-  }
-
-  public void setLogoS3Key(String logoS3Key) {
-    this.logoS3Key = logoS3Key;
-    this.updatedAt = Instant.now();
-  }
-
-  public String getBrandColor() {
-    return brandColor;
-  }
-
-  public void setBrandColor(String brandColor) {
-    this.brandColor = brandColor;
-    this.updatedAt = Instant.now();
-  }
-
-  public String getDocumentFooterText() {
-    return documentFooterText;
-  }
-
-  public void setDocumentFooterText(String text) {
-    this.documentFooterText = text;
     this.updatedAt = Instant.now();
   }
 
@@ -963,81 +937,6 @@ public class OrgSettings {
               + ")");
     }
     this.legalMatterRetentionYears = legalMatterRetentionYears;
-    this.updatedAt = Instant.now();
-  }
-
-  public PortalRetainerMemberDisplay getPortalRetainerMemberDisplay() {
-    return portalRetainerMemberDisplay;
-  }
-
-  /**
-   * Returns the effective portal-retainer member-display mode, falling back to {@link
-   * PortalRetainerMemberDisplay#FIRST_NAME_ROLE} when unset.
-   */
-  public PortalRetainerMemberDisplay getEffectivePortalRetainerMemberDisplay() {
-    return portalRetainerMemberDisplay != null
-        ? portalRetainerMemberDisplay
-        : PortalRetainerMemberDisplay.FIRST_NAME_ROLE;
-  }
-
-  public void setPortalRetainerMemberDisplay(PortalRetainerMemberDisplay mode) {
-    this.portalRetainerMemberDisplay = mode;
-    this.updatedAt = Instant.now();
-  }
-
-  public PortalDigestCadence getPortalDigestCadence() {
-    return portalDigestCadence;
-  }
-
-  /**
-   * Returns the effective portal digest cadence, falling back to {@link PortalDigestCadence#WEEKLY}
-   * when unset.
-   */
-  public PortalDigestCadence getEffectivePortalDigestCadence() {
-    return portalDigestCadence != null ? portalDigestCadence : PortalDigestCadence.WEEKLY;
-  }
-
-  public void setPortalDigestCadence(PortalDigestCadence cadence) {
-    this.portalDigestCadence = cadence;
-    this.updatedAt = Instant.now();
-  }
-
-  public Instant getDigestLastSentAt() {
-    return digestLastSentAt;
-  }
-
-  /** Stamps the last successful digest send timestamp (Epic 498B). Bumps {@code updatedAt}. */
-  public void markDigestSent(Instant sentAt) {
-    this.digestLastSentAt = Objects.requireNonNull(sentAt, "sentAt must not be null");
-    this.updatedAt = Instant.now();
-  }
-
-  /**
-   * Clears the last successful digest send timestamp (Epic 498B). Intended for test-reset paths and
-   * administrative cadence resets. Bumps {@code updatedAt}.
-   */
-  public void clearDigestLastSent() {
-    this.digestLastSentAt = null;
-    this.updatedAt = Instant.now();
-  }
-
-  /**
-   * Returns an immutable view of the portal-notification document-type allowlist (GAP-L-72). The
-   * default JSONB seed ({@code ["matter-closure-letter", "statement-of-account"]}) is applied at
-   * the database layer via Flyway V117 — Java-side defaulting only kicks in when the column is
-   * absent (i.e. on a fresh entity not yet flushed from the DB).
-   */
-  public List<String> getPortalNotificationDocTypes() {
-    return portalNotificationDocTypes != null
-        ? List.copyOf(portalNotificationDocTypes)
-        : new ArrayList<>();
-  }
-
-  public void setPortalNotificationDocTypes(List<String> portalNotificationDocTypes) {
-    this.portalNotificationDocTypes =
-        portalNotificationDocTypes != null
-            ? new ArrayList<>(portalNotificationDocTypes)
-            : new ArrayList<>();
     this.updatedAt = Instant.now();
   }
 

@@ -71,8 +71,8 @@ public class ProposalPortalSyncService {
             toTimestamp(proposal.getSentAt()),
             toTimestamp(proposal.getExpiresAt()),
             orgName,
-            orgSettings != null ? orgSettings.getLogoS3Key() : null,
-            orgSettings != null ? orgSettings.getBrandColor() : null)
+            orgSettings != null ? orgSettings.getBranding().getLogoS3Key() : null,
+            orgSettings != null ? orgSettings.getBranding().getBrandColor() : null)
         .update();
   }
 

@@ -135,7 +135,7 @@ class ReportRenderingServiceTest {
                           orgSettingsRepository
                               .findForCurrentTenant()
                               .orElseGet(() -> orgSettingsRepository.save(new OrgSettings("ZAR")));
-                      settings.setBrandColor("#ff5733");
+                      settings.getBranding().setBrandColor("#ff5733");
                       orgSettingsRepository.save(settings);
                     }));
 
@@ -170,7 +170,7 @@ class ReportRenderingServiceTest {
                     tx -> {
                       var settings = orgSettingsRepository.findForCurrentTenant().orElse(null);
                       if (settings != null) {
-                        settings.setDocumentFooterText("Confidential - RRS Test Org");
+                        settings.getBranding().setDocumentFooterText("Confidential - RRS Test Org");
                         orgSettingsRepository.save(settings);
                       }
                     }));

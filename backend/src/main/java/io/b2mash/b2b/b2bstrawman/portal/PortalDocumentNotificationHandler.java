@@ -160,7 +160,7 @@ public class PortalDocumentNotificationHandler {
       log.info("Skipping portal-document-ready: no OrgSettings for tenant={}", event.tenantId());
       return;
     }
-    List<String> allowlist = settingsOpt.get().getPortalNotificationDocTypes();
+    List<String> allowlist = settingsOpt.get().getPortal().getPortalNotificationDocTypes();
     if (allowlist == null || allowlist.isEmpty()) {
       log.info(
           "Skipping portal-document-ready: per-tenant allowlist empty (tenant={})",

@@ -39,14 +39,15 @@ For each day-N walk in this cycle:
 - Payments: mock gateway only — expected per mandate.
 
 ## QA Position
-- **Day**: 0 complete — Day 1 next
-- **Next checkpoint**: Day 1 — Firm onboarding polish (1.1)
-- **Completed**: Day 0 (32/32 checkpoints PASS + 4/4 summary checkpoints PASS, zero gaps — see `checkpoint-results/day-00.md`)
+- **Day**: 1 complete — Day 2 next
+- **Next checkpoint**: Day 2 — Onboard Sipho as client, conflict check + KYC (2.1, actor Bob)
+- **Completed**: Day 0 (32/32 checkpoints PASS + 4/4 summary checkpoints PASS, zero gaps — see `checkpoint-results/day-00.md`); Day 1 (7/7 checkpoints PASS + 3/3 summary checkpoints PASS, zero gaps — see `checkpoint-results/day-01.md`)
 - **Resolved**: none
 - **Open gaps**: none
 - **Fixed (awaiting verify)**: none
 - **Exempt gaps**: none (see carry-over exemptions above)
 - **Created Day 0**: org `mathebula-partners` (legal-za, tenant_5039f2d497cf); users thandi (Owner) / bob (Admin) / carol (Member) @mathebula-test.local
+- **Created Day 1**: firm branding (logo in S3 `org/tenant_5039f2d497cf/branding/logo.png`, brand colour `#1B3358`); trust account "Mathebula Trust — Main" (Standard Bank · 051001 · 12345678, SECTION_86, Primary, R 0,00)
 
 ## Stack State
 - Dev Stack: **Running** (clean-slate start 2026-06-13)
@@ -73,3 +74,4 @@ For each day-N walk in this cycle:
 | 0 | Orchestrator | Archived completed 2026-05-30 cycle state; created branch `bugfix_cycle_2026-06-13`; seeded fresh status.md | Setup complete, Infra agent next |
 | 1 | Infra | Clean slate setup: svc stop all, `dev-down.sh --clean` (volumes wiped), `dev-up.sh`, Keycloak bootstrap (padmin only), svc start all, Mailpit cleared, 0 tenant schemas confirmed, padmin token grant verified | All services healthy |
 | 2 | QA | Day 0 executed: access request + OTP, padmin approval (legal-za auto-assigned, provisioning COMPLETED), Thandi/Bob/Carol KC registrations, team invites — full onboarding flow via browser UI; Mailpit API for OTP/invite links only | 32/32 checkpoints PASS, 0 gaps; Day 1 next |
+| 3 | QA | Day 1 executed as Thandi: logo upload + brand colour #1B3358 (persists across logout/KC re-login, S3-served), LSSA 2024/2025 tariff schedule verified (19 items, 4(a) R 7800/day + 4(c) R 780/hr), Section 86 trust account created (Mathebula Trust — Main, R 0,00) | 7/7 checkpoints PASS + 3/3 summary PASS, 0 gaps; Day 2 next |

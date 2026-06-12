@@ -104,11 +104,11 @@ public class InvoiceRenderingService {
 
     var orgSettings = orgSettingsRepository.findForCurrentTenant().orElse(null);
     String taxRegistrationNumber =
-        orgSettings != null ? orgSettings.getTaxRegistrationNumber() : null;
+        orgSettings != null ? orgSettings.getTax().getTaxRegistrationNumber() : null;
     String taxRegistrationLabel =
-        orgSettings != null ? orgSettings.getTaxRegistrationLabel() : "Tax Number";
-    String taxLabel = orgSettings != null ? orgSettings.getTaxLabel() : "Tax";
-    boolean taxInclusive = orgSettings != null && orgSettings.isTaxInclusive();
+        orgSettings != null ? orgSettings.getTax().getTaxRegistrationLabel() : "Tax Number";
+    String taxLabel = orgSettings != null ? orgSettings.getTax().getTaxLabel() : "Tax";
+    boolean taxInclusive = orgSettings != null && orgSettings.getTax().isTaxInclusive();
 
     Context ctx = new Context();
     ctx.setVariable("invoice", invoice);
@@ -153,7 +153,10 @@ public class InvoiceRenderingService {
     List<TaxBreakdownEntry> taxBreakdown = taxCalculationService.buildTaxBreakdown(lines);
     boolean hasPerLineTax = taxCalculationService.hasPerLineTax(lines);
     boolean taxInclusive =
-        orgSettingsRepository.findForCurrentTenant().map(s -> s.isTaxInclusive()).orElse(false);
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .map(s -> s.getTax().isTaxInclusive())
+            .orElse(false);
 
     var memberNames = resolveMemberNames(invoice);
     return InvoiceResponse.from(

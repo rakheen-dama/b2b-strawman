@@ -330,23 +330,23 @@ public class OrgSettingsService {
         settings.isAccountingEnabled(),
         settings.isAiEnabled(),
         settings.isDocumentSigningEnabled(),
-        settings.getTaxRegistrationNumber(),
-        settings.getTaxRegistrationLabel(),
-        settings.getTaxLabel(),
-        settings.isTaxInclusive(),
+        settings.getTax().getTaxRegistrationNumber(),
+        settings.getTax().getTaxRegistrationLabel(),
+        settings.getTax().getTaxLabel(),
+        settings.getTax().isTaxInclusive(),
         settings.getAcceptanceExpiryDays(),
         settings.getDefaultRequestReminderDays(),
         settings.isTimeReminderEnabled(),
         settings.getTimeReminderDays(),
         settings.getTimeReminderTime() != null ? settings.getTimeReminderTime().toString() : null,
         settings.getTimeReminderMinHours(),
-        settings.getDefaultExpenseMarkupPercent(),
-        settings.getDefaultWeeklyCapacityHours() != null
-            ? settings.getDefaultWeeklyCapacityHours()
+        settings.getExpense().getDefaultExpenseMarkupPercent(),
+        settings.getCapacity().getDefaultWeeklyCapacityHours() != null
+            ? settings.getCapacity().getDefaultWeeklyCapacityHours()
             : DEFAULT_WEEKLY_CAPACITY_HOURS,
-        settings.getBillingBatchAsyncThreshold(),
-        settings.getBillingEmailRateLimit(),
-        settings.getDefaultBillingRunCurrency(),
+        settings.getBilling().getBillingBatchAsyncThreshold(),
+        settings.getBilling().getBillingEmailRateLimit(),
+        settings.getBilling().getDefaultBillingRunCurrency(),
         settings.getProjectNamingPattern(),
         settings.getVerticalProfile(),
         settings.getEnabledModules(),
@@ -580,7 +580,10 @@ public class OrgSettingsService {
                   return orgSettingsRepository.save(s);
                 });
 
-    settings.updateTaxSettings(taxRegistrationNumber, taxRegistrationLabel, taxLabel, taxInclusive);
+    settings
+        .getTax()
+        .updateTaxSettings(taxRegistrationNumber, taxRegistrationLabel, taxLabel, taxInclusive);
+    settings.touchUpdatedAt();
     settings = orgSettingsRepository.save(settings);
 
     log.info("Updated tax settings: taxLabel={}, taxInclusive={}", taxLabel, taxInclusive);
@@ -662,7 +665,8 @@ public class OrgSettingsService {
                   return orgSettingsRepository.save(s);
                 });
 
-    settings.setDefaultExpenseMarkupPercent(defaultExpenseMarkupPercent);
+    settings.getExpense().setDefaultExpenseMarkupPercent(defaultExpenseMarkupPercent);
+    settings.touchUpdatedAt();
     settings = orgSettingsRepository.save(settings);
 
     log.info("Updated default expense markup percent to {}", defaultExpenseMarkupPercent);
@@ -747,7 +751,7 @@ public class OrgSettingsService {
   public BigDecimal getDefaultWeeklyCapacityHours() {
     return orgSettingsRepository
         .findForCurrentTenant()
-        .map(OrgSettings::getDefaultWeeklyCapacityHours)
+        .map(s -> s.getCapacity().getDefaultWeeklyCapacityHours())
         .orElse(DEFAULT_WEEKLY_CAPACITY_HOURS);
   }
 
@@ -765,7 +769,8 @@ public class OrgSettingsService {
                   return orgSettingsRepository.save(s);
                 });
 
-    settings.setDefaultWeeklyCapacityHours(hours);
+    settings.getCapacity().setDefaultWeeklyCapacityHours(hours);
+    settings.touchUpdatedAt();
     settings = orgSettingsRepository.save(settings);
 
     log.info("Updated default weekly capacity hours to {}", hours);
@@ -790,6 +795,12 @@ public class OrgSettingsService {
       ActorContext actor) {
     requireAdminOrOwner(actor.orgRole());
 
+    if (billingBatchAsyncThreshold == null
+        && billingEmailRateLimit == null
+        && defaultBillingRunCurrency == null) {
+      return getSettingsWithBranding();
+    }
+
     var settings =
         orgSettingsRepository
             .findForCurrentTenant()
@@ -800,14 +811,15 @@ public class OrgSettingsService {
                 });
 
     if (billingBatchAsyncThreshold != null) {
-      settings.setBillingBatchAsyncThreshold(billingBatchAsyncThreshold);
+      settings.getBilling().setBillingBatchAsyncThreshold(billingBatchAsyncThreshold);
     }
     if (billingEmailRateLimit != null) {
-      settings.setBillingEmailRateLimit(billingEmailRateLimit);
+      settings.getBilling().setBillingEmailRateLimit(billingEmailRateLimit);
     }
     if (defaultBillingRunCurrency != null) {
-      settings.setDefaultBillingRunCurrency(defaultBillingRunCurrency);
+      settings.getBilling().setDefaultBillingRunCurrency(defaultBillingRunCurrency);
     }
+    settings.touchUpdatedAt();
     settings = orgSettingsRepository.save(settings);
 
     log.info(

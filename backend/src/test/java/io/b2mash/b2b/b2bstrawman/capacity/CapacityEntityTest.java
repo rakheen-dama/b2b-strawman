@@ -282,12 +282,12 @@ class CapacityEntityTest {
         .run(
             () -> {
               var settings = orgSettingsRepository.findAll().getFirst();
-              settings.setDefaultWeeklyCapacityHours(new BigDecimal("37.50"));
+              settings.getCapacity().setDefaultWeeklyCapacityHours(new BigDecimal("37.50"));
               orgSettingsRepository.save(settings);
               orgSettingsRepository.flush();
 
               var found = orgSettingsRepository.findById(settings.getId()).orElseThrow();
-              assertThat(found.getDefaultWeeklyCapacityHours())
+              assertThat(found.getCapacity().getDefaultWeeklyCapacityHours())
                   .isEqualByComparingTo(new BigDecimal("37.50"));
             });
   }

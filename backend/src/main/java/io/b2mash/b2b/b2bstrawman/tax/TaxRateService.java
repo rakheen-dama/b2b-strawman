@@ -9,7 +9,6 @@ import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLine;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceLineRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceRepository;
 import io.b2mash.b2b.b2bstrawman.invoice.InvoiceStatus;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.tax.dto.CreateTaxRateRequest;
 import io.b2mash.b2b.b2bstrawman.tax.dto.TaxRateResponse;
@@ -258,7 +257,10 @@ public class TaxRateService {
     }
 
     boolean taxInclusive =
-        orgSettingsRepository.findForCurrentTenant().map(OrgSettings::isTaxInclusive).orElse(false);
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .map(s -> s.getTax().isTaxInclusive())
+            .orElse(false);
 
     Set<UUID> affectedInvoiceIds = new HashSet<>();
     for (InvoiceLine line : affectedLines) {

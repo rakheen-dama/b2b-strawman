@@ -869,6 +869,34 @@ class OrgSettingsIntegrationTest {
                 .value("defaultExpenseMarkupPercent must not exceed 999.99"));
   }
 
+  /**
+   * An all-null batch-billing PATCH must short-circuit (no save, no audit, no updatedAt bump) and
+   * leave previously set values untouched — same contract as the compliance-settings sibling.
+   */
+  @Test
+  void patchBatchBillingSettings_allNullPayloadIsNoOpAndPreservesValues() throws Exception {
+    mockMvc
+        .perform(
+            patch("/api/settings/batch-billing")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"billingBatchAsyncThreshold": 75}
+                    """))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.billingBatchAsyncThreshold").value(75));
+
+    mockMvc
+        .perform(
+            patch("/api/settings/batch-billing")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_settings_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{}"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.billingBatchAsyncThreshold").value(75));
+  }
+
   // --- Helpers ---
 
 }

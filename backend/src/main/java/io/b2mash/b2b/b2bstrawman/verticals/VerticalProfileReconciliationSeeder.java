@@ -133,8 +133,9 @@ public class VerticalProfileReconciliationSeeder {
     }
 
     // 1. tenant.org_settings.tax_label ← taxDefaults[default].name (e.g. "VAT")
-    if (!primary.name().equals(settings.getTaxLabel())) {
-      settings.setTaxLabel(primary.name());
+    if (!primary.name().equals(settings.getTax().getTaxLabel())) {
+      settings.getTax().setTaxLabel(primary.name());
+      settings.touchUpdatedAt();
       orgSettingsRepository.save(settings);
       log.info(
           "Reconciled tax_label for tenant {} (profile={}): {}",

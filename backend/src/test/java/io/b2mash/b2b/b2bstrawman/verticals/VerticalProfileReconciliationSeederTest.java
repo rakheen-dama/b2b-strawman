@@ -65,7 +65,7 @@ class VerticalProfileReconciliationSeederTest {
                   var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
 
                   // GAP-L-27: tax_label set to 'VAT' from the profile's taxDefaults.
-                  assertThat(settings.getTaxLabel()).isEqualTo("VAT");
+                  assertThat(settings.getTax().getTaxLabel()).isEqualTo("VAT");
 
                   // GAP-L-44: enabled_modules superset includes every legal-za profile module.
                   assertThat(settings.getEnabledModules())
@@ -141,7 +141,7 @@ class VerticalProfileReconciliationSeederTest {
                 tx -> {
                   var settings = orgSettingsRepository.findForCurrentTenant().orElseThrow();
                   out[0] = settings.getEnabledModules().size();
-                  out[2] = settings.getTaxLabel();
+                  out[2] = settings.getTax().getTaxLabel();
                   out[1] =
                       taxRateRepository.findByIsDefaultTrue().map(TaxRate::getName).orElse(null);
                   out[3] = taxRateRepository.count();

@@ -9,10 +9,8 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
-import java.math.BigDecimal;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalTime;
@@ -133,24 +131,52 @@ public class OrgSettings {
   @Column(name = "document_signing_enabled", nullable = false)
   private boolean documentSigningEnabled;
 
-  @Column(name = "tax_inclusive", nullable = false)
-  private boolean taxInclusive;
+  /**
+   * Tax configuration group (Wave 3.4): tax-inclusive pricing toggle and the tax-registration
+   * identity fields. Persisted inline on {@code org_settings} via {@code @Embedded} — column names
+   * pinned by {@code @AttributeOverride} for zero schema change. Initialised non-null so a fresh
+   * entity and an all-null DB row never NPE on {@link #getTax()}. ({@code tax_inclusive} is NOT
+   * NULL, so the group never fully materialises as NULL on reload — but the null-safe getter is
+   * kept for symmetry with the other groups.)
+   */
+  @Embedded
+  @AttributeOverride(
+      name = "taxInclusive",
+      column = @Column(name = "tax_inclusive", nullable = false))
+  @AttributeOverride(
+      name = "taxRegistrationNumber",
+      column = @Column(name = "tax_registration_number", length = 50))
+  @AttributeOverride(
+      name = "taxRegistrationLabel",
+      column = @Column(name = "tax_registration_label", length = 30))
+  @AttributeOverride(name = "taxLabel", column = @Column(name = "tax_label", length = 20))
+  private TaxSettings tax = new TaxSettings();
 
-  @Column(name = "tax_registration_number", length = 50)
-  private String taxRegistrationNumber;
+  /**
+   * Expense configuration group (Wave 3.4): the firm-wide default expense markup percent. Persisted
+   * inline on {@code org_settings} via {@code @Embedded} — column name/precision pinned by
+   * {@code @AttributeOverride} for zero schema change. Single nullable column, so it can
+   * materialise as NULL on reload; initialised non-null + lazy-fallback {@link #getExpense()} keeps
+   * it NPE-safe.
+   */
+  @Embedded
+  @AttributeOverride(
+      name = "defaultExpenseMarkupPercent",
+      column = @Column(name = "default_expense_markup_percent", precision = 5, scale = 2))
+  private ExpenseSettings expense = new ExpenseSettings();
 
-  @Column(name = "tax_registration_label", length = 30)
-  private String taxRegistrationLabel;
-
-  @Column(name = "tax_label", length = 20)
-  private String taxLabel;
-
-  @DecimalMin(value = "0.00", message = "Default expense markup percent must be non-negative")
-  @Column(name = "default_expense_markup_percent", precision = 5, scale = 2)
-  private BigDecimal defaultExpenseMarkupPercent;
-
-  @Column(name = "default_weekly_capacity_hours", precision = 5, scale = 2)
-  private BigDecimal defaultWeeklyCapacityHours;
+  /**
+   * Capacity-planning group (Wave 3.4): the firm-wide default weekly capacity hours. Persisted
+   * inline on {@code org_settings} via {@code @Embedded} — column name/precision pinned by
+   * {@code @AttributeOverride} for zero schema change. Single nullable column, so it can
+   * materialise as NULL on reload; initialised non-null + lazy-fallback {@link #getCapacity()}
+   * keeps it NPE-safe.
+   */
+  @Embedded
+  @AttributeOverride(
+      name = "defaultWeeklyCapacityHours",
+      column = @Column(name = "default_weekly_capacity_hours", precision = 5, scale = 2))
+  private CapacitySettings capacity = new CapacitySettings();
 
   @Column(name = "time_reminder_enabled", nullable = false)
   private boolean timeReminderEnabled;
@@ -164,14 +190,26 @@ public class OrgSettings {
   @Column(name = "time_reminder_min_minutes")
   private Integer timeReminderMinMinutes;
 
-  @Column(name = "billing_batch_async_threshold")
-  private Integer billingBatchAsyncThreshold;
-
-  @Column(name = "billing_email_rate_limit")
-  private Integer billingEmailRateLimit;
-
-  @Column(name = "default_billing_run_currency", length = 3)
-  private String defaultBillingRunCurrency;
+  /**
+   * Billing-run configuration group (Wave 3.4): batch async threshold, per-run email rate limit,
+   * and the optional default billing-run currency override. Persisted inline on {@code
+   * org_settings} via {@code @Embedded} — column names pinned by {@code @AttributeOverride} for
+   * zero schema change. Initialised non-null so a fresh entity and an all-null DB row never NPE on
+   * {@link #getBilling()}; the embeddable's field initialisers reproduce the constructor defaults
+   * (threshold 50, rate limit 5). NOTE: the org base currency ({@code default_currency}) stays
+   * top-level — see {@link BillingSettings}.
+   */
+  @Embedded
+  @AttributeOverride(
+      name = "billingBatchAsyncThreshold",
+      column = @Column(name = "billing_batch_async_threshold"))
+  @AttributeOverride(
+      name = "billingEmailRateLimit",
+      column = @Column(name = "billing_email_rate_limit"))
+  @AttributeOverride(
+      name = "defaultBillingRunCurrency",
+      column = @Column(name = "default_billing_run_currency", length = 3))
+  private BillingSettings billing = new BillingSettings();
 
   @Column(name = "project_naming_pattern", length = 500)
   private String projectNamingPattern;
@@ -259,11 +297,8 @@ public class OrgSettings {
     this.accountingEnabled = false;
     this.aiEnabled = false;
     this.documentSigningEnabled = false;
-    this.taxInclusive = false;
     this.timeReminderEnabled = false;
     this.retentionPolicyEnabled = false;
-    this.billingBatchAsyncThreshold = 50;
-    this.billingEmailRateLimit = 5;
     this.portal = PortalSettings.withDefaults();
   }
 
@@ -283,8 +318,50 @@ public class OrgSettings {
     return portal;
   }
 
+  /** Returns the tax configuration settings group. Never null. */
+  public TaxSettings getTax() {
+    if (tax == null) {
+      tax = new TaxSettings();
+    }
+    return tax;
+  }
+
+  /** Returns the expense configuration settings group. Never null. */
+  public ExpenseSettings getExpense() {
+    if (expense == null) {
+      expense = new ExpenseSettings();
+    }
+    return expense;
+  }
+
+  /** Returns the capacity-planning settings group. Never null. */
+  public CapacitySettings getCapacity() {
+    if (capacity == null) {
+      capacity = new CapacitySettings();
+    }
+    return capacity;
+  }
+
+  /** Returns the billing-run configuration settings group. Never null. */
+  public BillingSettings getBilling() {
+    if (billing == null) {
+      billing = new BillingSettings();
+    }
+    return billing;
+  }
+
   public void updateCurrency(String currency) {
     this.defaultCurrency = currency;
+    this.updatedAt = Instant.now();
+  }
+
+  /**
+   * Bumps {@code updatedAt} to now. Embeddable-group setters (tax/billing/capacity/expense/etc.) do
+   * not touch the owning entity's timestamp; service methods that mutate a group through {@link
+   * #getTax()}/{@link #getBilling()}/{@link #getCapacity()}/{@link #getExpense()} call this to
+   * preserve the explicit timestamp-bump semantics the former top-level entity mutators provided.
+   */
+  public void touchUpdatedAt() {
     this.updatedAt = Instant.now();
   }
 
@@ -628,73 +705,6 @@ public class OrgSettings {
     return documentSigningEnabled;
   }
 
-  public boolean isTaxInclusive() {
-    return taxInclusive;
-  }
-
-  public void setTaxInclusive(boolean taxInclusive) {
-    this.taxInclusive = taxInclusive;
-    this.updatedAt = Instant.now();
-  }
-
-  public String getTaxRegistrationNumber() {
-    return taxRegistrationNumber;
-  }
-
-  public void setTaxRegistrationNumber(String taxRegistrationNumber) {
-    this.taxRegistrationNumber = taxRegistrationNumber;
-    this.updatedAt = Instant.now();
-  }
-
-  public String getTaxRegistrationLabel() {
-    return taxRegistrationLabel;
-  }
-
-  public void setTaxRegistrationLabel(String taxRegistrationLabel) {
-    this.taxRegistrationLabel = taxRegistrationLabel;
-    this.updatedAt = Instant.now();
-  }
-
-  public String getTaxLabel() {
-    return taxLabel;
-  }
-
-  public void setTaxLabel(String taxLabel) {
-    this.taxLabel = taxLabel;
-    this.updatedAt = Instant.now();
-  }
-
-  public BigDecimal getDefaultExpenseMarkupPercent() {
-    return defaultExpenseMarkupPercent;
-  }
-
-  public void setDefaultExpenseMarkupPercent(BigDecimal defaultExpenseMarkupPercent) {
-    this.defaultExpenseMarkupPercent = defaultExpenseMarkupPercent;
-    this.updatedAt = Instant.now();
-  }
-
-  public BigDecimal getDefaultWeeklyCapacityHours() {
-    return defaultWeeklyCapacityHours;
-  }
-
-  public void setDefaultWeeklyCapacityHours(BigDecimal defaultWeeklyCapacityHours) {
-    this.defaultWeeklyCapacityHours = defaultWeeklyCapacityHours;
-    this.updatedAt = Instant.now();
-  }
-
-  /** Updates all four tax configuration fields and the timestamp. */
-  public void updateTaxSettings(
-      String taxRegistrationNumber,
-      String taxRegistrationLabel,
-      String taxLabel,
-      boolean taxInclusive) {
-    this.taxRegistrationNumber = taxRegistrationNumber;
-    this.taxRegistrationLabel = taxRegistrationLabel;
-    this.taxLabel = taxLabel;
-    this.taxInclusive = taxInclusive;
-    this.updatedAt = Instant.now();
-  }
-
   /** Updates all three integration domain flags and the timestamp. */
   public void updateIntegrationFlags(boolean accounting, boolean ai, boolean documentSigning) {
     this.accountingEnabled = accounting;
@@ -742,33 +752,6 @@ public class OrgSettings {
   /** Returns the minimum hours threshold, computed from minutes. Defaults to 4.0 if not set. */
   public double getTimeReminderMinHours() {
     return timeReminderMinMinutes != null ? timeReminderMinMinutes / 60.0 : 4.0;
-  }
-
-  public Integer getBillingBatchAsyncThreshold() {
-    return billingBatchAsyncThreshold;
-  }
-
-  public void setBillingBatchAsyncThreshold(Integer billingBatchAsyncThreshold) {
-    this.billingBatchAsyncThreshold = billingBatchAsyncThreshold;
-    this.updatedAt = Instant.now();
-  }
-
-  public Integer getBillingEmailRateLimit() {
-    return billingEmailRateLimit;
-  }
-
-  public void setBillingEmailRateLimit(Integer billingEmailRateLimit) {
-    this.billingEmailRateLimit = billingEmailRateLimit;
-    this.updatedAt = Instant.now();
-  }
-
-  public String getDefaultBillingRunCurrency() {
-    return defaultBillingRunCurrency;
-  }
-
-  public void setDefaultBillingRunCurrency(String defaultBillingRunCurrency) {
-    this.defaultBillingRunCurrency = defaultBillingRunCurrency;
-    this.updatedAt = Instant.now();
   }
 
   public String getProjectNamingPattern() {

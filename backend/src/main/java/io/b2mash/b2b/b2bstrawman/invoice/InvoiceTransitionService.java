@@ -267,10 +267,10 @@ public class InvoiceTransitionService {
     var taxContext =
         new TaxContext(
             sentTaxBreakdown,
-            settings != null ? settings.getTaxRegistrationNumber() : null,
-            settings != null ? settings.getTaxRegistrationLabel() : null,
-            settings != null ? settings.getTaxLabel() : null,
-            settings != null && settings.isTaxInclusive(),
+            settings != null ? settings.getTax().getTaxRegistrationNumber() : null,
+            settings != null ? settings.getTax().getTaxRegistrationLabel() : null,
+            settings != null ? settings.getTax().getTaxLabel() : null,
+            settings != null && settings.getTax().isTaxInclusive(),
             sentHasPerLineTax);
 
     eventPublisher.publishEvent(

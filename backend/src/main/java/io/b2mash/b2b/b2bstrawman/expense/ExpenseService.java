@@ -14,7 +14,6 @@ import io.b2mash.b2b.b2bstrawman.multitenancy.ActorContext;
 import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
 import io.b2mash.b2b.b2bstrawman.project.ProjectLifecycleGuard;
 import io.b2mash.b2b.b2bstrawman.security.Roles;
-import io.b2mash.b2b.b2bstrawman.settings.OrgSettings;
 import io.b2mash.b2b.b2bstrawman.settings.OrgSettingsRepository;
 import io.b2mash.b2b.b2bstrawman.task.TaskRepository;
 import java.math.BigDecimal;
@@ -382,7 +381,7 @@ public class ExpenseService {
   public BigDecimal getOrgDefaultMarkupPercent() {
     return orgSettingsRepository
         .findForCurrentTenant()
-        .map(OrgSettings::getDefaultExpenseMarkupPercent)
+        .map(s -> s.getExpense().getDefaultExpenseMarkupPercent())
         .orElse(null);
   }
 

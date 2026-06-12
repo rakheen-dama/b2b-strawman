@@ -53,7 +53,10 @@ public class InvoiceTaxService {
     }
 
     boolean taxInclusive =
-        orgSettingsRepository.findForCurrentTenant().map(s -> s.isTaxInclusive()).orElse(false);
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .map(s -> s.getTax().isTaxInclusive())
+            .orElse(false);
     BigDecimal calculatedTax =
         taxCalculationService.calculateLineTax(
             line.getAmount(), taxRate.getRate(), taxInclusive, taxRate.isExempt());
@@ -78,7 +81,10 @@ public class InvoiceTaxService {
     BigDecimal subtotal =
         lines.stream().map(InvoiceLine::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
     boolean taxInclusive =
-        orgSettingsRepository.findForCurrentTenant().map(s -> s.isTaxInclusive()).orElse(false);
+        orgSettingsRepository
+            .findForCurrentTenant()
+            .map(s -> s.getTax().isTaxInclusive())
+            .orElse(false);
     boolean hasPerLineTax = taxCalculationService.hasPerLineTax(lines);
     BigDecimal perLineTaxSum =
         lines.stream()

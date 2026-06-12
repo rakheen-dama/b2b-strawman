@@ -91,7 +91,7 @@ public class TemplateContextHelper {
               orgMap.put("defaultCurrency", settings.getDefaultCurrency());
               orgMap.put("brandColor", settings.getBranding().getBrandColor());
               orgMap.put("documentFooterText", settings.getBranding().getDocumentFooterText());
-              orgMap.put("taxRegistrationNumber", settings.getTaxRegistrationNumber());
+              orgMap.put("taxRegistrationNumber", settings.getTax().getTaxRegistrationNumber());
 
               if (settings.getBranding().getLogoS3Key() != null
                   && !settings.getBranding().getLogoS3Key().isBlank()) {

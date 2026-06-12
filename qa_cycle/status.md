@@ -39,13 +39,14 @@ For each day-N walk in this cycle:
 - Payments: mock gateway only — expected per mandate.
 
 ## QA Position
-- **Day**: 0 (not started)
-- **Next checkpoint**: Day 0 Phase A — access request + OTP
-- **Completed**: none
+- **Day**: 0 complete — Day 1 next
+- **Next checkpoint**: Day 1 — Firm onboarding polish (1.1)
+- **Completed**: Day 0 (32/32 checkpoints PASS + 4/4 summary checkpoints PASS, zero gaps — see `checkpoint-results/day-00.md`)
 - **Resolved**: none
 - **Open gaps**: none
 - **Fixed (awaiting verify)**: none
 - **Exempt gaps**: none (see carry-over exemptions above)
+- **Created Day 0**: org `mathebula-partners` (legal-za, tenant_5039f2d497cf); users thandi (Owner) / bob (Admin) / carol (Member) @mathebula-test.local
 
 ## Stack State
 - Dev Stack: **Running** (clean-slate start 2026-06-13)
@@ -71,3 +72,4 @@ For each day-N walk in this cycle:
 |-------|-------|--------|--------|
 | 0 | Orchestrator | Archived completed 2026-05-30 cycle state; created branch `bugfix_cycle_2026-06-13`; seeded fresh status.md | Setup complete, Infra agent next |
 | 1 | Infra | Clean slate setup: svc stop all, `dev-down.sh --clean` (volumes wiped), `dev-up.sh`, Keycloak bootstrap (padmin only), svc start all, Mailpit cleared, 0 tenant schemas confirmed, padmin token grant verified | All services healthy |
+| 2 | QA | Day 0 executed: access request + OTP, padmin approval (legal-za auto-assigned, provisioning COMPLETED), Thandi/Bob/Carol KC registrations, team invites — full onboarding flow via browser UI; Mailpit API for OTP/invite links only | 32/32 checkpoints PASS, 0 gaps; Day 1 next |

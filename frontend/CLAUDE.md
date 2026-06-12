@@ -45,7 +45,7 @@ frontend/
 │   ├── globals.css                   # Tailwind v4 + slate color tokens
 │   └── layout.tsx                    # Root layout with AuthProvider
 ├── components/
-│   ├── ui/                           # Shadcn UI components (customized — see below)
+│   ├── ui/                           # Composite Shadcn components (customized — see below); base primitives live in @b2mash/ui
 │   ├── projects/                     # Project-specific components
 │   ├── documents/                    # Document-specific components
 │   ├── team/                         # Team management components
@@ -70,7 +70,7 @@ frontend/
 │   ├── api.ts                        # Spring Boot API client (attaches Bearer JWT)
 │   ├── internal-api.ts               # Types for internal/billing API
 │   ├── nav-items.ts                  # Sidebar navigation item definitions
-│   └── utils.ts                      # cn() helper from Shadcn
+│   └── utils.ts                      # re-exports cn() from @b2mash/ui/cn (source of truth)
 ├── hooks/                            # Custom React hooks
 ├── __tests__/                        # Test files
 ├── proxy.ts                         # Auth middleware entry point (delegates to lib/auth/middleware)
@@ -133,19 +133,20 @@ All authenticated routes are org-scoped under `(app)/org/[slug]/`.
 ### Path Aliases
 
 - `@/*` maps to project root (configured in `tsconfig.json`)
-- Import as `@/components/ui/button`, `@/lib/utils`, `@/hooks/use-something`
+- Import as `@/components/ui/dialog`, `@/lib/utils`, `@/hooks/use-something`
+- Base primitives (Button, Badge, Card, Input, Label, Separator, Skeleton) live in `@b2mash/ui` (packages/ui, shared with portal) — import from `@b2mash/ui`, NOT `@/components/ui/*`
 
 ### Component Conventions
 
 - Prefer React Server Components (RSC) by default — only add `"use client"` when needed
 - Feature components go in `components/{feature}/` (e.g., `components/projects/`)
 - Marketing page sections go in `components/marketing/`
-- Shared UI primitives in `components/ui/` — **these have been customized** (see below)
+- Composite/app-level primitives (Dialog, AlertDialog, Sheet, Form, Table, Select…) remain in `components/ui/` — **customized** (see below)
 - Custom reusable components outside `ui/` should follow Shadcn patterns (forwardRef, CVA variants, cn())
 
 ### Shadcn UI — Customized Components
 
-The `components/ui/` directory started from Shadcn scaffolding but **base components have been customized** with project-specific variants and slate styling. Key customizations:
+Components started from Shadcn scaffolding but **have been customized** with project-specific variants and slate styling. The base primitives below (Button, Badge, Card, Input) now live in `@b2mash/ui`; Dialog/AlertDialog/Textarea and other composites remain in `components/ui/`. Key customizations:
 
 - **Button** — Pill-shaped (`rounded-full`) primary/accent/soft/destructive variants. `soft` and `plain` variants added. Accent uses `bg-teal-600`.
 - **Badge** — Semantic variants: `lead`, `member`, `owner`, `admin`, `starter`, `pro`, `success`, `warning`, `destructive`, `neutral`.
@@ -168,7 +169,8 @@ The `components/ui/` directory started from Shadcn scaffolding but **base compon
 - **Tailwind CSS v4** — CSS-first config, no `tailwind.config.ts`
 - PostCSS via `@tailwindcss/postcss` plugin
 - CSS variables for theming in `app/globals.css`
-- Use `cn()` from `@/lib/utils` to merge Tailwind classes (clsx + tailwind-merge)
+- Use `cn()` to merge Tailwind classes (clsx + tailwind-merge) — source of truth is `@b2mash/ui/cn`; `@/lib/utils` re-exports it for existing import sites
+- Terminology and date/currency formatting come from `@b2mash/shared` — don't reimplement locally
 - Slate color classes: `bg-slate-50` through `bg-slate-950`, `text-slate-*`, `border-slate-*`
 - Teal accent classes: `bg-teal-500`, `bg-teal-600`, `text-teal-*`
 

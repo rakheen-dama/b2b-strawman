@@ -1,7 +1,7 @@
 # CLAUDE.md
 
 Multi-tenant B2B SaaS starter (Kazi product, b2mash company) with schema-per-tenant isolation.
-Monorepo: `frontend/`, `backend/`, `compose/`, `infra/`.
+Monorepo (pnpm workspace, one root lockfile): `frontend/`, `portal/`, `docs/`, `packages/` (`@b2mash/ui`, `@b2mash/shared`), `backend/`, `compose/`, `infra/`.
 
 ## Quality Gates — NON-NEGOTIABLE
 

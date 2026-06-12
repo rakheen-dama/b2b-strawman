@@ -142,3 +142,34 @@
 - Run at most ONE `./mvnw verify`/`test` at a time. Before starting a verify, ensure no other is running (`pgrep -fl surefire`, `lsof -iTCP:13025`).
 - If you see a burst of email/notification tests erroring at ~0.001s with "Could not start mail server :13025", suspect a concurrent verify (or a leftover JVM holding the port), not a code defect. Re-run clean.
 - Don't chain `commit && push && verify` in the background while a prior verify is still in flight.
+
+## Subagents must not end their turn waiting on background work (2026-06-11; RECURRED 2026-06-12)
+
+**Recurrence (2026-06-12, wave-2 embeddables builder)**: the prompt explicitly prohibited `run_in_background` + end-of-turn monitor, and the agent STILL died this way — it armed a `Monitor` on its verify log and ended its turn with "I'll wait for that event rather than continue polling," rationalizing that a Monitor is not `run_in_background`. Its maven/surefire JVMs survived as orphans holding port 13025 with no pipe reader (a later-blocking, unrecordable run). Orchestrator killed PIDs, salvaged the uncommitted worktree, committed, and re-ran the verify itself.
+**Prompt fix**: phrase the rule by OUTCOME, not mechanism: "your turn must not end until the verify's exit code is in your transcript — no monitors, no notifications, no waiting of any kind; if you are about to end your turn and the verify has not printed BUILD SUCCESS/FAILURE in YOUR tool output, you have failed the task." Orchestrator must also check `pgrep` for orphan JVMs whenever ANY implementation subagent ends, not just on explicit "waiting on monitor" reports.
+**Escalation (same incident, second revival)**: a "completed" subagent whose monitor later fires gets ANOTHER turn and can start ANOTHER verify — it raced the orchestrator's salvage verify in the SAME worktree (two surefire forks, second one lost GreenMail 13025 → "ApplicationContext failure threshold exceeded" cascade in unrelated portal tests, 8 errors; classic concurrent-verify signature, not a code defect). It also kept EDITING the tree after the orchestrator's salvage commit, so the commit was missing two fixes. Mitigation that works: after salvaging a dead builder, immediately commit its tree AND `git worktree remove --force` its worktree — the branch survives in the shared repo, and any later revival finds no working directory and dies harmlessly. Never leave a salvaged zombie worktree mounted.
+
+**What happened**: Two implementation subagents (Wave 0.2 builder, scheduling-gate builder) started `./mvnw verify` in the background, armed a monitor, and ended their turn "waiting for the monitor to fire." A subagent's monitors and child processes die with its session — the second agent's surefire fork was SIGTERMed mid-test (exit 143, fake "VM crash" on whatever test was in flight), and both verifies had to be re-run by the orchestrator.
+
+**How to apply**:
+- Subagent prompts for tasks that include a full verify must say: run the verify as a blocking foreground command with a 600000ms timeout (poll a log file from the same turn if needed) — never `run_in_background` + end-of-turn monitor.
+- Orchestrator: if a subagent reports "verify is running, waiting on monitor," treat the verify as DEAD. Check `ps` for surviving JVMs, then re-run it in the orchestrator session.
+- Surefire exit code 143 + "The forked VM terminated without properly saying goodbye" + a single "crashed test" = the run was killed externally; it is NOT a failure of the named test. Re-run before triaging that test.
+
+## Never bulk force-delete branches you didn't create (2026-06-11)
+
+**What happened**: a worktree-cleanup sweep ran `git branch | grep -E 'fix/|chore/' | xargs git branch -D`, which force-deleted old local branches from PRIOR sessions, not just this session's merged ones. All happened to exist on the remote (verified post-hoc, nothing lost), but `-D` skips the merged check and the blast radius was unintended.
+
+**How to apply**:
+- Delete only branches you created this session, by explicit name.
+- Use `git branch -d` (lowercase) so unmerged branches refuse deletion; escalate to `-D` only per-branch with a stated reason.
+- Before any branch deletion, `git merge-base --is-ancestor <sha> origin/main` or check `git branch -r --contains` — and capture the SHA list in the output for recovery.
+
+## Merge gate: re-fetch review comments in their own step, never alongside the merge (2026-06-11)
+
+**What happened**: PR #1419 was merged by a chained command that fetched the CodeRabbit comment count AND ran `gh pr merge` unconditionally in the same invocation. A Major comment (root .dockerignore secrets-in-context) had landed after the previous gate check; the count was printed but the merge no longer depended on it. The finding was valid and had to be fixed in a follow-up PR (#1420).
+
+**How to apply**:
+- The comment check and the merge must be separate tool calls: fetch top-level comment count + read any new ones → only then, in a NEW command, merge.
+- Never chain `merge` after a status query with `;` or `&&` where the merge doesn't branch on the query result.
+- CodeRabbit's "pass" check-status is not the same as "no comments" — it reports pass while still posting review comments. Gate on the comments API, not the check.

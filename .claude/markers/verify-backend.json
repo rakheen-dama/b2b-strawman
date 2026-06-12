@@ -1,7 +1,7 @@
 {
-  "commit": "e7d3d2bce3b24b121cfb8485b1bc4cb9a2694683",
+  "commit": "e8545cd87bee53800f09b4201f57e217fe71bde3",
   "command": "./mvnw verify",
   "exit": 0,
-  "ts": "2026-05-29T20:16:03Z",
-  "summary": "PR #1390 D5 proof test + TD-D5 refresh (test/docs only). Full backend verify clean: 5592 tests, 0 failures, 0 errors, 26 skipped (single-process)."
+  "ts": "2026-06-12T21:20:00Z",
+  "summary": "Wave 3 OrgSettings embeddables final head (incl. Locale.ROOT working-day parsing fix). Full verify run by orchestrator, observed: 5632 tests, 0 failures, 0 errors, 26 skipped. Log /tmp/wave3-verify3.log."
 }

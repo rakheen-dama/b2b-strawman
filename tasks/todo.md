@@ -1,115 +1,65 @@
-# Gap Analysis Fixes — Implementation Plan
+# Simplification Roadmap — Execution Tracker
 
-Groups B, C, D from `accepted-gap-analysis.md`. Three independent, incrementally deployable parts.
+Plan: `~/.claude/plans/tranquil-fluttering-patterson.md` (approved 2026-06-10)
+Mode: orchestrator + sequential implementation subagents (one PR at a time).
+(Previous gap-analysis plan in this file was verified complete — CommentService already on SHARED — and replaced.)
 
----
+## Wave 0 — Defect fixes (one PR each, reproduce-before-fix)
+- [x] 0.1 ReportingController authz — PR #1403 MERGED (squash). 6 endpoints guarded; reproduce-before-fix observed (200→403); full verify 5599/0; CodeRabbit Major (unsynced member) fixed + confirmed.
+- [x] 0.2 accounting-za regulatory_deadlines — PR #1407 MERGED. Register premise was wrong (two distinct modules); Option A added the missing slug. Two-direction bug-class test; retainer_agreements divergence documented for triage. Verify 5602/0.
+- [x] 0.3 legal-za packs.automation — PREMISE DISPROVEN: pack exists and already auto-installs (installer selects by pack's own verticalProfile field; ProfileDefinition.packs() map is vestigial). Pinning test added; register corrected. PR open, awaiting gate.
+- [x] 0.4 `/portal/dev/**` profile gate — PR #1410 open (real gate was CustomerAuthFilter.shouldNotFilter, not SecurityConfig permit; profiles local/dev/keycloak with evidence; 404→401 flip observed). Awaiting CI.
 
-## Part 1: Group C — Comment Visibility Enum Fix (Backend)
+## Wave 0.5 — Unplanned (discovered during 0.2 verify)
+- [x] PR #1406 JobWorker test flake — MERGED (CodeRabbit zero comments, Backend CI pass)
+- [x] Global scheduling gate — PR #1408 MERGED. Scheduler log lines 145→0 across full suite; zero opt-ins needed; 5602/0. Dead spring.scheduling.enabled config replaced with working kazi.scheduling.enabled.
 
-**Why first**: Security-relevant bug, smallest blast radius, zero frontend changes, fully testable in isolation.
+## Wave 1 — Hygiene
+- [x] 1.1 Root cleanup — PR #1411 MERGED (13 media → documentation/screenshots/, proj-snapshot.yml deleted, gitignore hardened, root node_modules deleted)
+- [x] 1.2 Docs truth pass — PR #1414 MERGED (docs map, historical banner, observability claims corrected; one CodeRabbit Minor fixed)
+- [x] 1.3 MemberFilter Caffeine — ALREADY DONE on main since PR #42; TD-001 was stale. Register fix merged as PR #1412.
+- [x] 1.4 Portal in dev compose — PR #1413 MERGED
+- [x] 1.5 Thymeleaf exclusion — PREMISE DISPROVEN (InvoiceRenderingService/AcceptanceCertificateService inject TemplateEngine in prod; exclusion would break invoicing). TD-003 invalidated — PR #1415 MERGED. WAVE 1 COMPLETE.
 
-### Changes
+## Wave 2 — pnpm workspace (staged, one app per PR)
+- [x] 2.1 Workspace bootstrap — PR #1416 MERGED (+ ci.yml pnpm version-input removal after CodeRabbit catch)
+- [x] 2.2 Portal joins — PR #1417 MERGED (zero dep drift via lockfile graft; 191 tests; image run-proven; 4th build site seed-images.yml found; Node 20 alignment)
+- [x] 2.3 Frontend joins — PR #1419 MERGED (zero drift graft; 2,339 tests; image run-proven; 7 build sites; removes #1418's interim flag) — NOW BAKING before 2.4
+- [x] 2.3a unplanned: PR #1418 MERGED — pre-existing prettier breakage on main + interim --ignore-workspace CI fix (#1416 had silently broken frontend CI for non-members)
+- [x] 2.3b unplanned: PR #1420 MERGED — deny-by-default root .dockerignore (CodeRabbit Major on #1419 caught post-merge; process lesson recorded); context proven to exclude compose/.env* secrets
+- [x] 2.4 packages/ui — PR #1421 MERGED (@b2mash/ui; 501-file import rewrite; drift table — badge superset; builder died mid-task, continuation agent caught @types/react any-collapse + tsconfig.base Docker miss; Tailwind scan proven)
+- [x] 2.5 packages/shared — PR #1422 MERGED (@b2mash/shared; TERMINOLOGY_BASE + explicit PORTAL_TERMINOLOGY_OVERRIDES; cn consolidated; format.ts correctly STOPPED — divergence was test-pinned product behavior)
+- [x] 2.6 unified formatting — PR #1423 MERGED (portal byte-identical, staff en-GB/en-ZA; CodeRabbit guards+isOverdue fixes applied). WAVE 2 COMPLETE.
+- [x] 2.7 flaky test — PR #1430 MERGED
 
-**1. `backend/src/main/java/io/b2mash/b2b/b2bstrawman/comment/CommentService.java`**
-- [ ] Line 80: `"EXTERNAL"` → `"SHARED"` in the create privilege gate
-- [ ] Line 159: `"EXTERNAL"` → `"SHARED"` in the update visibility validation
+## Wave 3 — Backend refactors
+- [ ] 3.1 TD-009 thin controllers (one per PR): Project → Document → Dashboard → OrgSettings → PortalBranding → repo-injection; delete ArchUnit exemption each time
+- [ ] 3.2a org_id predicate guard test for PortalReadModelRepository
+- [ ] 3.2b Split PortalReadModelRepository into domain read-repositories (one per PR)
+- [x] 3.3 OrgSettings → per-module @Embeddable groups (zero schema change) — COMPLETE 2026-06-12 via 3 wave PRs (#1433, #1434, #1435; merge commits 0590642 / 841dd393e / 60c9ff038). OrgSettings is now entity spine + 10 embedded groups; ~1,060→~600 LOC entity; schema snapshot pin byte-identical throughout.
+  - Wave 1 — PR #1433 MERGED 2026-06-12 (0590642): BrandingSettings + PortalSettings + hardened 53-column schema snapshot pin + null-reload test. CodeRabbit Major (updatedAt contract) was REAL — fixed via entity-level @PreUpdate (pinned by test; auto-covers waves 2–3); footer fixture + immutable-list Minors fixed. Verifies observed at all 3 heads (5630/0, 5631/0, 5631/0).
+  - Wave 2 — PR #1434 MERGED 2026-06-12 (841dd393e): Tax/Billing/Capacity/Expense embeddables; default_currency kept top-level; snapshot pin unchanged; CodeRabbit Minor (no-op batch-billing PATCH dirtied entity via touchUpdatedAt — verified PR-introduced) fixed + pinned. Verifies observed 5631/0 + 5632/0; both reviews APPROVE. Builder died twice at turn-end monitors (lesson updated); work salvaged by orchestrator.
+  - Wave 3 (final) — PR #1435 MERGED 2026-06-12 (60c9ff038): TimeReminderSettings, DataProtectionSettings, DataRequestSettings (split: POPIA panel vs scheduler tunables), PackStatusSettings (10 jsonb). CodeRabbit Minor (locale-sensitive toUpperCase — pre-existing, fixed in passing with Locale.ROOT). Verifies observed 5632/0 at both heads; both reviews APPROVE.
 
-**2. `backend/src/test/java/.../comment/CommentServiceIntegrationTest.java`**
-- [ ] Replace all `"EXTERNAL"` with `"SHARED"` (lines 235, 240, 256, 329)
-- [ ] Add a new test: `createComment_memberCannotCreateSharedComment` — proves a regular member (ORG_MEMBER role, non-lead) sending `visibility: "SHARED"` gets 403. This is the key regression test — the bug was that this check was frontend-only.
+## Phase 2 close-out review (2026-06-12)
+- Shipped: PR #1432 (P1 expense-markup write path), PRs #1433/#1434/#1435 (P2 OrgSettings embeddable reorganization, 3 waves). All merged on green CI + clean CodeRabbit + dual review verdicts + observed full verifies (final suite: 5632 tests / 0 failures).
+- P3 api-types: DEFERRED by user after premise disproven (no springdoc, REST Docs unused — see Wave 4.1 entry).
+- P4 items: untouched per standing instruction (explicit request only).
+- Premises disproven this phase (register-claims-are-hypotheses tally): (1) "springdoc already exposes the spec" — false; (2) wave-1 builder's "updatedAt bump was never load-bearing" framing — understated, CodeRabbit Major was real, fixed via @PreUpdate.
+- Process incidents: wave-2 builder died twice at end-of-turn monitors despite explicit prohibition (zombie revivals raced the orchestrator's verify in the same worktree; concurrent-verify GreenMail collision reproduced). Mitigations recorded in tasks/lessons.md: outcome-based verify phrasing (worked for wave-3 builder), salvage-then-remove-worktree rule, orphan-JVM sweep after every builder.
 
-**3. `backend/src/test/java/.../datarequest/DataAnonymizationServiceTest.java`**
-- [ ] Line 446: `"EXTERNAL"` → `"SHARED"` (test creates a shared comment for anonymization testing)
+## Found-during-review (tracked, not bundled)
+- [x] BUG: time-tracking settings form no-op — PR #1431 MERGED (PATCH /time-reminders + hours→minutes; reproduce-before-fix observed).
+- [x] BUG (P1): defaultExpenseMarkupPercent write path — PR #1432 MERGED 2026-06-12 (e04f8248b). PATCH /api/settings/expense + UpdateExpenseSettingsRequest + service method + form rewire. Reproduce-before-fix observed (404→200); full verify 5628/0 + CI Backend on final head; frontend gates green. CodeRabbit 2 Majors (ProblemDetail assertions) applied in 577d77998 + confirmed; 3 nitpicks declined. Null semantics: explicit null CLEARS markup (documented divergence from keep-existing siblings, pinned by test). (read in 3 services, exposed in SettingsResponse, setter has zero callers, no endpoint) — the form's markup input is dead UI. Needs scoped work: new endpoint + DTO + service wiring + form rewire. (was: time-tracking settings form is a wire-level no-op — posts timeReminderEnabled/Days/Time/MinHours + defaultExpenseMarkupPercent to PUT /api/settings whose UpdateSettingsRequest has none of those fields (Jackson drops silently). Real endpoint PATCH /api/settings/time-reminders expects timeReminderMinMinutes (different name AND units). Surfaced by CodeRabbit on #1428, verified end-to-end. Needs own reproduce-before-fix PR: wire form to PATCH endpoint with hours→minutes conversion (or extend PUT). Pre-existing, unrelated to DTO move.
 
-### Verification
-- [ ] `./mvnw test -Dtest=CommentServiceIntegrationTest -q`
-- [ ] `./mvnw test -Dtest=DataAnonymizationServiceTest -q`
-- [ ] Grep codebase for remaining `"EXTERNAL"` in comment context — should be zero
+## Wave 4 — Decisions to surface
+- [ ] 4.1 packages/api-types via openapi-typescript — DEFERRED by user decision 2026-06-12. PREMISE CORRECTION: the plan claimed "springdoc already exposes the spec" — FALSE. Backend has no springdoc dependency; Spring REST Docs is on the classpath but used by zero tests. There is no OpenAPI source today. Reviving P3 requires first adding springdoc-openapi (new dependency, /v3/api-docs endpoint needing profile-gating/security review) or bootstrapping REST Docs coverage, then the types package + CI drift strategy (commit-the-spec vs boot-in-CI was left undecided).
+- [ ] 4.2 docs/ deployable: keep vs static-export — user decision
+- [x] 4.3 Gateway: no action (judged justified as-is)
 
----
+## Bake checkpoint (2026-06-11, post-2.3)
+- deploy-staging.yml failing on `configure-aws-credentials` ("Could not load credentials from any providers") since 2026-05-30 — predates this session; aligns with the aws-infra extraction. Workspace images never deploy-pipeline-tested; proven via local build+run + green CI. SURFACED TO USER — infra/credentials fix outside this plan.
+- Wave 2 remaining: 2.4 packages/ui, 2.5 packages/shared — start after bake. Wave 3 backend refactors and Wave 4 decisions pending.
 
-## Part 2: Group B — Invoice Creation Link Fix (Frontend)
-
-**Why second**: Eliminates user-facing 404s, frontend-only, no backend changes.
-
-### Changes
-
-**1. `frontend/components/projects/overview-tab.tsx`** (line ~170-179)
-
-The project overview's "Unbilled Time" ActionCard currently links to `/org/${slug}/invoices/new?projectId=${projectId}` (404).
-
-Fix: Thread `customerId` through to the OverviewTab and redirect to the customer's Invoices tab.
-
-- [ ] Add `customerId: string | null` to `OverviewTabProps`
-- [ ] Change ActionCard `primaryAction.href` from the dead `/invoices/new` route to:
-  ```
-  `/org/${slug}/customers/${customerId}?tab=invoices`
-  ```
-- [ ] Guard: only show primaryAction when `customerId` is non-null (can't invoice without a linked customer)
-
-**2. `frontend/app/(app)/org/[slug]/projects/[id]/page.tsx`** (line ~417-429)
-
-- [ ] Pass `customerId={customers.length > 0 ? customers[0].id : null}` to `<OverviewTab>`
-
-**3. `frontend/app/(app)/org/[slug]/customers/[id]/page.tsx`** (line ~495)
-
-The customer overview's "Unbilled Time" ActionCard links to `/org/${slug}/invoices/new?customerId=${id}` (404). Since we're already on the customer page:
-
-- [ ] Change `href` to `?tab=invoices` (same page, switch to Invoices tab where `InvoiceGenerationDialog` lives)
-
-**4. Test updates**
-- [ ] `frontend/__tests__/components/projects/overview-tab-setup.test.tsx` line 111: Update expected href
-- [ ] `frontend/__tests__/components/customers/customer-setup-guidance.test.tsx` line 93: Update expected href
-- [ ] `frontend/__tests__/components/action-card.test.tsx` line 36/42: Update test fixture href (optional — generic component test)
-
-### Verification
-- [ ] `pnpm test --run` (all frontend tests pass)
-- [ ] `pnpm build` (no broken links at build time)
-- [ ] Manual: click "Create Invoice" ActionCard on project overview → lands on customer Invoices tab
-- [ ] Manual: click "Create Invoice" ActionCard on customer overview → switches to Invoices tab
-
----
-
-## Part 3: Group D — Retainer UX Polish (Frontend)
-
-**Why third**: UX enhancement, no backend changes, lowest urgency.
-
-### Part 3a: Post-close invoice navigation (`close-period-dialog.tsx`)
-
-- [ ] Add `useRouter` from `next/navigation` to the dialog
-- [ ] After successful close, navigate to the generated invoice:
-  ```tsx
-  if (result.success && result.data?.generatedInvoice?.id) {
-    onOpenChange(false);
-    router.push(`/org/${slug}/invoices/${result.data.generatedInvoice.id}`);
-  }
-  ```
-- [ ] The `slug` prop is already available in the component props
-
-### Part 3b: Retainer consumption alert banners (`retainers/[id]/page.tsx`)
-
-- [ ] Compute `consumptionPercent` from `retainer.currentPeriod.consumedHours / retainer.allocatedHours * 100`
-- [ ] Add conditional alert banners above or inside the "Current Period" card:
-  - At >= 100%: destructive variant — "Retainer fully consumed — additional hours are overage."
-  - At >= 80% and < 100%: warning variant — "Retainer at X% capacity — approaching limit."
-- [ ] Import `Alert` / `AlertDescription` from `@/components/ui/alert` and `AlertTriangle` icon
-- [ ] Only show for HOUR_BANK type retainers (FIXED_FEE has no hour tracking)
-- [ ] Only show when `retainer.currentPeriod` exists and status is OPEN
-
-### Verification
-- [ ] Manual: close a retainer period → browser navigates to the generated draft invoice
-- [ ] Manual: log time until retainer hits 80% → amber alert appears on detail page
-- [ ] Manual: log time past 100% → red alert appears
-- [ ] `pnpm build` passes
-
----
-
-## Summary
-
-| Part | Group | Layer | Files Changed | Risk |
-|------|-------|-------|--------------|------|
-| 1 | C | Backend | 3 (service + 2 tests) | Low — string replacements + 1 new test |
-| 2 | B | Frontend | 5 (2 production + 3 tests) | Low — href changes, one new prop |
-| 3 | D | Frontend | 2 (dialog + detail page) | Low — additive UI, no existing behavior changes |
-
-Each part is independently deployable and testable. A single agent can handle all three in sequence (they share no files), or they can be done in parallel by separate agents on separate branches.
+## Review log
+- 2026-06-10 PR #1403 (Wave 0.1): CodeRabbit raised 1 Major — denial tests used an unsynced member, so 403 could've been the unresolved-member path. Fixed by syncing `user_rc_member` in @BeforeAll; CodeRabbit auto-confirmed. CI Backend 27m pass, qodana pass. Merged.

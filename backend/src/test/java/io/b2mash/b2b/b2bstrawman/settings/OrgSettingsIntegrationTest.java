@@ -840,7 +840,13 @@ class OrgSettingsIntegrationTest {
                     """
                     {"defaultExpenseMarkupPercent": -1.00}
                     """))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("defaultExpenseMarkupPercent"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message")
+                .value("defaultExpenseMarkupPercent must be non-negative"));
   }
 
   @Test
@@ -854,7 +860,13 @@ class OrgSettingsIntegrationTest {
                     """
                     {"defaultExpenseMarkupPercent": 1000.00}
                     """))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.title").value("Validation failed"))
+        .andExpect(jsonPath("$.detail").value("1 field(s) have validation errors"))
+        .andExpect(jsonPath("$.fieldErrors[0].field").value("defaultExpenseMarkupPercent"))
+        .andExpect(
+            jsonPath("$.fieldErrors[0].message")
+                .value("defaultExpenseMarkupPercent must not exceed 999.99"));
   }
 
   // --- Helpers ---

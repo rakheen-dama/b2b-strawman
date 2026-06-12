@@ -28,16 +28,15 @@ export async function updateTimeTrackingSettings(
   }
 
   try {
-    await api.put("/api/settings", data);
+    // Backend stores reminder threshold in minutes; the form works in hours.
+    await api.patch("/api/settings/time-reminders", {
+      timeReminderEnabled: data.timeReminderEnabled,
+      timeReminderDays: data.timeReminderDays,
+      timeReminderTime: data.timeReminderTime,
+      timeReminderMinMinutes: Math.round(data.timeReminderMinHours * 60),
+    });
   } catch (error) {
     if (error instanceof ApiError) {
-      if (error.status === 404 || error.status === 405) {
-        return {
-          success: false,
-          error:
-            "Time tracking settings API not available yet. This feature is coming in a future update.",
-        };
-      }
       if (error.status === 403) {
         return {
           success: false,

@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.event.ProposalSentEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskCompletedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TaskStatusChangedEvent;
 import io.b2mash.b2b.b2bstrawman.event.TimeEntryChangedEvent;
+import io.b2mash.b2b.b2bstrawman.project.Project;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -67,11 +68,49 @@ public final class AutomationContext {
       case FIELD_DATE_APPROACHING ->
           buildFieldDateApproaching((FieldDateApproachingEvent) event, context);
       case SCHEDULED -> {
-        // TODO(515C): Scheduled triggers currently produce a context map with no entity data.
-        // When Epic 515C implements scheduled trigger execution, this block must populate
-        // entity fields so templates can resolve {{event.entityId}} and related placeholders.
+        // SCHEDULED rules carry no triggering DomainEvent, so the event-driven build() path
+        // produces only actor+rule. Per-entity fan-out (e.g. one AI summary per active matter) is
+        // handled by buildScheduledProjectContext() below, which the scheduled poll handler invokes
+        // once per project. Nothing further to populate here (515C resolved — OBS-505 addendum).
       }
     }
+
+    return context;
+  }
+
+  /**
+   * Builds a scheduled-execution context for a single project. SCHEDULED triggers have no
+   * triggering {@link DomainEvent}, so the per-tenant cron poll fans out across the tenant's active
+   * projects and calls this once per project. The returned context carries the {@code rule} section
+   * plus an {@code actor} section synthesised from the rule creator (scheduled runs have no live
+   * actor) and a {@code project} section so that {@code {{project.id}}} contextRefs and {@code
+   * project.*} conditions resolve. (OBS-505 addendum — resolves the former 515C gap.)
+   *
+   * @param rule the SCHEDULED rule being fired
+   * @param project the active project this fan-out iteration targets
+   * @return a nested context map keyed by {@code rule}, {@code actor}, {@code project}
+   */
+  public static Map<String, Map<String, Object>> buildScheduledProjectContext(
+      AutomationRule rule, Project project) {
+    var context = new LinkedHashMap<String, Map<String, Object>>();
+
+    var ruleMap = new LinkedHashMap<String, Object>();
+    ruleMap.put("id", uuidToString(rule.getId()));
+    ruleMap.put("name", rule.getName());
+    ruleMap.put("createdBy", uuidToString(rule.getCreatedBy()));
+    context.put("rule", ruleMap);
+
+    // No live actor on a scheduled run — fall back to the rule creator so the executor can resolve
+    // an actor id (InvokeAiSpecialistActionExecutor reads actor.id then rule.createdBy).
+    var actor = new LinkedHashMap<String, Object>();
+    actor.put("id", uuidToString(rule.getCreatedBy()));
+    context.put("actor", actor);
+
+    var projectMap = new LinkedHashMap<String, Object>();
+    projectMap.put("id", uuidToString(project.getId()));
+    projectMap.put("name", project.getName());
+    projectMap.put("status", project.getStatus() != null ? project.getStatus().name() : null);
+    context.put("project", projectMap);
 
     return context;
   }

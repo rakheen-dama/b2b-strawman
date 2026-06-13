@@ -412,7 +412,7 @@ export function ActionForm({
               id="action-ai-context"
               value={(actionConfig.contextRef as string) ?? ""}
               onChange={(e) => updateField("contextRef", e.target.value)}
-              placeholder="e.g. {{event.entityType}}:{{event.entityId}}"
+              placeholder="e.g. {{project.id}}"
             />
           </div>
           <div className="space-y-1.5">

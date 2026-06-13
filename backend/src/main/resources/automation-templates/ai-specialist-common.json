@@ -1,6 +1,6 @@
 {
   "packId": "ai-specialist-common",
-  "version": 1,
+  "version": 2,
   "templates": [
     {
       "slug": "polish-invoice-on-send",

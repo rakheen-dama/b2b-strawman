@@ -98,14 +98,15 @@ class AiSpecialistAutomationPackValidityTest {
           .doesNotContain("{{event.");
 
       TriggerType triggerType = action.template().triggerType();
-      if (triggerType == TriggerType.SCHEDULED) {
-        // SCHEDULED contexts carry no entity data yet (515C gap, documented in AutomationContext).
-        // Skip live-resolution here — the registered-specialist + no-`event`-section guards above
-        // still apply.
-        continue;
-      }
 
-      Map<String, Map<String, Object>> context = buildSampleContext(triggerType);
+      // SCHEDULED actions resolve under the scheduled per-active-project context model (OBS-505
+      // addendum). The poll handler fans out across active projects and builds a {{project.*}}
+      // context via AutomationContext.buildScheduledProjectContext; assert the contextRef resolves
+      // there rather than skipping. The no-`event`-section guard above still applies.
+      Map<String, Map<String, Object>> context =
+          triggerType == TriggerType.SCHEDULED
+              ? buildSampleScheduledProjectContext()
+              : buildSampleContext(triggerType);
       String resolved = variableResolver.resolve(entityIdTemplate, context);
       assertThatCode(() -> UUID.fromString(resolved))
           .as(
@@ -117,6 +118,29 @@ class AiSpecialistAutomationPackValidityTest {
               triggerType)
           .doesNotThrowAnyException();
     }
+  }
+
+  /**
+   * Builds a representative scheduled per-active-project context, mirroring what the poll handler
+   * constructs for each active project when fanning out a SCHEDULED project-scoped rule.
+   */
+  private Map<String, Map<String, Object>> buildSampleScheduledProjectContext() {
+    UUID actorId = UUID.randomUUID();
+    var rule =
+        new AutomationRule(
+            "guard-test-scheduled-rule",
+            null,
+            TriggerType.SCHEDULED,
+            Map.of(),
+            List.of(),
+            RuleSource.TEMPLATE,
+            "guard-test",
+            actorId);
+    var project =
+        io.b2mash.b2b.b2bstrawman.testutil.TestIds.withId(
+            new io.b2mash.b2b.b2bstrawman.project.Project("Matter X", "desc", actorId),
+            UUID.randomUUID());
+    return AutomationContext.buildScheduledProjectContext(rule, project);
   }
 
   /**

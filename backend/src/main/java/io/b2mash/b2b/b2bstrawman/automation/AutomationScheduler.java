@@ -2,14 +2,11 @@ package io.b2mash.b2b.b2bstrawman.automation;
 
 import io.b2mash.b2b.b2bstrawman.infrastructure.jobqueue.JobEnqueuer;
 import java.time.Instant;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.core.type.TypeReference;
@@ -33,7 +30,7 @@ public class AutomationScheduler {
   private final AutomationRuleRepository ruleRepository;
   private final AutomationActionRepository actionRepository;
   private final AutomationActionExecutor automationActionExecutor;
-  private final AutomationEventListener automationEventListener;
+  private final AutomationPollTriggersHandler pollTriggersHandler;
   private final TransactionTemplate transactionTemplate;
   private final ObjectMapper objectMapper;
   private final JobEnqueuer jobEnqueuer;
@@ -44,7 +41,7 @@ public class AutomationScheduler {
       AutomationRuleRepository ruleRepository,
       AutomationActionRepository actionRepository,
       AutomationActionExecutor automationActionExecutor,
-      AutomationEventListener automationEventListener,
+      AutomationPollTriggersHandler pollTriggersHandler,
       TransactionTemplate transactionTemplate,
       ObjectMapper objectMapper,
       JobEnqueuer jobEnqueuer) {
@@ -53,7 +50,7 @@ public class AutomationScheduler {
     this.ruleRepository = ruleRepository;
     this.actionRepository = actionRepository;
     this.automationActionExecutor = automationActionExecutor;
-    this.automationEventListener = automationEventListener;
+    this.pollTriggersHandler = pollTriggersHandler;
     this.transactionTemplate = transactionTemplate;
     this.objectMapper = objectMapper;
     this.jobEnqueuer = jobEnqueuer;
@@ -77,106 +74,17 @@ public class AutomationScheduler {
     jobEnqueuer.fanOutToAllTenants("automation_poll_triggers", null);
   }
 
+  /**
+   * Delegates the per-tenant scheduled-trigger cron pass to {@link AutomationPollTriggersHandler},
+   * which is the single source of truth (OBS-505). Previously this class carried a duplicate copy
+   * of the decision/fire logic that was never reached in production — the live path is {@link
+   * #pollScheduledTriggers()} → {@code fanOutToAllTenants("automation_poll_triggers")} → {@code
+   * AutomationPollTriggersHandler}. The duplicate has been collapsed so the cron poll and the
+   * direct test entry point exercise identical code, including the per-active-project AI-summary
+   * fan-out.
+   */
   int processScheduledTenant() {
-    // Phase 1: short transaction to evaluate which rules should fire and update lastRunAt.
-    // This prevents holding a long-running transaction open during LLM execution.
-    record DueRule(AutomationRule rule, Instant now) {}
-    List<DueRule> dueRules;
-    {
-      var result =
-          transactionTemplate.execute(
-              tx -> {
-                var rules = ruleRepository.findByEnabledAndTriggerType(true, TriggerType.SCHEDULED);
-                if (rules.isEmpty()) return List.<DueRule>of();
-
-                Instant now = Instant.now();
-                var due = new java.util.ArrayList<DueRule>();
-
-                for (var rule : rules) {
-                  try {
-                    if (shouldFire(rule, now)) {
-                      // Update lastRunAt inside the short tx to prevent re-firing
-                      rule.setLastRunAt(now);
-                      ruleRepository.save(rule);
-                      due.add(new DueRule(rule, now));
-                    }
-                  } catch (Exception e) {
-                    log.error(
-                        "Failed to evaluate scheduled rule {} ({}): {}",
-                        rule.getId(),
-                        rule.getName(),
-                        e.getMessage(),
-                        e);
-                  }
-                }
-                return due;
-              });
-      dueRules = result != null ? result : List.of();
-    }
-
-    // Phase 2: execute each due rule outside the transaction (LLM calls may be long-running)
-    int fired = 0;
-    for (var due : dueRules) {
-      try {
-        fireScheduledRule(due.rule(), due.now());
-        fired++;
-      } catch (Exception e) {
-        log.error(
-            "Failed to fire scheduled rule {} ({}): {}",
-            due.rule().getId(),
-            due.rule().getName(),
-            e.getMessage(),
-            e);
-      }
-    }
-    return fired;
-  }
-
-  private boolean shouldFire(AutomationRule rule, Instant now) {
-    Map<String, Object> triggerConfig = rule.getTriggerConfig();
-    if (triggerConfig == null) return false;
-
-    Object cronObj = triggerConfig.get("cronExpression");
-    if (cronObj == null) return false;
-    String cronExpr = cronObj.toString();
-
-    try {
-      var cron = CronExpression.parse(cronExpr);
-      Instant baseTime = rule.getLastRunAt() != null ? rule.getLastRunAt() : rule.getCreatedAt();
-      // Deliberate UTC-only cron evaluation: all cron expressions are stored and evaluated in UTC.
-      // Per-tenant timezone support is deferred (ADR-271). If added later, the ZoneId should come
-      // from the tenant's configured timezone and be applied here instead of ZoneOffset.UTC.
-      var next = cron.next(baseTime.atZone(java.time.ZoneOffset.UTC).toLocalDateTime());
-      if (next == null) return false;
-      Instant nextFire = next.toInstant(java.time.ZoneOffset.UTC);
-      return !nextFire.isAfter(now);
-    } catch (IllegalArgumentException e) {
-      log.warn(
-          "Invalid cron expression '{}' for rule {} ({}): {}",
-          cronExpr,
-          rule.getId(),
-          rule.getName(),
-          e.getMessage());
-      return false;
-    }
-  }
-
-  private void fireScheduledRule(AutomationRule rule, Instant now) {
-    // Build minimal context for the scheduled execution
-    Map<String, Map<String, Object>> context = new LinkedHashMap<>();
-    context.put(
-        "rule",
-        Map.of(
-            "id", rule.getId().toString(),
-            "name", rule.getName(),
-            "createdBy", rule.getCreatedBy().toString()));
-
-    // lastRunAt was already updated in the short decision-transaction (processScheduledTenant
-    // phase 1) to prevent re-firing. The actual execution happens outside any transaction so
-    // that long-running LLM calls do not hold the connection open.
-    automationEventListener.fireRule(rule, context);
-
-    log.info("Fired scheduled rule {} ({}) at {}", rule.getId(), rule.getName(), now);
+    return pollTriggersHandler.processScheduledTenant();
   }
 
   int processTenant() {

@@ -361,6 +361,15 @@ public class InformationRequestService {
     if (saved.getProjectId() != null) {
       sentAuditDetails.put("project_id", saved.getProjectId().toString());
     }
+    // OBS-504: record the recipient contact name so the activity feed attributes the
+    // request to the client contact, not the sending actor (formatter fallback).
+    if (saved.getPortalContactId() != null) {
+      portalContactRepository
+          .findById(saved.getPortalContactId())
+          .map(PortalContact::getDisplayName)
+          .filter(name -> name != null && !name.isBlank())
+          .ifPresent(name -> sentAuditDetails.put("contact_name", name));
+    }
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("information_request.sent")

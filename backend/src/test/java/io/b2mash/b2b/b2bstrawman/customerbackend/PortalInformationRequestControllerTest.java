@@ -27,6 +27,7 @@ import io.b2mash.b2b.b2bstrawman.portal.PortalJwtService;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
+import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.MethodOrderer;
@@ -616,6 +617,88 @@ class PortalInformationRequestControllerTest {
                     {}
                     """))
         .andExpect(status().isBadRequest());
+  }
+
+  // ── 13. OBS-503: file submit finalizes Document; firm side can download ──
+
+  @Test
+  @Order(13)
+  void shouldMarkDocumentUploadedOnSubmitSoFirmCanDownload() throws Exception {
+    // Fresh file item on the project-scoped request (existing items are consumed by earlier tests)
+    UUID extraItemId =
+        ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+            .where(RequestScopes.ORG_ID, ORG_ID)
+            .where(RequestScopes.MEMBER_ID, memberId)
+            .call(
+                () ->
+                    transactionTemplate.execute(
+                        tx -> {
+                          var item =
+                              new RequestItem(
+                                  sentRequestId,
+                                  "FICA Document",
+                                  "Upload your FICA document",
+                                  ResponseType.FILE_UPLOAD,
+                                  true,
+                                  ".pdf",
+                                  3);
+                          return itemRepository.save(item).getId();
+                        }));
+
+    String token = tokenForCustomerA();
+
+    var uploadResult =
+        mockMvc
+            .perform(
+                post("/portal/requests/{id}/items/{itemId}/upload", sentRequestId, extraItemId)
+                    .header("Authorization", "Bearer " + token)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(
+                        """
+                        {"fileName": "fica-id.pdf", "contentType": "application/pdf", "size": 627}
+                        """))
+            .andExpect(status().isCreated())
+            .andReturn();
+
+    String docIdStr =
+        JsonPath.read(uploadResult.getResponse().getContentAsString(), "$.documentId");
+    UUID documentId = UUID.fromString(docIdStr);
+
+    // Before submit the document is PENDING (created by initiateUpload)
+    runInTenantWithMember(
+        () -> {
+          var doc = documentRepository.findById(documentId).orElseThrow();
+          assertThat(doc.getStatus()).isEqualTo(Document.Status.PENDING);
+        });
+
+    // Portal submit — the S3 PUT has already happened at this point in the real flow
+    mockMvc
+        .perform(
+            post("/portal/requests/{id}/items/{itemId}/submit", sentRequestId, extraItemId)
+                .header("Authorization", "Bearer " + token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    """
+                    {"documentId": "%s"}
+                    """
+                        .formatted(docIdStr)))
+        .andExpect(status().isOk());
+
+    // OBS-503: submit must finalize the Document lifecycle (PENDING -> UPLOADED) —
+    // the portal flow has no separate confirm step
+    runInTenantWithMember(
+        () -> {
+          var doc = documentRepository.findById(documentId).orElseThrow();
+          assertThat(doc.getStatus()).isEqualTo(Document.Status.UPLOADED);
+        });
+
+    // Cross-side handoff: firm staff can presign-download the portal-submitted document
+    mockMvc
+        .perform(
+            get("/api/documents/" + documentId + "/presign-download")
+                .with(TestJwtFactory.adminJwt(ORG_ID, CLERK_USER_ID)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.presignedUrl").exists());
   }
 
   // ── Helpers ──────────────────────────────────────────────────────────

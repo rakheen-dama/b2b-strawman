@@ -100,7 +100,9 @@ public class ActivityMessageFormatter {
           "%s created information request %s".formatted(actorName, getRequestNumber(details));
       case "information_request.sent" ->
           "Information request %s sent to %s"
-              .formatted(getRequestNumber(details), getContactName(details, actorName));
+              // OBS-504: never fall back to the actor name — a missing contact_name must
+              // render neutrally so the sender is never misattributed as the recipient.
+              .formatted(getRequestNumber(details), getContactName(details, "the client contact"));
       case "information_request.cancelled" ->
           "%s cancelled information request %s".formatted(actorName, getRequestNumber(details));
       case "information_request.completed" ->

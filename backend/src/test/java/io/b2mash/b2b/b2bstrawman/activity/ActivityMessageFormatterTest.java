@@ -351,6 +351,40 @@ class ActivityMessageFormatterTest {
     assertThat(item.message()).doesNotContain("unknown");
   }
 
+  // ---------- OBS-504: info-request sent recipient attribution ----------
+
+  /**
+   * OBS-504: when the sent-event details carry a {@code contact_name}, the activity feed names the
+   * recipient contact — not the sending actor.
+   */
+  @Test
+  void informationRequestSentWithContactNameNamesTheRecipient() {
+    var event =
+        createEvent(
+            "information_request.sent",
+            "information_request",
+            Map.of("request_number", "REQ-0001", "contact_name", "Sipho Dlamini"));
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    assertThat(item.message()).isEqualTo("Information request REQ-0001 sent to Sipho Dlamini");
+  }
+
+  /**
+   * OBS-504 regression: when {@code contact_name} is absent, the message must render neutral copy —
+   * never the actor name (the sender). Pre-fix this rendered "sent to Alice" (the actor),
+   * misattributing the recipient.
+   */
+  @Test
+  void informationRequestSentWithoutContactNameRendersNeutralCopyNotActor() {
+    var event =
+        createEvent(
+            "information_request.sent",
+            "information_request",
+            Map.of("request_number", "REQ-0001"));
+    var item = formatter.format(event, actorMap(), emptyPortalContactMap());
+    assertThat(item.message()).isEqualTo("Information request REQ-0001 sent to the client contact");
+    assertThat(item.message()).doesNotContain("Alice");
+  }
+
   // ---------- OBS-Cycle55-PortalContactBucketedAsSystem ----------
 
   /**

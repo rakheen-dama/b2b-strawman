@@ -1,5 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.invoice;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -8,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProject;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
@@ -33,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -56,6 +59,7 @@ class InvoiceLifecycleIntegrationTest {
   @Autowired private ProjectRepository projectRepository;
   @Autowired private TaskRepository taskRepository;
   @Autowired private TimeEntryRepository timeEntryRepository;
+  @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
@@ -310,6 +314,47 @@ class InvoiceLifecycleIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.status").value("SENT"));
+  }
+
+  // OBS-8801: invoice.sent audit must carry details.project_id (derived from the invoice lines) so
+  // the matter Activity feed (findByProjectId) and the portal Firm-actions trail
+  // (findActivityFirmForCustomer) include the fee-note-sent milestone — both feeds scope on
+  // details->>'project_id'.
+  @Test
+  void shouldEmitInvoiceSentAuditWithProjectIdSoActivityFeedShowsIt() throws Exception {
+    String invoiceId = createDraftWithManualLine();
+
+    mockMvc
+        .perform(
+            post("/api/invoices/" + invoiceId + "/approve")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
+        .andExpect(status().isOk());
+
+    mockMvc
+        .perform(
+            post("/api/invoices/" + invoiceId + "/send")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_inv_lifecycle_owner")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.status").value("SENT"));
+
+    ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              var matterEvents =
+                  auditEventRepository.findByProjectId(
+                      projectId.toString(), null, null, PageRequest.of(0, 50));
+              var sent =
+                  matterEvents.getContent().stream()
+                      .filter(e -> "invoice.sent".equals(e.getEventType()))
+                      .findFirst()
+                      .orElseThrow(
+                          () ->
+                              new AssertionError(
+                                  "invoice.sent not returned by the matter Activity feed query"
+                                      + " (findByProjectId) — details.project_id is missing"));
+              assertThat(sent.getDetails()).containsEntry("project_id", projectId.toString());
+            });
   }
 
   // --- Test 5: send fails if not APPROVED ---

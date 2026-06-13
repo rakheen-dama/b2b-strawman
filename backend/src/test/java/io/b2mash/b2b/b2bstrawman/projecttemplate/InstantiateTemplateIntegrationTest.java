@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerProjectRepository;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
@@ -37,6 +39,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -67,6 +70,7 @@ class InstantiateTemplateIntegrationTest {
   @Autowired private FieldGroupRepository fieldGroupRepository;
   @Autowired private FieldGroupMemberRepository fieldGroupMemberRepository;
   @Autowired private FieldDefinitionRepository fieldDefinitionRepository;
+  @Autowired private AuditEventRepository auditEventRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -85,6 +89,48 @@ class InstantiateTemplateIntegrationTest {
                 mockMvc, ORG_ID, "user_inst_lead", "inst_lead@test.com", "Lead", "member"));
     tenantSchema =
         orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+  }
+
+  /**
+   * OBS-8801 — {@code project.created_from_template} must carry {@code details.project_id} so the
+   * matter Activity feed surfaces template-instantiated matters. The feed query ({@code
+   * AuditEventRepository.findByProjectId}) scopes strictly on {@code details->>'project_id'};
+   * without it the row drops out of the feed. This completes the {@code project.*} lifecycle family
+   * (the other six events are covered by {@code ProjectLifecycleIntegrationTest}).
+   */
+  @Test
+  void instantiate_emitsCreatedFromTemplateEventCarryingProjectId() {
+    runInTenant(
+        () -> {
+          var template =
+              transactionTemplate.execute(
+                  tx ->
+                      templateRepository.saveAndFlush(
+                          new ProjectTemplate(
+                              "OBS-8801 Feed Template",
+                              "{customer} - {month}",
+                              null,
+                              true,
+                              "MANUAL",
+                              null,
+                              memberId)));
+
+          var request =
+              new InstantiateTemplateRequest(
+                  "OBS-8801 Template Matter", null, null, null, null, null, null);
+          var project = templateService.instantiateTemplate(template.getId(), request, memberId);
+
+          var feed =
+              auditEventRepository.findByProjectId(
+                  project.getId().toString(), null, null, PageRequest.of(0, 50));
+
+          assertThat(feed.getContent())
+              .as(
+                  "project.created_from_template missing from matter Activity feed (findByProjectId)"
+                      + " — emit site dropped details.project_id (OBS-8801)")
+              .extracting(AuditEvent::getEventType)
+              .contains("project.created_from_template");
+        });
   }
 
   @Test

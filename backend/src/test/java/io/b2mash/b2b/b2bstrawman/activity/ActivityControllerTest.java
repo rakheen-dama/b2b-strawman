@@ -155,8 +155,12 @@ class ActivityControllerTest extends AbstractIntegrationTest {
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
-        .andExpect(jsonPath("$.content", hasSize(5)))
-        .andExpect(jsonPath("$.page.totalElements").value(5))
+        // OBS-8801: 4 seeded events + project_member.added + project.created (the latter now
+        // carries
+        // details.project_id, so the project-creation row is correctly surfaced in the matter
+        // feed).
+        .andExpect(jsonPath("$.content", hasSize(6)))
+        .andExpect(jsonPath("$.page.totalElements").value(6))
         .andExpect(jsonPath("$.content[0].id").exists())
         .andExpect(jsonPath("$.content[0].message").exists())
         .andExpect(jsonPath("$.content[0].actorName").exists())
@@ -195,9 +199,11 @@ class ActivityControllerTest extends AbstractIntegrationTest {
   }
 
   @Test
-  void emptyProjectReturnsEmptyList() throws Exception {
-    // Create a second project with no audit events
-    var emptyProjectResult =
+  void freshProjectFeedContainsOnlyItsCreationEvent() throws Exception {
+    // A project with no further domain activity. Post OBS-8801, project.created carries
+    // details.project_id, so the matter Activity feed correctly surfaces exactly the creation event
+    // (and nothing else) — it is no longer silently empty.
+    var freshProjectResult =
         mockMvc
             .perform(
                 post("/api/projects")
@@ -205,20 +211,21 @@ class ActivityControllerTest extends AbstractIntegrationTest {
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(
                         """
-                        {"name": "Empty Activity Project", "description": "No audit events"}
+                        {"name": "Fresh Activity Project", "description": "Only creation event"}
                         """))
             .andExpect(status().isCreated())
             .andReturn();
-    String emptyProjectId = TestEntityHelper.extractIdFromLocation(emptyProjectResult);
+    String freshProjectId = TestEntityHelper.extractIdFromLocation(freshProjectResult);
 
     mockMvc
         .perform(
-            get("/api/projects/" + emptyProjectId + "/activity")
+            get("/api/projects/" + freshProjectId + "/activity")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_ac_owner")))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.content").isArray())
-        .andExpect(jsonPath("$.content", hasSize(0)))
-        .andExpect(jsonPath("$.page.totalElements").value(0));
+        .andExpect(jsonPath("$.content", hasSize(1)))
+        .andExpect(jsonPath("$.page.totalElements").value(1))
+        .andExpect(jsonPath("$.content[0].eventType").value("project.created"));
   }
 
   @Test

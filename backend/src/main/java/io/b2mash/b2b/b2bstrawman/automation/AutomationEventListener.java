@@ -20,6 +20,14 @@ import org.springframework.transaction.annotation.Transactional;
  *
  * <p>This listener runs within the same transaction as the event publisher. All processing is
  * wrapped in try-catch to prevent automation failures from rolling back the triggering transaction.
+ * Note: the {@code @Transactional} below is a no-op for the synchronous event-dispatch path (Spring
+ * invokes the listener on the target bean, bypassing the AOP proxy), so it does NOT create a new
+ * transaction. The isolation that actually protects the triggering transaction lives one layer
+ * down, in {@link AutomationActionExecutor}, which runs each side-effecting action in its own
+ * {@code REQUIRES_NEW} transaction so a throwing action (e.g. an {@code INVOKE_AI_SPECIALIST}
+ * action hitting an {@code @Transactional} guard with no AI provider configured) can only mark its
+ * own transaction rollback-only — never the business transaction that published the event.
+ * (OBS-505)
  */
 @Component
 public class AutomationEventListener {

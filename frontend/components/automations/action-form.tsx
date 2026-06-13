@@ -389,9 +389,9 @@ export function ActionForm({
                 <SelectValue placeholder="Select specialist" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="BILLING">Billing</SelectItem>
-                <SelectItem value="INTAKE">Intake</SelectItem>
-                <SelectItem value="INBOX">Inbox</SelectItem>
+                <SelectItem value="billing-za">Billing</SelectItem>
+                <SelectItem value="intake-za">Intake</SelectItem>
+                <SelectItem value="inbox-za">Inbox</SelectItem>
               </SelectContent>
             </Select>
           </div>

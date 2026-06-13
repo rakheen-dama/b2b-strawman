@@ -17,8 +17,8 @@
         {
           "actionType": "INVOKE_AI_SPECIALIST",
           "actionConfig": {
-            "specialistId": "INBOX",
-            "contextRef": { "entityType": "project", "entityId": "{{event.entityId}}" },
+            "specialistId": "inbox-za",
+            "contextRef": { "entityType": "project", "entityId": "{{project.id}}" },
             "initialPrompt": "Summarise the past week of activity on this matter.",
             "lookback": "P7D",
             "mode": "DIRECT",
@@ -42,8 +42,8 @@
         {
           "actionType": "INVOKE_AI_SPECIALIST",
           "actionConfig": {
-            "specialistId": "INBOX",
-            "contextRef": { "entityType": "project", "entityId": "{{event.entityId}}" },
+            "specialistId": "inbox-za",
+            "contextRef": { "entityType": "project", "entityId": "{{project.id}}" },
             "initialPrompt": "Provide a catch-up summary of the last 30 days of activity on this matter.",
             "lookback": "P30D",
             "mode": "DIRECT",

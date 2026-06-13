@@ -172,6 +172,18 @@ public class AutomationPollTriggersHandler implements JobHandler {
    * so a {@code project.status EQUALS ACTIVE} condition — or any future per-project condition — is
    * honored. Scale note: only invoked for due rules that actually need project context, and bounded
    * to the tenant's active projects (60s tick × due rules × active projects).
+   *
+   * <p><b>Fan-out limitation (OBS-505):</b> fan-out is decided per <i>rule</i>, not per
+   * <i>action</i>. If a SCHEDULED rule is classified project-scoped (see {@link
+   * #requiresProjectContext}) because <i>any</i> of its actions targets a project contextRef, then
+   * <b>all</b> of that rule's actions are re-fired once per active project. A rule that mixes a
+   * project-scoped action (e.g. {@code INVOKE_AI_SPECIALIST}, {@code entityType=project}) with a
+   * non-project action (e.g. {@code SEND_NOTIFICATION}) would therefore fire the non-project action
+   * N times — once per active project — instead of once. No shipped AI-specialist pack template
+   * does this today (each SCHEDULED template carries a single project-scoped action), and {@code
+   * AiSpecialistAutomationPackValidityTest.noShippedScheduledTemplateMixesProjectAndNonProjectActions}
+   * guards against a future template silently introducing the mix — adding one trips CI and forces
+   * a deliberate per-action design decision rather than a silent multi-fire.
    */
   private void fireScheduledRulePerActiveProject(AutomationRule rule, Instant now) {
     List<Project> activeProjects = projectRepository.findByStatus(ProjectStatus.ACTIVE);
@@ -199,6 +211,10 @@ public class AutomationPollTriggersHandler implements JobHandler {
    * {{project.}}}. Such rules need per-active-project fan-out; everything else fires once.
    */
   private boolean requiresProjectContext(AutomationRule rule) {
+    // TODO(OBS-505): minor N+1 — one findByRuleIdOrderBySortOrder per due rule on each 60s tick.
+    // Bounded today since SCHEDULED rules are rare; if SCHEDULED-rule volume grows this could batch
+    // via the existing actionRepository.findByRuleIdInOrderBySortOrder(dueRuleIds). Not worth the
+    // refactor at current scale.
     return actionRepository.findByRuleIdOrderBySortOrder(rule.getId()).stream()
         .anyMatch(action -> actionTargetsProject(action.getActionConfig()));
   }

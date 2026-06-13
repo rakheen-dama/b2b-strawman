@@ -218,6 +218,114 @@ class AiSpecialistAutomationPackValidityTest {
     return AutomationContext.build(triggerType, event, rule);
   }
 
+  /**
+   * Guard for the OBS-505 fan-out limitation. The scheduled poll handler fans out a SCHEDULED rule
+   * per active project when <i>any</i> action targets a project contextRef, and re-fires <b>all</b>
+   * of the rule's actions per project (see {@code
+   * AutomationPollTriggersHandler#fireScheduledRulePerActiveProject}). So a SCHEDULED template that
+   * mixes a project-scoped action with a non-project action would fire the non-project action N
+   * times (once per active project) instead of once. No shipped template does this today; this test
+   * fails CI if a future template introduces the mix, forcing a deliberate per-action design
+   * decision rather than a silent multi-fire.
+   */
+  @Test
+  void noShippedScheduledTemplateMixesProjectAndNonProjectActions() {
+    var scheduledTemplates =
+        seeder.getAvailablePacks().stream()
+            .map(loaded -> loaded.definition())
+            .flatMap(pack -> pack.templates().stream().map(t -> new PackTemplate(pack, t)))
+            .filter(pt -> pt.template().triggerType() == TriggerType.SCHEDULED)
+            .toList();
+
+    // Sanity: the packs do ship SCHEDULED templates, so this guard is actually exercising
+    // something.
+    assertThat(scheduledTemplates)
+        .as("expected at least one shipped SCHEDULED template to guard")
+        .isNotEmpty();
+
+    for (PackTemplate pt : scheduledTemplates) {
+      var actions = pt.template().actions();
+      // Distinct-action rule: a single-action template can never fan out incorrectly, so only
+      // multi-action SCHEDULED templates are at risk.
+      if (actions.size() <= 1) {
+        continue;
+      }
+      boolean anyProjectScoped =
+          actions.stream().anyMatch(a -> actionTargetsProject(a.actionConfig()));
+      boolean anyNonProject =
+          actions.stream().anyMatch(a -> !actionTargetsProject(a.actionConfig()));
+      assertThat(anyProjectScoped && anyNonProject)
+          .as(
+              "SCHEDULED template %s/%s mixes a project-scoped action with a non-project action;"
+                  + " the per-active-project fan-out would fire the non-project action once per"
+                  + " active project. Split into separate rules or make the fan-out per-action"
+                  + " before shipping this (OBS-505).",
+              pt.pack().packId(), pt.template().slug())
+          .isFalse();
+    }
+  }
+
+  /**
+   * Proves the guard above actually trips on a mixed-action SCHEDULED template: a synthetic
+   * template carrying one project-scoped action (contextRef.entityType=project) and one non-project
+   * action is detected as mixed. If this assertion failed, the guard's detection logic would be a
+   * no-op and could silently let a real mixed template through.
+   */
+  @Test
+  void mixedActionDetectionWouldCatchAMixedScheduledTemplate() {
+    var projectScopedAction =
+        new AutomationTemplateDefinition.TemplateActionDefinition(
+            ActionType.INVOKE_AI_SPECIALIST,
+            Map.of(
+                "specialistId",
+                "matter-summary",
+                "contextRef",
+                Map.of("entityType", "project", "entityId", "{{project.id}}")),
+            null,
+            null,
+            0);
+    var nonProjectAction =
+        new AutomationTemplateDefinition.TemplateActionDefinition(
+            ActionType.SEND_NOTIFICATION, Map.of("message", "weekly digest sent"), null, null, 1);
+
+    assertThat(actionTargetsProject(projectScopedAction.actionConfig()))
+        .as("project-scoped action must be detected as targeting a project")
+        .isTrue();
+    assertThat(actionTargetsProject(nonProjectAction.actionConfig()))
+        .as("non-project action must NOT be detected as targeting a project")
+        .isFalse();
+
+    var mixed = List.of(projectScopedAction, nonProjectAction);
+    boolean anyProjectScoped = mixed.stream().anyMatch(a -> actionTargetsProject(a.actionConfig()));
+    boolean anyNonProject = mixed.stream().anyMatch(a -> !actionTargetsProject(a.actionConfig()));
+    assertThat(anyProjectScoped && anyNonProject)
+        .as("a project + non-project action mix must be flagged by the guard predicate")
+        .isTrue();
+  }
+
+  /**
+   * Mirrors the production fan-out classifier {@code
+   * AutomationPollTriggersHandler#actionTargetsProject}: an action targets a project when its
+   * {@code contextRef} has {@code entityType == "project"} or an {@code entityId} template
+   * referencing {@code {{project.}}}.
+   */
+  @SuppressWarnings("unchecked")
+  private static boolean actionTargetsProject(Map<String, Object> actionConfig) {
+    if (actionConfig == null) {
+      return false;
+    }
+    Object contextRefObj = actionConfig.get("contextRef");
+    if (!(contextRefObj instanceof Map<?, ?> contextRef)) {
+      return false;
+    }
+    Object entityType = ((Map<String, Object>) contextRef).get("entityType");
+    if ("project".equals(entityType)) {
+      return true;
+    }
+    Object entityId = ((Map<String, Object>) contextRef).get("entityId");
+    return entityId instanceof String idTemplate && idTemplate.contains("{{project.");
+  }
+
   private record PackTemplate(AutomationTemplatePack pack, AutomationTemplateDefinition template) {}
 
   private record AiSpecialistAction(

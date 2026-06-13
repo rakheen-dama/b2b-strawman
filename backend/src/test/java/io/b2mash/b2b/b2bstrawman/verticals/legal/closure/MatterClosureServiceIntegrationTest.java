@@ -362,6 +362,45 @@ class MatterClosureServiceIntegrationTest {
     assertThat(reopenedEvents).isEqualTo(1);
   }
 
+  // OBS-8801: matter_closure.reopened audit must carry details.project_id so the matter Activity
+  // feed (findByProjectId) and the portal Firm-actions trail (findActivityFirmForCustomer) include
+  // the reopen milestone — both feeds scope on details->>'project_id'. Mirrors the
+  // matter_closure.closed coverage above.
+  @Test
+  void reopen_emitsAuditEventWithProjectIdSoActivityFeedShowsIt() {
+    UUID projectId = createProject("Reopen Audit ProjectId Matter");
+
+    runInTenantAsOwner(
+        () ->
+            matterClosureService.close(
+                projectId,
+                new ClosureRequest(
+                    ClosureReason.CONCLUDED, "done", false, false, true, VALID_JUSTIFICATION),
+                memberId));
+
+    runInTenantAsOwner(
+        () ->
+            matterClosureService.reopen(
+                projectId, new ReopenRequest(VALID_REOPEN_NOTES), memberId));
+
+    runInTenantAsOwner(
+        () -> {
+          var matterEvents =
+              auditEventRepository.findByProjectId(
+                  projectId.toString(), null, null, PageRequest.of(0, 50));
+          var reopened =
+              matterEvents.getContent().stream()
+                  .filter(e -> "matter_closure.reopened".equals(e.getEventType()))
+                  .findFirst()
+                  .orElseThrow(
+                      () ->
+                          new AssertionError(
+                              "matter_closure.reopened not returned by the matter Activity feed"
+                                  + " query (findByProjectId) — details.project_id is missing"));
+          assertThat(reopened.getDetails()).containsEntry("project_id", projectId.toString());
+        });
+  }
+
   @Test
   void reopen_shortNotes_throwsInvalidStateException() {
     UUID projectId = createProject("Short Reopen Notes Matter");

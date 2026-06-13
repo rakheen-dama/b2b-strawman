@@ -481,6 +481,11 @@ public class MatterClosureService {
     latestLog.recordReopen(reopenedAt, actingMemberId, req.notes());
     var savedLog = matterClosureLogRepository.save(latestLog);
 
+    // Audit. Include project_id in details (OBS-8801): mirrors matter_closure.closed above.
+    // Both activity feeds (AuditEventRepository.findByProjectId for the matter tab,
+    // findActivityFirmForCustomer for the portal Firm-actions trail) scope on
+    // details->>'project_id'. Without it this client-safe reopen milestone is silently dropped
+    // from both feeds.
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("matter_closure.reopened")
@@ -489,7 +494,8 @@ public class MatterClosureService {
             .details(
                 Map.of(
                     "closure_log_id", savedLog.getId().toString(),
-                    "reopened_by", actingMemberId.toString()))
+                    "reopened_by", actingMemberId.toString(),
+                    "project_id", projectId.toString()))
             .build());
 
     eventPublisher.publishEvent(MatterReopenedEvent.of(projectId, actingMemberId, req.notes()));

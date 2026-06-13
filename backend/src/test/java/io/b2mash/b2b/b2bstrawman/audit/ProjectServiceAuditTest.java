@@ -88,6 +88,9 @@ class ProjectServiceAuditTest {
               assertThat(event.getEntityType()).isEqualTo("project");
               assertThat(event.getEntityId()).isEqualTo(projectId);
               assertThat(event.getDetails()).containsEntry("name", "Audit Create Test");
+              // OBS-8801: project.created must carry project_id so the matter Activity feed
+              // (findByProjectId, which scopes on details->>'project_id') surfaces creation.
+              assertThat(event.getDetails()).containsEntry("project_id", projectId.toString());
               assertThat(event.getActorType()).isEqualTo("USER");
               assertThat(event.getSource()).isEqualTo("API");
             });
@@ -236,6 +239,9 @@ class ProjectServiceAuditTest {
               assertThat(event.getEventType()).isEqualTo("project.deleted");
               assertThat(event.getEntityId()).isEqualTo(projectId);
               assertThat(event.getDetails()).containsEntry("name", "Delete Me");
+              // OBS-8801: project.deleted must carry project_id so the matter Activity feed
+              // (findByProjectId, which scopes on details->>'project_id') surfaces the deletion.
+              assertThat(event.getDetails()).containsEntry("project_id", projectId.toString());
             });
   }
 

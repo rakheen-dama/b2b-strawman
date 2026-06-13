@@ -225,6 +225,8 @@ public class PortalInformationRequestService {
     // (DocumentService.getPresignedDownloadUrl) rejects the document as not uploaded.
     // Intentionally no DocumentUploadedEvent (RequestItemSubmittedEvent below already notifies
     // the firm) and no document.uploaded audit (upload_initiated + item.submitted cover the trail).
+    // Also intentionally no DocumentCreatedEvent: it would newly project this document into the
+    // portal documents read model — a behaviour change outside the OBS-503 scope.
     if (document.getStatus() != Document.Status.UPLOADED) {
       document.confirmUpload();
       documentRepository.save(document);

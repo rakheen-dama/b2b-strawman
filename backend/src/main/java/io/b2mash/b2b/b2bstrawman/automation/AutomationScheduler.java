@@ -88,6 +88,14 @@ public class AutomationScheduler {
   }
 
   int processTenant() {
+    // Transaction-boundary note (OBS-505): this OUTER transactionTemplate holds the SELECT ... FOR
+    // UPDATE lock on the due actions and the per-action completion/failure status saves. Each
+    // action
+    // body, however, runs in its OWN REQUIRES_NEW inner transaction inside
+    // AutomationActionExecutor.executeInNewTransaction. The per-action catch below keeps a single
+    // action's failure from marking this outer transaction rollback-only, so a throwing action
+    // leaves its ActionExecution row SCHEDULED (it is never advanced to a terminal state) and is
+    // picked up again on the next poll — idempotent retry, which is acceptable.
     Integer processed =
         transactionTemplate.execute(
             tx -> {

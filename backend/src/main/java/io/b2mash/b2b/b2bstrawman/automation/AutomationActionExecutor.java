@@ -167,6 +167,17 @@ public class AutomationActionExecutor {
    * transaction and converted into an {@link ActionFailure}. It never propagates to the caller's
    * transaction, so the triggering business transaction is left clean. The automation
    * execution/notification bookkeeping that follows runs in that outer transaction and commits.
+   *
+   * <p><strong>Stale-read caveat (pre-existing, made explicit here):</strong> because each action
+   * runs in its OWN {@code REQUIRES_NEW} transaction and domain events are published synchronously
+   * <em>before</em> the triggering business transaction commits, an executor must derive entity
+   * state from the {@code context} payload (the {@code AutomationContext} snapshot captured at
+   * trigger time) — it must NOT re-query the triggering entity by id. A re-query from inside the
+   * isolated transaction would see the entity's <em>pre-change</em> committed state (the in-flight
+   * change is not yet visible), which is almost never what the action intends. The AI executor
+   * already reads from the context payload. A broader audit of the non-AI executors
+   * (UpdateStatus/AssignMember/etc.) on status-change triggers, to confirm none of them re-query,
+   * is tracked as a follow-up — not part of OBS-505.
    */
   private ActionResult executeInNewTransaction(
       AutomationAction action,

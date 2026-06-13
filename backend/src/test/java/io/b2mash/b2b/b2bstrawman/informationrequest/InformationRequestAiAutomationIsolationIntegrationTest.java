@@ -8,6 +8,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.multitenancy.RequestScopes;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContact;
+import io.b2mash.b2b.b2bstrawman.portal.PortalContactRepository;
 import io.b2mash.b2b.b2bstrawman.provisioning.SchemaNameGenerator;
 import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestChecklistHelper;
@@ -56,6 +59,8 @@ class InformationRequestAiAutomationIsolationIntegrationTest {
   @Autowired private MockMvc mockMvc;
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+  @Autowired private RequestItemRepository requestItemRepository;
+  @Autowired private PortalContactRepository portalContactRepository;
 
   private String memberIdOwner;
   private String customerId;
@@ -205,11 +210,16 @@ class InformationRequestAiAutomationIsolationIntegrationTest {
   }
 
   private void simulateItemSubmission(String reqId, String itemIdToSubmit) {
-    jdbcTemplate.update(
-        "UPDATE \"%s\".request_items SET status = 'SUBMITTED', submitted_at = now(), document_id = ?::uuid WHERE id = ?::uuid"
-            .formatted(schema),
-        UUID.randomUUID().toString(),
-        itemIdToSubmit);
+    // Mirror the repository-driven submission pattern used by
+    // InformationRequestReadModelSyncIntegrationTest: load the RequestItem through its repository
+    // inside the tenant ScopedValue and drive the domain transition (PENDING -> SUBMITTED) via
+    // RequestItem.submit(...), rather than fabricating state with raw SQL.
+    runInTenant(
+        () -> {
+          var item = requestItemRepository.findById(UUID.fromString(itemIdToSubmit)).orElseThrow();
+          item.submit(UUID.randomUUID());
+          requestItemRepository.save(item);
+        });
   }
 
   private String createActiveCustomer(JwtRequestPostProcessor jwt) throws Exception {
@@ -238,15 +248,27 @@ class InformationRequestAiAutomationIsolationIntegrationTest {
   }
 
   private String createPortalContact(String custId, String email, String displayName) {
-    String contactId = UUID.randomUUID().toString();
-    jdbcTemplate.update(
-        "INSERT INTO \"%s\".portal_contacts (id, org_id, customer_id, email, display_name, role, status, created_at, updated_at) VALUES (?::uuid, ?, ?::uuid, ?, ?, 'PRIMARY', 'ACTIVE', now(), now())"
-            .formatted(schema),
-        contactId,
-        ORG_ID,
-        custId,
-        email,
-        displayName);
-    return contactId;
+    // Mirror InformationRequestReadModelSyncIntegrationTest: persist a real PortalContact through
+    // its repository inside the tenant ScopedValue, rather than hand-rolling a raw SQL INSERT.
+    final UUID[] contactId = new UUID[1];
+    runInTenant(
+        () -> {
+          var contact =
+              new PortalContact(
+                  ORG_ID,
+                  UUID.fromString(custId),
+                  email,
+                  displayName,
+                  PortalContact.ContactRole.PRIMARY);
+          contactId[0] = portalContactRepository.save(contact).getId();
+        });
+    return contactId[0].toString();
+  }
+
+  /** Runs the action with the tenant ScopedValue bound to this test's provisioned schema. */
+  private void runInTenant(Runnable action) {
+    ScopedValue.where(RequestScopes.TENANT_ID, schema)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(action);
   }
 }

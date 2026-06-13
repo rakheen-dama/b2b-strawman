@@ -64,9 +64,16 @@ import org.springframework.transaction.support.TransactionTemplate;
  * portal fee-note download endpoint ({@code GET /portal/invoices/{id}/download}) finds nothing and
  * returns 404 ("Download failed").
  *
- * <p>Pre-fix this test fails: no GeneratedDocument is persisted on send and the portal download
- * returns 404. Post-fix the GeneratedDocument is persisted and the portal download resolves to a
- * presigned URL.
+ * <p>The OBS-3001 symptom is specifically the <em>post-send</em> download 404. Send is the point at
+ * which the invoice is projected into the portal read model (so the portal can find it) AND the
+ * point at which the fee-note PDF should be persisted. The bug is that the projection happens but
+ * the persistence does not, so the download 404s even though the invoice is visible in the portal.
+ * (A <em>before</em>-send download also 404s, but for the unrelated reason that the draft has not
+ * been projected into the portal yet — that is not OBS-3001.)
+ *
+ * <p>Pre-fix this test fails at the post-send download: no GeneratedDocument is persisted on send
+ * and the download returns 404. Post-fix the GeneratedDocument is persisted and the post-send
+ * download resolves to a presigned URL.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -223,7 +230,11 @@ class InvoiceSentDocumentPersistenceIntegrationTest {
     UUID invoiceId =
         UUID.fromString(JsonPath.read(createResult.getResponse().getContentAsString(), "$.id"));
 
-    // Before send: no GeneratedDocument exists for this fee note, so the portal download 404s.
+    // Before send: the fee note is a draft and has NOT been projected into the portal read model
+    // (portal.portal_invoices) yet — the InvoiceSyncEvent / portal upsert only fires on send. So
+    // a portal download here 404s because the invoice is "not found in portal", which is NOT the
+    // OBS-3001 symptom. We assert it only to establish the starting state, not as the bug gate.
+    // (The GeneratedDocument count is also 0 here, but that is incidental at this point.)
     assertGeneratedInvoiceDocCount(invoiceId, 0);
     mockMvc
         .perform(
@@ -231,8 +242,10 @@ class InvoiceSentDocumentPersistenceIntegrationTest {
                 .header("Authorization", "Bearer " + portalToken))
         .andExpect(status().isNotFound());
 
-    // Approve, then send — sending publishes InvoiceSentEvent (AFTER_COMMIT) which the
-    // InvoiceEmailEventListener handles synchronously on the request thread.
+    // Approve, then send — sending projects the invoice into the portal read model
+    // (InvoiceSyncEvent)
+    // and publishes InvoiceSentEvent (AFTER_COMMIT) which the InvoiceEmailEventListener handles
+    // synchronously on the request thread.
     mockMvc
         .perform(post("/api/invoices/" + invoiceId + "/approve").with(jwt))
         .andExpect(status().isOk());
@@ -240,11 +253,18 @@ class InvoiceSentDocumentPersistenceIntegrationTest {
         .perform(post("/api/invoices/" + invoiceId + "/send").with(jwt))
         .andExpect(status().isOk());
 
-    // OBS-3001: after send, the fee-note PDF must be persisted as a GeneratedDocument so the
-    // portal download resolves to a presigned URL rather than 404 ("Download failed").
-    // The download endpoint is the load-bearing, user-facing assertion: it runs in its own
-    // HTTP request / transaction and reads the committed GeneratedDocument row.
-    // (Pre-fix: this returns 404 because no GeneratedDocument is ever persisted on send.)
+    // ===== OBS-3001 REGRESSION GATE =====
+    // After send, the invoice IS now projected into the portal read model, so the portal can find
+    // it. The ONLY remaining reason the download can 404 is the actual OBS-3001 bug: no INVOICE
+    // GeneratedDocument was persisted on send. This download is therefore the focal, load-bearing,
+    // user-facing assertion — it isolates OBS-3001 from the unrelated "invoice not in portal" 404
+    // above. It runs in its own HTTP request / transaction and reads the committed
+    // GeneratedDocument row.
+    //
+    // Verified by stashing the production fix: on pre-fix code this post-send download returns 404
+    // ("Download failed") because the fee-note PDF was rendered ephemerally for the email
+    // attachment only and never persisted via the GeneratedDocument pipeline. The fix persists it
+    // in a REQUIRES_NEW transaction, so the download below resolves to a presigned URL.
     mockMvc
         .perform(
             get("/portal/invoices/{id}/download", invoiceId)
@@ -252,8 +272,9 @@ class InvoiceSentDocumentPersistenceIntegrationTest {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.downloadUrl").value("https://s3.example.com/fee-note.pdf"));
 
-    // Belt-and-braces: exactly one GeneratedDocument was persisted for the fee note (re-send
-    // idempotency is out of scope — each send renders the current state and the download
+    // Corroborating state behind the download: exactly one INVOICE GeneratedDocument now exists
+    // (0 → 1 across the send). Pre-fix this stays at 0, which is what makes the download 404
+    // (re-send idempotency is out of scope — each send renders current state; the download
     // resolves the most recent).
     assertGeneratedInvoiceDocCount(invoiceId, 1);
   }

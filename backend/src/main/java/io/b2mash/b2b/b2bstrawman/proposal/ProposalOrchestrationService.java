@@ -152,17 +152,6 @@ public class ProposalOrchestrationService {
       proposal.markAccepted();
       proposalRepository.save(proposal);
 
-      auditService.log(
-          AuditEventBuilder.builder()
-              .eventType("proposal.accepted")
-              .entityType("proposal")
-              .entityId(proposalId)
-              .details(
-                  Map.of(
-                      "proposal_number", proposal.getProposalNumber(),
-                      "customer_id", proposal.getCustomerId().toString()))
-              .build());
-
       log.info("Proposal {} accepted by contact {}", proposalId, portalContactId);
 
       // Step 2: Transition customer lifecycle (before project creation — lifecycle guard blocks
@@ -173,6 +162,22 @@ public class ProposalOrchestrationService {
       var project = createProject(proposal);
       proposal.setCreatedProjectId(project.getId());
       proposalRepository.save(proposal);
+
+      // Audit AFTER project creation so details.project_id is populated (OBS-8801). The matter
+      // Activity feed (AuditEventRepository.findByProjectId) and the portal Firm-actions trail
+      // (findActivityFirmForCustomer) both scope on details->>'project_id'; without it this
+      // client-safe milestone is silently dropped from both feeds.
+      auditService.log(
+          AuditEventBuilder.builder()
+              .eventType("proposal.accepted")
+              .entityType("proposal")
+              .entityId(proposalId)
+              .details(
+                  Map.of(
+                      "proposal_number", proposal.getProposalNumber(),
+                      "customer_id", proposal.getCustomerId().toString(),
+                      "project_id", project.getId().toString()))
+              .build());
 
       // Step 4: Assign team members
       var assignedMemberIds =

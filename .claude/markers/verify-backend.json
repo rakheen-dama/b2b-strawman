@@ -1,1 +1,7 @@
-{"commit":"fc3cfca84","command":"./mvnw verify","exit":0,"ts":"2026-06-13T16:17:16Z","summary":"OBS-3001 PR #1439 (persist fee-note PDF via GeneratedDocument REQUIRES_NEW so portal download resolves). BUILD SUCCESS — Tests run: 5644, Failures: 0, Errors: 0, Skipped: 26. Log /tmp/mvn-verify-obs3001-f2.log"}
+{
+  "commit": "e8545cd87bee53800f09b4201f57e217fe71bde3",
+  "command": "./mvnw verify",
+  "exit": 0,
+  "ts": "2026-06-12T21:20:00Z",
+  "summary": "Wave 3 OrgSettings embeddables final head (incl. Locale.ROOT working-day parsing fix). Full verify run by orchestrator, observed: 5632 tests, 0 failures, 0 errors, 26 skipped. Log /tmp/wave3-verify3.log."
+}

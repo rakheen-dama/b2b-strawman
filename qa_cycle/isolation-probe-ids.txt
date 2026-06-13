@@ -17,7 +17,7 @@ document_s3_key       = org/mathebula-partners/project/dc10e9ac-becd-4cd6-babe-c
 trust_transaction_id  = 23791476-e6c6-4715-8272-5a666a6867b6   # DEP/2026/002, DEPOSIT, R 25 000,00, RECORDED
 portal_contact_id     = 651e35a8-1636-449d-aa8b-11cb1506ac9f   # Moroka portal contact, moroka.portal@example.com
 # Moroka portal magic-link (DO NOT use on Sipho's session — for negative isolation reference only):
-#   http://localhost:3002/auth/exchange?token=GIt69AIK3rFw1YSPaZb2zg8XdDIoqb-wsmUkcxhMA_c&orgId=mathebula-partners
+#   http://localhost:3002/auth/exchange?token=[REDACTED-MAGIC-LINK-TOKEN]&orgId=mathebula-partners
 
 ## Reference — existing Sipho entities (this cycle 2026-06-13) — Day 15 SHOULD be visible to Sipho
 customer_id           = 2211a80a-5523-4a6d-8f96-0d638dff88f6   # "Sipho Dlamini", INDIVIDUAL

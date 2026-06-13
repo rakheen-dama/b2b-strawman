@@ -52,5 +52,5 @@ None. (Missing generic "Expenses" Finance sub-tab investigated and proven intent
 
 - **Matter ID**: `08ad56c4-ff5e-49c2-a034-cb5fa04b462c` — "Dlamini v Road Accident Fund", ref RAF-2026-001 (`/org/mathebula-partners/projects/08ad56c4-ff5e-49c2-a034-cb5fa04b462c`)
 - **Info request ID**: `de3d6962-6018-43bf-852d-d366d1a4d626` — REQ-0001, FICA Onboarding Pack, Sent, due 2026-06-20 (`/org/mathebula-partners/information-requests/de3d6962-6018-43bf-852d-d366d1a4d626`)
-- **Magic-link email**: Mailpit ID `hhoVkD8UxgQaLsn2dG2oNu`; token link `http://localhost:3002/auth/exchange?token=nsJKu6Q0-pI87cRzaViMkltCnxF1hrwoGaPQzusxvFM&orgId=mathebula-partners` (Day 4 entry point)
+- **Magic-link email**: Mailpit ID `hhoVkD8UxgQaLsn2dG2oNu`; token link `http://localhost:3002/auth/exchange?token=[REDACTED-MAGIC-LINK-TOKEN]&orgId=mathebula-partners` (Day 4 entry point)
 - **Client**: Sipho Dlamini `2211a80a-5523-4a6d-8f96-0d638dff88f6` (unchanged from Day 2)

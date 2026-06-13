@@ -63,6 +63,14 @@ public class AutomationPollDelayedHandler implements JobHandler {
   }
 
   private int processTenant() {
+    // Transaction-boundary note (OBS-505): this OUTER transactionTemplate holds the SELECT ... FOR
+    // UPDATE lock on the due actions and the per-action completion/failure status saves. Each
+    // action
+    // body runs in its OWN REQUIRES_NEW inner transaction inside
+    // AutomationActionExecutor.executeInNewTransaction. The per-action catch below keeps one
+    // action's
+    // failure from marking this outer transaction rollback-only, so a throwing action leaves its
+    // ActionExecution row SCHEDULED and is retried on the next poll — idempotent retry, acceptable.
     Integer processed =
         transactionTemplate.execute(
             tx -> {

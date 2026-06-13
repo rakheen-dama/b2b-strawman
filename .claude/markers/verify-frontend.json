@@ -1,7 +1,1 @@
-{
-  "commit": "d6a5a3e151579c4dbe28345ee5c0f4cccc8dce59",
-  "command": "pnpm lint && pnpm test && pnpm build",
-  "exit": 0,
-  "ts": "2026-06-12T15:10:00Z",
-  "summary": "P1 expense-markup write path (fix/expense-markup-write-path). Frontend gates observed by implementation subagent a00a0f2560eb57117: lint 0 errors (112 pre-existing e2e warnings), 375 test files / 2344 passed / 2 skipped, build compiled successfully."
-}
+{"commit":"3e67c75be","command":"pnpm run lint && pnpm run build && pnpm test","exit":0,"ts":"2026-06-13T10:30:00Z","summary":"lint 0 errors (112 pre-existing warnings); build success; test 375 files, 2344 passed, 2 skipped, 0 failed"}

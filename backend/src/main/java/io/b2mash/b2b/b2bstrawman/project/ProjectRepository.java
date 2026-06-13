@@ -45,6 +45,13 @@ public interface ProjectRepository extends JpaRepository<Project, UUID> {
   List<ProjectWithRole> findAllProjectsWithRoleAndStatus(
       @Param("memberId") UUID memberId, @Param("status") ProjectStatus status);
 
+  /**
+   * Finds all projects in the current tenant schema with the given status. Used by the scheduled
+   * automation fan-out (OBS-505) to enumerate active matters for per-project AI-specialist
+   * summaries.
+   */
+  List<Project> findByStatus(ProjectStatus status);
+
   /** Finds all projects linked to a specific customer. */
   @Query("SELECT p FROM Project p WHERE p.customerId = :customerId ORDER BY p.createdAt DESC")
   List<Project> findByCustomerId(@Param("customerId") UUID customerId);

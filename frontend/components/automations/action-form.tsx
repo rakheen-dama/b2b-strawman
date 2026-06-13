@@ -389,9 +389,9 @@ export function ActionForm({
                 <SelectValue placeholder="Select specialist" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="BILLING">Billing</SelectItem>
-                <SelectItem value="INTAKE">Intake</SelectItem>
-                <SelectItem value="INBOX">Inbox</SelectItem>
+                <SelectItem value="billing-za">Billing</SelectItem>
+                <SelectItem value="intake-za">Intake</SelectItem>
+                <SelectItem value="inbox-za">Inbox</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -412,7 +412,7 @@ export function ActionForm({
               id="action-ai-context"
               value={(actionConfig.contextRef as string) ?? ""}
               onChange={(e) => updateField("contextRef", e.target.value)}
-              placeholder="e.g. {{event.entityType}}:{{event.entityId}}"
+              placeholder="e.g. {{project.id}}"
             />
           </div>
           <div className="space-y-1.5">

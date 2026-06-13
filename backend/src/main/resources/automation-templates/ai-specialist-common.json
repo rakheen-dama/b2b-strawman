@@ -1,6 +1,6 @@
 {
   "packId": "ai-specialist-common",
-  "version": 1,
+  "version": 2,
   "templates": [
     {
       "slug": "polish-invoice-on-send",
@@ -14,8 +14,8 @@
         {
           "actionType": "INVOKE_AI_SPECIALIST",
           "actionConfig": {
-            "specialistId": "BILLING",
-            "contextRef": { "entityType": "invoice", "entityId": "{{event.entityId}}" },
+            "specialistId": "billing-za",
+            "contextRef": { "entityType": "invoice", "entityId": "{{invoice.id}}" },
             "initialPrompt": "Polish the time-entry descriptions on this invoice for client readability.",
             "mode": "REVIEW",
             "timeoutSeconds": 60
@@ -38,8 +38,8 @@
         {
           "actionType": "INVOKE_AI_SPECIALIST",
           "actionConfig": {
-            "specialistId": "INTAKE",
-            "contextRef": { "entityType": "customer", "entityId": "{{event.entityId}}" },
+            "specialistId": "intake-za",
+            "contextRef": { "entityType": "customer", "entityId": "{{customer.id}}" },
             "initialPrompt": "Extract customer details from the submitted intake documents.",
             "mode": "REVIEW",
             "timeoutSeconds": 90

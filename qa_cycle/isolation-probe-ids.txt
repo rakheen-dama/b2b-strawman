@@ -3,19 +3,21 @@
 # Tenant: mathebula-partners (legal-za, tenant_5039f2d497cf)
 # Branch: bugfix_cycle_2026-06-13
 #
-# STATUS: Day 14 BLOCKED — Moroka entities NOT created. A browser-extension event
-# interception on the Keycloak login page (:3000) prevents authenticating as Thandi,
-# so no Day 14 firm-side checkpoint could run. See checkpoint-results/day-14.md.
-# Moroka IDs below are PLACEHOLDERS — DO NOT use for Day 15 probes until Day 14 is
-# unblocked and re-run. (Prior-cycle IDs that were here are from the 2026-05-13 run
-# on a different tenant instance and are NOT valid this cycle.)
+# STATUS: Day 14 PASS (retried via Playwright MCP — prior claude-in-chrome
+# extension-hijack blocker did NOT recur). All Moroka entities created via the
+# firm UI on :3000 as Thandi. IDs below are REAL and ready for Day 15 probes.
+# See checkpoint-results/day-14.md.
 
-## Moroka Family Trust entities (Day 15 MUST-BE-INVISIBLE to Sipho) — NOT YET CREATED
-customer_id           = <PENDING — Day 14 blocked, Moroka TRUST client not created>
-matter_id (project)   = <PENDING — EST-2026-002 "Estate Late Peter Moroka" not created>
-info_request_id       = <PENDING — "Liquidation and Distribution Account docs" request not sent>
-document_storage_key  = <PENDING — death-certificate / letters-of-authority not uploaded>
-trust_transaction_id  = <PENDING — R 25 000,00 Moroka trust deposit not recorded>
+## Moroka Family Trust entities (Day 15 MUST-BE-INVISIBLE to Sipho)
+customer_id           = 9894de9b-31d1-4017-af9c-98ea889092f5   # "Moroka Family Trust", TRUST, IT 001234/2024
+matter_id (project)   = dc10e9ac-becd-4cd6-babe-c723b501bfb0   # EST-2026-002 "Estate Late Peter Moroka", Estates — Deceased
+info_request_id       = 458c97b6-637d-41d1-a458-f4f0c03354e5   # REQ-0003, Liquidation and Distribution Account Pack, Sent, due 2026-07-13
+document_id           = b72eaa77-ecd2-4ec2-b0e3-cdfc744526fb   # death-certificate-moroka.pdf, UPLOADED, visibility INTERNAL
+document_s3_key       = org/mathebula-partners/project/dc10e9ac-becd-4cd6-babe-c723b501bfb0/b72eaa77-ecd2-4ec2-b0e3-cdfc744526fb
+trust_transaction_id  = 23791476-e6c6-4715-8272-5a666a6867b6   # DEP/2026/002, DEPOSIT, R 25 000,00, RECORDED
+portal_contact_id     = 651e35a8-1636-449d-aa8b-11cb1506ac9f   # Moroka portal contact, moroka.portal@example.com
+# Moroka portal magic-link (DO NOT use on Sipho's session — for negative isolation reference only):
+#   http://localhost:3002/auth/exchange?token=GIt69AIK3rFw1YSPaZb2zg8XdDIoqb-wsmUkcxhMA_c&orgId=mathebula-partners
 
 ## Reference — existing Sipho entities (this cycle 2026-06-13) — Day 15 SHOULD be visible to Sipho
 customer_id           = 2211a80a-5523-4a6d-8f96-0d638dff88f6   # "Sipho Dlamini", INDIVIDUAL
@@ -25,16 +27,17 @@ proposal_id           = 6a1b35fc-b342-4101-abd7-f2ab8ffad26e   # PROP-0001, ACCE
 portal_contact_id     = 793df2fa-6350-46af-b0c0-8b3ac0d7d855   # Sipho portal contact
 trust_transaction_id  = <DEP/2026/001 R 50 000,00 RECORDED Day 10 — tx UUID not captured this cycle>
 
-## Day 15 probe plan (unchanged — re-target once Moroka IDs above are filled)
+## Day 15 probe plan (re-targeted with real Moroka IDs above)
 
 ### Frontend (portal :3002, Sipho logged in)
 - `/home` — must NOT show Moroka in any list/card.
 - `/projects` — must NOT list EST-2026-002.
-- `/projects/[morokaMatterId]` — must 403/404 (not render Moroka matter).
-- `/info-requests/[morokaInfoRequestId]` — must 403/404.
-- `/trust` — must NEVER show R 25 000 deposit; balance must remain Sipho-only (R 50 000,00).
+- `/projects/dc10e9ac-becd-4cd6-babe-c723b501bfb0` — must 403/404 (not render Moroka matter).
+- `/info-requests/458c97b6-637d-41d1-a458-f4f0c03354e5` — must 403/404.
+- `/trust` — must NEVER show the R 25 000 Moroka deposit; balance must remain Sipho-only (R 50 000,00).
 
 ### Backend (Sipho's portal session, mathebula-partners tenant)
-- `GET /portal/api/projects/[morokaMatterId]` → expect 403 or 404.
-- `GET /portal/api/info-requests/[morokaInfoRequestId]` → expect 403 or 404.
-- `GET /portal/api/trust/transactions/[morokaTrustTxId]` → expect 403 or 404.
+- `GET /portal/api/projects/dc10e9ac-becd-4cd6-babe-c723b501bfb0` → expect 403 or 404.
+- `GET /portal/api/info-requests/458c97b6-637d-41d1-a458-f4f0c03354e5` → expect 403 or 404.
+- `GET /portal/api/trust/transactions/23791476-e6c6-4715-8272-5a666a6867b6` → expect 403 or 404.
+- Document `b72eaa77-ecd2-4ec2-b0e3-cdfc744526fb` (INTERNAL) → must never be downloadable by Sipho.

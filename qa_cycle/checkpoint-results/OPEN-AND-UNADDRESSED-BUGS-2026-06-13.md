@@ -3,7 +3,10 @@
 Scope: the full 90-day legal-ZA lifecycle walk (Days 0→90, ALL_DAYS_COMPLETE) on the Keycloak dev stack.
 This document lists everything **observed but not fixed** in this cycle, with the disposition and rationale for each.
 
-**Fixed-and-verified this cycle (NOT in this list, for reference):** OBS-503, OBS-504, OBS-505 (incl. scheduled fan-out + tx-isolation cascade), OBS-3001, OBS-8801 (12 audit emit sites). Prior-cycle fixes OBS-2801/2801b/2802/2803 confirmed **no-regression**.
+**Fixed this cycle (NOT in this list, for reference):**
+- **VERIFIED on main (QA re-walked E2E):** OBS-503, OBS-504, OBS-505 (incl. scheduled fan-out + tx-isolation cascade), OBS-3001.
+- **FIXED + MERGED, awaiting E2E re-verify:** OBS-8801 (PR #1440 — `project_id` across 12 audit emit sites; integration-tested + CI green; the firm/portal activity-feed E2E re-verify is deferred because it needs fresh proposal/invoice/closure events).
+- **No-regression (prior-cycle fixes re-checked):** OBS-2801/2801b/2802/2803.
 
 ---
 

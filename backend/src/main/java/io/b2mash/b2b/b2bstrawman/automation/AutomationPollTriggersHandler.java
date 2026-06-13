@@ -188,21 +188,41 @@ public class AutomationPollTriggersHandler implements JobHandler {
   private void fireScheduledRulePerActiveProject(AutomationRule rule, Instant now) {
     List<Project> activeProjects = projectRepository.findByStatus(ProjectStatus.ACTIVE);
     int fanned = 0;
+    int failed = 0;
     for (Project project : activeProjects) {
       Map<String, Map<String, Object>> context =
           AutomationContext.buildScheduledProjectContext(rule, project);
       if (!conditionEvaluator.evaluate(rule.getConditions(), context)) {
         continue;
       }
-      automationEventListener.fireRule(rule, context);
-      fanned++;
+      // Isolate per-project failures: one bad project must not abort the fan-out for the rest.
+      // lastRunAt already advanced before this loop (single source of truth in
+      // processScheduledTenant), so an unhandled throw here would skip every remaining active
+      // project until the next cron tick — a week away for the weekly per-matter rules. Swallow +
+      // log + continue, mirroring the per-rule isolation in processScheduledTenant and
+      // AutomationEventListener.processEvent.
+      try {
+        automationEventListener.fireRule(rule, context);
+        fanned++;
+      } catch (Exception e) {
+        failed++;
+        log.warn(
+            "Failed to fire scheduled rule {} ({}) for project {} ({}): {}",
+            rule.getId(),
+            rule.getName(),
+            project.getId(),
+            project.getName(),
+            e.getMessage(),
+            e);
+      }
     }
     log.info(
-        "Fired scheduled rule {} ({}) at {} across {} active project(s)",
+        "Fired scheduled rule {} ({}) at {} across {} active project(s) ({} failed)",
         rule.getId(),
         rule.getName(),
         now,
-        fanned);
+        fanned,
+        failed);
   }
 
   /**

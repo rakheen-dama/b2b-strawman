@@ -34,6 +34,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /** Integration tests for the SCHEDULED trigger cron pass in {@link AutomationScheduler}. */
@@ -59,6 +60,7 @@ class AutomationSchedulerScheduledTriggerIntegrationTest {
   @Autowired private ProjectRepository projectRepository;
   @Autowired private NotificationRepository notificationRepository;
   @MockitoBean private NonInteractiveSpecialistRunner runner;
+  @MockitoSpyBean private AutomationEventListener eventListener;
 
   private String tenantSchema;
   private UUID ownerMemberId;
@@ -302,6 +304,121 @@ class AutomationSchedulerScheduledTriggerIntegrationTest {
 
           // No automation failure notifications produced by the fan-out.
           assertThat(countAutomationActionFailedNotifications()).isEqualTo(failedBefore);
+        });
+  }
+
+  /**
+   * OBS-505 (CodeRabbit): per-project failure isolation. When {@code fireRule(...)} throws for one
+   * active project during the fan-out, the remaining active projects must still be processed and
+   * the cron tick must complete without propagating the exception (otherwise one bad matter starves
+   * all others for the whole cron window, and since lastRunAt already advanced there is no retry
+   * until the next tick — a week away for the weekly per-matter rule).
+   *
+   * <p>Fail-first evidence: against the pre-fix code (no per-project try/catch inside {@code
+   * fireScheduledRulePerActiveProject}) the thrown exception aborts the loop, so the healthy
+   * project's {@code fireRule} is never reached when it is iterated after the failing one, and
+   * {@code processScheduledTenant()} would either propagate or never invoke the second project —
+   * the {@code times(1)} verification on the healthy context fails. With the fix the loop swallows,
+   * logs, continues, and the healthy project is still fired.
+   */
+  @Test
+  void scheduledTrigger_oneProjectFails_othersStillFireAndTickCompletes() {
+    runInTenant(
+        () -> {
+          var failing =
+              projectRepository.save(new Project("Failing Matter", "desc", ownerMemberId));
+          var healthy =
+              projectRepository.save(new Project("Healthy Matter", "desc", ownerMemberId));
+
+          var rule =
+              new AutomationRule(
+                  "Per-project isolation rule",
+                  "Fan-out failure isolation",
+                  TriggerType.SCHEDULED,
+                  Map.of("cronExpression", "* * * * * *"),
+                  List.of(),
+                  RuleSource.CUSTOM,
+                  null,
+                  ownerMemberId);
+          rule = ruleRepository.save(rule);
+          rule.setLastRunAt(Instant.now().minus(2, ChronoUnit.MINUTES));
+          rule = ruleRepository.save(rule);
+
+          var action =
+              new AutomationAction(
+                  rule.getId(),
+                  0,
+                  ActionType.SEND_NOTIFICATION,
+                  Map.of(
+                      "message",
+                      "Per-matter ping",
+                      "contextRef",
+                      Map.of("entityType", "project", "entityId", "{{project.id}}")),
+                  null,
+                  null);
+          actionRepository.save(action);
+
+          // Make fireRule throw for the failing project's context, delegate to the real method
+          // (which actually fires) for everyone else. project.id distinguishes the contexts.
+          String failingId = failing.getId().toString();
+          Mockito.doAnswer(
+                  inv -> {
+                    Map<String, Map<String, Object>> ctx = inv.getArgument(1);
+                    Object pid = ctx.getOrDefault("project", Map.of()).get("id");
+                    if (failingId.equals(pid)) {
+                      throw new RuntimeException("Simulated per-project failure");
+                    }
+                    return inv.callRealMethod();
+                  })
+              .when(eventListener)
+              .fireRule(Mockito.any(), Mockito.any());
+
+          UUID ruleId = rule.getId();
+          long execsBefore =
+              executionRepository.findAll().stream()
+                  .filter(e -> e.getRuleId().equals(ruleId))
+                  .count();
+          // Sibling tests in this PER_CLASS instance may have seeded other ACTIVE projects, so the
+          // fan-out fires once per ACTIVE project. The failing one throws inside fireRule before
+          // its
+          // execution record is created; every other active project still gets one.
+          long activeProjectCount = projectRepository.findByStatus(ProjectStatus.ACTIVE).size();
+
+          // Must NOT propagate, even though one project's fireRule throws.
+          scheduler.processScheduledTenant();
+
+          // The healthy project was still fired (real method ran) — the core isolation guarantee:
+          // the failing project did NOT abort the loop before the healthy one was reached.
+          String healthyId = healthy.getId().toString();
+          Mockito.verify(eventListener, Mockito.atLeastOnce())
+              .fireRule(
+                  Mockito.any(),
+                  Mockito.argThat(
+                      ctx ->
+                          ctx != null
+                              && healthyId.equals(
+                                  ctx.getOrDefault("project", Map.of()).get("id"))));
+          // The failing project was also attempted (proving the failure was real, then swallowed).
+          String failingId2 = failing.getId().toString();
+          Mockito.verify(eventListener, Mockito.atLeastOnce())
+              .fireRule(
+                  Mockito.any(),
+                  Mockito.argThat(
+                      ctx ->
+                          ctx != null
+                              && failingId2.equals(
+                                  ctx.getOrDefault("project", Map.of()).get("id"))));
+
+          long execsAfter =
+              executionRepository.findAll().stream()
+                  .filter(e -> e.getRuleId().equals(ruleId))
+                  .count();
+          // One execution per active project EXCEPT the failing one (which threw before saving its
+          // execution). Without the per-project catch the loop would abort at the failing project,
+          // producing fewer than activeProjectCount - 1 executions.
+          assertThat(execsAfter - execsBefore).isEqualTo(activeProjectCount - 1);
+
+          Mockito.reset(eventListener);
         });
   }
 

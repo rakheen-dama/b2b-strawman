@@ -154,6 +154,13 @@ class InformationRequestNotificationAuditIntegrationTest {
     assertThat(event.entityId()).isEqualTo(UUID.fromString(requestId));
     assertThat(event.details()).containsKey("project_id");
 
+    // OBS-504: the sent-event must record the recipient portal contact's display name so the
+    // activity feed attributes the request to the client contact, not the sending actor.
+    // Pre-fix this key was absent, so the formatter fell back to the actor name (the sender).
+    assertThat(event.details())
+        .as("sent-event must carry the recipient contact name (OBS-504)")
+        .containsEntry("contact_name", "Portal User");
+
     // GAP-L-42: a magic-link token must be minted during the send path so the
     // portal deep-link in the email authenticates the client on click.
     long tokensAfter = countMagicLinkTokens();

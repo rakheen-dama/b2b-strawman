@@ -219,6 +219,19 @@ public class PortalInformationRequestService {
             .orElseThrow(() -> new ResourceNotFoundException("Document", documentId));
     verifyDocumentScope(document, request);
 
+    // OBS-503: finalize the Document lifecycle (PENDING -> UPLOADED). The portal flow has no
+    // separate confirm step — the frontend only calls submit after the presigned S3 PUT succeeds,
+    // so the submit is the confirmation. Without this, firm-side download
+    // (DocumentService.getPresignedDownloadUrl) rejects the document as not uploaded.
+    // Intentionally no DocumentUploadedEvent (RequestItemSubmittedEvent below already notifies
+    // the firm) and no document.uploaded audit (upload_initiated + item.submitted cover the trail).
+    // Also intentionally no DocumentCreatedEvent: it would newly project this document into the
+    // portal documents read model — a behaviour change outside the OBS-503 scope.
+    if (document.getStatus() != Document.Status.UPLOADED) {
+      document.confirmUpload();
+      documentRepository.save(document);
+    }
+
     item.submit(documentId);
     itemRepository.save(item);
 

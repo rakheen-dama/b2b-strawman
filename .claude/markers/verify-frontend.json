@@ -1,7 +1,1 @@
-{
-  "commit": "d6a5a3e151579c4dbe28345ee5c0f4cccc8dce59",
-  "command": "pnpm lint && pnpm test && pnpm build",
-  "exit": 0,
-  "ts": "2026-06-12T15:10:00Z",
-  "summary": "P1 expense-markup write path (fix/expense-markup-write-path). Frontend gates observed by implementation subagent a00a0f2560eb57117: lint 0 errors (112 pre-existing e2e warnings), 375 test files / 2344 passed / 2 skipped, build compiled successfully."
-}
+{"commit":"2519577e0","command":"pnpm run lint && pnpm run build && pnpm test","exit":0,"ts":"2026-06-13T09:55:51Z","summary":"OBS-505 PR #1437. Frontend (action-form.tsx placeholder) gates observed green by dev at bb75dbcf3: lint 0 errors, build success, 375 files/2344 passed/2 skipped. Frontend byte-identical bb75dbcf3..2519577e0 (later commits backend+test+doc only), result holds for merge commit."}

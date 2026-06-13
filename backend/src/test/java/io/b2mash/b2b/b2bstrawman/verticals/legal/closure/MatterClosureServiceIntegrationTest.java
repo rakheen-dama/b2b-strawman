@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventFilter;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.audit.AuditService;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.document.Document;
@@ -82,6 +83,7 @@ class MatterClosureServiceIntegrationTest {
   @Autowired private DocumentRepository documentRepository;
   @Autowired private RetentionPolicyRepository retentionPolicyRepository;
   @Autowired private AuditService auditService;
+  @Autowired private AuditEventRepository auditEventRepository;
 
   private String tenantSchema;
   private UUID memberId;
@@ -274,6 +276,39 @@ class MatterClosureServiceIntegrationTest {
     assertThat(closedEvents).isEqualTo(1);
   }
 
+  // OBS-8801: matter_closure.closed audit must carry details.project_id so the matter Activity
+  // feed (findByProjectId) and the portal Firm-actions trail (findActivityFirmForCustomer) include
+  // the closure milestone — both feeds scope on details->>'project_id'.
+  @Test
+  void close_emitsAuditEventWithProjectIdSoActivityFeedShowsIt() {
+    UUID projectId = createProject("Closure Audit ProjectId Matter");
+
+    runInTenantAsOwner(
+        () ->
+            matterClosureService.close(
+                projectId,
+                new ClosureRequest(
+                    ClosureReason.CONCLUDED, "done", false, false, true, VALID_JUSTIFICATION),
+                memberId));
+
+    runInTenantAsOwner(
+        () -> {
+          var matterEvents =
+              auditEventRepository.findByProjectId(
+                  projectId.toString(), null, null, PageRequest.of(0, 50));
+          var closed =
+              matterEvents.getContent().stream()
+                  .filter(e -> "matter_closure.closed".equals(e.getEventType()))
+                  .findFirst()
+                  .orElseThrow(
+                      () ->
+                          new AssertionError(
+                              "matter_closure.closed not returned by the matter Activity feed query"
+                                  + " (findByProjectId) — details.project_id is missing"));
+          assertThat(closed.getDetails()).containsEntry("project_id", projectId.toString());
+        });
+  }
+
   // ==========================================================================
   // reopen
   // ==========================================================================
@@ -325,6 +360,45 @@ class MatterClosureServiceIntegrationTest {
             .filter(e -> e.projectId().equals(projectId))
             .count();
     assertThat(reopenedEvents).isEqualTo(1);
+  }
+
+  // OBS-8801: matter_closure.reopened audit must carry details.project_id so the matter Activity
+  // feed (findByProjectId) and the portal Firm-actions trail (findActivityFirmForCustomer) include
+  // the reopen milestone — both feeds scope on details->>'project_id'. Mirrors the
+  // matter_closure.closed coverage above.
+  @Test
+  void reopen_emitsAuditEventWithProjectIdSoActivityFeedShowsIt() {
+    UUID projectId = createProject("Reopen Audit ProjectId Matter");
+
+    runInTenantAsOwner(
+        () ->
+            matterClosureService.close(
+                projectId,
+                new ClosureRequest(
+                    ClosureReason.CONCLUDED, "done", false, false, true, VALID_JUSTIFICATION),
+                memberId));
+
+    runInTenantAsOwner(
+        () ->
+            matterClosureService.reopen(
+                projectId, new ReopenRequest(VALID_REOPEN_NOTES), memberId));
+
+    runInTenantAsOwner(
+        () -> {
+          var matterEvents =
+              auditEventRepository.findByProjectId(
+                  projectId.toString(), null, null, PageRequest.of(0, 50));
+          var reopened =
+              matterEvents.getContent().stream()
+                  .filter(e -> "matter_closure.reopened".equals(e.getEventType()))
+                  .findFirst()
+                  .orElseThrow(
+                      () ->
+                          new AssertionError(
+                              "matter_closure.reopened not returned by the matter Activity feed"
+                                  + " query (findByProjectId) — details.project_id is missing"));
+          assertThat(reopened.getDetails()).containsEntry("project_id", projectId.toString());
+        });
   }
 
   @Test

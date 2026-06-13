@@ -228,12 +228,24 @@ public class InvoiceTransitionService {
     paymentLinkService.generatePaymentLink(invoice);
 
     UUID actorId = RequestScopes.MEMBER_ID.isBound() ? RequestScopes.MEMBER_ID.get() : null;
+
+    // Derive the matter from the invoice lines (the invoice has no direct project_id column).
+    // Single-matter invoices resolve to one project; spanning/empty invoices yield "". The
+    // details.project_id field is load-bearing — the matter Activity feed
+    // (AuditEventRepository.findByProjectId) and the portal Firm-actions trail
+    // (findActivityFirmForCustomer) both scope on details->>'project_id', so without it this
+    // client-safe milestone is silently dropped from both feeds (OBS-8801). Mirrors the
+    // portal.invoice.paid emission in PaymentReconciliationService.
+    var sentProjectIds = lineRepository.findDistinctProjectIdsByInvoiceId(invoice.getId());
+    String sentProjectId = sentProjectIds.size() == 1 ? sentProjectIds.getFirst().toString() : "";
+
     auditService.log(
         AuditEventBuilder.builder()
             .eventType("invoice.sent")
             .entityType("invoice")
             .entityId(invoice.getId())
-            .details(Map.of("invoice_number", invoice.getInvoiceNumber()))
+            .details(
+                Map.of("invoice_number", invoice.getInvoiceNumber(), "project_id", sentProjectId))
             .build());
 
     String tenantIdForEvent = RequestScopes.getTenantIdOrNull();

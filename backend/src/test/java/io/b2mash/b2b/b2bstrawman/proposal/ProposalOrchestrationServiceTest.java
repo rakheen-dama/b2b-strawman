@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
+import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.customer.Customer;
 import io.b2mash.b2b.b2bstrawman.customer.CustomerRepository;
 import io.b2mash.b2b.b2bstrawman.customer.LifecycleStatus;
@@ -33,6 +34,7 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -58,6 +60,7 @@ class ProposalOrchestrationServiceTest {
   @Autowired private MemberSyncService memberSyncService;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
   @Autowired private PortalContactRepository portalContactRepository;
+  @Autowired private AuditEventRepository auditEventRepository;
   @Autowired private TransactionTemplate transactionTemplate;
 
   private String tenantSchema;
@@ -450,6 +453,44 @@ class ProposalOrchestrationServiceTest {
     assertThat(result.assignedMemberIds()).contains(secondMemberId);
     assertThat(result.createdInvoiceIds()).hasSize(1);
     assertThat(result.retainerAgreementId()).isNull();
+  }
+
+  // --- OBS-8801: proposal.accepted audit must carry details.project_id ---
+
+  @Test
+  void acceptProposal_emitsAuditEventWithProjectIdSoActivityFeedShowsIt() {
+    var setup =
+        runInTenant(
+            () -> {
+              var customer = createProspectCustomer();
+              var proposal = createSentProposal(customer.getId(), FeeModel.HOURLY, null, null);
+              return new TestSetup(
+                  customer.getId(), proposal.getId(), proposal.getPortalContactId());
+            });
+
+    var result =
+        runInTenant(
+            () -> orchestrationService.acceptProposal(setup.proposalId, setup.portalContactId));
+
+    runInTenant(
+        () -> {
+          // (a) the persisted proposal.accepted audit row carries details.project_id
+          var matterEvents =
+              auditEventRepository.findByProjectId(
+                  result.projectId().toString(), null, null, PageRequest.of(0, 50));
+          var accepted =
+              matterEvents.getContent().stream()
+                  .filter(e -> "proposal.accepted".equals(e.getEventType()))
+                  .findFirst()
+                  .orElseThrow(
+                      () ->
+                          new AssertionError(
+                              "proposal.accepted not returned by the matter Activity feed query"
+                                  + " (findByProjectId) — details.project_id is missing"));
+          assertThat(accepted.getDetails())
+              .containsEntry("project_id", result.projectId().toString());
+          return null;
+        });
   }
 
   // --- Negative tests ---

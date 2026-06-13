@@ -88,6 +88,9 @@ class ProjectServiceAuditTest {
               assertThat(event.getEntityType()).isEqualTo("project");
               assertThat(event.getEntityId()).isEqualTo(projectId);
               assertThat(event.getDetails()).containsEntry("name", "Audit Create Test");
+              // OBS-8801: project.created must carry project_id so the matter Activity feed
+              // (findByProjectId, which scopes on details->>'project_id') surfaces creation.
+              assertThat(event.getDetails()).containsEntry("project_id", projectId.toString());
               assertThat(event.getActorType()).isEqualTo("USER");
               assertThat(event.getSource()).isEqualTo("API");
             });
@@ -150,7 +153,7 @@ class ProjectServiceAuditTest {
   }
 
   @Test
-  void updateProjectWithNoChangesProducesEventWithNullDetails() throws Exception {
+  void updateProjectWithNoChangesStillCarriesProjectId() throws Exception {
     var createResult =
         mockMvc
             .perform(
@@ -189,10 +192,13 @@ class ProjectServiceAuditTest {
 
               assertThat(page.getTotalElements()).isEqualTo(1);
               var event = page.getContent().getFirst();
-              // No domain fields changed — only actor_name enrichment present
+              // No domain fields changed, but project.updated always carries project_id
+              // (OBS-8801 — load-bearing for the matter Activity feed) plus actor_name
+              // enrichment.
               assertThat(event.getDetails()).isNotNull();
+              assertThat(event.getDetails()).hasSize(2);
               assertThat(event.getDetails()).containsKey("actor_name");
-              assertThat(event.getDetails()).hasSize(1);
+              assertThat(event.getDetails()).containsEntry("project_id", projectId.toString());
             });
   }
 
@@ -233,6 +239,9 @@ class ProjectServiceAuditTest {
               assertThat(event.getEventType()).isEqualTo("project.deleted");
               assertThat(event.getEntityId()).isEqualTo(projectId);
               assertThat(event.getDetails()).containsEntry("name", "Delete Me");
+              // OBS-8801: project.deleted must carry project_id so the matter Activity feed
+              // (findByProjectId, which scopes on details->>'project_id') surfaces the deletion.
+              assertThat(event.getDetails()).containsEntry("project_id", projectId.toString());
             });
   }
 

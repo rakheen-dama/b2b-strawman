@@ -236,11 +236,18 @@ class InvoiceSentDocumentPersistenceIntegrationTest {
     // OBS-3001 symptom. We assert it only to establish the starting state, not as the bug gate.
     // (The GeneratedDocument count is also 0 here, but that is incidental at this point.)
     assertGeneratedInvoiceDocCount(invoiceId, 0);
+    // The download endpoint resolves ownership via getInvoiceDetail first, which throws
+    // ResourceNotFoundException("Invoice", invoiceId) because the draft is not yet in the portal
+    // read model. Those strings land in the ProblemDetail title/detail via ProblemDetailFactory
+    // (RFC 9457) — assert the body shape, not just the status, per the error-path test convention.
     mockMvc
         .perform(
             get("/portal/invoices/{id}/download", invoiceId)
                 .header("Authorization", "Bearer " + portalToken))
-        .andExpect(status().isNotFound());
+        .andExpect(status().isNotFound())
+        .andExpect(jsonPath("$.status").value(404))
+        .andExpect(jsonPath("$.title").value("Invoice not found"))
+        .andExpect(jsonPath("$.detail").value("No invoice found with id " + invoiceId));
 
     // Approve, then send — sending projects the invoice into the portal read model
     // (InvoiceSyncEvent)

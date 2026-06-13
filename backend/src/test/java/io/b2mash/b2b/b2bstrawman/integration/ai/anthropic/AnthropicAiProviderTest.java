@@ -17,6 +17,7 @@ import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -123,6 +124,29 @@ class AnthropicAiProviderTest {
 
     assertThat(result.success()).isTrue();
     assertThat(result.content()).isEqualTo("Short summary");
+  }
+
+  @Test
+  void phase52Wrappers_useCanonicalSonnetModel() {
+    // The default model for generateText/summarize/suggestCategories must stay aligned with the
+    // canonical "claude-sonnet-4-6" used everywhere else (pricing config, chat, specialists). A
+    // dated/off-version id silently runs a different model and misses the AiPricingProperties
+    // table.
+    when(secretStore.retrieve("ai:anthropic:api_key")).thenReturn("sk-key");
+    var stubResponse =
+        new AiCompletionResponse("ok", "claude-sonnet-4-6", 10, 5, 0, 0, "end_turn", 50L);
+    when(apiClient.sendCompletion(eq("sk-key"), any(AiCompletionRequest.class)))
+        .thenReturn(stubResponse);
+    var captor = ArgumentCaptor.forClass(AiCompletionRequest.class);
+
+    provider.generateText(new AiTextRequest("Write something", 500, 0.7));
+    provider.summarize("Long content to summarize...", 100);
+    provider.suggestCategories("Some content", List.of("Legal", "Finance"));
+
+    verify(apiClient, times(3)).sendCompletion(eq("sk-key"), captor.capture());
+    assertThat(captor.getAllValues())
+        .extracting(AiCompletionRequest::model)
+        .containsOnly("claude-sonnet-4-6");
   }
 
   @Test

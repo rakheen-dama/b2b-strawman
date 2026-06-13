@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
 public class AnthropicAiProvider implements AiProvider {
 
   private static final Logger log = LoggerFactory.getLogger(AnthropicAiProvider.class);
-  private static final String DEFAULT_MODEL = "claude-sonnet-4-20250514";
+  private static final String DEFAULT_MODEL = "claude-sonnet-4-6";
 
   private final AnthropicApiClient apiClient;
   private final SecretStore secretStore;

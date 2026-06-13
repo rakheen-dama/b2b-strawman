@@ -1,10 +1,13 @@
 package io.b2mash.b2b.b2bstrawman.project;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -18,6 +21,7 @@ import io.b2mash.b2b.b2bstrawman.provisioning.TenantProvisioningService;
 import io.b2mash.b2b.b2bstrawman.testutil.TestEntityHelper;
 import io.b2mash.b2b.b2bstrawman.testutil.TestJwtFactory;
 import io.b2mash.b2b.b2bstrawman.testutil.TestMemberHelper;
+import java.util.List;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -41,6 +45,7 @@ class ProjectLifecycleIntegrationTest {
   @Autowired private TenantProvisioningService provisioningService;
   @Autowired private AutomationRuleRepository automationRuleRepository;
   @Autowired private OrgSchemaMappingRepository orgSchemaMappingRepository;
+  @Autowired private io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository auditEventRepository;
 
   @Autowired
   private org.springframework.transaction.support.TransactionTemplate transactionTemplate;
@@ -448,6 +453,122 @@ class ProjectLifecycleIntegrationTest {
             patch("/api/projects/" + projectId + "/reopen")
                 .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
         .andExpect(status().isBadRequest());
+  }
+
+  /**
+   * OBS-8801 — the full {@code project.*} lifecycle family must carry {@code details.project_id} so
+   * the matter Activity feed surfaces them. The feed query ({@code
+   * AuditEventRepository.findByProjectId}, exposed via {@code GET /api/projects/{id}/activity})
+   * scopes strictly on {@code details->>'project_id'}; any emit site that omits the id silently
+   * drops out of the feed.
+   *
+   * <p>This drives one project through created → updated → completed → reopened → archived →
+   * reopened and a second project through created → deleted, then asserts every emitted {@code
+   * project.*} event is returned by the feed. Covers 6 of the 7 emit sites; {@code
+   * project.created_from_template} is covered by {@code InstantiateTemplateIntegrationTest} (it
+   * lives in the template package and needs a persisted template).
+   */
+  @Test
+  void projectLifecycleEventsAreSurfacedInMatterActivityFeed() throws Exception {
+    // --- Project A: created -> updated -> completed -> reopened -> archived -> reopened ---
+    String projectA = createProject("OBS-8801 Lifecycle Feed A");
+
+    // updated
+    mockMvc
+        .perform(
+            put("/api/projects/" + projectA)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"name\": \"OBS-8801 Lifecycle Feed A (renamed)\"}"))
+        .andExpect(status().isOk());
+
+    // completed (no tasks -> no open-task guardrail)
+    mockMvc
+        .perform(
+            patch("/api/projects/" + projectA + "/complete")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
+        .andExpect(status().isOk());
+
+    // reopened (from completed)
+    mockMvc
+        .perform(
+            patch("/api/projects/" + projectA + "/reopen")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
+        .andExpect(status().isOk());
+
+    // archived
+    mockMvc
+        .perform(
+            patch("/api/projects/" + projectA + "/archive")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
+        .andExpect(status().isOk());
+
+    // reopened (from archived — second project.reopened row)
+    mockMvc
+        .perform(
+            patch("/api/projects/" + projectA + "/reopen")
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
+        .andExpect(status().isOk());
+
+    var feedA =
+        mockMvc
+            .perform(
+                get("/api/projects/" + projectA + "/activity")
+                    .param("size", "50")
+                    .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+
+    // Every lifecycle event emitted for project A must appear in its matter Activity feed.
+    for (String eventType :
+        new String[] {
+          "project.created",
+          "project.updated",
+          "project.completed",
+          "project.archived",
+          "project.reopened"
+        }) {
+      List<Object> matches =
+          JsonPath.read(feedA, "$.content[?(@.eventType == '%s')]".formatted(eventType));
+      assertThat(matches)
+          .as(
+              "%s missing from matter Activity feed — emit site dropped details.project_id (OBS-8801)",
+              eventType)
+          .isNotEmpty();
+    }
+
+    // --- Project B: created -> deleted (delete requires ACTIVE + owner) ---
+    String projectB = createProject("OBS-8801 Lifecycle Feed B");
+    mockMvc
+        .perform(
+            delete("/api/projects/" + projectB)
+                .with(TestJwtFactory.ownerJwt(ORG_ID, "user_plc_owner")))
+        .andExpect(status().isNoContent());
+
+    // The HTTP feed endpoint guards on requireViewAccess, which 404s once the project is gone, so
+    // project.deleted is asserted directly against the feed query
+    // (AuditEventRepository.findByProjectId
+    // — the same query the endpoint runs, scoping on details->>'project_id'). findByProjectId does
+    // NOT
+    // join the projects table, so the deletion row stays queryable by the deleted project's id.
+    String schemaName =
+        orgSchemaMappingRepository.findByClerkOrgId(ORG_ID).orElseThrow().getSchemaName();
+    ScopedValue.where(RequestScopes.TENANT_ID, schemaName)
+        .where(RequestScopes.ORG_ID, ORG_ID)
+        .run(
+            () -> {
+              var deletedFeed =
+                  auditEventRepository.findByProjectId(
+                      projectB, null, null, org.springframework.data.domain.PageRequest.of(0, 50));
+              assertThat(deletedFeed.getContent())
+                  .as(
+                      "project.deleted missing from matter Activity feed (findByProjectId) — emit site"
+                          + " dropped details.project_id (OBS-8801)")
+                  .extracting(io.b2mash.b2b.b2bstrawman.audit.AuditEvent::getEventType)
+                  .contains("project.deleted");
+            });
   }
 
   // --- Helper Methods ---

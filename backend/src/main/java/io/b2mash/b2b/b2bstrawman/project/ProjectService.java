@@ -424,6 +424,9 @@ public class ProjectService {
 
     var auditDetails = new LinkedHashMap<String, Object>();
     auditDetails.put("name", project.getName());
+    // OBS-8801: project.created is a project-lifecycle event surfaced in the matter Activity feed
+    // (findByProjectId) — both feed queries scope on details->>'project_id', so it is load-bearing.
+    auditDetails.put("project_id", project.getId().toString());
     if (customerId != null) {
       auditDetails.put("customerId", customerId.toString());
     }
@@ -574,7 +577,10 @@ public class ProjectService {
             .track("referenceNumber", oldReferenceNumber, referenceNumber)
             .trackAsString("priority", oldPriority, priority)
             .track("workType", oldWorkType, workType)
-            .build();
+            .buildMutable();
+    // OBS-8801: project.updated is a project-lifecycle event surfaced in the matter Activity feed
+    // (findByProjectId) — both feed queries scope on details->>'project_id', so it is load-bearing.
+    details.put("project_id", project.getId().toString());
 
     auditService.log(
         AuditEventBuilder.builder()
@@ -629,7 +635,11 @@ public class ProjectService {
             .eventType("project.deleted")
             .entityType("project")
             .entityId(project.getId())
-            .details(Map.of("name", project.getName()))
+            // OBS-8801: include project_id so the matter Activity feed (findByProjectId, which
+            // scopes
+            // on details->>'project_id') surfaces the deletion consistently with the rest of the
+            // family.
+            .details(Map.of("name", project.getName(), "project_id", project.getId().toString()))
             .build());
   }
 
@@ -673,6 +683,9 @@ public class ProjectService {
 
     var auditDetails = new LinkedHashMap<String, Object>();
     auditDetails.put("name", project.getName());
+    // OBS-8801: project.completed is a project-lifecycle event surfaced in the matter Activity feed
+    // (findByProjectId) — both feed queries scope on details->>'project_id', so it is load-bearing.
+    auditDetails.put("project_id", project.getId().toString());
     auditDetails.put("completed_by", actor.memberId().toString());
     if (unbilledCount > 0 && acknowledgeUnbilledTime) {
       auditDetails.put("unbilled_time_waived", true);
@@ -731,10 +744,14 @@ public class ProjectService {
             .eventType("project.archived")
             .entityType("project")
             .entityId(project.getId())
+            // OBS-8801: include project_id so the matter Activity feed (findByProjectId, scoping on
+            // details->>'project_id') surfaces this project-lifecycle event with the rest of the
+            // family.
             .details(
                 Map.of(
                     "name", project.getName(),
-                    "archived_by", actor.memberId().toString()))
+                    "archived_by", actor.memberId().toString(),
+                    "project_id", project.getId().toString()))
             .build());
 
     String actorName = memberNameResolver.resolveName(actor.memberId());
@@ -778,11 +795,15 @@ public class ProjectService {
             .eventType("project.reopened")
             .entityType("project")
             .entityId(project.getId())
+            // OBS-8801: include project_id so the matter Activity feed (findByProjectId, scoping on
+            // details->>'project_id') surfaces this project-lifecycle event with the rest of the
+            // family.
             .details(
                 Map.of(
                     "name", project.getName(),
                     "reopened_by", actor.memberId().toString(),
-                    "previous_status", previousStatus))
+                    "previous_status", previousStatus,
+                    "project_id", project.getId().toString()))
             .build());
 
     String actorName = memberNameResolver.resolveName(actor.memberId());

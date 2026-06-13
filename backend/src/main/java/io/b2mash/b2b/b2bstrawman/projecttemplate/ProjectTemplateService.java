@@ -632,6 +632,9 @@ public class ProjectTemplateService {
             .eventType("project.created_from_template")
             .entityType("project")
             .entityId(project.getId())
+            // OBS-8801: include project_id so the matter Activity feed (findByProjectId, scoping on
+            // details->>'project_id') surfaces this project-lifecycle event with the rest of the
+            // family.
             .details(
                 Map.of(
                     "template_name",
@@ -639,7 +642,9 @@ public class ProjectTemplateService {
                     "project_name",
                     resolvedName,
                     "customer_name",
-                    customer != null ? customer.getName() : "none"))
+                    customer != null ? customer.getName() : "none",
+                    "project_id",
+                    project.getId().toString()))
             .build());
 
     // 11. Publish notification event (informational — reuses ProjectCreatedEvent)
@@ -788,6 +793,9 @@ public class ProjectTemplateService {
             .eventType("project.created_from_template")
             .entityType("project")
             .entityId(project.getId())
+            // OBS-8801: include project_id so the matter Activity feed (findByProjectId, scoping on
+            // details->>'project_id') surfaces this project-lifecycle event with the rest of the
+            // family.
             .details(
                 Map.of(
                     "template_name",
@@ -795,7 +803,9 @@ public class ProjectTemplateService {
                     "project_name",
                     resolvedName,
                     "customer_name",
-                    customer != null ? customer.getName() : "none"))
+                    customer != null ? customer.getName() : "none",
+                    "project_id",
+                    project.getId().toString()))
             .build());
 
     // 7. Auto-create draft information request

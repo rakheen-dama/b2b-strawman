@@ -1,69 +1,52 @@
-# Day 7 — Checkpoint Results (Cycle 2026-05-30)
+# Day 7 — Firm drafts + sends proposal (engagement letter) — Cycle 2026-06-13
 
-**Date**: 2026-05-30
-**Stack**: Keycloak dev stack (frontend :3000, backend :8080, gateway :8443, KC :8180, Mailpit :8025, portal :3002)
-**Executed by**: QA Agent
-**Scenario**: legal-za-full-lifecycle-keycloak.md (Mathebula & Partners)
-**Actor**: Thandi Mathebula (Owner — signs proposals)
+**Executed**: 2026-06-13 (branch `bugfix_cycle_2026-06-13`)
+**Actor**: Thandi Mathebula (Owner — signs proposals). Context swap from Day 5 Bob session: signed Bob out, fresh Keycloak login on :3000 (`thandi@mathebula-test.local` / `SecureP@ss1`, realm `docteams`), landed on dashboard as "Thandi Mathebula". Portal projection check (7.11) reused Sipho's live portal session on :3002 (magic-link cookie still valid, no re-auth).
+**Driver**: QA agent via Playwright MCP — browser UI only; Mailpit API used only to read the proposal notification email; backend log read for 7.9 sync confirmation.
+**Pre-checks**: svc.sh status — backend (PID 45933→46138 after Day-5 retest restart) / gateway / frontend / portal all RUNNING+HEALTHY.
+**Result**: **11/11 checkpoints PASS + 5/5 summary checkpoints PASS. Zero new gaps.**
 
----
+## Created Day 7
+- Proposal / Engagement Letter **PROP-0001** — ID `6a1b35fc-b342-4101-abd7-f2ab8ffad26e`
+  (`/org/mathebula-partners/proposals/6a1b35fc-b342-4101-abd7-f2ab8ffad26e`)
+- Title: "Engagement Letter — Litigation (Dlamini v RAF)"; Fee Model Hourly; Hourly Rate Note = LSSA-tariff estimate text; Created 13 Jun 2026; Expires 20 Jun 2026; Sent 13 Jun 2026
+- Sent to portal contact **Sipho Dlamini** (sipho.portal@example.com), portal contact ID `793df2fa-6350-46af-b0c0-8b3ac0d7d855`
+- Proposal email in Mailpit: `nso7TsKUKSxPWXvKkDhXwR` — subject "Mathebula & Partners: New proposal PROP-0001 for your review"; portal link `http://localhost:3002/proposals/6a1b35fc-b342-4101-abd7-f2ab8ffad26e`
 
-## Pre-check: Login as Thandi
-
-Navigated to `http://localhost:3000/dashboard` -> redirected to Keycloak login at `:8180`. Entered `thandi@mathebula-test.local` / `SecureP@ss1`. Logged in successfully, landed on `/org/mathebula-partners/dashboard`. Sidebar shows "TM" avatar, org "Mathebula & Partners", user "Thandi Mathebula" (thandi@mathebula-test.local). Dashboard shows 1 Active Matter ("Dlamini v Road Accident Fund"), recent activity with FICA completion events from Day 5.
-
----
-
-## Day 7 — Firm drafts + sends proposal (engagement letter) `[FIRM]`
+## Checkpoints
 
 | ID | Checkpoint | Result | Evidence |
 |----|-----------|--------|----------|
-| 7.1 | Navigate to matter RAF-2026-001 -> click + New Engagement Letter | **PASS** | Navigated to `/org/mathebula-partners/projects/d80aeac5-d5f4-4690-9291-193f05e3785d`. Matter detail page with header card: "Dlamini v Road Accident Fund", badges Active + Litigation, ref RAF-2026-001, client "Sipho Dlamini". Clicked "More actions" overflow menu -> "New Engagement Letter" menu item (legal-za term map for "+ New Proposal"). Dialog opened. |
-| 7.2 | Dialog opens with Client pre-filled = Sipho Dlamini (disabled) | **PASS** | "New Engagement Letter" dialog shows Client combobox displaying "Sipho Dlamini" with `disabled` attribute (pre-filled from matter context, not editable). Dialog subtitle: "Create a engagement letter for a client engagement." |
-| 7.3 | Set Title = "Engagement Letter — Litigation (Dlamini v RAF)" | **PASS** | Title textbox filled with "Engagement Letter — Litigation (Dlamini v RAF)". Placeholder was "e.g. Annual Audit Proposal". |
-| 7.4 | Fee Model = Hourly; set Hourly Rate Note | **PASS** | Fee Model combobox pre-selected as "Hourly" (legal-za default). Hourly Rate Note filled with "R 2,500/hr (LSSA tariff High Court Party-and-Party 2024/2025) — 30h Bob Ndlovu (attorney) + 5h Thandi Mathebula (senior partner) ≈ R 87,500.00 estimate." |
-| 7.5 | Set Expiry Date = Day 17 (2026-06-16) | **PASS** | Expiry Date input (`type="date"`) filled with `2026-06-16`. Accepted ISO format correctly. |
-| 7.6 | Click Create Proposal -> redirected to proposal detail; status = Draft, PROP-0001 | **PASS** | Clicked "Create Engagement Letter". Redirected to `/org/mathebula-partners/proposals/40e7fd6b-efa1-4f53-8a1a-4a8f5291ae86`. Status badge: **Draft**. Reference: **PROP-0001**. Proposal Details: Fee Model=Hourly, Hourly Rate=full text, Created=May 30, 2026, Expires=Jun 16, 2026. Breadcrumb shows "Engagement Letters" (legal terminology). |
-| 7.7 | Click Send Proposal -> select Sipho Dlamini -> Send | **PASS** | Clicked "Send Proposal" button. "Send Proposal" dialog opened with Recipient combobox showing "Select a contact". Clicked combobox -> listbox shows single option: "Sipho Dlamini (sipho.portal@example.com)". Selected Sipho. "Send" button enabled. Clicked "Send". |
-| 7.8 | Status transitions to Sent; Sent date appears; action button = Withdraw | **PASS** | After Send: status badge changed from "Draft" to **Sent**. New "Sent: May 30, 2026" field appeared in Proposal Details. Action button changed from "Send Proposal" to **Withdraw**. Notification count incremented from 2 to 3. |
-| 7.9 | Backend log confirms send + portal sync | **PASS** | Backend logs confirm: (1) `Sent proposal 40e7fd6b-efa1-4f53-8a1a-4a8f5291ae86 to contact 02a7bed0-eb20-4771-866f-842a4138e7ce`, (2) `Portal sync completed for proposal PROP-0001 after commit`, (3) `Portal notification sent template=portal-new-proposal contact=02a7bed0-eb20-4771-866f-842a4138e7ce to=sipho.portal@example.com`. Automation rule "Proposal Follow-up (5 days)" also triggered. |
-| 7.10 | Mailpit -> proposal email to sipho.portal@example.com with portal link (OBS-703 fix) | **PASS** | Email received at `sipho.portal@example.com`. Subject: "Mathebula & Partners: New proposal PROP-0001 for your review". Body contains: "New Proposal for Your Review", "Hi Sipho Dlamini", "PROP-0001", "Engagement Letter — Litigation (Dlamini v RAF)", "View Proposal" link to `http://localhost:3002/proposals/40e7fd6b-efa1-4f53-8a1a-4a8f5291ae86`, "This proposal will expire on 16 June 2026". OBS-703 fix verified: email contains click-through to portal proposal URL. |
-| 7.11 | Portal `/proposals` shows PROP-0001 in "Awaiting Your Response" with SENT status | **PASS** | Context swap to portal (:3002). Authenticated as Sipho via fresh magic-link. Navigated to `/proposals` (sidebar: "Engagement Letters"). Page heading: "Engagement Letters". Section heading: "Awaiting Your Response". Table row: PROP-0001 / "Engagement Letter — Litigation (Dlamini v RAF)" / status **SENT** / 30 May 2026 / View link to `/proposals/40e7fd6b-efa1-4f53-8a1a-4a8f5291ae86`. Firm->portal projection working correctly. |
+| 7.1 | Matter RAF-2026-001 → **+ New Engagement Letter** (legal-za term for "+ New Proposal") | PASS | Navigated to `/org/mathebula-partners/projects/08ad56c4-…`. "New Engagement Letter" lives under the header **More actions** overflow menu (alongside Save as Template / Edit / Archive / Delete). Clicking it opens the engagement-letter dialog. |
+| 7.2 | Dialog opens with Client pre-filled = Sipho Dlamini (disabled, from matter context) | PASS | Dialog "New Engagement Letter" / subtitle "Create a engagement letter for a client engagement". Client combobox shows "Sipho Dlamini" with `disabled` attribute (DOM-verified `disabled:true`, not editable). |
+| 7.3 | Title = "Engagement Letter — Litigation (Dlamini v RAF)" | PASS | Title textbox filled (DOM value verified). |
+| 7.4 | Fee Model = Hourly (default); Hourly Rate Note set | PASS | Fee Model select pre-selected `HOURLY` (legal-za default, DOM `value=HOURLY`). Hourly Rate Note filled with "R 2,500/hr (LSSA tariff High Court Party-and-Party 2024/2025) — 30h Bob Ndlovu (attorney) + 5h Thandi Mathebula (senior partner) ≈ R 87,500.00 estimate." |
+| 7.5 | Expiry Date set (7-day acceptance window) | PASS | Expiry Date input is `type="date"`; filled `2026-06-20` (DOM value verified; sensible future date for the acceptance window). |
+| 7.6 | Create → redirect to `/proposals/{id}`; status = Draft, PROP-0001 assigned | PASS | Clicked "Create Engagement Letter" → redirected to `/org/mathebula-partners/proposals/6a1b35fc-b342-4101-abd7-f2ab8ffad26e`. Status badge **Draft**; reference **PROP-0001**; Details: Fee Model Hourly, Hourly Rate full text, Created 13 Jun 2026, Expires 20 Jun 2026. Breadcrumb "Engagement Letters" (legal terminology). Backend log: `Created proposal 6a1b35fc-… (PROP-0001) for customer 2211a80a-…`. Screenshot `day-07-proposal-draft.png`. |
+| 7.7 | Send Proposal → recipient combobox lists portal contacts → select Sipho → Send | PASS | Clicked "Send Proposal". Dialog "Send Proposal" → Recipient combobox listbox showed single option "Sipho Dlamini (sipho.portal@example.com)". Selected it; Send button enabled (DOM `disabled:false`); clicked Send. |
+| 7.8 | Status → Sent; "Sent: {date}" field appears; action button → Withdraw | PASS | Status badge Draft → **Sent**; new Details row **Sent: 13 Jun 2026**; action button changed "Send Proposal" → **Withdraw**. Screenshot `day-07-proposal-sent.png`. |
+| 7.9 | Backend log: `Sent proposal {id} to contact {portalContactId}` + `Portal sync completed for proposal PROP-0001 after commit` | PASS | `.svc/logs/backend.log`: (1) `Sent proposal 6a1b35fc-… to contact 793df2fa-6350-46af-b0c0-8b3ac0d7d855`; (2) `Portal sync completed for proposal PROP-0001 after commit`; (3) `Portal notification sent template=portal-new-proposal contact=793df2fa-… to=sipho.portal@example.com`. All in tenant `tenant_5039f2d497cf`, user Thandi `3efe16db-…`. |
+| 7.10 | Mailpit: proposal email to sipho.portal@example.com with portal click-through (OBS-703 fix) | PASS | Mailpit msg `nso7TsKUKSxPWXvKkDhXwR`, to sipho.portal@example.com. Subject "Mathebula & Partners: New proposal PROP-0001 for your review". Body: "New Proposal for Your Review", "Hi Sipho Dlamini", "Proposal PROP-0001", "Engagement Letter — Litigation (Dlamini v RAF)", **View Proposal** CTA → `http://localhost:3002/proposals/6a1b35fc-b342-4101-abd7-f2ab8ffad26e`. OBS-703 fix holds (portal click-through present). |
+| 7.11 | Portal `/proposals` shows PROP-0001 in "Awaiting Your Response" with status SENT (firm→portal projection) | PASS | Portal :3002 `/proposals` (Sipho live session, sidebar "Engagement Letters"): section "Awaiting Your Response" → row PROP-0001 / "Engagement Letter — Litigation (Dlamini v RAF)" / **SENT** / 13 Jun 2026 / Fee **-** / View → `/proposals/6a1b35fc-…`. Firm→portal sync confirmed. Fee column "-" = OBS-701 carry-over (fee-estimate/VAT line absent on portal proposal — expected, not filed). Screenshot `day-07-portal-proposal-sent.png`. |
 
----
-
-## Day 7 Summary Checkpoints
+## Day 7 summary checkpoints
 
 | Checkpoint | Result | Evidence |
 |-----------|--------|----------|
-| Proposal lifecycle: Draft -> Sent succeeds end-to-end | **PASS** | Full lifecycle: overflow menu "New Engagement Letter" -> fill form (Title, Fee Model=Hourly, Rate Note, Expiry) -> Create -> Draft (PROP-0001) -> Send to Sipho -> Sent. All transitions clean, no errors. |
-| Portal email dispatched (OBS-703) — subject + body verified, link reaches `/proposals/{id}` on portal | **PASS** | Email subject: "Mathebula & Partners: New proposal PROP-0001 for your review". Body: proper branding, proposal details, "View Proposal" CTA linking to `http://localhost:3002/proposals/40e7fd6b-...`. Link format correct (portal domain + proposal UUID path). |
-| Portal `/proposals` projection shows PROP-0001 (firm->portal sync) | **PASS** | Portal `/proposals` page shows PROP-0001 under "Awaiting Your Response" with SENT status, correct title, sent date. Backend log confirmed `Portal sync completed for proposal PROP-0001 after commit`. |
-| Frontend console clean (no hydration mismatch on `/proposals` index — OBS-704) | **PASS** | Firm side: only `/api/assistant/invocations` 404 errors (known OBS-201 WONT_FIX-EXEMPT). Portal side: zero JS errors (only favicon.ico 404 cosmetic). No hydration mismatches on either firm or portal `/proposals` pages. |
-| Expiry date renders consistently (no +1-day tz drift — OBS-702) | **PASS** | Input: `2026-06-16` (ISO date). Firm detail: "Jun 16, 2026". Email body: "16 June 2026". No timezone drift detected. All three representations refer to the same date. |
+| Proposal lifecycle Draft → Sent succeeds end-to-end | PASS | More actions → New Engagement Letter → fill form → Create (Draft, PROP-0001) → Send to Sipho → Sent. All transitions clean, no errors. |
+| Portal email dispatched (OBS-703) — subject + body + link verified | PASS | Mailpit `nso7TsKUKSxPWXvKkDhXwR`; subject + body + `http://localhost:3002/proposals/6a1b35fc-…` CTA all present. |
+| Portal `/proposals` projection shows PROP-0001 (firm→portal sync) | PASS | Portal index shows PROP-0001 SENT under "Awaiting Your Response"; backend `Portal sync completed for proposal PROP-0001 after commit`. |
+| Frontend console clean (no hydration mismatch on `/proposals` index — OBS-704) | PASS | Firm side: only the exempt OBS-201 `/api/assistant/invocations` 404 (×4, carried from matter-page context) + 1 Next.js dev advisory warning (`scroll-behavior: smooth`, cosmetic dev-only). Portal `/proposals`: **0 console errors, 0 warnings**. No hydration mismatch either side. |
+| Expiry date renders consistently (no +1-day tz drift — OBS-702) | PASS | Input `2026-06-20` → firm detail "20 Jun 2026". No tz drift. |
 
----
+## Console notes
+- **Firm side**: 4× `/api/assistant/invocations?...PENDING_APPROVAL` 404 — exempt OBS-201 (AI assistant proxy unwired in KC mode), expected. 1 Next.js dev warning about `scroll-behavior: smooth` — cosmetic dev-only advisory, not a JS/hydration error.
+- **Portal side**: clean — 0 errors, 0 warnings on `/proposals`.
+- No real JavaScript/hydration/render errors anywhere during Day 7.
 
-## Console Errors
+## Carry-over exemptions observed (not re-filed)
+- **OBS-701**: portal proposal view shows no fee-estimate/VAT line — confirmed by Fee column "-" on portal `/proposals`. Expected, WONT_FIX carry-over.
+- **OBS-201**: `/api/assistant/*` 404 in KC mode — present on firm matter page context. Exempt.
 
-### Firm side (during Day 7 execution)
-- 4x `/api/assistant/invocations` 404 — known OBS-201 (WONT_FIX-EXEMPT, AI assistant endpoint not wired in KC mode). Non-blocking.
-- Zero JavaScript/hydration/rendering errors.
-
-### Portal side (during checkpoint 7.11 verification)
-- 1x `favicon.ico` 404 — cosmetic.
-- 1x `portal/auth/exchange` 401 — from expired token attempt (QA procedural, not product bug).
-- Zero JavaScript/hydration/rendering errors.
-
-## Gaps Filed
-
+## Gaps filed
 None. Day 7 passed cleanly with zero new gaps.
-
-## Entity IDs (for downstream days)
-
-- **Proposal ID**: `40e7fd6b-efa1-4f53-8a1a-4a8f5291ae86`
-- **Proposal Reference**: PROP-0001
-- **Proposal URL (firm)**: `/org/mathebula-partners/proposals/40e7fd6b-efa1-4f53-8a1a-4a8f5291ae86`
-- **Proposal URL (portal)**: `/proposals/40e7fd6b-efa1-4f53-8a1a-4a8f5291ae86`
-- **Portal Contact ID (Sipho)**: `02a7bed0-eb20-4771-866f-842a4138e7ce`
-- **Proposal Email ID (Mailpit)**: `iSrVSUpZMRgoYWrS5CRW3M`

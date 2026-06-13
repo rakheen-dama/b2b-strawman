@@ -1,64 +1,50 @@
-# Day 8 — Checkpoint Results (Cycle 2026-05-30)
+# Day 8 — Sipho reviews + accepts proposal (engagement letter) — Cycle 2026-06-13
 
-**Date**: 2026-05-30
-**Stack**: Keycloak dev stack (frontend :3000, backend :8080, gateway :8443, KC :8180, Mailpit :8025, portal :3002)
-**Executed by**: QA Agent
-**Scenario**: legal-za-full-lifecycle-keycloak.md (Mathebula & Partners)
-**Actor**: Sipho Dlamini (portal contact — returning via fresh magic-link session)
+**Executed**: 2026-06-13 (branch `bugfix_cycle_2026-06-13`)
+**Actor**: Sipho Dlamini (returning portal contact). Reused the Day 4/7 magic-link portal session on :3002 — still valid, header showed "Sipho Dlamini" logged in, zero re-auth needed. Email-link entry verified: Mailpit proposal email `nso7TsKUKSxPWXvKkDhXwR` (subject "Mathebula & Partners: New proposal PROP-0001 for your review") carries the single CTA link `http://localhost:3002/proposals/6a1b35fc-b342-4101-abd7-f2ab8ffad26e`; navigating there loaded the proposal directly (session valid, no re-exchange).
+**Driver**: QA agent via Playwright MCP — portal browser UI only on :3002; Mailpit API used only to confirm the proposal email + extract the link; backend log read for the acceptance-event + orchestration confirmation.
+**Pre-checks**: svc.sh status — backend (PID 45933) / gateway / frontend / portal all RUNNING+HEALTHY.
+**Result**: **9/9 in-scope checkpoints PASS (8.6 N/A — inline accept, no token route) + 4/4 summary checkpoints PASS. Zero new gaps.**
 
----
+## Created / changed Day 8
+- Proposal / Engagement Letter **PROP-0001** (`6a1b35fc-b342-4101-abd7-f2ab8ffad26e`) status **SENT → ACCEPTED** by contact Sipho Dlamini (`793df2fa-6350-46af-b0c0-8b3ac0d7d855`).
+- Acceptance orchestration auto-provisioned a new matter/project **`15a25aa5-11e3-46fe-b90b-fbacf19c5bf1`** (lead member `ca39e4b1-…`) — firm-side projection to be verified Day 10.
 
-## Pre-check: Portal Authentication
-
-Requested fresh magic-link via `POST /portal/auth/request-link` with `{"email":"sipho.portal@example.com","orgId":"mathebula-partners"}`. Exchanged token via `POST /portal/auth/exchange`. JWT obtained successfully (sub=d74963c8-..., type=customer, org_id=mathebula-partners). Set portal-auth-token cookie + localStorage keys. Portal home loaded with "Sipho Dlamini" identity confirmed.
-
----
-
-## Day 8 — Sipho reviews + accepts proposal `[PORTAL]`
+## Checkpoints
 
 | ID | Checkpoint | Result | Evidence |
 |----|-----------|--------|----------|
-| 8.1 | Mailpit -> open proposal email -> click link -> lands on `/proposals/[id]` on portal | **PASS** | Proposal email found in Mailpit (ID=iSrVSUpZMRgoYWrS5CRW3M, subject="Mathebula & Partners: New proposal PROP-0001 for your review"). Email body contains "View Proposal" link to `http://localhost:3002/proposals/40e7fd6b-efa1-4f53-8a1a-4a8f5291ae86`. Navigated to URL with authenticated Sipho session. Proposal detail page rendered correctly. |
-| 8.2 | Verify proposal detail page renders: scope, fee estimate, effective date, expiry, Accept/Decline buttons | **PARTIAL** | Page renders: title "Engagement Letter -- Litigation (Dlamini v RAF)", status badge SENT, ref PROP-0001, "Sent: 30 May 2026", "Expires: 16 Jun 2026". **Fee Details** section: Fee Model = Hourly Rate. **Engagement Letter Details** section: "Dear Sipho Dlamini", fee arrangement with rate "R 2,500/hr (LSSA tariff...) -- 30h Bob + 5h Thandi = R 87,500.00 estimate". **Accept Engagement Letter** + **Decline** buttons present. Note: no standalone "scope" section or structured fee-estimate breakdown with line items and totals -- the content is auto-seeded from the proposal form fields as a Tiptap document (see Day 7 OBS-701 WONT_FIX amendment: proposal authoring is a thin lifecycle wrapper, not a full fee-estimate builder). The rendered content includes fee details adequate for review. |
-| 8.3 | Verify fee estimate renders with ZAR currency symbol + VAT 15% line | **PARTIAL** | ZAR currency symbol present: "R 2,500/hr" and "R 87,500.00 estimate" in the rate note. **No explicit VAT 15% line rendered** -- the auto-seeded Tiptap content does not include a separate VAT calculation. This is consistent with OBS-701 WONT_FIX: the product has no fee-estimate line-item builder in proposals. VAT will appear on the actual fee note (Day 28). Non-blocking. |
-| 8.4 | Screenshot: day-08-proposal-review.png | **PASS** | Full-page screenshot captured at `day-08-proposal-review.png` showing proposal detail with SENT status, fee details, engagement letter content, and Accept/Decline buttons. |
-| 8.5 | Click Accept -> acceptance confirmation dialog (or inline confirm) | **PASS** | Clicked "Accept Engagement Letter" button. Acceptance was **inline** (no separate confirmation dialog). Status immediately transitioned from SENT to **ACCEPTED**. Success banner appeared: "Thank you for accepting this engagement letter. Your matter has been set up." Accept/Decline buttons removed. |
-| 8.6 | (If tenant routes through `/accept/[token]`) complete the acceptance step | **N/A** | Acceptance was inline on the proposal detail page itself, not via a separate `/accept/[token]` route. The portal's authenticated session handled the accept directly. |
-| 8.7 | Confirm acceptance -> proposal status transitions to Accepted, timestamp + actor recorded | **PASS** | Status badge: **ACCEPTED**. Backend logs confirm: (1) `Proposal 40e7fd6b-... accepted by contact 02a7bed0-...` at 15:16:21Z, (2) `Portal accept completed for proposal 40e7fd6b-..., project afe80827-...`, (3) `Post-commit actions completed for accepted proposal PROP-0001`. Timestamp and actor (contact ID 02a7bed0 = Sipho) recorded. |
-| 8.8 | Screenshot: day-08-proposal-accepted.png — success / confirmation state | **PASS** | Full-page screenshot captured at `day-08-proposal-accepted.png` showing ACCEPTED status badge, success message "Thank you for accepting this engagement letter. Your matter has been set up.", fee details, and engagement letter content. No Accept/Decline buttons visible. |
-| 8.9 | Navigate to `/home` -> "Pending proposals" surface no longer shows this proposal | **PASS** | Navigated to `/home`. Home page shows: Pending info requests=0, Upcoming deadlines=0, Recent fee notes="No fee notes yet", Last trust movement="No recent activity". No pending proposals section visible. The accepted proposal is not surfaced as pending anywhere on the home page. |
-| 8.10 | Check `/proposals` list -- accepted proposal shows "Accepted" badge | **PASS** | Navigated to `/proposals` (page heading: "Engagement Letters"). Table shows single row: PROP-0001 / "Engagement Letter -- Litigation (Dlamini v RAF)" / status **ACCEPTED** / 30 May 2026. Previously showed under "Awaiting Your Response" section (Day 7 checkpoint 7.11); now displayed with ACCEPTED status in the main list. |
+| 8.1 | Mailpit → open proposal email → click proposal link → lands on `/proposals/[id]` on portal | PASS | Mailpit `nso7TsKUKSxPWXvKkDhXwR` (to sipho.portal@example.com) contains single proposal CTA → `http://localhost:3002/proposals/6a1b35fc-…`. Navigated there; page loaded as Sipho (banner "Sipho Dlamini"), no re-auth / no `/auth/exchange` round-trip — magic-link session from Day 4/7 still valid. |
+| 8.2 | Proposal detail renders: scope, fee, effective/expiry dates, Accept/Decline buttons | PASS | Heading "Engagement Letter — Litigation (Dlamini v RAF)", badge **SENT**, PROP-0001, "Sent: 13 Jun 2026", "Expires: 20 Jun 2026". **Fee Details** (Fee Model = Hourly Rate). **Engagement Letter Details** body: "Dear Sipho Dlamini," + Fee Arrangement ("Fees will be charged on an hourly basis"; Rate note "R 2,500/hr (LSSA tariff…) ≈ R 87,500.00 estimate"; "This proposal expires on 2026-06-20"; standard T&Cs). Buttons **Accept Engagement Letter** + **Decline** present. |
+| 8.3 | Fee estimate renders with ZAR symbol + VAT 15% line | PASS-with-exemption (OBS-701) | Fee is HOURLY model: ZAR currency present in the rate note ("R 2,500/hr … ≈ R 87,500.00"). No structured fee-line table / no explicit VAT 15% line — this is the **OBS-701** carry-over (fee-estimate structure/VAT line absent on portal proposal view; WONT_FIX from prior cycle). Not re-filed. |
+| 8.4 | 📸 Screenshot `day-08-proposal-review.png` | PASS | Saved (full page, SENT state with Accept/Decline). |
+| 8.5 | Click Accept → confirmation (dialog or inline) | PASS | Clicked "Accept Engagement Letter". Inline confirm — page transitioned in place to accepted state (no modal). |
+| 8.6 | (If `/accept/[token]` route) complete acceptance step | N/A | This tenant does NOT route portal accept through `/accept/[token]`. Accept is a single inline action on `/proposals/[id]`. Not applicable — not counted as PASS or FAIL. |
+| 8.7 | Confirm acceptance → status **ACCEPTED**, timestamp + actor recorded | PASS | Badge **SENT → ACCEPTED**; inline banner "Thank you for accepting this engagement letter. Your matter has been set up." Backend `.svc/logs/backend.log` (11:24:11Z, tenant `tenant_5039f2d497cf`): `Proposal 6a1b35fc-… accepted by contact 793df2fa-…` (actor = Sipho) → `Created project 15a25aa5-… with lead member ca39e4b1-…` → `Orchestration complete for proposal 6a1b35fc-…: project=15a25aa5-…` → `Portal accept completed…` → `Post-commit actions completed for accepted proposal PROP-0001`. |
+| 8.8 | 📸 Screenshot `day-08-proposal-accepted.png` — success state | PASS | Saved (full page, ACCEPTED badge + "Thank you for accepting…" confirmation). |
+| 8.9 | `/home` → "Pending proposals" no longer shows this proposal | PASS | Portal `/home`: surface cards = Pending info requests **0**, Upcoming deadlines **0**, Recent fee notes ("No fee notes yet."), Last trust movement ("No recent activity"). No pending-proposal entry for PROP-0001. |
+| 8.10 | `/proposals` list → accepted proposal shows "Accepted" badge / moves to Past | PASS | Portal `/proposals` table: row PROP-0001 / "Engagement Letter — Litigation (Dlamini v RAF)" / status **ACCEPTED** / Sent 13 Jun 2026 / Fee **-** (OBS-701) / View. No longer under "Awaiting Your Response". |
 
----
-
-## Day 8 Summary Checkpoints
+## Day 8 summary checkpoints
 
 | Checkpoint | Result | Evidence |
 |-----------|--------|----------|
-| Proposal accessible via email link without re-authentication (magic-link session valid OR transparent re-exchange) | **PASS** | Fresh magic-link token obtained and exchanged for JWT. Portal session authenticated as Sipho Dlamini. Proposal detail page at `/proposals/40e7fd6b-...` rendered correctly with full content. |
-| Acceptance recorded (firm will verify on Day 10) | **PASS** | Backend logs: `Proposal 40e7fd6b-... accepted by contact 02a7bed0-...`. Portal UI: status badge ACCEPTED, success message displayed. Post-commit actions completed (proposal accepted event handler ran). |
-| No double-accept bug: clicking Accept again shows already-accepted state, not a second transition | **PASS** | Revisited `/proposals/40e7fd6b-...` after acceptance. Page shows ACCEPTED status badge with message "This engagement letter has been accepted." No Accept/Decline buttons rendered. No way to trigger a second acceptance. |
-| Terminology consistent: portal copy reads "proposal" / "engagement letter" throughout | **PASS** | Consistent legal-za terminology throughout: sidebar shows "Engagement Letters" (not "Proposals"). Page heading: "Engagement Letters". Proposal detail uses "Engagement Letter" in title, breadcrumb, content. "PROP-0001" reference format retained. Footer: "Powered by Kazi". Zero vocabulary leaks. |
+| Proposal accessible via email link without re-auth (magic-link valid OR transparent re-exchange) | PASS | Mailpit CTA link opened the proposal directly as Sipho; no Keycloak, no `/auth/exchange` re-prompt — Day 4/7 magic-link session still live. |
+| Acceptance recorded (firm verifies Day 10) | PASS | Backend: single `accepted by contact 793df2fa-…` event + orchestration created matter `15a25aa5-…`. 0 ERROR/WARN at accept time. Firm-side projection deferred to Day 10. |
+| No double-accept bug: re-visiting shows already-accepted state, not a second transition | PASS | After accept, Accept/Decline buttons gone. Reloaded `/proposals/[id]` → badge **ACCEPTED**, banner "This engagement letter has been accepted.", **no action buttons** — no re-accept path. Backend `accepted by contact` count for this proposal = **exactly 1**. |
+| Terminology consistent | PASS-with-note | Portal chrome uses the established **legal-za term mapping "Engagement Letter"** (sidebar, page heading, breadcrumb "Back to engagement letters") — same convention verified Day 7. Body copy still reads "proposal" ("This proposal expires…", "subject to our standard terms"). The proposal↔Engagement Letter mapping is the intended legal-za vertical terminology, not a defect; consistent with Day 7. |
 
----
+## Console notes
+- **Portal side (:3002)** — current `/proposals/[id]` accepted-state page: **0 errors, 0 warnings**. `/home` and `/proposals` index also clean for Day 8.
+- The `all:true` console aggregate surfaced only **`localhost:3000` (firm-side)** 404s carried over from Day 5/7 navigation: OBS-201 `/api/assistant/invocations?...PENDING_APPROVAL` 404s and OBS-506 `/api/assistant/specialists/INTAKE/sessions` 404 + `[SpecialistLauncher] startSession failed`. None are on the portal :3002 Day 8 flow. Both exempt/known carry-overs.
+- No real JavaScript/hydration/render errors on the portal during Day 8.
 
-## Console Errors
+## Carry-over exemptions observed (not re-filed)
+- **OBS-701**: portal proposal view shows no structured fee-estimate / VAT 15% line — confirmed by Fee Details (Fee Model only) + Fee column "-" on `/proposals`. Expected, WONT_FIX carry-over.
+- **OBS-201 / OBS-506**: `/api/assistant/*` 404s + uppercase specialist-id launcher 404 — firm-side (:3000) only, from prior-day navigation. Exempt, not re-filed.
 
-### Portal side (during Day 8 execution)
-- 1x `favicon.ico` 404 -- cosmetic (same as Day 7 portal spot-check).
-- Zero JavaScript/hydration/rendering errors across all portal pages visited (`/proposals/{id}`, `/home`, `/proposals` list).
+## Gaps filed
+None. Day 8 passed cleanly with zero new gaps.
 
-## Gaps Filed
-
-None. Day 8 passed with zero new gaps.
-
-**Notes on PARTIAL checkpoints (8.2, 8.3)**: The scenario's checkpoint 8.2 mentions "scope, fee estimate breakdown (tariff lines + totals in ZAR incl. VAT)" and 8.3 mentions "ZAR currency symbol + VAT 15% line". The product's proposal detail page renders an auto-seeded Tiptap document with fee arrangement text (including ZAR rates and estimate total) rather than a structured fee-estimate table with individual tariff lines, subtotals, and VAT calculation. This is consistent with the Day 7 OBS-701 WONT_FIX amendment (thin lifecycle wrapper, no fee-estimate builder). The ZAR currency symbol is present in the rate note. These are not bugs but scenario expectations that exceed the current product capability as already documented. Both PARTIALs are non-blocking.
-
-## Entity IDs (for downstream days)
-
-- **Proposal ID**: `40e7fd6b-efa1-4f53-8a1a-4a8f5291ae86` (unchanged)
-- **Proposal Reference**: PROP-0001 (unchanged)
-- **Proposal Status**: ACCEPTED (transitioned from SENT)
-- **Acceptance Timestamp**: 2026-05-30T15:16:21Z (backend log)
-- **Acceptance Actor**: Portal contact 02a7bed0-eb20-4771-866f-842a4138e7ce (Sipho Dlamini)
-- **Proposal Email ID (Mailpit)**: iSrVSUpZMRgoYWrS5CRW3M (unchanged)
+## Note for Day 10
+Acceptance orchestration auto-created matter/project `15a25aa5-11e3-46fe-b90b-fbacf19c5bf1` (separate from the Day 3 RAF matter `08ad56c4-…`). Day 10 ("Firm activates matter, deposits trust funds") should confirm the firm-side projection of the accepted engagement letter and reconcile which matter the firm activates.

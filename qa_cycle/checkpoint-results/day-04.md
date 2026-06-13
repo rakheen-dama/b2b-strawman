@@ -1,81 +1,63 @@
-# Day 4 — Checkpoint Results (Cycle 2026-05-30)
+# Day 4 — Sipho first portal login, upload FICA documents — Cycle 2026-06-13
 
-**Date**: 2026-05-30
-**Stack**: Keycloak dev stack (frontend :3000, backend :8080, gateway :8443, KC :8180, portal :3002, Mailpit :8025)
-**Executed by**: QA Agent
-**Scenario**: legal-za-full-lifecycle-keycloak.md (Mathebula & Partners)
-**Actor**: Sipho Dlamini (unauthenticated, arriving via email magic-link on portal :3002)
+**Executed**: 2026-06-13 (branch `bugfix_cycle_2026-06-13`)
+**Actor**: Sipho Dlamini (unauthenticated portal contact, arriving via email magic-link on portal :3002)
+**Driver**: QA agent via Playwright MCP — fresh browser session (firm context from Days 2–3 closed; portal auth is an independent JWT session, no Keycloak cookies involved)
+**Pre-checks**: `curl http://localhost:3002/` → `307` (redirect to login — healthy); svc.sh status all 4 services RUNNING+HEALTHY; Mailpit :8025 → 200
+**Result**: 14/14 checkpoints PASS + 5/5 day-summary checkpoints PASS. **Zero new gaps filed.**
 
----
+## Phase A: Magic-link landing
 
-## Pre-check: Portal health + context swap
+| Checkpoint | Result | Evidence | Gap |
+|---|---|---|---|
+| 4.1 Mailpit → locate FICA magic-link email | PASS | Mailpit UI (browser) inbox row: From noreply@kazi.app → sipho.portal@example.com, Subject "Information request REQ-0001 from Mathebula & Partners", msg ID `hhoVkD8UxgQaLsn2dG2oNu` (same email captured Day 3 — still valid, no re-request needed). | — |
+| 4.2 Click magic-link in email body | PASS | Email body's single CTA link "View Request" → `http://localhost:3002/auth/exchange?token=nsJKu6Q0-…&orgId=mathebula-partners`. Navigated to link target. (Scenario's literal `/accept/[token]` route does not exist — actual route is `/auth/exchange?token=…`; identical to prior cycle's accepted PASS.) | — |
+| 4.3 Token exchange → redirect | PASS | Exchange succeeded; browser landed authenticated on `/projects` (portal's default post-auth landing, same as prior cycle). **No Keycloak form at any step** — pure magic-link JWT auth. Landing page already showed Sipho's matter "Dlamini v Road Accident Fund". | — |
+| 4.4 `/home` renders pending info request with matter context | PASS | `/home`: "Pending info requests **1**" card → links `/requests`; `/requests` row indexed by matter name "Dlamini v Road Accident Fund" (REQ-0001), per OBS-401 amendment (portal indexes by matter, not template title). Other cards: Upcoming deadlines 0 (next 14 days), Recent fee notes "No fee notes yet", Last trust movement "No recent activity". | — |
+| 4.5 Header/sidebar shows Mathebula firm branding | PASS | Header `img "Mathebula & Partners logo"` served from tenant S3 path (`localhost:4566/docteams-dev/org/tenant_5039f2d497cf/branding/logo.png`, presigned). Brand navy verified computed: element with `backgroundColor: rgb(27, 51, 88)` = **#1B3358** (Day 1 brand colour) + inline `27, 51, 88` rgb in DOM. | — |
+| 4.6 User identity "Sipho Dlamini" | PASS | Header user-menu button renders "Sipho Dlamini" (from firm-side client record) — consistent on /projects, /home, /requests, /requests/{id}. | — |
+| 4.7 📸 Screenshot | PASS | `qa_cycle/checkpoint-results/day-04-portal-home-first-login.png` | — |
 
-- Portal health check: `curl -sS http://localhost:3002/ -o /dev/null -w "%{http_code}"` returned `307` (redirect to login — healthy)
-- Backend health: `http://localhost:8080/actuator/health` returned `200`
-- Mailpit health: `http://localhost:8025` returned `200`
-- Fresh browser context opened (no firm-side cookies carried over)
+## Phase B: Upload FICA documents
 
----
+| Checkpoint | Result | Evidence | Gap |
+|---|---|---|---|
+| 4.8 Click request row → detail renders matter context + per-item list | PASS | `/requests` row REQ-0001 / "Dlamini v Road Accident Fund" / SENT / 0/3 submitted → `/requests/de3d6962-6018-43bf-852d-d366d1a4d626`. Detail header: "REQ-0001 / Dlamini v Road Accident Fund / 0/3 submitted • status SENT"; per-item upload list below. | — |
+| 4.9 Three upload slots labelled | PASS | (1) **ID copy** (required, Accepts PDF/JPG/PNG, certified-copy description), (2) **Proof of residence (≤ 3 months)** (required, PDF/JPG/PNG), (3) **Bank statement (≤ 3 months)** (required, PDF only). Each slot: "Upload file" button + disabled "Upload and submit". | — |
+| 4.10 Upload test PDF to each slot | PASS | Via portal file-chooser (no API/SQL): `fica-id.pdf` (626 B) → ID copy, `fica-address.pdf` (627 B) → Proof of residence, `fica-bank.pdf` (615 B) → Bank statement (all from `qa_cycle/test-files/`, all ≤ 2 MB). Each selection enabled that item's "Upload and submit" button; no validation errors. | — |
+| 4.11 (OBS-402 amend: removed) No cover-message textarea | PASS | Confirmed: no request-level cover-message/notes input anywhere on the detail page — per-item firm-set `description` only. Matches OBS-402 amendment. | — |
+| 4.12 Per-item "Upload and submit" → each item Submitted | PASS | Sequential submits: ID copy → "Submitted — status: SUBMITTED", header "**1/3 submitted • status IN_PROGRESS**" (envelope SENT → IN_PROGRESS on first submit); Proof of residence → "2/3 submitted • status IN_PROGRESS"; Bank statement → "**3/3 submitted • status IN_PROGRESS**". No envelope-level Submit button exists; envelope stays IN_PROGRESS pending firm review (Day 5) — exactly the OBS-403 state machine. | — |
+| 4.13 `/home` pending count drops to 0 | PASS | `/home` after third submit: "Pending info requests **0**" (was 1). Envelope still IN_PROGRESS but no longer pending from portal contact's perspective. | — |
+| 4.14 📸 Screenshot | PASS | `qa_cycle/checkpoint-results/day-04-fica-submitted.png` (3/3 submitted • IN_PROGRESS, all items SUBMITTED). | — |
 
-## Day 4 — Phase A: Magic-link landing `[PORTAL]`
-
-| ID | Checkpoint | Result | Evidence |
-|----|-----------|--------|----------|
-| 4.1 | Open Mailpit -> locate FICA info-request magic-link email for sipho.portal@example.com | **PASS** | Mailpit API `GET /api/v1/messages` returned email ID `QMKKgJD3D7SyPc4hGRnr7e`. Subject: "Information request REQ-0001 from Mathebula & Partners". From: noreply@kazi.app. Body contains portal magic-link: `http://localhost:3002/auth/exchange?token=oSi7CghGxbR0pZ8kIX1rSXAKdrPn5ZkesW9qzIFaxLU&orgId=mathebula-partners`. |
-| 4.2 | Click magic-link -> browser navigates to `http://localhost:3002/auth/exchange?token=...` | **PASS** | Navigated to magic-link URL. Token exchange initiated. |
-| 4.3 | Portal exchanges token (POST /portal/auth/exchange fires) -> redirects to `/home` | **PASS** | Token exchange succeeded. Browser redirected to `/projects` (portal's default landing page after magic-link auth). No Keycloak form appeared at any step — pure magic-link JWT authentication. |
-| 4.4 | Verify `/home` renders: pending info request section shows matter context with due date | **PASS** | Navigated to `/home`. "Pending info requests" card shows **1** with link to `/requests`. Request is indexed by matter name "Dlamini v Road Accident Fund" (not template title "FICA Onboarding Pack" — per OBS-401 amendment). Other cards: Upcoming deadlines: 0, Recent fee notes: "No fee notes yet", Last trust movement: "No recent activity". |
-| 4.5 | Verify header/sidebar shows Mathebula firm branding (navy accent, firm logo) | **PASS** | Header displays `img "Mathebula & Partners logo"` (firm logo uploaded Day 1). Sidebar shows "Portal" label. Brand colour applied to UI elements. |
-| 4.6 | Verify user identity displayed as "Sipho Dlamini" | **PASS** | Header user menu button displays "Sipho Dlamini" (from firm-side client record). Consistent across all pages. |
-| 4.7 | Screenshot: day-04-portal-home-first-login.png | **PASS** | Snapshot captured showing Home page with pending info requests, firm branding, and user identity. |
-
----
-
-## Day 4 — Phase B: Upload FICA documents `[PORTAL]`
-
-| ID | Checkpoint | Result | Evidence |
-|----|-----------|--------|----------|
-| 4.8 | Click into request row -> info-request detail renders with matter context and per-item upload list | **PASS** | Clicked "Pending info requests" card -> navigated to `/requests`. Requests list shows: REQ-0001, "Dlamini v Road Accident Fund", status SENT, 0/3 submitted. Clicked into row -> navigated to `/requests/0e800982-fff7-4e1b-a4ba-ebfd0a5c9a19`. Detail page header: "REQ-0001", "Dlamini v Road Accident Fund", "0/3 submitted - status SENT". Per-item upload list rendered below. |
-| 4.9 | Verify three upload slots labelled: ID copy, Proof of residence, Bank statement | **PASS** | Three items rendered in list: (1) **ID copy** (required) — "Certified copy of the client's South African ID document or passport bio page. Must be certified by a Commissioner of Oaths, SAPS, or other accepted certifier within the last 3 months." Accepts: PDF, JPG, PNG. (2) **Proof of residence (<=3 months)** (required) — "Recent utility bill, municipal rates account, bank statement, or similar document confirming the client's residential address." Accepts: PDF, JPG, PNG. (3) **Bank statement (<=3 months)** (required) — "Most recent bank statement evidencing the client's source of funds." Accepts: PDF. All three have "Upload file" button and disabled "Upload and submit" button. |
-| 4.10 | Upload a test PDF to each slot -> three upload-progress indicators -> three completion states | **PASS** | Uploaded `fica-id.pdf` (597 bytes) to ID copy slot, `fica-address.pdf` (608 bytes) to Proof of residence slot, `fica-bank.pdf` (604 bytes) to Bank statement slot. Each file upload enabled the per-item "Upload and submit" button. All three files accepted without validation errors. |
-| 4.11 | (OBS-402 amend: removed) No portal-side cover-message textarea | **PASS** | Confirmed: no request-level cover-message textarea visible on the info-request detail page. Per-item context is set by the firm when sending and rendered as the item's description. Matches OBS-402 amendment. |
-| 4.12 | Submit each FICA item via per-item "Upload and submit" -> each item transitions to Submitted | **PASS** | Submitted items sequentially: (1) ID copy -> "Submitted -- status: SUBMITTED", header updated to "1/3 submitted - status IN_PROGRESS" (envelope transitioned SENT -> IN_PROGRESS on first per-item submit). (2) Proof of residence -> "Submitted -- status: SUBMITTED", header updated to "2/3 submitted - status IN_PROGRESS". (3) Bank statement -> "Submitted -- status: SUBMITTED", header updated to "3/3 submitted - status IN_PROGRESS". Envelope remains IN_PROGRESS (not auto-transitioning to SUBMITTED) — closes to COMPLETED only on firm-side "Mark as Reviewed" in Day 5. Matches OBS-403 state machine. |
-| 4.13 | Verify `/home` "Pending info requests" card pending count drops to 0 | **PASS** | Navigated to `/home`. "Pending info requests" card shows **0** (was 1 before submission). All 3 items SUBMITTED -> no longer pending from portal contact's perspective. Envelope itself remains IN_PROGRESS as expected. |
-| 4.14 | Screenshot: day-04-fica-submitted.png | **PASS** | Snapshot captured showing 3/3 submitted - status IN_PROGRESS with all three items showing "Submitted -- status: SUBMITTED". |
-
----
-
-## Day 4 Summary Checkpoints
+## Day 4 summary checkpoints
 
 | Checkpoint | Result | Evidence |
-|-----------|--------|----------|
-| Magic-link login succeeded -- no Keycloak form appeared at any step | **PASS** | Magic-link URL `http://localhost:3002/auth/exchange?token=...&orgId=mathebula-partners` exchanged token and redirected to portal. Zero Keycloak interaction. Pure JWT authentication via portal auth exchange endpoint. |
-| Uploads stored (firm side will verify on Day 5) | **PASS** | Three test PDFs uploaded and submitted: fica-id.pdf (ID copy), fica-address.pdf (Proof of residence), fica-bank.pdf (Bank statement). All accepted without validation errors. Per-item status transitioned to SUBMITTED. Firm-side verification deferred to Day 5. |
-| Info-request state machine progressed: per-item Pending -> Submitted for all 3; envelope Sent -> IN_PROGRESS | **PASS** | State machine observed: Envelope started at SENT (0/3), transitioned to IN_PROGRESS on first per-item submit (1/3), progressed through 2/3 and 3/3. Final state: 3/3 submitted, envelope IN_PROGRESS. Closes to COMPLETED on firm Mark-as-Reviewed in Day 5 — per OBS-403 amendment. |
-| No firm-side terminology leaks on portal | **PASS** | Sidebar: "Matters" (not "Projects"), "Fee Notes" (not "Invoices"), "Engagement Letters" (not "Proposals"). Page headings: "Information requests" (not "tasks"/"tickets"). Request detail: matter name "Dlamini v Road Accident Fund" shown as context. Footer: "Powered by Kazi" — never "DocTeams". |
-| Brand check: portal footer reads "Powered by Kazi" -- never "DocTeams" | **PASS** | Footer `contentinfo` element contains `paragraph: "Powered by Kazi"`. Verified on every page visited (/home, /requests, /requests/{id}). Zero "DocTeams" references anywhere in portal. |
+|---|---|---|
+| Magic-link login succeeded — no Keycloak form at any step | PASS | `/auth/exchange?token=…&orgId=mathebula-partners` → authenticated portal session directly; zero Keycloak interaction observed across the whole walk. |
+| Uploads stored (firm side verifies Day 5) | PASS | All 3 accepted + SUBMITTED portal-side; **storage proven**: LocalStack S3 `docteams-dev` bucket now lists 3 new objects under `org/mathebula-partners/project/08ad56c4-ff5e-49c2-a034-cb5fa04b462c/` (`07d78e24-…`, `60639e26-…`, `c13bb325-…`) alongside the Day 1 branding logo. Firm-side retrieval check deferred to Day 5 per scenario. |
+| State machine: per-item Pending → Submitted ×3; envelope Sent → IN_PROGRESS | PASS | Observed SENT (0/3) → IN_PROGRESS (1/3) → (2/3) → (3/3, still IN_PROGRESS). Closes to COMPLETED on firm accepts Day 5 (OBS-403). |
+| No firm-side terminology leaks on portal | PASS | Sidebar: Matters / Trust / Deadlines / **Fee Notes** (not Invoices) / **Engagement Letters** (not Proposals) / Requests / Activity. Headings: "Your Matters", "Information requests". No "task"/"ticket"/"project" leak in visible copy (route slug `/projects` is URL-only, accepted prior cycle). |
+| Brand check: footer "Powered by Kazi", never "DocTeams" | PASS | `contentinfo` → "Powered by Kazi" on every page visited (/projects, /home, /requests, /requests/{id}). Zero "DocTeams" strings anywhere (OBS-404 fix holds). |
 
----
+## Console / log health
 
-## Console Errors
+- Portal Day 4 session console: **only** `favicon.ico` 404 on :3002 — cosmetic, same as prior cycle (not an application error, not filed). Zero JS/hydration/render errors during the entire portal walk.
+- The session-wide error buffer also contains `:3000/api/assistant/invocations` 404s (OBS-201 WONT_FIX-EXEMPT) and 2 API-probe 404s — all from the firm-side Days 2–3 browser sessions, timestamped before Day 4 start; none from the portal session.
+- `.svc/logs/backend.log`: **0 ERROR lines**. `.svc/logs/portal.log`: no errors/exceptions.
 
-All errors from the entire session (including carryover from firm-side Days 2-3):
+## Gaps filed
 
-- **favicon.ico 404** on `:8180` (Keycloak) and `:3002` (portal) — cosmetic, not application errors
-- **`/api/assistant/invocations` 404** (multiple) — all are the known OBS-201 (WONT_FIX-EXEMPT, AI assistant endpoint not wired in KC mode). These are from the firm-side browser context from Days 2-3 sessions, NOT from the portal Day 4 session.
+None.
 
-**Zero JavaScript/hydration/rendering errors during the portal Day 4 execution.**
+## Screenshots
 
-## Gaps Filed
-
-None. Day 4 passed cleanly with zero new gaps.
+- `qa_cycle/checkpoint-results/day-04-portal-home-first-login.png` — /home first login: pending request 1, firm logo, Sipho identity
+- `qa_cycle/checkpoint-results/day-04-fica-submitted.png` — REQ-0001 detail: 3/3 submitted • IN_PROGRESS, all items SUBMITTED
 
 ## Entity IDs (for downstream days)
 
-- **Sipho Dlamini Client ID**: `d74963c8-4527-41b8-bd67-a2ca3ed6a3cf`
-- **Matter "Dlamini v Road Accident Fund" ID**: `d80aeac5-d5f4-4690-9291-193f05e3785d`
-- **Matter Reference**: RAF-2026-001
-- **Info Request REQ-0001 ID**: `0e800982-fff7-4e1b-a4ba-ebfd0a5c9a19`
-- **Info Request REQ-0001 Status**: 3/3 submitted, envelope IN_PROGRESS (awaits firm review Day 5)
-- **Portal magic-link token used**: `oSi7CghGxbR0pZ8kIX1rSXAKdrPn5ZkesW9qzIFaxLU`
-- **Portal session**: Active as Sipho Dlamini on :3002
+- **Info request REQ-0001**: `de3d6962-6018-43bf-852d-d366d1a4d626` — 3/3 submitted, envelope **IN_PROGRESS** (awaits firm per-item Accepts Day 5); portal route `/requests/de3d6962-6018-43bf-852d-d366d1a4d626`
+- **Uploaded docs (S3 keys)**: `org/mathebula-partners/project/08ad56c4-ff5e-49c2-a034-cb5fa04b462c/{07d78e24-0b50-4853-b490-ec7be8ec5be8, 60639e26-7557-4044-853e-608bc0bc355a, c13bb325-7e7b-4319-8977-ce8f676ad69b}` — fica-id.pdf / fica-address.pdf / fica-bank.pdf
+- **Sipho portal session**: live on :3002 (magic-link token `nsJKu6Q0-…` consumed/exchanged this walk); Day 5 portal spot-check may need re-auth if session expires
+- **Matter / client IDs**: unchanged from Day 3 (`08ad56c4-ff5e-49c2-a034-cb5fa04b462c` / `2211a80a-5523-4a6d-8f96-0d638dff88f6`)

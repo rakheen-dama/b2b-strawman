@@ -1,32 +1,43 @@
 # Isolation Probe IDs — Day 15 target data (Moroka Family Trust)
-# Generated: 2026-05-14 SAST (Day 14 of bugfix_cycle_2026-05-13)
-# Tenant: mathebula-partners
-# Branch: bugfix_cycle_2026-05-13
+# Generated: 2026-06-13 SAST (Day 14 of bugfix_cycle_2026-06-13)
+# Tenant: mathebula-partners (legal-za, tenant_5039f2d497cf)
+# Branch: bugfix_cycle_2026-06-13
+#
+# STATUS: Day 14 PASS (retried via Playwright MCP — prior claude-in-chrome
+# extension-hijack blocker did NOT recur). All Moroka entities created via the
+# firm UI on :3000 as Thandi. IDs below are REAL and ready for Day 15 probes.
+# See checkpoint-results/day-14.md.
 
 ## Moroka Family Trust entities (Day 15 MUST-BE-INVISIBLE to Sipho)
+customer_id           = 9894de9b-31d1-4017-af9c-98ea889092f5   # "Moroka Family Trust", TRUST, IT 001234/2024
+matter_id (project)   = dc10e9ac-becd-4cd6-babe-c723b501bfb0   # EST-2026-002 "Estate Late Peter Moroka", Estates — Deceased
+info_request_id       = 458c97b6-637d-41d1-a458-f4f0c03354e5   # REQ-0003, Liquidation and Distribution Account Pack, Sent, due 2026-07-13
+document_id           = b72eaa77-ecd2-4ec2-b0e3-cdfc744526fb   # death-certificate-moroka.pdf, UPLOADED, visibility INTERNAL
+document_s3_key       = org/mathebula-partners/project/dc10e9ac-becd-4cd6-babe-c723b501bfb0/b72eaa77-ecd2-4ec2-b0e3-cdfc744526fb
+trust_transaction_id  = 23791476-e6c6-4715-8272-5a666a6867b6   # DEP/2026/002, DEPOSIT, R 25 000,00, RECORDED
+portal_contact_id     = 651e35a8-1636-449d-aa8b-11cb1506ac9f   # Moroka portal contact, moroka.portal@example.com
+# Moroka portal magic-link (DO NOT use on Sipho's session — for negative isolation reference only):
+#   http://localhost:3002/auth/exchange?token=[REDACTED-MAGIC-LINK-TOKEN]&orgId=mathebula-partners
 
-customer_id           = b7e205be-4e7e-40f1-9d8d-940e6a2e4fee   # "Moroka Family Trust", customer_type=TRUST, lifecycle=PROSPECT
-matter_id (project)   = 43c3dd6b-4bc8-4504-b775-bd61fd19ed7a   # "Estate Late Peter Moroka" EST-2026-002, ACTIVE
-info_request_id       = d114eae8-7b44-460e-984c-1f3044e30690   # REQ-0002, "Liquidation and Distribution Account Pack" (5 items), SENT
-document_storage_key  = c1e78e13-a3b2-49b3-91f7-bebef1d589c3   # letters-of-authority.pdf, attached to matter 43c3dd6b (s3 key)
-trust_transaction_id  = d52ff25d-a0af-44e4-9651-b10bb781e038   # DEP/2026/EST-002, R 25 000.00, RECORDED, account=Mathebula Trust — Main
+## Reference — existing Sipho entities (this cycle 2026-06-13) — Day 15 SHOULD be visible to Sipho
+customer_id           = 2211a80a-5523-4a6d-8f96-0d638dff88f6   # "Sipho Dlamini", INDIVIDUAL
+matter_id (project)   = 08ad56c4-ff5e-49c2-a034-cb5fa04b462c   # "Dlamini v Road Accident Fund" RAF-2026-001
+info_request_id       = de3d6962-6018-43bf-852d-d366d1a4d626   # REQ-0001, FICA Onboarding Pack, COMPLETED
+proposal_id           = 6a1b35fc-b342-4101-abd7-f2ab8ffad26e   # PROP-0001, ACCEPTED
+portal_contact_id     = 793df2fa-6350-46af-b0c0-8b3ac0d7d855   # Sipho portal contact
+trust_transaction_id  = <DEP/2026/001 R 50 000,00 RECORDED Day 10 — tx UUID not captured this cycle>
 
-## Reference — existing Sipho entities (Day 15 SHOULD be visible to Sipho)
-
-customer_id           = 334bf98f-9f02-4d2f-9ee8-80bbed65ea5b   # "Sipho Dlamini", INDIVIDUAL, ONBOARDING
-matter_id             = c90832a4-c993-4eaa-9ea7-404a259b0e29   # "Dlamini v Road Accident Fund" RAF-2026-001
-trust_transaction_id  = 55c094e4-7889-406d-9689-a531e61c3083   # DEP/2026/001, R 50 000.00 RECORDED (Day 10)
-
-## Day 15 probe plan
+## Day 15 probe plan (re-targeted with real Moroka IDs above)
 
 ### Frontend (portal :3002, Sipho logged in)
 - `/home` — must NOT show Moroka in any list/card.
 - `/projects` — must NOT list EST-2026-002.
-- `/projects/43c3dd6b-4bc8-4504-b775-bd61fd19ed7a` — must 403/404 (not render Moroka matter).
-- `/info-requests/d114eae8-7b44-460e-984c-1f3044e30690` — must 403/404.
-- `/trust` — must NEVER show R 25 000 deposit; balance must remain Sipho-only (R 50 000).
+- `/projects/dc10e9ac-becd-4cd6-babe-c723b501bfb0` — must 403/404 (not render Moroka matter).
+- `/info-requests/458c97b6-637d-41d1-a458-f4f0c03354e5` — must 403/404.
+- `/trust` — must NEVER show the R 25 000 Moroka deposit; balance must remain Sipho-only (R 50 000,00).
 
 ### Backend (Sipho's portal session, mathebula-partners tenant)
-- `GET /portal/api/projects/43c3dd6b-4bc8-4504-b775-bd61fd19ed7a` → expect 403 or 404.
-- `GET /portal/api/info-requests/d114eae8-7b44-460e-984c-1f3044e30690` → expect 403 or 404.
-- `GET /portal/api/trust/transactions/d52ff25d-a0af-44e4-9651-b10bb781e038` → expect 403 or 404.
+- `GET /portal/api/projects/dc10e9ac-becd-4cd6-babe-c723b501bfb0` → expect 403 or 404.
+- `GET /portal/api/info-requests/458c97b6-637d-41d1-a458-f4f0c03354e5` → expect 403 or 404.
+- `GET /portal/api/trust/transactions/23791476-e6c6-4715-8272-5a666a6867b6` → expect 403 or 404.
+- Document `b72eaa77-ecd2-4ec2-b0e3-cdfc744526fb` (INTERNAL) → must never be downloadable by Sipho.

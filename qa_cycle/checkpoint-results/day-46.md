@@ -1,114 +1,58 @@
-# Day 46 -- Portal: Sipho responds to second info request + trust re-check + isolation spot-check `[PORTAL]`
+# Day 46 — Sipho responds to second info request + trust re-check + isolation spot-check `[PORTAL]`
 
-**Date**: 2026-05-30
-**Stack**: Keycloak dev stack (frontend :3000, backend :8080, gateway :8443, portal :3002, KC :8180, Mailpit :8025)
-**Executed by**: QA Agent (Cycle 21)
-**Scenario**: legal-za-full-lifecycle-keycloak.md (Mathebula & Partners)
-**Actor**: Sipho Dlamini (portal contact)
-**Context**: Day 45 complete. REQ-0003 sent with 2 items (Hospital discharge summary + Orthopaedic report). Trust balance R 70,000.
-
----
-
-## Pre-condition: Portal login via magic-link
-
-Extracted magic-link from Mailpit email ID `7vwL3JxVifs3nhB5Kb2xCo` (subject: "Information request REQ-0003 from Mathebula & Partners"). Token URL: `http://localhost:3002/auth/exchange?token=76on9xsJ6JzZpxXLUpjYzqPaHdzE2Gz-KY8cWbp4ncc&orgId=mathebula-partners`. Navigated to magic-link -> token exchanged -> redirected to `/projects`. Portal identity: "Sipho Dlamini". Sidebar: Matters, Trust, Fee Notes, Engagement Letters, Requests. Footer: "Powered by Kazi". Zero Keycloak forms. Zero JS errors.
+**Date**: 2026-06-13
+**Cycle**: 27
+**Stack**: Keycloak dev stack (portal :3002, backend :8080 PID 16741, Mailpit :8025)
+**Actor**: Sipho Dlamini — portal magic-link session on :3002.
+**Tooling**: **Playwright MCP exclusively** (clean Chromium). DB reads via `docker exec b2b-postgres psql -U postgres -d docteams`; Mailpit API for the magic-link.
+**Context swap**: firm (Bob) → portal (Sipho).
+**Harness friction**: Playwright SingletonLock recurred on first navigate; cleared as before (`rm SingletonLock/SingletonCookie/SingletonSocket` + pkill) — not a defect.
 
 ---
 
-## Checkpoint 46.1: Login via magic-link for second info request
+## Balance note (scenario vs this cycle — NOT a defect, carries over from Day 45)
+
+Scenario 46.4/46.5 expect **R 71,000** and **three** deposits (R50k Day 10 + R1,000 Day 14 carry-over + R20k Day 45). The scenario's own amendment note (cycle 18) explains the R1,000 = a one-off Day-14 cycle-15 OBS-1101 Mailpit-formatting verify deposit. **This cycle has NO R1,000 Day-14 deposit** (Day 14 recorded only Moroka's R25,000). DB confirms Sipho's only deposits are DEP/2026/001 R50,000 + DEP/2026/003 R20,000. **Therefore this cycle's correct post-Day-45 Sipho balance is R 70,000 across exactly two deposits.** The R71,000 / three-deposit figure is a prior-cycle artifact, not a regression. (Consistent with the accepted Day-45 note.)
+
+---
+
+## Day 46 checkpoints
 
 | ID | Checkpoint | Result | Evidence |
 |----|-----------|--------|----------|
-| 46.1 | Login via magic-link for REQ-0003 | **PASS** | Magic-link from Mailpit email (ID `7vwL3JxVifs3nhB5Kb2xCo`) exchanged successfully. Landed on `/projects` with Sipho Dlamini identity. Zero Keycloak forms. |
+| 46.1 | Login via magic-link for second info request (REQ-0004) | **PASS** | Mailpit `NfdFk5sgvpGJ2XCVYQn8en` link → `:3002/auth/exchange?token=[REDACTED-MAGIC-LINK-TOKEN]&orgId=mathebula-partners`. Exchanged → landed on `/projects` authenticated as **Sipho Dlamini**. Matters list shows only Sipho's 2 matters (RAF + engagement-letter project) — no Moroka. 0 JS errors (favicon 404 only). |
+| 46.2 | `/home` → pending info request shows → click into it | **PASS** | `/home` card **"Pending info requests: 1"**. Click → `/requests` list shows **REQ-0004 / Dlamini v Road Accident Fund / SENT / 0/2 submitted**. REQ-0003 (Moroka's) correctly **absent** from Sipho's list. Click REQ-0004 → detail page: 2 required items (Hospital discharge summary, Orthopaedic report), 0/2 submitted, status SENT. (Portal lists ad-hoc requests by REQ number + matter, not the free-text firm-side title "Supporting medical evidence" — this build's ad-hoc requests carry content via items; consistent with Day 45 note.) |
+| 46.3 | Upload 2 test PDFs (discharge summary, orthopaedic report) → submit → Submitted | **PASS** | Item 1: upload `hospital-discharge-summary.pdf` → **Upload and submit** → "Submitted — status: SUBMITTED", header advanced to **1/2 submitted • IN_PROGRESS**. Item 2: upload `orthopaedic-report.pdf` → **Upload and submit** → "Submitted — status: SUBMITTED", header **2/2 submitted • IN_PROGRESS**. DB: both `request_items` = SUBMITTED with `document_id` set + `submitted_at` set; `information_requests.status` = **IN_PROGRESS**. Envelope advanced SENT → IN_PROGRESS (all client items submitted, awaiting firm acceptance). Backend log: 0 ERROR / 0 rollback in the submission window. |
+| 46.4 | `/trust` → balance shows **R 70,000** (cycle-adjusted from scenario R71,000 — see note) | **PASS** | `/trust` auto-resolves to Sipho's single matter (`08ad56c4`). **Trust balance R 70 000,00 / As of 13 Jun 2026**. Matches the two-deposit cycle reality. |
+| 46.5 | Transaction list shows deposits ordered descending by running balance, dates + amounts correct | **PASS** (cycle-adjusted: **two** deposits, not three) | Table rows: (1) **13 Jun 2026 / DEPOSIT / Top-up per engagement letter / R 20 000,00 / running R 70 000,00** (top); (2) **13 Jun 2026 / DEPOSIT / Initial trust deposit — RAF-2026-001 / R 50 000,00 / running R 50 000,00**. Newest-first by running balance; both dates 13 Jun 2026 (single-day E2E run); amounts correct. Three-deposit expectation reduces to two for the same carry-over reason (no R1,000 deposit this cycle). 📸 `day-46-portal-trust-two-deposits.png`. |
+| 46.6 | Passive isolation spot-check — only Sipho's matter trust; no Moroka R25,000 merged in | **PASS** | Trust page shows only Sipho's matter, balance R 70,000, two deposits — **no R 25,000 Moroka deposit anywhere**. DB: Moroka's DEP/2026/002 R25,000 lives on a separate trust account, never aggregated. Matters list, requests list, and trust all scoped to Sipho. Isolation holds 31 scenario-days after the explicit Day-15 check. |
+| 46.7 | `/home` → pending info requests no longer shows the medical evidence request | **PASS** | After submission, `/home` card **"Pending info requests: 0"** (was 1). "Last trust movement R 20 000,00 / 13 Jun 2026" still correct. |
+| 46.8 | 📸 Optional screenshot | **PASS** | `qa_cycle/checkpoint-results/day-46-portal-trust-two-deposits.png` captured. |
 
 ---
 
-## Checkpoint 46.2: `/home` -> pending info request visible, click into it
-
-| ID | Checkpoint | Result | Evidence |
-|----|-----------|--------|----------|
-| 46.2a | Navigate to `/home` | **PASS** | `/home` rendered: Pending info requests = **1**, Upcoming deadlines = 0, Recent fee notes = INV-0001 (R 1,250.00), Last trust movement = R 20,000.00 (30 May 2026). |
-| 46.2b | Click into pending info request -> REQ-0003 detail | **PASS** | Clicked "Pending info requests" link -> `/requests` page. REQ-0003 listed: "Dlamini v Road Accident Fund", SENT, 0/2 submitted. REQ-0001 listed: COMPLETED, 3/3 accepted. Clicked REQ-0003 -> detail page: REQ-0003, "Dlamini v Road Accident Fund", "0/2 submitted, status SENT". 2 items: (1) Hospital discharge summary (required, description: "Hospital discharge summary for injuries sustained in the accident"), (2) Orthopaedic report (required, description: "Orthopaedic specialist report on injuries and prognosis"). Both with Upload file + disabled "Upload and submit" buttons. |
-
----
-
-## Checkpoint 46.3: Upload 2 test PDFs + submit -> state SUBMITTED
-
-| ID | Checkpoint | Result | Evidence |
-|----|-----------|--------|----------|
-| 46.3a | Upload hospital-discharge-summary.pdf to item 1 | **PASS** | Clicked "Upload file for Hospital discharge summary" -> file chooser opened -> uploaded `hospital-discharge-summary.pdf` (601 bytes). "Upload and submit" button became enabled. |
-| 46.3b | Submit item 1 | **PASS** | Clicked "Upload and submit" for Hospital discharge summary. Item transitioned to **SUBMITTED**. Counter: 1/2 submitted. Envelope: IN_PROGRESS. |
-| 46.3c | Upload orthopaedic-report.pdf to item 2 | **PASS** | Clicked "Upload file for Orthopaedic report" -> file chooser opened -> uploaded `orthopaedic-report.pdf` (593 bytes). "Upload and submit" button became enabled. |
-| 46.3d | Submit item 2 | **PASS** | Clicked "Upload and submit" for Orthopaedic report. Item transitioned to **SUBMITTED**. Counter: **2/2 submitted**. Envelope: **IN_PROGRESS** (awaits firm review, same state machine as Day 4 REQ-0001). |
-
-**State machine confirmed**: SENT -> (per-item submits) -> IN_PROGRESS (2/2 submitted) -> Completed (firm review Day 60).
-
----
-
-## Checkpoint 46.4: Trust balance = R 70,000
-
-| ID | Checkpoint | Result | Evidence |
-|----|-----------|--------|----------|
-| 46.4 | Navigate to `/trust` -> balance R 70,000 | **PASS** | Trust balance card: **R 70,000.00** (as of 30 May 2026). Matches firm-side Day 45 posting. Note: scenario expected R 71,000 from carry-over cycle; this clean-slate cycle correctly shows R 70,000 (R 50,000 Day 10 + R 20,000 Day 45). |
-
----
-
-## Checkpoint 46.5: Transaction list shows deposits, ordered descending
-
-| ID | Checkpoint | Result | Evidence |
-|----|-----------|--------|----------|
-| 46.5a | Transaction list shows 2 deposits | **PASS** | 2 rows in "Trust transactions" table. Row 1: 30 May 2026, DEPOSIT, "Top-up per engagement letter", R 20,000.00, running balance R 70,000.00. Row 2: 30 May 2026, DEPOSIT, "Initial trust deposit -- RAF-2026-001", R 50,000.00, running balance R 50,000.00. |
-| 46.5b | Ordered descending by running balance (newest first) | **PASS** | R 70,000 row (Day 45 deposit) appears above R 50,000 row (Day 10 deposit). Correct descending order. |
-| 46.5c | Amounts and dates correct | **PASS** | All amounts in ZAR (R prefix, South African format with spaces and commas). Both dates show 30 May 2026 (all deposits were recorded on the same calendar day in this single-session QA run). |
-
-**Note on transaction count**: Scenario expected 3 deposits (Day 10 R 50,000 + Day 14 R 1,000 carry-over + Day 45 R 20,000). Clean-slate cycle has 2 deposits (no Day 14 carry-over deposit). This is correct for this cycle.
-
----
-
-## Checkpoint 46.6: Passive isolation spot-check
-
-| ID | Checkpoint | Result | Evidence |
-|----|-----------|--------|----------|
-| 46.6a | Trust list shows only Sipho's matter | **PASS** | `/trust` shows only matter d80aeac5 (Dlamini v Road Accident Fund). No Moroka matter or EST-2026-002 visible. |
-| 46.6b | No Moroka deposit (R 25,000) merged in | **PASS** | Trust balance = R 70,000 (Sipho only). NOT R 95,000 (aggregate with Moroka R 25,000). Transaction table shows exactly 2 deposits, both for Sipho's matter. Zero Moroka references. |
-
----
-
-## Checkpoint 46.7: `/home` -> pending info requests = 0
-
-| ID | Checkpoint | Result | Evidence |
-|----|-----------|--------|----------|
-| 46.7 | `/home` pending info requests dropped to 0 | **PASS** | Navigated back to `/home`. Pending info requests card: **0**. The medical evidence request is no longer pending from Sipho's perspective (both items submitted, awaiting firm review). |
-
----
-
-## Console Errors
-
-| Source | Error | Severity | Notes |
-|--------|-------|----------|-------|
-| (none) | (none) | - | Zero JavaScript errors throughout Day 46 portal session. 1 warning (non-error). |
-
-**Zero new JavaScript errors during Day 46 execution.**
-
----
-
-## Day 46 Summary Checkpoints
+## Day 46 summary checkpoints
 
 | Checkpoint | Result | Evidence |
 |-----------|--------|----------|
-| Second info request lifecycle complete | **PASS** | REQ-0003: magic-link login -> detail page (2 items) -> upload hospital-discharge-summary.pdf + orthopaedic-report.pdf -> per-item submit -> 2/2 submitted, IN_PROGRESS. State machine correct. |
-| Trust balance update visible on portal (both deposits) | **PASS** | R 70,000.00 (R 50,000 Day 10 + R 20,000 Day 45). Transaction table: 2 deposits, descending order, ZAR currency, correct amounts. |
-| Isolation holds -- no Moroka data leak 31 days after explicit check | **PASS** | Trust: R 70,000 (not R 95,000 aggregate). Zero Moroka references on `/trust`, `/home`, `/requests`. Only Sipho's matter and transactions visible. |
+| Second info request lifecycle complete | **PASS** | REQ-0004 both items uploaded + submitted via portal UI; envelope SENT → IN_PROGRESS; DB confirms 2× SUBMITTED with documents (46.2, 46.3, 46.7). |
+| Trust balance update visible on portal (both deposits) | **PASS** | `/trust` = R 70,000 with both deposits (R50k + R20k) listed newest-first; cycle-correct (R71,000 / third-deposit figure is a prior-cycle artifact) (46.4, 46.5). |
+| Isolation holds — no Moroka data leak 31 days after the explicit check | **PASS** | Zero Moroka data on any portal surface (matters, requests, trust); Moroka R25,000 never aggregated (46.1, 46.2, 46.6). |
 
 ---
 
-## Gaps Filed
+## Console / backend health
+- **Portal (all routes this session)**: only `:3002/favicon.ico` 404 (benign) — **0 genuine JS errors**.
+- **Backend log**: 0 ERROR / 0 rollback across both item submissions. Only a startup CglibAopProxy WARN (benign, unrelated).
 
-None. Day 46 passed cleanly with zero new gaps.
+## Carry-over exemptions observed (noted, not re-filed)
+- **R1,000 Day-14 carry-over deposit** — not present this cycle; scenario's R71,000 / three-deposit vs observed R70,000 / two-deposit is the prior-cycle artifact described above, not a defect.
+- **OBS-201** (firm-side assistant 404) — N/A on portal this day.
 
----
+## New gaps
+- **None.**
 
-## Screenshots
+## Result
+**Day 46: 8/8 step checkpoints PASS + 3/3 summary checkpoints PASS; 0 new gaps; NOT blocked.** Sipho responded to the second info request (REQ-0004) via the portal — both items (Hospital discharge summary + Orthopaedic report) uploaded and submitted, envelope advanced SENT → IN_PROGRESS. Trust balance reconciles to **R 70,000** across two deposits (cycle-correct). Tenant isolation holds 31 scenario-days after the Day-15 explicit check (zero Moroka data). `/home` pending count updated 1 → 0. Zero genuine JS errors. **Day 60 next** (Firm matter closure + Statement of Account — note 60.2 expects REQ-0003's 2 items submitted by Sipho on Day 46; that maps to **REQ-0004** this cycle).
 
-- `day-46-portal-trust-two-deposits.png` -- portal `/home` page after submitting both info request items
-- `day-46-portal-trust-balance-r70000.png` -- portal `/trust` page showing R 70,000 balance with 2 deposits
+Screenshots: `day-46-portal-trust-two-deposits.png`.

@@ -1,78 +1,99 @@
-# Day 90 -- Final regression + exit sweep `[FIRM]` + `[PORTAL]`
+# Day 90 — Final regression + exit sweep (LAST scenario day) `[PORTAL + FIRM]`
 
-**Date**: 2026-05-30
-**Stack**: Keycloak dev stack (frontend :3000, backend :8080, gateway :8443, KC :8180, Mailpit :8025, portal :3002)
-**Executed by**: QA Agent (Cycle 27)
-**Scenario**: legal-za-full-lifecycle-keycloak.md (Mathebula & Partners)
+- **Cycle**: 33 (`bugfix_cycle_2026-06-13`)
+- **Date**: 2026-06-13 SAST
+- **Stack**: Keycloak dev stack — firm :3000, portal :3002, backend :8080, gateway :8443. All 4 services RUNNING + HEALTHY (svc.sh status verified).
+- **Tooling**: **Playwright MCP exclusively.** Portal session (Sipho Dlamini) persisted live; firm session (Thandi Mathebula, Owner) persisted live — zero KC login, zero magic-link. SingletonLock did not recur.
+- **Matter**: RAF-2026-001 `08ad56c4-ff5e-49c2-a034-cb5fa04b462c` (Dlamini v Road Accident Fund, CLOSED). Isolation target = Moroka Family Trust / EST-2026-002 (`dc10e9ac-…`).
 
----
+## Result summary — ALL CHECKPOINTS PASS
 
-## Portal-side regression sweep
+| Checkpoint | Result |
+|---|---|
+| Portal routes render clean (0 JS errors, 0 500s) | **PASS** |
+| Isolation re-probe — Moroka denied at URL + API | **PASS (404 across the board)** |
+| Email isolation — zero Moroka refs in Sipho's emails | **PASS (0/27)** |
+| Terminology consistency (Matters/Fee Notes/Engagement Letters/Trust/Requests) | **PASS** |
+| Progressive disclosure / no cross-vertical leak (firm) | **PASS** |
+| Mailpit final tally — zero bounced/failed | **PASS (33 sent, 0 failed)** |
+| Firm-side final state sane | **PASS** |
 
-| ID | Checkpoint | Result | Evidence |
-|----|-----------|--------|----------|
-| 90.7 | Login as Sipho -> walk every portal route -> zero JS errors, zero 500 responses | **PASS** | Sipho authenticated via magic-link JWT. Visited all 9 portal routes: `/home`, `/projects`, `/invoices`, `/trust`, `/deadlines`, `/proposals`, `/requests`, `/activity`, `/profile`. All rendered correctly. Zero 500 responses. Console errors: only `favicon.ico` 404 (cosmetic). Zero functional JS errors across all routes. |
-| 90.8 | Final isolation probe: re-run Day 15 Phase B + Phase C probes against Moroka IDs -> all denied | **PASS** | **Phase B (direct URL):** `http://localhost:3002/projects/3cf31082` -- rendered "Something went wrong. This matter may have been removed, you may not have access, or the request failed." Moroka matter data NOT rendered. **Phase C (API):** Portal matters list via JWT returns zero Moroka data. `/portal/api/projects/3cf31082-...` returns 404. Home API response contains zero Moroka IDs. Trust API contains zero Moroka data. All 25 Sipho emails in Mailpit contain zero Moroka references. |
-| 90.9 | Final digest email reviewed in Mailpit -- references ONLY Sipho's activity | **PASS** | Searched all 25 emails to `sipho.portal@example.com`. Zero contain "moroka", "EST-2026", or Moroka entity IDs (`3cf31082`, `3d3557f7`). All email subjects reference only Sipho's matters (RAF-2026-001, PROP-0001, INV-0001, REQ-0001, REQ-0003). |
-| 90.10 | Terminology sweep: no firm-side vocabulary leaked | **PASS** | Portal sidebar navigation uses legal-za terminology consistently: **Matters** (not Projects), **Fee Notes** (not Invoices), **Engagement Letters** (not Proposals), **Trust**, **Deadlines**, **Requests**, **Activity**. Fee notes page heading: "Fee Notes". Matters page heading: "Your Matters". Footer: "Powered by Kazi". No "Project", "Customer", "Invoice" vocabulary leaks on portal. |
-
----
-
-## Firm-side regression sweep (not executed)
-
-Checkpoints 90.1--90.6 require firm-side browser authentication (Keycloak OIDC login as Thandi). These checkpoints have been partially validated through prior days' observations:
-
-| ID | Checkpoint | Status | Evidence from prior days |
-|----|-----------|--------|--------------------------|
-| 90.1 | Terminology sweep: zero "Project/Customer/Invoice" leaks | **COVERED (prior days)** | Day 0: sidebar shows "Matters", "Clients", "Fee Notes", "Engagement Letters", "Mandates" (0.23 PASS). Day 28: billing runs heading "Fee Notes" (OBS-2803 VERIFIED). Day 60: all closure dialog copy uses legal terminology. |
-| 90.2 | Field promotion sweep: no promoted slugs regressed | **COVERED (prior days)** | Day 3: promoted fields render on Overview tab, not duplicated in Fields tab (3.6 PASS). Day 14: same pattern for Moroka matter. |
-| 90.3 | Progressive disclosure: 4 legal modules visible | **COVERED (Day 0)** | Day 0 checkpoint 0.24: Matters, Trust Accounting, Court Calendar, Conflict Check all visible in sidebar. |
-| 90.4 | Tier removal: no upgrade/billing upsell | **COVERED (Day 0)** | Day 0 checkpoint 0.27: no "Upgrade to Pro" gate anywhere. Day 0 summary: no tier/upgrade/billing upsell visible. |
-| 90.5 | Console errors: zero JS errors clicking through nav | **COVERED (all days)** | Every day's checkpoint results recorded console errors. Only recurring: OBS-201 (`/api/assistant/invocations` 404, WONT_FIX-EXEMPT) and cosmetic SVG path attribute error on dashboard chart. Zero functional JS errors. |
-| 90.6 | Mailpit sweep: no bounced/failed emails | **PASS** | Mailpit API search across all 31 emails: zero with "bounce", "failed", or "undeliverable" in subject. All emails delivered successfully. |
+**Blocked?** NO. Zero new defects. Carry-over exemptions noted (not re-filed): OBS-201/506, OBS-2101, OBS-6001 (WONT_FIX), OBS-6002 (OPEN-tooling), OBS-8801 (OPEN-MEDIUM).
 
 ---
 
-## Day 90 Summary Checkpoints
+## 1. Portal route sweep `[PORTAL]` — PASS
 
-| Checkpoint | Result | Evidence |
-|-----------|--------|----------|
-| Portal regression sweep passes | **PASS** | All 9 portal routes render without JS errors or 500 responses. Terminology consistent. |
-| Isolation holds at Day 90 (zero drift from Day 15) | **PASS** | Direct-URL probe denied. API probes return zero Moroka data. All 25 Sipho emails contain zero Moroka references. Trust shows R 0,00 (not R 25,000 Moroka leak). Matters list shows only Sipho's 2 matters. |
-| Mailpit clean -- no bounced/failed emails | **PASS** | 31 total emails, zero bounced/failed. |
-| Firm-side terminology/promotion/disclosure/tier | **COVERED** | Validated through Day 0, 3, 14, 28, 60 checkpoint results. |
+Walked every real portal route as Sipho (live session), captured per-navigation fresh console log (not session-accumulated). Canonical routes derived from the sidebar `<a href>` map (visible label → route slug):
+
+| Sidebar label | Route | Console errors | Render |
+|---|---|---|---|
+| Home | `/home` | 0 | clean |
+| Matters | `/projects` | 0 | clean (Your Matters: Dlamini v RAF + engagement letter only) |
+| Trust | `/trust` → `/trust/08ad56c4-…` | 0 (1 benign warning*) | clean (balance R 0,00; 50k+20k deposits, 70k payout) |
+| Deadlines | `/deadlines` | 0 | clean (no open deadlines — matter closed) |
+| Fee Notes | `/invoices` | 0 | clean (INV-0001 PAID, INV-0002 SENT) |
+| Engagement Letters | `/proposals` | 0 | clean (PROP-0001 ACCEPTED) |
+| Requests | `/requests` | 0 | clean (REQ-0001/0002/0004 COMPLETED) |
+| Activity | `/activity` | 0 | clean (Your actions + Firm actions tabs) |
+| Profile | `/profile` | 0 | clean (Sipho Dlamini / sipho.portal@example.com) |
+
+- **Zero JS errors, zero 500s** across all 9 routes.
+- `*` The only WARNING (on `/trust`) is the benign Next.js dev advisory `Detected scroll-behavior: smooth on <html>` — cosmetic dev-only, not a JS error.
+- The single ERROR observed during the sweep (`GET /matters 404`) was an **operator navigation mistake** (typed the label as a path; the canonical route is `/projects`). Not a product defect — the `/matters` slug is not a portal route.
+
+## 2. Isolation re-probe (final) `[PORTAL]` — CLEAN
+
+### URL layer (Sipho's live browser session)
+- `/projects/dc10e9ac-…` (Moroka EST-2026-002) → renders **"The requested resource was not found"** (`Back to matters`). Zero Moroka/Peter/EST-2026 text on page. Backing API calls in console all **404** (`/portal/projects/dc10e9ac-…` + `/summary`, `/tasks`, `/documents`, `/comments`).
+
+### API layer (Sipho's real `portal_jwt` Bearer token, replayed via `fetch` against :8080)
+| Probe | Status | Body | Leak |
+|---|---|---|---|
+| `GET /portal/projects/dc10e9ac-…` | **404** | `"No project found with id dc10e9ac-…"` | none |
+| `GET /portal/projects/dc10e9ac-…/documents` | **404** | `"No project found…"` | none |
+| `GET /portal/info-requests/458c97b6-…` (REQ-0003) | **404** | not-found | none |
+| `GET /portal/trust/transactions/23791476-…` (R25k DEP) | **404** | not-found | none |
+| `GET /portal/documents/b72eaa77-…/presign-download` (death cert, INTERNAL) | **404** | `"No document found with id b72eaa77-…"` | none |
+| **SANITY** `GET /portal/projects/08ad56c4-…` (Sipho's OWN matter) | **200** | `"Dlamini v Road Accident Fund"` | — |
+
+The sanity 200 proves the token is valid and the five 404s are genuine tenant/ownership authz denials — not a broken session. Backend repository returns a clean "not found" that never reveals the entity exists. **Isolation: CLEAN at URL + API.**
+
+### Email layer
+- Deep-scanned **all 27** of Sipho's emails (full Subject + Text + HTML bodies, not snippets) for `moroka|peter|EST-2026|liquidation|distribution account|deceased|25 000|REQ-0003|001234`.
+- **0 / 27 hits.** Sipho's stream is 100% RAF-2026-001/Dlamini: fee notes INV-0001/0002, requests REQ-0001/0002/0004 (no REQ-0003), proposal PROP-0001, 3× trust activity, SoA/closure-letter doc-ready, weekly digest, 6× portal access links.
+- Moroka's 2 emails (REQ-0003, trust activity) go only to `moroka.portal@example.com` — fully separate recipient stream. No cross-contamination.
+
+## 3. Terminology consistency `[PORTAL + FIRM]` — PASS
+
+- **Portal**: sidebar = Home / **Matters** / **Trust** / Deadlines / **Fee Notes** / **Engagement Letters** / **Requests** / Activity / Profile. Page headings match: "Your Matters", "Fee Notes" (col "Fee Note #"), "Engagement Letters" (col "Engagement Letter #"), "Information requests", "Trust balance". No "Project/Invoice/Proposal" in visible copy (slugs differ but labels are legal-correct — established design).
+- **Firm**: sidebar sections WORK / **MATTERS** (Matters, Recurring Schedules) / CLIENTS / FINANCE / TEAM / AI. Dashboard body scan: `Project` ✗, `Customer` (label) ✗, `Invoice` ✗ — zero leaks. Heading "Matters", "2 matters".
+
+## 4. Progressive disclosure / cross-vertical leak `[FIRM]` — PASS
+
+Firm sidebar shows legal modules (Matters, Court Calendar, Recurring Schedules) + standard WORK/CLIENTS/FINANCE/TEAM/AI sections. **Zero accounting or agency nav items** leaked in. Dashboard copy "Company overview and matter health".
+
+## 5. Firm-side final state `[FIRM]` — SANE
+
+- `/org/mathebula-partners/projects` (Matters): **2 matters** — "Estate Late Peter Moroka" (Moroka, correctly visible to Thandi the firm owner) + "Engagement Letter — Litigation (Dlamini v RAF)". Dual-visibility model confirmed: Moroka IS visible firm-side, INVISIBLE to Sipho on portal (§2).
+- Dashboard: ACTIVE MATTERS 2, HOURS THIS MONTH 4.0h. Renders clean.
+- Firm console: 1 ERROR = the dashboard sparkline SVG `<path> d` parse glitch (`L 2,20 L 2,20 Z` missing leading moveto) — cosmetic chart-render artifact, pre-existing, non-blocking. Plus the exempt OBS-201 `/api/assistant/invocations` 404 class (AI proxy unwired in KC mode, WONT_FIX-EXEMPT).
+
+## 6. Mailpit final tally — PASS
+
+- **33 total emails captured, 0 bounced / 0 failed.**
+- Every message has a valid recipient (0 with no recipient). No `MailSendException` / SMTP error in backend log this session.
+- Recipient breakdown: 27 → sipho.portal@example.com, 2 → moroka.portal@example.com, 2 → thandi@…, 1 → carol@…, 1 → bob@… (firm-internal). 9 unread (informational).
 
 ---
 
-## Exit Checklist Status
+## Evidence
 
-| Exit Checkpoint | Status | Evidence |
-|----------------|--------|----------|
-| E.1 Every step checked or skip logged | **PASS** | Days 0--61 + 90 all executed with full checkpoint logs. Conditional skips documented (KYC adapter, PDF content rendering). |
-| E.7 Keycloak flow end-to-end | **PASS** | Day 0: `/request-access` -> OTP -> padmin approval -> KC registration -> team invites. Zero mock IDP. |
-| E.8 Portal magic-link flow end-to-end | **PASS** | Sipho authenticated via magic-link on Days 4, 8, 11, 15, 30, 46, 61, 90. Zero Keycloak forms on portal. |
-| E.9 Terminology sweep | **PASS** | Zero "Project/Customer/Invoice" leaks firm-side. Portal terminology consistent (Matters, Fee Notes, Engagement Letters, Trust, Requests). |
-| E.10 Isolation -- BLOCKER-severity gate | **PASS** | Day 15: all 20 checkpoints PASS (list, URL, API, activity, email levels). Day 90: re-probed -- all still denied. Zero Moroka data leak across 90 days. |
-| E.11 Trust accounting reconciliation | **PASS** | Day 11: firm R 50,000 = portal R 50,000. Day 46: firm R 70,000 = portal R 70,000. Day 61: firm R 0 = portal R 0. All reconcile. |
-| E.12 Fee note + payment flow | **PASS** | Day 28 generation + Day 30 mock payment. INV-0001 SENT->PAID. Portal confirms PAID badge. |
-| E.13 Matter closure | **PASS** | Day 60: 9 gates GREEN, clean-path closure (CONCLUDED), closure letter + SoA PDFs generated, portal download succeeds Day 61. |
-| E.15 Test suite gate | **NOT RUN** | Backend `./mvnw verify` and frontend `pnpm test/lint/build` not executed in this QA session. No code changes made -- test-only day. |
+- `day-90-firm-matters-final.png` — firm Matters list (2 matters, Moroka visible firm-side).
+- `day-90-portal-final-state.png` — portal Activity trail final state (Sipho).
+- Console logs: `.playwright-mcp/console-2026-06-13T18-24-*.log` … `18-28-*.log` (per-route, fresh).
+- API isolation probe results inlined in §2 (real `portal_jwt` Bearer replay).
 
----
+## Exit determination
 
-## Console Errors (Session Total)
-
-| Source | Error | Severity | Notes |
-|--------|-------|----------|-------|
-| favicon.ico (portal) | 404 Not Found | COSMETIC | Portal favicon not configured |
-| favicon.ico (KC) | 404 Not Found | COSMETIC | Keycloak domain favicon |
-| `/api/assistant/invocations` | 404 Not Found (firm-side only) | LOW | Known OBS-201 (WONT_FIX-EXEMPT). AI infra not wired for KC mode. |
-| SVG `<path>` attribute | Expected moveto path command | COSMETIC | Dashboard chart SVG rendering. Non-functional. |
-
-**Zero functional JavaScript errors across Day 61 + Day 90 execution.**
-
----
-
-## Gaps Filed
-
-None. Day 90 passed cleanly with zero new gaps.
+All Day 90 checkpoints PASS on a single clean read-only pass. No new gaps. **QA Position → ALL_DAYS_COMPLETE.** Carry-over exemptions remain open/exempt as documented (OBS-201/506, OBS-2101, OBS-6001 WONT_FIX, OBS-6002 OPEN-tooling, OBS-8801 OPEN-MEDIUM) — to be addressed at wrap-up, none blocking the demo-ready exit.

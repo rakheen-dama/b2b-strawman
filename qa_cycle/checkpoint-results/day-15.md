@@ -1,99 +1,99 @@
-# Day 15 — Checkpoint Results (Cycle 2026-05-30)
+# Day 15 — Isolation check — Sipho cannot see Moroka's data `[PORTAL]`
 
-**Date**: 2026-05-30
-**Stack**: Keycloak dev stack (frontend :3000, backend :8080, gateway :8443, KC :8180, portal :3002)
-**Executed by**: QA Agent
-**Scenario**: legal-za-full-lifecycle-keycloak.md (Mathebula & Partners)
-**Actor**: Sipho Dlamini (portal contact, authenticated via magic link)
+**Cycle**: 21 (bugfix_cycle_2026-06-13)
+**Date executed**: 2026-06-13 SAST
+**Actor**: Sipho Dlamini (portal :3002)
+**Tooling**: Playwright MCP exclusively (`mcp__playwright__browser_*`) — clean Chromium, no claude-in-chrome (Day 14 block did NOT recur). Phase C API probes via `curl` with Sipho's portal JWT (the only legitimate non-browser surface — backend authz hard-negative).
+**Scenario**: `qa/testplan/demos/legal-za-full-lifecycle-keycloak.md` Day 15 (lines 519–575)
 
----
+## Verdict
 
-## Pre-check: Authenticate as Sipho on Portal
+**ALL CHECKPOINTS PASS — ZERO ISOLATION LEAK.** Tenant/contact isolation holds at every layer
+(list views, direct URL, backend API, activity, email). No Moroka data surfaced anywhere on
+Sipho's portal session. Not blocked.
 
-Navigated to `http://localhost:3002/login`. Entered `sipho.portal@example.com`, clicked "Send Magic Link". Dev-mode shortcut link appeared. Clicked it -> authenticated successfully, redirected to `/projects`. Header shows "Sipho Dlamini". Zero JavaScript errors on login flow.
+## Session setup
 
----
+- Fresh Sipho magic-link minted via `POST /portal/dev/generate-link` (email `sipho.portal@example.com`,
+  org `mathebula-partners`). Exchanged at `:3002/auth/exchange` → portal session for **Sipho Dlamini**
+  (customerId `2211a80a-5523-4a6d-8f96-0d638dff88f6`).
+- Separate JWT minted for Phase C curl probes (same identity; backend `/portal/auth/exchange` returned
+  `customerId 2211a80a-…`, `customerName "Sipho Dlamini"`, `org_id mathebula-partners`).
 
-## Phase A: List-view leak probe (no Moroka data should appear anywhere)
+## Phase A — List-view leak probe (browser)
 
-| ID | Checkpoint | Result | Evidence |
-|----|-----------|--------|----------|
-| 15.1 | Login as Sipho via magic-link | **PASS** | Authenticated via dev-mode magic link. Portal header: "Sipho Dlamini". Redirected to `/projects`. |
-| 15.2 | `/home` — verify only Sipho's data | **PASS** | Pending info requests: **0** (Sipho's REQ-0001 completed; Moroka's REQ-0002 NOT shown). Recent fee notes: "No fee notes yet." Upcoming deadlines: **0**. Last trust movement: **R 50 000,00** (Sipho only, NOT R 75,000 aggregate). Zero Moroka references anywhere on home. |
-| 15.3 | `/projects` — verify only Sipho's matters listed | **PASS** | 2 matters listed: "Engagement Letter -- Litigation (Dlamini v RAF)" + "Dlamini v Road Accident Fund". Zero Moroka matters ("Estate Late Peter Moroka" NOT listed). No EST-2026-002 reference. |
-| 15.4 | `/trust` — verify balance is R 50,000 (Sipho only) | **PASS** | Trust balance card: **R 50 000,00** (NOT R 75,000 aggregate). Transaction table: 1 row — "30 May 2026, DEPOSIT, Initial trust deposit -- RAF-2026-001, R 50 000,00, running balance R 50 000,00". Zero mention of Moroka, EST-2026-002, or R 25,000 deposit. URL resolved to `/trust/d80aeac5` (Sipho's matter). |
-| 15.5 | `/invoices` — verify empty or Sipho-only | **PASS** | "No fee notes yet." — empty as expected. No Moroka invoices. |
-| 15.6 | `/deadlines` — verify only Sipho's deadlines | **PASS** | "No deadlines in this view." Status/Type filters available but no items. No Moroka Master's Office filing deadlines. |
-| 15.7 | `/proposals` — verify only Sipho's proposals | **PASS** | 1 row: PROP-0001 "Engagement Letter -- Litigation (Dlamini v RAF)", ACCEPTED, 30 May 2026. No other proposals. |
-| 15.8 | Screenshot: `day-15-portal-home-isolated.png` | **PASS** | Screenshot captured showing Sipho's `/home` with only his data. |
+| # | Checkpoint | Result | Evidence |
+|---|---|---|---|
+| 15.1 | Login as Sipho | PASS | User menu = "Sipho Dlamini" |
+| 15.2 | `/home` — no Moroka in any list/card | PASS | Pending info requests **0**; Upcoming deadlines **0**; Recent fee notes "No fee notes yet"; Last trust movement **R 50 000,00** (13 Jun 2026 — Sipho's only). No death certificate, no Liquidation request. `day-15-portal-home-isolated.png` |
+| 15.3 | `/projects` — only Sipho's matters | PASS | Only **Dlamini v Road Accident Fund** (`08ad56c4-…`) + acceptance-auto matter **Engagement Letter — Litigation (Dlamini v RAF)** (`15a25aa5-…`). NO EST-2026-002 / Estate Late Peter Moroka |
+| 15.4 | `/trust` — Sipho R50k only, NOT R75k aggregate | **PASS (critical)** | Auto-redirect to `/trust/08ad56c4-…`. Balance **R 50 000,00**. One tx row: 13 Jun 2026 / DEPOSIT / "Initial trust deposit — RAF-2026-001" / R 50 000,00. NO Moroka, NO EST-2026-002, NO R 25 000. `day-15-portal-trust-isolated.png` |
+| 15.5 | `/invoices` (Fee Notes) — empty/Sipho only | PASS | "No fee notes yet." |
+| 15.6 | `/deadlines` — only Sipho's | PASS | "No deadlines in this view." No Moroka Master's Office filings |
+| 15.7 | `/proposals` — only Sipho's accepted | PASS | Only **PROP-0001** ACCEPTED 13 Jun 2026. No Moroka |
+| 15.8 | Screenshot `/home` isolated | PASS | `day-15-portal-home-isolated.png` |
+| (extra) | `/requests` list | PASS | Only REQ-0001 + REQ-0002 (both RAF). No REQ-0003 / Liquidation pack |
 
-**Additional list-view probe**: `/requests` page shows only REQ-0001 (Sipho's FICA, COMPLETED, 3/3 accepted). Moroka's REQ-0002 ("Liquidation and Distribution Account Pack") NOT listed.
+## Phase B — Direct-URL probe (hard negative, Moroka IDs, browser)
 
----
+| # | URL | Result | Rendered |
+|---|---|---|---|
+| 15.9 | `/projects/dc10e9ac-…` (Moroka matter EST-2026-002) | PASS | "The requested resource was not found… you may not have access." Backend returned **404** on detail/comments/tasks/summary/documents (console confirms). No matter data |
+| 15.10 | `/requests/458c97b6-…` (Moroka REQ-0003) | PASS | "The requested resource was not found." No Liquidation/Distribution content |
+| 15.11 | `/documents/b72eaa77-…` (Moroka death cert) | PASS | **404 Page not found** (no portal route; backend presign-download also 404 — see Phase C). PDF never reachable |
+| 15.12 | `/trust/transactions/23791476-…` (Moroka tx) | PASS | **404 Page not found** (no per-tx URL shape) |
+| (extra) | `/trust/dc10e9ac-…` (Moroka matter ledger) | PASS | "No trust balance is recorded for this matter" + "The requested resource was not found" (txns + statements). R 25 000 not rendered |
+| 15.13 | Screenshot denial | PASS | `day-15-portal-denial.png` |
 
-## Phase B: Direct-URL probe (hard negative — Moroka IDs used)
+## Phase C — API-level probe (backend authz, Sipho JWT)
 
-| ID | Checkpoint | Result | Evidence |
-|----|-----------|--------|----------|
-| 15.9 | Navigate to `/projects/3cf31082-b371-4ae5-abdf-34f6f38df708` (Moroka matter) | **PASS** | Page rendered: "The requested resource was not found. This matter may have been removed, you may not have access, or the request failed." with "Try again" and "Back to matters" buttons. Moroka matter data **did NOT render**. Backend returned 404 for all subresources (projects, summary, tasks, documents, comments). |
-| 15.10 | Navigate to `/requests/e6cc55cd-3250-4a51-a5bd-9c9231c91e2c` (Moroka info request) | **PASS** | Page rendered: "The requested resource was not found." No "Liquidation and Distribution Account" data shown. Backend returned 404. |
-| 15.11 | Navigate to `/documents/2fe8a1cb-2359-4533-868d-ae19f91d2594` (Moroka death certificate) | **PASS** | Next.js 404 page: "404 — Page not found". Moroka death-certificate PDF **NOT returned**. |
-| 15.12 | Navigate to `/trust/transactions/2d9fec05-b071-4ff9-85c1-b2175a312f8b` (Moroka trust tx) | **PASS** | Next.js 404 page: "404 — Page not found". Moroka R 25,000 deposit **NOT rendered**. |
-| 15.13 | Screenshot: `day-15-portal-denial.png` | **PASS** | Screenshot captured showing denial page from Moroka matter probe (15.9). |
+| # | Endpoint | Expected | Got | Result |
+|---|---|---|---|---|
+| 15.14 | `GET /portal/projects/dc10e9ac-…` | 403/404 | **404** "No project found" | PASS |
+| 15.15 | `GET /portal/requests/458c97b6-…` | 403/404 | **404** "No informationrequest found" | PASS |
+| 15.16 | `GET /portal/trust/matters/dc10e9ac-…/transactions` | 403/404 | **404** "No project found" | PASS |
+| 15.17 | `GET /portal/documents/b72eaa77-…/presign-download` | 403/404 | **404** "No document found" — NO bytes | PASS |
+| 15.18 | `GET /portal/trust/summary` | Sipho only | **200**: single matter `08ad56c4-…` balance **50000.00**. No R25k/R75k | PASS |
+| (extra) | `GET /portal/trust/movements` | Sipho only | **200**: one DEPOSIT 50000.00 "Initial trust deposit — RAF-2026-001". No Moroka | PASS |
+| (extra) | `GET /portal/projects` (list) | Sipho only | 2 matters (RAF + engagement). No EST-2026-002 | PASS |
+| (extra) | `GET /portal/requests` (list) | Sipho only | REQ-0001 + REQ-0002 only | PASS |
+| (extra) | `GET /portal/api/proposals` (list) | Sipho only | PROP-0001 only | PASS |
+| **CONTROL** | `GET /portal/projects/08ad56c4-…` (Sipho's OWN matter) | 200 | **200** "Dlamini v Road Accident Fund" | PASS — proves the 404s are per-contact scoping, NOT a blanket failure |
 
----
+**Identifier-leak scan**: every portal endpoint response (`/projects`, `/requests`, `/api/proposals`,
+`/activity`, `/trust/summary`, `/trust/movements`, `/documents`) grepped for `moroka | EST-2026-002 |
+9894de9b | dc10e9ac | 458c97b6 | b72eaa77 | 23791476 | 25000 | liquidation | death-certificate |
+651e35a8` → **ALL CLEAN, zero matches.**
 
-## Phase C: API-level probe (hard negative — backend enforcement)
+## Phase D — Activity trail + digest leak probe
 
-JWT used: `portal_jwt` from Sipho's localStorage (sub=`d74963c8`, org_id=`mathebula-partners`).
+| # | Checkpoint | Result | Evidence |
+|---|---|---|---|
+| 15.19 | `/activity` (both tabs) references only Sipho's matters | PASS | "Your actions" = Sipho's own uploads/submits. "Firm actions" = Bob Ndlovu's REQ-0001/REQ-0002 events. No Moroka REQ-0003, no Estate, no death-cert events |
+| 15.20 | Most-recent digest email — Moroka-free | N/A (PASS by absence) | No digest delivered to Sipho by Day 15 (conditional checkpoint). All 12 Sipho emails (magic-links, trust-activity, PROP-0001, REQ-0001/0002 item-accepted/completed) body-scanned → **zero Moroka identifiers**. Moroka's 2 emails (REQ-0003, trust-activity) went to `moroka.portal@example.com` ONLY — never misrouted to Sipho |
 
-| ID | Checkpoint | Result | Evidence |
-|----|-----------|--------|----------|
-| 15.14 | `GET /portal/projects/3cf31082-...` (Moroka matter) | **PASS** | HTTP 404: `{"detail":"No project found with id 3cf31082-b371-4ae5-abdf-34f6f38df708","status":404,"title":"Project not found"}`. No 200, no Moroka data returned. |
-| 15.15 | `GET /portal/requests/e6cc55cd-...` (Moroka info request) | **PASS** | HTTP 404: `{"detail":"No informationrequest found with id e6cc55cd-3250-4a51-a5bd-9c9231c91e2c","status":404,"title":"InformationRequest not found"}`. No 200. |
-| 15.16 | `GET /portal/trust/matters/3cf31082-.../transactions` (Moroka trust) | **PASS** | HTTP 404: `{"detail":"No project found with id 3cf31082-b371-4ae5-abdf-34f6f38df708","status":404,"title":"Project not found"}`. No 200, no R 25,000 data. |
-| 15.17 | `GET /portal/documents/2fe8a1cb-.../presign-download` (Moroka document) | **PASS** | HTTP 404: `{"detail":"No document found with id 2fe8a1cb-2359-4533-868d-ae19f91d2594","status":404,"title":"Document not found"}`. No presigned URL, no document bytes. |
-| 15.18 | `GET /portal/projects` — verify no Moroka IDs in list | **PASS** | Returns array of 2 projects: `afe80827` (Engagement Letter) + `d80aeac5` (Dlamini v RAF). Zero Moroka IDs (`3cf31082`, `3d3557f7`). Zero EST-2026-002 references. |
+## Day 15 summary checkpoints (BLOCKER severity)
 
-**Additional API probes**:
-- `GET /portal/trust/summary` — returns 1 matter (`d80aeac5`, balance=50000.0). No Moroka matter, no R 25,000, no R 75,000 aggregate.
-- `GET /portal/trust/movements` — returns 1 movement (Sipho's deposit, R 50,000). No Moroka deposit.
-- `GET /portal/requests` — returns 1 request (REQ-0001, COMPLETED). No Moroka REQ-0002.
+- [x] List views (`/home`, `/projects`, `/trust`, `/invoices`, `/deadlines`, `/proposals`, `/requests`) show ONLY Sipho's data
+- [x] Direct-URL probes to 4+ Moroka entity IDs denied at frontend (+1 extra trust-ledger probe) — no matter data renders
+- [x] API-level probes to 4+ Moroka endpoints denied at backend (404, never 200)
+- [x] Trust balance card R 50 000,00 (Sipho's only) — NOT R 75 000 aggregate
+- [x] Activity trail + email have zero Moroka references
 
----
+## Console / errors
 
-## Phase D: Activity trail + digest leak probe
+- Trust ledger page: 0 errors, 1 benign warning (Next.js `scroll-behavior: smooth` dev warning — carry-over, non-defect).
+- Direct-URL Moroka probes: the only console errors are the **expected 404s** from the backend authz layer
+  (`/portal/projects/dc10e9ac-…` + sub-resources). These are the desired isolation behaviour, not defects.
 
-| ID | Checkpoint | Result | Evidence |
-|----|-----------|--------|----------|
-| 15.19 | `/activity` — verify only Sipho's events | **PASS** | "Your actions" tab: 6 entries (3x "submitted an information request item" + 3x "started uploading a document") — all Sipho's Day 4 FICA uploads. "Firm actions" tab: 6 entries (Bob: 1x info request created, 1x sent, 3x items accepted, 1x request completed) — all from Sipho's REQ-0001. Zero Moroka events on either tab. |
-| 15.20 | Digest email check — verify no Moroka references | **PASS** | Searched all 13 emails to `sipho.portal@example.com` in Mailpit. Subjects: magic links, trust activity, proposal, info request acceptance/completion. Zero contain "Moroka", "EST-2026", "Deceased", or "Liquidation". Trust notification email body confirmed: R 50,000 deposit to matter `d80aeac5` only. |
+## Gaps
 
----
+**Zero new gaps.** No isolation leak — the most security-sensitive day passed clean at all four layers.
 
-## Day 15 Summary Checkpoints (BLOCKER severity)
+Carry-over exemptions (noted, not re-filed): OBS-701 (no structured fee/VAT line on portal proposal),
+OBS-201/OBS-506 (firm-side AI-proxy 404s, not portal-origin). None observed on portal surfaces this day.
 
-| Checkpoint | Result | Evidence |
-|-----------|--------|----------|
-| List views on `/home`, `/projects`, `/trust`, `/invoices`, `/deadlines`, `/proposals` show ONLY Sipho's data | **PASS** | All 7 list-view pages verified (including `/requests`). Zero Moroka data on any page. |
-| Direct-URL probes to 4+ Moroka entity IDs denied at the frontend (no matter data renders) | **PASS** | 4 probes (matter, info request, document, trust tx) — all denied (404 / "not found"). Zero Moroka data rendered. |
-| API-level probes to 4+ Moroka endpoints denied at backend (403/404, never 200) | **PASS** | 4 primary probes + 3 additional (trust summary, movements, requests list) — all return 404 or scoped-to-Sipho results. Zero 200 with Moroka data. |
-| Trust balance card shows R 50,000 (Sipho's only) — not R 75,000 (aggregate leak) | **PASS** | Portal: R 50 000,00. API: `currentBalance: 50000.0`. Home: "Last trust movement R 50 000,00". No aggregate leak. |
-| Activity trail / digest have zero Moroka references | **PASS** | Activity page (both tabs): zero Moroka events. All 13 Sipho emails: zero Moroka references. |
+## Next
 
----
-
-## Console Errors
-
-**During Moroka matter probe (15.9)**: 10 console errors — all HTTP 404s from backend denying access to Moroka's project subresources (`/portal/projects/3cf31082-.../summary`, `/tasks`, `/documents`, `/comments`). These are **expected behavior** — the frontend attempted to fetch matter detail data, and the backend correctly returned 404 for every endpoint. No data leak.
-
-**All other pages**: Zero JavaScript/hydration/rendering errors. Only HMR info logs.
-
-## Gaps Filed
-
-**None.** Day 15 passed cleanly with zero new gaps. Portal isolation is complete and correct at all three levels (list views, direct URLs, API).
-
-## Screenshots
-
-- `day-15-portal-home-isolated.png` — Sipho's `/home` showing only his data
-- `day-15-portal-denial.png` — denial page from Moroka matter direct-URL probe
+Day 21 — Firm logs time, adds disbursement, creates court date `[FIRM]` (context swap portal → firm :3000, actor Bob).
+Day 90 (E.10) will re-run Phase B + Phase C probes against the same Moroka IDs to confirm zero isolation drift.

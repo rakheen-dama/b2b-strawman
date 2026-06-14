@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.fail;
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
 import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecution;
@@ -156,7 +157,7 @@ class AiSkillExecutionServiceTest {
 
   @Test
   @Order(5)
-  void executeSkill_budgetExhausted_throwsInvalidStateException() {
+  void executeSkill_budgetExhausted_throwsForbidden_blocksBeforeLlmWithNoCost() {
     runInTenant(
         () -> {
           // Set a very low budget (1 cent) on the firm profile.
@@ -179,14 +180,21 @@ class AiSkillExecutionServiceTest {
                 firmProfileRepository.save(profile);
               });
 
-          // This call should fail immediately because spend > budget
+          long executionsBefore = executionRepository.count();
+
+          // This call should fail immediately because spend > budget. The budget block is a
+          // policy/quota denial → 403 ForbiddenException (AIVERIFY-010), not a 400.
           var skill = new TestSkill();
           var context = new SkillContext(UUID.randomUUID(), "CUSTOMER", "Over budget", Map.of());
           var request = new SkillExecutionRequest(skill, context, ownerMemberId, List.of());
 
           assertThatThrownBy(() -> executionService.executeSkill(request))
-              .isInstanceOf(InvalidStateException.class)
+              .isInstanceOf(ForbiddenException.class)
               .hasMessageContaining("budget exhausted");
+
+          // Pre-LLM block: no execution row was recorded and therefore no cost was metered —
+          // a budget-exhausted call must never reach (and pay for) the provider.
+          assertThat(executionRepository.count()).isEqualTo(executionsBefore);
 
           // Clean up: set budget to a very high value so other test classes aren't affected
           transactionTemplate.executeWithoutResult(

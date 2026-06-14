@@ -526,10 +526,24 @@ export function AiProfileForm({ slug, initialData }: AiProfileFormProps) {
                       step={100}
                       placeholder="e.g., 5000"
                       className="pl-7"
-                      value={field.value ? Math.round(field.value / 100) : ""}
+                      // Field holds cents; the input edits Rands. Display a STRING (never a
+                      // number) so React keeps the controlled value in sync with what's typed —
+                      // a number value desynced the field and reverted edits (AIVERIFY-010).
+                      value={
+                        field.value === undefined || field.value === null
+                          ? ""
+                          : String(Math.round((field.value as number) / 100))
+                      }
                       onChange={(e) => {
-                        const rands = e.target.value ? parseInt(e.target.value, 10) : undefined;
-                        field.onChange(rands !== undefined ? rands * 100 : undefined);
+                        const raw = e.target.value.trim();
+                        if (raw === "") {
+                          field.onChange(undefined); // cleared field → no cap
+                          return;
+                        }
+                        const rands = Number(raw);
+                        // Ignore unparseable input rather than pushing NaN into the field
+                        // (NaN would fail validation and silently abort the whole submit).
+                        field.onChange(Number.isFinite(rands) ? Math.round(rands * 100) : undefined);
                       }}
                     />
                   </div>

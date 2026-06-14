@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.integration.ai.AiCompletionResponse;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecution;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecutionRepository;
@@ -104,7 +104,7 @@ class AiCostServiceTest {
   }
 
   @Test
-  void checkBudget_throwsWhenBudgetExhausted() {
+  void checkBudget_throwsForbiddenWhenBudgetExhausted() {
     // Use a separate org to avoid interference with other tests
     String budgetOrg = "org_ai_cost_budget_test";
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
@@ -144,8 +144,9 @@ class AiCostServiceTest {
 
               var profile = firmProfileService.getOrCreateProfile();
 
+              // Budget-exhausted is a policy/quota denial → 403 ForbiddenException, not 400.
               assertThatThrownBy(() -> costService.checkBudget(profile))
-                  .isInstanceOf(InvalidStateException.class)
+                  .isInstanceOf(ForbiddenException.class)
                   .hasMessageContaining("AI budget exhausted");
             });
   }

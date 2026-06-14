@@ -1,0 +1,113 @@
+```json
+{
+  "matterClassification": {
+    "recommendedType": "LITIGATION",
+    "confidence": 0.92,
+    "reasoning": "The matter involves a civil claim against a former business partner for breach of a shareholders' agreement, seeking both damages (a personal action sounding in money) and an interdict (urgent or ordinary motion relief). This is squarely a High Court litigation matter. The shareholders' agreement element introduces a commercial dimension, but the primary relief sought — damages and an interdict — is procedurally litigious in nature and governed by the Uniform Rules of Court. The High Court (Western Cape Division) has exclusive jurisdiction over interdict proceedings of this nature and unlimited civil jurisdiction for the damages claim. The matter does not qualify as a purely commercial transaction workflow. Prescription must be assessed: a claim for breach of contract prescribes after three years under section 11(d) of the Prescription Act 68 of 1969, and the date of breach must be confirmed urgently."
+  },
+  "templateRecommendation": {
+    "templateId": "1f01e0d8-ad13-4fad-8761-0be438778fab",
+    "templateName": "Litigation (Personal Injury / General)",
+    "reasoning": "Of the available templates, 'Litigation (Personal Injury / General)' is the closest procedural fit for a general civil High Court matter. It covers the standard litigation workflow — instructions, pleadings, discovery, trial preparation, and court attendances — which maps directly onto the steps required for a combined action (damages) and motion (interdict) proceeding. The RAF and Collections templates are inapplicable. The Commercial template does not cater for adversarial court proceedings.",
+    "customisationNotes": "The following customisations are recommended for this matter: (1) Add a dedicated interdict workflow track (notice of motion, founding affidavit, rule nisi or interim interdict application, return date) alongside the action proceedings track for the damages claim; (2) Insert a prescription monitoring milestone — confirm the date of breach and calculate the three-year prescription date under section 11(d) of the Prescription Act 68 of 1969; (3) Add a shareholders' agreement review task at the outset to identify the specific breach provisions, dispute resolution clauses (including any arbitration or mediation clauses that may oust court jurisdiction), and any non-variation clauses (Shifren principle) that may affect the claim; (4) Include a FICA / PEP screening milestone for Mr Sipho Dlamini and the former business partner as adverse party; (5) Add a task to consider whether the former business partner is a juristic person or individual, as this affects CPA applicability and enforcement strategy; (6) Include a costs strategy task to assess whether to proceed on a party-and-party or attorney-and-client scale, and whether a contingency fee arrangement under the Contingency Fees Act 66 of 1997 is appropriate."
+  },
+  "requiredDocuments": [
+    {
+      "documentType": "Signed Mandate and Fee Agreement",
+      "reasoning": "Required to formalise the attorney-client relationship in accordance with the Legal Practice Act 28 of 2014 and the LPC Code of Conduct. Must set out the basis of fees, the LSSA tariff baseline plus the firm's 10% uplift, and any contingency fee terms if applicable under the Contingency Fees Act 66 of 1997.",
+      "priority": "HIGH"
+    },
+    {
+      "documentType": "FICA Identification Documents — Client (Sipho Dlamini)",
+      "reasoning": "Mandatory under the Financial Intelligence Centre Act 38 of 2001 (FICA) and the firm's pepScreening and enhancedDueDiligence requirements. Required before any work may commence. Must include certified copy of identity document and proof of residential address not older than three months.",
+      "priority": "HIGH"
+    },
+    {
+      "documentType": "Original or Certified Copy of the Shareholders' Agreement",
+      "reasoning": "The foundational document upon which the entire claim rests. Required to identify the specific clauses alleged to have been breached, any dispute resolution mechanisms (arbitration, mediation, or expert determination clauses), non-variation clauses, and any limitation of liability provisions. The Shifren principle must be assessed to determine whether any oral or informal amendments were made.",
+      "priority": "HIGH"
+    },
+    {
+      "documentType": "Memorandum of Incorporation (MOI) and Company Registration Documents",
+      "reasoning": "Required to confirm the corporate structure of the company in which the parties held shares, identify the former business partner's directorship and shareholding, and assess whether any provisions of the Companies Act 71 of 2008 (including section 163 oppression remedy or section 164 appraisal rights) are relevant or overlap with the contractual claim.",
+      "priority": "HIGH"
+    },
+    {
+      "documentType": "Detailed Written Statement of Facts from Client",
+      "reasoning": "Required to establish the full factual matrix, identify the specific acts or omissions constituting the alleged breach, confirm the date of breach for prescription purposes under the Prescription Act 68 of 1969, and assess the quantum of damages claimed.",
+      "priority": "HIGH"
+    },
+    {
+      "documentType": "Documentary Evidence of Breach and Damages",
+      "reasoning": "All correspondence, minutes of meetings, financial statements, bank statements, invoices, or other records evidencing the alleged breach and the resultant loss. Required to support both the damages claim and the interdict application. Specific performance is the primary remedy under South African contract law; however, where damages are sought, quantification evidence is essential.",
+      "priority": "HIGH"
+    },
+    {
+      "documentType": "Proof of Quantum of Damages",
+      "reasoning": "Financial records, expert valuations, or accountant's reports quantifying the loss suffered as a result of the breach. Required to plead a liquidated or unliquidated amount in the summons and to support the relief sought.",
+      "priority": "HIGH"
+    },
+    {
+      "documentType": "Prior Demand Letter or Correspondence with Former Business Partner",
+      "reasoning": "Any prior written demands or correspondence sent to the former business partner are required to assess whether a demand has already been made (relevant to mora and prescription), whether the respondent has repudiated the agreement, and whether any admissions have been made. Also relevant to the interdict application to demonstrate that the respondent has been placed on notice.",
+      "priority": "MEDIUM"
+    },
+    {
+      "documentType": "Share Register and Proof of Shareholding",
+      "reasoning": "Required to confirm the client's locus standi as a shareholder and to establish the shareholding structure relevant to the breach alleged.",
+      "priority": "MEDIUM"
+    },
+    {
+      "documentType": "Identification and Contact Details of Former Business Partner (Adverse Party)",
+      "reasoning": "Required for service of process, conflict screening against active and former matters, and FICA adverse party checks. Full name, identity number, and registered address are needed for summons and interdict papers.",
+      "priority": "MEDIUM"
+    },
+    {
+      "documentType": "Any Arbitration or Dispute Resolution Correspondence",
+      "reasoning": "If the shareholders' agreement contains an arbitration or mediation clause, any prior steps taken under that clause must be documented. Failure to comply with a contractual dispute resolution mechanism may be raised as a special plea by the respondent.",
+      "priority": "MEDIUM"
+    },
+    {
+      "documentType": "Expert or Forensic Accountant's Report (if available)",
+      "reasoning": "Where the damages claim involves complex financial loss (e.g., loss of profits, diminution in share value), an expert report will be required for trial. Early engagement of an expert is advisable under the conservative risk calibration.",
+      "priority": "LOW"
+    }
+  ],
+  "feeEstimate": {
+    "tariffBasis": "LSSA 2024/2025 High Court Party-and-Party Tariff + 10% firm uplift (attorney-and-client basis for billing to client)",
+    "estimatedRangeMinCents": 8500000,
+    "estimatedRangeMaxCents": 22000000,
+    "reasoning": "This is a combined action (damages) and motion (interdict) matter in the Western Cape High Court. The estimate is constructed on the LSSA 2024/2025 High Court Party-and-Party tariff with the firm's 10% uplift applied throughout, on a conservative basis. The lower bound assumes a matter that settles after pleadings are closed and before trial (i.e., after summons, plea, and possibly a replication, with the interdict resolved on motion). The upper bound assumes a contested trial of two to three days with discovery, expert evidence, and heads of argument. Key components estimated: Instructions to sue (R780 × 1.10 = R858); Initial consultations — estimated 4 quarter-hours (R780 × 4 × 1.10 = R3,432); Drawing of summons (R1,250 × 1.10 = R1,375); Drawing of notice of motion for interdict (R1,250 × 1.10 = R1,375); Founding affidavit — estimated 20 folios (R195 × 20 × 1.10 = R4,290); Pleadings (plea, replication) — estimated 2 items (R1,250 × 2 × 1.10 = R2,750); Correspondence — estimated 30 letters/emails sent and received (blended average R162.50 × 30 × 1.10 = R5,363); Discovery affidavit (R1,250 × 1.10 = R1,375); Inspection of documents — estimated 4 hours (R780 × 4 × 1.10 = R3,432); Trial preparation — estimated 2 days (R7,800 × 2 × 1.10 = R17,160); Court attendance — estimated 2 days trial plus 1 half-day motion (R7,800 × 2 × 1.10 + R4,680 × 1.10 = R22,308); Heads of argument — estimated 15 folios (R260 × 15 × 1.10 = R4,290); Service of process — estimated 3 services (R390 × 3 × 1.10 = R1,287); Advocate's fees (senior counsel or junior counsel) are excluded from this estimate and will be a significant additional disbursement. The lower bound of R85,000 reflects a matter resolved on motion or by settlement after pleadings; the upper bound of R220,000 reflects a fully contested trial. Disbursements (sheriff's fees, filing fees, advocate's fees, expert witness fees, transcript costs) are excluded and may add materially to the total cost.",
+    "assumptions": [
+      "Fees are calculated on the LSSA 2024/2025 High Court Party-and-Party tariff with the firm's 10% uplift applied to all items.",
+      "The matter proceeds in the Western Cape Division of the High Court of South Africa.",
+      "Advocate's fees (counsel) are excluded from this estimate and will be quoted separately.",
+      "Disbursements including sheriff's fees, filing fees, expert witness fees, and transcript costs are excluded.",
+      "The lower bound assumes settlement or resolution on motion after pleadings are closed.",
+      "The upper bound assumes a fully contested trial of two to three days with discovery and expert evidence.",
+      "The interdict application is treated as an ordinary (non-urgent) motion; if urgency is required, additional fees for urgent court applications will apply.",
+      "The quantum of the damages claim has not yet been confirmed; a higher quantum may attract additional tariff items.",
+      "No contingency fee arrangement is assumed; fees are on an attorney-and-client basis.",
+      "The shareholders' agreement does not contain a binding arbitration clause that would divert the matter from the High Court.",
+      "VAT at 15% is not included in the estimate and will be added to all fees and disbursements."
+    ]
+  },
+  "conflictScreening": {
+    "status": "CLEAR",
+    "matches": []
+  },
+  "riskFlags": [
+    "PRESCRIPTION RISK: The claim for breach of contract prescribes after three years from the date on which the debt became due under section 11(d) of the Prescription Act 68 of 1969. The date of the alleged breach must be confirmed immediately. If the breach occurred more than two years ago, the matter is approaching prescription and urgent steps must be taken to interrupt prescription by service of summons or a written acknowledgement of liability.",
+    "ARBITRATION CLAUSE RISK: Shareholders' agreements frequently contain arbitration or mediation clauses. If the agreement contains a binding arbitration clause, the High Court may decline jurisdiction or stay proceedings pending arbitration. The agreement must be reviewed as a matter of priority before issuing process.",
+    "INTERDICT REQUIREMENTS: To obtain an interdict (whether interim or final), the client must establish a clear right, a reasonable apprehension of harm, and the absence of an adequate alternative remedy (Setlogelo v Setlogelo 1914 AD 221). The factual basis for the interdict must be carefully assessed before launching motion proceedings, particularly if urgency is to be alleged.",
+    "SPECIFIC PERFORMANCE CONSIDERATION: Under South African contract law, specific performance is the primary remedy for breach of contract. The client's election to claim damages rather than (or in addition to) specific performance must be carefully considered and documented in the mandate.",
+    "NON-VARIATION CLAUSE (SHIFREN PRINCIPLE): If the shareholders' agreement contains a non-variation clause, any oral or informal amendments to the agreement will be void. This must be assessed in the context of the alleged breach, particularly if the former business partner relies on a subsequent oral agreement as a defence.",
+    "COMPANIES ACT OVERLAP: The matter may engage section 163 of the Companies Act 71 of 2008 (oppressive or prejudicial conduct remedy) or section 164 (appraisal rights) in addition to the contractual claim. These statutory remedies should be assessed and, if applicable, pleaded in the alternative.",
+    "FICA AND PEP SCREENING: The firm's profile requires pepScreening and enhancedDueDiligence for all new clients. Mr Sipho Dlamini must be screened against PEP databases and sanctions lists before the matter is opened and any funds are received into the trust account, in accordance with FICA 38 of 2001 and the firm's compliance obligations under the Attorneys Act.",
+    "TRUST ACCOUNT OBLIGATIONS: Any funds received from the client (including retainer payments) must be deposited into the firm's trust account in accordance with section 78 of the Attorneys Act 53 of 1979 and rule 54 of the Rules of the Law Society. The firm must ensure compliance with trust accounting obligations throughout the matter.",
+    "QUANTUM NOT YET ESTABLISHED: The quantum of the damages claim has not been confirmed. An unquantified or poorly substantiated damages claim may weaken the client's negotiating position and affect the viability of a contingency fee arrangement under the Contingency Fees Act 66 of 1997.",
+    "COSTS EXPOSURE: In the event that the client is unsuccessful, an adverse costs order on the party-and-party scale may be made against the client. The client must be advised of this risk in writing as part of the mandate, in accordance with the LPC Code of Conduct.",
+    "FORMER BUSINESS PARTNER IDENTITY NOT CONFIRMED: The identity, domicilium citandi et executandi, and legal capacity of the former business partner (as an individual or juristic person) have not yet been confirmed. This information is required for service of process and conflict screening purposes."
+  ]
+}
+```

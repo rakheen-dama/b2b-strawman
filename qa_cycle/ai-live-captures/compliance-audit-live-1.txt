@@ -1,0 +1,198 @@
+```json
+{
+  "auditDate": "2025-01-31",
+  "overallGrade": "C",
+  "overallAssessment": "The firm's compliance posture cannot be meaningfully assessed due to the complete absence of data across all regulatory categories. Zero active customers, zero trust accounts, zero registered POPIA activities, and no prescription or retention records have been submitted for audit. This systemic data absence is itself a significant compliance concern, as it suggests either a failure of the firm's compliance management systems to capture and report data, or a failure to onboard clients and conduct business through properly monitored channels. Under a conservative risk calibration, the absence of evidence of compliance cannot be treated as evidence of compliance. The firm is accordingly graded 'C' overall, reflecting significant structural and systemic gaps that require urgent remediation before a substantive compliance assessment can be conducted. Immediate steps must be taken to verify whether underlying data exists but is not being surfaced, or whether the firm is operating without any compliance infrastructure in place.",
+  "categoryScores": {
+    "FICA_CDD": {
+      "grade": "C",
+      "compliant": 0,
+      "nonCompliant": 0,
+      "critical": 1
+    },
+    "POPIA": {
+      "grade": "C",
+      "compliant": 0,
+      "nonCompliant": 0,
+      "critical": 1
+    },
+    "TRUST_ACCOUNTING": {
+      "grade": "C",
+      "compliant": 0,
+      "nonCompliant": 0,
+      "critical": 1
+    },
+    "PRESCRIPTION": {
+      "grade": "B",
+      "compliant": 0,
+      "nonCompliant": 0,
+      "critical": 0
+    },
+    "RETENTION": {
+      "grade": "C",
+      "compliant": 0,
+      "nonCompliant": 0,
+      "critical": 1
+    }
+  },
+  "findings": [
+    {
+      "id": "FICA-001",
+      "severity": "CRITICAL",
+      "category": "FICA_CDD",
+      "title": "Complete Absence of Customer Due Diligence Records",
+      "description": "The compliance data submitted reflects zero active customers and zero Customer Due Diligence (CDD) records, whether compliant or non-compliant. As an accountable institution under the Financial Intelligence Centre Act 38 of 2001 ('FICA'), the firm is obliged to establish and verify the identity of all clients prior to establishing a business relationship or concluding a single transaction. The total absence of CDD records raises one of two equally serious concerns: either the firm has no clients and has therefore not yet established the requisite compliance infrastructure, or the firm has clients whose CDD records are not being captured or surfaced by the compliance management system. In either scenario, the firm is not in a demonstrable position of compliance with its obligations as an accountable institution. Furthermore, the firm profile specifies that Politically Exposed Person ('PEP') screening and Enhanced Due Diligence ('EDD') are required. No evidence of either process having been applied to any client exists in the submitted data.",
+      "regulatoryBasis": "FICA s21 (Customer Due Diligence); FICA s21A (Enhanced Due Diligence for high-risk clients); FICA s21B (Ongoing monitoring); FICA s42 (Accountable institution obligations for attorneys)",
+      "remediation": "1. Conduct an immediate audit of all client files, both physical and electronic, to determine whether client onboarding records exist outside the compliance management system. 2. If client records exist but are not captured in the system, arrange for retrospective data migration and CDD verification without delay. 3. If the firm has no active clients, establish a documented CDD policy and procedure framework, including PEP screening protocols and EDD triggers, prior to onboarding any client. 4. Appoint or confirm a designated FICA Compliance Officer responsible for overseeing CDD obligations. 5. Ensure that the compliance management system is configured to capture all client onboarding events and to flag CDD deficiencies in real time. 6. Submit a written report to the firm's managing partner confirming the outcome of the above steps within 14 days.",
+      "entityReferences": []
+    },
+    {
+      "id": "FICA-002",
+      "severity": "HIGH",
+      "category": "FICA_CDD",
+      "title": "Absence of PEP Screening and Enhanced Due Diligence Infrastructure Evidence",
+      "description": "The firm profile mandates PEP screening and Enhanced Due Diligence for all applicable clients. The submitted compliance data contains no records whatsoever indicating that either process has been applied to any individual. While the absence of active customer records may partially explain this gap, the firm must be able to demonstrate, at any point in time, that a functioning PEP screening and EDD framework is in place and operational. The Financial Intelligence Centre may request evidence of such frameworks during an inspection, and the inability to produce such evidence constitutes a regulatory risk independent of whether any specific client has been screened.",
+      "regulatoryBasis": "FICA s21A (Enhanced Due Diligence for high-risk clients); FICA s42 (Accountable institution obligations for attorneys)",
+      "remediation": "1. Document and formalise the firm's PEP screening policy, specifying the screening database(s) to be used, the frequency of rescreening, and the escalation procedure upon a positive match. 2. Document and formalise the firm's EDD policy, specifying the triggers for EDD, the additional information to be collected, and the approval authority required before a high-risk business relationship is established. 3. Ensure that both policies are reviewed and approved by the firm's managing partner and FICA Compliance Officer. 4. Retain copies of all policies in the firm's compliance register. 5. Train all fee earners and support staff involved in client onboarding on the PEP screening and EDD requirements within 30 days.",
+      "entityReferences": []
+    },
+    {
+      "id": "FICA-003",
+      "severity": "HIGH",
+      "category": "FICA_CDD",
+      "title": "No Evidence of Record-Keeping Framework for FICA Compliance",
+      "description": "FICA section 22 requires accountable institutions to retain records of all CDD measures applied, all transactions conducted, and all reports submitted to the Financial Intelligence Centre for a minimum period of five years. The submitted data contains no records of any kind, which means the firm cannot demonstrate compliance with its record-keeping obligations. This is a standalone obligation that applies regardless of the volume of client activity.",
+      "regulatoryBasis": "FICA s22 (Record-keeping requirements — 5-year minimum retention)",
+      "remediation": "1. Establish a FICA records register that captures, at minimum: client identity documents, CDD verification records, transaction records, and any suspicious transaction reports filed. 2. Ensure that the compliance management system is configured to retain all FICA records for a minimum of five years from the date of the last transaction or the termination of the business relationship, whichever is later. 3. Implement access controls to prevent unauthorised deletion or alteration of FICA records. 4. Conduct a quarterly review of the records register to confirm completeness and integrity.",
+      "entityReferences": []
+    },
+    {
+      "id": "POPIA-001",
+      "severity": "CRITICAL",
+      "category": "POPIA",
+      "title": "Zero Registered Processing Activities — Potential Failure to Comply with Information Officer Obligations",
+      "description": "The submitted data reflects zero registered processing activities under the Protection of Personal Information Act 4 of 2013 ('POPIA'). As a law firm operating in the Western Cape, the firm processes personal information of clients, counterparties, witnesses, and employees as a matter of course in both its Litigation and Conveyancing practice areas. The complete absence of registered processing activities indicates either that the firm has not conducted a personal information impact assessment, has not compiled a record of processing activities, or that such records exist but are not being captured by the compliance management system. All of these scenarios represent a failure to meet the firm's obligations as a responsible party under POPIA. The firm's Information Officer is required to ensure that processing activities are lawful, that data subjects' rights are protected, and that a record of processing activities is maintained.",
+      "regulatoryBasis": "POPIA s8 (Conditions for lawful processing); POPIA s14 (Collection limitation); POPIA s69-71 (Enforcement and penalties)",
+      "remediation": "1. Confirm whether the firm has registered an Information Officer with the Information Regulator. If not, do so immediately via the Information Regulator's online portal. 2. Conduct a comprehensive personal information audit across both the Litigation and Conveyancing practice areas to identify all categories of personal information processed, the purposes of processing, the legal basis for processing, and the recipients of personal information. 3. Compile a Record of Processing Activities ('ROPA') based on the findings of the personal information audit. 4. Ensure that the ROPA is reviewed and approved by the Information Officer and updated whenever a new processing activity is introduced. 5. Integrate the ROPA into the compliance management system so that registered and unregistered activities are tracked and reported accurately.",
+      "entityReferences": []
+    },
+    {
+      "id": "POPIA-002",
+      "severity": "HIGH",
+      "category": "POPIA",
+      "title": "Absence of Data Subject Access Request Management Framework",
+      "description": "The submitted data reflects zero pending and zero overdue Data Subject Access Requests ('DSARs'). While this may indicate that no DSARs have been received, it may equally indicate that DSARs are being received but are not being logged or tracked through the compliance management system. POPIA section 23 grants data subjects the right to request access to their personal information held by the firm, and the firm is obliged to respond within a reasonable period. The absence of any DSAR tracking infrastructure means the firm cannot demonstrate that it is meeting this obligation, and risks failing to respond to DSARs within the required timeframe.",
+      "regulatoryBasis": "POPIA s23 (Data subject access requests); POPIA s69-71 (Enforcement and penalties)",
+      "remediation": "1. Establish a formal DSAR intake and tracking procedure, specifying the channel(s) through which DSARs may be submitted, the individual responsible for receiving and logging DSARs, the timeframe for acknowledgement and response, and the escalation procedure for complex or disputed requests. 2. Configure the compliance management system to log all incoming DSARs, track their status, and generate alerts when response deadlines are approaching. 3. Train all staff who interact with clients or members of the public on how to identify and escalate a DSAR. 4. Publish the firm's DSAR procedure in its Privacy Notice.",
+      "entityReferences": []
+    },
+    {
+      "id": "POPIA-003",
+      "severity": "HIGH",
+      "category": "POPIA",
+      "title": "No Evidence of Security Safeguards or Data Breach Notification Procedure",
+      "description": "The submitted compliance data contains no information regarding the firm's information security safeguards or data breach notification procedures. POPIA section 19 requires responsible parties to implement appropriate, reasonable technical and organisational measures to prevent loss, damage, or unauthorised access to personal information. POPIA section 22 requires responsible parties to notify the Information Regulator and affected data subjects as soon as reasonably possible upon becoming aware of a compromise of personal information. The absence of any data in these areas indicates that the firm has not established or documented the requisite safeguards or notification procedures.",
+      "regulatoryBasis": "POPIA s19 (Security safeguards); POPIA s22 (Notification of data breaches)",
+      "remediation": "1. Conduct an information security risk assessment to identify vulnerabilities in the firm's systems, processes, and physical environment. 2. Implement appropriate technical safeguards, including, at minimum: access controls, encryption of personal information at rest and in transit, regular data backups, and antivirus and firewall protection. 3. Implement appropriate organisational safeguards, including: a clear desk policy, a staff confidentiality policy, and a procedure for reporting suspected security incidents internally. 4. Draft and adopt a Data Breach Response Plan that specifies: the criteria for determining whether a breach has occurred, the individual responsible for managing the response, the timeframe and process for notifying the Information Regulator and affected data subjects, and the post-breach review process. 5. Test the Data Breach Response Plan at least annually.",
+      "entityReferences": []
+    },
+    {
+      "id": "TRUST-001",
+      "severity": "CRITICAL",
+      "category": "TRUST_ACCOUNTING",
+      "title": "Trust Accounting Module Enabled but Zero Trust Accounts Recorded",
+      "description": "The trust accounting module is enabled within the firm's practice management system, yet zero trust accounts are recorded. As a firm conducting both Litigation and Conveyancing practice, it is highly improbable that the firm holds no client funds whatsoever. Conveyancing transactions in particular routinely involve the receipt and disbursement of substantial trust monies, including purchase prices, transfer duty payments, and bond proceeds. The complete absence of trust account records is a significant concern under section 78 of the Attorneys Act 53 of 1979 and Rule 54 of the Rules of the Law Society of South Africa. Either the firm is not conducting any fee-earning work — which would itself require explanation — or trust monies are being received and disbursed without being recorded in a properly maintained trust account, which would constitute a serious breach of the Attorneys Act.",
+      "regulatoryBasis": "Attorneys Act 53 of 1979 s78(1) (Separate trust account obligation); Attorneys Act 53 of 1979 s78(2) (Investment of trust monies); Rule 54 (Reconciliation requirements — monthly); Rule 54.14 (Trust accounting records retention)",
+      "remediation": "1. Conduct an immediate review of the firm's banking records to determine whether any trust account exists at a registered bank in the name of the firm. 2. If a trust account exists but is not recorded in the compliance management system, arrange for the account to be registered in the system without delay and for all historical transactions to be captured retrospectively. 3. If no trust account exists and the firm is conducting conveyancing or litigation work involving client funds, open a trust account at a registered bank immediately and notify the relevant Law Society. 4. Ensure that monthly trust account reconciliations are performed and recorded in accordance with Rule 54, and that reconciliation records are retained for the period required by Rule 54.14. 5. Appoint a designated trust account administrator responsible for the day-to-day management and reconciliation of the trust account. 6. Report the outcome of the above steps to the firm's managing partner within 7 days.",
+      "entityReferences": []
+    },
+    {
+      "id": "TRUST-002",
+      "severity": "HIGH",
+      "category": "TRUST_ACCOUNTING",
+      "title": "Absence of Monthly Reconciliation Records",
+      "description": "Rule 54 of the Rules of the Law Society of South Africa requires attorneys to perform monthly reconciliations of their trust accounts and to retain records of such reconciliations. The submitted data reflects zero trust accounts and, by extension, zero reconciliation records. Even if the firm currently holds no client funds, the absence of any reconciliation records for prior periods — assuming the firm has been in operation — constitutes a breach of the record-keeping requirements applicable to trust accounting.",
+      "regulatoryBasis": "Attorneys Act 53 of 1979 Rule 54 (Reconciliation requirements — monthly); Attorneys Act 53 of 1979 Rule 54.14 (Trust accounting records retention)",
+      "remediation": "1. Retrieve all historical trust account statements from the firm's bank for the preceding five years (or since the firm's establishment, if less than five years). 2. Prepare retrospective monthly reconciliations for all periods for which reconciliations are missing, and retain these in the firm's trust accounting records. 3. Implement a monthly reconciliation procedure within the compliance management system, with automated reminders to the trust account administrator at the commencement of each calendar month. 4. Ensure that completed reconciliations are reviewed and signed off by a partner of the firm each month.",
+      "entityReferences": []
+    },
+    {
+      "id": "RETENTION-001",
+      "severity": "HIGH",
+      "category": "RETENTION",
+      "title": "Absence of Document Retention Records and Retention Schedule",
+      "description": "The submitted data reflects zero records approaching expiry and zero records past expiry under the firm's document retention framework. This is inconsistent with a firm conducting Litigation and Conveyancing work, both of which generate substantial volumes of documents subject to mandatory retention periods under FICA (five years), the Attorneys Act (Rule 54.14), and general legal practice requirements. The complete absence of retention records indicates that the firm either has no document retention schedule in place, or that its retention management system is not capturing documents subject to retention obligations.",
+      "regulatoryBasis": "FICA s22 (Record-keeping — 5-year minimum); Attorneys Act 53 of 1979 Rule 54.14 (Trust accounting records retention); POPIA s14 (Collection limitation — personal information must not be retained longer than necessary)",
+      "remediation": "1. Develop and adopt a comprehensive Document Retention Schedule that specifies, for each category of document generated by the firm, the applicable retention period, the legal basis for that period, the storage medium, and the destruction procedure upon expiry. 2. Ensure that the retention schedule addresses, at minimum: client files (Litigation and Conveyancing), trust accounting records, FICA CDD records, POPIA processing records, and correspondence. 3. Integrate the retention schedule into the compliance management system so that approaching and past-expiry records are flagged automatically. 4. Assign responsibility for monitoring and actioning retention alerts to a designated individual. 5. Conduct an annual review of the retention schedule to ensure it remains current with applicable legislation.",
+      "entityReferences": []
+    },
+    {
+      "id": "SYS-001",
+      "severity": "CRITICAL",
+      "category": "FICA_CDD",
+      "title": "Systemic Data Absence Across All Compliance Categories — Compliance Management System Integrity Concern",
+      "description": "The submitted compliance data reflects zero records across every single compliance category, including FICA CDD, POPIA processing activities, trust accounts, prescription monitoring, and document retention. While it is theoretically possible that the firm has no active clients and has not yet commenced operations, the firm profile indicates active practice areas in Litigation and Conveyancing, which makes a complete absence of data across all categories highly improbable. The most likely explanation is that the compliance management system is not correctly integrated with the firm's practice management, banking, and document management systems, and is therefore failing to surface data that exists elsewhere. This systemic data gap means that the firm cannot rely on its compliance management system to provide accurate or complete compliance reporting, which is itself a significant regulatory risk.",
+      "regulatoryBasis": "FICA s21; FICA s22; FICA s42; POPIA s8; POPIA s19; Attorneys Act 53 of 1979 s78(1); Attorneys Act 53 of 1979 Rule 54",
+      "remediation": "1. Engage the compliance management system vendor or internal IT team to conduct a full system integration audit within 14 days, with the objective of identifying all data sources that are not currently feeding into the compliance reporting module. 2. Verify that the system is correctly connected to: the firm's client onboarding database, the firm's practice management system, the firm's trust banking platform, and the firm's document management system. 3. Resolve all identified integration failures and conduct a test data import to confirm that records are being surfaced correctly. 4. Once integration is confirmed, re-run the compliance audit to obtain a data-backed assessment of the firm's actual compliance posture. 5. Implement a monthly data integrity check to confirm that all expected data sources are feeding into the compliance management system.",
+      "entityReferences": []
+    }
+  ],
+  "recommendations": [
+    {
+      "priority": "CRITICAL",
+      "recommendation": "Conduct an immediate system integration audit to determine why zero records are being reported across all compliance categories. Engage the compliance management system vendor or internal IT team within 48 hours to identify and resolve all data feed failures. Until the system is confirmed to be accurately surfacing firm-wide data, no reliance should be placed on compliance reports generated by the system.",
+      "estimatedEffort": "2–3 days"
+    },
+    {
+      "priority": "CRITICAL",
+      "recommendation": "Verify the existence and status of the firm's trust account(s) by reviewing banking records immediately. If a trust account exists but is unregistered in the system, register it without delay. If no trust account exists and the firm is conducting Litigation or Conveyancing work involving client funds, open a trust account at a registered bank and notify the relevant Law Society forthwith, in accordance with section 78 of the Attorneys Act 53 of 1979.",
+      "estimatedEffort": "1 day"
+    },
+    {
+      "priority": "CRITICAL",
+      "recommendation": "Confirm whether the firm has registered an Information Officer with the Information Regulator under POPIA. If not, complete registration immediately via the Information Regulator's online portal. Thereafter, conduct a personal information audit and compile a Record of Processing Activities covering all Litigation and Conveyancing processing activities.",
+      "estimatedEffort": "3–5 days"
+    },
+    {
+      "priority": "CRITICAL",
+      "recommendation": "Conduct a physical and electronic audit of all client files to determine whether CDD records exist outside the compliance management system. If CDD records exist, arrange for retrospective data migration. If no CDD records exist for any client, initiate CDD verification for all active clients immediately, with priority given to high-risk clients requiring Enhanced Due Diligence under FICA section 21A.",
+      "estimatedEffort": "3–5 days"
+    },
+    {
+      "priority": "HIGH",
+      "recommendation": "Develop and adopt a comprehensive Document Retention Schedule covering all document categories generated by the firm's Litigation and Conveyancing practice areas. Integrate the schedule into the compliance management system and assign a designated retention administrator. This schedule must address the five-year FICA record-keeping requirement, the Attorneys Act Rule 54.14 trust accounting retention requirement, and the POPIA collection limitation principle.",
+      "estimatedEffort": "2–3 days"
+    },
+    {
+      "priority": "HIGH",
+      "recommendation": "Formalise and document the firm's PEP screening and Enhanced Due Diligence policies, specifying the screening databases to be used, the frequency of rescreening, EDD triggers, and escalation procedures. Ensure these policies are approved by the firm's managing partner and FICA Compliance Officer, and that all relevant staff are trained within 30 days.",
+      "estimatedEffort": "1–2 days"
+    },
+    {
+      "priority": "HIGH",
+      "recommendation": "Implement monthly trust account reconciliation procedures within the compliance management system, with automated reminders and partner sign-off requirements. Retrieve historical bank statements and prepare retrospective reconciliations for all periods for which records are missing, in accordance with Rule 54 of the Rules of the Law Society of South Africa.",
+      "estimatedEffort": "2–4 days"
+    },
+    {
+      "priority": "HIGH",
+      "recommendation": "Draft and adopt a Data Breach Response Plan in accordance with POPIA section 22, specifying breach identification criteria, the responsible individual, notification timeframes for the Information Regulator and affected data subjects, and a post-breach review process. Test the plan at least annually.",
+      "estimatedEffort": "1–2 days"
+    },
+    {
+      "priority": "MEDIUM",
+      "recommendation": "Establish a formal Data Subject Access Request intake and tracking procedure, including a designated DSAR recipient, acknowledgement and response timeframes, and integration with the compliance management system for automated deadline tracking. Publish the DSAR procedure in the firm's Privacy Notice.",
+      "estimatedEffort": "4–6 hours"
+    },
+    {
+      "priority": "MEDIUM",
+      "recommendation": "Conduct an information security risk assessment across the firm's Litigation and Conveyancing practice areas and implement appropriate technical and organisational safeguards in accordance with POPIA section 19. At minimum, implement access controls, encryption, regular data backups, and a staff confidentiality policy.",
+      "estimatedEffort": "3–5 days"
+    },
+    {
+      "priority": "LOW",
+      "recommendation": "Schedule a firm-wide compliance training session covering FICA CDD obligations, POPIA data subject rights, trust accounting requirements under the Attorneys Act, and document retention obligations. Training should be conducted annually and attendance records retained as evidence of the firm's commitment to a compliance culture.",
+      "estimatedEffort": "1 day"
+    }
+  ]
+}
+```

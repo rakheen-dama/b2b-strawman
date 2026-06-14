@@ -1,0 +1,127 @@
+```json
+{
+  "matterClassification": {
+    "recommendedType": "LITIGATION",
+    "confidence": 0.92,
+    "reasoning": "The matter involves a civil claim against a former business partner for breach of a shareholders' agreement, seeking both damages (a personal action sounding in money) and an interdict (urgent or ordinary motion relief). This is squarely a High Court litigation matter. The shareholders' agreement element introduces a commercial dimension, but the primary relief sought — damages and an interdict — is procedurally litigious in nature and governed by the Uniform Rules of Court. The High Court of the Western Cape Division has jurisdiction: the interdict claim requires High Court jurisdiction (Magistrates' Courts cannot grant interdicts of this nature in a commercial dispute), and the quantum of damages arising from a shareholders' agreement dispute will in all likelihood exceed the Magistrates' Court monetary cap. The matter is not a standalone commercial transaction and therefore the Commercial template is not the primary fit, although commercial law principles (Companies Act 71 of 2008, common law of contract) will inform the substantive analysis."
+  },
+  "templateRecommendation": {
+    "templateId": "1f01e0d8-ad13-4fad-8761-0be438778fab",
+    "templateName": "Litigation (Personal Injury / General)",
+    "reasoning": "Of the available templates, 'Litigation (Personal Injury / General)' is the only general civil litigation workflow and is therefore the most appropriate starting point. The RAF template is inapplicable. The Collections, Estates, Commercial, and Conveyancing templates do not match the procedural requirements of a contested High Court civil action combining a damages claim with interdict proceedings.",
+    "customisationNotes": "The following customisations are required to adapt this template to the present matter: (1) Replace all personal injury-specific tasks and documents with shareholders' agreement dispute equivalents (e.g., particulars of claim based on breach of contract, not delict). (2) Add a dedicated interdict workflow stream: notice of motion, founding affidavit, rule nisi or urgent application checklist, and opposing affidavit timeline. (3) Insert a Companies Act 71 of 2008 compliance review task to assess whether the shareholders' agreement is consistent with the memorandum of incorporation (MOI) and whether any relief under ss 163 or 164 (oppression/squeeze-out) is available in addition to or instead of contractual damages. (4) Add a prescription monitoring task: the general contractual prescription period is three years from the date on which the debt became due (Prescription Act 68 of 1969, s 11(d)); the date of breach must be confirmed urgently. (5) Add a FICA/PEP screening task for Mr Sipho Dlamini and the respondent/defendant. (6) Add an advocate briefing task if senior or junior counsel is to be retained for the interdict application. (7) Include a costs strategy task to consider whether to proceed on a party-and-party or attorney-and-client costs basis in the pleadings."
+  },
+  "requiredDocuments": [
+    {
+      "documentType": "Signed Mandate and Fee Agreement",
+      "reasoning": "Required to formalise the attorney-client relationship in accordance with the Legal Practice Act 28 of 2014 and the LPC Code of Conduct. Must set out the basis of fees (LSSA tariff + 10% firm multiplier), disbursements, and the scope of the mandate including both the damages claim and the interdict application.",
+      "priority": "HIGH"
+    },
+    {
+      "documentType": "FICA Identification and Verification Documents (Identity Document / Passport and Proof of Residential Address)",
+      "reasoning": "Mandatory under the Financial Intelligence Centre Act 38 of 2001 (FICA) before any work may be performed. The firm profile specifies pepScreening=true and enhancedDueDiligence=true, requiring certified copies of identity documents and a recent utility bill or bank statement confirming residential address.",
+      "priority": "HIGH"
+    },
+    {
+      "documentType": "PEP and Sanctions Screening Record",
+      "reasoning": "The firm profile mandates PEP screening. A documented screening result for Mr Sipho Dlamini (and the respondent/defendant once identified) must be placed on file before the matter proceeds, in accordance with the FIC Act and the firm's enhanced due diligence obligations.",
+      "priority": "HIGH"
+    },
+    {
+      "documentType": "Original or Certified Copy of the Shareholders' Agreement",
+      "reasoning": "This is the primary contractual instrument upon which the cause of action is founded. The specific clauses alleged to have been breached must be identified and pleaded with particularity in the particulars of claim. The agreement must also be reviewed for any dispute resolution clauses (arbitration, mediation, or expert determination) that may preclude or delay High Court proceedings.",
+      "priority": "HIGH"
+    },
+    {
+      "documentType": "Memorandum of Incorporation (MOI) of the Company",
+      "reasoning": "Required to assess whether the shareholders' agreement is consistent with the MOI (Companies Act 71 of 2008, s 15(7) — to the extent of any inconsistency, the MOI prevails). Also necessary to determine whether any additional statutory remedies under ss 163 or 164 are available.",
+      "priority": "HIGH"
+    },
+    {
+      "documentType": "Company Registration Documents (CIPC Records — CoR14.3 / CoR15.1A)",
+      "reasoning": "Required to confirm the identity, registration number, and registered address of the company for citation in pleadings, and to verify the respondent/defendant's directorship and shareholding.",
+      "priority": "HIGH"
+    },
+    {
+      "documentType": "Proof of Shareholding (Share Register Extract or Share Certificates)",
+      "reasoning": "Necessary to establish locus standi and to quantify the client's shareholding interest for purposes of both the damages claim and any interdict relating to the exercise of shareholder rights.",
+      "priority": "HIGH"
+    },
+    {
+      "documentType": "Detailed Written Instructions / Statement of Facts from Client",
+      "reasoning": "A comprehensive chronological account of the alleged breaches, the conduct of the former business partner, and the harm suffered is required to draft particulars of claim and, if applicable, a founding affidavit for the interdict. This document forms the evidentiary foundation of the matter.",
+      "priority": "HIGH"
+    },
+    {
+      "documentType": "Documentary Evidence of Breach (Correspondence, Board Minutes, Financial Records, etc.)",
+      "reasoning": "All documents evidencing the alleged breach of the shareholders' agreement must be collated for discovery purposes and to support the founding affidavit. These may include emails, WhatsApp records, board resolutions, management accounts, and bank statements.",
+      "priority": "HIGH"
+    },
+    {
+      "documentType": "Quantification of Damages (Financial Statements, Expert Valuation, or Loss of Profit Calculation)",
+      "reasoning": "The damages claim must be pleaded with sufficient particularity. Financial statements of the company and, if necessary, an expert accountant or business valuation report will be required to substantiate the quantum of loss suffered.",
+      "priority": "MEDIUM"
+    },
+    {
+      "documentType": "Any Prior Demand Letters or Notices Sent to the Respondent/Defendant",
+      "reasoning": "Required to establish whether a demand has already been made (relevant to mora and costs), and to assess whether any response or admission has been made by the former business partner.",
+      "priority": "MEDIUM"
+    },
+    {
+      "documentType": "Dispute Resolution Clause Analysis / Arbitration Agreement (if any)",
+      "reasoning": "If the shareholders' agreement contains an arbitration or mediation clause, the client may be required to exhaust that process before approaching the High Court, or the defendant may raise a special plea of lis alibi pendens or referral to arbitration. This must be assessed before issuing process.",
+      "priority": "MEDIUM"
+    },
+    {
+      "documentType": "Urgency Motivation (if Interdict is to be Brought on an Urgent Basis)",
+      "reasoning": "If the interdict is to be brought urgently under Uniform Rule 6(12), a written motivation setting out the grounds of urgency and why the applicant cannot be afforded substantial redress at a hearing in due course must be prepared and placed on file.",
+      "priority": "MEDIUM"
+    },
+    {
+      "documentType": "Prescription Date Calculation Memorandum",
+      "reasoning": "Given the three-year prescription period under the Prescription Act 68 of 1969 (s 11(d)), a formal memorandum confirming the date of breach and the prescription deadline must be prepared and diarised immediately to avoid time-bar.",
+      "priority": "MEDIUM"
+    },
+    {
+      "documentType": "Source of Funds Declaration",
+      "reasoning": "Required under the firm's enhanced due diligence obligations (FICA, FIC Act) to confirm the lawful origin of funds to be used to pay legal fees, particularly given the commercial nature of the dispute.",
+      "priority": "LOW"
+    }
+  ],
+  "feeEstimate": {
+    "tariffBasis": "LSSA 2024/2025 High Court Party-and-Party tariff + 10% firm multiplier (attorney-and-client basis for billing to client)",
+    "estimatedRangeMinCents": 8500000,
+    "estimatedRangeMaxCents": 22000000,
+    "reasoning": "The estimate covers two procedural streams: (1) the interdict application (motion proceedings) and (2) the damages action (action proceedings through to trial). Stream 1 — Interdict application: instructions (R858), notice of motion (R1,375), founding affidavit estimated at 20 folios (R4,290), consultations estimated at 4 quarter-hours (R3,432), correspondence and emails (estimated R2,860), service of process x2 (R858), attendance at motion court half-day (R5,148), advocate fees (estimated R15,000–R30,000 for junior counsel). Stream 1 subtotal: approximately R33,000–R48,000. Stream 2 — Damages action: instructions (R858), summons and particulars of claim (R1,375), consultations estimated at 8 quarter-hours (R6,864), plea and further pleadings (R1,375 each x2), discovery affidavit (R1,375), inspection of documents 4 hours (R3,432), trial preparation 2 days (R17,160), attendance at trial 2 days (R17,160), heads of argument 10 folios (R2,860), correspondence and emails throughout (estimated R8,000–R15,000), advocate fees for trial (estimated R40,000–R80,000 for junior counsel). Stream 2 subtotal: approximately R100,000–R155,000. Combined estimate before disbursements: R133,000–R203,000. Disbursements (sheriff, filing fees, copies, travel): estimated R12,000–R17,000. Total estimated range: R145,000–R220,000. All tariff items have been increased by the firm's 10% multiplier. The lower bound assumes a relatively straightforward interdict and early settlement or default; the upper bound assumes a defended action proceeding to a two-day trial with counsel. Contingency fees are not applicable as this is not a contingency matter on the current instructions.",
+    "assumptions": [
+      "The matter proceeds in the Western Cape Division of the High Court of South Africa.",
+      "Junior counsel (advocate) is briefed for both the interdict application and trial; senior counsel is not required at this stage.",
+      "The trial, if it proceeds, is estimated at two court days.",
+      "The founding affidavit for the interdict is estimated at 20 folios; particulars of claim at 10 folios.",
+      "No urgent application surcharge is included; if urgency is required, fees will increase materially.",
+      "The shareholders' agreement does not contain a binding arbitration clause that would divert the matter from the High Court.",
+      "Prescription has not yet run; no emergency steps are required solely to interrupt prescription.",
+      "The estimate is on an attorney-and-client basis (what the firm charges the client); party-and-party costs recovered from the defendant, if successful, will partially offset this amount.",
+      "VAT at 15% is not included and will be added to all fees and disbursements.",
+      "The firm's 10% multiplier above the LSSA tariff baseline has been applied throughout.",
+      "Expert witness fees (e.g., forensic accountant or business valuator) are excluded and will be estimated separately once the quantum of damages is determined.",
+      "FICA and onboarding costs are excluded from this estimate."
+    ]
+  },
+  "conflictScreening": {
+    "status": "CLEAR",
+    "matches": []
+  },
+  "riskFlags": [
+    "PRESCRIPTION RISK: The general contractual prescription period is three years from the date the debt became due (Prescription Act 68 of 1969, s 11(d)). The date of the alleged breach of the shareholders' agreement must be confirmed immediately. If the breach occurred more than two and a half years ago, urgent steps to interrupt prescription (service of summons or written acknowledgement of liability) must be considered without delay.",
+    "DISPUTE RESOLUTION CLAUSE: The shareholders' agreement must be reviewed immediately for any arbitration, mediation, or expert determination clause. If such a clause exists and is binding, the High Court may decline jurisdiction or stay proceedings pending exhaustion of the contractual dispute resolution mechanism. Failure to comply with such a clause may expose the client to an adverse costs order.",
+    "COMPANIES ACT CONSISTENCY: In terms of s 15(7) of the Companies Act 71 of 2008, to the extent that the shareholders' agreement is inconsistent with the company's MOI, the MOI prevails. The agreement must be reviewed against the MOI before pleadings are drafted to ensure the cause of action is properly founded.",
+    "INTERDICT REQUIREMENTS: To obtain an interdict (whether final or interim), the client must establish a clear right, an injury actually committed or reasonably apprehended, and the absence of an adequate alternative remedy (Setlogelo v Setlogelo 1914 AD 221). The factual basis for each element must be carefully assessed before launching motion proceedings, as a failed interdict application may result in an adverse costs order.",
+    "FICA AND ENHANCED DUE DILIGENCE: The firm profile mandates PEP screening and enhanced due diligence. All FICA obligations must be fully discharged before any work is performed or trust monies received. Non-compliance constitutes a criminal offence under the FIC Act.",
+    "COSTS EXPOSURE: Litigation in the High Court carries significant costs exposure for the client if the matter is unsuccessful. The client must be advised in writing of the risk of an adverse party-and-party costs order in favour of the defendant, in accordance with the firm's duty of candour under the LPC Code of Conduct.",
+    "NON-VARIATION CLAUSE (SHIFREN PRINCIPLE): If the shareholders' agreement contains a non-variation clause, any alleged oral amendments or informal variations will be void and unenforceable. The client's instructions must be carefully assessed to determine whether any reliance is placed on informal variations, as this may affect the strength of the claim.",
+    "SPECIFIC PERFORMANCE REMEDY: Under South African law, specific performance is the primary remedy for breach of contract. The client must be advised that the court may order specific performance of the shareholders' agreement rather than, or in addition to, damages, and that any liability caps in the agreement may be less protective than anticipated given this primary remedy.",
+    "CONSERVATIVE RISK CALIBRATION — BROADER DOCUMENT COLLECTION: In accordance with the firm's conservative risk calibration, a broader than standard set of documents has been recommended. All documents should be obtained and reviewed before any pleadings are settled or process is issued."
+  ]
+}
+```

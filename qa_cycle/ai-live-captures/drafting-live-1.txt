@@ -1,0 +1,262 @@
+```json
+{
+  "templateId": "0edcc81c-802c-489b-82b3-60302dcb1c37",
+  "variableFills": [
+    {
+      "variableName": "deponent_full_name",
+      "value": "Sipho Dlamini",
+      "source": "DATA",
+      "confidence": "HIGH",
+      "flag": null
+    },
+    {
+      "variableName": "deponent_id_number",
+      "value": "[IDENTITY NUMBER]",
+      "source": "UNAVAILABLE",
+      "confidence": "UNDETERMINED",
+      "flag": "Deponent's South African identity document number has not been provided in the matter or customer data. This is required for a founding affidavit."
+    },
+    {
+      "variableName": "deponent_occupation",
+      "value": "[OCCUPATION]",
+      "source": "UNAVAILABLE",
+      "confidence": "UNDETERMINED",
+      "flag": "Deponent's occupation has not been provided. Required for the affidavit preamble."
+    },
+    {
+      "variableName": "deponent_residential_address",
+      "value": "[FULL RESIDENTIAL ADDRESS, PROVINCE, POSTAL CODE]",
+      "source": "UNAVAILABLE",
+      "confidence": "UNDETERMINED",
+      "flag": "Deponent's full residential address has not been provided. Required for the affidavit preamble and service of process."
+    },
+    {
+      "variableName": "court_name",
+      "value": "Western Cape Division of the High Court of South Africa",
+      "source": "INFERRED",
+      "confidence": "MEDIUM",
+      "flag": "Inferred from the firm's jurisdiction (ZA-WC). Attorney to confirm the appropriate court division and whether the matter falls within the High Court's jurisdiction or should be heard in the Magistrates' Court."
+    },
+    {
+      "variableName": "case_number",
+      "value": "[CASE NUMBER]",
+      "source": "UNAVAILABLE",
+      "confidence": "UNDETERMINED",
+      "flag": "Case number not yet assigned or not provided. To be inserted upon filing."
+    },
+    {
+      "variableName": "applicant_name",
+      "value": "Sipho Dlamini",
+      "source": "DATA",
+      "confidence": "HIGH",
+      "flag": null
+    },
+    {
+      "variableName": "respondent_name",
+      "value": "[RESPONDENT FULL NAME / REGISTERED NAME AND REGISTRATION NUMBER]",
+      "source": "UNAVAILABLE",
+      "confidence": "UNDETERMINED",
+      "flag": "The minority shareholder's full name or registered entity details have not been provided in the matter data. Required to identify the Respondent correctly."
+    },
+    {
+      "variableName": "company_name",
+      "value": "[COMPANY FULL REGISTERED NAME AND REGISTRATION NUMBER]",
+      "source": "UNAVAILABLE",
+      "confidence": "UNDETERMINED",
+      "flag": "The name and registration number of the company that is the subject of the shareholder dispute have not been provided."
+    },
+    {
+      "variableName": "shareholders_agreement_date",
+      "value": "[DATE OF SHAREHOLDERS AGREEMENT]",
+      "source": "UNAVAILABLE",
+      "confidence": "UNDETERMINED",
+      "flag": "The date of the shareholders agreement has not been provided. Required to identify the agreement in the affidavit."
+    },
+    {
+      "variableName": "affidavit_date",
+      "value": "[DATE OF COMMISSIONING]",
+      "source": "UNAVAILABLE",
+      "confidence": "UNDETERMINED",
+      "flag": "The date on which the affidavit will be commissioned before a commissioner of oaths is not yet known."
+    },
+    {
+      "variableName": "commissioner_of_oaths_name",
+      "value": "[COMMISSIONER OF OATHS FULL NAME]",
+      "source": "UNAVAILABLE",
+      "confidence": "UNDETERMINED",
+      "flag": "Commissioner of oaths details not yet known."
+    },
+    {
+      "variableName": "commissioner_of_oaths_address",
+      "value": "[COMMISSIONER OF OATHS ADDRESS]",
+      "source": "UNAVAILABLE",
+      "confidence": "UNDETERMINED",
+      "flag": "Commissioner of oaths address not yet known."
+    },
+    {
+      "variableName": "relief_sought",
+      "value": "[SPECIFIC RELIEF SOUGHT — e.g., interdictory relief, declaratory order, enforcement of reserved matters provisions, enforcement of restraint of trade]",
+      "source": "INFERRED",
+      "confidence": "MEDIUM",
+      "flag": "The nature of the relief sought has been inferred from the matter description (deadlock, reserved matters, restraint of trade) but the precise orders sought must be confirmed by the attorney and Applicant."
+    },
+    {
+      "variableName": "applicant_shareholding_percentage",
+      "value": "[APPLICANT'S SHAREHOLDING PERCENTAGE]",
+      "source": "UNAVAILABLE",
+      "confidence": "UNDETERMINED",
+      "flag": "The Applicant's shareholding percentage in the company has not been provided."
+    },
+    {
+      "variableName": "respondent_shareholding_percentage",
+      "value": "[RESPONDENT'S SHAREHOLDING PERCENTAGE]",
+      "source": "UNAVAILABLE",
+      "confidence": "UNDETERMINED",
+      "flag": "The Respondent's shareholding percentage has not been provided."
+    },
+    {
+      "variableName": "notice_of_motion_date",
+      "value": "[DATE OF NOTICE OF MOTION]",
+      "source": "UNAVAILABLE",
+      "confidence": "UNDETERMINED",
+      "flag": "The date of the accompanying notice of motion has not been provided."
+    }
+  ],
+  "narrativeSections": [
+    {
+      "sectionName": "Preamble / Deponent Introduction",
+      "content": "I, the undersigned,\n\nSIPHO DLAMINI\n\ndo hereby make oath and state:\n\n1. I am an adult [OCCUPATION], residing at [FULL RESIDENTIAL ADDRESS, PROVINCE, POSTAL CODE], bearing South African identity document number [IDENTITY NUMBER].\n\n2. I am the Applicant in these proceedings and a shareholder in [COMPANY FULL REGISTERED NAME] (Registration Number: [REGISTRATION NUMBER]) (hereinafter referred to as \"the Company\").\n\n3. The facts deposed to herein are, unless the context indicates otherwise, within my personal knowledge and are, to the best of my knowledge and belief, both true and correct.\n\n4. Where I make submissions of a legal nature, I do so on the advice of my legal representatives, which advice I verily believe to be correct.",
+      "notes": "Attorney to insert all bracketed particulars before commissioning. Confirm that the deponent has read and understood the contents of the affidavit prior to commissioning, as required by Regulation 3 of the Regulations Governing the Administration of an Oath or Affirmation (GN R1258 of 21 July 1972, as amended)."
+    },
+    {
+      "sectionName": "Background and Locus Standi",
+      "content": "5. The Applicant holds [APPLICANT'S SHAREHOLDING PERCENTAGE]% of the issued share capital of the Company.\n\n6. The Respondent, [RESPONDENT FULL NAME / REGISTERED NAME] (Identity Number / Registration Number: [RESPONDENT ID/REG NUMBER]), is a minority shareholder in the Company, holding [RESPONDENT'S SHAREHOLDING PERCENTAGE]% of the issued share capital.\n\n7. The relationship between the Applicant and the Respondent, and their respective rights and obligations as shareholders of the Company, are governed by a written shareholders agreement concluded on or about [DATE OF SHAREHOLDERS AGREEMENT] (hereinafter referred to as \"the Shareholders Agreement\"). A copy of the Shareholders Agreement is annexed hereto marked Annexure \"A\".\n\n8. The Applicant has locus standi to bring this application by virtue of his status as a shareholder of the Company and as a party to the Shareholders Agreement.",
+      "notes": "Attach a certified copy of the Shareholders Agreement as Annexure A. If the Company's Memorandum of Incorporation (MOI) is also relevant, attach it as a further annexure. Confirm the precise shareholding percentages from the Company's share register."
+    },
+    {
+      "sectionName": "Background Facts — Deadlock",
+      "content": "9. [DESCRIBE THE CIRCUMSTANCES GIVING RISE TO THE DEADLOCK, INCLUDING: the specific decisions or resolutions that could not be passed; the dates on which deadlock arose; any deadlock resolution mechanisms invoked under the Shareholders Agreement; and the outcome thereof.]\n\n10. The Shareholders Agreement provides, in clause [CLAUSE NUMBER], for the following deadlock resolution mechanism: [DESCRIBE MECHANISM]. Despite the Applicant's compliance with the said mechanism, the deadlock has not been resolved.\n\n11. As a result of the deadlock, the Company is unable to [DESCRIBE OPERATIONAL OR GOVERNANCE CONSEQUENCES], which is causing, and will continue to cause, material prejudice to the Applicant and to the Company.",
+      "notes": "Attorney to obtain full instructions from the Applicant regarding the specific deadlock events, dates, and any correspondence exchanged. Attach relevant correspondence as annexures. Confirm which deadlock resolution provisions of the Shareholders Agreement were triggered and whether they were properly invoked."
+    },
+    {
+      "sectionName": "Background Facts — Reserved Matters",
+      "content": "12. The Shareholders Agreement further provides, in clause [CLAUSE NUMBER], for certain \"Reserved Matters\" which require the prior written consent of [DESCRIBE CONSENT THRESHOLD, e.g., all shareholders / shareholders holding a specified percentage] before the Company may take any action in respect thereof.\n\n13. On or about [DATE], the Respondent [DESCRIBE THE RESPONDENT'S CONDUCT IN RELATION TO RESERVED MATTERS, e.g., caused or permitted the Company to take action in respect of a Reserved Matter without obtaining the requisite consent / refused to provide consent to a Reserved Matter, thereby frustrating the Company's operations].\n\n14. A copy of the relevant correspondence is annexed hereto marked Annexure \"[B]\".\n\n15. The Respondent's conduct constitutes a breach of the Shareholders Agreement and is causing material prejudice to the Applicant.",
+      "notes": "Attorney to obtain full instructions regarding the specific Reserved Matters in dispute. Identify the precise clause numbers in the Shareholders Agreement. Attach all relevant correspondence and board or shareholder resolutions as annexures."
+    },
+    {
+      "sectionName": "Background Facts — Restraint of Trade",
+      "content": "16. The Shareholders Agreement further contains a restraint of trade provision in clause [CLAUSE NUMBER] (hereinafter referred to as \"the Restraint\"), in terms of which the Respondent undertook, inter alia, not to [DESCRIBE THE RESTRAINT OBLIGATIONS, e.g., carry on or be interested in any business that competes with the Company within a defined geographic area and for a defined period].\n\n17. Notwithstanding the Restraint, the Respondent has, on or about [DATE], [DESCRIBE THE RESPONDENT'S CONDUCT IN BREACH OF THE RESTRAINT, e.g., established / become a director or shareholder of / provided services to a competing business, namely [NAME OF COMPETING BUSINESS]].\n\n18. The Applicant became aware of the Respondent's breach of the Restraint on or about [DATE APPLICANT BECAME AWARE].\n\n19. The Respondent's conduct constitutes a material breach of the Restraint and is causing, and will continue to cause, irreparable harm to the Applicant and to the Company, for which damages would not be an adequate remedy.\n\n20. A copy of [DESCRIBE EVIDENCE OF BREACH, e.g., the competing business's registration documents / correspondence] is annexed hereto marked Annexure \"[C]\".",
+      "notes": "Attorney to assess the enforceability of the restraint of trade clause in light of the Constitutional Court's jurisprudence on restraints (Magna Alloys and Research (SA) (Pty) Ltd v Ellis 1984 (4) SA 874 (A) and subsequent developments). Consider whether the restraint is reasonable as to geographic scope, duration, and the interest it protects. If interim relief is sought, ensure the requirements for an interdict (clear right, injury actually committed or reasonably apprehended, absence of similar protection by any other ordinary remedy) are addressed."
+    },
+    {
+      "sectionName": "Relief Sought and Grounds Therefor",
+      "content": "21. The Applicant seeks the following relief, as more fully set out in the Notice of Motion:\n\n21.1 [FIRST ORDER SOUGHT, e.g., An order declaring that a deadlock exists in the Company and directing the parties to implement the deadlock resolution mechanism as provided in clause [X] of the Shareholders Agreement;]\n\n21.2 [SECOND ORDER SOUGHT, e.g., An order interdicting and restraining the Respondent from taking any action in respect of the Reserved Matters listed in Schedule [X] to the Shareholders Agreement without the prior written consent of the Applicant;]\n\n21.3 [THIRD ORDER SOUGHT, e.g., An order interdicting and restraining the Respondent from continuing to breach the Restraint, and directing the Respondent to cease all involvement with [COMPETING BUSINESS] forthwith;]\n\n21.4 Costs of this application, including the costs of two counsel should the Applicant employ two counsel; and\n\n21.5 Such further and/or alternative relief as this Honourable Court may deem fit.\n\n22. The Applicant submits that he has a clear right to the relief sought by virtue of the provisions of the Shareholders Agreement and the applicable provisions of the Companies Act 71 of 2008.\n\n23. The Applicant has no other adequate remedy in law, and the balance of convenience favours the granting of the relief sought.",
+      "notes": "Attorney to carefully draft the precise orders sought in the Notice of Motion and ensure they correspond exactly with the relief described in this affidavit. If urgent relief is sought, a separate affidavit in support of urgency will be required. Consider whether section 163 (oppressive or prejudicial conduct) or section 164 (appraisal rights) of the Companies Act 71 of 2008 are applicable and should be pleaded."
+    },
+    {
+      "sectionName": "Confirmation and Deponent's Signature Block",
+      "content": "24. I confirm that I know and understand the contents of this affidavit.\n\n25. I have no objection to taking the prescribed oath.\n\n26. I consider the prescribed oath to be binding on my conscience.\n\n__________________________________\nSIPHO DLAMINI\nDEPONENT\n\nSubscribed and sworn to before me at _________________________ on this the _______ day of _________________ 20_____.\n\nThe Deponent has acknowledged that he knows and understands the contents of this affidavit, has no objection to taking the oath, and considers the oath to be binding on his conscience.\n\n__________________________________\nCOMMISSIONER OF OATHS\nFull Name: _________________________\nCapacity: __________________________\nAddress: __________________________\n__________________________________\n__________________________________",
+      "notes": "The affidavit must be commissioned in accordance with the Justices of the Peace and Commissioners of Oaths Act 16 of 1963 and the Regulations Governing the Administration of an Oath or Affirmation (GN R1258 of 21 July 1972, as amended). The commissioner of oaths must not be a party to the proceedings or have a personal interest in the matter. Ensure the commissioner certifies compliance with Regulation 3(1)(b) (that the deponent has acknowledged the contents, has no objection to the oath, and considers it binding)."
+    }
+  ],
+  "clauseRecommendations": [
+    {
+      "clauseId": "76ce5a38-90a2-4d64-9f14-dfd57e1a7794",
+      "clauseName": "Dispute Resolution",
+      "reasoning": "The matter involves a shareholder dispute. The attorney should confirm whether the Shareholders Agreement contains a dispute resolution or arbitration clause that may require the parties to exhaust alternative dispute resolution mechanisms before approaching the court. If so, the affidavit must address compliance with or inapplicability of such provisions. This clause from the library may assist in drafting the relevant paragraph."
+    },
+    {
+      "clauseId": "ca82215c-5afd-47cb-8fe8-4b82f1abea96",
+      "clauseName": "Confidentiality",
+      "reasoning": "Shareholder agreements typically contain confidentiality provisions. The affidavit and its annexures may disclose confidential company information. The attorney should consider whether a confidentiality or sealing order should be sought, and whether the filing of the affidavit constitutes a breach of any confidentiality obligations owed by the Applicant."
+    },
+    {
+      "clauseId": "7d0cbd7f-ba29-48f6-98c3-c69a3b8e75d0",
+      "clauseName": "FICA Compliance",
+      "reasoning": "The firm's profile requires FICA screening (pepScreening=true; enhancedDueDiligence=true). Before accepting instructions and filing any court documents, the firm must complete FICA verification of the Applicant, Sipho Dlamini, including identity verification and source of funds assessment. This is a mandatory compliance step under the Financial Intelligence Centre Act 38 of 2001."
+    },
+    {
+      "clauseId": "0040caa2-d9e6-4599-8ac8-a5c90dba7614",
+      "clauseName": "Data Protection (POPIA)",
+      "reasoning": "The affidavit and supporting documents will contain personal information of the Applicant and the Respondent. The firm must ensure that the processing of such personal information complies with the Protection of Personal Information Act 4 of 2013, including obtaining the Applicant's consent for processing and ensuring appropriate safeguards for third-party personal information disclosed in the proceedings."
+    },
+    {
+      "clauseId": "6df710ca-2f54-47bd-8ada-7e11dcd8e175",
+      "clauseName": "Scope of Mandate",
+      "reasoning": "Given the complexity of the shareholder dispute (deadlock, reserved matters, and restraint of trade), the attorney should ensure that a clear mandate letter or engagement agreement is in place with the Applicant, defining the scope of the litigation mandate, including whether the mandate extends to any potential appeal or related proceedings."
+    },
+    {
+      "clauseId": "8083431c-f7ce-4d35-8a3b-14ba2762efc9",
+      "clauseName": "Fees — Hourly Basis",
+      "reasoning": "Complex shareholder litigation in the High Court is typically billed on an hourly basis. The firm should ensure that a fee arrangement is documented with the Applicant, consistent with the LSSA tariff baseline plus 10% as per the firm's fee estimation policy."
+    },
+    {
+      "clauseId": "54dfb84c-8a2a-4918-80e9-f403b9a6240c",
+      "clauseName": "Conflict of Interest Waiver",
+      "reasoning": "The firm must confirm that it does not act for the Respondent or the Company in any capacity that would give rise to a conflict of interest. If any potential conflict exists, a conflict of interest waiver or withdrawal from one matter may be required in accordance with the Attorneys Act 53 of 1979 and the Legal Practice Act 28 of 2014."
+    },
+    {
+      "clauseId": "56092683-cfba-4ce7-8fcc-194203de026b",
+      "clauseName": "Trust Account Deposits",
+      "reasoning": "If the Applicant is required to pay a deposit for costs or security for costs is ordered by the court, any funds received must be handled in accordance with section 86 of the Attorneys Act 53 of 1979 (as amended by the Legal Practice Act 28 of 2014) and deposited into the firm's trust account."
+    }
+  ],
+  "warnings": [
+    "CRITICAL — MISSING DEPONENT PARTICULARS: The deponent's identity document number, occupation, and residential address are not available. These are mandatory requirements for a valid founding affidavit under the Uniform Rules of Court and the Justices of the Peace and Commissioners of Oaths Act 16 of 1963. The affidavit cannot be commissioned or filed without these details.",
+    "CRITICAL — RESPONDENT NOT IDENTIFIED: The minority shareholder (Respondent) has not been identified by name, identity number, or registered entity details. The Respondent must be correctly identified before the Notice of Motion and founding affidavit can be finalised and served.",
+    "CRITICAL — COMPANY NOT IDENTIFIED: The name and registration number of the company that is the subject of the dispute have not been provided. This information is essential for the affidavit and for any relief sought in relation to the Company.",
+    "CRITICAL — FICA COMPLIANCE: The firm's profile requires PEP screening and enhanced due diligence. FICA verification of the Applicant (Sipho Dlamini) must be completed before the firm accepts instructions and files any court documents. Failure to comply with the Financial Intelligence Centre Act 38 of 2001 may expose the firm to regulatory sanction.",
+    "HIGH RISK — SHAREHOLDERS AGREEMENT NOT REVIEWED: The Shareholders Agreement has not been provided for review. The affidavit cannot be properly drafted without reviewing the agreement to identify the precise deadlock, reserved matters, and restraint of trade provisions, including any dispute resolution or arbitration clauses that may affect the court's jurisdiction.",
+    "HIGH RISK — DISPUTE RESOLUTION / ARBITRATION CLAUSE: Many shareholders agreements contain mandatory arbitration or mediation clauses. If such a clause exists, the court may decline to hear the matter or stay the proceedings pending arbitration. The attorney must review the Shareholders Agreement and address this issue before filing.",
+    "HIGH RISK — RESTRAINT OF TRADE ENFORCEABILITY: The enforceability of the restraint of trade clause must be assessed in light of South African law (Magna Alloys and Research (SA) (Pty) Ltd v Ellis 1984 (4) SA 874 (A)). The restraint must be reasonable as to geographic scope, duration, and the protectable interest. If the restraint is overbroad, the court may decline to enforce it or apply the doctrine of severability.",
+    "HIGH RISK — URGENCY: If the Applicant requires urgent relief (e.g., an interim interdict to prevent ongoing breach of the restraint or further deadlock-related harm), a separate affidavit in support of urgency must be prepared and the matter must be enrolled on the urgent roll. The attorney must assess urgency and advise the Applicant accordingly.",
+    "MEDIUM RISK — COMPANIES ACT REMEDIES: The attorney should consider whether the Applicant's complaints also give rise to relief under section 163 (oppressive or prejudicial conduct) or section 164 (appraisal rights) of the Companies Act 71 of 2008, and whether these statutory remedies should be pleaded in addition to or instead of contractual remedies.",
+    "MEDIUM RISK — SECURITY FOR COSTS: The Respondent may apply for security for costs if the Applicant is not resident in South Africa or if there are concerns about the Applicant's ability to pay costs. The attorney should advise the Applicant of this risk.",
+    "MEDIUM RISK — POPIA COMPLIANCE: The affidavit and annexures will contain personal information of the Applicant and third parties. The firm must ensure compliance with the Protection of Personal Information Act 4 of 2013 in the processing and filing of such information.",
+    "LOW RISK — COURT JURISDICTION: The appropriate court (High Court vs. Magistrates' Court) must be confirmed based on the quantum of any monetary relief sought and the nature of the declaratory or interdictory relief. The Western Cape Division of the High Court has been assumed, but this must be confirmed by the attorney.",
+    "LOW RISK — CASE NUMBER: No case number has been assigned. The affidavit must be updated with the case number upon filing."
+  ],
+  "recommendedActions": [
+    {
+      "action": "Obtain and verify the Applicant's full personal particulars, including full names as per identity document, identity document number, occupation, and full residential address (including province and postal code), before commissioning the affidavit.",
+      "reasoning": "These particulars are mandatory for a valid founding affidavit under the Uniform Rules of Court and the Justices of the Peace and Commissioners of Oaths Act 16 of 1963. The affidavit will be defective and may be set aside without them."
+    },
+    {
+      "action": "Complete FICA verification and PEP screening of the Applicant, Sipho Dlamini, including identity verification, source of funds assessment, and enhanced due diligence, before accepting instructions or filing any court documents.",
+      "reasoning": "The firm's profile mandates pepScreening=true and enhancedDueDiligence=true. Compliance with the Financial Intelligence Centre Act 38 of 2001 is a non-negotiable regulatory requirement. Failure to comply may expose the firm to regulatory sanction and reputational harm."
+    },
+    {
+      "action": "Obtain a certified copy of the Shareholders Agreement and review it in full before finalising the affidavit, with particular attention to: (a) the deadlock provisions and resolution mechanism; (b) the reserved matters schedule; (c) the restraint of trade clause (scope, duration, geographic area, and protectable interest); and (d) any dispute resolution, arbitration, or mediation clause.",
+      "reasoning": "The affidavit cannot be properly drafted without the Shareholders Agreement. The existence of an arbitration clause may affect the court's jurisdiction and the form of relief available. The restraint of trade clause must be assessed for enforceability before the Applicant commits to litigation."
+    },
+    {
+      "action": "Identify the Respondent (minority shareholder) by full name, identity document number or company registration number, and registered or residential address, and confirm the Respondent's shareholding percentage from the Company's share register.",
+      "reasoning": "The Respondent must be correctly identified in the Notice of Motion and founding affidavit. Incorrect identification may result in the proceedings being set aside or the Respondent raising a point in limine."
+    },
+    {
+      "action": "Obtain the Company's full registered name, registration number, and registered address from the Companies and Intellectual Property Commission (CIPC), and obtain a copy of the Company's Memorandum of Incorporation (MOI) and share register.",
+      "reasoning": "The Company's details are required for the affidavit. The MOI may contain provisions relevant to the dispute (e.g., reserved matters, deadlock mechanisms, or restrictions on share transfers). The share register will confirm the parties' shareholding percentages."
+    },
+    {
+      "action": "Assess whether urgent relief is required and, if so, prepare a separate affidavit in support of urgency and enrol the matter on the urgent roll of the Western Cape Division of the High Court.",
+      "reasoning": "If the Respondent's breach of the restraint of trade or the deadlock is causing ongoing and irreparable harm, urgent interdictory relief may be necessary. Delay in seeking urgent relief may be used against the Applicant to demonstrate that the matter is not truly urgent."
+    },
+    {
+      "action": "Advise the Applicant in writing of the prospects of success, the estimated costs of the litigation (on the LSSA tariff baseline plus 10%), and the risks associated with the restraint of trade claim and the deadlock relief, and obtain the Applicant's written instructions to proceed.",
+      "reasoning": "The attorney's duty to the client under the Legal Practice Act 28 of 2014 and the Attorneys Act 53 of 1979 requires that the client be fully informed of the risks and costs before litigation is commenced. A written mandate protects both the client and the firm."
+    },
+    {
+      "action": "Conduct a conflict of interest check to confirm that the firm does not act for the Respondent or the Company in any capacity, and document the outcome of the conflict check on the matter file.",
+      "reasoning": "The Legal Practice Act 28 of 2014 and the Rules of the Legal Practice Council prohibit attorneys from acting where a conflict of interest exists. A documented conflict check is best practice and protects the firm from disciplinary proceedings."
+    },
+    {
+      "action": "Consider whether the Applicant's complaints give rise to relief under section 163 (oppressive or prejudicial conduct) or section 164 (appraisal rights) of the Companies Act 71 of 2008, and advise the Applicant accordingly.",
+      "reasoning": "Statutory remedies under the Companies Act 71 of 2008 may provide additional or alternative relief to contractual remedies under the Shareholders Agreement, and may be more appropriate depending on the facts. Section 163 in particular provides broad remedial powers to the court in cases of oppressive or prejudicial conduct by a shareholder."
+    },
+    {
+      "action": "Ensure that a signed engagement letter or mandate agreement is in place with the Applicant, clearly defining the scope of the litigation mandate, the fee arrangement (hourly basis at LSSA tariff plus 10%), billing intervals, and the firm's trust account details for any deposits.",
+      "reasoning": "A written engagement agreement is required under the Legal Practice Act 28 of 2014 and protects both the firm and the client. It also ensures compliance with section 86 of the Attorneys Act 53 of 1979 regarding trust account deposits."
+    }
+  ]
+}
+```

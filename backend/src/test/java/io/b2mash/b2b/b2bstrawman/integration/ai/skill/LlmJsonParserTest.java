@@ -119,6 +119,18 @@ class LlmJsonParserTest {
   }
 
   @Test
+  void parse_prosePreambleWithBracketBeforeObject_prefersObjectOpener() {
+    // A '[' inside the prose preamble must not hijack the slice into matching a ']'. The slicer
+    // must prefer the object opener '{' so a real JSON object is still extracted.
+    String raw = "For the items [see attached schedule]: {\"name\":\"ivan\",\"value\":42}";
+
+    Sample result = parser.parse(mapper, raw, Sample.class);
+
+    assertThat(result.name()).isEqualTo("ivan");
+    assertThat(result.value()).isEqualTo(42);
+  }
+
+  @Test
   void parse_trailingProseWithStrayBrace_stopsAtMatchingCloser() {
     // A naive lastIndexOf('}') would extend the slice to the '}' in the prose epilogue and fail.
     String raw = "{\"name\":\"heidi\",\"value\":8}  Note the closing brace } in this sentence.";

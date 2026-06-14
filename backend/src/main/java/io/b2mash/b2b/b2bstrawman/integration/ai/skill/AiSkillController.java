@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/ai/skills")
@@ -94,11 +96,20 @@ public class AiSkillController {
   public record SkillExecutionResponse(
       UUID executionId,
       String status,
-      String output,
+      JsonNode output,
       List<GateDto> gates,
       long costCents,
       String model,
       Long durationMs) {
+
+    // Stateless helpers for turning the stored raw LLM output into a structured JSON object for the
+    // API. The LLM response is frequently wrapped in a markdown ```json fence; returning it
+    // verbatim
+    // as a string forces every frontend to JSON.parse a code-fenced string (and several skills omit
+    // that parse entirely, crashing the UI — AIVERIFY-001). Returning a parsed JsonNode gives all
+    // skills a single, consistent object contract.
+    private static final ObjectMapper OUTPUT_MAPPER = new ObjectMapper();
+    private static final LlmJsonParser OUTPUT_PARSER = new LlmJsonParser();
 
     public static SkillExecutionResponse from(SkillExecutionResult result) {
       return from(result.execution(), result.gates());
@@ -108,29 +119,49 @@ public class AiSkillController {
       return new SkillExecutionResponse(
           execution.getId(),
           execution.getStatus(),
-          execution.getOutputContent(),
+          parseOutput(execution.getOutputContent()),
           gates.stream().map(GateDto::from).toList(),
           execution.getCostCents(),
           execution.getModel(),
           execution.getDurationMs());
     }
+
+    /**
+     * Strip any markdown fence / prose preamble and parse the LLM output into a JSON object.
+     * Returns {@code null} for blank or unparseable content (e.g. a FAILED execution) — the
+     * frontend renders the failure state from {@code status}, not {@code output}.
+     */
+    private static JsonNode parseOutput(String rawOutput) {
+      if (rawOutput == null || rawOutput.isBlank()) {
+        return null;
+      }
+      try {
+        return OUTPUT_MAPPER.readTree(OUTPUT_PARSER.extractJson(rawOutput));
+      } catch (RuntimeException e) {
+        return null;
+      }
+    }
   }
 
   public record GateDto(
       UUID id,
+      UUID executionId,
       String gateType,
       String status,
       Map<String, Object> proposedAction,
       String aiReasoning,
+      Instant createdAt,
       Instant expiresAt) {
 
     public static GateDto from(AiExecutionGate gate) {
       return new GateDto(
           gate.getId(),
+          gate.getExecution().getId(),
           gate.getGateType(),
           gate.getStatus(),
           gate.getProposedAction(),
           gate.getAiReasoning(),
+          gate.getCreatedAt(),
           gate.getExpiresAt());
     }
   }

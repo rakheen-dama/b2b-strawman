@@ -111,7 +111,10 @@ public class LlmJsonParser {
   private String sliceJsonBody(String text) {
     int objStart = text.indexOf('{');
     int arrStart = text.indexOf('[');
-    int start = firstNonNegative(objStart, arrStart);
+    // Prefer the object opener. Every skill output is a JSON object, so a stray '[' appearing in a
+    // prose preamble (e.g. "For items [see below]: {...}") must not hijack the slice into matching
+    // a ']'. Fall back to the array opener only when there is no '{' at all.
+    int start = objStart >= 0 ? objStart : arrStart;
     if (start < 0) {
       return null;
     }
@@ -139,15 +142,5 @@ public class LlmJsonParser {
       }
     }
     return null;
-  }
-
-  private int firstNonNegative(int a, int b) {
-    if (a < 0) {
-      return b;
-    }
-    if (b < 0) {
-      return a;
-    }
-    return Math.min(a, b);
   }
 }

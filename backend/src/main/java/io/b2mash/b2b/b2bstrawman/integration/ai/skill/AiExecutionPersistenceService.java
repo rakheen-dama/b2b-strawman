@@ -126,16 +126,20 @@ public class AiExecutionPersistenceService {
     execution.markCompleted(response, costCents);
     execution = executionRepository.save(execution);
 
-    // Parse output + build gates. A parse failure here must NOT roll back the metered execution —
-    // the LLM was already billed. Record FAILED-with-cost and emit the failure audit event instead.
+    // Parse output + build gates. ANY failure here must NOT roll back the metered execution — the
+    // LLM was already billed. Record FAILED-with-cost and emit the failure audit event instead of
+    // unwinding the transaction. We catch RuntimeException broadly because createGates does more
+    // than parse the response: it can throw ResourceNotFoundException (a referenced entity was
+    // deleted) or NPE (a null id) while resolving gate context. All of those mean "billed but no
+    // gate produced", which is the FAILED-with-cost case — never a silent rollback.
     List<AiExecutionGate> gates;
     try {
       gates = request.skill().createGates(execution, response.content(), request.context());
-    } catch (InvalidStateException e) {
+    } catch (RuntimeException e) {
       execution.markFailedAfterCompletion(e.getMessage());
       execution = executionRepository.save(execution);
       log.warn(
-          "AI skill {} returned unparseable output for entity {} (cost {}c metered, FAILED): {}",
+          "AI skill {} failed to build gates for entity {} (cost {}c metered, FAILED): {}",
           execution.getSkillId(),
           execution.getEntityId(),
           execution.getCostCents(),

@@ -8,6 +8,7 @@ import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEvent;
 import io.b2mash.b2b.b2bstrawman.audit.AuditEventRepository;
 import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ResourceNotFoundException;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecution;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecutionRepository;
 import io.b2mash.b2b.b2bstrawman.integration.ai.gate.AiExecutionGate;
@@ -306,6 +307,47 @@ class AiSkillExecutionServiceTest {
         });
   }
 
+  /**
+   * Regression for AIVERIFY-001 (review follow-up): {@code createGates} does more than parse — it
+   * can throw {@link ResourceNotFoundException} (a referenced entity was deleted) or an NPE while
+   * resolving gate context, AFTER the LLM was billed. Those must also record FAILED-with-cost, not
+   * roll back the metered execution. Before broadening the catch from {@code InvalidStateException}
+   * to {@code RuntimeException}, this path unwound the transaction and lost the spend.
+   */
+  @Test
+  @Order(7)
+  void executeSkill_gateBuildingThrowsNonParseError_recordsFailedWithCost_noRollback() {
+    runInTenant(
+        () -> {
+          long executionsBefore = executionRepository.count();
+          long auditFailedBefore = countSpecialistFailedAudits();
+
+          // Parseable stub (reuses test-skill's response) so the LLM call succeeds and is billed;
+          // createGates then throws a non-parse runtime exception.
+          var skill = new GateBuildingFailingSkill();
+          var context =
+              new SkillContext(
+                  UUID.randomUUID(), "CUSTOMER", "Gate-building failure test", Map.of());
+          var request = new SkillExecutionRequest(skill, context, ownerMemberId, List.of());
+
+          SkillExecutionResult result = executionService.executeSkill(request);
+          AiExecution execution = result.execution();
+
+          // FAILED, not rolled back, cost preserved.
+          assertThat(execution.getStatus()).isEqualTo("FAILED");
+          assertThat(execution.getCostCents()).isGreaterThan(0);
+          assertThat(result.gates()).isEmpty();
+          assertThat(gateRepository.findByExecutionId(execution.getId())).isEmpty();
+
+          // Exactly one new execution row + a specialist.failed audit event.
+          assertThat(executionRepository.count()).isEqualTo(executionsBefore + 1);
+          AiExecution reloaded = executionRepository.findById(execution.getId()).orElseThrow();
+          assertThat(reloaded.getStatus()).isEqualTo("FAILED");
+          assertThat(reloaded.getCostCents()).isGreaterThan(0);
+          assertThat(countSpecialistFailedAudits()).isEqualTo(auditFailedBefore + 1);
+        });
+  }
+
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   private long countSpecialistFailedAudits() {
@@ -405,6 +447,40 @@ class AiSkillExecutionServiceTest {
       return fail(
           "createGates should not be reached — LlmJsonParser should have thrown"
               + " InvalidStateException for the unparseable stub");
+    }
+
+    @Override
+    public boolean requiresVision() {
+      return false;
+    }
+  }
+
+  /**
+   * A skill that parses fine (reuses the parseable {@code test-skill} stub) but throws a non-parse
+   * runtime exception from {@code createGates} — reproducing the ContractReviewSkill path where a
+   * referenced document/project is missing. Exercises the broadened catch in completeExecution.
+   */
+  static class GateBuildingFailingSkill implements AiSkill {
+
+    @Override
+    public String skillId() {
+      return "test-skill";
+    }
+
+    @Override
+    public String assembleSystemPrompt(AiFirmProfile profile) {
+      return "You are a skill that fails while building gates.";
+    }
+
+    @Override
+    public String assembleUserPrompt(SkillContext context) {
+      return "Produce output for: " + context.entityId();
+    }
+
+    @Override
+    public List<AiExecutionGate> createGates(
+        AiExecution execution, String outputContent, SkillContext context) {
+      throw new ResourceNotFoundException("Document", UUID.randomUUID());
     }
 
     @Override

@@ -397,29 +397,12 @@ export async function invokeContractReview(
   documentId: string,
   projectId: string
 ): Promise<ContractReviewResponse> {
-  const raw = await api.post<{
-    executionId: string;
-    status: "COMPLETED" | "FAILED";
-    output: string | null;
-    gates: AiGateListItem[];
-    costCents: number;
-    model: string;
-    durationMs: number;
-  }>("/api/ai/skills/contract-review", { documentId, projectId });
-
-  let parsedOutput: ContractReviewOutput | null = null;
-  if (raw.output) {
-    try {
-      parsedOutput = JSON.parse(raw.output) as ContractReviewOutput;
-    } catch {
-      parsedOutput = null;
-    }
-  }
-
-  return {
-    ...raw,
-    output: parsedOutput,
-  };
+  // The backend returns `output` as a parsed JSON object (the markdown fence is stripped
+  // server-side), so no client-side JSON.parse is needed — consistent with the other skills.
+  return api.post<ContractReviewResponse>("/api/ai/skills/contract-review", {
+    documentId,
+    projectId,
+  });
 }
 
 // ---- Drafting API Function ----
@@ -428,27 +411,10 @@ export async function invokeDrafting(
   templateId: string,
   projectId: string
 ): Promise<DraftingResponse> {
-  const raw = await api.post<{
-    executionId: string;
-    status: "COMPLETED" | "FAILED";
-    output: string | null;
-    gates: AiGateListItem[];
-    costCents: number;
-    model: string;
-    durationMs: number;
-  }>("/api/ai/skills/drafting", { templateId, projectId });
-
-  let parsedOutput: DraftingOutput | null = null;
-  if (raw.output) {
-    try {
-      parsedOutput = JSON.parse(raw.output) as DraftingOutput;
-    } catch {
-      parsedOutput = null;
-    }
-  }
-
-  return {
-    ...raw,
-    output: parsedOutput,
-  };
+  // The backend returns `output` as a parsed JSON object (the markdown fence is stripped
+  // server-side), so no client-side JSON.parse is needed — consistent with the other skills.
+  return api.post<DraftingResponse>("/api/ai/skills/drafting", {
+    templateId,
+    projectId,
+  });
 }

@@ -15,6 +15,7 @@ import io.b2mash.b2b.b2bstrawman.integration.ai.gate.AiExecutionGate;
 import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfile;
 import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfileService;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.AiSkill;
+import io.b2mash.b2b.b2bstrawman.integration.ai.skill.LlmJsonParser;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.SkillContext;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +29,6 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 
 /**
@@ -51,6 +51,7 @@ public class FicaVerificationSkill implements AiSkill {
   private final AiFirmProfileService firmProfileService;
   private final FicaDocumentReader ficaDocumentReader;
   private final ObjectMapper objectMapper;
+  private final LlmJsonParser llmJsonParser;
 
   public FicaVerificationSkill(
       CustomerRepository customerRepository,
@@ -59,7 +60,8 @@ public class FicaVerificationSkill implements AiSkill {
       ChecklistInstanceItemRepository checklistInstanceItemRepository,
       AiFirmProfileService firmProfileService,
       FicaDocumentReader ficaDocumentReader,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      LlmJsonParser llmJsonParser) {
     this.customerRepository = customerRepository;
     this.documentRepository = documentRepository;
     this.checklistInstanceRepository = checklistInstanceRepository;
@@ -67,6 +69,7 @@ public class FicaVerificationSkill implements AiSkill {
     this.firmProfileService = firmProfileService;
     this.ficaDocumentReader = ficaDocumentReader;
     this.objectMapper = objectMapper;
+    this.llmJsonParser = llmJsonParser;
   }
 
   @Override
@@ -172,14 +175,8 @@ public class FicaVerificationSkill implements AiSkill {
   @Override
   public List<AiExecutionGate> createGates(
       AiExecution execution, String outputContent, SkillContext context) {
-    FicaVerificationOutput output;
-    try {
-      output = objectMapper.readValue(outputContent, FicaVerificationOutput.class);
-    } catch (JacksonException e) {
-      throw new InvalidStateException(
-          "AI response parse failed",
-          "AI response could not be parsed as valid FICA verification output: " + e.getMessage());
-    }
+    FicaVerificationOutput output =
+        llmJsonParser.parse(objectMapper, outputContent, FicaVerificationOutput.class);
 
     List<AiExecutionGate> gates = new ArrayList<>();
     for (FicaVerificationOutput.RecommendedAction action : output.recommendedActions()) {

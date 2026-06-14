@@ -14,15 +14,24 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api/ai/skills")
 public class AiSkillController {
 
   private final AiSkillExecutionService executionService;
+  private final LlmJsonParser llmJsonParser;
+  private final ObjectMapper objectMapper;
 
-  public AiSkillController(AiSkillExecutionService executionService) {
+  public AiSkillController(
+      AiSkillExecutionService executionService,
+      LlmJsonParser llmJsonParser,
+      ObjectMapper objectMapper) {
     this.executionService = executionService;
+    this.llmJsonParser = llmJsonParser;
+    this.objectMapper = objectMapper;
   }
 
   @PostMapping("/fica-verification")
@@ -33,7 +42,9 @@ public class AiSkillController {
     return ResponseEntity.ok(
         SkillExecutionResponse.from(
             executionService.executeFicaVerification(
-                request.customerId(), RequestScopes.requireMemberId())));
+                request.customerId(), RequestScopes.requireMemberId()),
+            llmJsonParser,
+            objectMapper));
   }
 
   @PostMapping("/matter-intake")
@@ -44,7 +55,9 @@ public class AiSkillController {
     return ResponseEntity.ok(
         SkillExecutionResponse.from(
             executionService.executeMatterIntake(
-                request.customerId(), request.description(), RequestScopes.requireMemberId())));
+                request.customerId(), request.description(), RequestScopes.requireMemberId()),
+            llmJsonParser,
+            objectMapper));
   }
 
   @PostMapping("/contract-review")
@@ -55,7 +68,9 @@ public class AiSkillController {
     return ResponseEntity.ok(
         SkillExecutionResponse.from(
             executionService.executeContractReview(
-                request.documentId(), request.projectId(), RequestScopes.requireMemberId())));
+                request.documentId(), request.projectId(), RequestScopes.requireMemberId()),
+            llmJsonParser,
+            objectMapper));
   }
 
   @PostMapping("/drafting")
@@ -66,7 +81,9 @@ public class AiSkillController {
     return ResponseEntity.ok(
         SkillExecutionResponse.from(
             executionService.executeDrafting(
-                request.templateId(), request.projectId(), RequestScopes.requireMemberId())));
+                request.templateId(), request.projectId(), RequestScopes.requireMemberId()),
+            llmJsonParser,
+            objectMapper));
   }
 
   @PostMapping("/compliance-audit")
@@ -76,7 +93,9 @@ public class AiSkillController {
       @RequestBody(required = false) ComplianceAuditRequest request) {
     return ResponseEntity.ok(
         SkillExecutionResponse.from(
-            executionService.executeComplianceAudit(RequestScopes.requireMemberId())));
+            executionService.executeComplianceAudit(RequestScopes.requireMemberId()),
+            llmJsonParser,
+            objectMapper));
   }
 
   // ── DTOs ────────────────────────────────────────────────────────────────
@@ -94,43 +113,71 @@ public class AiSkillController {
   public record SkillExecutionResponse(
       UUID executionId,
       String status,
-      String output,
+      JsonNode output,
       List<GateDto> gates,
       long costCents,
       String model,
       Long durationMs) {
 
-    public static SkillExecutionResponse from(SkillExecutionResult result) {
-      return from(result.execution(), result.gates());
+    public static SkillExecutionResponse from(
+        SkillExecutionResult result, LlmJsonParser parser, ObjectMapper mapper) {
+      return from(result.execution(), result.gates(), parser, mapper);
     }
 
-    public static SkillExecutionResponse from(AiExecution execution, List<AiExecutionGate> gates) {
+    public static SkillExecutionResponse from(
+        AiExecution execution,
+        List<AiExecutionGate> gates,
+        LlmJsonParser parser,
+        ObjectMapper mapper) {
       return new SkillExecutionResponse(
           execution.getId(),
           execution.getStatus(),
-          execution.getOutputContent(),
+          parseOutput(execution.getOutputContent(), parser, mapper),
           gates.stream().map(GateDto::from).toList(),
           execution.getCostCents(),
           execution.getModel(),
           execution.getDurationMs());
     }
+
+    /**
+     * Strip any markdown fence / prose preamble and parse the LLM output into a JSON object so the
+     * API exposes structured output, not a code-fenced string every frontend would have to re-parse
+     * (the AIVERIFY-001 contract). Returns {@code null} for blank or unparseable content (e.g. a
+     * FAILED execution) — the frontend renders the failure state from {@code status}, not {@code
+     * output}. Uses the Spring-managed {@link ObjectMapper} for tree parsing.
+     */
+    private static JsonNode parseOutput(
+        String rawOutput, LlmJsonParser parser, ObjectMapper mapper) {
+      if (rawOutput == null || rawOutput.isBlank()) {
+        return null;
+      }
+      try {
+        return mapper.readTree(parser.extractJson(rawOutput));
+      } catch (RuntimeException e) {
+        return null;
+      }
+    }
   }
 
   public record GateDto(
       UUID id,
+      UUID executionId,
       String gateType,
       String status,
       Map<String, Object> proposedAction,
       String aiReasoning,
+      Instant createdAt,
       Instant expiresAt) {
 
     public static GateDto from(AiExecutionGate gate) {
       return new GateDto(
           gate.getId(),
+          gate.getExecution().getId(),
           gate.getGateType(),
           gate.getStatus(),
           gate.getProposedAction(),
           gate.getAiReasoning(),
+          gate.getCreatedAt(),
           gate.getExpiresAt());
     }
   }

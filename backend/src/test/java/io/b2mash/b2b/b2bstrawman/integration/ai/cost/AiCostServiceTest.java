@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.b2mash.b2b.b2bstrawman.TestcontainersConfiguration;
-import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.integration.ai.AiCompletionResponse;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecution;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecutionRepository;
@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -104,9 +105,7 @@ class AiCostServiceTest {
   }
 
   @Test
-  void checkBudget_throwsWhenBudgetExhausted() {
-    // Use a separate org to avoid interference with other tests
-    String budgetOrg = "org_ai_cost_budget_test";
+  void checkBudget_throwsForbiddenWhenBudgetExhausted() {
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .where(RequestScopes.MEMBER_ID, ownerMemberId)
@@ -144,9 +143,16 @@ class AiCostServiceTest {
 
               var profile = firmProfileService.getOrCreateProfile();
 
+              // Budget-exhausted is a policy/quota denial → 403 ForbiddenException, not 400.
               assertThatThrownBy(() -> costService.checkBudget(profile))
-                  .isInstanceOf(InvalidStateException.class)
-                  .hasMessageContaining("AI budget exhausted");
+                  .isInstanceOf(ForbiddenException.class)
+                  .satisfies(
+                      ex -> {
+                        ForbiddenException fe = (ForbiddenException) ex;
+                        assertThat(fe.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+                        assertThat(fe.getBody().getTitle()).isEqualTo("AI budget exhausted");
+                        assertThat(fe.getBody().getDetail()).contains("reached the budget");
+                      });
             });
   }
 }

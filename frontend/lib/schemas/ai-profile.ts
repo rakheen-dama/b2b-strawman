@@ -18,7 +18,14 @@ export const aiProfileSchema = z.object({
     .optional(),
   feeEstimationNotes: z.string().max(2000).optional().or(z.literal("")),
   preferredModel: preferredModelEnum,
-  monthlyBudgetCents: z.coerce.number().int().min(0, "Budget must be zero or positive").optional(),
+  // A cleared budget arrives as undefined/null/NaN/"" from the number field — all mean "no cap".
+  // Normalise those to undefined BEFORE validating so an emptied field never trips a silent
+  // "expected number, received NaN" failure that aborts the whole form submit (AIVERIFY-010).
+  monthlyBudgetCents: z.preprocess((value) => {
+    if (value === undefined || value === null || value === "") return undefined;
+    const n = typeof value === "string" ? Number(value) : value;
+    return typeof n === "number" && Number.isFinite(n) ? n : undefined;
+  }, z.number().int().min(0, "Budget must be zero or positive").optional()),
   coldStartCompleted: z.boolean().optional(),
 });
 

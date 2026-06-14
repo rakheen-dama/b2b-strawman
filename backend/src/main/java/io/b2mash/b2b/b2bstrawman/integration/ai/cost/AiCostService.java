@@ -1,6 +1,6 @@
 package io.b2mash.b2b.b2bstrawman.integration.ai.cost;
 
-import io.b2mash.b2b.b2bstrawman.exception.InvalidStateException;
+import io.b2mash.b2b.b2bstrawman.exception.ForbiddenException;
 import io.b2mash.b2b.b2bstrawman.integration.ai.AiCompletionResponse;
 import io.b2mash.b2b.b2bstrawman.integration.ai.execution.AiExecutionRepository;
 import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfile;
@@ -32,7 +32,12 @@ public class AiCostService {
     this.pricingProperties = pricingProperties;
   }
 
-  /** Check if tenant has budget remaining. Throws if budget exhausted. */
+  /**
+   * Check if tenant has budget remaining. Throws if budget exhausted.
+   *
+   * <p>A budget-exhausted block is a policy/quota denial, not a malformed request, so it surfaces
+   * as HTTP 403 (ForbiddenException) rather than 400 (AIVERIFY-010).
+   */
   public void checkBudget(AiFirmProfile profile) {
     if (profile.getMonthlyBudgetCents() == null) {
       return; // no cap
@@ -41,7 +46,7 @@ public class AiCostService {
         YearMonth.now(ZoneOffset.UTC).atDay(1).atStartOfDay(ZoneOffset.UTC).toInstant();
     long spent = executionRepository.sumCostCentsForCurrentMonth(monthStart);
     if (spent >= profile.getMonthlyBudgetCents()) {
-      throw new InvalidStateException(
+      throw new ForbiddenException(
           "AI budget exhausted",
           "Monthly AI spend of R%.2f has reached the budget of R%.2f"
               .formatted(spent / 100.0, profile.getMonthlyBudgetCents() / 100.0));

@@ -1,1 +1,1 @@
-{"commit":"66be148e5","command":"pnpm run lint && pnpm run build && pnpm test","exit":0,"ts":"2026-06-14T19:26:47Z","summary":"lint 0 errors; build ok; 2344 tests passed, 2 skipped (375 files)"}
+{"commit":"f97bfe146","command":"cd frontend && pnpm install && pnpm run lint && pnpm run format:check && pnpm run build && pnpm run test","exit":0,"ts":"2026-06-14T21:59:09Z","summary":"lint 0 errors; format:check clean; build OK; 376 files, 2352 passed, 2 skipped"}

@@ -31,7 +31,8 @@ For each verification stage V0–V12:
 
 ## QA Position
 
-- **Stage**: V0 (firm onboarding) — **NOT STARTED**. Cycle just initialized; awaiting Infra clean-slate startup.
+- **Stage**: **V1 — awaiting human to enter funded Anthropic key (BYOAK)**. V0 onboarding fully PASS. Human logs in as Nomsa (`nomsa@verifain-test.local` / `SecureP@ss1`) at http://localhost:3000 → `/org/verifain-attorneys/settings/integrations` → enters funded `sk-ant-…` key (V1 steps 1.1–1.7), enables, runs connection test green → tells orchestrator "done". QA stopped before V1 per the human-in-the-loop gate.
+- **Resolved org slug**: `verifain-attorneys` (tenant `tenant_c6107524c9b4`, org KC id `221d86fb-f1b6-440d-b2df-873239f6d784`, profile `legal-za`). V0 evidence + full detail: `qa_cycle/checkpoint-results/V0.md`.
 
 ## Dev Stack
 
@@ -51,7 +52,7 @@ For each verification stage V0–V12:
 
 | Stage | Description | Result |
 |-------|-------------|--------|
-| V0 | Onboard firm (Nomsa owner, Pieter member) | PENDING |
+| V0 | Onboard firm (Nomsa owner, Pieter member) | ✅ PASS |
 | V1 | BYOAK key configuration (human enters key) | PENDING |
 | V2 | Firm AI profile cold-start | PENDING |
 | V3 | Matter-intake skill (live Claude) | PENDING |
@@ -68,4 +69,5 @@ For each verification stage V0–V12:
 ## Log
 
 - **2026-06-14** — Cycle initialized. Archived completed Legal-ZA cycle (ALL_DAYS_COMPLETE, 0 open gaps) to `qa_cycle/_archive_2026-06-13_legal-full-lifecycle-kc/`. Branch `bugfix_cycle_2026-06-14` created. Fresh tracker seeded. Human-in-the-loop key decision: human enters key at V1. Stack decision: clean-slate startup. Next action: Infra agent (Session 0 clean-slate startup).
+- **2026-06-14 (QA, V0)** — Onboarding walked end-to-end via Playwright MCP. **V0 PASS (all sub-steps 0.1–0.4).** Org slug resolved = `verifain-attorneys` (tenant `tenant_c6107524c9b4`). Vertical profile `legal-za` auto-assigned — confirmed via backend provisioning log (legal-za field/template/compliance/AI-specialist packs installed). Nomsa Verifain registered + logged in as **Owner** (Team page row). Pieter Botha invited as plain **member** (no 2-member plan gate hit), registered + logged in; KC shows only `default-roles-docteams` (no AI roles) and his sidebar lacks the "AI" nav item — clean RBAC negative-test subject for V10. 0 console errors throughout. Evidence: `qa_cycle/checkpoint-results/V0.md` + `v0-*.png`. No defects filed. **STOPPED before V1** for human key entry (BYOAK gate). Noted testing-only session-handoff caveat (KC SSO "already authenticated" when switching actors on invite links — resolved via admin-API session logout + browser-context reset; not a product defect).
 - **2026-06-14 (Infra, Session 0)** — Clean-slate stack brought up. Docker infra verified healthy (postgres/keycloak/mailpit/localstack). `keycloak-bootstrap.sh` run idempotently — padmin@docteams.local confirmed. Clean-slate teardown (0.A/0.B): **0 `tenant_verifain*` schemas** found, **0 `@verifain-test.local` KC users** found, **0 verifain `access_requests`** rows in public schema — environment was already clean, nothing to drop/delete. Encryption-key check (0.C): `integration.encryption-key` present in `application-local.yml:86` (valid 32-byte base64 dev key), backend launches with `SPRING_PROFILES_ACTIVE=local,keycloak` — **no encryption/SecretStore startup error**; V1 BYOAK unblocked. `svc.sh start all` → all 4 services healthy on first attempt. Sanity probes: backend/gateway `/actuator/health` UP, frontend 200, KC realm 200. QA Position remains V0.

@@ -105,6 +105,19 @@ public class AiExecution {
     this.durationMs = durationMs;
   }
 
+  /**
+   * Transition a previously-COMPLETED execution to FAILED while preserving the cost, token usage
+   * and duration already recorded by {@link #markCompleted}. Used when the LLM call succeeded (and
+   * was billed) but its output could not be parsed — the real spend must stay metered rather than
+   * being rolled back, distinguishing "cost incurred, parse failed" from a provider-level failure.
+   */
+  public void markFailedAfterCompletion(String errorMessage) {
+    this.status = "FAILED";
+    this.errorMessage = errorMessage;
+    // costCents, inputTokens, outputTokens, cache tokens, outputContent and durationMs are left
+    // intact — they were set by markCompleted and represent real, already-incurred spend.
+  }
+
   public void setInputSummary(String inputSummary) {
     this.inputSummary = inputSummary;
   }

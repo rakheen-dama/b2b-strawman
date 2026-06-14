@@ -11,6 +11,7 @@ import io.b2mash.b2b.b2bstrawman.integration.ai.gate.AiExecutionGate;
 import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfile;
 import io.b2mash.b2b.b2bstrawman.integration.ai.profile.AiFirmProfileService;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.AiSkill;
+import io.b2mash.b2b.b2bstrawman.integration.ai.skill.LlmJsonParser;
 import io.b2mash.b2b.b2bstrawman.integration.ai.skill.SkillContext;
 import io.b2mash.b2b.b2bstrawman.project.Project;
 import io.b2mash.b2b.b2bstrawman.project.ProjectRepository;
@@ -27,7 +28,6 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import tools.jackson.core.JacksonException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
@@ -50,6 +50,7 @@ public class DraftingSkill implements AiSkill {
   private final ClauseRepository clauseRepository;
   private final AiFirmProfileService firmProfileService;
   private final ObjectMapper objectMapper;
+  private final LlmJsonParser llmJsonParser;
 
   public DraftingSkill(
       DocumentTemplateRepository documentTemplateRepository,
@@ -57,13 +58,15 @@ public class DraftingSkill implements AiSkill {
       CustomerRepository customerRepository,
       ClauseRepository clauseRepository,
       AiFirmProfileService firmProfileService,
-      ObjectMapper objectMapper) {
+      ObjectMapper objectMapper,
+      LlmJsonParser llmJsonParser) {
     this.documentTemplateRepository = documentTemplateRepository;
     this.projectRepository = projectRepository;
     this.customerRepository = customerRepository;
     this.clauseRepository = clauseRepository;
     this.firmProfileService = firmProfileService;
     this.objectMapper = objectMapper;
+    this.llmJsonParser = llmJsonParser;
   }
 
   @Override
@@ -241,14 +244,7 @@ public class DraftingSkill implements AiSkill {
   @Override
   public List<AiExecutionGate> createGates(
       AiExecution execution, String outputContent, SkillContext context) {
-    DraftingOutput output;
-    try {
-      output = objectMapper.readValue(outputContent, DraftingOutput.class);
-    } catch (JacksonException e) {
-      throw new InvalidStateException(
-          "AI response parse failed",
-          "AI response could not be parsed as valid drafting output: " + e.getMessage());
-    }
+    DraftingOutput output = llmJsonParser.parse(objectMapper, outputContent, DraftingOutput.class);
 
     // Extract templateId from execution context (set by controller)
     Object templateIdObj = context.additionalContext().get("templateId");

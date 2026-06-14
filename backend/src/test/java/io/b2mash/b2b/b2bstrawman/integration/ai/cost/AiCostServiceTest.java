@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -105,8 +106,6 @@ class AiCostServiceTest {
 
   @Test
   void checkBudget_throwsForbiddenWhenBudgetExhausted() {
-    // Use a separate org to avoid interference with other tests
-    String budgetOrg = "org_ai_cost_budget_test";
     ScopedValue.where(RequestScopes.TENANT_ID, tenantSchema)
         .where(RequestScopes.ORG_ID, ORG_ID)
         .where(RequestScopes.MEMBER_ID, ownerMemberId)
@@ -147,7 +146,13 @@ class AiCostServiceTest {
               // Budget-exhausted is a policy/quota denial → 403 ForbiddenException, not 400.
               assertThatThrownBy(() -> costService.checkBudget(profile))
                   .isInstanceOf(ForbiddenException.class)
-                  .hasMessageContaining("AI budget exhausted");
+                  .satisfies(
+                      ex -> {
+                        ForbiddenException fe = (ForbiddenException) ex;
+                        assertThat(fe.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+                        assertThat(fe.getBody().getTitle()).isEqualTo("AI budget exhausted");
+                        assertThat(fe.getBody().getDetail()).contains("reached the budget");
+                      });
             });
   }
 }

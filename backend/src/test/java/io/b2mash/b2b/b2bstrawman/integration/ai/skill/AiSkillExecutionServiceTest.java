@@ -40,6 +40,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -190,7 +191,13 @@ class AiSkillExecutionServiceTest {
 
           assertThatThrownBy(() -> executionService.executeSkill(request))
               .isInstanceOf(ForbiddenException.class)
-              .hasMessageContaining("budget exhausted");
+              .satisfies(
+                  ex -> {
+                    ForbiddenException fe = (ForbiddenException) ex;
+                    assertThat(fe.getStatusCode()).isEqualTo(HttpStatus.FORBIDDEN);
+                    assertThat(fe.getBody().getTitle()).isEqualTo("AI budget exhausted");
+                    assertThat(fe.getBody().getDetail()).contains("reached the budget");
+                  });
 
           // Pre-LLM block: no execution row was recorded and therefore no cost was metered —
           // a budget-exhausted call must never reach (and pay for) the provider.
